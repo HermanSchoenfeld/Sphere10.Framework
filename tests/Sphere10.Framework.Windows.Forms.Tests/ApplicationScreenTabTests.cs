@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Sphere10.Framework.Application.UI;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -18,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -559,7 +559,10 @@ public class ApplicationScreenTabTests {
 		var Overview = new WinFormsScreenMenuItem("Overview", typeof(PermanentDragScreen), Icon) {
 			ScreenDefinition = new ApplicationScreenDefinition(typeof(PermanentDragScreen), "Overview", ScreenActivationMode.PermanentSingleton)
 		};
-		var Files = new WinFormsScreenMenuItem("Open Files And File Blockers", typeof(DragScreen), Icon);
+		var filesDefinition = new ApplicationScreenDefinition(typeof(DragScreen), "Open Files And File Blockers");
+		var Files = new WinFormsScreenMenuItem(filesDefinition, image16x16: Icon);
+		Block.AddScreenDefinition(Overview.ScreenDefinition);
+		Block.AddScreenDefinition(filesDefinition);
 		Block.AddMenu(new WinFormsApplicationMenu("Monitor", new IWinFormsApplicationMenuItem[] { Overview, Files }));
 		Block.DefaultScreenDefinition = Overview.ScreenDefinition;
 		using var Form = new HostedTabLayoutForm { ScreenMode = ScreenMode.MultiView, ClientSize = new Size(1300, 750),
@@ -587,7 +590,7 @@ public class ApplicationScreenTabTests {
 				Stage = "checking native caption measurements";
 				Assert.That(Form.Visible, Is.True);
 				AssertHostedCaption(0, "Overview");
-				Form.ScreenHost.ActivateScreen(Block, typeof(DragScreen), "Open Files And File Blockers");
+				Form.ScreenHost.ActivateScreen(Block, filesDefinition);
 				AssertHostedCaption(0, "Overview");
 				AssertHostedCaption(1, "Open Files And File Blockers");
 				Completed = true;

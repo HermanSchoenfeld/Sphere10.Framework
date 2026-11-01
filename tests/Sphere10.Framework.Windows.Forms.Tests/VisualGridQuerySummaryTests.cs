@@ -20,7 +20,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridQuerySummaryTests {
+public class VisualGridQuerySummaryTests {
 	[Test]
 	public void AcceptedBindingsExposeTheFilteredTotalAcrossPagesAndEmptyResults() => RunWithMessageLoop(async owner => {
 		using var grid = CreateGrid(owner);
@@ -74,11 +74,11 @@ public class CrudGridQuerySummaryTests {
 		Assert.That(grid.VisibleEntities.Cast<QueryRow>().Select(row => row.Name), Is.All.EqualTo("Current"));
 	});
 
-	private static CrudGrid CreateGrid(Form owner) {
-		var grid = new CrudGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PrepareReadOnlyCellsInBackground = true };
+	private static VisualGrid CreateGrid(Form owner) {
+		var grid = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PrepareReadOnlyCellsInBackground = true };
 		grid.GridBindings = new[] {
-			new CrudGridColumn<QueryRow> { ColumnName = "ID", SortName = nameof(QueryRow.Id), DataType = typeof(int), PropertyValue = row => row.Id },
-			new CrudGridColumn<QueryRow> { ColumnName = "Name", SortName = nameof(QueryRow.Name), DataType = typeof(string), PropertyValue = row => row.Name }
+			new VisualGridColumn<QueryRow> { ColumnName = "ID", SortName = nameof(QueryRow.Id), DataType = typeof(int), PropertyValue = row => row.Id },
+			new VisualGridColumn<QueryRow> { ColumnName = "Name", SortName = nameof(QueryRow.Name), DataType = typeof(string), PropertyValue = row => row.Name }
 		};
 		owner.Controls.Add(grid);
 		return grid;

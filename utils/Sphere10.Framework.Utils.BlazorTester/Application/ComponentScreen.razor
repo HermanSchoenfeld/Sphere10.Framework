@@ -9,7 +9,76 @@
 *@
 
 @using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid
+@using Sphere10.Framework.Application.UI
+@using Sphere10.Framework.Application
+@using Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls
+@using Sphere10.Framework.Utils.BlazorTester.Demos
+@inject IJSRuntime JSRuntime
 @using Sphere10.Framework.Utils.BlazorTester.Modern.UI
 @inherits BlazorApplicationScreen
 
-<Index />
+@if (_settings != null) {
+	<Index GridPreferences="_settings.Grid" GridPreferencesChanged="GridPreferencesChangedAsync"
+		LiveGridPreferences="_settings.LiveGrid" LiveGridPreferencesChanged="LiveGridPreferencesChangedAsync" />
+}
+@if (!string.IsNullOrWhiteSpace(SettingsError)) {
+	<p role="alert">Preferences could not be saved: @SettingsError</p>
+}
+
+@code {
+	private GallerySettings _settings;
+	private bool _legacyChecked;
+
+	// Read legacy values before child grids are constructed, and record each named role's one-time migration.
+	protected override async Task OnSettingsChangedAsync(object values) {
+		if (_legacyChecked) {
+			_settings = (GallerySettings)values;
+			return;
+		}
+		_legacyChecked = true;
+		var grid = SettingsProfile.SectionVersions.ContainsKey(nameof(GallerySettings.Grid)) ? null
+			: await BlazorGrid<TestClass>.ReadLegacyPreferencesAsync(JSRuntime, "tester.editable-grid");
+		var live = SettingsProfile.SectionVersions.ContainsKey(nameof(GallerySettings.LiveGrid)) ? null
+			: await BlazorGrid<GridDemoSnapshotDataSource.Row>.ReadLegacyPreferencesAsync(JSRuntime, "tester.live-grid");
+		SettingsProfile.TryInitializeSection(nameof(GallerySettings.Grid), 1, root => {
+			if (grid != null)
+				((GallerySettings)root).Grid = MergeLegacy(((GallerySettings)root).Grid, grid);
+		}, (source, target) => ((GallerySettings)target).Grid = ((GallerySettings)source).Grid);
+		SettingsProfile.TryInitializeSection(nameof(GallerySettings.LiveGrid), 1, root => {
+			if (live != null)
+				((GallerySettings)root).LiveGrid = MergeLegacy(((GallerySettings)root).LiveGrid, live);
+		}, (source, target) => ((GallerySettings)target).LiveGrid = ((GallerySettings)source).LiveGrid);
+		_settings = GetSettings<GallerySettings>();
+	}
+
+	// The root profile captures only plain preferences, leaving active records and row edit buffers in the grids.
+	protected override object CaptureSettings() {
+		return _settings;
+	}
+
+	// Completed control actions use the same profile revision and save path as Options.
+	private async Task GridPreferencesChangedAsync(BlazorGridSettings preferences) {
+		_settings.Grid = preferences;
+		MarkSettingsChanged();
+		await SaveSettingsChangesAsync();
+	}
+
+	// Independent named roles share one authoritative root without writing separate browser records.
+	private async Task LiveGridPreferencesChangedAsync(BlazorGridSettings preferences) {
+		_settings.LiveGrid = preferences;
+		MarkSettingsChanged();
+		await SaveSettingsChangesAsync();
+	}
+
+	// Legacy records supply values; the declared defaults retain stable editable column metadata.
+	private static BlazorGridSettings MergeLegacy(BlazorGridSettings defaults, BlazorGridSettings legacy) {
+		foreach (var column in defaults.Columns) {
+			var stored = legacy.Columns.FirstOrDefault(value => value.Key == column.Key)
+				?? legacy.Columns.SingleOrDefault(value => value.Key == column.Title);
+			column.Width = stored?.Width;
+		}
+		legacy.Columns = defaults.Columns;
+		return legacy;
+	}
+}

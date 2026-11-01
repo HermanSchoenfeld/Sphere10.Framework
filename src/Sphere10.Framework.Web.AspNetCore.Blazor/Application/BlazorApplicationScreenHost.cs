@@ -24,10 +24,12 @@ public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
 	}
 
 	protected override BlazorApplicationScreenSession CreateScreen(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
-		var effective = ResolveDefinition(definition);
 		var source = GetScreenMenuItem(block, definition);
-		var screen = new BlazorApplicationScreenSession(block, source, effective, CurrentActivation);
-		TrackKeyedScreen(screen);
+		var prepared = (definition as BlazorApplicationScreenDefinition)?.Activator?.Invoke(new BlazorApplicationScreenActivationContext(Services, block, definition));
+		Guard.Ensure(definition is not BlazorApplicationScreenDefinition { Activator: not null } || prepared != null,
+			"The screen activator must return component activation parameters.");
+		Guard.Ensure(prepared?.InstanceKey == null, "Supply instance reuse keys when opening a registration; its activator prepares component parameters.");
+		var screen = new BlazorApplicationScreenSession(block, source, definition, CurrentActivation, prepared);
 		return screen;
 	}
 }

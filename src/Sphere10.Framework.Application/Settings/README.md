@@ -1,6 +1,6 @@
 # Settings
 
-`SettingsObject`, `UserSettings` and `GlobalSettings` provide persistent configuration through `ISettingsProvider`. These types are UI-independent. The [application module](../ModuleConfiguration.cs) registers cached directory providers and assigns the static settings facades during process initialization. Read settings after that initialization; individual screens should use the established providers.
+`SettingsObject`, `UserSettings` and `GlobalSettings` provide standalone persistent configuration through `ISettingsProvider`. These types are UI-independent. The [application module](../ModuleConfiguration.cs) registers cached directory providers and assigns the static settings facades during process initialization. Read settings after that initialization. Registered screen preferences can instead attach any ordinary object through `UseSettings`; see [Screen Options](../../../docs/usage/screen-options.md).
 
 ## Declare settings
 
@@ -52,6 +52,17 @@ For main-window placement, use the WinForms startup builder's `UseMainFormSettin
 
 Blazor interactive applications resolve their services per circuit, but the static `UserSettings` facade identifies the server process's operating-system user. For per-browser or per-account preferences, use an appropriately scoped application service and storage rather than assuming this static facade isolates browser users.
 
+For registration-owned preferences, attach an ordinary value with `UseSettings`
+or contribute application values with `AddSettings`. Standard dialogs and screen
+helpers handle detached drafts and accepted saves through the owning application;
+see the [Application guide](../README.md#application-and-screen-preferences).
+Per-browser Blazor settings use their scoped store rather than static `UserSettings`.
+
+`CachedSettingsProvider` retains the inner provider's existing `Changed` event
+forwarding and timing. A failed save restores its previous cache entry, or removes
+an unpersisted new entry, and rethrows. `Changed` is not a persistence acknowledgement;
+accept values only after the save call succeeds.
+
 ## Encryption
 
 `EncryptedStringAttribute` marks string properties encrypted by providers with `EncryptSettings` enabled. The application module reads `AssemblyProductSecretAttribute` from the entry assembly during initialization and sets `EncryptedStringAttribute.ApplicationSharedSecret`:
@@ -76,11 +87,11 @@ using Sphere10.Framework.Application;
 
 Sphere10Framework.Instance
 	.Build()
-	.ConfigureServices(services => {
+	.AddServices(services => {
 		services.AddSingleton(new Local<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider("data/user"))));
 		services.AddSingleton(new Global<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider("data/shared"))));
 	})
-	.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
 	.Start();
 ```
 

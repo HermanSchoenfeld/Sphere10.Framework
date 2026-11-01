@@ -14,10 +14,10 @@ namespace Sphere10.Framework.Windows.Forms;
 
 internal class AutoPopulateDropDownListOnEditStarting : SourceGrid.Cells.Controllers.ControllerBase {
 	private readonly DropDownList _dropDownList;
-	private readonly ICrudGridColumn _columnBinding;
+	private readonly IVisualGridColumn _columnBinding;
 	private readonly object _entity;
 
-	public AutoPopulateDropDownListOnEditStarting(DropDownList ddl, ICrudGridColumn column, object entity) {
+	public AutoPopulateDropDownListOnEditStarting(DropDownList ddl, IVisualGridColumn column, object entity) {
 		_dropDownList = ddl;
 		_columnBinding = column;
 		_entity = entity;

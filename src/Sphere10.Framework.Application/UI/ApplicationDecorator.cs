@@ -66,6 +66,9 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication
 
 	public virtual IApplicationScreenHost ScreenHost => InternalApplication.ScreenHost;
 
+	/// <summary>Forwards the existing application-owned settings catalog without creating another owner.</summary>
+	public virtual ApplicationSettingsCatalog Settings => InternalApplication.Settings;
+
 	public virtual bool HasUnsavedChanges => InternalApplication.HasUnsavedChanges;
 
 	public virtual IApplicationMenu[] Menus => InternalApplication.Menus;

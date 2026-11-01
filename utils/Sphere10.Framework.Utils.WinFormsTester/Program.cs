@@ -6,11 +6,11 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Application.UI;
 using System;
-using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows.Forms;
 
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
@@ -64,20 +64,20 @@ static class Program {
 					(WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>());
 			})
 			.UseMainFormSettings()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddWinFormsApplicationPlugin(plugin => WinFormsDemoPlugin.Configure(plugin, freshEmptyWorkspace));
 				services.AddWinFormsApplicationPlugin(WinFormsComponentDemoPlugin.Configure);
 			})
-			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.CryptoEx.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.Sqlite.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.Oracle.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.PostgreSQL.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.MySQL.ModuleConfiguration>()
-			.UseModule<ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.CryptoEx.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.Sqlite.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.Oracle.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.PostgreSQL.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.MySQL.ModuleConfiguration>()
+			.AddModule<ModuleConfiguration>()
 			.UseSplashScreen()
 			.StartWinFormsApplication();
 	}

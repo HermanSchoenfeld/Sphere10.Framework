@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -15,9 +14,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
@@ -183,7 +183,7 @@ public class MainFormExitTests {
 		RequestExit.Start();
 		Sphere10Framework.Instance
 			.BuildWinFormsApplication()
-			.ConfigureServices(Services => {
+			.AddServices(Services => {
 				Services.AddSingleton<IProductUsageServices, ProbeUsageServices>();
 				Services.AddSingleton<ShutdownProbeSettingsProvider>(_ => SettingsProvider);
 			})
@@ -293,7 +293,7 @@ public class MainFormExitTests {
 		if (StartFramework)
 			Sphere10Framework.Instance
 				.Build()
-				.ConfigureServices(Services => Services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
+				.AddServices(Services => Services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
 				.Start();
 		using var FrameworkLifetime = Tools.Scope.ExecuteOnDispose(() => {
 			if (StartFramework)

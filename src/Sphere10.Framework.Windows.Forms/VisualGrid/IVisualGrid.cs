@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface ICrudGrid {
+public interface IVisualGrid {
 	Type EntityEditorDisplay { get; }
 	string GridTitle { get; }
 	DataSourceCapabilities Capabilities { get; set; }
-	IEnumerable<ICrudGridColumn> GridBindings { get; }
+	IEnumerable<IVisualGridColumn> GridBindings { get; }
 
 	Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource);
 	Task<Array> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default);

@@ -6,20 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
@@ -35,7 +36,6 @@ public class ApplicationCommandStateTests {
 			.WithId("project")
 			.WithText("Hidden project launcher")
 			.WithScreen<ProjectScreen>()
-			.AsMultiInstance()
 			.WithVisibility(false)
 			.Build();
 		var visible = new BlazorApplicationMenuItemBuilder()
@@ -46,7 +46,11 @@ public class ApplicationCommandStateTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProjectScreen>(screen => screen
+				.WithTitle("Hidden project launcher")
+				.AsMultiInstance()
+			)
+			.AddMenu(menu => menu
 				.WithId("navigation")
 				.WithText("Project navigation")
 				.AddItem(hidden)
@@ -100,7 +104,7 @@ public class ApplicationCommandStateTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithId("work")
 				.WithText("Work")
 				.AddItem(before)
@@ -135,14 +139,17 @@ public class ApplicationCommandStateTests {
 			.AddApplicationBlock(block => block
 				.WithId("projects")
 				.WithName("Projects")
-				.ConfigureMenu(menu => menu
+				.AddScreen<ProjectScreen>(screen => screen
+					.WithTitle("Hidden project launcher")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddMenu(menu => menu
 					.WithId("navigation")
 					.WithText("Project navigation")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("project")
 						.WithText("Hidden project launcher")
 						.WithScreen<ProjectScreen>()
-						.AsMultiInstance()
 						.WithVisibility(false)
 					)
 				)
@@ -177,7 +184,7 @@ public class ApplicationCommandStateTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithId("work")
 				.WithText("Work")
 				.AddItem(command)

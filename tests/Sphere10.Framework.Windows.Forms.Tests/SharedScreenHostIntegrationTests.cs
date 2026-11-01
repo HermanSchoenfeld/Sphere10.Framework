@@ -7,8 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -139,6 +139,7 @@ public class SharedScreenHostIntegrationTests {
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
 		using var other = new WinFormsApplicationBlock { Name = "Other workspace" };
 		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Site editor", ScreenActivationMode.SingleInstance);
+		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
 		native.InitializeScreens(new[] { block, other });
 		IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen> host = native;
@@ -194,7 +195,9 @@ public class SharedScreenHostIntegrationTests {
 	public void NativeControlsAndBlocksKeepReferenceIdentityWhenEqualsCollides() {
 		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var firstBlock = new EqualBlock { Name = "First" };
+		firstBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(EqualScreen)));
 		using var secondBlock = new EqualBlock { Name = "Second" };
+		secondBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(EqualScreen)));
 		var first = native.ActivateScreen(firstBlock, typeof(EqualScreen));
 		var second = native.ActivateScreen(secondBlock, typeof(EqualScreen));
 		IMultiApplicationScreenHost host = native;
@@ -262,14 +265,17 @@ public class SharedScreenHostIntegrationTests {
 		using var native = new WinFormsApplicationScreenHost();
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Workspace")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Default editor")
+			)
+			.WithDefaultScreen(typeof(ProbeScreen))
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<ProbeScreen>("First editor")
-				.ConfigureItem(item => item
+				.AddShowScreenItem<ProbeScreen>("First editor")
+				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("Default editor")
 					.WithScreen<ProbeScreen>()
-					.AsDefault()
 				)
 			)
 			.Build();
@@ -285,10 +291,12 @@ public class SharedScreenHostIntegrationTests {
 		form.ScreenHost.ScreenMode = ScreenMode.MultiView;
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Workspace")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProbeScreen>(screen => screen.WithTitle("First draft"), out var first)
+			.AddScreen<ProbeScreen>(screen => screen.WithTitle("Second draft"), out var second)
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<ProbeScreen>("First editor", title: "First draft")
-				.AddScreenItem<ProbeScreen>("Second editor", title: "Second draft")
+				.AddShowScreenItem(first, "First editor")
+				.AddShowScreenItem(second, "Second editor")
 			)
 			.Build();
 		form.ScreenHost.RegisterScreenTypes(block);
@@ -373,6 +381,7 @@ public class SharedScreenHostIntegrationTests {
 	public void SharedUnsavedStateIncludesCachedNativeSingletons() {
 		using var native = new WinFormsApplicationScreenHost();
 		using var block = CreateBlock("work");
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(SingletonScreen)));
 		var dirty = (SingletonScreen)native.ActivateScreen(block, typeof(SingletonScreen));
 		dirty.IsDirty = true;
 		native.ActivateScreen(block, typeof(ProbeScreen));
@@ -389,6 +398,7 @@ public class SharedScreenHostIntegrationTests {
 	public void MovingACachedSingletonRejectsTheOperationWithoutChangingTabs() {
 		using var native = new WinFormsApplicationScreenHost();
 		using var block = CreateBlock("work");
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(SingletonScreen)));
 		var cached = native.ActivateScreen(block, typeof(SingletonScreen));
 		var active = native.ActivateScreen(block, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
@@ -454,9 +464,12 @@ public class SharedScreenHostIntegrationTests {
 
 	private static WinFormsApplicationBlock CreateBlock(string id) => new WinFormsApplicationBlockBuilder()
 		.WithName(id)
-		.ConfigureMenu(menu => menu
+		.AddScreen<ProbeScreen>(screen => screen
+			.WithTitle("Editor")
+		)
+		.AddMenu(menu => menu
 			.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("Editor")
+			.AddShowScreenItem<ProbeScreen>("Editor")
 		)
 		.Build();
 

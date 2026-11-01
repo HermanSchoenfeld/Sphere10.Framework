@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Application.UI;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -18,6 +17,7 @@ using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -297,10 +297,13 @@ public class NavigationPaneTests {
 		using var Icon = new Bitmap(16, 16);
 		using var Block = new WinFormsApplicationBlockBuilder()
 			.WithName("Navigation width")
-			.ConfigureMenu(Menu => Menu
+			.AddScreen<NavigationScreen>(screen => screen
+				.WithTitle("FlagsCheckedListBox")
+			)
+			.AddMenu(Menu => Menu
 				.WithText("Screens")
-				.AddScreenItem<NavigationScreen>("ApplicationServicesTester", Icon)
-				.AddScreenItem<NavigationScreen>("FlagsCheckedListBox", Icon)
+				.AddShowScreenItem<NavigationScreen>("ApplicationServicesTester",Icon)
+				.AddShowScreenItem<NavigationScreen>("FlagsCheckedListBox",Icon)
 			)
 			.Build();
 		Form.RegisterBlock(Block);
@@ -322,15 +325,18 @@ public class NavigationPaneTests {
 		using var icon = new Bitmap(16, 16);
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Navigation reflow")
-			.ConfigureMenu(menu => menu
-				.WithText("Monitor")
-				.AddScreenItem<NavigationScreen>("Performance Statistics", icon)
-				.AddScreenItem<NavigationScreen>("Installed Applications Management", icon)
+			.AddScreen<NavigationScreen>(screen => screen
+				.WithTitle("Installed Applications Management")
 			)
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
+				.WithText("Monitor")
+				.AddShowScreenItem<NavigationScreen>("Performance Statistics",icon)
+				.AddShowScreenItem<NavigationScreen>("Installed Applications Management",icon)
+			)
+			.AddMenu(menu => menu
 				.WithText("Files")
-				.AddScreenItem<NavigationScreen>("Open Files And File Locks", icon)
-				.AddScreenItem<NavigationScreen>("Physical Disks And Partitions", icon)
+				.AddShowScreenItem<NavigationScreen>("Open Files And File Locks",icon)
+				.AddShowScreenItem<NavigationScreen>("Physical Disks And Partitions",icon)
 			)
 			.Build();
 		form.RegisterBlock(block);

@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 using ComponentHost = Sphere10.Framework.Web.AspNetCore.Blazor.Tests.ComponentParameterLifecycleTests.ComponentHost;
 
@@ -28,6 +29,24 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorGridRenderingTests {
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(true, true)]
+	public async Task SettingsButtonRequiresValuesAndItsTraitControlsEditing(bool hasSettings, bool allowsSettingsChange) {
+		var parameters = GridParameters(new ProbeSource<Row>(new Row { Name = "A" }), BlazorGridColumn<Row>.For(row => row.Name));
+		if (hasSettings)
+			parameters[nameof(BlazorGrid<Row>.Preferences)] = new BlazorGridSettings();
+		if (!allowsSettingsChange)
+			parameters[nameof(BlazorGrid<Row>.GridType)] = BlazorGrid<Row>.GridTypes.ActionColumn | BlazorGrid<Row>.GridTypes.NewItem;
+		await RenderAsync<BlazorGrid<Row>>(parameters, (_, _, rendered) => {
+			var button = Regex.Match(rendered.ToHtmlString(), "<button[^>]*>Settings</button>");
+			Assert.That(button.Success, Is.EqualTo(hasSettings));
+			if (hasSettings)
+				Assert.That(button.Value.Contains("disabled"), Is.EqualTo(!allowsSettingsChange));
+			return Task.CompletedTask;
+		});
+	}
+
 	[TestCase(BlazorGridPageMode.Paged, true, true)]
 	[TestCase(BlazorGridPageMode.Auto, true, false)]
 	[TestCase(BlazorGridPageMode.Single, false, false)]
@@ -38,7 +57,8 @@ public class BlazorGridRenderingTests {
 			var html = rendered.ToHtmlString();
 			Assert.That(html.Contains("aria-label=\"Grid pages\""), Is.EqualTo(navigator));
 			Assert.That(html.Contains("aria-label=\"Rows per page\""), Is.EqualTo(manualSize));
-			Assert.That(html, Does.Contain("Auto Paged").And.Contain("Single Paged"));
+			var label = mode == BlazorGridPageMode.Paged ? "Manual" : mode.ToString();
+			Assert.That(html, Does.Contain("aria-label=\"Paging mode\"").And.Contain("aria-haspopup=\"menu\"").And.Contain($"title=\"Paging mode: {label}\""));
 			Assert.That(grid.Controller.PageMode, Is.EqualTo(mode));
 			return Task.CompletedTask;
 		});
@@ -142,6 +162,141 @@ public class BlazorGridRenderingTests {
 			Assert.That(runtime.Module.Behavior.SettingsWrites[0].Key, Is.EqualTo("orders"));
 			Assert.That(runtime.Module.Behavior.SettingsWrites[0].Settings.PageSize, Is.EqualTo(7), "The saved size is the manual preference, not the automatic capacity.");
 		}, runtime);
+	}
+
+	[Test]
+	public async Task OwnedPreferencesSeedTheFirstQueryAndNeverUseTheSeparateBrowserRecord() {
+		var runtime = new GridJsRuntime();
+		var name = BlazorGridColumn<Row>.For(row => row.Name, "Renamed heading");
+		var enabled = BlazorGridColumn<Row>.For(row => row.Enabled);
+		var source = new ProbeSource<Row>(Enumerable.Range(0, 20).Select(index => new Row { Name = "Row " + index }).ToArray());
+		var values = new BlazorGridSettings {
+			ColumnWidths = new Dictionary<string, double> { ["Name"] = 999 },
+			PageMode = BlazorGridPageMode.Paged, PageSize = 3, PageNumber = 2,
+			SortColumnName = "Name", SortDirection = SortDirection.Descending,
+			Columns = new[] {
+				new ApplicationGridColumnPreferences { Key = "Name", Title = "Old heading", Width = 185 },
+				new ApplicationGridColumnPreferences { Key = "Optional", Title = "Optional detail", Width = 81 },
+				new ApplicationGridColumnPreferences { Key = "Hidden", Title = "Hidden detail" }
+			}
+		};
+		var changes = new List<BlazorGridSettings>();
+		var parameters = GridParameters(source, name, enabled);
+		parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "owned";
+		parameters[nameof(BlazorGrid<Row>.Preferences)] = values;
+		parameters[nameof(BlazorGrid<Row>.PreferencesChanged)] = EventCallback.Factory.Create<BlazorGridSettings>(this, changes.Add);
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, rendered) => {
+			Assert.That(source.Requests.First(), Is.EqualTo((3, 2, "Name", SortDirection.Descending)));
+			Assert.That(rendered.ToHtmlString(), Does.Contain("data-grid-key=\"Name\" style=\"width: 185px\""), "Restored geometry belongs in the first HTML, before any JS autosizing.");
+			await grid.LoadJavascript();
+			await grid.SetColumnWidthAsync("Name", 211);
+			Assert.That(changes, Has.Count.EqualTo(1));
+			Assert.That(changes[0].Columns.Single(column => column.Key == "Name").Width, Is.EqualTo(211));
+			Assert.That(changes[0].Columns.Single(column => column.Key == "Enabled").Width, Is.Null);
+			Assert.That(changes[0].Columns.Single(column => column.Key == "Name").Title, Is.EqualTo("Renamed heading"));
+			Assert.That(changes[0].Columns.Single(column => column.Key == "Optional").Width, Is.EqualTo(81));
+			Assert.That(changes[0].Columns.Single(column => column.Key == "Hidden").Width, Is.Null);
+			changes[0].Columns[0].Width = 999;
+			Assert.That(grid.CaptureGridPreferences().Columns[0].Width, Is.EqualTo(211), "The published record must be detached.");
+			Assert.That(values.Columns[0].Width, Is.EqualTo(185));
+			Assert.That(runtime.Module.Behavior.SettingsReads, Is.Empty);
+			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty);
+		}, runtime);
+	}
+
+	[Test]
+	public async Task StandaloneRestorePrecedesItsFirstDataQuery() {
+		var runtime = new GridJsRuntime();
+		runtime.Module.Behavior.StoredSettings["first-read"] = new BlazorGridSettings {
+			PageMode = BlazorGridPageMode.Paged, PageSize = 4, PageNumber = 1,
+			SortColumnName = "Name", SortDirection = SortDirection.Ascending
+		};
+		var source = new ProbeSource<Row>(Enumerable.Range(0, 20).Select(index => new Row { Name = "Row " + index }).ToArray());
+		var parameters = GridParameters(source);
+		parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "first-read";
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			Assert.That(source.Requests, Is.Empty, "The browser value is needed before a standalone keyed grid can issue a query.");
+			await grid.LoadJavascript();
+			Assert.That(source.Requests, Is.EqualTo(new[] { (4, 1, "Name", SortDirection.Ascending) }));
+			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty);
+		}, runtime);
+	}
+
+	[Test]
+	public async Task ChangingAStandaloneKeyPreservesTheDraftAndRemovingItStopsWrites() {
+		var runtime = new GridJsRuntime();
+		runtime.Module.Behavior.StoredSettings["old-key"] = new BlazorGridSettings { PageSize = 5 };
+		runtime.Module.Behavior.StoredSettings["new-key"] = new BlazorGridSettings { PageSize = 2 };
+		var column = BlazorGridColumn<Row>.For(row => row.Name);
+		var source = new ProbeSource<Row>(Enumerable.Range(0, 20).Select(index => new Row { Name = "Row " + index }).ToArray());
+		var parameters = GridParameters(source, column);
+		parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "old-key";
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			await grid.LoadJavascript();
+			var row = grid.Controller.Items[0];
+			grid.BeginEdit(row);
+			grid.Controller.SetEditValue(column, "Retained standalone draft");
+			parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "new-key";
+			await grid.SetParametersAsync(ParameterView.FromDictionary(parameters));
+			await grid.LoadJavascript();
+			Assert.That(grid.Controller.IsEditing, Is.True);
+			Assert.That(grid.Controller.GetEditValue(column), Is.EqualTo("Retained standalone draft"));
+			Assert.That(source.Requests, Has.Count.EqualTo(1));
+			Assert.That(await grid.SaveAsync(), Is.True);
+			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(2));
+			Assert.That(row.Name, Is.EqualTo("Retained standalone draft"));
+			parameters[nameof(BlazorGrid<Row>.SettingsKey)] = null;
+			await grid.SetParametersAsync(ParameterView.FromDictionary(parameters));
+			await grid.SetPageSizeAsync(4);
+			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty);
+			Assert.That(runtime.Module.Behavior.SettingsReads, Is.EqualTo(new[] { "old-key", "new-key" }));
+		}, runtime);
+	}
+
+	[Test]
+	public async Task AcceptedPreferencesPreserveTheRowDraftAndDeferTheQueryUntilSave() {
+		var row = new Row { Name = "Original" };
+		var column = BlazorGridColumn<Row>.For(value => value.Name);
+		var source = new ProbeSource<Row>(row, new Row { Name = "Second" });
+		var parameters = GridParameters(source, column);
+		parameters[nameof(BlazorGrid<Row>.Preferences)] = new BlazorGridSettings { PageSize = 10 };
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			grid.BeginEdit(row);
+			grid.Controller.SetEditValue(column, "Unsaved draft");
+			await grid.ApplyGridPreferencesAsync(new BlazorGridSettings {
+				PageSize = 1, PageMode = BlazorGridPageMode.Paged,
+				Columns = new[] { new ApplicationGridColumnPreferences { Key = "Name", Width = 203 } }
+			});
+			Assert.That(grid.Controller.IsEditing, Is.True);
+			Assert.That(grid.Controller.GetEditValue(column), Is.EqualTo("Unsaved draft"));
+			Assert.That(row.Name, Is.EqualTo("Original"));
+			Assert.That(source.Requests, Has.Count.EqualTo(1));
+			Assert.That(grid.CaptureGridPreferences().Columns.Single().Width, Is.EqualTo(203));
+			Assert.That(await grid.SaveAsync(), Is.True);
+			Assert.That(row.Name, Is.EqualTo("Unsaved draft"));
+			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(1));
+			Assert.That(source.Requests.Last().Length, Is.EqualTo(1));
+		});
+	}
+
+	[Test]
+	public async Task CompletedPagingPublishesBeforeTheDelayedReadFinishes() {
+		var source = new ProbeSource<Row>(Enumerable.Range(0, 30).Select(index => new Row { Name = "Row " + index }).ToArray());
+		var changes = new List<BlazorGridSettings>();
+		var parameters = GridParameters(source);
+		parameters[nameof(BlazorGrid<Row>.Preferences)] = new BlazorGridSettings { PageSize = 3 };
+		parameters[nameof(BlazorGrid<Row>.PreferencesChanged)] = EventCallback.Factory.Create<BlazorGridSettings>(this, changes.Add);
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			using var release = Tools.Scope.ExecuteOnDispose(() => gate.TrySetResult());
+			source.ReadGate = gate.Task;
+			var change = grid.SetPageAsync(1);
+			Assert.That(change.IsCompleted, Is.False);
+			Assert.That(changes, Has.Count.EqualTo(1));
+			Assert.That(changes[0].PageNumber, Is.EqualTo(1));
+			gate.SetResult();
+			await change;
+		});
 	}
 
 	[TestCase(false)]
@@ -710,6 +865,8 @@ public class BlazorGridRenderingTests {
 		public bool Disposed { get; private set; }
 
 		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+			if (identifier == "ReadLegacySettings")
+				return await Behavior.InvokeAsync<TValue>("ReadSettings", args);
 			Assert.That(identifier, Is.EqualTo("Initialize"));
 			Assert.That(args[0], Is.TypeOf<ElementReference>());
 			Callbacks.Add((DotNetObjectReference<BlazorGrid<Row>>)args[1]);
@@ -738,6 +895,8 @@ public class BlazorGridRenderingTests {
 		public bool Disposed { get; private set; }
 
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+			if (identifier == "ApplyWidths")
+				return ValueTask.FromResult(default(TValue));
 			if (identifier == "Dispose")
 				return ValueTask.FromResult(default(TValue));
 			if (identifier == "ReadSettings") {
@@ -778,6 +937,8 @@ public class BlazorGridRenderingTests {
 
 		public Task ReadGate { get; set; }
 
+		public List<(int Length, int Page, string Sort, SortDirection Direction)> Requests { get; } = new();
+
 		public DataSourceCapabilities AvailableCapabilities { get; set; } = DataSourceCapabilities.Default;
 
 		public override DataSourceCapabilities Capabilities => AvailableCapabilities;
@@ -785,6 +946,7 @@ public class BlazorGridRenderingTests {
 		public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.FromResult(AvailableCapabilities);
 
 		public override async Task<DataSourceItems<T>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
+			Requests.Add((pageLength, page, sortProperty, sortDirection));
 			if (ReadGate != null)
 				await ReadGate;
 			return ReadRange(searchTerm, pageLength, page, sortProperty, sortDirection);

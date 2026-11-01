@@ -103,14 +103,14 @@ tests.
 Application task registration belongs on
 [ApplicationPluginBuilderBase](../../../src/Sphere10.Framework.Application/UI/ApplicationPluginBuilderBase.cs).
 Call `WithName`
-before `RegisterInitializer` or `RegisterFinalizer`, including factory
+before `AddInitializer` or `AddFinalizer`, including factory
 overloads; an unnamed registration must throw immediately before changing
 builder state. Register task services under the built plugin's unique `Name`,
 and reject duplicate names when loading. Name comparison is ordinal and
 case-sensitive; custom plugin names must remain stable. No additional plugin ID is required.
 Resolve tasks through the executing application's provider so scoped dependencies
 and task instances belong to that application. Keep the inventory protected;
-ordinary `ConfigureServices` callbacks continue to register other dependencies.
+ordinary `AddServices` callbacks continue to register other dependencies.
 Reserve unkeyed tasks for the existing process lifecycle and `typeof(IApplication)`
 keys for application-owned host tasks. Demonstrate these helpers in real plugins.
 
@@ -229,3 +229,20 @@ Expose array snapshots for collection-valued data properties. A defensive
 membership copy retains the element references; it does not imply deep
 cloning or ownership of those elements. Make resource ownership explicit,
 and use the framework's disposable scopes for cleanup and state transitions.
+
+## Registration-owned preferences
+
+Settings metadata belongs to the canonical screen definition; the application
+owns the catalog, persistence scope and accepted profile revisions. Menus only
+reference registrations. Catalog enumeration uses declarations/default values
+without constructing operational screens or acquiring their resources. Native
+catalogs resolve the application's actual configured blocks; web catalogs and
+stores belong to the circuit and user/browser profile.
+
+Editors own detached drafts, controls own UI-thread capture, and the profile
+orders exclusive persistence snapshots before publishing accepted changes.
+Accepted close/finalization owns capture/flush; hide, veto and unchanged disposal
+do not. Bind reusable controls to that profile's plain section rather than
+retaining a competing standalone persistence owner. Runtime activators, services,
+providers and business drafts never become preference payloads. See
+[Screen Options](../../usage/screen-options.md) for the implementation contract.

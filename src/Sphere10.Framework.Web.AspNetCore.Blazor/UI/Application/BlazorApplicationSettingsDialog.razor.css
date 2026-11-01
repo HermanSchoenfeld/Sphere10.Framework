@@ -1,0 +1,169 @@
+.sphere10-options-host ::deep .modal-dialog {
+	width: min(1080px, calc(100vw - 2rem));
+	max-width: none;
+	margin: .75rem auto;
+	min-height: calc(100dvh - 1.5rem);
+}
+
+.sphere10-options-host ::deep .modal-content {
+	background: var(--sphere10-surface, #fff);
+	color: var(--sphere10-text, #212529);
+	max-height: calc(100dvh - 1.5rem);
+	display: flex;
+	flex-direction: column;
+}
+
+.sphere10-options-host ::deep .modal-body {
+	min-height: 0;
+	overflow-y: auto;
+}
+
+.sphere10-options-host ::deep .modal-header,
+.sphere10-options-host ::deep .modal-footer {
+	flex-shrink: 0;
+}
+
+.sphere10-options-fieldset {
+	border: 0;
+	padding: 0;
+	margin: 0;
+	min-width: 0;
+}
+
+.sphere10-options-layout {
+	display: grid;
+	grid-template-columns: minmax(190px, 260px) minmax(0, 1fr);
+	gap: 1.25rem;
+}
+
+.sphere10-options-navigation, .sphere10-options-page {
+	max-height: min(64vh, 650px);
+	overflow: auto;
+	min-width: 0;
+	padding: .25rem;
+}
+
+.sphere10-options-navigation {
+	border-right: 1px solid var(--sphere10-border, #d2d8df);
+	padding-right: .75rem;
+}
+
+.sphere10-options-navigation details details {
+	margin-left: .75rem;
+}
+
+.sphere10-options-navigation summary {
+	cursor: pointer;
+	margin: .5rem 0;
+	font-weight: 600;
+}
+
+.sphere10-options-page-link {
+	display: block;
+	width: 100%;
+	text-align: left;
+	background: transparent;
+	color: inherit;
+	border: 1px solid transparent;
+	border-radius: .25rem;
+	padding: .45rem .6rem;
+}
+
+.sphere10-options-page-link.selected {
+	background: var(--sphere10-selection, #e6f0ff);
+	border-color: var(--sphere10-border, #b5c8e3);
+}
+
+.sphere10-options-reset {
+	margin-right: auto;
+}
+
+.sphere10-options-host ::deep .modal-footer {
+	flex-wrap: wrap;
+	gap: .5rem;
+}
+
+.sphere10-options-host ::deep h2 {
+	font-size: 1.3rem;
+	margin: 0;
+}
+
+.sphere10-options-host ::deep h3 {
+	font-size: 1.05rem;
+	margin: .5rem 0 .75rem;
+}
+
+.sphere10-options-host ::deep .sphere10-options-property {
+	display: grid;
+	grid-template-columns: minmax(140px, 1fr) minmax(110px, 1fr);
+	gap: .35rem .75rem;
+	margin: .75rem 0;
+	align-items: center;
+}
+
+.sphere10-options-host ::deep .sphere10-options-property input:not([type=checkbox]), .sphere10-options-host ::deep .sphere10-options-property select {
+	width: 100%;
+	min-width: 0;
+	color: inherit;
+	background: var(--sphere10-input-background, #fff);
+	border: 1px solid var(--sphere10-border, #adb5bd);
+	border-radius: .25rem;
+	padding: .35rem .5rem;
+}
+
+.sphere10-options-host ::deep .sphere10-options-property fieldset {
+	grid-column: 1 / -1;
+	border: 1px solid var(--sphere10-border, #d2d8df);
+	padding: .5rem .75rem;
+	min-width: 0;
+}
+
+.sphere10-options-host ::deep .sphere10-options-property legend {
+	width: auto;
+	font-size: 1rem;
+	padding: 0 .3rem;
+}
+
+.sphere10-options-host ::deep .sphere10-options-collection-item {
+	border-bottom: 1px solid var(--sphere10-border, #d2d8df);
+	padding: .5rem 0;
+}
+
+.sphere10-options-host ::deep .sphere10-options-description {
+	display: block;
+	grid-column: 1 / -1;
+	opacity: .8;
+}
+
+.sphere10-options-host ::deep .sphere10-options-error {
+	grid-column: 1 / -1;
+	color: var(--sphere10-danger, #b42318);
+	overflow-wrap: anywhere;
+}
+
+
+@media (max-width: 650px) {
+	.sphere10-options-layout {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(60px, 140px) minmax(0, 1fr);
+		height: min(62dvh, 600px);
+		gap: .5rem;
+	}
+
+	.sphere10-options-navigation {
+		max-height: none;
+		min-height: 0;
+		border-right: 0;
+		border-bottom: 1px solid var(--sphere10-border, #d2d8df);
+	}
+
+	.sphere10-options-page {
+		max-height: none;
+		min-height: 0;
+	}
+
+	.sphere10-options-host ::deep .sphere10-options-property {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+}

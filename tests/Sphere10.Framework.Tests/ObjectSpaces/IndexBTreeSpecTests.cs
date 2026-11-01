@@ -85,7 +85,7 @@ public class IndexBTreeSpecTests {
 	[Test]
 	public void ExplicitIndexSpecificationSurvivesSharedBuilderChangesAndReopen() {
 		var builder = CreateBuilder(null, false);
-		var identifier = builder.Configure<Record>().Indexes.Single(index => index.Type == ObjectSpaceDefinition.IndexType.Identifier);
+		var identifier = builder.GetDimension<Record>().Indexes.Single(index => index.Type == ObjectSpaceDefinition.IndexType.Identifier);
 		var specification = new BTreeSpec(BTreeType.BTreePlus, 7);
 		identifier.BTreeSpec = specification;
 		builder.WithIndexBTreeOrder(9).WithIndexBTreeType(BTreeType.BTree);

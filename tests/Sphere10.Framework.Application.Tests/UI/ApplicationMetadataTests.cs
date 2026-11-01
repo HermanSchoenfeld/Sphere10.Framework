@@ -183,11 +183,12 @@ public class ApplicationMetadataTests {
 	}
 
 	[Test]
-	public void HostRejectsConflictingPoliciesAcrossDifferentBlocks() {
+	public void HostAllowsIndependentPoliciesAcrossDifferentBlocks() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var first = CreateScreenBlock("First", ScreenActivationMode.SingleInstance);
 		var second = CreateScreenBlock("Second", ScreenActivationMode.MultiInstance);
-		Assert.That(() => new ApplicationScreenHost<Block, IApplicationScreen>(new[] { first, second }, provider), Throws.InstanceOf<ArgumentException>());
+		using var host = new ApplicationScreenHost<Block, IApplicationScreen>(new[] { first, second }, provider);
+		Assert.That(host.Blocks, Has.Length.EqualTo(2));
 	}
 
 	[Test]
@@ -209,6 +210,7 @@ public class ApplicationMetadataTests {
 		var block = CreateBlockWithItem(firstItem);
 		var menu = new Menu { Text = "Other" };
 		menu.AddItem(secondItem);
+		block.AddScreenDefinition(second);
 		block.AddMenu(menu);
 		block.DefaultScreenDefinition = second;
 		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.SameAs(second));
@@ -455,6 +457,8 @@ public class ApplicationMetadataTests {
 		var menu = new Menu { Text = "Menu" };
 		menu.AddItem(item);
 		var block = new Block { Name = "Block" };
+		if (item is IScreenMenuItem screen)
+			block.AddScreenDefinition(screen.ScreenDefinition);
 		block.AddMenu(menu);
 		return block;
 	}

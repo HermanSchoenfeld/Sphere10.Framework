@@ -23,7 +23,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridLiveInputTests {
+public class VisualGridLiveInputTests {
 
 	[TestCase(false, false)]
 	[TestCase(false, true)]
@@ -185,28 +185,28 @@ public class CrudGridLiveInputTests {
 		Assert.That(crud.SelectedEntity, Is.SameAs(source.Rows[1]));
 	});
 
-	private static CrudGrid NewGrid(Form owner, bool suppress, bool leftClickToDeselect, bool selectOnMouseUp = false) {
-		var crud = new CrudGrid {
+	private static VisualGrid NewGrid(Form owner, bool suppress, bool leftClickToDeselect, bool selectOnMouseUp = false) {
+		var crud = new VisualGrid {
 			Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = suppress, AllowCellEditing = false,
-			LeftClickToDeselect = leftClickToDeselect, SelectOnMouseUp = selectOnMouseUp, PageMode = CrudGridPageMode.Single,
+			LeftClickToDeselect = leftClickToDeselect, SelectOnMouseUp = selectOnMouseUp, PageMode = VisualGridPageMode.Single,
 			AutoSizeRowsOnRefresh = false, PrepareReadOnlyCellsInBackground = true
 		};
 		owner.Controls.Add(crud);
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), PropertyValue = row => row.Name, ExpandsToFit = true } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), PropertyValue = row => row.Name, ExpandsToFit = true } };
 		return crud;
 	}
 
-	private static async Task<ControlledSource> BindAsync(CrudGrid crud) {
+	private static async Task<ControlledSource> BindAsync(VisualGrid crud) {
 		var source = new ControlledSource();
 		await crud.SetDataSource(source, DataSourceCapabilities.CanRead);
 		await crud.RefreshGrid();
 		return source;
 	}
 
-	private static Grid FindGrid(CrudGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
+	private static Grid FindGrid(VisualGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
 
-	private static ContextMenuStrip FindMenu(CrudGrid crud)
-		=> (ContextMenuStrip)typeof(CrudGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
+	private static ContextMenuStrip FindMenu(VisualGrid crud)
+		=> (ContextMenuStrip)typeof(VisualGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
 
 	private static Point CellCenter(Grid grid, int row) {
 		var bounds = grid.PositionToRectangle(new Position(row, 0));

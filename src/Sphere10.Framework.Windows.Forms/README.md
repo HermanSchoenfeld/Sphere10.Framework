@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
 # 🖼️ Sphere10.Framework.Windows.Forms
 
@@ -270,11 +270,11 @@ For an existing dialog instance, configure `PreviewText`, `Instructions`, `Defau
 
 ## Application lifecycle and splash
 
-Declare `WithName(...)` before calling `RegisterInitializer` or `RegisterFinalizer`. Both type and factory overloads throw `InvalidOperationException` immediately when the plugin has no name.
+Declare `WithName(...)` before calling `AddInitializer` or `AddFinalizer`. Both type and factory overloads throw `InvalidOperationException` immediately when the plugin has no name.
 
 `IApplication` exposes `Initialize()` / `InitializeAsync(...)`, `Finalize()` / `FinalizeAsync(...)`, `Exit(...)` / `ExitAsync(...)`, `Logger`, `Disposables`, lifecycle events and `Progress`. Initializing an application runs its tasks once; concurrent calls await the same operation. Merely building a plugin, resolving the application or reading its properties does not run its tasks. Finalization waits for attempted initialization, runs shutdown tasks once and releases application-owned resources; disposing the application also completes that cleanup. Finalization alone does not close the main window: request closure through `ExitAsync`. Task collections remain protected implementation details of `ApplicationBase`.
 
-`WinFormsApplicationPluginBuilder` inherits `RegisterInitializer<T>()` and `RegisterFinalizer<T>()` from the shared plugin builder. Their factory overloads accept `Func<IServiceProvider, T>`. These helpers register transient lifecycle tasks keyed by the built plugin's `Name`; duplicate names are rejected at load, and custom plugin names must remain stable. Different plugins can register the same task type without sharing its instance. The application resolves and caches tasks for its successful `LoadedPlugins` through its own provider. Host registrations using `services.AddInitializer<T>(typeof(IApplication))` and `services.AddFinalizer<T>(typeof(IApplication))` remain supported for application-owned tasks. The combined inventory starts with host-owned registrations in registration order, followed by plugins in `LoadedPlugins` order and each plugin's tasks in declaration order. Initializer priorities apply across this inventory within the existing sequential and parallelizable phases; finalizers execute in combined inventory order. Existing unkeyed framework tasks retain their process startup and shutdown behavior. Use `ConfigureServices` for other plugin dependencies.
+`WinFormsApplicationPluginBuilder` inherits `AddInitializer<T>()` and `AddFinalizer<T>()` from the shared plugin builder. Their factory overloads accept `Func<IServiceProvider, T>`. These helpers register transient lifecycle tasks keyed by the built plugin's `Name`; duplicate names are rejected at load, and custom plugin names must remain stable. Different plugins can register the same task type without sharing its instance. The application resolves and caches tasks for its successful `LoadedPlugins` through its own provider. Host registrations using `services.AddInitializer<T>(typeof(IApplication))` and `services.AddFinalizer<T>(typeof(IApplication))` remain supported for application-owned tasks. The combined inventory starts with host-owned registrations in registration order, followed by plugins in `LoadedPlugins` order and each plugin's tasks in declaration order. Initializer priorities apply across this inventory within the existing sequential and parallelizable phases; finalizers execute in combined inventory order. Existing unkeyed framework tasks retain their process startup and shutdown behavior. Use `AddServices` for other plugin dependencies.
 
 Derive synchronous tasks from `SyncApplicationInitializerBase` or `SyncApplicationFinalizerBase` and override only their synchronous method; the base supplies the worker-task async bridge. Derive asynchronous tasks from `AsyncApplicationInitializerBase` or `AsyncApplicationFinalizerBase` and override only their asynchronous method; the base supplies the synchronous bridge. The common `ApplicationInitializerBase` and `ApplicationFinalizerBase` leave both methods abstract. Tasks requiring native UI affinity can implement both contracts there and dispatch to their owning UI thread.
 
@@ -328,6 +328,20 @@ The native adapter composes the common logical host and performs native presenta
 
 `OpenScreenAsync(block, definition)` accepts a registered block and an exact definition reference from its `ScreenDefinitions`. Blocks own immutable definitions independently of menus, so a screen can open without a navigation item. A menu item references `ScreenDefinition`, and the block's `DefaultScreenDefinition` references the desired startup definition. Use `RegisterBlockAsync` and `UnregisterBlockAsync` for application membership; guarded removal closes its native controls and updates the same host registry.
 
+`AddScreen<TScreen>(configure, out registration)` returns an opaque reference to
+that exact block registration. Pass it to `AddShowScreenItem(registration)` or
+`WithDefaultScreen(registration)`; the ordinary overload needs no unused `out`.
+Register existing definitions with `AddScreen(definition)`. A menu item configured
+with `WithScreen<TScreen>()` is only a pending reference and does not register a
+screen. Missing and foreign exact references fail validation. Type-based menu
+references choose the first match, while type-based defaults and programmatic
+lookup require one unambiguous registration. A menu-free registration remains
+available to `OpenScreenAsync(block, definition)` and has no invented activator.
+
+Give same-type registrations distinct `WithStableKey` values when their identity
+must survive a restart. Changing captions, menu order or adding an earlier menu
+item does not redefine a registration's persistent identity.
+
 Menu items expose their declaring menu through `Parent`, and menus expose their block through `Parent`. Adding and removing items and menus through their containers maintains these references. A screen definition's `Activators` array is a snapshot of the commands attached to menus that reference it; replacing a command's definition or removing the command updates that reverse membership. Application-level menus have no block parent. Rendering merged menus preserves each command's original parent. Screen commands, including toolbar commands, require their declaring menu's block through `item.Parent.Parent`. Ordinary application actions can run without a block or menu parent.
 
 A registered block's `Parent` references the running application. That link follows live host membership and clears when the block is removed or the application adapter is disposed. `Source` records the plugin that successfully contributed the captured block; standalone blocks have no source plugin. Removing and registering a contributed block again preserves its source, independently of its current application membership. Native and shared interfaces expose the same references.
@@ -344,6 +358,12 @@ a registered screen activator image, including another definition for the same
 screen type. The host owns its image-list entry, keeps each tab's image key across
 docking and releases that entry when its screen is removed. Shared definitions
 remain platform-neutral.
+
+A registration can supply `WithActivator(context => ...)` to construct its actual
+control on the owning UI thread. The context exposes the executing services,
+host, block, owner and definition. That exact registration's factory is
+authoritative; a result already owned by another host, block or registration is
+rejected. A manually constructed standalone host may have no service provider.
 
 The default `WinFormsApplicationScreenHost.CreateScreen` selects compatible
 `(block, owner)` or `(block)` constructors, then a parameterless constructor.
@@ -407,7 +427,7 @@ It no longer clears native selection, an unsupported operation on .NET 10.
 
 ## 🔧 Core Components
 
-### CrudGrid
+### VisualGrid
 
 See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/grids-and-screen-hosts.md)
 for the Blazor equivalents, shared contracts and platform differences.
@@ -447,7 +467,7 @@ sort, so a later ascending or descending indicator cannot cover the measured
 caption. Sorting keeps the established widths; explicit user widths still take
 precedence. SourceGrid's `SortIndicator.ReserveSpaceWhenUnsorted` defaults to true.
 
-`CrudGrid` hides the create and delete buttons when their respective capabilities are unavailable. Delete is also hidden unless a visible row is selected. Toolbar and paging controls size to their contents, including scaled fonts and DPI.
+`VisualGrid` hides the create and delete buttons when their respective capabilities are unavailable. Delete is also hidden unless a visible row is selected. Toolbar and paging controls size to their contents, including scaled fonts and DPI.
 
 Set `AllowCellEditing = true` to edit columns with `CanEditCell = true` and a `SetPropertyValue` binding; `CanUpdate` must also be enabled. Changing the editing setting updates existing cells immediately. `LeftClickToDeselect` defaults to `true` and toggles a row on successive single clicks, including Ctrl-clicks. When both settings are enabled, double-click an editable cell or press **F2** to edit while keeping its row selected; checkbox values also change only through that explicit edit gesture. Set `LeftClickToDeselect = false` to retain selection on repeated clicks and enable single-click editing. These selection modes also support `SelectOnMouseUp`.
 
@@ -503,15 +523,15 @@ the same snapshot. Actual query or binding changes still supersede the result.
 The header collapses hidden Create/Delete button slots, so a read-only title
 starts at the normal header inset rather than reserving space for unavailable actions.
 
-The footer keeps **Total** on the left and the page-mode dropdown, **Page Size** and navigator aligned on the right. Narrow hosts wrap complete groups without clipping their controls. `PageMode` selects a `CrudGridPageMode`:
+The footer keeps **Total** on the left and a compact grid-icon menu button, **Page Size** and navigator aligned on the right. The menu lists **Single**, **Auto** and **Manual**, with a checkmark on the selected mode; its tooltip names that mode. Narrow hosts wrap complete groups without clipping their controls. `PageMode` retains the existing `VisualGridPageMode` API:
 
 | Mode | Behavior |
 |---|---|
-| **Paged** | Manual **Page Size** label/editor and page navigator. Sizes range from **1 to 9999**, in steps of one. |
-| **Auto Paged** (`Auto`) | Page navigator remains available; the manual label/editor are hidden. The actual ordered row heights, header and scrollbar-adjusted viewport determine how many complete rows fit, with a minimum of one. Resize, font and DPI changes recalculate capacity. Taller individual rows do not inflate the budget for every ordinary row. |
-| **Single Paged** (`Single`) | All matching rows in one vertically scrollable page. The manual size and page navigator are hidden; the source receives page zero and `int.MaxValue` page length. Search and sorting still apply. |
+| **Manual** (`Paged`) | Manual **Page Size** label/editor and page navigator. Sizes range from **1 to 9999**, in steps of one. |
+| **Auto** (`Auto`) | Page navigator remains available; the manual label/editor are hidden. The actual ordered row heights, header and scrollbar-adjusted viewport determine how many complete rows fit, with a minimum of one. Resize, font and DPI changes recalculate capacity. Taller individual rows do not inflate the budget for every ordinary row. |
+| **Single** (`Single`) | All matching rows in one vertically scrollable page. The manual size and page navigator are hidden; the source receives page zero and `int.MaxValue` page length. Search and sorting still apply. |
 
-Switching modes starts at page zero and retains the remembered manual size for returning to **Paged**. `AutoPageSize` remains a compatibility alias: true selects **Auto Paged**, false selects **Paged**. The enum values and stored preferences remain unchanged. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting are remembered for **Paged** and **Auto Paged**; **Single Paged** always uses page zero.
+Switching modes starts at page zero and retains the remembered manual size for returning to **Manual**. `AutoPageSize` remains a compatibility alias: true selects **Auto**, false selects **Manual**. The `Paged` enum value and stored preferences remain unchanged. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting are remembered for **Manual** and **Auto**; **Single** always uses page zero.
 
 Auto paging settles both larger and smaller capacities after native measurement.
 Measured viewport/header/row dimensions already use the window's device pixels;
@@ -552,12 +572,21 @@ collector; snapshot sources therefore reuse their published inventory.
 
 Columns take their natural widths from the first nonempty result for a binding set, then keep those widths across paging, searching and refresh. Longer values on a later page do not resize the table. Explicit user resizing takes precedence and survives subsequent reads. Columns marked `ExpandsToFit` share spare viewport width when the viewport changes; an explicitly resized column keeps its chosen width. Assigning a new binding set starts a fresh natural-width calculation. Right mouse-down selects the clicked data row before a context menu opens in either left-click selection mode, without starting an editor or toggling checkbox values; headers and empty space do not open an entity menu.
 
-`PersistSettings` defaults to true. Each logical grid uses a typed `CrudGridSettings` object through `UserSettings` to remember its page mode, manual size, page number and source sort name/direction across sessions. Older settings without `PageMode` migrate through their retained `AutoPageSize` flag. The default settings ID uses its concrete screen/control type and named child path, so docking and caption changes do not change it. Set `SettingsKey` for an explicit stable identity when names are dynamic or ambiguous; set `PersistSettings = false` for transient grids. Reference pickers already opt out. Settings restore after bindings and the provider are available, validate obsolete values, and preserve the consumer's configured defaults on first use. Accepted preference changes save; viewport resizing and source refreshes do not write settings. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
+`PersistSettings` defaults to true. Each logical grid uses a typed `VisualGridSettings` object through `UserSettings` to remember its page mode, manual size, page number and source sort name/direction across sessions. Older settings without `PageMode` migrate through their retained `AutoPageSize` flag. The default settings ID uses its concrete screen/control type and named child path, so docking and caption changes do not change it. Set `SettingsKey` for an explicit stable identity when names are dynamic or ambiguous; set `PersistSettings = false` for transient grids. Reference pickers already opt out. Settings restore after bindings and the provider are available, validate obsolete values, and preserve the consumer's configured defaults on first use. Accepted preference changes save; viewport resizing and source refreshes do not write settings. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
+
+A non-null `VisualGrid.Preferences` selects screen-owned `VisualGridSettings` and suppresses the separate standalone record. Use a distinct named role for each grid in the root settings object. `CaptureGridPreferences()` returns detached values; `ApplyGridPreferences(values)` applies accepted values without changing the chosen persistence owner, saving, or discarding a live cell draft. Query changes defer until the editor ends. `PreferencesChanged` reports accepted page/sort choices and completed header drags; the screen captures and saves its root through the same profile used by Options.
+
+The grid's top **Grid settings** button appears when it has bound preferences or a restored standalone settings object. `Traits` defaults to `VisualGridTraits.AllowsSettingsChange`; the designer-friendly `AllowsSettingsChange` property wraps that flag. Turning it off keeps the button visible and disabled. Without a settings object the button is hidden. The button opens an ordinary value editor for the same `VisualGridSettings` used by Options. OK validates and publishes through the existing preference-change path; Cancel discards the detached edit. It does not create another profile or persistence provider.
+
+Existing JSON/XML grid records remain readable under their original internal storage type names. Restoration copies those values into `VisualGridSettings` without writing during load; an existing record with the new name takes precedence. The compatibility types remain internal and do not retain the old public grid API.
+
+Persisted manual widths use `IVisualGridColumn.PreferenceKey`, which normally falls back to the property or source sort name. Supply an explicit key for computed columns and keep keys unique. Captions and column positions can change without losing widths. Widths use logical pixels at 96 DPI, remain stable across rebinds and DPI changes, and leave untouched natural/stretch columns unspecified. Reset clears deliberate overrides. Legacy standalone records are read with `ReadLegacyPreferencesAsync(provider)` into detached values; the screen imports them once under its named section marker. Standalone reads finish before the first query, and detached accepted saves run off the UI thread through the captured provider. Await `FlushPreferencesAsync()` during an accepted standalone close/shutdown; `PreferenceSaveError` exposes a failed write and flush retries it.
+
 
 ### Snapshot collection and binding
 
 For read-only changing collections, use the nonvisual
-[CrudGridSnapshotController<T>](Crud/CrudGridSnapshotController.cs) behind a
+[VisualGridSnapshotController<T>](VisualGrid/VisualGridSnapshotController.cs) behind a
 designer-owned grid. It accepts an async collector, stable row identity and
 optional property-value formatter; an overload accepts an existing core
 `SnapshotDataSource<T>`. It binds once, serializes refreshes, queries the grid's
@@ -570,7 +599,7 @@ Typed `Rows`, `Count`, `SetDefaultSort`, `RefreshAsync` and `CaptureSnapshot`
 support concrete nongeneric screen surfaces. CSV/JSON export belongs to the caller.
 Create/configure/refresh it on the grid's UI thread with its dispatcher context;
 the collector determines its own worker execution. Late results are ignored
-after grid disposal. See [controller tests](../../tests/Sphere10.Framework.Windows.Forms.Tests/CrudGridSnapshotControllerTests.cs).
+after grid disposal. See [controller tests](../../tests/Sphere10.Framework.Windows.Forms.Tests/VisualGridSnapshotControllerTests.cs).
 
 ### References from a data source
 
@@ -579,7 +608,7 @@ Assign a `CrudReferenceBinding<TEntity>` to a column's `ReferenceBinding` to sel
 ```csharp
 var ManagerBinding = new CrudReferenceBinding<Employee>(EmployeeDataSource, EmployeeColumns,
 	Employee => $"{Employee.FirstName} {Employee.LastName}");
-var ManagerColumn = new CrudGridColumn<Employee> {
+var ManagerColumn = new VisualGridColumn<Employee> {
 	ColumnName = "Manager",
 	PropertyName = nameof(Employee.Manager),
 	DataType = typeof(Employee),
@@ -595,7 +624,7 @@ The picker is read-only, automatically fits complete rows, and supports paging, 
 
 Set `ExpandsToFit = true` on the column that should occupy spare width, such as the Name column in a reference picker. Other columns keep their initial measured widths. Multiple configured columns share extra space; none stretch implicitly when no column is configured. Resizing redistributes spare width from remembered minimum widths. Explicitly resized columns retain the chosen width and leave automatic stretching. Pages, search and refresh do not remeasure columns from their new values. Existing columns wider than the viewport use horizontal scrolling. Automatic page sizing continues to fit complete rows in the available grid height.
 
-`CrudGrid.ReferenceBindings` and `DefaultCrudEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
+`VisualGrid.ReferenceBindings` and `DefaultCrudEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
 
 `CrudComboBox` uses the same column configuration. Its `MaximumDropDownSize` and optional `SetCrudParameters(size: ...)` configure the popup size, capped to the available screen space. Use `ExpandsToFit` in its grid bindings to choose which columns fill spare width.
 
@@ -707,6 +736,11 @@ Hosted log views retain the originating navigation block, including after the so
 `Configuration` is a defensive `LogOutputConfiguration` snapshot. Configure/start/stop on the creating UI thread. `StartLogging()` accepts its already configured values for programmatic consumers; `ConfigureAsync(owner)` supplies the wizard and `ShowConfigurationAsync(owner)` supplies the details dialog. `LoggingStarting(configuration)` can veto before IO, including during restoration. `LoggingStateChanged`, `LoggingFailed`, `HasConfiguration`, `IsLogging` and `LastError` expose state and failures. Do not separately dispose the selected session or register it as another global owner.
 
 With **Remember After Close**, `LogOutputSelectorSettings` persists the accepted configuration and enabled choice through `UserSettings`. Call `RestoreSettings()` explicitly after the application logger and consumer hooks are ready. Construction/handle creation never read preferences or open output. The method returns false while a stable owner/provider is unavailable and can then be retried; completed restoration is idempotent. `SettingsKey` can supply an explicit stable ID; otherwise the owning screen/control type and named child path identify this selector independently of captions or docking. Set the key before restoring or accepting output. Restoration and unchanged disposal do not write preferences, and disposal closes a remembered active sink without changing its saved enabled choice. Turning Remember off deletes only that selector's stored preferences, including its cached record. Optional preference failures appear in `LastSettingsError`; output remains usable and failed accepted saves retry on disposal. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md#reusable-logging-preferences).
+
+Hosted screens can instead bind a plain `LogOutputSelectorPreferences` through the screen's `BindLogOutputPreferencesAsync<TSettings>` helper under a named role such as `LogOutput`. An unopened Options Apply or Reset already owns public root value properties, so a `LogOutput` property needs no separate declaration. A non-null selector `Preferences` disables its separate standalone record. `CapturePreferences()` returns detached configuration and the remembered `Enabled` choice; `ReadLegacyPreferencesAsync(provider)` reads only values through the captured provider and never creates a record or opens output. The owning profile imports that legacy section once.
+
+`ApplyPreferences(values)` is a pure value/UI operation: the selector must be stopped and its drain awaited first. It neither starts logging nor saves preferences. The real owning screen supplies its application logger and preflight before explicitly starting remembered enabled output. Accepted configuration and On/Off changes raise `PreferencesChanged` through the overridable `OnPreferencesChanged` hook; disposal does not invent an Off preference. Output choices with Remember After Close disabled remain available in the current session but their configuration/enabled fields are omitted from the root's JSON persistence. Standalone `RestoreSettings()` and its existing Remember/delete/preflight behavior remain available when no screen owner is assigned.
+
 
 SystemExpert's watcher passes `eventLoggerProvider: () => logOutputSelector.Logger`, so output changes take effect without restarting monitoring. Every accepted event is independent of display filters, pause and retention; file paths inside the watched tree are rejected before IO. WinFormsTester's **Logging** screen demonstrates the selector alongside a TextBoxLogger preview. See the [reusable controls catalog](../../docs/guidelines/patterns/winforms-controls.md).
 
@@ -860,25 +894,38 @@ editors, registration requirements, ownership and current limitations.
 Application blocks provide a modular way to organize application features with menu structures. The builder pattern provides a fluent API for construction:
 
 ```csharp
-using Sphere10.Framework.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Windows.Forms;
 
 // Register an application block using the builder pattern
 serviceCollection
 	.AddApplicationBlock(
 		new WinFormsApplicationBlockBuilder()
 			.WithName("My Block")
+			.AddScreen<MainScreen>(screen => screen
+				.WithTitle("Main")
+			)
+			.AddScreen<SettingsScreen>(screen => screen
+				.WithTitle("Settings")
+				.AsSingleInstance()
+			)
+			.AddScreen<ToolA>(screen => screen
+				.WithTitle("Tool A")
+			)
+			.AddScreen<ToolB>(screen => screen
+				.WithTitle("Tool B")
+			)
 			.WithDefaultScreen<MainScreen>()
-			.ConfigureMenu(mb => mb
+			.AddMenu(mb => mb
 				.WithText("File")
 				.AddActionItem("New", () => CreateNew())
 				.AddActionItem("Open", () => OpenFile())
-				.AddScreenItem<SettingsScreen>("Settings")
+				.AddShowScreenItem<SettingsScreen>("Settings")
 			)
-			.ConfigureMenu(mb => mb
+			.AddMenu(mb => mb
 				.WithText("Tools")
-				.AddScreenItem<ToolA>("Tool A")
-				.AddScreenItem<ToolB>("Tool B")
+				.AddShowScreenItem<ToolA>("Tool A")
+				.AddShowScreenItem<ToolB>("Tool B")
 			)
 			.Build()
 	);
@@ -888,11 +935,21 @@ public class MyApplicationBlock {
 	public static WinFormsApplicationBlock Build() {
 		return new WinFormsApplicationBlockBuilder()
 			.WithName("My Application")
+			.AddScreen<DashboardScreen>(screen => screen
+				.WithTitle("Dashboard")
+				.AsSingleInstance()
+			)
+			.AddScreen<Screen1>(screen => screen
+				.WithTitle("Option 1")
+			)
+			.AddScreen<Screen2>(screen => screen
+				.WithTitle("Option 2")
+			)
 			.WithDefaultScreen<DashboardScreen>()
-			.ConfigureMenu(mb => mb
+			.AddMenu(mb => mb
 				.WithText("Main Menu")
-				.AddScreenItem<Screen1>("Option 1")
-				.AddScreenItem<Screen2>("Option 2")
+				.AddShowScreenItem<Screen1>("Option 1")
+				.AddShowScreenItem<Screen2>("Option 2")
 				.AddActionItem("Custom Action", () => DoSomething())
 			)
 			.Build();
@@ -908,14 +965,14 @@ Owner-aware actions receive the executing `IUserInterfaceServices`, including ac
 ```csharp
 menu
 	.AddActionItem("Ready", userInterface => userInterface.Status = "Ready")
-	.ConfigureItem(item => item
+	.AddItem(item => item
 		.AsActionItem()
 		.WithText("Report status")
 		.WithAction(userInterface => userInterface.Status = "Ready")
 	);
 ```
 
-The parameterless `Action` overload remains available. Native action items take synchronous delegates; an `async` lambda supplied to one becomes `async void`, and command dispatch cannot await its completion. Await asynchronous dialogs and other work from a `Task`-returning method or a native async event handler as shown above. `PrimaryUIController` supplies the form when a callback needs its native owner. `AddItem(existingItem)` registers an existing item; `ConfigureItem(item => ...)` configures a child builder and adds its built item. `AddScreenItem` and `AddActionItem` construct their definitions directly without invoking a child builder.
+The parameterless `Action` overload remains available. Native action items take synchronous delegates; an `async` lambda supplied to one becomes `async void`, and command dispatch cannot await its completion. Await asynchronous dialogs and other work from a `Task`-returning method or a native async event handler as shown above. `PrimaryUIController` supplies the form when a callback needs its native owner. `AddItem(existingItem)` registers an existing item; `AddItem(item => ...)` configures a child builder and adds its built item. `AddShowScreenItem` adds a command for an already registered screen; `AddActionItem` adds an action. Neither creates a screen registration. A type-based screen command selects the first matching registration in its declaring block; pass an exact registration reference when several definitions share that type.
 
 The builder pattern supports:
 - **Screen items**: Navigate to specific forms/screens
@@ -939,15 +996,23 @@ using Sphere10.Framework.Windows.Forms;
 serviceCollection
 	.AddWinFormsApplicationPlugin(plugin => plugin
 		.WithName("Administration")
-		.RegisterInitializer<AdministrationInitializer>()
-		.RegisterFinalizer<AdministrationFinalizer>()
-		.ConfigureServices(services => services.AddSingleton<AdministrationService>())
-		.ConfigureBlock(block => block
+		.AddInitializer<AdministrationInitializer>()
+		.AddFinalizer<AdministrationFinalizer>()
+		.AddServices(services => services.AddSingleton<AdministrationService>())
+		.AddBlock(block => block
 			.WithName("Administration")
+			.AddScreen<DashboardScreen>(screen => screen
+				.WithTitle("Dashboard")
+				.AsSingleInstance()
+			)
+			.AddScreen<SettingsScreen>(screen => screen
+				.WithTitle("Settings")
+				.AsSingleInstance()
+			)
 			.WithDefaultScreen<DashboardScreen>()
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("Management")
-				.AddScreenItem<SettingsScreen>("Settings")
+				.AddShowScreenItem<SettingsScreen>("Settings")
 			)
 		)
 	);
@@ -985,11 +1050,11 @@ public sealed class AdministrationFinalizer : AsyncApplicationFinalizerBase {
 }
 ```
 
-Replace these demonstration messages with the plugin's actual startup and cleanup work. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `ConfigureBlock(block => ...)` builds a nested block; `AddBlock(block)` registers an existing `IWinFormsApplicationBlock`.
+Replace these demonstration messages with the plugin's actual startup and cleanup work. For a reusable definition, call `new WinFormsApplicationPluginBuilder()...Build()` and pass its result to `AddWinFormsApplicationPlugin(plugin)`. `AddBlock(block => ...)` builds a nested block; `AddBlock(block)` registers an existing `IWinFormsApplicationBlock`.
 
 Registration invokes `Load(IServiceCollection)` once, validates the completed contribution, and supplies its blocks to the existing `AddApplicationBlock` startup path. Only after those registrations succeed does it publish an `ApplicationPluginRegistration<IWinFormsApplicationPlugin>` receipt containing the original plugin and a defensive copy of its contributed block membership. The application factory reads these receipts; manually registering an unloaded plugin in DI does not add it to `LoadedPlugins`. Failed loading or contribution validation does not publish a receipt. Later changes to a plugin's block getter do not change the captured startup contribution.
 
-Registration rejects both duplicate successful plugin names and recursive attempts to load the same name. A failed registration discards newly added lifecycle task descriptors under the attempted name, preventing a later successful plugin with that name from inheriting abandoned tasks. Ordinary `ConfigureServices` side effects retain their existing behavior.
+Registration rejects both duplicate successful plugin names and recursive attempts to load the same name. A failed registration discards newly added lifecycle task descriptors under the attempted name, preventing a later successful plugin with that name from inheriting abandoned tasks. Ordinary `AddServices` side effects retain their existing behavior.
 
 The same plugin instance remains available through native and shared DI contracts. `WinFormsApplication.Initialize()` and `await WinFormsApplication.InitializeAsync()` register each native block once, retaining position ordering, default screens and `ExecuteOnLoad` behavior. Startup selection follows receipt and block declaration order, while `Position` orders the navigation icons. Resolving or disposing an application adapter does not load, unload or dispose plugin definitions. Block objects, menu parent links, images and disposal ownership remain with the existing native code.
 
@@ -998,6 +1063,31 @@ The same plugin instance remains available through native and shared DI contract
 Existing `AddApplicationBlock` calls and the `WinFormsApplication(form, blocks)` constructor remain supported. Their blocks appear directly in the application's live `Blocks` array without creating a plugin. The three-argument constructor accepts `loadedPlugins` that the caller has already loaded and captures their contributions without invoking lifecycle methods. Successfully registered plugin names must be unique, and a block reference cannot be contributed by two plugins.
 
 `IWinFormsApplication.LoadedPlugins` returns a snapshot of the original loaded plugin instances. `Blocks` projects the host's current registered blocks and follows direct registration and guarded removal. Removing a contributed block does not unload its plugin. Select navigation through `ScreenHost.ActiveBlock` and screen operations through the host; plugins have no active UI selection. The shared `IApplication` resolves to the same application object and projects the same loaded plugins and live blocks. `BlockMainForm.BlockBindings` maps each block to its native navigation pane.
+
+### Screen Options
+
+Attach an ordinary settings object with `UseSettings<TSettings>()`,
+`UseSettings(instance)` or `UseSettings(() => new Preferences(...))` in the
+block's `AddScreen` callback. No settings base class is required. The application restores values
+before permanent/default screen work, includes unopened/no-options registrations,
+and contributes **Screen Options...** to the existing main **Options** menu.
+The designer-compatible dialog edits detached ordinary objects with
+PropertyGrid defaults, nested/collection values, selected-page Apply/OK/Reset,
+Cancel and retryable validation/storage errors.
+
+Use `GetSettings<TSettings>()` after attachment and
+`BindGridPreferencesAsync(grid, nameof(MySettings.Grid))` after configuring
+columns but before their first query. Named grid dictionaries additionally take
+the role name. Screen-owned grid roles suppress independent standalone records;
+accepted closure/finalization awaits the owning profile's detached saves.
+`WithSettingsEditor` receives the ordinary draft as `context.Settings` and
+supplies a specialized native entity editor without changing
+constructor selection or creating a generic visual base. Its context supplies
+the detached `Settings` value, real services and owner; the dialog handles saving.
+Plain main forms can
+use `AddApplicationSettings` and the same catalog. See
+[Screen Options](../../docs/usage/screen-options.md) for examples, editor
+contracts, legacy section migration and provider ownership.
 
 ### Remembering the main window
 
@@ -1024,11 +1114,11 @@ Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)
 
 ### Shared presentation contracts
 
-The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts with typed collections and native presentation options. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared metadata has no string IDs. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit common metadata, screen policies and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `ConfigureBlock`, block `ConfigureMenu`, menu `ConfigureItem`, their corresponding `Add` methods and common setters live in `Sphere10.Framework.Application.UI`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
+The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts with typed collections and native presentation options. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared navigation has no menu string IDs. Screen registrations have block-local identity; `WithStableKey` gives a registration a deliberate persistent key. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit block-owned screen registration and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `AddBlock`, block `AddScreen`/`AddMenu`, menu `AddItem` and common setters live in `Sphere10.Framework.Application.UI`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
 
 `IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The native presentation hooks remain synchronous; the host also exposes the shared asynchronous operations for controls, tabs, docking and screen disposal.
 
-Screen definitions carry activation modes for both UI hosts. The host resolves declarations and captures a constructor's mode in a definition when no mode was declared, then validates subsequent instances against that metadata. The native adapter uses the shared `ScreenActivationMode` enum directly; an unspecified menu mode still leaves the initial choice to the screen constructor. Help metadata remains available through the shared screen contract.
+Screen definitions carry activation modes for both UI hosts. The native adapter uses the shared `ScreenActivationMode` enum directly. Each registration resolves its own mode; menu commands carry presentation and a registration reference. When a registration omits a mode, its first constructed screen supplies the fallback, and subsequent instances of that registration must agree. Help metadata remains available through the shared screen contract.
 
 ### Running application and shared wizards
 
@@ -1051,17 +1141,27 @@ using Sphere10.Framework.Windows.Forms;
 
 var block = new WinFormsApplicationBlockBuilder()
 	.WithName("Workspace")
-	.WithDefaultScreen<DashboardScreen>(title: "Dashboard")
-	.ConfigureMenu(menu => menu
+	.AddScreen<DashboardScreen>(screen => screen
+		.WithTitle("Dashboard")
+		.AsSingleInstance()
+	)
+	.AddScreen<EditorScreen>(screen => screen
+		.WithTitle("Editor")
+		.AsMultiInstance()
+	)
+	.AddScreen<ReportScreen>(screen => screen
+		.WithTitle("Report")
+		.AsMultiInstance()
+	)
+	.WithDefaultScreen<DashboardScreen>()
+	.AddMenu(menu => menu
 		.WithText("Views")
-		.AddScreenItem<DashboardScreen>("Dashboard")
-		.AddScreenItem<EditorScreen>("New editor", title: "Editor")
-		.ConfigureItem(item => item
+		.AddShowScreenItem<DashboardScreen>("Dashboard")
+		.AddShowScreenItem<EditorScreen>("New editor")
+		.AddItem(item => item
 			.AsScreenItem()
 			.WithText("New report")
 			.WithScreen<ReportScreen>()
-			.AsMultiInstance()
-			.WithTitle("Report")
 		)
 	)
 	.Build();
@@ -1069,24 +1169,22 @@ var block = new WinFormsApplicationBlockBuilder()
 Sphere10Framework.Instance
 	.BuildWinFormsApplication()
 	.UseMainForm<BlockMainForm>(form => form.ScreenMode = ScreenMode.MultiView)
-	.ConfigureServices(services => services.AddApplicationBlock(block))
+	.AddServices(services => services.AddApplicationBlock(block))
 	.StartWinFormsApplication();
 
 public class DashboardScreen : WinFormsApplicationScreen {
-	public DashboardScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 }
 
 public class EditorScreen : WinFormsApplicationScreen {
-	public EditorScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
 }
 
 public class ReportScreen : WinFormsApplicationScreen {
 }
 ```
 
-Screen builders declare the type's instance policy with `.AsSingleInstance()` or `.AsMultiInstance()`. `SingleInstance` allows one instance of that type per host across all blocks and menu entries, including detached windows. `MultiInstance` (the default) allows a new independent instance on each menu activation. Declare `.AsSingleInstance()` explicitly for settings or other screens that must be reused. The host validates all explicit declarations for a block before opening its screens; an unspecified menu entry inherits any declaration for the same type. Conflicting declarations or changes to a resolved type policy are rejected, even after its last instance closes. Without a builder declaration, the screen's constructor supplies `ActivationMode` through its protected setter. The property cannot change while hosted. The former `KeepAlive` and `AlwaysCreate` names are now `SingleInstance` and `MultiInstance`, respectively.
+Screen registration builders declare each definition's instance policy with `.AsSingleInstance()` or `.AsMultiInstance()`. `SingleInstance` reuses one instance of that exact registration in its owning block, including its detached window. Another registration of the same CLR type can have a different title, activator, lifetime and screen kind. `MultiInstance` opens an independent instance on each activation. Set the policy on `AddScreen`, then attach any number of menu commands to that registration. A screen constructor supplies the fallback when the registration omits a mode; a hosted instance cannot change its resolved mode. The former `KeepAlive` and `AlwaysCreate` names are `SingleInstance` and `MultiInstance`.
 
-`WinFormsApplicationScreen.Title` uses the control's `Text` property. Menu navigation supplies the menu text as the initial title unless a specific builder title is provided. Screens can subsequently change `Title`; the tab and detached window update immediately. A block's default screen opens during registration if there is no active screen after its `ExecuteOnLoad` items have run.
+`WinFormsApplicationScreen.Title` uses the control's `Text` property. The screen registration supplies its initial title; a command can have a different navigation caption. Screens can subsequently change `Title`; the tab and detached window update immediately. A block's default screen opens during registration if there is no active screen after its `ExecuteOnLoad` items have run.
 
 Tab widths grow with their titles up to `WinFormsApplicationScreenTabControl.MaximumTabWidth`, which defaults to 320 logical pixels. Native caption measurements reserve room for the owner-drawn icon, its spacing and the close action, including when the image list retains its original pixel size on a higher-DPI monitor. Longer titles display an ellipsis, with the full title available on hover. Tab spacing, close buttons, docking markers, and the width limit scale for the current monitor's DPI.
 
@@ -1113,7 +1211,7 @@ Menu rows wrap captions to the available navigation width. Narrowing the pane in
 
 SingleView retains hidden single-instance screens and disposes multi-instance screens when navigating away, preserving the previous behavior. Explicit close destroys an ordinary instance; opening it again constructs a fresh screen. Switching from MultiView to SingleView closes other ordinary open screens and retains the selected screen. Permanent singletons remain owned and return to the tab strip when MultiView is restored. Use `ScreenHost.TrySetScreenMode` to handle cancellation without an exception; assigning `ScreenMode` throws if a screen vetoes the change.
 
-`ScreenActivationMode.PermanentSingleton` adds an anchored lifetime. Declare it with `.AsPermanentSingleton()` on a screen item, or pass `activationMode: ScreenActivationMode.PermanentSingleton` to `WithDefaultScreen`. These registered permanent screens are created once at startup, remain in `OpenScreens` across both view modes, and reject close and undock requests. Ordinary navigation away remains allowed. Declare the policy in registration when it must open automatically; a constructor-only default is learned when that type is first activated.
+`ScreenActivationMode.PermanentSingleton` adds an anchored lifetime. Declare it with `.AsPermanentSingleton()` in the block's `AddScreen` callback. These registered permanent screens are created once at startup, remain in `OpenScreens` across both view modes, and reject close and undock requests. Ordinary navigation away remains allowed. Declare the policy in registration when it must open automatically; a constructor-only default is learned when that type is first activated.
 
 `ScreenKind.Empty` marks a tabless fallback shown only when no regular screen remains open (detached windows and permanent screens also count as open). It is excluded from `OpenScreens`, while `Screens` includes a cached Empty singleton. Navigating away retains a singleton's controls and disposes a multi-instance placeholder; returning either reuses or recreates it. Empty and PermanentSingleton cannot be combined.
 
@@ -1123,40 +1221,43 @@ using Sphere10.Framework.Windows.Forms;
 
 var block = new WinFormsApplicationBlockBuilder()
 	.WithName("Workspace")
-	.ConfigureMenu(menu => menu
+	.AddScreen<StartScreen>(screen => screen
+		.WithTitle("Start")
+		.AsSingleInstance()
+	)
+	.AddScreen<NotesScreen>(screen => screen
+		.WithTitle("Pinned notes")
+		.AsPermanentSingleton()
+	)
+	.WithDefaultScreen<StartScreen>()
+	.AddMenu(menu => menu
 		.WithText("Screens")
-		.ConfigureItem(item => item
-			.AsScreenItem()
-			.WithText("Start")
-			.WithScreen<StartScreen>()
-			.AsSingleInstance()
-			.AsDefault()
-		)
-		.ConfigureItem(item => item
-			.AsScreenItem()
-			.WithText("Pinned notes")
-			.WithScreen<NotesScreen>()
-			.AsPermanentSingleton()
-		)
+		.AddShowScreenItem<StartScreen>("Start")
+		.AddShowScreenItem<NotesScreen>("Pinned notes")
 	)
 	.Build();
 
 var emptyBlock = new WinFormsApplicationBlockBuilder()
 	.WithName("Empty workspace")
-	.WithDefaultScreen<EmptyScreen>("Nothing open",
-		activationMode: ScreenActivationMode.SingleInstance, screenKind: ScreenKind.Empty)
+	.AddScreen<EmptyScreen>(screen => screen
+		.WithTitle("Nothing open")
+		.AsSingleInstance()
+		.WithScreenKind(ScreenKind.Empty)
+	)
+	.WithDefaultScreen<EmptyScreen>()
 	.Build();
 ```
 
-The screen types in this example derive from `WinFormsApplicationScreen`. Startup selects the first `.AsDefault()` or block `WithDefaultScreen` in plugin, block, then menu declaration order. A permanent screen prevents an Empty default from taking selection. Block `Position` continues to order the displayed navigation independently. If no explicit default exists, existing `IsStartScreen` / `ExecuteOnLoad` screen registrations keep their behavior; startup actions still execute.
+The screen types in this example derive from `WinFormsApplicationScreen`. Startup selects the first configured block `WithDefaultScreen` in plugin and block declaration order. A permanent screen prevents an Empty default from taking selection. Block `Position` continues to order the displayed navigation independently. If no explicit default exists, existing `IsStartScreen` / `ExecuteOnLoad` screen registrations keep their behavior; startup actions still execute.
 
 The tab context menu's **Make Startup Screen** saves an
 `ApplicationStartupScreenSettings` preference through the application's
 `UserSettings`. The host loads it asynchronously before block registration and
 prefers a matching registered screen over the configured default, while still
-creating permanent screens. Identity uses plugin/block names, full screen type
-and simple assembly name; captions, assembly versions and live session handles
-are not persisted. Missing, invalid or non-restorable definitions fall back to
+creating permanent screens. Identity uses the owning plugin/block and stable screen registration key;
+captions, menu order, assembly versions and live session handles are not persisted.
+A legacy type-only preference restores only when that type identifies one
+registration in the owning block. Missing, invalid or non-restorable definitions fall back to
 the configured default without overwriting the preference. Override
 `WinFormsApplicationScreen.CanRestoreAtStartup` to false for screens that require
 session arguments; their context action remains visible with an explanation.
@@ -1242,7 +1343,7 @@ Application, block and screen command layers compose through `Tools.UI.MergeAppl
 
 `Control.EnterRenderingScope()` defers layout and native redraw across the control tree. Nested scopes, added controls, newly created handles and newly shown controls share suppression. The last scope flushes parent/child layout and performs one redraw; disposed and intentionally hidden controls remain so. Controls moved into another window receive their final full-tree invalidation at their current surviving root, including when the original root was disposed. A subtree still held by another rendering scope waits for that owner to release it. `EnterRenderingScope(repaintImmediately: false)` restores layout and native visibility synchronously but queues painting for the next normal native paint cycle, appropriate inside native input/selection callbacks. The existing no-argument overload retains immediate painting. Dispose scopes on the creating UI thread; never keep one across an await or BeginInvoke. Screen-host transitions use this scope around the form and publish one completed selection and command update.
 
-Native redraw suppression temporarily removes `WS_VISIBLE`; old pixels can remain while Windows routes mouse input to another window. An enabled control and a responsive managed message loop do not establish that its native input target remains available. Live CrudGrid publication and incremental native sizing therefore use SourceGrid's existing double buffering and managed layout suspension, without `WM_SETREDRAW`. A single-row publication explicitly invalidates the changed view, including when no row is selected. Native input regressions sample cached HWND visibility and hit-test routing from a worker during publication, rather than calling control handlers directly or observing only UI timer ticks.
+Native redraw suppression temporarily removes `WS_VISIBLE`; old pixels can remain while Windows routes mouse input to another window. An enabled control and a responsive managed message loop do not establish that its native input target remains available. Live VisualGrid publication and incremental native sizing therefore use SourceGrid's existing double buffering and managed layout suspension, without `WM_SETREDRAW`. A single-row publication explicitly invalidates the changed view, including when no row is selected. Native input regressions sample cached HWND visibility and hit-test routing from a worker during publication, rather than calling control handlers directly or observing only UI timer ticks.
 
 After native resizing and redraw restoration, the scope compares a top-aligned `TabControl`'s native `TCM_ADJUSTRECT` display area with WinForms' cached display rectangle. During toolbar restoration and undocking, managed `OnResize` can run before the native `WM_SIZE` recalculates wrapped header rows; the retained page then covers those headers. A mismatch reapplies the selected page's existing nonvirtual image metadata, whose parent update clears that cache. Its image-key/index mode, captions, custom text setters, native handles, selected page and selection events remain unchanged. This synchronization finishes before the existing final invalidation; it does not resize or recreate controls or select another page.
 

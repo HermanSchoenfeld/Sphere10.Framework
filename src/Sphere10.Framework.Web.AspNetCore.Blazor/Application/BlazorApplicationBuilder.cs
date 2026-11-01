@@ -41,8 +41,8 @@ public class BlazorApplicationBuilder : ApplicationBuilderBase<BlazorApplication
 		_services.AddSphere10Blazor();
 		foreach (var plugin in plugins)
 			_services.AddSphere10BlazorPlugin(plugin);
-		if (configureApplication != null)
-			_services.AddSphere10BlazorApplication(configureApplication);
+		if (configureApplication != null || SettingsKey != null || SettingsDefinitions.Length != 0)
+			_services.AddSphere10BlazorApplication(configureApplication, SettingsKey, SettingsDefinitions);
 		_services.Replace(ServiceDescriptor.Singleton(options));
 		return _services;
 	}

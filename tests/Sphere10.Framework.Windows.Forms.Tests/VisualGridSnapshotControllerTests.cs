@@ -21,14 +21,14 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridSnapshotControllerTests {
+public class VisualGridSnapshotControllerTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ReadCapabilitiesRetainNativeHeadersAndRowsThroughSelectionModalEditingAndRefresh(bool save) => RunWithMessageLoop(async owner => {
 		using var crud = CreateGrid(owner);
 		var rows = Enumerable.Range(1, 90).Select(index => new Row { Id = index, Name = $"Original {index}" }).ToArray();
 		var source = new EditableSnapshotSource();
-		var controller = new CrudGridSnapshotController<Row>(crud, source, row => row.Id, _ => Task.FromResult(rows));
+		var controller = new VisualGridSnapshotController<Row>(crud, source, row => row.Id, _ => Task.FromResult(rows));
 		var readCapabilities = source.Capabilities & (DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage);
 		crud.EntitySelected += (_, _) => crud.Capabilities = readCapabilities | DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanUpdate | DataSourceCapabilities.CanDelete;
 		crud.EntityDeselected += (_, _) => crud.Capabilities = readCapabilities | DataSourceCapabilities.CanCreate;
@@ -89,7 +89,7 @@ public class CrudGridSnapshotControllerTests {
 	public void TypedSnapshotsPreserveSelectionAcrossReplacedRowInstances() => RunWithMessageLoop(async owner => {
 		using var grid = CreateGrid(owner);
 		var rows = new[] { new Row { Id = 1, Name = "First" }, new Row { Id = 2, Name = "Second" } };
-		var controller = new CrudGridSnapshotController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
+		var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
 		await controller.RefreshAsync();
 		grid.SelectedEntity = rows[1];
 		rows = new[] { new Row { Id = 1, Name = "Updated first" }, new Row { Id = 2, Name = "Updated second" } };
@@ -100,7 +100,7 @@ public class CrudGridSnapshotControllerTests {
 		var snapshot = controller.Rows;
 		snapshot[0] = null;
 		Assert.That(controller.Rows[0], Is.SameAs(rows[0]));
-		Assert.That(((Row[])((ICrudGridSnapshotController)controller).CaptureSnapshot())[0], Is.SameAs(rows[0]));
+		Assert.That(((Row[])((IVisualGridSnapshotController)controller).CaptureSnapshot())[0], Is.SameAs(rows[0]));
 	});
 
 	[TestCase(false)]
@@ -117,7 +117,7 @@ public class CrudGridSnapshotControllerTests {
 		var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var block = 0;
 		grid.GridBindings = new[] {
-			new CrudGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), CanEditCell = false, PropertyValue = row => {
+			new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), CanEditCell = false, PropertyValue = row => {
 				if (Interlocked.Exchange(ref block, 0) != 0) {
 					started.TrySetResult();
 					release.Wait();
@@ -125,7 +125,7 @@ public class CrudGridSnapshotControllerTests {
 				return row.Name;
 			} }
 		};
-		var controller = new CrudGridSnapshotController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
+		var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
 		await controller.RefreshAsync();
 		grid.SelectedEntity = original[0];
 		rows = new[] { new Row { Id = 1, Name = "Updated first" }, new Row { Id = 2, Name = "Updated second" } };
@@ -143,7 +143,7 @@ public class CrudGridSnapshotControllerTests {
 	public void AnExistingSourceRetainsItsConfiguredDefaultSort() => RunWithMessageLoop(async owner => {
 		using var grid = CreateGrid(owner);
 		var source = new SnapshotDataSource<Row>();
-		var controller = new CrudGridSnapshotController<Row>(grid, source, row => row.Id,
+		var controller = new VisualGridSnapshotController<Row>(grid, source, row => row.Id,
 			_ => Task.FromResult(new[] { new Row { Id = 2 }, new Row { Id = 1 } }));
 		controller.SetDefaultSort(nameof(Row.Id), SortDirection.Ascending);
 		await controller.RefreshAsync();
@@ -156,7 +156,7 @@ public class CrudGridSnapshotControllerTests {
 		using var grid = CreateGrid(owner);
 		var collected = new TaskCompletionSource<Row[]>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var changes = 0;
-		var controller = new CrudGridSnapshotController<Row>(grid, row => row.Id, _ => collected.Task, _ => changes++);
+		var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, _ => collected.Task, _ => changes++);
 		var refresh = controller.RefreshAsync();
 		grid.Dispose();
 		collected.SetResult(new[] { new Row { Id = 1 } });
@@ -170,7 +170,7 @@ public class CrudGridSnapshotControllerTests {
 		using var grid = CreateGrid(owner);
 		using var cancellation = new CancellationTokenSource();
 		var collected = new TaskCompletionSource<Row[]>(TaskCreationOptions.RunContinuationsAsynchronously);
-		var controller = new CrudGridSnapshotController<Row>(grid, row => row.Id, _ => collected.Task);
+		var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, _ => collected.Task);
 		var refresh = controller.RefreshAsync(cancellation.Token);
 		cancellation.Cancel();
 		collected.SetResult(new[] { new Row { Id = 1 } });
@@ -186,7 +186,7 @@ public class CrudGridSnapshotControllerTests {
 		var maximumActive = 0;
 		var captures = 0;
 		var callbacks = new List<int>();
-		var controller = new CrudGridSnapshotController<Row>(grid, row => row.Id, async token => {
+		var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, async token => {
 			active++;
 			maximumActive = Math.Max(maximumActive, active);
 			var id = ++captures;
@@ -200,11 +200,11 @@ public class CrudGridSnapshotControllerTests {
 		Assert.That(grid.VisibleEntities.Cast<Row>().Single().Id, Is.EqualTo(2));
 	});
 
-	private static CrudGrid CreateGrid(Form owner) {
-		var grid = new CrudGrid { Name = "snapshotGrid", Dock = DockStyle.Fill, PersistSettings = false };
+	private static VisualGrid CreateGrid(Form owner) {
+		var grid = new VisualGrid { Name = "snapshotGrid", Dock = DockStyle.Fill, PersistSettings = false };
 		grid.GridBindings = new[] {
-			new CrudGridColumn<Row> { ColumnName = "ID", DataType = typeof(int), SortName = nameof(Row.Id), PropertyValue = row => row.Id },
-			new CrudGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), SortName = nameof(Row.Name), PropertyValue = row => row.Name }
+			new VisualGridColumn<Row> { ColumnName = "ID", DataType = typeof(int), SortName = nameof(Row.Id), PropertyValue = row => row.Id },
+			new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), SortName = nameof(Row.Name), PropertyValue = row => row.Name }
 		};
 		owner.Controls.Add(grid);
 		return grid;

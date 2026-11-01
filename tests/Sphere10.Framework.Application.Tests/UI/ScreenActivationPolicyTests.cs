@@ -21,18 +21,21 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ScreenActivationPolicyTests {
 	[Test]
-	public async Task CompatibleExplicitAliasesResolveAnUnspecifiedDefinitionWithoutChangingItsMetadata() {
+	public async Task AnExplicitSiblingDoesNotChangeAnUnspecifiedRegistrationsDefaultPolicy() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var inferred = new ApplicationScreenDefinition(typeof(FirstScreen), "Inferred");
 		var explicitAlias = new ApplicationScreenDefinition(typeof(FirstScreen), "Alias", ScreenActivationMode.SingleInstance);
 		var block = new TestApplicationBlock("Work", inferred);
 		block.AddScreenDefinition(explicitAlias);
-		block.AddScreenDefinition(explicitAlias.WithTitle("Another alias"));
 		Assert.That(() => ApplicationScreenDefinition.ValidateDefinitions(block.ScreenDefinitions), Throws.Nothing);
 		using var host = new ProbeHost(block, provider);
 		var first = await host.ActivateBlockAsync(block);
-		Assert.That(await host.OpenScreenAsync(block, explicitAlias), Is.SameAs(first));
-		Assert.That(host.Mode(first), Is.EqualTo(ScreenActivationMode.SingleInstance));
+		var singleton = await host.OpenScreenAsync(block, explicitAlias);
+		Assert.That(singleton, Is.Not.SameAs(first));
+		Assert.That(await host.OpenScreenAsync(block, explicitAlias), Is.SameAs(singleton));
+		Assert.That(await host.OpenScreenAsync(block, inferred), Is.Not.SameAs(first).And.Not.SameAs(singleton));
+		Assert.That(host.Mode(first), Is.EqualTo(ScreenActivationMode.MultiInstance));
+		Assert.That(host.Mode(singleton), Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(inferred.ActivationMode, Is.Null);
 		Assert.That(inferred.Title, Is.EqualTo("Inferred"));
 		Assert.That(first.Host, Is.SameAs(host));
@@ -40,18 +43,15 @@ public class ScreenActivationPolicyTests {
 	}
 
 	[Test]
-	public async Task ConflictingDefinitionBatchDoesNotPartiallyChangeTheHostsTypeIndex() {
+	public async Task InvalidDefinitionBatchDoesNotChangeRetainedScreensOrRunGuards() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var initial = new ApplicationScreenDefinition(typeof(FirstScreen), activationMode: ScreenActivationMode.SingleInstance);
 		var block = new TestApplicationBlock("Work", initial);
 		using var host = new ProbeHost(block, provider);
 		var screen = await host.ActivateBlockAsync(block);
-		var conflict = new ApplicationScreenDefinition(typeof(FirstScreen), activationMode: ScreenActivationMode.MultiInstance);
 		Assert.That(() => host.RegisterDefinitions(new[] {
-			new ApplicationScreenDefinition(typeof(SecondScreen), activationMode: ScreenActivationMode.SingleInstance), conflict
+			new ApplicationScreenDefinition(typeof(SecondScreen), activationMode: ScreenActivationMode.SingleInstance), null
 		}), Throws.ArgumentException);
-		Assert.That(host.ActivationDefinition(typeof(SecondScreen)), Is.Null);
-		Assert.That(host.ActivationDefinition(typeof(FirstScreen)), Is.SameAs(initial));
 		Assert.That(host.ActiveScreen, Is.SameAs(screen));
 		Assert.That(host.Screens.Single(), Is.SameAs(screen));
 		Assert.That(((FirstScreen)screen).GuardCalls, Is.Zero);
@@ -59,7 +59,7 @@ public class ScreenActivationPolicyTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void DefinitionValidationRejectsConflictingModesOrKindsWithoutChangingTheGraph(bool conflictingKinds) {
+	public void DefinitionValidationAllowsIndependentSameTypeModesAndKindsWithoutChangingTheGraph(bool conflictingKinds) {
 		var first = new ApplicationScreenDefinition(typeof(FirstScreen), "First", ScreenActivationMode.SingleInstance);
 		var second = new ApplicationScreenDefinition(typeof(FirstScreen), "Second",
 			conflictingKinds ? ScreenActivationMode.SingleInstance : ScreenActivationMode.MultiInstance,
@@ -67,7 +67,7 @@ public class ScreenActivationPolicyTests {
 		var command = new ScreenItem { ScreenDefinition = first };
 		var menu = new TestApplicationMenu<TestApplicationMenuItem> { Text = "Actions" };
 		menu.AddItem(command);
-		Assert.That(() => ApplicationScreenDefinition.ValidateDefinitions(new[] { first, second }), Throws.ArgumentException);
+		Assert.That(() => ApplicationScreenDefinition.ValidateDefinitions(new[] { first, second }), Throws.Nothing);
 		Assert.That(first.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(second.Title, Is.EqualTo("Second"));
 		Assert.That(first.Activators.Single(), Is.SameAs(command));
@@ -100,7 +100,7 @@ public class ScreenActivationPolicyTests {
 
 	[TestCase(ScreenActivationMode.SingleInstance, ScreenActivationMode.MultiInstance)]
 	[TestCase(ScreenActivationMode.MultiInstance, ScreenActivationMode.SingleInstance)]
-	public async Task RetainedInstanceModeCannotChangeBeforeNavigationGuardsRun(ScreenActivationMode initialMode, ScreenActivationMode otherMode) {
+	public async Task SameTypeRegistrationsRetainTheirOwnPoliciesInEitherActivationOrder(ScreenActivationMode initialMode, ScreenActivationMode otherMode) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var initial = new ApplicationScreenDefinition(typeof(FirstScreen), activationMode: initialMode);
 		var block = new TestApplicationBlock("Work", initial);
@@ -108,13 +108,14 @@ public class ScreenActivationPolicyTests {
 		var first = (FirstScreen)await host.ActivateBlockAsync(block);
 		var conflict = new ApplicationScreenDefinition(typeof(FirstScreen), activationMode: otherMode);
 		block.AddScreenDefinition(conflict);
-		Assert.That(async () => await host.OpenScreenAsync(block, conflict), Throws.ArgumentException);
-		Assert.That(host.ActiveScreen, Is.SameAs(first));
+		var sibling = await host.OpenScreenAsync(block, conflict);
+		Assert.That(sibling, Is.Not.SameAs(first));
+		Assert.That(host.ActiveScreen, Is.SameAs(sibling));
 		Assert.That(host.Mode(first), Is.EqualTo(initialMode));
-		Assert.That(first.GuardCalls, Is.Zero);
-		Assert.That(first.DeactivationCalls, Is.Zero);
-		Assert.That(host.Screens.Single(), Is.SameAs(first));
-		block.RemoveScreenDefinition(conflict);
+		Assert.That(host.Mode(sibling), Is.EqualTo(otherMode));
+		Assert.That(first.GuardCalls, Is.EqualTo(1));
+		Assert.That(first.DeactivationCalls, Is.EqualTo(1));
+		Assert.That(host.Screens, Has.Length.EqualTo(2));
 		var next = await host.ActivateBlockAsync(block);
 		if (initialMode == ScreenActivationMode.SingleInstance)
 			Assert.That(next, Is.SameAs(first));
@@ -190,7 +191,6 @@ public class ScreenActivationPolicyTests {
 	private sealed class ProbeHost(TestApplicationBlock block, IServiceProvider provider) : ApplicationScreenHost<TestApplicationBlock, IApplicationScreen>(new[] { block }, provider) {
 		public int CreatedScreens { get; private set; }
 		public ScreenActivationMode Mode(IApplicationScreen screen) => GetScreenActivationMode(screen);
-		public ApplicationScreenDefinition ActivationDefinition(Type screenType) => GetScreenActivationDefinition(screenType);
 		public void RegisterDefinitions(IEnumerable<ApplicationScreenDefinition> definitions) => RegisterTrackedDefinitions(definitions);
 
 		protected override IApplicationScreen CreateScreen(TestApplicationBlock block, ApplicationScreenDefinition definition) {

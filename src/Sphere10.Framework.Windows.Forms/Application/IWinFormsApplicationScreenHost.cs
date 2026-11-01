@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -33,6 +33,9 @@ public interface IWinFormsApplicationScreenHost : ISingleApplicationScreenHost<I
 	WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition);
 	/// <summary>Shows a supplied instance using its registered type policy. Rejects duplicate single-instance screens and conflicting constructor defaults.</summary>
 	bool ShowScreen(WinFormsApplicationScreen Screen);
+
+	/// <summary>Shows a caller-created contextual screen through its exact block registration.</summary>
+	Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default);
 	/// <summary>Shows a supplied screen directly in a modeless detached window without selecting a main-frame tab. Requires MultiView and a normal nonpermanent screen.</summary>
 	bool ShowScreenUndocked(WinFormsApplicationScreen screen);
 	bool CloseScreen(WinFormsApplicationScreen Screen);

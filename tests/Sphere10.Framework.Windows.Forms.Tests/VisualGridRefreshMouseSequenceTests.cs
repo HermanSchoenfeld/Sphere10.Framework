@@ -25,11 +25,11 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridRefreshMouseSequenceTests {
+public class VisualGridRefreshMouseSequenceTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void PressSpanningOneSecondSnapshotReplacementDoesNotGateMovementReleaseOrTheNextPress(bool processFlags) => RunWithMessageLoop(async owner => {
-		using var crud = new CrudGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true };
+		using var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true };
 		if (processFlags) {
 			crud.LeftClickToDeselect = true;
 			crud.AllowCellEditing = false;
@@ -37,13 +37,13 @@ public class CrudGridRefreshMouseSequenceTests {
 			crud.AutoSizeRowsOnRefresh = false;
 		}
 		owner.Controls.Add(crud);
-		crud.GridBindings = Enumerable.Range(0, 20).Select(index => new CrudGridColumn<Row> {
+		crud.GridBindings = Enumerable.Range(0, 20).Select(index => new VisualGridColumn<Row> {
 			ColumnName = "Column " + index, DataType = typeof(string), CanEditCell = false,
 			PropertyValue = row => $"Row {row.Id} / generation {row.Generation} / column {index}"
 		}).ToArray();
 		var generation = 0;
 		var rows = CreateRows(generation);
-		var controller = new CrudGridSnapshotController<Row>(crud, row => row.Id, _ => Task.FromResult(rows));
+		var controller = new VisualGridSnapshotController<Row>(crud, row => row.Id, _ => Task.FromResult(rows));
 		await controller.RefreshAsync();
 		var pageSize = crud.Controls.Find("_pageSizeUpDown", true).OfType<NumericUpDown>().Single();
 		pageSize.Value = 10;
@@ -136,11 +136,11 @@ public class CrudGridRefreshMouseSequenceTests {
 
 	private sealed class InputTrace : NativeWindow, IDisposable {
 		private readonly Grid _native;
-		private readonly CrudGrid _crud;
+		private readonly VisualGrid _crud;
 		private readonly Stopwatch _watch;
 		private readonly List<string> _log;
 
-		public InputTrace(Grid native, CrudGrid crud, Stopwatch watch, List<string> log) {
+		public InputTrace(Grid native, VisualGrid crud, Stopwatch watch, List<string> log) {
 			_native = native;
 			_crud = crud;
 			_watch = watch;
@@ -151,7 +151,7 @@ public class CrudGridRefreshMouseSequenceTests {
 		public TimeSpan LongestInput { get; private set; }
 
 		public void Record(string phase) {
-			var state = typeof(CrudGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_crud);
+			var state = typeof(VisualGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(_crud);
 			var row = _crud.SelectedEntity as Row;
 			_log.Add($"{_watch.Elapsed.TotalMilliseconds:F1}ms {phase}: state={state}, enabled={_native.Enabled}, capture=0x{WinAPI.USER32.GetCapture().ToInt64():X}, selection={RuntimeHelpers.GetHashCode(_native.Selection)}, selected={row?.Id}/g{row?.Generation}, down={_native.MouseDownPosition}");
 		}

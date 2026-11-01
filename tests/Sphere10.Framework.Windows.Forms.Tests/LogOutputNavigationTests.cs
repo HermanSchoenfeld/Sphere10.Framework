@@ -148,9 +148,12 @@ public class LogOutputNavigationTests {
 
 	private static WinFormsApplicationBlock CreateBlock(string name) => new WinFormsApplicationBlockBuilder()
 		.WithName(name)
-		.ConfigureMenu(menu => menu
+		.AddScreen<InventoryScreen>(screen => screen
+			.WithTitle("Inventory")
+		)
+		.AddMenu(menu => menu
 			.WithText(name)
-			.AddScreenItem<InventoryScreen>("Inventory")
+			.AddShowScreenItem<InventoryScreen>("Inventory")
 		)
 		.Build();
 

@@ -52,6 +52,10 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 
 	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) => InternalHost.OpenScreenAsync(block, definition, cancellationToken);
 
+	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		return InternalHost.OpenScreenAsync(block, registration, cancellationToken);
+	}
+
 	public virtual Task<bool> ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken = default) => InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
 
 	public virtual Task RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) => InternalHost.RegisterBlockAsync(block, cancellationToken);
@@ -114,6 +118,10 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 
 	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) => InternalHost.OpenScreenAsync(block, definition, cancellationToken);
 
+	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		return InternalHost.OpenScreenAsync(block, registration, cancellationToken);
+	}
+
 	public virtual Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default) => InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
 
 	public virtual Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) => InternalHost.RegisterBlockAsync(block, cancellationToken);
@@ -153,6 +161,10 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken) => await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
 
 	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
+
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken) {
+		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
+	}
 
 	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) => ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 

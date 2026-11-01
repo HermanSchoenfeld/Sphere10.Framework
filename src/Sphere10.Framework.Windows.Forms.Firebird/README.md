@@ -91,7 +91,7 @@ The host owns the added bar. The dialog and its child controls are disposed afte
 
 ## Shared provider selection
 
-Register `Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration` with `UseModule<TModule>()` in the existing framework startup builder. It registers both bar/panel pairs as named transient services under `nameof(DBMSType.Firebird)` and `nameof(DBMSType.FirebirdFile)`.
+Register `Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration` with `AddModule<TModule>()` in the existing framework startup builder. It registers both bar/panel pairs as named transient services under `nameof(DBMSType.Firebird)` and `nameof(DBMSType.FirebirdFile)`.
 
 Start the framework before constructing a generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`. Set `SelectedDBMSType` to the required mode before assigning its `ConnectionString`. Package installation alone does not register the module; directly constructed Firebird controls do not use this lookup.
 

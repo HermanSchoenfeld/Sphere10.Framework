@@ -30,27 +30,28 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApp
 		return this;
 	}
 
-	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string id, string text, ScreenActivationMode activationMode = ScreenActivationMode.MultiInstance,
-		IReadOnlyDictionary<string, object> parameters = null, ScreenKind screenKind = ScreenKind.Normal, bool isDefault = false
-	)
-		where TScreen : IComponent, IBlazorApplicationScreen => AddScreenItem(id, text, typeof(TScreen), activationMode, parameters, screenKind, isDefault);
+	/// <summary>Adds a command for the owning block's first registration of the screen type.</summary>
+	public BlazorApplicationMenuBuilder AddShowScreenItem<TScreen>(string text = null, string id = null, string icon = null)
+		where TScreen : IComponent, IBlazorApplicationScreen {
+		return AddShowScreenItem(typeof(TScreen), text, id, icon);
+	}
 
-	public BlazorApplicationMenuBuilder AddScreenItem<TScreen>(string text)
-		where TScreen : IComponent, IBlazorApplicationScreen =>
-		AddScreenItem<TScreen>(typeof(TScreen).Name, text);
+	/// <summary>Adds a runtime-type command for the first matching registration in its owning block.</summary>
+	public BlazorApplicationMenuBuilder AddShowScreenItem(Type screenType, string text = null, string id = null, string icon = null) {
+		return AddShowScreenItem(ApplicationScreenRegistration.ForType(screenType), text, id, icon);
+	}
 
-	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, Type screenType, ScreenActivationMode activationMode = ScreenActivationMode.MultiInstance,
-		IReadOnlyDictionary<string, object> parameters = null, ScreenKind screenKind = ScreenKind.Normal, bool isDefault = false
-	) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
-		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
-		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
-		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
-		return AddItem(new BlazorScreenMenuItem {
-			Id = id, Title = text, ScreenType = screenType, ActivationMode = activationMode, ScreenKind = screenKind,
-			IsDefault = isDefault, Parameters = parameters ?? new Dictionary<string, object>()
-		});
+	/// <summary>Adds presentation for an exact registration without creating or configuring a screen.</summary>
+	public BlazorApplicationMenuBuilder AddShowScreenItem(ApplicationScreenRegistration registration, string text = null, string id = null, string icon = null) {
+		Guard.ArgumentNotNull(registration, nameof(registration));
+		Tools.UI.ValidateScreenType(registration.ScreenType, typeof(IBlazorApplicationScreen));
+		return AddItem(new BlazorScreenMenuItem { Id = id, Title = text, Icon = icon, Registration = registration });
+	}
+
+	/// <summary>References an existing block-owned definition; the block resolves its graph-local copy.</summary>
+	public BlazorApplicationMenuBuilder AddShowScreenItem(ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		return AddShowScreenItem(definition.Registration, text, id, icon);
 	}
 
 	public BlazorApplicationMenuBuilder AddActionItem(string id, string text, Func<IServiceProvider, CancellationToken, Task> action) {
@@ -59,17 +60,6 @@ public class BlazorApplicationMenuBuilder : ApplicationMenuBuilderBase<BlazorApp
 		Guard.ArgumentNotNull(action, nameof(action));
 		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
 		return AddItem(new BlazorActionMenuItem { Id = id, Title = text, AsyncAction = action });
-	}
-
-	/// <summary>References an existing immutable definition without creating a second screen registration.</summary>
-	public BlazorApplicationMenuBuilder AddScreenItem(string id, string text, ApplicationScreenDefinition definition,
-		IReadOnlyDictionary<string, object> parameters = null, bool isDefault = false) {
-		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
-		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
-		Guard.ArgumentNotNull(definition, nameof(definition));
-		return AddItem(new BlazorScreenMenuItem {
-			Id = id, Title = text, ScreenDefinition = definition, Parameters = parameters ?? new Dictionary<string, object>(), IsDefault = isDefault
-		});
 	}
 
 	public BlazorApplicationMenuBuilder AddActionItem(string id, string text, Action action) {

@@ -6,8 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
@@ -68,6 +68,9 @@ public class ApplicationScreenNotificationTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
+			.AddScreen<NotificationScreen>(screen => screen
+				.WithTitle(nameof(NotificationScreen))
+			)
 			.WithDefaultScreen<NotificationScreen>()
 			.Build();
 		return new BlazorApplicationScreenHost(new[] { block }, provider);

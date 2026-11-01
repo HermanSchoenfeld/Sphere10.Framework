@@ -7,12 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Application.UI;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
@@ -81,7 +81,7 @@ public abstract class ScreenHostingTestScreen : WinFormsApplicationScreen {
 		_layout.Controls.Add(_status);
 		_cancelHide = new CheckBox { AutoSize = true, Text = "Block switching away, closing, undocking, redocking and mode changes involving this screen" };
 		_layout.Controls.Add(_cancelHide);
-		_layout.Controls.Add(new TextBox { Multiline = true, Dock = DockStyle.Fill, ScrollBars = ScrollBars.Vertical, Text = "Edit these notes to check that this instance retains its state." });
+		_layout.Controls.Add(new TextBox { Name = "LifecycleNotes", Multiline = true, Dock = DockStyle.Fill, ScrollBars = ScrollBars.Vertical, Text = "Edit these notes to check that this instance retains its state." });
 		_layout.Controls.Add(new Label { AutoSize = true, Text = "Screen events" });
 		_events = new TextBox { Multiline = true, ReadOnly = true, Dock = DockStyle.Fill, ScrollBars = ScrollBars.Vertical };
 		_layout.Controls.Add(_events);

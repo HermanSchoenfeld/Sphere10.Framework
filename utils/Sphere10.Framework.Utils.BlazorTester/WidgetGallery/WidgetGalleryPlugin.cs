@@ -27,9 +27,9 @@ public static class WidgetGalleryPlugin {
 		const string pluginName = "Widget Gallery";
 		plugin
 			.WithName(pluginName)
-			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.ConfigureServices(services => {
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddServices(services => {
 				services.AddTransient<IRandomNumberService, RandomNumberService>();
 				services.AddTransient<IValidator<NewWidgetModel>, NewWidgetModelValidator>();
 				services.AddTransient<WidgetGalleryViewModel>();
@@ -40,42 +40,50 @@ public static class WidgetGalleryPlugin {
 				services.AddTransient<NewWidgetSummaryViewModel>();
 				services.AddTransient<WidgetModalViewModel>();
 			})
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("components")
 				.WithName("Component gallery")
 				.WithIconUrl("img/boxes-solid.svg")
 				.WithTooltip("Component gallery")
 				.WithPosition(1)
+				.AddScreen<ComponentScreen>(screen => screen
+					.WithTitle("Visual grid")
+					.UseSettings<GallerySettings>()
+				)
+				.AddScreen<TablesScreen>(screen => screen.WithTitle("Tables"))
+				.AddScreen<DialogsScreen>(screen => screen.WithTitle("Dialogs"))
+				.AddScreen<WizardsScreen>(screen => screen.WithTitle("Wizards"))
+				.AddScreen<ThemeScreen>(screen => screen.WithTitle("Themes"))
 				.WithDefaultScreen<ComponentScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("gallery")
 					.WithText("Components")
 					.WithIcon("fas fa-th-large")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("gallery")
-						.WithText("CRUD grid")
+						.WithText("Visual grid")
 						.WithIcon("fas fa-table")
 						.WithScreen<ComponentScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("tables")
 						.WithText("Tables")
 						.WithIcon("fas fa-list-alt")
 						.WithScreen<TablesScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("dialogs")
 						.WithText("Dialogs")
 						.WithIcon("fas fa-comment-alt")
 						.WithScreen<DialogsScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("wizards")
 						.WithText("Wizards")
 						.WithIcon("fas fa-magic")
 						.WithScreen<WizardsScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("themes")
 						.WithText("Themes")
 						.WithIcon("fas fa-palette")
@@ -83,53 +91,59 @@ public static class WidgetGalleryPlugin {
 					)
 				)
 			)
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("legacy")
 				.WithName("Legacy examples")
 				.WithIconUrl("img/logo.svg")
 				.WithTooltip("Original gallery and loader examples")
 				.WithPosition(3)
+				.AddScreen<LegacyGalleryScreen>(screen => screen.WithTitle("Plugin gallery"))
+				.AddScreen<LegacyDialogsScreen>(screen => screen.WithTitle("Legacy dialogs"))
+				.AddScreen<LegacyTablesScreen>(screen => screen.WithTitle("Legacy tables"))
+				.AddScreen<LegacyWizardsScreen>(screen => screen.WithTitle("Legacy wizard"))
+				.AddScreen<EndpointScreen>(screen => screen.WithTitle("Endpoint sample"))
+				.AddScreen<LegacyDashboardScreen>(screen => screen.WithTitle("Legacy dashboard"))
 				.WithDefaultScreen<LegacyGalleryScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("examples")
 					.WithText("Examples")
 					.WithIcon("fas fa-history")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("gallery")
 						.WithText("Plugin gallery")
 						.WithIcon("fas fa-th-large")
 						.WithScreen<LegacyGalleryScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("dialogs")
 						.WithText("Legacy dialogs")
 						.WithIcon("fas fa-comment")
 						.WithScreen<LegacyDialogsScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("tables")
 						.WithText("Legacy tables")
 						.WithIcon("fas fa-list")
 						.WithScreen<LegacyTablesScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("wizards")
 						.WithText("Legacy wizard")
 						.WithIcon("fas fa-magic")
 						.WithScreen<LegacyWizardsScreen>()
 					)
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("loader")
 					.WithText("Loader")
 					.WithIcon("fas fa-server")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("servers")
 						.WithText("Endpoint sample")
 						.WithIcon("fas fa-server")
 						.WithScreen<EndpointScreen>()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("dashboard")
 						.WithText("Legacy dashboard")
 						.WithIcon("fas fa-tachometer-alt")

@@ -46,8 +46,8 @@ public class ApplicationTabsBrowserTests {
 		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true })
 			.GetByRole(AriaRole.Button, new() { Name = "Overview", Exact = true }).ClickAsync();
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).WaitForAsync();
-		await _page.GetByRole(AriaRole.Button, new() { Name = "Close CRUD grid", Exact = true }).ClickAsync();
-		await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await _page.GetByRole(AriaRole.Button, new() { Name = "Close Visual grid", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).WaitForAsync(new() { State = WaitForSelectorState.Detached });
 	}
 
 	[TearDown]
@@ -263,13 +263,13 @@ public class ApplicationTabsBrowserTests {
 		await components.WaitForAsync();
 		Assert.That(_page.Url, Is.EqualTo(lockedUrl));
 		Assert.That(await second.IsVisibleAsync(), Is.True);
-		await components.GetByRole(AriaRole.Button, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+		await components.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Instance one", Exact = true }).ClickAsync();
 		await second.GetByRole(AriaRole.Button, new() { Name = "Increment instance counter", Exact = true }).ClickAsync();
 		await second.GetByText("Instance counter: 1", new() { Exact = true }).WaitForAsync();
 		Assert.That(_page.Url, Is.EqualTo(lockedUrl), "Both the menu request and tab request must be vetoed by the active instance.");
 		Assert.That(await _page.GetByRole(AriaRole.Tab, new() { Name = "Instance two", Exact = true }).GetAttributeAsync("aria-selected"), Is.EqualTo("true"));
-		Assert.That(await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).CountAsync(), Is.Zero);
+		Assert.That(await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).CountAsync(), Is.Zero);
 		await second.GetByRole(AriaRole.Checkbox, new() { Name = "Prevent tab switching", Exact = true }).UncheckAsync();
 		await second.GetByText("Tab switching is allowed.", new() { Exact = true }).WaitForAsync();
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Instance one", Exact = true }).ClickAsync();
@@ -285,8 +285,8 @@ public class ApplicationTabsBrowserTests {
 		await _page.ScreenshotAsync(new() { Path = screenshot, FullPage = true });
 		TestContext.AddTestAttachment(screenshot, "Independent screen instances with Instance two active");
 		await dock.GetByRole(AriaRole.Button, new() { Name = "Component gallery", Exact = true }).ClickAsync();
-		await components.GetByRole(AriaRole.Button, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
-		await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).And(_page.Locator("[aria-selected=true]")).WaitForAsync();
+		await components.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).And(_page.Locator("[aria-selected=true]")).WaitForAsync();
 		Assert.That(_page.Url, Is.Not.EqualTo(lockedUrl), "Clearing the lock permits menu navigation as well as tab selection.");
 	}
 

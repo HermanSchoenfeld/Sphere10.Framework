@@ -379,7 +379,7 @@ public void Process(int count, string name, string value, IList<int> items) {
 
 Fluent builders describe an object graph. Format their configuration to show that graph, even when each call would fit within 170 characters. Apply this to application, plugin, block, menu, screen and wizard builders in framework code, consumers, tests and documentation.
 
-Use `ConfigurePlugin`, `ConfigureBlock`, `ConfigureMenu` and `ConfigureItem` for child-builder callbacks. As in `ProtocolBuilder`, each `ConfigureX` builds the child and registers it through `AddX`. `AddX` methods accept existing definitions or construct them directly from arguments and never invoke a child builder.
+Use `AddPlugin`, `AddBlock`, `AddMenu` and `AddItem` for child-builder callbacks. Each `AddX(Action<XBuilder> configure)` creates and builds one child, adds its product and returns the parent. The matching `AddX(existingX)` accepts an existing definition. Use `WithX` for scalar/replacement configuration and explicit `OnX` names for runtime callbacks. Preserve each callback's immediate or deferred execution contract; callbacks over service collections or serializer factories are not child builders.
 
 - Start each configuration call on its own line. Indent the root chain one tab from its receiver; indent each child builder chain one additional tab beneath the call that owns it.
 - Keep sibling blocks, menus, items and wizard steps at the same depth. Do not flatten a child configuration onto its parent's line or align every nested chain to the root.
@@ -392,18 +392,18 @@ Use `ConfigurePlugin`, `ConfigureBlock`, `ConfigureMenu` and `ConfigureItem` for
 services
 	.BuildBlazorApplication()
 	.WithTitle("Operations")
-	.ConfigurePlugin(plugin => plugin
+	.AddPlugin(plugin => plugin
 		.WithName("Operations")
-		.ConfigureBlock(block => block
+		.AddBlock(block => block
 			.WithId("inventory")
 			.WithName("Inventory")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProductsScreen>(screen => screen
+				.WithTitle("Products")
+				.AsMultiInstance()
+			)
+			.AddMenu(menu => menu
 				.WithText("Stock")
-				.ConfigureItem(item => item
-					.WithText("Products")
-					.WithScreen<ProductsScreen>()
-					.AsMultiInstance()
-				)
+				.AddShowScreenItem<ProductsScreen>()
 			)
 		)
 	)

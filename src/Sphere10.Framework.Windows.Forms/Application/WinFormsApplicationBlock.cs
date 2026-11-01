@@ -67,7 +67,6 @@ public class WinFormsApplicationBlock : ApplicationBlockBase, IWinFormsApplicati
 	public virtual void AddMenu(IWinFormsApplicationMenu menu) {
 		Guard.ArgumentNotNull(menu, nameof(menu));
 		base.AddMenu(menu);
-		DefaultScreenDefinition ??= menu.Items.OfType<WinFormsScreenMenuItem>().FirstOrDefault(item => item.IsDefault)?.ScreenDefinition;
 	}
 
 	public override bool ContainsMenu(IApplicationMenu menu) => menu is IWinFormsApplicationMenu nativeMenu && ContainsMenu(nativeMenu);

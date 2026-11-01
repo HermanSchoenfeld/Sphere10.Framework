@@ -48,13 +48,19 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
 	private IApplicationScreenHost _observedHost;
 	private IApplicationBlock[] _parentedBlocks = Array.Empty<IApplicationBlock>();
+	private readonly Lazy<ApplicationSettingsCatalog> _settings;
+	private readonly ApplicationSettingsDefinition[] _settingsDefinitions;
 
 	protected ApplicationBase()
 		: this(null) {
 	}
 
 	/// <summary>Resolves application-owned tasks and tasks keyed by successfully loaded plugin names, leaving process registrations untouched.</summary>
-	protected ApplicationBase(IServiceProvider services) {
+	protected ApplicationBase(IServiceProvider services, string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null) {
+		Services = services;
+		SettingsKey = settingsKey ?? Tools.Runtime.GetEntryAssembly().GetName().Name;
+		_settingsDefinitions = settingsDefinitions?.ToArray() ?? Array.Empty<ApplicationSettingsDefinition>();
+		_settings = new Lazy<ApplicationSettingsCatalog>(CreateSettingsCatalog);
 		_initializers = Tools.Values.Future.LazyLoad(() => ResolveLifecycleTasks<IApplicationInitializer>(services));
 		_finalizers = Tools.Values.Future.LazyLoad(() => ResolveLifecycleTasks<IApplicationFinalizer>(services));
 		_logger = services?.GetService<ILogger>() ?? SystemLog.Logger;
@@ -94,6 +100,9 @@ public abstract class ApplicationBase : Disposable, IApplication {
 
 	public abstract IApplicationScreenHost ScreenHost { get; }
 
+	/// <summary>The application-owned preference catalog, including unopened and no-options registrations.</summary>
+	public virtual ApplicationSettingsCatalog Settings => _settings.Value;
+
 	public virtual bool HasUnsavedChanges => ScreenHost?.HasUnsavedChanges ?? false;
 
 	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus);
@@ -101,6 +110,21 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems);
 
 	protected bool IsDisposed { get; private set; }
+
+	/// <summary>The borrowed provider for this application's lifecycle, activation context and registered services.</summary>
+	protected IServiceProvider Services { get; }
+
+	/// <summary>The stable preference namespace, independent of the application's displayed caption.</summary>
+	protected string SettingsKey { get; }
+
+	/// <summary>A snapshot of application-root preference contributions supplied at construction.</summary>
+	protected ApplicationSettingsDefinition[] SettingsDefinitions => Tools.Array.Clone(_settingsDefinitions);
+
+	/// <summary>Uses an existing application-DI catalog when supplied, otherwise projects this application's own graph lazily.</summary>
+	protected virtual ApplicationSettingsCatalog CreateSettingsCatalog() {
+		return Services?.GetService<ApplicationSettingsCatalog>()
+			?? new ApplicationSettingsCatalog(SettingsKey, Services?.GetService<IApplicationSettingsStore>(), Blocks, SettingsDefinitions, Logger);
+	}
 
 	protected bool IsFinalizationCompleted {
 		get {

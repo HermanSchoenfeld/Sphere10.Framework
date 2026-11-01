@@ -18,12 +18,12 @@ namespace Sphere10.Framework.Windows.Forms;
 public abstract class CrudReferenceBinding {
 	public const DataSourceCapabilities ReadOnlyCapabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
 
-	protected CrudReferenceBinding(IEnumerable<ICrudGridColumn> GridBindings) {
+	protected CrudReferenceBinding(IEnumerable<IVisualGridColumn> GridBindings) {
 		Guard.ArgumentNotNull(GridBindings, nameof(GridBindings));
 		this.GridBindings = GridBindings;
 	}
 
-	public IEnumerable<ICrudGridColumn> GridBindings { get; set; }
+	public IEnumerable<IVisualGridColumn> GridBindings { get; set; }
 
 	public bool AllowNull { get; set; } = true;
 
@@ -38,9 +38,9 @@ public abstract class CrudReferenceBinding {
 
 	public abstract string GetDisplayText(object? Entity);
 
-	public abstract Task BindAsync(CrudGrid Grid);
+	public abstract Task BindAsync(VisualGrid Grid);
 
-	protected void ConfigureGrid(CrudGrid Grid) {
+	protected void ConfigureGrid(VisualGrid Grid) {
 		Guard.ArgumentNotNull(Grid, nameof(Grid));
 		Grid.AllowCellEditing = false;
 		Grid.RightClickForContextMenu = false;
@@ -53,7 +53,7 @@ public abstract class CrudReferenceBinding {
 }
 
 public class CrudReferenceBinding<TEntity> : CrudReferenceBinding {
-	public CrudReferenceBinding(IDataSource<TEntity> DataSource, IEnumerable<ICrudGridColumn> GridBindings, Func<TEntity, string>? DisplayText = null)
+	public CrudReferenceBinding(IDataSource<TEntity> DataSource, IEnumerable<IVisualGridColumn> GridBindings, Func<TEntity, string>? DisplayText = null)
 		: base(GridBindings) {
 		Guard.ArgumentNotNull(DataSource, nameof(DataSource));
 		this.DataSource = DataSource;
@@ -66,7 +66,7 @@ public class CrudReferenceBinding<TEntity> : CrudReferenceBinding {
 
 	public override string GetDisplayText(object? Entity) => Entity == null ? "(none)" : DisplayText?.Invoke((TEntity)Entity) ?? Entity.ToString() ?? string.Empty;
 
-	public override async Task BindAsync(CrudGrid Grid) {
+	public override async Task BindAsync(VisualGrid Grid) {
 		ConfigureGrid(Grid);
 		await Grid.SetDataSource(DataSource, ReadOnlyCapabilities);
 		if (Grid.IsDisposed)

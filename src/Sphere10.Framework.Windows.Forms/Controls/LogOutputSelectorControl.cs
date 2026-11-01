@@ -7,15 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework.Application.UI;
-
-using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -605,6 +604,8 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	/// Returns false when no stable identity/provider is available yet, allowing the owner to retry after initialization.</summary>
 	public bool RestoreSettings() {
 		EnsureOwnerThread();
+		if (_ownsPreferences)
+			return true;
 		if (DesignMode || Tools.Runtime.IsDesignMode)
 			return false;
 		if (_restoreCompleted)
@@ -644,12 +645,20 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	private void AcceptLogOutputSettings() {
 		if (_restoringSettings || DesignMode || Tools.Runtime.IsDesignMode)
 			return;
+		if (_ownsPreferences) {
+			Tools.Exceptions.ExecuteCapturingException<Exception>(() => NotifyPreferencesChanged(CapturePreferences()), out var error);
+			if (error != null)
+				RecordSettingsFailure(error, "Could not accept screen-owned logging preferences.");
+			else
+				_lastSettingsError = null;
+			return;
+		}
 		_settingsDirty = true;
 		SaveLogOutputSettings();
 	}
 
 	private void SaveLogOutputSettings() {
-		if (!_settingsDirty || _restoringSettings || DesignMode || Tools.Runtime.IsDesignMode)
+		if (_ownsPreferences || !_settingsDirty || _restoringSettings || DesignMode || Tools.Runtime.IsDesignMode)
 			return;
 		var key = ResolveLogSettingsKey();
 		if (key == null)

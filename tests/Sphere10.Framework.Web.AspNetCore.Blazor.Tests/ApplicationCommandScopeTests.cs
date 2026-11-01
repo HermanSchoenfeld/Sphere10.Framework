@@ -6,21 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
 
@@ -34,7 +35,7 @@ public class ApplicationCommandScopeTests {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-		ConfigureApplication(provider);
+		OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var pipe = await host.ActivateScreenAsync("pipes", "pipe-screen");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -69,7 +70,7 @@ public class ApplicationCommandScopeTests {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var application = ConfigureApplication(provider);
+		var application = OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.ActivateScreenAsync("pipes", "pipe-screen");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -104,7 +105,7 @@ public class ApplicationCommandScopeTests {
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var navigation = (ShellNavigation)provider.GetRequiredService<NavigationManager>();
-		ConfigureApplication(provider);
+		OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var pipe = await host.ActivateScreenAsync("pipes", "pipe-screen");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -153,7 +154,7 @@ public class ApplicationCommandScopeTests {
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var navigation = (ShellNavigation)provider.GetRequiredService<NavigationManager>();
-		ConfigureApplication(provider);
+		OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var pipe = await host.ActivateScreenAsync("pipes", "pipe-screen");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -184,25 +185,28 @@ public class ApplicationCommandScopeTests {
 			.AddApplicationBlock(block => block
 				.WithId("pipes")
 				.WithName("Pipe block")
-				.ConfigureMenu(menu => menu
+				.AddScreen<PipeScreen>(screen => screen
+					.WithTitle("Hidden pipe registration")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.AddMenu(menu => menu
 					.WithId("file")
 					.WithText("File")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("pipe-screen")
 						.WithText("Hidden pipe registration")
 						.WithScreen<PipeScreen>()
-						.AsSingleInstance()
 						.WithVisibility(false)
 					)
 					.AddItem(Command("pipe-file", "Pipe command"))
 					.AddItem(Group("export", "Block export", Command("block-export", "Block output")))
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("tools")
 					.WithText("Tools")
 					.AddItem(Command("calculator", "Pipe calculator"))
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("internal")
 					.WithText("Internal commands")
 					.AddItem(Command("internal", "Internal command", false))
@@ -212,20 +216,23 @@ public class ApplicationCommandScopeTests {
 			.AddApplicationBlock(block => block
 				.WithId("administration")
 				.WithName("Administration")
-				.ConfigureMenu(menu => menu
+				.AddScreen<AdministrationScreen>(screen => screen
+					.WithTitle("Hidden administration registration")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.WithDefaultScreen<AdministrationScreen>()
+				.AddMenu(menu => menu
 					.WithId("file")
 					.WithText("File")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("admin-screen")
 						.WithText("Hidden administration registration")
 						.WithScreen<AdministrationScreen>()
-						.AsSingleInstance()
-						.AsDefault()
 						.WithVisibility(false)
 					)
 					.AddItem(Command("admin-file", "Administration command"))
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("reports")
 					.WithText("Reports")
 					.AddItem(Command("audit", "Access audit"))
@@ -235,7 +242,7 @@ public class ApplicationCommandScopeTests {
 			.AddApplicationBlock(block => block
 				.WithId("actions")
 				.WithName("Action block")
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("actions")
 					.WithText("Actions")
 					.AddItem(Command("action", "Run action"))
@@ -245,7 +252,7 @@ public class ApplicationCommandScopeTests {
 		return services;
 	}
 
-	private static BlazorApplication ConfigureApplication(IServiceProvider provider) {
+	private static BlazorApplication OnApplicationCreated(IServiceProvider provider) {
 		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
 		var save = Command("save", "Common save");
 		application.SetMenus(new[] {

@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class CrudTestScreen {
+	partial class VisualGridTestScreen {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -58,7 +58,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_autoSelectOnCreateCheckBox = new System.Windows.Forms.CheckBox();
 			_crudComboBox = new Windows.Forms.Crud.CrudComboBox();
 			_flagsCheckedListBox = new FlagsCheckedListBox();
-			_crudGrid = new CrudGrid();
+			_visualGrid = new VisualGrid();
 			_allowCellEditingCheckBox = new System.Windows.Forms.CheckBox();
 			_refreshEntireGridOnUpdateCheckBox = new System.Windows.Forms.CheckBox();
 			_refreshEntireGridOnDeleteCheckBox = new System.Windows.Forms.CheckBox();
@@ -67,7 +67,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_contentTabs = new TabControl();
 			_editingTab = new TabPage();
 			_liveTab = new TabPage();
-			_liveGrid = new CrudGrid();
+			_liveGrid = new VisualGrid();
 			_liveActions = new FlowLayoutPanel();
 			_liveOptions = new FlowLayoutPanel();
 			_liveUpdatesCheckBox = new CheckBox();
@@ -97,9 +97,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_liveActions.SuspendLayout();
 			_liveOptions.SuspendLayout();
 			SuspendLayout();
-			// 
+			//
 			// _outputTextBox
-			// 
+			//
 			_outputTextBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 			_outputTextBox.Location = new System.Drawing.Point(14, 680);
 			_outputTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -110,9 +110,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_outputTextBox.Name = "_outputTextBox";
 			_outputTextBox.Size = new System.Drawing.Size(1077, 94);
 			_outputTextBox.TabIndex = 2;
-			// 
+			//
 			// _generateDeleteErrorCheckBox
-			// 
+			//
 			_generateDeleteErrorCheckBox.AutoSize = true;
 			_generateDeleteErrorCheckBox.Location = new System.Drawing.Point(19, 248);
 			_generateDeleteErrorCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -122,9 +122,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_generateDeleteErrorCheckBox.Text = "Generate delete error";
 			_generateDeleteErrorCheckBox.UseVisualStyleBackColor = true;
 			_generateDeleteErrorCheckBox.CheckedChanged += _generateDeleteErrorCheckBox_CheckedChanged;
-			// 
+			//
 			// _crudDialogButton
-			// 
+			//
 			_crudDialogButton.Location = new System.Drawing.Point(20, 614);
 			_crudDialogButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_crudDialogButton.Name = "_crudDialogButton";
@@ -133,9 +133,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_crudDialogButton.Text = "Test CRUD Dialog";
 			_crudDialogButton.UseVisualStyleBackColor = true;
 			_crudDialogButton.Click += _crudDialogButton_Click;
-			// 
+			//
 			// _generateCreateErrorCheckBox
-			// 
+			//
 			_generateCreateErrorCheckBox.AutoSize = true;
 			_generateCreateErrorCheckBox.Location = new System.Drawing.Point(19, 275);
 			_generateCreateErrorCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -145,9 +145,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_generateCreateErrorCheckBox.Text = "Generate create error";
 			_generateCreateErrorCheckBox.UseVisualStyleBackColor = true;
 			_generateCreateErrorCheckBox.CheckedChanged += _generateCreateErrorCheckBox_CheckedChanged;
-			// 
+			//
 			// _generateUpdateErrorCheckBox
-			// 
+			//
 			_generateUpdateErrorCheckBox.AutoSize = true;
 			_generateUpdateErrorCheckBox.Location = new System.Drawing.Point(19, 301);
 			_generateUpdateErrorCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -157,9 +157,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_generateUpdateErrorCheckBox.Text = "Generate update error";
 			_generateUpdateErrorCheckBox.UseVisualStyleBackColor = true;
 			_generateUpdateErrorCheckBox.CheckedChanged += _createUpdateErrorCheckBox_CheckedChanged;
-			// 
+			//
 			// _selectFirstEntityButton
-			// 
+			//
 			_selectFirstEntityButton.Location = new System.Drawing.Point(20, 581);
 			_selectFirstEntityButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_selectFirstEntityButton.Name = "_selectFirstEntityButton";
@@ -168,9 +168,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_selectFirstEntityButton.Text = "Select First Entity";
 			_selectFirstEntityButton.UseVisualStyleBackColor = true;
 			_selectFirstEntityButton.Click += _selectFirstEntityButton_Click;
-			// 
+			//
 			// _rightClickCheckBox
-			// 
+			//
 			_rightClickCheckBox.AutoSize = true;
 			_rightClickCheckBox.Location = new System.Drawing.Point(19, 354);
 			_rightClickCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -180,9 +180,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_rightClickCheckBox.Text = "Right click for menu";
 			_rightClickCheckBox.UseVisualStyleBackColor = true;
 			_rightClickCheckBox.CheckedChanged += _rightClickCheckBox_CheckedChanged;
-			// 
+			//
 			// _leftClickCheckBox
-			// 
+			//
 			_leftClickCheckBox.AutoSize = true;
 			_leftClickCheckBox.Checked = true;
 			_leftClickCheckBox.Location = new System.Drawing.Point(19, 328);
@@ -193,9 +193,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_leftClickCheckBox.Text = "Left click to deselect";
 			_leftClickCheckBox.UseVisualStyleBackColor = true;
 			_leftClickCheckBox.CheckedChanged += _leftClickCheckBox_CheckedChanged;
-			// 
+			//
 			// _refreshGrid
-			// 
+			//
 			_refreshGrid.Location = new System.Drawing.Point(20, 547);
 			_refreshGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			_refreshGrid.Name = "_refreshGrid";
@@ -204,9 +204,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_refreshGrid.Text = "Refresh Grid";
 			_refreshGrid.UseVisualStyleBackColor = true;
 			_refreshGrid.Click += _refreshGrid_Click;
-			// 
+			//
 			// _autoSizeCheckBox
-			// 
+			//
 			_autoSizeCheckBox.AutoSize = true;
 			_autoSizeCheckBox.Location = new System.Drawing.Point(19, 378);
 			_autoSizeCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -216,9 +216,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_autoSizeCheckBox.Text = "Auto page size";
 			_autoSizeCheckBox.UseVisualStyleBackColor = true;
 			_autoSizeCheckBox.CheckedChanged += _autoSizeCheckBox_CheckedChanged;
-			// 
+			//
 			// _autoSelectOnCreateCheckBox
-			// 
+			//
 			_autoSelectOnCreateCheckBox.AutoSize = true;
 			_autoSelectOnCreateCheckBox.Location = new System.Drawing.Point(19, 405);
 			_autoSelectOnCreateCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -228,9 +228,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_autoSelectOnCreateCheckBox.Text = "Auto select on create";
 			_autoSelectOnCreateCheckBox.UseVisualStyleBackColor = true;
 			_autoSelectOnCreateCheckBox.CheckedChanged += _autoSelectOnCreateCheckBox_CheckedChanged_1;
-			// 
+			//
 			// _crudComboBox
-			// 
+			//
 			_crudComboBox.AllowResizeDropDown = true;
 			_crudComboBox.ControlSize = new System.Drawing.Size(524, 306);
 			_crudComboBox.DropDownSizeMode = CustomComboBox.SizeMode.UseInitialControlSize;
@@ -242,9 +242,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_crudComboBox.Size = new System.Drawing.Size(146, 23);
 			_crudComboBox.TabIndex = 5;
 			_crudComboBox.EntitySelectionChanged += _crudComboBox_EntitySelectionChanged;
-			// 
+			//
 			// _flagsCheckedListBox
-			// 
+			//
 			_flagsCheckedListBox.BackColor = System.Drawing.SystemColors.Control;
 			_flagsCheckedListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			_flagsCheckedListBox.CheckOnClick = true;
@@ -255,31 +255,31 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_flagsCheckedListBox.Size = new System.Drawing.Size(194, 218);
 			_flagsCheckedListBox.TabIndex = 1;
 			_flagsCheckedListBox.SelectedValueChanged += _flagsCheckedListBox_SelectedValueChanged;
-			// 
-			// _crudGrid
-			// 
-			_crudGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_crudGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			_crudGrid.Dock = DockStyle.Fill;
-			_crudGrid.GridTitle = "Employees";
-			_crudGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
-			_crudGrid.Capabilities = DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanRead;
-			_crudGrid.Location = new System.Drawing.Point(217, 15);
-			_crudGrid.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
-			_crudGrid.MinimumSize = new System.Drawing.Size(372, 100);
-			_crudGrid.Name = "_crudGrid";
-			_crudGrid.RightClickForContextMenu = false;
-			_crudGrid.Size = new System.Drawing.Size(876, 659);
-			_crudGrid.TabIndex = 0;
-			_crudGrid.EntitySelected += _crudGrid_EntitySelected;
-			_crudGrid.EntityDeselected += _crudGrid_EntityDeselected;
-			_crudGrid.EntityCreated += _crudGrid_EntityCreated;
-			_crudGrid.EntityUpdated += _crudGrid_EntityUpdated;
-			_crudGrid.EntityDeleted += _crudGrid_EntityDeleted;
-			_crudGrid.EntityPropertyChanged += _crudGrid_EntityEditing;
-			// 
+			//
+			// _visualGrid
+			//
+			_visualGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			_visualGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			_visualGrid.Dock = DockStyle.Fill;
+			_visualGrid.GridTitle = "Employees";
+			_visualGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
+			_visualGrid.Capabilities = DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanRead;
+			_visualGrid.Location = new System.Drawing.Point(217, 15);
+			_visualGrid.Margin = new System.Windows.Forms.Padding(5, 3, 5, 3);
+			_visualGrid.MinimumSize = new System.Drawing.Size(372, 100);
+			_visualGrid.Name = "_crudGrid";
+			_visualGrid.RightClickForContextMenu = false;
+			_visualGrid.Size = new System.Drawing.Size(876, 659);
+			_visualGrid.TabIndex = 0;
+			_visualGrid.EntitySelected += _visualGrid_EntitySelected;
+			_visualGrid.EntityDeselected += _visualGrid_EntityDeselected;
+			_visualGrid.EntityCreated += _visualGrid_EntityCreated;
+			_visualGrid.EntityUpdated += _visualGrid_EntityUpdated;
+			_visualGrid.EntityDeleted += _visualGrid_EntityDeleted;
+			_visualGrid.EntityPropertyChanged += _visualGrid_EntityEditing;
+			//
 			// _allowCellEditingCheckBox
-			// 
+			//
 			_allowCellEditingCheckBox.AutoSize = true;
 			_allowCellEditingCheckBox.Location = new System.Drawing.Point(19, 432);
 			_allowCellEditingCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -289,9 +289,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_allowCellEditingCheckBox.Text = "Allow cell editing";
 			_allowCellEditingCheckBox.UseVisualStyleBackColor = true;
 			_allowCellEditingCheckBox.CheckedChanged += _allowCellEditingCheckBox_CheckedChanged;
-			// 
+			//
 			// _refreshEntireGridOnUpdateCheckBox
-			// 
+			//
 			_refreshEntireGridOnUpdateCheckBox.AutoSize = true;
 			_refreshEntireGridOnUpdateCheckBox.Location = new System.Drawing.Point(19, 458);
 			_refreshEntireGridOnUpdateCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -301,9 +301,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_refreshEntireGridOnUpdateCheckBox.Text = "Refresh entire grid on update";
 			_refreshEntireGridOnUpdateCheckBox.UseVisualStyleBackColor = true;
 			_refreshEntireGridOnUpdateCheckBox.CheckedChanged += _refreshEntireGridOnUpdateCheckBox_CheckedChanged;
-			// 
+			//
 			// _refreshEntireGridOnDeleteCheckBox
-			// 
+			//
 			_refreshEntireGridOnDeleteCheckBox.AutoSize = true;
 			_refreshEntireGridOnDeleteCheckBox.Location = new System.Drawing.Point(19, 485);
 			_refreshEntireGridOnDeleteCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -341,7 +341,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_editingTab.Text = "Editable Records";
 			_editingTab.BackColor = SystemColors.Control;
 			_editingTab.Padding = new Padding(3);
-			_editingTab.Controls.Add(_crudGrid);
+			_editingTab.Controls.Add(_visualGrid);
 			_liveTab.Name = "_liveTab";
 			_liveTab.Text = "Live Snapshots";
 			_liveTab.BackColor = SystemColors.Control;
@@ -351,7 +351,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_liveGrid.GridTitle = "Background Snapshot Samples";
 			_liveGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
 			_liveGrid.PersistSettings = false;
-			_liveGrid.PageMode = CrudGridPageMode.Auto;
+			_liveGrid.PageMode = VisualGridPageMode.Auto;
 			_liveGrid.PrepareReadOnlyCellsInBackground = true;
 			_liveGrid.SuppressLoadingIndicator = true;
 			_liveGrid.AutoSizeRowsOnRefresh = false;
@@ -479,9 +479,9 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_liveGrid.BringToFront();
 			_liveTimer.Interval = 750;
 			_liveTimer.Tick += LiveTimerTick;
-			// 
-			// CrudTestScreen
-			// 
+			//
+			// VisualGridTestScreen
+			//
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			_optionsPanel.Controls.Add(_refreshEntireGridOnDeleteCheckBox);
@@ -515,7 +515,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 			_liveOptions.ResumeLayout(false);
 			_liveOptions.PerformLayout();
 			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			Name = "CrudTestScreen";
+			Name = "VisualGridTestScreen";
 			Size = new System.Drawing.Size(1106, 789);
 			ResumeLayout(false);
 			PerformLayout();
@@ -523,7 +523,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 
 		#endregion
 
-		private Sphere10.Framework.Windows.Forms.CrudGrid _crudGrid;
+		private Sphere10.Framework.Windows.Forms.VisualGrid _visualGrid;
 		private Sphere10.Framework.Windows.Forms.FlagsCheckedListBox _flagsCheckedListBox;
 		private System.Windows.Forms.TextBox _outputTextBox;
 		private System.Windows.Forms.CheckBox _generateDeleteErrorCheckBox;
@@ -545,7 +545,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester {
 		private TabControl _contentTabs;
 		private TabPage _editingTab;
 		private TabPage _liveTab;
-		private CrudGrid _liveGrid;
+		private VisualGrid _liveGrid;
 		private FlowLayoutPanel _liveActions;
 		private FlowLayoutPanel _liveOptions;
 		private CheckBox _liveUpdatesCheckBox;

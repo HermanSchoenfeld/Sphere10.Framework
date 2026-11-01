@@ -9,28 +9,47 @@
 *@
 
 @using Sphere10.Framework.Application.UI
+@using Microsoft.Extensions.DependencyInjection
 @implements IDisposable
 @inject IBlazorApplicationScreenHost ScreenHost
+@inject IServiceProvider Services
 
+@if (!SettingsReady) {
+	<p role="status">Loading screen preferences…</p>
+} else {
 @foreach (var session in ScreenHost.Screens) {
 	var hasTab = ScreenHost.ScreenMode == ScreenMode.MultiView && ScreenHost.OpenScreens.Contains(session);
 	<section @key="session.Id" id="@($"screen-{session.Id:N}")" hidden="@(ScreenHost.ActiveScreen != session)" aria-label="@session.Title" role="@(hasTab ? "tabpanel" : null)" aria-labelledby="@(hasTab ? $"tab-{session.Id:N}" : null)" class="sphere10-screen">
+		@if (session.Screen is BlazorApplicationScreen { SettingsError: { } settingsError }) {
+			<p role="alert">Preferences could not be applied or saved. @settingsError</p>
+		}
 		<CascadingValue Value="session" IsFixed="true">
 			<DynamicComponent Type="session.ScreenType" Parameters="session.Parameters" />
 		</CascadingValue>
 	</section>
 }
+}
 
 @code {
 	private bool _disposed;
+	private IBlazorApplication _application;
+
+	// Operational components never mount during prerender while browser/user restoration is still pending.
+	private bool SettingsReady => _application == null || _application.Settings.IsInitialized
+		|| !_application.Settings.Profiles.Any(profile => profile.HasOptions);
 
 	protected override void OnInitialized() {
+		_application = Services.GetService<IBlazorApplication>();
+		if (_application != null)
+			_application.Initialized += OnHostChanged;
 		ScreenHost.Changed += OnHostChanged;
 	}
 
 	public void Dispose() {
 		_disposed = true;
 		ScreenHost.Changed -= OnHostChanged;
+		if (_application != null)
+			_application.Initialized -= OnHostChanged;
 	}
 
 	private void OnHostChanged() {

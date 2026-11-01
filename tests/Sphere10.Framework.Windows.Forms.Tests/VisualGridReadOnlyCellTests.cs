@@ -27,16 +27,16 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridReadOnlyCellTests {
+public class VisualGridReadOnlyCellTests {
 	[TestCase(false, true, true)]
 	[TestCase(true, false, true)]
 	[TestCase(true, true, false)]
 	public void LargeReadOnlyTextPagesHaveNoEditorControlsOrPersistenceControllers(bool allowEditing, bool columnEditable, bool canUpdate) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
-		crud.PageMode = CrudGridPageMode.Single;
+		crud.PageMode = VisualGridPageMode.Single;
 		crud.AllowCellEditing = allowEditing;
 		var rows = Enumerable.Range(0, 512).Select(index => new Row { Value = $"Item {index}", HasValue = index % 5 != 0 }).ToArray();
-		crud.GridBindings = Enumerable.Range(0, 8).Select(index => new CrudGridColumn<Row> {
+		crud.GridBindings = Enumerable.Range(0, 8).Select(index => new VisualGridColumn<Row> {
 			ColumnName = $"Column {index}", DataType = typeof(string), CanEditCell = columnEditable,
 			PropertyHasValue = row => row.HasValue, PropertyValue = row => row.Value, SetPropertyValue = (row, value) => row.Value = value
 		}).ToArray();
@@ -57,7 +57,7 @@ public class CrudGridReadOnlyCellTests {
 	public void ReadOnlyTextRetainsCustomTypeConverterFormattingAndNullHandling() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		var rows = new[] { new Row { Value = new DisplayValue { Number = 42 } }, new Row { Value = null } };
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Converted", DataType = typeof(DisplayValue), PropertyValue = row => row.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Converted", DataType = typeof(DisplayValue), PropertyValue = row => row.Value } };
 		await crud.SetDataSource(new ListDataSource<Row>(new ExtendedList<Row>(rows)));
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
@@ -74,11 +74,11 @@ public class CrudGridReadOnlyCellTests {
 		using var crud = NewGrid(owner);
 		Assert.That(crud.AutoSizeRowsOnRefresh, Is.True);
 		crud.AutoSizeRowsOnRefresh = autoSizeOnRefresh;
-		crud.PageMode = CrudGridPageMode.Single;
+		crud.PageMode = VisualGridPageMode.Single;
 		var row = new Row { Value = "First value" };
 		var source = new SnapshotDataSource<Row>();
 		source.ReplaceSnapshot(new[] { row });
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
@@ -97,12 +97,12 @@ public class CrudGridReadOnlyCellTests {
 	public void PreservedRowsStillMeasureNewRowsAndChangedImageHeightsAndDoNotOwnImages() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		crud.AutoSizeRowsOnRefresh = false;
-		crud.PageMode = CrudGridPageMode.Single;
+		crud.PageMode = VisualGridPageMode.Single;
 		using var small = new Bitmap(16, 16);
 		using var large = new Bitmap(16, 64);
 		var source = new SnapshotDataSource<Row>();
 		source.ReplaceSnapshot(new[] { new Row { Value = small } });
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Image", DisplayType = CrudCellDisplayType.Image, PropertyValue = entity => entity.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Image", DisplayType = CrudCellDisplayType.Image, PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
@@ -128,7 +128,7 @@ public class CrudGridReadOnlyCellTests {
 		var row = new Row { Value = "Single line" };
 		var source = new SnapshotDataSource<Row>();
 		source.ReplaceSnapshot(new[] { row });
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
@@ -146,7 +146,7 @@ public class CrudGridReadOnlyCellTests {
 		await crud.RefreshGrid();
 		Assert.That(native.Rows[1].Height, Is.GreaterThan(largeHeight), "Multiline cells never reuse single-line measurements.");
 		row.Value = "Single again";
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Replacement", DataType = typeof(string), PropertyValue = entity => entity.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Replacement", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.RefreshGrid();
 		Assert.That(native.Rows[1].Height, Is.EqualTo(largeHeight));
 	});
@@ -162,7 +162,7 @@ public class CrudGridReadOnlyCellTests {
 		var row = new Row { Value = initiallyHasValue ? string.Empty : "Initially hidden", HasValue = initiallyHasValue };
 		var source = new SnapshotDataSource<Row>();
 		source.ReplaceSnapshot(new[] { row });
-		crud.GridBindings = new[] { new CrudGridColumn<Row> {
+		crud.GridBindings = new[] { new VisualGridColumn<Row> {
 			ColumnName = "Value", DataType = typeof(string), PropertyHasValue = entity => entity.HasValue, PropertyValue = entity => entity.Value
 		} };
 		await crud.SetDataSource(source, source.Capabilities);
@@ -189,7 +189,7 @@ public class CrudGridReadOnlyCellTests {
 		var row = new Row { Value = "Short" };
 		var source = new SnapshotDataSource<Row>();
 		source.ReplaceSnapshot(new[] { row });
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = entity => entity.Value } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		var native = FindGrid(crud);
@@ -207,10 +207,10 @@ public class CrudGridReadOnlyCellTests {
 		var row = new Row { Value = "Original" };
 		var source = new ListDataSource<Row>(new ExtendedList<Row>(new[] { row }));
 		crud.GridBindings = new[] {
-			new CrudGridColumn<Row> {
+			new VisualGridColumn<Row> {
 				ColumnName = "Editable", DataType = typeof(string), CanEditCell = true, PropertyValue = entity => entity.Value, SetPropertyValue = (entity, value) => entity.Value = value
 			},
-			new CrudGridColumn<Row> { ColumnName = "Always read only", DataType = typeof(string), CanEditCell = false, PropertyValue = entity => entity.Value }
+			new VisualGridColumn<Row> { ColumnName = "Always read only", DataType = typeof(string), CanEditCell = false, PropertyValue = entity => entity.Value }
 		};
 		await crud.SetDataSource(source, grantCapability ? CrudReferenceBinding.ReadOnlyCapabilities : DataSourceCapabilities.Default);
 		await crud.RefreshGrid();
@@ -246,7 +246,7 @@ public class CrudGridReadOnlyCellTests {
 		crud.AllowCellEditing = true;
 		var row = new Row { Value = "Original" };
 		crud.GridBindings = new[] {
-			new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), CanEditCell = true, PropertyValue = entity => entity.Value, SetPropertyValue = (entity, value) => entity.Value = value }
+			new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), CanEditCell = true, PropertyValue = entity => entity.Value, SetPropertyValue = (entity, value) => entity.Value = value }
 		};
 		await crud.SetDataSource(new ListDataSource<Row>(new ExtendedList<Row>(new[] { row })));
 		await crud.RefreshGrid();
@@ -271,16 +271,16 @@ public class CrudGridReadOnlyCellTests {
 		Assert.That(row.Value, Is.EqualTo("Original"), "A direct display value change after revocation must not write through the old controller.");
 	});
 
-	private static CrudGrid NewGrid(Form owner) {
-		var crud = new CrudGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true };
+	private static VisualGrid NewGrid(Form owner) {
+		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true };
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static Grid FindGrid(CrudGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
+	private static Grid FindGrid(VisualGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
 
 	private static bool HasPersistenceController(ICellVirtual cell)
-		=> cell.FindController(typeof(CrudGrid).Assembly.GetType("Sphere10.Framework.Windows.Forms.UpdateEntityOnValueChangedController", true)) != null;
+		=> cell.FindController(typeof(VisualGrid).Assembly.GetType("Sphere10.Framework.Windows.Forms.UpdateEntityOnValueChangedController", true)) != null;
 
 	private static void RunWithMessageLoop(Func<Form, Task> test) {
 		Exception failure = null;

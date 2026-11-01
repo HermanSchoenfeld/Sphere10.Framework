@@ -85,7 +85,7 @@ public static class SqlServerConnectionUi {
 
 ## Shared provider selection
 
-To use the generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`, add `Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration` with `UseModule<TModule>()` in the existing framework startup builder, before starting the application and creating those generic controls. This registers named transient bars and panels under `nameof(DBMSType.SQLServer)`.
+To use the generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`, add `Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration` with `AddModule<TModule>()` in the existing framework startup builder, before starting the application and creating those generic controls. This registers named transient bars and panels under `nameof(DBMSType.SQLServer)`.
 
 After startup, set `SelectedDBMSType = DBMSType.SQLServer` before assigning the generic control's `ConnectionString`. Merely referencing the NuGet package does not register the services. A directly constructed `MSSQLConnectionBar` or `MSSQLConnectionPanel` does not need this provider lookup.
 

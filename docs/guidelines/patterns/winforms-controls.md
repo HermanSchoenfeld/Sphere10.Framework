@@ -29,7 +29,7 @@ worker.
 | Choose optional file/application/screen/stdout/stderr logging, options and rolling output | `LogOutputSelectorControl` |
 | Choose a database engine and edit its connection | `DatabaseConnectionPanel` or `DatabaseConnectionBar`, with provider modules registered |
 | Edit a specific SQL Server, SQLite or Firebird connection | The matching concrete provider panel/bar |
-| Display/search/page/edit entity records | `CrudGrid` with `IDataSource<T>` |
+| Display/search/page/edit entity records | `VisualGrid` with `IDataSource<T>` |
 | Choose an existing related record | `CrudReferenceBinding<T>` and its `CrudReferencePicker` |
 | Show a grid in a dropdown | `CrudComboBox` |
 | Select an enum or combined flags | `EnumComboBox` or `FlagsCheckedListBox` |
@@ -117,7 +117,7 @@ Read settings/call the control on the UI thread, await the test, and inspect
 
 The generic selectors use the running framework's named provider services. Add
 the matching UI provider `ModuleConfiguration` through the existing startup
-builder's `UseModule<TModule>()` **before** constructing them. Referencing a package
+builder's `AddModule<TModule>()` **before** constructing them. Referencing a package
 alone does not register these services. They select only registered engines;
 `IgnoreDBMS` can hide further choices. Set `SelectedDBMSType` before assigning
 `ConnectionString`. A concrete provider control can instead be constructed
@@ -160,23 +160,23 @@ requires.
 
 | Component | Use and API |
 |---|---|
-| [CrudGrid](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGrid.cs) | `GridBindings` of `CrudGridColumn<T>`, `SetDataSource<T>(IDataSource<T>, capabilities)`, `RefreshGrid()`, record create/edit/delete operations, selected entity, search/sort/paging and optional inline edits. These task-returning methods retain their established names without `Async` suffixes. Source capabilities and supplied permission masks are intersected at binding. |
-| [CrudGridColumn<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridColumn.cs) | Actual typed value getter/setter, display type, header, sort name, property path, per-cell edit/availability, command actions and explicit `ExpandsToFit`. `CrudCellDisplayType.Image` uses a borrowed read-only image; the owning cache/consumer must keep it alive while displayed. |
-| [CrudComboBox](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudComboBox.cs) | Namespace `Sphere10.Framework.Windows.Forms.Crud`. A `CustomComboBox` with a full CrudGrid dropdown; await `SetCrudParameters<T>(...)`, configure display delegate, `MaximumDropDownSize`, selected entity and auto-hide behavior. Supply an already constrained source capability mask. |
-| [CrudReferenceBinding<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudReferenceBinding.cs) | Describe an eligible related-record source, picker columns, shallow display text, null policy and fixed popup bounds. Share the binding with inline columns and the property-grid editor through property paths. |
-| [CrudReferencePicker](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudReferencePicker.cs) and [CrudReferenceEditor](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudReferenceEditor.cs) | Read/search/page existing records while preserving selected object identity. Load asynchronously; accept/cancel/clear selection according to the binding. These are reference editors, not ownership-graph editors. |
-| [DefaultCrudEntityEditor](../../../src/Sphere10.Framework.Windows.Forms/Crud/DefaultCrudEntityEditor.cs) | Property-grid editing, session-local descriptors, related-record bindings, owned-object expansion, changed values and undo/accept. Implements `ICrudEntityEditor<object>`. |
-| [CrudEntityEditorDialog](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudEntityEditorDialog.cs) | Owns editor presentation, save/delete/validation/cancel decisions for the supplied data source and entity. |
-| [CrudDialog](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudDialog.cs) | `ShowAsync<T>(...)` for a complete CRUD grid dialog, with optional custom entity editor. |
-| [CrudGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridSnapshotController.cs), [ICrudGridSnapshotController](../../../src/Sphere10.Framework.Windows.Forms/Crud/ICrudGridSnapshotController.cs) | Typed nonvisual collection/binding for a concrete designer surface. Caller-supplied async collector, identity and optional value formatter; typed `Rows`, `Count`, `SetDefaultSort`, `RefreshAsync` and `CaptureSnapshot`. Serializes refreshes and preserves selection across replacement instances. Use an existing core `SnapshotDataSource<T>` through its constructor overload when appropriate; export policy stays with the caller. |
-| [CrudGridSettings](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridSettings.cs) and [grid settings integration](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGrid.cs) | Reuse `PersistSettings`/`SettingsKey` for accepted manual paging, automatic sizing choice and sorting preferences. See the settings practice for lifecycle and IDs. |
+| [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs) | `GridBindings` of `VisualGridColumn<T>`, `SetDataSource<T>(IDataSource<T>, capabilities)`, `RefreshGrid()`, record create/edit/delete operations, selected entity, search/sort/paging and optional inline edits. These task-returning methods retain their established names without `Async` suffixes. Source capabilities and supplied permission masks are intersected at binding. |
+| [VisualGridColumn<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridColumn.cs) | Actual typed value getter/setter, display type, header, sort name, property path, per-cell edit/availability, command actions and explicit `ExpandsToFit`. `CrudCellDisplayType.Image` uses a borrowed read-only image; the owning cache/consumer must keep it alive while displayed. |
+| [CrudComboBox](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudComboBox.cs) | Namespace `Sphere10.Framework.Windows.Forms.Crud`. A `CustomComboBox` with a full VisualGrid dropdown; await `SetCrudParameters<T>(...)`, configure display delegate, `MaximumDropDownSize`, selected entity and auto-hide behavior. Supply an already constrained source capability mask. |
+| [CrudReferenceBinding<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudReferenceBinding.cs) | Describe an eligible related-record source, picker columns, shallow display text, null policy and fixed popup bounds. Share the binding with inline columns and the property-grid editor through property paths. |
+| [CrudReferencePicker](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudReferencePicker.cs) and [CrudReferenceEditor](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudReferenceEditor.cs) | Read/search/page existing records while preserving selected object identity. Load asynchronously; accept/cancel/clear selection according to the binding. These are reference editors, not ownership-graph editors. |
+| [DefaultCrudEntityEditor](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/DefaultCrudEntityEditor.cs) | Property-grid editing, session-local descriptors, related-record bindings, owned-object expansion, changed values and undo/accept. Implements `ICrudEntityEditor<object>`. |
+| [CrudEntityEditorDialog](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudEntityEditorDialog.cs) | Owns editor presentation, save/delete/validation/cancel decisions for the supplied data source and entity. |
+| [CrudDialog](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/CrudDialog.cs) | `ShowAsync<T>(...)` for a complete CRUD grid dialog, with optional custom entity editor. |
+| [VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs), [IVisualGridSnapshotController](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/IVisualGridSnapshotController.cs) | Typed nonvisual collection/binding for a concrete designer surface. Caller-supplied async collector, identity and optional value formatter; typed `Rows`, `Count`, `SetDefaultSort`, `RefreshAsync` and `CaptureSnapshot`. Serializes refreshes and preserves selection across replacement instances. Use an existing core `SnapshotDataSource<T>` through its constructor overload when appropriate; export policy stays with the caller. |
+| [VisualGridSettings](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSettings.cs) and [grid settings integration](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGrid.cs) | Reuse `PersistSettings`/`SettingsKey` for accepted manual paging, automatic sizing choice and sorting preferences. See the settings practice for lifecycle and IDs. |
 
 Use the [WinForms project guide](../../../src/Sphere10.Framework.Windows.Forms/README.md)
 for capability masks, complete-row automatic page sizing, refresh completion,
 reference identity, editor commit/undo and fixed dropdown sizing. Use an existing sync/async
 `IDataSource<T>` base according to the source's execution direction; see
 [data-source practice](data-sources.md). Diagnostic/read-only tables still use
-CrudGrid with restricted capabilities. `VisibleEntities` represents the current
+VisualGrid with restricted capabilities. `VisibleEntities` represents the current
 page, not the full collection.
 
 For grid-driven screens, follow the [row-action toolbar/context-menu rule](winforms-designer.md#row-actions-on-grid-screens).
@@ -184,7 +184,7 @@ Expose custom row tools in the screen toolbar as well as by right-click, sharing
 their handlers and selection-dependent availability. Standard CRUD actions may
 remain in the grid/context menu according to the screen's workflow.
 
-The [CrudTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/CrudTestScreen.cs)
+The [VisualGridTestScreen](../../../utils/Sphere10.Framework.Utils.WinFormsTester/Screens/VisualGridTestScreen.cs)
 demonstrates the complete editing path. Core's
 [SnapshotDataSource<T>](../../../src/Sphere10.Framework/DataSource/SnapshotDataSource.cs)
 supplies platform-neutral snapshot queries, and Windows'
@@ -289,7 +289,7 @@ from the framework's background job scheduler.
 ## Bundled grid and editor infrastructure
 
 SourceGrid/DevAge visual components are included under the WinForms assembly's
-`SourceGrid` namespaces. Prefer the framework's CrudGrid for application record
+`SourceGrid` namespaces. Prefer the framework's VisualGrid for application record
 tables. Lower-level components remain appropriate when implementing a custom
 cell presentation or a specialized existing grid, not to duplicate CRUD paging,
 editing or reference selection.

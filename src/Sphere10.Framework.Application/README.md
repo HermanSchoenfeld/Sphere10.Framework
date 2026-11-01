@@ -56,7 +56,7 @@ public sealed class UsersScreen : IApplicationScreen {
 }
 ```
 
-`AddMenu` registers each screen command's definition on the block and assigns the menu's `Parent`. `AddItem` assigns the item's `Parent` and updates its definition's reverse activator membership. Removing membership clears that parent; transferring a menu or item requires removing it from its current owner first. Removing a menu leaves its block-owned screens available for direct activation. `IApplicationBlock.Parent` identifies the running application, while `Source` identifies its original startup plugin; standalone blocks have no source plugin. UI services activate a screen command through `item.Parent.Parent`.
+Register screens independently through the owning block builder's `AddScreen` methods. `AddMenu` assigns the menu's `Parent`; it never registers screens. `AddItem` assigns the item's `Parent` and updates a resolved definition's reverse activator membership. Removing membership clears that parent; transferring a menu or item requires removing it from its current owner first. Removing a menu leaves its block-owned screens available for direct activation. `IApplicationBlock.Parent` identifies the running application, while `Source` identifies its original startup plugin; standalone blocks have no source plugin. UI services activate a screen command through `item.Parent.Parent`.
 
 | Runtime relationship | Property |
 |---|---|
@@ -67,15 +67,101 @@ public sealed class UsersScreen : IApplicationScreen {
 
 Use these object relationships when executing commands or accessing application services. Pass the registered command object to `ExecuteMenuItemAsync(item, cancellationToken)`; retained screens use their own `Host` and `Block`. A screen definition's `Activators` is reverse command membership, while a screen instance's ownership is maintained by its host.
 
-Block builders collect definitions introduced by child menu builders, explicit `AddScreenDefinition` calls and `WithDefaultScreen` configuration. Snapshot factories clone definition metadata once per source reference in each copied graph. Its default, commands and activators use the same canonical cloned objects; separate snapshots have independent parents and reverse membership. `WithTitle` and `WithActivationMode` create metadata variants with no copied activators. Blazor owns named IDs, reserved routing IDs, parameter copies and lookup validation; the shared models require none of these.
+Block builders collect explicit `AddScreen` registrations; `WithDefaultScreen` references an existing registration. Screens own their title, activation policy, platform activator and persistent key. Menu and toolbar items own command presentation and refer to those registrations. `AddShowScreenItem<TScreen>()` selects the first registration of that type in the owning block's declaration order. The exact-registration overload selects its supplied moniker. Programmatic type lookups and type-based default selection require one unambiguous registration.
+
+The primary callback form returns the parent builder. Its optional reference overload takes the configuration callback first and `out registration` second; callers without a use for the reference use the ordinary overload. `ApplicationScreenRegistration<TScreen>` is an immutable identity token, never a screen instance or a reference retargeted to the latest built graph. Snapshot factories call `ApplicationScreenDefinition.Clone()` once per source definition in each copied graph. Its default, commands and activators use the same canonical cloned objects; separate snapshots have independent parents and reverse membership. Platform definitions override `Clone()` to retain their activation metadata. `WithTitle` and `WithActivationMode` copy through that virtual method and start with no copied activators.
+
+`host.OpenScreenAsync(block, registration)` resolves a source moniker within the supplied block's current graph and follows the normal host lifecycle. Singletons are retained per owning block and registration, so two registrations of the same screen type can use different policies and activators. A sibling's explicit policy never supplies another registration's omitted policy.
+
+Persistent identity is separate from the transient moniker token. `WithStableKey` supplies an explicit key; an unambiguous screen type gets an assembly-name/type-name key automatically. Duplicate screen types that need startup or settings persistence require explicit keys. Keys are independent of captions and construction order, and explicit keys cannot collide with another explicit or generated key in that block. `Tools.UI.GetScreenRegistrationKey` validates this at the persistence boundary. Ordinary registrations need no hand-written key. `AddPlugin`, `AddBlock`, `AddMenu` and `AddItem` also offer callback-first, `out`-second overloads that capture their configured definition products; these configuration references are distinct from runtime instances and graph-local screen monikers.
 
 `Menus`, `Items`, `ScreenDefinitions`, `Activators`, `Blocks` and `AvailableBlocks` return defensive arrays; modifying array slots cannot change stored membership. Copies preserve element references within their graph. Presentation command merging borrows the original command references and callbacks without changing their owning parents.
 
-`ApplicationScreenDefinition.ValidateDefinitions` checks a complete collection for valid screen types, activation modes, hosting kinds and conflicting declarations without changing metadata or membership. It accepts an optional platform type validator. The host validates a whole batch before updating its internal type-to-definition index and preserves a retained screen's captured lifetime. `IApplicationScreen` supplies writable `Host` and `Block` ownership slots, UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Owner-aware synchronous callbacks use `ApplicationAction.UIAction` and `Execute(IUserInterfaceServices)`; `ExecuteAsync` resolves those UI services from the executing provider. `PrimaryUIController` supplies the platform UI owner. Registration-time callbacks must not capture scoped services or mutable per-user state.
+`ApplicationScreenDefinition.ValidateDefinitions` checks a complete collection for valid screen types, activation modes and hosting kinds without changing metadata or membership. It accepts an optional platform type validator. `Tools.UI.ValidateScreenRegistrations` additionally checks a block's distinct registration tokens and persistent keys. The host validates a whole batch before changing host state and preserves each retained registration's captured lifetime. `IApplicationScreen` supplies writable `Host` and `Block` ownership slots, UI-independent help metadata, cancellation-aware activation/deactivation hooks and a navigation guard. `ApplicationAction.ExecuteAsync` receives the executing service provider and cancellation token; callbacks should resolve scoped services there. Owner-aware synchronous callbacks use `ApplicationAction.UIAction` and `Execute(IUserInterfaceServices)`; `ExecuteAsync` resolves those UI services from the executing provider. `PrimaryUIController` supplies the platform UI owner. Registration-time callbacks must not capture scoped services or mutable per-user state.
 
 The [WinForms adapter](../Sphere10.Framework.Windows.Forms/README.md) retains controls, images, UI-thread dispatch and desktop screen ownership. The [Blazor adapter](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) retains component validation, rendering, circuit scopes and browser interaction. Each supplies factories and platform validation to the shared engines. An ApplicationBlock describes navigation metadata; `ModuleConfiguration` continues to handle service registration and framework startup.
 
 The [Application test suite](../../tests/Sphere10.Framework.Application.Tests/README.md) exercises the shared behavior using ordinary .NET classes and checks the framework assembly dependency graph. [NuGet validation](../../scripts/package-consumers/README.md) also builds a consumer referencing only the Application package and rejects UI dependencies in its resolved packages and framework references.
+
+## Application and screen preferences
+
+Attach an ordinary object to a screen registration with `UseSettings`. The object
+contains editable values and useful defaults; no settings base class is required.
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+
+var definition = new ApplicationScreenBuilder<UsersScreen>()
+	.WithTitle("Users")
+	.UseSettings<UsersPreferences>()
+	.Build();
+
+[UserEditable]
+public class UsersPreferences {
+	public bool ShowArchived { get; set; }
+
+	[Range(1, 10000)]
+	public int PageSize { get; set; } = 100;
+}
+```
+
+Use `UseSettings(instance)` for an existing ordinary object, or
+`UseSettings(() => new UsersPreferences { PageSize = 50 })` for fresh factory
+defaults. Supplied instances are detached when declared, so later edits cannot
+change **Reset Defaults**. A supplied instance or factory can use a class whose
+constructor requires arguments. Factories construct only settings values;
+registration discovery never constructs the operational screen.
+
+Standard validation attributes and `IValidatableObject` validate ordinary
+objects. Existing `SettingsObject` classes remain supported and retain their
+`Validate()` method. Validate nested/grid sections explicitly where needed.
+`[UserEditable]` enables the automatic Options editor. Public properties can use
+`[ReadOnly(true)]` or `[Browsable(false)]` to opt out of editing without changing
+persistence. Explicit custom editors also work with unmarked classes.
+Stored values restore over the declared defaults: missing members retain their
+defaults, explicit collections replace defaults, and explicit null remains null.
+
+Native and web hosts provide **Options → Screen Options...**, including unopened
+and no-options registrations. Editors receive a detached ordinary value. Apply
+validates and awaits persistence; Reset changes only the provisional draft;
+Cancel discards unapplied nested/collection changes. Failed validation or storage
+keeps the draft and error available for retry. Custom native editors receive
+`WinFormsApplicationSettingsEditorContext.Settings`; web editors receive `Value`
+and an awaited `Changed` callback. They do not manage persistence.
+
+Read screen values through `GetSettings<T>()`. Bind named grid roles before their
+first query using the platform's grid preference helpers. A screen-owned grid
+uses its existing `VisualGridSettings` (native) or `BlazorGridSettings` (web)
+section instead of an independent
+record. Columns have stable keys, readable titles and optional manual widths in
+native logical 96-DPI units or web CSS pixels. Null restores natural sizing.
+Changes to preferences preserve the screen's operational/business draft.
+
+Application roots use `AddSettings` or
+`new ApplicationSettingsDefinition("sampling", "Sampling", settings)`.
+`WithSettingsKey` supplies the stable application namespace; same-type screen
+registrations use distinct `WithStableKey` values. Captions do not identify saved
+preferences. `ApplicationSettingsDefinition.WithStorageId` retains a compatible
+native legacy `SettingsObject` record, including an explicitly null ID. Native
+plain main forms can contribute roots through their existing DI composition.
+
+Internally, `IApplication.Settings` exposes the application-owned catalog used by
+the platform dialogs and screen helpers. Profiles hold accepted values; edit
+sessions hold provisional copies. Ordered saves publish only after persistence,
+reject stale instance captures and preserve newer local edits when an older own
+save completes. Stores serialize/encrypt only exclusive snapshots off the
+UI/renderer thread. Accepted close and approved finalization capture dirty values
+and await writes before provider disposal; hide, vetoed close and unchanged
+restoration/disposal do not save.
+
+Migration presence is separate from resettable values. A first control binding
+imports only an absent section; explicit Options Apply marks public root value
+members and declared grid paths present even for unopened controls. Reset cannot
+revive retired legacy values. Explicit legacy type/ID roots keep their original
+value-only format. The [Screen Options guide](../../docs/usage/screen-options.md)
+explains custom editors, ownership, adapters and failure/retry behavior.
 
 ## Application plugins
 
@@ -88,7 +174,7 @@ using Sphere10.Framework.Application.UI;
 var plugin = new ApplicationPluginBuilder()
 	.WithName("Administration")
 	.AddBlock(new WorkspaceBlock { Name = "Users" })
-	.ConfigureServices(services => services.AddSingleton<AdministrationSettings>())
+	.AddServices(services => services.AddSingleton<AdministrationSettings>())
 	.Build();
 
 var services = new ServiceCollection();
@@ -104,7 +190,7 @@ public class AdministrationSettings {
 
 Platform startup registrars publish an `ApplicationPluginRegistration<TPlugin>` only after loading the plugin, validating its finalized definitions and registering its blocks. They assign each registered block's `Source` to the original plugin. The immutable receipt retains that plugin and copies finalized block membership; constructing a receipt validates existing source ownership without changing it or invoking lifecycle methods. Application factories resolve this receipt inventory to supply `LoadedPlugins`; an unrelated plugin registered directly in DI does not become a loaded startup plugin. The framework does not currently connect plugin `Unload` to process shutdown, application disposal or Blazor circuit disposal.
 
-Startup registration rejects both duplicate successful plugin names and recursive attempts to load the same name. If registration fails, it discards newly added lifecycle task descriptors under the attempted name so a later successful plugin with that name cannot inherit abandoned tasks. Ordinary `ConfigureServices` side effects retain their existing behavior.
+Startup registration rejects both duplicate successful plugin names and recursive attempts to load the same name. If registration fails, it discards newly added lifecycle task descriptors under the attempted name so a later successful plugin with that name cannot inherit abandoned tasks. Ordinary `AddServices` side effects retain their existing behavior.
 
 `ApplicationPlugin` supports constructor configuration and init-only `Name`/`Blocks`; its arrays copy membership and retain block identity. Platform adapters can snapshot their own block metadata before forwarding it to shared storage. `ApplicationPluginBuilderBase<TBlock, TPlugin>` shares name validation, accumulated blocks, service callback composition and independent build inputs with typed platform builders. Empty applications and service-only plugins with no blocks are valid.
 
@@ -142,11 +228,11 @@ The convenience overloads use display captions; adapters can supply semantic key
 
 ## Application initialization and shutdown
 
-Call `WithName(...)` before `RegisterInitializer` or `RegisterFinalizer`, including their factory overloads. An unnamed plugin throws `InvalidOperationException` immediately without adding a deferred registration.
+Call `WithName(...)` before `AddInitializer` or `AddFinalizer`, including their factory overloads. An unnamed plugin throws `InvalidOperationException` immediately without adding a deferred registration.
 
 `IApplication` provides synchronous `Initialize()`, `Finalize()` and `Exit()` operations alongside awaited `InitializeAsync()`, `FinalizeAsync()` and `ExitAsync()` counterparts. Following the repository hierarchy, the interface and neutral `ApplicationBase` require both directions. Choose `SyncApplicationBase` for synchronous lifecycle work or `AsyncApplicationBase` for awaited lifecycle work. The directional base supplies the opposite API and disposal direction; shared state, notifications, coalescing and ownership remain in `ApplicationBase`.
 
-Application task inventories are protected implementation details of `ApplicationBase`. `IApplicationInitializer` / `IApplicationFinalizer` and their neutral bases declare both execution methods without interface implementations. Derive synchronous tasks from `SyncApplicationInitializerBase` / `SyncApplicationFinalizerBase` and override only `Initialize()` / `Finalize()`. Derive asynchronous tasks from `AsyncApplicationInitializerBase` / `AsyncApplicationFinalizerBase` and override only `InitializeAsync()` / `FinalizeAsync()`. Sync-first async adapters run the synchronous primitive on a worker using `Task.Run`. Async-first sync adapters start the asynchronous primitive outside the caller's synchronization context and block until completion, propagating errors. Plugins declare their application tasks through `RegisterInitializer<T>()` and `RegisterFinalizer<T>()`; platform plugin builders inherit these helpers. Ordinary service registrations continue to use `ConfigureServices`. Unkeyed registrations keep their existing process-wide `Sphere10Framework` lifetime and are not replayed by the application:
+Application task inventories are protected implementation details of `ApplicationBase`. `IApplicationInitializer` / `IApplicationFinalizer` and their neutral bases declare both execution methods without interface implementations. Derive synchronous tasks from `SyncApplicationInitializerBase` / `SyncApplicationFinalizerBase` and override only `Initialize()` / `Finalize()`. Derive asynchronous tasks from `AsyncApplicationInitializerBase` / `AsyncApplicationFinalizerBase` and override only `InitializeAsync()` / `FinalizeAsync()`. Sync-first async adapters run the synchronous primitive on a worker using `Task.Run`. Async-first sync adapters start the asynchronous primitive outside the caller's synchronization context and block until completion, propagating errors. Plugins declare their application tasks through `AddInitializer<T>()` and `AddFinalizer<T>()`; platform plugin builders inherit these helpers. Ordinary service registrations continue to use `AddServices`. Unkeyed registrations keep their existing process-wide `Sphere10Framework` lifetime and are not replayed by the application:
 
 ```csharp
 using System.Threading;
@@ -157,8 +243,8 @@ using Sphere10.Framework.Application.UI;
 
 var plugin = new ApplicationPluginBuilder()
 	.WithName("Workspace")
-	.RegisterInitializer<WorkspaceInitializer>()
-	.RegisterFinalizer<WorkspaceFinalizer>()
+	.AddInitializer<WorkspaceInitializer>()
+	.AddFinalizer<WorkspaceFinalizer>()
 	.Build();
 
 public sealed class WorkspaceInitializer : SyncApplicationInitializerBase {
@@ -257,7 +343,7 @@ The writable `ScreenMode` property supports safe configuration: the same value, 
 
 Permanent screens reject ordinary closure. `CanNavigateAsync` checks all retained screens. `NotifyScreenChanged(screen)` reports changes to a retained screen's title, commands or dirty state. The host's asynchronous engine serializes lifecycle work, checks cancellation before committing selection or removal, and propagates post-commit activation failures. Lifecycle callbacks must not await another transition on the same host.
 
-`ApplicationScreenHost<TBlock, TScreen>` shares registration, type policies, singleton retention, selection, ordering and guards. Its overridable `CreateScreen`, reuse and removal hooks let adapters own platform presentation. The neutral factory resolves or creates the actual screen through dependency injection. Native adapters create and own controls; Blazor keeps its renderer proxy, session GUIDs, runtime reuse keys, parameters and attachment bookkeeping in the Blazor library. Those presentation details do not enter the abstract host contract. Named routing IDs and lookup APIs live in Blazor. Shared menu merging uses display captions by default and accepts adapter-supplied key selectors when a platform needs another semantic identity.
+`ApplicationScreenHost<TBlock, TScreen>` shares registration-specific policies, singleton retention, selection, ordering and guards. Its overridable `CreateScreen`, reuse and removal hooks let adapters own platform presentation. The neutral factory resolves or creates the actual screen through dependency injection. Native adapters create and own controls; Blazor keeps its renderer proxy, session GUIDs, runtime reuse keys, parameters and attachment bookkeeping in the Blazor library. Those presentation details do not enter the abstract host contract. Named routing IDs and lookup APIs live in Blazor. Shared menu merging uses display captions by default and accepts adapter-supplied key selectors when a platform needs another semantic identity.
 
 `IUserInterfaceServices` provides application dialogs, status, reporting, exit, UI dispatch and menu/action execution. `ApplicationUserInterfaceServices` borrows the host for screen commands without retaining another block or screen collection. The neutral host uses a registered interaction service when available; otherwise it lazily owns one shared command-capable fallback. Host disposal releases that fallback and leaves registered services to their independent owner. Platform interaction implementations supply dialogs and native/browser dispatch.
 
@@ -271,16 +357,16 @@ The fluent methods live in this library. WinForms and Blazor inherit the same co
 
 | Shared base | Responsibility |
 |---|---|
-| `ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>` | Application title, existing plugins, `ConfigurePlugin(builder => ...)`, deferred application callbacks and a terminal `Build`. The platform registers or creates its host without the base resolving services. |
-| `ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>` | Plugin name, service callbacks, `RegisterInitializer<T>()`, `RegisterFinalizer<T>()`, existing blocks and `ConfigureBlock(builder => ...)`. |
-| `ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>` | Block metadata, default screen policy, existing menus and `ConfigureMenu(builder => ...)`. |
-| `ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu>` | Menu metadata, existing items and `ConfigureItem(builder => ...)`. |
-| `ApplicationMenuItemBuilderBase<TSelf>` | Screen/action selection, screen captions and instance policies. Platform factories reject unsupported item kinds. |
+| `ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>` | Application title, existing plugins, `AddPlugin(builder => ...)`, deferred application callbacks and a terminal `Build`. The platform registers or creates its host without the base resolving services. |
+| `ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>` | Plugin name, service callbacks, `AddInitializer<T>()`, `AddFinalizer<T>()`, existing blocks and `AddBlock(builder => ...)`. |
+| `ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock>` | Block metadata, default screen policy, existing menus and `AddMenu(builder => ...)`. |
+| `ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu>` | Menu metadata, existing items and `AddItem(builder => ...)`. |
+| `ApplicationMenuItemBuilderBase<TSelf>` | Command presentation, actions and references to independently registered screens. Platform factories reject unsupported item kinds. |
 | `WizardBuilderBase<TSelf, TModel, TStep, TWizard>` | Fluent wizard setup, reset, ordered steps, cancellation, callbacks and build validation. |
 
-`ConfigurePlugin`, `ConfigureBlock`, `ConfigureMenu` and `ConfigureItem` follow `ProtocolBuilder`: create a child builder, invoke its callback, call `Build()` and register the product through the corresponding `Add` method. `AddPlugin`, `AddBlock`, `AddMenu` and `AddItem` accept existing definitions. Convenience `Add` methods construct definitions directly from their arguments without invoking a child builder.
+`AddPlugin`, `AddBlock`, `AddMenu` and `AddItem` follow `ProtocolBuilder`: create a child builder, invoke its callback, call `Build()` and register the product through the corresponding `Add` method. `AddPlugin`, `AddBlock`, `AddMenu` and `AddItem` accept existing definitions. Convenience `Add` methods construct definitions directly from their arguments without invoking a child builder.
 
-`IApplicationUIBuilder<out TProduct>` lets a parent accept child builders through their product interfaces. The self type preserves fluent platform return types; the smaller state bases remain available for custom builders that need a different facade. New platform adapters should override factories and validation hooks or add genuine platform options, rather than repeat `WithName`, `ConfigureBlock`, `ConfigureMenu` or wizard lifecycle methods. Web icon URLs, native `Image` objects, Razor step constraints and DI registration stay in their respective libraries.
+`IApplicationUIBuilder<out TProduct>` lets a parent accept child builders through their product interfaces. The self type preserves fluent platform return types; the smaller state bases remain available for custom builders that need a different facade. New platform adapters should override factories and validation hooks or add genuine platform options, rather than repeat `WithName`, `AddBlock`, `AddMenu` or wizard lifecycle methods. Web icon URLs, native `Image` objects, Razor step constraints and DI registration stay in their respective libraries.
 
 Native builders retain their existing live-product ownership; Blazor factories produce registration snapshots. Application host registration is terminal so repeating `Build` cannot repeat service-registration side effects. Plugin service callbacks and application configuration callbacks remain deferred to the existing startup and scoped application paths.
 
@@ -290,9 +376,22 @@ Keep each builder invocation as one continuous indented block without blank sepa
 
 Ordinary Blazor and WinForms screens default to `ScreenActivationMode.MultiInstance`: each activation creates a new screen. Choose `SingleInstance` explicitly for a retained screen, such as Settings; permanent and empty-screen test scenarios keep their declared lifetimes. Enum numeric values are unchanged.
 
-Both UI adapters use the same screen metadata and selection rules. Set a block's canonical `DefaultScreenDefinition`, or use the platform builders' `AsDefault()` and `WithDefaultScreen<TScreen>(...)` convenience APIs. Menu default hints are promoted to the block's selected definition. Startup chooses the first marked screen in plugin registration order, then each plugin's block order, then menu declaration order. `Position` remains a navigation display setting and does not override plugin ownership order. Explicit navigation to a screen takes precedence over startup selection.
+Both UI adapters use the same screen metadata and selection rules. Add the screen
+to the block, then select its canonical definition/moniker with
+`WithDefaultScreen(registration)` or use the unambiguous
+`WithDefaultScreen<TScreen>()` convenience. Defaults do not add a screen or create
+another definition. Startup follows plugin contribution, block and screen
+registration order; `Position` controls visible block order. Explicit navigation
+takes precedence over the startup selection.
 
-The shared block builder resolves type-based defaults against matching owned definitions before creating the block. Menu registrations take precedence over definitions supplied through `AddScreenDefinition`. Omitted captions and policies inherit the matching definition's metadata; matching metadata reuses its exact reference. An explicit caption or policy override creates a separate definition owned by the block. `WithDefaultScreen(definition)` always retains the supplied definition unchanged. Platform builders can extend the inference candidates through `GetDefaultScreenDefinitions`, including canonical definitions retained by a cached block after its navigation changes.
+The block builder resolves defaults against independently added owned definitions.
+Missing/foreign references and ambiguous type defaults fail graph validation.
+Menus and toolbar items resolve references to those same canonical definitions;
+their captions do not change screen metadata. Type-based menu conveniences choose
+the first matching registration in the owning block; exact monikers choose their
+specific registration. Activation policy, activator and settings remain owned by
+the screen definition. Explicit policies for different registrations of the same
+type can differ; an unspecified sibling retains its own default.
 
 | Configuration | Behavior |
 |---|---|
@@ -304,7 +403,7 @@ The shared block builder resolves type-based defaults against matching owned def
 
 `Empty` describes the screen's role, separately from its activation mode. It never has a tab and cannot be combined with `PermanentSingleton`. A permanently open normal screen therefore keeps an empty placeholder hidden. Administrative block removal ends its screens' lifetime, including permanent screens, after applicable navigation guards permit removal; normal application shutdown also disposes them. A permanent screen does not make application shutdown impossible.
 
-`Tools.UI.OrderApplicationBlocks` resolves plugin membership against registered blocks and appends standalone blocks in their supplied order. Its receipt overload uses captured startup membership, preserving registration order even when a plugin later changes its live `Blocks`. `GetScreenDefinitions` returns the immutable definitions already owned by each block, validating command references and lifetime/role consistency. `GetDefaultScreen(blocks)` and `GetEmptyScreen(blocks)` inspect the blocks' selected default references. Hosts can specialize startup order through `GetStartupScreen` without changing the definition model. The first explicitly marked empty candidate is preferred; otherwise the first empty candidate is used. Platform convenience APIs may reuse a matching owned definition; explicitly supplied definitions retain their reference identity. Conflicting explicit policies fail before registration.
+`Tools.UI.OrderApplicationBlocks` resolves plugin membership against registered blocks and appends standalone blocks in their supplied order. Its receipt overload uses captured startup membership, preserving registration order even when a plugin later changes its live `Blocks`. `GetScreenDefinitions` returns the immutable definitions already owned by each block, validating command references and lifetime/role consistency. `GetDefaultScreen(blocks)` and `GetEmptyScreen(blocks)` inspect the blocks' selected default references. Hosts can specialize startup order through `GetStartupScreen` without changing the definition model. The first explicitly marked empty candidate is preferred; otherwise the first empty candidate is used. Platform snapshots resolve source monikers to their own canonical definitions without retargeting another graph or sharing retained instances.
 
 For example, a UI-independent placeholder declaration is:
 
@@ -369,8 +468,8 @@ static class Program {
 		Sphere10Framework.Instance
 			.BuildWinFormsApplication()
 			.UseMainForm<BlockMainForm>()
-			.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
-			.UseModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
+			.AddModule<Sphere10.Framework.Windows.Forms.ModuleConfiguration>()
 			.StartWinFormsApplication();
 	}
 }
@@ -388,22 +487,22 @@ using Sphere10.Framework.Application;
 
 Sphere10Framework.Instance
 	.Build()
-	.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
-	.UseModule<StartupTasksModule>()
+	.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.AddModule<StartupTasksModule>()
 	.Start();
 
 var productInformation = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IProductInformationProvider>();
 // Call EndFramework() during process shutdown after the running application's finalization.
 ```
 
-Modules are explicitly selected with `UseModule<T>()` or `UseModule(instance)`. They are registered and initialized in descending module priority order. `Start()` owns the provider it builds. To use an external provider, register the builder's modules into its service collection with `RegisterModules(services)`, then call `Start(provider)`; that provider remains owned by its host. Platform startup builders compose these operations for their runtime.
+Modules are explicitly selected with `AddModule<T>()` or `AddModule(instance)`. They are registered and initialized in descending module priority order. `Start()` owns the provider it builds. To use an external provider, register the builder's modules into its service collection with `RegisterModules(services)`, then call `Start(provider)`; that provider remains owned by its host. Platform startup builders compose these operations for their runtime.
 
 ### Process and application lifecycle
 
 ```
-Sphere10Framework.Instance.Build().UseModule<...>().Start()
+Sphere10Framework.Instance.Build().AddModule<...>().Start()
     ↓
-    1. Apply ConfigureServices callbacks and module RegisterComponents()
+    1. Apply AddServices callbacks and module RegisterComponents()
     2. Build ServiceProvider
     3. Call module OnInitialize() hooks
     4. Execute unkeyed IApplicationInitializer process tasks
@@ -429,7 +528,7 @@ The WinForms runner completes process shutdown tasks under the shutdown splash b
 
 ## 🧩 ModuleConfiguration Pattern
 
-Use `ModuleConfiguration` for process service composition and framework hooks. Plugins use `ConfigureServices` for component registration and their named `RegisterInitializer` / `RegisterFinalizer` helpers for running application tasks. Unkeyed module task registrations belong to the process lifetime.
+Use `ModuleConfiguration` for process service composition and framework hooks. Plugins use `AddServices` for component registration and their named `AddInitializer` / `AddFinalizer` helpers for running application tasks. Unkeyed module task registrations belong to the process lifetime.
 
 ### Creating a Module
 
@@ -457,7 +556,7 @@ public class StartupTasksModule : ModuleConfigurationBase {
 }
 ```
 
-The task classes are shown below. Register this module with `UseModule<StartupTasksModule>()` together with the application module that supplies product services.
+The task classes are shown below. Register this module with `AddModule<StartupTasksModule>()` together with the application module that supplies product services.
 
 ### Module Priority
 
@@ -780,7 +879,7 @@ Configure framework behavior with options:
 Sphere10Framework.Instance
 	.Build()
 	.WithOptions(Sphere10FrameworkOptions.EnsureSystemDataDirGloballyAccessible)
-	.UseModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
 	.Start();
 ```
 

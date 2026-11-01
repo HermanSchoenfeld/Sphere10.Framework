@@ -16,7 +16,6 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFormsApplicationBlockBuilder, IWinFormsApplicationMenu, WinFormsApplicationMenuBuilder, WinFormsApplicationBlock> {
 	private WinFormsApplicationBlock _block;
-	private ApplicationScreenDefinition _generatedDefaultScreenDefinition;
 	private Image _image32x32;
 	private Image _image8x8;
 	private string _helpFile;
@@ -58,15 +57,40 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 		return this;
 	}
 
-	public override WinFormsApplicationBlock Build() {
-		if (_block == null)
-			return base.Build();
-		Guard.Ensure(!string.IsNullOrEmpty(_block.Name), "Block name is required");
-		ResolveDefaultScreen();
-		foreach (var definition in ScreenDefinitions)
-			_block.AddScreenDefinition(definition);
-		Tools.UI.GetScreenDefinitions(new IApplicationBlock[] { _block });
-		return _block;
+	/// <summary>Configures and adds one native screen while returning the owning block builder.</summary>
+	public WinFormsApplicationBlockBuilder AddScreen<TScreen>(Action<WinFormsApplicationScreenBuilder<TScreen>> configure)
+		where TScreen : WinFormsApplicationScreen {
+		return AddScreen(configure, out _);
+	}
+
+	/// <summary>Adds one native registration and returns its typed identity after configuration completes.</summary>
+	public WinFormsApplicationBlockBuilder AddScreen<TScreen>(Action<WinFormsApplicationScreenBuilder<TScreen>> configure,
+		out ApplicationScreenRegistration<TScreen> registration)
+		where TScreen : WinFormsApplicationScreen {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var builder = new WinFormsApplicationScreenBuilder<TScreen>();
+		configure(builder);
+		var definition = builder.Build();
+		registration = (ApplicationScreenRegistration<TScreen>)definition.Registration;
+		AddScreenDefinitionInternal(definition);
+		return this;
+	}
+
+	/// <summary>Accepts a callback that supplies its screen type explicitly.</summary>
+	public WinFormsApplicationBlockBuilder AddScreen(Action<WinFormsApplicationScreenBuilder> configure) {
+		return AddScreen(configure, out _);
+	}
+
+	/// <summary>Adds an explicitly typed native registration and returns its identity.</summary>
+	public WinFormsApplicationBlockBuilder AddScreen(Action<WinFormsApplicationScreenBuilder> configure,
+		out ApplicationScreenRegistration registration) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var builder = new WinFormsApplicationScreenBuilder();
+		configure(builder);
+		var definition = builder.Build();
+		registration = definition.Registration;
+		AddScreenDefinitionInternal(definition);
+		return this;
 	}
 
 	protected override void OnConfigurationChanged(string propertyName) {
@@ -79,46 +103,34 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 			case nameof(Position):
 				_block.Position = Position;
 				break;
-			case nameof(DefaultScreenDefinition):
-				UpdateDefaultScreenDefinition();
-				break;
 		}
 	}
 
 	protected override void OnMenuAdded(IWinFormsApplicationMenu menu) {
 		_block?.AddMenu(menu);
-		if (_generatedDefaultScreenDefinition != null && IsMenuDefinition(_generatedDefaultScreenDefinition))
-			_generatedDefaultScreenDefinition = null;
 	}
 
-	protected override IEnumerable<ApplicationScreenDefinition> GetDefaultScreenDefinitions() =>
-		base.GetDefaultScreenDefinitions().Concat((_block?.ScreenDefinitions ?? Array.Empty<ApplicationScreenDefinition>())
-			.Where(definition => !ReferenceEquals(definition, _generatedDefaultScreenDefinition)));
+	/// <summary>Retained native products keep direct metadata edits as the authoritative configuration.</summary>
+	protected override void ValidateConfiguration() {
+		Guard.Ensure(!string.IsNullOrWhiteSpace(_block?.Name ?? Name), "Block name is required.");
+	}
 
-	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+	protected override void ValidateScreenType(Type screenType) {
+		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+	}
 
 	protected override WinFormsApplicationBlock CreateBlock(IReadOnlyList<IWinFormsApplicationMenu> menus) {
 		if (_block != null)
 			return _block;
 		_block = new WinFormsApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null) {
-			Position = Position,
-			DefaultScreenDefinition = DefaultScreenDefinition
+			Position = Position
 		};
+		foreach (var definition in ScreenDefinitions)
+			_block.AddScreenDefinition(definition);
+		if (DefaultScreenDefinition != null)
+			_block.DefaultScreenDefinition = DefaultScreenDefinition;
 		foreach (var menu in menus)
 			_block.AddMenu(menu);
-		if (DefaultScreenDefinition != null)
-			UpdateDefaultScreenDefinition();
 		return _block;
-	}
-
-	private bool IsMenuDefinition(ApplicationScreenDefinition definition) =>
-		_block != null && definition != null && definition.Activators.Any(item => ReferenceEquals(item.Parent?.Parent, _block));
-
-	private void UpdateDefaultScreenDefinition() {
-		var previousGenerated = _generatedDefaultScreenDefinition;
-		_block.DefaultScreenDefinition = DefaultScreenDefinition;
-		_generatedDefaultScreenDefinition = IsTypeBasedDefault && !IsMenuDefinition(DefaultScreenDefinition) ? DefaultScreenDefinition : null;
-		if (previousGenerated != null && !ScreenDefinitions.Any(definition => ReferenceEquals(definition, previousGenerated)))
-			_block.RemoveScreenDefinition(previousGenerated);
 	}
 }

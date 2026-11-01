@@ -239,8 +239,8 @@ public class TypedProtocolAdapterTests {
 		var requestHandler = new DirectRequestHandler((_, request) => request.Length);
 		var responseHandler = new DirectResponseHandler((_, _, response) => receivedResponse = response);
 		var protocol = new ProtocolBuilder()
-			.ConfigureCommand<string>(command => command.HandleWith(commandHandler))
-			.ConfigureRequest<string>(request => request
+			.AddCommand<string>(command => command.HandleWith(commandHandler))
+			.AddRequest<string>(request => request
 				.HandleRequestWith(requestHandler)
 				.HandleResponseWith(responseHandler)
 			)
@@ -254,6 +254,193 @@ public class TypedProtocolAdapterTests {
 		Assert.That(receivedCommand, Is.EqualTo("command"));
 		Assert.That(receivedResponse, Is.EqualTo(7));
 		Assert.That(protocol.Validate().IsSuccess, Is.True);
+	}
+
+	/// <summary>Composition callbacks run immediately; runtime callbacks wait for a typed dispatch.</summary>
+	[Test]
+	public void BuilderCompositionAndRuntimeCallbacksRemainDistinct() {
+		var configured = 0;
+		var commandCalls = 0;
+		var responseValue = 0L;
+		var builder = new ProtocolBuilder()
+			.AddCommand<string>(command => {
+				configured++;
+				command.HandleWith(_ => commandCalls++);
+			})
+			.AddRequest<int>(request => {
+				configured++;
+				request
+					.HandleRequestWith(value => (long)value + 1)
+					.HandleResponseWith((_, response) => responseValue = response);
+			})
+			.OnCommand<byte[]>(_ => commandCalls++);
+
+		Assert.That(configured, Is.EqualTo(2));
+		Assert.That(commandCalls, Is.Zero);
+		Assert.That(responseValue, Is.Zero);
+		var protocol = builder.Build();
+		Assert.That(builder.Build(), Is.SameAs(protocol), "Protocol builders retain their configured product.");
+
+		// Execute the already registered handlers without opening a channel or starting an orchestrator.
+		protocol.Modes[0].CommandHandlers[typeof(string)].Execute(_orchestrator, "command");
+		protocol.Modes[0].CommandHandlers[typeof(byte[])].Execute(_orchestrator, new byte[] { 1 });
+		var response = protocol.Modes[0].RequestHandlers[typeof(int)].Execute(_orchestrator, 7);
+		protocol.Modes[0].ResponseHandlers[typeof(int), typeof(long)].Execute(_orchestrator, 7, response);
+		Assert.That(commandCalls, Is.EqualTo(2));
+		Assert.That(responseValue, Is.EqualTo(8L));
+		Assert.That(configured, Is.EqualTo(2));
+	}
+
+	/// <summary>Every runtime command overload still dispatches through the explicit handler API.</summary>
+	[TestCase(0)]
+	[TestCase(1)]
+	[TestCase(2)]
+	public void RuntimeCommandOverloadsRunOnlyAtDispatch(int overload) {
+		var called = false;
+		var builder = new ProtocolBuilder();
+		switch (overload) {
+			case 0:
+				builder.OnCommand<string>(() => called = true);
+				break;
+			case 1:
+				builder.OnCommand<string>(message => called = message == "message");
+				break;
+			default:
+				builder.OnCommand<string>((orchestrator, message) => called = ReferenceEquals(orchestrator, _orchestrator) && message == "message");
+				break;
+		}
+		var protocol = builder.Build();
+		Assert.That(called, Is.False);
+
+		protocol.Modes[0].CommandHandlers[typeof(string)].Execute(_orchestrator, "message");
+		Assert.That(called, Is.True);
+	}
+
+	/// <summary>Runtime request callbacks are not invoked while constructing their registration.</summary>
+	[TestCase(0)]
+	[TestCase(1)]
+	[TestCase(2)]
+	public void RuntimeRequestOverloadsPreserveTypedDispatch(int overload) {
+		var calls = 0;
+		var received = 0;
+		var builder = new ProtocolBuilder();
+		switch (overload) {
+			case 0:
+				builder.OnRequestResponse<string, int>(() => {
+					calls++;
+					return 7;
+				}, () => received = 7);
+				break;
+			case 1:
+				builder.OnRequestResponse<string, int>(request => {
+					calls++;
+					return request.Length;
+				}, (_, response) => received = response);
+				break;
+			default:
+				builder.OnRequestResponse<string, int>((orchestrator, request) => {
+					Assert.That(orchestrator, Is.SameAs(_orchestrator));
+					calls++;
+					return request.Length;
+				}, (_, _, response) => received = response);
+				break;
+		}
+		var protocol = builder.Build();
+		Assert.That(calls, Is.Zero);
+		Assert.That(received, Is.Zero);
+
+		var response = protocol.Modes[0].RequestHandlers[typeof(string)].Execute(_orchestrator, "request");
+		protocol.Modes[0].ResponseHandlers[typeof(string), typeof(int)].Execute(_orchestrator, "request", response);
+		Assert.That(calls, Is.EqualTo(1));
+		Assert.That(received, Is.EqualTo(7));
+	}
+
+	/// <summary>Replacement handshake composition remains immediate and preserves the last configured value.</summary>
+	[Test]
+	public void HandshakeCompositionReplacesRatherThanAppends() {
+		var configured = 0;
+		var handler = new BaseHandshakeHandler();
+		var builder = new ProtocolBuilder()
+			.WithHandshake(handshake => {
+				configured++;
+				handshake
+					.UseTwoWay()
+					.InitiatedBy(CommunicationRole.Client)
+					.HandleWith(handler, typeof(string), typeof(int));
+			})
+			.WithHandshake(handshake => {
+				configured++;
+				handshake
+					.UseTwoWay()
+					.InitiatedBy(CommunicationRole.Server)
+					.HandleWith(handler, typeof(string), typeof(int));
+			});
+
+		Assert.That(configured, Is.EqualTo(2));
+		var protocol = builder.Build();
+		Assert.That(protocol.Handshake.Type, Is.EqualTo(ProtocolHandshakeType.TwoWay));
+		Assert.That(protocol.Handshake.Initiator, Is.EqualTo(CommunicationRole.Server));
+		Assert.That(protocol.Handshake.Handler, Is.SameAs(handler));
+	}
+
+	/// <summary>The factory callback remains an immediate callback rather than a deferred child builder.</summary>
+	[Test]
+	public void SerializerFactoryCallbackRunsAtCompositionTime() {
+		var calls = 0;
+		var builder = new ProtocolBuilder();
+
+		Assert.That(builder.AddSerializers(_ => calls++), Is.SameAs(builder));
+		Assert.That(calls, Is.EqualTo(1));
+		builder.Build();
+		Assert.That(calls, Is.EqualTo(1));
+	}
+
+	/// <summary>Optional child references are the handlers actually used by the retained protocol.</summary>
+	[Test]
+	public void ChildReferenceOverloadsRetainRegisteredProductsAndExecuteOnlyAtDispatch() {
+		var configured = 0;
+		var calls = 0;
+		var protocol = new ProtocolBuilder()
+			.AddCommand<string>(command => {
+				configured++;
+				command.HandleWith(_ => calls++);
+			}, out var command)
+			.AddRequest<int>(request => {
+				configured++;
+				request
+					.HandleRequestWith(value => (long)value + 1)
+					.HandleResponseWith(_ => calls++);
+			}, out var exchange)
+			.Build();
+
+		Assert.That(configured, Is.EqualTo(2));
+		Assert.That(calls, Is.Zero);
+		Assert.That(protocol.Modes[0].CommandHandlers[typeof(string)], Is.SameAs(command));
+		Assert.That(protocol.Modes[0].RequestHandlers[typeof(int)], Is.SameAs(exchange.RequestHandler));
+		Assert.That(protocol.Modes[0].ResponseHandlers[typeof(int), typeof(long)], Is.SameAs(exchange.ResponseHandler));
+		command.Execute(_orchestrator, "message");
+		var response = exchange.RequestHandler.Execute(_orchestrator, 4);
+		exchange.ResponseHandler.Execute(_orchestrator, 4, response);
+		Assert.That(calls, Is.EqualTo(2));
+		Assert.That(response, Is.EqualTo(5L));
+	}
+
+	/// <summary>Existing-handler reference overloads keep caller-supplied handler identity intact.</summary>
+	[Test]
+	public void ExistingHandlerReferenceOverloadsDoNotCloneOrReplaceTheirProducts() {
+		var command = new ActionCommandHandler<string>((_, _) => { });
+		var request = new ActionRequestHandler<int, long>((_, value) => value);
+		var response = new ActionResponseHandler<int, long>((_, _, _) => { });
+		var protocol = new ProtocolBuilder()
+			.AddCommand(command, out var commandRegistration)
+			.AddRequestResponse(request, response, out var exchangeRegistration)
+			.Build();
+
+		Assert.That(commandRegistration, Is.SameAs(command));
+		Assert.That(exchangeRegistration.RequestHandler, Is.SameAs(request));
+		Assert.That(exchangeRegistration.ResponseHandler, Is.SameAs(response));
+		Assert.That(protocol.Modes[0].CommandHandlers[typeof(string)], Is.SameAs(commandRegistration));
+		Assert.That(protocol.Modes[0].RequestHandlers[typeof(int)], Is.SameAs(exchangeRegistration.RequestHandler));
 	}
 
 	private static ICommandHandler<string> CreateCommandHandler(bool useBaseClass, Action<ProtocolOrchestrator, string> action)

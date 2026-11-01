@@ -51,6 +51,12 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 
 	public abstract Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default);
 
+	/// <summary>Resolves the retained source moniker within this host's canonical graph before opening.</summary>
+	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		return OpenScreenAsync(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
+	}
+
 	public abstract Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default);
 
 	public abstract Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default);
@@ -100,6 +106,10 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken) => await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
 
 	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
+
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken) {
+		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
+	}
 
 	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) => ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 

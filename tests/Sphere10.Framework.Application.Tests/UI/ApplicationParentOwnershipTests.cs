@@ -428,6 +428,7 @@ public class ApplicationParentOwnershipTests {
 		var menu = new TestApplicationMenu<TestApplicationMenuItem> { Text = "Actions" };
 		menu.AddItem(item);
 		var block = new TestApplicationBlock { Name = name };
+		block.AddScreenDefinition(item.ScreenDefinition);
 		block.AddMenu(menu);
 		return block;
 	}

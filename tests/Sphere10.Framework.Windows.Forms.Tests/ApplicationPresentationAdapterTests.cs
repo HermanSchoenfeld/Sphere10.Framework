@@ -120,7 +120,9 @@ public class ApplicationPresentationAdapterTests {
 		var menu = new WinFormsApplicationMenu("Editors");
 		block.AddMenu(menu);
 		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Site editor", ScreenActivationMode.SingleInstance);
-		var item = new WinFormsScreenMenuItem { Text = "Open site", ScreenDefinition = definition, IsDefault = true };
+		block.AddScreenDefinition(definition);
+		block.DefaultScreenDefinition = definition;
+		var item = new WinFormsScreenMenuItem { Text = "Open site", ScreenDefinition = definition };
 		menu.AddItem(item);
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(definition));
 		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
@@ -211,17 +213,19 @@ public class ApplicationPresentationAdapterTests {
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.MultiInstance)]
 	public void BuilderRetainsNullableNativeActivationPolicy(ScreenActivationMode? activationMode) {
-		var builder = new WinFormsApplicationMenuItemBuilder();
-		var screenBuilder = builder
-			.AsScreenItem()
-			.WithText("Document")
-			.WithScreen<ProbeScreen>()
-			.WithTitle(Title: "Editor");
-		if (activationMode == ScreenActivationMode.SingleInstance)
-			screenBuilder.AsSingleInstance();
-		if (activationMode == ScreenActivationMode.MultiInstance)
-			screenBuilder.AsMultiInstance();
-		using var item = builder.Build();
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<ProbeScreen>(screen => {
+				screen.WithTitle("Editor");
+				if (activationMode.HasValue)
+					screen.WithActivationMode(activationMode.Value);
+			})
+			.AddMenu(menu => menu
+				.WithText("Editors")
+				.AddShowScreenItem<ProbeScreen>("Document")
+			)
+			.Build();
+		var item = block.Menus.Single().Items.Single();
 		var native = (IWinFormsScreenMenuItem)item;
 		var shared = (IScreenMenuItem)item;
 		Assert.That(native.ScreenDefinition.ActivationMode, Is.EqualTo(activationMode));
@@ -235,7 +239,10 @@ public class ApplicationPresentationAdapterTests {
 		var builder = new WinFormsApplicationBlockBuilder()
 			.WithName("Tools")
 			.WithPosition(5)
-			.WithDefaultScreen<ProbeScreen>("Start");
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Start")
+			)
+			.WithDefaultScreen<ProbeScreen>();
 		using var first = builder.Build();
 		builder.WithName("Updated tools");
 		Assert.That(first.Name, Is.EqualTo("Updated tools"), "Post-build setters must immediately update the existing native product");
@@ -299,6 +306,7 @@ public class ApplicationPresentationAdapterTests {
 		Assert.That(secondItem.Parent, Is.SameAs(menu));
 		var blockBuilder = new WinFormsApplicationBlockBuilder()
 			.WithName("Workspace")
+			.AddScreen<ProbeScreen>(screen => screen.WithTitle("Document"))
 			.AddMenu(menu);
 		var block = blockBuilder.Build();
 		var otherMenu = new DisposableMenu();
@@ -318,7 +326,7 @@ public class ApplicationPresentationAdapterTests {
 	[Test]
 	public void NativeBuildersRejectNonNativeAndOpenGenericScreens() {
 		Assert.That(() => new WinFormsApplicationBlockBuilder().WithDefaultScreen(typeof(NeutralScreen)), Throws.ArgumentException);
-		Assert.That(() => new WinFormsApplicationMenuBuilder().AddScreenItem("Generic", typeof(GenericScreen<>)), Throws.ArgumentException);
+		Assert.That(() => new WinFormsApplicationMenuBuilder().AddShowScreenItem(typeof(GenericScreen<>), "Generic"), Throws.ArgumentException);
 		Assert.That(() => new WinFormsApplicationMenuItemBuilder().AsScreenItem().WithScreen(typeof(GenericScreen<>)), Throws.ArgumentException);
 	}
 

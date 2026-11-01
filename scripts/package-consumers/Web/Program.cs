@@ -20,16 +20,16 @@ builder.Services
 	.BuildBlazorApplication()
 	.WithTitle("Sphere10 package consumer")
 	.WithFavicon("data:,")
-	.ConfigurePlugin(plugin => plugin
+	.AddPlugin(plugin => plugin
 		.WithName("Package plugin")
-		.ConfigureBlock(block => block
+		.AddBlock(block => block
 			.WithId("package")
 			.WithName("Package block")
 			.WithDefaultScreen<WelcomeScreen>("Package screen")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithId("records")
 				.WithText("Records")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("grid")
 					.WithText("Package grid")
 					.WithScreen<WelcomeScreen>()

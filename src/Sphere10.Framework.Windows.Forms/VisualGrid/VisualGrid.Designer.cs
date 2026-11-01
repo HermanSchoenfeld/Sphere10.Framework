@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms {
-	partial class CrudGrid {
+	partial class VisualGrid {
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
@@ -42,10 +42,13 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._titleLabel = new System.Windows.Forms.Label();
 			this._createButton = new System.Windows.Forms.Button();
 			this._deleteButton = new System.Windows.Forms.Button();
+			this._settingsButton = new System.Windows.Forms.Button();
+			this._settingsToolTip = new System.Windows.Forms.ToolTip(this.components);
 			this._bottomPanel = new System.Windows.Forms.TableLayoutPanel();
 			this._pagingControlsPanel = new System.Windows.Forms.FlowLayoutPanel();
 			this._totalRecordsPanel = new System.Windows.Forms.FlowLayoutPanel();
-			this._pageModeComboBox = new System.Windows.Forms.ComboBox();
+			this._pageModeToolStrip = new System.Windows.Forms.ToolStrip();
+			this._pageModeButton = new Sphere10.Framework.Windows.Forms.ToolStripChoiceSelector();
 			this._manualPageSizePanel = new System.Windows.Forms.FlowLayoutPanel();
 			this._pageNavigationPanel = new System.Windows.Forms.FlowLayoutPanel();
 			this._lastPageButton = new System.Windows.Forms.Button();
@@ -71,6 +74,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._bottomPanel.SuspendLayout();
 			this._pagingControlsPanel.SuspendLayout();
 			this._totalRecordsPanel.SuspendLayout();
+			this._pageModeToolStrip.SuspendLayout();
 			this._manualPageSizePanel.SuspendLayout();
 			this._pageNavigationPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this._pageSizeUpDown)).BeginInit();
@@ -111,15 +115,17 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			this._topPanel.AutoSize = true;
 			this._topPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this._topPanel.ColumnCount = 4;
+			this._topPanel.ColumnCount = 5;
 			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 			this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 			this._topPanel.Controls.Add(this._createButton, 0, 0);
 			this._topPanel.Controls.Add(this._deleteButton, 1, 0);
 			this._topPanel.Controls.Add(this._titleLabel, 2, 0);
 			this._topPanel.Controls.Add(this._searchTextBox, 3, 0);
+			this._topPanel.Controls.Add(this._settingsButton, 4, 0);
 			this._topPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._topPanel.Location = new System.Drawing.Point(3, 3);
 			this._topPanel.Name = "_topPanel";
@@ -129,6 +135,21 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._topPanel.Size = new System.Drawing.Size(518, 25);
 			this._topPanel.TabIndex = 2;
 			// 
+			// _settingsButton
+			//
+			this._settingsButton.AccessibleName = "Grid settings";
+			this._settingsButton.AccessibleDescription = "Configure paging, sorting and column widths for this grid.";
+			this._settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
+			this._settingsButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.SmallEditIcon;
+			this._settingsButton.Margin = new System.Windows.Forms.Padding(3, 2, 2, 0);
+			this._settingsButton.Name = "_settingsButton";
+			this._settingsButton.Size = new System.Drawing.Size(28, 23);
+			this._settingsButton.TabIndex = 5;
+			this._settingsButton.UseVisualStyleBackColor = true;
+			this._settingsButton.Visible = false;
+			this._settingsToolTip.SetToolTip(this._settingsButton, "Grid settings");
+			this._settingsButton.Click += new System.EventHandler(this.SettingsButtonClick);
+			//
 			// _titleLabel
 			// 
 			this._titleLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
@@ -189,7 +210,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._pagingControlsPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this._pagingControlsPanel.Controls.Add(this._pageNavigationPanel);
 			this._pagingControlsPanel.Controls.Add(this._manualPageSizePanel);
-			this._pagingControlsPanel.Controls.Add(this._pageModeComboBox);
+			this._pagingControlsPanel.Controls.Add(this._pageModeToolStrip);
 			this._pagingControlsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._pagingControlsPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
 			this._pagingControlsPanel.Margin = new System.Windows.Forms.Padding(0);
@@ -208,18 +229,32 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._totalRecordsPanel.TabIndex = 0;
 			this._totalRecordsPanel.WrapContents = false;
 			//
-			// _pageModeComboBox
+			// _pageModeToolStrip
 			//
-			this._pageModeComboBox.AccessibleName = "Page Mode";
-			this._pageModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._pageModeComboBox.FormattingEnabled = true;
-			this._pageModeComboBox.Items.AddRange(new object[] { "Paged", "Auto Paged", "Single Paged" });
-			this._pageModeComboBox.Margin = new System.Windows.Forms.Padding(3, 3, 6, 3);
-			this._pageModeComboBox.Name = "_pageModeComboBox";
-			this._pageModeComboBox.SelectedIndex = 0;
-			this._pageModeComboBox.Size = new System.Drawing.Size(80, 21);
-			this._pageModeComboBox.TabIndex = 1;
-			this._pageModeComboBox.SelectedIndexChanged += new System.EventHandler(this.PageModeSelectedIndexChanged);
+			this._pageModeToolStrip.AutoSize = false;
+			this._pageModeToolStrip.CanOverflow = false;
+			this._pageModeToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+			this._pageModeToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this._pageModeToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this._pageModeButton });
+			this._pageModeToolStrip.Margin = new System.Windows.Forms.Padding(3, 3, 6, 3);
+			this._pageModeToolStrip.Name = "_pageModeToolStrip";
+			this._pageModeToolStrip.Padding = new System.Windows.Forms.Padding(0);
+			this._pageModeToolStrip.Size = new System.Drawing.Size(35, 21);
+			this._pageModeToolStrip.TabIndex = 1;
+			this._pageModeToolStrip.TabStop = true;
+			//
+			// _pageModeButton
+			//
+			this._pageModeButton.AccessibleName = "Page mode";
+			this._pageModeButton.AutoSize = false;
+			this._pageModeButton.AutoToolTip = false;
+			this._pageModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this._pageModeButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.Grid;
+			this._pageModeButton.Margin = new System.Windows.Forms.Padding(0);
+			this._pageModeButton.Name = "_pageModeButton";
+			this._pageModeButton.Size = new System.Drawing.Size(35, 21);
+			this._pageModeButton.ToolTipText = "Page mode: Manual";
+			this._pageModeButton.SelectedIndexChanged += new System.EventHandler(this.PageModeSelectedIndexChanged);
 			//
 			// _manualPageSizePanel
 			//
@@ -460,7 +495,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._grid.DpiChangedAfterParent += new System.EventHandler(this.GridMetricsChanged);
 			this._grid.FontChanged += new System.EventHandler(this.GridViewportChanged);
 			// 
-			// CrudGrid
+			// VisualGrid
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -481,6 +516,8 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._pagingControlsPanel.PerformLayout();
 			this._totalRecordsPanel.ResumeLayout(false);
 			this._totalRecordsPanel.PerformLayout();
+			this._pageModeToolStrip.ResumeLayout(false);
+			this._pageModeToolStrip.PerformLayout();
 			this._manualPageSizePanel.ResumeLayout(false);
 			this._manualPageSizePanel.PerformLayout();
 			this._pageNavigationPanel.ResumeLayout(false);
@@ -500,10 +537,13 @@ namespace Sphere10.Framework.Windows.Forms {
 		private System.Windows.Forms.TableLayoutPanel _topPanel;
 		private System.Windows.Forms.Button _createButton;
 		private System.Windows.Forms.Button _deleteButton;
+		private System.Windows.Forms.Button _settingsButton;
+		private System.Windows.Forms.ToolTip _settingsToolTip;
 		private System.Windows.Forms.TableLayoutPanel _bottomPanel;
 		private System.Windows.Forms.FlowLayoutPanel _pagingControlsPanel;
 		private System.Windows.Forms.FlowLayoutPanel _totalRecordsPanel;
-		private System.Windows.Forms.ComboBox _pageModeComboBox;
+		private System.Windows.Forms.ToolStrip _pageModeToolStrip;
+		private Sphere10.Framework.Windows.Forms.ToolStripChoiceSelector _pageModeButton;
 		private System.Windows.Forms.FlowLayoutPanel _manualPageSizePanel;
 		private System.Windows.Forms.FlowLayoutPanel _pageNavigationPanel;
 		private System.Windows.Forms.Label label3;

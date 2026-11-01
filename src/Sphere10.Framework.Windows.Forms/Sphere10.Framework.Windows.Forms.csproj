@@ -28,6 +28,10 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
+		<Compile Update="VisualGrid\VisualGrid.Preferences.cs"><SubType>Code</SubType></Compile>
+		<Compile Update="VisualGrid\VisualGrid.Settings.cs"><SubType>Code</SubType></Compile>
+		<!-- The preferences partial shares VisualGrid's existing designer and resources. -->
+		<EmbeddedResource Remove="VisualGrid\VisualGrid.Preferences.resx" />
 		<Compile Update="Charts\TelemetryChart.cs"><SubType>UserControl</SubType></Compile>
 		<Compile Update="Charts\TelemetryChart.Designer.cs"><DependentUpon>TelemetryChart.cs</DependentUpon></Compile>
 		<Compile Update="Charts\GraphChart.cs"><SubType>UserControl</SubType></Compile>

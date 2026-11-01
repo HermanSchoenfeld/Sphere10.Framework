@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -29,20 +29,22 @@ public class BlazorApplicationBuilderSharingTests {
 		services
 			.BuildBlazorApplication()
 			.WithTitle("Shared configuration")
-			.ConfigurePlugin(plugin => plugin
+			.AddPlugin(plugin => plugin
 				.WithName("Workspace")
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithId("work")
 					.WithName("Work")
-					.ConfigureMenu(menu => menu
+					.AddScreen<ProbeScreen>(screen => screen
+						.WithTitle("Document editor")
+						.WithActivationMode(ScreenActivationMode.MultiInstance)
+						.WithParameters(parameters)
+					)
+					.AddMenu(menu => menu
 						.WithText("File")
-						.ConfigureItem(item => item
+						.AddItem(item => item
 							.WithId("document")
 							.WithText("Open document")
 							.WithScreen<ProbeScreen>()
-							.WithScreenTitle("Document editor")
-							.AsMultiInstance()
-							.WithParameters(parameters)
 						)
 					)
 				)
@@ -72,7 +74,7 @@ public class BlazorApplicationBuilderSharingTests {
 			menu.AddActionItem("run", "Run", () => calls++);
 		else
 			menu
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("run")
 					.WithText("Run")
 					.WithAction(() => calls++)
@@ -80,7 +82,7 @@ public class BlazorApplicationBuilderSharingTests {
 		var services = new ServiceCollection()
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Commands")
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithName("Work")
 					.AddMenu(menu.Build())
 				)
@@ -99,18 +101,29 @@ public class BlazorApplicationBuilderSharingTests {
 
 	[Test]
 	public void ScreenShortcutsRejectInvalidPoliciesDuringChildConfiguration() {
-		var menu = new BlazorApplicationMenuBuilder()
-			.WithText("Screens");
-		Assert.That(() => menu.AddScreenItem<ProbeScreen>("screen", "Screen", (ScreenActivationMode)100), Throws.ArgumentException);
-		Assert.That(() => menu.AddScreenItem<ProbeScreen>("screen", "Screen", ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty),
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithName("Workspace");
+		Assert.That(() => builder
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithActivationMode((ScreenActivationMode)100)
+			), Throws.ArgumentException);
+		Assert.That(() => builder
+			.AddScreen<ProbeScreen>(screen => screen
+				.AsPermanentSingleton()
+				.WithScreenKind(ScreenKind.Empty)
+			),
 			Throws.InstanceOf<ArgumentException>());
-		Assert.That(menu.Build().Items, Is.Empty, "A failed child configuration must not leave a partial menu item.");
+		Assert.That(builder.Build().ScreenDefinitions, Is.Empty, "A failed child configuration must not leave a partial registration.");
 	}
 
 	[Test]
 	public void SharedGenericScreenMethodsRetainBlazorTypeValidation() {
-		Assert.That(() => new BlazorApplicationBlockBuilder().WithDefaultScreen<NeutralScreen>(), Throws.ArgumentException);
-		Assert.That(() => new BlazorApplicationMenuItemBuilder().WithScreen<NeutralScreen>(), Throws.ArgumentException);
+		Assert.That(() => new BlazorApplicationBlockBuilder()
+			.AddScreen(screen => screen
+				.WithScreen<NeutralScreen>()
+			), Throws.ArgumentException);
+		Assert.That(() => new BlazorApplicationMenuItemBuilder()
+			.WithScreen<NeutralScreen>(), Throws.ArgumentException);
 	}
 
 	[TestCase(false)]

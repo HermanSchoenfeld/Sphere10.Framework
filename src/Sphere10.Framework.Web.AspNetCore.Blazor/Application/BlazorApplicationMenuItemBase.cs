@@ -20,9 +20,14 @@ public abstract class BlazorApplicationMenuItemBase : ApplicationMenuItemBase, I
 	}
 
 	public string Id {
-		get => _id ?? Title;
+		get => _id ?? DefaultId;
 		init => _id = value;
 	}
+
+	/// <summary>Distinguishes declared command bookmarks from temporary IDs used while configuring a registration reference.</summary>
+	internal bool HasExplicitId => _id != null;
+
+	protected virtual string DefaultId => Title;
 
 	public string Icon { get; init; }
 
@@ -41,6 +46,12 @@ public abstract class BlazorApplicationMenuItemBase : ApplicationMenuItemBase, I
 	internal void CopySubscriptionsFrom(BlazorApplicationMenuItemBase source) {
 		Guard.ArgumentNotNull(source, nameof(source));
 		base.CopySubscriptionsFrom(source);
+	}
+
+	/// <summary>Fills an omitted command caption after its owning block resolves the screen registration.</summary>
+	protected void SetDefaultTitle(string title) {
+		if (string.IsNullOrWhiteSpace(base.Title))
+			base.Title = title;
 	}
 
 	public override void NotifyHover() {

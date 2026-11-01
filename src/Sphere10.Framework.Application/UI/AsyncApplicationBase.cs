@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,8 +18,8 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 	protected AsyncApplicationBase() {
 	}
 
-	protected AsyncApplicationBase(IServiceProvider services)
-		: base(services) {
+	protected AsyncApplicationBase(IServiceProvider services, string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null)
+		: base(services, settingsKey, settingsDefinitions) {
 	}
 
 	public override void Initialize() {

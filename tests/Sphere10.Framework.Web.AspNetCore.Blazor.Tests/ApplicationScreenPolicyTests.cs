@@ -6,19 +6,19 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
-using Microsoft.AspNetCore.Components.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -32,7 +32,8 @@ public class ApplicationScreenPolicyTests {
 		var first = Block("first", typeof(FirstScreen), position: 50);
 		var second = Block("second", typeof(SecondScreen), position: -10);
 		var services = new ServiceCollection();
-		services.AddSphere10BlazorPlugin(new BlazorPlugin("Ordered", new[] { first, second }));
+		services
+			.AddSphere10BlazorPlugin(new BlazorPlugin("Ordered", new[] { first, second }));
 		using var provider = services.BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new[] { second, first }, provider);
 		await host.InitializeAsync();
@@ -50,15 +51,21 @@ public class ApplicationScreenPolicyTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
-			.ConfigureMenu(menu => menu
+			.AddScreen<FirstScreen>(screen => screen
+				.WithTitle("First")
+			)
+			.AddScreen<SecondScreen>(screen => screen
+				.WithTitle("Second")
+			)
+			.WithDefaultScreen<SecondScreen>()
+			.AddMenu(menu => menu
 				.WithId("screens")
 				.WithText("Screens")
-				.AddScreenItem<FirstScreen>("first", "First")
-				.ConfigureItem(item => item
+				.AddShowScreenItem<FirstScreen>(text: "First", id: "first")
+				.AddItem(item => item
 					.WithId("second")
 					.WithText("Second")
 					.WithScreen<SecondScreen>()
-					.AsDefault()
 				)
 			)
 			.Build();
@@ -66,7 +73,7 @@ public class ApplicationScreenPolicyTests {
 		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
 		await host.InitializeAsync();
 		Assert.That(host.ActiveScreen.MenuItemId, Is.EqualTo("second"));
-		Assert.That(host.ActiveScreen.MenuItem.IsDefault, Is.True);
+		Assert.That(host.ActiveScreen.Definition, Is.SameAs(host.ActiveScreen.Block.DefaultScreenDefinition));
 	}
 
 	[TestCase(ScreenMode.SingleView)]
@@ -235,14 +242,17 @@ public class ApplicationScreenPolicyTests {
 			.WithId("empty")
 			.WithText("Empty")
 			.WithScreen<EmptyScreen>()
-			.WithScreenKind(ScreenKind.Empty)
-			.AsDefault()
-			.AsMultiInstance()
 			.Build();
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
-			.ConfigureMenu(menu => menu
+			.AddScreen<EmptyScreen>(screen => screen
+				.WithTitle("Empty")
+				.WithScreenKind(ScreenKind.Empty)
+				.AsMultiInstance()
+			)
+			.WithDefaultScreen<EmptyScreen>()
+			.AddMenu(menu => menu
 				.WithId("screens")
 				.WithText("Screens")
 				.AddItem(item)
@@ -251,11 +261,15 @@ public class ApplicationScreenPolicyTests {
 		using var metadataHost = new BlazorApplicationScreenHost(new[] { block }, provider);
 		var copy = metadataHost.AvailableBlocks.Single().Menus.Single().Items.OfType<BlazorScreenMenuItem>().Single();
 		Assert.That(copy.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(copy.IsDefault, Is.True);
+		Assert.That(copy.ScreenDefinition, Is.SameAs(metadataHost.AvailableBlocks.Single().DefaultScreenDefinition));
 		Assert.That(copy.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(() => new BlazorApplicationBlockBuilder()
 			.WithName("Invalid")
-			.WithDefaultScreen<EmptyScreen>(activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
+			.AddScreen<EmptyScreen>(screen => screen
+				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+				.WithScreenKind(ScreenKind.Empty)
+			)
+			.WithDefaultScreen<EmptyScreen>(), Throws.ArgumentException);
 	}
 
 	[TestCase(ScreenActivationMode.SingleInstance)]
@@ -263,8 +277,10 @@ public class ApplicationScreenPolicyTests {
 	public async Task RendererRetainsSingletonEmptyAndDisposesMultiInstanceEmpty(ScreenActivationMode mode) {
 		var services = new ServiceCollection().AddLogging().AddSphere10Blazor();
 		services.AddSingleton<RenderedScreenState>();
-		services.AddApplicationBlock(Block("normal", typeof(FirstScreen)));
-		services.AddApplicationBlock(Block("empty", typeof(RenderedEmptyScreen), mode, ScreenKind.Empty));
+		services
+			.AddApplicationBlock(Block("normal", typeof(FirstScreen)));
+		services
+			.AddApplicationBlock(Block("empty", typeof(RenderedEmptyScreen), mode, ScreenKind.Empty));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -317,8 +333,10 @@ public class ApplicationScreenPolicyTests {
 		var services = new ServiceCollection().AddLogging().AddSphere10Blazor();
 		services.AddSingleton<NavigationManager>(new TestNavigationManager());
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
-		services.AddApplicationBlock(Block("normal", typeof(FirstScreen)));
-		services.AddApplicationBlock(Block("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton));
+		services
+			.AddApplicationBlock(Block("normal", typeof(FirstScreen)));
+		services
+			.AddApplicationBlock(Block("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {
@@ -346,7 +364,8 @@ public class ApplicationScreenPolicyTests {
 			.WithId(id)
 			.WithName(id)
 			.WithPosition(position)
-			.WithDefaultScreen(type, id, mode, kind)
+			.AddScreen(new BlazorApplicationScreenDefinition(type, id, mode, kind))
+			.WithDefaultScreen(type)
 			.Build();
 
 	public class RenderedScreenState {

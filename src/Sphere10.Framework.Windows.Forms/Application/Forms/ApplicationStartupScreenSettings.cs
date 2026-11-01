@@ -16,4 +16,7 @@ public sealed class ApplicationStartupScreenSettings : SettingsObject {
 	public string BlockName { get; set; } = string.Empty;
 	public string ScreenTypeName { get; set; } = string.Empty;
 	public string ScreenAssemblyName { get; set; } = string.Empty;
+
+	/// <summary>The stable registration key; empty legacy values resolve only when the screen type is unambiguous.</summary>
+	public string RegistrationKey { get; set; } = string.Empty;
 }

@@ -11,8 +11,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sphere10.Framework.Application.UI;
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -23,6 +24,8 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	private readonly ApplicationPluginRegistration<IWinFormsApplicationPlugin>[] _loadedPluginRegistrations;
 	private readonly IWinFormsApplicationPlugin[] _loadedPlugins;
 	private readonly int _uiThread;
+	private readonly Lazy<IApplicationSettingsStore> _settingsStore;
+	private readonly Lazy<ISettingsProvider> _settingsProvider;
 	private bool _blocksInitialized;
 
 	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks)
@@ -30,17 +33,23 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	/// <summary>Adapts blocks and plugins that the caller has already loaded; this constructor does not invoke plugin lifecycle methods.</summary>
-	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks, IEnumerable<IWinFormsApplicationPlugin> loadedPlugins)
+	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks, IEnumerable<IWinFormsApplicationPlugin> loadedPlugins,
+		string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null)
 		: this(mainForm, blocks, Tools.UI.ValidatePlugins(loadedPlugins).Cast<IWinFormsApplicationPlugin>()
-			.Select(plugin => new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks))) {
+			.Select(plugin => new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks)), null, settingsKey, settingsDefinitions) {
 	}
 
 	internal WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks,
-		IEnumerable<ApplicationPluginRegistration<IWinFormsApplicationPlugin>> loadedPluginRegistrations, IServiceProvider services = null)
-		: base(services) {
+		IEnumerable<ApplicationPluginRegistration<IWinFormsApplicationPlugin>> loadedPluginRegistrations, IServiceProvider services = null,
+		string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null)
+		: base(services, settingsKey, settingsDefinitions) {
 		Guard.ArgumentNotNull(mainForm, nameof(mainForm));
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		Guard.ArgumentNotNull(loadedPluginRegistrations, nameof(loadedPluginRegistrations));
+		_settingsStore = new Lazy<IApplicationSettingsStore>(() => services?.GetService<IApplicationSettingsStore>()
+			?? new WinFormsApplicationSettingsStore(WinFormsApplicationSettingsExtensions.ResolveSettingsProvider(services)));
+		_settingsProvider = new Lazy<ISettingsProvider>(() => (_settingsStore.Value as WinFormsApplicationSettingsStore)?.Provider
+			?? WinFormsApplicationSettingsExtensions.ResolveSettingsProvider(services));
 		_mainForm = mainForm;
 		_uiThread = Environment.CurrentManagedThreadId;
 		_loadedPluginRegistrations = Tools.UI.ValidatePluginRegistrations(loadedPluginRegistrations);
@@ -60,6 +69,35 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	public IBlockManager BlockManager => _mainForm;
+
+	/// <summary>The actual provider captured by the application's existing lifecycle owner.</summary>
+	internal IServiceProvider ApplicationServices {
+		get {
+			return Services;
+		}
+	}
+
+	// Migration reads use the same provider captured by this application's native store.
+	internal ISettingsProvider SettingsProvider {
+		get {
+			return _settingsProvider.Value;
+		}
+	}
+
+	/// <summary>Uses the one application-DI catalog, with a manual-host fallback over the same canonical definitions.</summary>
+	protected override ApplicationSettingsCatalog CreateSettingsCatalog() {
+		return Services?.GetService<ApplicationSettingsCatalog>() ?? CreateOwnedSettingsCatalog();
+	}
+
+	// The DI factory calls this directly after construction, never recursively through the lazy Settings property.
+	internal ApplicationSettingsCatalog CreateOwnedSettingsCatalog(string applicationKey = null) {
+		var definitions = (Services?.GetServices<ApplicationSettingsDefinition>() ?? Array.Empty<ApplicationSettingsDefinition>())
+			.Concat(SettingsDefinitions).Distinct<ApplicationSettingsDefinition>(ReferenceEqualityComparer.Instance).ToArray();
+		var hasOptions = definitions.Length != 0 || _configuredBlocks.Any(block => block.ScreenDefinitions.Any(definition => definition.Settings != null));
+		if (hasOptions)
+			_ = _settingsProvider.Value;
+		return new ApplicationSettingsCatalog(applicationKey ?? SettingsKey, hasOptions ? _settingsStore.Value : null, _configuredBlocks, definitions, Logger);
+	}
 
 	public override IWinFormsApplicationScreenHost ScreenHost => _mainForm.ScreenHost;
 
@@ -146,6 +184,8 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	protected override async Task<bool> OnInitializeAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
 		if (!_blocksInitialized) {
+			// Declared preferences must be ready before registration creates permanent or default screens.
+			await Settings.InitializeAsync(cancellationToken);
 			await _mainForm.ScreenHost.LoadStartupScreenSettingsAsync(cancellationToken);
 			var ordered = Tools.UI.OrderApplicationBlocks(_loadedPluginRegistrations,
 				_configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance));
@@ -156,6 +196,8 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 
 	protected override async Task OnFinalizeAsync(CancellationToken cancellationToken) {
 		await _mainForm.ScreenHost.CompleteStartupScreenWritesAsync();
+		await _mainForm.ScreenHost.SaveScreenSettingsAsync(_mainForm.ScreenHost.Screens, cancellationToken);
+		await Settings.FlushAsync(cancellationToken);
 		await base.OnFinalizeAsync(cancellationToken);
 	}
 

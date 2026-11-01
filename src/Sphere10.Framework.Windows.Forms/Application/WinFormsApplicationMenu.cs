@@ -48,16 +48,6 @@ public class WinFormsApplicationMenu : ApplicationMenuBase<IWinFormsApplicationM
 
 	public Image Image32x32 { get; set; }
 
-	public override void AddItem(IWinFormsApplicationMenuItem item) {
-		Guard.ArgumentNotNull(item, nameof(item));
-		base.AddItem(item);
-		if (Parent is WinFormsApplicationBlock block && item is IScreenMenuItem screen) {
-			block.AddScreenDefinition(screen.ScreenDefinition);
-			if (item is WinFormsScreenMenuItem { IsDefault: true })
-				block.DefaultScreenDefinition ??= screen.ScreenDefinition;
-		}
-	}
-
 	public virtual void Dispose() {
 		Parent = null;
 		foreach (var item in ItemCollection)

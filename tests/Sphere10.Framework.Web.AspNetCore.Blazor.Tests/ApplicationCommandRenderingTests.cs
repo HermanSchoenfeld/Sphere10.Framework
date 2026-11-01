@@ -18,10 +18,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
-using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -115,11 +115,11 @@ public class ApplicationCommandRenderingTests {
 			.AddApplicationBlock(block => block
 				.WithId("browse")
 				.WithName("Browse")
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Browse menu")
 					.AddActionItem("browse-action", "Browse action", () => { })
 				)
-				.ConfigureToolBarItem(item => item
+				.AddToolBarItem(item => item
 					.WithId("browse-tool")
 					.WithText("Browse tool")
 					.WithAction((_, _) => Task.CompletedTask)
@@ -231,11 +231,19 @@ public class ApplicationCommandRenderingTests {
 			.AddApplicationBlock(block => block
 				.WithId("test")
 				.WithName("Test")
-				.ConfigureMenu(menu => menu
+				.AddScreen<TemporaryScreen>(screen => screen
+					.WithTitle("Two")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddScreen<CommandScreen>(screen => screen
+					.WithTitle("One")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.AddMenu(menu => menu
 					.WithId("work")
 					.WithText("Work")
-					.AddScreenItem<CommandScreen>("one", "One", ScreenActivationMode.SingleInstance)
-					.AddScreenItem<TemporaryScreen>("two", "Two", ScreenActivationMode.MultiInstance)
+					.AddShowScreenItem<CommandScreen>(text: "One", id: "one")
+					.AddShowScreenItem<TemporaryScreen>(text: "Two", id: "two")
 				)
 			);
 		services

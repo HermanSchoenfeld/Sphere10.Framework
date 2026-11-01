@@ -33,8 +33,7 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 	public virtual ApplicationScreenDefinition DefaultScreenDefinition {
 		get => _defaultScreenDefinition;
 		set {
-			if (value != null)
-				AddScreenDefinition(value);
+			Guard.Argument(value == null || ContainsScreenDefinition(value), nameof(value), "The default screen must already be registered by this block.");
 			_defaultScreenDefinition = value;
 		}
 	}
@@ -76,8 +75,6 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 		Guard.ArgumentNotNull(menu.Items, nameof(menu));
 		Guard.Argument(!_menus.Exists(candidate => ReferenceEquals(candidate, menu)), nameof(menu), "The menu is already in this block.");
 		Guard.Argument(menu.Parent == null || ReferenceEquals(menu.Parent, MenuOwner), nameof(menu), "The menu already belongs to another block.");
-		foreach (var item in menu.Items.OfType<IScreenMenuItem>())
-			AddScreenDefinition(item.ScreenDefinition);
 		menu.Parent = MenuOwner;
 		_menus.Add(menu);
 	}

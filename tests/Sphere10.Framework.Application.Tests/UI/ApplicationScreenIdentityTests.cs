@@ -126,11 +126,11 @@ public class ApplicationScreenIdentityTests {
 
 	[Test]
 	public void ScreenCommandsReferenceDefinitionsAndSharedNavigationDoesNotUseIdentifierLookup() {
-		Assert.That(typeof(IScreenMenuItem).GetProperties().Select(property => property.Name), Is.EqualTo(new[] { nameof(IScreenMenuItem.ScreenDefinition) }));
+		Assert.That(typeof(IScreenMenuItem).GetProperties().Select(property => property.Name), Is.EquivalentTo(new[] { nameof(IScreenMenuItem.ScreenDefinition), nameof(IScreenMenuItem.Registration) }));
 		Assert.That(typeof(IApplicationBlock).GetProperty(nameof(IApplicationBlock.DefaultScreenDefinition)).PropertyType, Is.EqualTo(typeof(ApplicationScreenDefinition)));
 		Assert.That(typeof(IApplicationBlock).GetProperty(nameof(IApplicationBlock.ScreenDefinitions)).PropertyType, Is.EqualTo(typeof(ApplicationScreenDefinition[])));
 		Assert.That(typeof(ApplicationScreenDefinition).GetProperties().Select(property => property.Name),
-			Is.EquivalentTo(new[] { "ScreenType", "Title", "ActivationMode", "ScreenKind", "Activators" }));
+			Is.EquivalentTo(new[] { "ScreenType", "Title", "ActivationMode", "ScreenKind", "Activators", "Registration", "StableKey", "Settings", "SettingsFactory" }));
 		Assert.That(typeof(IApplicationScreenHost).GetMethods().SelectMany(method => method.GetParameters()).Select(parameter => parameter.Name),
 			Has.None.EqualTo("blockId").And.None.EqualTo("menuItemId"));
 		Assert.That(typeof(IUserInterfaceServices).GetMethods().Where(method => method.Name == nameof(IUserInterfaceServices.ExecuteMenuItemAsync))

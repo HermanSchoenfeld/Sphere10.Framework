@@ -9,7 +9,7 @@
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Controls whether a CRUD grid uses manual pages, fitted pages or one complete result page.</summary>
-public enum CrudGridPageMode {
+public enum VisualGridPageMode {
 	Paged,
 	Auto,
 	Single

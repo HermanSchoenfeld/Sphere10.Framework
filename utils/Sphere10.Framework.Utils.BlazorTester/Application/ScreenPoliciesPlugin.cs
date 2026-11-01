@@ -20,46 +20,52 @@ public static class ScreenPoliciesPlugin {
 		const string pluginName = "Screen policies";
 		plugin
 			.WithName(pluginName)
-			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.ConfigureBlock(block => block
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddBlock(block => block
 				.WithId("empty-workspace")
 				.WithName("Empty workspace")
 				.WithPosition(4)
 				.WithIconUrl("img/heading-solid.svg")
 				.WithTooltip("Open the tabless empty-workspace screen when no normal screens are open")
-				.WithDefaultScreen<EmptyWorkspaceScreen>("Empty workspace", emptyScreenLifetime, ScreenKind.Empty)
-				.ConfigureMenu(menu => menu
+				.AddScreen<EmptyWorkspaceScreen>(screen => screen
+					.WithTitle("Empty workspace")
+					.WithActivationMode(emptyScreenLifetime)
+					.WithScreenKind(ScreenKind.Empty)
+				)
+				.WithDefaultScreen<EmptyWorkspaceScreen>()
+				.AddMenu(menu => menu
 					.WithId("empty")
 					.WithText("Workspace")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("empty")
 						.WithText("Empty workspace")
 						.WithIcon("fas fa-window-maximize")
 						.WithScreen<EmptyWorkspaceScreen>()
-						.WithActivationMode(emptyScreenLifetime)
-						.WithScreenKind(ScreenKind.Empty)
 					)
 				)
 			);
 		if (permanentScreen)
 			plugin
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithId("permanent-workspace")
 					.WithName("Permanent workspace")
 					.WithPosition(5)
 					.WithIconUrl("img/heading-solid.svg")
 					.WithTooltip("A screen that stays open for this application session")
-					.WithDefaultScreen<PermanentWorkspaceScreen>("Permanent screen", ScreenActivationMode.PermanentSingleton)
-					.ConfigureMenu(menu => menu
+					.AddScreen<PermanentWorkspaceScreen>(screen => screen
+						.WithTitle("Permanent screen")
+						.AsPermanentSingleton()
+					)
+					.WithDefaultScreen<PermanentWorkspaceScreen>()
+					.AddMenu(menu => menu
 						.WithId("permanent")
 						.WithText("Permanent screen")
-						.ConfigureItem(item => item
+						.AddItem(item => item
 							.WithId("permanent")
 							.WithText("Permanent screen")
 							.WithIcon("fas fa-thumbtack")
 							.WithScreen<PermanentWorkspaceScreen>()
-							.AsPermanentSingleton()
 						)
 					)
 				);

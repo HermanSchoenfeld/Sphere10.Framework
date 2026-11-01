@@ -15,7 +15,7 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 
 | Example | Source | Library foundations |
 | --- | --- | --- |
-| Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | ConfigurePlugin, ConfigureBlock, ConfigureMenu, canonical screen definitions, scoped services and named initializer/finalizer registration |
+| Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | AddPlugin, AddBlock, AddMenu, canonical screen definitions, scoped services and named initializer/finalizer registration |
 | Card/table catalogue | [CardsScreen.razor](Cards/CardsScreen.razor), [CollectionDataSource.cs](Cards/CollectionDataSource.cs) | BulkFetchDataSource, BlazorGridController, BlazorGrid, PageSizeSelector, ExpandsToFit |
 | Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | BlazorApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
 | Native commands | [CommandsScreen.razor](Commands/CommandsScreen.razor) | Menus/ToolBarItems, merge by ID, WithChildren, EnabledWhen, WithVisibility and ViewService |

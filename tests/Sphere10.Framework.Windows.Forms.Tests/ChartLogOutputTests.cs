@@ -73,9 +73,12 @@ public class ChartLogOutputTests {
 		application.Logger = logger;
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Charts")
-			.ConfigureMenu(menu => menu
+			.AddScreen<PreloadedChartScreen>(screen => screen
+				.WithTitle("Chart")
+			)
+			.AddMenu(menu => menu
 				.WithText("Charts")
-				.AddScreenItem<PreloadedChartScreen>("Chart")
+				.AddShowScreenItem<PreloadedChartScreen>("Chart")
 			)
 			.Build();
 		block.Parent = application;

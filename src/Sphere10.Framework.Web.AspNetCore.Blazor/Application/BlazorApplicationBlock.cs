@@ -21,20 +21,13 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 
 	private readonly BlockMetadata _definition;
 	private readonly BlazorApplicationMenu _toolbarOwner;
-	private readonly BlazorApplicationMenu _generatedOwner;
-	private readonly Dictionary<ApplicationScreenDefinition, BlazorScreenMenuItem> _definitionCommands = new(ReferenceEqualityComparer.Instance);
-	private BlazorScreenMenuItem _defaultCommand;
 	private IBlazorApplicationMenuItem[] _toolBarItems = Array.Empty<IBlazorApplicationMenuItem>();
 	private string _id;
 	private Type _defaultScreen;
-	private string _defaultScreenTitle;
-	private ScreenActivationMode? _defaultScreenActivationMode;
-	private ScreenKind _defaultScreenKind;
 
 	public BlazorApplicationBlock() {
 		_definition = new BlockMetadata(this);
 		_toolbarOwner = new BlazorApplicationMenu { Parent = this, Text = "Toolbar" };
-		_generatedOwner = new BlazorApplicationMenu { Parent = this, Text = "Screen activators" };
 	}
 
 	public IBlazorApplication Parent { get; set; }
@@ -78,8 +71,6 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 			_toolBarItems = value.ToArray();
 			foreach (var item in _toolBarItems.Where(item => item.Parent == null))
 				_toolbarOwner.AddItem(item);
-			foreach (var screen in _toolBarItems.OfType<BlazorScreenMenuItem>())
-				_definition.AddScreenDefinition(screen.ScreenDefinition);
 		}
 	}
 
@@ -89,23 +80,19 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	}
 
 	public ScreenActivationMode? DefaultScreenActivationMode {
-		get => _defaultScreenActivationMode ?? _definition.DefaultScreenDefinition?.ActivationMode;
-		init => _defaultScreenActivationMode = value;
+		get => DefaultScreenDefinition?.ActivationMode;
 	}
 
 	public ScreenKind DefaultScreenKind {
-		get => _definition.DefaultScreenDefinition?.ScreenKind ?? _defaultScreenKind;
-		init => _defaultScreenKind = value;
+		get => DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
 	}
 
 	public string DefaultScreenTitle {
-		get => _defaultScreenTitle ?? _definition.DefaultScreenDefinition?.Title;
-		init => _defaultScreenTitle = value;
+		get => DefaultScreenDefinition?.Title;
 	}
 
 	public ApplicationScreenDefinition[] ScreenDefinitions {
 		get {
-			_ = DefaultScreenDefinition;
 			return _definition.ScreenDefinitions;
 		}
 		init {
@@ -117,16 +104,8 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 
 	public ApplicationScreenDefinition DefaultScreenDefinition {
 		get {
-			if (_definition.DefaultScreenDefinition == null && _defaultScreen != null) {
-				var matching = Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>().FirstOrDefault(item => item.ScreenType == _defaultScreen);
-				_definition.DefaultScreenDefinition = matching != null && _defaultScreenTitle == null && !_defaultScreenActivationMode.HasValue && _defaultScreenKind == ScreenKind.Normal
-					? matching.ScreenDefinition : new ApplicationScreenDefinition(_defaultScreen, _defaultScreenTitle ?? matching?.ScreenTitle ?? matching?.Title,
-					_defaultScreenActivationMode ?? matching?.ActivationMode ?? ScreenActivationMode.MultiInstance,
-					_defaultScreenKind == ScreenKind.Normal ? matching?.ScreenKind ?? ScreenKind.Normal : _defaultScreenKind);
-			}
-			if (_definition.DefaultScreenDefinition == null)
-				_definition.DefaultScreenDefinition = Menus.SelectMany(menu => menu.Items).Concat(ToolBarItems).OfType<BlazorScreenMenuItem>()
-					.FirstOrDefault(item => item.IsDefault)?.ScreenDefinition;
+			if (_definition.DefaultScreenDefinition == null && _defaultScreen != null)
+				_definition.DefaultScreenDefinition = Tools.UI.ResolveScreenRegistration(_definition.ScreenDefinitions, ApplicationScreenRegistration.ForType(_defaultScreen));
 			return _definition.DefaultScreenDefinition;
 		}
 		init => _definition.DefaultScreenDefinition = value;
@@ -137,27 +116,6 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 		Guard.ArgumentNotNull(application, nameof(application));
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.FromResult(true);
-	}
-
-	internal BlazorScreenMenuItem GetGeneratedScreenCommand(ApplicationScreenDefinition definition, string id, BlazorScreenMenuItem matching = null, bool isDefault = false) {
-		if (isDefault && _defaultCommand != null)
-			return _defaultCommand;
-		if (!isDefault && _definitionCommands.TryGetValue(definition, out var command))
-			return command;
-		command = new BlazorScreenMenuItem {
-			Id = id, Title = definition.Title, ScreenDefinition = definition,
-			ActivationMode = definition.ActivationMode ?? matching?.ActivationMode ?? ScreenActivationMode.MultiInstance,
-			Icon = matching?.Icon, IsVisible = matching?.IsVisible ?? true, CanExecute = matching?.CanExecute, IsDefault = isDefault,
-			Parameters = matching?.Parameters ?? new Dictionary<string, object>()
-		};
-		if (matching != null)
-			command.CopySubscriptionsFrom(matching);
-		_generatedOwner.AddItem(command);
-		if (isDefault)
-			_defaultCommand = command;
-		else
-			_definitionCommands.Add(definition, command);
-		return command;
 	}
 
 	private sealed class BlockMetadata : ApplicationBlockBase {

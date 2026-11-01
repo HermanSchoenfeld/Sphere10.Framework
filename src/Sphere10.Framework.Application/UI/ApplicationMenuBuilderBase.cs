@@ -65,14 +65,25 @@ public abstract class ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMe
 	}
 
 	public TSelf AddItem(TItem item) {
+		return AddItem(item, out _);
+	}
+
+	/// <summary>Adds an existing command definition and captures its configuration reference.</summary>
+	public TSelf AddItem(TItem item, out TItem registration) {
 		AddItemInternal(item);
+		registration = item;
 		return (TSelf)(object)this;
 	}
 
-	public TSelf ConfigureItem(Action<TItemBuilder> configure) {
+	public TSelf AddItem(Action<TItemBuilder> configure) {
+		return AddItem(configure, out _);
+	}
+
+	/// <summary>Configures one child command, captures its definition and returns this parent.</summary>
+	public TSelf AddItem(Action<TItemBuilder> configure, out TItem registration) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		var builder = new TItemBuilder();
 		configure(builder);
-		return AddItem(builder.Build());
+		return AddItem(builder.Build(), out registration);
 	}
 }

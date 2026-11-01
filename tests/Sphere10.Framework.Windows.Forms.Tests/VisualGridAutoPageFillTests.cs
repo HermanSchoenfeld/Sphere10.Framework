@@ -22,7 +22,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridAutoPageFillTests {
+public class VisualGridAutoPageFillTests {
 	[TestCase(false, false, true)]
 	[TestCase(true, false, true)]
 	[TestCase(false, true, true)]
@@ -45,7 +45,7 @@ public class CrudGridAutoPageFillTests {
 		var measuredHeights = grid.Rows.Skip(1).Select(row => row.Height).ToArray();
 		Assert.That(measuredHeights.Distinct().Count(), Is.GreaterThan(1), "The native image cells must produce genuinely different row heights.");
 		Assert.That(grid.HScrollBarVisible, Is.EqualTo(horizontalScroll));
-		crud.PageMode = CrudGridPageMode.Auto;
+		crud.PageMode = VisualGridPageMode.Auto;
 		await crud.RefreshGrid();
 		await SettleAsync(crud);
 		if (nextPage) {
@@ -80,7 +80,7 @@ public class CrudGridAutoPageFillTests {
 		var previousHeight = grid.Rows[1].Height;
 		SourceGrid.Cells.Views.Cell.Default.Font = smallFont;
 		crud.Font = smallFont;
-		crud.PageMode = CrudGridPageMode.Auto;
+		crud.PageMode = VisualGridPageMode.Auto;
 		await crud.RefreshGrid();
 		await SettleAsync(crud);
 		Assert.That(grid.Rows[1].Height, Is.LessThan(previousHeight), "The fixture must actually shrink the rendered native rows.");
@@ -91,7 +91,7 @@ public class CrudGridAutoPageFillTests {
 	public void ResizingAndScalingFillTheirNewViewportWithoutLeavingACompleteRowUnused() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		var source = new RecordingSource(Enumerable.Range(0, 400).Select(index => new Row { Number = index, Text = $"Item {index}" }).ToArray());
-		crud.PageMode = CrudGridPageMode.Auto;
+		crud.PageMode = VisualGridPageMode.Auto;
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
 		await SettleAsync(crud);
@@ -112,7 +112,7 @@ public class CrudGridAutoPageFillTests {
 	public void ShortLastPageDoesNotChangeItsCapacityOrRereadWhenLayoutSettles() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		var source = new RecordingSource(Enumerable.Range(0, 400).Select(index => new Row { Number = index, Text = $"Item {index}" }).ToArray());
-		crud.PageMode = CrudGridPageMode.Auto;
+		crud.PageMode = VisualGridPageMode.Auto;
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
 		await SettleAsync(crud);
@@ -135,9 +135,9 @@ public class CrudGridAutoPageFillTests {
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(3));
 	});
 
-	[TestCase(CrudGridPageMode.Paged)]
-	[TestCase(CrudGridPageMode.Single)]
-	public void FontMetricsDoNotImplicitlyRequeryModesWithAnExplicitPageSize(CrudGridPageMode mode) => RunWithMessageLoop(async owner => {
+	[TestCase(VisualGridPageMode.Paged)]
+	[TestCase(VisualGridPageMode.Single)]
+	public void FontMetricsDoNotImplicitlyRequeryModesWithAnExplicitPageSize(VisualGridPageMode mode) => RunWithMessageLoop(async owner => {
 		using var changedFont = new Font("Segoe UI", 19f);
 		using var crud = NewGrid(owner);
 		crud.PageMode = mode;
@@ -154,23 +154,23 @@ public class CrudGridAutoPageFillTests {
 		Assert.That(source.ReadCount, Is.GreaterThan(reads), "An explicit refresh must still reevaluate the data and its changed native font geometry.");
 	});
 
-	private static CrudGrid NewGrid(Form owner) {
-		var crud = new CrudGrid {
+	private static VisualGrid NewGrid(Form owner) {
+		var crud = new VisualGrid {
 			Dock = DockStyle.Fill,
 			Font = owner.Font,
 			PersistSettings = false,
-			PageMode = CrudGridPageMode.Single,
+			PageMode = VisualGridPageMode.Single,
 			PrepareReadOnlyCellsInBackground = true,
-			GridBindings = new ICrudGridColumn[] {
-				new CrudGridColumn<Row> { ColumnName = "Icon", DisplayType = CrudCellDisplayType.Image, DataType = typeof(Image), PropertyValue = row => row.Image },
-				new CrudGridColumn<Row> { ColumnName = "Description", DataType = typeof(string), PropertyValue = row => row.Text }
+			GridBindings = new IVisualGridColumn[] {
+				new VisualGridColumn<Row> { ColumnName = "Icon", DisplayType = CrudCellDisplayType.Image, DataType = typeof(Image), PropertyValue = row => row.Image },
+				new VisualGridColumn<Row> { ColumnName = "Description", DataType = typeof(string), PropertyValue = row => row.Text }
 			}
 		};
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static void AssertLargestPrefix(CrudGrid crud, int[] measuredHeights) {
+	private static void AssertLargestPrefix(VisualGrid crud, int[] measuredHeights) {
 		var grid = Find<Grid>(crud, "_grid");
 		var available = grid.DisplayRectangle.Height - grid.Rows[0].Height;
 		var expected = 0;
@@ -185,7 +185,7 @@ public class CrudGridAutoPageFillTests {
 		Assert.That(grid.VScrollBarVisible, Is.False, "Auto pages must not require vertical scrolling.");
 	}
 
-	private static async Task SettleAsync(CrudGrid crud) {
+	private static async Task SettleAsync(VisualGrid crud) {
 		await crud.RefreshGrid();
 		await Task.Delay(350);
 		await crud.RefreshGrid();

@@ -10,6 +10,7 @@
 
 @inject ViewService ViewService
 @using System.Threading
+@using Sphere10.Framework.Application.UI
 @implements IAsyncDisposable
 
 <section class="demo-example" data-demo="grid">
@@ -20,6 +21,7 @@
 <p>Polkadot records are protected from deletion. The Active checkbox, Color list, date field, custom Note editor and Related record picker demonstrate typed editing.</p>
 <BlazorGrid TItem="TestClass" PageSize="10" PageSizeOptions="_pageSizeOptions" DataSource="_dataSource"
 	PersistSettings="true" SettingsKey="tester.editable-grid"
+	Preferences="GridPreferences" PreferencesChanged="GridPreferencesChanged"
 	Columns="_columns" Actions="_actions" SelectedItemChanged="SelectItem" />
 <p role="status" data-testid="grid-selection">
 	@(_selectedItem == null ? "No record selected." : $"Selected: {_selectedItem.Name} (ID {_selectedItem.Id}).")
@@ -57,11 +59,12 @@
 	</select></label>
 	<label><input type="checkbox" checked="@_stretchLiveColumns" @onchange="LiveStretchChanged" /> Stretch Name and Details</label>
 </div>
-<p>Use the grid's paging mode selector to compare Paged, Auto Paged and Single Paged. Drag a header edge to give it a manual width,
+<p>Use the compact paging menu to choose Single, Auto or Manual. Settings edits the same grid values shown in Screen Options. Drag a header edge to give it a manual width,
 	then page, search or publish a snapshot: that width remains. Name and Details are the preferred stretch columns.</p>
 <BlazorGrid TItem="GridDemoSnapshotDataSource.Row" @ref="_liveGrid" Caption="Live Samples" DataSource="_liveDataSource"
 	Columns="_liveColumns" PageSize="12" PageSizeOptions="_pageSizeOptions" PageMode="BlazorGridPageMode.Auto" Height="360"
 	CaptionAlignment="_liveCaptionAlignment" PersistSettings="true" SettingsKey="tester.live-grid"
+	Preferences="LiveGridPreferences" PreferencesChanged="LiveGridPreferencesChanged"
 	SuppressLoadingIndicator="_suppressLiveIndicator" SelectedItemChanged="SelectLiveItem" />
 <p role="status" data-testid="live-grid-status">@_liveStatus</p>
 @if (_filteredPreview != null) {
@@ -72,7 +75,23 @@
 }
 </section>
 
+<section class="demo-example" data-demo="standalone-grid">
+<h2>Standalone grid preferences</h2>
+<p>This ordinary reusable grid has no screen settings binding. Its independent paging and manual widths stay in this browser.</p>
+<BlazorGrid TItem="TestClass" Caption="Standalone samples" DataSource="_dataSource" Columns="_referenceColumns"
+	PageSize="5" AllowedCapabilities="DataSourceCapabilities.CanRead | DataSourceCapabilities.CanPage | DataSourceCapabilities.CanSort"
+	SettingsKey="tester.standalone-grid" />
+</section>
+
 @code {
+	[Parameter] public BlazorGridSettings GridPreferences { get; set; }
+
+	[Parameter] public EventCallback<BlazorGridSettings> GridPreferencesChanged { get; set; }
+
+	[Parameter] public BlazorGridSettings LiveGridPreferences { get; set; }
+
+	[Parameter] public EventCallback<BlazorGridSettings> LiveGridPreferencesChanged { get; set; }
+
 	private readonly TestClassDataSource _dataSource = new();
 	private readonly GridDemoSnapshotDataSource _liveDataSource = new();
 	private readonly CancellationTokenSource _lifetime = new();
@@ -139,6 +158,7 @@
 		};
 		var summary = new BlazorGridColumn<TestClass> {
 			ColumnName = "Summary",
+			PreferenceKey = "Summary",
 			DataType = typeof(string),
 			PropertyValue = item => item.Details,
 			CanEditCell = false,
@@ -156,6 +176,7 @@
 		_liveDetailsColumn.ExpandsToFit = true;
 		_liveImageColumn = new BlazorGridColumn<GridDemoSnapshotDataSource.Row> {
 			ColumnName = "Icon",
+			PreferenceKey = "Icon",
 			CanEditCell = false,
 			Width = 70,
 			ImageWidth = 48,

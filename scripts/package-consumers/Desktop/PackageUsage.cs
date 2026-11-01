@@ -14,7 +14,7 @@ namespace PackageConsumer.Desktop;
 public sealed class PackageUsage : WinFormsApplicationScreen {
 	public static IWinFormsApplicationPlugin CreatePlugin() => new WinFormsApplicationPluginBuilder()
 		.WithName("Desktop plugin")
-		.ConfigureBlock(block => block
+		.AddBlock(block => block
 			.WithName("Desktop block")
 			.WithDefaultScreen<PackageUsage>(activationMode: ScreenActivationMode.PermanentSingleton)
 		)

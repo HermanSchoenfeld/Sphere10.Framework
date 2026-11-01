@@ -24,19 +24,21 @@ public class SharedFluentBuilderIntegrationTests {
 		var calls = 0;
 		var plugin = new WinFormsApplicationPluginBuilder()
 			.WithName("Operations")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithName("Inventory")
 				.ShowInMenuStrip()
-				.WithDefaultScreen<Screen>(activationMode: ScreenActivationMode.SingleInstance)
-				.ConfigureMenu(menu => menu
+				.AddScreen<Screen>(screen => screen
+					.WithTitle("Stock levels")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.WithDefaultScreen<Screen>()
+				.AddMenu(menu => menu
 					.WithText("Items")
 					.ShowInMenuStrip()
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.AsScreenItem()
 						.WithText("Stock")
 						.WithScreen<Screen>()
-						.AsSingleInstance()
-						.WithTitle("Stock levels")
 					)
 					.AddActionItem("Adjust", () => calls++)
 				)
@@ -57,15 +59,18 @@ public class SharedFluentBuilderIntegrationTests {
 	public void SharedMetadataChangesPreserveUnrelatedLiveNativeEdits() {
 		var builder = new WinFormsApplicationBlockBuilder()
 			.WithName("Original")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("First")
 			);
 		using var block = builder.Build();
 		block.Name = "Edited directly";
 		builder
 			.WithPosition(7)
-			.WithDefaultScreen<Screen>("Default")
-			.ConfigureMenu(menu => menu
+			.AddScreen<Screen>(screen => screen
+				.WithTitle("Default")
+			)
+			.WithDefaultScreen<Screen>()
+			.AddMenu(menu => menu
 				.WithText("Second")
 			);
 
@@ -82,7 +87,8 @@ public class SharedFluentBuilderIntegrationTests {
 		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace");
 		using var block = builder.Build();
 		var definition = new ApplicationScreenDefinition(typeof(Screen), "Direct editor");
-		builder.AddScreenDefinition(definition);
+		builder
+			.AddScreen(definition);
 		Assert.That(builder.Build(), Is.SameAs(block));
 		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(1));
 		Assert.That(block.ScreenDefinitions[0], Is.SameAs(definition));
@@ -90,21 +96,28 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void NativeCachedTypeDefaultsResolveToTheirMatchingMenuDefinition(bool defineDefaultBeforeFirstBuild) {
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace");
+	public void NativeCachedTypeDefaultsResolveAnIndependentRegistrationBeforeOrAfterFirstBuild(bool defineDefaultBeforeFirstBuild) {
+		var builder = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<Screen>(screen => screen
+				.WithTitle("Site editor")
+				.AsSingleInstance()
+			);
 		if (defineDefaultBeforeFirstBuild)
 			builder.WithDefaultScreen<Screen>();
 		using var block = builder.Build();
 		block.Name = "Edited workspace";
 		if (!defineDefaultBeforeFirstBuild)
 			builder.WithDefaultScreen<Screen>();
-		builder.ConfigureMenu(menu => menu.WithText("Editors").ConfigureItem(item => item
-			.AsScreenItem()
-			.WithText("Open editor")
-			.WithScreen<Screen>()
-			.WithTitle("Site editor")
-			.AsSingleInstance()
-		));
+		builder
+			.AddMenu(menu => menu
+				.WithText("Editors")
+				.AddItem(item => item
+					.AsScreenItem()
+					.WithText("Open editor")
+					.WithScreen<Screen>()
+				)
+			);
 		Assert.That(builder.Build(), Is.SameAs(block));
 		var definition = ((IScreenMenuItem)block.Menus[0].Items[0]).ScreenDefinition;
 		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
@@ -114,23 +127,32 @@ public class SharedFluentBuilderIntegrationTests {
 	}
 
 	[Test]
-	public void NativeCachedTypeDefaultRetiresItsProvisionalNormalDefinitionWhenMenuDeclaresEmpty() {
+	public void NativeTypeDefaultRequiresAnExplicitRegistrationAndNeverCreatesAProvisionalDefinition() {
 		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace").WithDefaultScreen<Screen>();
+		Assert.That(() => builder.Build(), Throws.ArgumentException);
+		builder
+			.AddScreen<Screen>(screen => screen
+				.WithTitle("Empty workspace")
+				.WithScreenKind(ScreenKind.Empty)
+				.AsSingleInstance()
+			);
 		using var block = builder.Build();
-		var provisional = block.DefaultScreenDefinition;
+		var registered = block.DefaultScreenDefinition;
 		block.Name = "Edited workspace";
-		builder.ConfigureMenu(menu => menu.WithText("Editors").ConfigureItem(item => item
-			.AsScreenItem()
-			.WithText("Empty workspace")
-			.WithScreen<Screen>()
-			.WithScreenKind(ScreenKind.Empty)
-			.AsSingleInstance()
-		));
+		builder
+			.AddMenu(menu => menu
+				.WithText("Editors")
+				.AddItem(item => item
+					.AsScreenItem()
+					.WithText("Empty workspace")
+					.WithScreen<Screen>()
+				)
+			);
 		Assert.That(builder.Build(), Is.SameAs(block));
 		var definition = ((IScreenMenuItem)block.Menus[0].Items[0]).ScreenDefinition;
 		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(definition));
-		Assert.That(block.ContainsScreenDefinition(provisional), Is.False);
+		Assert.That(block.ContainsScreenDefinition(registered), Is.True);
 		Assert.That(block.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		Assert.That(block.Name, Is.EqualTo("Edited workspace"));
 	}
@@ -138,14 +160,22 @@ public class SharedFluentBuilderIntegrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void NativeCachedEmptyDefaultRemainsBlockOwnedAfterRemovingItsNavigation(bool removeEntireMenu) {
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace").WithDefaultScreen<Screen>()
-			.ConfigureMenu(menu => menu.WithText("Editors").ConfigureItem(item => item
-				.AsScreenItem()
-				.WithText("Empty workspace")
-				.WithScreen<Screen>()
+		var builder = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<Screen>(screen => screen
+				.WithTitle("Empty workspace")
+				.WithActivationMode(ScreenActivationMode.SingleInstance)
 				.WithScreenKind(ScreenKind.Empty)
-				.AsSingleInstance()
-			));
+			)
+			.WithDefaultScreen<Screen>()
+			.AddMenu(menu => menu
+				.WithText("Editors")
+				.AddItem(item => item
+					.AsScreenItem()
+					.WithText("Empty workspace")
+					.WithScreen<Screen>()
+				)
+			);
 		using var block = builder.Build();
 		var menu = (WinFormsApplicationMenu)block.Menus[0];
 		var item = (WinFormsScreenMenuItem)menu.Items[0];
@@ -168,19 +198,20 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void NativeCachedDefaultsKeepExplicitlyOwnedDefinitions(bool addGeneratedDefinitionExplicitly) {
+	public void NativeCachedDefaultSelectionKeepsBothExplicitRegistrations(bool selectByDefinition) {
 		var explicitDefinition = new ApplicationScreenDefinition(typeof(Screen), "Explicit editor");
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace");
-		if (addGeneratedDefinitionExplicitly)
-			builder.WithDefaultScreen<Screen>();
-		else
-			builder.WithDefaultScreen(explicitDefinition);
+		var builder = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(explicitDefinition)
+			.WithDefaultScreen(explicitDefinition);
 		using var block = builder.Build();
-		if (addGeneratedDefinitionExplicitly) {
-			explicitDefinition = block.DefaultScreenDefinition;
-			builder.AddScreenDefinition(explicitDefinition);
-		}
-		builder.WithDefaultScreen<Screen>("New editor");
+		var second = new ApplicationScreenDefinition(typeof(Screen), "New editor");
+		builder
+			.AddScreen(second, out var secondRegistration);
+		if (selectByDefinition)
+			builder.WithDefaultScreen(second);
+		else
+			builder.WithDefaultScreen(secondRegistration);
 		Assert.That(builder.Build(), Is.SameAs(block));
 		Assert.That(block.ContainsScreenDefinition(explicitDefinition), Is.True);
 		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(explicitDefinition));
@@ -250,14 +281,22 @@ public class SharedFluentBuilderIntegrationTests {
 	}
 
 	[Test]
-	public void NativeScreenShortcutsCreateDistinctCanonicalDefinitions() {
-		var menu = new WinFormsApplicationMenuBuilder()
-			.WithText("Screens")
-			.AddScreenItem<Screen>("First")
-			.AddScreenItem<Screen>("Second")
+	public void NativeShowScreenCommandsReferenceIndependentlyConfiguredRegistrations() {
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<Screen>(screen => screen
+				.WithTitle("First"), out var firstRegistration
+			)
+			.AddScreen<Screen>(screen => screen
+				.WithTitle("Second"), out var secondRegistration
+			)
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem(firstRegistration)
+				.AddShowScreenItem(secondRegistration)
+			)
 			.Build();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddMenu(menu);
+		var menu = block.Menus.Single();
 		var first = ((IScreenMenuItem)menu.Items[0]).ScreenDefinition;
 		var second = ((IScreenMenuItem)menu.Items[1]).ScreenDefinition;
 		Assert.That(first, Is.Not.SameAs(second));

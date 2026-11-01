@@ -33,7 +33,7 @@ public class ApplicationIconProviderTests {
 		});
 		builder
 			.UseIcon(configured ? configuredIcon : null)
-			.ConfigureServices(services => services.AddMainForm<IconMainForm>(form => form.ContractIcon = formIcon))
+			.AddServices(services => services.AddMainForm<IconMainForm>(form => form.ContractIcon = formIcon))
 			.Start();
 		var provider = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IApplicationIconProvider>();
 		var expected = configured ? configuredIcon : formIcon;
@@ -53,7 +53,7 @@ public class ApplicationIconProviderTests {
 		});
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				if (beforeMainForm)
 					services.AddSingleton<IApplicationIconProvider>(selected);
 				services.AddMainForm<LiteMainForm>();

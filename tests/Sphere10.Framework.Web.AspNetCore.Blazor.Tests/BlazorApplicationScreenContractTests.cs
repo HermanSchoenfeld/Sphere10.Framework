@@ -6,13 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -49,6 +49,9 @@ public class BlazorApplicationScreenContractTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
+			.AddScreen(registration => registration
+				.WithScreen(screen.GetType())
+			)
 			.WithDefaultScreen(screen.GetType())
 			.Build();
 		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);

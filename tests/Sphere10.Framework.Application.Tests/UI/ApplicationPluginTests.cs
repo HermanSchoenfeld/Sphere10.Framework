@@ -83,12 +83,12 @@ public class ApplicationPluginTests {
 		var builder = new ApplicationPluginBuilder()
 			.WithName("First plugin")
 			.AddBlock(firstBlock)
-			.ConfigureServices(_ => calls.Add("first"));
+			.AddServices(_ => calls.Add("first"));
 		var first = builder.Build();
 		var second = builder
 			.WithName("Second plugin")
 			.AddBlock(secondBlock)
-			.ConfigureServices(_ => calls.Add("second"))
+			.AddServices(_ => calls.Add("second"))
 			.Build();
 		Assert.That(calls, Is.Empty, "Building definitions does not perform startup work.");
 		first.Load(new ServiceCollection());
@@ -135,7 +135,7 @@ public class ApplicationPluginTests {
 		Assert.That(Tools.UI.ValidatePlugins(Array.Empty<IApplicationPlugin>()), Is.Empty);
 		var plugin = new ApplicationPluginBuilder()
 			.WithName("Services")
-			.ConfigureServices(services => services.AddSingleton<Marker>())
+			.AddServices(services => services.AddSingleton<Marker>())
 			.Build();
 		var input = new IApplicationPlugin[] { plugin };
 		var validated = Tools.UI.ValidatePlugins(input);

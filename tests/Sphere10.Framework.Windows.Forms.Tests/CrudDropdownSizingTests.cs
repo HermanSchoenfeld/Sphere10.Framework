@@ -54,7 +54,7 @@ public class CrudDropdownSizingTests {
 	public void OnlyTheConfiguredColumnAbsorbsWidthChangesWhenPopupShrinksAndGrows(string? StretchProperty) => RunWithMessageLoop(async Owner => {
 		var Source = new SizingDataSource(CreateRecords(2));
 		var Binding = CreateBinding(Source);
-		foreach (var Column in Binding.GridBindings.Cast<CrudGridColumn<Employee>>())
+		foreach (var Column in Binding.GridBindings.Cast<VisualGridColumn<Employee>>())
 			Column.ExpandsToFit = Column.SortName == StretchProperty;
 		using var Picker = new CrudReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
@@ -127,7 +127,7 @@ public class CrudDropdownSizingTests {
 			Record.Name = new string('W', 160);
 		var Source = new SizingDataSource(Records);
 		var Binding = CreateBinding(Source, new Size(520, 300));
-		foreach (var Column in Binding.GridBindings.Cast<CrudGridColumn<Employee>>())
+		foreach (var Column in Binding.GridBindings.Cast<VisualGridColumn<Employee>>())
 			Column.ExpandsToFit = false;
 		using var Picker = new CrudReferencePicker(Binding, null);
 		Owner.Controls.Add(Picker);
@@ -187,8 +187,8 @@ public class CrudDropdownSizingTests {
 		var ConfiguredSize = Picker.Size;
 		var PageSize = Picker.Grid.VisibleEntities.Count();
 		var originalWidths = ColumnWidths(FindControl<Grid>(Picker, "_grid"));
-		var pageMode = FindControl<ComboBox>(Picker, "_pageModeComboBox");
-		Assert.That(pageMode.SelectedIndex, Is.EqualTo((int)CrudGridPageMode.Auto));
+		var pageMode = FindControl<ToolStrip>(Picker, "_pageModeToolStrip").Items.OfType<ToolStripChoiceSelector>().Single();
+		Assert.That(pageMode.SelectedItem, Is.EqualTo(VisualGridPageMode.Auto));
 		Assert.That(FindControl<Button>(Picker, "_lastPageButton").Visible, Is.True);
 		Assert.That(Picker.Size, Is.EqualTo(ConfiguredSize));
 		FindControl<Button>(Picker, "_lastPageButton").PerformClick();
@@ -215,7 +215,7 @@ public class CrudDropdownSizingTests {
 		var Binding = CreateBinding(Source);
 		var Entity = new Employee { Name = "Owner", Manager = Records[0] };
 		using var Editor = new DefaultCrudEntityEditor { Dock = DockStyle.Fill };
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Control View;
 		Action OpenPopup;
 		if (PropertyEditor) {
@@ -235,7 +235,7 @@ public class CrudDropdownSizingTests {
 		} else {
 			Owner.Controls.Add(Crud);
 			Crud.GridBindings = new[] {
-				new CrudGridColumn<Employee> {
+				new VisualGridColumn<Employee> {
 					ColumnName = "Manager", PropertyName = nameof(Employee.Manager), DataType = typeof(Employee), DisplayType = CrudCellDisplayType.DropDownList,
 					ReferenceBinding = Binding, PropertyValue = Employee => Employee.Manager!, SetPropertyValue = (Employee, Value) => Employee.Manager = (Employee?)Value,
 					CanEditCell = true, ExpandsToFit = true
@@ -360,9 +360,9 @@ public class CrudDropdownSizingTests {
 	});
 
 	private static CrudReferenceBinding<Employee> CreateBinding(SizingDataSource Source, Size? MaximumSize = null) => new(Source, new[] {
-		new CrudGridColumn<Employee> { ColumnName = "ID", DataType = typeof(int), SortName = nameof(Employee.ID), PropertyValue = Employee => Employee.ID },
-		new CrudGridColumn<Employee> { ColumnName = "Name", DataType = typeof(string), SortName = nameof(Employee.Name), PropertyValue = Employee => Employee.Name, ExpandsToFit = true },
-		new CrudGridColumn<Employee> { ColumnName = "Unsigned Int Field", DataType = typeof(uint), SortName = nameof(Employee.UIntField), PropertyValue = Employee => Employee.UIntField }
+		new VisualGridColumn<Employee> { ColumnName = "ID", DataType = typeof(int), SortName = nameof(Employee.ID), PropertyValue = Employee => Employee.ID },
+		new VisualGridColumn<Employee> { ColumnName = "Name", DataType = typeof(string), SortName = nameof(Employee.Name), PropertyValue = Employee => Employee.Name, ExpandsToFit = true },
+		new VisualGridColumn<Employee> { ColumnName = "Unsigned Int Field", DataType = typeof(uint), SortName = nameof(Employee.UIntField), PropertyValue = Employee => Employee.UIntField }
 	}, Employee => Employee.Name) { MaximumDropDownSize = MaximumSize ?? new Size(760, 380) };
 
 	private static Employee[] CreateRecords(int Count) => Enumerable.Range(0, Count).Select(Index => new Employee { ID = Index, Name = $"Employee {Index}", UIntField = (uint)Index }).ToArray();
@@ -406,7 +406,7 @@ public class CrudDropdownSizingTests {
 
 	private static Task WaitForStableLayout(CrudReferencePicker Picker, SizingDataSource Source) => WaitForStableLayout(Picker.Grid, Source, Picker);
 
-	private static async Task WaitForStableLayout(CrudGrid Crud, SizingDataSource Source, Control? PopupContent = null, Func<string> diagnostics = null) {
+	private static async Task WaitForStableLayout(VisualGrid Crud, SizingDataSource Source, Control? PopupContent = null, Func<string> diagnostics = null) {
 		PopupContent ??= Crud;
 		var PreviousSize = Size.Empty;
 		var PreviousReads = -1;
@@ -414,7 +414,7 @@ public class CrudDropdownSizingTests {
 		for (var Attempt = 0; Attempt < 160; Attempt++) {
 			await Task.Delay(25);
 			Assert.That(PopupContent.IsDisposed, Is.False, diagnostics?.Invoke());
-			var Normal = typeof(CrudGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Crud)!.ToString() == "Normal";
+			var Normal = typeof(VisualGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Crud)!.ToString() == "Normal";
 			StableSamples = Normal && PopupContent.Size == PreviousSize && Source.ReadCount == PreviousReads ? StableSamples + 1 : 0;
 			if (StableSamples == 5)
 				return;

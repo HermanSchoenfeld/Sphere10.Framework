@@ -54,7 +54,7 @@ public class ActionMenuOwnerTests {
 			builder.AddActionItem("Run", action);
 		else
 			builder
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.AsActionItem()
 					.WithText("Run")
 					.WithAction(action)
@@ -79,7 +79,7 @@ public class ActionMenuOwnerTests {
 		var notifications = 0;
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Operations")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("Actions")
 				.AddActionItem("Startup", ui => {
 					receivedUI = ui;

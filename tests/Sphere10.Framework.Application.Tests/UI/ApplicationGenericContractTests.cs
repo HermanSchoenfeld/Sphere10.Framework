@@ -159,6 +159,7 @@ public class ApplicationGenericContractTests {
 		ExplicitPlugin[] IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>>.LoadedPlugins => new[] { plugin };
 		ApplicationScreenHost<ExplicitBlock, ProbeScreen> IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>>.ScreenHost => host;
 		public IApplicationBlock[] Blocks => host.Blocks;
+		public ApplicationSettingsCatalog Settings { get; } = new("ExplicitApplication", null, host.Blocks);
 		public bool HasUnsavedChanges => host.HasUnsavedChanges;
 		public void Initialize() { }
 		public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;

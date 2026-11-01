@@ -20,24 +20,52 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class SharedFluentBuilderTests {
 	[Test]
+	public void OptionalDefinitionReferencesKeepCallbackOrderAndReturnTheParentBuilder() {
+		var configured = 0;
+		var executed = 0;
+		var menuBuilder = new MenuBuilder().WithText("Actions");
+		Assert.That(menuBuilder
+			.AddItem(item => {
+			configured++;
+			item.WithText("Run").WithAction(() => executed++);
+		}, out var itemDefinition), Is.SameAs(menuBuilder));
+		var blockBuilder = new BlockBuilder().WithName("Work");
+		Assert.That(blockBuilder
+			.AddMenu(menuBuilder.Build(), out var menuDefinition), Is.SameAs(blockBuilder));
+		var pluginBuilder = new PluginBuilder().WithName("Operations");
+		Assert.That(pluginBuilder
+			.AddBlock(blockBuilder.Build(), out var blockDefinition), Is.SameAs(pluginBuilder));
+		var plugin = pluginBuilder.Build();
+
+		Assert.That(configured, Is.EqualTo(1));
+		Assert.That(executed, Is.Zero, "Configuration and graph construction must not run action callbacks.");
+		Assert.That(itemDefinition.Title, Is.EqualTo("Run"));
+		Assert.That(menuDefinition.Text, Is.EqualTo("Actions"));
+		Assert.That(plugin.Blocks.Single(), Is.SameAs(blockDefinition));
+		((ActionItem)blockDefinition.Menus.Single().Items.Single()).Action();
+		Assert.That(executed, Is.EqualTo(1));
+	}
+
+	[Test]
 	public void PluginComposesTypedChildBuildersAndOrderedServiceCallbacks() {
 		var calls = new List<string>();
 		var plugin = new PluginBuilder()
 			.WithName("Operations")
-			.ConfigureServices(_ => calls.Add("first"))
-			.ConfigureBlock(block => block
+			.AddServices(_ => calls.Add("first"))
+			.AddBlock(block => block
 				.WithName("Inventory")
 				.WithPosition(3)
-				.WithDefaultScreen<Screen>("Stock", ScreenActivationMode.SingleInstance)
-				.ConfigureMenu(menu => menu
+				.AddScreen(new ApplicationScreenDefinition(typeof(Screen), "Stock", ScreenActivationMode.SingleInstance))
+				.WithDefaultScreen<Screen>()
+				.AddMenu(menu => menu
 					.WithText("Items")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithText("Adjust stock")
 						.WithAction(() => calls.Add("action"))
 					)
 				)
 			)
-			.ConfigureServices(_ => calls.Add("second"))
+			.AddServices(_ => calls.Add("second"))
 			.Build();
 
 		plugin.Load(new ServiceCollection());
@@ -58,33 +86,48 @@ public class SharedFluentBuilderTests {
 	public void FailedChildConfigurationDoesNotAppendPartialDefinitions() {
 		var builder = new PluginBuilder()
 			.WithName("Operations")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithName("First")
 			);
-		Assert.That(() => builder.ConfigureBlock(block => block.WithName("Invalid").ConfigureMenu(menu => menu.WithText(""))), Throws.InvalidOperationException);
+		Assert.That(() => builder
+			.AddBlock(block => block
+				.WithName("Invalid")
+				.AddMenu(menu => menu
+					.WithText("")
+				)
+			), Throws.InvalidOperationException);
 		Assert.That(builder.Build().Blocks.Length, Is.EqualTo(1));
-		Assert.That(() => builder.ConfigureBlock((Action<BlockBuilder>)null), Throws.ArgumentNullException);
+		Assert.That(() => builder
+			.AddBlock((Action<BlockBuilder>)null), Throws.ArgumentNullException);
 	}
 
 	[Test]
 	public void FluentScreenPolicyRejectsInvalidCombinationsBeforeAttachingBlock() {
 		var builder = new PluginBuilder().WithName("Operations");
-		Assert.That(() => builder.ConfigureBlock(block => block
-			.WithName("Invalid")
-			.WithDefaultScreen<Screen>(activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty)), Throws.ArgumentException);
+		Assert.That(() => builder
+			.AddBlock(block => block
+				.WithName("Invalid")
+				.AddScreen(new ApplicationScreenDefinition(typeof(Screen), activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty))
+			), Throws.ArgumentException);
 		Assert.That(builder.Build().Blocks, Is.Empty);
 	}
 
 	[Test]
 	public void RepeatedMenuAndBlockBuildsProduceIndependentOwningGraphs() {
-		var menuBuilder = new MenuBuilder().WithText("Views")
-			.AddItem(new ScreenItem { Title = "Open", ScreenDefinition = new(typeof(Screen)) });
+		var definition = new ApplicationScreenDefinition(typeof(Screen));
+		var menuBuilder = new MenuBuilder()
+			.WithText("Views")
+			.AddItem(new ScreenItem { Title = "Open", ScreenDefinition = definition });
 		var firstMenu = menuBuilder.Build();
 		var secondMenu = menuBuilder.Build();
 		Assert.That(firstMenu.Items.Single().Parent, Is.SameAs(firstMenu));
 		Assert.That(secondMenu.Items.Single().Parent, Is.SameAs(secondMenu));
 		Assert.That(secondMenu.Items.Single(), Is.Not.SameAs(firstMenu.Items.Single()));
-		var builder = new BlockBuilder().WithName("Work").AddMenu(firstMenu).WithDefaultScreen<Screen>();
+		var builder = new BlockBuilder()
+			.WithName("Work")
+			.AddScreen(definition)
+			.AddMenu(firstMenu)
+			.WithDefaultScreen<Screen>();
 		var first = builder.Build();
 		var second = builder.Build();
 		Assert.That(first.Menus.Single().Parent, Is.SameAs(first));
@@ -98,9 +141,14 @@ public class SharedFluentBuilderTests {
 	[TestCase(true)]
 	public void TypeBasedDefaultReusesTheMatchingMenusCanonicalDefinition(bool genericDefault) {
 		var definition = new ApplicationScreenDefinition(typeof(Screen), "Empty workspace", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
-		var menu = new MenuBuilder().WithText("Views")
-			.AddItem(new ScreenItem { Title = "Navigation caption", ScreenDefinition = definition }).Build();
-		var builder = new BlockBuilder().WithName("Workspace").AddMenu(menu);
+		var menu = new MenuBuilder()
+			.WithText("Views")
+			.AddItem(new ScreenItem { Title = "Navigation caption", ScreenDefinition = definition })
+			.Build();
+		var builder = new BlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(definition)
+			.AddMenu(menu);
 		if (genericDefault)
 			builder.WithDefaultScreen<Screen>();
 		else
@@ -118,8 +166,10 @@ public class SharedFluentBuilderTests {
 	[Test]
 	public void TypeBasedDefaultReusesAnExplicitlyRegisteredDefinitionWithoutAMenu() {
 		var definition = new ApplicationScreenDefinition(typeof(Screen), "Standalone workspace", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
-		var builder = new BlockBuilder().WithName("Workspace")
-			.AddScreenDefinition(definition).WithDefaultScreen<Screen>();
+		var builder = new BlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(definition)
+			.WithDefaultScreen<Screen>();
 		var block = builder.Build();
 
 		Assert.That(block.Menus, Is.Empty);
@@ -132,19 +182,25 @@ public class SharedFluentBuilderTests {
 	}
 
 	[Test]
-	public void ExplicitDefaultTitleOverridesOnlyTheInferredCaption() {
-		var definition = new ApplicationScreenDefinition(typeof(Screen), "Menu screen", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
-		var menu = new MenuBuilder().WithText("Views")
-			.AddItem(new ScreenItem { Title = "Navigation caption", ScreenDefinition = definition }).Build();
-		var builder = new BlockBuilder().WithName("Workspace")
-			.WithDefaultScreen<Screen>("Pinned title").AddMenu(menu);
+	public void DefaultReferencePreservesRegisteredMetadataAndIndependentCommandCaption() {
+		var definition = new ApplicationScreenDefinition(typeof(Screen), "Pinned title", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
+		var menu = new MenuBuilder()
+			.WithText("Views")
+			.AddItem(new ScreenItem { Title = "Navigation caption", ScreenDefinition = definition })
+			.Build();
+		var builder = new BlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(definition)
+			.WithDefaultScreen<Screen>()
+			.AddMenu(menu);
 		var block = builder.Build();
 
 		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(definition));
 		Assert.That(block.DefaultScreenDefinition.Title, Is.EqualTo("Pinned title"));
 		Assert.That(block.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(block.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(2));
+		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(1));
+		Assert.That(block.Menus.Single().Items.Single().Title, Is.EqualTo("Navigation caption"));
 		Assert.That(builder.Build().DefaultScreenDefinition, Is.Not.SameAs(block.DefaultScreenDefinition));
 	}
 
@@ -152,9 +208,16 @@ public class SharedFluentBuilderTests {
 	public void ExplicitDefaultDefinitionRemainsUntouchedByMatchingMenuMetadata() {
 		var selected = new ApplicationScreenDefinition(typeof(Screen), "Canonical default");
 		var matching = new ApplicationScreenDefinition(typeof(Screen), "Menu screen", ScreenActivationMode.SingleInstance);
-		var menu = new MenuBuilder().WithText("Views")
-			.AddItem(new ScreenItem { Title = "Navigation caption", ScreenDefinition = matching }).Build();
-		var builder = new BlockBuilder().WithName("Workspace").WithDefaultScreen(selected).AddMenu(menu);
+		var menu = new MenuBuilder()
+			.WithText("Views")
+			.AddItem(new ScreenItem { Title = "Navigation caption", ScreenDefinition = matching })
+			.Build();
+		var builder = new BlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(selected)
+			.AddScreen(matching)
+			.WithDefaultScreen(selected)
+			.AddMenu(menu);
 		var block = builder.Build();
 
 		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(selected));
@@ -165,67 +228,71 @@ public class SharedFluentBuilderTests {
 		Assert.That(builder.Build().DefaultScreenDefinition, Is.Not.SameAs(block.DefaultScreenDefinition));
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public void RepeatedBuildsReevaluateInferredMetadataWithoutOverwritingTheDefaultTemplate(bool explicitTitle) {
+	[Test]
+	public void RepeatedBuildsPreserveRegistrationMetadataWhenCommandPresentationChanges() {
 		var original = new ApplicationScreenDefinition(typeof(Screen), "Original", ScreenActivationMode.SingleInstance);
 		var item = new ScreenItem { Title = "Navigation caption", ScreenDefinition = original };
-		var menu = new MenuBuilder().WithText("Views").AddItem(item).Build();
-		var builder = new BlockBuilder().WithName("Workspace")
-			.WithDefaultScreen<Screen>(explicitTitle ? "Pinned title" : null).AddMenu(menu);
+		var menu = new MenuBuilder()
+			.WithText("Views")
+			.AddItem(item)
+			.Build();
+		var builder = new BlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(original)
+			.WithDefaultScreen<Screen>()
+			.AddMenu(menu);
 		var first = builder.Build();
-		var updated = new ApplicationScreenDefinition(typeof(Screen), "Updated", ScreenActivationMode.MultiInstance, ScreenKind.Empty);
-		((ScreenItem)menu.Items.Single()).ScreenDefinition = updated;
+		((ScreenItem)menu.Items.Single()).Title = "Updated navigation";
 		var second = builder.Build();
 		var third = builder.Build();
 
-		Assert.That(first.DefaultScreenDefinition.Title, Is.EqualTo(explicitTitle ? "Pinned title" : "Original"));
+		Assert.That(first.DefaultScreenDefinition.Title, Is.EqualTo("Original"));
 		Assert.That(first.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(first.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		Assert.That(second.DefaultScreenDefinition.Title, Is.EqualTo(explicitTitle ? "Pinned title" : "Updated"));
-		Assert.That(second.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(second.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(second.ScreenDefinitions.Any(definition => definition.Title == updated.Title), Is.True);
+		Assert.That(second.DefaultScreenDefinition.Title, Is.EqualTo("Original"));
+		Assert.That(second.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
+		Assert.That(second.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
+		Assert.That(second.Menus.Single().Items.Single().Title, Is.EqualTo("Updated navigation"));
+		Assert.That(first.Menus.Single().Items.Single().Title, Is.EqualTo("Navigation caption"));
 		Assert.That(third.DefaultScreenDefinition, Is.Not.SameAs(second.DefaultScreenDefinition));
 		Assert.That(third.DefaultScreenDefinition.Title, Is.EqualTo(second.DefaultScreenDefinition.Title));
-		if (!explicitTitle)
-			Assert.That(second.DefaultScreenDefinition, Is.SameAs(((IScreenMenuItem)second.Menus.Single().Items.Single()).ScreenDefinition));
+		Assert.That(second.DefaultScreenDefinition, Is.SameAs(((IScreenMenuItem)second.Menus.Single().Items.Single()).ScreenDefinition));
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public void RemovingTheMatchingMenuScreenRestoresTheOriginalDefaultTemplate(bool explicitTitle) {
+	[Test]
+	public void AForeignCommandReferenceCannotReplaceTheRegisteredDefault() {
 		var matching = new ApplicationScreenDefinition(typeof(Screen), "Inferred title", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
 		var item = new ScreenItem { Title = "Navigation caption", ScreenDefinition = matching };
-		var menu = new MenuBuilder().WithText("Views").AddItem(item).Build();
-		var builder = new BlockBuilder().WithName("Workspace")
-			.WithDefaultScreen<Screen>(explicitTitle ? "Pinned title" : null).AddMenu(menu);
+		var menu = new MenuBuilder()
+			.WithText("Views")
+			.AddItem(item)
+			.Build();
+		var builder = new BlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(matching)
+			.WithDefaultScreen<Screen>()
+			.AddMenu(menu);
 		var first = builder.Build();
 		((ScreenItem)menu.Items.Single()).ScreenDefinition = new(typeof(OtherScreen), "Other screen", ScreenActivationMode.MultiInstance);
-		var second = builder.Build();
+		((ScreenItem)menu.Items.Single()).Registration = ((ScreenItem)menu.Items.Single()).ScreenDefinition.Registration;
+		Assert.That(() => builder.Build(), Throws.ArgumentException);
 
 		Assert.That(first.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(first.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(second.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(Screen)));
-		Assert.That(second.DefaultScreenDefinition.Title, Is.EqualTo(explicitTitle ? "Pinned title" : nameof(Screen)));
-		Assert.That(second.DefaultScreenDefinition.ActivationMode, Is.Null);
-		Assert.That(second.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		Assert.That(second.ScreenDefinitions.Any(definition => definition.ScreenType == matching.ScreenType && definition.Title == matching.Title
-			&& definition.ActivationMode == matching.ActivationMode && definition.ScreenKind == matching.ScreenKind), Is.False);
-		Assert.That(builder.Build().DefaultScreenDefinition, Is.Not.SameAs(second.DefaultScreenDefinition));
+		Assert.That(first.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(Screen)));
+		Assert.That(first.DefaultScreenDefinition.Title, Is.EqualTo("Inferred title"));
 	}
 
 	[TestCase(true)]
 	[TestCase(false)]
-	public void ActionItemsRejectScreenOnlyConfiguration(bool activationMode) {
+	public void ActionItemsRejectScreenReferences(bool definitionReference) {
 		var builder = new ItemBuilder()
 			.WithText("Action")
 			.WithAction(() => { });
-		if (activationMode)
-			builder.AsSingleInstance();
+		if (definitionReference)
+			Assert.That(() => builder.WithScreen(new ApplicationScreenDefinition(typeof(Screen))), Throws.InvalidOperationException);
 		else
-			builder.WithScreenTitle("Screen caption");
-		Assert.That(() => builder.Build(), Throws.InvalidOperationException);
+			Assert.That(() => builder.WithScreen<Screen>(), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -274,7 +341,8 @@ public class SharedFluentBuilderTests {
 		protected override TestApplicationMenu<IApplicationMenuItem> CreateMenu(IReadOnlyList<IApplicationMenuItem> items) {
 			var menu = new MenuTemplate { Text = Text };
 			foreach (var item in items)
-				menu.AddItem(item);
+				menu
+					.AddItem(item);
 			return (TestApplicationMenu<IApplicationMenuItem>)new DefinitionSnapshot().CreateMenu(menu);
 		}
 	}
@@ -295,20 +363,22 @@ public class SharedFluentBuilderTests {
 				snapshot.AddScreenDefinition(SnapshotDefinition(definition, definitions));
 			snapshot.DefaultScreenDefinition = SnapshotDefinition(block.DefaultScreenDefinition, definitions);
 			foreach (var menu in menus)
-				snapshot.AddMenu(menu);
+				snapshot
+					.AddMenu(menu);
 			return snapshot;
 		}
 
 		protected override IApplicationMenu CreateMenuSnapshot(IApplicationMenu menu, IApplicationMenuItem[] items) {
 			var snapshot = new TestApplicationMenu<IApplicationMenuItem> { Text = menu.Text };
 			foreach (var item in items)
-				snapshot.AddItem(item);
+				snapshot
+					.AddItem(item);
 			return snapshot;
 		}
 
 		protected override IApplicationMenuItem CreateItemSnapshot(IApplicationMenuItem item, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
 			var snapshot = item switch {
-				IScreenMenuItem screen => (TestApplicationMenuItem)new ScreenItem { ScreenDefinition = SnapshotDefinition(screen.ScreenDefinition, definitions) },
+				IScreenMenuItem screen => (TestApplicationMenuItem)new ScreenItem { ScreenDefinition = SnapshotDefinition(screen.ScreenDefinition, definitions), Registration = screen.Registration },
 				ActionItem action => new ActionItem { Action = action.Action },
 				_ => new TestApplicationMenuItem()
 			};
@@ -332,6 +402,16 @@ public class SharedFluentBuilderTests {
 
 	private sealed class ScreenItem : TestApplicationMenuItem, IScreenMenuItem {
 		private ApplicationScreenDefinition _definition;
+		private ApplicationScreenRegistration _registration;
+
+		public ApplicationScreenRegistration Registration {
+			get {
+				return _registration ?? _definition?.Registration;
+			}
+			set {
+				_registration = value;
+			}
+		}
 
 		public ApplicationScreenDefinition ScreenDefinition {
 			get => _definition;
@@ -342,6 +422,12 @@ public class SharedFluentBuilderTests {
 				if (Parent != null)
 					_definition?.AddActivator(this);
 			}
+		}
+
+		public void ResolveScreenDefinition(ApplicationScreenDefinition definition) {
+			ScreenDefinition = definition;
+			if (string.IsNullOrWhiteSpace(Title))
+				Title = definition.Title;
 		}
 	}
 

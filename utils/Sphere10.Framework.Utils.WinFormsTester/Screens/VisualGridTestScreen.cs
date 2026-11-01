@@ -19,7 +19,7 @@ using Sphere10.Framework.Windows.Forms.Crud;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class CrudTestScreen : WinFormsApplicationScreen {
+public partial class VisualGridTestScreen : WinFormsApplicationScreen {
 	static readonly string[] Subjects = new string[] { "Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5", "Subject 6", "Subject 7", "Subject 8", "Subject 9", "Subject 10" };
 	static readonly string[] Streets = new string[] { "Alpha", "Beta", "Gamma", "Delta", "Omega", "Phi", "Psi", "Andromeda", "Milky Way", "Ursur Minor" };
 	static readonly string[] StreetTypes = new string[] { "St", "Rd", "Way", "Pde", "Ct" };
@@ -27,11 +27,11 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 	static readonly string[] Cities = new string[] { "Vega", "Pleides", "Ceres", "Hyades", "Celestial Sphere", "Taurus", "Gemeni", "Mars", "Mercury", "Woodridge" };
 	private readonly TextBoxWriter _textWriter;
 	private readonly TestCrudDataSource _dataSource;
-	private readonly IEnumerable<ICrudGridColumn> _gridBindings;
+	private readonly IEnumerable<IVisualGridColumn> _gridBindings;
 	private readonly CancellationTokenSource _liveCancellation = new();
-	private readonly CrudGridSnapshotController<LiveSample> _liveController;
+	private readonly VisualGridSnapshotController<LiveSample> _liveController;
 	private readonly RefreshableSnapshotDataSource<LiveSample, int> _liveSource;
-	private readonly CrudGridColumn<LiveSample> _liveImageColumn;
+	private readonly VisualGridColumn<LiveSample> _liveImageColumn;
 	private readonly Image[] _liveImages;
 	private Task _liveWork = Task.CompletedTask;
 	private long _liveGeneration;
@@ -40,10 +40,10 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 	private bool _loaded;
 	private bool _liveDisposed;
 
-	public CrudTestScreen() {
+	public VisualGridTestScreen() {
 		InitializeComponent();
 		ActivationMode = ScreenActivationMode.MultiInstance;
-		Title = "CRUD Grid";
+		Title = "Visual Grid";
 		if (Tools.Runtime.IsDesignMode)
 			return;
 		_textWriter = new TextBoxWriter(_outputTextBox);
@@ -51,7 +51,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 		_flagsCheckedListBox.EnumType = typeof(DataSourceCapabilities);
 		_flagsCheckedListBox.SelectedEnum = DataSourceCapabilities.Default;
 		_gridBindings = new[] {
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "ID",
 				SortName = "ID",
 				PropertyValue = e => e.ID,
@@ -59,7 +59,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				DisplayType = CrudCellDisplayType.Text,
 				CanEditCell = false
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Name",
 				SortName = "Name",
 				DataType = typeof(string),
@@ -68,7 +68,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				ExpandsToFit = false,
 				CanEditCell = false
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "DOB",
 				SortName = "DateOfBirth",
 				DataType = typeof(DateTime),
@@ -78,7 +78,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.DateOfBirth = (DateTime)o
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Salary",
 				SortName = "Salary",
 				DataType = typeof(decimal),
@@ -87,7 +87,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Salary = (decimal)o
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Unsigned Int Field",
 				SortName = "UIntField",
 				DataType = typeof(uint),
@@ -96,7 +96,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.UIntField = (uint)o
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Supervisor",
 				SortName = "Supervisor",
 				DataType = typeof(bool),
@@ -105,7 +105,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Supervisor = (bool)o
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Start Work Time",
 				SortName = "StartWorkTime",
 				DataType = typeof(DateTime),
@@ -115,7 +115,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.StartWorkTime = (DateTime)o
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Address (Street)",
 				SortName = "Address",
 				DataType = typeof(string),
@@ -125,7 +125,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (Employee, Value) => (Employee.Address ??= new Address()).Street = Value as string
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Location",
 				DataType = typeof(string),
 				PropertyHasValue = Employee => Employee.Address != null,
@@ -133,7 +133,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				DisplayType = CrudCellDisplayType.Text,
 				CanEditCell = false
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Notes",
 				SortName = "Notes",
 				DataType = typeof(string),
@@ -143,7 +143,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Notes = o as string
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Manager",
 				PropertyName = nameof(Employee.Manager),
 				SortName = "Manager",
@@ -155,13 +155,13 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 				CanEditCell = true,
 				SetPropertyValue = (e, o) => e.Manager = (Employee)o
 			},
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				DisplayType = CrudCellDisplayType.EditCommand,
 			}
 		};
-		var ManagerColumns = new ICrudGridColumn[] {
+		var ManagerColumns = new IVisualGridColumn[] {
 			_gridBindings.Single(Column => Column.SortName == nameof(Employee.ID)),
-			new CrudGridColumn<Employee> {
+			new VisualGridColumn<Employee> {
 				ColumnName = "Name",
 				SortName = "Name",
 				DataType = typeof(string),
@@ -173,8 +173,8 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 		var ManagerBinding = new CrudReferenceBinding<Employee>(_dataSource, ManagerColumns, Employee => $"{Employee.Title} {Employee.FirstName} {Employee.LastName}".Trim()) {
 			MaximumDropDownSize = new Size(520, 300)
 		};
-		_gridBindings.OfType<CrudGridColumn<Employee>>().Single(Column => Column.PropertyName == nameof(Employee.Manager)).ReferenceBinding = ManagerBinding;
-		_crudGrid.GridBindings = _gridBindings;
+		_gridBindings.OfType<VisualGridColumn<Employee>>().Single(Column => Column.PropertyName == nameof(Employee.Manager)).ReferenceBinding = ManagerBinding;
+		_visualGrid.GridBindings = _gridBindings;
 		_crudComboBox.DisplayMember = (o) => ((Employee)o).FirstName;
 		// These images are owned by the screen and borrowed by the worker-safe, read-only cells.
 		using var icon = SystemIcons.Information.ToBitmap();
@@ -183,20 +183,20 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 			icon.Resize(new Size(28, 28), ResizeMethod.AspectFit, ResizeAlignment.CenterCenter),
 			icon.Resize(new Size(40, 40), ResizeMethod.AspectFit, ResizeAlignment.CenterCenter)
 		};
-		_liveImageColumn = new CrudGridColumn<LiveSample> {
+		_liveImageColumn = new VisualGridColumn<LiveSample> {
 			ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = sample => sample.Icon
 		};
-		_liveGrid.GridBindings = new ICrudGridColumn[] {
+		_liveGrid.GridBindings = new IVisualGridColumn[] {
 			_liveImageColumn,
-			new CrudGridColumn<LiveSample> { ColumnName = "ID", SortName = nameof(LiveSample.Id), DataType = typeof(int), PropertyValue = sample => sample.Id },
-			new CrudGridColumn<LiveSample> { ColumnName = "Name", SortName = nameof(LiveSample.Name), DataType = typeof(string), PropertyValue = sample => sample.Name, ExpandsToFit = true },
-			new CrudGridColumn<LiveSample> { ColumnName = "Load (%)", SortName = nameof(LiveSample.Load), DataType = typeof(double), PropertyValue = sample => Math.Round(sample.Load, 1) },
-			new CrudGridColumn<LiveSample> { ColumnName = "Bytes", SortName = nameof(LiveSample.Bytes), DataType = typeof(long), PropertyValue = sample => sample.Bytes },
-			new CrudGridColumn<LiveSample> { ColumnName = "Generation", SortName = nameof(LiveSample.Generation), DataType = typeof(long), PropertyValue = sample => sample.Generation },
-			new CrudGridColumn<LiveSample> { ColumnName = "Captured (UTC)", SortName = nameof(LiveSample.CapturedUtc), DataType = typeof(string), PropertyValue = sample => sample.CapturedUtc.ToString("HH:mm:ss.fff") }
+			new VisualGridColumn<LiveSample> { ColumnName = "ID", SortName = nameof(LiveSample.Id), DataType = typeof(int), PropertyValue = sample => sample.Id },
+			new VisualGridColumn<LiveSample> { ColumnName = "Name", SortName = nameof(LiveSample.Name), DataType = typeof(string), PropertyValue = sample => sample.Name, ExpandsToFit = true },
+			new VisualGridColumn<LiveSample> { ColumnName = "Load (%)", SortName = nameof(LiveSample.Load), DataType = typeof(double), PropertyValue = sample => Math.Round(sample.Load, 1) },
+			new VisualGridColumn<LiveSample> { ColumnName = "Bytes", SortName = nameof(LiveSample.Bytes), DataType = typeof(long), PropertyValue = sample => sample.Bytes },
+			new VisualGridColumn<LiveSample> { ColumnName = "Generation", SortName = nameof(LiveSample.Generation), DataType = typeof(long), PropertyValue = sample => sample.Generation },
+			new VisualGridColumn<LiveSample> { ColumnName = "Captured (UTC)", SortName = nameof(LiveSample.CapturedUtc), DataType = typeof(string), PropertyValue = sample => sample.CapturedUtc.ToString("HH:mm:ss.fff") }
 		};
 		_liveSource = new RefreshableSnapshotDataSource<LiveSample, int>(sample => sample.Id, RefreshLiveSample);
-		_liveController = new CrudGridSnapshotController<LiveSample>(_liveGrid, _liveSource, sample => sample.Id, CollectLiveSamplesAsync);
+		_liveController = new VisualGridSnapshotController<LiveSample>(_liveGrid, _liveSource, sample => sample.Id, CollectLiveSamplesAsync);
 		_liveController.SetDefaultSort(nameof(LiveSample.Id), SortDirection.Ascending);
 		_liveTitleAlignment.SelectedIndex = 0;
 		_liveImageAlignment.SelectedIndex = 4;
@@ -239,14 +239,14 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 		await Task.Run(() => FillDataSourceWithData(_dataSource, 1000));
 		if (IsDisposed)
 			return;
-		await _crudGrid.SetDataSource(_dataSource);
+		await _visualGrid.SetDataSource(_dataSource);
 		if (IsDisposed)
 			return;
-		_crudGrid.Capabilities = (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum;
+		_visualGrid.Capabilities = (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum;
 		await _crudComboBox.SetCrudParameters(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked);
 		if (IsDisposed)
 			return;
-		await _crudGrid.RefreshGrid();
+		await _visualGrid.RefreshGrid();
 		if (IsDisposed)
 			return;
 		_optionsPanel.Enabled = true;
@@ -317,32 +317,32 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 	private void _flagsCheckedListBox_SelectedValueChanged(object sender, EventArgs e) {
 		var value = _flagsCheckedListBox.SelectedEnum;
 		if (value != null) {
-			_crudGrid.Capabilities = (DataSourceCapabilities)value;
+			_visualGrid.Capabilities = (DataSourceCapabilities)value;
 			_crudComboBox.Capabilities = (DataSourceCapabilities)value;
 		}
 	}
 
-	private void _crudGrid_EntityDeselected(CrudGrid arg1, object arg2) {
+	private void _visualGrid_EntityDeselected(VisualGrid arg1, object arg2) {
 		_textWriter.WriteLine("{0}: Entity Deselected - ID: {1}", arg1.Name, arg2 != null ? ((Employee)arg2).ID.ToString() : "(unknown)");
 	}
 
-	private void _crudGrid_EntitySelected(CrudGrid arg1, object arg2) {
+	private void _visualGrid_EntitySelected(VisualGrid arg1, object arg2) {
 		_textWriter.WriteLine("{0}: Entity Selected - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 	}
 
-	private void _crudGrid_EntityEditing(CrudGrid arg1, CrudEntityPropertyChangedEventArgs args) {
+	private void _visualGrid_EntityEditing(VisualGrid arg1, CrudEntityPropertyChangedEventArgs args) {
 		_textWriter.WriteLine("{0}: Entity Changing - ID: {1}, Property: {2}, Old Value: {3}, New Value: {4}", arg1.Name, ((Employee)args.Entity).ID, args.PropertyName, args.OldValue, args.NewValue);
 	}
 
-	private void _crudGrid_EntityDeleted(CrudGrid arg1, object arg2) {
+	private void _visualGrid_EntityDeleted(VisualGrid arg1, object arg2) {
 		_textWriter.WriteLine("{0}: Entity Deleted - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 	}
 
-	private void _crudGrid_EntityCreated(CrudGrid arg1, object arg2) {
+	private void _visualGrid_EntityCreated(VisualGrid arg1, object arg2) {
 		_textWriter.WriteLine("{0}: Entity Created - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 	}
 
-	private void _crudGrid_EntityUpdated(CrudGrid arg1, object arg2) {
+	private void _visualGrid_EntityUpdated(VisualGrid arg1, object arg2) {
 		_textWriter.WriteLine("{0}: Entity Updated - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 	}
 
@@ -368,44 +368,44 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 	}
 
 	private void _selectFirstEntityButton_Click(object sender, EventArgs e) {
-		_crudGrid.SelectedEntity = _dataSource.FirstEntity;
+		_visualGrid.SelectedEntity = _dataSource.FirstEntity;
 	}
 
 	private void _leftClickCheckBox_CheckedChanged(object sender, EventArgs e) {
-		_crudGrid.LeftClickToDeselect = _leftClickCheckBox.Checked;
+		_visualGrid.LeftClickToDeselect = _leftClickCheckBox.Checked;
 	}
 
 	private void _rightClickCheckBox_CheckedChanged(object sender, EventArgs e) {
-		_crudGrid.RightClickForContextMenu = _rightClickCheckBox.Checked;
+		_visualGrid.RightClickForContextMenu = _rightClickCheckBox.Checked;
 	}
 
 	private async void _refreshGrid_Click(object sender, EventArgs e) {
-		await RunDemoActionAsync(_crudGrid.RefreshGrid);
+		await RunDemoActionAsync(_visualGrid.RefreshGrid);
 	}
 
 	private async void _autoSizeCheckBox_CheckedChanged(object sender, EventArgs e) {
-		_crudGrid.AutoPageSize = _autoSizeCheckBox.Checked;
+		_visualGrid.AutoPageSize = _autoSizeCheckBox.Checked;
 		await _crudComboBox.SetCrudParameters(_gridBindings, null, (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum, _dataSource, autoPageSize: _autoSizeCheckBox.Checked);
 	}
 
 	private void _autoSelectOnCreateCheckBox_CheckedChanged_1(object sender, EventArgs e) {
-		_crudGrid.AutoSelectOnCreate = _autoSelectOnCreateCheckBox.Checked;
+		_visualGrid.AutoSelectOnCreate = _autoSelectOnCreateCheckBox.Checked;
 	}
 
 	private void _allowCellEditingCheckBox_CheckedChanged(object sender, EventArgs e) {
-		_crudGrid.AllowCellEditing = _allowCellEditingCheckBox.Checked;
+		_visualGrid.AllowCellEditing = _allowCellEditingCheckBox.Checked;
 	}
 
 	private void _refreshEntireGridOnUpdateCheckBox_CheckedChanged(object sender, EventArgs e) {
-		_crudGrid.RefreshEntireGridOnUpdate = _refreshEntireGridOnUpdateCheckBox.Checked;
+		_visualGrid.RefreshEntireGridOnUpdate = _refreshEntireGridOnUpdateCheckBox.Checked;
 	}
 
 	private void _refreshEntireGridOnDeleteCheckBox_CheckedChanged(object sender, EventArgs e) {
-		_crudGrid.RefreshEntireGridOnDelete = _refreshEntireGridOnDeleteCheckBox.Checked;
+		_visualGrid.RefreshEntireGridOnDelete = _refreshEntireGridOnDeleteCheckBox.Checked;
 	}
 
 	private void SuppressLoadingIndicatorCheckedChanged(object sender, EventArgs e) {
-		_crudGrid.SuppressLoadingIndicator = _suppressLoadingIndicatorCheckBox.Checked;
+		_visualGrid.SuppressLoadingIndicator = _suppressLoadingIndicatorCheckBox.Checked;
 		_crudComboBox.Grid.SuppressLoadingIndicator = _suppressLoadingIndicatorCheckBox.Checked;
 	}
 
@@ -465,7 +465,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 
 	private void LiveUpdatesChanged(object sender, EventArgs args) => _liveTimer.Enabled = _liveUpdatesCheckBox.Checked;
 
-	private void LiveSelectionChanged(CrudGrid sender, object entity) {
+	private void LiveSelectionChanged(VisualGrid sender, object entity) {
 		_refreshSelectedLiveButton.Enabled = _removeSelectedLiveButton.Enabled = _liveGrid.SelectedEntity != null;
 	}
 
@@ -487,7 +487,7 @@ public partial class CrudTestScreen : WinFormsApplicationScreen {
 	private async void LivePageModeChanged(object sender, EventArgs args) {
 		if (_livePageMode.SelectedIndex < 0)
 			return;
-		_liveGrid.PageMode = (CrudGridPageMode)_livePageMode.SelectedIndex;
+		_liveGrid.PageMode = (VisualGridPageMode)_livePageMode.SelectedIndex;
 		if (_loaded)
 			await RunDemoActionAsync(_liveGrid.RefreshGrid);
 	}

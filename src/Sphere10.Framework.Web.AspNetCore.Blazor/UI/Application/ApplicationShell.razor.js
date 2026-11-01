@@ -10,8 +10,9 @@ export function ReadStartupScreen(key) {
 		return null;
 	try {
 		const identity = JSON.parse(value);
+		// New choices use the stable registration key; older choices may still identify a menu command.
 		return identity && typeof identity === "object" && typeof identity.blockId === "string"
-			&& typeof identity.menuItemId === "string" && typeof identity.screenTypeName === "string"
+			&& (typeof identity.registrationKey === "string" || typeof identity.menuItemId === "string") && typeof identity.screenTypeName === "string"
 			&& typeof identity.screenAssemblyName === "string" ? identity : null;
 	} catch {
 		return null;

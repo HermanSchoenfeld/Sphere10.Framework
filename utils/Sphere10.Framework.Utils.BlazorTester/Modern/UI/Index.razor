@@ -9,12 +9,25 @@
 *@
 
 @using Sphere10.Framework.Utils.BlazorTester.Demos
+@using Sphere10.Framework.Application.UI
+@using Sphere10.Framework.Web.AspNetCore.Blazor
 
 <header class="demo-page-header">
-	<h1><i class="fas fa-table" aria-hidden="true"></i> CRUD grid</h1>
+	<h1><i class="fas fa-table" aria-hidden="true"></i> Visual grid</h1>
 	<p>Typed columns, buffered edits, source validation and reference selection backed by local data.</p>
 	<nav aria-label="Related component demos">
 		<a href="components/tables">Tables</a> · <a href="components/dialogs">Dialogs</a> · <a href="components/wizards">Wizards</a>
 	</nav>
 </header>
-<GridDemo />
+<GridDemo GridPreferences="GridPreferences" GridPreferencesChanged="GridPreferencesChanged"
+	LiveGridPreferences="LiveGridPreferences" LiveGridPreferencesChanged="LiveGridPreferencesChanged" />
+
+@code {
+	[Parameter] public BlazorGridSettings GridPreferences { get; set; }
+
+	[Parameter] public EventCallback<BlazorGridSettings> GridPreferencesChanged { get; set; }
+
+	[Parameter] public BlazorGridSettings LiveGridPreferences { get; set; }
+
+	[Parameter] public EventCallback<BlazorGridSettings> LiveGridPreferencesChanged { get; set; }
+}

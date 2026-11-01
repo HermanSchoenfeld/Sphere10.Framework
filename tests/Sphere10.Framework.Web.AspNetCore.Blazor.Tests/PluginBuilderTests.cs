@@ -6,15 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -25,15 +25,18 @@ public class PluginBuilderTests {
 	public void FluentConfigurationUsesTheExistingBlockAndMenuBuilders() {
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("work")
 				.WithName("Work")
 				.WithPosition(5)
-				.WithDefaultScreen<TestScreen>("Overview")
-				.ConfigureMenu(menu => menu
+				.AddScreen<TestScreen>(screen => screen
+					.WithTitle("Overview")
+				)
+				.WithDefaultScreen<TestScreen>()
+				.AddMenu(menu => menu
 					.WithId("screens")
 					.WithText("Screens")
-					.AddScreenItem<TestScreen>("overview", "Overview")
+					.AddShowScreenItem<TestScreen>(text: "Overview", id: "overview")
 				)
 			)
 			.Build();
@@ -54,19 +57,19 @@ public class PluginBuilderTests {
 		var callbacks = new List<string>();
 		var builder = new BlazorPluginBuilder()
 			.WithName("First")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("first")
 				.WithName("First")
 			)
-			.ConfigureServices(_ => callbacks.Add("first"));
+			.AddServices(_ => callbacks.Add("first"));
 		var first = builder.Build();
 		var second = builder
 			.WithName("Second")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("second")
 				.WithName("Second")
 			)
-			.ConfigureServices(_ => callbacks.Add("second"))
+			.AddServices(_ => callbacks.Add("second"))
 			.Build();
 
 		Assert.That(callbacks, Is.Empty, "Building metadata must not execute service registrations.");
@@ -81,10 +84,11 @@ public class PluginBuilderTests {
 	[Test]
 	public void PluginSnapshotsInputMetadataAndReturnsDefensiveBlockArrays() {
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
+		var definition = new BlazorApplicationScreenDefinition(typeof(TestScreen), "Screen", parameters: parameters);
 		var items = new IBlazorApplicationMenuItem[] {
-			new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen), Parameters = parameters }
+			new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenDefinition = definition }
 		};
-		var blocks = new[] { new BlazorApplicationBlock { Id = "work", Title = "Work", Menus = new[] { new BlazorApplicationMenu { Text = "Menu", Items = items } } } };
+		var blocks = new[] { new BlazorApplicationBlock { Id = "work", Title = "Work", ScreenDefinitions = new[] { definition }, Menus = new[] { new BlazorApplicationMenu { Text = "Menu", Items = items } } } };
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
 			.AddBlock(blocks[0])
@@ -96,42 +100,47 @@ public class PluginBuilderTests {
 		((IApplicationPlugin)plugin).Blocks[0] = null;
 
 		var screen = (BlazorScreenMenuItem)plugin.Blocks.Single().Menus.Single().Items.Single();
-		Assert.That(screen.Parameters["Message"], Is.EqualTo("Original"));
-		Assert.That(() => ((IDictionary<string, object>)screen.Parameters)["Message"] = "Changed", Throws.TypeOf<NotSupportedException>());
+		var screenParameters = ((BlazorApplicationScreenDefinition)screen.ScreenDefinition).Parameters;
+		Assert.That(screenParameters["Message"], Is.EqualTo("Original"));
+		Assert.That(() => ((IDictionary<string, object>)screenParameters)["Message"] = "Changed", Throws.TypeOf<NotSupportedException>());
 	}
 
 	[TestCase(null)]
 	[TestCase("")]
 	[TestCase(" ")]
 	public void InvalidNamesAreRejectedImmediately(string name) {
-		Assert.That(() => new BlazorPluginBuilder().WithName(name), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => new BlazorPluginBuilder()
+			.WithName(name), Throws.InstanceOf<ArgumentException>());
 		Assert.That(() => new BlazorPlugin(name, Array.Empty<IBlazorApplicationBlock>()), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public void MissingNameIsRejectedAtBuild() {
-		Assert.That(() => new BlazorPluginBuilder().Build(), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => new BlazorPluginBuilder()
+			.Build(), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
 	public void NullConfigurationArgumentsAreRejected() {
 		var builder = new BlazorPluginBuilder();
 		Assert.That(() => builder.AddBlock((IBlazorApplicationBlock)null), Throws.TypeOf<ArgumentNullException>());
-		Assert.That(() => builder.ConfigureBlock((Action<BlazorApplicationBlockBuilder>)null), Throws.TypeOf<ArgumentNullException>());
-		Assert.That(() => builder.ConfigureServices(null), Throws.TypeOf<ArgumentNullException>());
-		Assert.That(() => new ServiceCollection().AddSphere10BlazorPlugin((Action<BlazorPluginBuilder>)null), Throws.TypeOf<ArgumentNullException>());
-		Assert.That(() => new ServiceCollection().AddSphere10BlazorPlugin((IBlazorPlugin)null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => builder.AddBlock((Action<BlazorApplicationBlockBuilder>)null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => builder.AddServices(null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => new ServiceCollection()
+			.AddSphere10BlazorPlugin((Action<BlazorPluginBuilder>)null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => new ServiceCollection()
+			.AddSphere10BlazorPlugin((IBlazorPlugin)null), Throws.TypeOf<ArgumentNullException>());
 	}
 
 	[Test]
 	public void DuplicateBlockIdsAreRejectedAtBuild() {
 		var builder = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("same")
 				.WithName("First")
 			)
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("same")
 				.WithName("Second")
 			);
@@ -139,23 +148,32 @@ public class PluginBuilderTests {
 	}
 
 	[Test]
-	public void ConflictingScreenPoliciesAreRejectedAcrossPluginBlocks() {
+	public void DifferentScreenPoliciesRemainIndependentAcrossPluginBlocks() {
 		var builder = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("single")
 				.WithName("Single")
-				.WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance)
+				.AddScreen<TestScreen>(screen => screen
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.WithDefaultScreen<TestScreen>()
 			)
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("multiple")
 				.WithName("Multiple")
-				.ConfigureMenu(menu => menu
+				.AddScreen<TestScreen>(screen => screen
+					.WithTitle("Screen")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddMenu(menu => menu
 					.WithText("Screens")
-					.AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)
+					.AddShowScreenItem<TestScreen>(text: "Screen", id: "screen")
 				)
 			);
-		Assert.That(() => builder.Build(), Throws.InstanceOf<ArgumentException>());
+		var plugin = builder.Build();
+		Assert.That(plugin.Blocks.SelectMany(block => block.ScreenDefinitions).Select(definition => definition.ActivationMode),
+			Is.EqualTo(new ScreenActivationMode?[] { ScreenActivationMode.SingleInstance, ScreenActivationMode.MultiInstance }));
 	}
 
 	[Test]
@@ -163,14 +181,15 @@ public class PluginBuilderTests {
 		var services = new ServiceCollection();
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Services")
-			.ConfigureServices(collection => collection.AddScoped<ScopedCounter>())
+			.AddServices(collection => collection.AddScoped<ScopedCounter>())
 			.Build();
 		var loaded = 0;
 		plugin.Loaded += () => {
 			Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ScopedCounter)), Is.True);
 			loaded++;
 		};
-		var result = services.AddSphere10BlazorPlugin(plugin);
+		var result = services
+			.AddSphere10BlazorPlugin(plugin);
 		using var provider = services.BuildServiceProvider();
 
 		Assert.That(result, Is.SameAs(services));
@@ -189,17 +208,18 @@ public class PluginBuilderTests {
 		var executed = 0;
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("work")
 				.WithName("Work")
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Actions")
 					.AddActionItem("run", "Run", () => executed++)
 				)
 			)
 			.Build();
 		plugin.Loaded += () => plugin.Blocks.Single().Menus.Single().Items.Single().Select += () => selected++;
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin);
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
 		var userInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
@@ -216,11 +236,11 @@ public class PluginBuilderTests {
 		var services = new ServiceCollection();
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("work")
 				.WithName("Plugin block")
 			)
-			.ConfigureServices(collection => collection
+			.AddServices(collection => collection
 				.AddApplicationBlock(block => block
 					.WithId("work")
 					.WithName("Callback block")
@@ -230,7 +250,8 @@ public class PluginBuilderTests {
 		var loaded = 0;
 		plugin.Loaded += () => loaded++;
 
-		Assert.That(() => services.AddSphere10BlazorPlugin(plugin), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => services
+			.AddSphere10BlazorPlugin(plugin), Throws.InstanceOf<ArgumentException>());
 		Assert.That(loaded, Is.EqualTo(1), "The Loaded callback precedes final validation; only the receipt publishes a successful registration.");
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin)), Is.False);
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IApplicationPlugin)), Is.False);
@@ -245,7 +266,8 @@ public class PluginBuilderTests {
 	public async Task CustomPluginCanFinishItsBlockDefinitionsDuringLoad() {
 		var plugin = new LateBlockPlugin();
 		Assert.That(plugin.Blocks, Is.Empty);
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin);
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
 		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -266,13 +288,13 @@ public class PluginBuilderTests {
 		services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Workspace")
-				.RegisterInitializer<IncrementUsageByOneInitializer>()
+				.AddInitializer<IncrementUsageByOneInitializer>()
 			);
 		Assert.That(() => services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Workspace")
-				.RegisterInitializer<IncrementUsageByOneInitializer>()
-				.ConfigureServices(_ => configured++)
+				.AddInitializer<IncrementUsageByOneInitializer>()
+				.AddServices(_ => configured++)
 			), Throws.InstanceOf<ArgumentException>());
 		Assert.That(configured, Is.Zero);
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IApplicationInitializer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Workspace")), Is.EqualTo(1));
@@ -289,7 +311,7 @@ public class PluginBuilderTests {
 		Assert.That(() => services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Workspace")
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithId("work")
 					.WithName("Plugin block")
 				)
@@ -297,30 +319,40 @@ public class PluginBuilderTests {
 	}
 
 	[Test]
-	public void RegistrationValidatesPoliciesAcrossPlugins() {
+	public void RegistrationPreservesIndependentPoliciesAcrossPlugins() {
 		var services = new ServiceCollection();
 		services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("First")
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithId("first")
 					.WithName("First")
-					.WithDefaultScreen<TestScreen>(activationMode: ScreenActivationMode.SingleInstance)
+					.AddScreen<TestScreen>(screen => screen
+						.WithActivationMode(ScreenActivationMode.SingleInstance)
+					)
+					.WithDefaultScreen<TestScreen>()
 				)
 			);
-		Assert.That(() => services
+		services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Second")
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithId("second")
 					.WithName("Second")
-					.ConfigureMenu(menu => menu
+					.AddScreen<TestScreen>(screen => screen
+						.WithTitle("Screen")
+						.WithActivationMode(ScreenActivationMode.MultiInstance)
+					)
+					.AddMenu(menu => menu
 						.WithText("Screens")
-						.AddScreenItem<TestScreen>("screen", "Screen", ScreenActivationMode.MultiInstance)
+						.AddShowScreenItem<TestScreen>(text: "Screen", id: "screen")
 					)
 				)
-			),
-			Throws.InstanceOf<ArgumentException>());
+			);
+		using var provider = services.BuildServiceProvider();
+		var definitions = provider.GetRequiredService<IBlazorApplicationScreenHost>().Blocks.SelectMany(block => block.ScreenDefinitions).ToArray();
+		Assert.That(definitions.Select(definition => definition.ActivationMode),
+			Is.EqualTo(new ScreenActivationMode?[] { ScreenActivationMode.SingleInstance, ScreenActivationMode.MultiInstance }));
 	}
 
 	[Test]
@@ -329,12 +361,15 @@ public class PluginBuilderTests {
 		services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Workspace")
-				.ConfigureServices(collection => collection.AddScoped<ScopedCounter>())
-				.ConfigureBlock(block => block
+				.AddServices(collection => collection.AddScoped<ScopedCounter>())
+				.AddBlock(block => block
 					.WithId("work")
 					.WithName("Work")
+					.AddScreen<TestScreen>(screen => screen
+						.WithTitle(nameof(TestScreen))
+					)
 					.WithDefaultScreen<TestScreen>()
-					.ConfigureMenu(menu => menu
+					.AddMenu(menu => menu
 						.WithText("Actions")
 						.AddActionItem("increment", "Increment", (provider, token) => {
 							token.ThrowIfCancellationRequested();
@@ -455,6 +490,9 @@ public class PluginBuilderTests {
 				new BlazorApplicationBlockBuilder()
 					.WithId("late")
 					.WithName("Late block")
+					.AddScreen<TestScreen>(screen => screen
+						.WithTitle(nameof(TestScreen))
+					)
 					.WithDefaultScreen<TestScreen>()
 					.Build()
 			};

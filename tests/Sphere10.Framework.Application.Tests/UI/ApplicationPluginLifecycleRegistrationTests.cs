@@ -22,13 +22,13 @@ public class ApplicationPluginLifecycleRegistrationTests {
 	public void DistinctPluginNamesOwnDistinctTransientInstancesOfTheSameTaskTypes() {
 		var first = new ApplicationPluginBuilder()
 			.WithName("First")
-			.RegisterInitializer<FirstInitializer>()
-			.RegisterFinalizer<FirstFinalizer>()
+			.AddInitializer<FirstInitializer>()
+			.AddFinalizer<FirstFinalizer>()
 			.Build();
 		var second = new ApplicationPluginBuilder()
 			.WithName("Second")
-			.RegisterInitializer<FirstInitializer>()
-			.RegisterFinalizer<FirstFinalizer>()
+			.AddInitializer<FirstInitializer>()
+			.AddFinalizer<FirstFinalizer>()
 			.Build();
 		var services = new ServiceCollection();
 		first.Load(services);
@@ -56,18 +56,18 @@ public class ApplicationPluginLifecycleRegistrationTests {
 		var callbacks = new List<string>();
 		var builder = new ApplicationPluginBuilder()
 			.WithName("First")
-			.ConfigureServices(_ => callbacks.Add("original"))
-			.RegisterInitializer<FirstInitializer>();
+			.AddServices(_ => callbacks.Add("original"))
+			.AddInitializer<FirstInitializer>();
 		var first = builder.Build();
 		builder
 			.WithName("Second")
-			.ConfigureServices(_ => callbacks.Add("second"))
-			.RegisterFinalizer<FirstFinalizer>();
+			.AddServices(_ => callbacks.Add("second"))
+			.AddFinalizer<FirstFinalizer>();
 		var second = builder.Build();
 		builder
 			.WithName("Third")
-			.ConfigureServices(_ => callbacks.Add("third"))
-			.RegisterInitializer<SecondInitializer>();
+			.AddServices(_ => callbacks.Add("third"))
+			.AddInitializer<SecondInitializer>();
 		var firstServices = new ServiceCollection();
 		var secondServices = new ServiceCollection();
 		first.Load(firstServices);
@@ -91,8 +91,8 @@ public class ApplicationPluginLifecycleRegistrationTests {
 	public void RegistrationUsesTheConstructedProductsNameRatherThanTheBuilderName() {
 		var plugin = new RenamedPluginBuilder()
 			.WithName("Configuration")
-			.RegisterInitializer<FirstInitializer>()
-			.RegisterFinalizer<FirstFinalizer>()
+			.AddInitializer<FirstInitializer>()
+			.AddFinalizer<FirstFinalizer>()
 			.Build();
 		var services = new ServiceCollection();
 		plugin.Load(services);
@@ -110,14 +110,14 @@ public class ApplicationPluginLifecycleRegistrationTests {
 		var counts = new List<int>();
 		var plugin = new ApplicationPluginBuilder()
 			.WithName("Ordered")
-			.ConfigureServices(services => counts.Add(services.Count))
-			.RegisterInitializer<FirstInitializer>()
-			.ConfigureServices(services => counts.Add(services.Count))
-			.RegisterFinalizer(_ => new FirstFinalizer())
-			.ConfigureServices(services => counts.Add(services.Count))
-			.RegisterInitializer(_ => new SecondInitializer())
-			.ConfigureServices(services => counts.Add(services.Count))
-			.RegisterFinalizer<SecondFinalizer>()
+			.AddServices(services => counts.Add(services.Count))
+			.AddInitializer<FirstInitializer>()
+			.AddServices(services => counts.Add(services.Count))
+			.AddFinalizer(_ => new FirstFinalizer())
+			.AddServices(services => counts.Add(services.Count))
+			.AddInitializer(_ => new SecondInitializer())
+			.AddServices(services => counts.Add(services.Count))
+			.AddFinalizer<SecondFinalizer>()
 			.Build();
 		var services = new ServiceCollection();
 		plugin.Load(services);
@@ -138,11 +138,11 @@ public class ApplicationPluginLifecycleRegistrationTests {
 		var factories = 0;
 		var plugin = new ApplicationPluginBuilder()
 			.WithName("Scoped")
-			.RegisterInitializer(provider => {
+			.AddInitializer(provider => {
 				factories++;
 				return new ScopedInitializer(provider, provider.GetRequiredService<ScopedContext>());
 			})
-			.RegisterFinalizer(provider => {
+			.AddFinalizer(provider => {
 				factories++;
 				return new ScopedFinalizer(provider, provider.GetRequiredService<ScopedContext>());
 			})
@@ -179,8 +179,8 @@ public class ApplicationPluginLifecycleRegistrationTests {
 	public void NestedDecoratorsPreserveThePluginNameUsedForTaskRegistration() {
 		var plugin = new ApplicationPluginBuilder()
 			.WithName("Wrapped")
-			.RegisterInitializer<FirstInitializer>()
-			.RegisterFinalizer<FirstFinalizer>()
+			.AddInitializer<FirstInitializer>()
+			.AddFinalizer<FirstFinalizer>()
 			.Build();
 		IApplicationPlugin decorated = new PluginDecorator(new PluginDecorator(plugin));
 		var services = new ServiceCollection();
@@ -198,8 +198,8 @@ public class ApplicationPluginLifecycleRegistrationTests {
 		var builder = new ApplicationPluginBuilder()
 			.WithName("Named");
 
-		Assert.That(() => builder.RegisterInitializer<FirstInitializer>(null), Throws.ArgumentNullException);
-		Assert.That(() => builder.RegisterFinalizer<FirstFinalizer>(null), Throws.ArgumentNullException);
+		Assert.That(() => builder.AddInitializer<FirstInitializer>(null), Throws.ArgumentNullException);
+		Assert.That(() => builder.AddFinalizer<FirstFinalizer>(null), Throws.ArgumentNullException);
 	}
 
 	[TestCase(false, false)]
@@ -239,8 +239,8 @@ public class ApplicationPluginLifecycleRegistrationTests {
 
 	private static ApplicationPluginBuilder RegisterLifecycleTask(ApplicationPluginBuilder builder, bool finalizer, bool useFactory) {
 		if (finalizer)
-			return useFactory ? builder.RegisterFinalizer(_ => new FirstFinalizer()) : builder.RegisterFinalizer<FirstFinalizer>();
-		return useFactory ? builder.RegisterInitializer(_ => new FirstInitializer()) : builder.RegisterInitializer<FirstInitializer>();
+			return useFactory ? builder.AddFinalizer(_ => new FirstFinalizer()) : builder.AddFinalizer<FirstFinalizer>();
+		return useFactory ? builder.AddInitializer(_ => new FirstInitializer()) : builder.AddInitializer<FirstInitializer>();
 	}
 
 	public sealed class FirstInitializer : SyncApplicationInitializerBase {

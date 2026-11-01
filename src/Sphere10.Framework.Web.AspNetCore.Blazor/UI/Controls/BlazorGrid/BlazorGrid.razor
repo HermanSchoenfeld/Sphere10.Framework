@@ -8,6 +8,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Grids
+@using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
 @typeparam TItem
 
 <div class="sphere10-grid" @ref="_element" aria-busy="@IsBusy.ToString().ToLowerInvariant()" data-grid-auto-size="@AutoSizeColumns.ToString().ToLowerInvariant()"
@@ -29,7 +30,25 @@
 		@if (Can(DataSourceCapabilities.CanDelete) && Controller.HasSelection) {
 			<button type="button" @onclick="RequestDelete" disabled="@NavigationDisabled">Delete</button>
 		}
+		@if (Preferences != null) {
+			<button type="button" @onclick="BeginGridSettings" disabled="@(NavigationDisabled || !CanEditGridSettings)">Settings</button>
+		}
 	</div>
+	@if (_settingsDraft != null) {
+		<section class="sphere10-grid-settings" role="region" aria-label="Grid settings">
+			<h3>Grid settings</h3>
+			<fieldset disabled="@_savingPreferences">
+				<BlazorApplicationSettingsEditor @ref="_settingsEditor" Value="_settingsDraft" />
+				@foreach (var error in _settingsErrors) {
+					<p role="alert" class="sphere10-grid-error">@error</p>
+				}
+				<div class="sphere10-grid-settings-actions">
+					<button type="button" @onclick="ApplyGridSettingsAsync">Apply settings</button>
+					<button type="button" @onclick="CancelGridSettings">Cancel settings</button>
+				</div>
+			</fieldset>
+		</section>
+	}
 	@if (!string.IsNullOrEmpty(ErrorMessage)) {
 		<div class="sphere10-grid-error" role="alert">@ErrorMessage</div>
 	}
@@ -61,7 +80,7 @@
 			<colgroup>
 				@foreach (var column in _columns) {
 					<col @key="column" data-grid-width="@Math.Max(40, column.Width)" data-grid-expands="@column.ExpandsToFit.ToString().ToLowerInvariant()"
-						data-grid-key="@(column.PropertyName ?? column.SortName ?? column.ColumnName)" style="@ColumnStyle(column)" />
+						data-grid-key="@column.PreferenceKey" style="@ColumnStyle(column)" />
 				}
 				@foreach (var column in ColumnDefinitions) {
 					<col @key="column" data-grid-width="140" style="width: 140px" />
@@ -155,12 +174,24 @@
 	<div class="sphere10-grid-footer">
 		<span role="status">@(Controller.IsLoading ? "Loading…" : $"{TotalDataCount} items")</span>
 		@if (Can(DataSourceCapabilities.CanPage)) {
-			<label class="sphere10-grid-visually-hidden" for="@(Id)-page-mode">Paging mode</label>
-			<select id="@(Id)-page-mode" aria-label="Paging mode" value="@Controller.PageMode" @onchange="ChangePageModeAsync" disabled="@NavigationDisabled">
-				<option value="@BlazorGridPageMode.Paged">Paged</option>
-				<option value="@BlazorGridPageMode.Auto">Auto Paged</option>
-				<option value="@BlazorGridPageMode.Single">Single Paged</option>
-			</select>
+			<div class="sphere10-grid-page-mode" @onkeydown="PageModeKeyDownAsync" @onkeydown:stopPropagation>
+				<button @ref="_pageModeButton" type="button" class="sphere10-grid-page-button" aria-label="Paging mode"
+					title="@($"Paging mode: {PageModeLabel(Controller.PageMode)}")" aria-haspopup="menu" aria-controls="@(Id)-page-mode"
+					aria-expanded="@(_pageModeMenuOpen && !NavigationDisabled ? "true" : "false")" disabled="@NavigationDisabled" @onclick="TogglePageModeMenu">
+					<svg aria-hidden="true" focusable="false" viewBox="0 0 20 20" width="18" height="18"><path d="M3 3h14v14H3zM3 7h14M3 11h14M7 3v14m6-14v14" /></svg>
+				</button>
+				@if (_pageModeMenuOpen && !NavigationDisabled) {
+					<button type="button" class="sphere10-grid-page-mode-dismiss" aria-label="Dismiss paging mode menu" tabindex="-1" @onclick="ClosePageModeMenu"></button>
+					<div id="@(Id)-page-mode" role="menu" aria-label="Paging mode" class="sphere10-grid-page-mode-menu">
+						@foreach (var mode in new[] { BlazorGridPageMode.Single, BlazorGridPageMode.Auto, BlazorGridPageMode.Paged }) {
+							<button type="button" role="menuitemradio" aria-checked="@(Controller.PageMode == mode ? "true" : "false")" @onclick="() => SelectPageModeAsync(mode)">
+								<span class="sphere10-grid-page-mode-marker" aria-hidden="true">@(Controller.PageMode == mode ? "●" : null)</span>
+								@PageModeLabel(mode)
+							</button>
+						}
+					</div>
+				}
+			</div>
 			@if (Controller.PageMode != BlazorGridPageMode.Single) {
 			<nav class="sphere10-grid-pagination" aria-label="Grid pages">
 				<button type="button" class="sphere10-grid-page-button" aria-label="First page" title="First page"

@@ -15,6 +15,8 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | [**Real-World Examples**](real-world-usage-examples.md) | Practical patterns from the test suite |
 | [**Keys, graphs and mapped properties**](usage/keys-graphs-and-stream-properties.md) | Compound keys, graph construction/traversal, IBTree and optional property caching |
 | [**Self-describing storage**](usage/self-describing-storage.md) | Binary ObjectSpace/ObjectStream metadata, factory registrations and packet layouts |
+| [**Builder API migration**](usage/builder-api-migration.md) | Add-style child composition, runtime callbacks and independent screen registrations |
+| [**Screen Options**](usage/screen-options.md) | Registration-owned typed preferences, native/web editors and persistent grid layouts |
 
 ---
 

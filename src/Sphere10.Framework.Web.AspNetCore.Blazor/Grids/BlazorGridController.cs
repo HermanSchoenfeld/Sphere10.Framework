@@ -122,10 +122,15 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize) => BindAsync(source, allowedCapabilities, pageSize, _pageMode);
 
 	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode) {
+		return BindAsync(source, allowedCapabilities, pageSize, pageMode, null);
+	}
+
+	/// <summary>Seeds restored query values before the first read while preserving the ordinary bind contract.</summary>
+	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode, BlazorGridSettings initialSettings) {
 		EnsureUsable();
 		Guard.ArgumentInRange(pageSize, 1, 9999, nameof(pageSize));
 		ValidatePageMode(pageMode);
-		if (ReferenceEquals(_source, source) && _allowedCapabilities == allowedCapabilities && _manualPageSize == pageSize && _pageMode == pageMode)
+		if (initialSettings == null && ReferenceEquals(_source, source) && _allowedCapabilities == allowedCapabilities && _manualPageSize == pageSize && _pageMode == pageMode)
 			return _pendingRead;
 		_source = source;
 		_allowedCapabilities = allowedCapabilities;
@@ -142,6 +147,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		_items = Array.Empty<TItem>();
 		ClearSelectionCore();
 		InvalidateEdit();
+		if (initialSettings != null)
+			ApplyViewSettingsCore(initialSettings);
 		return QueueReadAsync();
 	}
 
@@ -205,16 +212,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	public override Task ApplyViewSettingsAsync(BlazorGridSettings settings) {
 		EnsureNoDraft();
 		Guard.ArgumentNotNull(settings, nameof(settings));
-		// Treat browser-stored values as untrusted preferences, then apply the query in one read.
-		_manualPageSize = Math.Clamp(settings.PageSize, 1, 9999);
-		_pageMode = settings.PageMode is BlazorGridPageMode.Paged or BlazorGridPageMode.Auto or BlazorGridPageMode.Single ? settings.PageMode : BlazorGridPageMode.Paged;
-		_currentPage = UsesPages ? Math.Clamp(settings.PageNumber, 0, int.MaxValue - 1) : 0;
-		var sort = HasCapability(DataSourceCapabilities.CanSort)
-			&& !string.IsNullOrWhiteSpace(settings.SortColumnName)
-			&& _columns.Any(column => column.SortName == settings.SortColumnName)
-			&& settings.SortDirection is SortDirection.Ascending or SortDirection.Descending;
-		_sortProperty = sort ? settings.SortColumnName : null;
-		_sortDirection = sort ? settings.SortDirection : SortDirection.None;
+		ApplyViewSettingsCore(settings);
 		ClearVisibleItems();
 		return QueueReadAsync();
 	}
@@ -496,6 +494,19 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	protected override ValueTask FreeManagedResourcesAsync() {
 		FreeManagedResources();
 		return ValueTask.CompletedTask;
+	}
+
+	// Query capabilities are checked again by ReadAsync before the source is called, including the first restored query.
+	private void ApplyViewSettingsCore(BlazorGridSettings settings) {
+		_manualPageSize = Math.Clamp(settings.PageSize, 1, 9999);
+		_pageMode = settings.PageMode is BlazorGridPageMode.Paged or BlazorGridPageMode.Auto or BlazorGridPageMode.Single ? settings.PageMode : BlazorGridPageMode.Paged;
+		_currentPage = _pageMode == BlazorGridPageMode.Single ? 0 : Math.Clamp(settings.PageNumber, 0, int.MaxValue - 1);
+		var sort = (_allowedCapabilities & DataSourceCapabilities.CanSort) == DataSourceCapabilities.CanSort
+			&& !string.IsNullOrWhiteSpace(settings.SortColumnName)
+			&& _columns.Any(column => column.SortName == settings.SortColumnName)
+			&& settings.SortDirection is SortDirection.Ascending or SortDirection.Descending;
+		_sortProperty = sort ? settings.SortColumnName : null;
+		_sortDirection = sort ? settings.SortDirection : SortDirection.None;
 	}
 
 	private Task QueueReadAsync(bool showLoadingIndicator = true) {

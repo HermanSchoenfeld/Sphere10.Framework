@@ -37,11 +37,6 @@ public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinForm
 		private bool _showOnToolBar = true;
 		private bool _isStartScreen = false;
 
-		public WinFormsScreenMenuItemBuilder WithTitle(string Title) {
-			Guard.ArgumentNotNullOrEmpty(Title, nameof(Title));
-			return WithScreenTitle(Title);
-		}
-
 		public WinFormsScreenMenuItemBuilder WithImage(Image image16x16) {
 			_image16x16 = image16x16;
 			return this;
@@ -65,10 +60,7 @@ public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinForm
 		public WinFormsScreenMenuItem Build() {
 			ValidateItem();
 			Guard.Ensure(ScreenType != null, "A native screen item requires a screen.");
-			return new WinFormsScreenMenuItem(Text, ScreenType, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen) {
-				ScreenDefinition = ScreenDefinition,
-				IsDefault = IsDefault
-			};
+			return new WinFormsScreenMenuItem(ScreenRegistration, Text, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen);
 		}
 
 		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));

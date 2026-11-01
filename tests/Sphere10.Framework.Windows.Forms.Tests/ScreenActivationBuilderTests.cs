@@ -6,11 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Linq;
-using Sphere10.Framework.Application.UI;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -24,9 +27,7 @@ public class ScreenActivationBuilderTests {
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
-			Sphere10Framework.Instance
-				.Build()
-				.Start();
+			Sphere10Framework.Instance.Build().Start();
 	}
 
 	[OneTimeTearDown]
@@ -35,404 +36,326 @@ public class ScreenActivationBuilderTests {
 			Sphere10Framework.Instance.EndFramework();
 	}
 
-	[TestCase(ScreenActivationMode.SingleInstance)]
-	[TestCase(ScreenActivationMode.MultiInstance)]
-	public void FluentMethodsPreserveTheBuilderAndDeclareMetadata(ScreenActivationMode Mode) {
-		var Builder = new WinFormsApplicationMenuItemBuilder();
-		var ScreenBuilder = Builder
-			.AsScreenItem()
-			.WithScreen<DefaultSingleScreen>()
-			.WithText("Open");
-		var Result = Mode == ScreenActivationMode.SingleInstance ? ScreenBuilder.AsSingleInstance() : ScreenBuilder.AsMultiInstance();
-		using var Item = (WinFormsScreenMenuItem)Builder.Build();
-		Assert.That(Result, Is.SameAs(ScreenBuilder));
-		Assert.That(Item.ScreenDefinition.ActivationMode, Is.EqualTo(Mode));
-		Assert.That(((IWinFormsScreenMenuItem)Item).ScreenDefinition.ActivationMode, Is.EqualTo(Mode));
-		Assert.That(Item.ScreenDefinition.ScreenType, Is.EqualTo(typeof(DefaultSingleScreen)));
-	}
-
-	[TestCase(ScreenMode.SingleView)]
-	[TestCase(ScreenMode.MultiView)]
-	public void UnspecifiedScreenPolicyCreatesIndependentInstancesThroughMenuNavigation(ScreenMode mode) {
-		using var form = new BlockMainForm { ScreenMode = mode };
-		using var firstBlock = new WinFormsApplicationBlockBuilder()
-			.WithName("First")
-			.WithDefaultScreen<UnconfiguredScreen>()
-			.ConfigureMenu(menu => menu
-				.WithText("Screens")
-				.AddScreenItem<UnconfiguredScreen>("Open")
+	[Test]
+	public void RegistrationsOwnMetadataAndCommandsOnlyReferenceTheConfiguredScreen() {
+		var creations = 0;
+		var builder = new WinFormsApplicationBlockBuilder().WithName("Inspectors");
+		var returned = builder
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithTitle("CPU Inspector")
+				.WithStableKey("cpu")
+				.WithActivator(context => {
+				creations++;
+				return new ArgumentScreen("CPU");
+			})
+				.AsSingleInstance(), out var cpu
+			);
+		builder
+			.AddScreen<OtherScreen>(screen => screen
+				.WithTitle("Menu-free")
 			)
-			.Build();
-		using var otherBlock = new WinFormsApplicationBlockBuilder()
-			.WithName("Other")
-			.ConfigureMenu(menu => menu
-				.WithText("Screens")
-				.AddScreenItem<UnconfiguredScreen>("Open again")
+			.AddMenu(menu => menu
+				.WithText("Inspect")
+				.AddShowScreenItem(cpu)
+				.AddShowScreenItem(cpu, "Inspect Again")
 			)
-			.Build();
-		form.RegisterBlock(firstBlock);
-		form.RegisterBlock(otherBlock);
-		var first = (UnconfiguredScreen)form.ActiveScreen;
-		first.Text = "First instance state";
-		Assert.That(first.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		form.ExecuteMenuItem(firstBlock.Menus[0].Items[0]);
-		var second = form.ActiveScreen;
-		form.ExecuteMenuItem(otherBlock.Menus[0].Items[0]);
-		var third = form.ActiveScreen;
-		Assert.That(second, Is.Not.SameAs(first));
-		Assert.That(third, Is.Not.SameAs(second));
-		Assert.That(third.ApplicationBlock, Is.SameAs(otherBlock));
-		Assert.That(third.Text, Is.Not.EqualTo("First instance state"));
-		Assert.That(first.IsDisposed, Is.EqualTo(mode == ScreenMode.SingleView));
-		Assert.That(second.IsDisposed, Is.EqualTo(mode == ScreenMode.SingleView));
-		Assert.That(form.ScreenHost.OpenScreens, Has.Length.EqualTo(mode == ScreenMode.MultiView ? 3 : 1));
+			.WithDefaultScreen(cpu);
+		using var block = builder.Build();
+		var definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
+		Assert.That(returned, Is.SameAs(builder));
+		Assert.That(builder.Build(), Is.SameAs(block), "The native builder retains its product.");
+		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(2));
+		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
+		Assert.That(definition.Activators, Has.Length.EqualTo(2));
+		Assert.That(block.Menus[0].Items[0].Title, Is.EqualTo("CPU Inspector"));
+		Assert.That(block.Menus[0].Items[1].Title, Is.EqualTo("Inspect Again"));
+		Assert.That(creations, Is.Zero, "Configuration, enumeration and repeated builds must not activate screens.");
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var first = host.ActivateScreen(block, definition);
+		var second = host.ActivateScreen(block, ((IWinFormsScreenMenuItem)block.Menus[0].Items[1]).ScreenDefinition);
+		Assert.That(second, Is.SameAs(first));
+		Assert.That(((ArgumentScreen)first).Argument, Is.EqualTo("CPU"));
+		Assert.That(creations, Is.EqualTo(1));
 	}
 
 	[Test]
-	public void UnspecifiedMetadataRetainsTheScreenConstructorDefault() {
-		using var Block = new WinFormsApplicationBlockBuilder()
-			.WithName("Defaults")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Screens")
-				.AddScreenItem<DefaultSingleScreen>("Settings")
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultMultiScreen>()
-					.WithText("Design")
-				)
+	public async Task StartupActivatorReceivesTheOwningApplicationProviderAndNativeContext() {
+		WinFormsApplicationScreenActivationContext context = null;
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Context")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithTitle("Contextual screen")
+				.WithActivator(activation => {
+					context = activation;
+					return new ArgumentScreen("Context");
+				}),
+				out var registration
 			)
+			.WithDefaultScreen(registration)
 			.Build();
-		using var DirectItem = new WinFormsScreenMenuItem("Direct", typeof(DefaultSingleScreen));
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		Assert.That(Block.Menus[0].Items.Cast<IWinFormsScreenMenuItem>().Select(Item => Item.ScreenDefinition.ActivationMode), Is.All.Null);
-		Assert.That(DirectItem.ScreenDefinition.ActivationMode, Is.Null);
-		var Settings = Host.ActivateScreen(Block, typeof(DefaultSingleScreen));
-		var Design = Host.ActivateScreen(Block, typeof(DefaultMultiScreen));
-		Assert.That(Host.ActivateScreen(Block, typeof(DefaultSingleScreen)), Is.SameAs(Settings));
-		Assert.That(Host.ActivateScreen(Block, typeof(DefaultMultiScreen)), Is.Not.SameAs(Design));
-	}
-
-	[TestCase(ScreenMode.SingleView)]
-	[TestCase(ScreenMode.MultiView)]
-	public void MultiInstanceDeclarationOverridesTheDefaultSingleConstructor(ScreenMode Mode) {
-		using var Block = CreateBlock<DefaultSingleScreen>(ScreenActivationMode.MultiInstance);
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = Mode };
-		var First = Host.ActivateScreen(Block, typeof(DefaultSingleScreen))!;
-		var Second = Host.ActivateScreen(Block, typeof(DefaultSingleScreen))!;
-		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Second.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Second, Is.Not.SameAs(First));
-		Assert.That(First.IsDisposed, Is.EqualTo(Mode == ScreenMode.SingleView));
-		Assert.That(Host.OpenScreens, Has.Length.EqualTo(Mode == ScreenMode.MultiView ? 2 : 1));
-	}
-
-	[TestCase(ScreenMode.SingleView, false)]
-	[TestCase(ScreenMode.MultiView, false)]
-	[TestCase(ScreenMode.MultiView, true)]
-	public void ExplicitSingletonIsReusedAcrossBlocksWhenCachedOrDetached(ScreenMode Mode, bool Detached) {
-		using var Block = CreateBlock<DefaultMultiScreen>(ScreenActivationMode.SingleInstance);
-		using var OtherBlock = CreateBlock<DefaultMultiScreen>(ScreenActivationMode.SingleInstance);
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = Mode };
-		var First = Host.ActivateScreen(Block, typeof(DefaultMultiScreen))!;
-		Host.ActivateScreen(Block, typeof(DefaultSingleScreen));
-		if (Detached)
-			Assert.That(Host.UndockScreen(First), Is.True);
-		Assert.That(Host.ActivateScreen(OtherBlock, typeof(DefaultMultiScreen)), Is.SameAs(First));
-		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(First.ApplicationBlock, Is.SameAs(Block));
-		Assert.That(Host.Screens.OfType<DefaultMultiScreen>().Count(), Is.EqualTo(1));
-		Assert.That(Host.IsScreenUndocked(First), Is.EqualTo(Detached));
-	}
-
-	[Test]
-	public void UnspecifiedAliasUsesALaterDeclarationFromAnotherMenu() {
-		using var Block = new WinFormsApplicationBlockBuilder()
-			.WithName("Aliases")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Shortcuts")
-				.AddScreenItem<DefaultSingleScreen>("Design shortcut")
-			)
-			.ConfigureMenu(Menu => Menu
-				.WithText("Designs")
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultSingleScreen>()
-					.WithText("New design")
-					.AsMultiInstance()
-				)
-			)
-			.Build();
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		var Alias = (IWinFormsScreenMenuItem)Block.Menus[0].Items[0];
-		var First = Host.ActivateScreen(Alias.Parent.Parent, Alias.ScreenDefinition.ScreenType)!;
-		var Second = Host.ActivateScreen(Alias.Parent.Parent, Alias.ScreenDefinition.ScreenType)!;
-		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Second, Is.Not.SameAs(First));
-		Assert.That(Host.OpenScreens, Has.Length.EqualTo(2));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void SuppliedScreensUseTheirBlockOrPreviouslyRegisteredMultiInstanceDeclaration(bool RegisterFirst) {
-		using var Block = CreateBlock<DefaultSingleScreen>(ScreenActivationMode.MultiInstance);
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		if (RegisterFirst)
-			((IWinFormsApplicationScreenHost)Host).RegisterScreenTypes(Block);
-		using var First = new DefaultSingleScreen();
-		using var Second = new DefaultSingleScreen();
-		if (!RegisterFirst) {
-			First.ApplicationBlock = Block;
-			Second.ApplicationBlock = Block;
-		}
-		Assert.That(Host.ShowScreen(First), Is.True);
-		Assert.That(Host.ShowScreen(Second), Is.True);
-		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Second.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Host.OpenScreens, Is.EquivalentTo(new[] { First, Second }));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void SuppliedScreensCannotBypassAnExplicitSingletonWithAMultiInstanceConstructor(bool RegisterFirst) {
-		using var Block = CreateBlock<DefaultMultiScreen>(ScreenActivationMode.SingleInstance);
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		if (RegisterFirst)
-			Host.RegisterScreenTypes(Block);
-		using var First = new DefaultMultiScreen();
-		using var Duplicate = new DefaultMultiScreen();
-		if (!RegisterFirst) {
-			First.ApplicationBlock = Block;
-			Duplicate.ApplicationBlock = Block;
-		}
-		Assert.That(Host.ShowScreen(First), Is.True);
-		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(() => Host.ShowScreen(Duplicate), Throws.ArgumentException);
-		Assert.That(Duplicate.IsDisposed, Is.False);
-		Assert.That(Host.ActiveScreen, Is.SameAs(First));
-		Assert.That(Host.Screens, Is.EqualTo(new[] { First }));
-	}
-
-	[Test]
-	public void ConflictingDeclarationsWithinABlockDoNotRegisterAnyTypes() {
-		using var Block = CreateConflictingBlock();
-		using var EmptyBlock = new WinFormsApplicationBlock();
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		Assert.That(() => Host.RegisterScreenTypes(Block), Throws.ArgumentException);
-		Assert.That(Host.Screens, Is.Empty);
-		var First = Host.ActivateScreen(EmptyBlock, typeof(DefaultSingleScreen))!;
-		Assert.That(First.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance), "A rejected block must not leak its earlier multi-instance declaration");
-		Assert.That(Host.ActivateScreen(EmptyBlock, typeof(DefaultSingleScreen)), Is.SameAs(First));
-	}
-
-	[Test]
-	public void ConflictingDeclarationsAcrossRegisteredBlocksAreAtomic() {
-		using var RegisteredBlock = CreateBlock<DefaultMultiScreen>(ScreenActivationMode.SingleInstance);
-		using var ConflictingBlock = new WinFormsApplicationBlockBuilder()
-			.WithName("Conflict")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Screens")
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultSingleScreen>()
-					.WithText("New design")
-					.AsMultiInstance()
-				)
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultMultiScreen>()
-					.WithText("Conflict")
-					.AsMultiInstance()
-				)
-			)
-			.Build();
-		using var EmptyBlock = new WinFormsApplicationBlock();
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		Host.RegisterScreenTypes(RegisteredBlock);
-		Assert.That(() => Host.RegisterScreenTypes(ConflictingBlock), Throws.ArgumentException);
-		var Untouched = Host.ActivateScreen(EmptyBlock, typeof(DefaultSingleScreen))!;
-		var Registered = Host.ActivateScreen(RegisteredBlock, typeof(DefaultMultiScreen))!;
-		Assert.That(Untouched.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(Registered.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(Host.ActivateScreen(EmptyBlock, typeof(DefaultSingleScreen)), Is.SameAs(Untouched));
-		Assert.That(Host.ActivateScreen(RegisteredBlock, typeof(DefaultMultiScreen)), Is.SameAs(Registered));
+		var services = new ServiceCollection();
+		services.AddMainForm<BlockMainForm>();
+		services.AddApplicationBlock(block);
+		await using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		await application.InitializeAsync();
+		Assert.That(context, Is.Not.Null);
+		Assert.That(context.Services, Is.SameAs(provider.GetRequiredService<IServiceProvider>()));
+		Assert.That(context.Application, Is.SameAs(application));
+		Assert.That(context.Host, Is.SameAs(application.ScreenHost));
+		Assert.That(context.Block, Is.SameAs(block));
+		Assert.That(context.Definition, Is.SameAs(block.DefaultScreenDefinition));
+		Assert.That(context.Owner, Is.SameAs(provider.GetRequiredService<IMainForm>()));
 	}
 
 	[TestCase(false, false)]
 	[TestCase(false, true)]
 	[TestCase(true, false)]
 	[TestCase(true, true)]
-	public void ResolvedTypePolicyCannotChangeAfterInstantiationOrClosing(bool ExplicitInitially, bool CloseFirst) {
-		using var InitialBlock = ExplicitInitially ? CreateBlock<DefaultSingleScreen>(ScreenActivationMode.SingleInstance) : new WinFormsApplicationBlock();
-		using var ConflictingBlock = CreateBlock<DefaultSingleScreen>(ScreenActivationMode.MultiInstance);
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		var First = Host.ActivateScreen(InitialBlock, typeof(DefaultSingleScreen))!;
-		if (CloseFirst)
-			Assert.That(Host.CloseScreen(First), Is.True);
-		Assert.That(() => Host.RegisterScreenTypes(ConflictingBlock), Throws.ArgumentException);
-		Assert.That(() => Host.ActivateScreen(ConflictingBlock, typeof(DefaultSingleScreen)), Throws.ArgumentException);
-		Assert.That(Host.Screens, Has.Length.EqualTo(CloseFirst ? 0 : 1));
-		var Selected = Host.ActivateScreen(InitialBlock, typeof(DefaultSingleScreen))!;
-		Assert.That(Selected.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(Host.ActivateScreen(InitialBlock, typeof(DefaultSingleScreen)), Is.SameAs(Selected));
-	}
-
-	[Test]
-	public void SelectingAnExistingSingletonStillValidatesTheWholeIncomingBlock() {
-		using var InitialBlock = new WinFormsApplicationBlock();
-		using var ConflictingBlock = CreateConflictingBlock();
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		var Existing = Host.ActivateScreen(InitialBlock, typeof(OtherScreen));
-		Assert.That(() => Host.ActivateScreen(ConflictingBlock, typeof(OtherScreen)), Throws.ArgumentException);
-		Assert.That(Host.ActiveScreen, Is.SameAs(Existing));
-		Assert.That(Host.Screens, Is.EqualTo(new[] { Existing }));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void CapturedConstructorModeValidatesLaterInstancesWithoutOverwritingTheirMode(bool closeFirst) {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		using var first = new SuppliedModeScreen(ScreenActivationMode.SingleInstance);
-		using var conflicting = new SuppliedModeScreen(ScreenActivationMode.MultiInstance);
-		Assert.That(host.ShowScreen(first), Is.True);
-		if (closeFirst)
-			Assert.That(host.CloseScreen(first), Is.True);
-		Assert.That(() => host.ShowScreen(conflicting), Throws.ArgumentException);
-		Assert.That(conflicting.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(conflicting.Host, Is.Null);
-		Assert.That(host.Screens, Has.Length.EqualTo(closeFirst ? 0 : 1));
-	}
-
-	[Test]
-	public void RegisterBlockAppliesALaterDeclarationToItsDefaultScreen() {
-		using var Block = new WinFormsApplicationBlockBuilder()
-			.WithName("Default")
-			.WithDefaultScreen<DefaultSingleScreen>("Initial design")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Shortcuts")
-				.AddScreenItem<DefaultSingleScreen>("Design shortcut")
-			)
-			.ConfigureMenu(Menu => Menu
-				.WithText("Designs")
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultSingleScreen>()
-					.WithText("New design")
-					.AsMultiInstance()
-				)
-			)
-			.Build();
-		using var Form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
-		Form.RegisterBlock(Block);
-		var Initial = Form.ActiveScreen!;
-		Assert.That(Initial.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Initial.Title, Is.EqualTo("Initial design"));
-		Assert.That(Form.ScreenHost.ActivateScreen(Block, typeof(DefaultSingleScreen)), Is.Not.SameAs(Initial));
-		Assert.That(Form.ScreenHost.OpenScreens, Has.Length.EqualTo(2));
-	}
-
-	[Test]
-	public void RegisterBlockAppliesAllDeclarationsBeforeAnyExecuteOnLoadAction() {
-		using var Form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
-		WinFormsApplicationScreen? StartupScreen = null;
-		using var Block = new WinFormsApplicationBlockBuilder()
-			.WithName("Startup")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Startup")
-				.AddActionItem("Open initial design", () => {
-					StartupScreen = new DefaultSingleScreen();
-					Form.ShowScreen(StartupScreen);
-				}, executeOnLoad: true)
-			)
-			.ConfigureMenu(Menu => Menu
-				.WithText("Designs")
-				.ConfigureItem(Item => Item
-					.AsScreenItem()
-					.WithScreen<DefaultSingleScreen>()
-					.WithText("New design")
-					.AsMultiInstance()
-				)
-			)
-			.Build();
-		Form.RegisterBlock(Block);
-		Assert.That(StartupScreen, Is.Not.Null);
-		Assert.That(StartupScreen!.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(Form.ScreenHost.ActivateScreen(Block, typeof(DefaultSingleScreen)), Is.Not.SameAs(StartupScreen));
-		Assert.That(Form.ScreenHost.OpenScreens, Has.Length.EqualTo(2));
-	}
-
-	[Test]
-	public void RegisterBlockRejectsConflictsBeforeStartupActionsAndUserInterfaceChanges() {
-		using var Form = new BlockMainForm { ScreenMode = ScreenMode.MultiView, Text = "Original" };
-		using var Block = CreateConflictingBlock();
-		var Executed = false;
-		Block
-			.AddMenu(new WinFormsApplicationMenuBuilder()
-				.WithText("Startup")
-				.AddActionItem("Run", () => Executed = true, executeOnLoad: true)
-				.Build()
-			);
-		Assert.That(() => Form.RegisterBlock(Block), Throws.ArgumentException);
-		Assert.That(Executed, Is.False);
-		Assert.That(Form.Text, Is.EqualTo("Original"));
-		Assert.That(Form.RegisteredBlocks, Is.Empty);
-		Assert.That(Form.BlockBindings, Is.Empty);
-		Assert.That(Form.ActiveBlock, Is.Null);
-		Assert.That(Form.ScreenHost.Screens, Is.Empty);
-	}
-
-	private static WinFormsApplicationBlock CreateBlock<TScreen>(ScreenActivationMode Mode)
-		where TScreen : WinFormsApplicationScreen {
-		return new WinFormsApplicationBlockBuilder()
-			.WithName("Declarations")
-			.ConfigureMenu(Menu => Menu
-				.WithText("Screens")
-				.ConfigureItem(Item => {
-					var ScreenBuilder = Item
-						.AsScreenItem()
-						.WithScreen<TScreen>()
-						.WithText("Open");
-					if (Mode == ScreenActivationMode.SingleInstance)
-						ScreenBuilder.AsSingleInstance();
-					else
-						ScreenBuilder.AsMultiInstance();
+	public void SameTypeRegistrationsRetainIndependentSingletonsAndArguments(bool reverse, bool runtimeType) {
+		var counts = new int[2];
+		var uiThread = Environment.CurrentManagedThreadId;
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Hardware")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithTitle("CPU")
+				.WithStableKey("cpu")
+				.WithActivator(context => {
+					counts[0]++;
+					Assert.That(context.Block.Name, Is.EqualTo("Hardware"));
+					Assert.That(Environment.CurrentManagedThreadId, Is.EqualTo(uiThread));
+					return new ArgumentScreen("CPU");
 				})
+				.AsSingleInstance(), out var cpu
+			)
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithTitle("GPU")
+				.WithStableKey("gpu")
+				.WithActivator(context => {
+					counts[1]++;
+					return new ArgumentScreen("GPU");
+				})
+				.AsSingleInstance(), out var gpu
+			)
+			.AddMenu(menu => {
+				menu.WithText("Inspect");
+				if (runtimeType)
+					menu.AddShowScreenItem(typeof(ArgumentScreen));
+				else
+					menu.AddShowScreenItem<ArgumentScreen>();
+				menu.AddShowScreenItem(gpu);
+			})
+			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var cpuDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
+		var gpuDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, gpu);
+		var first = host.ActivateScreen(block, reverse ? gpuDefinition : cpuDefinition);
+		var second = host.ActivateScreen(block, reverse ? cpuDefinition : gpuDefinition);
+		Assert.That(first, Is.Not.SameAs(second));
+		Assert.That(host.ActivateScreen(block, cpuDefinition), Is.SameAs(reverse ? second : first));
+		Assert.That(host.ActivateScreen(block, gpuDefinition), Is.SameAs(reverse ? first : second));
+		Assert.That(counts, Is.EqualTo(new[] { 1, 1 }));
+		Assert.That(host.Screens.Cast<ArgumentScreen>().Select(screen => screen.Argument), Is.EquivalentTo(new[] { "CPU", "GPU" }));
+		Assert.That(((IWinFormsScreenMenuItem)block.Menus[0].Items[0]).ScreenDefinition, Is.SameAs(cpuDefinition), "A type-based menu shortcut selects the first matching registration.");
+		Assert.That(((IWinFormsScreenMenuItem)block.Menus[0].Items[1]).ScreenDefinition, Is.SameAs(gpuDefinition));
+		Assert.That(() => host.ActivateScreen(block, typeof(ArgumentScreen)), Throws.ArgumentException, "Programmatic type lookup must remain unambiguous.");
+	}
+
+	[TestCase(false, false)]
+	[TestCase(false, true)]
+	[TestCase(true, false)]
+	[TestCase(true, true)]
+	public void ExplicitAndConstructorDefaultPoliciesDoNotLeakAcrossRegistrations(bool reverse, bool explicitSingleton) {
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Policies")
+			.AddScreen<DefaultSingleScreen>(screen => screen
+				.WithTitle("Explicit")
+				.WithStableKey("explicit")
+				.WithActivationMode(explicitSingleton ? ScreenActivationMode.SingleInstance : ScreenActivationMode.MultiInstance), out var configured
+			)
+			.AddScreen<DefaultSingleScreen>(screen => screen
+				.WithTitle("Default")
+				.WithStableKey("default"), out var unspecified
 			)
 			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var firstDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? unspecified : configured);
+		var secondDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? configured : unspecified);
+		host.ActivateScreen(block, firstDefinition);
+		host.ActivateScreen(block, secondDefinition);
+		var explicitDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, configured);
+		var defaultDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, unspecified);
+		var explicitFirst = host.ActivateScreen(block, explicitDefinition);
+		var defaultFirst = host.ActivateScreen(block, defaultDefinition);
+		Assert.That(defaultFirst.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
+		Assert.That(host.ActivateScreen(block, defaultDefinition), Is.SameAs(defaultFirst));
+		Assert.That(host.ActivateScreen(block, explicitDefinition), explicitSingleton ? Is.SameAs(explicitFirst) : Is.Not.SameAs(explicitFirst));
 	}
 
-	private static WinFormsApplicationBlock CreateConflictingBlock() {
-		// Bypass builder validation to exercise host registration against malformed caller-supplied metadata.
-		var block = new WinFormsApplicationBlock { Name = "Conflict" };
-		var menu = new WinFormsApplicationMenu("Screens");
-		menu.AddItem(new WinFormsScreenMenuItem("New design", typeof(DefaultSingleScreen)) {
-			ScreenDefinition = new ApplicationScreenDefinition(typeof(DefaultSingleScreen), "New design", ScreenActivationMode.MultiInstance)
-		});
-		menu.AddItem(new WinFormsScreenMenuItem("Settings", typeof(DefaultMultiScreen)) {
-			ScreenDefinition = new ApplicationScreenDefinition(typeof(DefaultMultiScreen), "Settings", ScreenActivationMode.SingleInstance)
-		});
-		menu.AddItem(new WinFormsScreenMenuItem("Conflict", typeof(DefaultMultiScreen)) {
-			ScreenDefinition = new ApplicationScreenDefinition(typeof(DefaultMultiScreen), "Conflict", ScreenActivationMode.MultiInstance)
-		});
-		block.AddMenu(menu);
-		return block;
+	[Test]
+	public void CancellationAfterCustomCreationDisposesOnlyTheUnretainedAttempt() {
+		using var cancellation = new CancellationTokenSource();
+		ArgumentScreen created = null;
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Cancellation")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithActivator(context => {
+					created = new ArgumentScreen("Canceled");
+					cancellation.Cancel();
+					return created;
+				}),
+				out var registration
+			)
+			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		host.RegisterScreenTypes(block);
+		Assert.That(() => host.OpenScreenAsync(block, registration, cancellation.Token).GetAwaiter().GetResult(), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(created.IsDisposed, Is.True);
+		Assert.That(host.Screens, Is.Empty);
+		Assert.That(host.OpenScreens, Is.Empty);
+		Assert.That(host.ActiveScreen, Is.Null);
 	}
 
-	public class UnconfiguredScreen : WinFormsApplicationScreen {
+	[TestCase("Null")]
+	[TestCase("Incompatible")]
+	[TestCase("Disposed")]
+	public void InvalidActivatorResultsDoNotLeaveRetainedState(string invalidResult) {
+		WinFormsApplicationScreen result = invalidResult == "Null" ? null : invalidResult == "Incompatible" ? new OtherScreen() : new ArgumentScreen("Disposed");
+		if (invalidResult == "Disposed")
+			result.Dispose();
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Invalid")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithActivator(context => result)
+			)
+			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		Assert.That(() => host.ActivateScreen(block, block.ScreenDefinitions[0]), Throws.InvalidOperationException);
+		Assert.That(host.Screens, Is.Empty);
+		Assert.That(host.ActiveScreen, Is.Null);
+		if (result != null)
+			Assert.That(result.IsDisposed, Is.True, "Only an unattached result created for this attempt is disposed.");
 	}
 
-	public class DefaultSingleScreen : WinFormsApplicationScreen {
-		public DefaultSingleScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
+	[Test]
+	public void ReturningAnAlreadyHostedControlDoesNotStealOrDisposeIt() {
+		ArgumentScreen retained = null;
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Ownership")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithStableKey("first")
+				.WithActivator(context => new ArgumentScreen("Owned"))
+				.AsSingleInstance(), out var first
+			)
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithStableKey("second")
+				.WithActivator(context => retained)
+				.AsSingleInstance(), out var second
+			)
+			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		retained = (ArgumentScreen)host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, first));
+		Assert.That(() => host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, second)), Throws.InvalidOperationException);
+		Assert.That(retained.IsDisposed, Is.False);
+		Assert.That(retained.Host, Is.SameAs(host));
+		Assert.That(host.ActiveScreen, Is.SameAs(retained));
+		Assert.That(host.Screens, Is.EqualTo(new[] { retained }));
 	}
 
-	public class DefaultMultiScreen : WinFormsApplicationScreen {
-		public DefaultMultiScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
+	[Test]
+	public async Task MenuFreeProgrammaticOpeningAndCancelledActivationUseTheSameRegistration() {
+		var creations = 0;
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Menu-free")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithActivator(context => {
+					creations++;
+					return new ArgumentScreen("Programmatic");
+				})
+				.AsSingleInstance(), out var registration
+			)
+			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		host.RegisterScreenTypes(block);
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		await Assert.ThatAsync(async () => await host.OpenScreenAsync(block, registration, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		Assert.That(creations, Is.Zero);
+		var screen = await host.OpenScreenAsync(block, registration);
+		Assert.That(((ArgumentScreen)screen).Argument, Is.EqualTo("Programmatic"));
+		Assert.That(await host.OpenScreenAsync(block, registration), Is.SameAs(screen));
+		Assert.That(creations, Is.EqualTo(1));
+	}
+
+	[Test]
+	public void FailedLeaveGuardDisposesOnlyTheNewActivationAttempt() {
+		ArgumentScreen attempt = null;
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Guards")
+			.AddScreen<GuardScreen>(screen => screen
+				.AsSingleInstance(), out var guarded
+			)
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithActivator(context => attempt = new ArgumentScreen("Attempt")), out var next
+			)
+			.Build();
+		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var first = (GuardScreen)host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, guarded));
+		first.Veto = true;
+		Assert.That(host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, next)), Is.Null);
+		Assert.That(attempt.IsDisposed, Is.True);
+		Assert.That(first.IsDisposed, Is.False);
+		Assert.That(host.ActiveScreen, Is.SameAs(first));
+		first.Veto = false;
+	}
+
+	[Test]
+	public void DefinitionCopiesPreserveActivationWithoutSharingCommandMembership() {
+		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator = context => new ArgumentScreen("Copy");
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Copies")
+			.AddScreen<ArgumentScreen>(screen => screen
+				.WithTitle("Original")
+				.WithStableKey("copy")
+				.WithActivator(activator), out var reference
+			)
+			.AddMenu(menu => menu
+				.WithText("Inspect")
+				.AddShowScreenItem(reference)
+			)
+			.Build();
+		var definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reference);
+		var copy = (WinFormsApplicationScreenDefinition)definition.WithTitle("Copy");
+		Assert.That(copy.Activator, Is.SameAs(activator));
+		Assert.That(copy.Registration, Is.SameAs(reference));
+		Assert.That(copy.StableKey, Is.EqualTo("copy"));
+		Assert.That(copy.Activators, Is.Empty);
+		Assert.That(definition.Title, Is.EqualTo("Original"));
+		Assert.That(definition.Activators, Has.Length.EqualTo(1));
+	}
+
+	public class ArgumentScreen : WinFormsApplicationScreen {
+		public ArgumentScreen(string argument) {
+			Argument = argument;
+		}
+
+		public string Argument { get; }
 	}
 
 	public class OtherScreen : WinFormsApplicationScreen {
-		public OtherScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 	}
 
-	public sealed class SuppliedModeScreen : WinFormsApplicationScreen {
-		public SuppliedModeScreen(ScreenActivationMode activationMode) => ActivationMode = activationMode;
+	public class DefaultSingleScreen : WinFormsApplicationScreen {
+		public DefaultSingleScreen() {
+			ActivationMode = ScreenActivationMode.SingleInstance;
+		}
+	}
+
+	public class GuardScreen : WinFormsApplicationScreen {
+		public bool Veto;
+
+		protected override void OnHide(ref bool cancelHide) {
+			cancelHide = Veto;
+		}
 	}
 }

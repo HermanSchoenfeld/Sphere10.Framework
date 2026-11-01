@@ -6,23 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
 
@@ -82,29 +82,37 @@ public class BlockDockTests {
 	public async Task OneLoadedPluginContributesTwoIndependentBlockDockEntries() {
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Shared plugin")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("first")
 				.WithName("First block")
 				.WithIconUrl("img/first.svg")
+				.AddScreen<GuardedScreen>(screen => screen
+					.WithTitle("First screen")
+				)
 				.WithDefaultScreen<GuardedScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("First menus")
-					.AddScreenItem<GuardedScreen>("first-screen", "First screen")
+					.AddShowScreenItem<GuardedScreen>(text: "First screen", id: "first-screen")
 				)
 			)
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("second")
 				.WithName("Second block")
 				.WithPosition(1)
 				.WithIconUrl("img/second.svg")
+				.AddScreen<OtherScreen>(screen => screen
+					.WithTitle("Second screen")
+				)
 				.WithDefaultScreen<OtherScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Second menus")
-					.AddScreenItem<OtherScreen>("second-screen", "Second screen")
+					.AddShowScreenItem<OtherScreen>(text: "Second screen", id: "second-screen")
 				)
 			)
 			.Build();
-		var services = new ServiceCollection().AddLogging().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddLogging()
+			.AddSphere10BlazorPlugin(plugin);
 		services.AddSingleton<NavigationManager>(new DockNavigationManager());
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
@@ -224,10 +232,13 @@ public class BlockDockTests {
 				.WithName("Second block")
 				.WithPosition(1)
 				.WithIconUrl("img/second.svg")
+				.AddScreen<OtherScreen>(screen => screen
+					.WithTitle("Second screen")
+				)
 				.WithDefaultScreen<OtherScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Screens")
-					.AddScreenItem<OtherScreen>("screen", "Second screen")
+					.AddShowScreenItem<OtherScreen>(text: "Second screen", id: "screen")
 				)
 			);
 		services
@@ -235,10 +246,13 @@ public class BlockDockTests {
 				.WithId("first")
 				.WithName("First block")
 				.WithIconUrl("img/first.svg")
+				.AddScreen<GuardedScreen>(screen => screen
+					.WithTitle("First screen")
+				)
 				.WithDefaultScreen<GuardedScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Screens")
-					.AddScreenItem<GuardedScreen>("screen", "First screen")
+					.AddShowScreenItem<GuardedScreen>(text: "First screen", id: "screen")
 				)
 			);
 		return services;

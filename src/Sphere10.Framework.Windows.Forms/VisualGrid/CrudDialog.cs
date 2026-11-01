@@ -29,40 +29,40 @@ public partial class CrudDialog : Form {
 				_delayedInitializationAction = null;
 				await Initialization();
 			}
-			await _crudGrid.RefreshGrid();
+			await _visualGrid.RefreshGrid();
 		} catch (Exception Error) {
 			await ExceptionDialog.ShowAsync(this, Error);
 		}
 	}
 
-	public static Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<ICrudGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public static Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		return ShowAsync(window, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
 	}
 
-	public static Task ShowAsync<TEntity>(string title, IEnumerable<ICrudGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		return ShowAsync(null, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
 	}
 
-	public static Task ShowAsync<TEntity>(string title, IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		return ShowAsync(null, title, gridBindings, entityEditorType, capabilities, dataSource);
 	}
 
-	public static async Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public static async Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		using var crudDialog = new CrudDialog();
 		crudDialog.Text = title;
 		await crudDialog.SetCrudParameters(gridBindings, entityEditorType, capabilities, dataSource);
 		await crudDialog.ShowDialogAsync(window);
 	}
 
-	public async Task SetCrudParameters<TEntity>(IEnumerable<ICrudGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		var initializationAction =
 			new Func<Task>(async () => {
 				try {
 					if (entityEditorType != null)
-						_crudGrid.SetEntityEditor<TEntity>(entityEditorType);
-					_crudGrid.GridBindings = gridBindings;
-					await _crudGrid.SetDataSource(dataSource);
-					_crudGrid.Capabilities = capabilities;
+						_visualGrid.SetEntityEditor<TEntity>(entityEditorType);
+					_visualGrid.GridBindings = gridBindings;
+					await _visualGrid.SetDataSource(dataSource);
+					_visualGrid.Capabilities = capabilities;
 				} catch (Exception error) {
 					await ExceptionDialog.ShowAsync(this, error);
 				}

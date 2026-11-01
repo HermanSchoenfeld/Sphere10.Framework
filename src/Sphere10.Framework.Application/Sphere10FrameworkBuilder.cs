@@ -26,19 +26,34 @@ public class Sphere10FrameworkBuilder {
 	
 	public Sphere10Framework Framework => _framework;	
 
-	public Sphere10FrameworkBuilder UseModule<TModule>()
+	/// <summary>Constructs and adds one module immediately; service registration remains deferred.</summary>
+	public Sphere10FrameworkBuilder AddModule<TModule>()
 		where TModule : ICoreModuleConfiguration, new() {
-		_modules.Add(new TModule());
+		return AddModule<TModule>(out _);
+	}
+
+	/// <summary>Adds a typed module and exposes its exact constructed registration.</summary>
+	public Sphere10FrameworkBuilder AddModule<TModule>(out TModule registration)
+		where TModule : ICoreModuleConfiguration, new() {
+		registration = new TModule();
+		_modules.Add(registration);
 		return this;
 	}
 
-	public Sphere10FrameworkBuilder UseModule(ICoreModuleConfiguration module) {
+	/// <summary>Adds an existing module without running its lifecycle or component registration.</summary>
+	public Sphere10FrameworkBuilder AddModule(ICoreModuleConfiguration module) {
+		return AddModule(module, out _);
+	}
+
+	/// <summary>Adds an existing module and exposes that same registration.</summary>
+	public Sphere10FrameworkBuilder AddModule(ICoreModuleConfiguration module, out ICoreModuleConfiguration registration) {
 		Guard.ArgumentNotNull(module, nameof(module));
 		_modules.Add(module);
+		registration = module;
 		return this;
 	}
 
-	public Sphere10FrameworkBuilder ConfigureServices(Action<IServiceCollection> configure) {
+	public Sphere10FrameworkBuilder AddServices(Action<IServiceCollection> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		_configureActions.Add(configure);
 		return this;

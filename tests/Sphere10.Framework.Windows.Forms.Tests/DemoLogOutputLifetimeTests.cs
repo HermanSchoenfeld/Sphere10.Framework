@@ -49,7 +49,7 @@ public class DemoLogOutputLifetimeTests {
 			GlobalSettings.Provider = previousGlobal;
 		});
 		Sphere10Framework.Instance.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton(new Local<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(directory, "User")))));
 				services.AddSingleton(new Global<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(directory, "Global")))));
 				services.AddSingleton<ISettingsServices, StandardSettingsServices>();

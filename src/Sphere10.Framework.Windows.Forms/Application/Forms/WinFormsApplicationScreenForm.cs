@@ -34,6 +34,7 @@ public class WinFormsApplicationScreenForm : Form {
 	private readonly bool _toolBarVisible;
 	private readonly bool _movedToolBar;
 	private bool _released;
+	private bool _closing;
 	private bool _inMoveSize;
 	private bool _moving;
 	private bool _resizing;
@@ -202,11 +203,22 @@ public class WinFormsApplicationScreenForm : Form {
 		_caption?.UpdateWindowState();
 	}
 
-	protected override void OnFormClosing(FormClosingEventArgs Args) {
+	// Cancel the native attempt while the existing host validates and saves; successful removal releases this window.
+	protected override async void OnFormClosing(FormClosingEventArgs Args) {
 		base.OnFormClosing(Args);
 		if (_released || Args.Cancel || Args.CloseReason == CloseReason.FormOwnerClosing || Args.CloseReason == CloseReason.ApplicationExitCall)
 			return;
-		Args.Cancel = !_host.CloseScreen(Screen);
+		Args.Cancel = true;
+		if (_closing)
+			return;
+		_closing = true;
+		try {
+			await _host.CloseScreenAsync(Screen);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		} finally {
+			_closing = false;
+		}
 	}
 
 	protected override void OnResizeBegin(EventArgs Args) {

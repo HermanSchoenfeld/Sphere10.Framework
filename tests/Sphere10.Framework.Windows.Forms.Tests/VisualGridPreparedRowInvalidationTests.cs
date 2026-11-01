@@ -22,7 +22,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridPreparedRowInvalidationTests {
+public class VisualGridPreparedRowInvalidationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void RefreshingAnUnselectedPreparedRowInvalidatesItsReusedNativeCell(bool selectAnotherRow) => RunWithMessageLoop(async owner => {
@@ -31,13 +31,13 @@ public class CrudGridPreparedRowInvalidationTests {
 		var replacement = original with { Value = "Refreshed Value" };
 		var source = new RefreshableSnapshotDataSource<Row, int>(row => row.Id, row => row.Id == original.Id ? replacement : row);
 		source.ReplaceSnapshot(new[] { original, other });
-		using var crud = new CrudGrid {
+		using var crud = new VisualGrid {
 			Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true,
-			PageMode = CrudGridPageMode.Single, PrepareReadOnlyCellsInBackground = true, AutoSizeRowsOnRefresh = false
+			PageMode = VisualGridPageMode.Single, PrepareReadOnlyCellsInBackground = true, AutoSizeRowsOnRefresh = false
 		};
 		owner.Controls.Add(crud);
 		crud.GridBindings = new[] {
-			new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = row => row.Value, ExpandsToFit = true }
+			new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), PropertyValue = row => row.Value, ExpandsToFit = true }
 		};
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();

@@ -49,6 +49,32 @@ public partial class MainForm : LiteMainForm, IUserInterfaceServices {
 		ScreenHost.Changed += ScreensChanged;
 	}
 
+	// Derived forms have installed their native menu headings by Load; reuse Options instead of duplicating it.
+	protected override void OnLoad(EventArgs e) {
+		if (!Tools.Runtime.IsDesignMode && (Application != null || ApplicationServices != null)) {
+			var heading = FindApplicationMenuHeader("Options");
+			if (heading == null) {
+				heading = new ToolStripMenuItem("&Options");
+				MenuStrip.Items.Add(heading);
+				KeepHelpMenuLast();
+			}
+			var options = new ToolStripMenuItem("Screen &Options...");
+			options.Click += ScreenOptionsClick;
+			heading.DropDownItems.Add(options);
+		}
+		base.OnLoad(e);
+	}
+
+	// Await the real modal dialog and report a failed optional load without blocking the UI thread.
+	private async void ScreenOptionsClick(object sender, EventArgs e) {
+		try {
+			var profile = ActiveScreen?.SettingsProfile;
+			await ShowScreenOptionsAsync(profile);
+		} catch (Exception error) {
+			ReportError(error);
+		}
+	}
+
 	[DefaultValue(ScreenMode.SingleView), Category("Behavior"), Description("Display one screen or multiple screens in detachable tabs")]
 	public ScreenMode ScreenMode {
 		get => ScreenHost.ScreenMode;

@@ -25,9 +25,9 @@ public class FrameworkFinalizationTests {
 		framework.Finalized += () => events.Add("finalized");
 		framework
 			.Build()
-			.UseModule(new RecordingModule("first-module", events, priority: 20))
-			.UseModule(new RecordingModule("second-module", events, priority: 10))
-			.ConfigureServices(services => {
+			.AddModule(new RecordingModule("first-module", events, priority: 20))
+			.AddModule(new RecordingModule("second-module", events, priority: 10))
+			.AddServices(services => {
 				services.AddSingleton(_ => new ProviderResource(events));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("first-task", events));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("second-task", events));
@@ -63,9 +63,9 @@ public class FrameworkFinalizationTests {
 		framework.Finalized += () => events.Add("finalized");
 		framework
 			.Build()
-			.UseModule(new RecordingModule("failed-module", events, moduleError, 20))
-			.UseModule(new RecordingModule("next-module", events, priority: 10))
-			.ConfigureServices(services => {
+			.AddModule(new RecordingModule("failed-module", events, moduleError, 20))
+			.AddModule(new RecordingModule("next-module", events, priority: 10))
+			.AddServices(services => {
 				services.AddSingleton(_ => new ProviderResource(events));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("failed-task", events, taskError));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("next-task", events));
@@ -101,8 +101,8 @@ public class FrameworkFinalizationTests {
 		framework.Finalized += () => events.Add("next-observer");
 		framework
 			.Build()
-			.UseModule(new RecordingModule("module", events))
-			.ConfigureServices(services => {
+			.AddModule(new RecordingModule("module", events))
+			.AddServices(services => {
 				services.AddSingleton(_ => new ProviderResource(events, providerError));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("failed-task", events, taskError));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("next-task", events));
@@ -133,8 +133,8 @@ public class FrameworkFinalizationTests {
 		framework.Finalized += () => events.Add("finalized");
 		framework
 			.Build()
-			.UseModule(new RecordingModule("module", events))
-			.ConfigureServices(services => services.AddTransient<IApplicationFinalizer>(_ => throw resolutionError))
+			.AddModule(new RecordingModule("module", events))
+			.AddServices(services => services.AddTransient<IApplicationFinalizer>(_ => throw resolutionError))
 			.Start();
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => EndIfStarted(framework));
 		framework.Disposables.Add(() => events.Add("bag"));
@@ -155,7 +155,7 @@ public class FrameworkFinalizationTests {
 		var framework = new Sphere10Framework();
 		framework
 			.Build()
-			.UseModule(new RecordingModule("module", events))
+			.AddModule(new RecordingModule("module", events))
 			.Start(provider);
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => EndIfStarted(framework));
 		framework.EndFramework();
@@ -173,14 +173,14 @@ public class FrameworkFinalizationTests {
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => EndIfStarted(framework));
 		framework
 			.Build()
-			.ConfigureServices(services => services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("first-task", events)))
+			.AddServices(services => services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("first-task", events)))
 			.Start();
 		framework.Disposables.Add(() => events.Add("first-bag"));
 		GetFinalization(framework)();
 		framework.EndFramework();
 		framework
 			.Build()
-			.ConfigureServices(services => services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("second-task", events)))
+			.AddServices(services => services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("second-task", events)))
 			.Start();
 		framework.Disposables.Add(() => events.Add("second-bag"));
 		framework.EndFramework();
@@ -194,7 +194,7 @@ public class FrameworkFinalizationTests {
 		framework.Finalizing += framework.EndFramework;
 		framework
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton(_ => new ProviderResource(events));
 				services.AddSingleton<IApplicationFinalizer>(new RecordingFinalizer("task", events));
 			})

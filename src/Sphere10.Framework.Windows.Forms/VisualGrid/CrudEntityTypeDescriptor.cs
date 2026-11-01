@@ -21,14 +21,19 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 	private readonly object _entity;
 	private readonly IDictionary<string, CrudReferenceBinding> _referenceBindings;
 	private readonly bool _readOnly;
+	private readonly HashSet<string> _hiddenProperties;
+	private readonly Func<object, PropertyDescriptor, bool> _propertyFilter;
 	private readonly List<PropertyEdit> _edits = new();
 	private readonly List<CollectionEdit> _collectionEdits = new();
 
-	public CrudEntityTypeDescriptor(object Entity, IDictionary<string, CrudReferenceBinding> ReferenceBindings, bool readOnly = false)
+	public CrudEntityTypeDescriptor(object Entity, IDictionary<string, CrudReferenceBinding> ReferenceBindings, bool readOnly = false, IEnumerable<string> hiddenProperties = null,
+		Func<object, PropertyDescriptor, bool> propertyFilter = null)
 		: base(TypeDescriptor.GetProvider(Entity).GetTypeDescriptor(Entity)) {
 		_entity = Entity;
 		_referenceBindings = ReferenceBindings;
 		_readOnly = readOnly;
+		_hiddenProperties = new HashSet<string>(hiddenProperties ?? Array.Empty<string>(), StringComparer.Ordinal);
+		_propertyFilter = propertyFilter;
 	}
 
 	public bool HasChanges => _edits.Any(Edit => Edit.Property.IsActive && !Equals(Edit.OriginalValue, Edit.Property.GetValue(null)))
@@ -65,8 +70,11 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		AcceptChanges();
 	}
 
-	private PropertyDescriptorCollection WrapProperties(object Owner, PropertyDescriptorCollection Properties, EditablePropertyDescriptor? Parent) =>
-		new(Properties.Cast<PropertyDescriptor>().Select(Property => new EditablePropertyDescriptor(this, Owner, Property, Parent)).ToArray(), true);
+	private PropertyDescriptorCollection WrapProperties(object Owner, PropertyDescriptorCollection Properties, EditablePropertyDescriptor? Parent) {
+		var visible = Properties.Cast<PropertyDescriptor>().Where(property => (!ReferenceEquals(Owner, _entity) || !_hiddenProperties.Contains(property.Name))
+			&& (_propertyFilter == null || _propertyFilter(Owner, property)));
+		return new PropertyDescriptorCollection(visible.Select(property => new EditablePropertyDescriptor(this, Owner, property, Parent)).ToArray(), true);
+	}
 
 	private void RecordEdit(EditablePropertyDescriptor Property) {
 		if (!_edits.Any(Edit => ReferenceEquals(Edit.Property.Owner, Property.Owner) && Edit.Property.Name == Property.Name))
@@ -130,10 +138,12 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		}
 
 		public bool CanExpandAutomatically => _referenceBinding == null && (PropertyType.IsClass || PropertyType.IsInterface) && PropertyType != typeof(string)
-			&& !typeof(IEnumerable).IsAssignableFrom(PropertyType) && !typeof(Delegate).IsAssignableFrom(PropertyType)
-			&& (_property.Converter.GetType() == typeof(TypeConverter) || PropertyType.IsInterface && _property.Converter.GetType() == typeof(ReferenceConverter));
+			&& (!typeof(IEnumerable).IsAssignableFrom(PropertyType) || typeof(IDictionary).IsAssignableFrom(PropertyType) || typeof(IList).IsAssignableFrom(PropertyType)) && !typeof(Delegate).IsAssignableFrom(PropertyType)
+			&& (typeof(IDictionary).IsAssignableFrom(PropertyType) || typeof(IList).IsAssignableFrom(PropertyType) || _property.Converter.GetType() == typeof(TypeConverter) || PropertyType.IsInterface && _property.Converter.GetType() == typeof(ReferenceConverter));
 
 		public bool CanCreate => CanExpandAutomatically && !IsReadOnly && !PropertyType.IsAbstract && PropertyType.GetConstructor(Type.EmptyTypes) != null;
+
+		public override string DisplayName => _property.DisplayName;
 
 		public override Type ComponentType => _property.ComponentType;
 
@@ -185,11 +195,65 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		public void RestoreValue(object? Value) => _property.SetValue(Owner, Value);
 
 		public PropertyDescriptorCollection GetChildren(object Value, Attribute[]? Attributes, ITypeDescriptorContext? Context) {
-			var Properties = CanExpandAutomatically ? TypeDescriptor.GetProperties(Value, Attributes) : _property.Converter.GetProperties(Context, Value, Attributes);
+			// Declared dictionary roles are fixed navigation keys, with editable nested values instead of an opaque collection dialog.
+			var Properties = Value is IDictionary dictionary
+				? new PropertyDescriptorCollection(dictionary.Keys.Cast<object>().Select(key => new DictionaryValueProperty(dictionary, key)).ToArray(), true)
+				: Value is IList list
+					? new PropertyDescriptorCollection(Enumerable.Range(0, list.Count).Select(index => new ListValueProperty(list, index)).ToArray(), true)
+					: CanExpandAutomatically ? TypeDescriptor.GetProperties(Value, Attributes) : _property.Converter.GetProperties(Context, Value, Attributes);
 			// Let WinForms manage boxed values and immutable converters through their owning property setter.
 			return Value.GetType().IsValueType && !_session._readOnly ? Properties ?? new PropertyDescriptorCollection(null)
 				: _session.WrapProperties(Value, Properties ?? new PropertyDescriptorCollection(null), this);
 		}
+	}
+
+	// This descriptor edits a declared role's value; adding/removing/renaming role keys remains product schema configuration.
+	private sealed class DictionaryValueProperty(IDictionary dictionary, object key) : PropertyDescriptor(key.ToString(), null) {
+		public override Type ComponentType => dictionary.GetType();
+
+		public override Type PropertyType => dictionary[key]?.GetType() ?? typeof(object);
+
+		public override bool IsReadOnly => dictionary.IsReadOnly;
+
+		public override object GetValue(object component) => dictionary[key];
+
+		public override void SetValue(object component, object value) => dictionary[key] = value;
+
+		public override bool CanResetValue(object component) => false;
+
+		public override void ResetValue(object component) { }
+
+		public override bool ShouldSerializeValue(object component) => false;
+	}
+
+	// Ordinal paths remain stable inside the editor; meaningful value labels make nested column widths readable.
+	private sealed class ListValueProperty(IList list, int index) : PropertyDescriptor($"[{index}]", null) {
+		public override Type ComponentType => list.GetType();
+
+		public override Type PropertyType => list.GetType().IsArray ? list.GetType().GetElementType()
+			: list.GetType().GetInterfaces().FirstOrDefault(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))?.GetGenericArguments()[0]
+				?? list[index]?.GetType() ?? typeof(object);
+
+		public override string DisplayName {
+			get {
+				var value = list[index];
+				var label = value?.ToString();
+				return value != null && value is not string && !value.GetType().IsValueType && !string.IsNullOrWhiteSpace(label)
+					&& label != value.GetType().FullName && label != value.GetType().Name ? label : base.DisplayName;
+			}
+		}
+
+		public override bool IsReadOnly => list.IsReadOnly;
+
+		public override object GetValue(object component) => list[index];
+
+		public override void SetValue(object component, object value) => list[index] = value;
+
+		public override bool CanResetValue(object component) => false;
+
+		public override void ResetValue(object component) { }
+
+		public override bool ShouldSerializeValue(object component) => false;
 	}
 
 	private sealed class RecordingValueEditor : UITypeEditor {
@@ -242,14 +306,20 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 		}
 
 		public override object? ConvertTo(ITypeDescriptorContext? Context, CultureInfo? Culture, object? Value, Type DestinationType) {
+			if (DestinationType == typeof(string)) {
+				if (Value is IDictionary dictionary)
+					return dictionary.Count == 1 ? "1 entry" : $"{dictionary.Count} entries";
+				if (Value is ICollection collection)
+					return collection.Count == 1 ? "1 item" : $"{collection.Count} items";
+			}
 			if (_property.CanExpandAutomatically && DestinationType == typeof(string)) {
 				if (Value == null)
 					return EmptyValue;
 				if (Value is string)
 					return Value;
 				var Summary = Value.ToString();
-				if (Summary == Value.GetType().FullName || string.IsNullOrWhiteSpace(Summary))
-					Summary = Value.GetType().Name;
+				if (Summary == Value.GetType().FullName || Summary == Value.GetType().Name || string.IsNullOrWhiteSpace(Summary))
+					Summary = "Expand to edit";
 				return _property.IsCircular ? $"{Summary} (already shown)" : Summary;
 			}
 			return _converter.ConvertTo(Context, Culture, Value, DestinationType);

@@ -13,13 +13,13 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A nonvisual, read-only converter whose prepared value never needs formatting during layout or painting.</summary>
-internal sealed class CrudGridPreparedTextEditor : EditorBase {
+internal sealed class VisualGridPreparedTextEditor : EditorBase {
 	private object _value;
 	private string _displayText;
 	private bool _hasPreparedValue;
-	private CrudGridPreparedTextEditor _converter;
+	private VisualGridPreparedTextEditor _converter;
 
-	public CrudGridPreparedTextEditor(Type type)
+	public VisualGridPreparedTextEditor(Type type)
 		: base(type) {
 		EnableEdit = false;
 		EditableMode = EditableMode.None;
@@ -32,14 +32,14 @@ internal sealed class CrudGridPreparedTextEditor : EditorBase {
 		return error == null ? text : "Error:" + error.Message;
 	}
 
-	public CrudGridPreparedTextEditor CopyForValue(object value, string displayText) {
+	public VisualGridPreparedTextEditor CopyForValue(object value, string displayText) {
 		// Clone the worker-initialized converter metadata, without running constructors or type factories on the UI thread.
-		var editor = (CrudGridPreparedTextEditor)MemberwiseClone();
+		var editor = (VisualGridPreparedTextEditor)MemberwiseClone();
 		editor.ReplacePreparedValue(value, displayText, this);
 		return editor;
 	}
 
-	public void ReplacePreparedValue(object value, string displayText, CrudGridPreparedTextEditor converter) {
+	public void ReplacePreparedValue(object value, string displayText, VisualGridPreparedTextEditor converter) {
 		_value = value;
 		_displayText = displayText;
 		_hasPreparedValue = true;

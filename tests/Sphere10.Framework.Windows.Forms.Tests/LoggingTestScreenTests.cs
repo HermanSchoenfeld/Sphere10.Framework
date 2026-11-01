@@ -39,7 +39,7 @@ public class LoggingTestScreenTests {
 		_settingsDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "Sphere10-LoggingDemo-Settings-" + Guid.NewGuid().ToString("N"))).FullName;
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton(new Local<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(_settingsDirectory, "User")))));
 				services.AddSingleton(new Global<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(_settingsDirectory, "Global")))));
 			})

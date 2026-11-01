@@ -6,7 +6,7 @@ Build and run `Sphere10.Framework.Utils.WinFormsTester.csproj` on Windows. The a
 
 ## Plugin lifecycle and splash
 
-Each plugin calls `WithName(...)` before registering two initializers and two finalizers from the [Lifecycle folder](Lifecycle) through `RegisterInitializer<T>()` and `RegisterFinalizer<T>()`. Calling either helper, including its factory overload, before declaring a name throws `InvalidOperationException` immediately. Registrations use the built plugin's name as their service key; duplicate plugin names are rejected during loading.
+Each plugin calls `WithName(...)` before registering two initializers and two finalizers from the [Lifecycle folder](Lifecycle) through `AddInitializer<T>()` and `AddFinalizer<T>()`. Calling either helper, including its factory overload, before declaring a name throws `InvalidOperationException` immediately. Registrations use the built plugin's name as their service key; duplicate plugin names are rejected during loading.
 
 | Plugin | Initializers | Finalizers |
 |---|---|---|
@@ -21,7 +21,7 @@ The runner starts the framework, installs the blocks, and awaits `application.In
 
 **File > Exit** and closing the main window defer to `application.ExitAsync()`. After confirmation and screen/block permissions succeed, the shutdown splash appears while the main window remains open with interaction disabled. It displays application finalization and framework shutdown tasks; the main window closes as the last step after those tasks, followed by service disposal and splash cleanup. Declining confirmation or a permission guard leaves the application running. Forced exit skips those decisions but still completes shutdown tasks. The application coordinates repeated requests and runs plugin tasks once.
 
-Startup registration also rejects recursive attempts to load the same plugin name. If registration fails, newly added lifecycle task descriptors under that name are discarded so a later successful plugin cannot inherit abandoned tasks; ordinary `ConfigureServices` side effects retain their existing behavior.
+Startup registration also rejects recursive attempts to load the same plugin name. If registration fails, newly added lifecycle task descriptors under that name are discarded so a later successful plugin cannot inherit abandoned tasks; ordinary `AddServices` side effects retain their existing behavior.
 
 Run from the repository root:
 
@@ -36,7 +36,7 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p
 | Workspace | Screen Hosting, single/multi-view switching, navigation samples, and wizard. The empty workspace is a hidden screen definition in this block. |
 | Notes | Permanent Notes and guarded removal of the Notes block. |
 | Controls | Input controls, layout, and visual feedback. |
-| Data And Collections | CRUD Grid, ObjectSpace, transactional/observable collections, Merkle trees, and Bloom filters. |
+| Data And Collections | Visual Grid, ObjectSpace, transactional/observable collections, Merkle trees, and Bloom filters. |
 | Integration | Email, WebSockets, database connection controls, Windows input/hooks, sounds, and application services. |
 | Utilities | Compression, cryptography, text/image/file transformations, logging output, user settings, scheduling, and visual inheritance. |
 
@@ -44,7 +44,7 @@ Choose a block from the bottom navigation buttons, then open a screen from its m
 
 The shared `IApplicationScreenHost` owns block registration, navigation and screen lifecycle. It exposes actual native controls by reference. The form's `IUserInterfaceServices` provides interactions and object-based menu execution through `ExecuteMenuItemAsync(item)`. Each item reaches its declaring block through `item.Parent.Parent`; each registered block reaches the application through `Parent` and its contributor through `Source`. Screen examples use their own `Host` and `Block` to navigate or close themselves, including when detached, and can log through `Block.Parent.Logger`. Typed hosting uses the generic base contract; native tab and docking commands remain on `IWinFormsApplicationScreenHost`. `SharedScreenHostIntegrationTests` verifies service identity, shared reference operations and native presentation behavior.
 
-Blocks own their `ScreenDefinitions` independently of navigation. Each screen menu item references the same immutable activation metadata held by its block; the default is a `DefaultScreenDefinition` reference, and the definition's `Activators` array records its attached menu commands. Definitions carry lifetime and screen-kind policies directly. Native menus merge by their visible text and commands by title, with no string IDs in the shared model. The shared metadata classes are abstract `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, and `ApplicationMenuItemBase`; native `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` remain abstract intermediates. Concrete screen and action items add images, placement, and resource ownership.
+Blocks own their `ScreenDefinitions` independently of navigation. Each screen menu item references its canonical registration held by the block; the default is a `DefaultScreenDefinition` reference, and the definition's `Activators` array records its attached menu commands. Definitions carry lifetime and screen-kind policies directly. Native menus merge by their visible text and commands by title. Screen registrations have block-local identity and can declare stable persistence keys; navigation captions do not define that identity. The shared metadata classes are abstract `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, and `ApplicationMenuItemBase`; native `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` remain abstract intermediates. Concrete screen and action items add images, placement, and resource ownership.
 
 ## Default, permanent, and empty screens
 
@@ -64,8 +64,8 @@ Open Settings, then choose **Workspace > Screen Hosting > Close Ordinary Screens
 
 Ordinary screens use the framework's **MultiInstance** default: every menu activation opens an independent instance, including each **Workspace > Navigation Samples** item. **Settings** explicitly uses SingleInstance so repeated clicks reuse its tab. The permanent and empty-screen test profiles keep their declared policies.
 
-1. In **Workspace > Screen Hosting**, click **Settings** repeatedly. Settings is a singleton screen type; the same tab and instance number remain selected.
-2. Click **New Design** twice. Design is a multi-instance screen type; each tab has its own instance number, editable notes, counter, and event log.
+1. In **Workspace > Screen Hosting**, click **Settings** repeatedly. The Settings registration is single-instance; the same tab and instance number remain selected.
+2. Click **New Design** twice. The Design registration is multi-instance; each tab has its own instance number, editable notes, counter, and event log.
 3. Type different notes in each tab. Switch between tabs and use **Settings N** / **Design N > Actions**, or its counter toolbar button. Both must operate on the selected instance, and only its menu and toolbar should be merged into the main window.
 4. Right-click a tab and choose **Undock**, or drag a selected tab away from the tab headers and release. Try the rightmost tab and the last remaining tab as well. Its notes and counter remain intact. The compact detached window shows its own **File** and **Actions** menus directly, and retains the screen's original toolbar. Check its caption icons for **Re-dock**, **Minimize**, **Maximize/Restore**, and **Close**. Minimize and restore through the taskbar, double-click the title to maximize/restore, and resize using the window edges. The main window continues to show the selected docked screen's controls, or an empty content panel when all screens are detached.
 5. Undock Settings and click **Settings** in the main window's navigation again. This should focus the existing detached window without creating another tab.
@@ -80,6 +80,39 @@ Ordinary screens use the framework's **MultiInstance** default: every menu activ
 14. Open **Plain Screen (no bars)** and detach it. Its content should start directly below the caption, with no empty menu, toolbar, or tab row. Edit the notes, re-dock, and detach again to check that the same content survives. Also check a regular Settings or Design screen: only their actual menus and toolbar should occupy space.
 
 The remaining demonstrations are grouped by function as listed above and can be opened side by side. **Integration > Connections > WebSockets** polls reports on a component-owned UI timer that stops when its handle is destroyed and resumes when recreated. Switching, detaching, re-docking, and closing that screen must not leave a callback invoking a missing handle. The **Integration > Windows Integration > Input Hooks** screen batches worker events for a UI timer, stops its hooks while its handle is unavailable, and releases hook subscriptions and resources on close or direct disposal. Reopening or re-docking it must not leave callbacks updating a disposed screen.
+
+## Independent screen registrations
+
+`WinFormsDemoPlugin` registers screens through block `AddScreen` callbacks before
+adding menus. Menus use `AddShowScreenItem` or a presentation-only `AddItem` that
+references one of those registrations. Defaults resolve an existing registration.
+A type-based menu reference selects the first matching registration in its block;
+the CPU/GPU commands use exact `out` registration references.
+
+The **Workspace > Screen Hosting** menu puts the alternatives together:
+
+| Menu item | Builder example | Target |
+|---|---|---|
+| **First Design (by type)** | `AddShowScreenItem<ScreenHostingDesignTestScreen>(...)` | The first matching registration, **Design**. |
+| **First Design (by runtime type)** | `AddShowScreenItem(typeof(ScreenHostingDesignTestScreen), ...)` | The same first **Design** registration. |
+| **CPU Inspector** / **GPU Inspector** | `AddShowScreenItem(cpuInspector)` / `AddShowScreenItem(gpuInspector)` | The exact moniker captured by `AddScreen(..., out registration)`. |
+
+Try each type shortcut twice: every click opens a new Design instance because
+that registration is multi-instance. Then alternate the CPU/GPU commands: each
+reuses its own single-instance inspector even though all three registrations use
+the same screen class. The original **New Design** command remains available.
+
+Open **Workspace > Screen Hosting > CPU Inspector** and **GPU Inspector**. Both use
+`ScreenHostingDesignTestScreen`, with independent stable keys, titles and
+registration activators. Each command reuses its own single-instance tab; it
+does not reuse the other inspector. **New Design** uses a separate multi-instance
+registration of the same type, so its drafts and lifetime stay independent.
+
+Choose **Open Menu-free Inspector**. This action opens an exact block registration
+that has no screen-navigation item. It still appears as an ordinary hosted screen
+and follows the same leave, close and disposal guards. Its registration does not
+gain a synthetic command. These examples configure the controls without opening
+them during registration.
 
 ## Chart showcases
 
@@ -226,9 +259,9 @@ is visible, has a handle and Live is selected; closing the screen disposes it.
 In both dashboards, the screen owns capture and retention. The chart controls
 render supplied snapshots and do not collect telemetry themselves.
 
-## CRUD Grid walkthrough
+## Visual Grid walkthrough
 
-Choose **Data And Collections > Data Editing > CRUD Grid** to open a fresh screen each time; each tab has its own data and grid settings.
+Choose **Data And Collections > Data Editing > Visual Grid** to open a fresh screen each time; each tab has its own data and grid settings.
 
 The **Editable Records** tab retains the employee editor and reference-picker demonstrations. Its options scroll independently when the window is short. Enable **Allow cell editing** and **CanUpdate** to edit **Address (Street)** and **Notes** immediately. The street editor creates an address when needed and preserves its other fields, which remain visible in **Location**. Turning editing or update capability off also closes an active cell editor.
 
@@ -248,7 +281,7 @@ immediately without the spinner or temporary disabling. Use **Refresh Grid** to
 compare this with the default loading feedback. Pending reads still join and
 retain their stale-query protection in either mode.
 
-The **Live Snapshots** tab demonstrates a separate read-only Text/Image grid backed by `RefreshableSnapshotDataSource<T,TKey>` and `CrudGridSnapshotController<T>`. **Capture Snapshot** creates 500 immutable synthetic rows on a worker, including a deliberate asynchronous capture delay. No operating-system telemetry or files are read. **Live Updates (750 ms)** repeats capture while this workspace is visible; disposal stops the timer and cancels pending collection. The status line shows the capture and UI thread IDs. Employee sample generation also runs on a worker before its first binding.
+The **Live Snapshots** tab demonstrates a separate read-only Text/Image grid backed by `RefreshableSnapshotDataSource<T,TKey>` and `VisualGridSnapshotController<T>`. **Capture Snapshot** creates 500 immutable synthetic rows on a worker, including a deliberate asynchronous capture delay. No operating-system telemetry or files are read. **Live Updates (750 ms)** repeats capture while this workspace is visible; disposal stops the timer and cancels pending collection. The status line shows the capture and UI thread IDs. Employee sample generation also runs on a worker before its first binding.
 
 Live updates default to `SuppressLoadingIndicator = true`, `PrepareReadOnlyCellsInBackground = true` and `AutoSizeRowsOnRefresh = false`. Keep clicking different rows or resizing while capture runs: the committed grid remains enabled, compatible native cell slots are reused, and stable row IDs transfer selection to replacement instances. **Show Loading Feedback**, **Prepare Cells On Worker**, and **Measure Rows On Each Refresh** let you compare the supported paths. The first binding still uses the grid's normal full-size loading surface.
 
@@ -286,3 +319,12 @@ dotnet test tests/Sphere10.Framework.Windows.Forms.Tests/Sphere10.Framework.Wind
 
 
 The application-level **Views > Toggle Screen Mode** command is also a toolbar button. It remains available when switching blocks, uses the guarded native host transition and toggles between the live single/multi-view implementations. Try it with a screen's cancellation checkbox selected to verify that vetoed changes leave the workspace intact.
+
+
+## Inspector preferences
+
+Open **Workspace > CPU Inspector** and **GPU Inspector**, then **Options > Screen Options...**. Both commands create the existing `ScreenHostingDesignTestScreen` with their original constructor labels and separate stable registrations. `ScreenHostingPreferences` is an ordinary class with standard .NET validation, without a `SettingsObject` base. CPU uses the shared default editor; GPU adds a custom provisional preview while retaining the same nested, collection and grid editor. Each registration declares its own heading/defaults, detail enum, nested presentation, saved-view collection, two named grid roles and logging section. Options metadata and defaults are available before either inspector opens.
+
+The **Preferences and grids** tab contains two screen-owned grids and a standalone comparison. Drag a column edge, change a page, Apply or Reset options, close and reopen the inspector to compare persistence. A computed Summary column has an explicit stable key. The standalone grid retains its ordinary independent record; the owned grids and Log Output selector save only through the inspector's root profile. Remembered logging starts only after the screen's logger and normal readiness/preflight path are available.
+
+Use the **Lifecycle and draft** tab to edit the original notes, then apply preferences or switch between CPU and GPU. Preference changes update the summary and controls without replacing those operational notes. A cancelled Options page remains provisional; successful earlier Apply actions remain accepted. Turning Remember After Close off keeps transient output usable in the current session while omitting that output from persisted preferences.

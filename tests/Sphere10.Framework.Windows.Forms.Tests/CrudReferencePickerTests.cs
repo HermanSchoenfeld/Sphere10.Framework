@@ -59,7 +59,7 @@ public class CrudReferencePickerTests {
 		var Entity = new Employee { Name = "Employee" };
 		Entity.Manager = Entity;
 		var Binding = CreateBinding(new[] { Entity });
-		using var Crud = new CrudGrid();
+		using var Crud = new VisualGrid();
 		await Crud.SetDataSource(Binding.DataSource);
 		Crud.GridBindings = Binding.GridBindings;
 		using var AutomaticEditor = new DefaultCrudEntityEditor();
@@ -114,7 +114,7 @@ public class CrudReferencePickerTests {
 	public void PickerLoadsFullDatasourceWithOnlySupportedReadCapabilities(DataSourceCapabilities Capabilities) => RunWithMessageLoop(async Owner => {
 		var Records = Enumerable.Range(0, 120).Select(Index => new Employee { Name = $"Employee {Index}" }).ToArray();
 		var Source = new TestDataSource(Records) { SupportedCapabilities = Capabilities };
-		var Columns = CreateColumns().Concat(new[] { new CrudGridColumn<Employee> { DisplayType = CrudCellDisplayType.EditCommand } });
+		var Columns = CreateColumns().Concat(new[] { new VisualGridColumn<Employee> { DisplayType = CrudCellDisplayType.EditCommand } });
 		var Binding = new CrudReferenceBinding<Employee>(Source, Columns, Employee => Employee.Name);
 		using var Picker = new CrudReferencePicker(Binding, Records[110]);
 		Owner.Controls.Add(Picker);
@@ -166,7 +166,7 @@ public class CrudReferencePickerTests {
 		var Replacement = new Employee { Name = "Replacement" };
 		var Entity = new Employee { Name = "Employee", Manager = Original };
 		var Binding = CreateBinding(new[] { Original, Replacement });
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
 		Crud.GridBindings = new[] { ManagerColumn(Binding) };
 		await Crud.SetDataSource(new ListDataSource<Employee>(new ExtendedList<Employee>(new[] { Entity })));
@@ -298,19 +298,19 @@ public class CrudReferencePickerTests {
 	});
 	private static CrudReferenceBinding<Employee> CreateBinding(Employee[] Records) => new(new TestDataSource(Records), CreateColumns(), Employee => Employee.Name);
 
-	private static ICrudGridColumn[] CreateColumns() => new ICrudGridColumn[] {
-		new CrudGridColumn<Employee> { ColumnName = "Name", DataType = typeof(string), SortName = "Name", CanEditCell = true, PropertyValue = Employee => Employee.Name },
-		new CrudGridColumn<Employee> { ColumnName = "Manager", DataType = typeof(string), PropertyValue = Employee => Employee.Manager?.Name ?? "(none)" }
+	private static IVisualGridColumn[] CreateColumns() => new IVisualGridColumn[] {
+		new VisualGridColumn<Employee> { ColumnName = "Name", DataType = typeof(string), SortName = "Name", CanEditCell = true, PropertyValue = Employee => Employee.Name },
+		new VisualGridColumn<Employee> { ColumnName = "Manager", DataType = typeof(string), PropertyValue = Employee => Employee.Manager?.Name ?? "(none)" }
 	};
 
-	private static CrudGridColumn<Employee> ManagerColumn(CrudReferenceBinding Binding) => new() {
+	private static VisualGridColumn<Employee> ManagerColumn(CrudReferenceBinding Binding) => new() {
 		ColumnName = "Manager", PropertyName = nameof(Employee.Manager), DataType = typeof(Employee), DisplayType = CrudCellDisplayType.DropDownList,
 		ReferenceBinding = Binding, PropertyValue = Employee => Employee.Manager!, SetPropertyValue = (Employee, Value) => Employee.Manager = (Employee?)Value,
 		CanEditCell = true, ExpandsToFit = true
 	};
 
-	private static void ConfigureEditor(CrudGrid Crud, DefaultCrudEntityEditor Editor, object Entity) =>
-		typeof(CrudGrid).GetMethod("ConfigureReferenceBindings", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(Crud, new[] { Editor, Entity });
+	private static void ConfigureEditor(VisualGrid Crud, DefaultCrudEntityEditor Editor, object Entity) =>
+		typeof(VisualGrid).GetMethod("ConfigureReferenceBindings", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(Crud, new[] { Editor, Entity });
 
 	private static T FindControl<T>(Control Parent, string Name) where T : Control => (T)Parent.Controls.Find(Name, true).Single();
 

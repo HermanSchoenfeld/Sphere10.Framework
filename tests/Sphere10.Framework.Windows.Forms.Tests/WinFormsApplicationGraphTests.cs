@@ -62,8 +62,9 @@ public class WinFormsApplicationGraphTests {
 		using var otherBlock = new WinFormsApplicationBlock { Name = "Other" };
 		using var menu = new WinFormsApplicationMenu("Screens");
 		using var otherMenu = new WinFormsApplicationMenu("Other");
-		var item = new WinFormsScreenMenuItem("Editor", typeof(TrackedScreen));
+		var item = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
 		var definition = item.ScreenDefinition;
+		block.AddScreenDefinition(definition);
 		menu.AddItem(item);
 		block.AddMenu(menu);
 		Assert.That(((IApplicationMenuItem)item).Parent, Is.SameAs(menu));
@@ -88,9 +89,9 @@ public class WinFormsApplicationGraphTests {
 	[Test]
 	public void DefinitionReplacementUpdatesEveryActivatorWithoutExposingItsArray() {
 		using var menu = new WinFormsApplicationMenu("Screens");
-		var first = new WinFormsScreenMenuItem("First", typeof(TrackedScreen));
+		var first = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "First"), "First");
 		var original = first.ScreenDefinition;
-		var second = new WinFormsScreenMenuItem("Second", typeof(TrackedScreen)) { ScreenDefinition = original };
+		var second = new WinFormsScreenMenuItem(original, "Second");
 		menu.AddItem(first);
 		menu.AddItem(second);
 		Assert.That(original.Activators, Is.EqualTo(new[] { first, second }));
@@ -111,6 +112,7 @@ public class WinFormsApplicationGraphTests {
 	public void OwnersAreAvailableDuringNativeLifecycleAndClearedAfterRemoval(bool throwDuringDestruction) {
 		using var host = new WinFormsApplicationScreenHost();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = (TrackedScreen)host.ActivateScreen(block, typeof(TrackedScreen));
 		IApplicationScreen common = screen;
 		Assert.That(screen.ActivationHost, Is.SameAs(host));
@@ -186,6 +188,8 @@ public class WinFormsApplicationGraphTests {
 		using var host = new WinFormsApplicationScreenHost();
 		using var otherHost = new WinFormsApplicationScreenHost();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(OtherScreen)));
 		var retained = host.ActivateScreen(block, typeof(TrackedScreen));
 		host.ActivateScreen(block, typeof(OtherScreen));
 		Assert.That(host.OpenScreens, Does.Not.Contain(retained));
@@ -200,6 +204,7 @@ public class WinFormsApplicationGraphTests {
 	public void CancelledCloseLeavesScreenAssociationsIntact() {
 		using var host = new WinFormsApplicationScreenHost();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = (TrackedScreen)host.ActivateScreen(block, typeof(TrackedScreen));
 		screen.CancelHide = true;
 		Assert.That(host.CloseScreen(screen), Is.False);
@@ -212,6 +217,7 @@ public class WinFormsApplicationGraphTests {
 	public void ExternalDisposalClearsOwnersAfterTheDestructionHook() {
 		using var host = new WinFormsApplicationScreenHost();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = (TrackedScreen)host.ActivateScreen(block, typeof(TrackedScreen));
 		screen.Dispose();
 		Assert.That(screen.DestructionHost, Is.SameAs(host));
@@ -225,6 +231,7 @@ public class WinFormsApplicationGraphTests {
 	public void DetachedScreensKeepTheirHostAndBlockThroughDocking() {
 		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = host.ActivateScreen(block, typeof(TrackedScreen));
 		Assert.That(host.UndockScreen(screen), Is.True);
 		Assert.That(screen.Host, Is.SameAs(host));
@@ -237,7 +244,7 @@ public class WinFormsApplicationGraphTests {
 	[Test]
 	public void StandaloneToolbarScreenCommandsRequireAnOwnedMenu() {
 		using var form = new MainForm();
-		using var item = new WinFormsScreenMenuItem("Editor", typeof(TrackedScreen));
+		using var item = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
 		using var block = new ToolbarBlock { Name = "Workspace", ToolBarItems = new[] { item } };
 		block.AddScreenDefinition(item.ScreenDefinition);
 		form.ScreenHost.RegisterScreenTypes(block);
@@ -261,8 +268,9 @@ public class WinFormsApplicationGraphTests {
 		using var form = new MainForm();
 		using var firstBlock = new WinFormsApplicationBlock { Name = "First" };
 		using var owner = new WinFormsApplicationBlock { Name = "Owner" };
-		using var item = new WinFormsScreenMenuItem("Editor", typeof(TrackedScreen));
+		using var item = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
 		using var menu = new WinFormsApplicationMenu("Screens", new[] { item });
+		owner.AddScreenDefinition(item.ScreenDefinition);
 		owner.AddMenu(menu);
 		firstBlock.AddScreenDefinition(item.ScreenDefinition);
 		form.ScreenHost.RegisterScreenTypes(firstBlock);

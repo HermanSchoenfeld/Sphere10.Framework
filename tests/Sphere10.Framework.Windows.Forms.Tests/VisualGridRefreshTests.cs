@@ -26,11 +26,11 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridRefreshTests {
+public class VisualGridRefreshTests {
 	[Test]
 	public void GridTitleCanBeConfiguredBeforeAHandleOrApplicationFormExists() {
 		var forms = FormsApplication.OpenForms.Count;
-		using var crud = new CrudGrid { PersistSettings = false, GridTitle = "Devices" };
+		using var crud = new VisualGrid { PersistSettings = false, GridTitle = "Devices" };
 		Assert.That(crud.IsHandleCreated, Is.False);
 		Assert.That(Find<Label>(crud, "_titleLabel").Text, Is.EqualTo("Devices"));
 		Assert.That(FormsApplication.OpenForms.Count, Is.EqualTo(forms), "An appearance property must not require or create an application window.");
@@ -44,7 +44,7 @@ public class CrudGridRefreshTests {
 		using var crud = NewGrid(owner, true);
 		var source = new SnapshotDataSource<string>();
 		source.ReplaceSnapshot(new[] { "Device" });
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
 		await crud.SetDataSource(source, source.Capabilities);
 		await crud.RefreshGrid();
 		crud.GridTitle = "Connected Devices";
@@ -62,7 +62,7 @@ public class CrudGridRefreshTests {
 		crud.Enabled = !disabled;
 		crud.GridTitleAlignment = ContentAlignment.MiddleLeft;
 		crud.GridTitle = "Connected Devices";
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new SnapshotDataSource<string>();
 		source.ReplaceSnapshot(new[] { "Device" });
 		await crud.SetDataSource(source, DataSourceCapabilities.CanRead);
@@ -82,7 +82,7 @@ public class CrudGridRefreshTests {
 	public void AddingAndClearingATitleShowsAndCollapsesAnOtherwiseUnusedHeaderWithoutRebinding(bool disabled) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
 		crud.Enabled = !disabled;
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new ControlledSource();
 		await crud.SetDataSource(source, DataSourceCapabilities.CanRead);
 		await crud.RefreshGrid();
@@ -105,7 +105,7 @@ public class CrudGridRefreshTests {
 	public void UntitledSearchHeaderRetainsItsLayoutWhileTheGridIsDisabled() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
 		crud.Enabled = false;
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new SnapshotDataSource<string>();
 		await crud.SetDataSource(source, DataSourceCapabilities.CanSearch);
 		await crud.RefreshGrid();
@@ -119,7 +119,7 @@ public class CrudGridRefreshTests {
 	[Test]
 	public void GridTitleMarshalsAWorkerUpdateToItsExistingOwnerHandle() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Device", PropertyValue = row => row, DataType = typeof(string) } };
 		await crud.SetDataSource(new SnapshotDataSource<string>(), DataSourceCapabilities.CanRead);
 		await crud.RefreshGrid();
 		var caption = Find<Label>(crud, "_titleLabel");
@@ -145,12 +145,12 @@ public class CrudGridRefreshTests {
 
 	[Test]
 	public void ConstructorPageAndCapabilitySettingsDoNotScheduleAnUnconfiguredBinding() {
-		using var crud = new CrudGrid { PersistSettings = false };
-		crud.PageMode = CrudGridPageMode.Auto;
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Result", PropertyValue = row => row, DataType = typeof(string) } };
+		using var crud = new VisualGrid { PersistSettings = false };
+		crud.PageMode = VisualGridPageMode.Auto;
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Result", PropertyValue = row => row, DataType = typeof(string) } };
 		crud.Capabilities = CrudReferenceBinding.ReadOnlyCapabilities;
 		var loading = Find<LoadingCircle>(crud, "_initialLoadingCircle");
-		Assert.That(typeof(CrudGrid).GetField("_refreshTask", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud), Is.Null,
+		Assert.That(typeof(VisualGrid).GetField("_refreshTask", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud), Is.Null,
 			"Configuring a never-hosted grid must not start an implicit asynchronous read before any data source exists.");
 		Assert.That(crud.IsHandleCreated, Is.False);
 		Assert.That(crud.VisibleEntities, Is.Empty);
@@ -171,7 +171,7 @@ public class CrudGridRefreshTests {
 		var loading = Find<LoadingCircle>(crud, "_initialLoadingCircle");
 		Assert.That(loading.Visible && loading.Active, Is.True);
 		Assert.That(Find<TableLayoutPanel>(crud, "_layoutPanel").Visible, Is.False);
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new ControlledSource();
 		source.DelayNextRead();
 		await crud.SetDataSource(source);
@@ -193,7 +193,7 @@ public class CrudGridRefreshTests {
 	public void FirstBindingAndReloadUseTheSameExpandedIndicatorAndFollowHostResizing(int width, int height) => RunWithMessageLoop(async owner => {
 		owner.ClientSize = new Size(width, height);
 		using var crud = NewGrid(owner, false);
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new ControlledSource();
 		source.DelayNextRead();
 		await crud.SetDataSource(source);
@@ -235,7 +235,7 @@ public class CrudGridRefreshTests {
 	[Test]
 	public void AFailedFirstReadRetainsTheUnifiedIndicatorUntilASuccessfulRetry() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new ControlledSource { FailNextRead = true };
 		await crud.SetDataSource(source);
 		var loading = Descendants(crud).OfType<LoadingCircle>().Single();
@@ -253,7 +253,7 @@ public class CrudGridRefreshTests {
 		using var crud = NewGrid(owner, true);
 		await BindAsync(crud);
 		var loading = Descendants(crud).OfType<LoadingCircle>().Single();
-		var enterLoading = typeof(CrudGrid).GetMethod("EnterLoadingIndicator", BindingFlags.Instance | BindingFlags.NonPublic);
+		var enterLoading = typeof(VisualGrid).GetMethod("EnterLoadingIndicator", BindingFlags.Instance | BindingFlags.NonPublic);
 		using (var outer = (IDisposable)enterLoading.Invoke(crud, null)) {
 			using (var inner = (IDisposable)enterLoading.Invoke(crud, null))
 				Assert.That(loading.Visible && loading.Active, Is.True);
@@ -269,7 +269,7 @@ public class CrudGridRefreshTests {
 	[Test]
 	public void InitialLoadingAlsoCoversAnIncompleteSourceConfiguration() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, true);
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string) } };
 		var source = new ControlledSource { ContinueCapabilities = new TaskCompletionSource<DataSourceCapabilities>(TaskCreationOptions.RunContinuationsAsynchronously) };
 		var setup = crud.SetDataSource(source);
 		await crud.RefreshGrid();
@@ -420,14 +420,14 @@ public class CrudGridRefreshTests {
 		Assert.That(crud.IsDisposed, Is.True);
 	});
 
-	private static CrudGrid NewGrid(Form owner, bool suppress) {
-		var crud = new CrudGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = suppress };
+	private static VisualGrid NewGrid(Form owner, bool suppress) {
+		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = suppress };
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static async Task<ControlledSource> BindAsync(CrudGrid crud) {
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string), ExpandsToFit = true } };
+	private static async Task<ControlledSource> BindAsync(VisualGrid crud) {
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Row", PropertyValue = row => row, DataType = typeof(string), ExpandsToFit = true } };
 		var source = new ControlledSource();
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
@@ -437,7 +437,7 @@ public class CrudGridRefreshTests {
 	private static T Find<T>(Control control, string name)
 		where T : Control => (T)control.Controls.Find(name, true).Single();
 
-	private static void SaveLoadingScreenshot(CrudGrid crud, string name) {
+	private static void SaveLoadingScreenshot(VisualGrid crud, string name) {
 		var directory = Environment.GetEnvironmentVariable("SPHERE10_CRUD_LOADING_SCREENSHOT_DIRECTORY");
 		if (string.IsNullOrWhiteSpace(directory))
 			return;

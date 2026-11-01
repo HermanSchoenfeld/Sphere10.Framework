@@ -6,15 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -56,8 +56,9 @@ public class ApplicationScreenActivationTests {
 		Assert.That(session.Parameters["ProjectId"], Is.EqualTo(projectId));
 		Assert.That(session.Parameters["Caption"], Is.EqualTo("Runtime"));
 		Assert.That(session.Parameters["Units"], Is.EqualTo("Metric"));
-		Assert.That(((BlazorApplicationScreenSession)session).MenuItem.Parameters["Caption"], Is.EqualTo("Registered"));
-		Assert.That(((BlazorApplicationScreenSession)session).MenuItem.Parameters.ContainsKey("ProjectId"), Is.False);
+		var registeredParameters = ((BlazorApplicationScreenDefinition)session.Definition).Parameters;
+		Assert.That(registeredParameters["Caption"], Is.EqualTo("Registered"));
+		Assert.That(registeredParameters.ContainsKey("ProjectId"), Is.False);
 		Assert.That(() => session.Parameters["ProjectId"] = Guid.NewGuid(), Throws.TypeOf<NotSupportedException>());
 		Assert.That(() => ((IDictionary<string, object>)activation.Parameters).Clear(), Throws.TypeOf<NotSupportedException>());
 	}
@@ -84,9 +85,13 @@ public class ApplicationScreenActivationTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("singleton")
 			.WithName("Singleton")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
+				.WithTitle("Screen")
+				.WithActivationMode(policy)
+			)
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("screen", "Screen", policy)
+				.AddShowScreenItem<ApplicationScreenHostTests.ProbeScreen>(text: "Screen", id: "screen")
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -228,24 +233,35 @@ public class ApplicationScreenActivationTests {
 			new BlazorApplicationBlockBuilder()
 				.WithId("projects")
 				.WithName("Projects")
-				.ConfigureMenu(menu => menu
+				.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
+					.WithTitle("Project")
+					.WithStableKey("project")
+					.AsMultiInstance()
+					.WithParameters(new Dictionary<string, object> { ["Caption"] = "Registered", ["Units"] = "Metric" }),
+					out var project
+				)
+				.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
+					.WithTitle("Other")
+					.WithStableKey("other")
+					.AsMultiInstance(),
+					out var other
+				)
+				.AddMenu(menu => menu
 					.WithText("Screens")
-					.ConfigureItem(item => item
-						.WithId("project")
-						.WithText("Project")
-						.WithScreen<ApplicationScreenHostTests.ProbeScreen>()
-						.AsMultiInstance()
-						.WithParameters(new Dictionary<string, object> { ["Caption"] = "Registered", ["Units"] = "Metric" })
-					)
-					.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("other", "Other", ScreenActivationMode.MultiInstance)
+					.AddShowScreenItem(project, id: "project")
+					.AddShowScreenItem(other, id: "other")
 				)
 				.Build(),
 			new BlazorApplicationBlockBuilder()
 				.WithId("other-projects")
 				.WithName("Other projects")
-				.ConfigureMenu(menu => menu
+				.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
+					.WithTitle("Project")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddMenu(menu => menu
 					.WithText("Screens")
-					.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)
+					.AddShowScreenItem<ApplicationScreenHostTests.ProbeScreen>(text: "Project", id: "project")
 				)
 				.Build()
 		};

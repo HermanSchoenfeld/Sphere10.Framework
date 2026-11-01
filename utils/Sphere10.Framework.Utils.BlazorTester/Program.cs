@@ -43,11 +43,11 @@ public static class Program {
 			.BuildBlazorApplication()
 			.WithTitle("Sphere10 Blazor demos")
 			.WithFavicon("img/logo.svg", "image/svg+xml")
-			.ConfigureApplication(WorkspaceCommands.Configure)
-			.ConfigurePlugin(Sphere10Plugin.Configure)
-			.ConfigurePlugin(WidgetGalleryPlugin.Configure)
-			.ConfigurePlugin(ShowcasePlugin.Configure)
-			.ConfigurePlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
+			.OnApplicationCreated(WorkspaceCommands.Configure)
+			.AddPlugin(Sphere10Plugin.Configure)
+			.AddPlugin(WidgetGalleryPlugin.Configure)
+			.AddPlugin(ShowcasePlugin.Configure)
+			.AddPlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
 			.Build();
 	}
 }

@@ -40,7 +40,7 @@ Keep dependency directions intact: Windows may depend on Core/provider packages,
 not an executable, Application, Data or WinForms. Core's
 [SnapshotDataSource<T>](../../../src/Sphere10.Framework/DataSource/SnapshotDataSource.cs)
 owns generic query behavior; WinForms'
-[CrudGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridSnapshotController.cs)
+[VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
 owns visual binding/selection. Application export envelopes use the existing
 Data CSV implementation without pulling it into native wrappers.
 

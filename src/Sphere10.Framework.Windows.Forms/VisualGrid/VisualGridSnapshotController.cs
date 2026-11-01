@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Collects typed snapshots, binds them to a CrudGrid and retains row selection by caller-defined identity.</summary>
-public sealed class CrudGridSnapshotController<T> : ICrudGridSnapshotController {
-	private readonly CrudGrid _grid;
+/// <summary>Collects typed snapshots, binds them to a VisualGrid and retains row selection by caller-defined identity.</summary>
+public sealed class VisualGridSnapshotController<T> : IVisualGridSnapshotController {
+	private readonly VisualGrid _grid;
 	private readonly SnapshotDataSource<T> _source;
 	private readonly Func<T, object> _identity;
 	private readonly Func<CancellationToken, Task<T[]>> _collect;
@@ -23,12 +23,12 @@ public sealed class CrudGridSnapshotController<T> : ICrudGridSnapshotController 
 	private readonly int _ownerThreadId;
 	private bool _bound;
 
-	public CrudGridSnapshotController(CrudGrid grid, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect, Action<T[]> changed = null,
+	public VisualGridSnapshotController(VisualGrid grid, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect, Action<T[]> changed = null,
 		Func<object, string> formatValue = null)
 		: this(grid, new SnapshotDataSource<T>(formatValue), identity, collect, changed) {
 	}
 
-	public CrudGridSnapshotController(CrudGrid grid, SnapshotDataSource<T> source, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect,
+	public VisualGridSnapshotController(VisualGrid grid, SnapshotDataSource<T> source, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect,
 		Action<T[]> changed = null) {
 		Guard.ArgumentNotNull(grid, nameof(grid));
 		Guard.ArgumentNotNull(source, nameof(source));

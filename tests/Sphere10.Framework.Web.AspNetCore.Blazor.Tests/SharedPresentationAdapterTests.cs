@@ -6,15 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -29,10 +29,13 @@ public class SharedPresentationAdapterTests {
 			.AddApplicationBlock(block => block
 				.WithId("workspace")
 				.WithName("Workspace")
+				.AddScreen<ExtensionScreen>(screen => screen
+					.WithTitle("Overview")
+				)
 				.WithDefaultScreen<ExtensionScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Screens")
-					.AddScreenItem<ExtensionScreen>("overview", "Overview")
+					.AddShowScreenItem<ExtensionScreen>(text: "Overview", id: "overview")
 				)
 			);
 		using var provider = services.BuildServiceProvider();
@@ -51,12 +54,16 @@ public class SharedPresentationAdapterTests {
 		Assert.That(((IBlazorApplicationMenuItem)screen).Id, Is.EqualTo("overview"));
 		Assert.That(typeof(BlazorRoutedApplicationBlock).IsAssignableTo(typeof(IApplicationBlock)), Is.False);
 		Assert.That(screen.ScreenDefinition.ScreenType, Is.EqualTo(typeof(ExtensionScreen)));
-		Assert.That(screen.ScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+		Assert.That(screen.ScreenDefinition.ActivationMode, Is.Null, "Omitted registration policy remains a platform default.");
+		Assert.That(((BlazorScreenMenuItem)screen).ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 	}
 
 	[Test]
 	public void TypedHostMembersDispatchThroughSharedRegistration() {
-		var block = new BlazorApplicationBlockBuilder().WithId("workspace").WithName("Workspace").Build();
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("workspace")
+			.WithName("Workspace")
+			.Build();
 		var services = new ServiceCollection();
 		services.AddScoped<IBlazorApplicationScreenHost>(provider => new BlazorApplicationScreenHost(new[] { block }, provider));
 		services.AddSphere10Blazor();
@@ -78,6 +85,9 @@ public class SharedPresentationAdapterTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
+			.AddScreen<ExtensionScreen>(screen => screen
+				.WithTitle(nameof(ExtensionScreen))
+			)
 			.WithDefaultScreen<ExtensionScreen>()
 			.Build();
 		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
@@ -99,7 +109,10 @@ public class SharedPresentationAdapterTests {
 
 	[Test]
 	public void BlazorBuilderRejectsAPlatformNeutralScreenWithoutComponentSupport() {
-		Assert.That(() => new BlazorApplicationBlockBuilder().WithName("Workspace").WithDefaultScreen(typeof(NeutralScreen)),
+		Assert.That(() => new BlazorApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(new BlazorApplicationScreenDefinition(typeof(NeutralScreen), null, null, ScreenKind.Normal))
+			.WithDefaultScreen(typeof(NeutralScreen)),
 			Throws.ArgumentException);
 	}
 

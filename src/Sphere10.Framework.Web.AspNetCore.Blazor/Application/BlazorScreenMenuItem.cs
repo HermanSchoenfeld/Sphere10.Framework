@@ -7,46 +7,36 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
+/// <summary>A navigation command referencing a screen owned by its block.</summary>
 public class BlazorScreenMenuItem : BlazorApplicationMenuItemBase, IScreenMenuItem {
-	private Type _screenType;
 	private ApplicationScreenDefinition _screenDefinition;
-	private string _screenTitle;
-	private ScreenActivationMode _activationMode = ScreenActivationMode.MultiInstance;
-	private ScreenKind _screenKind;
-	private IReadOnlyDictionary<string, object> _parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+	private ApplicationScreenRegistration _registration;
 
 	public Type ScreenType {
-		get => _screenDefinition?.ScreenType ?? _screenType;
+		get => _screenDefinition?.ScreenType ?? Registration?.ScreenType;
 		init {
 			Tools.UI.ValidateScreenType(value, typeof(IBlazorApplicationScreen));
-			_screenType = value;
+			_registration = ApplicationScreenRegistration.ForType(value);
 		}
 	}
 
-	/// <summary>Optional screen caption, independent of the navigation command label.</summary>
-	public string ScreenTitle {
-		get => _screenDefinition?.Title ?? _screenTitle;
-		init => _screenTitle = value;
-	}
+	public string ScreenTitle => _screenDefinition?.Title;
 
-	public ScreenActivationMode ActivationMode {
-		get => _screenDefinition?.ActivationMode ?? _activationMode;
-		init => _activationMode = value;
-	}
+	public ScreenActivationMode ActivationMode => _screenDefinition?.ActivationMode ?? ScreenActivationMode.MultiInstance;
 
-	public ScreenKind ScreenKind {
-		get => _screenDefinition?.ScreenKind ?? _screenKind;
-		init => _screenKind = value;
+	public ScreenKind ScreenKind => _screenDefinition?.ScreenKind ?? ScreenKind.Normal;
+
+	public ApplicationScreenRegistration Registration {
+		get => _registration ?? _screenDefinition?.Registration;
+		init => _registration = value;
 	}
 
 	public ApplicationScreenDefinition ScreenDefinition {
-		get => _screenDefinition ??= new ApplicationScreenDefinition(_screenType, _screenTitle ?? Title, _activationMode, _screenKind);
+		get => _screenDefinition;
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			Tools.UI.ValidateScreenType(value.ScreenType, typeof(IBlazorApplicationScreen));
@@ -54,16 +44,29 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItemBase, IScreenMenuIt
 		}
 	}
 
-	public bool IsDefault { get; init; }
-
-	public IReadOnlyDictionary<string, object> Parameters {
-		get => _parameters;
-		init {
-			Guard.ArgumentNotNull(value, nameof(value));
-			_parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(value));
+	protected override string DefaultId {
+		get {
+			return Registration == null ? base.DefaultId : Registration.IsTypeReference ? Registration.ScreenType.Name : Registration.Token.ToString("N");
 		}
 	}
 
+	/// <summary>Binds the command to its own graph's canonical definition and updates reverse membership.</summary>
+	public void ResolveScreenDefinition(ApplicationScreenDefinition definition) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		Tools.UI.ValidateScreenType(definition.ScreenType, typeof(IBlazorApplicationScreen));
+		Guard.Argument(Registration == null || Registration.ScreenType == definition.ScreenType
+			&& (Registration.IsTypeReference || Registration.Token == definition.Registration.Token), nameof(definition), "The definition must match this command's registration reference.");
+		if (!ReferenceEquals(_screenDefinition, definition)) {
+			_screenDefinition?.RemoveActivator(this);
+			_screenDefinition = definition;
+		}
+		SetDefaultTitle(definition.Title);
+		if (Parent != null)
+			definition.AddActivator(this);
+	}
+
 	public static BlazorScreenMenuItem For<TScreen>(string icon, string title)
-		where TScreen : IBlazorApplicationScreen => new() { Id = typeof(TScreen).Name, Icon = icon, Title = title, ScreenType = typeof(TScreen) };
+		where TScreen : IBlazorApplicationScreen {
+		return new BlazorScreenMenuItem { Id = typeof(TScreen).Name, Icon = icon, Title = title, ScreenType = typeof(TScreen) };
+	}
 }

@@ -21,7 +21,7 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationScreenHostTests {
 	[Test]
-	public async Task AConflictingResolvedRoleIsRejectedBeforeChangingTheHostedSelection() {
+	public async Task AnEmptySiblingDoesNotReplaceAnOpenNormalRegistration() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var owner = new TestApplicationBlock { Name = "Standalone" };
 		using var host = new TestHost(provider, owner);
@@ -32,7 +32,7 @@ public class ApplicationScreenHostTests {
 		var view = selected;
 		owner.AddScreenDefinition(empty);
 
-		Assert.That(async () => await host.OpenScreenAsync(owner, empty), Throws.InstanceOf<ArgumentException>());
+		Assert.That(await host.OpenScreenAsync(owner, empty), Is.Null);
 
 		Assert.That(host.ActiveScreen, Is.SameAs(selected));
 		Assert.That(host.Screens.Single(), Is.SameAs(selected));
@@ -58,7 +58,7 @@ public class ApplicationScreenHostTests {
 	}
 
 	[Test]
-	public async Task RemovingAPermanentPolicyOwnerRecreatesTheRemainingAliasBeforeSelectingAnEmptyScreen() {
+	public async Task RemovingAPermanentRegistrationDoesNotPromoteAnUnspecifiedSiblingToPermanent() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var explicitOwner = CreateBlock("explicit", Item("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton));
 		var aliasItem = Item("alias", typeof(PermanentScreen), mode: null);
@@ -71,11 +71,13 @@ public class ApplicationScreenHostTests {
 
 		Assert.That(await host.UnregisterBlockAsync(explicitOwner), Is.True);
 
-		Assert.That(host.GetScreenBlock(host.ActiveScreen), Is.SameAs(aliasOwner));
-		Assert.That(host.ModeOf(host.ActiveScreen), Is.EqualTo(ScreenActivationMode.PermanentSingleton));
+		Assert.That(host.GetScreenBlock(host.ActiveScreen), Is.SameAs(placeholderOwner));
+		Assert.That(host.ModeOf(host.ActiveScreen), Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(host.ActiveScreen, Is.Not.SameAs(original));
-		Assert.That(host.OpenScreens.Single(), Is.SameAs(host.ActiveScreen));
-		Assert.That(host.KindOf(host.ActiveScreen), Is.EqualTo(ScreenKind.Normal));
+		Assert.That(host.OpenScreens, Is.Empty);
+		Assert.That(host.KindOf(host.ActiveScreen), Is.EqualTo(ScreenKind.Empty));
+		var alias = await host.OpenScreenAsync(aliasOwner, aliasItem.ScreenDefinition);
+		Assert.That(host.ModeOf(alias), Is.EqualTo(ScreenActivationMode.MultiInstance));
 	}
 
 	[Test]
@@ -114,7 +116,7 @@ public class ApplicationScreenHostTests {
 	}
 
 	[Test]
-	public async Task SingletonReuseAcrossBlocksKeepsTheOriginalScreenAndOwningBlock() {
+	public async Task SameTypeSingletonRegistrationsInDifferentBlocksHaveIndependentInstancesAndOwners() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = await CreateHostAsync(provider);
 		var first = await host.OpenScreenAsync(Block(host, "first"), Definition(host, "first", "single"));
@@ -123,11 +125,12 @@ public class ApplicationScreenHostTests {
 
 		var reused = await host.OpenScreenAsync(Block(host, "second"), Definition(host, "second", "shared"));
 
-		Assert.That(reused, Is.SameAs(first));
-		Assert.That(host.GetScreenBlock(reused).Name, Is.EqualTo("first"));
-		Assert.That(host.DefinitionOf(reused), Is.SameAs(Definition(host, "first", "single")));
-		Assert.That(reused.Title, Is.EqualTo("Record one"));
-		Assert.That(reused.Activations, Is.EqualTo(2));
+		Assert.That(reused, Is.Not.SameAs(first));
+		Assert.That(host.GetScreenBlock(reused).Name, Is.EqualTo("second"));
+		Assert.That(host.DefinitionOf(reused), Is.SameAs(Definition(host, "second", "shared")));
+		Assert.That(first.Title, Is.EqualTo("Record one"));
+		Assert.That(reused.Activations, Is.EqualTo(1));
+		Assert.That(await host.OpenScreenAsync(Block(host, "first"), Definition(host, "first", "single")), Is.SameAs(first));
 	}
 
 	[TestCase(false)]
@@ -156,7 +159,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenActivationMode.SingleInstance, true)]
 	[TestCase(ScreenActivationMode.PermanentSingleton, false)]
 	[TestCase(ScreenActivationMode.PermanentSingleton, true)]
-	public async Task AnUndeclaredAliasInheritsTheExplicitPolicyForItsScreenType(ScreenActivationMode declaredMode, bool explicitFirst) {
+	public async Task AnUnspecifiedRegistrationKeepsItsDefaultRegardlessOfSiblingActivationOrder(ScreenActivationMode declaredMode, bool explicitFirst) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var undeclared = Item("undeclared", typeof(ProbeScreen), mode: null);
 		var block = CreateBlock("records", undeclared, Item("declared", typeof(ProbeScreen), declaredMode));
@@ -165,9 +168,10 @@ public class ApplicationScreenHostTests {
 		var first = await host.OpenScreenAsync(Block(host, "records"), Definition(host, "records", explicitFirst ? "declared" : "undeclared"));
 		var second = await host.OpenScreenAsync(Block(host, "records"), Definition(host, "records", explicitFirst ? "undeclared" : "declared"));
 
-		Assert.That(host.ModeOf(first), Is.EqualTo(declaredMode), "A screen type has one policy even when an alias omits it.");
-		Assert.That(second, Is.SameAs(first));
-		Assert.That(host.Screens, Has.Length.EqualTo(1));
+		Assert.That(host.ModeOf(first), Is.EqualTo(explicitFirst ? declaredMode : ScreenActivationMode.MultiInstance));
+		Assert.That(host.ModeOf(second), Is.EqualTo(explicitFirst ? ScreenActivationMode.MultiInstance : declaredMode));
+		Assert.That(second, Is.Not.SameAs(first));
+		Assert.That(host.Screens, Has.Length.EqualTo(2));
 	}
 
 	[Test]
@@ -195,6 +199,57 @@ public class ApplicationScreenHostTests {
 	}
 
 	[Test]
+	public async Task RejectedBatchCloseDoesNotCaptureOrSaveAnyScreenPreferences() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = await CreateHostAsync(provider);
+		var block = Block(host, "first");
+		var first = await host.OpenScreenAsync(block, Definition(host, "first", "multiple"));
+		var second = await host.OpenScreenAsync(block, Definition(host, "first", "multiple"));
+		second.Guard = _ => Task.FromResult(false);
+
+		Assert.That(await host.CloseScreensAsync(new[] { first, second }), Is.False);
+		Assert.That(first.SettingsSaves, Is.Zero);
+		Assert.That(second.SettingsSaves, Is.Zero);
+		Assert.That(host.ActiveScreen, Is.SameAs(second));
+	}
+
+	[Test]
+	public async Task FailedPreferenceSaveLeavesTheClosingScreenAttachedAndActiveForRetry() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = await CreateHostAsync(provider);
+		var block = Block(host, "first");
+		var screen = await host.OpenScreenAsync(block, Definition(host, "first", "single"));
+		screen.SavingSettings = _ => throw new InvalidOperationException("The accepted preferences could not be saved.");
+
+		Assert.That(async () => await host.CloseScreenAsync(screen), Throws.InvalidOperationException);
+
+		Assert.That(host.ActiveScreen, Is.SameAs(screen));
+		Assert.That(host.Screens, Does.Contain(screen));
+		Assert.That(screen.Host, Is.SameAs(host));
+		Assert.That(screen.Block, Is.SameAs(block));
+		Assert.That(screen.Deactivations, Is.Zero);
+		Assert.That(screen.Disposals, Is.Zero);
+		screen.SavingSettings = _ => Task.CompletedTask;
+		Assert.That(await host.CloseScreenAsync(screen), Is.True);
+		Assert.That(screen.SettingsSaves, Is.EqualTo(2));
+		Assert.That(screen.Deactivations, Is.EqualTo(1));
+		Assert.That(screen.Host, Is.Null);
+	}
+
+	[Test]
+	public async Task HideAndNavigationGuardsDoNotSavePreferences() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = await CreateHostAsync(provider);
+		await host.TrySetScreenModeAsync(ScreenMode.SingleView);
+		var block = Block(host, "first");
+		var first = await host.OpenScreenAsync(block, Definition(host, "first", "single"));
+		await host.OpenScreenAsync(block, Definition(host, "first", "multiple"));
+		Assert.That(await host.CanNavigateAsync(), Is.True);
+		Assert.That(first.Deactivations, Is.EqualTo(1));
+		Assert.That(first.SettingsSaves, Is.Zero);
+	}
+
+	[Test]
 	public async Task GuardCancellationPreservesSelectionAndReleasesTheTransitionGate() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = await CreateHostAsync(provider);
@@ -212,6 +267,164 @@ public class ApplicationScreenHostTests {
 		Assert.That(screen.Deactivations, Is.Zero);
 		screen.Guard = _ => Task.FromResult(true);
 		Assert.That(await host.OpenScreenAsync(Block(host, "first"), Definition(host, "first", "multiple")), Is.Not.Null);
+	}
+
+	[Test]
+	public async Task CreatorCancellationPreservesTheActiveScreenAndDoesNotAttachTheResult() {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = await CreateHostAsync(provider);
+		var block = Block(host, "first");
+		var selected = await host.OpenScreenAsync(block, Definition(host, "first", "single"));
+		var prepared = new OtherScreen();
+		using var cancellation = new CancellationTokenSource();
+		host.Creation = (_, _) => {
+			cancellation.Cancel();
+			return prepared;
+		};
+		var notifications = 0;
+		host.Changed += () => notifications++;
+
+		Assert.That(async () => await host.OpenScreenAsync(block, Definition(host, "first", "multiple"), cancellation.Token),
+			Throws.InstanceOf<OperationCanceledException>());
+
+		Assert.That(host.ActiveScreen, Is.SameAs(selected));
+		Assert.That(host.Screens, Is.EqualTo(new[] { selected }));
+		Assert.That(selected.Deactivations, Is.Zero);
+		Assert.That(prepared.Host, Is.Null);
+		Assert.That(prepared.Block, Is.Null);
+		Assert.That(prepared.Disposals, Is.Zero, "The shared host has not taken ownership of this adapter result.");
+		Assert.That(notifications, Is.Zero);
+
+		host.Creation = null;
+		Assert.That(await host.OpenScreenAsync(block, Definition(host, "first", "multiple")), Is.Not.Null);
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task FailedCreationDoesNotDeactivateTheCurrentScreen(bool returnsNull) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		using var host = await CreateHostAsync(provider);
+		var block = Block(host, "first");
+		var selected = await host.OpenScreenAsync(block, Definition(host, "first", "single"));
+		host.Creation = (_, _) => {
+			if (returnsNull)
+				return null;
+			throw new InvalidOperationException("The adapter could not create the screen.");
+		};
+
+		Assert.That(async () => await host.OpenScreenAsync(block, Definition(host, "first", "multiple")),
+			Throws.TypeOf(returnsNull ? typeof(ArgumentNullException) : typeof(InvalidOperationException)));
+
+		Assert.That(host.ActiveScreen, Is.SameAs(selected));
+		Assert.That(host.Screens, Is.EqualTo(new[] { selected }));
+		Assert.That(selected.Deactivations, Is.Zero);
+		Assert.That(selected.Host, Is.SameAs(host));
+		Assert.That(selected.Block, Is.SameAs(block));
+
+		host.Creation = null;
+		Assert.That(await host.OpenScreenAsync(block, Definition(host, "first", "multiple")), Is.Not.Null);
+	}
+
+	[TestCase(ScreenActivationMode.MultiInstance, ScreenKind.Normal)]
+	[TestCase(ScreenActivationMode.SingleInstance, ScreenKind.Empty)]
+	[TestCase(ScreenActivationMode.PermanentSingleton, ScreenKind.Normal)]
+	public async Task CreatorCancellationDuringInitializationDoesNotRetainTheResultAndCanRetry(ScreenActivationMode mode, ScreenKind kind) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Startup", mode, kind);
+		var block = new TestApplicationBlock("Startup", definition);
+		using var host = new TestHost(provider, block);
+		using var cancellation = new CancellationTokenSource();
+		var prepared = new ProbeScreen();
+		host.Creation = (_, _) => {
+			cancellation.Cancel();
+			return prepared;
+		};
+
+		Assert.That(async () => await host.InitializeAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+
+		Assert.That(host.ActiveScreen, Is.Null);
+		Assert.That(host.Screens, Is.Empty);
+		Assert.That(prepared.Host, Is.Null);
+		Assert.That(prepared.Block, Is.Null);
+		Assert.That(prepared.Disposals, Is.Zero);
+
+		host.Creation = null;
+		await host.InitializeAsync();
+		Assert.That(host.ActiveScreen, Is.Not.Null);
+		Assert.That(host.Screens.Single(), Is.SameAs(host.ActiveScreen));
+	}
+
+	[TestCase(false, false)]
+	[TestCase(false, true)]
+	[TestCase(true, false)]
+	[TestCase(true, true)]
+	public async Task FailedPermanentCreationPreservesTheEmptyLifecycleAndRecoveryDoesNotDuplicateRegistrations(bool registerBlock, bool cancelCreation) {
+		using var provider = new ServiceCollection().BuildServiceProvider();
+		var emptyDefinition = new ApplicationScreenDefinition(typeof(EmptyScreen), "Welcome", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
+		var firstDefinition = new ApplicationScreenDefinition(typeof(PermanentScreen), "First", ScreenActivationMode.PermanentSingleton);
+		var secondDefinition = new ApplicationScreenDefinition(typeof(PermanentScreen), "Second", ScreenActivationMode.PermanentSingleton);
+		var emptyBlock = new TestApplicationBlock("Welcome", emptyDefinition);
+		var permanentBlock = new TestApplicationBlock("Permanent", firstDefinition);
+		permanentBlock.AddScreenDefinition(secondDefinition);
+		using var host = new TestHost(provider, emptyBlock, permanentBlock);
+		if (registerBlock) {
+			await host.UnregisterBlockAsync(permanentBlock);
+			await host.InitializeAsync();
+		} else {
+			await host.OpenScreenAsync(emptyBlock, emptyDefinition);
+		}
+		var empty = host.ActiveScreen;
+		var failedResult = new PermanentScreen();
+		var attempts = new Dictionary<ApplicationScreenDefinition, int>();
+		var failCreation = true;
+		using var cancellation = new CancellationTokenSource();
+		host.Creation = (_, definition) => {
+			attempts[definition] = attempts.GetValueOrDefault(definition) + 1;
+			if (ReferenceEquals(definition, secondDefinition) && failCreation) {
+				if (!cancelCreation)
+					throw new InvalidOperationException("The second permanent screen could not be created.");
+				cancellation.Cancel();
+				return failedResult;
+			}
+			return new PermanentScreen { Title = definition.Title };
+		};
+
+		Assert.That(async () => {
+			if (registerBlock)
+				await host.RegisterBlockAsync(permanentBlock, cancellation.Token);
+			else
+				await host.InitializeAsync(cancellation.Token);
+		}, Throws.TypeOf(cancelCreation ? typeof(OperationCanceledException) : typeof(InvalidOperationException)));
+
+		Assert.That(host.ActiveScreen, Is.SameAs(empty));
+		Assert.That(empty.Deactivations, Is.Zero);
+		Assert.That(empty.Host, Is.SameAs(host));
+		Assert.That(empty.Block, Is.SameAs(emptyBlock));
+		Assert.That(failedResult.Host, Is.Null);
+		Assert.That(failedResult.Block, Is.Null);
+		var first = host.Screens.Single(screen => host.ModeOf(screen) == ScreenActivationMode.PermanentSingleton);
+		Assert.That(host.DefinitionOf(first), Is.SameAs(firstDefinition));
+		Assert.That(attempts[firstDefinition], Is.EqualTo(1));
+		Assert.That(attempts[secondDefinition], Is.EqualTo(1));
+
+		failCreation = false;
+		if (registerBlock) {
+			// Block membership and each successful permanent were already committed before the failure.
+			await host.UnregisterBlockAsync(permanentBlock);
+			await host.RegisterBlockAsync(permanentBlock);
+		} else {
+			await host.InitializeAsync();
+		}
+
+		Assert.That(empty.Deactivations, Is.EqualTo(1));
+		Assert.That(host.ActiveScreen, Is.Not.SameAs(empty));
+		Assert.That(host.ModeOf(host.ActiveScreen), Is.EqualTo(ScreenActivationMode.PermanentSingleton));
+		var permanents = host.Screens.Where(screen => host.ModeOf(screen) == ScreenActivationMode.PermanentSingleton).ToArray();
+		Assert.That(permanents.Select(host.DefinitionOf), Is.EquivalentTo(new[] { firstDefinition, secondDefinition }));
+		Assert.That(attempts[firstDefinition], Is.EqualTo(registerBlock ? 2 : 1));
+		Assert.That(attempts[secondDefinition], Is.EqualTo(2));
+		if (!registerBlock)
+			Assert.That(permanents, Does.Contain(first), "Retrying initialization reuses the permanent screen committed before the failure.");
 	}
 
 	[Test]
@@ -479,18 +692,22 @@ public class ApplicationScreenHostTests {
 
 		public ApplicationScreenDefinition[] Definitions { get; }
 
+		public Func<TestApplicationBlock, ApplicationScreenDefinition, ProbeScreen> Creation { get; set; }
+
 		public ApplicationScreenDefinition DefinitionOf(ProbeScreen screen) => GetScreenDefinition(screen);
 		public ScreenActivationMode ModeOf(ProbeScreen screen) => GetScreenActivationMode(screen);
 		public ScreenKind KindOf(ProbeScreen screen) => GetScreenKind(screen);
 
 		protected override ProbeScreen CreateScreen(TestApplicationBlock block, ApplicationScreenDefinition definition) {
+			if (Creation != null)
+				return Creation(block, definition);
 			var screen = (ProbeScreen)Activator.CreateInstance(definition.ScreenType, nonPublic: true);
 			screen.Title = definition.Title;
 			return screen;
 		}
 	}
 
-	private class ProbeScreen : IApplicationScreen, IDisposable {
+	private class ProbeScreen : IApplicationScreen, IApplicationSettingsParticipant, IDisposable {
 		public IApplicationScreenHost Host { get; set; }
 
 		public IApplicationBlock Block { get; set; }
@@ -498,10 +715,12 @@ public class ApplicationScreenHostTests {
 		public bool HasUnsavedChanges { get; set; }
 		public Func<CancellationToken, Task<bool>> Guard { get; set; } = _ => Task.FromResult(true);
 		public Func<CancellationToken, Task> Activation { get; set; } = _ => Task.CompletedTask;
+		public Func<CancellationToken, Task> SavingSettings { get; set; } = _ => Task.CompletedTask;
 		public int GuardCalls { get; private set; }
 		public int Activations { get; private set; }
 		public int Deactivations { get; private set; }
 		public int Disposals { get; private set; }
+		public int SettingsSaves { get; private set; }
 
 		public async Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) {
 			GuardCalls++;
@@ -516,6 +735,11 @@ public class ApplicationScreenHostTests {
 		public Task OnDeactivatedAsync(CancellationToken cancellationToken = default) {
 			Deactivations++;
 			return Task.CompletedTask;
+		}
+
+		public Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
+			SettingsSaves++;
+			return SavingSettings(cancellationToken);
 		}
 
 		public void Dispose() => Disposals++;

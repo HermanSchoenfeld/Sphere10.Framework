@@ -52,6 +52,23 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	internal IApplication Application { get; set; }
 
+	// The runner lends its actual service provider; forms never create or dispose another container.
+	internal IServiceProvider ApplicationServices { get; private set; }
+
+	internal void AttachApplicationServices(IServiceProvider services) {
+		Guard.Ensure(ApplicationServices == null || ReferenceEquals(ApplicationServices, services), "The main form already belongs to another application provider.");
+		ApplicationServices = services;
+	}
+
+	/// <summary>Opens the application-owned Options catalog, optionally at one exact screen or application profile.</summary>
+	public async Task<DialogResult> ShowScreenOptionsAsync(ApplicationSettingsProfile selectedProfile = null, CancellationToken cancellationToken = default) {
+		var catalog = Application?.Settings ?? ApplicationServices?.GetService<ApplicationSettingsCatalog>();
+		Guard.Ensure(catalog != null, "Register application settings before displaying Options.");
+		await catalog.InitializeAsync(cancellationToken);
+		using var dialog = new WinFormsApplicationSettingsDialog(catalog, Application as IWinFormsApplication, ApplicationServices, selectedProfile);
+		return await dialog.ShowDialogAsync(this);
+	}
+
 	#region Form Methods
 
 

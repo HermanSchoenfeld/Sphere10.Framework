@@ -43,6 +43,12 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 
 	Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default);
 
+	/// <summary>Opens an exact registration in this host's own block graph.</summary>
+	Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		return OpenScreenAsync(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
+	}
+
 	/// <summary>Shows a supplied instance directly in a modeless detached window without changing the main-frame selection.</summary>
 	/// <exception cref="NotSupportedException">This host does not support detached presentation.</exception>
 	Task<bool> ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken = default);
@@ -84,6 +90,11 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default);
 
+	Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		return OpenScreenAsync(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
+	}
+
 	Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default);
 
 	Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default);
@@ -112,6 +123,10 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken) => await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
 
 	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
+
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken) {
+		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
+	}
 
 	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) => ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 

@@ -27,16 +27,17 @@ public class ApplicationGraphOwnershipTests {
 		var builder = new BlazorApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
+			.AddScreen(prototype)
 			.WithDefaultScreen(prototype)
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithId("first")
 				.WithText("First")
-				.AddScreenItem("one", "One", prototype)
+				.AddShowScreenItem(prototype, text: "One", id: "one")
 			)
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithId("second")
 				.WithText("Second")
-				.AddScreenItem("two", "Two", prototype)
+				.AddShowScreenItem(prototype, text: "Two", id: "two")
 			)
 			.AddToolBarItem(new BlazorScreenMenuItem { Id = "toolbar", Title = "Toolbar", ScreenDefinition = prototype });
 		var first = builder.Build();
@@ -111,14 +112,16 @@ public class ApplicationGraphOwnershipTests {
 
 	[Test]
 	public async Task ApplicationMenusAndToolbarsBorrowScreenCommandsWhileFreezingOrdinaryActions() {
+		var definition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), "Record",
+			parameters: new Dictionary<string, object> { ["Caption"] = "Canonical record" });
 		var source = new BlazorApplicationBlock {
 			Id = "work", Title = "Work",
+			ScreenDefinitions = new[] { definition },
 			Menus = new[] {
 				new BlazorApplicationMenu {
 					Id = "views", Text = "Views", Items = new[] {
 						new BlazorScreenMenuItem {
-							Id = "record", Title = "Record", ScreenType = typeof(ProbeScreen),
-							Parameters = new Dictionary<string, object> { ["Caption"] = "Canonical record" }
+							Id = "record", Title = "Record", ScreenDefinition = definition
 						}
 					}
 				}
@@ -148,7 +151,8 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(application.ToolBarItems[0], Is.SameAs(command));
 		Assert.That(command.Parent, Is.SameAs(canonicalMenu));
 		Assert.That(projectedCommand.ScreenDefinition, Is.SameAs(owner.ScreenDefinitions.Single()));
-		Assert.That(projectedCommand.Parameters, Is.SameAs(command.Parameters));
+		Assert.That(((BlazorApplicationScreenDefinition)projectedCommand.ScreenDefinition).Parameters,
+			Is.SameAs(((BlazorApplicationScreenDefinition)command.ScreenDefinition).Parameters));
 		Assert.That(projectedMenu.Items[1], Is.Not.SameAs(ordinaryAction));
 		Assert.That(projectedMenu.Items[1].Parent, Is.SameAs(projectedMenu));
 		Assert.That(application.ToolBarItems[1].Parent, Is.Null);
@@ -172,14 +176,14 @@ public class ApplicationGraphOwnershipTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public async Task ApplicationToolbarPreservesGeneratedScreenCommandOwnership(bool defaultScreen) {
+	public async Task MenuFreeActivationDoesNotFabricateNavigationCommands(bool defaultScreen) {
+		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record");
 		var builder = new BlazorApplicationBlockBuilder()
 			.WithId("work")
-			.WithName("Work");
+			.WithName("Work")
+			.AddScreen(definition);
 		if (defaultScreen)
-			builder.WithDefaultScreen<ProbeScreen>();
-		else
-			builder.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ProbeScreen), "Record"));
+			builder.WithDefaultScreen(definition);
 		using var services = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new[] { builder.Build() }, services);
 		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
@@ -187,16 +191,14 @@ public class ApplicationGraphOwnershipTests {
 		var session = defaultScreen
 			? await host.ActivateBlockAsync("work")
 			: await host.OpenScreenAsync(owner, owner.ScreenDefinitions.Single(), new BlazorApplicationScreenActivation(instanceKey: "record"));
-		var command = session.MenuItem;
-		var parent = command.Parent;
-		application.SetToolBarItems(new[] { command });
-		Assert.That(application.ToolBarItems.Single(), Is.SameAs(command));
-		Assert.That(command.Parent, Is.SameAs(parent));
-		Assert.That(command.Parent.Parent, Is.SameAs(owner));
-		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(application.ToolBarItems.Single()), Is.True);
-		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
-		Assert.That(command.Parent, Is.SameAs(parent));
-		Assert.That(command.ScreenDefinition.Activators, Is.EqualTo(new[] { command }));
+		Assert.That(session.MenuItem, Is.Null);
+		Assert.That(session.Definition, Is.SameAs(owner.ScreenDefinitions.Single()));
+		Assert.That(owner.Menus, Is.Empty);
+		Assert.That(owner.ToolBarItems, Is.Empty);
+		Assert.That(session.Definition.Activators, Is.Empty);
+		Assert.That(application.ToolBarItems, Is.Empty);
+		Assert.That(await host.OpenScreenAsync(owner, session.Definition), Is.Not.Null);
+		Assert.That(session.Definition.Activators, Is.Empty, "Programmatic opening does not create a synthetic menu command.");
 	}
 
 	[Test]
@@ -274,11 +276,11 @@ public class ApplicationGraphOwnershipTests {
 	}
 
 	[Test]
-	public async Task GeneratedDefinitionCommandsHaveStableOwnersAndReverseMembership() {
+	public async Task MenuFreeKeyedSessionsRetainTheirCanonicalRegistrationWithoutCommands() {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
-			.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ProbeScreen), "Record"))
+			.AddScreen(new ApplicationScreenDefinition(typeof(ProbeScreen), "Record"))
 			.Build();
 		using var services = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(new[] { block }, services);
@@ -287,18 +289,23 @@ public class ApplicationGraphOwnershipTests {
 		var first = await host.OpenScreenAsync(owner, definition, new BlazorApplicationScreenActivation(instanceKey: "record"));
 		var repeated = await host.OpenScreenAsync(owner, definition, new BlazorApplicationScreenActivation(instanceKey: "record"));
 		Assert.That(repeated, Is.SameAs(first));
-		Assert.That(first.MenuItem.Parent.Parent, Is.SameAs(owner));
+		Assert.That(first.MenuItem, Is.Null);
+		Assert.That(first.Block, Is.SameAs(owner));
+		Assert.That(first.Definition, Is.SameAs(definition));
 		Assert.That(owner.Menus, Is.Empty);
-		Assert.That(definition.Activators, Is.EqualTo(new[] { first.MenuItem }));
-		Assert.That(await host.UserInterfaceServices.ExecuteMenuItemAsync(first.MenuItem), Is.True);
-		Assert.That(definition.Activators, Has.Length.EqualTo(1));
+		Assert.That(definition.Activators, Is.Empty);
+		Assert.That(await host.OpenScreenAsync(owner, definition), Is.Not.Null);
+		Assert.That(definition.Activators, Is.Empty);
 	}
 
 	[Test]
-	public async Task GeneratedDefaultIsCachedAndKeepsTheCanonicalDefinition() {
+	public async Task MenuFreeDefaultKeepsTheCanonicalDefinitionAcrossInstances() {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle(nameof(ProbeScreen))
+			)
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -306,10 +313,13 @@ public class ApplicationGraphOwnershipTests {
 		var first = await host.ActivateBlockAsync("work");
 		var second = await host.ActivateBlockAsync("work");
 		var owner = host.Blocks.Single();
-		Assert.That(first.MenuItem, Is.SameAs(second.MenuItem));
-		Assert.That(first.MenuItem.ScreenDefinition, Is.SameAs(owner.DefaultScreenDefinition));
-		Assert.That(first.MenuItem.Parent.Parent, Is.SameAs(owner));
-		Assert.That(owner.DefaultScreenDefinition.Activators, Has.Length.EqualTo(1));
+		Assert.That(first.MenuItem, Is.Null);
+		Assert.That(second.MenuItem, Is.Null);
+		Assert.That(first.Definition, Is.SameAs(owner.DefaultScreenDefinition));
+		Assert.That(second.Definition, Is.SameAs(owner.DefaultScreenDefinition));
+		Assert.That(first.Block, Is.SameAs(owner));
+		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
+		Assert.That(owner.DefaultScreenDefinition.Activators, Is.Empty);
 	}
 
 	[Test]
@@ -514,9 +524,12 @@ public class ApplicationGraphOwnershipTests {
 		new BlazorApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Record")
+			)
+			.AddMenu(menu => menu
 				.WithText("Views")
-				.AddScreenItem<ProbeScreen>("record", "Record")
+				.AddShowScreenItem<ProbeScreen>(text: "Record", id: "record")
 			)
 			.Build()
 	}, services);

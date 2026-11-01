@@ -6,20 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
 using FluentValidation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
-using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
@@ -112,10 +112,14 @@ public class DemoPluginRegistrationTests {
 		var services = new ServiceCollection();
 		services.AddSphere10BlazorApplication(WorkspaceCommands.Configure);
 		if (includeWorkspace)
-			services.AddApplicationBlock(block => block
-				.WithName("Workspace")
-				.WithDefaultScreen<PluginBuilderTests.TestScreen>()
-			);
+			services
+				.AddApplicationBlock(block => block
+					.WithName("Workspace")
+					.AddScreen<PluginBuilderTests.TestScreen>(screen => screen
+						.WithTitle(nameof(PluginBuilderTests.TestScreen))
+					)
+					.WithDefaultScreen<PluginBuilderTests.TestScreen>()
+				);
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
 		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();

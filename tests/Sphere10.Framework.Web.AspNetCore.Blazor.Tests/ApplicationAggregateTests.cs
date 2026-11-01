@@ -6,9 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -25,9 +25,12 @@ public class ApplicationAggregateTests {
 		var unloaded = 0;
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("work")
 				.WithName("Work")
+				.AddScreen<ProbeScreen>(screen => screen
+					.WithTitle(nameof(ProbeScreen))
+				)
 				.WithDefaultScreen<ProbeScreen>()
 			)
 			.Build();
@@ -83,9 +86,12 @@ public class ApplicationAggregateTests {
 	public async Task ApplicationBlocksFollowLiveHostMembershipIndependentlyOfLoadedPlugins() {
 		var explicitPlugin = new BlazorPluginBuilder()
 			.WithName("Application")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("registered")
 				.WithName("Registered")
+				.AddScreen<ProbeScreen>(screen => screen
+					.WithTitle(nameof(ProbeScreen))
+				)
 				.WithDefaultScreen<ProbeScreen>()
 			)
 			.Build();
@@ -94,6 +100,9 @@ public class ApplicationAggregateTests {
 			.AddApplicationBlock(block => block
 				.WithId("standalone")
 				.WithName("Standalone")
+				.AddScreen<ProbeScreen>(screen => screen
+					.WithTitle(nameof(ProbeScreen))
+				)
 				.WithDefaultScreen<ProbeScreen>()
 			);
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });

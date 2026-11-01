@@ -1,0 +1,71 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+*@
+
+@namespace Sphere10.Framework.Utils.BlazorTester.Application
+@using Sphere10.Framework.Web.AspNetCore.Blazor
+@using Sphere10.Framework.Application
+@inherits BlazorApplicationScreen
+
+<article data-demo="screen-registration">
+	<h2>@Name inspector</h2>
+	<p>CPU and GPU use the same component type with independent registrations and retained instances.</p>
+	@if (_settings.ShowSummary) {
+		<section aria-label="Inspector summary" style="@($"font-size: {_settings.Presentation.FontScale}%")">
+			<p data-inspector-caption style="@(_settings.Presentation.EmphasizeHeading ? "font-weight: 600" : null)">@_settings.Caption</p>
+			<p data-inspector-detail>@_settings.DetailLevel</p>
+			@if (_settings.DetailLevel == RegistrationInspectorSettings.InspectorDetailLevel.Detailed) {
+				<ul>@foreach (var view in _settings.SavedViews) { <li>@view.Name: @view.Description</li> }</ul>
+			}
+		</section>
+	}
+	<button class="btn btn-outline-secondary mb-3" @onclick="ToggleSummaryAsync">Toggle summary</button>
+	<label class="form-label" for="@($"registration-draft-{_instance:N}")">Retained draft</label>
+	<input id="@($"registration-draft-{_instance:N}")" class="form-control mb-3" @bind="_draft" />
+	<p>Instance: <code data-registration-instance>@_instance</code></p>
+	<button class="btn btn-primary" @onclick="OpenDetailsAsync">Open menu-free details</button>
+</article>
+
+@code {
+	private readonly Guid _instance = Guid.NewGuid();
+	private string _draft;
+	private RegistrationInspectorSettings _settings = new();
+
+	[Parameter]
+	public string Name { get; set; }
+
+	public override string Title {
+		get {
+			return Name + " inspector";
+		}
+	}
+
+	// Settings Apply changes presentation while the unrelated retained draft and instance identity stay intact.
+	protected override Task OnSettingsChangedAsync(object values) {
+		_settings = (RegistrationInspectorSettings)values;
+		return Task.CompletedTask;
+	}
+
+	// Only plain preference values enter the profile's detached background snapshot.
+	protected override object CaptureSettings() {
+		return _settings;
+	}
+
+	// A completed control action is accepted once; layout and pointer movement never save preferences.
+	private async Task ToggleSummaryAsync() {
+		_settings.ShowSummary = !_settings.ShowSummary;
+		MarkSettingsChanged();
+		await SaveSettingsChangesAsync();
+	}
+
+	// Opens the independent registration through the normal guarded host without adding a menu command.
+	private async Task OpenDetailsAsync() {
+		await Host.ActivateScreenAsync(Block, typeof(RegistrationDetailsScreen));
+	}
+}

@@ -23,31 +23,41 @@ public class NativeApplicationMenuBuilderPatternTests {
 	public void ScreenShortcutPreservesConfiguredMetadata() {
 		var directImage = new Bitmap(16, 16);
 		var configuredImage = new Bitmap(16, 16);
-		using var direct = new WinFormsApplicationMenuBuilder()
-			.WithText("Screens")
-			.AddScreenItem<Screen>("Stock", directImage, showOnExplorerBar: false, showOnToolBar: false, isStartScreen: true, title: "Stock levels")
-			.Build();
-		using var configured = new WinFormsApplicationMenuBuilder()
-			.WithText("Screens")
-			.ConfigureItem(item => item
-				.AsScreenItem()
-				.WithText("Stock")
-				.WithScreen<Screen>()
-				.WithImage(configuredImage)
-				.ShowOnExplorerBar(false)
-				.ShowOnToolBar(false)
-				.IsStartScreen()
-				.WithScreenTitle("Stock levels")
+		var definition = new ApplicationScreenDefinition(typeof(Screen), "Stock levels");
+		using var directBlock = new WinFormsApplicationBlockBuilder()
+			.WithName("Direct")
+			.AddScreen(definition)
+			.WithDefaultScreen(definition)
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem(definition, "Stock", directImage, showOnExplorerBar: false, showOnToolBar: false, isStartScreen: true)
 			)
 			.Build();
-		var directItem = (WinFormsScreenMenuItem)direct.Items[0];
-		var configuredItem = (WinFormsScreenMenuItem)configured.Items[0];
+		using var configuredBlock = new WinFormsApplicationBlockBuilder()
+			.WithName("Configured")
+			.AddScreen(definition)
+			.WithDefaultScreen(definition)
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddItem(item => item
+					.AsScreenItem()
+					.WithText("Stock")
+					.WithScreen(definition.Registration)
+					.WithImage(configuredImage)
+					.ShowOnExplorerBar(false)
+					.ShowOnToolBar(false)
+					.IsStartScreen()
+				)
+			)
+			.Build();
+		var directItem = (WinFormsScreenMenuItem)directBlock.Menus[0].Items[0];
+		var configuredItem = (WinFormsScreenMenuItem)configuredBlock.Menus[0].Items[0];
 		Assert.That(directItem.Text, Is.EqualTo(configuredItem.Text));
 		Assert.That(directItem.ScreenDefinition.ScreenType, Is.EqualTo(configuredItem.ScreenDefinition.ScreenType));
 		Assert.That(directItem.ScreenDefinition.Title, Is.EqualTo(configuredItem.ScreenDefinition.Title));
 		Assert.That(directItem.ScreenDefinition.ActivationMode, Is.EqualTo(configuredItem.ScreenDefinition.ActivationMode));
 		Assert.That(directItem.ScreenDefinition.ScreenKind, Is.EqualTo(configuredItem.ScreenDefinition.ScreenKind));
-		Assert.That(directItem.IsDefault, Is.EqualTo(configuredItem.IsDefault));
+		Assert.That(directBlock.DefaultScreenDefinition, Is.SameAs(configuredBlock.DefaultScreenDefinition));
 		Assert.That(directItem.ShowOnExplorerBar, Is.EqualTo(configuredItem.ShowOnExplorerBar));
 		Assert.That(directItem.ShowOnToolStrip, Is.EqualTo(configuredItem.ShowOnToolStrip));
 		Assert.That(directItem.ExecuteOnLoad, Is.EqualTo(configuredItem.ExecuteOnLoad));
@@ -74,16 +84,27 @@ public class NativeApplicationMenuBuilderPatternTests {
 		Assert.That(receivedUI, Is.SameAs(userInterface));
 	}
 
-	[TestCase(null, typeof(ArgumentException))]
-	[TestCase("", typeof(ArgumentException))]
-	[TestCase(" ", typeof(InvalidOperationException))]
-	public void InvalidScreenShortcutDoesNotAppendAnItem(string text, Type exceptionType) {
+	[Test]
+	public void AShowScreenShortcutRejectsAnInvalidRegistrationBeforeAppendingACommand() {
 		var builder = new WinFormsApplicationMenuBuilder()
 			.WithText("Screens");
 
-		Assert.That(() => builder.AddScreenItem<Screen>(text), Throws.TypeOf(exceptionType));
+		Assert.That(() => builder.AddShowScreenItem((ApplicationScreenRegistration)null), Throws.ArgumentNullException);
 		using var menu = builder.Build();
 		Assert.That(menu.Items, Is.Empty);
+	}
+
+	[Test]
+	public void AnOmittedShortcutCaptionUsesTheRegistrationTitleAfterBlockBinding() {
+		using var block = new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<Screen>(screen => screen.WithTitle("Stock levels"))
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem<Screen>()
+			)
+			.Build();
+		Assert.That(block.Menus[0].Items[0].Title, Is.EqualTo("Stock levels"));
 	}
 
 	private sealed class Screen : WinFormsApplicationScreen {

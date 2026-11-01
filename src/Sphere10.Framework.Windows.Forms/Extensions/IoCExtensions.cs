@@ -21,8 +21,11 @@ public static class IoCExtensions {
 
 	public static void AddMainForm<TMainForm>(this IServiceCollection serviceCollection, Action<TMainForm>? Configure = null)
 		where TMainForm : class, IMainForm {
+		WinFormsApplicationSettingsExtensions.EnsureApplicationSettingsServices(serviceCollection);
 		serviceCollection.AddSingleton<IMainForm>(Provider => {
 			var Form = ActivatorUtilities.CreateInstance<TMainForm>(Provider);
+			if (Form is LiteMainForm mainForm)
+				mainForm.AttachApplicationServices(Provider);
 			Configure?.Invoke(Form);
 			return Form;
 		});

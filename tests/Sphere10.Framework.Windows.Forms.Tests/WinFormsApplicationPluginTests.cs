@@ -49,7 +49,7 @@ public class WinFormsApplicationPluginTests {
 		var plugin = new WinFormsApplicationPluginBuilder()
 			.WithName("Features")
 			.AddBlock(block)
-			.ConfigureServices(_ => configured++)
+			.AddServices(_ => configured++)
 			.Build();
 		IApplicationPlugin shared = plugin;
 		shared.Loaded += () => loaded++;
@@ -75,7 +75,8 @@ public class WinFormsApplicationPluginTests {
 		services.AddMainForm<TrackingMainForm>();
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Workspace")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProbeScreen>(screen => screen.WithTitle("Workspace"))
+			.AddMenu(menu => menu
 				.WithText("Commands")
 				.AddActionItem("Startup", () => startupActions++, executeOnLoad: true)
 			)
@@ -83,7 +84,7 @@ public class WinFormsApplicationPluginTests {
 		var plugin = new WinFormsApplicationPluginBuilder()
 			.WithName("Workspace plugin")
 			.AddBlock(block)
-			.ConfigureServices(registry => registry.AddSingleton<StartupMarker>())
+			.AddServices(registry => registry.AddSingleton<StartupMarker>())
 			.Build();
 		plugin.Loaded += () => loaded++;
 		plugin.Unloaded += () => unloaded++;
@@ -119,7 +120,9 @@ public class WinFormsApplicationPluginTests {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
 		using var explicitBlock = new WinFormsApplicationBlock { Name = "Plugin block", Position = 2 };
+		explicitBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(OtherScreen)));
 		using var legacyBlock = new WinFormsApplicationBlock { Name = "Legacy", Position = 1 };
+		legacyBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ProbeScreen)));
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
 				.WithName("Application")
@@ -226,13 +229,13 @@ public class WinFormsApplicationPluginTests {
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
 				.WithName("Duplicate")
-				.RegisterInitializer<IncrementUsageByOneInitializer>()
+				.AddInitializer<IncrementUsageByOneInitializer>()
 			);
 		var loads = 0;
 		var duplicate = new WinFormsApplicationPluginBuilder()
 			.WithName("Duplicate")
-			.RegisterInitializer<IncrementUsageByOneInitializer>()
-			.ConfigureServices(_ => loads++)
+			.AddInitializer<IncrementUsageByOneInitializer>()
+			.AddServices(_ => loads++)
 			.Build();
 		Assert.That(() => services.AddWinFormsApplicationPlugin(duplicate), Throws.ArgumentException);
 		Assert.That(loads, Is.Zero);
@@ -268,9 +271,9 @@ public class WinFormsApplicationPluginTests {
 		services.AddWinFormsApplicationPlugin(new WinFormsApplicationPlugin("Owner", new[] { owned }));
 		var failed = (MutablePlugin)new MutablePluginBuilder()
 			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
-			.ConfigureServices(components => {
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
+			.AddServices(components => {
 				components.AddSingleton<StartupMarker>();
 				components.AddKeyedSingleton<StartupMarker>("Reused", new StartupMarker());
 				Guard.Ensure(failureStage != "Configure", "Configuration failed.");
@@ -289,8 +292,8 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IApplicationFinalizer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Reused")), Is.EqualTo(1));
 		services.AddWinFormsApplicationPlugin(plugin => plugin
 			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
 		);
 		using var provider = services.BuildServiceProvider();
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null, "Ordinary service side effects retain the existing registration policy.");
@@ -310,11 +313,11 @@ public class WinFormsApplicationPluginTests {
 		var calls = new List<string>();
 		var outer = new WinFormsApplicationPluginBuilder()
 			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
-			.ConfigureServices(components => components.AddWinFormsApplicationPlugin(plugin => plugin
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
+			.AddServices(components => components.AddWinFormsApplicationPlugin(plugin => plugin
 				.WithName("Reused")
-				.ConfigureServices(_ => nestedLoads++)
+				.AddServices(_ => nestedLoads++)
 			))
 			.Build();
 		Assert.That(() => services.AddWinFormsApplicationPlugin(outer), Throws.ArgumentException);
@@ -323,8 +326,8 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(services.Any(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Reused")), Is.False);
 		services.AddWinFormsApplicationPlugin(plugin => plugin
 			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
 		);
 		using var provider = services.BuildServiceProvider();
 		provider.GetKeyedServices<IApplicationInitializer>("Reused").Single().Initialize();
@@ -338,13 +341,13 @@ public class WinFormsApplicationPluginTests {
 		var calls = new List<string>();
 		var outer = new WinFormsApplicationPluginBuilder()
 			.WithName("Outer")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
-			.ConfigureServices(components => {
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
+			.AddServices(components => {
 				components.AddWinFormsApplicationPlugin(plugin => plugin
 					.WithName("Nested")
-					.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Nested initialized")))
-					.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Nested finalized")))
+					.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Nested initialized")))
+					.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Nested finalized")))
 				);
 				Guard.Ensure(false, "Outer loading failed.");
 			})
@@ -353,8 +356,8 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(services.Any(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Outer")), Is.False);
 		services.AddWinFormsApplicationPlugin(plugin => plugin
 			.WithName("Outer")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
 		);
 		using var provider = services.BuildServiceProvider();
 		var registrations = provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>().ToArray();
@@ -373,11 +376,13 @@ public class WinFormsApplicationPluginTests {
 		using var first = new WinFormsApplicationBlockBuilder()
 			.WithName("First")
 			.WithPosition(30)
+			.AddScreen<ProbeScreen>(screen => screen.WithTitle(nameof(ProbeScreen)))
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
 		using var second = new WinFormsApplicationBlockBuilder()
 			.WithName("Second")
 			.WithPosition(20)
+			.AddScreen<OtherScreen>(screen => screen.WithTitle(nameof(OtherScreen)))
 			.WithDefaultScreen<OtherScreen>()
 			.Build();
 		using var third = new WinFormsApplicationBlock { Name = "Third", Position = 10 };
@@ -415,7 +420,7 @@ public class WinFormsApplicationPluginTests {
 		var loads = 0;
 		services.AddWinFormsApplicationPlugin(plugin => plugin
 			.WithName("Services")
-			.ConfigureServices(registry => {
+			.AddServices(registry => {
 				loads++;
 				registry.AddSingleton<StartupMarker>();
 			})
@@ -496,6 +501,7 @@ public class WinFormsApplicationPluginTests {
 		using var initial = new WinFormsApplicationBlock { Name = "Initial" };
 		using var contributed = new WinFormsApplicationBlockBuilder()
 			.WithName("Contributed")
+			.AddScreen<ProbeScreen>(screen => screen.WithTitle(nameof(ProbeScreen)))
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
 		using var later = new WinFormsApplicationBlock { Name = "Later" };

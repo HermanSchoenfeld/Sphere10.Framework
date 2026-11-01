@@ -200,7 +200,8 @@ public class ApplicationBarSelectionTests {
 
 	private static ApplicationBar.Item Add(ApplicationBar bar, Control menu, string text) {
 		var item = new ApplicationBar.Item(menu, null, text);
-		bar.AddItem(item);
+		bar
+			.AddItem(item);
 		return item;
 	}
 
@@ -218,9 +219,23 @@ public class ApplicationBarSelectionTests {
 
 	private static WinFormsApplicationBlock CreateBlock(string name) => new WinFormsApplicationBlockBuilder()
 		.WithName(name)
-		.WithDefaultScreen<DefaultNavigationScreen>("Default", ScreenActivationMode.SingleInstance)
-		.ConfigureMenu(menu => menu.WithText(name + " Menu")
-			.ConfigureItem(item => item.AsScreenItem().WithText("Requested").WithScreen<RequestedNavigationScreen>().AsSingleInstance()))
+		.AddScreen<DefaultNavigationScreen>(screen => screen
+			.WithTitle("Default")
+			.WithActivationMode(ScreenActivationMode.SingleInstance)
+		)
+		.AddScreen<RequestedNavigationScreen>(screen => screen
+			.WithTitle("Requested")
+			.WithActivationMode(ScreenActivationMode.SingleInstance)
+		)
+		.WithDefaultScreen<DefaultNavigationScreen>()
+		.AddMenu(menu => menu
+			.WithText(name + " Menu")
+			.AddItem(item => item
+				.AsScreenItem()
+				.WithText("Requested")
+				.WithScreen<RequestedNavigationScreen>()
+			)
+		)
 		.Build();
 
 	private sealed class ClickableApplicationBar : ApplicationBar {

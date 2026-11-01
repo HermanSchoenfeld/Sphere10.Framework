@@ -46,7 +46,7 @@ public static class WorkspaceCommands {
 				.AddItem(newScratchpad)
 				.AddItem(applicationAction)
 				.AddItem(new BlazorMenuSeparator())
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("close-screen")
 					.WithText("Close screen")
 					.WithIcon("fas fa-times")
@@ -54,7 +54,7 @@ public static class WorkspaceCommands {
 						await provider.GetRequiredService<ISingleApplicationScreenHost>().CloseActiveScreenAsync(token);
 					})
 				)
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("close-all")
 					.WithText("Close all screens")
 					.WithIcon("fas fa-times-circle")
@@ -64,7 +64,7 @@ public static class WorkspaceCommands {
 					})
 				)
 				.AddItem(new BlazorMenuSeparator())
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("exit")
 					.WithText("Exit application")
 					.WithIcon("fas fa-sign-out-alt")
@@ -75,14 +75,14 @@ public static class WorkspaceCommands {
 			new BlazorApplicationMenuBuilder()
 				.WithId("view")
 				.WithText("View")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("layout-tabs")
 					.WithText("Tabbed screens")
 					.WithIcon("fas fa-folder")
 					.WithAction(async (provider, token) =>
 						await provider.GetRequiredService<IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.MultiView, token))
 				)
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("layout-single")
 					.WithText("Single screen")
 					.WithIcon("fas fa-window-maximize")
@@ -93,14 +93,14 @@ public static class WorkspaceCommands {
 			new BlazorApplicationMenuBuilder()
 				.WithId("help")
 				.WithText("Help")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("workspace-help")
 					.WithText("Application guide")
 					.WithIcon("fas fa-question-circle")
 					.EnabledWhen(() => workspace != null)
 					.WithAction(async (_, token) => await application.ScreenHost.ActivateBlockAsync(workspace, token))
 				)
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("about")
 					.WithText("About Sphere10 Framework")
 					.WithIcon("fas fa-info-circle")

@@ -7,9 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -20,6 +23,7 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.WinFormsTester;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
+using TypeDescriptor = System.ComponentModel.TypeDescriptor;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -30,9 +34,16 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 public class DemoPluginRegistrationTests {
 	private bool _startedFramework;
 	private Form _dispatcher;
+	private ISettingsProvider _previousUserSettings;
+	private ISettingsProvider _previousGlobalSettings;
+	private SynchronizationContext _previousSynchronizationContext;
 
 	[SetUp]
 	public void CreateDispatcher() {
+		// A native loop disposes its thread context; never carry that installed context into another NUnit case.
+		_previousSynchronizationContext = SynchronizationContext.Current;
+		_previousUserSettings = (ISettingsProvider)typeof(UserSettings).GetField("_provider", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+		_previousGlobalSettings = (ISettingsProvider)typeof(GlobalSettings).GetField("_provider", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
 		// Controls can queue constructor-time notifications before their own handles exist.
 		_dispatcher = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
 		_dispatcher.Show();
@@ -40,6 +51,11 @@ public class DemoPluginRegistrationTests {
 
 	[TearDown]
 	public async Task StopDemo() {
+		using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(_previousSynchronizationContext));
+		using var restoreProviders = Tools.Scope.ExecuteOnDispose(() => {
+			UserSettings.Provider = _previousUserSettings;
+			GlobalSettings.Provider = _previousGlobalSettings;
+		});
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => _dispatcher?.Dispose());
 		System.Windows.Forms.Application.DoEvents();
 		if (_startedFramework) {
@@ -55,6 +71,8 @@ public class DemoPluginRegistrationTests {
 			_startedFramework = false;
 			foreach (var block in blocks)
 				block.Dispose();
+			var reportedError = ((DemoMainForm)form).ReportedError;
+			Assert.That(reportedError, Is.Null, reportedError?.ToString());
 			Assert.That(errors, Is.Empty, "A configured demo menu command opened an exception dialog.");
 		}
 	}
@@ -170,7 +188,7 @@ public class DemoPluginRegistrationTests {
 			"CompressionTestScreen",
 			"ConnectionBarTestScreen",
 			"ConnectionPanelTestScreen",
-			"CrudTestScreen",
+			"VisualGridTestScreen",
 			"CustomComboBoxScreen",
 			"DecayGaugeScreen",
 			"DraggableControlsTestScreen",
@@ -219,7 +237,7 @@ public class DemoPluginRegistrationTests {
 	[TestCase("Workspace", typeof(ScreenA))]
 	[TestCase("Notes", typeof(ScreenHostingPermanentTestScreen))]
 	[TestCase("Controls", typeof(EnumComboScreen))]
-	[TestCase("Data And Collections", typeof(CrudTestScreen))]
+	[TestCase("Data And Collections", typeof(VisualGridTestScreen))]
 	[TestCase("Integration", typeof(CommunicationsTestScreen))]
 	[TestCase("Utilities", typeof(CompressionTestScreen))]
 	[TestCase("Utilities", typeof(LoggingTestScreen))]
@@ -277,12 +295,13 @@ public class DemoPluginRegistrationTests {
 	[TestCase(typeof(ScreenC))]
 	[TestCase(typeof(ScreenHostingDesignTestScreen))]
 	[TestCase(typeof(ScreenHostingPlainTestScreen))]
-	[TestCase(typeof(CrudTestScreen))]
+	[TestCase(typeof(VisualGridTestScreen))]
 	[TestCase(typeof(EnumComboScreen))]
 	public async Task OrdinaryDemoScreensOpenIndependentInstancesThroughTheirRegisteredMenus(Type screenType) {
 		var form = await StartDemoAsync();
 		var item = form.RegisteredBlocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)
-			.OfType<IWinFormsScreenMenuItem>().Single(item => item.ScreenDefinition.ScreenType == screenType);
+			.OfType<IWinFormsScreenMenuItem>().Single(item => item.ScreenDefinition.ScreenType == screenType
+				&& (screenType != typeof(ScreenHostingDesignTestScreen) || item.ScreenDefinition.StableKey == "design" && item.Title == "New Design"));
 		form.ExecuteMenuItem(item);
 		var first = form.ActiveScreen;
 		form.ExecuteMenuItem(item);
@@ -293,6 +312,177 @@ public class DemoPluginRegistrationTests {
 		Assert.That(first.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(second.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(form.ScreenHost.OpenScreens.Count(screen => screen.GetType() == screenType), Is.EqualTo(2));
+
+		if (screenType == typeof(ScreenHostingDesignTestScreen)) {
+			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
+			var design = workspace.ScreenDefinitions.First(definition => definition.ScreenType == screenType);
+			Assert.That(design.StableKey, Is.EqualTo("design"));
+			Assert.That(item.ScreenDefinition, Is.SameAs(design));
+
+			// Generic and runtime type references use the same first registration without inheriting the later inspector policies.
+			foreach (var title in new[] { "First Design (by type)", "First Design (by runtime type)" }) {
+				var alias = (IWinFormsScreenMenuItem)GetItem(form, "Workspace", title);
+				Assert.That(alias.ScreenDefinition, Is.SameAs(item.ScreenDefinition));
+				form.ExecuteMenuItem(alias);
+				var firstAliasScreen = form.ActiveScreen;
+				form.ExecuteMenuItem(alias);
+				Assert.That(form.ActiveScreen, Is.Not.SameAs(firstAliasScreen));
+				Assert.That(firstAliasScreen.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+				Assert.That(form.ActiveScreen.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+			}
+			Assert.That(form.ScreenHost.OpenScreens.Count(screen => screen.GetType() == screenType), Is.EqualTo(6));
+		}
+	}
+
+	[Test]
+	public void IndependentRegistrationsKeepFactoryArgumentsDraftsAndMenuFreeNavigationSeparate() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
+			var cpuCommand = GetItem(form, "Workspace", "CPU Inspector");
+			var gpuCommand = GetItem(form, "Workspace", "GPU Inspector");
+			Assert.That(((IWinFormsScreenMenuItem)cpuCommand).ScreenDefinition,
+				Is.SameAs(workspace.ScreenDefinitions.Single(definition => definition.StableKey == "cpu-inspector")));
+			Assert.That(((IWinFormsScreenMenuItem)gpuCommand).ScreenDefinition,
+				Is.SameAs(workspace.ScreenDefinitions.Single(definition => definition.StableKey == "gpu-inspector")));
+			form.ExecuteMenuItem(cpuCommand);
+			var cpu = form.ActiveScreen;
+			await WaitForInspectorGridAsync(cpu);
+			GetNotesEditor(cpu).Text = "CPU-specific draft";
+			form.ExecuteMenuItem(gpuCommand);
+			var gpu = form.ActiveScreen;
+			await WaitForInspectorGridAsync(gpu);
+			GetNotesEditor(gpu).Text = "GPU-specific draft";
+			Assert.That(gpu, Is.Not.SameAs(cpu));
+			Assert.That(cpu.ApplicationMenuStripText, Does.StartWith("CPU Inspector "));
+			Assert.That(gpu.ApplicationMenuStripText, Does.StartWith("GPU Inspector "));
+			form.ExecuteMenuItem(cpuCommand);
+			Assert.That(form.ActiveScreen, Is.SameAs(cpu));
+			Assert.That(GetNotesEditor(form.ActiveScreen).Text, Is.EqualTo("CPU-specific draft"));
+			form.ExecuteMenuItem(gpuCommand);
+			Assert.That(form.ActiveScreen, Is.SameAs(gpu));
+			Assert.That(GetNotesEditor(form.ActiveScreen).Text, Is.EqualTo("GPU-specific draft"));
+
+			// A normal action opens the menu-free registration without synthesizing a screen command.
+			var menuFree = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "menu-free-inspector");
+			Assert.That(menuFree.Activators, Is.Empty);
+			form.ExecuteMenuItem(GetItem(form, "Workspace", "Open Menu-free Inspector"));
+			Assert.That(form.ActiveScreen, Is.TypeOf<ScreenHostingDesignTestScreen>());
+			Assert.That(form.ActiveScreen.ApplicationMenuStripText, Does.StartWith("Menu-free Inspector "));
+			Assert.That(form.ActiveScreen.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
+			Assert.That(form.ScreenHost.OpenScreens.OfType<ScreenHostingDesignTestScreen>(), Has.Exactly(3).Items);
+		});
+	}
+
+	[Test]
+	public void InspectorOptionsDeclareIndependentDefaultsAndCustomEditorWithoutActivatingScreens() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
+			var cpuDefinition = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "cpu-inspector");
+			var gpuDefinition = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "gpu-inspector");
+			var cpu = application.Settings.GetProfile(workspace, cpuDefinition.Registration);
+			var gpu = application.Settings.GetProfile(workspace, gpuDefinition.Registration);
+			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("CPU summary"));
+			Assert.That(gpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("GPU summary"));
+			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Grid.Columns.Select(column => column.Key), Is.EqualTo(new[] { "Id", "Name", "Summary" }));
+			Assert.That(cpu.Validate(cpu.GetValues<ScreenHostingPreferences>()).IsSuccess, Is.True);
+			Assert.That(form.ScreenHost.OpenScreens.OfType<ScreenHostingDesignTestScreen>(), Is.Empty);
+			using var dialog = new WinFormsApplicationSettingsDialog(application.Settings, application, Sphere10Framework.Instance.ServiceProvider, cpu);
+			dialog.Show(_dispatcher);
+			SetInspectorHeading(dialog, "CPU accepted heading");
+			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("CPU summary"));
+			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
+			dialog.SelectProfile(gpu);
+			Assert.That(dialog.Controls.Find("PreferencePreview", true).Single().Text, Does.Contain("GPU summary"));
+			Assert.That(gpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("GPU summary"));
+			dialog.ResetSelectedDefaults();
+			dialog.CancelEdits();
+			dialog.Close();
+			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("CPU accepted heading"));
+			Assert.That(gpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("GPU summary"));
+			Assert.That(form.ScreenHost.OpenScreens.OfType<ScreenHostingDesignTestScreen>(), Is.Empty, "Options creates value editors, never the operational inspectors.");
+		});
+	}
+
+	[Test]
+	public void InspectorApplyUpdatesOnlyItsRegistrationAndRetainsNotesAndNamedGridOwnership() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
+			form.ExecuteMenuItem(GetItem(form, "Workspace", "CPU Inspector"));
+			var cpu = form.ActiveScreen;
+			await WaitForInspectorGridAsync(cpu);
+			GetNotesEditor(cpu).Text = "Retained CPU operational draft";
+			form.ExecuteMenuItem(GetItem(form, "Workspace", "GPU Inspector"));
+			var gpu = form.ActiveScreen;
+			await WaitForInspectorGridAsync(gpu);
+			GetNotesEditor(gpu).Text = "Retained GPU operational draft";
+			var definition = workspace.ScreenDefinitions.Single(item => item.StableKey == "cpu-inspector");
+			var profile = application.Settings.GetProfile(workspace, definition.Registration);
+			using var dialog = new WinFormsApplicationSettingsDialog(application.Settings, application, Sphere10Framework.Instance.ServiceProvider, profile);
+			dialog.Show(_dispatcher);
+			SetInspectorHeading(dialog, "CPU live preferences");
+			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
+
+			// Acceptance persists first; the live screen then awaits its two grid refreshes before updating the summary.
+			var deadline = DateTime.UtcNow.AddSeconds(10);
+			while (cpu.Controls.Find("PreferenceHeading", true).Single().Text != "CPU live preferences") {
+				AssertNoDemoError();
+				Assert.That(DateTime.UtcNow, Is.LessThan(deadline), "The CPU registration did not publish its accepted preferences to the live screen.");
+				await Task.Delay(10);
+			}
+			Assert.That(cpu.Controls.Find("PreferenceHeading", true).Single().Text, Is.EqualTo("CPU live preferences"));
+			Assert.That(gpu.Controls.Find("PreferenceHeading", true).Single().Text, Is.EqualTo("GPU summary"));
+			Assert.That(GetNotesEditor(cpu).Text, Is.EqualTo("Retained CPU operational draft"));
+			Assert.That(GetNotesEditor(gpu).Text, Is.EqualTo("Retained GPU operational draft"));
+			var owned = cpu.Controls.Find("PreferencesGrid", true).Cast<VisualGrid>().Single();
+			var details = cpu.Controls.Find("DetailsGrid", true).Cast<VisualGrid>().Single();
+			var standalone = cpu.Controls.Find("StandaloneGrid", true).Cast<VisualGrid>().Single();
+			Assert.That(owned.Preferences, Is.Not.Null);
+			Assert.That(details.Preferences, Is.Not.Null);
+			Assert.That(standalone.Preferences, Is.Null);
+			Assert.That(owned.CaptureGridPreferences().PageSize, Is.EqualTo(5));
+			Assert.That(details.CaptureGridPreferences().PageSize, Is.EqualTo(3));
+			Assert.That(cpu.Controls.Find("PreferenceLogOutput", true).Cast<LogOutputSelectorControl>().Single().Preferences, Is.Not.Null);
+			dialog.CancelEdits();
+			dialog.Close();
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void RapidInspectorCloseOrDisposalOwnsThePendingPreferenceLoad(bool disposeDirectly) {
+		RunWithNativeMessageLoop(async () => {
+			var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "inspector-blocked-load-" + Guid.NewGuid().ToString("N"));
+			using var provider = new BlockingLegacyProvider(directory);
+			using var release = Tools.Scope.ExecuteOnDispose(provider.Release.Set);
+			var form = await StartDemoAsync(settingsProvider: provider);
+			ShowDemo(form);
+			form.ExecuteMenuItem(GetItem(form, "Workspace", "CPU Inspector"));
+			var screen = form.ActiveScreen;
+			await provider.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.That(provider.Saves, Is.Zero);
+			if (disposeDirectly) {
+				screen.Dispose();
+				provider.Release.Set();
+				await screen.SaveSettingsAsync().WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.That(provider.Saves, Is.Zero, "Direct disposal cancels pending initialization without inventing an accepted save.");
+			} else {
+				var close = form.ScreenHost.CloseScreenAsync(screen);
+				Assert.That(close.IsCompleted, Is.False, "Accepted close must join the actual screen readiness task before saving or disposing.");
+				Assert.That(screen.IsDisposed, Is.False);
+				provider.Release.Set();
+				Assert.That(await close.WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
+			}
+			System.Windows.Forms.Application.DoEvents();
+			Assert.That(screen.IsDisposed, Is.True);
+			Assert.That(form.ScreenHost.OpenScreens, Does.Not.Contain(screen));
+		});
 	}
 
 	[Test]
@@ -310,12 +500,12 @@ public class DemoPluginRegistrationTests {
 	}
 
 	[Test]
-	public async Task CrudGridDemoExposesSuppressedLoadingForItsGridAndDropdown() {
+	public async Task VisualGridDemoExposesSuppressedLoadingForItsGridAndDropdown() {
 		var form = await StartDemoAsync();
-		form.ExecuteMenuItem(GetItem(form, "Data And Collections", "CRUD Grid"));
-		var screen = (CrudTestScreen)form.ActiveScreen;
+		form.ExecuteMenuItem(GetItem(form, "Data And Collections", "Visual Grid"));
+		var screen = (VisualGridTestScreen)form.ActiveScreen;
 		var option = screen.Controls.Find("_suppressLoadingIndicatorCheckBox", true).OfType<CheckBox>().Single();
-		var grid = screen.Controls.Find("_crudGrid", true).OfType<CrudGrid>().Single();
+		var grid = screen.Controls.Find("_crudGrid", true).OfType<VisualGrid>().Single();
 		var combo = screen.Controls.Find("_crudComboBox", true).OfType<Sphere10.Framework.Windows.Forms.Crud.CrudComboBox>().Single();
 		Assert.That(grid.SuppressLoadingIndicator, Is.False);
 		Assert.That(combo.Grid.SuppressLoadingIndicator, Is.False);
@@ -386,11 +576,20 @@ public class DemoPluginRegistrationTests {
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.Zero);
 	}
 
-	private async Task<BlockMainForm> StartDemoAsync(bool freshEmptyWorkspace = false, ILogger logger = null) {
+	private async Task<BlockMainForm> StartDemoAsync(bool freshEmptyWorkspace = false, ILogger logger = null, ISettingsProvider settingsProvider = null) {
+		var settingsDirectory = Path.Combine(TestContext.CurrentContext.TestDirectory, "native-demo-settings-" + Guid.NewGuid().ToString("N"));
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => {
-				services.AddMainForm<BlockMainForm>(form => form.ScreenMode = ScreenMode.MultiView);
+			.AddServices(services => {
+				services.AddSingleton<IProductUsageServices, ProbeUsageServices>();
+				services.AddSingleton(new Local<ISettingsProvider>(settingsProvider ?? new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(settingsDirectory, "User")))));
+				services.AddSingleton(new Global<ISettingsProvider>(new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(settingsDirectory, "Global")))));
+				services.AddMainForm<DemoMainForm>(form => {
+					// Match the owning dispatcher before handle creation, avoiding an unrelated mixed-monitor DPI transition.
+					form.StartPosition = FormStartPosition.Manual;
+					form.Location = _dispatcher.Location;
+					form.ScreenMode = ScreenMode.MultiView;
+				});
 				if (logger != null)
 					services.AddSingleton<ILogger>(logger);
 				services
@@ -410,9 +609,125 @@ public class DemoPluginRegistrationTests {
 		return form;
 	}
 
+	// Shown controls keep the real native synchronization lifetime through readiness, accepted close and framework teardown.
+	private void RunWithNativeMessageLoop(Func<Task> test) {
+		using var native = new WindowsFormsSynchronizationContext();
+		using var restore = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(_previousSynchronizationContext));
+		SynchronizationContext.SetSynchronizationContext(native);
+		using var loop = new ApplicationContext();
+		Exception failure = null;
+		_dispatcher.BeginInvoke((Action)(async () => {
+			try {
+				await test();
+			} catch (Exception error) {
+				failure = error;
+			}
+			try {
+				await StopDemo();
+			} catch (Exception error) {
+				failure = failure == null ? error : new AggregateException(failure, error);
+			} finally {
+				loop.ExitThread();
+			}
+		}));
+		System.Windows.Forms.Application.Run(loop);
+		if (failure != null)
+			ExceptionDispatchInfo.Capture(failure).Throw();
+	}
+
+	// Editing the actual native detached property descriptor exercises the same values as the Options property grid.
+	private static void SetInspectorHeading(WinFormsApplicationSettingsDialog dialog, string heading) {
+		var editor = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single();
+		var values = editor.SelectedObject;
+		TypeDescriptor.GetProperties(values)[nameof(ScreenHostingPreferences.Heading)].SetValue(values, heading);
+	}
+
+	// Waits for the real load/binding path, surfacing a failed preference load rather than silently skipping readiness.
+	private static async Task WaitForInspectorGridAsync(WinFormsApplicationScreen screen) {
+		var grid = screen.Controls.Find("PreferencesGrid", true).Cast<VisualGrid>().Single();
+		var deadline = DateTime.UtcNow.AddSeconds(10);
+		while (!grid.VisibleEntities.Any() || screen.Controls.Find("PreferenceSummary", true).Single().Text == "Loading inspector preferences...") {
+			AssertNoDemoError();
+			var status = screen.Controls.Find("PreferenceSummary", true).Single().Text;
+			Assert.That(status, Does.Not.StartWith("Preferences could not be loaded:"));
+			Assert.That(DateTime.UtcNow, Is.LessThan(deadline), "The typed inspector never completed its first owned grid binding.");
+			System.Windows.Forms.Application.DoEvents();
+			await Task.Delay(10);
+		}
+		AssertNoDemoError();
+		Assert.That(screen.Controls.Find("PreferenceSummary", true).Single().Text, Does.Not.StartWith("Preferences could not be loaded:"));
+	}
+
+	// Surface the originating native failure instead of entering a modal error dialog inside a test message pump.
+	private static void AssertNoDemoError() {
+		var form = (DemoMainForm)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IMainForm>();
+		Assert.That(form.ReportedError, Is.Null, form.ReportedError?.ToString());
+	}
+
+	// Settle the matching owner/main-form DPI before opening child tabs or starting their asynchronous bindings.
+	private void ShowDemo(BlockMainForm form) {
+		form.Show(_dispatcher);
+		System.Windows.Forms.Application.DoEvents();
+		AssertNoDemoError();
+	}
+
 	private static IWinFormsApplicationMenuItem GetItem(BlockMainForm form, string blockName, string title) =>
 		form.RegisteredBlocks.Single(block => block.Name == blockName).Menus.SelectMany(menu => menu.Items).Single(item => item.Title == title);
 
 	private static TextBox GetNotesEditor(WinFormsApplicationScreen screen) =>
-		screen.Controls.OfType<TableLayoutPanel>().Single().Controls.OfType<TextBox>().Single(editor => !editor.ReadOnly);
+		screen.Controls.Find("LifecycleNotes", true).Cast<TextBox>().Single();
+
+	// Retain ordinary demo startup while capturing UI-thread failures for the originating fixture.
+	public sealed class DemoMainForm : BlockMainForm {
+		public Exception ReportedError { get; private set; }
+
+		public override void ReportError(Exception error) {
+			ReportedError ??= error;
+			TestContext.Progress.WriteLine("Native demo error: " + error);
+			TestContext.Progress.Flush();
+		}
+	}
+
+	// The shown main form consumes usage information; these deterministic values need no product installation or IO.
+	private sealed class ProbeUsageServices : IProductUsageServices {
+		public ProductUsageInformation ProductUsageInformation { get; } = new();
+
+		public IDictionary<string, object> UserEncryptedProperties { get; } = new Dictionary<string, object>();
+
+		public IDictionary<string, object> SystemEncryptedProperties { get; } = new Dictionary<string, object>();
+
+		public void IncrementUsageByOne() {
+		}
+	}
+
+	// Blocks only the first legacy control read; profile metadata loading remains ordinary worker IO.
+	private sealed class BlockingLegacyProvider(string directory) : DirectoryFileSettingsProvider(directory), IDisposable {
+		private int _blocked;
+
+		public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		public ManualResetEventSlim Release { get; } = new(false);
+
+		public int Saves { get; private set; }
+
+		public override bool ContainsSetting(Type settingsType, object id = null) {
+			if (settingsType == typeof(VisualGridSettings) && Interlocked.Exchange(ref _blocked, 1) == 0) {
+				ReadStarted.TrySetResult();
+				if (!Release.Wait(TimeSpan.FromSeconds(10)))
+					throw new TimeoutException("The test did not release the inspector's legacy read.");
+			}
+			return base.ContainsSetting(settingsType, id);
+		}
+
+		public override void SaveSetting(SettingsObject settings) {
+			Saves++;
+			base.SaveSetting(settings);
+		}
+
+		public void Dispose() {
+			Release.Set();
+			Release.Dispose();
+		}
+	}
+
 }

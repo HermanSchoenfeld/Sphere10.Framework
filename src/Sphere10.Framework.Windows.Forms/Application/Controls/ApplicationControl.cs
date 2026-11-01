@@ -8,7 +8,10 @@
 
 using System;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Windows.Forms;
@@ -20,6 +23,7 @@ namespace Sphere10.Framework.Windows.Forms;
 public partial class ApplicationControl : UserControlEx {
 
 	private IServiceProvider _serviceProvider;
+	private WinFormsApplicationScreenSettings _applicationSettings;
 	private IFuture<ISettingsServices> _settingsServices;
 	private IFuture<IUserInterfaceServices> _userInterfaceServices;
 
@@ -32,6 +36,33 @@ public partial class ApplicationControl : UserControlEx {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	protected IUserInterfaceServices UserInterfaceServices => TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
+
+	// Plain application controls borrow the same class-valued preferences and ordered saves as hosted screens.
+	protected bool TryGetApplicationSettings<TSettings>(string key, out TSettings settings) {
+		if (_applicationSettings == null) {
+			var framework = Sphere10Framework.Instance;
+			var catalog = framework.IsStarted ? framework.ServiceProvider.GetService<ApplicationSettingsCatalog>() : null;
+			if (catalog?.IsInitialized != true) {
+				settings = default;
+				return false;
+			}
+			_applicationSettings = new WinFormsApplicationScreenSettings(this, catalog.GetProfile(key), null, OnApplicationSettingsChanged);
+			Disposables.Add(_applicationSettings);
+		}
+		settings = _applicationSettings.GetValues<TSettings>();
+		return true;
+	}
+
+	// Deliberate accepted control edits are snapshotted and persisted by the existing internal coordinator.
+	protected Task SaveApplicationSettingsAsync(CancellationToken cancellationToken = default) {
+		Guard.Ensure(_applicationSettings != null, "Load declared application settings before saving them.");
+		_applicationSettings.MarkChanged();
+		return _applicationSettings.SaveAsync(cancellationToken);
+	}
+
+	// Products react to accepted values without observing profiles, producer tokens or revisions.
+	protected virtual void OnApplicationSettingsChanged(object previous, object settings) {
+	}
 
 	private bool TryInitializeServiceCache() {
 		var framework = Sphere10Framework.Instance;

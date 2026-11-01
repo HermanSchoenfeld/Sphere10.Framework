@@ -11,4 +11,16 @@ namespace Sphere10.Framework.Application.UI;
 /// <summary>A command referencing a screen definition registered by its owning block.</summary>
 public interface IScreenMenuItem : IApplicationMenuItem {
 	ApplicationScreenDefinition ScreenDefinition { get; }
+
+	/// <summary>The exact registration or unambiguous type request to resolve in the owning block.</summary>
+	ApplicationScreenRegistration Registration {
+		get {
+			return ScreenDefinition?.Registration;
+		}
+	}
+
+	/// <summary>Binds a command to its graph's canonical definition without registering another screen.</summary>
+	void ResolveScreenDefinition(ApplicationScreenDefinition definition) {
+		Guard.Argument(ReferenceEquals(ScreenDefinition, definition), nameof(definition), "This command requires its canonical registered definition.");
+	}
 }

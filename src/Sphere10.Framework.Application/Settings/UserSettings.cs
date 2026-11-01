@@ -23,6 +23,12 @@ public static class UserSettings {
 		set => _provider = value;
 	}
 
+	/// <summary>Returns the currently configured user provider without requiring an application settings lifetime.</summary>
+	public static bool TryGetProvider(out ISettingsProvider provider) {
+		provider = _provider;
+		return provider != null;
+	}
+
 	public static bool Has<T>(object id = null)
 		where T : SettingsObject, new() {
 		return Provider.Has<T>(id);

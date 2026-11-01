@@ -61,7 +61,7 @@ public class ApplicationTaskRegistrationTests {
 		var framework = new Sphere10Framework();
 		framework
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton(probe);
 				services.AddInitializer<CountingProcessInitializer>();
 				services.AddFinalizer<CountingProcessFinalizer>();

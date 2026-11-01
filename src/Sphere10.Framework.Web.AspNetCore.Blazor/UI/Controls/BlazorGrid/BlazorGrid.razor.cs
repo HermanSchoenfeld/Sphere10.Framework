@@ -25,12 +25,14 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private BlazorGridColumn<TItem>[] _autoColumns;
 	private BlazorGridColumn<TItem>[] _columns = Array.Empty<BlazorGridColumn<TItem>>();
 	private ElementReference _element;
+	private ElementReference _pageModeButton;
 	private Task _initializationTask;
 	private IJSObjectReference _module;
 	private IJSObjectReference _behavior;
 	private DotNetObjectReference<BlazorGrid<TItem>> _reference;
 	private bool _disposed;
 	private bool _confirmDelete;
+	private bool _pageModeMenuOpen;
 	private bool _performingAction;
 	private bool _wasSelected;
 	private TItem _lastSelection;
@@ -90,7 +92,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	[Parameter] public int Height { get; set; } = 420;
 
-	[Parameter] public GridTypes GridType { get; set; }
+	[Parameter] public GridTypes GridType { get; set; } = GridTypes.ActionColumn | GridTypes.NewItem | GridTypes.AllowsSettingsChange;
 
 	[Parameter] public GridAction<TItem>[] Actions { get; set; } = Array.Empty<GridAction<TItem>>();
 
@@ -118,7 +120,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	private bool IsBusy => Controller.IsLoading || Controller.IsSaving || _performingAction;
 
-	private bool NavigationDisabled => IsBusy || Controller.IsEditing || _confirmDelete;
+	private bool NavigationDisabled => IsBusy || Controller.IsEditing || _confirmDelete || _settingsDraft != null;
 
 	private bool ShowActions => Actions.Length > 0 && (GridType == 0 || GridType.HasFlag(GridTypes.ActionColumn));
 
@@ -129,7 +131,8 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private string ViewportStyle => UsesViewportPageSize || Controller.PageMode == BlazorGridPageMode.Single
 		? $"height: {Height}px" : $"max-height: {Height}px;{(Controller.IsLoading && Controller.Items.Length == 0 ? $" min-height: {Height}px;" : null)}";
 
-	private long MinimumTableWidth => Math.Max(40L, _columns.Sum(column => (long)Math.Max(40, column.Width)) + ColumnDefinitions.Length * 140L + (ShowActions ? 120 : 0));
+	private string MinimumTableWidth => Math.Max(40D, _columns.Sum(PreferredColumnWidth) + ColumnDefinitions.Length * 140D + (ShowActions ? 120 : 0))
+		.ToString(CultureInfo.InvariantCulture);
 
 	public Task RefreshAsync() => RefreshAsync(!SuppressLoadingIndicator);
 
@@ -161,21 +164,24 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	public void RemoveRows(IEnumerable<TItem> entities) => Controller.RemoveRows(entities);
 
 	public async Task SetPageModeAsync(BlazorGridPageMode mode) {
-		await Controller.SetPageModeAsync(mode);
-		await NotifySelectionAsync();
+		var read = Controller.SetPageModeAsync(mode);
 		await SaveSettingsAsync();
+		await read;
+		await NotifySelectionAsync();
 	}
 
 	public async Task SetPageAsync(int page) {
-		await Controller.SetPageAsync(Math.Clamp(page, 0, TotalPages - 1));
-		await NotifySelectionAsync();
+		var read = Controller.SetPageAsync(Math.Clamp(page, 0, TotalPages - 1));
 		await SaveSettingsAsync();
+		await read;
+		await NotifySelectionAsync();
 	}
 
 	public async Task SetPageSizeAsync(int pageSize) {
-		await Controller.SetPageSizeAsync(pageSize);
-		await NotifySelectionAsync();
+		var read = Controller.SetPageSizeAsync(pageSize);
 		await SaveSettingsAsync();
+		await read;
+		await NotifySelectionAsync();
 	}
 
 	public void BeginCreate() {
@@ -191,6 +197,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	public void CancelEdit() {
 		Controller.CancelEdit();
 		ResetEditor();
+		_ = InvokeAsync(ApplyPendingPreferencesAsync);
 	}
 
 	public async Task<bool> SaveAsync() {
@@ -201,6 +208,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		if (!await Controller.SaveAsync() || _disposed)
 			return false;
 		ResetEditor();
+		await ApplyPendingPreferencesAsync();
 		await (creating ? ItemCreated : ItemUpdated).InvokeAsync(item);
 		await NotifySelectionAsync();
 		return true;
@@ -220,14 +228,22 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			throw;
 		}
 		if (_behavior != null && !_disposed) {
-			var settingsKey = PersistSettings && !string.IsNullOrWhiteSpace(SettingsKey) ? SettingsKey : null;
-			if (_settingsKey != settingsKey) {
-				_settingsKey = settingsKey;
-				var settings = await _behavior.InvokeAsync<BlazorGridSettings>("ReadSettings", settingsKey, CaptureSettings());
-				if (!_disposed && settings != null && !Controller.IsEditing) {
-					await Controller.ApplyViewSettingsAsync(settings);
-					await NotifySelectionAsync();
+			if (_bindPending) {
+				if (_settingsKey != SettingsKey)
+					await ReadInitialSettingsAsync();
+				await _behavior.InvokeVoidAsync("ApplyWidths", _manualWidths);
+				await BindRestoredSourceAsync();
+			} else if (Preferences == null && PersistSettings && !string.IsNullOrWhiteSpace(SettingsKey) && _settingsKey != SettingsKey) {
+				var key = SettingsKey;
+				var settings = await _module.InvokeAsync<BlazorGridSettings>("ReadLegacySettings", key);
+				if (_disposed || Preferences != null || !PersistSettings || SettingsKey != key)
+					return;
+				_settingsKey = key;
+				if (settings == null) {
+					settings = CaptureSettings();
+					settings.ColumnWidths.Clear();
 				}
+				await ApplyGridPreferencesAsync(ToPreferences(settings, _columns));
 			}
 			await _behavior.InvokeVoidAsync("Update", UsesViewportPageSize && !NavigationDisabled);
 		}
@@ -275,8 +291,15 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		Guard.Argument(Enum.IsDefined(CaptionAlignment), nameof(CaptionAlignment), "Select a supported caption alignment.");
 		Guard.Argument(Enum.IsDefined(PageMode), nameof(PageMode), "Select a supported page mode.");
 		var requestedPageMode = AutoPageSize ? BlazorGridPageMode.Auto : PageMode;
+		if (Preferences != null || !PersistSettings || string.IsNullOrWhiteSpace(SettingsKey))
+			_settingsKey = null;
+
+		// Column changes can request a render while the first read is pending; seed saved geometry before that render.
+		if (_boundSource == null && Preferences != null)
+			AcceptPreferenceValues(GetPreferenceSettings(Preferences), Preferences);
 		Controller.Columns = Columns ?? (AutoGenerateColumns ? _autoColumns ??= BlazorGridColumn<TItem>.AutoGenerate() : Array.Empty<BlazorGridColumn<TItem>>());
 		_columns = Controller.Columns;
+		ValidatePreferenceKeys();
 		foreach (var column in _columns) {
 			Guard.ArgumentGT(column.ImageWidth, 0, nameof(column.ImageWidth));
 			Guard.ArgumentGT(column.ImageHeight, 0, nameof(column.ImageHeight));
@@ -290,13 +313,21 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			_parameterPageMode = requestedPageMode;
 			_confirmDelete = false;
 			ResetEditor();
-			await Controller.BindAsync(DataSource, AllowedCapabilities, PageSize, requestedPageMode);
+			if (Preferences == null && PersistSettings && !string.IsNullOrWhiteSpace(SettingsKey) && _settingsKey != SettingsKey) {
+				_bindPending = true;
+				return;
+			}
+			var settings = Preferences == null ? _appliedPreferences : GetPreferenceSettings(Preferences);
+			AcceptPreferenceValues(settings, Preferences);
+			await Controller.BindAsync(DataSource, AllowedCapabilities, PageSize, requestedPageMode, settings);
 			_searchText = Controller.SearchTerm;
 			await NotifySelectionAsync();
 		} else if (_parameterPageMode != requestedPageMode) {
 			_parameterPageMode = requestedPageMode;
 			await SetPageModeAsync(requestedPageMode);
 		}
+		if (Preferences != null && (!PreferenceSettingsEqual(_appliedPreferences, GetPreferenceSettings(Preferences)) || !PreferenceSchemaEqual(Preferences)))
+			await ApplyGridPreferencesAsync(Preferences);
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
@@ -308,8 +339,10 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		_module ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/UI/Controls/BlazorGrid/BlazorGrid.razor.js");
 		if (_disposed || _module == null)
 			return;
+		if (_bindPending)
+			await ReadInitialSettingsAsync();
 		_reference = DotNetObjectReference.Create(this);
-		_behavior = await _module.InvokeAsync<IJSObjectReference>("Initialize", _element, _reference);
+		_behavior = await _module.InvokeAsync<IJSObjectReference>("Initialize", _element, _reference, _manualWidths);
 	}
 
 	private bool Can(DataSourceCapabilities capability) => (Controller.Capabilities & capability) == capability;
@@ -320,6 +353,8 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		if (!_disposed)
 			_ = InvokeAsync(async () => {
 				if (!_disposed) {
+					if (NavigationDisabled)
+						ClosePageModeMenu();
 					StateHasChanged();
 					await NotifySelectionAsync();
 				}
@@ -406,13 +441,22 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 			SortDirection.Descending => SortDirection.None,
 			_ => SortDirection.Ascending
 		};
-		await Controller.SortAsync(column.SortName, direction);
-		await NotifySelectionAsync();
+		var read = Controller.SortAsync(column.SortName, direction);
 		await SaveSettingsAsync();
+		await read;
+		await NotifySelectionAsync();
 	}
 
 	private async Task SaveSettingsAsync() {
-		if (_disposed || _behavior == null || _settingsKey == null || !PersistSettings || Controller.ErrorMessage != null || Controller.IsEditing)
+		if (_disposed)
+			return;
+		if (_pendingPreferences == null)
+			_appliedPreferences = CaptureSettings();
+		if (Preferences != null) {
+			await PreferencesChanged.InvokeAsync(CaptureGridPreferences());
+			return;
+		}
+		if (_behavior == null || _settingsKey == null || !PersistSettings)
 			return;
 		await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => {
 			await _behavior.InvokeVoidAsync("WriteSettings", _settingsKey, CaptureSettings());
@@ -424,14 +468,48 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		PageSize = Controller.ManualPageSize,
 		PageNumber = Controller.CurrentPage,
 		SortColumnName = Controller.SortProperty,
-		SortDirection = Controller.SortDirection
+		SortDirection = Controller.SortDirection,
+		ColumnWidths = new Dictionary<string, double>(_manualWidths, StringComparer.Ordinal)
 	};
 
 	private Task ChangePageAsync(ChangeEventArgs args) =>
 		int.TryParse(args.Value?.ToString(), out var page) ? SetPageAsync(page > 0 ? page - 1 : 0) : Task.CompletedTask;
 
-	private Task ChangePageModeAsync(ChangeEventArgs args) =>
-		Enum.TryParse<BlazorGridPageMode>(args.Value?.ToString(), out var mode) ? SetPageModeAsync(mode) : Task.CompletedTask;
+	// Mode selection changes only the existing controller mode; Manual is the presentation label for Paged.
+	private async Task SelectPageModeAsync(BlazorGridPageMode mode) {
+		ClosePageModeMenu();
+		await SetPageModeAsync(mode);
+		if (!_disposed)
+			await _pageModeButton.FocusAsync();
+	}
+
+	// The compact trigger follows the same dismissal-button pattern as other Framework popup menus.
+	private void TogglePageModeMenu() {
+		if (!NavigationDisabled)
+			_pageModeMenuOpen = !_pageModeMenuOpen;
+	}
+
+	// Dismissal never changes the saved paging choice.
+	private void ClosePageModeMenu() {
+		_pageModeMenuOpen = false;
+	}
+
+	// Escape restores the compact trigger without accepting a menu item.
+	private async Task PageModeKeyDownAsync(KeyboardEventArgs args) {
+		if (args.Key == "Escape" && _pageModeMenuOpen) {
+			ClosePageModeMenu();
+			await _pageModeButton.FocusAsync();
+		}
+	}
+
+	// Keep the persisted enum and its three user-facing choices independent.
+	private static string PageModeLabel(BlazorGridPageMode mode) {
+		return mode switch {
+			BlazorGridPageMode.Single => "Single",
+			BlazorGridPageMode.Auto => "Auto",
+			_ => "Manual"
+		};
+	}
 
 	private async Task PerformActionAsync(GridAction<TItem> action, TItem item) {
 		if (NavigationDisabled || !(action.IsActionAvailable?.Invoke(item) ?? true))
@@ -505,7 +583,15 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		builder.CloseElement();
 	};
 
-	private static string ColumnStyle(BlazorGridColumn<TItem> column) => $"width: {Math.Max(40, column.Width)}px";
+	// The initial HTML uses restored manual widths before JavaScript performs any natural sizing.
+	private string ColumnStyle(BlazorGridColumn<TItem> column) {
+		return $"width: {PreferredColumnWidth(column).ToString(CultureInfo.InvariantCulture)}px";
+	}
+
+	// Unspecified columns retain their configured natural/stretch minimum.
+	private double PreferredColumnWidth(BlazorGridColumn<TItem> column) {
+		return column.PreferenceKey != null && _manualWidths.TryGetValue(column.PreferenceKey, out var width) ? width : Math.Max(40, column.Width);
+	}
 
 	private static string ImagePosition(ResizeAlignment alignment) => alignment switch {
 		ResizeAlignment.TopLeft => "left top",
@@ -556,6 +642,9 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		DataSupplied = 1,
 		DataOnDemand = 1 << 1,
 		ActionColumn = 1 << 2,
-		NewItem = 1 << 3
+		NewItem = 1 << 3,
+
+		/// <summary>Allows the grid's Settings button to edit its supplied settings value.</summary>
+		AllowsSettingsChange = 1 << 4
 	}
 }

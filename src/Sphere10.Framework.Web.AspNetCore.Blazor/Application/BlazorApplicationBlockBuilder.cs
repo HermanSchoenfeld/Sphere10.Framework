@@ -17,6 +17,39 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 	private readonly List<IBlazorApplicationMenuItem> _toolBarItems = new();
 	private string _id;
 
+	/// <summary>Configures and registers a component without requiring a menu command.</summary>
+	public BlazorApplicationBlockBuilder AddScreen<TScreen>(Action<BlazorApplicationScreenBuilder<TScreen>> configure)
+		where TScreen : IBlazorApplicationScreen {
+		return AddScreen(configure, out _);
+	}
+
+	/// <summary>Captures a graph-independent reference to the configured component registration.</summary>
+	public BlazorApplicationBlockBuilder AddScreen<TScreen>(Action<BlazorApplicationScreenBuilder<TScreen>> configure, out ApplicationScreenRegistration<TScreen> registration)
+		where TScreen : IBlazorApplicationScreen {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		registration = new ApplicationScreenRegistration<TScreen>();
+		var builder = new BlazorApplicationScreenBuilder<TScreen>(registration);
+		configure(builder);
+		AddScreenDefinitionInternal(builder.Build());
+		return this;
+	}
+
+	/// <summary>Registers a component whose type is supplied by its callback.</summary>
+	public BlazorApplicationBlockBuilder AddScreen(Action<BlazorApplicationScreenBuilder> configure) {
+		return AddScreen(configure, out _);
+	}
+
+	/// <summary>Captures the identity after a callback has supplied the component type and configuration.</summary>
+	public BlazorApplicationBlockBuilder AddScreen(Action<BlazorApplicationScreenBuilder> configure, out ApplicationScreenRegistration registration) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var builder = new BlazorApplicationScreenBuilder();
+		configure(builder);
+		var definition = builder.Build();
+		registration = definition.Registration;
+		AddScreenDefinitionInternal(definition);
+		return this;
+	}
+
 	public BlazorApplicationBlockBuilder WithId(string id) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		_id = id;
@@ -36,16 +69,27 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 	}
 
 	public BlazorApplicationBlockBuilder AddToolBarItem(IBlazorApplicationMenuItem item) {
+		return AddToolBarItem(item, out _);
+	}
+
+	/// <summary>Adds a toolbar command and captures its configured definition before graph snapshots are built.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(IBlazorApplicationMenuItem item, out IBlazorApplicationMenuItem registration) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		_toolBarItems.Add(item);
+		registration = item;
 		return this;
 	}
 
-	public BlazorApplicationBlockBuilder ConfigureToolBarItem(Action<BlazorApplicationMenuItemBuilder> configure) {
+	public BlazorApplicationBlockBuilder AddToolBarItem(Action<BlazorApplicationMenuItemBuilder> configure) {
+		return AddToolBarItem(configure, out _);
+	}
+
+	/// <summary>Configures one toolbar command, captures its definition and returns the block builder.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarItem(Action<BlazorApplicationMenuItemBuilder> configure, out IBlazorApplicationMenuItem registration) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		var builder = new BlazorApplicationMenuItemBuilder();
 		configure(builder);
-		return AddToolBarItem(builder.Build());
+		return AddToolBarItem(builder.Build(), out registration);
 	}
 
 	public BlazorApplicationBlockBuilder AddToolBarSeparator() => AddToolBarItem(new BlazorMenuSeparator());
@@ -57,8 +101,7 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 	protected override BlazorApplicationBlock CreateBlock(IReadOnlyList<IBlazorApplicationMenu> menus) =>
 		BlazorApplicationBlockSnapshot.Create(new BlockSource {
 			Id = _id ?? Name, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip,
-			ScreenDefinitions = ScreenDefinitions.Concat(_toolBarItems.OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition))
-				.Distinct<ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance).ToArray(), DefaultScreenDefinition = DefaultScreenDefinition,
+			ScreenDefinitions = ScreenDefinitions, DefaultScreenDefinition = DefaultScreenDefinition,
 			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle,
 			DefaultScreenActivationMode = DefaultScreenActivationMode, DefaultScreenKind = DefaultScreenKind, Menus = menus.ToArray(), ToolBarItems = _toolBarItems.ToArray()
 		});

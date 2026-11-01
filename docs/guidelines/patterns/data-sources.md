@@ -38,7 +38,7 @@ In the current [TaskExtensions](../../../src/Sphere10.Framework/Extensions/TaskE
 See [collections and storage](collections-and-storage.md), [fluent builders](fluent-builders.md) and the [WinForms project guide](../../../src/Sphere10.Framework.Windows.Forms/README.md) for CRUD grid consumers.
 
 WinForms snapshot grids reuse the nonvisual
-[CrudGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridSnapshotController.cs)
+[VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
 with a typed collector and stable identity. This binds the core source behind a
 concrete designer surface; source queries remain platform-neutral and caller
 CSV/report policy does not belong in the controller. Verify query/copy/concurrency

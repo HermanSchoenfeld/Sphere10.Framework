@@ -109,8 +109,8 @@ public class ApplicationLoadedPluginLifecycleTests {
 
 	private static ApplicationPlugin CreatePlugin(string name, int priority = 0) => new ApplicationPluginBuilder()
 		.WithName(name)
-		.RegisterInitializer(provider => new ProbeInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<LifecycleState>(), name, priority))
-		.RegisterFinalizer(provider => new ProbeFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<LifecycleState>(), name))
+		.AddInitializer(provider => new ProbeInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<LifecycleState>(), name, priority))
+		.AddFinalizer(provider => new ProbeFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<LifecycleState>(), name))
 		.Build();
 
 	private static ServiceCollection CreateServices(params IApplicationPlugin[] plugins) {

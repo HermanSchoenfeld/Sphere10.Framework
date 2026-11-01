@@ -480,9 +480,9 @@ public class FlatStorageObjectSpaceTests {
 		// A different GC-root role or tracking member is a different persisted dimension contract.
 		var builder = CreateBuilder(null, endianness, false).UseMemoryStream(raw);
 		if (changeRoot)
-			builder.Configure<Record>().AsRoot();
+			builder.GetDimension<Record>().AsRoot();
 		else
-			builder.Configure<Record>().WithChangeTrackingVia(item => item.OtherDirty);
+			builder.GetDimension<Record>().WithChangeTrackingVia(item => item.OtherDirty);
 		Assert.That(() => builder.Build(), Throws.TypeOf<InvalidDataException>());
 		Assert.That(raw.ToArray(), Is.EqualTo(expected));
 	}

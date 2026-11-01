@@ -68,7 +68,7 @@ SystemExpert's [LivePerformanceStatistics](../../../../SystemExpert/src/SystemEx
 is an application example: `Statistics(0)` per selected metric, unavailable-reading filters,
 shared scopes, UTC sample identity, immutable summary rows and atomic reset.
 Its [LiveMetricSnapshot](../../../../SystemExpert/src/SystemExpert/Diagnostics/LiveMetricSnapshot.cs)
-rows bind through the existing CrudGrid/snapshot controller and export through
+rows bind through the existing VisualGrid/snapshot controller and export through
 the Data library's CSV facilities. Metric selection, display names, units and
 shared-screen sampling policy belong to the application. The reusable
 `Statistics` accumulator and raw Windows counter queries remain in Framework;

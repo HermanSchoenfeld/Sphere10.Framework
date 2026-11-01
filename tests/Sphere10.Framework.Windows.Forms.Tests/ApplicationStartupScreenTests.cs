@@ -99,6 +99,76 @@ public class ApplicationStartupScreenTests {
 	});
 
 	[Test]
+	public void SameTypeStartupChoiceUsesItsStableKeyAcrossReorderedRegistrations() {
+		RunWithMessageLoop(async owner => {
+			using (var block = CreateSameTypeBlock())
+			using (var form = CreateForm(owner)) {
+				await using var application = new WinFormsApplication(form, new[] { block });
+				await application.InitializeAsync();
+				var gpu = block.ScreenDefinitions.Single(definition => definition.StableKey == "gpu");
+				var screen = form.ScreenHost.ActivateScreen(block, gpu);
+				await form.ScreenHost.MakeStartupScreenAsync(screen);
+				Assert.That(_files.Saves, Is.EqualTo(1));
+			}
+			UseFreshProvider(_directory);
+			using (var block = CreateSameTypeBlock(reverse: true))
+			using (var form = CreateForm(owner)) {
+				await using var application = new WinFormsApplication(form, new[] { block });
+				await application.InitializeAsync();
+				Assert.That(form.ActiveScreen.Title, Is.EqualTo("Renamed GPU"));
+				Assert.That(form.ScreenHost.IsStartupScreen(form.ActiveScreen), Is.True);
+				Assert.That(_files.Saves, Is.Zero, "Restoration must use the stable registration identity without rewriting preferences.");
+			}
+			ISettingsProvider fresh = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
+			Assert.That(fresh.Get<ApplicationStartupScreenSettings>().RegistrationKey, Is.EqualTo("gpu"));
+		});
+	}
+
+	[Test]
+	public void LegacyUniqueTypeChoiceRestoresTheRegisteredScreenWithoutRewritingPreferences() {
+		RunWithMessageLoop(async owner => {
+			var settings = UserSettings.Get<ApplicationStartupScreenSettings>();
+			settings.BlockName = "Workspace";
+			settings.ScreenTypeName = typeof(ToolScreen).FullName;
+			settings.ScreenAssemblyName = typeof(ToolScreen).Assembly.GetName().Name;
+			settings.Save();
+			UseFreshProvider(_directory);
+			using var block = CreateBlock();
+			using var form = CreateForm(owner);
+			await using var application = new WinFormsApplication(form, new[] { block });
+			await application.InitializeAsync();
+			Assert.That(form.ActiveScreen, Is.TypeOf<ToolScreen>());
+			Assert.That(form.ScreenHost.IsStartupScreen(form.ActiveScreen), Is.True);
+			Assert.That(StartupCommand(form.ScreenHost, form.ActiveScreen).Checked, Is.True);
+			Assert.That(_files.Saves, Is.Zero);
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void AmbiguousTypeOnlyChoicesRequireAStableKeyAndNeverSelectAnArbitrarySibling(bool legacyChoice) {
+		RunWithMessageLoop(async owner => {
+			if (legacyChoice) {
+				var settings = UserSettings.Get<ApplicationStartupScreenSettings>();
+				settings.BlockName = "Workspace";
+				settings.ScreenTypeName = typeof(ToolScreen).FullName;
+				settings.ScreenAssemblyName = typeof(ToolScreen).Assembly.GetName().Name;
+				settings.Save();
+				UseFreshProvider(_directory);
+			}
+			using var block = CreateSameTypeBlock(stableKeys: false);
+			using var form = CreateForm(owner);
+			await using var application = new WinFormsApplication(form, new[] { block });
+			await application.InitializeAsync();
+			Assert.That(form.ActiveScreen.Title, Is.EqualTo("CPU"), "An ambiguous legacy choice falls back to the explicitly registered default.");
+			Assert.That(form.ScreenHost.CanMakeStartupScreen(form.ActiveScreen), Is.False);
+			Assert.That(StartupCommand(form.ScreenHost, form.ActiveScreen).Enabled, Is.False);
+			await Assert.ThatAsync(() => form.ScreenHost.MakeStartupScreenAsync(form.ActiveScreen), Throws.InvalidOperationException.With.Message.Contains("WithStableKey"));
+			Assert.That(_files.Saves, Is.Zero);
+		});
+	}
+
+	[Test]
 	public void AnotherApplicationStoreKeepsItsOwnDefault() => RunWithMessageLoop(async owner => {
 		using (var block = CreateBlock())
 		using (var form = CreateForm(owner)) {
@@ -232,14 +302,41 @@ public class ApplicationStartupScreenTests {
 
 	private static WinFormsApplicationBlock CreateBlock() => new WinFormsApplicationBlockBuilder()
 		.WithName("Workspace")
-		.WithDefaultScreen<OverviewScreen>(title: "Overview", activationMode: ScreenActivationMode.PermanentSingleton)
-		.ConfigureMenu(menu => menu
+		.AddScreen<OverviewScreen>(screen => screen
+			.WithTitle("Overview")
+			.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+		)
+		.AddScreen<ToolScreen>(screen => screen
+			.WithTitle("Tool")
+		)
+		.AddScreen<OtherScreen>(screen => screen
+			.WithTitle("Other")
+		)
+		.AddScreen<SessionOnlyScreen>(screen => screen
+			.WithTitle("Session Only")
+		)
+		.WithDefaultScreen<OverviewScreen>()
+		.AddMenu(menu => menu
 			.WithText("Tools")
-			.AddScreenItem<ToolScreen>("Tool")
-			.AddScreenItem<OtherScreen>("Other")
-			.AddScreenItem<SessionOnlyScreen>("Session Only")
+			.AddShowScreenItem<ToolScreen>("Tool")
+			.AddShowScreenItem<OtherScreen>("Other")
+			.AddShowScreenItem<SessionOnlyScreen>("Session Only")
 		)
 		.Build();
+
+	// Recreates registrations with new transient tokens while retaining explicit persistent identities.
+	private static WinFormsApplicationBlock CreateSameTypeBlock(bool reverse = false, bool stableKeys = true) {
+		var cpu = new ApplicationScreenDefinition(typeof(ToolScreen), reverse ? "Renamed CPU" : "CPU",
+			ScreenActivationMode.SingleInstance, stableKey: stableKeys ? "cpu" : null);
+		var gpu = new ApplicationScreenDefinition(typeof(ToolScreen), reverse ? "Renamed GPU" : "GPU",
+			ScreenActivationMode.SingleInstance, stableKey: stableKeys ? "gpu" : null);
+		return new WinFormsApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(reverse ? gpu : cpu)
+			.AddScreen(reverse ? cpu : gpu)
+			.WithDefaultScreen(cpu)
+			.Build();
+	}
 
 	private static BlockMainForm CreateForm(Form owner) {
 		var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual,

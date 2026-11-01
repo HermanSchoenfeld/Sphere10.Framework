@@ -7,8 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Drawing;
 using System.Collections.Generic;
+using System.Drawing;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
@@ -33,21 +33,31 @@ public class WinFormsApplicationMenuBuilder : ApplicationMenuBuilderBase<WinForm
 		return this;
 	}
 
-	public WinFormsApplicationMenuBuilder AddScreenItem(string text, Type screenType, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false,
-		string title = null
-	) {
-		Guard.ArgumentNotNullOrEmpty(text, nameof(text));
-		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
-		Guard.Ensure(!string.IsNullOrWhiteSpace(text), "Menu item text is required.");
-		return AddItem(new WinFormsScreenMenuItem(text, screenType, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
-			ScreenDefinition = new ApplicationScreenDefinition(screenType, title ?? text)
-		});
+	/// <summary>Adds a command for the first matching screen registration in the owning block.</summary>
+	public WinFormsApplicationMenuBuilder AddShowScreenItem<TScreen>(string text = null, Image image16x16 = null, bool showOnExplorerBar = true,
+		bool showOnToolBar = true, bool isStartScreen = false)
+		where TScreen : WinFormsApplicationScreen {
+		return AddShowScreenItem(ApplicationScreenRegistration.ForType(typeof(TScreen)), text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
 	}
 
-	public WinFormsApplicationMenuBuilder AddScreenItem<TScreen>(string text, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false,
-		string title = null
-	)
-		where TScreen : WinFormsApplicationScreen => AddScreenItem(text, typeof(TScreen), image16x16, showOnExplorerBar, showOnToolBar, isStartScreen, title);
+	/// <summary>Adds a runtime-type command for the first matching registration in the owning block.</summary>
+	public WinFormsApplicationMenuBuilder AddShowScreenItem(Type screenType, string text = null, Image image16x16 = null, bool showOnExplorerBar = true,
+		bool showOnToolBar = true, bool isStartScreen = false) {
+		return AddShowScreenItem(ApplicationScreenRegistration.ForType(screenType), text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
+	}
+
+	/// <summary>References one exact registration without changing its activation metadata.</summary>
+	public WinFormsApplicationMenuBuilder AddShowScreenItem(ApplicationScreenRegistration registration, string text = null, Image image16x16 = null,
+		bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false) {
+		return AddItem(new WinFormsScreenMenuItem(registration, text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen));
+	}
+
+	/// <summary>References an existing block-owned definition without adding or changing its metadata.</summary>
+	public WinFormsApplicationMenuBuilder AddShowScreenItem(ApplicationScreenDefinition definition, string text = null, Image image16x16 = null,
+		bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		return AddShowScreenItem(definition.Registration, text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
+	}
 
 	public WinFormsApplicationMenuBuilder AddActionItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false) {
 		Guard.ArgumentNotNull(text, nameof(text));

@@ -97,7 +97,7 @@ The host owns the added bar. The dialog disposes its panel and buttons after clo
 
 ## Shared provider selection
 
-Register `Sphere10.Framework.Windows.Forms.Sqlite.ModuleConfiguration` with `UseModule<TModule>()` in the existing framework startup builder before creating a generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`. It supplies named transient implementations under `nameof(DBMSType.Sqlite)`.
+Register `Sphere10.Framework.Windows.Forms.Sqlite.ModuleConfiguration` with `AddModule<TModule>()` in the existing framework startup builder before creating a generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`. It supplies named transient implementations under `nameof(DBMSType.Sqlite)`.
 
 After the framework has started, set the generic control's `SelectedDBMSType` to `DBMSType.Sqlite`, then assign `ConnectionString`. Referencing the package alone does not register its module. Concrete `SqliteConnectionBar` and `SqliteConnectionPanel` instances can be constructed directly without provider lookup.
 

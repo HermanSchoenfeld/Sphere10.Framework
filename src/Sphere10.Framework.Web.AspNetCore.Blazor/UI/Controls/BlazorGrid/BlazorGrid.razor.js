@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 // One behavior instance owns column geometry and observers for the lifetime of this rendered grid.
-export function Initialize(element, receiver) {
+export function Initialize(element, receiver, initialWidths = {}) {
 	const viewport = element.querySelector(".sphere10-grid-viewport");
 	const table = element.querySelector("table");
 	let autoPageSize = false;
@@ -24,7 +24,7 @@ export function Initialize(element, receiver) {
 	const naturalWidths = new WeakMap();
 	let settingsKey = null;
 	let settings = null;
-	let storedWidths = {};
+	let storedWidths = SanitizeWidths(initialWidths);
 	const Configuration = column => column.dataset.gridWidth + ":" + column.dataset.gridExpands + ":" + element.dataset.gridAutoSize;
 	const WriteSettings = () => {
 		if (!settingsKey || !settings) return;
@@ -144,7 +144,7 @@ export function Initialize(element, receiver) {
 			const column = drag.columns[drag.index];
 			if (column.dataset.gridKey && resizedWidths.has(column)) {
 				storedWidths[column.dataset.gridKey] = resizedWidths.get(column).width;
-				WriteSettings();
+				receiver.invokeMethodAsync("SetColumnWidthAsync", column.dataset.gridKey, storedWidths[column.dataset.gridKey]).catch(() => {});
 			}
 		}
 		drag = null;
@@ -165,7 +165,7 @@ export function Initialize(element, receiver) {
 	const OnPointerMove = event => {
 		if (!drag || event.pointerId !== drag.pointerId)
 			return;
-		const width = Math.max(40, drag.widths[drag.index] + (event.clientX - drag.startX) / drag.scale);
+		const width = Math.min(100000, Math.max(40, drag.widths[drag.index] + (event.clientX - drag.startX) / drag.scale));
 		// Only the dragged column receives an explicit override; other preferred columns still share spare width.
 		const column = drag.columns[drag.index];
 		resizedWidths.set(column, { width, configuration: Configuration(column) });
@@ -177,7 +177,9 @@ export function Initialize(element, receiver) {
 		if (disposed)
 			return;
 		disposed = true;
-		StopDrag();
+		if (drag?.grip.hasPointerCapture(drag.pointerId))
+			drag.grip.releasePointerCapture(drag.pointerId);
+		drag = null;
 		cancelAnimationFrame(frame);
 		resizeObserver.disconnect();
 		removalObserver.disconnect();
@@ -220,34 +222,22 @@ export function Initialize(element, receiver) {
 	return {
 		ReadSettings(key, defaults) {
 			settingsKey = key;
-			settings = defaults;
-			storedWidths = {};
+			settings = ReadLegacySettings(key) ?? defaults;
+			storedWidths = SanitizeWidths(settings?.columnWidths);
 			resizedWidths = new WeakMap();
-			if (!key) return null;
-			try {
-				const parsed = JSON.parse(localStorage.getItem("sphere10-grid:" + key));
-				if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-				// Accept old or partial preference records; the controller validates query values too.
-				settings = {
-					pageMode: [0, 1, 2].includes(parsed.pageMode) ? parsed.pageMode : 0,
-					pageSize: Number.isInteger(parsed.pageSize) ? Math.min(9999, Math.max(1, parsed.pageSize)) : 10,
-					pageNumber: Number.isInteger(parsed.pageNumber) ? Math.min(2147483647, Math.max(0, parsed.pageNumber)) : 0,
-					sortColumnName: typeof parsed.sortColumnName === "string" ? parsed.sortColumnName : null,
-					sortDirection: [0, 1, 2].includes(parsed.sortDirection) ? parsed.sortDirection : 0
-				};
-				if (parsed.columnWidths && typeof parsed.columnWidths === "object")
-					for (const [name, width] of Object.entries(parsed.columnWidths))
-						if (Number.isFinite(width) && width >= 40 && width <= 100000) storedWidths[name] = width;
-				return { ...settings, columnWidths: storedWidths };
-			} catch {
-				return null;
-			}
+			return key ? settings : null;
+		},
+		ApplyWidths(widths) {
+			storedWidths = SanitizeWidths(widths);
+			resizedWidths = new WeakMap();
+			layoutPending = true;
+			Schedule();
 		},
 		WriteSettings(key, value) {
 			if (!key) return;
-			if (settingsKey !== key) storedWidths = {};
 			settingsKey = key;
 			settings = value;
+			storedWidths = SanitizeWidths(value?.columnWidths);
 			WriteSettings();
 		},
 		Update(enabled) {
@@ -265,4 +255,33 @@ export function Initialize(element, receiver) {
 		},
 		Dispose
 	};
+}
+
+// Reads a detached legacy value; importing it into an application profile is the caller's decision.
+export function ReadLegacySettings(key) {
+	if (!key) return null;
+	try {
+		const parsed = JSON.parse(localStorage.getItem("sphere10-grid:" + key));
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+		return {
+			pageMode: [0, 1, 2].includes(parsed.pageMode) ? parsed.pageMode : 0,
+			pageSize: Number.isInteger(parsed.pageSize) ? Math.min(9999, Math.max(1, parsed.pageSize)) : 10,
+			pageNumber: Number.isInteger(parsed.pageNumber) ? Math.min(2147483647, Math.max(0, parsed.pageNumber)) : 0,
+			sortColumnName: typeof parsed.sortColumnName === "string" ? parsed.sortColumnName : null,
+			sortDirection: [0, 1, 2].includes(parsed.sortDirection) ? parsed.sortDirection : 0,
+			columnWidths: SanitizeWidths(parsed.columnWidths)
+		};
+	} catch {
+		// Missing, damaged or unavailable browser records do not prevent a usable grid.
+		return null;
+	}
+}
+
+// Geometry accepts only bounded CSS pixel overrides; natural and stretch columns remain absent.
+function SanitizeWidths(widths) {
+	const result = {};
+	if (widths && typeof widths === "object" && !Array.isArray(widths))
+		for (const [key, width] of Object.entries(widths))
+			if (key && Number.isFinite(width) && width > 0) result[key] = Math.min(100000, Math.max(40, width));
+	return result;
 }

@@ -34,7 +34,7 @@ public class AboutBoxLifetimeTests {
 		})) {
 			Sphere10Framework.Instance
 				.Build()
-				.ConfigureServices(services => {
+				.AddServices(services => {
 					services.AddMainForm<LiteMainForm>();
 					IAboutBox Create(IServiceProvider _) {
 						var dialog = new ProbeAboutBox();

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Nonvisual snapshot binding operations shared by concrete nongeneric grid surfaces.</summary>
-public interface ICrudGridSnapshotController {
+public interface IVisualGridSnapshotController {
 	long Count { get; }
 
 	Task RefreshAsync(CancellationToken cancellationToken = default);

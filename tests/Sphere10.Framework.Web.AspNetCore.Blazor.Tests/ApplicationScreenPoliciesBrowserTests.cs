@@ -46,8 +46,8 @@ public class ApplicationScreenPoliciesBrowserTests {
 		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true })
 			.GetByRole(AriaRole.Button, new() { Name = "Overview", Exact = true }).ClickAsync();
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true }).WaitForAsync();
-		await _page.GetByRole(AriaRole.Button, new() { Name = "Close CRUD grid", Exact = true }).ClickAsync();
-		await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await _page.GetByRole(AriaRole.Button, new() { Name = "Close Visual grid", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).WaitForAsync(new() { State = WaitForSelectorState.Detached });
 	}
 
 	[TearDown]

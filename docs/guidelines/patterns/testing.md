@@ -59,7 +59,7 @@ Use the existing `RunWithMessageLoop` fixture approach: install a
 `WindowsFormsSynchronizationContext`, run an owned form through `Application.Run`,
 await the test inside its live dispatcher, and restore the previous context with
 a cleanup scope. Keep the watchdog and exception reporting used by the existing
-fixtures. See [CrudGridRefreshTests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/CrudGridRefreshTests.cs)
+fixtures. See [VisualGridRefreshTests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/VisualGridRefreshTests.cs)
 for initial binding and disposal coverage and
 [AsyncModalTests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/AsyncModalTests.cs)
 for native modal dispatch. Keep fixtures that share native or application state

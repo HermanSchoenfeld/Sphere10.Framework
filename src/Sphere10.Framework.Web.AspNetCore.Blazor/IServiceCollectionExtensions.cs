@@ -39,6 +39,7 @@ public static class IServiceCollectionExtensions {
 		services.TryAddTransient(typeof(Wizard.IBlazorWizardBuilder<>), typeof(Wizard.BlazorWizardBuilder<>));
 		services.TryAddScoped<Modal.ModalService>();
 		services.TryAddScoped<Modal.ViewService>();
+		services.TryAddScoped<IApplicationSettingsStore, BlazorApplicationSettingsStore>();
 		services.TryAddScoped<IBlazorApplicationScreenHost>(provider => new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider));
 		services.TryAddScoped<IApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
 		services.TryAddScoped<IApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
@@ -58,14 +59,20 @@ public static class IServiceCollectionExtensions {
 
 	/// <summary>Configures application-level commands once per circuit, using the same aggregate exposed through IApplication.</summary>
 	public static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure) {
-		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(configure, nameof(configure));
+		return AddSphere10BlazorApplication(services, configure, null, null);
+	}
+
+	// Builder metadata travels into each circuit's application; no application or preference values are resolved at registration time.
+	internal static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure,
+		string settingsKey, ApplicationSettingsDefinition[] settingsDefinitions) {
+		Guard.ArgumentNotNull(services, nameof(services));
 		services.AddSphere10Blazor();
 		services.Replace(ServiceDescriptor.Scoped<IBlazorApplication>(provider => {
 			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
-				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider);
+				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider, settingsKey, settingsDefinitions);
 			try {
-				configure(application);
+				configure?.Invoke(application);
 				return application;
 			} catch {
 				// Failed construction must not leave a subscription on the circuit's host.

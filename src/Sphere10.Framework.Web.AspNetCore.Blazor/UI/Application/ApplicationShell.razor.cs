@@ -8,8 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Application;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +15,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -107,11 +107,16 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 	protected override void OnInitialized() {
 		Application.Changed += OnHostChanged;
+		ScreenHost.ScreenSelected += OnScreenSelected;
 		_controllerScope = ((IBlazorUserInterfaceServices)UserInterfaceServices).AttachController(this, action => InvokeAsync(action));
 	}
 
 	protected override async Task OnParametersSetAsync() {
 		if (Application?.IsExiting == true || Application?.HasExited == true)
+			return;
+
+		// Prerender has no browser-owned preference provider. Live circuit startup restores it before any screen factory or query runs.
+		if (!Application.Settings.IsInitialized && Application.Settings.Profiles.Any(profile => profile.HasOptions))
 			return;
 		ResolveNavigationPath(NavigationPath, nameof(NavigationPath));
 		var settingsKey = string.IsNullOrWhiteSpace(StartupScreenSettingsKey) ? null : StartupScreenSettingsKey;
@@ -165,7 +170,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 				return;
 			}
 			var existing = ScreenHost.Screens.FirstOrDefault(session =>
-				session.Id == request.InstanceId && session.Block.Id == block.Id && session.MenuItem.Id == request.ScreenId);
+				session.Id == request.InstanceId && session.Block.Id == block.Id && session.MenuItemId == request.ScreenId);
 			if (existing != null) {
 				await ScreenHost.ShowScreenAsync(existing.Id, token);
 			} else if (!string.IsNullOrEmpty(request.ScreenId)) {
@@ -217,6 +222,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		_lifetimeCancellation.Dispose();
 		CancelRouteRequest();
 		Application.Changed -= OnHostChanged;
+		ScreenHost.ScreenSelected -= OnScreenSelected;
 		_controllerScope?.Dispose();
 	}
 
@@ -328,9 +334,35 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) => RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 
-	private IBlazorApplicationMenu[] MergedMenus => Tools.UI.MergeApplicationMenus<IBlazorApplicationMenu, IBlazorApplicationMenuItem>(
-		(menu, items) => new BlazorApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
-		menu => menu.Id, item => item.Id, Tools.UI.GetCommandLayers(Application));
+	// Keep existing menu order and reuse a contextual Options heading before adding a heading of our own.
+	private IBlazorApplicationMenu[] MergedMenus {
+		get {
+			var menus = Tools.UI.MergeApplicationMenus<IBlazorApplicationMenu, IBlazorApplicationMenuItem>(
+				(menu, items) => new BlazorApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
+				menu => menu.Id, item => item.Id, Tools.UI.GetCommandLayers(Application)).ToList();
+			var settings = menus.FirstOrDefault(menu => menu.Id == BlazorApplication.SettingsMenuId);
+			if (settings == null)
+				return menus.ToArray();
+
+			menus.Remove(settings);
+			var existing = menus.FindIndex(menu => IsMenuHeading(menu, "Options"));
+			if (existing >= 0) {
+				var menu = menus[existing];
+				menus[existing] = new BlazorApplicationMenu(ownsItems: false) {
+					Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = menu.Items.Concat(settings.Items).ToArray()
+				};
+			} else {
+				var help = menus.FindIndex(menu => IsMenuHeading(menu, "Help"));
+				menus.Insert(help < 0 ? menus.Count : help, settings);
+			}
+			return menus.ToArray();
+		}
+	}
+
+	// Menu accelerators and surrounding whitespace do not change a heading's purpose.
+	private static bool IsMenuHeading(IBlazorApplicationMenu menu, string heading) {
+		return string.Equals(menu.Text?.Replace("&", string.Empty).Trim(), heading, StringComparison.OrdinalIgnoreCase);
+	}
 
 	private IBlazorApplicationMenuItem[] MergedToolBarItems => Tools.UI.MergeApplicationToolBarItems<IBlazorApplicationMenuItem>(
 		item => item.Id, Tools.UI.GetCommandLayers(Application));
@@ -348,7 +380,10 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	public Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) =>
 		RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 
-	private Task CloseScreensAsync(Guid[] ids) => RunInteractionAsync(token => ScreenHost.CloseScreensAsync(ids, token), true);
+	// Accepted batch closure captures preferences after every screen guard has approved removal.
+	private Task CloseScreensAsync(Guid[] ids) {
+		return RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreensAsync(ids, token)), true);
+	}
 
 	private async Task ReorderScreenAsync((Guid SessionId, int Index) request) {
 		if (!_disposed && Application?.IsExiting != true && Application?.HasExited != true)
@@ -357,13 +392,29 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 	private async Task ChangeScreenModeAsync(ChangeEventArgs args) {
 		var mode = string.Equals(args.Value?.ToString(), nameof(ScreenMode.SingleView), StringComparison.Ordinal) ? ScreenMode.SingleView : ScreenMode.MultiView;
-		await RunInteractionAsync(token => ScreenHost.TrySetScreenModeAsync(mode, token), true);
+		await RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.TrySetScreenModeAsync(mode, token)), true);
 		_screenModeSelectionVersion++;
 	}
 
 	private Task ShowScreenAsync(Guid id) => RunInteractionAsync(token => ScreenHost.ShowScreenAsync(id, token), false);
 
-	private Task CloseScreenAsync(Guid id) => RunInteractionAsync(token => ScreenHost.CloseScreenAsync(id, token), true);
+	// A preference-save failure keeps the retained screen available for correction and retry.
+	private Task CloseScreenAsync(Guid id) {
+		return RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreenAsync(id, token)), true);
+	}
+
+	// An expected persistence failure preserves the host's live screens and leaves an observable retry path.
+	private async Task<bool> CloseWithPreferencesAsync(Func<Task<bool>> close) {
+		try {
+			return await close();
+		} catch (OperationCanceledException) {
+			throw;
+		} catch (Exception error) {
+			_routeError = "The screen could not be closed. " + error.Message;
+			Tools.Exceptions.ExecuteIgnoringException(() => Application.Logger.Exception(error));
+			return false;
+		}
+	}
 
 	private async Task RunInteractionAsync(Func<CancellationToken, Task<bool>> action, bool replace) {
 		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
@@ -390,7 +441,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			: ResolveNavigationPath(NavigationUriFactory(session), nameof(NavigationUriFactory)).AbsoluteUri;
 		if (NavigationUriFactory == null) {
 			if (session != null)
-				target += $"?block={Uri.EscapeDataString(session.Block.Id)}&screen={Uri.EscapeDataString(session.MenuItem.Id)}&instance={session.Id:D}";
+				target += $"?block={Uri.EscapeDataString(session.Block.Id)}&screen={Uri.EscapeDataString(session.MenuItemId)}&instance={session.Id:D}";
 			else if (ActiveBlock != null)
 				target += $"?block={Uri.EscapeDataString(ActiveBlock.Id)}";
 		}
@@ -417,8 +468,24 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			if (string.Equals(destination.GetLeftPart(UriPartial.Path), shell.GetLeftPart(UriPartial.Path), StringComparison.OrdinalIgnoreCase))
 				return;
 		}
-		if (!await ScreenHost.CanNavigateAsync(context.CancellationToken))
+		if (!await ScreenHost.CanNavigateAsync(context.CancellationToken)) {
 			context.PreventNavigation();
+			return;
+		}
+
+		// Capture only after leave permission succeeds; disposal and veto callbacks never become save boundaries.
+		try {
+			foreach (var participant in ScreenHost.Screens.OfType<IApplicationSettingsParticipant>())
+				await participant.SaveSettingsAsync(context.CancellationToken);
+			await Application.Settings.FlushAsync(context.CancellationToken);
+		} catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) {
+			context.PreventNavigation();
+		} catch (Exception error) {
+			context.PreventNavigation();
+			_routeError = "Preferences could not be saved before leaving. " + error.Message;
+			Tools.Exceptions.ExecuteIgnoringException(() => Application.Logger.Exception(error));
+			StateHasChanged();
+		}
 	}
 
 	private Uri ResolveNavigationPath(string path, string parameterName) {
@@ -437,6 +504,19 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		_routeCancellation?.Dispose();
 		_routeCancellation = null;
 	}
+	// Default registration URLs also follow direct host selection; browsing and dirty notifications do not navigate.
+	private void OnScreenSelected(IApplicationScreen screen) {
+		if (_disposed || NavigationUriFactory != null || _navigationOperations != 0 || _routeError != null)
+			return;
+		_ = InvokeAsync(() => {
+			if (_disposed)
+				return;
+			_synchronizeLocation = true;
+			_replaceSynchronizedLocation = false;
+			StateHasChanged();
+		});
+	}
+
 	private void OnHostChanged() {
 		if (!_disposed)
 			_ = InvokeAsync(() => {

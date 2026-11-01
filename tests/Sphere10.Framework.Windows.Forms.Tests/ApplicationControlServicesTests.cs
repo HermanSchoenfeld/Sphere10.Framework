@@ -103,7 +103,7 @@ public class ApplicationControlServicesTests {
 
 	private static Resolutions StartFramework() {
 		var resolutions = new Resolutions();
-		Sphere10Framework.Instance.Build().ConfigureServices(services => {
+		Sphere10Framework.Instance.Build().AddServices(services => {
 			services.AddTransient<ISettingsServices>(_ => { resolutions.Settings++; return new OwnedSettings(); });
 			services.AddTransient<IUserInterfaceServices>(_ => { resolutions.UserInterface++; return new ConsoleApplicationUserInterfaceServices(); });
 		}).Start();

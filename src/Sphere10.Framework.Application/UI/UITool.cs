@@ -272,6 +272,7 @@ public static class UI {
 			Guard.ArgumentNotNull(owned, nameof(blocks));
 			Guard.Argument(owned.All(definition => definition != null), nameof(blocks), "Screen definitions cannot be null.");
 			Guard.Argument(owned.Distinct(ReferenceEqualityComparer.Instance).Count() == owned.Length, nameof(blocks), "Screen definitions must be registered once by reference.");
+			ValidateScreenRegistrations(owned);
 			Guard.Argument(block.DefaultScreenDefinition == null || owned.Any(definition => ReferenceEquals(definition, block.DefaultScreenDefinition)),
 				nameof(blocks), "The default screen definition must be owned by the block.");
 			Guard.ArgumentNotNull(block.Menus, nameof(blocks));
@@ -289,6 +290,56 @@ public static class UI {
 		}
 		ApplicationScreenDefinition.ValidateDefinitions(definitions);
 		return definitions.ToArray();
+	}
+
+	/// <summary>Binds navigation commands to existing registrations without changing block membership or activating screens.</summary>
+	public static void ResolveScreenReferences(IApplicationBlock block) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		ValidateScreenRegistrations(block.ScreenDefinitions);
+		foreach (var item in block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems).OfType<IScreenMenuItem>()) {
+			var registration = item.Registration ?? item.ScreenDefinition?.Registration;
+			Guard.Argument(registration != null, nameof(block), "A show-screen command must identify a registered screen.");
+			// Navigation type shortcuts deliberately select the first registration in declaration order.
+			var definition = registration.IsTypeReference ? block.ScreenDefinitions.FirstOrDefault(candidate => candidate.ScreenType == registration.ScreenType)
+				: ResolveScreenRegistration(block.ScreenDefinitions, registration);
+			Guard.Argument(definition != null, nameof(block), $"Screen '{registration.ScreenType.Name}' is not registered in the owning block. Add it with AddScreen first.");
+			item.ResolveScreenDefinition(definition);
+		}
+	}
+
+	/// <summary>Resolves an exact moniker or an unambiguous type within the owning block's registration scope.</summary>
+	public static ApplicationScreenDefinition ResolveScreenRegistration(IEnumerable<ApplicationScreenDefinition> definitions, ApplicationScreenRegistration registration) {
+		Guard.ArgumentNotNull(definitions, nameof(definitions));
+		Guard.ArgumentNotNull(registration, nameof(registration));
+		var matching = definitions.Where(definition => registration.IsTypeReference ? definition.ScreenType == registration.ScreenType
+			: definition.Registration.Token == registration.Token && definition.ScreenType == registration.ScreenType).ToArray();
+		Guard.Argument(matching.Length > 0, nameof(registration), $"Screen '{registration.ScreenType.Name}' is not registered in the owning block. Add it with AddScreen first.");
+		Guard.Argument(matching.Length == 1, nameof(registration), $"Screen '{registration.ScreenType.Name}' has several registrations. Supply the exact registration reference.");
+		return matching[0];
+	}
+
+	/// <summary>Returns a caption-independent persistent key, requiring an explicit key for duplicate screen types.</summary>
+	public static string GetScreenRegistrationKey(IApplicationBlock block, ApplicationScreenDefinition definition) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		Guard.Argument(definition != null && block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, definition)), nameof(definition), "The screen registration must belong to this block.");
+		if (definition.StableKey != null)
+			return definition.StableKey;
+		Guard.Argument(block.ScreenDefinitions.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1, nameof(definition),
+			$"Screen '{definition.ScreenType.Name}' has several registrations. Configure WithStableKey for a registration that needs persistent identity.");
+		return definition.ScreenType.Assembly.GetName().Name + ":" + definition.ScreenType.FullName;
+	}
+
+	/// <summary>Validates one block's independent registration identities and explicitly supplied persistent keys.</summary>
+	public static void ValidateScreenRegistrations(IEnumerable<ApplicationScreenDefinition> definitions) {
+		Guard.ArgumentNotNull(definitions, nameof(definitions));
+		var owned = definitions.ToArray();
+		ApplicationScreenDefinition.ValidateDefinitions(owned);
+		Guard.Argument(owned.Select(definition => definition.Registration.Token).Distinct().Count() == owned.Length,
+			nameof(definitions), "A screen registration can be added only once to a block.");
+		var persistentKeys = owned.Select(definition => definition.StableKey ?? (owned.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1
+			? definition.ScreenType.Assembly.GetName().Name + ":" + definition.ScreenType.FullName : null)).Where(key => key != null).ToArray();
+		Guard.Argument(persistentKeys.Distinct(StringComparer.Ordinal).Count() == persistentKeys.Length, nameof(definitions),
+			"Screen registration stable keys must be unique within their owning block, including generated type keys.");
 	}
 
 	/// <summary>Returns the first block's marked startup screen. Permanent screens exclude empty placeholders.</summary>

@@ -69,18 +69,24 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 	}
 
 	public TSelf AddBlock(TBlock block) {
+		return AddBlock(block, out _);
+	}
+
+	/// <summary>Adds an existing block definition and captures that configuration product.</summary>
+	public TSelf AddBlock(TBlock block, out TBlock registration) {
 		AddBlockDefinition(block);
+		registration = block;
 		return (TSelf)(object)this;
 	}
 
-	public TSelf ConfigureServices(Action<IServiceCollection> configure) {
+	public TSelf AddServices(Action<IServiceCollection> configure) {
 		AddServiceConfiguration(configure);
 		return (TSelf)(object)this;
 	}
 
 	/// <summary>Registers a transient startup task under the built plugin's name when the plugin loads.</summary>
 	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
-	public TSelf RegisterInitializer<T>()
+	public TSelf AddInitializer<T>()
 		where T : class, IApplicationInitializer {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering an initializer.");
 		AddServiceConfiguration((services, pluginName) => services.AddInitializer<T>(pluginName));
@@ -89,7 +95,7 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 
 	/// <summary>Creates a startup task through the executing application's service provider.</summary>
 	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
-	public TSelf RegisterInitializer<T>(Func<IServiceProvider, T> factory)
+	public TSelf AddInitializer<T>(Func<IServiceProvider, T> factory)
 		where T : class, IApplicationInitializer {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering an initializer.");
 		Guard.ArgumentNotNull(factory, nameof(factory));
@@ -99,7 +105,7 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 
 	/// <summary>Registers a transient shutdown task under the built plugin's name when the plugin loads.</summary>
 	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
-	public TSelf RegisterFinalizer<T>()
+	public TSelf AddFinalizer<T>()
 		where T : class, IApplicationFinalizer {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering a finalizer.");
 		AddServiceConfiguration((services, pluginName) => services.AddFinalizer<T>(pluginName));
@@ -108,7 +114,7 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 
 	/// <summary>Creates a shutdown task through the executing application's service provider.</summary>
 	/// <exception cref="InvalidOperationException">The plugin name has not been declared with <see cref="WithName"/>.</exception>
-	public TSelf RegisterFinalizer<T>(Func<IServiceProvider, T> factory)
+	public TSelf AddFinalizer<T>(Func<IServiceProvider, T> factory)
 		where T : class, IApplicationFinalizer {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Declare the plugin name with WithName before registering a finalizer.");
 		Guard.ArgumentNotNull(factory, nameof(factory));
@@ -123,10 +129,15 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder,
 	where TBlock : class, IApplicationBlock
 	where TPlugin : IApplicationPlugin
 	where TBlockBuilder : IApplicationUIBuilder<TBlock>, new() {
-	public TSelf ConfigureBlock(Action<TBlockBuilder> configure) {
+	public TSelf AddBlock(Action<TBlockBuilder> configure) {
+		return AddBlock(configure, out _);
+	}
+
+	/// <summary>Configures one child block, captures its definition and returns this parent.</summary>
+	public TSelf AddBlock(Action<TBlockBuilder> configure, out TBlock registration) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		var builder = new TBlockBuilder();
 		configure(builder);
-		return AddBlock(builder.Build());
+		return AddBlock(builder.Build(), out registration);
 	}
 }

@@ -25,7 +25,7 @@ public class ApplicationProcessLoggingTests {
 		var progress = new ConcurrentQueue<decimal>();
 		framework.Progress += (_, _, _, _, percent) => progress.Enqueue(percent);
 		framework.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton<ILogger>(logger);
 				services.AddTransient<IApplication>(_ => {
 					applicationResolutions++;
@@ -51,7 +51,7 @@ public class ApplicationProcessLoggingTests {
 		SystemLog.RegisterLogger(logger);
 		using var subscription = Tools.Scope.ExecuteOnDispose(() => SystemLog.DeregisterLogger(logger));
 		var framework = new Sphere10Framework();
-		framework.Build().ConfigureServices(services => services.AddInitializer<NoOpProcessInitializer>()).Start();
+		framework.Build().AddServices(services => services.AddInitializer<NoOpProcessInitializer>()).Start();
 		using var lifetime = Tools.Scope.ExecuteOnDispose(framework.EndFramework);
 		var name = typeof(NoOpProcessInitializer).ToStringCS();
 		Assert.That(logger.Messages, Is.EqualTo(new[] { $"Initializing {name}...", $"Initialized {name}." }));
@@ -63,7 +63,7 @@ public class ApplicationProcessLoggingTests {
 		var disposed = 0;
 		var finalizations = 0;
 		var failure = new InvalidOperationException("Global initializer failed.");
-		var builder = framework.Build().ConfigureServices(services => {
+		var builder = framework.Build().AddServices(services => {
 			services.AddSingleton<ILogger>(new NoOpLogger());
 			services.AddSingleton(_ => new OwnedResource(() => disposed++));
 			services.AddTransient<IApplicationInitializer>(provider => new CallbackInitializer(() => {

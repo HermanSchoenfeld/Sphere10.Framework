@@ -304,7 +304,7 @@ IApplication.Logger at the application boundary.
 
 Core's [SnapshotDataSource<T>](../Sphere10.Framework/DataSource/SnapshotDataSource.cs)
 owns generic search/sort/paging; WinForms'
-[CrudGridSnapshotController<T>](../Sphere10.Framework.Windows.Forms/Crud/CrudGridSnapshotController.cs)
+[VisualGridSnapshotController<T>](../Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
 owns binding/selection retention. See the [control catalog](../../docs/guidelines/patterns/winforms-controls.md)
 and [Windows practice](../../docs/guidelines/patterns/windows-interop.md).
 

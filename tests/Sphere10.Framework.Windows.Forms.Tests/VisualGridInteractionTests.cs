@@ -25,12 +25,12 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridInteractionTests {
+public class VisualGridInteractionTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
 	public void EnablingCellEditingAfterBindingAllowsTextEditsAndPersistsChanges(bool InitiallyEmpty) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = false };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, LeftClickToDeselect = false };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud, InitialAddress: InitiallyEmpty ? null : "1 Original Street");
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -56,7 +56,7 @@ public class CrudGridInteractionTests {
 	[TestCase(true, false, true)]
 	[TestCase(true, true, false)]
 	public void TextEditingRequiresGridColumnAndUpdatePermission(bool AllowEditing, bool CanEditColumn, bool CanUpdate) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = AllowEditing };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = AllowEditing };
 		Owner.Controls.Add(Crud);
 		await BindRecords(Crud, CanEditColumn);
 		if (!CanUpdate)
@@ -71,7 +71,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void RevokingEditingPermissionClosesTheCurrentEditor(bool RevokeCapability) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true };
 		Owner.Controls.Add(Crud);
 		await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -95,7 +95,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false, 100)]
 	[TestCase(true, 100)]
 	public void DefaultLeftClickSelectsUnselectedRowsAndDeselectsSelectedRows(bool SelectOnMouseUp, int HoldMilliseconds) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, SelectOnMouseUp = SelectOnMouseUp };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, SelectOnMouseUp = SelectOnMouseUp };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -123,7 +123,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ControlModifiedClicksDoNotToggleSelectionTwice(bool SelectOnMouseUp) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = true, SelectOnMouseUp = SelectOnMouseUp };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, LeftClickToDeselect = true, SelectOnMouseUp = SelectOnMouseUp };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -150,7 +150,7 @@ public class CrudGridInteractionTests {
 
 		await ClickCell(Grid, 1);
 		Assert.That(Crud.SelectedEntity, Is.SameAs(Records[0]));
-		Assert.That(Selected, Is.EqualTo(new[] { Records[0] }), "SourceGrid's Ctrl handler must not deselect the row selected by CrudGrid's own mouse-down handler.");
+		Assert.That(Selected, Is.EqualTo(new[] { Records[0] }), "SourceGrid's Ctrl handler must not deselect the row selected by VisualGrid's own mouse-down handler.");
 		Assert.That(Deselected, Is.Empty);
 		await ClickCell(Grid, 1);
 		Assert.That(Crud.SelectedEntity, Is.Null);
@@ -161,7 +161,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void RapidRowChangesKeepEntityAndHighlightInSync(bool LeftClickToDeselect) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = LeftClickToDeselect };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, LeftClickToDeselect = LeftClickToDeselect };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -183,7 +183,7 @@ public class CrudGridInteractionTests {
 	[TestCase(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanDelete, false, true)]
 	[TestCase(DataSourceCapabilities.Default, true, true)]
 	public void ToolbarOnlyShowsSupportedCrudActions(DataSourceCapabilities Capabilities, bool CanCreate, bool CanDelete) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		Crud.Capabilities = Capabilities;
@@ -200,7 +200,7 @@ public class CrudGridInteractionTests {
 
 	[Test]
 	public void DeleteButtonFollowsVisibleSelectionAndCapabilities() => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -224,7 +224,7 @@ public class CrudGridInteractionTests {
 	[TestCase(18f)]
 	public void ToolbarAndPageSelectorFitTheirRowsAtLargerFonts(float FontSize) => RunWithMessageLoop(Owner => {
 		using var Font = new Font("Segoe UI", FontSize);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, Font = Font, Capabilities = DataSourceCapabilities.Default };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, Font = Font, Capabilities = DataSourceCapabilities.Default };
 		Owner.Controls.Add(Crud);
 		Crud.PerformLayout();
 		foreach (var PanelName in new[] { "_topPanel", "_bottomPanel" }) {
@@ -241,7 +241,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void DoubleClickDeselectsTheRowSelectedByTheFirstClick(bool SelectOnMouseUp) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = true, SelectOnMouseUp = SelectOnMouseUp };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, LeftClickToDeselect = true, SelectOnMouseUp = SelectOnMouseUp };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -257,7 +257,7 @@ public class CrudGridInteractionTests {
 
 	[Test]
 	public void EnablingDeselectModePreservesAnActiveTextEditor() => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = false };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = false };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -278,7 +278,7 @@ public class CrudGridInteractionTests {
 	[TestCase(true, false)]
 	[TestCase(true, true)]
 	public void CombinedModeSelectsWithSingleClicksAndEditsTextWithoutDeselecting(bool SelectOnMouseUp, bool UseF2) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true, SelectOnMouseUp = SelectOnMouseUp };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true, SelectOnMouseUp = SelectOnMouseUp };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud, InitialAddress: null);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -309,7 +309,7 @@ public class CrudGridInteractionTests {
 
 	[Test]
 	public void DisablingDeselectModeRestoresSingleClickEditing() => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
 		await BindRecords(Crud);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -325,7 +325,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void CombinedModeCheckboxChangesOnlyOnExplicitEdit(bool UseF2) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud, DisplayType: CrudCellDisplayType.Boolean);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -351,7 +351,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void CombinedModeDropDownOpensOnlyOnExplicitEdit(bool UseF2) => RunWithMessageLoop(async Owner => {
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = true };
 		Owner.Controls.Add(Crud);
 		var Records = await BindRecords(Crud, DisplayType: CrudCellDisplayType.DropDownList);
 		var Grid = FindControl<Grid>(Crud, "_grid");
@@ -373,14 +373,14 @@ public class CrudGridInteractionTests {
 	[TestCase(false, CrudCellDisplayType.Boolean)]
 	[TestCase(true, CrudCellDisplayType.Boolean)]
 	public void NativeRightMouseDownSelectsItsRowBeforeTheContextMenuOpens(bool leftClickToDeselect, CrudCellDisplayType displayType) => RunWithMessageLoop(async owner => {
-		using var crud = new CrudGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = leftClickToDeselect };
+		using var crud = new VisualGrid { Dock = DockStyle.Fill, AllowCellEditing = true, LeftClickToDeselect = leftClickToDeselect };
 		owner.Controls.Add(crud);
 		var records = await BindRecords(crud, DisplayType: displayType);
 		var grid = FindControl<Grid>(crud, "_grid");
 		crud.SelectedEntity = records[0];
 		var bounds = grid.PositionToRectangle(new Position(2, 0));
 		var point = new Point(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
-		var menu = (ContextMenuStrip)typeof(CrudGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
+		var menu = (ContextMenuStrip)typeof(VisualGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
 		using var closeMenu = Tools.Scope.ExecuteOnDispose(menu.Close);
 		object selectedAtOpening = null;
 		menu.Opening += (_, _) => selectedAtOpening = crud.SelectedEntity;
@@ -399,7 +399,7 @@ public class CrudGridInteractionTests {
 	[TestCase(false, true)]
 	[TestCase(true, true)]
 	public void NativeRightClicksOnHeaderOrBlankAreaDoNotOpenAnEntityMenu(bool leftClickToDeselect, bool blankArea) => RunWithMessageLoop(async owner => {
-		using var crud = new CrudGrid { Dock = DockStyle.Fill, LeftClickToDeselect = leftClickToDeselect };
+		using var crud = new VisualGrid { Dock = DockStyle.Fill, LeftClickToDeselect = leftClickToDeselect };
 		owner.Controls.Add(crud);
 		var records = await BindRecords(crud);
 		var grid = FindControl<Grid>(crud, "_grid");
@@ -407,7 +407,7 @@ public class CrudGridInteractionTests {
 		var header = grid.PositionToRectangle(new Position(0, 0));
 		var lastRow = grid.PositionToRectangle(new Position(2, 0));
 		var point = blankArea ? new Point(10, lastRow.Bottom + 20) : new Point(10, header.Top + header.Height / 2);
-		var menu = (ContextMenuStrip)typeof(CrudGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
+		var menu = (ContextMenuStrip)typeof(VisualGrid).GetField("_selectionContextMenuStrip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(crud);
 		using var closeMenu = Tools.Scope.ExecuteOnDispose(menu.Close);
 		SendRightMouseDown(grid, point);
 		RaiseMouseEvent(grid, "OnMouseClick", new MouseEventArgs(MouseButtons.Right, 1, point.X, point.Y, 0));
@@ -420,10 +420,10 @@ public class CrudGridInteractionTests {
 		Sphere10.Framework.Windows.WinAPI.USER32.SendMessage(grid.Handle, Sphere10.Framework.Windows.WinAPI.WindowMessageFlags.WM_RBUTTONDOWN, (IntPtr)2, coordinates);
 	}
 
-	private static async Task<Record[]> BindRecords(CrudGrid Crud, bool CanEditColumn = true, string? InitialAddress = "1 Original Street", CrudCellDisplayType DisplayType = CrudCellDisplayType.Text) {
+	private static async Task<Record[]> BindRecords(VisualGrid Crud, bool CanEditColumn = true, string? InitialAddress = "1 Original Street", CrudCellDisplayType DisplayType = CrudCellDisplayType.Text) {
 		var Records = new[] { new Record { Address = InitialAddress }, new Record { Address = "2 Original Street" } };
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<Record> {
+			new VisualGridColumn<Record> {
 				ColumnName = "Address",
 				DisplayType = DisplayType,
 				DataType = DisplayType == CrudCellDisplayType.Boolean ? typeof(bool) : typeof(string),
@@ -487,7 +487,7 @@ public class CrudGridInteractionTests {
 		};
 		using var Watchdog = new System.Windows.Forms.Timer { Interval = 15000 };
 		Watchdog.Tick += (_, _) => {
-			Failure = new AssertionException("The CrudGrid interaction test timed out.");
+			Failure = new AssertionException("The VisualGrid interaction test timed out.");
 			foreach (var Dialog in FormsApplication.OpenForms.Cast<Form>().Reverse().ToArray())
 				Dialog.Dispose();
 			FormsApplication.ExitThread();

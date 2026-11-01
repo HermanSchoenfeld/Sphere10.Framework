@@ -58,12 +58,14 @@ public class BlazorDefaultInterfaceDispatchTests {
 	public void DirectPlatformApplicationUsesInlineSharedProjections() {
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Direct")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("direct")
 				.WithName("Direct block")
 			)
 			.Build();
-		using var provider = new ServiceCollection().AddSphere10BlazorPlugin(plugin).BuildServiceProvider();
+		using var provider = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin)
+			.BuildServiceProvider();
 		var application = new DirectApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(), plugin);
 		IApplication neutral = application;
 		IApplication<IBlazorPlugin, IBlazorApplicationScreenHost> typed = application;
@@ -123,6 +125,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 		public DirectApplication(IBlazorApplicationScreenHost screenHost, IBlazorPlugin plugin) {
 			ScreenHost = screenHost;
 			_plugin = plugin;
+			Settings = new ApplicationSettingsCatalog("DirectApplication", null, screenHost.AvailableBlocks);
 		}
 
 		public ILogger Logger { get; } = new NoOpLogger();
@@ -140,6 +143,8 @@ public class BlazorDefaultInterfaceDispatchTests {
 		public IBlazorApplicationBlock[] Blocks => ScreenHost.Blocks;
 
 		public IBlazorApplicationScreenHost ScreenHost { get; }
+
+		public ApplicationSettingsCatalog Settings { get; }
 
 		public bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 

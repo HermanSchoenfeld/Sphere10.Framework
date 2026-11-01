@@ -18,8 +18,7 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 	where TBlock : IApplicationBlock {
 	private readonly List<TMenu> _menus = new();
 	private readonly List<ApplicationScreenDefinition> _screenDefinitions = new();
-	private ApplicationScreenDefinition _defaultScreenTemplate;
-	private bool _inheritDefaultScreenTitle;
+	private ApplicationScreenRegistration _defaultScreenRegistration;
 
 	protected string Name { get; private set; }
 
@@ -39,21 +38,20 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 
 	protected ScreenKind DefaultScreenKind => DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
 
-	protected bool IsTypeBasedDefault => _defaultScreenTemplate != null;
-
-	protected ApplicationScreenDefinition[] ScreenDefinitions => _screenDefinitions
-		.Concat(_menus.SelectMany(menu => menu.Items).OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition))
-		.Concat(DefaultScreenDefinition == null ? Array.Empty<ApplicationScreenDefinition>() : new[] { DefaultScreenDefinition })
-		.Distinct<ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance).ToArray();
+	protected ApplicationScreenDefinition[] ScreenDefinitions {
+		get {
+			return _screenDefinitions.ToArray();
+		}
+	}
 
 	public virtual TBlock Build() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
+		ValidateConfiguration();
 		ResolveDefaultScreen();
 		var block = CreateBlock(Array.AsReadOnly(_menus.ToArray()));
 		RegisterScreenDefinitions(block);
+		ResolveScreenReferences(block);
 		Tools.UI.GetScreenDefinitions(new IApplicationBlock[] { block });
-		Guard.Ensure(ScreenDefinitions.GroupBy(definition => (definition.ScreenType, definition.Title, definition.ActivationMode, definition.ScreenKind))
-			.All(group => block.ScreenDefinitions.Count(candidate => (candidate.ScreenType, candidate.Title, candidate.ActivationMode, candidate.ScreenKind) == group.Key) >= group.Count()),
+		Guard.Ensure(ScreenDefinitions.All(definition => block.ScreenDefinitions.Any(candidate => candidate.Registration.Token == definition.Registration.Token)),
 			"The block factory must own every configured screen definition.");
 		return block;
 	}
@@ -63,8 +61,13 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 			foreach (var definition in ScreenDefinitions)
 				storage.AddScreenDefinition(definition);
 			if (DefaultScreenDefinition != null)
-				storage.DefaultScreenDefinition = DefaultScreenDefinition;
+				storage.DefaultScreenDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, DefaultScreenDefinition.Registration);
 		}
+	}
+
+	/// <summary>Completes pending navigation bindings against this product's canonical registrations.</summary>
+	protected void ResolveScreenReferences(TBlock block) {
+		Tools.UI.ResolveScreenReferences(block);
 	}
 
 	protected void SetName(string name) {
@@ -88,28 +91,29 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 		OnConfigurationChanged(nameof(Tooltip));
 	}
 
-	protected void SetDefaultScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
+	protected void SetDefaultScreen(Type screenType) {
 		ValidateScreenType(screenType);
-		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
-		_defaultScreenTemplate = new ApplicationScreenDefinition(screenType, title, activationMode, screenKind);
-		_inheritDefaultScreenTitle = title == null;
-		DefaultScreenDefinition = _defaultScreenTemplate;
-		OnConfigurationChanged(nameof(DefaultScreenDefinition));
+		SetDefaultScreen(ApplicationScreenRegistration.ForType(screenType));
 	}
 
 	protected void SetDefaultScreen(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		ValidateScreenType(definition.ScreenType);
-		_defaultScreenTemplate = null;
-		DefaultScreenDefinition = definition;
+		SetDefaultScreen(definition.Registration);
+	}
+
+	protected void SetDefaultScreen(ApplicationScreenRegistration registration) {
+		Guard.ArgumentNotNull(registration, nameof(registration));
+		ValidateScreenType(registration.ScreenType);
+		_defaultScreenRegistration = registration;
+		DefaultScreenDefinition = null;
 		OnConfigurationChanged(nameof(DefaultScreenDefinition));
 	}
 
 	protected void AddScreenDefinitionInternal(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		ValidateScreenType(definition.ScreenType);
-		if (!_screenDefinitions.Any(candidate => ReferenceEquals(candidate, definition)))
-			_screenDefinitions.Add(definition);
+		Guard.Argument(!_screenDefinitions.Any(candidate => candidate.Registration.Token == definition.Registration.Token), nameof(definition), "The screen registration has already been added to this block.");
+		_screenDefinitions.Add(definition);
 	}
 
 	protected void AddMenuDefinition(TMenu menu) {
@@ -126,33 +130,18 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 
 	protected virtual void ValidateName(string name) => Guard.ArgumentNotNull(name, nameof(name));
 
+	/// <summary>Validates the effective product configuration before publishing or updating its registrations.</summary>
+	protected virtual void ValidateConfiguration() {
+		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
+	}
+
 	protected virtual void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType);
 
 	protected abstract TBlock CreateBlock(IReadOnlyList<TMenu> menus);
 
-	/// <summary>Supplies canonical definitions eligible for type-based default inference.</summary>
-	protected virtual IEnumerable<ApplicationScreenDefinition> GetDefaultScreenDefinitions() =>
-		_menus.SelectMany(menu => menu.Items).OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition).Concat(_screenDefinitions);
-
-	/// <summary>Type-based convenience defaults inherit owned metadata; explicitly supplied definitions remain canonical.</summary>
+	/// <summary>Resolves a default reference without creating or changing registration metadata.</summary>
 	protected virtual void ResolveDefaultScreen() {
-		if (_defaultScreenTemplate == null)
-			return;
-		var matching = GetDefaultScreenDefinitions().FirstOrDefault(definition => definition.ScreenType == _defaultScreenTemplate.ScreenType);
-		var title = _inheritDefaultScreenTitle ? matching?.Title ?? _defaultScreenTemplate.Title : _defaultScreenTemplate.Title;
-		var mode = _defaultScreenTemplate.ActivationMode ?? matching?.ActivationMode;
-		var kind = _defaultScreenTemplate.ScreenKind == ScreenKind.Normal ? matching?.ScreenKind ?? ScreenKind.Normal : _defaultScreenTemplate.ScreenKind;
-		var resolved = DefaultScreenDefinition;
-		if (matching == null)
-			resolved = _defaultScreenTemplate;
-		else if (matching.Title == title && matching.ActivationMode == mode && matching.ScreenKind == kind)
-			resolved = matching;
-		else if (resolved.Title != title || resolved.ActivationMode != mode || resolved.ScreenKind != kind)
-			resolved = new ApplicationScreenDefinition(_defaultScreenTemplate.ScreenType, title, mode, kind);
-		if (ReferenceEquals(DefaultScreenDefinition, resolved))
-			return;
-		DefaultScreenDefinition = resolved;
-		OnConfigurationChanged(nameof(DefaultScreenDefinition));
+		DefaultScreenDefinition = _defaultScreenRegistration == null ? null : Tools.UI.ResolveScreenRegistration(ScreenDefinitions, _defaultScreenRegistration);
 	}
 }
 
@@ -172,11 +161,13 @@ public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TB
 		return (TSelf)(object)this;
 	}
 
-	public TSelf WithDefaultScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal)
-		where TScreen : IApplicationScreen => WithDefaultScreen(typeof(TScreen), title, activationMode, screenKind);
+	public TSelf WithDefaultScreen<TScreen>()
+		where TScreen : IApplicationScreen {
+		return WithDefaultScreen(typeof(TScreen));
+	}
 
-	public TSelf WithDefaultScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
-		SetDefaultScreen(screenType, title, activationMode, screenKind);
+	public TSelf WithDefaultScreen(Type screenType) {
+		SetDefaultScreen(screenType);
 		return (TSelf)(object)this;
 	}
 
@@ -185,20 +176,43 @@ public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TB
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddScreenDefinition(ApplicationScreenDefinition definition) {
+	public TSelf WithDefaultScreen(ApplicationScreenRegistration registration) {
+		SetDefaultScreen(registration);
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Adds an existing compatible screen definition independently of commands.</summary>
+	public TSelf AddScreen(ApplicationScreenDefinition definition) {
+		return AddScreen(definition, out _);
+	}
+
+	/// <summary>Adds a definition and captures its immutable screen registration reference.</summary>
+	public TSelf AddScreen(ApplicationScreenDefinition definition, out ApplicationScreenRegistration registration) {
 		AddScreenDefinitionInternal(definition);
+		registration = definition.Registration;
 		return (TSelf)(object)this;
 	}
 
 	public TSelf AddMenu(TMenu menu) {
+		return AddMenu(menu, out _);
+	}
+
+	/// <summary>Adds an existing menu definition and returns its configuration reference.</summary>
+	public TSelf AddMenu(TMenu menu, out TMenu registration) {
 		AddMenuDefinition(menu);
+		registration = menu;
 		return (TSelf)(object)this;
 	}
 
-	public TSelf ConfigureMenu(Action<TMenuBuilder> configure) {
+	public TSelf AddMenu(Action<TMenuBuilder> configure) {
+		return AddMenu(configure, out _);
+	}
+
+	/// <summary>Configures one child menu, captures its definition and returns this parent.</summary>
+	public TSelf AddMenu(Action<TMenuBuilder> configure, out TMenu registration) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		var builder = new TMenuBuilder();
 		configure(builder);
-		return AddMenu(builder.Build());
+		return AddMenu(builder.Build(), out registration);
 	}
 }

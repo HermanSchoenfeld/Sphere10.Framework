@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -47,15 +47,18 @@ public class ApplicationMenuEventTests {
 	}
 
 	[Test]
-	public async Task MatchingDefaultScreenKeepsItsSelectionCallback() {
+	public async Task DefaultActivationDoesNotSelectACommandButItsExplicitMenuActivationStillNotifies() {
 		var selections = 0;
 		var item = new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) };
 		item.Select += () => selections++;
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
-			.WithDefaultScreen<TestScreen>("Dashboard")
-			.ConfigureMenu(menu => menu
+			.AddScreen<TestScreen>(screen => screen
+				.WithTitle("Dashboard")
+			)
+			.WithDefaultScreen<TestScreen>()
+			.AddMenu(menu => menu
 				.WithText("Menu")
 				.AddItem(item)
 			)
@@ -65,6 +68,8 @@ public class ApplicationMenuEventTests {
 
 		var session = await host.ActivateBlockAsync("block");
 		Assert.That(session.Title, Is.EqualTo("Dashboard"));
+		Assert.That(selections, Is.Zero);
+		await host.ActivateScreenAsync("block", "screen");
 		Assert.That(selections, Is.EqualTo(1));
 	}
 
@@ -72,7 +77,7 @@ public class ApplicationMenuEventTests {
 	public async Task GuardVetoAndCancellationDoNotRaiseSelection() {
 		var selections = 0;
 		var item = new BlazorScreenMenuItem {
-			Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen), ActivationMode = ScreenActivationMode.MultiInstance
+			Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen)
 		};
 		item.Select += () => selections++;
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -167,7 +172,10 @@ public class ApplicationMenuEventTests {
 		new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
-			.ConfigureMenu(menu => menu
+			.AddScreen<TestScreen>(screen => screen
+				.WithTitle("Screen")
+			)
+			.AddMenu(menu => menu
 				.WithText("Menu")
 				.AddItem(item)
 			)

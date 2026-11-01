@@ -36,7 +36,8 @@ public class BlazorApplicationLifecycleTests {
 		var unloaded = 0;
 		plugin.Loaded += () => loaded++;
 		plugin.Unloaded += () => unloaded++;
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin);
 		var logger = new NoOpLogger();
 		services.AddSingleton<Sphere10.Framework.ILogger>(logger);
 		if (configureApplication)
@@ -98,13 +99,13 @@ public class BlazorApplicationLifecycleTests {
 		services
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("First")
-				.RegisterInitializer<CircuitInitializer>()
-				.RegisterFinalizer<CircuitFinalizer>()
+				.AddInitializer<CircuitInitializer>()
+				.AddFinalizer<CircuitFinalizer>()
 			)
 			.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Second")
-				.RegisterInitializer<CircuitInitializer>()
-				.RegisterFinalizer<CircuitFinalizer>()
+				.AddInitializer<CircuitInitializer>()
+				.AddFinalizer<CircuitFinalizer>()
 			);
 		Assert.That(services.Where(descriptor => descriptor.ServiceType == typeof(IApplicationInitializer) && descriptor.IsKeyedService)
 			.Select(descriptor => descriptor.ServiceKey), Is.EqualTo(new[] { "First", "Second" }));
@@ -152,7 +153,9 @@ public class BlazorApplicationLifecycleTests {
 
 	[Test]
 	public async Task ServerRenderingDoesNotRunApplicationOrProcessLifecycleTasks() {
-		var services = new ServiceCollection().AddLogging().AddSphere10BlazorPlugin(CreatePlugin());
+		var services = new ServiceCollection()
+			.AddLogging()
+			.AddSphere10BlazorPlugin(CreatePlugin());
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/application"));
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
@@ -178,12 +181,17 @@ public class BlazorApplicationLifecycleTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle(nameof(ProbeScreen))
+			)
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
 		var plugin = CreatePlugin(block);
 		var unloaded = 0;
 		plugin.Unloaded += () => unloaded++;
-		await using var provider = new ServiceCollection().AddSphere10BlazorPlugin(plugin).BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var provider = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin)
+			.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
 		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
 		var handler = scope.ServiceProvider.GetServices<CircuitHandler>().Single();
@@ -270,9 +278,9 @@ public class BlazorApplicationLifecycleTests {
 	private static BlazorPlugin CreatePlugin(params IBlazorApplicationBlock[] blocks) {
 		var builder = new BlazorPluginBuilder()
 			.WithName("Lifecycle")
-			.RegisterInitializer<CircuitInitializer>()
-			.RegisterFinalizer<CircuitFinalizer>()
-			.ConfigureServices(services => {
+			.AddInitializer<CircuitInitializer>()
+			.AddFinalizer<CircuitFinalizer>()
+			.AddServices(services => {
 				services.AddScoped<LifecycleState>();
 				services.AddInitializer<ProcessInitializer>();
 				services.AddFinalizer<ProcessFinalizer>();

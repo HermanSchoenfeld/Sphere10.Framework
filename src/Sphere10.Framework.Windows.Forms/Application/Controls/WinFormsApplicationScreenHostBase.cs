@@ -6,7 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -78,6 +78,11 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 	public virtual Task<WinFormsApplicationScreen> OpenScreenAsync(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default)
 		=> ApplicationHost.OpenScreenAsync(block, definition, cancellationToken);
 
+	/// <summary>Opens the graph-local definition identified by the retained registration reference.</summary>
+	public virtual Task<WinFormsApplicationScreen> OpenScreenAsync(IWinFormsApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		return ApplicationHost.OpenScreenAsync(block, registration, cancellationToken);
+	}
+
 	public virtual Task RegisterBlockAsync(IWinFormsApplicationBlock block, CancellationToken cancellationToken = default) => ApplicationHost.RegisterBlockAsync(block, cancellationToken);
 
 	public virtual Task<bool> UnregisterBlockAsync(IWinFormsApplicationBlock block, CancellationToken cancellationToken = default) => ApplicationHost.UnregisterBlockAsync(block, cancellationToken);
@@ -91,6 +96,8 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 	public virtual Task MoveScreenAsync(WinFormsApplicationScreen screen, int index, CancellationToken cancellationToken = default) => ApplicationHost.MoveScreenAsync(screen, index, cancellationToken);
 
 	public virtual Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) => ApplicationHost.ShowScreenAsync(screen, cancellationToken);
+
+	public abstract Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default);
 
 	public virtual Task<bool> ShowScreenUndockedAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default)
 		=> ApplicationHost.ShowScreenUndockedAsync(screen, cancellationToken);

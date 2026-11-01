@@ -73,10 +73,12 @@ public class BlazorGridBrowserTests {
 		await Assertions.Expect(demo.Locator("[data-testid=live-grid-status]")).ToContainTextAsync("Published");
 		await Assertions.Expect(second).ToHaveAttributeAsync("aria-selected", "true");
 		await Assertions.Expect(demo.GetByRole(AriaRole.Button, new() { Name = "Refresh selected row", Exact = true })).ToBeEnabledAsync();
-		await grid.GetByRole(AriaRole.Combobox, new() { Name = "Paging mode", Exact = true }).SelectOptionAsync("Single");
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Paging mode", Exact = true }).ClickAsync();
+		await grid.GetByRole(AriaRole.Menuitemradio, new() { Name = "Single", Exact = true }).ClickAsync();
 		await Assertions.Expect(table.Locator(":scope > tbody > tr")).ToHaveCountAsync(96);
 		Assert.That(await grid.GetByRole(AriaRole.Navigation, new() { Name = "Grid pages", Exact = true }).CountAsync(), Is.Zero);
-		await grid.GetByRole(AriaRole.Combobox, new() { Name = "Paging mode", Exact = true }).SelectOptionAsync("Paged");
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Paging mode", Exact = true }).ClickAsync();
+		await grid.GetByRole(AriaRole.Menuitemradio, new() { Name = "Manual", Exact = true }).ClickAsync();
 		await Assertions.Expect(grid.GetByRole(AriaRole.Combobox, new() { Name = "Rows per page", Exact = true })).ToHaveValueAsync("12");
 		Assert.That(errors, Is.Empty);
 	}
@@ -118,7 +120,7 @@ public class BlazorGridBrowserTests {
 		await page.Mouse.DownAsync();
 		await page.Mouse.MoveAsync(handle.X + handle.Width / 2 + 65, handle.Y + handle.Height / 2, new MouseMoveOptions { Steps = 5 });
 		await page.Mouse.UpAsync();
-		await page.WaitForFunctionAsync("() => !!JSON.parse(localStorage.getItem('sphere10-grid:tester.editable-grid'))?.columnWidths?.Name");
+		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key)).values?.Grid?.Columns?.some(column => column.Key === 'Name' && column.Width > 0))");
 		var manual = await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)");
 		await grid.GetByRole(AriaRole.Button, new() { Name = "Reload", Exact = true }).ClickAsync();
 		await Assertions.Expect(grid).ToHaveAttributeAsync("aria-busy", "false");
@@ -264,6 +266,24 @@ public class BlazorGridBrowserTests {
 		var previous = pager.GetByRole(AriaRole.Button, new() { Name = "Previous page", Exact = true });
 		var next = pager.GetByRole(AriaRole.Button, new() { Name = "Next page", Exact = true });
 		var last = pager.GetByRole(AriaRole.Button, new() { Name = "Last page", Exact = true });
+		var modeButton = grid.GetByRole(AriaRole.Button, new() { Name = "Paging mode", Exact = true });
+		await modeButton.ClickAsync();
+		var modes = grid.GetByRole(AriaRole.Menu, new() { Name = "Paging mode", Exact = true });
+		Assert.That(await modes.GetByRole(AriaRole.Menuitemradio).CountAsync(), Is.EqualTo(3));
+		await Assertions.Expect(modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Manual", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
+		await modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Single", Exact = true }).ClickAsync();
+		await Assertions.Expect(pager).ToBeHiddenAsync();
+		await Assertions.Expect(grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr")).ToHaveCountAsync(73);
+		await modeButton.ClickAsync();
+		await Assertions.Expect(modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Single", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
+		await modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Auto", Exact = true }).ClickAsync();
+		await Assertions.Expect(pager).ToBeVisibleAsync();
+		await modeButton.ClickAsync();
+		await Assertions.Expect(modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Auto", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
+		var modeScreenshot = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"grid-page-mode-menu-{width}.png");
+		await modes.ScreenshotAsync(new LocatorScreenshotOptions { Path = modeScreenshot });
+		TestContext.AddTestAttachment(modeScreenshot, "Compact paging menu with the selected Auto marker");
+		await modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Manual", Exact = true }).ClickAsync();
 		Assert.That(await pager.Locator("button > svg[aria-hidden=true]").CountAsync(), Is.EqualTo(4));
 		await Assertions.Expect(first).ToBeDisabledAsync();
 		await Assertions.Expect(previous).ToBeDisabledAsync();
@@ -286,9 +306,11 @@ public class BlazorGridBrowserTests {
 		await grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr").First.ClickAsync();
 		await grid.GetByRole(AriaRole.Button, new() { Name = "Edit", Exact = true }).ClickAsync();
 		await Assertions.Expect(pageSize).ToBeDisabledAsync();
+		await Assertions.Expect(modeButton).ToBeDisabledAsync();
 		await Assertions.Expect(next).ToBeDisabledAsync();
 		await grid.GetByRole(AriaRole.Group, new() { Name = "Edit item", Exact = true }).GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
 		await Assertions.Expect(pageSize).ToBeEnabledAsync();
+		await Assertions.Expect(modeButton).ToBeEnabledAsync();
 		await Assertions.Expect(pageSize).ToHaveValueAsync("5");
 		await Assertions.Expect(next).ToBeEnabledAsync();
 		Assert.That(await pageSize.EvaluateAsync<string>("element => getComputedStyle(element).appearance"), Is.EqualTo("auto"), "The dropdown uses the native browser arrow.");
@@ -298,6 +320,124 @@ public class BlazorGridBrowserTests {
 		await grid.Locator(":scope > .sphere10-grid-footer").ScreenshotAsync(new LocatorScreenshotOptions { Path = screenshot });
 		TestContext.AddTestAttachment(screenshot, "Grid icon navigation and page-size dropdown");
 		Assert.That(errors, Is.Empty);
+	}
+
+	[Test]
+	public async Task OwnedWidthsMigrateOnceRoundTripAndOptionsPreserveTheLiveRowDraft() {
+		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
+		Assert.That(Uri.TryCreate(url, UriKind.Absolute, out var origin) && origin.IsLoopback, Is.True);
+		var executable = TestContext.Parameters.Get("BrowserExecutablePath", "");
+		using var playwright = await Playwright.CreateAsync();
+		await using var browser = await playwright.Chromium.LaunchAsync(new() {
+			Headless = true, ExecutablePath = string.IsNullOrWhiteSpace(executable) ? null : executable
+		});
+		await using var context = await browser.NewContextAsync(new() { ViewportSize = new() { Width = 1440, Height = 1000 } });
+		await context.AddInitScriptAsync("""
+			if (!localStorage.getItem('__grid-preferences-seeded')) {
+				localStorage.setItem('__grid-preferences-seeded', 'true');
+				localStorage.setItem('sphere10-grid:tester.editable-grid', JSON.stringify({ pageMode:0, pageSize:5, pageNumber:0, columnWidths:{Name:197} }));
+			}
+			""");
+		var page = await context.NewPageAsync();
+		page.SetDefaultTimeout(15000);
+		var errors = new List<string>();
+		page.PageError += (_, error) => errors.Add(error);
+		await page.GotoAsync(new Uri(origin, "/components/grid").AbsoluteUri);
+		var grid = page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid");
+		var rows = grid.Locator(":scope > .sphere10-grid-viewport > table > tbody > tr");
+		var name = grid.Locator("col[data-grid-key=Name]");
+		await page.WaitForFunctionAsync("() => parseFloat(document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] col[data-grid-key=Name]')?.style.width) === 197");
+		await Assertions.Expect(rows).ToHaveCountAsync(5);
+
+		// A completed drag persists through the screen's root; its legacy browser record remains untouched.
+		var grip = grid.Locator("thead th").Nth(1).Locator(".sphere10-grid-resizer");
+		await grip.ScrollIntoViewIfNeededAsync();
+		var handle = await grip.BoundingBoxAsync();
+		await page.Mouse.MoveAsync(handle.X + handle.Width / 2, handle.Y + handle.Height / 2);
+		await page.Mouse.DownAsync();
+		await page.Mouse.MoveAsync(handle.X + handle.Width / 2 + 46, handle.Y + handle.Height / 2, new() { Steps = 5 });
+		await page.Mouse.UpAsync();
+		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key)).values?.Grid?.Columns?.some(column => column.Key === 'Name' && column.Width > 220))");
+		var manual = await name.EvaluateAsync<double>("column => parseFloat(column.style.width)");
+		Assert.That(await page.EvaluateAsync<double>("() => JSON.parse(localStorage.getItem('sphere10-grid:tester.editable-grid')).columnWidths.Name"), Is.EqualTo(197));
+		await page.ReloadAsync();
+		await Assertions.Expect(rows).ToHaveCountAsync(5);
+		await page.WaitForFunctionAsync("width => Math.abs(parseFloat(document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] col[data-grid-key=Name]')?.style.width) - width) < .25", manual);
+
+		// The grid's own editor uses the same root values as Screen Options, with a detached cancellation boundary.
+		var settingsButton = grid.GetByRole(AriaRole.Button, new() { Name = "Settings", Exact = true });
+		await settingsButton.ClickAsync();
+		var localSettings = grid.GetByRole(AriaRole.Region, new() { Name = "Grid settings", Exact = true });
+		var settingsScreenshot = Path.Combine(TestContext.CurrentContext.WorkDirectory, "grid-owned-settings.png");
+		await localSettings.ScreenshotAsync(new() { Path = settingsScreenshot });
+		TestContext.AddTestAttachment(settingsScreenshot, "The grid editor binds the same values as Screen Options");
+		await localSettings.Locator("[data-option-path='PageSize'] input").FillAsync("2");
+		await localSettings.Locator("[data-option-path='PageSize'] input").PressAsync("Tab");
+		await localSettings.GetByRole(AriaRole.Button, new() { Name = "Cancel settings", Exact = true }).ClickAsync();
+		await Assertions.Expect(rows).ToHaveCountAsync(5);
+		await settingsButton.ClickAsync();
+		await localSettings.Locator("[data-option-path='PageSize'] input").FillAsync("0");
+		await localSettings.Locator("[data-option-path='PageSize'] input").PressAsync("Tab");
+		await localSettings.GetByRole(AriaRole.Button, new() { Name = "Apply settings", Exact = true }).ClickAsync();
+		await Assertions.Expect(localSettings.GetByRole(AriaRole.Alert)).ToContainTextAsync("must be positive");
+		await localSettings.Locator("[data-option-path='PageSize'] input").FillAsync("5");
+		await localSettings.Locator("[data-option-path='PageSize'] input").PressAsync("Tab");
+		await localSettings.Locator("[data-option-path='Columns.1.Width'] input").FillAsync("249");
+		await localSettings.Locator("[data-option-path='Columns.1.Width'] input").PressAsync("Tab");
+		await localSettings.GetByRole(AriaRole.Button, new() { Name = "Apply settings", Exact = true }).ClickAsync();
+		await localSettings.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await page.WaitForFunctionAsync("() => parseFloat(document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] col[data-grid-key=Name]')?.style.width) === 249");
+		var sameValues = await OpenGridOptionsAsync(page);
+		await Assertions.Expect(sameValues.Locator("[data-option-path='Grid.Columns.1.Width'] input")).ToHaveValueAsync("249");
+		await sameValues.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
+		await sameValues.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+
+		// Applying page and width preferences never commits or discards an active business-row draft.
+		await rows.First.ClickAsync();
+		await grid.GetByRole(AriaRole.Button, new() { Name = "Edit", Exact = true }).ClickAsync();
+		var draft = grid.GetByLabel("Name", new() { Exact = true });
+		await draft.FillAsync("Unsaved grid row");
+		await draft.PressAsync("Tab");
+		var dialog = await OpenGridOptionsAsync(page);
+		await dialog.Locator("[data-option-path='Grid.PageSize'] input").FillAsync("1");
+		await dialog.Locator("[data-option-path='Grid.PageSize'] input").PressAsync("Tab");
+		await dialog.Locator("[data-option-path='Grid.Columns.1.Width'] input").FillAsync("259");
+		await dialog.Locator("[data-option-path='Grid.Columns.1.Width'] input").PressAsync("Tab");
+		await dialog.GetByRole(AriaRole.Button, new() { Name = "Apply", Exact = true }).ClickAsync();
+		await page.WaitForFunctionAsync("() => parseFloat(document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] col[data-grid-key=Name]')?.style.width) === 259");
+		Assert.That(await draft.InputValueAsync(), Is.EqualTo("Unsaved grid row"));
+		Assert.That(await rows.CountAsync(), Is.EqualTo(5), "The accepted query waits until the active draft ends.");
+		await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
+		await dialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		await grid.GetByRole(AriaRole.Group, new() { Name = "Edit item", Exact = true })
+			.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
+		await Assertions.Expect(rows).ToHaveCountAsync(1);
+		Assert.That(await rows.First.InnerTextAsync(), Does.Not.Contain("Unsaved grid row"));
+
+		// Reset releases manual geometry and retains migration markers, so old values cannot return on reload.
+		dialog = await OpenGridOptionsAsync(page);
+		await dialog.GetByRole(AriaRole.Button, new() { Name = "Reset Defaults", Exact = true }).ClickAsync();
+		await dialog.GetByRole(AriaRole.Button, new() { Name = "Apply", Exact = true }).ClickAsync();
+		await Assertions.Expect(rows).ToHaveCountAsync(10);
+		await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
+		await dialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+		Assert.That(await page.EvaluateAsync<bool>("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => { const record=JSON.parse(localStorage.getItem(key)); return record.values?.Grid?.PageSize===10 && record.values.Grid.Columns.every(column=>column.Width===null) && record.sectionVersions?.Grid===1 && record.sectionVersions?.LiveGrid===1; })"), Is.True);
+		await page.ReloadAsync();
+		await Assertions.Expect(rows).ToHaveCountAsync(10);
+		await page.WaitForFunctionAsync("() => !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] table')?.style.width");
+		Assert.That(await name.EvaluateAsync<double>("column => parseFloat(column.style.width)"), Is.Not.EqualTo(197).Within(.25));
+		Assert.That(errors, Is.Empty);
+	}
+
+	// Opens the actual application Options page while the gallery and its row editor remain mounted.
+	private static async Task<ILocator> OpenGridOptionsAsync(IPage page) {
+		var commands = page.GetByRole(AriaRole.Navigation, new() { Name = "Application commands", Exact = true });
+		await commands.GetByRole(AriaRole.Button, new() { Name = "Options", Exact = true }).ClickAsync();
+		await commands.GetByRole(AriaRole.Button, new() { Name = "Screen Options...", Exact = true }).ClickAsync();
+		var dialog = page.Locator(".sphere10-options-host");
+		await dialog.GetByRole(AriaRole.Navigation, new() { Name = "Screen options pages", Exact = true })
+			.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
+		return dialog;
 	}
 
 	private static async Task<LayoutObservation> SampleLayoutAsync(ILocator grid, bool sampleRows = true) {

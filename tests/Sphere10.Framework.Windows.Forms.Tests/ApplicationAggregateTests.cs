@@ -45,7 +45,10 @@ public class ApplicationAggregateTests {
 		var services = new ServiceCollection();
 		services.AddMainForm<ProbeMainForm>();
 		using var later = new WinFormsApplicationBlock { Name = "Later", Position = 2 };
+		later.AddScreenDefinition(new ApplicationScreenDefinition(typeof(DirtyScreen)));
 		using var first = new WinFormsApplicationBlock { Name = "First", Position = 1 };
+		first.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CleanScreen)));
+		first.DefaultScreenDefinition = first.ScreenDefinitions.Single();
 		services.AddApplicationBlock(later);
 		services.AddApplicationBlock(first);
 		await using var provider = services.BuildServiceProvider();
@@ -80,6 +83,8 @@ public class ApplicationAggregateTests {
 	public async Task HiddenRetainedScreensStillContributeUnsavedChanges() {
 		using var form = new ProbeMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(DirtyScreen)));
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CleanScreen)));
 		await using var application = new WinFormsApplication(form, new[] { block });
 		await application.InitializeAsync();
 		application.ScreenHost.ScreenMode = ScreenMode.SingleView;

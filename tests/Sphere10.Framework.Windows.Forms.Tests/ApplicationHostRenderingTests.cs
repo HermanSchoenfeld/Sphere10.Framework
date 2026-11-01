@@ -18,8 +18,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -179,6 +179,7 @@ public class ApplicationHostRenderingTests {
 	public void NativeTabClickCommitsOneSelectionWithoutReentrantSelectionOrMouseUpRepaint() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView, ClientSize = new Size(1000, 650) };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		form.RegisterBlock(block);
 		form.Show();
 		var first = (CountingScreen)form.ScreenHost.ActivateScreen(block, typeof(CountingScreen), "First");
@@ -223,7 +224,9 @@ public class ApplicationHostRenderingTests {
 	public void NativeTabClickOnTheSelectedPageDoesNotRepeatItsLifecycleOrRedrawOnMouseUp() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		form.RegisterBlock(block);
+		form.ScreenHost.CloseScreens(form.ScreenHost.OpenScreens);
 		form.Show();
 		var screen = (CountingScreen)form.ScreenHost.ActivateScreen(block, typeof(CountingScreen));
 		var tabs = form.ScreenHost.TabControl;
@@ -251,7 +254,10 @@ public class ApplicationHostRenderingTests {
 	public void NativeTabClickRetainsThePreviousSelectionWhenItsScreenVetoesHiding() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(GuardedScreen)));
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		form.RegisterBlock(block);
+		form.ScreenHost.CloseScreens(form.ScreenHost.OpenScreens);
 		form.Show();
 		var previous = (GuardedScreen)form.ScreenHost.ActivateScreen(block, typeof(GuardedScreen));
 		var target = (CountingScreen)form.ScreenHost.ActivateScreen(block, typeof(CountingScreen));
@@ -280,6 +286,8 @@ public class ApplicationHostRenderingTests {
 	public void NativeKeyboardTabSelectionCoordinatesTheHostAndHonorsTheHideGuard() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(GuardedScreen)));
 		form.RegisterBlock(block);
 		form.Show();
 		var first = (CountingScreen)form.ScreenHost.ActivateScreen(block, typeof(CountingScreen));
@@ -308,7 +316,10 @@ public class ApplicationHostRenderingTests {
 	public void NativeTabCloseGlyphClosesItsScreenOrHonorsItsHideGuard(bool veto) {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(GuardedScreen)));
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		form.RegisterBlock(block);
+		form.ScreenHost.CloseScreens(form.ScreenHost.OpenScreens);
 		form.Show();
 		var first = (GuardedScreen)form.ScreenHost.ActivateScreen(block, typeof(GuardedScreen), "First");
 		var second = (CountingScreen)form.ScreenHost.ActivateScreen(block, typeof(CountingScreen), "Second");
@@ -435,6 +446,7 @@ public class ApplicationHostRenderingTests {
 	public void ScreenTransitionPublishesOneFinalSelectionAndRebuildsChromeOnce() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		form.RegisterBlock(block);
 		form.Show();
 		form.ScreenHost.ActivateScreen(block, typeof(CountingScreen));
@@ -459,6 +471,7 @@ public class ApplicationHostRenderingTests {
 	public void FailedRenderingEntryLeavesTheNativeTransitionReadyForRetry() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		using var failing = new FailingLayoutPanel();
 		form.Controls.Add(failing);
 		form.RegisterBlock(block);
@@ -493,6 +506,8 @@ public class ApplicationHostRenderingTests {
 	public async Task ApplicationCommandsSurviveBlockAndScreenCaptionCollisions() {
 		using var form = new CountingMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace", ShowInMenuStrip = true };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CommandScreen)));
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		await using var application = new WinFormsApplication(form, new[] { block });
 		using var globalMenu = new WinFormsApplicationMenu("&File");
 		using var globalHelpMenu = new WinFormsApplicationMenu("&Help");
@@ -570,6 +585,7 @@ public class ApplicationHostRenderingTests {
 	public async Task NativeScreenMenusReuseExistingHeadersWithoutTakingCommandOwnership(string caption) {
 		using var form = new CountingMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CountingScreen)));
 		await using var application = new WinFormsApplication(form, new[] { block });
 		using var globalMenu = new WinFormsApplicationMenu(caption);
 		globalMenu.AddItem(new WinFormsActionMenuItem("Keep", () => { }));

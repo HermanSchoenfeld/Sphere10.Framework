@@ -136,8 +136,8 @@ internal static class Program {
 		WinFormsApplication.SetCompatibleTextRenderingDefault(false);
 		var framework = Sphere10Framework.Instance;
 		framework.Build()
-			.UseModule<WinFormsModule>()
-			.UseModule<ProviderModule>()
+			.AddModule<WinFormsModule>()
+			.AddModule<ProviderModule>()
 			.Start();
 		using var shutdown = Tools.Scope.ExecuteOnDispose(framework.EndFramework);
 		using var window = new Form { Text = "Database connection", ClientSize = new Size(660, 220) };
@@ -151,7 +151,7 @@ internal static class Program {
 }
 ```
 
-In an existing framework application, add `.UseModule<ProviderModule>()` to its startup builder instead of starting a second framework. Register other provider UI modules to add choices to the selector. The module supplies both the bar and the panel as transient controls; use separate instances for separate hosts and keep them on the UI thread.
+In an existing framework application, add `.AddModule<ProviderModule>()` to its startup builder instead of starting a second framework. Register other provider UI modules to add choices to the selector. The module supplies both the bar and the panel as transient controls; use separate instances for separate hosts and keep them on the UI thread.
 
 ## Connection and lifecycle limits
 

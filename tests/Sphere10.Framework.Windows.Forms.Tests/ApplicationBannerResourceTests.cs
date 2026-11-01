@@ -27,7 +27,7 @@ public class ApplicationBannerResourceTests {
 		_applicationIcon = (Icon)SystemIcons.Application.Clone();
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton<IApplicationIconProvider>(new BorrowedIconProvider(_applicationIcon));
 				services.AddMainForm<LiteMainForm>();
 			})

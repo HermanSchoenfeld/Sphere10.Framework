@@ -10,12 +10,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
+using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Projects a circuit's live host and startup plugin definitions without loading or owning those plugins again.</summary>
 public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
+	internal const string SettingsMenuId = "sphere10-screen-options-menu";
+
 	private readonly IBlazorPlugin[] _loadedPlugins;
 
 	/// <summary>Projects plugins already loaded successfully during startup; construction does not load or unload plugins.</summary>
@@ -23,8 +30,9 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 		: this(screenHost, CaptureLoadedPlugins(loadedPlugins)) {
 	}
 
-	internal BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations, IServiceProvider services = null)
-		: base(services) {
+	internal BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations, IServiceProvider services = null,
+		string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null)
+		: base(services, settingsKey, settingsDefinitions) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
 		var registrations = Tools.UI.ValidatePluginRegistrations(pluginRegistrations);
 		_loadedPlugins = registrations.Select(registration => registration.Plugin).ToArray();
@@ -78,6 +86,59 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	}
 
 	protected override void OnScreenHostChanged() => OnChanged();
+
+	// The existing block IDs qualify profiles independently of their displayed titles.
+	protected override ApplicationSettingsCatalog CreateSettingsCatalog() {
+		return new ApplicationSettingsCatalog(SettingsKey, Services?.GetService<IApplicationSettingsStore>(), ScreenHost.AvailableBlocks,
+			SettingsDefinitions, Logger, block => ((IBlazorApplicationBlock)block).Id);
+	}
+
+	// Circuit initialization restores the correct user's preferences before ordinary initializers or operational components run.
+	protected override async Task<bool> OnInitializeAsync(CancellationToken cancellationToken) {
+		await Settings.InitializeAsync(cancellationToken);
+		if (Settings.Profiles.Any(profile => profile.HasOptions))
+			InstallSettingsCommand();
+		return await base.OnInitializeAsync(cancellationToken);
+	}
+
+	// Approved exit captures on the renderer owner and drains writes while its scoped persistence services remain alive.
+	protected override async Task OnFinalizeAsync(CancellationToken cancellationToken) {
+		if (Settings.IsInitialized) {
+			foreach (var participant in ScreenHost.Screens.OfType<IApplicationSettingsParticipant>())
+				await participant.SaveSettingsAsync(cancellationToken);
+			await Settings.FlushAsync(cancellationToken);
+		}
+		await base.OnFinalizeAsync(cancellationToken);
+	}
+
+	// Add the preferences action to an existing Options heading without changing its operational commands.
+	private void InstallSettingsCommand() {
+		const string commandId = "sphere10-screen-options";
+		if (Menus.SelectMany(menu => menu.Items).Any(item => item.Id == commandId))
+			return;
+		var command = new BlazorActionMenuItem {
+			Id = commandId,
+			Title = "Screen Options...",
+			AsyncAction = async (services, token) => {
+				var parameters = ParameterView.FromDictionary(new Dictionary<string, object> {
+					[nameof(BlazorApplicationSettingsDialog.Catalog)] = Settings,
+					[nameof(BlazorApplicationSettingsDialog.ApplicationTitle)] = services.GetRequiredService<BlazorApplicationOptions>().Title
+				});
+				await services.GetRequiredService<Modal.ModalService>().ShowAsync<BlazorApplicationSettingsDialog>(parameters, new ModalOptions { Size = ModalSize.Large }, token);
+			}
+		};
+		var menus = Menus.ToList();
+		var existing = menus.FindIndex(menu => string.Equals(menu.Text.Replace("&", string.Empty).Trim(), "Options", StringComparison.OrdinalIgnoreCase));
+		if (existing < 0)
+			menus.Add(new BlazorApplicationMenu { Id = SettingsMenuId, Text = "Options", Items = new[] { command } });
+		else {
+			var menu = menus[existing];
+			menus[existing] = new BlazorApplicationMenu(ownsItems: false) {
+				Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = menu.Items.Concat(new[] { command }).ToArray()
+			};
+		}
+		SetMenus(menus);
+	}
 
 	private static ApplicationPluginRegistration<IBlazorPlugin>[] CaptureLoadedPlugins(IEnumerable<IBlazorPlugin> loadedPlugins) {
 		Guard.ArgumentNotNull(loadedPlugins, nameof(loadedPlugins));

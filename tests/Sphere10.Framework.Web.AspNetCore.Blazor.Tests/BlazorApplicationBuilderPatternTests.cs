@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -23,37 +24,53 @@ public class BlazorApplicationBuilderPatternTests {
 	[Test]
 	public void ScreenArgumentsAreCopiedWhenAddedAndRetainTheirPolicy() {
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
-		var menuBuilder = new BlazorApplicationMenuBuilder()
-			.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("document", "Open document", ScreenActivationMode.SingleInstance, parameters, isDefault: true);
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Open document")
+				.AsSingleInstance()
+				.WithParameters(parameters)
+			)
+			.WithDefaultScreen<ProbeScreen>()
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem<ProbeScreen>(id: "document")
+			);
 		parameters["Message"] = "Changed";
-		var item = (BlazorScreenMenuItem)menuBuilder.Build().Items[0];
+		var block = builder.Build();
+		var item = (BlazorScreenMenuItem)block.Menus.Single().Items[0];
 
 		Assert.That(item.Id, Is.EqualTo("document"));
 		Assert.That(item.Title, Is.EqualTo("Open document"));
 		Assert.That(item.ScreenType, Is.EqualTo(typeof(ProbeScreen)));
 		Assert.That(item.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(item.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		Assert.That(item.IsDefault, Is.True);
-		Assert.That(item.Parameters["Message"], Is.EqualTo("Original"));
+		Assert.That(block.DefaultScreenDefinition, Is.SameAs(item.ScreenDefinition));
+		Assert.That(((BlazorApplicationScreenDefinition)item.ScreenDefinition).Parameters["Message"], Is.EqualTo("Original"));
 		Assert.That(((IScreenMenuItem)item).ScreenDefinition.Title, Is.EqualTo("Open document"));
 	}
 
 	[Test]
 	public void ScreenShortcutRetainsDefaultMetadata() {
-		var menu = new BlazorApplicationMenuBuilder()
-			.WithText("Screens")
-			.AddScreenItem<ProbeScreen>("Open")
+		var block = new BlazorApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Probe")
+			)
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem<ProbeScreen>(text: "Open")
+			)
 			.Build();
-		var item = (BlazorScreenMenuItem)menu.Items[0];
+		var item = (BlazorScreenMenuItem)block.Menus.Single().Items[0];
 
 		Assert.That(item.Id, Is.EqualTo(nameof(ProbeScreen)));
 		Assert.That(item.Title, Is.EqualTo("Open"));
 		Assert.That(item.ScreenType, Is.EqualTo(typeof(ProbeScreen)));
 		Assert.That(item.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(item.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		Assert.That(item.IsDefault, Is.False);
-		Assert.That(item.Parameters, Is.Empty);
+		Assert.That(block.DefaultScreenDefinition, Is.Null);
+		Assert.That(((BlazorApplicationScreenDefinition)item.ScreenDefinition).Parameters, Is.Empty);
 		Assert.That(item.IsVisible, Is.True);
 		Assert.That(item.IsEnabled, Is.True);
 	}
@@ -63,11 +80,20 @@ public class BlazorApplicationBuilderPatternTests {
 	[TestCase(ScreenActivationMode.MultiInstance, ScreenKind.Empty)]
 	[TestCase(ScreenActivationMode.PermanentSingleton, ScreenKind.Normal)]
 	public void ScreenTypeOverloadRetainsTheRequestedPolicy(ScreenActivationMode activationMode, ScreenKind screenKind) {
-		var menu = new BlazorApplicationMenuBuilder()
-			.WithText("Screens")
-			.AddScreenItem("screen", "Screen", typeof(ProbeScreen), activationMode, screenKind: screenKind)
+		var block = new BlazorApplicationBlockBuilder()
+			.WithName("Workspace")
+			.AddScreen(screen => screen
+				.WithScreen(typeof(ProbeScreen))
+				.WithTitle("Screen")
+				.WithActivationMode(activationMode)
+				.WithScreenKind(screenKind)
+			)
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem<ProbeScreen>(id: "screen")
+			)
 			.Build();
-		var item = (BlazorScreenMenuItem)menu.Items[0];
+		var item = (BlazorScreenMenuItem)block.Menus.Single().Items[0];
 
 		Assert.That(item.ActivationMode, Is.EqualTo(activationMode));
 		Assert.That(item.ScreenKind, Is.EqualTo(screenKind));
@@ -77,22 +103,29 @@ public class BlazorApplicationBuilderPatternTests {
 	[TestCase(ScreenActivationMode.MultiInstance, (ScreenKind)100)]
 	[TestCase(ScreenActivationMode.PermanentSingleton, ScreenKind.Empty)]
 	public void InvalidScreenPolicyDoesNotRegisterAnItem(ScreenActivationMode activationMode, ScreenKind screenKind) {
-		var menuBuilder = new BlazorApplicationMenuBuilder()
-			.WithText("Screens");
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithName("Workspace");
 
-		Assert.That(() => menuBuilder.AddScreenItem<ProbeScreen>("screen", "Screen", activationMode, screenKind: screenKind), Throws.ArgumentException);
-		Assert.That(menuBuilder.Build().Items, Is.Empty);
+		Assert.That(() => builder
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithActivationMode(activationMode)
+				.WithScreenKind(screenKind)
+			), Throws.ArgumentException);
+		Assert.That(builder.Build().ScreenDefinitions, Is.Empty);
 	}
 
 	[TestCase(null)]
 	[TestCase(typeof(ComponentBase))]
 	[TestCase(typeof(NeutralScreen))]
 	public void InvalidScreenTypeDoesNotRegisterAnItem(Type screenType) {
-		var menuBuilder = new BlazorApplicationMenuBuilder()
-			.WithText("Screens");
+		var builder = new BlazorApplicationBlockBuilder()
+			.WithName("Workspace");
 
-		Assert.That(() => menuBuilder.AddScreenItem("screen", "Screen", screenType), Throws.InstanceOf<ArgumentException>());
-		Assert.That(menuBuilder.Build().Items, Is.Empty);
+		Assert.That(() => builder
+			.AddScreen(screen => screen
+				.WithScreen(screenType)
+			), Throws.InstanceOf<ArgumentException>());
+		Assert.That(builder.Build().ScreenDefinitions, Is.Empty);
 	}
 
 	[Test]
@@ -160,12 +193,12 @@ public class BlazorApplicationBuilderPatternTests {
 	}
 
 	[Test]
-	public void ConfigureToolBarItemBuildsAndRegistersTheConfiguredCommand() {
+	public void AddToolBarItemBuildsAndRegistersTheConfiguredCommand() {
 		var configurationCalls = 0;
 		var actionCalls = 0;
 		var block = new BlazorApplicationBlockBuilder()
 			.WithName("Workspace")
-			.ConfigureToolBarItem(item => {
+			.AddToolBarItem(item => {
 				configurationCalls++;
 				item
 					.WithId("run")

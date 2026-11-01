@@ -83,6 +83,11 @@ public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorG
 
 	public virtual Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode) => InternalController.BindAsync(source, allowedCapabilities, pageSize, pageMode);
 
+	/// <summary>Forwards one initial query configuration without issuing an earlier default read.</summary>
+	public virtual Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode, BlazorGridSettings initialSettings) {
+		return InternalController.BindAsync(source, allowedCapabilities, pageSize, pageMode, initialSettings);
+	}
+
 	public virtual Task RefreshAsync() => InternalController.RefreshAsync();
 
 	public virtual Task RefreshAsync(bool showLoadingIndicator) => InternalController.RefreshAsync(showLoadingIndicator);

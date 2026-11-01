@@ -6,27 +6,27 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using ModernWizard = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Layouts;
 using Sphere10.Framework.Utils.BlazorTester.Loader.Pages;
 using Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Pages;
-using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
@@ -56,9 +56,11 @@ public class GalleryRenderingTests {
 	public async Task EveryDemoAliasRendersItsRegisteredScreenInOneApplicationShell(string route, string blockId, string screenId, string expectedText) {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
+		services.AddSingleton<IApplicationSettingsStore, EmptySettingsStore>();
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
+		await provider.GetRequiredService<IBlazorApplication>().InitializeAsync();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {
@@ -93,6 +95,8 @@ public class GalleryRenderingTests {
 	public async Task ImplicitStartupRoutesWaitForBrowserPreferencesBeforeOpeningAnyDefaultScreen(string route) {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
+		var store = new EmptySettingsStore();
+		services.AddSingleton<IApplicationSettingsStore>(store);
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
@@ -107,7 +111,8 @@ public class GalleryRenderingTests {
 		});
 
 		Assert.That(host.ActiveScreen, Is.Null, "Prerender cannot read browser-local preferences and must not briefly activate an unrelated default.");
-		Assert.That(html, Does.Contain("Loading workspace"));
+		Assert.That(html, Does.Contain("Loading screen preferences"));
+		Assert.That(store.Reads, Is.Zero, "Prerender cannot perform browser preference IO.");
 	}
 
 	[Test]
@@ -160,7 +165,7 @@ public class GalleryRenderingTests {
 		Assert.That(plugins.SelectMany(plugin => plugin.Blocks).Select(block => block.Id), Is.EquivalentTo(metadataHost.AvailableBlocks.Select(block => block.Id)),
 			"The registered demo plugins must supply the workspace blocks through the existing catalog.");
 		var workspace = metadataHost.AvailableBlocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).ToDictionary(item => item.Id);
-		Assert.That(workspace.Keys, Is.EquivalentTo(new[] { "overview", "editor", "scratchpad", "action" }));
+		Assert.That(workspace.Keys, Is.EquivalentTo(new[] { "overview", "editor", "scratchpad", "action", "cpu-inspector", "gpu-inspector" }));
 		Assert.That(workspace["overview"].Icon, Is.EqualTo("fas fa-home"));
 		Assert.That(workspace["editor"].Icon, Is.EqualTo("fas fa-edit"));
 		Assert.That(workspace["scratchpad"].Icon, Is.EqualTo("fas fa-sticky-note"));
@@ -252,7 +257,9 @@ public class GalleryRenderingTests {
 		var services = new ServiceCollection();
 		services.AddLogging();
 		Program.ConfigureServices(services);
+		services.AddSingleton<IApplicationSettingsStore, EmptySettingsStore>();
 		await using var provider = services.BuildServiceProvider();
+		await provider.GetRequiredService<IBlazorApplication>().InitializeAsync();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var action = host.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
@@ -278,8 +285,41 @@ public class GalleryRenderingTests {
 	}
 
 	public class TestJsRuntime : IJSRuntime {
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) => ValueTask.FromResult(default(TValue));
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+			return ValueTask.FromResult(identifier == "import" ? (TValue)(object)new EmptyJsModule() : default);
+		}
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => ValueTask.FromResult(default(TValue));
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
+			return InvokeAsync<TValue>(identifier, args);
+		}
+	}
+
+	// Models an empty browser without activating storage, data sources or platform services.
+	private sealed class EmptySettingsStore : IApplicationSettingsStore {
+		public int Reads { get; private set; }
+
+		public Task<ApplicationSettingsStoredProfile> LoadAsync(string key, object defaults, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
+			Reads++;
+			return Task.FromResult<ApplicationSettingsStoredProfile>(null);
+		}
+
+		public Task SaveAsync(string key, ApplicationSettingsStoredProfile snapshot, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
+			return Task.CompletedTask;
+		}
+	}
+
+	// Value-only legacy imports find no record in this isolated browser substitute.
+	private sealed class EmptyJsModule : IJSObjectReference {
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+			return ValueTask.FromResult(default(TValue));
+		}
+
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
+			return InvokeAsync<TValue>(identifier, args);
+		}
+
+		public ValueTask DisposeAsync() {
+			return ValueTask.CompletedTask;
+		}
 	}
 }

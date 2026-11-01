@@ -31,16 +31,25 @@ public class CollectionShowcaseTests {
 		var services = new ServiceCollection().AddLogging().AddSphere10Blazor();
 		services.AddScoped<CollectionCatalogue>();
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
-		services.AddApplicationBlock(block => block
-			.WithId("recomposed-collections")
-			.WithName("Collections")
-			.WithDefaultScreen<CardsScreen>()
-			.ConfigureMenu(menu => menu
-				.WithText("Collections")
-				.AddScreenItem<CardsScreen>("gallery", "Collections", ScreenActivationMode.SingleInstance)
-				.AddScreenItem<CollectionDetailScreen>("editor", "Editor", ScreenActivationMode.MultiInstance)
-			)
-		);
+		services
+			.AddApplicationBlock(block => block
+				.WithId("recomposed-collections")
+				.WithName("Collections")
+				.AddScreen<CollectionDetailScreen>(screen => screen
+					.WithTitle("Editor")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddScreen<CardsScreen>(screen => screen
+					.WithTitle("Collections")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.WithDefaultScreen<CardsScreen>()
+				.AddMenu(menu => menu
+					.WithText("Collections")
+					.AddShowScreenItem<CardsScreen>(text: "Collections", id: "gallery")
+					.AddShowScreenItem<CollectionDetailScreen>(text: "Editor", id: "editor")
+				)
+			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();

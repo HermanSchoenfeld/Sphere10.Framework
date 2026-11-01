@@ -25,7 +25,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridAutoPageSizeTests {
+public class VisualGridAutoPageSizeTests {
 	private ISettingsProvider _previousProvider;
 	private string _directory;
 	private CountingProvider _provider;
@@ -33,7 +33,7 @@ public class CrudGridAutoPageSizeTests {
 	[SetUp]
 	public void SetUp() {
 		_previousProvider = (ISettingsProvider)typeof(UserSettings).GetField("_provider", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-		_directory = Path.Combine(Path.GetTempPath(), $"Sphere10-CrudGrid-{Guid.NewGuid():N}");
+		_directory = Path.Combine(Path.GetTempPath(), $"Sphere10-VisualGrid-{Guid.NewGuid():N}");
 		_provider = new CountingProvider(_directory);
 		UserSettings.Provider = new CachedSettingsProvider(_provider);
 	}
@@ -54,8 +54,8 @@ public class CrudGridAutoPageSizeTests {
 		Find<IntBox>(crud, "_pageNumberBox").Value = 3;
 		await CompleteRefreshAsync(crud);
 		Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
-		var mode = Find<ComboBox>(crud, "_pageModeComboBox");
-		mode.SelectedIndex = (int)CrudGridPageMode.Auto;
+		var mode = ModeSelector(crud);
+		mode.SelectedItem = VisualGridPageMode.Auto;
 		await CompleteRefreshAsync(crud);
 		Assert.That(crud.AutoPageSize, Is.True);
 		Assert.That(source.Requests.Last().Page, Is.Zero);
@@ -67,7 +67,7 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(Find<Label>(crud, "_totalRecordsLabel").Visible, Is.True);
 		Assert.That(Find<Label>(crud, "_totalRecordsLabel").Text, Is.EqualTo("240"));
 		AssertCompleteRows(crud);
-		mode.SelectedIndex = (int)CrudGridPageMode.Paged;
+		mode.SelectedItem = VisualGridPageMode.Paged;
 		await CompleteRefreshAsync(crud);
 		Assert.That(crud.AutoPageSize, Is.False);
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(37));
@@ -123,51 +123,51 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(Find<IntBox>(restored, "_pageNumberBox").Value, Is.EqualTo(3));
 	});
 
-	[TestCase(CrudGridPageMode.Paged)]
-	[TestCase(CrudGridPageMode.Auto)]
-	[TestCase(CrudGridPageMode.Single)]
-	public void SelectedModePersistsAcrossSessionsAndRetainsTheManualSize(CrudGridPageMode mode) => RunWithMessageLoop(async owner => {
+	[TestCase(VisualGridPageMode.Paged)]
+	[TestCase(VisualGridPageMode.Auto)]
+	[TestCase(VisualGridPageMode.Single)]
+	public void SelectedModePersistsAcrossSessionsAndRetainsTheManualSize(VisualGridPageMode mode) => RunWithMessageLoop(async owner => {
 		using (var first = NewGrid(owner, "Mode-persistence")) {
 			await BindAsync(first);
 			Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 41;
 			await CompleteRefreshAsync(first);
-			Find<ComboBox>(first, "_pageModeComboBox").SelectedIndex = (int)mode;
+			ModeSelector(first).SelectedItem = mode;
 			await CompleteRefreshAsync(first);
 		}
 		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
 		using var restored = NewGrid(owner, "Mode-persistence");
 		var source = await BindAsync(restored);
 		Assert.That(restored.PageMode, Is.EqualTo(mode));
-		Assert.That(UserSettings.Get<CrudGridSettings>("Mode-persistence").PageMode, Is.EqualTo(mode));
-		Assert.That(UserSettings.Get<CrudGridSettings>("Mode-persistence").PageSize, Is.EqualTo(41));
+		Assert.That(UserSettings.Get<VisualGridSettings>("Mode-persistence").PageMode, Is.EqualTo(mode));
+		Assert.That(UserSettings.Get<VisualGridSettings>("Mode-persistence").PageSize, Is.EqualTo(41));
 		Assert.That(source.Requests.Last().Page, Is.Zero);
-		if (mode == CrudGridPageMode.Single)
+		if (mode == VisualGridPageMode.Single)
 			Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(240));
-		restored.PageMode = CrudGridPageMode.Paged;
+		restored.PageMode = VisualGridPageMode.Paged;
 		await CompleteRefreshAsync(restored);
 		Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(41));
 		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(41));
 	});
 
-	[TestCase(false, null, CrudGridPageMode.Paged)]
-	[TestCase(true, null, CrudGridPageMode.Auto)]
-	[TestCase(false, 999, CrudGridPageMode.Paged)]
-	[TestCase(true, 999, CrudGridPageMode.Auto)]
-	public void OldOrInvalidModeSettingsFallBackToTheLegacyAutoPreference(bool automatic, int? storedMode, CrudGridPageMode expected) => RunWithMessageLoop(async owner => {
-		var settings = UserSettings.Get<CrudGridSettings>("Legacy-mode");
+	[TestCase(false, null, VisualGridPageMode.Paged)]
+	[TestCase(true, null, VisualGridPageMode.Auto)]
+	[TestCase(false, 999, VisualGridPageMode.Paged)]
+	[TestCase(true, 999, VisualGridPageMode.Auto)]
+	public void OldOrInvalidModeSettingsFallBackToTheLegacyAutoPreference(bool automatic, int? storedMode, VisualGridPageMode expected) => RunWithMessageLoop(async owner => {
+		var settings = UserSettings.Get<VisualGridSettings>("Legacy-mode");
 		settings.AutoPageSize = automatic;
-		settings.PageMode = storedMode.HasValue ? (CrudGridPageMode)storedMode.Value : null;
+		settings.PageMode = storedMode.HasValue ? (VisualGridPageMode)storedMode.Value : null;
 		settings.PageSize = 23;
 		settings.Save();
 		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
 		using var crud = NewGrid(owner, "Legacy-mode");
 		await BindAsync(crud);
 		Assert.That(crud.PageMode, Is.EqualTo(expected));
-		Assert.That(Find<ComboBox>(crud, "_pageModeComboBox").SelectedIndex, Is.EqualTo((int)expected));
+		Assert.That(ModeSelector(crud).SelectedItem, Is.EqualTo(expected));
 		Assert.That(_provider.SaveCount, Is.EqualTo(1), "Migration reads must not overwrite cached preferences.");
 		crud.AutoPageSize = false;
 		await CompleteRefreshAsync(crud);
-		Assert.That(crud.PageMode, Is.EqualTo(CrudGridPageMode.Paged));
+		Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(23));
 	});
 
@@ -181,10 +181,10 @@ public class CrudGridAutoPageSizeTests {
 		await CompleteRefreshAsync(crud);
 		var grid = Find<Grid>(crud, "_grid");
 		var widths = grid.Columns.Cast<ColumnInfo>().Select(column => column.Width).ToArray();
-		var mode = Find<ComboBox>(crud, "_pageModeComboBox");
-		mode.SelectedIndex = (int)CrudGridPageMode.Single;
+		var mode = ModeSelector(crud);
+		mode.SelectedItem = VisualGridPageMode.Single;
 		await CompleteRefreshAsync(crud);
-		Assert.That(crud.PageMode, Is.EqualTo(CrudGridPageMode.Single));
+		Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Single));
 		Assert.That(source.Requests.Last().Length, Is.EqualTo(int.MaxValue));
 		Assert.That(source.Requests.Last().Page, Is.Zero);
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(240));
@@ -193,11 +193,11 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(Find<Control>(crud, "_pageNavigationPanel").Visible, Is.False);
 		Assert.That(Find<Control>(crud, "_manualPageSizePanel").Visible, Is.False);
 		Assert.That(grid.Columns.Cast<ColumnInfo>().Select(column => column.Width), Is.EqualTo(widths));
-		mode.SelectedIndex = (int)CrudGridPageMode.Auto;
+		mode.SelectedItem = VisualGridPageMode.Auto;
 		await CompleteRefreshAsync(crud);
 		Assert.That(Find<Control>(crud, "_pageNavigationPanel").Visible, Is.True);
 		AssertCompleteRows(crud);
-		mode.SelectedIndex = (int)CrudGridPageMode.Paged;
+		mode.SelectedItem = VisualGridPageMode.Paged;
 		await CompleteRefreshAsync(crud);
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(25));
 		Assert.That(source.Requests.Last().Page, Is.Zero);
@@ -208,8 +208,8 @@ public class CrudGridAutoPageSizeTests {
 	[Test]
 	public void ConsumerMigrationIsDetachedAndLaterExplicitSingleSurvivesAFreshProvider() => RunWithMessageLoop(async owner => {
 		const string key = "Consumer-migration";
-		var settings = UserSettings.Get<CrudGridSettings>(key);
-		settings.PageMode = CrudGridPageMode.Single;
+		var settings = UserSettings.Get<VisualGridSettings>(key);
+		settings.PageMode = VisualGridPageMode.Single;
 		settings.PageSize = 37;
 		settings.SortColumnName = "Address";
 		settings.SortDirection = SortDirection.Descending;
@@ -217,29 +217,29 @@ public class CrudGridAutoPageSizeTests {
 		using (var crud = new UpgradedGrid { Dock = DockStyle.Fill, SettingsKey = key }) {
 			owner.Controls.Add(crud);
 			await BindAsync(crud);
-			Assert.That(crud.PageMode, Is.EqualTo(CrudGridPageMode.Auto));
+			Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
 			Assert.That(crud.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0239"));
 			Assert.That(settings.ConsumerVersion, Is.Zero, "Restoring must not mutate the provider's cached payload.");
-			Assert.That(settings.PageMode, Is.EqualTo(CrudGridPageMode.Single));
+			Assert.That(settings.PageMode, Is.EqualTo(VisualGridPageMode.Single));
 			Assert.That(_provider.SaveCount, Is.EqualTo(1), "Restoring must not write preferences.");
-			crud.PageMode = CrudGridPageMode.Single;
+			crud.PageMode = VisualGridPageMode.Single;
 			await CompleteRefreshAsync(crud);
 		}
 		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
 		using var restored = new UpgradedGrid { Dock = DockStyle.Fill, SettingsKey = key };
 		owner.Controls.Add(restored);
 		await BindAsync(restored);
-		var saved = UserSettings.Get<CrudGridSettings>(key);
+		var saved = UserSettings.Get<VisualGridSettings>(key);
 		Assert.That(saved.ConsumerVersion, Is.EqualTo(1));
 		Assert.That(saved.PageSize, Is.EqualTo(37));
 		Assert.That(saved.SortDirection, Is.EqualTo(SortDirection.Descending));
-		Assert.That(restored.PageMode, Is.EqualTo(CrudGridPageMode.Single));
+		Assert.That(restored.PageMode, Is.EqualTo(VisualGridPageMode.Single));
 	});
 
 	[Test]
 	public void SingleModeKeepsSortingAndSearchingOverTheCompleteResult() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
-		crud.PageMode = CrudGridPageMode.Single;
+		crud.PageMode = VisualGridPageMode.Single;
 		var source = await BindAsync(crud);
 		await ClickHeaderAsync(crud);
 		await ClickHeaderAsync(crud);
@@ -252,13 +252,13 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(Find<Label>(crud, "_totalRecordsLabel").Text, Is.EqualTo("10"));
 	});
 
-	[TestCase(CrudGridPageMode.Paged)]
-	[TestCase(CrudGridPageMode.Auto)]
-	[TestCase(CrudGridPageMode.Single)]
-	public void NonpageableSourcesKeepTheirExistingCompleteResultBehavior(CrudGridPageMode mode) => RunWithMessageLoop(async owner => {
+	[TestCase(VisualGridPageMode.Paged)]
+	[TestCase(VisualGridPageMode.Auto)]
+	[TestCase(VisualGridPageMode.Single)]
+	public void NonpageableSourcesKeepTheirExistingCompleteResultBehavior(VisualGridPageMode mode) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		crud.PageMode = mode;
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = value => value } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = value => value } };
 		var source = new RecordingSource(240);
 		await crud.SetDataSource(source, DataSourceCapabilities.ComboBoxDefault);
 		await CompleteRefreshAsync(crud);
@@ -266,7 +266,7 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(source.Requests.Last().Length, Is.EqualTo(int.MaxValue));
 		Assert.That(source.Requests.Last().Page, Is.Zero);
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(240));
-		Assert.That(Find<ComboBox>(crud, "_pageModeComboBox").Visible, Is.False);
+		Assert.That(ModeSelector(crud).Visible, Is.False);
 		Assert.That(crud.Capabilities.HasFlag(DataSourceCapabilities.CanPage), Is.False);
 		Assert.That(crud.Capabilities, Is.EqualTo(DataSourceCapabilities.ComboBoxDefault));
 	});
@@ -279,7 +279,7 @@ public class CrudGridAutoPageSizeTests {
 		source.DelayNextRead();
 		var pending = crud.RefreshGrid();
 		await source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		crud.PageMode = CrudGridPageMode.Single;
+		crud.PageMode = VisualGridPageMode.Single;
 		source.ContinueRead.SetResult();
 		await pending;
 		await CompleteRefreshAsync(crud);
@@ -290,20 +290,20 @@ public class CrudGridAutoPageSizeTests {
 
 	[Test]
 	public void AutoPageSizeCompatibilityAliasSelectsAutoOrPagedAndInvalidModesAreRejected() {
-		using var crud = new CrudGrid();
+		using var crud = new VisualGrid();
 		crud.AutoPageSize = true;
-		Assert.That(crud.PageMode, Is.EqualTo(CrudGridPageMode.Auto));
-		crud.PageMode = CrudGridPageMode.Single;
+		Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
+		crud.PageMode = VisualGridPageMode.Single;
 		Assert.That(crud.AutoPageSize, Is.False);
 		crud.AutoPageSize = false;
-		Assert.That(crud.PageMode, Is.EqualTo(CrudGridPageMode.Paged));
-		Assert.That(() => crud.PageMode = (CrudGridPageMode)999, Throws.ArgumentException);
+		Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
+		Assert.That(() => crud.PageMode = (VisualGridPageMode)999, Throws.ArgumentException);
 	}
 
-	[TestCase(CrudGridPageMode.Paged)]
-	[TestCase(CrudGridPageMode.Auto)]
-	[TestCase(CrudGridPageMode.Single)]
-	public void FooterPagingControlsAlignRightWithModeBeforePageSizeAndNavigator(CrudGridPageMode mode) => RunWithMessageLoop(async owner => {
+	[TestCase(VisualGridPageMode.Paged)]
+	[TestCase(VisualGridPageMode.Auto)]
+	[TestCase(VisualGridPageMode.Single)]
+	public void FooterPagingControlsAlignRightWithModeBeforePageSizeAndNavigator(VisualGridPageMode mode) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		crud.PageMode = mode;
 		await BindAsync(crud);
@@ -312,18 +312,19 @@ public class CrudGridAutoPageSizeTests {
 		var paging = Find<Control>(crud, "_pagingControlsPanel");
 		var manual = Find<Control>(crud, "_manualPageSizePanel");
 		var navigator = Find<Control>(crud, "_pageNavigationPanel");
-		var modeSelector = Find<ComboBox>(crud, "_pageModeComboBox");
+		var modeSelector = Find<ToolStrip>(crud, "_pageModeToolStrip");
+		var modeButton = ModeSelector(crud);
 		Assert.That(total.Left, Is.EqualTo(0));
 		Assert.That(paging.Right, Is.EqualTo(footer.ClientSize.Width));
-		Assert.That(modeSelector.Items.Cast<string>(), Is.EqualTo(new[] { "Paged", "Auto Paged", "Single Paged" }));
-		Assert.That(modeSelector.SelectedIndex, Is.EqualTo((int)mode));
-		Assert.That(manual.Visible, Is.EqualTo(mode == CrudGridPageMode.Paged));
-		Assert.That(navigator.Visible, Is.EqualTo(mode != CrudGridPageMode.Single));
-		if (mode == CrudGridPageMode.Single)
+		Assert.That(modeButton.DropDownItems.Cast<ToolStripMenuItem>().Select(item => item.Text), Is.EqualTo(new[] { "Single", "Auto", "Manual" }));
+		Assert.That(modeButton.SelectedItem, Is.EqualTo(mode));
+		Assert.That(manual.Visible, Is.EqualTo(mode == VisualGridPageMode.Paged));
+		Assert.That(navigator.Visible, Is.EqualTo(mode != VisualGridPageMode.Single));
+		if (mode == VisualGridPageMode.Single)
 			Assert.That(modeSelector.Right + modeSelector.Margin.Right, Is.EqualTo(paging.ClientSize.Width));
 		else {
 			Assert.That(navigator.Right, Is.EqualTo(paging.ClientSize.Width));
-			if (mode == CrudGridPageMode.Paged) {
+			if (mode == VisualGridPageMode.Paged) {
 				Assert.That(modeSelector.Right, Is.LessThanOrEqualTo(manual.Left));
 				Assert.That(manual.Right, Is.LessThanOrEqualTo(navigator.Left));
 			} else
@@ -337,7 +338,7 @@ public class CrudGridAutoPageSizeTests {
 		using var crud = NewGrid(owner);
 		crud.PersistSettings = false;
 		crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Value", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = stretch }
+			new VisualGridColumn<string> { ColumnName = "Value", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = stretch }
 		};
 		var items = new[] { "Short", new string('W', 200), "Tiny" };
 		await crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(items)));
@@ -402,15 +403,15 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(Find<Label>(crud, "_totalRecordsLabel").Text, Is.EqualTo("1"));
 	});
 
-	[TestCase(319, 8.25f, CrudGridPageMode.Paged)]
-	[TestCase(319, 18f, CrudGridPageMode.Paged)]
-	[TestCase(520, 8.25f, CrudGridPageMode.Paged)]
-	[TestCase(520, 18f, CrudGridPageMode.Paged)]
-	[TestCase(319, 18f, CrudGridPageMode.Auto)]
-	[TestCase(520, 18f, CrudGridPageMode.Auto)]
-	[TestCase(319, 18f, CrudGridPageMode.Single)]
-	[TestCase(520, 18f, CrudGridPageMode.Single)]
-	public void FooterGroupsNeverOverlapOrClip(int width, float fontSize, CrudGridPageMode mode) => RunWithMessageLoop(async owner => {
+	[TestCase(319, 8.25f, VisualGridPageMode.Paged)]
+	[TestCase(319, 18f, VisualGridPageMode.Paged)]
+	[TestCase(520, 8.25f, VisualGridPageMode.Paged)]
+	[TestCase(520, 18f, VisualGridPageMode.Paged)]
+	[TestCase(319, 18f, VisualGridPageMode.Auto)]
+	[TestCase(520, 18f, VisualGridPageMode.Auto)]
+	[TestCase(319, 18f, VisualGridPageMode.Single)]
+	[TestCase(520, 18f, VisualGridPageMode.Single)]
+	public void FooterGroupsNeverOverlapOrClip(int width, float fontSize, VisualGridPageMode mode) => RunWithMessageLoop(async owner => {
 		owner.ClientSize = new Size(width, 450);
 		using var font = new Font("Segoe UI", fontSize);
 		using var crud = NewGrid(owner);
@@ -426,13 +427,13 @@ public class CrudGridAutoPageSizeTests {
 				Assert.That(groups[index].Bounds.IntersectsWith(other.Bounds), Is.False, $"{groups[index].Name} overlaps {other.Name}.");
 	});
 
-	[TestCase(CrudGridPageMode.Paged, 8.25f)]
-	[TestCase(CrudGridPageMode.Auto, 8.25f)]
-	[TestCase(CrudGridPageMode.Single, 8.25f)]
-	[TestCase(CrudGridPageMode.Paged, 18f)]
-	[TestCase(CrudGridPageMode.Auto, 18f)]
-	[TestCase(CrudGridPageMode.Single, 18f)]
-	public void FooterReturnsToOneCompactLineAfterTheViewportWidens(CrudGridPageMode mode, float fontSize) => RunWithMessageLoop(async owner => {
+	[TestCase(VisualGridPageMode.Paged, 8.25f)]
+	[TestCase(VisualGridPageMode.Auto, 8.25f)]
+	[TestCase(VisualGridPageMode.Single, 8.25f)]
+	[TestCase(VisualGridPageMode.Paged, 18f)]
+	[TestCase(VisualGridPageMode.Auto, 18f)]
+	[TestCase(VisualGridPageMode.Single, 18f)]
+	public void FooterReturnsToOneCompactLineAfterTheViewportWidens(VisualGridPageMode mode, float fontSize) => RunWithMessageLoop(async owner => {
 		owner.ClientSize = new Size(319, 600);
 		using var font = new Font("Segoe UI", fontSize);
 		using var crud = NewGrid(owner);
@@ -443,13 +444,17 @@ public class CrudGridAutoPageSizeTests {
 		owner.ClientSize = new Size(1400, 600);
 		await CompleteRefreshAsync(crud);
 		var footer = Find<TableLayoutPanel>(crud, "_bottomPanel");
-		var modeSelector = Find<ComboBox>(crud, "_pageModeComboBox");
-		var rowHeight = Math.Max(modeSelector.PreferredHeight, Math.Max(Find<NumericUpDown>(crud, "_pageSizeUpDown").PreferredHeight, Find<IntBox>(crud, "_pageNumberBox").PreferredHeight));
+		var modeSelector = Find<ToolStrip>(crud, "_pageModeToolStrip");
+		var rowHeight = Math.Max(modeSelector.Height, Math.Max(Find<NumericUpDown>(crud, "_pageSizeUpDown").PreferredHeight, Find<IntBox>(crud, "_pageNumberBox").PreferredHeight));
 		Assert.That(footer.RowCount, Is.EqualTo(1));
 		Assert.That(footer.Height, Is.LessThanOrEqualTo(rowHeight + 8), "A normal-width footer must occupy only its control height and small vertical margins.");
 		Assert.That(footer.GetCellPosition(Find<Control>(crud, "_pagingControlsPanel")).Row, Is.Zero);
 		AssertChildrenFit(footer);
 	});
+
+	private static ToolStripChoiceSelector ModeSelector(VisualGrid grid) {
+		return Find<ToolStrip>(grid, "_pageModeToolStrip").Items.OfType<ToolStripChoiceSelector>().Single();
+	}
 
 	private static void AssertChildrenFit(Control parent) {
 		foreach (var child in parent.Controls.Cast<Control>().Where(control => control.Visible)) {
@@ -530,7 +535,7 @@ public class CrudGridAutoPageSizeTests {
 	public void HeaderClicksCycleThroughAscendingDescendingAndNaturalOrderWithoutChangingPageOrWidths() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, "Three-state-sort");
 		crud.GridBindings = new[] {
-			new CrudGridColumn<SortRow> { ColumnName = "Number", SortName = nameof(SortRow.Number), DataType = typeof(int), PropertyValue = row => row.Number }
+			new VisualGridColumn<SortRow> { ColumnName = "Number", SortName = nameof(SortRow.Number), DataType = typeof(int), PropertyValue = row => row.Number }
 		};
 		var source = new SnapshotDataSource<SortRow> { DefaultSortProperty = nameof(SortRow.Number), DefaultSortDirection = SortDirection.Descending };
 		source.ReplaceSnapshot(new[] { 6, 1, 5, 2, 4, 3 }.Select(number => new SortRow { Number = number }).ToArray());
@@ -553,7 +558,7 @@ public class CrudGridAutoPageSizeTests {
 			Assert.That(grid.Columns[0].Width, Is.EqualTo(193));
 			var sortable = (SourceGrid.Cells.Models.ISortableHeader)grid[0, 0].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader));
 			Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(styles[index]));
-			Assert.That(UserSettings.Get<CrudGridSettings>("Three-state-sort").SortDirection, Is.EqualTo(directions[index]));
+			Assert.That(UserSettings.Get<VisualGridSettings>("Three-state-sort").SortDirection, Is.EqualTo(directions[index]));
 		}
 	});
 
@@ -600,19 +605,19 @@ public class CrudGridAutoPageSizeTests {
 		var source = await BindAsync(restored);
 		Assert.That(restored.AutoPageSize, Is.EqualTo(automatic));
 		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(25));
-		Assert.That(UserSettings.Get<CrudGridSettings>("Shared-grid").PageSize, Is.EqualTo(25), "Fitted capacity must not replace the manual preference.");
+		Assert.That(UserSettings.Get<VisualGridSettings>("Shared-grid").PageSize, Is.EqualTo(25), "Fitted capacity must not replace the manual preference.");
 		Assert.That(source.Requests.Last().Page, Is.EqualTo(automatic ? 0 : 2));
 	});
 
 	[Test]
 	public void RestoringMissingColumnsDoesNotMutateTheSharedSettingsObject() => RunWithMessageLoop(async owner => {
-		var settings = UserSettings.Get<CrudGridSettings>("Shared-columns");
+		var settings = UserSettings.Get<VisualGridSettings>("Shared-columns");
 		settings.SortColumnName = "Address";
 		settings.SortDirection = SortDirection.Descending;
 		settings.Save();
 		using (var other = NewGrid(owner, "Shared-columns")) {
 			other.GridBindings = new[] {
-				new CrudGridColumn<string> { ColumnName = "Other", SortName = "Other", DataType = typeof(string), PropertyValue = value => value }
+				new VisualGridColumn<string> { ColumnName = "Other", SortName = "Other", DataType = typeof(string), PropertyValue = value => value }
 			};
 			await other.SetDataSource(new RecordingSource(240));
 			await CompleteRefreshAsync(other);
@@ -633,7 +638,7 @@ public class CrudGridAutoPageSizeTests {
 		}
 		Assert.That(_provider.SaveCount, Is.EqualTo(2));
 		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		Assert.That(UserSettings.Get<CrudGridSettings>("Retry-grid").AutoPageSize, Is.True);
+		Assert.That(UserSettings.Get<VisualGridSettings>("Retry-grid").AutoPageSize, Is.True);
 	});
 
 	[Test]
@@ -651,7 +656,7 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(restored.AutoPageSize, Is.True);
 		Assert.That(source.Requests.Last().Page, Is.Zero);
 		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Visible, Is.False);
-		Assert.That(UserSettings.Get<CrudGridSettings>("Automatic-grid").PageSize, Is.EqualTo(41));
+		Assert.That(UserSettings.Get<VisualGridSettings>("Automatic-grid").PageSize, Is.EqualTo(41));
 		AssertCompleteRows(restored);
 		restored.AutoPageSize = false;
 		await CompleteRefreshAsync(restored);
@@ -682,7 +687,7 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(Find<IntBox>(crud, "_pageNumberBox").Value, Is.EqualTo(3));
 		Assert.That(crud.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0189"));
 		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		var saved = UserSettings.Get<CrudGridSettings>("In-flight-grid");
+		var saved = UserSettings.Get<VisualGridSettings>("In-flight-grid");
 		Assert.That(saved.PageNumber, Is.EqualTo(2));
 		Assert.That(saved.SortDirection, Is.EqualTo(SortDirection.Descending));
 	});
@@ -690,7 +695,7 @@ public class CrudGridAutoPageSizeTests {
 	[TestCase(-100, -1, "Removed column", 999, 1)]
 	[TestCase(100000, int.MaxValue, "Address", 999, 9999)]
 	public void InvalidStoredOptionsAreNormalizedBeforeTheSourceIsRead(int pageSize, int pageNumber, string sort, int direction, int expectedPageSize) => RunWithMessageLoop(async owner => {
-		var settings = UserSettings.Get<CrudGridSettings>("Invalid-grid");
+		var settings = UserSettings.Get<VisualGridSettings>("Invalid-grid");
 		settings.PageSize = pageSize;
 		settings.PageNumber = pageNumber;
 		settings.SortColumnName = sort;
@@ -728,7 +733,7 @@ public class CrudGridAutoPageSizeTests {
 	public void OwnerAndNamedChildKeysSurviveMovingTheScreenBetweenForms() => RunWithMessageLoop(async owner => {
 		using (var screen = new PreferenceScreen { Dock = DockStyle.Fill }) {
 			owner.Controls.Add(screen);
-			using var crud = new CrudGrid { Name = "Events", Dock = DockStyle.Fill };
+			using var crud = new VisualGrid { Name = "Events", Dock = DockStyle.Fill };
 			screen.Controls.Add(crud);
 			await BindAsync(crud);
 			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 19;
@@ -742,39 +747,39 @@ public class CrudGridAutoPageSizeTests {
 		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
 		using var restoredScreen = new PreferenceScreen { Dock = DockStyle.Fill };
 		owner.Controls.Add(restoredScreen);
-		using var restored = new CrudGrid { Name = "Events", Dock = DockStyle.Fill };
+		using var restored = new VisualGrid { Name = "Events", Dock = DockStyle.Fill };
 		restoredScreen.Controls.Add(restored);
 		await BindAsync(restored);
 		Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(23));
 		Assert.That(Directory.GetFiles(_directory, "*.setting").Length, Is.EqualTo(1), "Undocking must not create a second identity.");
 	});
 
-	private static CrudGrid NewGrid(Form owner, string key = "") {
-		var crud = new CrudGrid { Dock = DockStyle.Fill, SettingsKey = key };
+	private static VisualGrid NewGrid(Form owner, string key = "") {
+		var crud = new VisualGrid { Dock = DockStyle.Fill, SettingsKey = key };
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static async Task<RecordingSource> BindAsync(CrudGrid crud, int count = 240) {
+	private static async Task<RecordingSource> BindAsync(VisualGrid crud, int count = 240) {
 		return await BindAsync(crud, new RecordingSource(count));
 	}
 
-	private static async Task<RecordingSource> BindAsync(CrudGrid crud, RecordingSource source) {
+	private static async Task<RecordingSource> BindAsync(VisualGrid crud, RecordingSource source) {
 		crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", SortName = "Address", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = true }
+			new VisualGridColumn<string> { ColumnName = "Address", SortName = "Address", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = true }
 		};
 		await crud.SetDataSource(source);
 		await CompleteRefreshAsync(crud);
 		return source;
 	}
 
-	private static async Task CompleteRefreshAsync(CrudGrid crud) {
+	private static async Task CompleteRefreshAsync(VisualGrid crud) {
 		await crud.RefreshGrid();
 		await Task.Delay(300);
 		await crud.RefreshGrid();
 	}
 
-	private static async Task ClickHeaderAsync(CrudGrid crud) {
+	private static async Task ClickHeaderAsync(VisualGrid crud) {
 		var grid = Find<Grid>(crud, "_grid");
 		var position = new Position(0, 0);
 		var bounds = grid.PositionToRectangle(position);
@@ -783,7 +788,7 @@ public class CrudGridAutoPageSizeTests {
 		await CompleteRefreshAsync(crud);
 	}
 
-	private static void AssertCompleteRows(CrudGrid crud) {
+	private static void AssertCompleteRows(VisualGrid crud) {
 		var grid = Find<Grid>(crud, "_grid");
 		Assert.That(crud.VisibleEntities.Count(), Is.GreaterThanOrEqualTo(1));
 		Assert.That(grid.VScrollBarVisible, Is.False);
@@ -818,12 +823,12 @@ public class CrudGridAutoPageSizeTests {
 		Assert.That(failure, Is.Null, failure?.ToString());
 	}
 
-	private sealed class UpgradedGrid : CrudGrid {
-		protected override void UpgradeGridSettings(CrudGridSettings settings) {
+	private sealed class UpgradedGrid : VisualGrid {
+		protected override void UpgradeGridSettings(VisualGridSettings settings) {
 			if (settings.ConsumerVersion >= 1)
 				return;
-			if (settings.PageMode == CrudGridPageMode.Single)
-				settings.PageMode = CrudGridPageMode.Auto;
+			if (settings.PageMode == VisualGridPageMode.Single)
+				settings.PageMode = VisualGridPageMode.Auto;
 			settings.ConsumerVersion = 1;
 		}
 	}

@@ -13,10 +13,10 @@ using Sphere10.Framework.Windows.Forms.SourceGrid;
 namespace Sphere10.Framework.Windows.Forms;
 
 internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.ControllerBase {
-	private readonly CrudGrid _crudGrid;
+	private readonly VisualGrid _visualGrid;
 
-	public CustomSortHeaderCellController(CrudGrid crudGrid) {
-		_crudGrid = crudGrid;
+	public CustomSortHeaderCellController(VisualGrid visualGrid) {
+		_visualGrid = visualGrid;
 	}
 
 
@@ -34,7 +34,7 @@ internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.Con
 		float distanceFromBorder;
 		switch (_logicalBorder.GetPointPartType(cellRect, mousePoint, out distanceFromBorder)) {
 			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.ContentArea:
-				_crudGrid._grid_SortColumnPressed(sender.Position.Column);
+				_visualGrid._grid_SortColumnPressed(sender.Position.Column);
 				break;
 
 		}

@@ -55,8 +55,17 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 
 	public override void SaveSetting(SettingsObject setting) {
 		var key = (setting.GetType(), setting.ID);
+		var hadPrevious = _cache.TryGetValue(key, out var previous);
 		_cache[key] = setting;
-		base.SaveSetting(setting);
+		try {
+			base.SaveSetting(setting);
+		} catch {
+			if (hadPrevious)
+				_cache[key] = previous;
+			else
+				_cache.Remove(key);
+			throw;
+		}
 	}
 
 

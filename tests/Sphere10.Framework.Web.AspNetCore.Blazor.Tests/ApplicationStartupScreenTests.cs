@@ -241,13 +241,30 @@ public class ApplicationStartupScreenTests {
 		new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Test block")
+			.AddScreen<PermanentScreen>(screen => screen
+				.WithTitle("Permanent")
+				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+			)
+			.AddScreen<SessionScreen>(screen => screen
+				.WithTitle("Session")
+				.WithActivationMode(ScreenActivationMode.MultiInstance)
+			)
+			.AddScreen<OtherScreen>(screen => screen
+				.WithTitle("Other")
+				.WithActivationMode(ScreenActivationMode.MultiInstance)
+				.WithParameters(new Dictionary<string, object> { ["Caption"] = "Configured value" })
+			)
+			.AddScreen<DefaultScreen>(screen => screen
+				.WithTitle("Default")
+				.WithActivationMode(ScreenActivationMode.SingleInstance)
+			)
 			.WithDefaultScreen<DefaultScreen>()
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<DefaultScreen>("default", "Default", ScreenActivationMode.SingleInstance)
-				.AddScreenItem<OtherScreen>("other", "Other", ScreenActivationMode.MultiInstance, new Dictionary<string, object> { ["Caption"] = "Configured value" })
-				.AddScreenItem<SessionScreen>("session", "Session", ScreenActivationMode.MultiInstance)
-				.AddScreenItem<PermanentScreen>("permanent", "Permanent", ScreenActivationMode.PermanentSingleton)
+				.AddShowScreenItem<DefaultScreen>(text: "Default", id: "default")
+				.AddShowScreenItem<OtherScreen>(text: "Other", id: "other")
+				.AddShowScreenItem<SessionScreen>(text: "Session", id: "session")
+				.AddShowScreenItem<PermanentScreen>(text: "Permanent", id: "permanent")
 			)
 			.Build()
 	};
@@ -255,7 +272,8 @@ public class ApplicationStartupScreenTests {
 	private static RendererSetup CreateRenderer(BrowserRuntime browser) {
 		var services = new ServiceCollection().AddLogging();
 		services.AddSphere10Blazor();
-		services.AddApplicationBlock(CreateBlocks()[0]);
+		services
+			.AddApplicationBlock(CreateBlocks()[0]);
 		services.AddSingleton<NavigationManager>(new TestNavigationManager());
 		services.AddSingleton<IJSRuntime>(browser);
 		return new RendererSetup(services.BuildServiceProvider(), browser);

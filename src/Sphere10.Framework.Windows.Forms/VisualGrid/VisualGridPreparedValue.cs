@@ -9,8 +9,8 @@
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Worker-prepared data, independent of a native cell's model, controllers and editor lifetime.</summary>
-internal readonly struct CrudGridPreparedValue {
-	public CrudGridPreparedValue(bool hasValue, object value, string displayText, CrudGridPreparedTextEditor textEditor) {
+internal readonly struct VisualGridPreparedValue {
+	public VisualGridPreparedValue(bool hasValue, object value, string displayText, VisualGridPreparedTextEditor textEditor) {
 		HasValue = hasValue;
 		Value = value;
 		DisplayText = displayText;
@@ -23,5 +23,5 @@ internal readonly struct CrudGridPreparedValue {
 
 	public string DisplayText { get; }
 
-	public CrudGridPreparedTextEditor TextEditor { get; }
+	public VisualGridPreparedTextEditor TextEditor { get; }
 }

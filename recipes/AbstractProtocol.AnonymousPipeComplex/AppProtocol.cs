@@ -17,18 +17,18 @@ namespace AbstractProtocol.AnonymousPipeComplex;
 public class AppProtocol {
 	public static Protocol Build() {
 		return new ProtocolBuilder()
-			.ConfigureHandshake(hb => hb
+			.WithHandshake(hb => hb
 				.UseThreeWay()
 				.InitiatedBy(CommunicationRole.Client)
 				.HandleWith<Sync, Ack, Verack>(InitiateHandshake, ReceiveHandshake, VerifyHandshake, AcknowledgeHandshake)
 			)
-			.AddRequestResponse<Ping, Pong>(Ping, HandlePong)
-			.AddRequestResponse<RequestListFolder, FolderContents>(ListFolder, PrintFolderContents)
-			.ConfigureRequest<RequestFilePart>(rb => rb.HandleRequestWith(GetFilePart).HandleResponseWith(SaveFilePart))
-			.AddCommand<NotifyNewTransaction>(HandleNewTransaction)
-			.AddCommand<NotifyNewBlock>(HandleNewBlock)
-			.ConfigureCommand<NotifyLayer2Message>(cb => cb.HandleWith(HandleNewLayer2Message))
-			.ConfigureSerialization( sf => sf
+			.OnRequestResponse<Ping, Pong>(Ping, HandlePong)
+			.OnRequestResponse<RequestListFolder, FolderContents>(ListFolder, PrintFolderContents)
+			.AddRequest<RequestFilePart>(rb => rb.HandleRequestWith(GetFilePart).HandleResponseWith(SaveFilePart))
+			.OnCommand<NotifyNewTransaction>(HandleNewTransaction)
+			.OnCommand<NotifyNewBlock>(HandleNewBlock)
+			.AddCommand<NotifyLayer2Message>(cb => cb.HandleWith(HandleNewLayer2Message))
+			.AddSerializers( sf => sf
 				.SetMinTypeCode(1000)
 				.RegisterAutoBuild<Ping>()
 				.RegisterAutoBuild<Pong>()

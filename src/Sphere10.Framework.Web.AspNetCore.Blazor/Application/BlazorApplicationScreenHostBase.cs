@@ -19,11 +19,9 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Hosts logical Blazor screen proxies while the renderer owns their component instances.</summary>
 public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>, IBlazorApplicationScreenHost {
-	private readonly Dictionary<IBlazorApplicationBlock, Dictionary<(string MenuItemId, Type ScreenType, string InstanceKey), BlazorApplicationScreenSession>> _keyedScreens = new(ReferenceEqualityComparer.Instance);
 	private BlazorApplicationScreenActivation _activation;
 	private BlazorScreenMenuItem _menuItem;
 	private BlazorUserInterfaceServices _ownedUserInterface;
-	private BlazorScreenMenuItem _startupMenuItem;
 
 	protected BlazorApplicationScreenHostBase(IServiceProvider services)
 		: this(Array.Empty<IBlazorApplicationBlock>(), services) {
@@ -52,9 +50,11 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 	public virtual Task<BlazorApplicationScreenSession> ActivateScreenAsync(string blockId, string screenMenuItemId, BlazorApplicationScreenActivation activation,
 		CancellationToken cancellationToken = default) {
 		var block = GetRegisteredBlock(blockId);
-		var item = BlazorApplicationBlockSnapshot.ResolveMenuItem(block, screenMenuItemId) as BlazorScreenMenuItem;
-		Guard.Argument(item != null, nameof(screenMenuItemId), "The menu item does not open a registered screen.");
-		return OpenScreenAsync(block, item.ScreenDefinition, item, activation, cancellationToken);
+		var definition = BlazorApplicationBlockSnapshot.ResolveScreenDefinition(block, screenMenuItemId);
+		Guard.Argument(definition != null, nameof(screenMenuItemId), "The route does not identify a registered screen.");
+		var item = BlazorApplicationBlockSnapshot.EnumerateItems(block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems))
+			.OfType<BlazorScreenMenuItem>().FirstOrDefault(candidate => candidate.Id == screenMenuItemId);
+		return OpenScreenAsync(block, definition, item, activation, cancellationToken);
 	}
 
 	public virtual Task<BlazorApplicationScreenSession> OpenScreenAsync(IBlazorApplicationBlock block, ApplicationScreenDefinition definition, BlazorApplicationScreenActivation activation,
@@ -72,8 +72,7 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 	public override Task<BlazorApplicationScreenSession> ActivateScreenAsync(IBlazorApplicationBlock block, Type screenType, string title = null,
 		CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		var registration = block.ScreenDefinitions.FirstOrDefault(definition => definition.ScreenType == screenType);
-		Guard.Argument(registration != null, nameof(screenType), "The screen type is not registered in this block.");
+		var registration = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, ApplicationScreenRegistration.ForType(screenType));
 		return OpenScreenAsync(block, title == null ? registration : registration.WithTitle(title), null, null, cancellationToken, registration);
 	}
 
@@ -95,7 +94,7 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 				_menuItem = previousMenuItem;
 			});
 			_activation = activation;
-			_menuItem = menuItem ?? GetScreenMenuItem(block, registration ?? definition);
+			_menuItem = menuItem;
 			return await ActivateCoreAsync(block, definition, token, registration);
 		}, cancellationToken);
 	}
@@ -161,6 +160,8 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 			return "This screen is no longer registered with the application.";
 		if (!screen.CanRestoreAtStartup)
 			return "This screen requires session-specific state and cannot be restored at startup.";
+		if (screen.Definition.StableKey == null && screen.Block.ScreenDefinitions.Count(definition => definition.ScreenType == screen.ScreenType) > 1)
+			return "Configure WithStableKey on this screen registration before choosing it as the startup screen.";
 		var identity = CreateStartupScreenIdentity(screen);
 		return ResolveStartupScreen(identity) == null ? "This screen is excluded by the application's startup policy." : null;
 	}
@@ -184,52 +185,45 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 	/// <summary>Override to exclude registrations requiring application-specific state before a component is constructed.</summary>
 	protected virtual bool CanRestoreScreenAtStartup(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) => definition.ScreenKind == ScreenKind.Normal;
 
-	private static BlazorApplicationStartupScreen CreateStartupScreenIdentity(BlazorApplicationScreenSession screen) => new(
-		screen.Block.Source?.Name ?? string.Empty, screen.Block.Id, screen.MenuItemId, screen.ScreenType.FullName, screen.ScreenType.Assembly.GetName().Name);
+	private static BlazorApplicationStartupScreen CreateStartupScreenIdentity(BlazorApplicationScreenSession screen) {
+		return new BlazorApplicationStartupScreen(screen.Block.Source?.Name ?? string.Empty, screen.Block.Id, null, screen.ScreenType.FullName,
+			screen.ScreenType.Assembly.GetName().Name, Tools.UI.GetScreenRegistrationKey(screen.Block, screen.Definition));
+	}
 
-	private BlazorScreenMenuItem ResolveStartupScreen(BlazorApplicationStartupScreen identity) {
-		if (identity == null || string.IsNullOrEmpty(identity.BlockId) || string.IsNullOrEmpty(identity.MenuItemId)
+	private ApplicationScreenDefinition ResolveStartupScreen(BlazorApplicationStartupScreen identity) {
+		if (identity == null || string.IsNullOrEmpty(identity.BlockId)
 			|| string.IsNullOrEmpty(identity.ScreenTypeName) || string.IsNullOrEmpty(identity.ScreenAssemblyName))
 			return null;
 		var block = Blocks.FirstOrDefault(candidate => candidate.Id == identity.BlockId && (candidate.Source?.Name ?? string.Empty) == (identity.PluginName ?? string.Empty));
 		if (block == null)
 			return null;
-		BlazorScreenMenuItem item = null;
-		Tools.Exceptions.ExecuteCapturingException<ArgumentException>(() => {
-			item = BlazorApplicationBlockSnapshot.ResolveMenuItem(block, identity.MenuItemId) as BlazorScreenMenuItem;
-		}, out var capturedError);
-		if (capturedError != null) {
-			return null;
-		}
-		return item != null && block.ScreenDefinitions.Any(definition => ReferenceEquals(definition, item.ScreenDefinition))
-			&& item.ScreenType.FullName == identity.ScreenTypeName && item.ScreenType.Assembly.GetName().Name == identity.ScreenAssemblyName
-			&& CanRestoreScreenAtStartup(block, item.ScreenDefinition) ? item : null;
+		var matches = block.ScreenDefinitions.Where(definition => definition.ScreenType.FullName == identity.ScreenTypeName
+			&& definition.ScreenType.Assembly.GetName().Name == identity.ScreenAssemblyName).ToArray();
+		// Legacy type-only choices can migrate only when the current registration is unambiguous.
+		if (string.IsNullOrEmpty(identity.RegistrationKey))
+			return matches.Length == 1 && (string.IsNullOrEmpty(identity.MenuItemId)
+				|| identity.MenuItemId.StartsWith(BlazorApplicationBlockSnapshot.DefinitionScreenItemPrefix, StringComparison.Ordinal)
+				&& int.TryParse(identity.MenuItemId[BlazorApplicationBlockSnapshot.DefinitionScreenItemPrefix.Length..], out _)
+				|| ReferenceEquals(BlazorApplicationBlockSnapshot.ResolveScreenDefinition(block, identity.MenuItemId), matches[0]))
+				&& CanRestoreScreenAtStartup(block, matches[0]) ? matches[0] : null;
+		var selected = matches.SingleOrDefault(definition => definition.StableKey == identity.RegistrationKey
+			|| definition.StableKey == null && matches.Length == 1 && Tools.UI.GetScreenRegistrationKey(block, definition) == identity.RegistrationKey);
+		return selected != null && CanRestoreScreenAtStartup(block, selected) ? selected : null;
 	}
 
 	protected BlazorApplicationScreenActivation CurrentActivation => _activation;
 
 	protected override BlazorApplicationScreenSession FindReusableScreen(IBlazorApplicationBlock block, ApplicationScreenDefinition definition, ApplicationScreenDefinition registration) {
-		var reusable = base.FindReusableScreen(block, definition);
+		var reusable = base.FindReusableScreen(block, definition, registration);
 		if (reusable != null || definition.ActivationMode != ScreenActivationMode.MultiInstance || _activation?.InstanceKey == null)
 			return reusable;
-		return _keyedScreens.TryGetValue(block, out var ownerScreens)
-			&& ownerScreens.TryGetValue((GetScreenMenuItem(block, registration).Id, definition.ScreenType, _activation.InstanceKey), out var keyed) ? keyed : null;
-	}
-
-	protected void TrackKeyedScreen(BlazorApplicationScreenSession screen) {
-		if (screen.InstanceKey == null)
-			return;
-		if (!_keyedScreens.TryGetValue(screen.Block, out var ownerScreens))
-			_keyedScreens.Add(screen.Block, ownerScreens = new());
-		ownerScreens[(screen.MenuItemId, screen.ScreenType, screen.InstanceKey)] = screen;
+		// Instance identity comes from the retained sessions; failed preparation cannot leave a second retention index behind.
+		return Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, block)
+			&& screen.Definition.Registration.Token == registration.Registration.Token
+			&& string.Equals(screen.InstanceKey, _activation.InstanceKey, StringComparison.Ordinal));
 	}
 
 	protected override void OnScreenRemoved(BlazorApplicationScreenSession screen) {
-		if (screen.InstanceKey != null && _keyedScreens.TryGetValue(screen.Block, out var ownerScreens)) {
-			ownerScreens.Remove((screen.MenuItemId, screen.ScreenType, screen.InstanceKey));
-			if (ownerScreens.Count == 0)
-				_keyedScreens.Remove(screen.Block);
-		}
 		screen.SetScreen(null);
 		base.OnScreenRemoved(screen);
 	}
@@ -238,13 +232,10 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 		return GetDefinitions(BlazorApplicationBlockSnapshot.OrderBlocks(Services.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Blocks));
 	}
 
-	protected override ApplicationScreenDefinition GetDefaultScreen(IBlazorApplicationBlock block) =>
-		BlazorApplicationBlockSnapshot.GetDefaultScreen(block)?.ScreenDefinition ?? base.GetDefaultScreen(block);
-
 	protected override ApplicationScreenDefinition GetStartupScreen() {
-		_startupMenuItem = ResolveStartupScreen(StartupScreen);
-		if (_startupMenuItem != null)
-			return _startupMenuItem.ScreenDefinition;
+		var startup = ResolveStartupScreen(StartupScreen);
+		if (startup != null)
+			return startup;
 		var blocks = BlazorApplicationBlockSnapshot.OrderBlocks(Services.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Blocks);
 		return Tools.UI.GetDefaultScreen(blocks) ?? (blocks.FirstOrDefault() is { } first ? GetDefaultScreen(first) : null);
 	}
@@ -253,22 +244,13 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 
 	protected override void NotifyScreenActivated(BlazorApplicationScreenSession screen) {
 		base.NotifyScreenActivated(screen);
-		(_menuItem ?? screen.MenuItem).NotifySelect();
+		_menuItem?.NotifySelect();
 	}
 
 	protected BlazorScreenMenuItem GetScreenMenuItem(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
 		if (_menuItem != null)
 			return _menuItem;
-		if (_startupMenuItem != null && ReferenceEquals(_startupMenuItem.ScreenDefinition, definition)) {
-			var startup = _startupMenuItem;
-			_startupMenuItem = null;
-			return startup;
-		}
-		var defaultScreen = BlazorApplicationBlockSnapshot.GetDefaultScreen(block);
-		if (ReferenceEquals(block.DefaultScreenDefinition, definition))
-			return defaultScreen;
-		return definition.Activators.OfType<BlazorScreenMenuItem>().FirstOrDefault(item => ReferenceEquals(item.Parent?.Parent, block))
-			?? BlazorApplicationBlockSnapshot.GetDefinitionMenuItem(block, definition);
+		return definition.Activators.OfType<BlazorScreenMenuItem>().FirstOrDefault(item => ReferenceEquals(item.Parent?.Parent, block));
 	}
 
 	private IBlazorApplicationBlock GetRegisteredBlock(string blockId) => GetBlock(Blocks, blockId);
@@ -292,7 +274,6 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 		_ownedUserInterface?.Dispose();
 		foreach (var screen in Screens)
 			screen.SetScreen(null);
-		_keyedScreens.Clear();
 		base.FreeManagedResources();
 	}
 }

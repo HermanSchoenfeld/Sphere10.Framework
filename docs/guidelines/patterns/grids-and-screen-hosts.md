@@ -8,14 +8,14 @@ guides for concrete configuration and examples.
 
 | Behavior | WinForms | Blazor |
 |---|---|---|
-| Typed source | `CrudGrid.SetDataSource<T>` borrows an `IDataSource<T>`. | `BlazorGrid<TItem>.DataSource` borrows the same contract; `IBlazorGridController<TItem>` owns query, selection and draft state. |
+| Typed source | `VisualGrid.SetDataSource<T>` borrows an `IDataSource<T>`. | `BlazorGrid<TItem>.DataSource` borrows the same contract; `IBlazorGridController<TItem>` owns query, selection and draft state. |
 | Permissions | Intersects source capabilities with the caller's mask. | `AllowedCapabilities` intersects the source capabilities. |
-| Paged | `CrudGridPageMode.Paged`, remembered manual page size. | `BlazorGridPageMode.Paged`, remembered `ManualPageSize`. |
+| Paged | `VisualGridPageMode.Paged`, remembered manual page size. | `BlazorGridPageMode.Paged`, remembered `ManualPageSize`. |
 | Auto Paged | Complete ordered rows that fit the native viewport; recalculated for font, DPI and viewport changes. | Complete ordered browser rows that fit the viewport; observes browser layout, zoom and viewport changes. |
 | Single Paged | Page zero, `int.MaxValue` length, vertical scrolling. | Same query and presentation policy. |
 | Nonpageable source | Complete result; paging controls hidden. | Same behavior; a UI setting cannot grant `CanPage`. |
 | Natural widths | Measured once for a binding set; retained through paging, filter, sort and refresh. | Same policy, measured from the first nonempty rendered page. |
-| Preferred stretching | `CrudGridColumn<T>.ExpandsToFit`. | `BlazorGridColumn<T>.ExpandsToFit`. |
+| Preferred stretching | `VisualGridColumn<T>.ExpandsToFit`. | `BlazorGridColumn<T>.ExpandsToFit`. |
 | Explicit resizing | Resized columns keep their chosen widths instead of stretching. | Same; other stretch columns continue sharing spare width. |
 | Sorting | Ascending, Descending, None; retains the current page and widths. | Same three-state cycle and source query. |
 | Header sizing | Reserves the native sort-indicator extent before sorting. | Reserves a sort-indicator slot before sorting. |
@@ -27,7 +27,16 @@ guides for concrete configuration and examples.
 | Targeted refresh | `RefreshEntityAsync`, `RefreshSelectedEntityAsync`. | Same methods plus typed `RefreshRowsAsync`; `RemoveRows` applies caller-known removals. |
 | Filtered export input | `ReadFilteredEntitiesAsync` returns a typed `Array`. | `ReadFilteredEntitiesAsync` returns `TItem[]`. Both read all matches across pages in current sort order. |
 | Reference selection | `CrudComboBox`, shared grid configuration and reference bindings. | `BlazorGridReferencePicker`, typed reference bindings/editor templates. |
-| Preferences | `CrudGridSettings` through application `UserSettings`. | `BlazorGridSettings` in browser storage when `PersistSettings` and an explicit `SettingsKey` are supplied. |
+| Preferences | `VisualGridSettings` in the owning screen object, or standalone through the captured application provider. | `BlazorGridSettings` in the owning screen object, or standalone in browser storage with an explicit `SettingsKey`. |
+| Persistent manual widths | Stable column `PreferenceKey`, logical 96-DPI width, captured after a deliberate drag. | Stable column `PreferenceKey`, CSS-pixel width, applied before first markup/sizing. |
+
+For screen-owned preferences, declare named grid roles on the registration's
+typed settings root and bind non-null `Preferences`. That suppresses independent
+standalone writes while retaining the same grid capture/apply path. Default
+column schemas serve unopened Options pages. Import only absent legacy sections
+and retain presence across Reset/restart. See
+[Screen Options](../../usage/screen-options.md) for startup, detached editing,
+ordered accepted persistence and custom native/web editors.
 
 Paging belongs at the source's query boundary. Filter and sort the complete
 logical result before applying the requested page, and report its matching

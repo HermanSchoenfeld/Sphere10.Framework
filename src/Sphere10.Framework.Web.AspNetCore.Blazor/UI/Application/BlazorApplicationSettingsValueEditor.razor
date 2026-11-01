@@ -1,0 +1,121 @@
+@*
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+// Distributed under the MIT software license, see the accompanying LICENSE.
+*@
+
+@using System.Collections
+@using System.ComponentModel
+@using Sphere10.Framework.Application.UI
+
+@{
+	var properties = Properties;
+	var showCategories = properties.Any(property => property.Category != CategoryAttribute.Default.Category);
+	string previousCategory = null;
+}
+@foreach (var property in properties) {
+	var value = property.GetValue(Value);
+	var path = GetPath(property);
+	var disabled = ReadOnly || property.IsReadOnly;
+	@if (showCategories && previousCategory != property.Category) {
+		previousCategory = property.Category;
+		<h3 class="sphere10-options-category">@(property.Category == CategoryAttribute.Default.Category ? "General" : property.Category)</h3>
+	}
+	<div class="sphere10-options-property" data-option-path="@path">
+		@if (IsScalar(property.PropertyType)) {
+			<label for="@GetInputId(path)">@property.DisplayName</label>
+			@if (disabled) {
+				<output id="@GetInputId(path)">@FormatValue(value, property.PropertyType)</output>
+			} else if (property.PropertyType == typeof(bool)) {
+				<input id="@GetInputId(path)" type="checkbox" checked="@(value is true)" @onchange="args => ChangeValueAsync(property, args.Value)" />
+			} else if ((Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType).IsEnum) {
+				<select id="@GetInputId(path)" value="@FormatValue(value, property.PropertyType)" @onchange="args => ChangeValueAsync(property, args.Value)">
+					@if (Nullable.GetUnderlyingType(property.PropertyType) != null) {
+						<option value="">Default</option>
+					}
+					@foreach (var choice in Enum.GetValues(Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType)) {
+						<option value="@choice">@GetEnumTitle(choice)</option>
+					}
+				</select>
+			} else {
+				<input id="@GetInputId(path)" type="text" value="@FormatValue(value, property.PropertyType)"
+					@onchange="args => ChangeValueAsync(property, args.Value)" aria-invalid="@(Errors.ContainsKey(path) ? "true" : "false")" />
+			}
+		} else if (typeof(IDictionary).IsAssignableFrom(property.PropertyType) && GetDictionaryValueType(property.PropertyType) != null) {
+			<fieldset>
+				<legend>@property.DisplayName</legend>
+				@foreach (var entry in GetDictionaryEntries(value)) {
+					var key = (string)entry.Key;
+					var itemPath = GetDictionaryPath(path, key);
+					var itemType = GetDictionaryValueType(property.PropertyType);
+					<div class="sphere10-options-collection-item">
+						<strong>@key</strong>
+						@if (IsScalar(itemType)) {
+							<input type="text" aria-label="@($"{property.DisplayName} {key}")" disabled="@disabled"
+								value="@FormatValue(entry.Value, itemType)" @onchange="args => ChangeDictionaryItemAsync(property, key, args.Value)"
+								aria-invalid="@(Errors.ContainsKey(itemPath) ? "true" : "false")" />
+						} else if (entry.Value != null && !Ancestors.Append(Value).Any(ancestor => ReferenceEquals(ancestor, entry.Value))) {
+							<BlazorApplicationSettingsValueEditor Value="entry.Value" Prefix="@itemPath" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
+						}
+						@if (!disabled && itemType != typeof(BlazorGridSettings)) {
+							<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RemoveDictionaryItemAsync(property, key)">Remove @key</button>
+						}
+						@if (Errors.TryGetValue(itemPath, out var itemError)) {
+							<span role="alert" class="sphere10-options-error">@itemError</span>
+						}
+					</div>
+				}
+				@if (!disabled && GetDictionaryValueType(property.PropertyType) != typeof(BlazorGridSettings) && CanCreate(GetDictionaryValueType(property.PropertyType))) {
+					<label>New @property.DisplayName key<input type="text" value="@GetDictionaryKey(path)" @onchange="args => SetDictionaryKey(path, args.Value?.ToString())" /></label>
+					<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => AddDictionaryItemAsync(property)">Add @property.DisplayName</button>
+				}
+			</fieldset>
+		} else if (typeof(IList).IsAssignableFrom(property.PropertyType)) {
+			<fieldset>
+				<legend>@property.DisplayName</legend>
+				@{ var items = value as IList; }
+				@for (var index = 0; index < (items?.Count ?? 0); index++) {
+					var itemIndex = index;
+					var item = items[index];
+					var itemPath = $"{path}.{index}";
+					<div class="sphere10-options-collection-item">
+						<strong>@GetItemTitle(item, index)</strong>
+						@if (IsScalar(GetElementType(property.PropertyType))) {
+							<input type="text" aria-label="@($"{property.DisplayName} {index + 1}")" disabled="@disabled"
+								value="@FormatValue(item, GetElementType(property.PropertyType))" @onchange="args => ChangeItemAsync(property, itemIndex, args.Value)"
+								aria-invalid="@(Errors.ContainsKey(itemPath) ? "true" : "false")" />
+						} else if (item != null) {
+							<BlazorApplicationSettingsValueEditor Value="item" Prefix="@($"{path}.{index}")" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
+						}
+						@if (!disabled && !IsColumnSchema(property.PropertyType)) {
+							<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RemoveItemAsync(property, itemIndex)">Remove</button>
+						}
+						@if (Errors.TryGetValue(itemPath, out var itemError)) {
+							<span role="alert" class="sphere10-options-error">@itemError</span>
+						}
+					</div>
+				}
+				@if (!disabled && !IsColumnSchema(property.PropertyType) && CanCreate(GetElementType(property.PropertyType))) {
+					<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => AddItemAsync(property)">Add @property.DisplayName</button>
+				}
+			</fieldset>
+		} else {
+			<fieldset>
+				<legend>@property.DisplayName</legend>
+				@if (value != null && !Ancestors.Append(Value).Any(ancestor => ReferenceEquals(ancestor, value))) {
+					<BlazorApplicationSettingsValueEditor Value="value" Prefix="@path" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
+				} else if (value == null && !disabled && CanCreate(property.PropertyType)) {
+					<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => CreateValueAsync(property)">Set @property.DisplayName</button>
+				} else {
+					<p class="sphere10-options-description">@(value == null ? "Not set" : "This value is already shown in its containing section.")</p>
+				}
+			</fieldset>
+		}
+		@if (!string.IsNullOrWhiteSpace(property.Description)) {
+			<small class="sphere10-options-description">@property.Description</small>
+		}
+		@if (Errors.TryGetValue(path, out var error)) {
+			<span role="alert" class="sphere10-options-error">@error</span>
+		}
+	</div>
+}

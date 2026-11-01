@@ -11,13 +11,13 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native cell slot whose value, image model and cached text editor survive compatible snapshot updates.</summary>
-internal sealed class CrudGridPreparedCell : Cell {
-	private readonly CrudGridPreparedValueModel _valueModel = new();
+internal sealed class VisualGridPreparedCell : Cell {
+	private readonly VisualGridPreparedValueModel _valueModel = new();
 	private readonly SourceGrid.Cells.Models.ModelContainer _modelContainer;
 	private readonly SourceGrid.Cells.Models.Image _imageModel;
-	private CrudGridPreparedTextEditor _textEditor;
+	private VisualGridPreparedTextEditor _textEditor;
 
-	public CrudGridPreparedCell(CrudGridPreparedValue prepared) {
+	public VisualGridPreparedCell(VisualGridPreparedValue prepared) {
 		_modelContainer = Model;
 		Model.ValueModel = _valueModel;
 		_imageModel = (SourceGrid.Cells.Models.Image)Model.FindModel(typeof(SourceGrid.Cells.Models.Image));
@@ -27,7 +27,7 @@ internal sealed class CrudGridPreparedCell : Cell {
 	public bool CanApplyPreparedValue => ReferenceEquals(Model, _modelContainer) && ReferenceEquals(Model.ValueModel, _valueModel)
 		&& ReferenceEquals(Model.FindModel(typeof(SourceGrid.Cells.Models.Image)), _imageModel);
 
-	public void ApplyPreparedValue(CrudGridPreparedValue prepared) {
+	public void ApplyPreparedValue(VisualGridPreparedValue prepared) {
 		// Snapshot publication is not an edit: replace exact raw values without notifying model/controller callbacks.
 		_valueModel.ReplaceValue(prepared.HasValue && prepared.TextEditor != null ? prepared.Value : string.Empty);
 		_imageModel.ImageValue = prepared.HasValue && prepared.TextEditor == null ? prepared.Value as System.Drawing.Image : null;

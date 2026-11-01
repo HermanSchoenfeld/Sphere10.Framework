@@ -29,7 +29,7 @@ public class BuilderTests {
 			.AddDimension<Account>(true);
 
 		var serializer = SerializerBuilder.For<Account>().Build();
-		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingSerializer(serializer), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingSerializer(serializer), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -41,7 +41,7 @@ public class BuilderTests {
 			.UsingSerializerFactory(customSerializerFactory)
 			.AddDimension<Account>(true);
 
-		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingSerializer<DummyAccountSerializer>(), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingSerializer<DummyAccountSerializer>(), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -67,7 +67,7 @@ public class BuilderTests {
 			.AddDimension<Account>(true);
 
 		var comparer = ComparerBuilder.For<Account>();
-		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingComparer(comparer), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingComparer(comparer), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -79,7 +79,7 @@ public class BuilderTests {
 			.UsingComparerFactory(customComparerFactory)
 			.AddDimension<Account>(true);
 
-		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingComparer<DummyAccountComparer>(), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingComparer<DummyAccountComparer>(), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -92,7 +92,7 @@ public class BuilderTests {
 			.AddDimension<Account>(true);
 
 		var comparer = EqualityComparerBuilder.For<Account>();
-		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingEqualityComparer(comparer), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingEqualityComparer(comparer), Throws.InvalidOperationException);
 	}
 
 	[Test]
@@ -104,7 +104,7 @@ public class BuilderTests {
 			.UsingComparerFactory(customComparerFactory)
 			.AddDimension<Account>(true);
 
-		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingEqualityComparer<DummyAccountEqualityComparer>(), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingEqualityComparer<DummyAccountEqualityComparer>(), Throws.InvalidOperationException);
 	}
 
 	[Test]

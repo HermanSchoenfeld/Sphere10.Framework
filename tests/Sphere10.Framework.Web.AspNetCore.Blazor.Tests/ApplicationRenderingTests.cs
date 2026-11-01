@@ -6,22 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -146,6 +146,9 @@ public class ApplicationRenderingTests {
 			.AddApplicationBlock(block => block
 				.WithId("default")
 				.WithName("Default only")
+				.AddScreen<DefaultOnlyScreen>(screen => screen
+					.WithTitle(nameof(DefaultOnlyScreen))
+				)
 				.WithDefaultScreen<DefaultOnlyScreen>()
 			);
 		await using var provider = services.BuildServiceProvider();
@@ -310,12 +313,20 @@ public class ApplicationRenderingTests {
 			.AddApplicationBlock(block => block
 				.WithId("test")
 				.WithName("Test application")
+				.AddScreen<OtherScreen>(screen => screen
+					.WithTitle("Multiple")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddScreen<ProbeScreen>(screen => screen
+					.WithTitle("Single")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
 				.WithDefaultScreen<ProbeScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Screens")
 					.WithIcon("fa fa-folder")
-					.AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance)
-					.AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)
+					.AddShowScreenItem<ProbeScreen>(text: "Single", id: "single")
+					.AddShowScreenItem<OtherScreen>(text: "Multiple", id: "multiple")
 				)
 			);
 		return services;

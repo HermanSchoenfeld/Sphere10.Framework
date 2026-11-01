@@ -15,12 +15,12 @@ namespace AbstractProtocol.UDPSimple;
 public class AppProtocol {
 	public static Protocol Build() {
 		return new ProtocolBuilder()
-			.ConfigureHandshake(hb => hb
+			.WithHandshake(hb => hb
 				.UseThreeWay()
 				.InitiatedBy(CommunicationRole.Client)
 				.HandleWith<Sync, Ack, Verack>(InitiateHandshake, ReceiveHandshake, VerifyHandshake)
 			)
-			.AddRequestResponse<RequestBytes, ReturnBytes>(RequestBytes, HandleReturnBytes)
+			.OnRequestResponse<RequestBytes, ReturnBytes>(RequestBytes, HandleReturnBytes)
 			//.Commands
 			//	.ForCommand<NotifyNewTransaction>().Execute(HandleNewTransaction)
 			.AutoBuildSerializers()

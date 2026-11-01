@@ -30,7 +30,7 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridBackgroundPreparationTests {
+public class VisualGridBackgroundPreparationTests {
 	[Test]
 	public void PreparationRunsReadsEnumerationGettersAndConvertersOffOwnerThreadWhileMessagesContinue() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
@@ -43,7 +43,7 @@ public class CrudGridBackgroundPreparationTests {
 		var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var block = 0;
 		var source = new RecordingSource { Rows = new[] { new Row { Value = new DisplayValue { Number = 1 } } } };
-		crud.GridBindings = new[] { new CrudGridColumn<Row> {
+		crud.GridBindings = new[] { new VisualGridColumn<Row> {
 			ColumnName = "Value", DataType = typeof(DisplayValue),
 			PropertyHasValue = row => { modelThreads.Enqueue(Environment.CurrentManagedThreadId); return row.HasValue; },
 			PropertyValue = row => {
@@ -104,9 +104,9 @@ public class CrudGridBackgroundPreparationTests {
 	public async Task PreparingTenThousandTextValuesAllocatesBoundedDataWithoutPerCellNativeGraphs() {
 		// Warm reflection/conversion first and measure only a representative worker publication with pre-existing strings.
 		var rows = Enumerable.Range(0, 500).Select(index => (object)new Row { Value = "Process " + index }).ToArray();
-		var columns = Enumerable.Range(0, 20).Select(_ => (ICrudGridColumn)TextColumn()).ToArray();
+		var columns = Enumerable.Range(0, 20).Select(_ => (IVisualGridColumn)TextColumn()).ToArray();
 		var formats = columns.Select(column => (column.DisplayType, column.DataType)).ToArray();
-		var prepare = typeof(CrudGrid).GetMethod("PrepareReadOnlyRows", BindingFlags.NonPublic | BindingFlags.Static);
+		var prepare = typeof(VisualGrid).GetMethod("PrepareReadOnlyRows", BindingFlags.NonPublic | BindingFlags.Static);
 		var arguments = new object[] { rows, columns, formats };
 		var result = await Task.Run(() => {
 			prepare.Invoke(null, arguments);
@@ -129,7 +129,7 @@ public class CrudGridBackgroundPreparationTests {
 	public void PreparedUpdatesRetainExactNullEmptyAndMissingStatesWithoutNativeValueChangeCallbacks() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		var source = new RecordingSource { Rows = new[] { new Row { Value = "Original" } } };
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string),
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string),
 			PropertyHasValue = row => row.HasValue, PropertyValue = row => row.Value } };
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
@@ -190,7 +190,7 @@ public class CrudGridBackgroundPreparationTests {
 		crud.GridBindings = new[] { TextColumn() };
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Superseded", DataType = typeof(string), PropertyValue = row => {
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Superseded", DataType = typeof(string), PropertyValue = row => {
 			started.TrySetResult();
 			if (!release.Wait(TimeSpan.FromSeconds(5)))
 				throw new TimeoutException("Superseded model work was not released.");
@@ -198,7 +198,7 @@ public class CrudGridBackgroundPreparationTests {
 		} } };
 		var pending = crud.RefreshGrid();
 		await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Current", DataType = typeof(string), PropertyValue = row => "Current value" } };
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Current", DataType = typeof(string), PropertyValue = row => "Current value" } };
 		release.Set();
 		await pending;
 		Assert.That(FindGrid(crud)[0, 0].Value, Is.EqualTo("Current"));
@@ -211,7 +211,7 @@ public class CrudGridBackgroundPreparationTests {
 		using var release = new ManualResetEventSlim();
 		using var releaseOnFailure = Tools.Scope.ExecuteOnDispose(release.Set);
 		var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Pending", DataType = typeof(string), PropertyValue = row => {
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Pending", DataType = typeof(string), PropertyValue = row => {
 			started.TrySetResult();
 			if (!release.Wait(TimeSpan.FromSeconds(5)))
 				throw new TimeoutException("Disposed model work was not released.");
@@ -233,7 +233,7 @@ public class CrudGridBackgroundPreparationTests {
 		crud.AllowCellEditing = allowEditing;
 		var ownerThread = Environment.CurrentManagedThreadId;
 		var getterThreads = new ConcurrentQueue<int>();
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(int), DisplayType = displayType,
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(int), DisplayType = displayType,
 			CanEditCell = true, PropertyValue = row => { getterThreads.Enqueue(Environment.CurrentManagedThreadId); return row.Value; }
 		} };
 		var source = new RecordingSource { Rows = new[] { new Row { Value = 12 } } };
@@ -248,7 +248,7 @@ public class CrudGridBackgroundPreparationTests {
 	public void PreparedCellsStillPromoteToRealEditorsAndPersistAcceptedEdits() => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
 		var row = new Row { Value = "Original" };
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), CanEditCell = true,
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Value", DataType = typeof(string), CanEditCell = true,
 			PropertyValue = entity => entity.Value, SetPropertyValue = (entity, value) => entity.Value = value } };
 		await crud.SetDataSource(new ListDataSource<Row>(new ExtendedList<Row>(new[] { row })));
 		await crud.RefreshGrid();
@@ -275,7 +275,7 @@ public class CrudGridBackgroundPreparationTests {
 		using var small = new Bitmap(16, 16);
 		using var large = new Bitmap(16, 64);
 		var source = new RecordingSource { Rows = new[] { new Row { Value = small }, new Row { HasValue = false } } };
-		crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Icon", DataType = typeof(System.Drawing.Image), DisplayType = CrudCellDisplayType.Image,
+		crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Icon", DataType = typeof(System.Drawing.Image), DisplayType = CrudCellDisplayType.Image,
 			PropertyHasValue = row => row.HasValue, PropertyValue = row => row.Value } };
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
@@ -377,7 +377,7 @@ public class CrudGridBackgroundPreparationTests {
 		using var crud = NewGrid(owner);
 		var ownerThread = Environment.CurrentManagedThreadId;
 		var evaluations = 0;
-		var columns = Enumerable.Range(0, 20).Select(column => new CrudGridColumn<Row> {
+		var columns = Enumerable.Range(0, 20).Select(column => new VisualGridColumn<Row> {
 			ColumnName = "C" + column, DataType = typeof(string), ExpandsToFit = column == 19,
 			PropertyValue = row => { Interlocked.Increment(ref evaluations); return row.Value; }
 		}).ToArray();
@@ -438,7 +438,7 @@ public class CrudGridBackgroundPreparationTests {
 		if (change == "dispose")
 			crud.Dispose();
 		else if (change == "bindings")
-			crud.GridBindings = new[] { new CrudGridColumn<Row> { ColumnName = "Current column", DataType = typeof(string), PropertyValue = row => "Current data" } };
+			crud.GridBindings = new[] { new VisualGridColumn<Row> { ColumnName = "Current column", DataType = typeof(string), PropertyValue = row => "Current data" } };
 		else
 			native.Font = largeFont;
 		await pending;
@@ -521,7 +521,7 @@ public class CrudGridBackgroundPreparationTests {
 
 	[Test]
 	public void GridTitleAlignmentDefaultsToExistingCenteredPresentationAndSupportsLeftAlignment() {
-		using var crud = new CrudGrid { PersistSettings = false };
+		using var crud = new VisualGrid { PersistSettings = false };
 		Assert.That(crud.GridTitleAlignment, Is.EqualTo(ContentAlignment.MiddleCenter));
 		crud.GridTitleAlignment = ContentAlignment.MiddleLeft;
 		crud.GridTitle = "Processes";
@@ -577,7 +577,7 @@ public class CrudGridBackgroundPreparationTests {
 			Directory.CreateDirectory(screenshotDirectory);
 			using var image = new Bitmap(crud.Width, crud.Height);
 			crud.DrawToBitmap(image, crud.ClientRectangle);
-			var path = Path.Combine(screenshotDirectory, $"CrudGrid-Title-{canCreate}-{canDelete}-{alignment}.png");
+			var path = Path.Combine(screenshotDirectory, $"VisualGrid-Title-{canCreate}-{canDelete}-{alignment}.png");
 			image.Save(path, System.Drawing.Imaging.ImageFormat.Png);
 			TestContext.AddTestAttachment(path);
 		}
@@ -588,20 +588,20 @@ public class CrudGridBackgroundPreparationTests {
 		Assert.That(caption.Left, Is.EqualTo(canCreate ? create.Right + create.Margin.Right : header.Padding.Left));
 	});
 
-	private static CrudGrid NewGrid(Form owner) {
-		var crud = new CrudGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true,
-			PageMode = CrudGridPageMode.Single, AutoSizeRowsOnRefresh = false, PrepareReadOnlyCellsInBackground = true };
+	private static VisualGrid NewGrid(Form owner) {
+		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true,
+			PageMode = VisualGridPageMode.Single, AutoSizeRowsOnRefresh = false, PrepareReadOnlyCellsInBackground = true };
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static CrudGridColumn<Row> TextColumn() => new() { ColumnName = "Value", DataType = typeof(string), PropertyValue = row => row.Value };
+	private static VisualGridColumn<Row> TextColumn() => new() { ColumnName = "Value", DataType = typeof(string), PropertyValue = row => row.Value };
 
-	private static CrudGridColumn<Row>[] SizingColumns() => Enumerable.Range(0, 12).Select(column => new CrudGridColumn<Row> {
+	private static VisualGridColumn<Row>[] SizingColumns() => Enumerable.Range(0, 12).Select(column => new VisualGridColumn<Row> {
 		ColumnName = "Column " + column, DataType = typeof(string), PropertyValue = row => row.Value + " / column " + column
 	}).ToArray();
 
-	private static Grid FindGrid(CrudGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
+	private static Grid FindGrid(VisualGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
 
 	private static void RunWithMessageLoop(Func<Form, Task> test) {
 		Exception failure = null;

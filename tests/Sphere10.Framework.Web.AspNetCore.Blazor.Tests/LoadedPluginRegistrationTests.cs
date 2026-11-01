@@ -48,13 +48,15 @@ public class LoadedPluginRegistrationTests {
 		var successful = new BlazorPlugin("Successful", Array.Empty<IBlazorApplicationBlock>());
 		var failing = new BlazorPluginBuilder()
 			.WithName("Failing")
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton<StartupMarker>();
 				Guard.Ensure(false, "Startup failed.");
 			})
 			.Build();
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(successful);
-		Assert.That(() => services.AddSphere10BlazorPlugin(failing), Throws.InvalidOperationException);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(successful);
+		Assert.That(() => services
+			.AddSphere10BlazorPlugin(failing), Throws.InvalidOperationException);
 		using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IBlazorApplication>();
 
@@ -76,12 +78,13 @@ public class LoadedPluginRegistrationTests {
 			.WithId("owned")
 			.WithName("Owned")
 			.Build();
-		services.AddSphere10BlazorPlugin(new BlazorPlugin("Owner", new[] { owned }));
+		services
+			.AddSphere10BlazorPlugin(new BlazorPlugin("Owner", new[] { owned }));
 		var failed = (MutablePlugin)new MutablePluginBuilder()
 			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
-			.ConfigureServices(components => {
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
+			.AddServices(components => {
 				components.AddSingleton<StartupMarker>();
 				components.AddKeyedSingleton<StartupMarker>("Reused", new StartupMarker());
 				Guard.Ensure(failureStage != "Configure", "Configuration failed.");
@@ -93,16 +96,19 @@ public class LoadedPluginRegistrationTests {
 				failed.CurrentBlocks = new[] { owned };
 		};
 		if (failureStage == "Validation")
-			Assert.That(() => services.AddSphere10BlazorPlugin(failed), Throws.ArgumentException);
+			Assert.That(() => services
+				.AddSphere10BlazorPlugin(failed), Throws.ArgumentException);
 		else
-			Assert.That(() => services.AddSphere10BlazorPlugin(failed), Throws.InvalidOperationException);
+			Assert.That(() => services
+				.AddSphere10BlazorPlugin(failed), Throws.InvalidOperationException);
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IApplicationInitializer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Reused")), Is.EqualTo(1));
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IApplicationFinalizer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Reused")), Is.EqualTo(1));
-		services.AddSphere10BlazorPlugin(plugin => plugin
-			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
-		);
+		services
+			.AddSphere10BlazorPlugin(plugin => plugin
+				.WithName("Reused")
+				.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
+				.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
+			);
 		using var provider = services.BuildServiceProvider();
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null, "Ordinary service side effects retain the existing registration policy.");
 		Assert.That(provider.GetRequiredKeyedService<StartupMarker>("Reused"), Is.Not.Null, "Cleanup only removes named lifecycle descriptors.");
@@ -121,22 +127,24 @@ public class LoadedPluginRegistrationTests {
 		var calls = new List<string>();
 		var outer = new BlazorPluginBuilder()
 			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
-			.ConfigureServices(components => components.AddSphere10BlazorPlugin(plugin => plugin
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
+			.AddServices(components => components.AddSphere10BlazorPlugin(plugin => plugin
 				.WithName("Reused")
-				.ConfigureServices(_ => nestedLoads++)
+				.AddServices(_ => nestedLoads++)
 			))
 			.Build();
-		Assert.That(() => services.AddSphere10BlazorPlugin(outer), Throws.ArgumentException);
+		Assert.That(() => services
+			.AddSphere10BlazorPlugin(outer), Throws.ArgumentException);
 		Assert.That(nestedLoads, Is.Zero);
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>)), Is.False);
 		Assert.That(services.Any(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Reused")), Is.False);
-		services.AddSphere10BlazorPlugin(plugin => plugin
-			.WithName("Reused")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
-		);
+		services
+			.AddSphere10BlazorPlugin(plugin => plugin
+				.WithName("Reused")
+				.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
+				.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
+			);
 		using var provider = services.BuildServiceProvider();
 		provider.GetKeyedServices<IApplicationInitializer>("Reused").Single().Initialize();
 		provider.GetKeyedServices<IApplicationFinalizer>("Reused").Single().Finalize();
@@ -149,24 +157,26 @@ public class LoadedPluginRegistrationTests {
 		var calls = new List<string>();
 		var outer = new BlazorPluginBuilder()
 			.WithName("Outer")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
-			.ConfigureServices(components => {
+			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
+			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
+			.AddServices(components => {
 				components.AddSphere10BlazorPlugin(plugin => plugin
 					.WithName("Nested")
-					.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Nested initialized")))
-					.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Nested finalized")))
+					.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Nested initialized")))
+					.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Nested finalized")))
 				);
 				Guard.Ensure(false, "Outer loading failed.");
 			})
 			.Build();
-		Assert.That(() => services.AddSphere10BlazorPlugin(outer), Throws.InvalidOperationException);
+		Assert.That(() => services
+			.AddSphere10BlazorPlugin(outer), Throws.InvalidOperationException);
 		Assert.That(services.Any(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Outer")), Is.False);
-		services.AddSphere10BlazorPlugin(plugin => plugin
-			.WithName("Outer")
-			.RegisterInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
-			.RegisterFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
-		);
+		services
+			.AddSphere10BlazorPlugin(plugin => plugin
+				.WithName("Outer")
+				.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Replacement initialized")))
+				.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
+			);
 		using var provider = services.BuildServiceProvider();
 		var registrations = provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().ToArray();
 		Assert.That(registrations.Select(registration => registration.Plugin.Name), Is.EqualTo(new[] { "Nested", "Outer" }));
@@ -182,9 +192,11 @@ public class LoadedPluginRegistrationTests {
 		var plugin = new BlazorPlugin("Once", Array.Empty<IBlazorApplicationBlock>());
 		var loaded = 0;
 		plugin.Loaded += () => loaded++;
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin);
 
-		Assert.That(() => services.AddSphere10BlazorPlugin(plugin), Throws.ArgumentException);
+		Assert.That(() => services
+			.AddSphere10BlazorPlugin(plugin), Throws.ArgumentException);
 		Assert.That(loaded, Is.EqualTo(1));
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>)), Is.EqualTo(1));
 	}
@@ -195,16 +207,23 @@ public class LoadedPluginRegistrationTests {
 			.WithId("first")
 			.WithName("First")
 			.WithPosition(50)
+			.AddScreen<FirstScreen>(screen => screen
+				.WithTitle(nameof(FirstScreen))
+			)
 			.WithDefaultScreen<FirstScreen>()
 			.Build();
 		var second = new BlazorApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
 			.WithPosition(-10)
+			.AddScreen<SecondScreen>(screen => screen
+				.WithTitle(nameof(SecondScreen))
+			)
 			.WithDefaultScreen<SecondScreen>()
 			.Build();
 		var plugin = new MutablePlugin(new[] { first, second });
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin);
 		plugin.CurrentBlocks = Array.Empty<IBlazorApplicationBlock>();
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();

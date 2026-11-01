@@ -49,7 +49,7 @@ public class ApplicationStartupScreenBrowserTests {
 			() => document.querySelector('[data-plugin-initializer-count]')?.textContent.includes('Plugins initialized: 4')
 				&& !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table')?.style.width
 			""");
-		var gridTab = page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true });
+		var gridTab = page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true });
 		await Assertions.Expect(gridTab).ToHaveAttributeAsync("aria-selected", "true");
 		await gridTab.ClickAsync(new() { Button = Microsoft.Playwright.MouseButton.Right });
 		var startup = page.GetByRole(AriaRole.Menuitemcheckbox, new() { NameRegex = new Regex("Make Startup Screen$") });
@@ -61,14 +61,14 @@ public class ApplicationStartupScreenBrowserTests {
 		await page.GetByRole(AriaRole.Button, new() { Name = "Dismiss tab commands", Exact = true }).ClickAsync();
 
 		await page.GotoAsync(new Uri(origin, "/").AbsoluteUri);
-		await Assertions.Expect(page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+		await Assertions.Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
 		await page.Locator(".sphere10-screen:not([hidden]) [data-demo=grid]").WaitForAsync();
 		Assert.That(await page.EvaluateAsync<bool>("() => window.startupOverviewWasRendered"), Is.False,
 			"Saved startup is resolved before opening any unrelated default screen.");
 
 		await page.GotoAsync(new Uri(origin, "/components/tables").AbsoluteUri);
 		await Assertions.Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Tables", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
-		Assert.That(await page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).CountAsync(), Is.Zero);
+		Assert.That(await page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).CountAsync(), Is.Zero);
 
 		await page.EvaluateAsync("() => localStorage.setItem('sphere10.startup-screen.Sphere10.BlazorTester.Workspace', '{invalid JSON')");
 		await page.GotoAsync(new Uri(origin, "/").AbsoluteUri);

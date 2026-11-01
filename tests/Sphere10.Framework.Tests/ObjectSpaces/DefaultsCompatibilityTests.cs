@@ -205,7 +205,7 @@ public class DefaultsCompatibilityTests {
 		byte[] pendingBytes;
 		using (var memory = new MemoryStream()) {
 			var builder = CreateBuilder(false).WithClusterSize(4096).WithClusteredStreamsPolicy(ClusteredStreamsPolicy.Default).UseMemoryStream(memory);
-			builder.Configure<Record>().OptimizeAssumingAverageItemSize(256);
+			builder.GetDimension<Record>().OptimizeAssumingAverageItemSize(256);
 			using var original = builder.Build();
 			SaveRecords(original);
 			original.Flush();
@@ -285,7 +285,7 @@ public class DefaultsCompatibilityTests {
 		builder.UseFile(legacyPath);
 		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
 		builder.WithIndexBTreeOrder(64).WithClusterSize(4096);
-		builder.Configure<Record>().OptimizeAssumingAverageItemSize(256);
+		builder.GetDimension<Record>().OptimizeAssumingAverageItemSize(256);
 		using var reopened = builder.Build();
 		AssertRecords(reopened);
 	}
@@ -307,7 +307,7 @@ public class DefaultsCompatibilityTests {
 		builder.UseMemoryStream(legacyMemory);
 		Assert.That(builder.BuildDefinition().IndexBTreeSpec, Is.EqualTo(new BTreeSpec(BTreeSpec.Default.Type, Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder)));
 		builder.WithIndexBTreeOrder(64).WithClusterSize(4096);
-		builder.Configure<Record>().OptimizeAssumingAverageItemSize(256);
+		builder.GetDimension<Record>().OptimizeAssumingAverageItemSize(256);
 		using var reopened = builder.Build();
 		AssertRecords(reopened);
 	}
@@ -321,7 +321,7 @@ public class DefaultsCompatibilityTests {
 		using var memory = new MemoryStream();
 		var path = Path.Combine(folder, "same.dat");
 		var builder = ConfigureStorage(CreateBuilder(false).WithIndexBTreeOrder(7).WithClusterSize(2048), fileBacked, path, memory, true);
-		builder.Configure<Record>().OptimizeAssumingAverageItemSize(512);
+		builder.GetDimension<Record>().OptimizeAssumingAverageItemSize(512);
 		using (var space = builder.Build()) {
 			SaveRecords(space);
 			CompleteWrites(space);
@@ -428,7 +428,7 @@ public class DefaultsCompatibilityTests {
 	/// <summary>Creates the historical schema with its original mixed BTree and BTreePlus index layouts.</summary>
 	private static ObjectSpaceBuilder CreateHistoricalBuilder() {
 		var builder = CreateBuilder(true);
-		foreach (var index in builder.Configure<Record>().Indexes.Where(index => index.Member != null))
+		foreach (var index in builder.GetDimension<Record>().Indexes.Where(index => index.Member != null))
 			index.BTreeSpec = new BTreeSpec(index.Type == ObjectSpaceDefinition.IndexType.Identifier ? BTreeType.BTree : BTreeType.BTreePlus, 64);
 		return builder;
 	}

@@ -24,15 +24,15 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridNativeInputRouteTests {
+public class VisualGridNativeInputRouteTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void PreparedRefreshKeepsTheCommittedNativeInputWindowVisibleToBackgroundHitTesting(bool measureRows) => RunWithMessageLoop(async owner => {
-		using var crud = new CrudGrid {
+		using var crud = new VisualGrid {
 			Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, AllowCellEditing = false,
-			LeftClickToDeselect = true, PageMode = CrudGridPageMode.Single, PrepareReadOnlyCellsInBackground = true,
+			LeftClickToDeselect = true, PageMode = VisualGridPageMode.Single, PrepareReadOnlyCellsInBackground = true,
 			AutoSizeRowsOnRefresh = measureRows,
-			GridBindings = Enumerable.Range(0, 12).Select(index => new CrudGridColumn<Row> {
+			GridBindings = Enumerable.Range(0, 12).Select(index => new VisualGridColumn<Row> {
 				ColumnName = "Column " + index, DataType = typeof(string), PropertyValue = row => row.Value + " / " + index
 			}).ToArray()
 		};

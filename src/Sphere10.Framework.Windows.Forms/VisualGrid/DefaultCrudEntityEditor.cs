@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -25,6 +26,21 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 
 	public IDictionary<string, CrudReferenceBinding> ReferenceBindings { get; } = new Dictionary<string, CrudReferenceBinding>(StringComparer.Ordinal);
 
+	/// <summary>Root property names omitted from the next edit session without changing global model metadata.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public string[] HiddenProperties { get; set; } = Array.Empty<string>();
+
+	/// <summary>Optional visibility filter for properties on the root and its nested objects.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public Func<object, PropertyDescriptor, bool> PropertyFilter { get; set; }
+
+	/// <summary>Controls whether the native property editor groups the model's declared categories.</summary>
+	[Category("Appearance"), DefaultValue(PropertySort.Alphabetical)]
+	public PropertySort PropertySort {
+		get => _propertyGrid.PropertySort;
+		set => _propertyGrid.PropertySort = value;
+	}
+
 	public bool HasChanges => _entityDescriptor?.HasChanges ?? false;
 
 	public Control AsControl() => this;
@@ -32,7 +48,7 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 	public void SetEntity(DataSourceCapabilities Capabilities, object Entity, bool IsNewEntity) {
 		Guard.ArgumentNotNull(Entity, nameof(Entity));
 		_entity = Entity;
-		_entityDescriptor = new CrudEntityTypeDescriptor(Entity, ReferenceBindings, !Capabilities.HasFlag(IsNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate));
+		_entityDescriptor = new CrudEntityTypeDescriptor(Entity, ReferenceBindings, !Capabilities.HasFlag(IsNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate), HiddenProperties, PropertyFilter);
 		_propertyGrid.SelectedObject = _entityDescriptor;
 		_propertyGrid.Enabled = true;
 	}

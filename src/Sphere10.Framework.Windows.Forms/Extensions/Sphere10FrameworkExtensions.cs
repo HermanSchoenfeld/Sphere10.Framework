@@ -15,8 +15,9 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -37,7 +38,7 @@ public static class Sphere10FrameworkExtensions {
 
 	public static Sphere10FrameworkBuilder UseMainForm<TMainForm>(this Sphere10FrameworkBuilder builder, Action<TMainForm>? Configure = null)
 		where TMainForm : class, IMainForm {
-		builder.ConfigureServices(services => services.AddMainForm(Configure));
+		builder.AddServices(services => services.AddMainForm(Configure));
 		return builder;
 	}
 
@@ -70,7 +71,7 @@ public static class Sphere10FrameworkExtensions {
 	public static Sphere10FrameworkBuilder UseMainFormSettings(this Sphere10FrameworkBuilder Builder, bool AutoPersist = true, string SettingsID = "MainForm") {
 		Guard.ArgumentNotNull(Builder, nameof(Builder));
 		Guard.ArgumentNotNullOrEmpty(SettingsID, nameof(SettingsID));
-		Builder.ConfigureServices(Services => {
+		Builder.AddServices(Services => {
 			Services.AddSingleton(new MainFormSettingsOptions(AutoPersist, SettingsID));
 			if (!Services.HasImplementationFor<MainFormSettingsFinalizer>()) {
 				Services.AddSingleton<MainFormSettingsFinalizer>();
@@ -86,6 +87,7 @@ public static class Sphere10FrameworkExtensions {
 		IWinFormsApplication application = null;
 		WinFormsApplication nativeApplication = null;
 		MainFormSettingsFinalizer settingsFinalizer = null;
+		ApplicationSettingsCatalog settingsCatalog = null;
 		Form mainForm = null;
 		ActionScope? windowSettings = null;
 		Func<Task> previousShutdown = null;
@@ -127,6 +129,8 @@ public static class Sphere10FrameworkExtensions {
 				}, errors);
 			if (application != null)
 				await CaptureAsync(() => application.FinalizeAsync());
+			else if (settingsCatalog != null)
+				await CaptureAsync(() => settingsCatalog.FlushAsync());
 			if (builder.Framework.IsStarted)
 				Tools.Exceptions.ExecuteCapturingException(builder.Framework.FinalizeFramework, errors);
 		}
@@ -165,6 +169,10 @@ public static class Sphere10FrameworkExtensions {
 						splash?.AttachToApplication(application);
 					return application?.Logger ?? provider.GetService<ILogger>() ?? SystemLog.Logger;
 				});
+				// Plain-form applications share the same DI-owned preference catalog without an artificial screen/application graph.
+				settingsCatalog = application?.Settings ?? builder.Framework.ServiceProvider.GetService<ApplicationSettingsCatalog>();
+				if (settingsCatalog != null)
+					await settingsCatalog.InitializeAsync();
 				if (application != null) {
 					await application.InitializeAsync();
 				} else if (mainForm is IBlockManager blockManager) {

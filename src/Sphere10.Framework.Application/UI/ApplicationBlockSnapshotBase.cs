@@ -20,6 +20,7 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 	public TBlock Create(TBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.ArgumentNotNullOrEmpty(block.Name, nameof(block), "Block name is required.");
+		Tools.UI.ResolveScreenReferences(block);
 		var definitions = Tools.UI.GetScreenDefinitions(new[] { block });
 		var defaultScreen = block.DefaultScreenDefinition;
 		foreach (var definition in definitions)
@@ -44,16 +45,21 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 
 	protected TItem CreateItem(TItem item, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		Guard.ArgumentNotNullOrEmpty(item.Title, nameof(item), "Menu item title is required.");
+		Guard.Argument(item is IScreenMenuItem || !string.IsNullOrWhiteSpace(item.Title), nameof(item), "Menu item title is required.");
 		if (item is IScreenMenuItem screen) {
-			Guard.ArgumentNotNull(screen.ScreenDefinition, nameof(item));
-			ValidateScreenTypeCore(screen.ScreenDefinition.ScreenType);
+			Guard.ArgumentNotNull(screen.Registration, nameof(item));
+			ValidateScreenTypeCore(screen.Registration.ScreenType);
 		}
 		var result = CreateItemSnapshot(item, definitions);
 		Guard.ArgumentNotNull(result, nameof(item));
-		if (item is IScreenMenuItem registration)
-			Guard.Argument(result is IScreenMenuItem snapshot && ReferenceEquals(snapshot.ScreenDefinition, SnapshotDefinition(registration.ScreenDefinition, definitions)),
-				nameof(item), "A screen command snapshot must reference its graph's canonical definition.");
+		if (item is IScreenMenuItem registration) {
+			Guard.Argument(result is IScreenMenuItem snapshot && snapshot.Registration != null
+				&& snapshot.Registration.Token == registration.Registration.Token && snapshot.Registration.ScreenType == registration.Registration.ScreenType,
+				nameof(item), "A screen command snapshot must retain its registration reference.");
+			if (registration.ScreenDefinition != null)
+				Guard.Argument(ReferenceEquals(((IScreenMenuItem)result).ScreenDefinition, SnapshotDefinition(registration.ScreenDefinition, definitions)),
+					nameof(item), "A screen command snapshot must reference its graph's canonical definition.");
+		}
 		return result;
 	}
 
@@ -61,7 +67,7 @@ public abstract class ApplicationBlockSnapshotBase<TBlock, TMenu, TItem> : IAppl
 		if (definition == null)
 			return null;
 		if (!definitions.TryGetValue(definition, out var snapshot)) {
-			snapshot = new ApplicationScreenDefinition(definition.ScreenType, definition.Title, definition.ActivationMode, definition.ScreenKind);
+			snapshot = definition.Clone();
 			definitions.Add(definition, snapshot);
 		}
 		return snapshot;

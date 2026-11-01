@@ -14,12 +14,12 @@ using Sphere10.Framework.Windows.Forms.SourceGrid;
 namespace Sphere10.Framework.Windows.Forms;
 
 internal class UpdateEntityOnValueChangedController : SourceGrid.Cells.Controllers.ControllerBase {
-	private readonly CrudGrid _grid;
+	private readonly VisualGrid _grid;
 	private readonly IDataSource<object> _dataSource;
-	private readonly ICrudGridColumn _columnBinding;
+	private readonly IVisualGridColumn _columnBinding;
 	private object _entity;
 
-	public UpdateEntityOnValueChangedController(CrudGrid grid, IDataSource<object> dataSource, ICrudGridColumn column, object entity) {
+	public UpdateEntityOnValueChangedController(VisualGrid grid, IDataSource<object> dataSource, IVisualGridColumn column, object entity) {
 		_grid = grid;
 		_dataSource = dataSource;
 		_columnBinding = column;

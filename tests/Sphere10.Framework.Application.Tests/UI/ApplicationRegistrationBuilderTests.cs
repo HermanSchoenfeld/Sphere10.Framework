@@ -24,7 +24,7 @@ public class ApplicationRegistrationBuilderTests {
 		var registration = new RegistrationBuilder()
 			.WithTitle("Test application")
 			.AddPlugin(existing)
-			.ConfigurePlugin(plugin => plugin
+			.AddPlugin(plugin => plugin
 				.WithName("Configured")
 			)
 			.Build();
@@ -39,8 +39,8 @@ public class ApplicationRegistrationBuilderTests {
 	public void ComposedConfigurationIsDeferredToEachApplication() {
 		var calls = new List<string>();
 		var registration = new RegistrationBuilder()
-			.ConfigureApplication(application => calls.Add(application.Name + ": first"))
-			.ConfigureApplication(application => calls.Add(application.Name + ": second"))
+			.OnApplicationCreated(application => calls.Add(application.Name + ": first"))
+			.OnApplicationCreated(application => calls.Add(application.Name + ": second"))
 			.Build();
 
 		Assert.That(calls, Is.Empty);
@@ -69,8 +69,8 @@ public class ApplicationRegistrationBuilderTests {
 		Assert.Multiple(() => {
 			Assert.That(() => builder.Build(), Throws.InvalidOperationException);
 			Assert.That(() => builder.WithTitle("Changed"), Throws.InvalidOperationException);
-			Assert.That(() => builder.ConfigureApplication(_ => callbackInvoked = true), Throws.InvalidOperationException);
-			Assert.That(() => builder.ConfigurePlugin(plugin => callbackInvoked = true), Throws.InvalidOperationException);
+			Assert.That(() => builder.OnApplicationCreated(_ => callbackInvoked = true), Throws.InvalidOperationException);
+			Assert.That(() => builder.AddPlugin(plugin => callbackInvoked = true), Throws.InvalidOperationException);
 			Assert.That(() => builder.AddPlugin(new ApplicationPluginBuilder().WithName("Late").Build()), Throws.InvalidOperationException);
 			Assert.That(callbackInvoked, Is.False);
 		});
@@ -101,8 +101,8 @@ public class ApplicationRegistrationBuilderTests {
 		Assert.Multiple(() => {
 			Assert.That(() => builder.WithTitle(" "), Throws.ArgumentException);
 			Assert.That(() => builder.AddPlugin((IApplicationPlugin)null), Throws.ArgumentNullException);
-			Assert.That(() => builder.ConfigurePlugin((Action<ApplicationPluginBuilder>)null), Throws.ArgumentNullException);
-			Assert.That(() => builder.ConfigureApplication(null), Throws.ArgumentNullException);
+			Assert.That(() => builder.AddPlugin((Action<ApplicationPluginBuilder>)null), Throws.ArgumentNullException);
+			Assert.That(() => builder.OnApplicationCreated(null), Throws.ArgumentNullException);
 		});
 
 		Assert.That(builder.WithTitle("Valid").Build().Title, Is.EqualTo("Valid"));

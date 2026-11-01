@@ -25,59 +25,74 @@ public static class ShowcasePlugin {
 		const string pluginName = "Application patterns";
 		plugin
 			.WithName(pluginName)
-			.RegisterInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.RegisterFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.ConfigureServices(services => services.AddScoped<CollectionCatalogue>())
-			.ConfigureBlock(block => block
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddServices(services => services.AddScoped<CollectionCatalogue>())
+			.AddBlock(block => block
 				.WithId("patterns")
 				.WithName("Application patterns")
 				.WithPosition(2)
 				.WithIconUrl("img/patterns.svg")
 				.WithTooltip("Cards, workflows, native commands and complete theme layouts")
+				.AddScreen<CardsScreen>(screen => screen
+					.WithTitle("Cards & collections")
+					.AsSingleInstance()
+				)
+				.AddScreen<CommandsScreen>(screen => screen
+					.WithTitle("Menus & commands")
+					.AsSingleInstance()
+				)
+				.AddScreen<GuidedWizardsScreen>(screen => screen
+					.WithTitle("Guided workflows")
+					.AsSingleInstance()
+				)
+				.AddScreen<ThemeStudioScreen>(screen => screen
+					.WithTitle("Theme studio")
+					.AsSingleInstance()
+				)
+				.AddScreen<CollectionDetailScreen>(screen => screen
+					.WithTitle("Collection details")
+					.AsMultiInstance()
+				)
 				.WithDefaultScreen<CardsScreen>()
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("patterns")
 					.WithText("Application patterns")
 					.WithIcon("fas fa-layer-group")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("cards-gallery")
 						.WithText("Cards & collections")
 						.WithIcon("fas fa-th-large")
 						.WithScreen<CardsScreen>()
-						.AsSingleInstance()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("commands")
 						.WithText("Menus & commands")
 						.WithIcon("fas fa-bars")
 						.WithScreen<CommandsScreen>()
-						.AsSingleInstance()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("guided-wizards")
 						.WithText("Guided workflows")
 						.WithIcon("fas fa-magic")
 						.WithScreen<GuidedWizardsScreen>()
-						.AsSingleInstance()
 					)
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("theme-studio")
 						.WithText("Theme studio")
 						.WithIcon("fas fa-palette")
 						.WithScreen<ThemeStudioScreen>()
-						.AsSingleInstance()
 					)
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithId("collection-screens")
 					.WithText("Collection editors")
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.WithId("collection-detail")
 						.WithText("Collection details")
 						.WithIcon("fas fa-folder-open")
 						.WithVisibility(false)
 						.WithScreen<CollectionDetailScreen>()
-						.AsMultiInstance()
 					)
 				)
 			);

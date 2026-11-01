@@ -152,7 +152,7 @@ public class ApplicationBuilderCompositionTests {
 				return new CompositionScenario(
 					probe, new ItemDefinition("Existing"), configured,
 					item => builder.AddItem((ItemDefinition)item),
-					callback => builder.ConfigureItem(callback == null ? null : child => {
+					callback => builder.AddItem(callback == null ? null : child => {
 						child.WithProduct(configured);
 						callback();
 					}),
@@ -165,7 +165,7 @@ public class ApplicationBuilderCompositionTests {
 				return new CompositionScenario(
 					probe, new MenuDefinition("Existing", Array.Empty<ItemDefinition>()), configured,
 					menu => builder.AddMenu((MenuDefinition)menu),
-					callback => builder.ConfigureMenu(callback == null ? null : child => {
+					callback => builder.AddMenu(callback == null ? null : child => {
 						child.WithProduct(configured);
 						callback();
 					}),
@@ -178,7 +178,7 @@ public class ApplicationBuilderCompositionTests {
 				return new CompositionScenario(
 					probe, new BlockDefinition("Existing", Array.Empty<MenuDefinition>()), configured,
 					block => builder.AddBlock((BlockDefinition)block),
-					callback => builder.ConfigureBlock(callback == null ? null : child => {
+					callback => builder.AddBlock(callback == null ? null : child => {
 						child.WithProduct(configured);
 						callback();
 					}),
@@ -191,7 +191,7 @@ public class ApplicationBuilderCompositionTests {
 				return new CompositionScenario(
 					probe, new ApplicationPlugin("Existing", Array.Empty<IApplicationBlock>()), configured,
 					plugin => builder.AddPlugin((ApplicationPlugin)plugin),
-					callback => builder.ConfigurePlugin(callback == null ? null : child => {
+					callback => builder.AddPlugin(callback == null ? null : child => {
 						child.WithProduct(configured);
 						callback();
 					}),

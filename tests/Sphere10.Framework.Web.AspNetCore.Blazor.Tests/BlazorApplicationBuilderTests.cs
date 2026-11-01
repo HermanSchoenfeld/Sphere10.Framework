@@ -33,9 +33,12 @@ public class BlazorApplicationBuilderTests {
 		var configured = new List<string>();
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
-			.ConfigureBlock(block => block
+			.AddBlock(block => block
 				.WithId("workspace")
 				.WithName("Workspace")
+				.AddScreen<ProbeScreen>(screen => screen
+					.WithTitle(nameof(ProbeScreen))
+				)
 				.WithDefaultScreen<ProbeScreen>()
 			)
 			.Build();
@@ -46,15 +49,15 @@ public class BlazorApplicationBuilderTests {
 			.WithTitle("Configured application")
 			.WithFavicon("img/application.svg", "image/svg+xml")
 			.AddPlugin(plugin)
-			.ConfigurePlugin(definition => definition
+			.AddPlugin(definition => definition
 				.WithName("Tools")
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithId("tools")
 					.WithName("Tools")
 				)
 			)
-			.ConfigureApplication(_ => configured.Add("first"))
-			.ConfigureApplication(_ => configured.Add("second"));
+			.OnApplicationCreated(_ => configured.Add("first"))
+			.OnApplicationCreated(_ => configured.Add("second"));
 		Assert.That(services, Is.Empty, "Collecting builder settings must not register services or load plugins.");
 		Assert.That(loaded, Is.Zero);
 		Assert.That(builder.Build(), Is.SameAs(services));
@@ -110,7 +113,7 @@ public class BlazorApplicationBuilderTests {
 		var options = provider.GetRequiredService<BlazorApplicationOptions>();
 		Assert.That(() => builder.WithTitle("Changed"), Throws.InvalidOperationException);
 		Assert.That(() => builder.WithFavicon("other.svg"), Throws.InvalidOperationException);
-		Assert.That(() => builder.ConfigureApplication(_ => { }), Throws.InvalidOperationException);
+		Assert.That(() => builder.OnApplicationCreated(_ => { }), Throws.InvalidOperationException);
 		Assert.That(() => builder.AddPlugin(plugin), Throws.InvalidOperationException);
 		Assert.That(() => builder.Build(), Throws.InvalidOperationException);
 		Assert.That(options.Title, Is.EqualTo("Original"));
@@ -124,7 +127,8 @@ public class BlazorApplicationBuilderTests {
 	[TestCase("")]
 	[TestCase("  ")]
 	public void EmptyApplicationTitleIsRejected(string title) {
-		var builder = new ServiceCollection().BuildBlazorApplication();
+		var builder = new ServiceCollection()
+			.BuildBlazorApplication();
 		Assert.That(() => builder.WithTitle(title), Throws.ArgumentException);
 	}
 
@@ -132,7 +136,8 @@ public class BlazorApplicationBuilderTests {
 	[TestCase("")]
 	[TestCase("  ")]
 	public void EmptyFaviconUrlIsRejected(string url) {
-		var builder = new ServiceCollection().BuildBlazorApplication();
+		var builder = new ServiceCollection()
+			.BuildBlazorApplication();
 		Assert.That(() => builder.WithFavicon(url), Throws.ArgumentException);
 	}
 

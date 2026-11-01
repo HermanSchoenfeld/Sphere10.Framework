@@ -58,7 +58,11 @@ public class WinFormsApplicationLifecycleTests {
 		LoggingScreen.InstanceCreated = () => screenCreations++;
 		using var resetScreen = Tools.Scope.ExecuteOnDispose(() => LoggingScreen.InstanceCreated = null);
 		using var block = new WinFormsApplicationBlockBuilder().WithName("Logging block")
-			.WithDefaultScreen<LoggingScreen>("Logging screen", ScreenActivationMode.PermanentSingleton).Build();
+			.AddScreen<LoggingScreen>(screen => screen
+				.WithTitle("Logging screen")
+				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+			)
+			.WithDefaultScreen<LoggingScreen>().Build();
 		using var bitmap = new Bitmap(32, 32);
 		using var icon = (Icon)SystemIcons.Information.Clone();
 		var previousIcon = Sphere10Framework.Instance.GetAppIcon();
@@ -91,8 +95,8 @@ public class WinFormsApplicationLifecycleTests {
 		var builder = Sphere10Framework.Instance.BuildWinFormsApplication()
 			.UseIcon(icon)
 			.UseMainForm<LifecycleMainForm>(mainForm => form = mainForm)
-			.UseModule(new CallbackModule(() => modulesInitialized = true))
-			.ConfigureServices(services => {
+			.AddModule(new CallbackModule(() => modulesInitialized = true))
+			.AddServices(services => {
 				services.AddSingleton<ILogger>(processLogger);
 				services.AddApplicationBlock(block);
 				services.AddSingleton<IWinFormsApplication>(provider => {
@@ -154,7 +158,7 @@ public class WinFormsApplicationLifecycleTests {
 		using var restoreSplash = Tools.Scope.ExecuteOnDispose(() => splashEnabledField.SetValue(null, originalSplashEnabled));
 		var builder = Sphere10Framework.Instance.BuildWinFormsApplication()
 			.UseMainForm<LifecycleMainForm>(mainForm => form = mainForm)
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton(_ => new ProviderResource(() => providerDisposals++));
 				services.AddSingleton<IWinFormsApplication>(provider => {
 					provider.GetRequiredService<ProviderResource>();
@@ -200,19 +204,19 @@ public class WinFormsApplicationLifecycleTests {
 		});
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddMainForm<LifecycleMainForm>();
 				services.AddSingleton<IApplicationInitializer>(new CallbackInitializer(() => processInitializations++));
 				services.AddSingleton<IApplicationFinalizer>(new CallbackFinalizer(() => processFinalizations++));
 				services.AddWinFormsApplicationPlugin(plugin => plugin
 					.WithName("Lifecycle plugin")
-					.RegisterInitializer<CallbackInitializer>(provider => new CallbackInitializer(() => {
+					.AddInitializer<CallbackInitializer>(provider => new CallbackInitializer(() => {
 						var application = provider.GetRequiredService<IApplication>();
 						Assert.That(application.Blocks, Is.EqualTo(new[] { block }), "Native block installation must precede application tasks.");
 						application.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => ownedDisposals++));
 						applicationInitializations++;
 					}))
-					.RegisterFinalizer<CallbackFinalizer>(provider => new CallbackFinalizer(() => {
+					.AddFinalizer<CallbackFinalizer>(provider => new CallbackFinalizer(() => {
 						Assert.That(provider.GetRequiredService<IApplication>().IsInitialized, Is.False);
 						applicationFinalizations++;
 					}))
@@ -260,19 +264,19 @@ public class WinFormsApplicationLifecycleTests {
 		});
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddMainForm<LifecycleMainForm>();
 				services.AddKeyedSingleton<IApplicationInitializer>(typeof(IApplication), new CallbackInitializer(() => calls.Add("Host initialized")));
 				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(IApplication), new CallbackFinalizer(() => calls.Add("Host finalized")));
 				services
 					.AddWinFormsApplicationPlugin(plugin => plugin
 						.WithName("First")
-						.RegisterInitializer<CallbackInitializer>(_ => {
+						.AddInitializer<CallbackInitializer>(_ => {
 							var initializer = new CallbackInitializer(() => calls.Add("First initialized"));
 							initializers.Add(initializer);
 							return initializer;
 						})
-						.RegisterFinalizer<CallbackFinalizer>(_ => {
+						.AddFinalizer<CallbackFinalizer>(_ => {
 							var finalizer = new CallbackFinalizer(() => calls.Add("First finalized"));
 							finalizers.Add(finalizer);
 							return finalizer;
@@ -280,12 +284,12 @@ public class WinFormsApplicationLifecycleTests {
 					)
 					.AddWinFormsApplicationPlugin(plugin => plugin
 						.WithName("Second")
-						.RegisterInitializer<CallbackInitializer>(_ => {
+						.AddInitializer<CallbackInitializer>(_ => {
 							var initializer = new CallbackInitializer(() => calls.Add("Second initialized"));
 							initializers.Add(initializer);
 							return initializer;
 						})
-						.RegisterFinalizer<CallbackFinalizer>(_ => {
+						.AddFinalizer<CallbackFinalizer>(_ => {
 							var finalizer = new CallbackFinalizer(() => calls.Add("Second finalized"));
 							finalizers.Add(finalizer);
 							return finalizer;
@@ -319,11 +323,20 @@ public class WinFormsApplicationLifecycleTests {
 		using var form = new LifecycleMainForm { ScreenMode = ScreenMode.MultiView };
 		using var emptyBlock = new WinFormsApplicationBlockBuilder()
 			.WithName("Empty")
-			.WithDefaultScreen<GuardedEmptyScreen>("Empty workspace", ScreenActivationMode.SingleInstance, ScreenKind.Empty)
+			.AddScreen<GuardedEmptyScreen>(screen => screen
+				.WithTitle("Empty workspace")
+				.WithActivationMode(ScreenActivationMode.SingleInstance)
+				.WithScreenKind(ScreenKind.Empty)
+			)
+			.WithDefaultScreen<GuardedEmptyScreen>()
 			.Build();
 		using var permanentBlock = new WinFormsApplicationBlockBuilder()
 			.WithName("Permanent")
-			.WithDefaultScreen<PermanentScreen>("Permanent", ScreenActivationMode.PermanentSingleton)
+			.AddScreen<PermanentScreen>(screen => screen
+				.WithTitle("Permanent")
+				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+			)
+			.WithDefaultScreen<PermanentScreen>()
 			.Build();
 		form.RegisterBlock(emptyBlock);
 		var empty = (GuardedEmptyScreen)form.ActiveScreen;
@@ -502,7 +515,7 @@ public class WinFormsApplicationLifecycleTests {
 					events.Add("Main form closed");
 				};
 			})
-			.ConfigureServices(services => {
+			.AddServices(services => {
 				services.AddSingleton<ProviderResource>(_ => resource = new ProviderResource(() => events.Add("Provider disposed")));
 				services.AddApplicationBlock(block);
 				services.AddKeyedSingleton<IApplicationInitializer>(typeof(IApplication), (provider, _) => new AsyncCallbackInitializer(async () => {

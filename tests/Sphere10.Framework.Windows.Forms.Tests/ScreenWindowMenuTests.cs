@@ -109,9 +109,10 @@ public class ScreenWindowMenuTests {
 		using var permanent = new PermanentScreen();
 		Assert.That(multiple.ScreenHost.ShowScreenUndocked(permanent), Is.False);
 		Assert.That(permanent.Host, Is.Null);
-		using var emptyBlock = new WinFormsApplicationBlock {
-			DefaultScreenDefinition = new ApplicationScreenDefinition(typeof(EmptyScreen), "Empty Workspace", ScreenActivationMode.MultiInstance, ScreenKind.Empty)
-		};
+		using var emptyBlock = new WinFormsApplicationBlock();
+		var emptyDefinition = new ApplicationScreenDefinition(typeof(EmptyScreen), "Empty Workspace", ScreenActivationMode.MultiInstance, ScreenKind.Empty);
+		emptyBlock.AddScreenDefinition(emptyDefinition);
+		emptyBlock.DefaultScreenDefinition = emptyDefinition;
 		using var empty = new EmptyScreen { Block = emptyBlock };
 		Assert.That(multiple.ScreenHost.ShowScreenUndocked(empty), Is.False);
 		Assert.That(empty.Host, Is.Null);

@@ -43,15 +43,22 @@ public class ScreenPolicyTests {
 	public void BuildersExposeSharedPoliciesAndUpdateCachedDefaultMetadata() {
 		var builder = new WinFormsApplicationBlockBuilder()
 			.WithName("Screens")
-			.WithDefaultScreen<EmptyScreen>("Placeholder", ScreenActivationMode.MultiInstance, ScreenKind.Empty)
-			.ConfigureMenu(menu => menu
+			.AddScreen<EmptyScreen>(screen => screen
+				.WithTitle("Placeholder")
+				.AsMultiInstance()
+				.WithScreenKind(ScreenKind.Empty)
+			)
+			.AddScreen<PermanentScreen>(screen => screen
+				.WithTitle("Permanent")
+				.AsPermanentSingleton()
+			)
+			.WithDefaultScreen<EmptyScreen>()
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("Permanent")
 					.WithScreen<PermanentScreen>()
-					.AsPermanentSingleton()
-					.AsDefault()
 				)
 			);
 		using var block = builder.Build();
@@ -60,22 +67,25 @@ public class ScreenPolicyTests {
 		Assert.That(shared.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		var screen = (IScreenMenuItem)shared.Menus[0].Items[0];
 		Assert.That(screen.ScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.PermanentSingleton));
-		Assert.That(((WinFormsScreenMenuItem)screen).IsDefault, Is.True);
+		Assert.That(shared.DefaultScreenDefinition, Is.Not.SameAs(screen.ScreenDefinition));
 		Assert.That(shared.ScreenDefinitions.Any(definition => ReferenceEquals(definition, screen.ScreenDefinition)), Is.True);
 		Assert.That(screen.ScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		builder.WithDefaultScreen<RegularScreen>("Changed", ScreenActivationMode.SingleInstance);
+		builder
+			.AddScreen<RegularScreen>(registration => registration
+				.WithTitle("Changed")
+				.AsSingleInstance()
+			)
+			.WithDefaultScreen<RegularScreen>();
 		Assert.That(builder.Build(), Is.SameAs(block));
 		Assert.That(shared.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(RegularScreen)));
 		Assert.That(shared.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
 		Assert.That(shared.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(() => new WinFormsApplicationBlockBuilder()
-			.WithDefaultScreen<EmptyScreen>(
-				activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
-		var invalid = new WinFormsApplicationMenuItemBuilder();
-		invalid
-			.AsScreenItem()
-			.WithText("Invalid")
-			.WithScreen<EmptyScreen>()
+			.AddScreen<EmptyScreen>(screen => screen
+				.AsPermanentSingleton()
+				.WithScreenKind(ScreenKind.Empty)
+			), Throws.ArgumentException);
+		var invalid = new WinFormsApplicationScreenBuilder<EmptyScreen>()
 			.AsPermanentSingleton()
 			.WithScreenKind(ScreenKind.Empty);
 		Assert.That(() => invalid.Build(), Throws.ArgumentException);
@@ -87,33 +97,38 @@ public class ScreenPolicyTests {
 		using var first = new WinFormsApplicationBlockBuilder()
 			.WithName("First")
 			.WithPosition(100)
-			.ConfigureMenu(menu => menu
+			.AddScreen<RegularScreen>(screen => screen.WithTitle("First default"))
+			.AddScreen<OtherScreen>(screen => screen.WithTitle("Later default"))
+			.WithDefaultScreen<RegularScreen>()
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("First default")
 					.WithScreen<RegularScreen>()
-					.AsDefault()
 				)
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("Later default")
 					.WithScreen<OtherScreen>()
-					.AsDefault()
 				)
 			)
 			.Build();
 		using var second = new WinFormsApplicationBlockBuilder()
 			.WithName("Second")
 			.WithPosition(-100)
+			.AddScreen<OtherScreen>(screen => screen.WithTitle("Other"))
+			.AddScreen<PermanentScreen>(screen => screen
+				.WithTitle("Permanent")
+				.AsPermanentSingleton()
+			)
 			.WithDefaultScreen<OtherScreen>()
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("Permanent")
 					.WithScreen<PermanentScreen>()
-					.AsPermanentSingleton()
 				)
 			)
 			.Build();
@@ -142,15 +157,17 @@ public class ScreenPolicyTests {
 		using var form = new BlockMainForm();
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Screens")
-			.ConfigureMenu(menu => menu
+			.AddScreen<OtherScreen>(screen => screen.WithTitle("Legacy"))
+			.AddScreen<RegularScreen>(screen => screen.WithTitle("Default"))
+			.WithDefaultScreen<RegularScreen>()
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<OtherScreen>("Legacy", isStartScreen: true)
+				.AddShowScreenItem<OtherScreen>("Legacy", isStartScreen: true)
 				.AddActionItem("Startup", () => calls++, executeOnLoad: true)
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("Default")
 					.WithScreen<RegularScreen>()
-					.AsDefault()
 				)
 			)
 			.Build();
@@ -165,9 +182,10 @@ public class ScreenPolicyTests {
 		using var form = new BlockMainForm();
 		using var block = new WinFormsApplicationBlockBuilder()
 			.WithName("Legacy")
-			.ConfigureMenu(menu => menu
+			.AddScreen<RegularScreen>(screen => screen.WithTitle("Start"))
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<RegularScreen>("Start", isStartScreen: true)
+				.AddShowScreenItem<RegularScreen>("Start", isStartScreen: true)
 			)
 			.Build();
 		form.RegisterBlock(block);
@@ -312,6 +330,7 @@ public class ScreenPolicyTests {
 		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var regularBlock = new WinFormsApplicationBlockBuilder()
 			.WithName("Regular")
+			.AddScreen<RegularScreen>(screen => screen.WithTitle("Regular"))
 			.WithDefaultScreen<RegularScreen>()
 			.Build();
 		using var permanentBlock = PermanentBlock();
@@ -349,7 +368,7 @@ public class ScreenPolicyTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public async Task RemovingPermanentOwnerRecreatesTheSurvivingBlockDeclarationBeforeEmptyFallback(bool inheritPolicy) {
+	public async Task RemovingPermanentOwnerRespectsTheSurvivingRegistrationsOwnPolicy(bool inheritPolicy) {
 		using var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		using var first = PermanentBlock();
 		using var second = PermanentBlock(inheritPolicy);
@@ -360,12 +379,17 @@ public class ScreenPolicyTests {
 		var original = (PermanentScreen)form.ActiveScreen;
 		Assert.That(original.ApplicationBlock, Is.SameAs(first));
 		form.UnregisterBlock(first);
-		var remaining = (PermanentScreen)form.ActiveScreen;
 		Assert.That(original.DestroyCount, Is.EqualTo(1));
-		Assert.That(remaining, Is.Not.SameAs(original));
-		Assert.That(remaining.ApplicationBlock, Is.SameAs(second));
-		Assert.That(form.ScreenHost.OpenScreens, Is.EqualTo(new[] { remaining }));
-		Assert.That(form.ScreenHost.Screens.OfType<EmptyScreen>(), Is.Empty);
+		if (inheritPolicy) {
+			Assert.That(form.ActiveScreen, Is.TypeOf<EmptyScreen>());
+			Assert.That(form.ScreenHost.Screens.OfType<PermanentScreen>(), Is.Empty, "An unspecified sibling keeps its own default instead of inheriting permanent lifetime.");
+		} else {
+			var remaining = (PermanentScreen)form.ActiveScreen;
+			Assert.That(remaining, Is.Not.SameAs(original));
+			Assert.That(remaining.ApplicationBlock, Is.SameAs(second));
+			Assert.That(form.ScreenHost.OpenScreens, Is.EqualTo(new[] { remaining }));
+			Assert.That(form.ScreenHost.Screens.OfType<EmptyScreen>(), Is.Empty);
+		}
 		form.UnregisterBlock(second);
 		Assert.That(form.ActiveScreen, Is.TypeOf<EmptyScreen>());
 	}
@@ -388,23 +412,34 @@ public class ScreenPolicyTests {
 		Assert.That(host.Screens, Is.Empty);
 	}
 
-	private static WinFormsApplicationBlock PermanentBlock(bool inheritPolicy = false) => new WinFormsApplicationBlockBuilder()
-		.WithName("Permanent")
-		.ConfigureMenu(menu => menu
-			.WithText("Screens")
-			.ConfigureItem(item => {
-				var screen = item.AsScreenItem().WithText("Permanent").WithScreen<PermanentScreen>();
+	private static WinFormsApplicationBlock PermanentBlock(bool inheritPolicy = false) {
+		return new WinFormsApplicationBlockBuilder()
+			.WithName("Permanent")
+			.AddScreen<PermanentScreen>(screen => {
+				screen.WithTitle("Permanent");
 				if (!inheritPolicy)
 					screen.AsPermanentSingleton();
 			})
-		)
-		.Build();
-
-	private static WinFormsApplicationBlock EmptyBlock(ScreenActivationMode mode = ScreenActivationMode.SingleInstance) =>
-		new WinFormsApplicationBlockBuilder()
-			.WithName("Empty")
-			.WithDefaultScreen<EmptyScreen>("Empty workspace", mode, ScreenKind.Empty)
+			.AddScreen<RegularScreen>(screen => screen.WithTitle("Regular"))
+			.AddMenu(menu => menu
+				.WithText("Screens")
+				.AddShowScreenItem<PermanentScreen>()
+			)
 			.Build();
+	}
+
+	private static WinFormsApplicationBlock EmptyBlock(ScreenActivationMode mode = ScreenActivationMode.SingleInstance) {
+		return new WinFormsApplicationBlockBuilder()
+			.WithName("Empty")
+			.AddScreen<EmptyScreen>(screen => screen
+				.WithTitle("Empty workspace")
+				.WithActivationMode(mode)
+				.WithScreenKind(ScreenKind.Empty)
+			)
+			.AddScreen<RegularScreen>(screen => screen.WithTitle("Regular"))
+			.WithDefaultScreen<EmptyScreen>()
+			.Build();
+	}
 
 	public class CountingMainForm : BlockMainForm {
 		public int RegisterCalls { get; private set; }

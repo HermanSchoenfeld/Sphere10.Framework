@@ -108,16 +108,19 @@ public class ApplicationScreenDefinitionTests {
 	}
 
 	[Test]
-	public void ScreenKindsCannotConflictForTheSameType() {
+	public void IndependentSameTypeRegistrationsCanDeclareDifferentScreenKinds() {
 		var block = CreateBlock("Block", Definition(typeof(FirstScreen)), Definition(typeof(FirstScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty));
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }), Has.Length.EqualTo(2));
 	}
 
 	[Test]
-	public void DistinctDefaultAndMenuAliasesCannotDeclareConflictingTypePolicies() {
+	public void ARegisteredDefaultRetainsItsOwnPolicyAlongsideAnotherRegistrationOfTheSameType() {
 		var block = CreateBlock("Block", Definition(typeof(FirstScreen), ScreenActivationMode.MultiInstance));
-		block.DefaultScreenDefinition = Definition(typeof(FirstScreen), ScreenActivationMode.PermanentSingleton);
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+		var selected = Definition(typeof(FirstScreen), ScreenActivationMode.PermanentSingleton);
+		block.AddScreenDefinition(selected);
+		block.DefaultScreenDefinition = selected;
+		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }), Has.Length.EqualTo(2));
+		Assert.That(block.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.PermanentSingleton));
 	}
 
 	[TestCase(ScreenActivationMode.SingleInstance, true)]
@@ -176,6 +179,7 @@ public class ApplicationScreenDefinitionTests {
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<IApplicationMenu, TestApplicationBlock> {
 		public BlockBuilder Default(ApplicationScreenDefinition definition) {
 			SetName("Block");
+			AddScreenDefinitionInternal(definition);
 			SetDefaultScreen(definition);
 			return this;
 		}

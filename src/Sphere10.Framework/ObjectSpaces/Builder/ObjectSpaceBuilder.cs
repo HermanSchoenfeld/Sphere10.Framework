@@ -309,7 +309,8 @@ public class ObjectSpaceBuilder {
 		return dimensionBuilder;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> Configure<T>() {
+	/// <summary>Returns the existing dimension configuration for a type, throwing when none was added.</summary>
+	public ObjectSpaceDimensionBuilder<T> GetDimension<T>() {
 		var dim = _dimensions.FirstOrDefault(x => x.ItemType == typeof(T));
 		if (dim is null)
 			throw new InvalidOperationException($"No dimension for type {typeof(T).ToStringCS()} was found");

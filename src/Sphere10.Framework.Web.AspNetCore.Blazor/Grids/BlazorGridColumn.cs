@@ -19,12 +19,20 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Typed display, editing and source-sort metadata for one grid column.</summary>
 public class BlazorGridColumn<T> {
+	private string _preferenceKey;
+
 	private static readonly PropertyMetadata[] _properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public)
 		.Where(property => property.GetIndexParameters().Length == 0 && !property.PropertyType.IsByRef && !property.PropertyType.IsByRefLike && !property.PropertyType.IsPointer
 			&& property.GetMethod is { IsPublic: true, IsStatic: false })
 		.Select(property => new PropertyMetadata(property)).ToArray();
 
 	public string ColumnName { get; set; }
+
+	/// <summary>Stable manual-width identity; normal columns fall back to their property or sort name.</summary>
+	public string PreferenceKey {
+		get => _preferenceKey ?? PropertyName ?? SortName;
+		set => _preferenceKey = value;
+	}
 
 	public string PropertyName { get; set; }
 

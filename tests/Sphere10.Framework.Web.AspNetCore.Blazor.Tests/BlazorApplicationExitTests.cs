@@ -87,12 +87,14 @@ public class BlazorApplicationExitTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task StartupAndCircuitSnapshotsPreserveBlockGuardsWithEachRunningApplication(bool allowExit) {
+		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen));
 		var source = new GuardedBlock {
 			Id = "workspace", Title = "Workspace", AllowExit = allowExit,
-			DefaultScreenDefinition = new ApplicationScreenDefinition(typeof(ProbeScreen))
+			ScreenDefinitions = new[] { definition }, DefaultScreenDefinition = definition
 		};
 		var plugin = new BlazorPlugin("Exit", new[] { source });
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(plugin);
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(plugin);
 		services.AddScoped<IBlazorApplication>(provider => new ConfirmingApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
 			provider.GetServices<IBlazorPlugin>()));
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
@@ -117,8 +119,13 @@ public class BlazorApplicationExitTests {
 
 	[Test]
 	public async Task ScreenVetoPreservesOwnershipAndForceBypassesBothScreenAndBlockGuards() {
-		var source = new GuardedBlock { Id = "workspace", Title = "Workspace", AllowExit = false, DefaultScreen = typeof(ProbeScreen) };
-		var services = new ServiceCollection().AddSphere10BlazorPlugin(new BlazorPlugin("Exit", new[] { source }));
+		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen));
+		var source = new GuardedBlock {
+			Id = "workspace", Title = "Workspace", AllowExit = false,
+			ScreenDefinitions = new[] { definition }, DefaultScreenDefinition = definition
+		};
+		var services = new ServiceCollection()
+			.AddSphere10BlazorPlugin(new BlazorPlugin("Exit", new[] { source }));
 		services.AddScoped<IBlazorApplication>(provider => new ConfirmingApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
 			provider.GetServices<IBlazorPlugin>()));
 		await using var provider = services.BuildServiceProvider();
@@ -367,6 +374,9 @@ public class BlazorApplicationExitTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle(nameof(ProbeScreen))
+			)
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
 		var services = new ServiceCollection();
@@ -374,7 +384,8 @@ public class BlazorApplicationExitTests {
 		services.AddSingleton(navigation);
 		services.AddSingleton<IJSRuntime>(new ModalRuntime());
 		services.AddScoped<ExitDialogProbe>();
-		services.AddSphere10BlazorPlugin(new BlazorPlugin("Exit", new[] { block }));
+		services
+			.AddSphere10BlazorPlugin(new BlazorPlugin("Exit", new[] { block }));
 		services.AddSphere10BlazorApplication(WorkspaceCommands.Configure);
 		return services;
 	}

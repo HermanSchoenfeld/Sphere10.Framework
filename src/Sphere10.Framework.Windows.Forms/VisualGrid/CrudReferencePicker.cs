@@ -52,7 +52,7 @@ public class CrudReferencePicker : UserControl {
 		Controls.Add(Buttons);
 	}
 
-	public CrudGrid Grid { get; }
+	public VisualGrid Grid { get; }
 
 	public object? SelectedEntity { get; private set; }
 
@@ -113,7 +113,7 @@ public class CrudReferencePicker : UserControl {
 		}
 	}
 
-	private sealed class ReferenceGrid : CrudGrid {
+	private sealed class ReferenceGrid : VisualGrid {
 		public override Task EditEntity(object Entity) => Task.CompletedTask;
 	}
 }

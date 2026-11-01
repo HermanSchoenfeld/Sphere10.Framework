@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A retained SourceGrid value model with a silent accepted-snapshot update.</summary>
-internal sealed class CrudGridPreparedValueModel : IValueModel {
+internal sealed class VisualGridPreparedValueModel : IValueModel {
 	private object _value;
 
 	public object GetValue(CellContext cellContext) => _value;

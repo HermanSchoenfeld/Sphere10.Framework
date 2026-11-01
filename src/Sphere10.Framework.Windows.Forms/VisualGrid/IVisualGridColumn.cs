@@ -12,7 +12,7 @@ using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface ICrudGridColumn {
+public interface IVisualGridColumn {
 	string ColumnName { get; set; }
 	Type DataType { get; set; }
 	CrudCellDisplayType DisplayType { get; }
@@ -21,6 +21,9 @@ public interface ICrudGridColumn {
 
 	/// <summary>Optional image scaling; null retains the original image dimensions.</summary>
 	Sphere10.Framework.ResizeMethod? ImageResizeMethod => null;
+
+	/// <summary>Stable preference identity; property and sort names provide the normal fallback.</summary>
+	string PreferenceKey => PropertyName ?? SortName;
 
 	string SortName { get; }
 

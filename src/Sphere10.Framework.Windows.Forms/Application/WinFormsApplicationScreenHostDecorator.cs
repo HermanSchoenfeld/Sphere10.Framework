@@ -6,12 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Application.UI;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -57,6 +57,10 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : MultiA
 		=> InternalHost.ActivateScreen(block, definition);
 
 	public virtual bool ShowScreen(WinFormsApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
+
+	public virtual Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+		return InternalHost.ShowScreenAsync(screen, registration, cancellationToken);
+	}
 
 	public virtual bool ShowScreenUndocked(WinFormsApplicationScreen screen) => InternalHost.ShowScreenUndocked(screen);
 

@@ -141,14 +141,14 @@
 		new BlazorApplicationMenuBuilder()
 			.WithId("tools")
 			.WithText("Tools")
-			.ConfigureItem(item => item
+			.AddItem(item => item
 				.WithId("showcase-mark-reviewed")
 				.WithText("Mark reviewed")
 				.WithIcon("fas fa-check-circle")
 				.EnabledWhen(() => CanReview)
 				.WithAction((_, token) => RunAsync(MarkReviewed, token))
 			)
-			.ConfigureItem(item => item
+			.AddItem(item => item
 				.WithId("showcase-clear-reviews")
 				.WithText("Clear review marks")
 				.WithIcon("fas fa-undo")
@@ -156,7 +156,7 @@
 				.WithAction((_, token) => RunAsync(ClearReviews, token))
 			)
 			.AddItem(new BlazorMenuSeparator())
-			.ConfigureItem(item => item
+			.AddItem(item => item
 				.WithId("showcase-inspect-context")
 				.WithText("Inspect command context")
 				.WithIcon("fas fa-info-circle")

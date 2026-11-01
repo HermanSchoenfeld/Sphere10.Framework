@@ -16,22 +16,42 @@ namespace Sphere10.Framework.Application.UI;
 public class ApplicationScreenDefinition {
 	private readonly List<IApplicationMenuItem> _activators = new();
 
-	public ApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal) {
+	public ApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal,
+		ApplicationScreenRegistration registration = null, string stableKey = null, object settings = null, Func<object> settingsFactory = null) {
 		Tools.UI.ValidateScreenType(screenType);
 		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
+		Guard.Argument(registration == null || registration.ScreenType == screenType && !registration.IsTypeReference, nameof(registration), "A definition requires an exact registration of its screen type.");
+		Guard.Argument(stableKey == null || !string.IsNullOrWhiteSpace(stableKey), nameof(stableKey), "A stable registration key cannot be blank.");
 		ScreenType = screenType;
 		Title = title ?? screenType.Name;
 		ActivationMode = activationMode;
 		ScreenKind = screenKind;
+		Registration = registration ?? new ApplicationScreenRegistration(screenType);
+		StableKey = stableKey;
+		Settings = settings == null ? null : ApplicationSettingsValueCloner.Copy(settings);
+		var defaults = settings == null || settingsFactory != null ? null : ApplicationSettingsValueCloner.Copy(settings);
+		SettingsFactory = settingsFactory ?? (defaults == null ? null : () => ApplicationSettingsValueCloner.Copy(defaults));
 	}
 
 	public Type ScreenType { get; }
 
-	public string Title { get; }
+	public string Title { get; private set; }
 
-	public ScreenActivationMode? ActivationMode { get; }
+	public ScreenActivationMode? ActivationMode { get; private set; }
 
 	public ScreenKind ScreenKind { get; }
+
+	/// <summary>Identifies this registration across graph snapshots without sharing mutable ownership.</summary>
+	public ApplicationScreenRegistration Registration { get; }
+
+	/// <summary>An explicit persistent identity, required when the owning block has several registrations of this type.</summary>
+	public string StableKey { get; }
+
+	/// <summary>Optional declared preferences, discoverable without constructing this registration's screen.</summary>
+	public object Settings { get; }
+
+	/// <summary>Creates fresh default values for Reset; an omitted factory copies the supplied object's initial values.</summary>
+	public Func<object> SettingsFactory { get; }
 
 	/// <summary>Returns a membership snapshot of commands attached to menus that reference this definition.</summary>
 	public IApplicationMenuItem[] Activators => _activators.ToArray();
@@ -48,28 +68,30 @@ public class ApplicationScreenDefinition {
 	/// <summary>Validates a complete set of definitions without changing their metadata or graph membership.</summary>
 	public static void ValidateDefinitions(IEnumerable<ApplicationScreenDefinition> definitions, Action<Type> validateScreenType = null) {
 		Guard.ArgumentNotNull(definitions, nameof(definitions));
-		var modes = new Dictionary<Type, ScreenActivationMode>();
-		var kinds = new Dictionary<Type, ScreenKind>();
 		foreach (var definition in definitions) {
 			Guard.ArgumentNotNull(definition, nameof(definitions));
 			Tools.UI.ValidateScreenType(definition.ScreenType);
 			Tools.UI.ValidateScreenPolicy(definition.ActivationMode, definition.ScreenKind);
 			validateScreenType?.Invoke(definition.ScreenType);
-			Guard.Argument(!kinds.TryGetValue(definition.ScreenType, out var kind) || kind == definition.ScreenKind,
-				nameof(definitions), $"Screen {definition.ScreenType.Name} declares conflicting screen kinds.");
-			kinds[definition.ScreenType] = definition.ScreenKind;
-			if (!definition.ActivationMode.HasValue)
-				continue;
-			var mode = definition.ActivationMode.Value;
-			Guard.Argument(!modes.TryGetValue(definition.ScreenType, out var existing) || existing == mode,
-				nameof(definitions), $"Screen {definition.ScreenType.Name} declares conflicting activation modes.");
-			modes[definition.ScreenType] = mode;
 		}
 	}
 
-	public virtual ApplicationScreenDefinition WithActivationMode(ScreenActivationMode activationMode) =>
-		new(ScreenType, Title, activationMode, ScreenKind);
+	/// <summary>Copies registration metadata into an independent graph with no command membership.</summary>
+	public virtual ApplicationScreenDefinition Clone() {
+		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings, SettingsFactory);
+	}
 
-	public virtual ApplicationScreenDefinition WithTitle(string title) =>
-		new(ScreenType, title, ActivationMode, ScreenKind);
+	public virtual ApplicationScreenDefinition WithActivationMode(ScreenActivationMode activationMode) {
+		Tools.UI.ValidateScreenPolicy(activationMode, ScreenKind);
+		var definition = Clone();
+		definition.ActivationMode = activationMode;
+		return definition;
+	}
+
+	public virtual ApplicationScreenDefinition WithTitle(string title) {
+		Guard.ArgumentNotNullOrEmpty(title, nameof(title));
+		var definition = Clone();
+		definition.Title = title;
+		return definition;
+	}
 }

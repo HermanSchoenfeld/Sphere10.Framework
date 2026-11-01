@@ -12,24 +12,19 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>Shared screen/action selection and validation for platform menu item builders.</summary>
+/// <summary>Configures command presentation and a screen reference or runtime action without registering screens.</summary>
 public abstract class ApplicationMenuItemBuilderBase {
-	private ApplicationScreenDefinition _screenDefinition;
-
 	protected string Text { get; private set; }
 
-	protected ApplicationScreenDefinition ScreenDefinition => ScreenType == null ? null :
-		_screenDefinition ??= new ApplicationScreenDefinition(ScreenType, ScreenTitle ?? Text, ActivationMode, ScreenKind);
+	protected ApplicationScreenDefinition ScreenDefinition { get; private set; }
 
-	protected Type ScreenType { get; private set; }
+	protected ApplicationScreenRegistration ScreenRegistration { get; private set; }
 
-	protected string ScreenTitle { get; private set; }
-
-	protected ScreenActivationMode? ActivationMode { get; private set; }
-
-	protected ScreenKind ScreenKind { get; private set; }
-
-	protected bool IsDefault { get; private set; }
+	protected Type ScreenType {
+		get {
+			return ScreenRegistration?.ScreenType;
+		}
+	}
 
 	protected Action Action { get; private set; }
 
@@ -40,48 +35,30 @@ public abstract class ApplicationMenuItemBuilderBase {
 	protected void SetText(string text) {
 		ValidateText(text);
 		Text = text;
-		if (ScreenTitle == null)
-			_screenDefinition = null;
 	}
 
 	protected void SetScreenType(Type screenType) {
 		ValidateScreenType(screenType);
-		Guard.Ensure(Action == null && UIAction == null && AsyncAction == null, "A menu item cannot contain both a screen and an action.");
-		ScreenType = screenType;
-		_screenDefinition = null;
-	}
-
-	protected void SetScreenTitle(string title) {
-		ScreenTitle = title;
-		_screenDefinition = null;
-	}
-
-	protected void SetActivationMode(ScreenActivationMode activationMode) {
-		Tools.UI.ValidateActivationMode(activationMode);
-		ActivationMode = activationMode;
-		_screenDefinition = null;
-	}
-
-	protected void SetScreenKind(ScreenKind screenKind) {
-		Tools.UI.ValidateScreenKind(screenKind);
-		ScreenKind = screenKind;
-		_screenDefinition = null;
+		SetScreenRegistration(ApplicationScreenRegistration.ForType(screenType));
 	}
 
 	protected void SetScreenDefinition(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		SetScreenType(definition.ScreenType);
-		ScreenTitle = definition.Title;
-		ActivationMode = definition.ActivationMode;
-		ScreenKind = definition.ScreenKind;
-		_screenDefinition = definition;
+		SetScreenRegistration(definition.Registration);
+		ScreenDefinition = definition;
 	}
 
-	protected void SetIsDefault(bool isDefault) => IsDefault = isDefault;
+	protected void SetScreenRegistration(ApplicationScreenRegistration registration) {
+		Guard.ArgumentNotNull(registration, nameof(registration));
+		ValidateScreenType(registration.ScreenType);
+		Guard.Ensure(Action == null && UIAction == null && AsyncAction == null, "A menu item cannot contain both a screen and an action.");
+		ScreenRegistration = registration;
+		ScreenDefinition = null;
+	}
 
 	protected void SetAction(Action action) {
 		Guard.ArgumentNotNull(action, nameof(action));
-		Guard.Ensure(ScreenType == null, "A menu item cannot contain both a screen and an action.");
+		Guard.Ensure(ScreenRegistration == null, "A menu item cannot contain both a screen and an action.");
 		Action = action;
 		UIAction = null;
 		AsyncAction = null;
@@ -89,7 +66,7 @@ public abstract class ApplicationMenuItemBuilderBase {
 
 	protected void SetAction(Action<IUserInterfaceServices> action) {
 		Guard.ArgumentNotNull(action, nameof(action));
-		Guard.Ensure(ScreenType == null, "A menu item cannot contain both a screen and an action.");
+		Guard.Ensure(ScreenRegistration == null, "A menu item cannot contain both a screen and an action.");
 		UIAction = action;
 		Action = null;
 		AsyncAction = null;
@@ -97,25 +74,27 @@ public abstract class ApplicationMenuItemBuilderBase {
 
 	protected void SetAction(Func<IServiceProvider, CancellationToken, Task> action) {
 		Guard.ArgumentNotNull(action, nameof(action));
-		Guard.Ensure(ScreenType == null, "A menu item cannot contain both a screen and an action.");
+		Guard.Ensure(ScreenRegistration == null, "A menu item cannot contain both a screen and an action.");
 		AsyncAction = action;
 		Action = null;
 		UIAction = null;
 	}
 
 	protected void ValidateItem() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
-		Guard.Ensure(ScreenType != null || Action != null || UIAction != null || AsyncAction != null, "A screen or action is required.");
-		Guard.Ensure(ScreenType != null || !IsDefault && ActivationMode == null && ScreenTitle == null && ScreenKind == ScreenKind.Normal, "Only screen items can declare screen behavior.");
-		Tools.UI.ValidateScreenPolicy(ActivationMode, ScreenKind);
+		Guard.Ensure(ScreenRegistration != null || Action != null || UIAction != null || AsyncAction != null, "A registered screen reference or action is required.");
+		Guard.Ensure(ScreenRegistration != null || !string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
 	}
 
-	protected virtual void ValidateText(string text) => Guard.ArgumentNotNull(text, nameof(text));
+	protected virtual void ValidateText(string text) {
+		Guard.ArgumentNotNull(text, nameof(text));
+	}
 
-	protected virtual void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType);
+	protected virtual void ValidateScreenType(Type screenType) {
+		Tools.UI.ValidateScreenType(screenType);
+	}
 }
 
-/// <summary>Shared fluent screen and action configuration. Platform factories validate the item kinds they support.</summary>
+/// <summary>Shared fluent command presentation, registered-screen references and runtime action callbacks.</summary>
 public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuItemBuilderBase
 	where TSelf : class {
 	public TSelf WithText(string text) {
@@ -133,23 +112,8 @@ public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuIte
 		return (TSelf)(object)this;
 	}
 
-	public TSelf WithScreenTitle(string title) {
-		SetScreenTitle(title);
-		return (TSelf)(object)this;
-	}
-
-	public TSelf WithActivationMode(ScreenActivationMode activationMode) {
-		SetActivationMode(activationMode);
-		return (TSelf)(object)this;
-	}
-
-	public TSelf WithScreenKind(ScreenKind screenKind) {
-		SetScreenKind(screenKind);
-		return (TSelf)(object)this;
-	}
-
-	public TSelf AsDefault(bool isDefault = true) {
-		SetIsDefault(isDefault);
+	public TSelf WithScreen(ApplicationScreenRegistration registration) {
+		SetScreenRegistration(registration);
 		return (TSelf)(object)this;
 	}
 
@@ -164,11 +128,7 @@ public abstract class ApplicationMenuItemBuilderBase<TSelf> : ApplicationMenuIte
 	}
 
 	public TSelf WithScreen<TScreen>()
-		where TScreen : IApplicationScreen => WithScreen(typeof(TScreen));
-
-	public TSelf AsSingleInstance() => WithActivationMode(ScreenActivationMode.SingleInstance);
-
-	public TSelf AsMultiInstance() => WithActivationMode(ScreenActivationMode.MultiInstance);
-
-	public TSelf AsPermanentSingleton() => WithActivationMode(ScreenActivationMode.PermanentSingleton);
+		where TScreen : IApplicationScreen {
+		return WithScreen(typeof(TScreen));
+	}
 }

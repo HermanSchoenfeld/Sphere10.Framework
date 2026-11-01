@@ -39,6 +39,9 @@ public interface IApplication : IApplicationCommandProvider, IDisposable, IAsync
 
 	IApplicationScreenHost ScreenHost { get; }
 
+	/// <summary>The application-owned catalog of declared screen and root preferences.</summary>
+	ApplicationSettingsCatalog Settings { get; }
+
 	bool HasUnsavedChanges { get; }
 
 	/// <summary>Runs the application's startup tasks once. Platform implementations may establish their UI before these tasks.</summary>

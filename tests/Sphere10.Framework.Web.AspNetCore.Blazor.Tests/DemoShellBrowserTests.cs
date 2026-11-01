@@ -387,7 +387,7 @@ public class DemoShellBrowserTests {
 		await WaitForBlockAsync("workspace");
 		Assert.That(await _page.Locator("#" + originalPanel).GetAttributeAsync("hidden"), Is.Not.Null);
 		await dock.GetByRole(AriaRole.Button, new() { Name = "Component gallery", Exact = true }).ClickAsync();
-		await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		await WaitForInteractiveGridAsync();
 		Assert.That(await table.EvaluateAsync<string>("element => element.closest('[role=tabpanel]').id"), Is.EqualTo(originalPanel));
 		Assert.That(await name.InputValueAsync(), Is.EqualTo("Retained across application blocks"));
@@ -411,12 +411,12 @@ public class DemoShellBrowserTests {
 		await firstName.PressAsync("Tab");
 
 		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Component gallery menus", Exact = true })
-			.GetByRole(AriaRole.Button, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+			.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		await _page.WaitForFunctionAsync("id => document.querySelector('.sphere10-screen[role=tabpanel]:not([hidden])')?.id !== id", firstPanelId);
 		await WaitForInteractiveGridAsync();
 		var secondPanelId = await activePanel.GetAttributeAsync("id");
 		Assert.That(secondPanelId, Is.Not.EqualTo(firstPanelId));
-		Assert.That(await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).CountAsync(), Is.EqualTo(2));
+		Assert.That(await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).CountAsync(), Is.EqualTo(2));
 		var secondTable = activePanel.Locator("[data-demo=grid] > .sphere10-grid > .sphere10-grid-viewport > table");
 		var secondGrid = secondTable.Locator("xpath=../..");
 		Assert.That(await secondTable.GetAttributeAsync("id"), Is.Not.EqualTo(firstTableId));
@@ -429,7 +429,7 @@ public class DemoShellBrowserTests {
 		Assert.That(await _page.EvaluateAsync<bool>("() => { const ids = Array.from(document.querySelectorAll('[data-demo=grid] [id]'), element => element.id); return new Set(ids).size === ids.length; }"),
 			Is.True, "Tables and their associated search and paging inputs must have unique IDs across retained screen instances.");
 
-		await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).And(_page.Locator($"[aria-controls='{firstPanelId}']")).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).And(_page.Locator($"[aria-controls='{firstPanelId}']")).ClickAsync();
 		await firstPanel.WaitForAsync();
 		Assert.That(await firstName.InputValueAsync(), Is.EqualTo("Draft in the first grid instance"));
 		Assert.That(await _page.Locator("#" + secondPanelId).GetAttributeAsync("hidden"), Is.Not.Null);
@@ -453,7 +453,7 @@ public class DemoShellBrowserTests {
 		await _page.WaitForFunctionAsync("screen => location.pathname === '/application' && new URLSearchParams(location.search).get('block') === 'components' && new URLSearchParams(location.search).get('screen') === screen", screenId);
 		await _page.GetByRole(AriaRole.Heading, new() { Name = heading, Exact = true }).WaitForAsync();
 		Assert.That(await _page.GetByRole(AriaRole.Tab, new() { Name = label, Exact = true }).GetAttributeAsync("aria-selected"), Is.EqualTo("true"));
-		await _page.GetByRole(AriaRole.Tab, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+		await _page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		await WaitForInteractiveGridAsync();
 		Assert.That(await table.EvaluateAsync<string>("element => element.closest('[role=tabpanel]').id"), Is.EqualTo(originalPanel));
 		Assert.That(await name.InputValueAsync(), Is.EqualTo("Retained through alias navigation"));
@@ -484,7 +484,7 @@ public class DemoShellBrowserTests {
 		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Application blocks", Exact = true })
 			.GetByRole(AriaRole.Button, new() { Name = "Component gallery", Exact = true }).ClickAsync();
 		await _page.GetByRole(AriaRole.Navigation, new() { Name = "Component gallery menus", Exact = true })
-			.GetByRole(AriaRole.Button, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+			.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		await WaitForInteractiveGridAsync();
 		Assert.That(await endpoint.InputValueAsync(), Is.EqualTo(original));
 		Assert.That(await endpoint.Locator("option").AllTextContentsAsync(), Does.Contain(added));
@@ -523,7 +523,7 @@ public class DemoShellBrowserTests {
 		await components.ClickAsync();
 		await components.And(_page.Locator("[aria-current=page]")).WaitForAsync();
 		var componentMenus = _page.GetByRole(AriaRole.Navigation, new() { Name = "Component gallery menus", Exact = true });
-		await componentMenus.GetByRole(AriaRole.Button, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+		await componentMenus.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 
 		// Save provides a circuit round trip after the vetoed screen request.
 		await _page.GetByRole(AriaRole.Tabpanel, new() { Name = "Single-instance screen", Exact = true })
@@ -532,7 +532,7 @@ public class DemoShellBrowserTests {
 		Assert.That(_page.Url, Is.EqualTo(editorUrl));
 		Assert.That(await note.InputValueAsync(), Is.EqualTo("Saved draft survives history"));
 		Assert.That(await components.GetAttributeAsync("aria-current"), Is.EqualTo("page"), "A blocked tab switch must not prevent browsing another block's menus.");
-		await componentMenus.GetByRole(AriaRole.Button, new() { Name = "CRUD grid", Exact = true }).ClickAsync();
+		await componentMenus.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		await WaitForBlockAsync("components");
 		await WaitForInteractiveGridAsync();
 		await _page.GoBackAsync();

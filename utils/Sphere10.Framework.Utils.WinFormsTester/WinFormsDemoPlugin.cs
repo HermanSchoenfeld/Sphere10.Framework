@@ -41,76 +41,135 @@ public static class WinFormsDemoPlugin {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		var emptyScreen = freshEmptyWorkspace ? typeof(ScreenHostingEmptyMultiTestScreen) : typeof(ScreenHostingEmptyTestScreen);
 		var emptyLifetime = freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance;
+		IWinFormsApplicationBlock workspace = null;
 
 		// Native definitions own their images; copies keep block removal from disposing resources used by another block or demo run.
 		plugin
 			.WithName("Workspace demonstrations")
-			.RegisterInitializer<DemoPluginInitializer>()
-			.RegisterInitializer<DemoWorkspaceInitializer>()
-			.RegisterFinalizer<DemoPluginFinalizer>()
-			.RegisterFinalizer<DemoWorkspaceFinalizer>()
-			.ConfigureBlock(block => block
+			.AddInitializer<DemoPluginInitializer>()
+			.AddInitializer<DemoWorkspaceInitializer>()
+			.AddFinalizer<DemoPluginFinalizer>()
+			.AddFinalizer<DemoWorkspaceFinalizer>()
+			.AddBlock(block => block
 				.WithName("Workspace")
 				.WithImage32x32((Image)Resources.TestBlock32x32.Clone())
 				.WithImage8x8((Image)Resources.TestBlock8x8.Clone())
-				.WithDefaultScreen(freshEmptyWorkspace ? emptyScreen : typeof(ScreenHostingSettingsTestScreen),
-					freshEmptyWorkspace ? "Empty Workspace" : "Settings", emptyLifetime,
-					freshEmptyWorkspace ? ScreenKind.Empty : ScreenKind.Normal
+				.AddScreen<ScreenHostingSettingsTestScreen>(screen => screen
+					.WithTitle("Settings")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
 				)
-				.ConfigureMenu(menu => menu
+				.AddScreen<ScreenHostingDesignTestScreen>(screen => screen
+					.WithTitle("Design")
+					.WithStableKey("design")
+				)
+				.AddScreen<ScreenHostingDesignTestScreen>(screen => screen
+					.WithTitle("CPU Inspector")
+					.WithStableKey("cpu-inspector")
+					.WithActivator(context => new ScreenHostingDesignTestScreen("CPU Inspector", "tester.cpu-inspector.standalone-grid"))
+					.UseSettings(
+						() => new ScreenHostingPreferences { Heading = "CPU summary" }
+					)
+					.AsSingleInstance(),
+					out var cpuInspector
+				)
+				.AddScreen<ScreenHostingDesignTestScreen>(screen => screen
+					.WithTitle("GPU Inspector")
+					.WithStableKey("gpu-inspector")
+					.WithActivator(context => new ScreenHostingDesignTestScreen("GPU Inspector", "tester.gpu-inspector.standalone-grid"))
+					.UseSettings(
+						() => new ScreenHostingPreferences { Heading = "GPU summary" }
+					)
+					.WithSettingsEditor(context => new ScreenHostingPreferencesEditor((ScreenHostingPreferences)context.Settings))
+					.AsSingleInstance(),
+					out var gpuInspector
+				)
+				.AddScreen<ScreenHostingDesignTestScreen>(screen => screen
+					.WithTitle("Menu-free Inspector")
+					.WithStableKey("menu-free-inspector")
+					.WithActivator(context => new ScreenHostingDesignTestScreen("Menu-free Inspector")),
+					out var menuFreeInspector
+				)
+				.AddScreen<ScreenHostingPlainTestScreen>(screen => screen
+					.WithTitle("Plain Screen")
+				)
+				.AddScreen(screen => screen
+					.WithScreen(emptyScreen)
+					.WithTitle("Empty Workspace")
+					.WithActivationMode(freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance)
+					.WithScreenKind(ScreenKind.Empty)
+				)
+				.AddScreen<ScreenA>(screen => screen
+					.WithTitle("Calendar And Toolbar")
+				)
+				.AddScreen<ScreenB>(screen => screen
+					.WithTitle("Expandable Panels")
+				)
+				.AddScreen<ScreenC>(screen => screen
+					.WithTitle("Task Pane Grids")
+				)
+				.WithDefaultScreen(freshEmptyWorkspace ? emptyScreen : typeof(ScreenHostingSettingsTestScreen))
+				.AddMenu(menu => menu
 					.WithText("Screen Hosting")
 					.WithImage32x32((Image)Resources.Tests32x32.Clone())
-					.ConfigureItem(item => item
+					.AddItem(item => item
 						.AsScreenItem()
 						.WithText("Settings")
 						.WithScreen<ScreenHostingSettingsTestScreen>()
-						.AsSingleInstance()
 						.WithImage((Image)Resources.Settings16x16.Clone())
-						.WithTitle("Settings")
 					)
-					.AddScreenItem<ScreenHostingDesignTestScreen>("New Design", (Image)Resources.Generic16x16.Clone(), title: "Design")
-					.AddScreenItem<ScreenHostingPlainTestScreen>("Plain Screen (No Bars)", (Image)Resources.Generic16x16.Clone(), title: "Plain Screen")
+					.AddShowScreenItem<ScreenHostingDesignTestScreen>("New Design", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<ScreenHostingDesignTestScreen>("First Design (by type)", (Image)Resources.Generic16x16.Clone(), showOnToolBar: false)
+					.AddShowScreenItem(typeof(ScreenHostingDesignTestScreen), "First Design (by runtime type)", (Image)Resources.Generic16x16.Clone(), showOnToolBar: false)
+					.AddShowScreenItem<ScreenHostingPlainTestScreen>("Plain Screen (No Bars)", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem(cpuInspector)
+					.AddShowScreenItem(gpuInspector)
+					.AddActionItem("Open Menu-free Inspector", userInterface => {
+						var host = ((BlockMainForm)userInterface.PrimaryUIController).ScreenHost;
+						host.ActivateScreen(workspace, Tools.UI.ResolveScreenRegistration(workspace.ScreenDefinitions, menuFreeInspector));
+					})
 					.AddActionItem("Use SingleView", userInterface => SetScreenMode(userInterface, ScreenMode.SingleView), (Image)Resources.Generic16x16.Clone())
 					.AddActionItem("Use MultiView", userInterface => SetScreenMode(userInterface, ScreenMode.MultiView), (Image)Resources.Generic16x16.Clone())
-					.AddActionItem("Close Ordinary Screens", CloseOrdinaryScreens, (Image)Resources.Generic16x16.Clone())
-					.ConfigureItem(item => item
+					.AddActionItem("Close Ordinary Screens", userInterface => CloseOrdinaryScreens(userInterface, workspace), (Image)Resources.Generic16x16.Clone())
+					.AddItem(item => item
 						.AsScreenItem()
 						.WithText("Empty Workspace")
 						.WithScreen(emptyScreen)
-						.WithScreenKind(ScreenKind.Empty)
 						.ShowOnExplorerBar(false)
 						.ShowOnToolBar(false)
-						.WithActivationMode(freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance)
 					)
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Navigation Samples")
 					.WithImage32x32((Image)Resources.Menu32x32.Clone())
-					.AddScreenItem<ScreenA>("Calendar And Toolbar", (Image)Resources.Generic16x16.Clone())
-					.AddScreenItem<ScreenB>("Expandable Panels", (Image)Resources.Generic16x16.Clone())
-					.AddScreenItem<ScreenC>("Task Pane Grids", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<ScreenA>("Calendar And Toolbar", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<ScreenB>("Expandable Panels", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<ScreenC>("Task Pane Grids", (Image)Resources.Generic16x16.Clone())
 				)
-				.ConfigureMenu(menu => menu
+				.AddMenu(menu => menu
 					.WithText("Wizard")
 					.WithImage32x32((Image)Resources.Wizard32x32.Clone())
 					.AddActionItem("Demo Wizard", async userInterface => await ShowDemoWizardAsync((Form)userInterface.PrimaryUIController), (Image)Resources.Wizard16x16.Clone())
-				)
+				),
+				out workspace
 			);
 
 		// The notes feature demonstrates permanent screens and guarded removal of a real application block.
 		if (!freshEmptyWorkspace)
 			plugin
-				.ConfigureBlock(block => block
+				.AddBlock(block => block
 					.WithName("Notes")
 					.WithImage32x32((Image)Resources.Menu32x32.Clone())
-					.ConfigureMenu(menu => menu
+					.AddScreen<ScreenHostingPermanentTestScreen>(screen => screen
+						.WithTitle("Permanent Notes")
+						.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+					)
+					.AddMenu(menu => menu
 						.WithText("Notes")
 						.WithImage32x32((Image)Resources.Menu32x32.Clone())
-						.ConfigureItem(item => item
+						.AddItem(item => item
 							.AsScreenItem()
 							.WithText("Permanent Notes")
 							.WithScreen<ScreenHostingPermanentTestScreen>()
-							.AsPermanentSingleton()
 							.WithImage((Image)Resources.Generic16x16.Clone())
 						)
 						.AddActionItem("Remove Notes Block", RemoveNotesBlock, (Image)Resources.Generic16x16.Clone())
@@ -136,10 +195,14 @@ public static class WinFormsDemoPlugin {
 			: "Notes block removed. Close the remaining ordinary screens to reveal the empty workspace.";
 	}
 
-	private static void CloseOrdinaryScreens(IUserInterfaceServices userInterface) {
+	private static void CloseOrdinaryScreens(IUserInterfaceServices userInterface, IWinFormsApplicationBlock workspace) {
 		var form = (BlockMainForm)userInterface.PrimaryUIController;
 		var closing = form.ScreenHost.OpenScreens.Where(screen => screen.ActivationMode != ScreenActivationMode.PermanentSingleton).ToArray();
 		var closed = form.ScreenHost.CloseScreens(closing);
+		if (closed && form.ScreenHost.OpenScreens.Length == 0) {
+			var empty = workspace.ScreenDefinitions.Single(definition => definition.ScreenKind == ScreenKind.Empty);
+			form.ScreenHost.ActivateScreen(workspace, empty);
+		}
 		form.Status = !closed ? "A screen blocked closing. Clear its cancellation checkbox and try again."
 			: form.ScreenHost.OpenScreens.Length > 0 ? "Permanent notes remain. Remove the Notes block before the empty workspace can appear."
 			: "The empty workspace has no tab. Open a screen and close it again to check its instance lifetime.";

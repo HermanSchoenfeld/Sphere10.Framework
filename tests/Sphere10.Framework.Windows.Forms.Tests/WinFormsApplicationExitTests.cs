@@ -359,7 +359,7 @@ public class WinFormsApplicationExitTests {
 		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
+			.AddServices(services => services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
 			.Start();
 		using var frameworkLifetime = Tools.Scope.ExecuteOnDispose(() => Sphere10Framework.Instance.EndFramework());
 		var previousContext = SynchronizationContext.Current;
@@ -513,7 +513,7 @@ public class WinFormsApplicationExitTests {
 		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
 		Sphere10Framework.Instance
 			.Build()
-			.ConfigureServices(services => services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
+			.AddServices(services => services.AddSingleton<IProductUsageServices, ProbeUsageServices>())
 			.Start();
 		using var frameworkLifetime = Tools.Scope.ExecuteOnDispose(() => Sphere10Framework.Instance.EndFramework());
 		Exception failure = null;

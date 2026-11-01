@@ -6,15 +6,15 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -102,7 +102,7 @@ public class ApplicationScreenHostTests {
 	}
 
 	[Test]
-	public async Task SingleInstanceIsRetainedAcrossBlocksAndMultipleInstancesAreIndependent() {
+	public async Task SingleInstancesAreRetainedPerRegistrationAndMultipleInstancesAreIndependent() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		var single = await host.ActivateScreenAsync("first", "single");
@@ -112,11 +112,13 @@ public class ApplicationScreenHostTests {
 		var secondMultiple = await host.ActivateScreenAsync("first", "multiple");
 		var selected = await host.ActivateScreenAsync("second", "shared");
 
-		Assert.That(selected, Is.SameAs(single));
-		Assert.That(selected.Screen, Is.SameAs(component));
-		Assert.That(selected.Block.Id, Is.EqualTo("first"));
+		Assert.That(selected, Is.Not.SameAs(single));
+		Assert.That(single.Screen, Is.SameAs(component));
+		Assert.That(selected.Block.Id, Is.EqualTo("second"));
+		Assert.That(await host.ActivateScreenAsync("second", "shared"), Is.SameAs(selected));
+		Assert.That(await host.ActivateScreenAsync("first", "single"), Is.SameAs(single));
 		Assert.That(firstMultiple.Id, Is.Not.EqualTo(secondMultiple.Id));
-		Assert.That(host.OpenScreens, Has.Length.EqualTo(3));
+		Assert.That(host.OpenScreens, Has.Length.EqualTo(4));
 	}
 
 	[Test]
@@ -253,9 +255,12 @@ public class ApplicationScreenHostTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("actions")
 			.WithName("Actions")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Screen")
+			)
+			.AddMenu(menu => menu
 				.WithText("Menu")
-				.AddScreenItem<ProbeScreen>("screen", "Screen")
+				.AddShowScreenItem<ProbeScreen>(text: "Screen", id: "screen")
 				.AddActionItem("run", "Run", async (services, token) => {
 					services.GetRequiredService<ActionState>().Calls++;
 					await services.GetRequiredService<IBlazorApplicationScreenHost>().ActivateScreenAsync("actions", "screen", token);
@@ -285,7 +290,7 @@ public class ApplicationScreenHostTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("actions")
 			.WithName("Actions")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("Menu")
 				.AddActionItem("run", "Run", (_, _) => Task.FromException(failure))
 			)
@@ -353,7 +358,7 @@ public class ApplicationScreenHostTests {
 		var actionBlock = new BlazorApplicationBlockBuilder()
 			.WithId("actions")
 			.WithName("Actions")
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithText("Menu")
 				.AddActionItem("run", "Run", () => { })
 			)
@@ -381,6 +386,9 @@ public class ApplicationScreenHostTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
+			.AddScreen<InitializingScreen>(screen => screen
+				.WithTitle(nameof(InitializingScreen))
+			)
 			.WithDefaultScreen<InitializingScreen>()
 			.Build();
 		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
@@ -399,18 +407,30 @@ public class ApplicationScreenHostTests {
 		new BlazorApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
-			.ConfigureMenu(menu => menu
+			.AddScreen<OtherScreen>(screen => screen
+				.WithTitle("Multiple")
+				.WithActivationMode(ScreenActivationMode.MultiInstance)
+			)
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Single")
+				.WithActivationMode(ScreenActivationMode.SingleInstance)
+			)
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<ProbeScreen>("single", "Single", ScreenActivationMode.SingleInstance)
-				.AddScreenItem<OtherScreen>("multiple", "Multiple", ScreenActivationMode.MultiInstance)
+				.AddShowScreenItem<ProbeScreen>(text: "Single", id: "single")
+				.AddShowScreenItem<OtherScreen>(text: "Multiple", id: "multiple")
 			)
 			.Build(),
 		new BlazorApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ProbeScreen>(screen => screen
+				.WithTitle("Shared")
+				.WithActivationMode(ScreenActivationMode.SingleInstance)
+			)
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<ProbeScreen>("shared", "Shared", ScreenActivationMode.SingleInstance)
+				.AddShowScreenItem<ProbeScreen>(text: "Shared", id: "shared")
 			)
 			.Build()
 	};

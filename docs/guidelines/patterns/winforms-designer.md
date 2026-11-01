@@ -39,8 +39,8 @@ Keep reusable domain/services/controller foundations abstract where appropriate;
 compose them behind a concrete nongeneric visual surface. Typed grid behavior
 can live in a nonvisual controller, leaving the designer to instantiate an
 ordinary control. Use the framework's
-[CrudGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/Crud/CrudGridSnapshotController.cs)
-behind a concrete designer-owned `CrudGrid`/`WinFormsApplicationScreen` surface.
+[VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
+behind a concrete designer-owned `VisualGrid`/`WinFormsApplicationScreen` surface.
 This visual-design requirement is an explicit exception
 to inheritance-only abstract-base naming; do not apply it to nonvisual classes.
 

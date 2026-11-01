@@ -624,7 +624,7 @@ sort lexicographically. Membership arrays are copied on replacement and access;
 row object ownership remains with the caller. Configure default sorting before
 publishing the source. CRUD mutation/validation operations remain unsupported.
 Its async reads use the existing sync-first data-source adapter. Native consumers
-can bind it through the WinForms `CrudGridSnapshotController<T>`; core retains no
+can bind it through the WinForms `VisualGridSnapshotController<T>`; core retains no
 visual dependency. [Snapshot tests](../../tests/Sphere10.Framework.Tests/DataSource/SnapshotDataSourceTests.cs)
 exercise query, ownership, concurrency and adapter behavior.
 

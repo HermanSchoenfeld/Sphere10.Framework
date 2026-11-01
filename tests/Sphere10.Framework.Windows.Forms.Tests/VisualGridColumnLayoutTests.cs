@@ -27,14 +27,14 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridColumnLayoutTests {
+public class VisualGridColumnLayoutTests {
 	[Test]
 	public void FirstNaturalHeaderWidthAlreadyFitsEverySortState([Values(false, true)] bool prepared, [Values(9f, 18f)] float fontSize) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, prepared);
 		var grid = FindGrid(crud);
 		using var font = new Font(grid.Font.FontFamily, fontSize);
 		grid.Font = font;
-		crud.GridBindings = new[] { new CrudGridColumn<string> { ColumnName = "GPU", SortName = "Value", DataType = typeof(string), PropertyValue = value => value } };
+		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "GPU", SortName = "Value", DataType = typeof(string), PropertyValue = value => value } };
 		var source = new SnapshotDataSource<string>();
 		source.ReplaceSnapshot(new[] { "x" });
 		await crud.SetDataSource(source);
@@ -74,7 +74,7 @@ public class CrudGridColumnLayoutTests {
 		using (var graphics = Graphics.FromImage(image))
 			graphics.Clear(Color.Magenta);
 		using var crud = NewGrid(owner, prepared);
-		var column = new CrudGridColumn<Image> { ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = value => value };
+		var column = new VisualGridColumn<Image> { ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = value => value };
 		// Exercise the column's default for the center case, rather than assigning that value in every case.
 		if (alignment != DrawingResizeAlignment.CenterCenter)
 			column.ImageAlignment = alignment;
@@ -115,7 +115,7 @@ public class CrudGridColumnLayoutTests {
 			graphics.FillRectangle(Brushes.Blue, 8, 0, 4, 6);
 		}
 		using var crud = NewGrid(owner, prepared);
-		crud.GridBindings = new[] { new CrudGridColumn<Image> {
+		crud.GridBindings = new[] { new VisualGridColumn<Image> {
 			ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = value => value,
 			ImageAlignment = DrawingResizeAlignment.BottomRight, ImageResizeMethod = method
 		} };
@@ -138,14 +138,14 @@ public class CrudGridColumnLayoutTests {
 		Assert.That(image.GetPixel(0, 0).ToArgb(), Is.EqualTo(Color.Lime.ToArgb()));
 	});
 
-	private static CrudGrid NewGrid(Form owner, bool prepared) {
-		var crud = new CrudGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PageMode = CrudGridPageMode.Single,
+	private static VisualGrid NewGrid(Form owner, bool prepared) {
+		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PageMode = VisualGridPageMode.Single,
 			PrepareReadOnlyCellsInBackground = prepared, AutoSizeRowsOnRefresh = false };
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static Grid FindGrid(CrudGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
+	private static Grid FindGrid(VisualGrid crud) => (Grid)crud.Controls.Find("_grid", true).Single();
 
 	private static Bitmap RenderCell(Grid grid, Size size) {
 		var cell = grid[1, 0];

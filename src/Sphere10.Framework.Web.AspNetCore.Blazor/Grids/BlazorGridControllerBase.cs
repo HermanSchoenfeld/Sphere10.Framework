@@ -66,6 +66,9 @@ public abstract class BlazorGridControllerBase<TItem> : Disposable, IBlazorGridC
 
 	public abstract Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode);
 
+	/// <summary>Restores the initial query before its first source read.</summary>
+	public abstract Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode, BlazorGridSettings initialSettings);
+
 	public abstract Task RefreshAsync();
 
 	public abstract Task RefreshAsync(bool showLoadingIndicator);

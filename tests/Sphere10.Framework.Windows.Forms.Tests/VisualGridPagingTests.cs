@@ -22,16 +22,16 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridPagingTests {
+public class VisualGridPagingTests {
 	[TestCase(1)]
 	[TestCase(50)]
 	[TestCase(9999)]
 	public void ManualPageSizeAcceptsOneThrough9999(int PageSize) => RunWithMessageLoop(async Owner => {
 		Owner.ClientSize = new Size(800, 400);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
+			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
 		};
 		await Crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Repeat("Address", 200).ToArray())));
 		await Crud.RefreshGrid();
@@ -53,13 +53,13 @@ public class CrudGridPagingTests {
 	[TestCase(550, 36)]
 	public void AutoPageSizeFitsMeasuredRowsAndResizes(int Height, int MinimumRowHeight) => RunWithMessageLoop(async Owner => {
 		Owner.ClientSize = new Size(800, Height);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		var Grid = (Grid)Crud.Controls.Find("_grid", true).Single();
 		Grid.MinimumHeight = MinimumRowHeight;
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true },
-			new CrudGridColumn<string> { DisplayType = CrudCellDisplayType.EditCommand }
+			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true },
+			new VisualGridColumn<string> { DisplayType = CrudCellDisplayType.EditCommand }
 		};
 		await Crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Range(1, 200).Select(Index => $"Address {Index}").ToArray())));
 		Crud.AutoPageSize = true;
@@ -81,10 +81,10 @@ public class CrudGridPagingTests {
 	[Test]
 	public void AutoPageSizeAccountsForHorizontalScrollbar() => RunWithMessageLoop(async Owner => {
 		Owner.ClientSize = new Size(400, 350);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = false }
+			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = false }
 		};
 		await Crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Repeat(new string('W', 160), 100).ToArray())));
 		Crud.AutoPageSize = true;
@@ -97,10 +97,10 @@ public class CrudGridPagingTests {
 	[Test]
 	public void AutoPageSizeRemainsPositiveForSmallViewport() => RunWithMessageLoop(async Owner => {
 		Owner.ClientSize = new Size(400, 100);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
+			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
 		};
 		await Crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Repeat("Address", 100).ToArray())));
 		Crud.AutoPageSize = true;
@@ -111,10 +111,10 @@ public class CrudGridPagingTests {
 	[Test]
 	public void DisablingAutoPageSizeRestoresManualPage() => RunWithMessageLoop(async Owner => {
 		Owner.ClientSize = new Size(800, 350);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
+			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
 		};
 		await Crud.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Repeat("Address", 200).ToArray())));
 		Crud.AutoPageSize = true;
@@ -128,10 +128,10 @@ public class CrudGridPagingTests {
 	[Test]
 	public void ResizingDuringReadUsesLatestViewport() => RunWithMessageLoop(async Owner => {
 		Owner.ClientSize = new Size(800, 300);
-		using var Crud = new CrudGrid { Dock = DockStyle.Fill };
+		using var Crud = new VisualGrid { Dock = DockStyle.Fill };
 		Owner.Controls.Add(Crud);
 		Crud.GridBindings = new[] {
-			new CrudGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
+			new VisualGridColumn<string> { ColumnName = "Address", DataType = typeof(string), PropertyValue = Item => Item, ExpandsToFit = true }
 		};
 		var Source = new DelayedDataSource();
 		await Crud.SetDataSource(Source);
@@ -142,7 +142,7 @@ public class CrudGridPagingTests {
 		await WaitForGrid(Crud);
 		AssertPageFits(Crud, (Grid)Crud.Controls.Find("_grid", true).Single());
 	});
-	private static void AssertPageFits(CrudGrid Crud, Grid Grid) {
+	private static void AssertPageFits(VisualGrid Crud, Grid Grid) {
 		Assert.That(Crud.VisibleEntities, Is.Not.Empty);
 		Assert.That(Grid.VScrollBarVisible, Is.False, $"{Grid.Rows.Count} rows must fit the {Grid.DisplayRectangle.Height}px viewport");
 		Assert.That(Grid.Rows.Sum(Row => Row.Height), Is.LessThanOrEqualTo(Grid.DisplayRectangle.Height));
@@ -150,14 +150,14 @@ public class CrudGridPagingTests {
 			"The page should use all available space without adding a partially visible row");
 	}
 
-	private static async Task WaitForGrid(CrudGrid Crud) {
+	private static async Task WaitForGrid(VisualGrid Crud) {
 		var Grid = (Grid)Crud.Controls.Find("_grid", true).Single();
 		for (var Attempt = 0; Attempt < 300; Attempt++) {
 			await Task.Delay(10);
-			if (Grid.Enabled && Crud.VisibleEntities.Any() && typeof(CrudGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Crud)!.ToString() == "Normal")
+			if (Grid.Enabled && Crud.VisibleEntities.Any() && typeof(VisualGrid).GetProperty("State", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Crud)!.ToString() == "Normal")
 				return;
 		}
-		Assert.Fail("CrudGrid did not finish refreshing");
+		Assert.Fail("VisualGrid did not finish refreshing");
 	}
 
 	private static void RunWithMessageLoop(Func<Form, Task> Test) {

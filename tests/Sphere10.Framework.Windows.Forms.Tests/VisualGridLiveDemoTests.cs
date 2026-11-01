@@ -22,14 +22,14 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class CrudGridLiveDemoTests {
+public class VisualGridLiveDemoTests {
 	[Test]
 	public void LiveCaptureKeepsCommittedRowsSelectableAndTimerPublishesReplacementInstances() => RunWithMessageLoop(async owner => {
 		using var screen = CreateScreen(owner);
 		await screen.Initialization;
-		var grid = Find<CrudGrid>(screen, "_liveGrid");
+		var grid = Find<VisualGrid>(screen, "_liveGrid");
 		await grid.RefreshGrid();
-		var rows = grid.VisibleEntities.Cast<CrudTestScreen.LiveSample>().ToArray();
+		var rows = grid.VisibleEntities.Cast<VisualGridTestScreen.LiveSample>().ToArray();
 		Assert.That(rows.Length, Is.GreaterThan(1).And.LessThan(500), "Auto Paged must query a fitted page from the 500-row source.");
 		grid.SelectedEntity = rows[0];
 		var pending = screen.RefreshLiveSnapshotAsync();
@@ -37,7 +37,7 @@ public class CrudGridLiveDemoTests {
 		Assert.That(grid.Enabled, Is.True, "Suppressed capture must keep its committed rows interactive.");
 		grid.SelectedEntity = rows[1];
 		await pending;
-		var selected = (CrudTestScreen.LiveSample)grid.SelectedEntity;
+		var selected = (VisualGridTestScreen.LiveSample)grid.SelectedEntity;
 		Assert.That(selected.Id, Is.EqualTo(rows[1].Id));
 		Assert.That(selected, Is.Not.SameAs(rows[1]));
 		Assert.That(selected.Generation, Is.GreaterThan(rows[1].Generation));
@@ -46,9 +46,9 @@ public class CrudGridLiveDemoTests {
 		Assert.That(threads.Groups[1].Value, Is.Not.EqualTo(threads.Groups[2].Value), "The demonstration must capture on a worker even when helper awaits complete synchronously.");
 
 		Find<CheckBox>(screen, "_liveUpdatesCheckBox").Checked = true;
-		await WaitForAsync(() => grid.SelectedEntity is CrudTestScreen.LiveSample current && current.Generation > selected.Generation);
+		await WaitForAsync(() => grid.SelectedEntity is VisualGridTestScreen.LiveSample current && current.Generation > selected.Generation);
 		Find<CheckBox>(screen, "_liveUpdatesCheckBox").Checked = false;
-		Assert.That(((CrudTestScreen.LiveSample)grid.SelectedEntity).Id, Is.EqualTo(selected.Id));
+		Assert.That(((VisualGridTestScreen.LiveSample)grid.SelectedEntity).Id, Is.EqualTo(selected.Id));
 		Assert.That(grid.Enabled, Is.True);
 	});
 
@@ -56,27 +56,27 @@ public class CrudGridLiveDemoTests {
 	public void TargetedDemoRefreshReplacesOnlyItsRowAndDisappearanceRemovesOnlyThatIdentity() => RunWithMessageLoop(async owner => {
 		using var screen = CreateScreen(owner);
 		await screen.Initialization;
-		var grid = Find<CrudGrid>(screen, "_liveGrid");
+		var grid = Find<VisualGrid>(screen, "_liveGrid");
 		await grid.RefreshGrid();
-		var before = grid.VisibleEntities.Cast<CrudTestScreen.LiveSample>().ToArray();
+		var before = grid.VisibleEntities.Cast<VisualGridTestScreen.LiveSample>().ToArray();
 		grid.SelectedEntity = before[0];
 		Assert.That(await screen.RefreshSelectedLiveRowAsync(), Is.True);
-		var replacement = (CrudTestScreen.LiveSample)grid.SelectedEntity;
+		var replacement = (VisualGridTestScreen.LiveSample)grid.SelectedEntity;
 		Assert.That(replacement.Id, Is.EqualTo(before[0].Id));
 		Assert.That(replacement.Generation, Is.GreaterThan(before[0].Generation));
 		Assert.That(grid.VisibleEntities.Skip(1).Zip(before.Skip(1), ReferenceEquals).All(same => same), Is.True,
 			"A targeted refresh must retain every other row instance.");
 		Assert.That(await screen.RefreshSelectedLiveRowAsync(disappear: true), Is.True);
 		Assert.That(grid.SelectedEntity, Is.Null);
-		Assert.That(grid.VisibleEntities.Cast<CrudTestScreen.LiveSample>().Select(row => row.Id), Does.Not.Contain(before[0].Id));
+		Assert.That(grid.VisibleEntities.Cast<VisualGridTestScreen.LiveSample>().Select(row => row.Id), Does.Not.Contain(before[0].Id));
 		Assert.That(grid.VisibleEntities.Count(), Is.EqualTo(before.Length - 1));
 		await screen.RefreshLiveSnapshotAsync();
-		Assert.That(grid.VisibleEntities.Cast<CrudTestScreen.LiveSample>().Select(row => row.Id), Does.Contain(before[0].Id));
+		Assert.That(grid.VisibleEntities.Cast<VisualGridTestScreen.LiveSample>().Select(row => row.Id), Does.Contain(before[0].Id));
 	});
 
-	private static CrudTestScreen CreateScreen(Form owner) {
-		var screen = new CrudTestScreen { Dock = DockStyle.Fill };
-		foreach (var grid in screen.Controls.Find("_crudGrid", true).OfType<CrudGrid>())
+	private static VisualGridTestScreen CreateScreen(Form owner) {
+		var screen = new VisualGridTestScreen { Dock = DockStyle.Fill };
+		foreach (var grid in screen.Controls.Find("_visualGrid", true).OfType<VisualGrid>())
 			grid.PersistSettings = false;
 		owner.Controls.Add(screen);
 		var tabs = Find<TabControl>(screen, "_contentTabs");

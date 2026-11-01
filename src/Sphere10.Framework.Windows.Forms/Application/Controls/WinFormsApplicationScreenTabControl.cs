@@ -7,13 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Application.UI;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -55,6 +55,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private bool _updatingCaptions;
 	private bool _deferringInputRendering;
 	private bool _refreshAfterRecreate;
+	private bool _creatingHandle;
 	private int _originalIndex;
 	private int _maximumTabWidth = 320;
 	private int _metricsDpi = LogicalDpi;
@@ -256,6 +257,17 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 		if (!Reordering && ReferenceEquals(Args.Control, _pressedTab))
 			CancelDrag();
 		base.OnControlRemoved(Args);
+	}
+
+	// Padding recreates a native tab handle, so apply it only after the original HWND has finished creation.
+	protected override void CreateHandle() {
+		_creatingHandle = true;
+		try {
+			base.CreateHandle();
+		} finally {
+			_creatingHandle = false;
+		}
+		UpdateTabPadding();
 	}
 
 	protected override void OnHandleCreated(EventArgs Args) {
@@ -560,6 +572,9 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	}
 
 	private void UpdateTabPadding() {
+		if (_creatingHandle)
+			return;
+
 		var reservedWidth = ScaleMetric(LogicalCloseSize) + 3 * ScaleMetric(LogicalTextInset);
 		if (ImageList != null)
 			reservedWidth += ScaleMetric(LogicalIconSize) + ScaleMetric(LogicalIconGap) - ImageList.ImageSize.Width;

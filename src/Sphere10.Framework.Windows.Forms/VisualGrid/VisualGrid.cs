@@ -15,14 +15,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
-using Sphere10.Framework.Application;
-
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class CrudGrid : UserControl, ICrudGrid {
+public partial class VisualGrid : UserControl, IVisualGrid {
 
 	#region Constants
 
@@ -34,17 +34,17 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	#region Events
 
 	[Category("Behavior")]
-	public event EventHandlerEx<CrudGrid, object> EntitySelected;
+	public event EventHandlerEx<VisualGrid, object> EntitySelected;
 	[Category("Behavior")]
-	public event EventHandlerEx<CrudGrid, object> EntityDeselected;
+	public event EventHandlerEx<VisualGrid, object> EntityDeselected;
 	[Category("Behavior")]
-	public event EventHandlerEx<CrudGrid, object> EntityCreated;
+	public event EventHandlerEx<VisualGrid, object> EntityCreated;
 	[Category("Behavior")]
-	public event EventHandlerEx<CrudGrid, object> EntityUpdated;
+	public event EventHandlerEx<VisualGrid, object> EntityUpdated;
 	[Category("Behavior")]
-	public event EventHandlerEx<CrudGrid, object> EntityDeleted;
+	public event EventHandlerEx<VisualGrid, object> EntityDeleted;
 	[Category("Behavior")]
-	public event EventHandlerEx<CrudGrid, CrudEntityPropertyChangedEventArgs> EntityPropertyChanged;
+	public event EventHandlerEx<VisualGrid, CrudEntityPropertyChangedEventArgs> EntityPropertyChanged;
 	/// <summary>Raised on the owning UI thread after the current filtered query has been bound, including empty results.</summary>
 	[Category("Behavior")]
 	public event EventHandler DataBindingComplete;
@@ -63,13 +63,13 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private int _endPageNumber;
 	private int _pageSize;
 	private int _manualPageSize;
-	private CrudGridPageMode _pageMode;
+	private VisualGridPageMode _pageMode;
 	private int _totalRecords;
 	private string _searchText;
 	private Type _dataSourceItemType = typeof(object);
 	private string _gridTitle;
 	private DataSourceCapabilities _crudCapabilities;
-	private ICrudGridColumn[] _columnsBindings;
+	private IVisualGridColumn[] _columnsBindings;
 	private IDictionary<int, object> _rowToEntityMap;
 	private ILookup<object, int> _entityToRowLookup;
 	private object _selectedEntity;
@@ -87,22 +87,22 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private bool _layingOutPageBar;
 	private bool _sizingColumns;
 	private bool _columnsSizedFromData;
-	private ICrudGridColumn[] _sizedColumnBindings;
+	private IVisualGridColumn[] _sizedColumnBindings;
 	private int[] _columnMinimumWidths = Array.Empty<int>();
 	private int _columnViewportWidth;
-	private readonly Dictionary<ICrudGridColumn, int> _columnWidthOverrides = new();
-	private readonly Dictionary<ICrudGridColumn, SourceGrid.Cells.Views.Cell> _imageCellViews = new();
+	private readonly Dictionary<IVisualGridColumn, int> _columnWidthOverrides = new();
+	private readonly Dictionary<IVisualGridColumn, SourceGrid.Cells.Views.Cell> _imageCellViews = new();
 	private readonly AsyncSynchronizedGate _bindingGate = new();
 	private bool _refreshing;
 	private bool _awaitingInitialBinding;
 	private int _loadingIndicatorScopes;
 	private int _bindingVersion;
 	private IDataSource<object> _boundDataSource;
-	private ICrudGridColumn[] _boundColumns;
+	private IVisualGridColumn[] _boundColumns;
 	private int _sourceAssignmentVersion;
 	private int _dataPublicationVersion;
 	private IDataSource<object> _rowHeightDataSource;
-	private ICrudGridColumn[] _rowHeightBindings;
+	private IVisualGridColumn[] _rowHeightBindings;
 	private int[] _rowHeightColumnWidths = Array.Empty<int>();
 	private (int ImageHeight, bool HasText)[] _rowHeightSignatures = Array.Empty<(int, bool)>();
 	private (System.Drawing.Font GridFont, System.Drawing.Font CellFont, int Dpi, int MinimumHeight, SourceGrid.Drawing.Padding Padding, System.Drawing.SizeF BorderExtent, object TextElement, object ImageElement, SourceGrid.Drawing.ElementsDrawMode DrawMode) _rowHeightGeometry;
@@ -111,15 +111,21 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#region Constructors
 
-	public CrudGrid() {
+	public VisualGrid() {
 		State = VisualState.Normal;
 		using (EnterVisualState(VisualState.Loading)) {
 		_threadLock = new object();
 			InitializeComponent();
+			_pageModeButton.ItemTextProvider = mode => (VisualGridPageMode)mode == VisualGridPageMode.Paged ? "Manual" : mode.ToString();
+			_pageModeButton.SetItems(new object[] { VisualGridPageMode.Single, VisualGridPageMode.Auto, VisualGridPageMode.Paged });
 			Disposed += (_, _) => ResetRowHeightMeasurements();
 			_grid.MouseDown += _grid_MouseDown;
 			_grid.KeyDown += _grid_KeyDown;
 			_grid.Columns.ColumnWidthChanged += GridColumnWidthChanged;
+			_grid.MouseUp += GridPreferenceResizeCompleted;
+			var preferenceEvents = new SourceGrid.Cells.Controllers.CustomEvents();
+			preferenceEvents.EditEnded += GridPreferenceEditEnded;
+			_grid.Controller.AddController(preferenceEvents);
 			// Keep SourceGrid's controller order while giving this grid independent mouse-selection settings.
 			_grid.Controller.RemoveController(SourceGrid.Cells.Controllers.MouseSelection.Default);
 			_grid.Controller.RemoveController(SourceGrid.Cells.Controllers.CellEventDispatcher.Default);
@@ -136,7 +142,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			_pageSizeUpDown.Minimum = 1;
 			_pageSizeUpDown.Maximum = 9999;
 			_pageSizeUpDown.Value = _pageSize;
-			_pageMode = CrudGridPageMode.Paged;
+			_pageMode = VisualGridPageMode.Paged;
 			_pageNumber = 0;
 			_endPageNumber = 0;
 			_totalRecords = 0;
@@ -144,7 +150,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			CalculateEntityToRowLookup();
 			_gridTitle = string.Empty;
 			_crudCapabilities = DataSourceCapabilities.Default;
-			_columnsBindings = new ICrudGridColumn[0];
+			_columnsBindings = new IVisualGridColumn[0];
 			_entityEditorAdapter = new CrudEntityEditorAdapter<object>();
 			_entityEditorType = typeof(DefaultCrudEntityEditor);
 			_gridContainerPanel.Resize += new EventHandler(_gridContainerPanel_Resize);
@@ -219,8 +225,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	[Description("Selects manual paging, viewport-fitted paging, or all matching rows in one scrollable page.")]
 	[Category("Appearance")]
-	[DefaultValue(CrudGridPageMode.Paged)]
-	public CrudGridPageMode PageMode {
+	[DefaultValue(VisualGridPageMode.Paged)]
+	public VisualGridPageMode PageMode {
 		get => _pageMode;
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Select a supported CRUD grid page mode.");
@@ -241,8 +247,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	[Category("Appearance")]
 	[DefaultValue(false)]
 	public bool AutoPageSize {
-		get => PageMode == CrudGridPageMode.Auto;
-		set => PageMode = value ? CrudGridPageMode.Auto : CrudGridPageMode.Paged;
+		get => PageMode == VisualGridPageMode.Auto;
+		set => PageMode = value ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
 	}
 
 	[Description("Uses reference equality (in place of standard equality) when programatically selecting an entity.")]
@@ -355,11 +361,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IEnumerable<ICrudGridColumn> GridBindings {
+	public IEnumerable<IVisualGridColumn> GridBindings {
 		get { return _columnsBindings; }
 		set {
-			_columnsBindings = (value ?? Enumerable.Empty<ICrudGridColumn>()).ToArray();
-			_columnWidthOverrides.Clear();
+			var bindings = (value ?? Enumerable.Empty<IVisualGridColumn>()).ToArray();
+			if (_preferences != null)
+				ValidatePreferenceBindings(bindings);
+			_columnsBindings = bindings;
+			RestoreColumnPreferences(_preferences?.Columns ?? _gridSettings?.Columns);
 			_imageCellViews.Clear();
 			ResetRowHeightMeasurements();
 			if (_sortColumnName == null)
@@ -424,7 +433,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		ResolvePublishedEntity = null;
 		ResetRowHeightMeasurements();
 		_crudCapabilities = available & capabilities;
-		RestoreGridSettings();
+		await RestoreGridSettingsAsync();
+		RestoreColumnPreferences(_preferences?.Columns ?? _gridSettings?.Columns);
 		UpdateCellInteraction();
 		OrganizeLayout();
 	}
@@ -478,7 +488,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		var refreshed = new[] { entity };
 		var prepare = CanPrepareReadOnlyCells(bindings);
 		var formats = prepare ? bindings.Select(column => (column.DisplayType, column.DataType)).ToArray() : null;
-		CrudGridPreparedValue[][] prepared = null;
+		VisualGridPreparedValue[][] prepared = null;
 		if (prepare) {
 			try {
 				prepared = await Task.Run(async () => {
@@ -645,7 +655,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		_editToolStripMenuItem.Enabled = _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate);
 		_searchTextBox.Enabled = _crudCapabilities.HasFlag(DataSourceCapabilities.CanSearch);
 
-		UpdateButtonBarVisibility();
+		UpdateSettingsButton();
 		var shouldBind = !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead) && _grid.Rows.Count > 0;
 		shouldBind = shouldBind || _crudCapabilities.HasFlag(DataSourceCapabilities.CanRead) && _grid.Rows.Count == 0;
 		shouldBind = shouldBind || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) && _sortColumnName != null;
@@ -658,15 +668,15 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			shouldBind = shouldBind || _layoutPanel.RowStyles[2].Height == 0;
 			ShowPageBar();
 			_pageSize = PageMode switch {
-				CrudGridPageMode.Auto => CalculateAutoPageSize(),
-				CrudGridPageMode.Single => int.MaxValue,
+				VisualGridPageMode.Auto => CalculateAutoPageSize(),
+				VisualGridPageMode.Single => int.MaxValue,
 				_ => _manualPageSize
 			};
 			UpdatePageSizeDisplay();
 			UpdatePageModeControl();
-			_pageModeComboBox.Enabled = true;
-			_manualPageSizePanel.Visible = _manualPageSizePanel.Enabled = PageMode == CrudGridPageMode.Paged;
-			_pageNavigationPanel.Visible = _pageNavigationPanel.Enabled = PageMode != CrudGridPageMode.Single;
+			_pageModeToolStrip.Enabled = true;
+			_manualPageSizePanel.Visible = _manualPageSizePanel.Enabled = PageMode == VisualGridPageMode.Paged;
+			_pageNavigationPanel.Visible = _pageNavigationPanel.Enabled = PageMode != VisualGridPageMode.Single;
 		} else {
 			shouldBind = shouldBind || _layoutPanel.RowStyles[2].Height != 0;
 			HidePageBar();
@@ -679,7 +689,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private void UpdatePageModeControl() {
 		_updatingPageModeControl = true;
 		using var restoreFlag = Tools.Scope.ExecuteOnDispose(() => _updatingPageModeControl = false);
-		_pageModeComboBox.SelectedIndex = (int)_pageMode;
+		_pageModeButton.SelectedItem = _pageMode;
+		_pageModeButton.ToolTipText = "Page mode: " + _pageModeButton.Text;
+		_pageModeButton.AccessibleDescription = _pageModeButton.ToolTipText;
 	}
 
 	private void UpdateDeleteButtonVisibility() {
@@ -691,7 +703,6 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	internal void AutoSizeCells() {
 		if (_sizedColumnBindings != _columnsBindings)
 			return;
-		_columnWidthOverrides.Clear();
 		SizeBoundColumns();
 		RememberRowHeightGeometry();
 		RefreshAutoPageSize();
@@ -703,27 +714,29 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		_layingOutPageBar = true;
 		using var restoreFlag = Tools.Scope.ExecuteOnDispose(() => _layingOutPageBar = false);
 		// Keep every footer element on the same baseline at the current font and DPI.
-		var height = Math.Max(_pageModeComboBox.PreferredHeight, Math.Max(_pageSizeUpDown.PreferredHeight, _pageNumberBox.PreferredHeight));
+		var height = Math.Max(_pageSizeUpDown.PreferredHeight, _pageNumberBox.PreferredHeight);
 		var spacing = Math.Max(1, (int)Math.Round(3 * DeviceDpi / 96.0));
 		foreach (var button in new[] { _firstPageButton, _previousPageButton, _nextPageButton, _lastPageButton }) {
 			button.Size = new System.Drawing.Size(height, height);
 			button.Margin = new Padding(spacing);
 		}
 		_pageSizeUpDown.Margin = _pageNumberBox.Margin = new Padding(spacing);
-		_pageModeComboBox.Margin = new Padding(spacing, spacing, spacing * 2, spacing);
+		_pageModeToolStrip.Margin = new Padding(spacing, spacing, spacing * 2, spacing);
 		_pageNavigationPanel.Margin = new Padding(spacing, 0, 0, 0);
 		_totalRecordsPanel.Margin = new Padding(0, 0, spacing * 2, 0);
 		_pageSizeUpDown.Width = TextRenderer.MeasureText("9999", Font).Width + SystemInformation.VerticalScrollBarWidth + 12;
-		_pageModeComboBox.Width = _pageModeComboBox.Items.Cast<object>().Max(item => TextRenderer.MeasureText(item.ToString(), Font).Width)
-			+ SystemInformation.VerticalScrollBarWidth + spacing * 4;
+		_pageModeToolStrip.Font = Font;
+		_pageModeToolStrip.ImageScalingSize = new System.Drawing.Size(16 * DeviceDpi / 96, 16 * DeviceDpi / 96);
+		_pageModeButton.Size = new System.Drawing.Size(height + spacing * 4, height);
+		_pageModeToolStrip.Size = _pageModeButton.Size;
 		_pageNumberBox.Width = TextRenderer.MeasureText(Math.Max(9999, _endPageNumber + 1).ToString(), Font).Width + 12;
 		foreach (var control in new Control[] { label3, _totalRecordsLabel, _pageSizeLabel, _pageCountLabel })
 			control.Margin = new Padding(spacing, Math.Max(0, (height - control.PreferredSize.Height) / 2) + spacing, spacing, spacing);
 		// Narrow hosts put the right-aligned paging groups below Total, without clipping a group.
-		var pagingWidth = _pageModeComboBox.Width + _pageModeComboBox.Margin.Horizontal;
-		if (PageMode == CrudGridPageMode.Paged)
+		var pagingWidth = _pageModeToolStrip.Width + _pageModeToolStrip.Margin.Horizontal;
+		if (PageMode == VisualGridPageMode.Paged)
 			pagingWidth += _manualPageSizePanel.PreferredSize.Width + _manualPageSizePanel.Margin.Horizontal;
-		if (PageMode != CrudGridPageMode.Single)
+		if (PageMode != VisualGridPageMode.Single)
 			pagingWidth += _pageNavigationPanel.PreferredSize.Width + _pageNavigationPanel.Margin.Horizontal;
 		var requiredWidth = _totalRecordsPanel.PreferredSize.Width + _totalRecordsPanel.Margin.Horizontal + pagingWidth;
 		var separateRow = requiredWidth > _bottomPanel.ClientSize.Width - _bottomPanel.Padding.Horizontal;
@@ -756,11 +769,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		_columnsSizedFromData = _rowToEntityMap.Count > 0;
 		_columnMinimumWidths = new int[_grid.ColumnsCount];
 		for (var column = 0; column < _grid.ColumnsCount; column++)
-			_grid.Columns[column].AutoSizeMode = _columnsBindings[column].ExpandsToFit
+			_grid.Columns[column].AutoSizeMode = _columnWidthOverrides.ContainsKey(_columnsBindings[column]) ? SourceGrid.AutoSizeMode.None : _columnsBindings[column].ExpandsToFit
 				? SourceGrid.AutoSizeMode.EnableAutoSize | SourceGrid.AutoSizeMode.EnableStretch : SourceGrid.AutoSizeMode.EnableAutoSize;
 		_grid.AutoSizeCells();
-		for (var column = 0; column < _grid.ColumnsCount; column++)
+		for (var column = 0; column < _grid.ColumnsCount; column++) {
+			if (_columnWidthOverrides.TryGetValue(_columnsBindings[column], out var manual))
+				_grid.Columns[column].Width = manual;
 			_columnMinimumWidths[column] = _grid.Columns[column].Width;
+		}
 		StretchColumnsToViewport();
 	}
 
@@ -781,9 +797,10 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	private void GridColumnWidthChanged(object sender, ColumnInfoEventArgs args) {
 		var column = args.Column.Index;
-		if (_sizingColumns || column < 0 || column >= _columnsBindings.Length)
+		if (_sizingColumns || _restoringGridSettings || column < 0 || column >= _columnsBindings.Length)
 			return;
 		if (State == VisualState.Loading && PrepareReadOnlyCellsInBackground) {
+			_columnResizePending = true;
 			_columnWidthOverrides[_columnsBindings[column]] = args.Column.Width;
 			args.Column.AutoSizeMode = SourceGrid.AutoSizeMode.None;
 			return;
@@ -791,6 +808,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		if (State != VisualState.Normal || column >= _columnMinimumWidths.Length)
 			return;
 		// A user's explicit width takes precedence over both natural sizing and viewport stretching.
+		_columnResizePending = true;
 		_columnWidthOverrides[_columnsBindings[column]] = args.Column.Width;
 		_columnMinimumWidths[column] = args.Column.Width;
 		_columnsSizedFromData = true;
@@ -804,7 +822,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	private void UpdateButtonBarVisibility() {
 		// A disabled parent does not remove the title or the commands supported by its source.
-		if (!string.IsNullOrEmpty(_gridTitle) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)
+		if (_preferences != null || _gridSettings != null || !string.IsNullOrEmpty(_gridTitle) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)
 			|| _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanSearch))
 			ShowButtonBar();
 		else
@@ -829,13 +847,16 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	public Task RefreshGrid() {
-		RestoreGridSettings();
-		if (_refreshTask is { IsCompleted: false })
-			return _refreshTask;
-		return _refreshTask = RefreshGridInternal();
+		if (_pendingQueryPreferences != null && IsPreferenceCellEditing())
+			return Task.CompletedTask;
+		if (_refreshTask is not { IsCompleted: false })
+			_refreshTask = RefreshGridInternal();
+		return _refreshTask;
 	}
 
 	private async Task RefreshGridInternal() {
+		// Keep restoration inside the existing shared refresh task so repeated requests retain task identity.
+		await RestoreGridSettingsAsync();
 		if (DesignMode || IsDisposed || State == VisualState.Loading && !_awaitingInitialBinding)
 			return;
 		using var admission = await _bindingGate.EnterScopeAsync();
@@ -922,7 +943,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		if (_grid == null || _rowToEntityMap == null)
 			return;
 
-		// CrudGrid owns row toggling; SourceGrid's Ctrl-click selection must not process the same press again.
+		// VisualGrid owns row toggling; SourceGrid's Ctrl-click selection must not process the same press again.
 		_mouseSelectionController.MouseButtons = LeftClickToDeselect ? MouseButtons.None : MouseButtons.Left;
 		foreach (var Row in _rowToEntityMap) {
 			for (var Column = 0; Column < Math.Min(_columnsBindings.Length, _grid.ColumnsCount); Column++) {
@@ -933,7 +954,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
-	private void ConfigureCellInteraction(ICell Cell, ICrudGridColumn Column, object Entity) {
+	private void ConfigureCellInteraction(ICell Cell, IVisualGridColumn Column, object Entity) {
 		var CanEdit = AllowCellEditing && _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) && Column.CanEditCell && Column.CellHasValue(Entity);
 		// Display-only text cells keep conversion support without constructing an unused native editor control.
 		// Promote the existing cell when editing is enabled later; do not require another data-source read.
@@ -1039,16 +1060,18 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#region Paging
 
+	// TODO: SHould be property
 	private int GetVisiblePageNumberText() {
 		return int.Parse(_pageNumberBox.Text) - 1;
 	}
 
+	// TODO: Should be SetPageNumberAsync
 	private async Task ChangePageNumberAsync(int pageNumber) {
-		_pageNumber = PageMode == CrudGridPageMode.Single || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)
+		_pageNumber = PageMode == VisualGridPageMode.Single || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)
 			? 0 : pageNumber.ClipTo(0, _endPageNumber);
 		SetVisiblePageNumberText(_pageNumber);
-		await RefreshGrid();
 		SaveGridSettings(true);
+		await RefreshGrid();
 	}
 
 	private int CalculateAutoPageSize(AutoPageSizing sizing = null) {
@@ -1149,8 +1172,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		object[] data;
 		IDictionary<int, object> preparedRows = null;
 		ILookup<object, int> preparedLookup = null;
-		CrudGridPreparedValue[][] prepared = null;
-		CrudGridPreparedCell[][] newCells = null;
+		VisualGridPreparedValue[][] prepared = null;
+		VisualGridPreparedCell[][] newCells = null;
 		if (prepareCells) {
 			try {
 				var result = await Task.Run(async () => {
@@ -1160,9 +1183,9 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 					var rows = visible.Select((entity, index) => (Entity: entity, Row: index + 1)).ToDictionary(item => item.Row, item => item.Entity);
 					var lookup = referenceLookup ? rows.InverseUsingValueReferenceAsKey() : rows.Inverse();
 					var values = PrepareReadOnlyRows(visible, columns, formats);
-					var cells = new CrudGridPreparedCell[values.Length][];
+					var cells = new VisualGridPreparedCell[values.Length][];
 					for (var row = reusableRowCount; row < values.Length; row++)
-						cells[row] = values[row].Select(value => new CrudGridPreparedCell(value)).ToArray();
+						cells[row] = values[row].Select(value => new VisualGridPreparedCell(value)).ToArray();
 					return (Read: read, Entities: entities, Cells: values, NewCells: cells, Rows: rows, Lookup: lookup);
 				});
 				readResult = result.Read;
@@ -1283,7 +1306,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return QueryChanged();
 	}
 
-	private bool CanPrepareReadOnlyCells(ICrudGridColumn[] columns)
+	private bool CanPrepareReadOnlyCells(IVisualGridColumn[] columns)
 		=> PrepareReadOnlyCellsInBackground && columns.All(column => column.DisplayType is CrudCellDisplayType.Text or CrudCellDisplayType.Image)
 			&& (!AllowCellEditing || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) || columns.All(column => !column.CanEditCell));
 
@@ -1398,7 +1421,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
-	private bool NativeWidthsAreCurrent(ICrudGridColumn[] columns, int[] expected) {
+	private bool NativeWidthsAreCurrent(IVisualGridColumn[] columns, int[] expected) {
 		for (var column = 0; column < expected.Length; column++) {
 			var actual = _grid.Columns[column].Width;
 			if (actual == expected[column])
@@ -1451,39 +1474,39 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return false;
 	}
 
-	private static CrudGridPreparedValue[][] PrepareReadOnlyRows(object[] entities, ICrudGridColumn[] columns, (CrudCellDisplayType DisplayType, Type DataType)[] formats) {
+	private static VisualGridPreparedValue[][] PrepareReadOnlyRows(object[] entities, IVisualGridColumn[] columns, (CrudCellDisplayType DisplayType, Type DataType)[] formats) {
 		// Conversion metadata is initialized once per populated text column on the worker; rows carry only values and prepared strings.
-		var editors = new CrudGridPreparedTextEditor[columns.Length];
-		var rows = new CrudGridPreparedValue[entities.Length][];
+		var editors = new VisualGridPreparedTextEditor[columns.Length];
+		var rows = new VisualGridPreparedValue[entities.Length][];
 		for (var row = 0; row < entities.Length; row++) {
-			rows[row] = new CrudGridPreparedValue[columns.Length];
+			rows[row] = new VisualGridPreparedValue[columns.Length];
 			for (var column = 0; column < columns.Length; column++) {
 				var hasValue = columns[column].CellHasValue(entities[row]);
 				var value = hasValue ? columns[column].GetCellValue(entities[row]) : null;
 				var editor = editors[column];
 				if (hasValue && formats[column].DisplayType == CrudCellDisplayType.Text && editor == null)
-					editor = editors[column] = new CrudGridPreparedTextEditor(formats[column].DataType);
+					editor = editors[column] = new VisualGridPreparedTextEditor(formats[column].DataType);
 				if (hasValue && formats[column].DisplayType == CrudCellDisplayType.Image)
 					Guard.Argument(value == null || value is System.Drawing.Image, nameof(value), "An image cell requires a System.Drawing.Image value.");
 				var displayText = hasValue && editor != null ? editor.PrepareValue(value) : string.Empty;
-				rows[row][column] = new CrudGridPreparedValue(hasValue, value, displayText, editor);
+				rows[row][column] = new VisualGridPreparedValue(hasValue, value, displayText, editor);
 			}
 		}
 		return rows;
 	}
 
-	private void BindPreparedRow(int row, object entity, CrudGridPreparedValue[] cells, bool reuse, CrudGridPreparedCell[] newCells = null) {
+	private void BindPreparedRow(int row, object entity, VisualGridPreparedValue[] cells, bool reuse, VisualGridPreparedCell[] newCells = null) {
 		_rowToEntityMap[row] = entity;
 		for (var column = 0; column < cells.Length; column++) {
 			var prepared = cells[column];
 			var view = GetColumnCellView(_columnsBindings[column]);
-			if (reuse && _grid[row, column] is CrudGridPreparedCell existing && existing.CanApplyPreparedValue && existing.View == view
+			if (reuse && _grid[row, column] is VisualGridPreparedCell existing && existing.CanApplyPreparedValue && existing.View == view
 				&& existing.RowSpan == 1 && existing.ColumnSpan == 1 && existing.Editor is not SourceGrid.Cells.Editors.EditorControlBase
 				&& existing.FindController<UpdateEntityOnValueChangedController>() == null) {
 				// Retain the native cell's complete graph; publishing new data does not allocate or fire edit callbacks.
 				existing.ApplyPreparedValue(prepared);
 			} else {
-				var cell = newCells?[column] ?? new CrudGridPreparedCell(prepared);
+				var cell = newCells?[column] ?? new VisualGridPreparedCell(prepared);
 				cell.View = view;
 				ConfigureCellInteraction(cell, _columnsBindings[column], entity);
 				_grid[row, column] = cell;
@@ -1544,7 +1567,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		var hasText = false;
 		for (var column = 0; column < _grid.ColumnsCount; column++) {
 			if (_columnsBindings[column].DisplayType is not (CrudCellDisplayType.Text or CrudCellDisplayType.Image)
-				|| _grid[row, column] is not Cell cell || cell.GetType() != typeof(Cell) && cell is not CrudGridPreparedCell
+				|| _grid[row, column] is not Cell cell || cell.GetType() != typeof(Cell) && cell is not VisualGridPreparedCell
 				|| cell.View != GetColumnCellView(_columnsBindings[column]) || cell.Editor is SourceGrid.Cells.Editors.EditorControlBase)
 				return (-1, false);
 			var cellView = (SourceGrid.Cells.Views.Cell)cell.View;
@@ -1584,7 +1607,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		}
 	}
 
-	private ICell CreateCell(ICrudGridColumn column, object entity) {
+	private ICell CreateCell(IVisualGridColumn column, object entity) {
 		Cell cell;
 		if (column.CellHasValue(entity)) {
 			var cellValue = column.GetCellValue(entity);
@@ -1640,7 +1663,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return cell;
 	}
 
-	private SourceGrid.Cells.Views.Cell GetColumnCellView(ICrudGridColumn column) {
+	private SourceGrid.Cells.Views.Cell GetColumnCellView(IVisualGridColumn column) {
 		var standard = SourceGrid.Cells.Views.Cell.Default;
 		if (column.DisplayType != CrudCellDisplayType.Image)
 			return standard;
@@ -1679,7 +1702,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return new Cell(string.Empty);
 	}
 
-	private Cell CreateTextBoxCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateTextBoxCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		if (AllowCellEditing && _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) && columnBinding.CanEditCell && columnBinding.CellHasValue(entity))
 			return new Cell(cellValue, columnBinding.DataType);
 		// EditorBase uses the same type converter as the visual editor, without EditorControlBase.CreateControl().
@@ -1687,22 +1710,22 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return new Cell(cellValue, display);
 	}
 
-	private Cell CreateCheckBoxCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateCheckBoxCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		var checkbox = new SourceGrid.Cells.CheckBox(null, (bool?)cellValue) {
 			Editor = { EnableEdit = AllowCellEditing && columnBinding.CanEditCell }
 		};
 		return checkbox;
 	}
 
-	private Cell CreateCurrencyCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateCurrencyCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		return new Cell(cellValue, new SourceGrid.Cells.Editors.TextBoxCurrency(columnBinding.DataType));
 	}
 
-	private Cell CreateNumericCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateNumericCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		return new Cell(cellValue, new SourceGrid.Cells.Editors.TextBoxNumeric(columnBinding.DataType));
 	}
 
-	private Cell CreateDateTimeCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateDateTimeCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		const DateTimeStyles dtStyles = System.Globalization.DateTimeStyles.AllowInnerWhite | System.Globalization.DateTimeStyles.AllowLeadingWhite | System.Globalization.DateTimeStyles.AllowTrailingWhite |
 		                                System.Globalization.DateTimeStyles.AllowWhiteSpaces;
 		var editor = columnBinding.DisplayType == CrudCellDisplayType.Time ? new SourceGrid.Cells.Editors.TimePicker() : new SourceGrid.Cells.Editors.DateTimePicker();
@@ -1715,7 +1738,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return new Cell(cellValue, editor);
 	}
 
-	private Cell CreateDropDownListCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateDropDownListCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		if (columnBinding.ReferenceBinding != null)
 			return new Cell(cellValue, new SourceGrid.Cells.Editors.CrudReference(columnBinding.DataType, columnBinding.ReferenceBinding));
 		var editor = new SourceGrid.Cells.Editors.DropDownList(columnBinding.DataType, columnBinding.DropDownItemDisplayMember);
@@ -1733,11 +1756,11 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		return cell;
 	}
 
-	private Cell CreateButtonCell(ICrudGridColumn columnBinding, object entity, object cellValue) {
+	private Cell CreateButtonCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		return CreateButtonCell(columnBinding, entity, columnBinding.GetButtonCaption(entity), columnBinding.GetButtonImage(entity), columnBinding.ButtonPressed);
 	}
 
-	private Cell CreateCommandCell(ICrudGridColumn columnBinding, object entity, CrudAction action) {
+	private Cell CreateCommandCell(IVisualGridColumn columnBinding, object entity, CrudAction action) {
 		System.Drawing.Image image;
 		Func<object, Task> callback;
 		switch (action) {
@@ -1760,7 +1783,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 		});
 	}
 
-	private Cell CreateButtonCell(ICrudGridColumn columnBinding, object entity, string caption, System.Drawing.Image image, Action<object> clickHandler) {
+	private Cell CreateButtonCell(IVisualGridColumn columnBinding, object entity, string caption, System.Drawing.Image image, Action<object> clickHandler) {
 		var button = new SourceGrid.Cells.Button(caption) {
 			Image = image
 		};
@@ -1881,8 +1904,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	}
 
 	private void PageModeSelectedIndexChanged(object sender, EventArgs args) {
-		if (!_updatingPageModeControl && _pageModeComboBox.SelectedIndex >= 0)
-			PageMode = (CrudGridPageMode)_pageModeComboBox.SelectedIndex;
+		if (!_updatingPageModeControl && _pageModeButton.SelectedItem is VisualGridPageMode mode)
+			PageMode = mode;
 	}
 
 	private async void RefreshAutoPageSize(bool forceRefresh = false) {
@@ -1922,8 +1945,8 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 				: SortDirection.Ascending;
 			_sortColumnIndex = col;
 			_sortColumnName = _sortDirection == SortDirection.None ? null : _columnsBindings[col].SortName;
-			await RefreshGrid();
 			SaveGridSettings(true);
+			await RefreshGrid();
 		});
 		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
@@ -1932,11 +1955,11 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	private async void _pageSizeUpDown_ValueChanged(object sender, EventArgs e) {
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (_restoringGridSettings || _updatingPageSizeDisplay || PageMode != CrudGridPageMode.Paged || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage))
+			if (_restoringGridSettings || _updatingPageSizeDisplay || PageMode != VisualGridPageMode.Paged || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage))
 				return;
 			_manualPageSize = _pageSize = (int)_pageSizeUpDown.Value;
-			await RefreshGrid();
 			SaveGridSettings(true);
+			await RefreshGrid();
 		});
 		if (error != null) {
 			await ExceptionDialog.ShowAsync(this, error);
@@ -2241,7 +2264,7 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	#endregion
 
-	private CrudGridSettings _gridSettings;
+	private VisualGridSettings _gridSettings;
 	private string _settingsKey = string.Empty;
 	private bool _persistSettings = true;
 	private bool _restoringGridSettings;
@@ -2249,7 +2272,13 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 	private bool _settingsSaveFailed;
 	private bool _gridSettingsDirty;
 	private int _settingsConsumerVersion;
-	private (CrudGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection) _savedPreferenceState;
+	private (VisualGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection, string Widths) _capturedPreferenceState;
+	private ISettingsProvider _settingsProvider;
+	private string _resolvedSettingsKey;
+	private Task _settingsLoadTask;
+	private Task _settingsSaveTask = Task.CompletedTask;
+	private long _settingsSaveVersion;
+	private Exception _settingsSaveError;
 	private ILogger _settingsLogger;
 
 	[Category("Behavior")]
@@ -2272,7 +2301,14 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 			SaveGridSettings();
 			_settingsKey = value;
 			_gridSettings = null;
+			_settingsLoadTask = null;
+			_settingsProvider = null;
+			_resolvedSettingsKey = null;
 			_settingsConsumerVersion = 0;
+
+			// A late completion for the previous identity must not mark this new identity dirty or failed.
+			_settingsSaveVersion++;
+			_settingsSaveError = null;
 			_settingsSaveFailed = false;
 			_gridSettingsDirty = false;
 		}
@@ -2280,112 +2316,118 @@ public partial class CrudGrid : UserControl, ICrudGrid {
 
 	/// <summary>Upgrades a detached preference payload before restoration. Changes persist with the next accepted preference change.</summary>
 	/// <remarks>Called for stored preferences and new control defaults; never receives the provider's cached settings object.</remarks>
-	protected virtual void UpgradeGridSettings(CrudGridSettings settings) {
+	protected virtual void UpgradeGridSettings(VisualGridSettings settings) {
 	}
 
-	private void RestoreGridSettings() {
-		if (!_persistSettings || _gridSettings != null || _dataSource == null || DesignMode || Tools.Runtime.IsDesignMode || IsDisposed || Disposing)
-			return;
+	// Captures provider and identity before worker IO; a standalone grid may retry after Framework startup.
+	private Task RestoreGridSettingsAsync() {
+		if (_preferences != null || !_persistSettings || _gridSettings != null || _dataSource == null || DesignMode || Tools.Runtime.IsDesignMode || IsDisposed || Disposing)
+			return Task.CompletedTask;
+		if (_settingsLoadTask != null)
+			return _settingsLoadTask;
 		var key = ResolveSettingsKey();
 		if (key == null)
-			return;
-		ISettingsProvider provider = null;
+			return Task.CompletedTask;
 		Tools.Exceptions.ExecuteCapturingException<InvalidOperationException>(() => {
-			provider = UserSettings.Provider;
+			_settingsProvider = UserSettings.Provider;
 		}, out var capturedError);
-		if (capturedError != null) {
-			// A standalone control can be created before framework initialization; retry on its next explicit refresh.
-			return;
-		}
+		if (capturedError != null)
+			return Task.CompletedTask;
+		_resolvedSettingsKey = key;
 		_settingsLogger = ResolveSettingsLogger();
-		_restoringGridSettings = true;
-		using var restoreFlag = Tools.Scope.ExecuteOnDispose(() => _restoringGridSettings = false);
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			var exists = UserSettings.Has<CrudGridSettings>(key);
-			_gridSettings = UserSettings.Get<CrudGridSettings>(key);
-			if (!exists) {
-				CaptureGridSettings(_gridSettings);
-			}
-			var restoredSettings = new CrudGridSettings {
-				ConsumerVersion = _gridSettings.ConsumerVersion,
-				PageMode = _gridSettings.PageMode,
-				AutoPageSize = _gridSettings.AutoPageSize,
-				PageSize = _gridSettings.PageSize,
-				PageNumber = _gridSettings.PageNumber,
-				SortColumnName = _gridSettings.SortColumnName,
-				SortDirection = _gridSettings.SortDirection
-			};
-			UpgradeGridSettings(restoredSettings);
-			_settingsConsumerVersion = restoredSettings.ConsumerVersion;
-			using (EnterVisualState(VisualState.Loading)) {
-				_manualPageSize = Math.Max(1, Math.Min(restoredSettings.PageSize, 9999));
-				var storedMode = restoredSettings.PageMode;
-				_pageMode = storedMode.HasValue && Enum.IsDefined(storedMode.Value) ? storedMode.Value
-					: restoredSettings.AutoPageSize ? CrudGridPageMode.Auto : CrudGridPageMode.Paged;
-				UpdatePageModeControl();
-				_pageNumber = _pageMode == CrudGridPageMode.Single || restoredSettings.PageNumber < 0 || restoredSettings.PageNumber >= int.MaxValue / _manualPageSize
-					? 0 : restoredSettings.PageNumber;
-				SetVisiblePageNumberText(_pageNumber);
-				var sortColumn = Array.FindIndex(_columnsBindings, column => !string.IsNullOrEmpty(column.SortName)
-					&& string.Equals(column.SortName, restoredSettings.SortColumnName, StringComparison.Ordinal));
-				if (_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) && restoredSettings.SortDirection == SortDirection.None) {
-					_sortColumnIndex = 0;
-					_sortColumnName = null;
-					_sortDirection = SortDirection.None;
-				} else if (_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) && sortColumn >= 0) {
-					_sortColumnIndex = sortColumn;
-					_sortColumnName = _columnsBindings[sortColumn].SortName;
-					_sortDirection = Enum.IsDefined(restoredSettings.SortDirection) ? restoredSettings.SortDirection : SortDirection.Ascending;
-				}
-				OrganizeLayout();
-			}
-			// Validate this instance's controls without changing a cached settings object shared with another instance.
-			_savedPreferenceState = CapturePreferenceState();
-		}, out var error);
-		if (error != null) {
-			_settingsLogger.Exception(error, "Could not restore CRUD grid preferences.");
-			Tools.Exceptions.Execute(() => {
-				_gridSettings = (CrudGridSettings)provider.NewSetting(typeof(CrudGridSettings), key);
-				CaptureGridSettings(_gridSettings);
-				_savedPreferenceState = CapturePreferenceState();
-			}, recoveryError => _settingsLogger.Exception(recoveryError, "Could not initialize CRUD grid preferences."));
-		}
+		return _settingsLoadTask = RestoreGridSettingsCoreAsync(_settingsProvider, key);
 	}
 
+	// Loading never creates a provider-bound default record or writes merely because a control opens.
+	private async Task RestoreGridSettingsCoreAsync(ISettingsProvider provider, string key) {
+		VisualGridSettings settings = null;
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			settings = await Task.Run(() => ReadGridSettings(provider, key));
+		});
+		if (IsDisposed || Disposing || _preferences != null || !ReferenceEquals(provider, _settingsProvider) || key != _resolvedSettingsKey)
+			return;
+		if (error != null)
+			_settingsLogger.Exception(error, "Could not restore CRUD grid preferences.");
+
+		_restoringGridSettings = true;
+		using var restoring = Tools.Scope.ExecuteOnDispose(() => _restoringGridSettings = false);
+		_gridSettings = settings ?? new VisualGridSettings();
+		if (settings == null)
+			CaptureGridSettings(_gridSettings);
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+			// Consumer upgrades receive a detached root on the owner thread, never the provider's cached object.
+			UpgradeGridSettings(_gridSettings);
+			_settingsConsumerVersion = _gridSettings.ConsumerVersion;
+			_gridSettings.PageMode ??= _gridSettings.AutoPageSize ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
+			ApplyGridPreferencesCore(_gridSettings);
+			_capturedPreferenceState = CapturePreferenceState();
+		}, out var applyError);
+		if (applyError != null)
+			_settingsLogger.Exception(applyError, "Could not apply CRUD grid preferences.");
+	}
+
+	// Completed actions capture detached values synchronously; the captured provider serializes them off the UI thread.
 	private void SaveGridSettings(bool acceptedChange = false) {
-		if (!_persistSettings || _gridSettings == null || _restoringGridSettings || _savingGridSettings || DesignMode || Tools.Runtime.IsDesignMode)
+		if (_preferences != null) {
+			if (acceptedChange)
+				PublishGridPreferences();
+			return;
+		}
+		if (!_persistSettings || _gridSettings == null || _settingsProvider == null || _restoringGridSettings || _savingGridSettings || DesignMode || Tools.Runtime.IsDesignMode)
 			return;
 		var preferences = CapturePreferenceState();
-		if (acceptedChange && preferences != _savedPreferenceState)
+		if (acceptedChange && preferences != _capturedPreferenceState)
 			_gridSettingsDirty = true;
 		if (!_gridSettingsDirty && !_settingsSaveFailed)
 			return;
+
 		_savingGridSettings = true;
-		using var restoreFlag = Tools.Scope.ExecuteOnDispose(() => _savingGridSettings = false);
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			CaptureGridSettings(_gridSettings);
-			_gridSettings.Save();
-			_settingsSaveFailed = false;
-			_gridSettingsDirty = false;
-			_savedPreferenceState = preferences;
-		}, out var error);
-		if (error != null) {
-			_settingsSaveFailed = true;
-			(_settingsLogger ?? SystemLog.Logger).Exception(error, "Could not save CRUD grid preferences.");
-		}
+		using var saving = Tools.Scope.ExecuteOnDispose(() => _savingGridSettings = false);
+		CaptureGridSettings(_gridSettings);
+		var snapshot = CopyGridSettings(_gridSettings);
+		snapshot.ID = _resolvedSettingsKey;
+		snapshot.Provider = _settingsProvider;
+		var version = ++_settingsSaveVersion;
+		_capturedPreferenceState = preferences;
+		_gridSettingsDirty = false;
+		_settingsSaveFailed = false;
+		_settingsSaveTask = SaveGridSnapshotAsync(_settingsSaveTask, _settingsProvider, snapshot, version, preferences);
 	}
 
-	private (CrudGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection) CapturePreferenceState()
-		=> (_pageMode, _manualPageSize, _pageNumber, _sortColumnName ?? string.Empty, _sortDirection);
+	// Serializes each accepted snapshot in order; only the latest completion can clear this control's dirty state.
+	private async Task SaveGridSnapshotAsync(Task previous, ISettingsProvider provider, VisualGridSettings snapshot, long version,
+		(VisualGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection, string Widths) preferences) {
+		await previous;
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(() => Task.Run(() => provider.SaveSetting(snapshot)));
+		if (error != null)
+			(_settingsLogger ?? SystemLog.Logger).Exception(error, "Could not save CRUD grid preferences.");
+		if (version != _settingsSaveVersion)
+			return;
+		_settingsSaveError = error;
+		_settingsSaveFailed = error != null;
+		_gridSettingsDirty = error != null;
+		if (error == null)
+			_capturedPreferenceState = preferences;
+	}
 
-	private void CaptureGridSettings(CrudGridSettings settings) {
-		settings.ConsumerVersion = _settingsConsumerVersion;
-		settings.PageMode = _pageMode;
-		settings.AutoPageSize = AutoPageSize;
-		settings.PageSize = _manualPageSize;
-		settings.PageNumber = _pageNumber;
-		settings.SortColumnName = _sortColumnName ?? string.Empty;
-		settings.SortDirection = _sortDirection;
+	// Includes only deliberate widths; viewport stretching and natural measurement never mark preferences dirty.
+	private (VisualGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection, string Widths) CapturePreferenceState() {
+		var widths = string.Join(";", CaptureGridPreferences().Columns.Where(column => column.Width.HasValue).OrderBy(column => column.Key, StringComparer.Ordinal)
+			.Select(column => column.Key.Length + ":" + column.Key + "=" + column.Width.Value.ToString("R", CultureInfo.InvariantCulture)));
+		return (_pageMode, _manualPageSize, _pageNumber, _sortColumnName ?? string.Empty, _sortDirection, widths);
+	}
+
+	// The legacy root and the screen-owned root use the same detached capture, with one persistence authority at a time.
+	private void CaptureGridSettings(VisualGridSettings settings) {
+		var values = CaptureGridPreferences();
+		settings.ConsumerVersion = values.ConsumerVersion;
+		settings.PageMode = (VisualGridPageMode?)values.PageMode;
+		settings.AutoPageSize = values.AutoPageSize;
+		settings.PageSize = values.PageSize;
+		settings.PageNumber = values.PageNumber;
+		settings.SortColumnName = values.SortColumnName;
+		settings.SortDirection = values.SortDirection;
+		settings.Columns = values.Columns;
 	}
 
 	private string ResolveSettingsKey() {

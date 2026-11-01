@@ -20,24 +20,30 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>The logical Blazor screen retained by the host, with renderer-local identity and immutable component parameters.</summary>
 /// <remarks>The renderer creates and disposes Screen. This proxy delegates its portable screen lifecycle to that component.</remarks>
-public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
+public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen, IApplicationSettingsParticipant {
 	private readonly string _registeredTitle;
 	private readonly ApplicationScreenDefinition _definition;
+	private readonly string _navigationId;
 	private readonly List<IBlazorApplicationMenu> _ownedMenus = new();
 	private readonly List<IBlazorApplicationMenuItem> _componentToolBarItems = new();
 	private BlazorApplicationMenu _toolbarOwner;
 	private readonly bool _hasActivationState;
 
-	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem, ApplicationScreenDefinition definition, BlazorApplicationScreenActivation activation = null) {
+	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem, ApplicationScreenDefinition definition,
+		BlazorApplicationScreenActivation activation = null, BlazorApplicationScreenActivation preparedActivation = null) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		Guard.ArgumentNotNull(menuItem, nameof(menuItem));
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		Id = Guid.NewGuid();
 		Block = block;
 		MenuItem = menuItem;
-		_definition = definition;
+		_definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, definition.Registration);
+		_navigationId = menuItem?.HasExplicitId == true ? menuItem.Id : (_definition.StableKey != null || block.ScreenDefinitions.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1
+			? BlazorApplicationBlockSnapshot.GetDefinitionScreenId(block, _definition) : null);
 		_registeredTitle = definition.Title;
-		var parameters = new Dictionary<string, object>(menuItem.Parameters, StringComparer.OrdinalIgnoreCase);
+		var parameters = new Dictionary<string, object>((definition as BlazorApplicationScreenDefinition)?.Parameters ?? new Dictionary<string, object>(), StringComparer.OrdinalIgnoreCase);
+		if (preparedActivation != null)
+			foreach (var parameter in preparedActivation.Parameters)
+				parameters[parameter.Key] = parameter.Value;
 		if (activation != null)
 			foreach (var parameter in activation.Parameters)
 				parameters[parameter.Key] = parameter.Value;
@@ -54,7 +60,15 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 
 	public BlazorScreenMenuItem MenuItem { get; }
 
-	public string MenuItemId => MenuItem.Id;
+	public string MenuItemId {
+		get {
+			Guard.Ensure(_navigationId != null, "Configure WithStableKey on this registration before creating its browser route.");
+			return _navigationId;
+		}
+	}
+
+	/// <summary>The canonical registration in this session's own block graph.</summary>
+	public ApplicationScreenDefinition Definition => _definition;
 
 	public Type ScreenType => _definition.ScreenType;
 
@@ -76,7 +90,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 
 	public bool CanRestoreAtStartup => !_hasActivationState && ScreenKind == ScreenKind.Normal && (Screen?.CanRestoreAtStartup ?? false);
 
-	public string Icon => MenuItem.Icon;
+	public string Icon => MenuItem?.Icon;
 
 	public IBlazorApplicationMenu[] Menus {
 		get {
@@ -142,6 +156,12 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 	public Task OnDeactivatedAsync(CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		return Screen?.OnDeactivatedAsync(cancellationToken) ?? Task.CompletedTask;
+	}
+
+	/// <summary>Awaits the renderer component's accepted-close capture without saving from hide or veto callbacks.</summary>
+	public Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		return Screen is IApplicationSettingsParticipant participant ? participant.SaveSettingsAsync(cancellationToken) : Task.CompletedTask;
 	}
 
 	internal void SetScreen(IBlazorApplicationScreen screen) {

@@ -2,7 +2,7 @@
 
 A .NET 10 Blazor Web App that presents every component demo through one full-page ApplicationBlock shell. It uses prerendered Interactive Server rendering and local sample data. No WebAssembly workload, database, backend node or WebSocket server is required.
 
-Open `/` for the organized tour or `/components/grid` for the editable CRUD grid. The **Application patterns** block adds complete card, menu, workflow and theme examples alongside the component reference and preserved legacy examples. Every entry uses the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
+Open `/` for the organized tour or `/components/grid` for the editable Visual grid. The **Application patterns** block adds complete card, menu, workflow and theme examples alongside the component reference and preserved legacy examples. Every entry uses the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
 
 ## Run the tester
 
@@ -26,13 +26,15 @@ Open `http://127.0.0.1:5188/components/grid`. To let the server choose an availa
 
 ## Plugin initialization and shutdown
 
-All four demo plugins declare `WithName(...)` before registering their initializer and finalizer through `RegisterInitializer` and `RegisterFinalizer`: **Sphere10.Framework**, **Widget Gallery**, **Application patterns** and **Screen policies**. The two [lifecycle task types](Lifecycle) create eight task instances per application, reuse `AsyncApplicationInitializerBase` and `AsyncApplicationFinalizerBase`, log through `IApplication.Logger`, and simulate short startup and shutdown work. The tester supplies `ConsoleLogger` when no application logger is registered, so the terminal displays both phases. Each plugin registers its own instances under its name, even though they share task types. Both type and factory registration overloads throw immediately if `WithName(...)` has not been called; loading also rejects duplicate plugin names.
+All four demo plugins declare `WithName(...)` before registering their initializer and finalizer through `AddInitializer` and `AddFinalizer`: **Sphere10.Framework**, **Widget Gallery**, **Application patterns** and **Screen policies**. The two [lifecycle task types](Lifecycle) create eight task instances per application, reuse `AsyncApplicationInitializerBase` and `AsyncApplicationFinalizerBase`, log through `IApplication.Logger`, and simulate short startup and shutdown work. The tester supplies `ConsoleLogger` when no application logger is registered, so the terminal displays both phases. Each plugin registers its own instances under its name, even though they share task types. Both type and factory registration overloads throw immediately if `WithName(...)` has not been called; loading also rejects duplicate plugin names.
 
 Opening an interactive browser circuit awaits application initialization. The footer then shows **Plugins initialized: 4**. Prerendering does not run the tasks, and reconnecting to the same circuit does not repeat them. File → Exit application awaits all four finalizers before showing terminal content; closing the circuit also finalizes its application. The completion names are recorded in the circuit's scoped `WorkspaceStatus`. Another browser circuit has its own tasks and status, while the plugin registrations and web server remain shared.
 
 `DemoPluginLifecycleTests` exercises the running tester's `Program.ConfigureServices`, task keys, startup footer, independent circuits, reconnects and once-only exit/finalization.
 
 ## Screen lifetime profiles
+
+The Workspace block also contains **CPU inspector** and **GPU inspector**: two registrations of the same component, with independent singleton instances and activator parameters. Enter different retained drafts, switch between them, then open **Menu-free details** from either screen. Its registration can be bookmarked and reloaded without adding a navigation item. [Sphere10Plugin](Loader/Sphere10Plugin.cs) demonstrates callback-first registration references, stable keys and exact show-screen commands.
 
 Screen menu entries open independent instances by default, including the component and legacy galleries. Overview, **Single-instance screen**, and the four Application patterns screens explicitly retain their singleton lifetimes. Collection editors use an instance key so each collection has its own retained tab; the empty and permanent profiles also declare their intended lifetimes.
 
@@ -63,7 +65,7 @@ With `--no-launch-profile`, the same settings can be supplied as `Demo__EmptyScr
 | `/patterns/menus` | Application patterns / Menus & commands | Merged File/Tools, nested Export, enabled/hidden commands and preview dialogs. |
 | `/patterns/wizards` | Application patterns / Guided workflows | The same validated conditional workflow in an embedded host or a dialog, with a preset detour and review. |
 | `/patterns/themes` | Application patterns / Theme studio | All catalogue presets applied to a complete dashboard, selectable chart, editable form and dialog. |
-| `/components/grid`, `/modern` | Component gallery / CRUD grid | Buffered editing, validation, reference selection and async row actions. |
+| `/components/grid`, `/modern` | Component gallery / Visual grid | Buffered editing, validation, reference selection and async row actions. |
 | `/components/tables` | Component gallery / Tables | Paged, virtual and streaming tables. |
 | `/components/dialogs` | Component gallery / Dialogs | Awaited information, confirmation and custom dialogs. |
 | `/components/wizards` | Component gallery / Wizards | Guided workspace setup plus the retained branching wallet wizard and step validation. |
@@ -194,11 +196,11 @@ services
 	.BuildBlazorApplication()
 	.WithTitle("Sphere10 Blazor demos")
 	.WithFavicon("img/logo.svg", "image/svg+xml")
-	.ConfigureApplication(WorkspaceCommands.Configure)
-	.ConfigurePlugin(Sphere10Plugin.Configure)
-	.ConfigurePlugin(WidgetGalleryPlugin.Configure)
-	.ConfigurePlugin(ShowcasePlugin.Configure)
-	.ConfigurePlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
+	.OnApplicationCreated(WorkspaceCommands.Configure)
+	.AddPlugin(Sphere10Plugin.Configure)
+	.AddPlugin(WidgetGalleryPlugin.Configure)
+	.AddPlugin(ShowcasePlugin.Configure)
+	.AddPlugin(plugin => ScreenPoliciesPlugin.Configure(plugin, permanentScreen, emptyScreenLifetime))
 	.Build();
 ```
 
@@ -216,17 +218,17 @@ The configuration has this shape, using the tester's existing screen and state t
 services
 	.AddSphere10BlazorPlugin(plugin => plugin
 		.WithName("Blazor tester")
-		.ConfigureServices(registry => registry.AddScoped<WorkspaceStatus>())
-		.ConfigureBlock(block => block
+		.AddServices(registry => registry.AddScoped<WorkspaceStatus>())
+		.AddBlock(block => block
 			.WithId("workspace")
 			.WithName("Workspace")
 			.WithIconUrl("img/heading-solid.svg")
 			.WithDefaultScreen<OverviewScreen>()
-			.ConfigureMenu(menu => menu
+			.AddMenu(menu => menu
 				.WithId("work")
 				.WithText("Screen hosting")
 				.WithIcon("fas fa-desktop")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("overview")
 					.WithText("Overview")
 					.WithIcon("fas fa-home")
@@ -252,7 +254,7 @@ Open `/application` and try these flows. If a saved startup choice opens another
 - In the top **File** menu and toolbar, **Application command** changes to **Save in session** while Single-instance screen is active. **Workspace action** remains a block contribution. Save there, switch back to Overview and verify the application command returns without duplicates; Help stays last.
 - Run **Run scoped async action**. Its service belongs to the current circuit.
 - Confirm the footer shows **Plugins initialized: 4**, then use **File → Exit application**. Decline once to retain the workspace; accept to see all four plugin finalizers logged before terminal content replaces the screens. Refresh to create and initialize a new circuit.
-- Switch to **Component gallery**, then select **CRUD grid**, **Tables**, **Dialogs** or **Wizards**. Each screen hosts its reusable demo content and retains its own state. The **Legacy examples** block exposes the original gallery, dialogs, tables, wizard, endpoints and dashboard in the same host.
+- Switch to **Component gallery**, then select **Visual grid**, **Tables**, **Dialogs** or **Wizards**. Each screen hosts its reusable demo content and retains its own state. The **Legacy examples** block exposes the original gallery, dialogs, tables, wizard, endpoints and dashboard in the same host.
 
 The URL carries the active screen's `block`, `screen` and `instance` query values. Browsing a different block does not change these values or create history entries. Back/Forward selects retained screens and restores their owning block menus; merged commands also continue to follow the active screen while another block is being browsed. A full refresh starts a fresh circuit and recreates the requested screen; sample edits are not persisted. See [the library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for screen lifecycle contracts and shell customization.
 

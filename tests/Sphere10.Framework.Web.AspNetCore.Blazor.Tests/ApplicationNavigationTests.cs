@@ -6,21 +6,22 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -61,30 +62,65 @@ public class ApplicationNavigationTests {
 		});
 	}
 
-	[Test]
-	public async Task ProgrammaticActivationSynchronizesRenderedShellWithoutAParentParameterUpdate() {
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task ProgrammaticActivationSynchronizesRenderedShellWithoutAParentParameterUpdate(bool useQueryRoutes) {
 		var navigation = new ProbeNavigation();
-		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
+		await using var provider = CreateRenderingServices(navigation, includeProjectMenu: !useQueryRoutes).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			BrowserShell shell = null;
-			await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(NavigationHarness.Capture)] = (Action<BrowserShell>)(component => shell = component)
+			var rendered = await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(NavigationHarness.Capture)] = (Action<BrowserShell>)(component => shell = component),
+				[nameof(NavigationHarness.UseQueryRoutes)] = useQueryRoutes
 			}));
 			await shell.SynchronizeBrowserAsync();
-			Assert.That(navigation.Uri, Is.EqualTo("http://localhost/app/application"));
+			if (!useQueryRoutes)
+				Assert.That(navigation.Uri, Is.EqualTo("http://localhost/app/application"));
+			var handler = typeof(ApplicationShell).GetMethod("OnBeforeInternalNavigationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
+				.CreateDelegate<Func<LocationChangingContext, Task>>(shell);
+			using var registration = navigation.RegisterLocationChangingHandler(context => new ValueTask(handler(context)));
+			var block = host.Blocks.Single();
+			var definition = block.ScreenDefinitions.Single(screen => screen.ScreenType == typeof(ProjectScreen));
+
+			// A direct registration open has no command and must still publish its default stable bookmark.
 			var firstId = Guid.NewGuid();
-			await host.ActivateScreenAsync("projects", "project", Activation(firstId));
+			var first = useQueryRoutes
+				? await host.OpenScreenAsync(block, definition, Activation(firstId))
+				: await host.ActivateScreenAsync("projects", "project", Activation(firstId));
+			await host.ShowScreenAsync(first.Id);
+			await rendered.QuiescenceTask;
 			await shell.SynchronizeBrowserAsync();
 			await navigation.PendingNavigation;
-			Assert.That(navigation.Uri, Is.EqualTo($"http://localhost/app/project/{firstId:D}"));
+			var firstLocation = useQueryRoutes
+				? $"http://localhost/app/application?block=projects&screen={Uri.EscapeDataString(first.MenuItemId)}&instance={first.Id:D}"
+				: $"http://localhost/app/project/{firstId:D}";
+			Assert.That(navigation.Uri, Is.EqualTo(firstLocation));
+			if (useQueryRoutes) {
+				Assert.That(first.MenuItem, Is.Null);
+				Assert.That(first.MenuItemId, Does.StartWith("__screen:"));
+				Assert.That(Uri.UnescapeDataString(first.MenuItemId), Does.Contain(typeof(ProjectScreen).FullName));
+			}
 			Assert.That(navigation.ReplacedLastEntry, Is.False, "Programmatic selection adds a browser history entry.");
+			var firstComponent = (ProjectScreen)first.Screen;
+			Assert.That(firstComponent, Is.Not.Null);
+
+			// The accepted second transition runs its leave guard once; URL synchronization must not run it again.
 			var secondId = Guid.NewGuid();
-			await host.ActivateScreenAsync("projects", "project", Activation(secondId));
+			var second = useQueryRoutes
+				? await host.OpenScreenAsync(block, definition, Activation(secondId))
+				: await host.ActivateScreenAsync("projects", "project", Activation(secondId));
 			await shell.SynchronizeBrowserAsync();
 			await navigation.PendingNavigation;
-			Assert.That(navigation.Uri, Is.EqualTo($"http://localhost/app/project/{secondId:D}"));
+			var secondLocation = useQueryRoutes
+				? $"http://localhost/app/application?block=projects&screen={Uri.EscapeDataString(second.MenuItemId)}&instance={second.Id:D}"
+				: $"http://localhost/app/project/{secondId:D}";
+			Assert.That(navigation.Uri, Is.EqualTo(secondLocation));
+			Assert.That(navigation.ReplacedLastEntry, Is.False);
+			Assert.That(firstComponent.GuardCalls, Is.EqualTo(1));
+			if (useQueryRoutes)
+				Assert.That(second.MenuItemId, Is.EqualTo(first.MenuItemId));
 		});
 	}
 
@@ -212,14 +248,17 @@ public class ApplicationNavigationTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
+				.WithTitle("Project")
+				.WithActivationMode(ScreenActivationMode.MultiInstance)
+				.WithParameters(new Dictionary<string, object> { ["ProjectId"] = nextId })
+			)
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.ConfigureItem(item => item
+				.AddItem(item => item
 					.WithId("project")
 					.WithText("Project")
 					.WithScreen<ApplicationScreenHostTests.ProbeScreen>()
-					.AsMultiInstance()
-					.WithParameters(new Dictionary<string, object> { ["ProjectId"] = nextId })
 				)
 			)
 			.Build();
@@ -276,7 +315,7 @@ public class ApplicationNavigationTests {
 		Assert.That(navigation.Uri, Is.EqualTo($"http://localhost/app/application?block=projects&screen=project&instance={session.Id:D}"));
 	}
 
-	private static ServiceCollection CreateRenderingServices(NavigationManager navigation) {
+	private static ServiceCollection CreateRenderingServices(NavigationManager navigation, bool includeProjectMenu = true) {
 		var services = new ServiceCollection();
 		services.AddLogging();
 		services.AddSphere10Blazor();
@@ -286,17 +325,27 @@ public class ApplicationNavigationTests {
 			.AddApplicationBlock(block => block
 				.WithId("projects")
 				.WithName("Projects")
-				.ConfigureMenu(menu => menu
-					.WithText("Screens")
-					.ConfigureItem(item => item
-						.WithId("anchor")
-						.WithText("Projects")
-						.WithScreen<AnchorScreen>()
-						.AsSingleInstance()
-						.AsDefault()
-					)
-					.AddScreenItem<ProjectScreen>("project", "Project", ScreenActivationMode.MultiInstance)
+				.AddScreen<ProjectScreen>(screen => screen
+					.WithTitle("Project")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
 				)
+				.AddScreen<AnchorScreen>(screen => screen
+					.WithTitle("Projects")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.WithDefaultScreen<AnchorScreen>()
+				.AddMenu(menu => {
+					menu
+						.WithText("Screens")
+						.AddItem(item => item
+							.WithId("anchor")
+							.WithText("Projects")
+							.WithScreen<AnchorScreen>()
+						);
+
+					if (includeProjectMenu)
+						menu.AddShowScreenItem<ProjectScreen>(text: "Project", id: "project");
+				})
 			);
 		return services;
 	}
@@ -320,9 +369,13 @@ public class ApplicationNavigationTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
-			.ConfigureMenu(menu => menu
+			.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
+				.WithTitle("Project")
+				.WithActivationMode(ScreenActivationMode.MultiInstance)
+			)
+			.AddMenu(menu => menu
 				.WithText("Screens")
-				.AddScreenItem<ApplicationScreenHostTests.ProbeScreen>("project", "Project", ScreenActivationMode.MultiInstance)
+				.AddShowScreenItem<ApplicationScreenHostTests.ProbeScreen>(text: "Project", id: "project")
 			)
 			.Build();
 		return new BlazorApplicationScreenHost(new[] { block }, provider);
@@ -357,7 +410,10 @@ public class ApplicationNavigationTests {
 
 		public TaskCompletionSource GuardEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+		public int GuardCalls { get; private set; }
+
 		protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
+			GuardCalls++;
 			GuardEntered.TrySetResult();
 			return GuardResult ?? Task.FromResult(true);
 		}
