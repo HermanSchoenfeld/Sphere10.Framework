@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 
@@ -14,18 +15,48 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>The selected output and its independent filtering/formatting options. No output is opened by constructing this data object.</summary>
 public sealed class LogOutputConfiguration {
+	/// <summary>The selected output destination.</summary>
+	[DefaultValue(LogOutputDestination.File)]
 	public LogOutputDestination Destination { get; set; } = LogOutputDestination.File;
+
+	/// <summary>The selected file path for file output.</summary>
+	[DefaultValue("")]
 	public string FilePath { get; set; } = string.Empty;
+
+	/// <summary>Whether file output rotates through bounded files.</summary>
+	[DefaultValue(false)]
 	public bool RollingEnabled { get; set; }
+
+	/// <summary>The maximum number of rolling files.</summary>
+	[DefaultValue(RollingFileLogger.DefaultMaxFiles)]
 	public int MaxFiles { get; set; } = RollingFileLogger.DefaultMaxFiles;
+
+	/// <summary>The maximum byte length of one rolling file.</summary>
+	[DefaultValue(RollingFileLogger.DefaultMaxFileSizeB)]
 	public int MaxFileSizeBytes { get; set; } = RollingFileLogger.DefaultMaxFileSizeB;
+
+	/// <summary>The encoding used for file output.</summary>
+	[DefaultValue("utf-8")]
 	public string EncodingName { get; set; } = "utf-8";
+
+	/// <summary>The message levels written to the selected output.</summary>
+	[DefaultValue(LogOptions.VerboseProfile)]
 	public LogOptions Options { get; set; } = LogOptions.VerboseProfile;
+
+	/// <summary>Whether each written message includes its timestamp.</summary>
+	[DefaultValue(true)]
 	public bool TimestampEnabled { get; set; } = true;
+
+	/// <summary>Whether this output is restored after the owning screen closes.</summary>
+	[DefaultValue(false)]
 	public bool RememberAfterClose { get; set; }
 
-	public LogOutputConfiguration Clone() => (LogOutputConfiguration)MemberwiseClone();
+	/// <summary>Copies plain output options without creating an output resource.</summary>
+	public LogOutputConfiguration Clone() {
+		return (LogOutputConfiguration)MemberwiseClone();
+	}
 
+	/// <summary>Formats the configured output and filtering choices for display.</summary>
 	public string Describe() {
 		var output = Destination switch {
 			LogOutputDestination.File => $"File: {FilePath}{Environment.NewLine}" + (RollingEnabled
@@ -42,6 +73,7 @@ public sealed class LogOutputConfiguration {
 			+ $"{Environment.NewLine}Remember After Close: {(RememberAfterClose ? "Yes" : "No")}";
 	}
 
+	// Validate value choices and the file destination before an output can be opened.
 	internal LogOutputConfiguration ValidateAndNormalize() {
 		var normalized = ValidateOptionsAndNormalize();
 		if (Destination != LogOutputDestination.File)
@@ -53,6 +85,7 @@ public sealed class LogOutputConfiguration {
 		return normalized;
 	}
 
+	// Validate and normalize plain configuration values without opening the output.
 	internal LogOutputConfiguration ValidateOptionsAndNormalize() {
 		Guard.Argument(Enum.IsDefined(Destination), nameof(Destination), "Select a supported logging output.");
 		Guard.Argument((Options & ~LogOptions.VerboseProfile) == 0, nameof(Options), "Unknown logging options.");
@@ -69,10 +102,13 @@ public sealed class LogOutputConfiguration {
 		return normalized;
 	}
 
-	internal Encoding GetEncoding() => EncodingName?.ToLowerInvariant() switch {
-		"utf-8" => new UTF8Encoding(false),
-		"utf-16" => Encoding.Unicode,
-		"ascii" => Encoding.ASCII,
-		_ => throw new ArgumentException("Select UTF-8, UTF-16 or ASCII encoding.", nameof(EncodingName))
-	};
+	// Resolve the supported encoding for a configured file output.
+	internal Encoding GetEncoding() {
+		return EncodingName?.ToLowerInvariant() switch {
+			"utf-8" => new UTF8Encoding(false),
+			"utf-16" => Encoding.Unicode,
+			"ascii" => Encoding.ASCII,
+			_ => throw new ArgumentException("Select UTF-8, UTF-16 or ASCII encoding.", nameof(EncodingName))
+		};
+	}
 }

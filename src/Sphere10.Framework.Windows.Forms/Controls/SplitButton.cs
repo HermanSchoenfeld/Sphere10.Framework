@@ -454,51 +454,20 @@ public class SplitButton : Button {
 		}
 	}
 
+	// Overlay content retains its fixed edge inset and its existing top-left fallback.
 	private static Rectangle OverlayObjectRect(ref Rectangle container, ref Size sizeOfObject, System.Drawing.ContentAlignment alignment) {
-		int x, y;
+		var x = 4;
+		var y = 4;
 
-		switch (alignment) {
-			case System.Drawing.ContentAlignment.TopLeft:
-				x = 4;
-				y = 4;
-				break;
-			case System.Drawing.ContentAlignment.TopCenter:
-				x = (container.Width - sizeOfObject.Width) / 2;
-				y = 4;
-				break;
-			case System.Drawing.ContentAlignment.TopRight:
-				x = container.Width - sizeOfObject.Width - 4;
-				y = 4;
-				break;
-			case System.Drawing.ContentAlignment.MiddleLeft:
-				x = 4;
-				y = (container.Height - sizeOfObject.Height) / 2;
-				break;
-			case System.Drawing.ContentAlignment.MiddleCenter:
-				x = (container.Width - sizeOfObject.Width) / 2;
-				y = (container.Height - sizeOfObject.Height) / 2;
-				break;
-			case System.Drawing.ContentAlignment.MiddleRight:
-				x = container.Width - sizeOfObject.Width - 4;
-				y = (container.Height - sizeOfObject.Height) / 2;
-				break;
-			case System.Drawing.ContentAlignment.BottomLeft:
-				x = 4;
-				y = container.Height - sizeOfObject.Height - 4;
-				break;
-			case System.Drawing.ContentAlignment.BottomCenter:
-				x = (container.Width - sizeOfObject.Width) / 2;
-				y = container.Height - sizeOfObject.Height - 4;
-				break;
-			case System.Drawing.ContentAlignment.BottomRight:
-				x = container.Width - sizeOfObject.Width - 4;
-				y = container.Height - sizeOfObject.Height - 4;
-				break;
-			default:
-				x = 4;
-				y = 4;
-				break;
-		}
+		if (Tools.Drawing.IsCenter(alignment))
+			x = (container.Width - sizeOfObject.Width) / 2;
+		else if (Tools.Drawing.IsRight(alignment))
+			x = container.Width - sizeOfObject.Width - 4;
+
+		if (Tools.Drawing.IsMiddle(alignment))
+			y = (container.Height - sizeOfObject.Height) / 2;
+		else if (Tools.Drawing.IsBottom(alignment))
+			y = container.Height - sizeOfObject.Height - 4;
 
 		return new Rectangle(x, y, sizeOfObject.Width, sizeOfObject.Height);
 	}
@@ -595,59 +564,41 @@ public class SplitButton : Button {
 		imageRect = final_image_rect;
 	}
 
+	// Classify the shared content-alignment value while retaining this layout's invalid-value fallback.
 	private static HorizontalAlignment GetHorizontalAlignment(System.Drawing.ContentAlignment align) {
-		switch (align) {
-			case System.Drawing.ContentAlignment.BottomLeft:
-			case System.Drawing.ContentAlignment.MiddleLeft:
-			case System.Drawing.ContentAlignment.TopLeft:
-				return HorizontalAlignment.Left;
-			case System.Drawing.ContentAlignment.BottomCenter:
-			case System.Drawing.ContentAlignment.MiddleCenter:
-			case System.Drawing.ContentAlignment.TopCenter:
-				return HorizontalAlignment.Center;
-			case System.Drawing.ContentAlignment.BottomRight:
-			case System.Drawing.ContentAlignment.MiddleRight:
-			case System.Drawing.ContentAlignment.TopRight:
-				return HorizontalAlignment.Right;
-		}
-
+		if (Tools.Drawing.IsCenter(align))
+			return HorizontalAlignment.Center;
+		if (Tools.Drawing.IsRight(align))
+			return HorizontalAlignment.Right;
 		return HorizontalAlignment.Left;
 	}
 
+	// Vertical classification retains the existing top fallback for unrecognized values.
 	private static VerticalAlignment GetVerticalAlignment(System.Drawing.ContentAlignment align) {
-		switch (align) {
-			case System.Drawing.ContentAlignment.TopLeft:
-			case System.Drawing.ContentAlignment.TopCenter:
-			case System.Drawing.ContentAlignment.TopRight:
-				return VerticalAlignment.Top;
-			case System.Drawing.ContentAlignment.MiddleLeft:
-			case System.Drawing.ContentAlignment.MiddleCenter:
-			case System.Drawing.ContentAlignment.MiddleRight:
-				return VerticalAlignment.Center;
-			case System.Drawing.ContentAlignment.BottomLeft:
-			case System.Drawing.ContentAlignment.BottomCenter:
-			case System.Drawing.ContentAlignment.BottomRight:
-				return VerticalAlignment.Bottom;
-		}
-
+		if (Tools.Drawing.IsMiddle(align))
+			return VerticalAlignment.Center;
+		if (Tools.Drawing.IsBottom(align))
+			return VerticalAlignment.Bottom;
 		return VerticalAlignment.Top;
 	}
 
+	// Keep clipping and the horizontal center clamp specific to the split-button layout.
 	internal static Rectangle AlignInRectangle(Rectangle outer, Size inner, System.Drawing.ContentAlignment align) {
-		int x = 0;
-		int y = 0;
+		var x = 0;
+		var y = 0;
 
-		if (align == System.Drawing.ContentAlignment.BottomLeft || align == System.Drawing.ContentAlignment.MiddleLeft || align == System.Drawing.ContentAlignment.TopLeft)
+		if (Tools.Drawing.IsLeft(align))
 			x = outer.X;
-		else if (align == System.Drawing.ContentAlignment.BottomCenter || align == System.Drawing.ContentAlignment.MiddleCenter || align == System.Drawing.ContentAlignment.TopCenter)
+		else if (Tools.Drawing.IsCenter(align))
 			x = Math.Max(outer.X + ((outer.Width - inner.Width) / 2), outer.Left);
-		else if (align == System.Drawing.ContentAlignment.BottomRight || align == System.Drawing.ContentAlignment.MiddleRight || align == System.Drawing.ContentAlignment.TopRight)
+		else if (Tools.Drawing.IsRight(align))
 			x = outer.Right - inner.Width;
-		if (align == System.Drawing.ContentAlignment.TopCenter || align == System.Drawing.ContentAlignment.TopLeft || align == System.Drawing.ContentAlignment.TopRight)
+
+		if (Tools.Drawing.IsTop(align))
 			y = outer.Y;
-		else if (align == System.Drawing.ContentAlignment.MiddleCenter || align == System.Drawing.ContentAlignment.MiddleLeft || align == System.Drawing.ContentAlignment.MiddleRight)
+		else if (Tools.Drawing.IsMiddle(align))
 			y = outer.Y + (outer.Height - inner.Height) / 2;
-		else if (align == System.Drawing.ContentAlignment.BottomCenter || align == System.Drawing.ContentAlignment.BottomRight || align == System.Drawing.ContentAlignment.BottomLeft)
+		else if (Tools.Drawing.IsBottom(align))
 			y = outer.Bottom - inner.Height;
 
 		return new Rectangle(x, y, Math.Min(inner.Width, outer.Width), Math.Min(inner.Height, outer.Height));

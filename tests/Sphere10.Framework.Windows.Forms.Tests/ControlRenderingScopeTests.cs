@@ -115,7 +115,13 @@ public class ControlRenderingScopeTests {
 			Assert.That(parent.PaintCount, Is.Zero, "Restoring drawing does not force a paint inside the operation that released the scope.");
 		});
 		System.Windows.Forms.Application.DoEvents();
-		Assert.That(parent.PaintCount, Is.EqualTo(1), "The normal native paint cycle renders the final state once.");
+		TestContext.WriteLine($"Deferred paint callbacks: native={parent.NativePaintCount}, print-client={parent.PrintClientCount}, OnPaint={parent.PaintCount}, update={parent.LastUpdateRegion}, client={parent.ClientRectangle}.");
+
+		// Themed buttons also ask their parent to paint into the child's DC; count the parent's own native paint cycle.
+		Assert.Multiple(() => {
+			Assert.That(parent.NativePaintCount, Is.EqualTo(1), "The normal native paint cycle renders the final state once.");
+			Assert.That(parent.LastUpdateRegion, Is.EqualTo(parent.ClientRectangle), "The deferred native paint must cover the parent's complete final layout.");
+		});
 	}
 
 	[Test]
@@ -403,17 +409,26 @@ public class ControlRenderingScopeTests {
 		public int EnableRedrawCount { get; private set; }
 		public int LayoutCount { get; private set; }
 		public int PaintCount { get; private set; }
+		public int NativePaintCount { get; private set; }
+		public int PrintClientCount { get; private set; }
 		public Rectangle LastUpdateRegion { get; private set; }
 
 		public void ResetCounts() {
-			DisableRedrawCount = EnableRedrawCount = LayoutCount = PaintCount = 0;
+			DisableRedrawCount = EnableRedrawCount = LayoutCount = PaintCount = NativePaintCount = PrintClientCount = 0;
 			LastUpdateRegion = Rectangle.Empty;
 		}
 
 		protected override void WndProc(ref Message message) {
 			// BeginPaint clips a fully offscreen HWND to an empty visible area; its native update region is still complete.
-			if (message.Msg == 0x000F && WinAPI.USER32.GetUpdateRect(new HandleRef(this, Handle), out var update, false))
+			if (message.Msg == 0x000F && WinAPI.USER32.GetUpdateRect(new HandleRef(this, Handle), out var update, false)) {
+				NativePaintCount++;
 				LastUpdateRegion = Rectangle.FromLTRB(update.Left, update.Top, update.Right, update.Bottom);
+			}
+
+			// Themed children can request parent rendering into their own DC without repainting the parent's window.
+			if (message.Msg == WinAPI.USER32.WM_PRINTCLIENT)
+				PrintClientCount++;
+
 			if (message.Msg == 0x000B) {
 				if (message.WParam == IntPtr.Zero)
 					DisableRedrawCount++;

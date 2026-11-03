@@ -1029,41 +1029,15 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 
 			// work out a rough location of where the watermark should go
 
-			switch (this.WatermarkAlignment) {
-				case ContentAlignment.BottomCenter:
-				case ContentAlignment.BottomLeft:
-				case ContentAlignment.BottomRight: {
-					rect.Y = this.DisplayRectangle.Bottom - this.Watermark.Height;
+			if (Tools.Drawing.IsBottom(this.WatermarkAlignment))
+				rect.Y = this.DisplayRectangle.Bottom - this.Watermark.Height;
+			else if (Tools.Drawing.IsMiddle(this.WatermarkAlignment))
+				rect.Y = this.DisplayRectangle.Top + ((this.DisplayRectangle.Height - this.Watermark.Height) / 2);
 
-					break;
-				}
-
-				case ContentAlignment.MiddleCenter:
-				case ContentAlignment.MiddleLeft:
-				case ContentAlignment.MiddleRight: {
-					rect.Y = this.DisplayRectangle.Top + ((this.DisplayRectangle.Height - this.Watermark.Height) / 2);
-
-					break;
-				}
-			}
-
-			switch (this.WatermarkAlignment) {
-				case ContentAlignment.BottomRight:
-				case ContentAlignment.MiddleRight:
-				case ContentAlignment.TopRight: {
-					rect.X = this.ClientRectangle.Right - this.Watermark.Width;
-
-					break;
-				}
-
-				case ContentAlignment.BottomCenter:
-				case ContentAlignment.MiddleCenter:
-				case ContentAlignment.TopCenter: {
-					rect.X = this.ClientRectangle.Left + ((this.ClientRectangle.Width - this.Watermark.Width) / 2);
-
-					break;
-				}
-			}
+			if (Tools.Drawing.IsRight(this.WatermarkAlignment))
+				rect.X = this.ClientRectangle.Right - this.Watermark.Width;
+			else if (Tools.Drawing.IsCenter(this.WatermarkAlignment))
+				rect.X = this.ClientRectangle.Left + ((this.ClientRectangle.Width - this.Watermark.Width) / 2);
 
 			// shrink the destination rect if necesary so that we
 			// can see all of the image

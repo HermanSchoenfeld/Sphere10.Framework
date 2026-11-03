@@ -13,8 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using NUnit.Framework;
-using Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls;
-using LegacyDes = Sphere10.Framework.Windows.Forms.SourceGrid.Security.Cryptography.Utilities.DES;
+using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -31,7 +30,7 @@ public class WindowsInteropTests {
 
 	[Test]
 	public void RichEditCharacterFormattingRoundTripsThroughWindowsInterop() {
-		using var editor = new DevAgeRichTextBox { Text = "Formatted text" };
+		using var editor = new RichTextBoxEx { Text = "Formatted text" };
 		_ = editor.Handle;
 		editor.SelectAll();
 		editor.SelectionUnderlineStyle = UnderlineStyle.Wave;
@@ -45,7 +44,7 @@ public class WindowsInteropTests {
 
 	[Test]
 	public void RichEditFormattingMeasuresAllTextAndReleasesItsCache() {
-		using var editor = new DevAgeRichTextBox { Text = "Native rich edit rendering" };
+		using var editor = new RichTextBoxEx { Text = "Native rich edit rendering" };
 		using var bitmap = new Bitmap(500, 100);
 		_ = editor.Handle;
 		using var formatScope = Tools.Scope.ExecuteOnDispose(() => Tools.Windows.Win32.ReleaseRichTextFormat(editor.Handle));
@@ -144,7 +143,7 @@ public class WindowsInteropTests {
 		using Stream input = shortReads ? new ShortReadStream(data) : new MemoryStream(data);
 		input.Position = 2;
 		using var output = new MemoryStream();
-		LegacyDes.EncryptStream(input, output, "12345678");
+		Tools.Crypto.EncryptStreamDES(input, output, "12345678");
 		// Legacy input allocation uses Length: remaining bytes 3,4 are followed by two zero bytes.
 		Assert.That(Convert.ToBase64String(output.ToArray()), Is.EqualTo("cp7w7NOhw2E="));
 	}
@@ -153,7 +152,7 @@ public class WindowsInteropTests {
 	public void LegacyDesCompletesShortPlaintextReadsWithoutChangingTheCiphertextFormat() {
 		using var input = new ShortReadStream(new byte[] { 1, 2, 3, 4, 5 });
 		using var output = new MemoryStream();
-		LegacyDes.EncryptStream(input, output, "12345678");
+		Tools.Crypto.EncryptStreamDES(input, output, "12345678");
 		Assert.That(Convert.ToBase64String(output.ToArray()), Is.EqualTo("xXrjv4y/1Yo="));
 		Assert.That(input.ReadCalls, Is.GreaterThanOrEqualTo(3));
 	}
@@ -163,7 +162,7 @@ public class WindowsInteropTests {
 		using var input = new ShortReadStream(Convert.FromBase64String("xXrjv4y/1Yo="));
 		using var output = new MemoryStream();
 		using var outputStream = new NonClosingStream(output);
-		LegacyDes.DecryptStream(input, outputStream, "12345678");
+		Tools.Crypto.DecryptStreamDES(input, outputStream, "12345678");
 		Assert.That(output.ToArray(), Is.EqualTo(new byte[] { 1, 2, 3, 4, 5 }));
 		Assert.That(input.ReadCalls, Is.GreaterThanOrEqualTo(4));
 	}

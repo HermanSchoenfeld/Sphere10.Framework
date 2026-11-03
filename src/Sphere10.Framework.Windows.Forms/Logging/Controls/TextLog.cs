@@ -7,39 +7,71 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace Sphere10.Framework.Windows.Forms.TextBoxes;
 
-public partial class TextLog : UserControl {
-	private readonly ProducerConsumerQueue<char> _appendQueue;
-	private readonly LargeCollection<char> _data;
-	private readonly Throttle _throttle;
+/// <summary>A multiline text surface with native text selection and append behavior.</summary>
+public partial class TextLog : UserControlEx {
+	/// <summary>Creates the designer-owned text editor without background resources.</summary>
 	public TextLog() {
 		InitializeComponent();
-		_appendQueue = new ProducerConsumerQueue<char>((c) => sizeof(char), 100000);
-		_data = new LargeCollection<char>(65536, 1, (c) => sizeof(char));
-		_throttle = new Throttle(2.0f);
 	}
 
-	public void AppendText() {
-
+	/// <summary>Gets or replaces the text displayed by the embedded editor.</summary>
+	[Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+	public override string Text {
+		get {
+			return _textBox == null ? base.Text : _textBox.Text;
+		}
+		set {
+			if (_textBox == null)
+				base.Text = value;
+			else
+				_textBox.Text = value;
+		}
 	}
 
+	/// <summary>Gets or sets the first selected character using the native editor's range rules.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int SelectionStart {
-		get { throw new NotImplementedException(); }
-		set { throw new NotImplementedException(); }
+		get {
+			return _textBox.SelectionStart;
+		}
+		set {
+			_textBox.SelectionStart = value;
+		}
 	}
 
+	/// <summary>Gets or sets the selected character count using the native editor's range rules.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int SelectionLength {
-		get { throw new NotImplementedException(); }
-		set { throw new NotImplementedException(); }
+		get {
+			return _textBox.SelectionLength;
+		}
+		set {
+			_textBox.SelectionLength = value;
+		}
 	}
 
+	/// <summary>Gets the text currently selected in the embedded editor.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public string SelectedText {
-		get { throw new NotImplementedException(); }
+		get {
+			return _textBox.SelectedText;
+		}
 	}
 
+	/// <summary>Appends text using the existing native editor on its owning UI thread.</summary>
+	public void AppendText(string text) {
+		_textBox.AppendText(text);
+	}
 
+	/// <summary>Preserves the legacy parameterless no-op. Supply text through <see cref="AppendText(string)"/>.</summary>
+	public void AppendText() {
+	}
+
+	private void TextBoxTextChanged(object sender, EventArgs args) {
+		OnTextChanged(args);
+	}
 }
-

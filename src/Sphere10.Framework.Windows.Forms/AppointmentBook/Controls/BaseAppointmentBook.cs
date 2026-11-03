@@ -12,13 +12,33 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
-
+using Sphere10.Framework.Drawing;
+using Sphere10.Framework.Windows.Forms.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 [ToolboxItem(false)]
-public partial class BaseAppointmentBook : UserControl {
+public partial class BaseAppointmentBook : UserControlEx {
+	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseUpEvent;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseDownEvent;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseOverEvent;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int> ClickEvent;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int> DoubleClickEvent;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int> SelectionStarted;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int> Selecting;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int> SelectionChanged;
+
+	public event EventHandlerEx<BaseAppointmentBook, int, int, int, int> SelectionFinished;
+
+	public event EventHandlerEx<BaseAppointmentBook> SelectionCleared;
+
 	private BaseAppointmentBookViewModel _viewModel;
 	private Tuple<int, int, DateTime, Point> _lastMouseDown;
 	private Tuple<int, int, DateTime, Point> _lastMouseUp;
@@ -29,17 +49,6 @@ public partial class BaseAppointmentBook : UserControl {
 	internal Tuple<int, int> SelectionEnd;
 	internal GridSelectingState SelectState;
 	private readonly IDictionary<Tuple<int, int>, Tuple<SourceGrid.Cells.Cell, CellViewModel>> _cellDisplays;
-
-	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseUpEvent;
-	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseDownEvent;
-	public event EventHandlerEx<BaseAppointmentBook, int, int, MouseEventArgs> MouseOverEvent;
-	public event EventHandlerEx<BaseAppointmentBook, int, int> ClickEvent;
-	public event EventHandlerEx<BaseAppointmentBook, int, int> DoubleClickEvent;
-	public event EventHandlerEx<BaseAppointmentBook, int, int> SelectionStarted;
-	public event EventHandlerEx<BaseAppointmentBook, int, int> Selecting;
-	public event EventHandlerEx<BaseAppointmentBook, int, int> SelectionChanged;
-	public event EventHandlerEx<BaseAppointmentBook, int, int, int, int> SelectionFinished;
-	public event EventHandlerEx<BaseAppointmentBook> SelectionCleared;
 
 	public BaseAppointmentBook() {
 		CanResize = true;
@@ -76,13 +85,13 @@ public partial class BaseAppointmentBook : UserControl {
 		_viewModel = null;
 		_cellDisplays = new Dictionary<Tuple<int, int>, Tuple<SourceGrid.Cells.Cell, CellViewModel>>();
 		ClearSelection();
-
 	}
 
-	#region Properties
-
+	// Properties
 	internal BaseAppointmentBookViewModel ViewModel {
-		get { return _viewModel; }
+		get {
+			return _viewModel;
+		}
 		set {
 			_viewModel = value;
 			if (_viewModel != null && !base.DesignMode) {
@@ -92,34 +101,72 @@ public partial class BaseAppointmentBook : UserControl {
 		}
 	}
 
-	public float DistanceMovedToInitiateDragging { get; set; }
+	public float DistanceMovedToInitiateDragging {
+		get; set;
+	}
 
-	public bool HasRowHeaders { get; set; }
+	public bool HasRowHeaders {
+		get; set;
+	}
 
-	public bool HasColHeaders { get; set; }
+	public bool HasColHeaders {
+		get; set;
+	}
 
-	public virtual bool CanResize { get; set; }
+	public virtual bool CanResize {
+		get; set;
+	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-	public BorderLine HorizontalBorderLine { get; set; }
+	public BorderLine HorizontalBorderLine {
+		get; set;
+	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-	public BorderLine SelectedAppointmentBorderLine { get; set; }
+	public BorderLine SelectedAppointmentBorderLine {
+		get; set;
+	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-	public BorderLine AppointmentBorderLine { get; set; }
+	public BorderLine AppointmentBorderLine {
+		get; set;
+	}
 
-	public int MaxColumnWidth { get; set; }
+	public int MaxColumnWidth {
+		get; set;
+	}
 
-	public int MinColumnWidth { get; set; }
+	public int MinColumnWidth {
+		get; set;
+	}
 
-	public int RowHeaderColumnWidth { get; set; }
+	public int RowHeaderColumnWidth {
+		get; set;
+	}
 
-	#endregion
+	public virtual bool IsCellSelected(int col, int row) {
+		if (!SelectState.IsIn(GridSelectingState.None, GridSelectingState.Dragging)) {
+			if ((SelectionStart.Item1 <= col && col <= SelectionEnd.Item1 &&
+				 SelectionStart.Item2 <= row && row <= SelectionEnd.Item2) ||
+				(SelectionEnd.Item1 <= col && col <= SelectionStart.Item1 &&
+				 SelectionEnd.Item2 <= row && row <= SelectionStart.Item2))
+				return true;
+		}
+		return false;
+	}
 
-	#region Binding
+	public virtual void EndDragging() {
+		SelectState = GridSelectingState.None;
+	}
 
+	/// <summary>Reports completed appointment-book gestures instead of the internal grid's intermediate selection.</summary>
+	protected override bool ShouldObserveChildStateChanges(Control child) {
+		return false;
+	}
+
+	// Binding
 	protected virtual void BindToViewModel() {
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
 		ClearSelection();
 		if (ViewModel == null) {
 			_grid.Redim(0, 0);
@@ -131,12 +178,12 @@ public partial class BaseAppointmentBook : UserControl {
 		var rowIndexOffset = HasColHeaders ? 1 : 0;
 
 		_grid.Redim(dataSourceRowCount + rowIndexOffset, dataSourceColCount + colIndexOffset);
-		for (int i = 0; i < _grid.ColumnsCount; i++) {
+		for (var index = 0; index < _grid.ColumnsCount; index++) {
 			if (this.MaxColumnWidth > 0)
-				_grid.Columns[i].MaximalWidth = this.MaxColumnWidth;
+				_grid.Columns[index].MaximalWidth = this.MaxColumnWidth;
 			if (this.MinColumnWidth > 0)
-				_grid.Columns[i].MinimalWidth = this.MinColumnWidth;
-			_grid.Columns[i].AutoSizeMode = SourceGrid.AutoSizeMode.EnableStretch;
+				_grid.Columns[index].MinimalWidth = this.MinColumnWidth;
+			_grid.Columns[index].AutoSizeMode = SourceGrid.AutoSizeMode.EnableStretch;
 		}
 		var rowHeaders = (
 			from rowNumber in Enumerable.Range(0, dataSourceRowCount)
@@ -144,7 +191,7 @@ public partial class BaseAppointmentBook : UserControl {
 		).ToLookup(x => x.Item1, x => x.Item2);
 
 		if (HasRowHeaders) {
-			for (int i = 0; i < _grid.RowsCount; i++)
+			for (var i = 0; i < _grid.RowsCount; i++)
 				_grid[i, 0] = _grid[i, 1] = null;
 
 			_grid[0, 0] = new SourceGrid.Cells.Header("Time");
@@ -176,9 +223,8 @@ public partial class BaseAppointmentBook : UserControl {
 			for (var i = 0 + colIndexOffset; i < _grid.ColumnsCount; i++)
 				_grid[0, i] = null;
 
-			for (var dataColIndex = 0; dataColIndex < dataSourceColCount; dataColIndex++) {
+			for (var dataColIndex = 0; dataColIndex < dataSourceColCount; dataColIndex++)
 				_grid[0, dataColIndex + colIndexOffset] = new SourceGrid.Cells.Header(_viewModel.GetColumnHeaderText(dataColIndex));
-			}
 		}
 
 		for (var row = 0; row < dataSourceRowCount; row++) {
@@ -209,10 +255,7 @@ public partial class BaseAppointmentBook : UserControl {
 		cell.View = new CellView(this, cellDisplay);
 	}
 
-	#endregion
-
-	#region Cell Methods
-
+	// Cell Methods
 	internal void RedrawCell(int col, int row) {
 		TransformModelToGrid(ref col, ref row);
 		_grid.InvalidateCell(new SourceGrid.Position(row, col));
@@ -229,83 +272,16 @@ public partial class BaseAppointmentBook : UserControl {
 		return _cellDisplays[Tuple.Create(col, row)];
 	}
 
-	#endregion
-
-	#region Selection
-
-	public virtual void ClearSelection() {
-		SelectState = GridSelectingState.None;
-		SelectionStart = null;
-		SelectionEnd = null;
-		_grid.Selection.ResetSelection(false);
-		FireSelectionCleared();
+	// Event Triggers
+	internal void FireMouseDown(int col, int row, MouseEventArgs mouseEvent) {
+		var now = DateTime.Now;
+		OnCellMouseDown(col, row, mouseEvent);
+		if (MouseDownEvent != null)
+			MouseDownEvent(this, col, row, mouseEvent);
+		_lastMouseDown = Tuple.Create(col, row, now, mouseEvent.Location);
 	}
 
-	public virtual bool IsCellSelected(int col, int row) {
-		if (!SelectState.IsIn(GridSelectingState.None, GridSelectingState.Dragging)) {
-			if ((SelectionStart.Item1 <= col && col <= SelectionEnd.Item1 &&
-			     SelectionStart.Item2 <= row && row <= SelectionEnd.Item2) ||
-			    (SelectionEnd.Item1 <= col && col <= SelectionStart.Item1 &&
-			     SelectionEnd.Item2 <= row && row <= SelectionStart.Item2)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public new virtual bool CanSelect(int col, int row) {
-		if (col < 0 || row < 0)
-			return false;
-
-		switch (SelectState) {
-			case GridSelectingState.Selecting:
-				// check1 = can only select empty cells 
-				// check2 = can only select cells within a single column
-				// check3 = selection must be continuous
-
-				var check1 = ViewModel.GetCellDisplay(col, row).Traits.HasFlag(CellTraits.Empty);
-				var check2 = SelectionEnd.Item1 == col;
-				var check3 = Math.Abs(SelectionEnd.Item2 - row) == 1;
-
-				return check1 && check2 && check3;
-
-			default:
-				// check1 = can only select empty cells 
-				return ViewModel.GetCellDisplay(col, row).Traits.HasFlag(CellTraits.Empty);
-		}
-	}
-
-	public virtual bool AcceptSelection(Tuple<int, int> selectionStart, Tuple<int, int> selectionEnd) {
-		return true;
-	}
-
-	protected virtual void OnSelectingStarted(int col, int row) {
-	}
-
-	protected virtual void OnSelecting(int col, int row) {
-		int startGridCol = SelectionStart.Item1, startGridRow = SelectionStart.Item2, endGridCol = SelectionEnd.Item1, endGridRow = SelectionEnd.Item2;
-		TransformModelToGrid(ref startGridCol, ref startGridRow);
-		TransformModelToGrid(ref endGridCol, ref endGridRow);
-		_grid.Selection.ResetSelection(false);
-		_grid.Selection.SelectRange(
-			new SourceGrid.CellRange(startGridRow, startGridCol, endGridRow, endGridCol),
-			true
-		);
-	}
-
-	protected virtual void OnSelectionChanged(int col, int row) {
-	}
-
-	protected virtual void OnSelectingFinished(int startCol, int startRow, int endCol, int endRow) {
-	}
-
-	protected virtual void OnSelectionCleared() {
-	}
-
-	#endregion
-
-	#region Mouse
-
+	// Mouse
 	protected virtual async void OnCellMouseDown(int col, int row, MouseEventArgs mouseEvent) {
 		try {
 			switch (SelectState) {
@@ -327,6 +303,14 @@ public partial class BaseAppointmentBook : UserControl {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(this, error);
 		}
+	}
+
+	internal void FireMouseUp(int col, int row, MouseEventArgs mouseEvent) {
+		var now = DateTime.Now;
+		OnCellMouseUp(col, row, mouseEvent);
+		if (MouseUpEvent != null)
+			MouseUpEvent(this, col, row, mouseEvent);
+		_lastMouseUp = Tuple.Create(col, row, now, mouseEvent.Location);
 	}
 
 	protected virtual async void OnCellMouseUp(int col, int row, MouseEventArgs mouseEvent) {
@@ -351,11 +335,40 @@ public partial class BaseAppointmentBook : UserControl {
 				default:
 					break;
 			}
-
 		} catch (Exception error) {
 			SystemLog.Exception(error);
 			await ExceptionDialog.ShowAsync(this, error);
 		}
+	}
+
+	// Selection
+	public virtual void ClearSelection() {
+		var changed = SelectState != GridSelectingState.None || SelectionStart != null || SelectionEnd != null;
+		SelectState = GridSelectingState.None;
+		SelectionStart = null;
+		SelectionEnd = null;
+		_grid.Selection.ResetSelection(false);
+		FireSelectionCleared();
+		if (changed)
+			NotifyStateChanged();
+	}
+
+	public virtual bool AcceptSelection(Tuple<int, int> selectionStart, Tuple<int, int> selectionEnd) {
+		return true;
+	}
+
+	internal void FireMouseEnter(int col, int row) {
+	}
+
+	internal void FireMouseLeave(int col, int row) {
+	}
+
+	internal void FireMouseMove(int col, int row, MouseEventArgs mouseEvent) {
+		var now = DateTime.Now;
+		OnCellMouseMoved(col, row, mouseEvent);
+		if (MouseOverEvent != null)
+			MouseOverEvent(this, col, row, mouseEvent);
+		_lastMouseOver = Tuple.Create(col, row, now, mouseEvent.Location);
 	}
 
 	protected virtual async void OnCellMouseMoved(int col, int row, MouseEventArgs mouseEvent) {
@@ -371,11 +384,10 @@ public partial class BaseAppointmentBook : UserControl {
 				default:
 					if (_lastMouseDown != null) {
 						if (mouseEvent.Button.HasFlag(MouseButtons.Left) &&
-						    _grid.PointToClient(Cursor.Position).DistanceTo(_lastMouseDown.Item4) >= DistanceMovedToInitiateDragging &&
-						    CanDragCell(_lastMouseDown.Item1, _lastMouseDown.Item2)
-						   ) {
+							_grid.PointToClient(Cursor.Position).DistanceTo(_lastMouseDown.Item4) >= DistanceMovedToInitiateDragging &&
+							CanDragCell(_lastMouseDown.Item1, _lastMouseDown.Item2)
+						   )
 							BeginDragging(_lastMouseDown.Item1, _lastMouseDown.Item2, _lastMouseDown.Item4);
-						}
 					}
 					break;
 			}
@@ -385,60 +397,34 @@ public partial class BaseAppointmentBook : UserControl {
 		}
 	}
 
-	protected virtual void OnCellClick(int col, int row) {
+	public new virtual bool CanSelect(int col, int row) {
+		if (col < 0 || row < 0)
+			return false;
+
+		switch (SelectState) {
+			case GridSelectingState.Selecting:
+				// check1 = can only select empty cells
+				// check2 = can only select cells within a single column
+				// check3 = selection must be continuous
+
+				var check1 = ViewModel.GetCellDisplay(col, row).Traits.HasFlag(CellTraits.Empty);
+				var check2 = SelectionEnd.Item1 == col;
+				var check3 = Math.Abs(SelectionEnd.Item2 - row) == 1;
+
+				return check1 && check2 && check3;
+
+			default:
+				// check1 = can only select empty cells
+				return ViewModel.GetCellDisplay(col, row).Traits.HasFlag(CellTraits.Empty);
+		}
 	}
 
-	protected virtual void OnCellDoubleClick(int col, int row) {
-
-	}
-
-	#endregion
-
-	#region Drag-n-drop
-
+	// Drag-n-drop
 	public virtual bool CanDragCell(int col, int row) {
 		return false;
 	}
 
 	public virtual void BeginDragging(int col, int row, Point mouseLocation) {
-	}
-
-	public virtual void EndDragging() {
-		SelectState = GridSelectingState.None;
-	}
-
-	#endregion
-
-	#region Event Triggers
-
-	internal void FireMouseDown(int col, int row, MouseEventArgs mouseEvent) {
-		DateTime now = DateTime.Now;
-		OnCellMouseDown(col, row, mouseEvent);
-		if (MouseDownEvent != null)
-			MouseDownEvent(this, col, row, mouseEvent);
-		_lastMouseDown = Tuple.Create(col, row, now, mouseEvent.Location);
-	}
-
-	internal void FireMouseUp(int col, int row, MouseEventArgs mouseEvent) {
-		DateTime now = DateTime.Now;
-		OnCellMouseUp(col, row, mouseEvent);
-		if (MouseUpEvent != null)
-			MouseUpEvent(this, col, row, mouseEvent);
-		_lastMouseUp = Tuple.Create(col, row, now, mouseEvent.Location);
-	}
-
-	internal void FireMouseEnter(int col, int row) {
-	}
-
-	internal void FireMouseLeave(int col, int row) {
-	}
-
-	internal void FireMouseMove(int col, int row, MouseEventArgs mouseEvent) {
-		DateTime now = DateTime.Now;
-		OnCellMouseMoved(col, row, mouseEvent);
-		if (MouseOverEvent != null)
-			MouseOverEvent(this, col, row, mouseEvent);
-		_lastMouseOver = Tuple.Create(col, row, now, mouseEvent.Location);
 	}
 
 	internal void FireClick(int col, int row) {
@@ -448,11 +434,17 @@ public partial class BaseAppointmentBook : UserControl {
 		_lastMouseClick = _lastMouseDown;
 	}
 
+	protected virtual void OnCellClick(int col, int row) {
+	}
+
 	internal void FireDoubleClick(int col, int row) {
 		OnCellDoubleClick(col, row);
 		if (DoubleClickEvent != null)
 			DoubleClickEvent(this, col, row);
 		_lastMouseDoubleClick = _lastMouseUp;
+	}
+
+	protected virtual void OnCellDoubleClick(int col, int row) {
 	}
 
 	internal void FireSelectingStarted(int col, int row) {
@@ -461,10 +453,22 @@ public partial class BaseAppointmentBook : UserControl {
 			SelectionStarted(this, col, row);
 	}
 
+	protected virtual void OnSelectingStarted(int col, int row) {
+	}
+
 	internal void FireSelecting(int col, int row) {
 		OnSelecting(col, row);
 		if (Selecting != null)
 			Selecting(this, col, row);
+	}
+
+	protected virtual void OnSelecting(int col, int row) {
+		int startGridCol = SelectionStart.Item1, startGridRow = SelectionStart.Item2, endGridCol = SelectionEnd.Item1, endGridRow = SelectionEnd.Item2;
+		TransformModelToGrid(ref startGridCol, ref startGridRow);
+		TransformModelToGrid(ref endGridCol, ref endGridRow);
+		_grid.Selection.ResetSelection(false);
+		_grid.Selection.SelectRange(
+new SourceGrid.CellRange(startGridRow, startGridCol, endGridRow, endGridCol), true);
 	}
 
 	internal void FireSelectionChanged(int col, int row) {
@@ -473,16 +477,27 @@ public partial class BaseAppointmentBook : UserControl {
 			SelectionChanged(this, col, row);
 	}
 
+	protected virtual void OnSelectionChanged(int col, int row) {
+	}
+
 	internal void FireSelectionFinished(int startCol, int startRow, int endCol, int endRow) {
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
 		OnSelectingFinished(startCol, startRow, endCol, endRow);
 		if (SelectionFinished != null)
 			SelectionFinished(this, startCol, startRow, endCol, endRow);
+		NotifyStateChanged();
+	}
+
+	protected virtual void OnSelectingFinished(int startCol, int startRow, int endCol, int endRow) {
 	}
 
 	internal void FireSelectionCleared() {
 		OnSelectionCleared();
 		if (SelectionCleared != null)
 			SelectionCleared(this);
+	}
+
+	protected virtual void OnSelectionCleared() {
 	}
 
 	internal void TransformGridToModel(ref int gridCol, ref int gridRow) {
@@ -498,8 +513,4 @@ public partial class BaseAppointmentBook : UserControl {
 		if (HasRowHeaders)
 			col = col + 2;
 	}
-
-	#endregion
-
 }
-

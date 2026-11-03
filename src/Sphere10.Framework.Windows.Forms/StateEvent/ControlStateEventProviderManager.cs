@@ -8,49 +8,117 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
-using Sphere10.Framework.Application;
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
+/// <summary>Resolves fresh state observers, preferring exact application registrations over inherited defaults.</summary>
 public class ControlStateEventProviderManager {
+	private static readonly Dictionary<Type, Type> _defaultProviders = new() {
+		[typeof(FormEx)] = typeof(FormEx.StateEventProvider),
+		[typeof(UserControlEx)] = typeof(UserControlEx.StateEventProvider),
+		[typeof(UserControl)] = typeof(ContainerControlStateEventProvider),
+		[typeof(ContainerControl)] = typeof(ContainerControlStateEventProvider),
+		[typeof(Panel)] = typeof(ContainerControlStateEventProvider),
+		[typeof(GroupBox)] = typeof(ContainerControlStateEventProvider),
+		[typeof(SplitContainer)] = typeof(SplitContainerControlStateEventProvider),
+		[typeof(TabControl)] = typeof(TabControlStateEventProvider),
+		[typeof(PathSelectorControl)] = typeof(PathSelectorControl.StateEventProvider),
+		[typeof(NumericUpDown)] = typeof(CommonControlStateEventProvider),
+		[typeof(TextBox)] = typeof(CommonControlStateEventProvider),
+		[typeof(TextBoxBase)] = typeof(CommonControlStateEventProvider),
+		[typeof(ComboBox)] = typeof(CommonControlStateEventProvider),
+		[typeof(RadioButton)] = typeof(CommonControlStateEventProvider),
+		[typeof(CheckBox)] = typeof(CommonControlStateEventProvider),
+		[typeof(CheckedListBox)] = typeof(CommonControlStateEventProvider),
+		[typeof(ListBox)] = typeof(CommonControlStateEventProvider),
+		[typeof(DateTimePicker)] = typeof(CommonControlStateEventProvider),
+		[typeof(MonthCalendar)] = typeof(CommonControlStateEventProvider),
+		[typeof(TrackBar)] = typeof(CommonControlStateEventProvider),
+		[typeof(ScrollBar)] = typeof(CommonControlStateEventProvider),
+		[typeof(DomainUpDown)] = typeof(CommonControlStateEventProvider),
+		[typeof(PropertyGrid)] = typeof(CommonControlStateEventProvider),
+		[typeof(SourceGrid.GridVirtual)] = typeof(SourceGridControlStateEventProvider),
+		[typeof(ToolStrip)] = typeof(ToolStripControlStateEventProvider),
+		[typeof(DataVisualization.Chart)] = typeof(ChartControlStateEventProvider),
+		[typeof(Expando)] = typeof(ExpandoControlStateEventProvider),
+		[typeof(TaskPane)] = typeof(ContainerControlStateEventProvider),
+		[typeof(PadLockButton)] = typeof(PadLockButtonControlStateEventProvider),
+		[typeof(Crud.CrudComboBox)] = typeof(CrudComboBoxControlStateEventProvider)
+	};
 	private readonly HashSet<string> _controlStateEventProviders;
 
 	static ControlStateEventProviderManager() {
 		Instance = new ControlStateEventProviderManager();
 	}
 
+	/// <summary>Captures registration names without constructing providers or inspecting unrelated assemblies.</summary>
 	public ControlStateEventProviderManager() {
 		_controlStateEventProviders = new HashSet<string>(StringComparer.Ordinal);
 		Refresh();
 	}
 
-	public static ControlStateEventProviderManager Instance { get; }
+	/// <summary>The normal process-wide registration resolver.</summary>
+	public static ControlStateEventProviderManager Instance {
+		get;
+	}
 
+	/// <summary>Gets a fresh observer for the exact control or its nearest supported ancestor.</summary>
+	public IControlStateEventProvider GetControlStateProvider<T>()
+		where T : Control {
+		return GetControlStateProvider(typeof(T));
+	}
 
+	/// <summary>Gets a fresh observer, rejecting controls without editable state support.</summary>
+	public IControlStateEventProvider GetControlStateProvider(Type controlType) {
+		Guard.ArgumentNotNull(controlType, nameof(controlType));
+		if (!TryGetControlStateProvider(controlType, out var provider))
+			throw new InvalidOperationException($"No {nameof(IControlStateEventProvider)} found for {controlType.Name}");
+		return provider;
+	}
+
+	/// <summary>Tries application registrations and built-in observers without requiring Framework startup.</summary>
+	public bool TryGetControlStateProvider(Type controlType, out IControlStateEventProvider provider) {
+		var lookup = GetRegisteredProviders();
+		for (var type = controlType; type != null && typeof(Control).IsAssignableFrom(type); type = type.BaseType) {
+			if (_controlStateEventProviders.Contains(type.FullName) && lookup != null) {
+				// Provider construction happens outside the availability fallback: custom factory failures propagate.
+				provider = lookup[type.FullName];
+				if (provider != null)
+					return true;
+			}
+			provider = CreateDefaultProvider(type);
+			if (provider != null)
+				return true;
+		}
+		provider = null;
+		return false;
+	}
+
+	/// <summary>Refreshes only names, leaving optional and unused provider implementations lazy.</summary>
 	public void Refresh() {
 		_controlStateEventProviders.Clear();
-		// Registrations already use exact control names. Resolve the provider only when a live control requests it;
-		// enumerating unrelated assembly types here loads optional designer graphs and can disable valid providers.
+		// Registrations already use exact control names. Resolve only when a live control requests its observer.
 		if (NamedLookupInfo.TryGetMap(typeof(IControlStateEventProvider), out var serviceMap))
 			_controlStateEventProviders.UnionWith(serviceMap.Keys);
 	}
 
+	/// <summary>Checks whether the exact control type has a registered or built-in observer.</summary>
 	public bool HasControlStateProvider<TControl>() {
 		return HasControlStateEventProvider(typeof(TControl));
 	}
 
-	public bool HasControlStateEventProvider(Type type)
-		=> FindControlStateEventProvider(type, false, out _);
+	/// <summary>Checks exact support without constructing a provider.</summary>
+	public bool HasControlStateEventProvider(Type type) {
+		return FindControlStateEventProvider(type, false, out _);
+	}
 
+	/// <summary>Finds the exact supported control type, optionally walking nearest ancestors first.</summary>
 	public bool FindControlStateEventProvider(Type controlType, bool searchSubClasses, out Type implementationForBaseType) {
-		var typesToSearch = new[] { controlType };
-		if (searchSubClasses)
-			typesToSearch = typesToSearch.Concat(controlType.GetAncestorClasses().Where(c => c.IsAssignableTo(typeof(Control)))).ToArray();
-		foreach (var type in typesToSearch) {
-			if (type != null && _controlStateEventProviders.Contains(type.FullName)) {
+		for (var type = controlType; type != null && typeof(Control).IsAssignableFrom(type); type = searchSubClasses ? type.BaseType : null) {
+			if (_controlStateEventProviders.Contains(type.FullName) || _defaultProviders.ContainsKey(type)) {
 				implementationForBaseType = type;
 				return true;
 			}
@@ -59,24 +127,31 @@ public class ControlStateEventProviderManager {
 		return false;
 	}
 
-	public IControlStateEventProvider GetControlStateProvider<T>() where T : Control
-		=> GetControlStateProvider(typeof(T));
-
-	public IControlStateEventProvider GetControlStateProvider(Type controlType) {
-		if (!TryGetControlStateProvider(controlType, out var provider))
-			throw new InvalidOperationException($"No {nameof(IControlStateEventProvider)} found for {controlType.Name}");
-		return provider;
-	}
-
-	public bool TryGetControlStateProvider(Type controlType, out IControlStateEventProvider provider) {
-
-		if (FindControlStateEventProvider(controlType, true, out var actualType)) {
-			provider = Sphere10Framework.Instance.ServiceProvider.GetNamedService<IControlStateEventProvider>(actualType.FullName);
-			return provider != null;
+	/// <summary>Registers the same built-in observers used for standalone construction, retaining application overrides.</summary>
+	internal static void RegisterDefaultProviders(IServiceCollection services) {
+		foreach (var registration in _defaultProviders) {
+			if (!services.HasNamedImplementationFor<IControlStateEventProvider>(registration.Key.FullName))
+				services.AddNamed(ServiceDescriptor.Transient(typeof(IControlStateEventProvider), registration.Value), registration.Key.FullName);
 		}
-		provider = null;
-		return false;
 	}
 
-}
+	/// <summary>Creates an independent built-in attachment for one exact native control type.</summary>
+	internal static IControlStateEventProvider CreateDefaultProvider(Type controlType) {
+		return _defaultProviders.TryGetValue(controlType, out var providerType)
+			? (IControlStateEventProvider)providerType.ActivateWithCompatibleArgs()
+			: null;
+	}
 
+	// Shutdown can leave the global provider reference pointing at a disposed container.
+	private static INamedLookup<IControlStateEventProvider> GetRegisteredProviders() {
+		var serviceProvider = Sphere10Framework.Instance.ServiceProvider;
+		if (serviceProvider == null)
+			return null;
+
+		INamedLookup<IControlStateEventProvider> lookup = null;
+		Tools.Exceptions.ExecuteCapturingException<ObjectDisposedException>(() => {
+			lookup = serviceProvider.GetService<INamedLookup<IControlStateEventProvider>>();
+		}, out _);
+		return lookup;
+	}
+}

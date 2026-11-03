@@ -17,8 +17,8 @@ using Sphere10.Framework.Windows.Forms.DataVisualization;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A reusable DataVisualization surface for captured numeric line, area and bar series.</summary>
-public partial class GraphChart : UserControl {
-	private static readonly Color[] DefaultColors = { Color.SteelBlue, Color.Firebrick, Color.SeaGreen, Color.DarkOrange, Color.MediumPurple, Color.Teal };
+public partial class GraphChart : UserControlEx {
+	private static readonly Color[] _defaultColors = { Color.SteelBlue, Color.Firebrick, Color.SeaGreen, Color.DarkOrange, Color.MediumPurple, Color.Teal };
 	private readonly int _ownerThreadId = Environment.CurrentManagedThreadId;
 	private GraphChartSeries[] _series = Array.Empty<GraphChartSeries>();
 	private GraphChartStyle _style;
@@ -41,7 +41,10 @@ public partial class GraphChart : UserControl {
 
 	[DefaultValue(GraphChartStyle.Line)]
 	public GraphChartStyle Style {
-		get => _style;
+		get {
+			return _style;
+		}
+
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart style");
 			if (_style == value)
@@ -52,35 +55,118 @@ public partial class GraphChart : UserControl {
 	}
 
 	[DefaultValue(null)]
-	public double? MinimumX { get => _minimumX; set { ValidateBounds(value, _maximumX); _minimumX = value; UpdateAxes(); } }
+	public double? MinimumX {
+		get {
+			return _minimumX;
+		}
+
+		set {
+			ValidateBounds(value, _maximumX);
+			_minimumX = value;
+			UpdateAxes();
+		}
+	}
 
 	[DefaultValue(null)]
-	public double? MaximumX { get => _maximumX; set { ValidateBounds(_minimumX, value); _maximumX = value; UpdateAxes(); } }
+	public double? MaximumX {
+		get {
+			return _maximumX;
+		}
+
+		set {
+			ValidateBounds(_minimumX, value);
+			_maximumX = value;
+			UpdateAxes();
+		}
+	}
 
 	[DefaultValue(null)]
-	public double? MinimumY { get => _minimumY; set { ValidateBounds(value, _maximumY); _minimumY = value; UpdateAxes(); } }
+	public double? MinimumY {
+		get {
+			return _minimumY;
+		}
+
+		set {
+			ValidateBounds(value, _maximumY);
+			_minimumY = value;
+			UpdateAxes();
+		}
+	}
 
 	[DefaultValue(null)]
-	public double? MaximumY { get => _maximumY; set { ValidateBounds(_minimumY, value); _maximumY = value; UpdateAxes(); } }
+	public double? MaximumY {
+		get {
+			return _maximumY;
+		}
+
+		set {
+			ValidateBounds(_minimumY, value);
+			_maximumY = value;
+			UpdateAxes();
+		}
+	}
 
 	[DefaultValue("")]
-	public string XAxisTitle { get => PlotArea.AxisX.Title; set => PlotArea.AxisX.Title = value ?? string.Empty; }
+	public string XAxisTitle {
+		get {
+			return PlotArea.AxisX.Title;
+		}
+
+		set {
+			PlotArea.AxisX.Title = value ?? string.Empty;
+		}
+	}
 
 	[DefaultValue("")]
-	public string YAxisTitle { get => PlotArea.AxisY.Title; set => PlotArea.AxisY.Title = value ?? string.Empty; }
+	public string YAxisTitle {
+		get {
+			return PlotArea.AxisY.Title;
+		}
+
+		set {
+			PlotArea.AxisY.Title = value ?? string.Empty;
+		}
+	}
 
 	[DefaultValue("")]
-	public string XValueFormat { get => PlotArea.AxisX.LabelStyle.Format; set => PlotArea.AxisX.LabelStyle.Format = value ?? string.Empty; }
+	public string XValueFormat {
+		get {
+			return PlotArea.AxisX.LabelStyle.Format;
+		}
+
+		set {
+			PlotArea.AxisX.LabelStyle.Format = value ?? string.Empty;
+		}
+	}
 
 	[DefaultValue("")]
-	public string YValueFormat { get => PlotArea.AxisY.LabelStyle.Format; set => PlotArea.AxisY.LabelStyle.Format = value ?? string.Empty; }
+	public string YValueFormat {
+		get {
+			return PlotArea.AxisY.LabelStyle.Format;
+		}
+
+		set {
+			PlotArea.AxisY.LabelStyle.Format = value ?? string.Empty;
+		}
+	}
 
 	[DefaultValue(false)]
-	public bool ShowLegend { get => _chart.Legends[0].Enabled; set => _chart.Legends[0].Enabled = value; }
+	public bool ShowLegend {
+		get {
+			return _chart.Legends[0].Enabled;
+		}
+
+		set {
+			_chart.Legends[0].Enabled = value;
+		}
+	}
 
 	[DefaultValue(true)]
 	public bool ShowAxes {
-		get => _showAxes;
+		get {
+			return _showAxes;
+		}
+
 		set {
 			_showAxes = value;
 			PlotArea.AxisX.LabelStyle.Enabled = PlotArea.AxisY.LabelStyle.Enabled = value;
@@ -93,53 +179,132 @@ public partial class GraphChart : UserControl {
 	}
 
 	[DefaultValue(false)]
-	public bool ShowVerticalGrid { get => PlotArea.AxisX.MajorGrid.Enabled; set => PlotArea.AxisX.MajorGrid.Enabled = value; }
+	public bool ShowVerticalGrid {
+		get {
+			return PlotArea.AxisX.MajorGrid.Enabled;
+		}
+
+		set {
+			PlotArea.AxisX.MajorGrid.Enabled = value;
+		}
+	}
 
 	[DefaultValue(typeof(Color), "ControlDark")]
 	public Color GridColor {
-		get => PlotArea.AxisY.MajorGrid.LineColor;
-		set { PlotArea.AxisX.MajorGrid.LineColor = PlotArea.AxisY.MajorGrid.LineColor = value; }
+		get {
+			return PlotArea.AxisY.MajorGrid.LineColor;
+		}
+
+		set {
+			PlotArea.AxisX.MajorGrid.LineColor = PlotArea.AxisY.MajorGrid.LineColor = value;
+		}
 	}
 
 	[DefaultValue(typeof(Color), "Control")]
 	public Color PlotBackColor {
-		get => PlotArea.BackColor;
-		set { PlotArea.BackColor = _chart.BackColor = _emptyState.BackColor = value; }
+		get {
+			return PlotArea.BackColor;
+		}
+
+		set {
+			PlotArea.BackColor = _chart.BackColor = _emptyState.BackColor = value;
+		}
 	}
 
 	[DefaultValue("NO DATA"), Localizable(true)]
 	public string NoDataText {
-		get => _emptyState.Text;
-		set { _emptyState.Text = value ?? string.Empty; UpdateEmptyState(); }
+		get {
+			return _emptyState.Text;
+		}
+
+		set {
+			_emptyState.Text = value ?? string.Empty;
+			UpdateEmptyState();
+		}
 	}
 
 	[DefaultValue(true)]
-	public bool ShowToolTips { get => _showToolTips; set { _showToolTips = value; PublishSeries(); } }
+	public bool ShowToolTips {
+		get {
+			return _showToolTips;
+		}
+
+		set {
+			_showToolTips = value;
+			PublishSeries();
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Func<double, string> XLabelFormatter { get => _xLabelFormatter; set { _xLabelFormatter = value; _chart.Invalidate(); } }
+	public Func<double, string> XLabelFormatter {
+		get {
+			return _xLabelFormatter;
+		}
+
+		set {
+			_xLabelFormatter = value;
+			_chart.Invalidate();
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Func<double, string> YLabelFormatter { get => _yLabelFormatter; set { _yLabelFormatter = value; _chart.Invalidate(); } }
+	public Func<double, string> YLabelFormatter {
+		get {
+			return _yLabelFormatter;
+		}
+
+		set {
+			_yLabelFormatter = value;
+			_chart.Invalidate();
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public GraphChartSeries[] Series => (GraphChartSeries[])_series.Clone();
+	public GraphChartSeries[] Series {
+		get {
+			return (GraphChartSeries[])_series.Clone();
+		}
+	}
 
 	/// <summary>The owned chart engine, for advanced chart-area, legend and rendering configuration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Chart NativeChart => _chart;
+	public Chart NativeChart {
+		get {
+			return _chart;
+		}
+	}
 
 	/// <summary>Optional output title; empty derives the native title or owning screen/group context.</summary>
 	[Category("Behavior"), DefaultValue("")]
-	public string LogTitle { get => _logTitle; set => _logTitle = value ?? string.Empty; }
+	public string LogTitle {
+		get {
+			return _logTitle;
+		}
+
+		set {
+			_logTitle = value ?? string.Empty;
+		}
+	}
 
 	/// <summary>Optional units for numeric log values; empty derives the Y-axis title.</summary>
 	[Category("Behavior"), DefaultValue("")]
-	public string LogUnit { get => _logUnit; set => _logUnit = value ?? string.Empty; }
+	public string LogUnit {
+		get {
+			return _logUnit;
+		}
+
+		set {
+			_logUnit = value ?? string.Empty;
+		}
+	}
 
 	/// <summary>The shared output selector used by this chart's Log Output context command.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LogOutputSelectorControl LogOutput => LogOutputBehavior.OutputSelector;
+	public LogOutputSelectorControl LogOutput {
+		get {
+			return LogOutputBehavior.OutputSelector;
+		}
+	}
 
 	/// <summary>Coordinates optional capture and the selector's output queue. A caller may bind a borrowed shared selector.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -156,9 +321,15 @@ public partial class GraphChart : UserControl {
 		}
 	}
 
-	internal Func<ChartLogSample[]> LogSampleProvider { get; set; }
+	internal Func<ChartLogSample[]> LogSampleProvider {
+		get; set;
+	}
 
-	internal string ResolvedLogTitle => string.IsNullOrWhiteSpace(_logTitle) ? ChartLogOutputBehavior.ResolveTitle(this) : _logTitle;
+	internal string ResolvedLogTitle {
+		get {
+			return string.IsNullOrWhiteSpace(_logTitle) ? ChartLogOutputBehavior.ResolveTitle(this) : _logTitle;
+		}
+	}
 
 	/// <summary>The actual plot rectangle, in this control's coordinates, after chart layout.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -174,21 +345,11 @@ public partial class GraphChart : UserControl {
 		}
 	}
 
-	private ChartArea PlotArea => _chart.ChartAreas[0];
-
-	public void SetSeries(GraphChartSeries[] series) {
-		Guard.ArgumentNotNull(series, nameof(series));
-		var names = new HashSet<string>(StringComparer.Ordinal);
-		foreach (var item in series) {
-			Guard.ArgumentNotNull(item, nameof(series));
-			Guard.Argument(names.Add(item.Name), nameof(series), "Series names must be unique");
+	private ChartArea PlotArea {
+		get {
+			return _chart.ChartAreas[0];
 		}
-		_series = (GraphChartSeries[])series.Clone();
-		PublishSeries();
-		_logOutputBehavior?.Capture();
 	}
-
-	public void Clear() => SetSeries(Array.Empty<GraphChartSeries>());
 
 	public bool TryGetPointAt(Point location, out GraphChartSeries series, out GraphChartPoint point) {
 		series = null;
@@ -278,14 +439,6 @@ public partial class GraphChart : UserControl {
 		return samples.ToArray();
 	}
 
-	private void UpdateAxes() {
-		PlotArea.AxisX.Minimum = _minimumX ?? double.NaN;
-		PlotArea.AxisX.Maximum = _maximumX ?? double.NaN;
-		PlotArea.AxisY.Minimum = _minimumY ?? double.NaN;
-		PlotArea.AxisY.Maximum = _maximumY ?? double.NaN;
-		_chart.Invalidate();
-	}
-
 	private double FindXBound(bool maximum) {
 		var result = maximum ? double.NegativeInfinity : double.PositiveInfinity;
 		foreach (var series in _series)
@@ -294,7 +447,56 @@ public partial class GraphChart : UserControl {
 		return double.IsFinite(result) ? result : maximum ? 1 : 0;
 	}
 
+	private void ChartCustomize(object sender, EventArgs args) {
+		FormatAxis(PlotArea.AxisX, _xLabelFormatter);
+		FormatAxis(PlotArea.AxisY, _yLabelFormatter);
+	}
+
+	private void ChartPostPaint(object sender, ChartPaintEventArgs args) {
+		_hasRendered = true;
+	}
+
+	private static void FormatAxis(Axis axis, Func<double, string> formatter) {
+		if (formatter == null)
+			return;
+		foreach (var label in axis.CustomLabels)
+			label.Text = formatter((label.FromPosition + label.ToPosition) / 2);
+	}
+
+	private void ChartMouseMove(object sender, MouseEventArgs args) {
+		OnMouseMove(new MouseEventArgs(args.Button, args.Clicks, args.X + _chart.Left, args.Y + _chart.Top, args.Delta));
+	}
+
+	private void ChartMouseLeave(object sender, EventArgs args) {
+		OnMouseLeave(args);
+	}
+
+	public void SetSeries(GraphChartSeries[] series) {
+		Guard.ArgumentNotNull(series, nameof(series));
+		var names = new HashSet<string>(StringComparer.Ordinal);
+		foreach (var item in series) {
+			Guard.ArgumentNotNull(item, nameof(series));
+			Guard.Argument(names.Add(item.Name), nameof(series), "Series names must be unique");
+		}
+		_series = (GraphChartSeries[])series.Clone();
+		PublishSeries();
+		_logOutputBehavior?.Capture();
+	}
+
+	public void Clear() {
+		SetSeries(Array.Empty<GraphChartSeries>());
+	}
+
+	private void UpdateAxes() {
+		PlotArea.AxisX.Minimum = _minimumX ?? double.NaN;
+		PlotArea.AxisX.Maximum = _maximumX ?? double.NaN;
+		PlotArea.AxisY.Minimum = _minimumY ?? double.NaN;
+		PlotArea.AxisY.Maximum = _maximumY ?? double.NaN;
+		_chart.Invalidate();
+	}
+
 	private void PublishSeries() {
+		using var state = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
 		// Keep the control and native series alive between snapshots; collection batching only defers invalidation.
 		_chart.Series.SuspendUpdates();
 		using var update = Tools.Scope.ExecuteOnDispose(() => { _chart.Series.ResumeUpdates(); _chart.Invalidate(); });
@@ -318,9 +520,13 @@ public partial class GraphChart : UserControl {
 				while (segmentEnd < points.Length && (bars || points[segmentEnd].Y.HasValue))
 					segmentEnd++;
 				var native = GetNativeSeries(nativeIndex++);
-				native.ChartType = style switch { GraphChartStyle.Area => SeriesChartType.Area, GraphChartStyle.Column => SeriesChartType.Column,
-					GraphChartStyle.Bar => SeriesChartType.Bar, _ => SeriesChartType.Line };
-				native.Color = item.Color.IsEmpty ? DefaultColors[logicalIndex % DefaultColors.Length] : item.Color;
+				native.ChartType = style switch {
+					GraphChartStyle.Area => SeriesChartType.Area,
+					GraphChartStyle.Column => SeriesChartType.Column,
+					GraphChartStyle.Bar => SeriesChartType.Bar,
+					_ => SeriesChartType.Line
+				};
+				native.Color = item.Color.IsEmpty ? _defaultColors[logicalIndex % _defaultColors.Length] : item.Color;
 				native.BorderColor = native.Color;
 				native.BorderWidth = 2;
 				native.MarkerStyle = segmentEnd - segmentStart == 1 && !bars ? MarkerStyle.Circle : MarkerStyle.None;
@@ -374,22 +580,4 @@ public partial class GraphChart : UserControl {
 		_chart.Series.Add(series);
 		return series;
 	}
-
-	private void ChartCustomize(object sender, EventArgs args) {
-		FormatAxis(PlotArea.AxisX, _xLabelFormatter);
-		FormatAxis(PlotArea.AxisY, _yLabelFormatter);
-	}
-
-	private void ChartPostPaint(object sender, ChartPaintEventArgs args) => _hasRendered = true;
-
-	private static void FormatAxis(Axis axis, Func<double, string> formatter) {
-		if (formatter == null)
-			return;
-		foreach (var label in axis.CustomLabels)
-			label.Text = formatter((label.FromPosition + label.ToPosition) / 2);
-	}
-
-	private void ChartMouseMove(object sender, MouseEventArgs args) => OnMouseMove(new MouseEventArgs(args.Button, args.Clicks, args.X + _chart.Left, args.Y + _chart.Top, args.Delta));
-
-	private void ChartMouseLeave(object sender, EventArgs args) => OnMouseLeave(args);
 }

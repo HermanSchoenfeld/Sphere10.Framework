@@ -626,7 +626,9 @@ public class TaskItem : Button {
 	/// Gets or sets the alignment of the text on the TaskItem
 	/// </summary>
 	public override ContentAlignment TextAlign {
-		get { return base.TextAlign; }
+		get {
+			return base.TextAlign;
+		}
 
 		set {
 			if (value != base.TextAlign) {
@@ -634,42 +636,24 @@ public class TaskItem : Button {
 				this.InitDrawTextFlags();
 
 				// should the text be aligned to the left/center/right
-				switch (value) {
-					case ContentAlignment.MiddleLeft:
-					case ContentAlignment.TopLeft:
-					case ContentAlignment.BottomLeft: {
-						this.stringFormat.Alignment = StringAlignment.Near;
+				if (Tools.Drawing.IsLeft(value)) {
+					this.stringFormat.Alignment = StringAlignment.Near;
 
-						//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_CENTER;
-						//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RIGHT;
-						//this.drawTextFlags |= Win32.DrawTextFlags.DT_LEFT;
+					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_CENTER;
+					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RIGHT;
+					//this.drawTextFlags |= Win32.DrawTextFlags.DT_LEFT;
+				} else if (Tools.Drawing.IsCenter(value)) {
+					this.stringFormat.Alignment = StringAlignment.Center;
 
-						break;
-					}
+					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_LEFT;
+					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RIGHT;
+					//this.drawTextFlags |= Win32.DrawTextFlags.DT_CENTER;
+				} else if (Tools.Drawing.IsRight(value)) {
+					this.stringFormat.Alignment = StringAlignment.Far;
 
-					case ContentAlignment.MiddleCenter:
-					case ContentAlignment.TopCenter:
-					case ContentAlignment.BottomCenter: {
-						this.stringFormat.Alignment = StringAlignment.Center;
-
-						//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_LEFT;
-						//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RIGHT;
-						//this.drawTextFlags |= Win32.DrawTextFlags.DT_CENTER;
-
-						break;
-					}
-
-					case ContentAlignment.MiddleRight:
-					case ContentAlignment.TopRight:
-					case ContentAlignment.BottomRight: {
-						this.stringFormat.Alignment = StringAlignment.Far;
-
-						//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_LEFT;
-						//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_CENTER;
-						//this.drawTextFlags |= Win32.DrawTextFlags.DT_RIGHT;
-
-						break;
-					}
+					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_LEFT;
+					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_CENTER;
+					//this.drawTextFlags |= Win32.DrawTextFlags.DT_RIGHT;
 				}
 
 				base.TextAlign = value;

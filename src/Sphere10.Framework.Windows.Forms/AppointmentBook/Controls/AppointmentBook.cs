@@ -7,12 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 
@@ -21,17 +21,29 @@ namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 [ToolboxItem(true)]
 public class AppointmentBook : BaseAppointmentBook {
 	public event EventHandlerEx<AppointmentBookFreeRegionSelected> AppointmentBookFreeRegionSelected;
+
 	public event EventHandlerEx<AppointmentEvent> AppointmentSelected;
+
 	public event EventHandlerEx<AppointmentEvent> AppointmentDoubleClicked;
+
 	public event EventHandlerEx<AppointmentEvent> AppointmentDeselected;
+
 	public event EventHandlerEx<AppointmentEvent> AppointmentResizingStarted;
+
 	public event EventHandlerEx<AppointmentResizingEvent> AppointmentResizing;
+
 	public event EventHandlerEx<AppointmentResizingFinishedEvent> AppointmentResizingFinished;
+
 	public event EventHandlerEx<AppointmentDragStartingEvent> AppointmentDragStarting;
+
 	public event EventHandlerEx<AppointmentDraggingEvent> AppointmentDragging;
+
 	public event EventHandlerEx<AppointmentDraggedEvent> AppointmentDragged;
+
 	public event EventHandlerEx<AppointmentDropStartingEvent> AppointmentDropStarting;
+
 	public event EventHandlerEx<AppointmentDropEvent> AppointmentDrop;
+
 	private AppointmentViewModel _selectedAppointment;
 	private IAppointmentBookDataSource _dataSource;
 	private Tuple<int, int> _resizingStart;
@@ -42,9 +54,10 @@ public class AppointmentBook : BaseAppointmentBook {
 	private TimePeriodType _timePeriodType;
 	private DateTime _timePeriodStart;
 	private AppointmentBookViewModelFilter _columnFilter;
-	private static readonly Icon CannotDropIcon = SystemIcons.Error;
+	private static readonly Icon _cannotDropIcon = SystemIcons.Error;
 
-	public AppointmentBook() : this(new DataSourceToViewModelConverter()) {
+	public AppointmentBook()
+		: this(new DataSourceToViewModelConverter()) {
 	}
 
 	protected AppointmentBook(DataSourceToViewModelConverter viewModelGenerator) {
@@ -63,8 +76,7 @@ public class AppointmentBook : BaseAppointmentBook {
 		base.DragDrop += ResourceCalendar_DragDrop;
 	}
 
-	#region Properties
-
+	// Properties
 	public override bool CanResize {
 		get {
 			switch (TimePeriodType) {
@@ -74,11 +86,15 @@ public class AppointmentBook : BaseAppointmentBook {
 					return base.CanResize;
 			}
 		}
-		set { base.CanResize = value; }
+		set {
+			base.CanResize = value;
+		}
 	}
 
 	public virtual IAppointmentBookDataSource DataSource {
-		get { return _dataSource; }
+		get {
+			return _dataSource;
+		}
 		set {
 			_dataSource = value;
 			RefreshFromDataSource();
@@ -93,21 +109,42 @@ public class AppointmentBook : BaseAppointmentBook {
 		}
 	}
 
-	protected DataSourceToViewModelConverter ViewModelGenerator { get; set; }
+	protected DataSourceToViewModelConverter ViewModelGenerator {
+		get; set;
+	}
 
 	public new virtual AppointmentBookViewModel ViewModel {
-		get { return base.ViewModel as AppointmentBookViewModel; }
+		get {
+			return base.ViewModel as AppointmentBookViewModel;
+		}
 		set {
 			base.ViewModel = value; // base will bind
 		}
 	}
 
 	public virtual DateTime TimePeriodStart {
-		get { return _timePeriodStart; }
+		get {
+			return _timePeriodStart;
+		}
 	}
 
 	public virtual TimePeriodType TimePeriodType {
-		get { return _timePeriodType; }
+		get {
+			return _timePeriodType;
+		}
+	}
+
+	public virtual AppointmentBookViewModelFilter ColumnFilter {
+		get {
+			return _columnFilter;
+		}
+		set {
+			_columnFilter = value;
+			if (ViewModel != null) {
+				ViewModel.ColumnFilter = _columnFilter;
+				BindToViewModel();
+			}
+		}
 	}
 
 	public void SetTimePeriod(TimePeriodType timePeriodTime, DateTime startTime) {
@@ -132,7 +169,6 @@ public class AppointmentBook : BaseAppointmentBook {
 			ViewModel.SetTimePeriod(_timePeriodType, _timePeriodStart);
 			BindToViewModel();
 		}
-
 	}
 
 	public void SetTimePeriodType(TimePeriodType timePeriodType) {
@@ -141,81 +177,6 @@ public class AppointmentBook : BaseAppointmentBook {
 			ViewModel.SetTimePeriodType(timePeriodType);
 			BindToViewModel();
 		}
-	}
-
-	public virtual AppointmentBookViewModelFilter ColumnFilter {
-		get { return _columnFilter; }
-		set {
-			_columnFilter = value;
-			if (ViewModel != null) {
-				ViewModel.ColumnFilter = _columnFilter;
-				BindToViewModel();
-			}
-		}
-	}
-
-	#endregion
-
-	#region Binding
-
-	protected override void BindToViewModel() {
-		base.BindToViewModel();
-		if (_selectedAppointment != null)
-			SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
-	}
-
-	protected override void BindCellWithCellDisplay(SourceGrid.Cells.Cell cell, CellViewModel cellDisplay, int col, int row) {
-		base.BindCellWithCellDisplay(cell, cellDisplay, col, row);
-		if (cellDisplay.Traits.HasFlag(CellTraits.Interior)) {
-			cell.AddController(new FilledCellController(this));
-		}
-		if (cellDisplay.Traits.HasFlag(CellTraits.Edge)) {
-			if (CanResize) {
-				if (cellDisplay.Traits.HasFlag(CellTraits.Top) && cellDisplay.Traits.HasFlag(CellTraits.Bottom))
-					cell.AddController(new ResizableAppointmentCellController(this, true, true));
-				else if (cellDisplay.Traits.HasFlag(CellTraits.Top))
-					cell.AddController(new ResizableAppointmentCellController(this, true, false));
-				else if (cellDisplay.Traits.HasFlag(CellTraits.Bottom))
-					cell.AddController(new ResizableAppointmentCellController(this, false, true));
-			} else {
-				cell.AddController(new FilledCellController(this));
-			}
-		}
-	}
-
-	public virtual void RefreshFromDataSource() {
-		ViewModel = _dataSource != null ? ViewModelGenerator.Convert(_dataSource, TimePeriodStart, TimePeriodType, ColumnFilter) : null;
-		if (_selectedAppointment != null) {
-			_selectedAppointment = ViewModel.FindAppointmentByDataObject(_selectedAppointment.AppointmentDataObject);
-			if (_selectedAppointment != null)
-				SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
-		}
-	}
-
-	#endregion
-
-	#region Creating Appointments
-
-	protected virtual void DeleteAppointment(AppointmentColumn column, Appointment appointment) {
-		DataSource.DeleteAppointment(column, appointment);
-		RefreshFromDataSource();
-	}
-
-	protected virtual void RescheduleAppointment(Appointment appointment, AppointmentColumn sourceColumn, AppointmentColumn destColumn, DateTime newStartTime, DateTime newEndTime) {
-		DataSource.Reschedule(appointment, sourceColumn, destColumn, newStartTime, newEndTime);
-		RefreshFromDataSource();
-	}
-
-	protected virtual bool IsTimeAvailable(AppointmentColumn column, Appointment appointment, DateTime startTime, DateTime endTime) {
-		return DataSource.IsTimeAvailable(column, appointment, startTime, endTime);
-	}
-
-	#endregion
-
-	#region Appointment Selection
-
-	public override void ClearSelection() {
-		base.ClearSelection();
 	}
 
 	public override bool CanSelect(int col, int row) {
@@ -231,11 +192,11 @@ public class AppointmentBook : BaseAppointmentBook {
 			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
 			if (appointment == null)
 				return false;
-			if (overlappingAppointment == null) {
+			if (overlappingAppointment == null)
 				check1 = true;
-			} else {
+			else
 				check1 = appointment == overlappingAppointment;
-			}
+
 			var check2 = _resizingEnd.Item1 == col;
 			var check3 = Math.Abs(_resizingEnd.Item2 - row) == 1;
 			var check4 = false;
@@ -253,144 +214,6 @@ public class AppointmentBook : BaseAppointmentBook {
 			return check1 && check2 && check3 && check4;
 		}
 		return base.CanSelect(col, row);
-	}
-
-	public virtual void SelectAppointment(Appointment appointment) {
-		if (!ReferenceEquals(SelectedAppointment, appointment))
-			SelectAppointmentInternal(appointment, true);
-	}
-
-	public virtual void DeselectAppointment() {
-		DeselectAppointmentInternal(true, true);
-	}
-
-	protected void OnFreeRegionSelected(AppointmentColumn column, DateTime startTime, DateTime endTime) {
-	}
-
-	protected void OnAppointmentDoubleClicked(AppointmentColumn column, Appointment appointment) {
-	}
-
-	protected void OnAppointmentSelected(AppointmentColumn column, Appointment appointment) {
-	}
-
-	protected void OnAppointmentDeselected(AppointmentColumn column, Appointment appointment) {
-	}
-
-	protected void SelectAppointmentInternal(Appointment appointment, bool fireEvent) {
-		var appointmentViewModel = ViewModel.FindAppointmentByDataObject(appointment);
-		if (appointmentViewModel != null) {
-			if (_selectedAppointment != null)
-				DeselectAppointmentInternal(true, fireEvent);
-
-			_selectedAppointment = appointmentViewModel;
-			var cellDisplays = appointmentViewModel.Lines;
-			foreach (var cellDisplay in cellDisplays) {
-				var cell = (SourceGrid.Cells.Cell)cellDisplay.GridCellObject;
-				if (cell != null && cell.Column != null && cell.Row != null) {
-					cell.View = new CellView(this, cellDisplay, true);
-					RedrawCell(cell);
-				}
-			}
-			if (fireEvent)
-				FireAppointmentSelected(appointmentViewModel.Column.ColumnDataObject, appointment);
-		}
-
-		// If appointmentViewModel is null it could mean that column is hidden, or is old. In either way, we defensively ignore.
-	}
-
-	protected void DeselectAppointmentInternal(bool redrawUI, bool fireEvent) {
-		if (_selectedAppointment != null) {
-			if (redrawUI) {
-				foreach (var cellDisplay in _selectedAppointment.Lines) {
-					var cell = (SourceGrid.Cells.Cell)cellDisplay.GridCellObject;
-					if (cell != null && cell.Column != null && cell.Row != null) {
-						cell.View = new CellView(this, cellDisplay, false);
-						RedrawCell(cell);
-					}
-				}
-			}
-			if (fireEvent)
-				FireAppointmentDeselectoed(_selectedAppointment.Column.ColumnDataObject, _selectedAppointment.AppointmentDataObject);
-		}
-	}
-
-	protected override void OnSelectingStarted(int col, int row) {
-		if (_selectedAppointment != null)
-			DeselectAppointment();
-		base.OnSelectingStarted(col, row);
-	}
-
-	protected override void OnSelectingFinished(int startCol, int startRow, int endCol, int endRow) {
-		base.OnSelectingFinished(startCol, startRow, endCol, endRow);
-		if (startCol == endCol) {
-			var appointmentColumn = ViewModel.GetColumnAt(startCol);
-			var startTime = ViewModel.RowToStartTime(Math.Min(startRow, endRow));
-			var endTime = ViewModel.RowToEndTime(Math.Max(startRow, endRow));
-			FireFreeRegionSelected(appointmentColumn.ColumnDataObject, startTime, endTime);
-		}
-		ClearSelection();
-	}
-
-	#endregion
-
-	#region Mouse
-
-	protected override void OnCellClick(int col, int row) {
-		base.OnCellClick(col, row);
-		var appointment = ViewModel.GetAppointmentBlockAt(col, row);
-		if (appointment != null) {
-			SelectAppointment(appointment.AppointmentDataObject);
-		}
-	}
-
-	protected override void OnCellDoubleClick(int col, int row) {
-		var appointment = ViewModel.GetAppointmentBlockAt(col, row);
-		if (appointment != null)
-			FireAppointmentDoubleClick(appointment.Column.ColumnDataObject, appointment.AppointmentDataObject);
-	}
-
-	#endregion
-
-	#region Appointments Resizing
-
-	protected virtual void OnAppointmentResizingStart(AppointmentColumn column, Appointment appointment) {
-	}
-
-	protected virtual void OnAppointmentResizing(AppointmentColumn column, Appointment appointment, DateTime newTime, DateTime endTime) {
-	}
-
-	protected virtual bool OnAppointmentRescheduled(AppointmentColumn column, Appointment appointment, DateTime newTime, DateTime endTime, out string errorMessage) {
-		errorMessage = null;
-		return true;
-	}
-
-	#endregion
-
-	#region Appointment Drag-n-Drop
-
-	protected virtual bool OnAppointmentDragging(Appointment appointment, AppointmentColumn overColumn, DateTime startTime, DateTime endTime) {
-		return IsTimeAvailable(overColumn, appointment, startTime, endTime);
-	}
-
-	protected virtual bool OnAppointmentDragStarting(AppointmentColumn column, Appointment appointment) {
-		return true;
-	}
-
-	protected virtual void OnAppointmentDrag(AppointmentColumn column, Appointment appointment) {
-	}
-
-	protected virtual bool OnAppointmentDropStarting(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime) {
-		// Check 1 - start is less than or equal to finish
-		// REMOVED Check 2 - appointment starts and finishes on same day (or midnight of next day)
-		// Check 3 - no appointments overlap period
-		var check1 = startTime <= endTime;
-		//var check2 = startTime.Day == endTime.Day || endTime == startTime.Add(TimeSpan.FromDays(1)).ToMidnight();
-		var check3 = IsTimeAvailable(targetColumn, appointment, startTime, endTime);
-		return check1 && true && check3;
-	}
-
-	protected virtual void OnAppointmentDrop(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime) {
-		RescheduleAppointment(appointment, originalColumn, targetColumn, startTime, endTime);
 	}
 
 	public override bool CanDragCell(int col, int row) {
@@ -425,11 +248,8 @@ public class AppointmentBook : BaseAppointmentBook {
 			TransformModelToGrid(ref startCol, ref startRow);
 			TransformModelToGrid(ref endCol, ref endRow);
 			var rectangle = _grid.RangeToRectangle(
-				new CellRange(
-					new Position(startRow, startCol),
-					new Position(endRow, endCol)
-				)
-			);
+new CellRange(
+new Position(startRow, startCol), new Position(endRow, endCol)));
 
 			var column = ViewModel.GetColumnAt(col);
 
@@ -446,8 +266,8 @@ public class AppointmentBook : BaseAppointmentBook {
 						.CanDropAppointmentBitmap
 						.Resize(
 							new Size(
-								Tools.Values.ClipValue(appointmentDragObject.CanDropAppointmentBitmap.Width, CannotDropIcon.Width, appointmentDragObject.CanDropAppointmentBitmap.Width),
-								Tools.Values.ClipValue(appointmentDragObject.CanDropAppointmentBitmap.Height, CannotDropIcon.Height, appointmentDragObject.CanDropAppointmentBitmap.Height)
+								Tools.Values.ClipValue(appointmentDragObject.CanDropAppointmentBitmap.Width, _cannotDropIcon.Width, appointmentDragObject.CanDropAppointmentBitmap.Width),
+								Tools.Values.ClipValue(appointmentDragObject.CanDropAppointmentBitmap.Height, _cannotDropIcon.Height, appointmentDragObject.CanDropAppointmentBitmap.Height)
 							),
 							ResizeMethod.AspectFitPadded,
 							ResizeAlignment.TopLeft,
@@ -458,7 +278,7 @@ public class AppointmentBook : BaseAppointmentBook {
 
 				// Draw a cross on the CannotDrop bitmap
 				using (var graphics = Graphics.FromImage(appointmentDragObject.CannotDropAppointmentBitmap)) {
-					graphics.DrawIcon(CannotDropIcon, 0, 0);
+					graphics.DrawIcon(_cannotDropIcon, 0, 0);
 				}
 			}
 
@@ -470,10 +290,8 @@ public class AppointmentBook : BaseAppointmentBook {
 			appointmentDragObject.CursorOffset = offset;
 			var result = base.DoDragDrop(appointmentDragObject, DragDropEffects.Move);
 			Cursor.Tag = null;
-			if (result.HasAnyFlags(DragDropEffects.Move, DragDropEffects.Copy)) {
+			if (result.HasAnyFlags(DragDropEffects.Move, DragDropEffects.Copy))
 				FireAppointmentDraggedEvent(appointmentDragObject);
-			}
-
 
 			Cursor.Position = Cursor.Position.Add(offset);
 			EndDragging();
@@ -487,143 +305,85 @@ public class AppointmentBook : BaseAppointmentBook {
 		}
 	}
 
-	private async void ResourceCalendar_DragGiveFeedback(object sender, GiveFeedbackEventArgs e) {
-		try {
-			e.UseDefaultCursors = e.Effect != DragDropEffects.Move;
-			if (e.UseDefaultCursors)
-				SetDragCursor(null, null);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
+	// Binding
+	protected override void BindToViewModel() {
+		base.BindToViewModel();
+		if (_selectedAppointment != null)
+			SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
+	}
+
+	protected override void BindCellWithCellDisplay(SourceGrid.Cells.Cell cell, CellViewModel cellDisplay, int col, int row) {
+		base.BindCellWithCellDisplay(cell, cellDisplay, col, row);
+		if (cellDisplay.Traits.HasFlag(CellTraits.Interior))
+			cell.AddController(new FilledCellController(this));
+
+		if (cellDisplay.Traits.HasFlag(CellTraits.Edge)) {
+			if (CanResize) {
+				if (cellDisplay.Traits.HasFlag(CellTraits.Top) && cellDisplay.Traits.HasFlag(CellTraits.Bottom))
+					cell.AddController(new ResizableAppointmentCellController(this, true, true));
+				else if (cellDisplay.Traits.HasFlag(CellTraits.Top))
+					cell.AddController(new ResizableAppointmentCellController(this, true, false));
+				else if (cellDisplay.Traits.HasFlag(CellTraits.Bottom))
+					cell.AddController(new ResizableAppointmentCellController(this, false, true));
+			} else
+				cell.AddController(new FilledCellController(this));
 		}
 	}
 
-	private async void ResourceCalendar_DragDrop(object sender, DragEventArgs e) {
-		try {
-			if (!e.Data.GetDataPresent(typeof(AppointmentDragObject))) {
-				e.Effect = DragDropEffects.None;
-				return;
-			}
+	protected override void OnSelectingStarted(int col, int row) {
+		if (_selectedAppointment != null)
+			DeselectAppointment();
+		base.OnSelectingStarted(col, row);
+	}
 
-			var appointmentDragObject = (AppointmentDragObject)e.Data.GetData(typeof(AppointmentDragObject));
+	public virtual void DeselectAppointment() {
+		var changed = _selectedAppointment != null;
+		DeselectAppointmentInternal(true, true);
+		if (changed)
+			NotifyStateChanged();
+	}
 
-			var screenPosition = new Point(e.X, e.Y);
-			var gridPosition = _grid.PointToClient(screenPosition);
-			var position = _grid.PositionAtPoint(gridPosition);
-			var col = position.Column;
-			var row = position.Row;
-			TransformGridToModel(ref col, ref row);
+	protected override void OnSelectingFinished(int startCol, int startRow, int endCol, int endRow) {
+		base.OnSelectingFinished(startCol, startRow, endCol, endRow);
+		if (startCol == endCol) {
+			var appointmentColumn = ViewModel.GetColumnAt(startCol);
+			var startTime = ViewModel.RowToStartTime(Math.Min(startRow, endRow));
+			var endTime = ViewModel.RowToEndTime(Math.Max(startRow, endRow));
+			FireFreeRegionSelected(appointmentColumn.ColumnDataObject, startTime, endTime);
+		}
+		ClearSelection();
+	}
 
-			if (col < 0 || row < -1) {
-				e.Effect = DragDropEffects.None;
-				return;
-			}
+	// Mouse
+	protected override void OnCellClick(int col, int row) {
+		base.OnCellClick(col, row);
+		var appointment = ViewModel.GetAppointmentBlockAt(col, row);
+		if (appointment != null)
+			SelectAppointment(appointment.AppointmentDataObject);
+	}
 
-			if (!FireAppointmentDropStartingEvent(appointmentDragObject, col, row)) {
-				e.Effect = DragDropEffects.None;
-				return;
-			}
-
-			FireAppointmentDropEvent(appointmentDragObject, col, row);
-			if (this.ViewModel.ContainsColumn(appointmentDragObject.SourceColumn))
-				e.Effect = DragDropEffects.Move; // drag-n-drop occured within same appointment book control
-			else
-				e.Effect = DragDropEffects.Copy; // drag-n-drop occured between two separate controls
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
+	public virtual void SelectAppointment(Appointment appointment) {
+		var previous = SelectedAppointment;
+		if (!ReferenceEquals(previous, appointment)) {
+			SelectAppointmentInternal(appointment, true);
+			if (!ReferenceEquals(previous, SelectedAppointment))
+				NotifyStateChanged();
 		}
 	}
 
-	private async void ResourceCalendar_DragOver(object sender, DragEventArgs e) {
-		try {
-			ProcessAppointmentDraggedOver(e);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
+	protected override void OnCellDoubleClick(int col, int row) {
+		var appointment = ViewModel.GetAppointmentBlockAt(col, row);
+		if (appointment != null)
+			FireAppointmentDoubleClick(appointment.Column.ColumnDataObject, appointment.AppointmentDataObject);
 	}
 
-	private async void ResourceCalendar_DragLeave(object sender, EventArgs e) {
-		try {
-			// ...
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
+	// Creating Appointments
+	protected virtual void DeleteAppointment(AppointmentColumn column, Appointment appointment) {
+		DataSource.DeleteAppointment(column, appointment);
+		RefreshFromDataSource();
 	}
 
-	private async void ResourceCalendar_DragEnter(object sender, DragEventArgs e) {
-		try {
-			ProcessAppointmentDraggedOver(e);
-			if (!e.Data.GetDataPresent(typeof(AppointmentDragObject))) {
-				SetDragCursor(null, null);
-				return;
-			}
-			var appointmentDragObject = e.Data.GetData(typeof(AppointmentDragObject)) as AppointmentDragObject;
-			Debug.Assert(appointmentDragObject != null, "appointmentDragObject != null");
-			SetDragCursor(true, appointmentDragObject);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private void ProcessAppointmentDraggedOver(DragEventArgs e) {
-		if (!e.Data.GetDataPresent(typeof(AppointmentDragObject))) {
-			e.Effect = DragDropEffects.None;
-			return;
-		}
-		var appointmentDragObject = e.Data.GetData(typeof(AppointmentDragObject)) as AppointmentDragObject;
-		Debug.Assert(appointmentDragObject != null, "appointmentDragObject != null");
-
-		var screenPosition = new Point(e.X, e.Y);
-		var gridPosition = _grid.PointToClient(screenPosition);
-		var position = _grid.PositionAtPoint(gridPosition);
-		var col = position.Column;
-		var row = position.Row;
-		TransformGridToModel(ref col, ref row);
-
-		if (col < 0 || row < -1) {
-			e.Effect = DragDropEffects.None;
-			SetDragCursor(null, null);
-			return;
-		}
-
-		var columnViewModel = ViewModel.GetColumnAt(col);
-		if (columnViewModel == null) {
-			e.Effect = DragDropEffects.None;
-			SetDragCursor(null, null);
-			return;
-		}
-
-		if (FireAppointmentDraggingEvent(col, row, appointmentDragObject)) {
-			SetDragCursor(true, appointmentDragObject);
-		} else {
-			SetDragCursor(false, appointmentDragObject);
-		}
-		e.Effect = DragDropEffects.Move;
-	}
-
-	private void SetDragCursor(bool? columnIsCompatible, AppointmentDragObject appointmentDragObject) {
-		const string CannotDropTag = "0";
-		const string CanDropTag = "1";
-		if (columnIsCompatible == null) {
-			Cursor.Tag = null;
-		} else {
-			if (columnIsCompatible.Value) {
-				if ((Cursor.Tag as string) != CanDropTag) {
-					Cursor.Current = Tools.WinForms.CreateCursor(appointmentDragObject.CanDropAppointmentBitmap, 0, 0);
-					Cursor.Tag = CanDropTag;
-				}
-			} else {
-				if ((Cursor.Tag as string) != CannotDropTag) {
-					Cursor.Current = Tools.WinForms.CreateCursor(appointmentDragObject.CannotDropAppointmentBitmap, 0, 0);
-					Cursor.Tag = CannotDropTag;
-				}
-			}
-		}
-	}
-
-	#endregion
-
-	#region Event Triggers
-
+	// Event Triggers
 	protected void FireAppointmentDoubleClick(AppointmentColumn column, Appointment appointment) {
 		OnAppointmentDoubleClicked(column, appointment);
 		if (AppointmentDoubleClicked != null)
@@ -636,24 +396,7 @@ public class AppointmentBook : BaseAppointmentBook {
 			);
 	}
 
-	protected void FireAppointmentSelected(AppointmentColumn column, Appointment appointment) {
-		try {
-			OnAppointmentSelected(column, appointment);
-			if (AppointmentSelected != null)
-				AppointmentSelected(new AppointmentEvent { Source = this, SourceColumn = column, Appointment = appointment });
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	protected void FireAppointmentDeselectoed(AppointmentColumn column, Appointment appointment) {
-		try {
-			OnAppointmentDeselected(column, appointment);
-			if (AppointmentDeselected != null)
-				AppointmentDeselected(new AppointmentEvent { Source = this, SourceColumn = column, Appointment = appointment });
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-		}
+	protected void OnAppointmentDoubleClicked(AppointmentColumn column, Appointment appointment) {
 	}
 
 	protected void FireFreeRegionSelected(AppointmentColumn column, DateTime startTime, DateTime endTime) {
@@ -675,6 +418,142 @@ public class AppointmentBook : BaseAppointmentBook {
 		}
 	}
 
+	protected void OnFreeRegionSelected(AppointmentColumn column, DateTime startTime, DateTime endTime) {
+	}
+
+	private async void ResourceCalendar_DragGiveFeedback(object sender, GiveFeedbackEventArgs args) {
+		try {
+			args.UseDefaultCursors = args.Effect != DragDropEffects.Move;
+			if (args.UseDefaultCursors)
+				SetDragCursor(null, null);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void ResourceCalendar_DragDrop(object sender, DragEventArgs args) {
+		try {
+			if (!args.Data.GetDataPresent(typeof(AppointmentDragObject))) {
+				args.Effect = DragDropEffects.None;
+				return;
+			}
+
+			var appointmentDragObject = (AppointmentDragObject)args.Data.GetData(typeof(AppointmentDragObject));
+
+			var screenPosition = new Point(args.X, args.Y);
+			var gridPosition = _grid.PointToClient(screenPosition);
+			var position = _grid.PositionAtPoint(gridPosition);
+			var col = position.Column;
+			var row = position.Row;
+			TransformGridToModel(ref col, ref row);
+
+			if (col < 0 || row < -1) {
+				args.Effect = DragDropEffects.None;
+				return;
+			}
+
+			if (!FireAppointmentDropStartingEvent(appointmentDragObject, col, row)) {
+				args.Effect = DragDropEffects.None;
+				return;
+			}
+
+			FireAppointmentDropEvent(appointmentDragObject, col, row);
+			if (this.ViewModel.ContainsColumn(appointmentDragObject.SourceColumn))
+				args.Effect = DragDropEffects.Move; // drag-n-drop occured within same appointment book control
+			else
+				args.Effect = DragDropEffects.Copy; // drag-n-drop occured between two separate controls
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void ResourceCalendar_DragOver(object sender, DragEventArgs args) {
+		try {
+			ProcessAppointmentDraggedOver(args);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void ResourceCalendar_DragLeave(object sender, EventArgs args) {
+		try {
+			// ...
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void ResourceCalendar_DragEnter(object sender, DragEventArgs args) {
+		try {
+			ProcessAppointmentDraggedOver(args);
+			if (!args.Data.GetDataPresent(typeof(AppointmentDragObject))) {
+				SetDragCursor(null, null);
+				return;
+			}
+			var appointmentDragObject = args.Data.GetData(typeof(AppointmentDragObject)) as AppointmentDragObject;
+			Debug.Assert(appointmentDragObject != null, "appointmentDragObject != null");
+			SetDragCursor(true, appointmentDragObject);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private void ProcessAppointmentDraggedOver(DragEventArgs args) {
+		if (!args.Data.GetDataPresent(typeof(AppointmentDragObject))) {
+			args.Effect = DragDropEffects.None;
+			return;
+		}
+		var appointmentDragObject = args.Data.GetData(typeof(AppointmentDragObject)) as AppointmentDragObject;
+		Debug.Assert(appointmentDragObject != null, "appointmentDragObject != null");
+
+		var screenPosition = new Point(args.X, args.Y);
+		var gridPosition = _grid.PointToClient(screenPosition);
+		var position = _grid.PositionAtPoint(gridPosition);
+		var col = position.Column;
+		var row = position.Row;
+		TransformGridToModel(ref col, ref row);
+
+		if (col < 0 || row < -1) {
+			args.Effect = DragDropEffects.None;
+			SetDragCursor(null, null);
+			return;
+		}
+
+		var columnViewModel = ViewModel.GetColumnAt(col);
+		if (columnViewModel == null) {
+			args.Effect = DragDropEffects.None;
+			SetDragCursor(null, null);
+			return;
+		}
+
+		if (FireAppointmentDraggingEvent(col, row, appointmentDragObject))
+			SetDragCursor(true, appointmentDragObject);
+		else
+			SetDragCursor(false, appointmentDragObject);
+
+		args.Effect = DragDropEffects.Move;
+	}
+
+	private void SetDragCursor(bool? columnIsCompatible, AppointmentDragObject appointmentDragObject) {
+		const string cannotDropTag = "0";
+		const string canDropTag = "1";
+		if (columnIsCompatible == null)
+			Cursor.Tag = null;
+		else {
+			if (columnIsCompatible.Value) {
+				if ((Cursor.Tag as string) != canDropTag) {
+					Cursor.Current = Tools.WinForms.CreateCursor(appointmentDragObject.CanDropAppointmentBitmap, 0, 0);
+					Cursor.Tag = canDropTag;
+				}
+			} else {
+				if ((Cursor.Tag as string) != cannotDropTag) {
+					Cursor.Current = Tools.WinForms.CreateCursor(appointmentDragObject.CannotDropAppointmentBitmap, 0, 0);
+					Cursor.Tag = cannotDropTag;
+				}
+			}
+		}
+	}
+
 	internal void FireAppointmentResizingStarted(int col, int row, ResizedAppointmentBorder borderType) {
 		try {
 			var cell = GetCell(col, row);
@@ -689,7 +568,7 @@ public class AppointmentBook : BaseAppointmentBook {
 			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
 			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
 			OnAppointmentResizingStart(column.ColumnDataObject, appointment.AppointmentDataObject);
-			if (AppointmentResizingStarted != null) {
+			if (AppointmentResizingStarted != null)
 				AppointmentResizingStarted(
 					new AppointmentEvent {
 						Source = this,
@@ -697,25 +576,25 @@ public class AppointmentBook : BaseAppointmentBook {
 						Appointment = appointment.AppointmentDataObject
 					}
 				);
-			}
 		} catch (Exception error) {
 			_ = ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
+	// Appointments Resizing
+	protected virtual void OnAppointmentResizingStart(AppointmentColumn column, Appointment appointment) {
+	}
+
 	internal void FireAppointmentResizing(int col, int row) {
 		try {
 
-			#region Select grid cells
-
+			// Select grid cells
 			_resizingEnd = Tuple.Create(col, row);
 			_grid.Selection.ResetSelection(false);
 			int startGridCol = _resizingStart.Item1, startGridRow = _resizingStart.Item2, endGridCol = _resizingEnd.Item1, endGridRow = _resizingEnd.Item2;
 			TransformModelToGrid(ref startGridCol, ref startGridRow);
 			TransformModelToGrid(ref endGridCol, ref endGridRow);
 			_grid.Selection.SelectRange(new SourceGrid.CellRange(startGridRow, startGridCol, endGridRow, endGridCol), true);
-
-			#endregion
 
 			_resizingEnd = Tuple.Create(col, row);
 			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
@@ -740,7 +619,7 @@ public class AppointmentBook : BaseAppointmentBook {
 			var newStartTime = ViewModel.RowToStartTime(minRow);
 			var newEndTime = ViewModel.RowToEndTime(maxRow);
 			OnAppointmentResizing(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime);
-			if (AppointmentResizing != null) {
+			if (AppointmentResizing != null)
 				AppointmentResizing(
 					new AppointmentResizingEvent {
 						Source = this,
@@ -750,10 +629,12 @@ public class AppointmentBook : BaseAppointmentBook {
 						SelectedEndTime = newEndTime,
 					}
 				);
-			}
 		} catch (Exception error) {
 			_ = ExceptionDialog.ShowAsync(this, error);
 		}
+	}
+
+	protected virtual void OnAppointmentResizing(AppointmentColumn column, Appointment appointment, DateTime newTime, DateTime endTime) {
 	}
 
 	internal async Task FireAppointmentResizingFinishedAsync() {
@@ -780,10 +661,10 @@ public class AppointmentBook : BaseAppointmentBook {
 			var newStartTime = ViewModel.RowToStartTime(minRow);
 			var newEndTime = ViewModel.RowToEndTime(maxRow);
 			string errorMessage;
-			bool resizeAccepted = OnAppointmentRescheduled(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime, out errorMessage);
-			if (!resizeAccepted) {
+			var resizeAccepted = OnAppointmentRescheduled(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime, out errorMessage);
+			if (!resizeAccepted)
 				await DialogEx.ShowAsync(this, SystemIconType.Error, "Scheduling Error", errorMessage ?? "Unable to reschedule appointment", "OK");
-			} else {
+			else {
 				if (AppointmentResizingFinished != null) {
 					foreach (EventHandlerEx<AppointmentResizingFinishedEvent> handler in AppointmentResizingFinished.GetInvocationList()) {
 						var eventArgs = new AppointmentResizingFinishedEvent {
@@ -804,12 +685,21 @@ public class AppointmentBook : BaseAppointmentBook {
 				}
 			}
 
-			if (resizeAccepted) {
+			if (resizeAccepted)
 				RescheduleAppointment(appointment.AppointmentDataObject, column.ColumnDataObject, column.ColumnDataObject, newStartTime, newEndTime);
-			}
 		} catch (Exception error) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
+	}
+
+	// Appointment Selection
+	public override void ClearSelection() {
+		base.ClearSelection();
+	}
+
+	protected virtual bool OnAppointmentRescheduled(AppointmentColumn column, Appointment appointment, DateTime newTime, DateTime endTime, out string errorMessage) {
+		errorMessage = null;
+		return true;
 	}
 
 	internal bool FireAppointmentDragStartingEvent(int col, int row) {
@@ -833,9 +723,8 @@ public class AppointmentBook : BaseAppointmentBook {
 						};
 						handler.Invoke(eventArgs);
 						dragAccepted = !eventArgs.Cancel;
-						if (!dragAccepted) {
+						if (!dragAccepted)
 							break;
-						}
 					}
 				}
 			}
@@ -846,6 +735,10 @@ public class AppointmentBook : BaseAppointmentBook {
 		}
 	}
 
+	protected virtual bool OnAppointmentDragStarting(AppointmentColumn column, Appointment appointment) {
+		return true;
+	}
+
 	internal void FireAppointmentDraggedEvent(AppointmentDragObject dragObject) {
 		try {
 			var sourceColumn = dragObject.SourceColumn;
@@ -854,7 +747,7 @@ public class AppointmentBook : BaseAppointmentBook {
 				throw new ArgumentException("dragObject", "Appointment property is null");
 
 			OnAppointmentDrag(sourceColumn, appointment);
-			if (AppointmentDragged != null) {
+			if (AppointmentDragged != null)
 				AppointmentDragged(
 					new AppointmentDraggedEvent {
 						Source = this,
@@ -862,18 +755,19 @@ public class AppointmentBook : BaseAppointmentBook {
 						Appointment = appointment,
 					}
 				);
-			}
 		} catch (Exception error) {
 			_ = ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
+	protected virtual void OnAppointmentDrag(AppointmentColumn column, Appointment appointment) {
+	}
+
 	internal bool FireAppointmentDraggingEvent(int col, int row, AppointmentDragObject dragObject) {
 		var result = _lastDraggedOver.Item3;
 		try {
-			if (_lastDraggedOver.Item1 == col && _lastDraggedOver.Item2 == row) {
+			if (_lastDraggedOver.Item1 == col && _lastDraggedOver.Item2 == row)
 				return _lastDraggedOver.Item3;
-			}
 
 			var dragOverColumn = ViewModel.GetColumnAt(col);
 			if (dragOverColumn == null)
@@ -900,9 +794,8 @@ public class AppointmentBook : BaseAppointmentBook {
 						};
 						handler.Invoke(eventArgs);
 						dragCompatible = eventArgs.IsDestinationCompatible;
-						if (!dragCompatible) {
+						if (!dragCompatible)
 							break;
-						}
 					}
 				}
 			}
@@ -914,6 +807,11 @@ public class AppointmentBook : BaseAppointmentBook {
 			_lastDraggedOver = Tuple.Create(col, row, result);
 		}
 		return result;
+	}
+
+	// Appointment Drag-n-Drop
+	protected virtual bool OnAppointmentDragging(Appointment appointment, AppointmentColumn overColumn, DateTime startTime, DateTime endTime) {
+		return IsTimeAvailable(overColumn, appointment, startTime, endTime);
 	}
 
 	internal bool FireAppointmentDropStartingEvent(AppointmentDragObject dragObject, int col, int row) {
@@ -954,9 +852,8 @@ public class AppointmentBook : BaseAppointmentBook {
 							};
 						handler.Invoke(eventArgs);
 						dragAccepted = !eventArgs.Cancel;
-						if (!dragAccepted) {
+						if (!dragAccepted)
 							break;
-						}
 					}
 				}
 			}
@@ -965,6 +862,20 @@ public class AppointmentBook : BaseAppointmentBook {
 			_ = ExceptionDialog.ShowAsync(this, error);
 			return false;
 		}
+	}
+
+	protected virtual bool OnAppointmentDropStarting(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime) {
+		// Check 1 - start is less than or equal to finish
+		// REMOVED Check 2 - appointment starts and finishes on same day (or midnight of next day)
+		// Check 3 - no appointments overlap period
+		var check1 = startTime <= endTime;
+		//var check2 = startTime.Day == endTime.Day || endTime == startTime.Add(TimeSpan.FromDays(1)).ToMidnight();
+		var check3 = IsTimeAvailable(targetColumn, appointment, startTime, endTime);
+		return check1 && true && check3;
+	}
+
+	protected virtual bool IsTimeAvailable(AppointmentColumn column, Appointment appointment, DateTime startTime, DateTime endTime) {
+		return DataSource.IsTimeAvailable(column, appointment, startTime, endTime);
 	}
 
 	internal void FireAppointmentDropEvent(AppointmentDragObject dragObject, int col, int row) {
@@ -991,7 +902,7 @@ public class AppointmentBook : BaseAppointmentBook {
 			}
 
 			OnAppointmentDrop(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
-			if (AppointmentDrop != null) {
+			if (AppointmentDrop != null)
 				AppointmentDrop(
 					new AppointmentDropEvent {
 						Source = this,
@@ -1002,13 +913,93 @@ public class AppointmentBook : BaseAppointmentBook {
 						Appointment = appointment
 					}
 				);
-			}
 		} catch (Exception error) {
 			_ = ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
-	#endregion
+	protected virtual void OnAppointmentDrop(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime) {
+		RescheduleAppointment(appointment, originalColumn, targetColumn, startTime, endTime);
+	}
 
+	protected virtual void RescheduleAppointment(Appointment appointment, AppointmentColumn sourceColumn, AppointmentColumn destColumn, DateTime newStartTime, DateTime newEndTime) {
+		DataSource.Reschedule(appointment, sourceColumn, destColumn, newStartTime, newEndTime);
+		RefreshFromDataSource();
+		NotifyStateChanged();
+	}
+
+	public virtual void RefreshFromDataSource() {
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
+		ViewModel = _dataSource != null ? ViewModelGenerator.Convert(_dataSource, TimePeriodStart, TimePeriodType, ColumnFilter) : null;
+		if (_selectedAppointment != null) {
+			_selectedAppointment = ViewModel.FindAppointmentByDataObject(_selectedAppointment.AppointmentDataObject);
+			if (_selectedAppointment != null)
+				SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
+		}
+	}
+
+	protected void SelectAppointmentInternal(Appointment appointment, bool fireEvent) {
+		var appointmentViewModel = ViewModel.FindAppointmentByDataObject(appointment);
+		if (appointmentViewModel != null) {
+			if (_selectedAppointment != null)
+				DeselectAppointmentInternal(true, fireEvent);
+
+			_selectedAppointment = appointmentViewModel;
+			var cellDisplays = appointmentViewModel.Lines;
+			foreach (var cellDisplay in cellDisplays) {
+				var cell = (SourceGrid.Cells.Cell)cellDisplay.GridCellObject;
+				if (cell != null && cell.Column != null && cell.Row != null) {
+					cell.View = new CellView(this, cellDisplay, true);
+					RedrawCell(cell);
+				}
+			}
+			if (fireEvent)
+				FireAppointmentSelected(appointmentViewModel.Column.ColumnDataObject, appointment);
+		}
+		// If appointmentViewModel is null it could mean that column is hidden, or is old. In either way, we defensively ignore.
+	}
+
+	protected void DeselectAppointmentInternal(bool redrawUI, bool fireEvent) {
+		if (_selectedAppointment != null) {
+			var selected = _selectedAppointment;
+			_selectedAppointment = null;
+			if (redrawUI) {
+				foreach (var cellDisplay in selected.Lines) {
+					var cell = (SourceGrid.Cells.Cell)cellDisplay.GridCellObject;
+					if (cell != null && cell.Column != null && cell.Row != null) {
+						cell.View = new CellView(this, cellDisplay, false);
+						RedrawCell(cell);
+					}
+				}
+			}
+			if (fireEvent)
+				FireAppointmentDeselectoed(selected.Column.ColumnDataObject, selected.AppointmentDataObject);
+		}
+	}
+
+	protected void FireAppointmentSelected(AppointmentColumn column, Appointment appointment) {
+		try {
+			OnAppointmentSelected(column, appointment);
+			if (AppointmentSelected != null)
+				AppointmentSelected(new AppointmentEvent { Source = this, SourceColumn = column, Appointment = appointment });
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	protected void OnAppointmentSelected(AppointmentColumn column, Appointment appointment) {
+	}
+
+	protected void FireAppointmentDeselectoed(AppointmentColumn column, Appointment appointment) {
+		try {
+			OnAppointmentDeselected(column, appointment);
+			if (AppointmentDeselected != null)
+				AppointmentDeselected(new AppointmentEvent { Source = this, SourceColumn = column, Appointment = appointment });
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	protected void OnAppointmentDeselected(AppointmentColumn column, Appointment appointment) {
+	}
 }
-

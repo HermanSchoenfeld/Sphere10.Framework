@@ -40,20 +40,6 @@
 		<Compile Update="Charts\Controls\BarChart.Designer.cs"><DependentUpon>BarChart.cs</DependentUpon></Compile>
 	</ItemGroup>
 	<ItemGroup>
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ColorPicker.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeNumericUpDown.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeTextBoxButton.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDown.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDownButton.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\EditableControlBase.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialog.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialogDetails.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\FormBase.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ImageNavigator.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\Line.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\LinkLabel.resources" />
-		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.resources" />
 		<None Remove="SourceGrid\Grid.bmp" />
 		<None Remove="SourceGrid\GridVirtual.bmp" />
 		<None Remove="Resources\Add.ico" />
@@ -69,23 +55,6 @@
 		<Content Include="Resources\ArrowUp.ICO" />
 		<Content Include="Resources\Delete.ICO" />
 		<Content Include="Resources\Refresh.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ColorPicker.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeNumericUpDown.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeTextBoxButton.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDown.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDownButton.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\EditableControlBase.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialog.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialogDetails.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\FormBase.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ImageNavigator.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\Line.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\LinkLabel.resources" />
-		<EmbeddedResource Include="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.resources" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -109,10 +78,10 @@
 		<Compile Update="Forms\ReviewTextDialog.Designer.cs">
 			<DependentUpon>ReviewTextDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Controls\HexEditorControl.cs"><SubType>UserControl</SubType></Compile>
-		<Compile Update="Controls\HexEditorControl.Designer.cs"><DependentUpon>HexEditorControl.cs</DependentUpon></Compile>
-		<Compile Update="Forms\HexEditorDialog.cs"><SubType>Form</SubType></Compile>
-		<Compile Update="Forms\HexEditorDialog.Designer.cs"><DependentUpon>HexEditorDialog.cs</DependentUpon></Compile>
+		<Compile Update="HexEditor\Controls\HexEditorControl.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="HexEditor\Controls\HexEditorControl.Designer.cs"><DependentUpon>HexEditorControl.cs</DependentUpon></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorDialog.cs"><SubType>Form</SubType></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorDialog.Designer.cs"><DependentUpon>HexEditorDialog.cs</DependentUpon></Compile>
 		<Compile Update="Logging\Controls\LogOutputSelectorControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>
@@ -168,18 +137,18 @@
 		<Compile Update="Controls\ImageAttachmentSelectorControl.Designer.cs">
 			<DependentUpon>ImageAttachmentSelectorControl.cs</DependentUpon>
 		</Compile>
-		<Compile Update="ToolTipEx.cs" />
+		<Compile Update="Misc\ToolTipEx.cs" />
 		<Compile Update="Application\FormApplicationIconProvider.Designer.cs">
 			<DependentUpon>FormApplicationIconProvider.cs</DependentUpon>
 		</Compile>
-		<Compile Update="PlaceHolderExtender.cs" />
+		<Compile Update="Misc\PlaceHolderExtender.cs" />
 		<Compile Update="Application\Controls\ApplicationBanner.cs" />
 		<Compile Update="Application\Controls\ApplicationBannerHost.cs"><SubType>UserControl</SubType></Compile>
 		<Compile Update="Application\Controls\ApplicationBannerHost.Designer.cs"><DependentUpon>ApplicationBannerHost.cs</DependentUpon></Compile>
 		<Compile Update="Application\Controls\ApplicationBanner.Designer.cs">
 			<DependentUpon>ApplicationBanner.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Controls\ServiceStatusControl.cs">
+		<Compile Update="Services\Controls\ServiceStatusControl.cs">
 		  <SubType>UserControl</SubType>
 		</Compile>
 		<Compile Update="Application\Controls\BasicContactDetailsControl.cs">
@@ -198,7 +167,7 @@
 		  <DependentUpon>WhoAreYouControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Application\Forms\ApplicationForm.cs" />
-		<Compile Update="Forms\ExceptionDialog.cs" />
+		<Compile Update="Dialogs\Forms\ExceptionDialog.cs" />
 		<Compile Update="Application\Forms\LiteMainForm.cs" />
 		<Compile Update="Application\Forms\LiteMainForm.Designer.cs">
 			<DependentUpon>LiteMainForm.cs</DependentUpon>
@@ -230,9 +199,9 @@
 		</Compile>
 		<Compile Update="Controls\CheckedListBoxEx.cs" />
 		<Compile Update="Controls\FlagsCheckedListBox.cs" />
-		<Compile Update="Controls\ComboBoxEx.cs" />
-		<Compile Update="Controls\CustomComboBox.cs" />
-		<Compile Update="Controls\EnumComboBox.cs" />
+		<Compile Update="ComboBoxes\Controls\ComboBoxEx.cs" />
+		<Compile Update="ComboBoxes\Controls\CustomComboBox.cs" />
+		<Compile Update="ComboBoxes\Controls\EnumComboBox.cs" />
 		<Compile Update="VisualGrid\Controls\CrudComboBox.cs" />
 		<Compile Update="VisualGrid\Forms\CrudDialog.cs" />
 		<Compile Update="VisualGrid\Forms\CrudDialog.Designer.cs">
@@ -266,7 +235,7 @@
 		<Compile Update="Database\Controls\DatabaseConnectionPanel.Designer.cs">
 			<DependentUpon>DatabaseConnectionPanel.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\ExpandingCircle.cs" />
+		<Compile Update="Drawing\Forms\ExpandingCircle.cs" />
 		<Compile Update="ExplorerBar\Controls\Expando.cs" />
 		<Compile Update="ExplorerBar\Controls\RoundedPanel.cs" />
 		<Compile Update="ExplorerBar\Controls\RoundedPanel.designer.cs">
@@ -274,57 +243,53 @@
 		</Compile>
 		<Compile Update="ExplorerBar\Controls\TaskItem.cs" />
 		<Compile Update="ExplorerBar\Controls\TaskPane.cs" />
-		<Compile Update="Controls\ListMerger.cs" />
-		<Compile Update="Controls\ListMerger.designer.cs">
+		<Compile Update="ListMerger\Controls\ListMerger.cs" />
+		<Compile Update="ListMerger\Controls\ListMerger.designer.cs">
 			<DependentUpon>ListMerger.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Controls\LoadingCircle.cs" />
-		<Compile Update="Controls\LoadingCircle.designer.cs">
+		<Compile Update="LoadingCircle\Controls\LoadingCircle.cs" />
+		<Compile Update="LoadingCircle\Controls\LoadingCircle.designer.cs">
 			<DependentUpon>LoadingCircle.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Controls\LoadingCircleToolStripMenuItem.cs" />
-		<Compile Update="Controls\MergeableMenuStrip.cs" />
-		<Compile Update="Controls\MergeableStatusStrip.cs" />
-		<Compile Update="Controls\MergeableToolStrip.cs" />
-		<Compile Update="ToolStripVisualInheritanceFixer.cs" />
-		<Compile Update="Controls\PathSelectorControl.cs" />
-		<Compile Update="Controls\PathSelectorControl.Designer.cs">
+		<Compile Update="LoadingCircle\Controls\LoadingCircleToolStripMenuItem.cs" />
+		<Compile Update="ToolStrips\Controls\MergeableMenuStrip.cs" />
+		<Compile Update="ToolStrips\Controls\MergeableStatusStrip.cs" />
+		<Compile Update="ToolStrips\Controls\MergeableToolStrip.cs" />
+		<Compile Update="ToolStrips\ToolStripVisualInheritanceFixer.cs" />
+		<Compile Update="PathSelector\Controls\PathSelectorControl.cs" />
+		<Compile Update="PathSelector\Controls\PathSelectorControl.Designer.cs">
 			<DependentUpon>PathSelectorControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Controls\PictureBoxEx.cs" />
-		<Compile Update="Controls\ProgressBarEx.cs" />
+		<Compile Update="ProgressBar\Controls\ProgressBarEx.cs" />
 		<Compile Update="Controls\RadioButtonPanel.cs" />
 		<Compile Update="Controls\RadioGroupBox.cs" />
 		<Compile Update="Controls\RadioGroupBox.Designer.cs">
 			<DependentUpon>RadioGroupBox.cs</DependentUpon>
 		</Compile>
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ColorPicker.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeComboBox.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeMaskedTextBox.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeNumericUpDown.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeTextBox.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeTextBoxButton.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDown.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDownButton.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\EditableControlBase.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialog.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialogDetails.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\FormBase.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\HeaderGroupBox.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ImageNavigator.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\Line.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\LinkLabel.cs" />
-		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.cs" />
+		<Compile Update="MultiSelection\Controls\MultiSelectionButton.cs" />
+		<Compile Update="Controls\ColorPicker.cs" />
+		<Compile Update="Controls\MaskedTextBoxEx.cs" />
+		<Compile Update="Controls\NumericUpDownEx.cs" />
+		<Compile Update="Controls\ValidatedTextBoxButton.cs" />
+		<Compile Update="DropDown\Forms\DropDownForm.cs" />
+		<Compile Update="DropDown\Controls\DropDownButton.cs" />
+		<Compile Update="Controls\EditableControl.cs" />
+		<Compile Update="Controls\HeaderGroupBox.cs" />
+		<Compile Update="Controls\ImageNavigator.cs" />
+		<Compile Update="Separator\Controls\SeparatorLine.cs" />
+		<Compile Update="Controls\ImageLinkLabel.cs" />
+		<Compile Update="Controls\TextBoxUITypeEditor.cs" />
 		<Compile Update="SourceGrid.Extensions\ArrayGrid.cs" />
 		<Compile Update="SourceGrid.Extensions\DataGrid.cs" />
-		<Compile Update="SourceGrid.Extensions\ListEditor.cs" />
+		<Compile Update="SourceGrid.Extensions\ListEditor.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="SourceGrid.Extensions\ListEditor.Designer.cs"><DependentUpon>ListEditor.cs</DependentUpon></Compile>
 		<Compile Update="SourceGrid.Extensions\PingGrids\PingGrid.cs" />
-		<Compile Update="SourceGrid.Extensions\PlanningGrid.cs" />
+		<Compile Update="SourceGrid.Extensions\PlanningGrid.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="SourceGrid.Extensions\PlanningGrid.Designer.cs"><DependentUpon>PlanningGrid.cs</DependentUpon></Compile>
 		<Compile Update="SourceGrid\Common\CustomScrollControl.cs" />
 		<Compile Update="SourceGrid\Exporter\GridPrintDocument.cs" />
-		<Compile Update="SourceGrid\Grids\Grid.Accessibility.cs" />
-		<Compile Update="SourceGrid\Grids\Grid.Columns.cs" />
+		<Compile Update="SourceGrid\Grids\GridColumn.cs" />
 		<Compile Update="SourceGrid\Grids\Grid.cs" />
 		<Compile Update="SourceGrid\Grids\GridVirtual.cs" />
 		<Compile Update="Controls\ButtonTextBox.cs" />
@@ -338,37 +303,37 @@
 		<Compile Update="Logging\Controls\TextLog.Designer.cs">
 			<DependentUpon>TextLog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Controls\UserControlEx.cs" />
-		<Compile Update="Controls\ValidationIndicator.cs" />
-		<Compile Update="Controls\ValidationIndicator.Designer.cs">
+		<Compile Update="StateEvent\Controls\UserControlEx.cs" />
+		<Compile Update="ValidationIndicator\Controls\ValidationIndicator.cs" />
+		<Compile Update="ValidationIndicator\Controls\ValidationIndicator.Designer.cs">
 			<DependentUpon>ValidationIndicator.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\DialogEx.cs" />
-		<Compile Update="Forms\DialogEx.designer.cs">
+		<Compile Update="Dialogs\Forms\DialogEx.cs" />
+		<Compile Update="Dialogs\Forms\DialogEx.designer.cs">
 			<DependentUpon>DialogEx.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Forms\EnterTextDialog.cs" />
 		<Compile Update="Forms\EnterTextDialog.Designer.cs">
 			<DependentUpon>EnterTextDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\ExecuteScriptForm.cs" />
-		<Compile Update="Forms\ExecuteScriptForm.designer.cs">
+		<Compile Update="Database\Forms\ExecuteScriptForm.cs" />
+		<Compile Update="Database\Forms\ExecuteScriptForm.designer.cs">
 			<DependentUpon>ExecuteScriptForm.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Forms\GenericEditorForm.cs" />
 		<Compile Update="Forms\GenericEditorForm.Designer.cs">
 			<DependentUpon>GenericEditorForm.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\LayeredWindow.cs" />
-		<Compile Update="Forms\LogonDialog.cs" />
-		<Compile Update="Forms\LogonDialog.designer.cs">
+		<Compile Update="Drawing\Forms\LayeredWindow.cs" />
+		<Compile Update="Authentication\Forms\LogonDialog.cs" />
+		<Compile Update="Authentication\Forms\LogonDialog.designer.cs">
 			<DependentUpon>LogonDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\PasswordDialog.cs" />
-		<Compile Update="Forms\PasswordDialog.designer.cs">
+		<Compile Update="Authentication\Forms\PasswordDialog.cs" />
+		<Compile Update="Authentication\Forms\PasswordDialog.designer.cs">
 			<DependentUpon>PasswordDialog.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\PerPixelAlphaForm.cs" />
+		<Compile Update="Drawing\Forms\PerPixelAlphaForm.cs" />
 		<Compile Update="Forms\TextEditorForm.cs" />
 		<Compile Update="Forms\TextEditorForm.Designer.cs">
 			<DependentUpon>TextEditorForm.cs</DependentUpon>
@@ -454,54 +419,45 @@
 			<SubType>Designer</SubType>
 			<DependentUpon>TaskItem.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Controls\ListMerger.resx">
+		<EmbeddedResource Update="ListMerger\Controls\ListMerger.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>ListMerger.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Controls\PathSelectorControl.resx">
+		<EmbeddedResource Update="PathSelector\Controls\PathSelectorControl.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>PathSelectorControl.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ButtonMultiSelection.resx">
-			<DependentUpon>ButtonMultiSelection.cs</DependentUpon>
+		<EmbeddedResource Update="MultiSelection\Controls\MultiSelectionButton.resx">
+			<DependentUpon>MultiSelectionButton.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ColorPicker.resx">
+		<EmbeddedResource Update="Controls\ColorPicker.resx">
 			<DependentUpon>ColorPicker.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeNumericUpDown.resx">
-			<DependentUpon>DevAgeNumericUpDown.cs</DependentUpon>
+		<EmbeddedResource Update="Controls\NumericUpDownEx.resx">
+			<DependentUpon>NumericUpDownEx.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DevAgeTextBoxButton.resx">
-			<DependentUpon>DevAgeTextBoxButton.cs</DependentUpon>
+		<EmbeddedResource Update="Controls\ValidatedTextBoxButton.resx">
+			<DependentUpon>ValidatedTextBoxButton.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDown.resx">
-			<DependentUpon>DropDown.cs</DependentUpon>
+		<EmbeddedResource Update="DropDown\Forms\DropDownForm.resx">
+			<DependentUpon>DropDownForm.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\DropDownButton.resx">
+		<EmbeddedResource Update="DropDown\Controls\DropDownButton.resx">
 			<DependentUpon>DropDownButton.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\EditableControlBase.resx">
-			<DependentUpon>EditableControlBase.cs</DependentUpon>
+		<EmbeddedResource Update="Controls\EditableControl.resx">
+			<DependentUpon>EditableControl.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialog.resx">
-			<DependentUpon>ErrorDialog.cs</DependentUpon>
-		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ErrorDialogDetails.resx">
-			<DependentUpon>ErrorDialogDetails.cs</DependentUpon>
-		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\FormBase.resx">
-			<DependentUpon>FormBase.cs</DependentUpon>
-		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\ImageNavigator.resx">
+		<EmbeddedResource Update="Controls\ImageNavigator.resx">
 			<DependentUpon>ImageNavigator.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\Line.resx">
-			<DependentUpon>Line.cs</DependentUpon>
+		<EmbeddedResource Update="Separator\Controls\SeparatorLine.resx">
+			<DependentUpon>SeparatorLine.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\LinkLabel.resx">
-			<DependentUpon>LinkLabel.cs</DependentUpon>
+		<EmbeddedResource Update="Controls\ImageLinkLabel.resx">
+			<DependentUpon>ImageLinkLabel.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.resx">
+		<EmbeddedResource Update="Controls\TextBoxUITypeEditor.resx">
 			<DependentUpon>TextBoxUITypeEditor.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="SourceGrid.Extensions\DataGrid.resx">
@@ -522,28 +478,28 @@
 		<EmbeddedResource Update="Logging\Controls\TextLog.resx">
 			<DependentUpon>TextLog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Controls\ValidationIndicator.resx">
+		<EmbeddedResource Update="ValidationIndicator\Controls\ValidationIndicator.resx">
 			<DependentUpon>ValidationIndicator.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Forms\DialogEx.resx">
+		<EmbeddedResource Update="Dialogs\Forms\DialogEx.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>DialogEx.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\EnterTextDialog.resx">
 			<DependentUpon>EnterTextDialog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Forms\ExecuteScriptForm.resx">
+		<EmbeddedResource Update="Database\Forms\ExecuteScriptForm.resx">
 			<DependentUpon>ExecuteScriptForm.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Forms\GenericEditorForm.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>GenericEditorForm.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Forms\LogonDialog.resx">
+		<EmbeddedResource Update="Authentication\Forms\LogonDialog.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>LogonDialog.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Forms\PasswordDialog.resx">
+		<EmbeddedResource Update="Authentication\Forms\PasswordDialog.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>PasswordDialog.cs</DependentUpon>
 		</EmbeddedResource>
@@ -565,8 +521,5 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="SourceGrid\QuadTree\" />
-	</ItemGroup>
 
 </Project>

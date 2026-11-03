@@ -18,9 +18,9 @@ public interface IControlStateEventProvider {
 	void Clear();
 }
 
-
-public interface IControlStateEventProvider<out TControl> : IControlStateEventProvider where TControl : Control {
-	TControl Control { get; }
-
+public interface IControlStateEventProvider<out TControl> : IControlStateEventProvider
+	where TControl : Control {
+	TControl Control {
+		get;
+	}
 }
-

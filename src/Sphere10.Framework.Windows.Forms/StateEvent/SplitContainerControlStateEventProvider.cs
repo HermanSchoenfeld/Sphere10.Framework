@@ -10,14 +10,12 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
+/// <summary>Combines state from both borrowed split-container panels.</summary>
 public class SplitContainerControlStateEventProvider : ControlStateEventProviderBase<Control> {
 	private ContainerControlStateEventProvider _panel1Listener;
 	private ContainerControlStateEventProvider _panel2Listener;
 
-
-	public SplitContainerControlStateEventProvider() {
-	}
-
+	/// <summary>Creates independent child observers for the two panels.</summary>
 	protected override void RegisterStateChangedListener(Control control, EventHandlerEx eventHandler) {
 		Guard.ArgumentCast<SplitContainer>(control, out var splitContainer, nameof(control));
 		_panel1Listener = new ContainerControlStateEventProvider();
@@ -28,11 +26,17 @@ public class SplitContainerControlStateEventProvider : ControlStateEventProvider
 		_panel2Listener.StateChanged += eventHandler;
 	}
 
+	/// <summary>Detaches the relay and clears all nested panel subscriptions.</summary>
 	protected override void DeregisterStateChangedListener(Control control, EventHandlerEx eventHandler) {
-		_panel1Listener.StateChanged -= eventHandler;
-		_panel2Listener.StateChanged -= eventHandler;
+		if (_panel1Listener != null) {
+			_panel1Listener.StateChanged -= eventHandler;
+			_panel1Listener.Clear();
+			_panel1Listener = null;
+		}
+		if (_panel2Listener != null) {
+			_panel2Listener.StateChanged -= eventHandler;
+			_panel2Listener.Clear();
+			_panel2Listener = null;
+		}
 	}
-
-
 }
-

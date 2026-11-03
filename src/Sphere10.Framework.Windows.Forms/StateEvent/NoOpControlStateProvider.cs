@@ -11,20 +11,30 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
+/// <summary>A design-time observer that acquires no native state or resources.</summary>
 public sealed class NoOpControlStateProvider : IControlStateEventProvider {
+	/// <summary>Accepts subscriptions without publishing operational or design-time changes.</summary>
 	public event EventHandlerEx StateChanged {
-		add { }
-		remove { }
+		add {
+		}
+		remove {
+		}
 	}
 
+	/// <summary>The general control contract accepted by this no-op observer.</summary>
+	public Type ControlType {
+		get {
+			return typeof(Control);
+		}
+	}
+
+	/// <summary>Releases no resources because none were acquired.</summary>
 	public void Clear() {
 		// do nothing
 	}
 
-	public Type ControlType => typeof(Control);
-
+	/// <summary>Accepts a borrowed design-time control without creating its handle.</summary>
 	public void SetControl(Control control) {
 		// do nothing
 	}
 }
-

@@ -34,6 +34,7 @@ public class ControlStateEventProviderManagerTests {
 		_services = services.BuildServiceProvider();
 		Sphere10Framework.Instance.Build().Start(_services);
 		ObservedProvider.Constructions = 0;
+		ObservedProvider.ThrowOnConstruction = false;
 		UnusedProvider.Constructions = 0;
 	}
 
@@ -84,6 +85,57 @@ public class ControlStateEventProviderManagerTests {
 	}
 
 	[Test]
+	public void InheritedCustomRegistrationsProduceIndependentAttachmentsAndWinOverDefaults() {
+		var manager = new ControlStateEventProviderManager();
+		var first = manager.GetControlStateProvider(typeof(DerivedTextBox));
+		var second = _services.GetControlStateEventProvider(typeof(DerivedTextBox));
+		Assert.That(first, Is.TypeOf<ObservedProvider>());
+		Assert.That(second, Is.TypeOf<ObservedProvider>().And.Not.SameAs(first));
+		using var firstInput = new DerivedTextBox();
+		using var secondInput = new DerivedTextBox();
+		first.SetControl(firstInput);
+		second.SetControl(secondInput);
+		var firstChanges = 0;
+		var secondChanges = 0;
+		first.StateChanged += () => firstChanges++;
+		second.StateChanged += () => secondChanges++;
+		firstInput.Text = "First";
+		secondInput.Text = "Second";
+		Assert.That((firstChanges, secondChanges), Is.EqualTo((1, 1)));
+		first.Clear();
+		second.Clear();
+	}
+
+	[Test]
+	public void DisposedGlobalServicesDoNotPreventStandaloneInputObservation() {
+		Sphere10Framework.Instance.EndFramework();
+		_services.Dispose();
+		var manager = new ControlStateEventProviderManager();
+		Assert.That(manager.TryGetControlStateProvider(typeof(RichTextBox), out var provider), Is.True);
+		Assert.That(provider, Is.TypeOf<CommonControlStateEventProvider>());
+		using var input = new RichTextBox();
+		provider.SetControl(input);
+		Assert.That(input.IsHandleCreated, Is.False, "Attaching a provider must not activate a borrowed control.");
+
+		// RichEdit raises TextChanged for an active native editor, not cached construction text.
+		input.CreateControl();
+
+		var changes = 0;
+		provider.StateChanged += () => changes++;
+		input.Text = "Usable without a running application";
+		Assert.That(changes, Is.EqualTo(1));
+		Assert.That(ObservedProvider.Constructions, Is.Zero);
+		provider.Clear();
+	}
+
+	[Test]
+	public void AnActualCustomProviderConstructionFailureIsNotReplacedByABuiltInProvider() {
+		ObservedProvider.ThrowOnConstruction = true;
+		var manager = new ControlStateEventProviderManager();
+		Assert.That(() => manager.GetControlStateProvider(typeof(ObservedTextBox)), Throws.TypeOf<ObjectDisposedException>());
+	}
+
+	[Test]
 	public void RefreshRetainsInheritanceLookupAndUsesTheCurrentRegistrationSnapshot() {
 		var manager = new ControlStateEventProviderManager();
 		Assert.That(manager.FindControlStateEventProvider(typeof(DerivedTextBox), false, out _), Is.False);
@@ -110,10 +162,13 @@ public class ControlStateEventProviderManagerTests {
 
 	private sealed class ObservedProvider : ControlStateEventProviderBase<TextBox> {
 		public static int Constructions;
+		public static bool ThrowOnConstruction;
 		private EventHandler _changed;
 
 		public ObservedProvider() {
 			Constructions++;
+			if (ThrowOnConstruction)
+				throw new ObjectDisposedException("Custom provider factory");
 		}
 
 		protected override void RegisterStateChangedListener(TextBox control, EventHandlerEx eventHandler) {
@@ -121,7 +176,9 @@ public class ControlStateEventProviderManagerTests {
 			control.TextChanged += _changed;
 		}
 
-		protected override void DeregisterStateChangedListener(TextBox control, EventHandlerEx eventHandler) => control.TextChanged -= _changed;
+		protected override void DeregisterStateChangedListener(TextBox control, EventHandlerEx eventHandler) {
+			control.TextChanged -= _changed;
+		}
 	}
 
 	private sealed class UnusedProvider : ControlStateEventProviderBase<Control> {

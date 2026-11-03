@@ -3347,25 +3347,12 @@ public class Expando : Control, ISupportInitialize {
 			// work out the y coordinate
 			ContentAlignment alignment = this.TitleAlignment;
 
-			switch (alignment) {
-				case ContentAlignment.MiddleLeft:
-				case ContentAlignment.MiddleCenter:
-				case ContentAlignment.MiddleRight:
-					rect.Y = ((this.HeaderHeight - this.TitleFont.Height) / 2) + ((this.HeaderHeight - this.TitleBarHeight) / 2) + border.Top + padding.Top;
-					break;
-
-				case ContentAlignment.TopLeft:
-				case ContentAlignment.TopCenter:
-				case ContentAlignment.TopRight:
-					rect.Y = (this.HeaderHeight - this.TitleBarHeight) + border.Top + padding.Top;
-					break;
-
-				case ContentAlignment.BottomLeft:
-				case ContentAlignment.BottomCenter:
-				case ContentAlignment.BottomRight:
-					rect.Y = this.HeaderHeight - this.TitleFont.Height;
-					break;
-			}
+			if (Tools.Drawing.IsMiddle(alignment))
+				rect.Y = ((this.HeaderHeight - this.TitleFont.Height) / 2) + ((this.HeaderHeight - this.TitleBarHeight) / 2) + border.Top + padding.Top;
+			else if (Tools.Drawing.IsTop(alignment))
+				rect.Y = (this.HeaderHeight - this.TitleBarHeight) + border.Top + padding.Top;
+			else if (Tools.Drawing.IsBottom(alignment))
+				rect.Y = this.HeaderHeight - this.TitleFont.Height;
 
 			// the height of the rectangle
 			rect.Height = this.TitleFont.Height;
@@ -3384,30 +3371,17 @@ public class Expando : Control, ISupportInitialize {
 
 			// don't wrap the string, and use an ellipsis if
 			// the string is too big to fit the rectangle
-			StringFormat sf = new StringFormat();
+			using var sf = new StringFormat();
 			sf.FormatFlags = StringFormatFlags.NoWrap;
 			sf.Trimming = StringTrimming.EllipsisCharacter;
 
 			// should the string be aligned to the left/center/right
-			switch (alignment) {
-				case ContentAlignment.MiddleLeft:
-				case ContentAlignment.TopLeft:
-				case ContentAlignment.BottomLeft:
-					sf.Alignment = StringAlignment.Near;
-					break;
-
-				case ContentAlignment.MiddleCenter:
-				case ContentAlignment.TopCenter:
-				case ContentAlignment.BottomCenter:
-					sf.Alignment = StringAlignment.Center;
-					break;
-
-				case ContentAlignment.MiddleRight:
-				case ContentAlignment.TopRight:
-				case ContentAlignment.BottomRight:
-					sf.Alignment = StringAlignment.Far;
-					break;
-			}
+			if (Tools.Drawing.IsLeft(alignment))
+				sf.Alignment = StringAlignment.Near;
+			else if (Tools.Drawing.IsCenter(alignment))
+				sf.Alignment = StringAlignment.Center;
+			else if (Tools.Drawing.IsRight(alignment))
+				sf.Alignment = StringAlignment.Far;
 
 			if (this.RightToLeft == RightToLeft.Yes) {
 				sf.FormatFlags |= StringFormatFlags.DirectionRightToLeft;

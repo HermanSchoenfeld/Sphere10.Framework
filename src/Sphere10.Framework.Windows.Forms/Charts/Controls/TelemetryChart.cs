@@ -16,7 +16,7 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Captured metric history displayed through the reusable DataVisualization graph control.</summary>
-public partial class TelemetryChart : UserControl {
+public partial class TelemetryChart : UserControlEx {
 	private TelemetryChartPoint[] _points = Array.Empty<TelemetryChartPoint>();
 	private TelemetryChartUnit _unit;
 	private TelemetryChartStyle _plotStyle;
@@ -43,13 +43,22 @@ public partial class TelemetryChart : UserControl {
 
 	[DefaultValue("Metric")]
 	public string ChartTitle {
-		get => _title.Text;
-		set { _title.Text = value; _title.Visible = !_compact && _showHeader && !string.IsNullOrWhiteSpace(value); }
+		get {
+			return _title.Text;
+		}
+
+		set {
+			_title.Text = value;
+			_title.Visible = !_compact && _showHeader && !string.IsNullOrWhiteSpace(value);
+		}
 	}
 
 	[DefaultValue(false)]
 	public bool Compact {
-		get => _compact;
+		get {
+			return _compact;
+		}
+
 		set {
 			_compact = value;
 			_title.Visible = !value && _showHeader && !string.IsNullOrWhiteSpace(ChartTitle);
@@ -62,16 +71,34 @@ public partial class TelemetryChart : UserControl {
 
 	[DefaultValue(true)]
 	public bool ShowHeader {
-		get => _showHeader;
-		set { _showHeader = value; _title.Visible = value && !_compact && !string.IsNullOrWhiteSpace(ChartTitle); _value.Visible = value && !_compact; }
+		get {
+			return _showHeader;
+		}
+
+		set {
+			_showHeader = value;
+			_title.Visible = value && !_compact && !string.IsNullOrWhiteSpace(ChartTitle);
+			_value.Visible = value && !_compact;
+		}
 	}
 
 	[DefaultValue(false)]
-	public bool Throughput { get => Unit == TelemetryChartUnit.BytesPerSecond; set => Unit = value ? TelemetryChartUnit.BytesPerSecond : TelemetryChartUnit.Percent; }
+	public bool Throughput {
+		get {
+			return Unit == TelemetryChartUnit.BytesPerSecond;
+		}
+
+		set {
+			Unit = value ? TelemetryChartUnit.BytesPerSecond : TelemetryChartUnit.Percent;
+		}
+	}
 
 	[DefaultValue(TelemetryChartUnit.Percent)]
 	public TelemetryChartUnit Unit {
-		get => _unit;
+		get {
+			return _unit;
+		}
+
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart unit");
 			_unit = value;
@@ -81,43 +108,125 @@ public partial class TelemetryChart : UserControl {
 
 	[DefaultValue(TelemetryChartStyle.Line)]
 	public TelemetryChartStyle PlotStyle {
-		get => _plotStyle;
-		set { Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart style"); _plotStyle = value; PublishSamples(); }
+		get {
+			return _plotStyle;
+		}
+
+		set {
+			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart style");
+			_plotStyle = value;
+			PublishSamples();
+		}
 	}
 
 	[DefaultValue(typeof(Color), "SteelBlue")]
-	public Color LineColor { get => _lineColor; set { _lineColor = value; _value.ForeColor = value; PublishSamples(); } }
+	public Color LineColor {
+		get {
+			return _lineColor;
+		}
+
+		set {
+			_lineColor = value;
+			_value.ForeColor = value;
+			PublishSamples();
+		}
+	}
 
 	[DefaultValue(typeof(Color), "Empty")]
-	public Color FillColor { get => _fillColor; set { _fillColor = value; PublishSamples(); } }
+	public Color FillColor {
+		get {
+			return _fillColor;
+		}
+
+		set {
+			_fillColor = value;
+			PublishSamples();
+		}
+	}
 
 	[DefaultValue(typeof(Color), "Control")]
-	public Color PlotBackColor { get => _plot.PlotBackColor; set => _plot.PlotBackColor = value; }
+	public Color PlotBackColor {
+		get {
+			return _plot.PlotBackColor;
+		}
+
+		set {
+			_plot.PlotBackColor = value;
+		}
+	}
 
 	[DefaultValue(typeof(Color), "ControlDark")]
-	public Color GridColor { get => _plot.GridColor; set => _plot.GridColor = value; }
+	public Color GridColor {
+		get {
+			return _plot.GridColor;
+		}
+
+		set {
+			_plot.GridColor = value;
+		}
+	}
 
 	[DefaultValue(false)]
-	public bool ShowVerticalGrid { get => _plot.ShowVerticalGrid; set => _plot.ShowVerticalGrid = value; }
+	public bool ShowVerticalGrid {
+		get {
+			return _plot.ShowVerticalGrid;
+		}
+
+		set {
+			_plot.ShowVerticalGrid = value;
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public TelemetryChartPoint[] Points => (TelemetryChartPoint[])_points.Clone();
+	public TelemetryChartPoint[] Points {
+		get {
+			return (TelemetryChartPoint[])_points.Clone();
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LogOutputSelectorControl LogOutput => _plot.LogOutput;
+	public LogOutputSelectorControl LogOutput {
+		get {
+			return _plot.LogOutput;
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ChartLogOutputBehavior LogOutputBehavior => _plot.LogOutputBehavior;
+	public ChartLogOutputBehavior LogOutputBehavior {
+		get {
+			return _plot.LogOutputBehavior;
+		}
+	}
 
 	[Category("Behavior"), DefaultValue("")]
-	public string LogTitle { get => _plot.LogTitle; set => _plot.LogTitle = value; }
+	public string LogTitle {
+		get {
+			return _plot.LogTitle;
+		}
+
+		set {
+			_plot.LogTitle = value;
+		}
+	}
 
 	/// <summary>Optional descriptive measurement name; empty uses the chart heading or surrounding group caption.</summary>
 	[Category("Behavior"), DefaultValue("")]
-	public string LogSeriesName { get => _logSeriesName; set => _logSeriesName = value ?? string.Empty; }
+	public string LogSeriesName {
+		get {
+			return _logSeriesName;
+		}
 
-	private string ResolvedLogSeriesName => !string.IsNullOrWhiteSpace(_logSeriesName) ? _logSeriesName
-		: ChartLogOutputBehavior.IsDescriptive(ChartTitle) ? ChartTitle : ChartLogOutputBehavior.ResolveGroupTitle(this) ?? _plot.ResolvedLogTitle;
+		set {
+			_logSeriesName = value ?? string.Empty;
+		}
+	}
+
+	private string ResolvedLogSeriesName {
+		get {
+			return !string.IsNullOrWhiteSpace(_logSeriesName) ? _logSeriesName
+					: ChartLogOutputBehavior.IsDescriptive(ChartTitle) ? ChartTitle : ChartLogOutputBehavior.ResolveGroupTitle(this) ?? _plot.ResolvedLogTitle;
+		}
+	}
 
 	public void SetSamples(TelemetryChartPoint[] points) {
 		Guard.ArgumentNotNull(points, nameof(points));
@@ -126,7 +235,9 @@ public partial class TelemetryChart : UserControl {
 		for (var index = 0; index < points.Length; index++) {
 			Guard.ArgumentNotNull(points[index], nameof(points));
 			var point = points[index];
-			prepared[index] = point with { Value = point.Value is { } value && double.IsFinite(value) && (Unit == TelemetryChartUnit.Celsius || value >= 0) ? value : null };
+			prepared[index] = point with {
+				Value = point.Value is { } value && double.IsFinite(value) && (Unit == TelemetryChartUnit.Celsius || value >= 0) ? value : null
+			};
 		}
 		_points = prepared;
 		_hoveredIndex = -1;
@@ -134,27 +245,6 @@ public partial class TelemetryChart : UserControl {
 		var latest = prepared.Length == 0 ? null : prepared[^1].Value;
 		_value.Text = latest.HasValue ? FormatValue(latest.Value) : "Unavailable";
 		PublishSamples();
-	}
-
-	/// <summary>Returns the nearest captured reading, including unavailable observations at a gap.</summary>
-	public bool TryGetSampleAt(Point location, out TelemetryChartPoint sample) {
-		var plotLocation = new Point(location.X - _plot.Left, location.Y - _plot.Top);
-		if (!_plot.TryGetPointAt(plotLocation, out _, out var point)) {
-			sample = null;
-			return false;
-		}
-		var latest = _points[^1].CapturedAtUtc;
-		var closest = 0;
-		var distance = double.MaxValue;
-		for (var index = 0; index < _points.Length; index++) {
-			var candidate = Math.Abs((_points[index].CapturedAtUtc - latest).TotalSeconds - point.X);
-			if (candidate >= distance)
-				continue;
-			distance = candidate;
-			closest = index;
-		}
-		sample = _points[closest];
-		return true;
 	}
 
 	protected override void Dispose(bool disposing) {
@@ -177,6 +267,7 @@ public partial class TelemetryChart : UserControl {
 	private void PublishSamples() {
 		if (_plot == null)
 			return;
+		using var state = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
 		// Sampling and retention stay with the caller; only captured numeric data enters the renderer.
 		var minimum = 0D;
 		var maximum = Unit == TelemetryChartUnit.Percent || Unit == TelemetryChartUnit.Celsius ? 100D : 1024D;
@@ -214,24 +305,6 @@ public partial class TelemetryChart : UserControl {
 		}
 	}
 
-	private string FormatValue(double value) => Unit switch {
-		TelemetryChartUnit.Bytes => FormatBytes(value),
-		TelemetryChartUnit.BytesPerSecond => FormatBytes(value) + "/s",
-		TelemetryChartUnit.Celsius => $"{value:N1} °C",
-		_ => $"{value:N1}%"
-	};
-
-	private static string FormatBytes(double value) {
-		var suffix = "B";
-		foreach (var unit in new[] { "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" }) {
-			if (Math.Abs(value) < 1024)
-				break;
-			value /= 1024;
-			suffix = unit;
-		}
-		return $"{value:N1} {suffix}";
-	}
-
 	private void PlotMouseMove(object sender, MouseEventArgs args) {
 		if (!TryGetSampleAt(new Point(args.X + _plot.Left, args.Y + _plot.Top), out var sample)) {
 			PlotMouseLeave(sender, args);
@@ -243,6 +316,47 @@ public partial class TelemetryChart : UserControl {
 		_hoveredIndex = index;
 		_sampleToolTip.SetToolTip(_plot.NativeChart, (sample.Value.HasValue ? FormatValue(sample.Value.Value) : "Unavailable")
 			+ Environment.NewLine + sample.CapturedAtUtc.ToLocalTime().ToString("HH:mm:ss", CultureInfo.CurrentCulture));
+	}
+
+	/// <summary>Returns the nearest captured reading, including unavailable observations at a gap.</summary>
+	public bool TryGetSampleAt(Point location, out TelemetryChartPoint sample) {
+		var plotLocation = new Point(location.X - _plot.Left, location.Y - _plot.Top);
+		if (!_plot.TryGetPointAt(plotLocation, out _, out var point)) {
+			sample = null;
+			return false;
+		}
+		var latest = _points[^1].CapturedAtUtc;
+		var closest = 0;
+		var distance = double.MaxValue;
+		for (var index = 0; index < _points.Length; index++) {
+			var candidate = Math.Abs((_points[index].CapturedAtUtc - latest).TotalSeconds - point.X);
+			if (candidate >= distance)
+				continue;
+			distance = candidate;
+			closest = index;
+		}
+		sample = _points[closest];
+		return true;
+	}
+
+	private string FormatValue(double value) {
+		return Unit switch {
+			TelemetryChartUnit.Bytes => FormatBytes(value),
+			TelemetryChartUnit.BytesPerSecond => FormatBytes(value) + "/s",
+			TelemetryChartUnit.Celsius => $"{value:N1} °C",
+			_ => $"{value:N1}%"
+		};
+	}
+
+	private static string FormatBytes(double value) {
+		var suffix = "B";
+		foreach (var unit in new[] { "KiB", "MiB", "GiB", "TiB", "PiB", "EiB" }) {
+			if (Math.Abs(value) < 1024)
+				break;
+			value /= 1024;
+			suffix = unit;
+		}
+		return $"{value:N1} {suffix}";
 	}
 
 	private void PlotMouseLeave(object sender, EventArgs args) {

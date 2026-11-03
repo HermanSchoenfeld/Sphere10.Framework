@@ -8,24 +8,34 @@
 
 using System;
 using System.ComponentModel;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Plain selected output values and the remembered enabled choice, without live output or storage ownership.</summary>
-public sealed class LogOutputSelectorPreferences {
+public sealed class LogOutputSelectorPreferences : SettingsObject {
 	/// <summary>Indicates that an output was explicitly configured; constructing defaults never opens it.</summary>
+	[DefaultValue(false)]
 	[Browsable(false)]
 	public bool HasConfiguration { get; set; }
 
 	/// <summary>The remembered enabled choice; applying values does not activate an output.</summary>
+	[DefaultValue(false)]
 	[DisplayName("Enabled")]
 	public bool Enabled { get; set; }
 
 	/// <summary>The selected output's plain options, including Remember After Close.</summary>
 	public LogOutputConfiguration Configuration { get; set; } = new();
 
+	/// <summary>Restores disabled output and its configuration defaults without opening any output resource.</summary>
+	public override void RestoreDefaultValues() {
+		base.RestoreDefaultValues();
+		Configuration ??= new LogOutputConfiguration();
+		Tools.Object.SetDefaultValues(Configuration);
+	}
+
 	/// <summary>Checks value constraints without testing directories, opening files or creating logger resources.</summary>
-	public Result Validate() {
+	public override Result Validate() {
 		var result = new Result();
 		if (!HasConfiguration) {
 			if (Enabled)
