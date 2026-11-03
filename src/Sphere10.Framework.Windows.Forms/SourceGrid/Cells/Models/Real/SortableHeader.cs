@@ -15,12 +15,8 @@ public class SortableHeader : ISortableHeader {
 	private SortStatus _sortStatus = new SortStatus(Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None, null);
 
 	public SortStatus SortStatus {
-		get {
-			return _sortStatus;
-		}
-		set {
-			_sortStatus = value;
-		}
+		get => _sortStatus;
+		set => _sortStatus = value;
 	}
 
 	// ISortableHeader Members

@@ -11,12 +11,9 @@ enum TokenType {
 
 
 abstract class Token {
-	private readonly TokenType tag;
-	private readonly string text;
-
 	protected Token(TokenType tag, string text) {
-		this.tag = tag;
-		this.text = text;
+		Tag = tag;
+		Text = text;
 	}
 
 	public static Token Name(string text) {
@@ -39,13 +36,9 @@ abstract class Token {
 		return new Value(text, false, false, true);
 	}
 
-	public TokenType Tag {
-		get { return tag; }
-	}
+	public TokenType Tag { get; }
 
-	public string Text {
-		get { return text; }
-	}
+	public string Text { get; }
 }
 
 
@@ -78,10 +71,6 @@ class Name : Token, IEquatable<Name> {
 
 
 class Value : Token, IEquatable<Value> {
-	private readonly bool explicitlyAssigned;
-	private readonly bool forced;
-	private readonly bool fromSeparator;
-
 	public Value(string text)
 		: this(text, false, false, false) {
 	}
@@ -92,31 +81,25 @@ class Value : Token, IEquatable<Value> {
 
 	public Value(string text, bool explicitlyAssigned, bool forced, bool fromSeparator)
 		: base(TokenType.Value, text) {
-		this.explicitlyAssigned = explicitlyAssigned;
-		this.forced = forced;
-		this.fromSeparator = fromSeparator;
+		ExplicitlyAssigned = explicitlyAssigned;
+		Forced = forced;
+		FromSeparator = fromSeparator;
 	}
 
 	/// <summary>
 	/// Whether this value came from a long option with "=" separating the name from the value
 	/// </summary>
-	public bool ExplicitlyAssigned {
-		get { return explicitlyAssigned; }
-	}
+	public bool ExplicitlyAssigned { get; }
 
 	/// <summary>
 	/// Whether this value came from a sequence specified with a separator (e.g., "--files a.txt,b.txt,c.txt")
 	/// </summary>
-	public bool FromSeparator {
-		get { return fromSeparator; }
-	}
+	public bool FromSeparator { get; }
 
 	/// <summary>
 	/// Whether this value came from args after the -- separator (when EnableDashDash = true)
 	/// </summary>
-	public bool Forced {
-		get { return forced; }
-	}
+	public bool Forced { get; }
 
 	public override bool Equals(object obj) {
 		var other = obj as Value;

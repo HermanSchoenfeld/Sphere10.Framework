@@ -22,9 +22,8 @@ namespace HashLib4CSharp.Base
         private const string CloneNotYetImplemented = "Clone not yet implemented for '{0}'";
         private const string InvalidBufferSize = "'BufferSize' must be greater than zero";
         internal const int InternalBufferSize = 64 * 1024; // 64Kb
-        private int _bufferSize;
 
-        protected Hash(int hashSize, int blockSize)
+		protected Hash(int hashSize, int blockSize)
         {
             Debug.Assert(hashSize > 0 || hashSize == -1);
             Debug.Assert(blockSize > 0 || blockSize == -1);
@@ -39,13 +38,15 @@ namespace HashLib4CSharp.Base
 
         public int BufferSize
         {
-            get => _bufferSize;
-            set
+			get {
+				return field;
+			}
+			set
             {
                 if (value <= 0) throw new ArgumentException(InvalidBufferSize);
-                _bufferSize = value;
+                field = value;
             }
-        }
+		}
         public abstract void TransformByteSpan(ReadOnlySpan<byte> data);
 
         public virtual IHash Clone() =>

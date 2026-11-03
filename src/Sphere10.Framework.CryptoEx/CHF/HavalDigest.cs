@@ -167,9 +167,7 @@ public abstract class HavalDigest
 		Reset(t);
 	}
 
-	public string AlgorithmName {
-		get { return "Haval_" + _rounds + "_" + (GetDigestSize() * 8); }
-	}
+	public string AlgorithmName => "Haval_" + _rounds + "_" + (GetDigestSize() * 8);
 
 	public int GetDigestSize() {
 		return _digestLength;

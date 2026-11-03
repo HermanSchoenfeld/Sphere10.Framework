@@ -38,11 +38,7 @@ public partial class ScheduleTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override SchedulingScreenSettings ScreenSettings {
-		get {
-			return (SchedulingScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override SchedulingScreenSettings ScreenSettings => (SchedulingScreenSettings)base.ScreenSettings;
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();

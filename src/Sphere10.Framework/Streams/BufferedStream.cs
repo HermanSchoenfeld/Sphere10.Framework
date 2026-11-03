@@ -45,7 +45,6 @@ public class BufferedStream : StreamDecorator {
 	private int _bufferOffset;
 	private int _bufferCount;
 	private long _position;
-	private long _streamLength;
 	private bool _positionKnown;
 	private bool _streamLengthKnown;
 	private bool _enableReadBuffering;
@@ -73,11 +72,7 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	/// <summary>The source whose physical cursor may be ahead of this stream's logical position.</summary>
-	public Stream WrappedStream {
-		get {
-			return InnerStream;
-		}
-	}
+	public Stream WrappedStream => InnerStream;
 
 	/// <summary>The configured read-ahead capacity, including while its allocation is released.</summary>
 	public int BufferSize { get; }
@@ -123,46 +118,30 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	/// <inheritdoc />
-	public override bool CanRead {
-		get {
-			return !_disposed && InnerStream.CanRead;
-		}
-	}
+	public override bool CanRead => !_disposed && InnerStream.CanRead;
 
 	/// <inheritdoc />
-	public override bool CanWrite {
-		get {
-			return !_disposed && InnerStream.CanWrite;
-		}
-	}
+	public override bool CanWrite => !_disposed && InnerStream.CanWrite;
 
 	/// <inheritdoc />
-	public override bool CanSeek {
-		get {
-			return !_disposed && InnerStream.CanSeek;
-		}
-	}
+	public override bool CanSeek => !_disposed && InnerStream.CanSeek;
 
 	/// <inheritdoc />
-	public override bool CanTimeout {
-		get {
-			return !_disposed && InnerStream.CanTimeout;
-		}
-	}
+	public override bool CanTimeout => !_disposed && InnerStream.CanTimeout;
 
 	/// <summary>The source's length, cached lazily when both buffering settings permit it.</summary>
 	public override long Length {
 		get {
 			EnsureOpen();
 			if (_enableReadBuffering && _enableStreamLengthCaching && _streamLengthKnown)
-				return _streamLength;
+				return field;
 
 			try {
 				var length = InnerStream.Length;
 				if (length < 0)
 					throw new IOException("The source returned a negative stream length.");
 				if (_enableReadBuffering && _enableStreamLengthCaching) {
-					_streamLength = length;
+					field = length;
 					_streamLengthKnown = true;
 				}
 				return length;
@@ -220,11 +199,7 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	// Track only the unread portion; the consumed portion remains available for in-buffer seeks.
-	private int UnreadCount {
-		get {
-			return _bufferCount - _bufferOffset;
-		}
-	}
+	private int UnreadCount => _bufferCount - _bufferOffset;
 
 	/// <summary>Reads buffered bytes plus at most one source read, preserving positive short-read results.</summary>
 	public override int Read(byte[] buffer, int offset, int count) {

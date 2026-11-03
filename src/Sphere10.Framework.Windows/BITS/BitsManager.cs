@@ -20,7 +20,6 @@ namespace Sphere10.Framework.Windows.BITS;
 public class BitsManager : IDisposable {
 	private IBackgroundCopyManager manager;
 	private BitsNotification notificationHandler;
-	private BitsJobs jobs;
 	private EventHandler<NotificationEventArgs> onJobModified;
 	private EventHandler<NotificationEventArgs> onJobTransfered;
 	private EventHandler<ErrorNotificationEventArgs> onJobErrored;
@@ -46,7 +45,7 @@ public class BitsManager : IDisposable {
 	private void notificationHandler_OnJobTransferredEvent(object sender, NotificationEventArgs e) {
 		System.Threading.Thread.SpinWait(0);
 		// route the event to the job
-		BitsJob job = this.jobs[e.Job.JobId];
+		BitsJob job = Jobs[e.Job.JobId];
 		if (null != job)
 			job.OnJobTransferred(sender, e);
 		//publish the event to other subscribers
@@ -57,7 +56,7 @@ public class BitsManager : IDisposable {
 	private void notificationHandler_OnJobModifiedEvent(object sender, NotificationEventArgs e) {
 		System.Threading.Thread.SpinWait(0);
 		// route the event to the job
-		BitsJob job = this.jobs[e.Job.JobId];
+		BitsJob job = Jobs[e.Job.JobId];
 		if (null != job)
 			job.OnJobModified(sender, e);
 		//publish the event to other subscribers
@@ -68,7 +67,7 @@ public class BitsManager : IDisposable {
 	private void notificationHandler_OnJobErrorEvent(object sender, ErrorNotificationEventArgs e) {
 		System.Threading.Thread.SpinWait(0);
 		// route the event to the job
-		BitsJob job = this.jobs[e.Job.JobId];
+		BitsJob job = Jobs[e.Job.JobId];
 		if (null != job)
 			job.OnJobError(sender, e);
 		//publish the event to other subscribers
@@ -86,13 +85,13 @@ public class BitsManager : IDisposable {
 		IEnumBackgroundCopyJobs jobList = null;
 
 		this.manager.EnumJobs(Convert.ToUInt32(jobType), out jobList);
-		if (this.jobs == null) {
-			this.jobs = new BitsJobs(this, jobList);
+		if (Jobs == null) {
+			Jobs = new BitsJobs(this, jobList);
 		} else {
-			this.jobs.Update(jobList);
+			Jobs.Update(jobList);
 		}
 
-		return this.jobs;
+		return Jobs;
 	}
 
 	/// <summary>
@@ -109,15 +108,13 @@ public class BitsManager : IDisposable {
 		IBackgroundCopyJob pJob;
 		this.manager.CreateJob(displayName, (BG_JOB_TYPE)jobType, out guid, out pJob);
 		BitsJob job = new BitsJob(this, pJob);
-		this.jobs.Add(guid, job);
+		Jobs.Add(guid, job);
 		if (null != this.onJobAdded)
 			this.onJobAdded(this, new NotificationEventArgs(job));
 		return job;
 	}
 
-	public BitsJobs Jobs {
-		get { return this.jobs; }
-	}
+	public BitsJobs Jobs { get; private set; }
 
 	#region Convert HResult into meaningful error message
 
@@ -133,9 +130,7 @@ public class BitsManager : IDisposable {
 
 	#region Internal Notification Handling
 
-	internal BitsNotification NotificationHandler {
-		get { return this.notificationHandler; }
-	}
+	internal BitsNotification NotificationHandler => this.notificationHandler;
 
 	internal void NotifyOnJobRemoval(BitsJob job) {
 		if (null != this.onJobRemoved)
@@ -188,9 +183,7 @@ public class BitsManager : IDisposable {
 
 	#endregion
 
-	internal IBackgroundCopyManager BackgroundCopyManager {
-		get { return this.manager; }
-	}
+	internal IBackgroundCopyManager BackgroundCopyManager => this.manager;
 
 	#region IDisposable Members
 

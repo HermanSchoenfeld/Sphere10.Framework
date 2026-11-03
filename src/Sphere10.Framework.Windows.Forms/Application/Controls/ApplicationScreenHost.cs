@@ -25,7 +25,6 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	private const int LogicalDockProximity = 8;
 	private readonly Dictionary<ApplicationScreen, ScreenBinding> _screens = new(ReferenceEqualityComparer.Instance);
 	private readonly NativeScreenHostEngine _engine;
-	private readonly ApplicationScreenTabControl _tabs;
 	private readonly ImageList _tabImages;
 	private readonly Panel _singleView;
 	private readonly AsyncSynchronizedGate _startupSettingsGate = new();
@@ -42,20 +41,20 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	public ApplicationScreenHost() {
 		_engine = new NativeScreenHostEngine(this);
 		_tabImages = new ImageList { ImageSize = new Size(16, 16), ColorDepth = ColorDepth.Depth32Bit };
-		_tabs = new ApplicationScreenTabControl { Dock = DockStyle.Fill, Visible = false, ImageList = _tabImages };
+		TabControl = new ApplicationScreenTabControl { Dock = DockStyle.Fill, Visible = false, ImageList = _tabImages };
 		_singleView = new Panel { Dock = DockStyle.Fill };
-		Controls.Add(_tabs);
+		Controls.Add(TabControl);
 		Controls.Add(_singleView);
-		_tabs.Selecting += TabSelecting;
-		_tabs.ScreenCloseRequested += CloseRequested;
-		_tabs.ScreenUndockRequested += Screen => UndockScreen(Screen);
-		_tabs.ScreenCloseAllRequested += CloseAllRequested;
-		_tabs.ScreenCloseOthersRequested += CloseOthersRequested;
-		_tabs.TabOrderChanged += SynchronizeTabOrder;
-		_tabs.DragEnter += TabDragEnter;
-		_tabs.DragOver += TabDragEnter;
-		_tabs.DragLeave += (_, _) => ClearDockPreview();
-		_tabs.DragDrop += TabDragDrop;
+		TabControl.Selecting += TabSelecting;
+		TabControl.ScreenCloseRequested += CloseRequested;
+		TabControl.ScreenUndockRequested += Screen => UndockScreen(Screen);
+		TabControl.ScreenCloseAllRequested += CloseAllRequested;
+		TabControl.ScreenCloseOthersRequested += CloseOthersRequested;
+		TabControl.TabOrderChanged += SynchronizeTabOrder;
+		TabControl.DragEnter += TabDragEnter;
+		TabControl.DragOver += TabDragEnter;
+		TabControl.DragLeave += (_, _) => ClearDockPreview();
+		TabControl.DragDrop += TabDragDrop;
 		AllowDrop = true;
 		DragEnter += TabDragEnter;
 		DragOver += TabDragEnter;
@@ -82,11 +81,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	/// <summary>The independently selected sidebar block.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override IApplicationBlock SelectedBlock {
-		get {
-			return _engine.SelectedBlock;
-		}
-	}
+	public override IApplicationBlock SelectedBlock => _engine.SelectedBlock;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public override IUserInterfaceServices UserInterfaceServices => FindForm() as IUserInterfaceServices;
@@ -104,7 +99,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ApplicationScreenTabControl TabControl => _tabs;
+	public ApplicationScreenTabControl TabControl { get; }
 
 	/// <summary>The tab header docking band in desktop coordinates, including a DPI-scaled proximity margin.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -112,11 +107,11 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		get {
 			if (ScreenMode != ScreenMode.MultiView || !Visible || IsDisposed || Disposing)
 				return Rectangle.Empty;
-			var Bounds = _tabs.TabStripBounds;
+			var Bounds = TabControl.TabStripBounds;
 			if (Bounds.IsEmpty)
 				return Rectangle.Empty;
-			Bounds.Inflate(0, _tabs.LogicalToDeviceUnits(LogicalDockProximity));
-			return _tabs.RectangleToScreen(Bounds);
+			Bounds.Inflate(0, TabControl.LogicalToDeviceUnits(LogicalDockProximity));
+			return TabControl.RectangleToScreen(Bounds);
 		}
 	}
 
@@ -409,7 +404,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		if (!IsPresented(Screen, Binding))
 			AddPresentation(Screen, Binding);
 		if (selectTab && Binding.Tab != null)
-			_tabs.SelectedTab = Binding.Tab;
+			TabControl.SelectedTab = Binding.Tab;
 		ChangeActiveScreen(Screen);
 		Screen.NotifyShow();
 		return true;
@@ -495,7 +490,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		if (ActiveScreen == null || !closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
 			return null;
 		// Native removal chooses a page of its own. Resolve the successor against the visual order before any page is removed.
-		var tabs = _tabs.TabPages.Cast<TabPage>().Select(page => (ApplicationScreen)page.Tag).ToArray();
+		var tabs = TabControl.TabPages.Cast<TabPage>().Select(page => (ApplicationScreen)page.Tag).ToArray();
 		var activeIndex = Array.FindIndex(tabs, screen => ReferenceEquals(screen, ActiveScreen));
 		if (activeIndex < 0)
 			return null;
@@ -553,7 +548,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		ChangeActiveScreen(null);
 		RemovePresentation(Screen, Binding);
 		AddPresentation(Screen, Binding);
-		_tabs.SelectedTab = Binding.Tab;
+		TabControl.SelectedTab = Binding.Tab;
 		ChangeActiveScreen(Screen);
 		Screen.NotifyShow();
 		FindForm()?.Activate();
@@ -576,21 +571,21 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			ClearDockPreview();
 			return false;
 		}
-		_tabs.ShowDockPreview(Screen.Title, _tabs.PointToClient(DockLocation));
+		TabControl.ShowDockPreview(Screen.Title, TabControl.PointToClient(DockLocation));
 		return true;
 	}
 
-	public void ClearDockPreview() => _tabs.HideDockPreview();
+	public void ClearDockPreview() => TabControl.HideDockPreview();
 
 	public bool CompleteScreenDock(ApplicationScreen Screen, Point ScreenLocation, Rectangle? DraggedCaptionBounds = null) {
 		if (!UpdateDockPreview(Screen, ScreenLocation, DraggedCaptionBounds))
 			return false;
-		var Index = _tabs.DockPreviewIndex;
+		var Index = TabControl.DockPreviewIndex;
 		using var update = EnterUpdateScope();
 		ClearDockPreview();
 		if (!DockScreen(Screen))
 			return false;
-		_tabs.MoveTab(GetBinding(Screen).Tab!, Math.Min(Index, _tabs.TabCount - 1));
+		TabControl.MoveTab(GetBinding(Screen).Tab!, Math.Min(Index, TabControl.TabCount - 1));
 		return true;
 	}
 
@@ -624,7 +619,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		if (active != null) {
 			AddPresentation(active, GetBinding(active));
 			if (GetBinding(active).Tab != null)
-				_tabs.SelectedTab = GetBinding(active).Tab;
+				TabControl.SelectedTab = GetBinding(active).Tab;
 		}
 		return true;
 	}
@@ -844,12 +839,12 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	private void UpdatePresentationVisibility() {
 		var tabless = ScreenMode == ScreenMode.SingleView || ActiveScreen?.ScreenKind == ScreenKind.Empty;
-		_tabs.Visible = !tabless;
+		TabControl.Visible = !tabless;
 		_singleView.Visible = tabless;
 		if (tabless)
 			_singleView.BringToFront();
 		else
-			_tabs.BringToFront();
+			TabControl.BringToFront();
 	}
 
 	private void AddPresentation(ApplicationScreen Screen, ScreenBinding Binding) {
@@ -858,7 +853,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			Binding.Tab = new TabPage(Screen.Title) { Tag = Screen, Padding = Padding.Empty,
 				ImageKey = _tabImages.Images.ContainsKey(Binding.ImageKey) ? Binding.ImageKey : string.Empty };
 			Binding.Tab.Controls.Add(Screen);
-			_tabs.TabPages.Add(Binding.Tab);
+			TabControl.TabPages.Add(Binding.Tab);
 		} else {
 			_singleView.Controls.Add(Screen);
 		}
@@ -868,7 +863,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	private void RemovePresentation(ApplicationScreen Screen, ScreenBinding Binding) {
 		Screen.Parent?.Controls.Remove(Screen);
 		if (Binding.Tab != null) {
-			_tabs.TabPages.Remove(Binding.Tab);
+			TabControl.TabPages.Remove(Binding.Tab);
 			Binding.Tab.Dispose();
 			Binding.Tab = null;
 		}
@@ -898,9 +893,9 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		if (ActiveScreen != null || _disposing)
 			return;
 		// During a batched close the native selection can still name a removed page.
-		var selectedIndex = _tabs.SelectedIndex;
-		var next = preferredScreen ?? (selectedIndex >= 0 && selectedIndex < _tabs.TabPages.Count
-			? _tabs.TabPages[selectedIndex].Tag as ApplicationScreen : null);
+		var selectedIndex = TabControl.SelectedIndex;
+		var next = preferredScreen ?? (selectedIndex >= 0 && selectedIndex < TabControl.TabPages.Count
+			? TabControl.TabPages[selectedIndex].Tag as ApplicationScreen : null);
 		next ??= Screens.FirstOrDefault(screen => IsPresented(screen, GetBinding(screen)) && GetBinding(screen).Window == null && screen.ScreenKind == ScreenKind.Normal);
 		if (showEmptyScreen || ScreenMode == ScreenMode.SingleView)
 			next ??= Screens.FirstOrDefault(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton
@@ -917,14 +912,14 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	}
 
 	private void TabSelecting(object? Sender, TabControlCancelEventArgs Args) {
-		if (!_updating && !_tabs.Reordering && Args.TabPage?.Tag is ApplicationScreen Screen)
+		if (!_updating && !TabControl.Reordering && Args.TabPage?.Tag is ApplicationScreen Screen)
 			// The native control is already selecting this page. Complete the host transition without selecting it again or painting before native input returns.
 			Args.Cancel = !ShowScreenCore(Screen, true, selectTab: false);
 	}
 
 	private void SynchronizeTabOrder() {
 		using var update = EnterUpdateScope();
-		var ordered = _tabs.TabPages.Cast<TabPage>().Select(page => (ApplicationScreen)page.Tag).ToArray();
+		var ordered = TabControl.TabPages.Cast<TabPage>().Select(page => (ApplicationScreen)page.Tag).ToArray();
 		for (var index = 0; index < ordered.Length; index++)
 			_engine.Move(ordered[index], index);
 	}
@@ -1229,7 +1224,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			var binding = _owner.GetBinding(screen);
 			if (binding.Tab != null) {
 				var targetTab = OpenScreens.Take(index).Count(candidate => _owner.GetBinding(candidate).Tab != null);
-				_owner._tabs.MoveTab(binding.Tab, Math.Min(targetTab, _owner._tabs.TabCount - 1));
+				_owner.TabControl.MoveTab(binding.Tab, Math.Min(targetTab, _owner.TabControl.TabCount - 1));
 			}
 			Move(screen, index);
 			return Task.CompletedTask;

@@ -12,24 +12,19 @@ using System.Text;
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class FunctionCallTree : SyntaxTree {
-	List<SyntaxTree> _arguments;
-
 	public FunctionCallTree(Token token)
 		: base(token) {
 
-		_arguments = new List<SyntaxTree>();
+		Arguments = new List<SyntaxTree>();
 	}
 
-	public List<SyntaxTree> Arguments {
-		get { return _arguments; }
-		set { _arguments = value; }
-	}
+	public List<SyntaxTree> Arguments { get; set; }
 
 	public override string ToString() {
 		StringBuilder paramsText = new StringBuilder();
-		for (int i = 0; i < _arguments.Count; i++) {
+		for (int i = 0; i < Arguments.Count; i++) {
 			if (i > 0) paramsText.Append(",");
-			paramsText.Append(_arguments[i].ToString());
+			paramsText.Append(Arguments[i].ToString());
 		}
 		return string.Format("FunctionCall({0},Args({1})", Token.Value, paramsText.ToString());
 	}

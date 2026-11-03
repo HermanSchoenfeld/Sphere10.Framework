@@ -38,7 +38,9 @@ public class LogView : FrameView {
 	}
 
 	public int MaxLines {
-		get => _maxLines;
+		get {
+			return _maxLines;
+		}
 		set {
 			Guard.ArgumentInRange(value, 1, int.MaxValue, nameof(value));
 			_maxLines = value;

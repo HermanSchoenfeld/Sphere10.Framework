@@ -61,7 +61,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 	private int _pageSize;
 	private int _manualPageSize;
 	private VisualGridPageMode _pageMode;
-	private int _totalRecords;
 	private string _searchText;
 	private Type _dataSourceItemType = typeof(object);
 	private string _gridTitle;
@@ -70,9 +69,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 	private IDictionary<int, object> _rowToEntityMap;
 	private ILookup<object, int> _entityToRowLookup;
 	private object _selectedEntity;
-	private bool _allowCellEditing;
-	private bool _leftClickToDeselect;
-	private bool _selectOnMouseUp;
 	private int _selectedRowOnMouseDown = -1;
 	private Position _lastClickedCell = Position.Empty;
 	private readonly SourceGrid.Cells.Controllers.MouseSelection _mouseSelectionController = new();
@@ -134,7 +130,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 			_pageMode = VisualGridPageMode.Paged;
 			_pageNumber = 0;
 			_endPageNumber = 0;
-			_totalRecords = 0;
+			TotalRecords = 0;
 			_rowToEntityMap = new Dictionary<int, object>();
 			CalculateEntityToRowLookup();
 			_gridTitle = string.Empty;
@@ -165,13 +161,12 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 	[DefaultValue(false)]
 	public bool AllowCellEditing {
 		get {
-			return _allowCellEditing;
+			return field;
 		}
-
 		set {
-			if (_allowCellEditing == value)
+			if (field == value)
 				return;
-			_allowCellEditing = value;
+			field = value;
 			UpdateCellInteraction();
 		}
 	}
@@ -181,13 +176,12 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 	[DefaultValue(true)]
 	public bool LeftClickToDeselect {
 		get {
-			return _leftClickToDeselect;
+			return field;
 		}
-
 		set {
-			if (_leftClickToDeselect == value)
+			if (field == value)
 				return;
-			_leftClickToDeselect = value;
+			field = value;
 			UpdateCellInteraction();
 		}
 	}
@@ -211,13 +205,12 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 	[DefaultValue(false)]
 	public bool SelectOnMouseUp {
 		get {
-			return _selectOnMouseUp;
+			return field;
 		}
-
 		set {
-			if (_selectOnMouseUp == value)
+			if (field == value)
 				return;
-			_selectOnMouseUp = value;
+			field = value;
 			UpdateCellInteraction();
 		}
 	}
@@ -236,7 +229,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		get {
 			return _pageMode;
 		}
-
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Select a supported CRUD grid page mode.");
 			if (_pageMode == value)
@@ -256,13 +248,8 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 	[Category("Appearance")]
 	[DefaultValue(false)]
 	public bool AutoPageSize {
-		get {
-			return PageMode == VisualGridPageMode.Auto;
-		}
-
-		set {
-			PageMode = value ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
-		}
+		get => PageMode == VisualGridPageMode.Auto;
+		set => PageMode = value ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
 	}
 
 	[Description("Uses reference equality (in place of standard equality) when programatically selecting an entity.")]
@@ -381,7 +368,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		get {
 			return _titleLabel.TextAlign;
 		}
-
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Select a supported title alignment.");
 			_titleLabel.TextAlign = value;
@@ -435,19 +421,11 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IEnumerable<object> VisibleEntities {
-		get {
-			return _rowToEntityMap.Keys.Select(row => _rowToEntityMap[row]);
-		}
-	}
+	public IEnumerable<object> VisibleEntities => _rowToEntityMap.Keys.Select(row => _rowToEntityMap[row]);
 
 	/// <summary>The total matching records in the last accepted query, across every page.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int TotalRecords {
-		get {
-			return _totalRecords;
-		}
-	}
+	public int TotalRecords { get; private set; }
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -457,7 +435,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		get {
 			return _selectedEntity;
 		}
-
 		set {
 			_selectedEntity = value;
 			UpdateDeleteButtonVisibility();
@@ -559,10 +536,10 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 			if (replacement == null) {
 				foreach (var row in rows.OrderByDescending(row => row))
 					RemoveGridRow(row);
-				_totalRecords = Math.Max(0, _totalRecords - rows.Length);
-				_totalRecordsLabel.Text = _totalRecords.ToString();
+				TotalRecords = Math.Max(0, TotalRecords - rows.Length);
+				_totalRecordsLabel.Text = TotalRecords.ToString();
 				// Retain the current page even if removing its last row requires the next explicit read to clamp it.
-				_endPageNumber = Math.Max(_pageNumber, (int)Math.Ceiling(_totalRecords / (decimal)_pageSize) - 1);
+				_endPageNumber = Math.Max(_pageNumber, (int)Math.Ceiling(TotalRecords / (decimal)_pageSize) - 1);
 				_pageCountLabel.Text = $"/ {_endPageNumber + 1}";
 			} else {
 				foreach (var row in rows.WithDescriptions()) {
@@ -1444,8 +1421,8 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 
 			foreach (var rowNumber in rowNumbers)
 				RemoveGridRow(rowNumber);
-			_totalRecords -= rowNumbers.Count();
-			_totalRecordsLabel.Text = _totalRecords.ToString();
+			TotalRecords -= rowNumbers.Count();
+			_totalRecordsLabel.Text = TotalRecords.ToString();
 		}
 
 		if (wasSelectedEntity)
@@ -1536,7 +1513,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 			CalculateEntityToRowLookup();
 			_grid.Redim(0, 0);
 			_sizedColumnBindings = null;
-			_totalRecords = 0;
+			TotalRecords = 0;
 			_totalRecordsLabel.Text = "0";
 			DataBindingComplete?.Invoke(this, EventArgs.Empty);
 			return false;
@@ -1592,8 +1569,8 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		_bindingVersion++;
 		_boundDataSource = dataSource;
 		_boundColumns = columns;
-		_totalRecords = readResult.TotalCount;
-		_endPageNumber = ((int)Math.Ceiling(_totalRecords / (decimal)pageSize) - 1).ClipTo(0, int.MaxValue);
+		TotalRecords = readResult.TotalCount;
+		_endPageNumber = ((int)Math.Ceiling(TotalRecords / (decimal)pageSize) - 1).ClipTo(0, int.MaxValue);
 
 		var resultPage = Math.Max(0, Math.Min(readResult.Page, _endPageNumber));
 		if (resultPage != _pageNumber) {
@@ -1640,7 +1617,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 					_entityToRowLookup = preparedLookup;
 				else
 					CalculateEntityToRowLookup();
-				_totalRecordsLabel.Text = _totalRecords.ToString();
+				_totalRecordsLabel.Text = TotalRecords.ToString();
 				_pageCountLabel.Text = string.Format("/ {0}", _endPageNumber + 1);
 				InitializeGridSelectionMode();
 				HighlightSelectedEntity();

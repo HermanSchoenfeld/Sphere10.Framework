@@ -20,12 +20,11 @@ namespace Sphere10.Framework.Windows.Forms;
 public class ToolStripChoiceSelector : ToolStripDropDownButton {
 	private object[] _items = Array.Empty<object>();
 	private int _selectedIndex = -1;
-	private string _emptyText = "(None)";
 	private Func<object, string> _itemTextProvider;
 
 	public ToolStripChoiceSelector() {
 		DisplayStyle = ToolStripItemDisplayStyle.Text;
-		Text = _emptyText;
+		Text = EmptyText;
 	}
 
 	public event EventHandler SelectedIndexChanged;
@@ -42,7 +41,9 @@ public class ToolStripChoiceSelector : ToolStripDropDownButton {
 
 	[DefaultValue(-1)]
 	public int SelectedIndex {
-		get => _selectedIndex;
+		get {
+			return _selectedIndex;
+		}
 		set {
 			Guard.ArgumentInRange(value, -1, _items.Length - 1, nameof(value));
 			if (_selectedIndex == value) return;
@@ -54,14 +55,24 @@ public class ToolStripChoiceSelector : ToolStripDropDownButton {
 
 	[DefaultValue("(None)")]
 	public string EmptyText {
-		get => _emptyText;
-		set { _emptyText = value ?? string.Empty; UpdateSelection(); }
-	}
+		get {
+			return field;
+		}
+		set {
+			field = value ?? string.Empty;
+			UpdateSelection();
+		}
+	} = "(None)";
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Func<object, string> ItemTextProvider {
-		get => _itemTextProvider;
-		set { _itemTextProvider = value; UpdateSelection(); }
+		get {
+			return _itemTextProvider;
+		}
+		set {
+			_itemTextProvider = value;
+			UpdateSelection();
+		}
 	}
 
 	/// <summary>Replaces the choices and preserves the selected object when it remains present.</summary>
@@ -109,7 +120,7 @@ public class ToolStripChoiceSelector : ToolStripDropDownButton {
 	}
 
 	private void UpdateSelection() {
-		Text = _selectedIndex < 0 ? _emptyText : GetItemText(SelectedItem);
+		Text = _selectedIndex < 0 ? EmptyText : GetItemText(SelectedItem);
 		for (var index = 0; index < DropDownItems.Count; index++) {
 			var item = (ToolStripMenuItem)DropDownItems[index];
 			item.Text = GetItemText(_items[index]);

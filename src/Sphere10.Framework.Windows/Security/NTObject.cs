@@ -17,7 +17,6 @@ namespace Sphere10.Framework.Windows.Security;
 /// </summary>
 public abstract class NTObject {
 	private string _host;
-	private string _name;
 
 	public NTObject()
 		: this(string.Empty, string.Empty, null, WinAPI.ADVAPI32.SidNameUse.Unknown) {
@@ -31,17 +30,16 @@ public abstract class NTObject {
 	}
 
 	public string Host {
-		get { return _host; }
-		internal set { _host = value.TrimStart('\\'); }
+		get => _host;
+		internal set => _host = value.TrimStart('\\');
 	}
 
-	public string Name {
-		get { return _name; }
-		internal set { _name = value; }
-	}
+	public string Name { get; internal set; }
 
 	public virtual string FullName {
-		get { return string.Format("{0}\\{1}", Host, Name); }
+		get {
+			return string.Format("{0}\\{1}", Host, Name);
+		}
 		set {
 			string[] splits = value.Split(new char[] { '\\' });
 			if (splits.Length != 2) {
@@ -61,9 +59,7 @@ public abstract class NTObject {
 	/// <summary>
 	/// Used for passing into API functions. Compatible with Windows NT+.
 	/// </summary>
-	protected string NTCompatibleHostName {
-		get { return string.Format("\\\\{0}", Host); }
-	}
+	protected string NTCompatibleHostName => string.Format("\\\\{0}", Host);
 
 	public override string ToString() {
 		return Name;

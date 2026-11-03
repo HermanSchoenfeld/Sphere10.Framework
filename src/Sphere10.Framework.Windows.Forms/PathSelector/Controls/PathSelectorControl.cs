@@ -46,12 +46,14 @@ public partial class PathSelectorControl : UserControlEx {
 	[Browsable(true)]
 	[DefaultValue(true)]
 	public bool Editable {
-		get { return !_filenameTextBox.ReadOnly; }
-		set { _filenameTextBox.ReadOnly = !value; }
+		get => !_filenameTextBox.ReadOnly;
+		set => _filenameTextBox.ReadOnly = !value;
 	}
 
 	public string Path {
-		get { return _filenameTextBox.Text; }
+		get {
+			return _filenameTextBox.Text;
+		}
 		set {
 			_filenameTextBox.Text = value;
 			if (!this.DesignMode) {
@@ -63,7 +65,9 @@ public partial class PathSelectorControl : UserControlEx {
 
 	[Browsable(true)]
 	public string PlaceHolderText {
-		get { return _filenameTextBox != null ? _filenameTextBox.PlaceHolderText : null; }
+		get {
+			return _filenameTextBox != null ? _filenameTextBox.PlaceHolderText : null;
+		}
 		set {
 			if (_filenameTextBox != null)
 				_filenameTextBox.PlaceHolderText = value;

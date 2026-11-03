@@ -32,13 +32,8 @@ public abstract class DropDownButtonBase : VisualElementBase, IDropDownButton {
 	}
 
 	public virtual ButtonStyle Style {
-		get {
-			return _controlDrawStyle;
-		}
-
-		set {
-			_controlDrawStyle = value;
-		}
+		get => _controlDrawStyle;
+		set => _controlDrawStyle = value;
 	}
 
 	protected virtual bool ShouldSerializeStyle() {

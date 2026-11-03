@@ -36,7 +36,6 @@ public class ColumnHeader : ColumnHeaderBase {
 		get {
 			return base.Style;
 		}
-
 		set {
 			base.Style = value;
 			_background.Style = value;
@@ -47,39 +46,24 @@ public class ColumnHeader : ColumnHeaderBase {
 	/// Back Color
 	/// </summary>
 	public Color BackColor {
-		get {
-			return _background.BackColor;
-		}
-
-		set {
-			_background.BackColor = value;
-		}
+		get => _background.BackColor;
+		set => _background.BackColor = value;
 	}
 
 	/// <summary>
 	/// Draw mode for the header. Default is Linear.
 	/// </summary>
 	public BackgroundColorStyle BackgroundColorStyle {
-		get {
-			return _background.BackgroundColorStyle;
-		}
-
-		set {
-			_background.BackgroundColorStyle = value;
-		}
+		get => _background.BackgroundColorStyle;
+		set => _background.BackgroundColorStyle = value;
 	}
 
 	/// <summary>
 	/// Border
 	/// </summary>
 	public RectangleBorder Border {
-		get {
-			return _background.Border;
-		}
-
-		set {
-			_background.Border = value;
-		}
+		get => _background.Border;
+		set => _background.Border = value;
 	}
 
 	/// <summary>

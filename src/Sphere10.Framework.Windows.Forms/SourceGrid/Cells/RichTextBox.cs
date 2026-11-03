@@ -42,59 +42,39 @@ public class RichTextBox : Cell {
 	/// Font of current selection
 	/// </summary>
 	public Font SelectionFont {
-		get {
-			return RichTextBoxModel.GetSelectionFont(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionFont(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionFont(GetContext());
+		set => RichTextBoxModel.SetSelectionFont(GetContext(), value);
 	}
 
 	/// <summary>
 	/// Color of current selection
 	/// </summary>
 	public Color SelectionColor {
-		get {
-			return RichTextBoxModel.GetSelectionColor(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionColor(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionColor(GetContext());
+		set => RichTextBoxModel.SetSelectionColor(GetContext(), value);
 	}
 
 	/// <summary>
 	/// CharOffset of current selection
 	/// </summary>
 	public int SelectionCharOffset {
-		get {
-			return RichTextBoxModel.GetSelectionCharOffset(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionCharOffset(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionCharOffset(GetContext());
+		set => RichTextBoxModel.SetSelectionCharOffset(GetContext(), value);
 	}
 
 	/// <summary>
 	/// Alignment of current selection
 	/// </summary>
 	public HorizontalAlignment SelectionAlignment {
-		get {
-			return RichTextBoxModel.GetSelectionAlignment(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionAlignment(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionAlignment(GetContext());
+		set => RichTextBoxModel.SetSelectionAlignment(GetContext(), value);
 	}
 
 	// Properties
 	/// <summary>
 	/// Get RichTextBoxModel
 	/// </summary>
-	private Models.RichTextBox RichTextBoxModel {
-		get {
-			return (Models.RichTextBox)Model.FindModel(typeof(Models.RichTextBox));
-		}
-	}
+	private Models.RichTextBox RichTextBoxModel => (Models.RichTextBox)Model.FindModel(typeof(Models.RichTextBox));
 
 	// Helper Methods
 	/// <summary>

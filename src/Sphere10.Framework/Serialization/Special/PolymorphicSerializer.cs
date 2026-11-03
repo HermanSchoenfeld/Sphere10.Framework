@@ -13,9 +13,7 @@ using System.Linq;
 namespace Sphere10.Framework;
 
 public class PolymorphicSerializer<TItem> : IItemSerializer<TItem>, IValueTypeActivatingSerializer {
-	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
-	private readonly IItemSerializer<TItem> _pureSerializer;
 
 	public PolymorphicSerializer(SerializerFactory factory)
 		: this(factory, !typeof(TItem).IsAbstract ? factory.GetPureSerializer<TItem>() : null) {
@@ -28,15 +26,15 @@ public class PolymorphicSerializer<TItem> : IItemSerializer<TItem>, IValueTypeAc
 		else
 			Guard.Argument(pureSerializer is not null, nameof(pureSerializer), "Must not be null for non-abstract types");
 
-		_factory = factory;
-		_serializerSerializer = new SerializerSerializer(_factory);
-		_pureSerializer = pureSerializer;
+		Factory = factory;
+		_serializerSerializer = new SerializerSerializer(Factory);
+		PureSerializer = pureSerializer;
 		ShouldNotifyInstanceActivation = false;
 	}
 
-	public IItemSerializer<TItem> PureSerializer => _pureSerializer ?? throw new InvalidOperationException("Abstract types have no pure serializer");
+	public IItemSerializer<TItem> PureSerializer => field ?? throw new InvalidOperationException("Abstract types have no pure serializer");
 
-	public SerializerFactory Factory => _factory;
+	public SerializerFactory Factory { get; }
 
 	public bool SupportsNull => false;
 
@@ -89,7 +87,7 @@ public class PolymorphicSerializer<TItem> : IItemSerializer<TItem>, IValueTypeAc
 		if (dataType == typeof(TItem))
 			return PureSerializer;
 
-		var factory = context.HasEphemeralFactory ? context.EphemeralFactory : _factory;
+		var factory = context.HasEphemeralFactory ? context.EphemeralFactory : Factory;
 
 		if (!factory.TryGetPureSerializer(dataType, out var serializer, out var missingSerializers)) {
 			if (!context.HasEphemeralFactory)

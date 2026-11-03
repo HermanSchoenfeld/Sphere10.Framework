@@ -22,9 +22,7 @@ public class SqliteDAC : DACBase {
 	}
 
 
-	public override DBMSType DBMSType {
-		get { return DBMSType.Sqlite; }
-	}
+	public override DBMSType DBMSType => DBMSType.Sqlite;
 
 	public override IDbConnection CreateConnection() {
 		return new SQLiteConnection() { ConnectionString = ConnectionString };

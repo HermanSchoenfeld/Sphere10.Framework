@@ -35,11 +35,7 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override TelemetryChartScreenSettings ScreenSettings {
-		get {
-			return (TelemetryChartScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override TelemetryChartScreenSettings ScreenSettings => (TelemetryChartScreenSettings)base.ScreenSettings;
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();

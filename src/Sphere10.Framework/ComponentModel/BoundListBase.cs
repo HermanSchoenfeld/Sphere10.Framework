@@ -54,68 +54,36 @@ public abstract class BoundListBase<T> : IBoundList {
 	/// <summary>
 	/// Gets the current edited object
 	/// </summary>
-	public object EditedObject {
-		get {
-			return _editItem;
-		}
-	}
+	public object EditedObject => _editItem;
 
 	public bool AllowEdit {
-		get {
-			return _allowEdit;
-		}
-		set {
-			_allowEdit = value;
-		}
+		get => _allowEdit;
+		set => _allowEdit = value;
 	}
 
 	public bool AllowNew {
-		get {
-			return _allowNew;
-		}
-		set {
-			_allowNew = value;
-		}
+		get => _allowNew;
+		set => _allowNew = value;
 	}
 
 	public bool AllowDelete {
-		get {
-			return _allowDelete;
-		}
-		set {
-			_allowDelete = value;
-		}
+		get => _allowDelete;
+		set => _allowDelete = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if the sort is enabled. Usually is enabled only if the IList is an instance of List class
 	/// </summary>
 	public bool AllowSort {
-		get {
-			return _allowSort;
-		}
-		set {
-			_allowSort = value;
-		}
+		get => _allowSort;
+		set => _allowSort = value;
 	}
 
-	public List<T> AddedItems {
-		get {
-			return _addedItems;
-		}
-	}
+	public List<T> AddedItems => _addedItems;
 
-	public List<T> RemovedItems {
-		get {
-			return _removedItems;
-		}
-	}
+	public List<T> RemovedItems => _removedItems;
 
-	public List<T> EditedItems {
-		get {
-			return _editedItems;
-		}
-	}
+	public List<T> EditedItems => _editedItems;
 
 	/// <summary>
 	/// Return the item at the specified position.

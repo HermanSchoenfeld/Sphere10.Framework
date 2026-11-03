@@ -117,9 +117,7 @@ public class Murmur3_x86_32Digest : IDigest, IMemoable {
 		Reset(t);
 	}
 
-	public string AlgorithmName {
-		get { return "Murmur3_x86_32"; }
-	}
+	public string AlgorithmName => "Murmur3_x86_32";
 
 	public int GetDigestSize() {
 		return DigestLengthBytes;

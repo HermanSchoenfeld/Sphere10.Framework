@@ -19,17 +19,16 @@ namespace Sphere10.Framework.Windows.Forms.Drawing;
 /// </summary>
 public class GraphicsMeasurement : IDisposable {
 	private readonly bool _ownsGraphics;
-	private Graphics _graphics;
 
 	/// <summary>Creates and owns graphics for the supplied control.</summary>
 	public GraphicsMeasurement(Control control) {
-		_graphics = control.CreateGraphics();
+		Graphics = control.CreateGraphics();
 		_ownsGraphics = true;
 	}
 
 	/// <summary>Borrows graphics without taking disposal ownership.</summary>
 	public GraphicsMeasurement(Graphics graphics) {
-		_graphics = graphics;
+		Graphics = graphics;
 	}
 
 	/// <summary>Borrows graphics from an existing drawing cache.</summary>
@@ -38,17 +37,13 @@ public class GraphicsMeasurement : IDisposable {
 	}
 
 	/// <summary>Gets the graphics used for measurement.</summary>
-	public Graphics Graphics {
-		get {
-			return _graphics;
-		}
-	}
+	public Graphics Graphics { get; private set; }
 
 	/// <summary>Releases control-created graphics; borrowed graphics retain their owner.</summary>
 	public void Dispose() {
-		if (_graphics != null && _ownsGraphics) {
-			_graphics.Dispose();
-			_graphics = null;
+		if (Graphics != null && _ownsGraphics) {
+			Graphics.Dispose();
+			Graphics = null;
 		}
 	}
 }

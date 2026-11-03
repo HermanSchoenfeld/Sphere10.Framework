@@ -18,7 +18,9 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 	private ApplicationScreenRegistration _registration;
 
 	public Type ScreenType {
-		get => _screenDefinition?.ScreenType ?? Registration?.ScreenType;
+		get {
+			return _screenDefinition?.ScreenType ?? Registration?.ScreenType;
+		}
 		init {
 			ApplicationHelper.ValidateScreenType(value, typeof(IApplicationScreen));
 			_registration = ApplicationScreenRegistration.ForType(value);
@@ -37,7 +39,9 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 	}
 
 	public SharedUI.ApplicationScreenDefinition ScreenDefinition {
-		get => _screenDefinition;
+		get {
+			return _screenDefinition;
+		}
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			ApplicationHelper.ValidateScreenType(value.ScreenType, typeof(IApplicationScreen));
@@ -46,9 +50,7 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 	}
 
 	protected override string DefaultId {
-		get {
-			return Registration == null ? base.DefaultId : Registration.IsTypeReference ? Registration.ScreenType.Name : Registration.Token.ToString("N");
-		}
+		get => Registration == null ? base.DefaultId : Registration.IsTypeReference ? Registration.ScreenType.Name : Registration.Token.ToString("N");
 	}
 
 	/// <summary>Binds the command to its own graph's canonical definition and updates reverse membership.</summary>

@@ -39,20 +39,11 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 	/// <summary>Controls whether the native property editor groups the model's declared categories.</summary>
 	[Category("Appearance"), DefaultValue(PropertySort.Alphabetical)]
 	public PropertySort PropertySort {
-		get {
-			return _propertyGrid.PropertySort;
-		}
-
-		set {
-			_propertyGrid.PropertySort = value;
-		}
+		get => _propertyGrid.PropertySort;
+		set => _propertyGrid.PropertySort = value;
 	}
 
-	public bool HasChanges {
-		get {
-			return _entityDescriptor?.HasChanges ?? false;
-		}
-	}
+	public bool HasChanges => _entityDescriptor?.HasChanges ?? false;
 
 	public Control AsControl() {
 		return this;

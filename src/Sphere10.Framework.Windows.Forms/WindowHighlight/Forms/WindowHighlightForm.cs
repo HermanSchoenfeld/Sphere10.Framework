@@ -15,7 +15,6 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Native nonactivating, input-transparent frame owned by WindowHighlightScope.</summary>
 internal sealed partial class WindowHighlightForm : Form {
 	private Region _frameRegion;
-	private int _thickness = 3;
 
 	public WindowHighlightForm() {
 		InitializeComponent();
@@ -23,9 +22,14 @@ internal sealed partial class WindowHighlightForm : Form {
 	}
 
 	public int Thickness {
-		get => _thickness;
-		set { _thickness = value; UpdateFrameRegion(); }
-	}
+		get {
+			return field;
+		}
+		set {
+			field = value;
+			UpdateFrameRegion();
+		}
+	} = 3;
 
 	protected override bool ShowWithoutActivation => true;
 
@@ -75,7 +79,7 @@ internal sealed partial class WindowHighlightForm : Form {
 		var region = new Region(ClientRectangle);
 		var retained = false;
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => { if (!retained) region.Dispose(); });
-		var inner = Rectangle.Inflate(ClientRectangle, -_thickness, -_thickness);
+		var inner = Rectangle.Inflate(ClientRectangle, -Thickness, -Thickness);
 		if (inner.Width > 0 && inner.Height > 0)
 			region.Exclude(inner);
 		var previous = _frameRegion;

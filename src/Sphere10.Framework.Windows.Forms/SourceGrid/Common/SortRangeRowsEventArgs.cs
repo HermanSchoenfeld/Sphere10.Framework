@@ -15,38 +15,19 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class SortRangeRowsEventArgs : EventArgs {
 	private CellRange _range;
-	private int _keyColumn;
-	private bool _ascending;
-	private IComparer _cellComparer;
 
 	public SortRangeRowsEventArgs(CellRange range, int keyColumn, bool ascending, IComparer cellComparer) {
 		_range = range;
-		_keyColumn = keyColumn;
-		_ascending = ascending;
-		_cellComparer = cellComparer;
+		KeyColumn = keyColumn;
+		Ascending = ascending;
+		CellComparer = cellComparer;
 	}
 
-	public CellRange Range {
-		get {
-			return _range;
-		}
-	}
+	public CellRange Range => _range;
 
-	public int KeyColumn {
-		get {
-			return _keyColumn;
-		}
-	}
+	public int KeyColumn { get; }
 
-	public bool Ascending {
-		get {
-			return _ascending;
-		}
-	}
+	public bool Ascending { get; }
 
-	public IComparer CellComparer {
-		get {
-			return _cellComparer;
-		}
-	}
+	public IComparer CellComparer { get; }
 }

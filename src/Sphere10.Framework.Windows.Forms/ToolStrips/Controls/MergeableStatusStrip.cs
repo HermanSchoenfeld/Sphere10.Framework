@@ -17,11 +17,9 @@ namespace Sphere10.Framework.Windows.Forms;
 /// those limitations by allowing you to merge a (hidden) tool strip on the sub form with the readonly inherited base form.
 /// </summary>
 public class MergeableStatusStrip : StatusStrip {
-	private readonly ToolStripVisualInheritanceFixer _fixer;
-
 	public MergeableStatusStrip() {
-		_fixer = new ToolStripVisualInheritanceFixer();
-		_fixer.ToolStrip = this;
+		MergeFixer = new ToolStripVisualInheritanceFixer();
+		MergeFixer.ToolStrip = this;
 	}
 
 	/// <summary>
@@ -31,35 +29,27 @@ public class MergeableStatusStrip : StatusStrip {
 	[Description("Set this to the base forms StatusStrip. If you can't find it, make sure it's modifer is set to to 'protected' or greater.")]
 	[Category("Behavior")]
 	public StatusStrip InheritedToolStrip {
-		get {
-			return _fixer.InheritedToolStrip as StatusStrip;
-		}
-		set {
-			_fixer.InheritedToolStrip = value;
-		}
+		get => MergeFixer.InheritedToolStrip as StatusStrip;
+		set => MergeFixer.InheritedToolStrip = value;
 	}
 
 	// Incoming mergers use the fixer's disposal notification before the target disposes borrowed items.
-	internal ToolStripVisualInheritanceFixer MergeFixer {
-		get {
-			return _fixer;
-		}
-	}
+	internal ToolStripVisualInheritanceFixer MergeFixer { get; }
 
 	/// <summary>Merges the original status items into the target while retaining their handlers and resources.</summary>
 	/// <remarks>Unmerge before disposing a plain StatusStrip target; mergeable targets return borrowed items automatically.</remarks>
 	public bool MergeInto(StatusStrip target) {
-		return _fixer.MergeInto(target);
+		return MergeFixer.MergeInto(target);
 	}
 
 	/// <summary>Merges newly added items into the configured inherited status strip.</summary>
 	public bool Merge() {
-		return _fixer.Merge();
+		return MergeFixer.Merge();
 	}
 
 	/// <summary>Returns this status strip's merged items before it is hidden, detached or disposed.</summary>
 	public bool Unmerge() {
-		return _fixer.Unmerge();
+		return MergeFixer.Unmerge();
 	}
 
 	// Visual inheritance source strips stay hidden on the derived form's designer surface.
@@ -71,7 +61,7 @@ public class MergeableStatusStrip : StatusStrip {
 	/// <summary>Returns merged items before the source status strip disposes its own items.</summary>
 	protected override void Dispose(bool disposing) {
 		if (disposing)
-			_fixer?.Dispose();
+			MergeFixer?.Dispose();
 		base.Dispose(disposing);
 	}
 

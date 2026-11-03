@@ -21,7 +21,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAsyncDisposable {
 	private Guid? _attachedSessionId;
 	private bool _settingsDirty;
-	private string _settingsError;
 	private bool _disposed;
 
 	/// <summary>The registration instance owning this renderer's screen and settings.</summary>
@@ -43,95 +42,43 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	public IApplicationBlock Block { get; set; }
 
 	/// <summary>Override for a dynamic tab title and call NotifyScreenChanged after changing it.</summary>
-	public virtual string Title {
-		get {
-			return null;
-		}
-	}
+	public virtual string Title => null;
 
 	/// <summary>Returns the actual registration settings; a typed override declares this screen's settings class.</summary>
-	public virtual SettingsObject ScreenSettings {
-		get {
-			return Session?.Definition.Settings;
-		}
-	}
+	public virtual SettingsObject ScreenSettings => Session?.Definition.Settings;
 
 	/// <inheritdoc />
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Array.Empty<IApplicationMenu>();
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Array.Empty<IApplicationMenu>();
 
 	/// <inheritdoc />
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Array.Empty<IApplicationMenuItem>();
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Array.Empty<IApplicationMenuItem>();
 
 	/// <inheritdoc />
-	public virtual bool HasUnsavedChanges {
-		get {
-			return false;
-		}
-	}
+	public virtual bool HasUnsavedChanges => false;
 
 	/// <inheritdoc />
-	public virtual bool CanRestoreAtStartup {
-		get {
-			return true;
-		}
-	}
+	public virtual bool CanRestoreAtStartup => true;
 
 	/// <inheritdoc />
-	public virtual HelpType Type {
-		get {
-			return HelpType.None;
-		}
-	}
+	public virtual HelpType Type => HelpType.None;
 
 	/// <inheritdoc />
-	public virtual string FileName {
-		get {
-			return null;
-		}
-	}
+	public virtual string FileName => null;
 
 	/// <inheritdoc />
-	public virtual string Url {
-		get {
-			return null;
-		}
-	}
+	public virtual string Url => null;
 
 	/// <inheritdoc />
-	public virtual int? PageNumber {
-		get {
-			return null;
-		}
-	}
+	public virtual int? PageNumber => null;
 
 	/// <inheritdoc />
-	public virtual int? HelpTopicID {
-		get {
-			return null;
-		}
-	}
+	public virtual int? HelpTopicID => null;
 
 	/// <inheritdoc />
-	public virtual int? HelpTopicAlias {
-		get {
-			return null;
-		}
-	}
+	public virtual int? HelpTopicAlias => null;
 
 	/// <summary>The most recent settings failure, cleared after a successful save or settings application.</summary>
-	public string SettingsError {
-		get {
-			return _settingsError;
-		}
-	}
+	public string SettingsError { get; private set; }
 
 	/// <summary>Saves a completed local settings edit through the actual object's configured provider.</summary>
 	public async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
@@ -141,10 +88,10 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 			// A later edit must remain pending while the current snapshot is being saved.
 			_settingsDirty = false;
 			await ScreenSettings.SaveAsync(cancellationToken);
-			_settingsError = null;
+			SettingsError = null;
 		} catch (Exception error) {
 			_settingsDirty = true;
-			_settingsError = error.Message;
+			SettingsError = error.Message;
 			NotifyScreenChanged();
 			throw;
 		}
@@ -241,9 +188,9 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 			_ = InvokeAsync(async () => {
 				try {
 					await OnSettingsChangedAsync(ScreenSettings);
-					_settingsError = null;
+					SettingsError = null;
 				} catch (Exception error) {
-					_settingsError = error.Message;
+					SettingsError = error.Message;
 					SystemLog.Exception(error);
 				}
 				if (!_disposed)

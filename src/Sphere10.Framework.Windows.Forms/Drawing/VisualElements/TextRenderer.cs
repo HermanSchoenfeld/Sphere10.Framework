@@ -44,13 +44,8 @@ public class TextRenderer : Text {
 	/// Gets or sets the TextFormatFlags enum.
 	/// </summary>
 	public virtual System.Windows.Forms.TextFormatFlags TextFormatFlags {
-		get {
-			return _textFormatFlags;
-		}
-
-		set {
-			_textFormatFlags = value;
-		}
+		get => _textFormatFlags;
+		set => _textFormatFlags = value;
 	}
 
 	/// <summary>

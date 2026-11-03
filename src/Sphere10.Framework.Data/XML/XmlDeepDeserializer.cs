@@ -29,8 +29,8 @@ public class XmlDeepDeserializer : IDisposable {
 	private IXmlSerializationTag taglib = new XmlSerializationTag();
 
 	public IXmlSerializationTag TagLib {
-		get { return taglib; }
-		set { taglib = value; }
+		get => taglib;
+		set => taglib = value;
 	}
 
 	#region XmlDeserializer Properties
@@ -38,14 +38,7 @@ public class XmlDeepDeserializer : IDisposable {
 	/// <summary>
 	/// Gets whether the current root node provides a type dictionary.
 	/// </summary>
-	protected bool HasTypeDictionary {
-		get {
-			if (typedictionary != null && typedictionary.Count > 0)
-				return true;
-
-			return false;
-		}
-	}
+	protected bool HasTypeDictionary => typedictionary != null && typedictionary.Count > 0;
 
 	/// <summary>
 	/// Gets or sets whether creation errors shall be ignored.
@@ -54,8 +47,8 @@ public class XmlDeepDeserializer : IDisposable {
 	/// </summary>
 	[Description("Gets or sets whether creation errors shall be ignored.")]
 	public bool IgnoreCreationErrors {
-		get { return ignorecreationerrors; }
-		set { ignorecreationerrors = value; }
+		get => ignorecreationerrors;
+		set => ignorecreationerrors = value;
 	}
 
 	#endregion XmlDeserializer Properties

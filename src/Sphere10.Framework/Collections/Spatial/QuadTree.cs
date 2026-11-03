@@ -17,62 +17,59 @@ namespace Sphere10.Framework;
 /// </summary>
 /// <typeparam name="TBounds">The rectangle type used for bounds and items.</typeparam>
 public class QuadTree<TBounds> where TBounds : struct, IIntegerRectangle<TBounds> {
-	private QuadTreeNode<TBounds> _root;
-	private TBounds _bounds;
-
 	public QuadTree(int rows, int columns)
 		: this(TBounds.Create(1, 1, rows, columns)) {
 	}
 
 	public QuadTree(TBounds bounds) {
-		_bounds = bounds;
-		_root = new QuadTreeNode<TBounds>(_bounds, 0, this);
+		Bounds = bounds;
+		Root = new QuadTreeNode<TBounds>(Bounds, 0, this);
 		QuadTreeNodeDivider = new ProportionateSizeNodeDivider<TBounds>();
 	}
 
 	public IQuadTreeNodeDivider<TBounds> QuadTreeNodeDivider { get; set; }
 
-	public TBounds Bounds => _bounds;
+	public TBounds Bounds { get; private set; }
 
-	public QuadTreeNode<TBounds> Root => _root;
+	public QuadTreeNode<TBounds> Root { get; private set; }
 
-	public int Count => _root.Count;
+	public int Count => Root.Count;
 
-	public int MaxDepth => _root.MaxDepth;
+	public int MaxDepth => Root.MaxDepth;
 
-	public List<TBounds> Contents => Query(_bounds);
+	public List<TBounds> Contents => Query(Bounds);
 
 	/// <summary>
 	/// Double occupied space by creating a new root that contains the current root.
 	/// </summary>
 	public void Grow() {
-		_root = QuadTreeNodeDivider.CreateNewRoot(_root);
-		_bounds = _root.Bounds;
+		Root = QuadTreeNodeDivider.CreateNewRoot(Root);
+		Bounds = Root.Bounds;
 	}
 
 	public QuadTree<TBounds> Insert(TBounds item) {
-		_root.Insert(item);
+		Root.Insert(item);
 		return this;
 	}
 
 	public QuadTree<TBounds> Insert(IEnumerable<TBounds> items) {
 		foreach (var Item in items)
-			_root.Insert(Item);
+			Root.Insert(Item);
 		return this;
 	}
 
 	public QuadTree<TBounds> Remove(TBounds range) {
-		_root.Remove(range);
+		Root.Remove(range);
 		return this;
 	}
 
-	public List<TBounds> Query(TBounds area) => _root.Query(area);
+	public List<TBounds> Query(TBounds area) => Root.Query(area);
 
-	public List<TBounds> Query(int row, int column) => _root.Query(row, column);
+	public List<TBounds> Query(int row, int column) => Root.Query(row, column);
 
-	public TBounds? QueryFirst(TBounds area) => _root.QueryFirst(area);
+	public TBounds? QueryFirst(TBounds area) => Root.QueryFirst(area);
 
-	public TBounds? QueryFirst(int row, int column) => _root.QueryFirst(row, column);
+	public TBounds? QueryFirst(int row, int column) => Root.QueryFirst(row, column);
 
-	public void ForEach(Action<QuadTreeNode<TBounds>> action) => _root.ForEach(action);
+	public void ForEach(Action<QuadTreeNode<TBounds>> action) => Root.ForEach(action);
 }

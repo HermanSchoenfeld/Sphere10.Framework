@@ -27,30 +27,16 @@ public class PingGridRows : RowsSimpleBase {
 		_headerHeight = grid.DefaultHeight;
 	}
 
-	public new PingGrid Grid {
-		get {
-			return (PingGrid)base.Grid;
-		}
-	}
+	public new PingGrid Grid => (PingGrid)base.Grid;
 
 	/// <summary>
 	/// Gets the number of row of the current DataView. Usually this value is automatically calculated and cannot be changed manually.
 	/// </summary>
-	public override int Count {
-		get {
-			if (Grid.DataSource == null)
-				return Grid.FixedRows;
-			return Grid.DataSource.Count + Grid.FixedRows;
-		}
-	}
+	public override int Count => Grid.DataSource == null ? Grid.FixedRows : Grid.DataSource.Count + Grid.FixedRows;
 
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
 	/// <summary>

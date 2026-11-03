@@ -19,12 +19,20 @@ public partial class HexEditorDialog : Form {
 	public HexEditorDialog() => InitializeComponent();
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public byte[] Bytes { get => _editor.Bytes; set => _editor.Bytes = value; }
+	public byte[] Bytes {
+		get => _editor.Bytes;
+		set => _editor.Bytes = value;
+	}
 
 	[Category("Behavior"), DefaultValue(false)]
 	public bool ReadOnly {
-		get => _editor.ReadOnly;
-		set { _editor.ReadOnly = value; _accept.Text = value ? "&Close" : "&OK"; }
+		get {
+			return _editor.ReadOnly;
+		}
+		set {
+			_editor.ReadOnly = value;
+			_accept.Text = value ? "&Close" : "&OK";
+		}
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

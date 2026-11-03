@@ -17,13 +17,10 @@ public class ParserSettings : IDisposable {
 	private bool disposed;
 	private bool caseSensitive;
 	private bool caseInsensitiveEnumValues;
-	private TextWriter helpWriter;
-	private bool ignoreUnknownArguments;
 	private bool autoHelp;
 	private bool autoVersion;
 	private CultureInfo parsingCulture;
 	private Maybe<bool> enableDashDash;
-	private int maximumDisplayWidth;
 	private Maybe<bool> allowMultiInstance;
 	private bool getoptMode;
 	private Maybe<bool> posixlyCorrect;
@@ -37,7 +34,7 @@ public class ParserSettings : IDisposable {
 		autoHelp = true;
 		autoVersion = true;
 		parsingCulture = CultureInfo.InvariantCulture;
-		maximumDisplayWidth = GetWindowWidth();
+		MaximumDisplayWidth = GetWindowWidth();
 		getoptMode = false;
 		enableDashDash = Maybe.Nothing<bool>();
 		allowMultiInstance = Maybe.Nothing<bool>();
@@ -74,8 +71,8 @@ public class ParserSettings : IDisposable {
 	/// assigned to them (for example, enum parsing).
 	/// </summary>
 	public bool CaseSensitive {
-		get { return caseSensitive; }
-		set { PopsicleSetter.Set(Consumed, ref caseSensitive, value); }
+		get => caseSensitive;
+		set => PopsicleSetter.Set(Consumed, ref caseSensitive, value);
 	}
 
 	/// <summary>
@@ -83,8 +80,8 @@ public class ParserSettings : IDisposable {
 	/// Note that case insensitivity only applies to <i>values</i>, not the parameters.
 	/// </summary>
 	public bool CaseInsensitiveEnumValues {
-		get { return caseInsensitiveEnumValues; }
-		set { PopsicleSetter.Set(Consumed, ref caseInsensitiveEnumValues, value); }
+		get => caseInsensitiveEnumValues;
+		set => PopsicleSetter.Set(Consumed, ref caseInsensitiveEnumValues, value);
 	}
 
 	/// <summary>
@@ -94,7 +91,9 @@ public class ParserSettings : IDisposable {
 	/// Default is invariant culture, <see cref="System.Globalization.CultureInfo.InvariantCulture"/>.
 	/// </remarks>
 	public CultureInfo ParsingCulture {
-		get { return parsingCulture; }
+		get {
+			return parsingCulture;
+		}
 		set {
 			if (value == null) throw new ArgumentNullException("value");
 
@@ -110,8 +109,8 @@ public class ParserSettings : IDisposable {
 	/// It is the caller's responsibility to dispose or close the <see cref="TextWriter"/>.
 	/// </remarks>
 	public TextWriter HelpWriter {
-		get { return helpWriter; }
-		set { PopsicleSetter.Set(Consumed, ref helpWriter, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>
@@ -126,24 +125,24 @@ public class ParserSettings : IDisposable {
 	/// when these are unknown by the main program at build time.
 	/// </remarks>
 	public bool IgnoreUnknownArguments {
-		get { return ignoreUnknownArguments; }
-		set { PopsicleSetter.Set(Consumed, ref ignoreUnknownArguments, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether implicit option or verb 'help' should be supported.
 	/// </summary>
 	public bool AutoHelp {
-		get { return autoHelp; }
-		set { PopsicleSetter.Set(Consumed, ref autoHelp, value); }
+		get => autoHelp;
+		set => PopsicleSetter.Set(Consumed, ref autoHelp, value);
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether implicit option or verb 'version' should be supported.
 	/// </summary>
 	public bool AutoVersion {
-		get { return autoVersion; }
-		set { PopsicleSetter.Set(Consumed, ref autoVersion, value); }
+		get => autoVersion;
+		set => PopsicleSetter.Set(Consumed, ref autoVersion, value);
 	}
 
 	/// <summary>
@@ -159,10 +158,7 @@ public class ParserSettings : IDisposable {
 	/// <summary>
 	/// Gets or sets the maximum width of the display.  This determines word wrap when displaying the text.
 	/// </summary>
-	public int MaximumDisplayWidth {
-		get { return maximumDisplayWidth; }
-		set { maximumDisplayWidth = value; }
-	}
+	public int MaximumDisplayWidth { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether options are allowed to be specified multiple times.
@@ -190,13 +186,7 @@ public class ParserSettings : IDisposable {
 		set => PopsicleSetter.Set(Consumed, ref posixlyCorrect, Maybe.Just(value));
 	}
 
-	internal StringComparer NameComparer {
-		get {
-			return CaseSensitive
-				? StringComparer.Ordinal
-				: StringComparer.OrdinalIgnoreCase;
-		}
-	}
+	internal StringComparer NameComparer => CaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
 
 	internal bool Consumed { get; set; }
 

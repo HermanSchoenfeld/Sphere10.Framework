@@ -27,7 +27,9 @@ public class ObjectSpaceLabConfiguration {
 
 	[Category("Indexes"), DisplayName("B-tree specification"), Description("Optional complete tree type and order. Omit it to retain historical mixed indexes at the configured order.")]
 	public BTreeSpec IndexBTreeSpec {
-		get => _indexBTreeSpec;
+		get {
+			return _indexBTreeSpec;
+		}
 		set {
 			_indexBTreeSpec = value;
 			if (value != null)
@@ -37,7 +39,9 @@ public class ObjectSpaceLabConfiguration {
 
 	[Category("Indexes"), DisplayName("B-tree order"), Description("Maximum node child count, at least three. Preserve the order on reopen.")]
 	public int IndexBTreeOrder {
-		get => _indexBTreeSpec?.Order ?? _indexBTreeOrder;
+		get {
+			return _indexBTreeSpec?.Order ?? _indexBTreeOrder;
+		}
 		set {
 			if (_indexBTreeSpec != null)
 				_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, value);

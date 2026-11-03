@@ -120,9 +120,7 @@ public class RadioGatun32Digest : IDigest, IMemoable {
 		Reset(t);
 	}
 
-	public string AlgorithmName {
-		get { return "RadioGatun32"; }
-	}
+	public string AlgorithmName => "RadioGatun32";
 
 	public int GetDigestSize() {
 		return DigestLengthBytes;

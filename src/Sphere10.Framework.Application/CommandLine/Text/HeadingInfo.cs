@@ -34,9 +34,7 @@ public class HeadingInfo {
 	/// <summary>
 	/// An empty object used for initialization. 
 	/// </summary>
-	public static HeadingInfo Empty {
-		get { return new HeadingInfo(""); }
-	}
+	public static HeadingInfo Empty => new HeadingInfo("");
 
 	/// <summary>
 	/// Gets the default heading instance.

@@ -19,10 +19,6 @@ namespace Sphere10.Framework.Data;
 /// Persists a DataSet with its schema version and selected payload format.
 /// </summary>
 public abstract class FileDataSetBase {
-	private StreamDataSetFormat _saveDataFormat = StreamDataSetFormat.Binary;
-	private StreamDataSetFormat _fileDataFormat;
-	private bool _mergeReadSchema = false;
-	private string _fileName;
 
 	// File framing uses the current Sphere10 namespace and accepts the original DevAge namespace.
 	private const string _dataNamespace = "https://sphere10.com/FileDataSet";
@@ -40,51 +36,26 @@ public abstract class FileDataSetBase {
 	}
 
 	/// <summary>Gets or sets the path used by load and save operations.</summary>
-	public string FileName {
-		get {
-			return _fileName;
-		}
-		set {
-			_fileName = value;
-		}
-	}
+	public string FileName { get; set; }
 
 	/// <summary>
 	/// Gets or Sets the format used to save the DataSet
 	/// </summary>
-	protected StreamDataSetFormat SaveDataFormat {
-		get {
-			return _saveDataFormat;
-		}
-		set {
-			_saveDataFormat = value;
-		}
-	}
+	protected StreamDataSetFormat SaveDataFormat { get; set; } = StreamDataSetFormat.Binary;
 
 	/// <summary>
 	/// Gets the current format of the File where the data are loaded.
 	/// </summary>
-	protected StreamDataSetFormat FileDataFormat {
-		get {
-			return _fileDataFormat;
-		}
-	}
+	protected StreamDataSetFormat FileDataFormat { get; private set; }
 
 	/// <summary>
 	/// Gets or Sets if merge the schema of the file with the schema of the DataSet specified. Use true if the DataSet doesn't have a schema definition. Default is false.
 	/// </summary>
-	protected bool MergeReadSchema {
-		get {
-			return _mergeReadSchema;
-		}
-		set {
-			_mergeReadSchema = value;
-		}
-	}
+	protected bool MergeReadSchema { get; set; } = false;
 
 	/// <summary>Writes the DataSet payload and its format/version attributes to the configured file.</summary>
 	protected virtual void SaveToFile(DataSet dataSet) {
-		if (_fileName == null)
+		if (FileName == null)
 			throw new ApplicationException("ExecutableFileName is null");
 
 		// Assemble the complete document before replacing the destination file.
@@ -104,14 +75,14 @@ public abstract class FileDataSetBase {
 			xmlWriter.WriteAttributeString(_dataVersionAttribute, GetDataVersion().ToString());
 
 			// Data format.
-			xmlWriter.WriteAttributeString(_dataFormatAttribute, ((int)_saveDataFormat).ToString());
+			xmlWriter.WriteAttributeString(_dataFormatAttribute, ((int)SaveDataFormat).ToString());
 			xmlWriter.WriteEndElement();
 
 			xmlWriter.WriteStartElement("data", _dataNamespace);
 
 			byte[] xmlByteArray;
 			using (var xmlMemStream = new MemoryStream()) {
-				Tools.Data.WriteDataSet(xmlMemStream, dataSet, _saveDataFormat);
+				Tools.Data.WriteDataSet(xmlMemStream, dataSet, SaveDataFormat);
 
 				//dataSet.WriteXml(xmlMemStream);
 
@@ -132,17 +103,17 @@ public abstract class FileDataSetBase {
 		}
 
 		//se tutto è andato a buon fine scrivo effettivamente il file
-		Tools.FileSystem.WriteAllBytes(_fileName, completeByteArray);
+		Tools.FileSystem.WriteAllBytes(FileName, completeByteArray);
 	}
 
 	/// <summary>Reads the configured file and hydrates a DataSet created for its stored schema version.</summary>
 	protected virtual DataSet LoadFromFile() {
-		if (_fileName == null)
+		if (FileName == null)
 			throw new ApplicationException("ExecutableFileName is null");
 
 		// Select the namespace used by the existing document before reading its header.
 		var xmlDoc = new XmlDocument();
-		xmlDoc.Load(_fileName);
+		xmlDoc.Load(FileName);
 
 		var namespaceMan = new XmlNamespaceManager(xmlDoc.NameTable);
 		namespaceMan.AddNamespace("fileds", xmlDoc.DocumentElement.NamespaceURI == _legacyDataNamespace ? _legacyDataNamespace : _dataNamespace);
@@ -157,9 +128,9 @@ public abstract class FileDataSetBase {
 		var fileVersion = int.Parse(strFileVersion);
 		if (fileVersion == _fileVersionNumber) {
 			var strDataFormat = header.GetAttribute(_dataFormatAttribute);
-			_fileDataFormat = (StreamDataSetFormat)int.Parse(strDataFormat);
+			FileDataFormat = (StreamDataSetFormat)int.Parse(strDataFormat);
 		} else if (fileVersion == 0)
-			_fileDataFormat = StreamDataSetFormat.XML;
+			FileDataFormat = StreamDataSetFormat.XML;
 		else if (fileVersion > _fileVersionNumber)
 			throw new ApplicationException("File Version not supported, expected: " + _fileVersionNumber.ToString());
 
@@ -176,7 +147,7 @@ public abstract class FileDataSetBase {
 
 		var xmlBuffer = Convert.FromBase64String(xmlDataNode.InnerText);
 		using (var memStream = new MemoryStream(xmlBuffer)) {
-			Tools.Data.ReadDataSet(memStream, dataSet, _fileDataFormat, MergeReadSchema);
+			Tools.Data.ReadDataSet(memStream, dataSet, FileDataFormat, MergeReadSchema);
 
 			//dataSet.ReadXml(memStream);
 		}

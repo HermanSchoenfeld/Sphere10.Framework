@@ -43,12 +43,8 @@ public class RowHeader : Header {
 
 	// Visual Elements
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader)base.Background;
+		set => base.Background = value;
 	}
 
 	// Clone

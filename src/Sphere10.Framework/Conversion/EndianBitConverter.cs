@@ -675,16 +675,12 @@ public abstract class EndianBitConverter {
 		/// <summary>
 		/// Returns the value of the instance as an integer.
 		/// </summary>
-		internal int AsInt32 {
-			get { return i; }
-		}
+		internal int AsInt32 => i;
 
 		/// <summary>
 		/// Returns the value of the instance as a floating point number.
 		/// </summary>
-		internal float AsSingle {
-			get { return f; }
-		}
+		internal float AsSingle => f;
 	}
 
 	#endregion

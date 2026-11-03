@@ -15,16 +15,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 /// CheckBox model.
 /// </summary>
 public class CheckBox : ICheckBox {
-	private string _caption = null;
-
-	public string Caption {
-		get {
-			return _caption;
-		}
-		set {
-			_caption = value;
-		}
-	}
+	public string Caption { get; set; } = null;
 
 	// ICheckBox Members
 	/// <summary>
@@ -39,9 +30,9 @@ public class CheckBox : ICheckBox {
 
 		var val = cellContext.Cell.Model.ValueModel.GetValue(cellContext);
 		if (val == null)
-			return new CheckBoxStatus(enableEdit, Sphere10.Framework.Windows.Forms.Drawing.CheckBoxState.Undefined, _caption);
+			return new CheckBoxStatus(enableEdit, Sphere10.Framework.Windows.Forms.Drawing.CheckBoxState.Undefined, Caption);
 		if (val is bool)
-			return new CheckBoxStatus(enableEdit, (bool)val, _caption);
+			return new CheckBoxStatus(enableEdit, (bool)val, Caption);
 		throw new SourceGridException("Cell value not supported for this cell. Expected bool value or null.");
 	}
 

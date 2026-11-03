@@ -49,7 +49,6 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 
 			return (UnderlineStyle)type;
 		}
-
 		set {
 			// Ensure we don't alter the color by accident.
 			var color = SelectionUnderlineColor;
@@ -90,7 +89,6 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 
 			return (UnderlineColor)style;
 		}
-
 		set {
 			// Ensure we don't alter the style.
 			var style = SelectionUnderlineStyle;
@@ -187,11 +185,7 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 	/// Returns true when the control is performing some
 	/// internal updates
 	/// </summary>
-	public bool InternalUpdating {
-		get {
-			return (_updating != 0);
-		}
-	}
+	public bool InternalUpdating => (_updating != 0);
 
 	/// <summary>
 	/// Maintains performance while updating.

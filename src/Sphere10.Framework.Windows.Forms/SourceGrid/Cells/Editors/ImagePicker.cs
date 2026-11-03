@@ -29,11 +29,7 @@ public class ImagePicker : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
-		}
-	}
+	public new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor Control => (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
 
 	public override object GetEditedValue() {
 		var val = Control.Value;

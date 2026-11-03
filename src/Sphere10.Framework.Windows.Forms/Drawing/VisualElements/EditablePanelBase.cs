@@ -32,13 +32,8 @@ public abstract class EditablePanelBase : IEditablePanel {
 	}
 
 	public virtual BorderStyle BorderStyle {
-		get {
-			return _borderStyle;
-		}
-
-		set {
-			_borderStyle = value;
-		}
+		get => _borderStyle;
+		set => _borderStyle = value;
 	}
 
 	public abstract RectangleF GetContentRectangle(RectangleF backGroundArea);

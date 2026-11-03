@@ -26,7 +26,10 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 		_lock = @lock ?? new CriticalObject();
 	}
 
-	public ICriticalObject ParentCriticalObject { get => _lock.ParentCriticalObject; set => _lock.ParentCriticalObject = value; }
+	public ICriticalObject ParentCriticalObject {
+		get => _lock.ParentCriticalObject;
+		set => _lock.ParentCriticalObject = value;
+	}
 
 	public object Lock => _lock.Lock;
 

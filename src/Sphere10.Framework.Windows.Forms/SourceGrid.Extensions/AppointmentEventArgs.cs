@@ -15,33 +15,15 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Planning;
 
 public class AppointmentEventArgs : EventArgs {
-	private DateTime _dateTimeStart;
-
-	private DateTime _dateTimeEnd;
-
-	private IAppointment _appointment;
-
 	public AppointmentEventArgs(DateTime start, DateTime end, IAppointment appointment) {
-		_dateTimeEnd = end;
-		_dateTimeStart = start;
-		_appointment = appointment;
+		DateTimeEnd = end;
+		DateTimeStart = start;
+		Appointment = appointment;
 	}
 
-	public DateTime DateTimeStart {
-		get {
-			return _dateTimeStart;
-		}
-	}
+	public DateTime DateTimeStart { get; }
 
-	public DateTime DateTimeEnd {
-		get {
-			return _dateTimeEnd;
-		}
-	}
+	public DateTime DateTimeEnd { get; }
 
-	public IAppointment Appointment {
-		get {
-			return _appointment;
-		}
-	}
+	public IAppointment Appointment { get; }
 }

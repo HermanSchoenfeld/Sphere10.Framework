@@ -116,15 +116,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         private float _angleX;
 
-        /// <summary>
-        /// Y Angle.
-        /// </summary>
-        private float _angleY;
-
-        /// <summary>
-        /// Private fields used for lighting
-        /// </summary>
-        Point3D[] _lightVectors = new Point3D[7];
+		/// <summary>
+		/// Private fields used for lighting
+		/// </summary>
+		Point3D[] _lightVectors = new Point3D[7];
 
         /// <summary>
         /// LightStyle Style
@@ -138,26 +133,21 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the X Angle.
         /// </summary>
-        internal float AngleX
-        {
-            get { return _angleX; }
-        }
+        internal float AngleX => _angleX;
 
-        /// <summary>
-        /// Gets the Y Angle.
-        /// </summary>
-        internal float AngleY
-        {
-            get { return _angleY; }
-        }
+		/// <summary>
+		/// Gets the Y Angle.
+		/// </summary>
 
-        /// <summary>
-        /// Get perspective value.
-        /// </summary>
-        internal float Perspective
-        {
-            get { return _perspective; }
-        }
+		/// <remarks>
+        /// Y Angle.
+        /// </remarks>
+		internal float AngleY { get; private set; }
+
+		/// <summary>
+		/// Get perspective value.
+		/// </summary>
+		internal float Perspective => _perspective;
 
         #endregion // Properties
 
@@ -216,7 +206,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
             // Remember Angles
             this._angleX = angleX;
-            this._angleY = angleY;
+			AngleY = angleY;
 
             // Change Degrees to radians.
             angleX = angleX / 180F * MathF.PI;
@@ -239,12 +229,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
             }
             else
             {
-                if (this._angleY >= 45)
+                if (AngleY >= 45)
                 {
                     // Rotate Chart Area Cube by Y axis. 
                     Rotate(MathF.PI / 2, RotationAxis.Y);
                 }
-                else if (this._angleY <= -45)
+                else if (AngleY <= -45)
                 {
                     // Rotate Chart Area Cube by Y axis. 
                     Rotate(-MathF.PI / 2, RotationAxis.Y);
@@ -439,17 +429,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
             float yFactor;
 
-            if (this._angleY >= 45)
+            if (AngleY >= 45)
             {
-                yFactor = (this._angleY - 90) / coorectionAngle;
+                yFactor = (AngleY - 90) / coorectionAngle;
             }
-            else if (this._angleY <= -45)
+            else if (AngleY <= -45)
             {
-                yFactor = (this._angleY + 90) / coorectionAngle;
+                yFactor = (AngleY + 90) / coorectionAngle;
             }
             else
             {
-                yFactor = this._angleY / coorectionAngle;
+                yFactor = AngleY / coorectionAngle;
             }
 
             // Projection formula
@@ -911,7 +901,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                             // Color correction. Angle between Normal vector of polygon and 
                             // vector of lightStyle source is used.
                             // ******************************************************************
-                            if (this._angleY >= 45 || this._angleY <= -45)
+                            if (AngleY >= 45 || AngleY <= -45)
                             {
                                 front = ChartGraphics.GetGradientColor(surfaceColor, Color.Black, GetAngle(lightSource, _lightVectors[1]) / Math.PI);
 

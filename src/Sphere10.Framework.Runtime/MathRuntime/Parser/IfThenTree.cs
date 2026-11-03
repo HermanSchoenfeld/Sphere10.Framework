@@ -9,22 +9,13 @@
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class IfThenTree : SyntaxTree {
-	private SyntaxTree _condition;
-	private SyntaxTree _expression;
-
 	public IfThenTree()
 		: base() {
 	}
 
-	public SyntaxTree Condition {
-		get { return _condition; }
-		set { _condition = value; }
-	}
+	public SyntaxTree Condition { get; set; }
 
-	public SyntaxTree Expression {
-		get { return _expression; }
-		set { _expression = value; }
-	}
+	public SyntaxTree Expression { get; set; }
 
 	public override string ToString() {
 		return string.Format("IFTHEN({0},{1})", Condition, Expression);

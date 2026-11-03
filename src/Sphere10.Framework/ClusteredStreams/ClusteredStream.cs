@@ -92,18 +92,18 @@
 	/// <summary>
 	/// Gets or sets whether this stream is logically considered <c>null</c> within the clustered stream container.
 	/// </summary>
- 	public bool IsNull { 
- 		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Null); 
- 		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Null, value);
- 	}
+	public bool IsNull {
+		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Null);
+		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Null, value);
+	}
  
 	/// <summary>
 	/// Gets or sets whether this stream has been marked as reaped (logically deleted) within the clustered stream container.
 	/// </summary>
- 	public bool IsReaped { 
- 		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Reaped); 
- 		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Reaped, value);
- 	}
+	public bool IsReaped {
+		get => _descriptor.Traits.HasFlag(ClusteredStreamTraits.Reaped);
+		set => _descriptor.Traits = _descriptor.Traits.CopyAndSetFlags(ClusteredStreamTraits.Reaped, value);
+	}
  
 	/// <summary>
 	/// Applies a <see cref="ClusterMap"/> change notification to this stream's descriptor and fragment provider.

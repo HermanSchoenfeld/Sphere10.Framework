@@ -197,16 +197,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool Enabled
         {
-            get
-            {
-                return _enabled;
-            }
-            set
+			get {
+				return _enabled;
+			}
+			set
             {
                 _enabled = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Indicates that marker overlapping by label is allowed.
@@ -219,16 +218,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool IsMarkerOverlappingAllowed
         {
-            get
-            {
-                return _isMarkerOverlappingAllowed;
-            }
-            set
+			get {
+				return _isMarkerOverlappingAllowed;
+			}
+			set
             {
                 _isMarkerOverlappingAllowed = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Indicates that overlapped labels that can't be repositioned will be hidden.
@@ -241,16 +239,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool IsOverlappedHidden
         {
-            get
-            {
-                return _isOverlappedHidden;
-            }
-            set
+			get {
+				return _isOverlappedHidden;
+			}
+			set
             {
                 _isOverlappedHidden = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Possible moving directions for the overlapped SmartLabelStyle.
@@ -263,11 +260,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public LabelAlignmentStyles MovingDirection
         {
-            get
-            {
-                return _movingDirection;
-            }
-            set
+			get {
+				return _movingDirection;
+			}
+			set
             {
                 if (value == 0)
                 {
@@ -277,7 +273,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _movingDirection = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Minimum distance the overlapped SmartLabelStyle can be moved from the marker. Distance is measured in pixels.
@@ -290,11 +286,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double MinMovingDistance
         {
-            get
-            {
-                return _minMovingDistance;
-            }
-            set
+			get {
+				return _minMovingDistance;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -303,7 +298,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _minMovingDistance = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Maximum distance the overlapped SmartLabelStyle can be moved from the marker. Distance is measured in pixels.
@@ -316,11 +311,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double MaxMovingDistance
         {
-            get
-            {
-                return _maxMovingDistance;
-            }
-            set
+			get {
+				return _maxMovingDistance;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -329,7 +323,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _maxMovingDistance = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Defines if SmartLabelStyle are allowed to be drawn outside of the plotting area.
@@ -342,16 +336,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public LabelOutsidePlotAreaStyle AllowOutsidePlotArea
         {
-            get
-            {
-                return _allowOutsidePlotArea;
-            }
-            set
+			get {
+				return _allowOutsidePlotArea;
+			}
+			set
             {
                 _allowOutsidePlotArea = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Callout style of the repositioned SmartLabelStyle.
@@ -364,16 +357,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public LabelCalloutStyle CalloutStyle
         {
-            get
-            {
-                return _calloutStyle;
-            }
-            set
+			get {
+				return _calloutStyle;
+			}
+			set
             {
                 _calloutStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Label callout line color.
@@ -387,16 +379,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color CalloutLineColor
         {
-            get
-            {
-                return _calloutLineColor;
-            }
-            set
+			get {
+				return _calloutLineColor;
+			}
+			set
             {
                 _calloutLineColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Label callout line style.
@@ -409,16 +400,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public ChartDashStyle CalloutLineDashStyle
         {
-            get
-            {
-                return _calloutLineDashStyle;
-            }
-            set
+			get {
+				return _calloutLineDashStyle;
+			}
+			set
             {
                 _calloutLineDashStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Label callout back color. Applies to the Box style only!
@@ -432,16 +422,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color CalloutBackColor
         {
-            get
-            {
-                return _calloutBackColor;
-            }
-            set
+			get {
+				return _calloutBackColor;
+			}
+			set
             {
                 _calloutBackColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Label callout line width.
@@ -454,16 +443,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public int CalloutLineWidth
         {
-            get
-            {
-                return _calloutLineWidth;
-            }
-            set
+			get {
+				return _calloutLineWidth;
+			}
+			set
             {
                 _calloutLineWidth = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Label callout line anchor cap.
@@ -476,16 +464,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public LineAnchorCapStyle CalloutLineAnchorCapStyle
         {
-            get
-            {
-                return _calloutLineAnchorCapStyle;
-            }
-            set
+			get {
+				return _calloutLineAnchorCapStyle;
+			}
+			set
             {
                 _calloutLineAnchorCapStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         #endregion
 

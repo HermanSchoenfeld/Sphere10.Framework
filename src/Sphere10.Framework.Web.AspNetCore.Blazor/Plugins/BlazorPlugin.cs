@@ -36,35 +36,19 @@ public class BlazorPlugin : ApplicationPluginBase<IApplicationBlock>, IBlazorPlu
 	}
 
 	/// <summary>Projects the original plugin's immutable menu contributions into this circuit owner.</summary>
-	public SharedUI.IApplicationMenu[] Menus {
-		get {
-			return _source?.Menus ?? Array.Empty<SharedUI.IApplicationMenu>();
-		}
-	}
+	public SharedUI.IApplicationMenu[] Menus => _source?.Menus ?? Array.Empty<SharedUI.IApplicationMenu>();
 
 	/// <summary>Projects the original plugin's immutable toolbar contributions into this circuit owner.</summary>
-	public SharedUI.IApplicationMenuItem[] ToolBarItems {
-		get {
-			return _source?.ToolBarItems ?? Array.Empty<SharedUI.IApplicationMenuItem>();
-		}
-	}
+	public SharedUI.IApplicationMenuItem[] ToolBarItems => _source?.ToolBarItems ?? Array.Empty<SharedUI.IApplicationMenuItem>();
 
 	/// <summary>Returns an array copy over immutable block snapshots for compatibility with the original plugin contract.</summary>
 	public override IApplicationBlock[] Blocks {
-		get {
-			return base.Blocks;
-		}
-		init {
-			base.Blocks = SnapshotBlocks(value);
-		}
+		get => base.Blocks;
+		init => base.Blocks = SnapshotBlocks(value);
 	}
 
 	/// <summary>Retained for compatibility. Plugins register into the host and never create a separate service provider.</summary>
-	public IServiceProvider IoCContainer {
-		get {
-			return null;
-		}
-	}
+	public IServiceProvider IoCContainer => null;
 
 	/// <summary>Copies validated web block definitions for a newly composed startup plugin.</summary>
 	private static IApplicationBlock[] SnapshotBlocks(IEnumerable<IApplicationBlock> blocks) {

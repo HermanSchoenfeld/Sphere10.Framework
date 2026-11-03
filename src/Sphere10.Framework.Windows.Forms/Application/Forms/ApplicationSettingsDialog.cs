@@ -30,11 +30,9 @@ public partial class ApplicationSettingsDialog : Form {
 	private readonly HashSet<SettingsObject> _resetPending = new(ReferenceEqualityComparer.Instance);
 	private readonly IApplication _application;
 	private readonly IServiceProvider _services;
-	private object _selectedOwner;
 	private ICrudEntityEditor<object> _editor;
 	private Control _editorControl;
 	private bool _applying;
-	private ApplicationSettingsScreenPolicy _policy = ApplicationSettingsScreenPolicy.Default;
 
 	/// <summary>Creates the native designer surface without resolving application services or settings.</summary>
 	public ApplicationSettingsDialog() {
@@ -65,11 +63,7 @@ public partial class ApplicationSettingsDialog : Form {
 
 	/// <summary>The selected existing application, plugin, block or screen definition.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public object SelectedOwner {
-		get {
-			return _selectedOwner;
-		}
-	}
+	public object SelectedOwner { get; private set; }
 
 	/// <summary>Controls reset descendants, non-editable reset targets and whether Apply saves pending resets beyond the selected page.</summary>
 	[Category("Behavior")]
@@ -77,23 +71,19 @@ public partial class ApplicationSettingsDialog : Form {
 	[Description("Controls the reset scope and targets, and whether Apply includes pending resets. OK always saves pending resets.")]
 	public ApplicationSettingsScreenPolicy Policy {
 		get {
-			return _policy;
+			return field;
 		}
 		set {
 			Guard.Argument((value & ~(ApplicationSettingsScreenPolicy.ResetDescendants | ApplicationSettingsScreenPolicy.IncludeNonEditableSettings
 				| ApplicationSettingsScreenPolicy.ApplyPendingResetScope)) == ApplicationSettingsScreenPolicy.None, nameof(value), "Select supported settings policy flags.");
-			_policy = value;
+			field = value;
 			UpdateButtons();
 		}
-	}
+	} = ApplicationSettingsScreenPolicy.Default;
 
 	/// <summary>Whether any visited settings object contains unapplied dialog edits.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasUnappliedChanges {
-		get {
-			return _dirty.Count > 0 || _editor?.HasChanges == true;
-		}
-	}
+	public bool HasUnappliedChanges => _dirty.Count > 0 || _editor?.HasChanges == true;
 
 	/// <summary>Selects an owner already present in the running application's graph.</summary>
 	public void SelectOwner(object owner) {
@@ -137,7 +127,7 @@ public partial class ApplicationSettingsDialog : Form {
 				_dirty.Remove(settings);
 				_resetPending.Remove(settings);
 				RefreshPageCaptions(settings);
-				if (ReferenceEquals(GetSettings(_selectedOwner), settings))
+				if (ReferenceEquals(GetSettings(SelectedOwner), settings))
 					CreateEditor();
 			}
 			_status.ForeColor = SystemColors.ControlText;
@@ -173,7 +163,7 @@ public partial class ApplicationSettingsDialog : Form {
 			settings.RestoreDefaultValues();
 			RefreshPageCaptions(settings);
 		}
-		if (GetSettings(_selectedOwner) != null)
+		if (GetSettings(SelectedOwner) != null)
 			CreateEditor();
 		_status.ForeColor = SystemColors.ControlText;
 		_status.Text = "Defaults are provisional until Apply or OK succeeds.";
@@ -209,11 +199,11 @@ public partial class ApplicationSettingsDialog : Form {
 	private void NavigationAfterSelect(object sender, TreeViewEventArgs e) {
 		CaptureEditorChanges();
 		ClearEditor();
-		_selectedOwner = e.Node.Tag;
+		SelectedOwner = e.Node.Tag;
 		_status.Clear();
 		_title.Text = e.Node.Text;
 		_emptyPage.Visible = true;
-		var settings = GetSettings(_selectedOwner);
+		var settings = GetSettings(SelectedOwner);
 		if (settings == null) {
 			_emptyPage.Text = "This item has no settings of its own. Reset Defaults can include its descendant settings.";
 			UpdateButtons();
@@ -231,13 +221,13 @@ public partial class ApplicationSettingsDialog : Form {
 	// Factories and attributed editors receive the actual object, rather than an edit-session surrogate.
 	private void CreateEditor() {
 		ClearEditor();
-		if (!CanEdit(_selectedOwner)) {
+		if (!CanEdit(SelectedOwner)) {
 			_emptyPage.Text = "These settings do not have a user editor.";
 			_emptyPage.Visible = true;
 			return;
 		}
-		var settings = GetSettings(_selectedOwner);
-		var factory = (_selectedOwner as ApplicationScreenDefinition)?.SettingsEditor;
+		var settings = GetSettings(SelectedOwner);
+		var factory = (SelectedOwner as ApplicationScreenDefinition)?.SettingsEditor;
 		var editorType = factory == null ? GetDeclaredEditorType(settings.GetType()) : null;
 		var context = new ApplicationSettingsEditorContext(settings, _application, _services, this);
 		ICrudEntityEditor<object> editor;
@@ -276,7 +266,7 @@ public partial class ApplicationSettingsDialog : Form {
 	private void CaptureEditorChanges() {
 		if (_editor == null)
 			return;
-		var settings = GetSettings(_selectedOwner);
+		var settings = GetSettings(SelectedOwner);
 		Guard.Ensure(ReferenceEquals(_editor.GetEntityWithChanges(), settings), "A settings editor must edit the actual settings object supplied by SetEntity.");
 		if (_editor.HasChanges) {
 			_dirty.Add(settings);
@@ -286,7 +276,7 @@ public partial class ApplicationSettingsDialog : Form {
 
 	// Property changes remain provisional until the user explicitly saves the actual settings object.
 	private void EditorPropertyChanged(CrudEntityPropertyChangedEventArgs change) {
-		var settings = GetSettings(_selectedOwner);
+		var settings = GetSettings(SelectedOwner);
 		if (settings == null)
 			return;
 		_dirty.Add(settings);
@@ -452,8 +442,8 @@ public partial class ApplicationSettingsDialog : Form {
 	// Pending reset records survive navigation; unrelated manual pages are saved only while selected.
 	private SettingsObject[] GetApplyTargets(bool includePendingReset) {
 		var targets = includePendingReset ? _resetPending.ToList() : new List<SettingsObject>();
-		var selected = GetSettings(_selectedOwner);
-		if (selected != null && (CanEdit(_selectedOwner) || _resetPending.Contains(selected))
+		var selected = GetSettings(SelectedOwner);
+		if (selected != null && (CanEdit(SelectedOwner) || _resetPending.Contains(selected))
 			&& (!includePendingReset || _resetPending.Count == 0 || _dirty.Contains(selected)))
 			targets.Add(selected);
 		return targets.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();

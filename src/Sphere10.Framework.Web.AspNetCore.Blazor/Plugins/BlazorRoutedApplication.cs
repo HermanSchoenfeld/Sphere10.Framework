@@ -16,7 +16,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// BlazorRoutedApplication - contains one or more app blocks.
 /// </summary>
 public class BlazorRoutedApplication : IBlazorRoutedApplication {
-	private readonly IBlazorRoutedApplicationBlock[] _appBlocks;
 
 	/// <summary>
 	/// Initialize a new instance of the <see cref="BlazorRoutedApplication"/> class.
@@ -29,7 +28,7 @@ public class BlazorRoutedApplication : IBlazorRoutedApplication {
 		Route = route ?? throw new ArgumentNullException(nameof(route));
 		Name = name ?? throw new ArgumentNullException(nameof(name));
 		Guard.ArgumentNotNull(appBlocks, nameof(appBlocks));
-		_appBlocks = appBlocks.ToArray();
+		AppBlocks = appBlocks.ToArray();
 		Icon = icon ?? throw new ArgumentNullException(nameof(icon));
 	}
 
@@ -46,7 +45,7 @@ public class BlazorRoutedApplication : IBlazorRoutedApplication {
 	/// <summary>
 	/// Gets the app blocks that are part of this 
 	/// </summary>
-	public IBlazorRoutedApplicationBlock[] AppBlocks => Tools.Array.Clone(_appBlocks);
+	public IBlazorRoutedApplicationBlock[] AppBlocks => Tools.Array.Clone(field);
 
 	/// <summary>
 	/// Gets the icon font-awesome ccs classes for this app block.

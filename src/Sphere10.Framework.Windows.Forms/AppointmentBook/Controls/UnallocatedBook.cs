@@ -20,12 +20,14 @@ public class UnallocatedBook : AppointmentBook {
 	}
 
 	public override bool CanResize {
-		get { return false; }
-		set { base.CanResize = value; }
+		get => false;
+		set => base.CanResize = value;
 	}
 
 	public new virtual UnallocatedBookViewModel ViewModel {
-		get { return base.ViewModel as UnallocatedBookViewModel; }
+		get {
+			return base.ViewModel as UnallocatedBookViewModel;
+		}
 		set {
 			base.ViewModel = value as UnallocatedBookViewModel; // base will bind
 		}

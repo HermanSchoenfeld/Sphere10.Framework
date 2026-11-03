@@ -13,12 +13,6 @@ using SharedUI = global::Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase, IApplicationMenuItem {
-	private Image _image16x16;
-	private bool _showOnExplorerBar;
-	private bool _showOnToolBar;
-	private bool _executeOnLoad;
-
-
 	protected ApplicationMenuItemBase()
 		: this(null) {
 	}
@@ -28,10 +22,10 @@ public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase
 	}
 
 	protected ApplicationMenuItemBase(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
-		_image16x16 = image16x16;
-		_showOnExplorerBar = showOnExplorerBar;
-		_showOnToolBar = showOnToolBar;
-		_executeOnLoad = executeOnLoad;
+		Image16x16 = image16x16;
+		ShowOnExplorerBar = showOnExplorerBar;
+		ShowOnToolStrip = showOnToolBar;
+		ExecuteOnLoad = executeOnLoad;
 	}
 
 	public new IApplicationMenu Parent {
@@ -39,30 +33,18 @@ public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase
 		set => base.Parent = value;
 	}
 
-	public Image Image16x16 {
-		get { return _image16x16; }
-		set { _image16x16 = value; }
-	}
+	public Image Image16x16 { get; set; }
 
-	public bool ShowOnExplorerBar {
-		get { return _showOnExplorerBar; }
-		set { _showOnExplorerBar = value; }
-	}
+	public bool ShowOnExplorerBar { get; set; }
 
-	public bool ShowOnToolStrip {
-		get { return _showOnToolBar; }
-		set { _showOnToolBar = value; }
-	}
+	public bool ShowOnToolStrip { get; set; }
 
-	public bool ExecuteOnLoad {
-		get { return _executeOnLoad; }
-		set { _executeOnLoad = value; }
-	}
+	public bool ExecuteOnLoad { get; set; }
 
 	public virtual void Dispose() {
 		Parent = null;
-		if (_image16x16 != null) {
-			_image16x16.Dispose();
+		if (Image16x16 != null) {
+			Image16x16.Dispose();
 		}
 	}
 }

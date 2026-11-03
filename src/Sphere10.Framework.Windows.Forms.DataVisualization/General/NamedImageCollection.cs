@@ -86,16 +86,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         #region Fields
 
         private string _name = string.Empty;
-        private System.Drawing.Image _image;
 
-        #endregion
+		#endregion
 
-        #region Constructor
+		#region Constructor
 
-        /// <summary>
-        /// NamedImage constructor.
-        /// </summary>
-        public NamedImage()
+		/// <summary>
+		/// NamedImage constructor.
+		/// </summary>
+		public NamedImage()
         {
         }
 
@@ -107,7 +106,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         public NamedImage(string name, System.Drawing.Image image)
         {
             this._name = name;
-            this._image = image;
+			Image = image;
         }
 
         #endregion
@@ -123,52 +122,36 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return _name;
-            }
-            set
-            {
-                _name = value;
-            }
-        }
+			get => _name;
+			set => _name = value;
+		}
 
-        /// <summary>
-        /// Gets or sets the image object.
-        /// </summary>
-        [
-        Bindable(false),
-        SRDescription("DescriptionAttributeNamedImage_Image"),
-        ]
-        public System.Drawing.Image Image
-        {
-            get
-            {
-                return _image;
-            }
-            set
-            {
-                _image = value;
-            }
-        }
+		/// <summary>
+		/// Gets or sets the image object.
+		/// </summary>
+		[
+		Bindable(false),
+		SRDescription("DescriptionAttributeNamedImage_Image"),
+		]
+		public System.Drawing.Image Image { get; set; }
 
-        #endregion
+		#endregion
 
 
-        #region IDisposable Members
+		#region IDisposable Members
 
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
+		/// <summary>
+		/// Releases unmanaged and - optionally - managed resources.
+		/// </summary>
+		/// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+		protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_image != null)
+                if (Image != null)
                 {
-                    _image.Dispose();
-                    _image = null;
+                    Image.Dispose();
+                    Image = null;
                 }
             }
         }

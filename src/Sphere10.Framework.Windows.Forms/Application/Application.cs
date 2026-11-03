@@ -80,56 +80,24 @@ public class Application : AsyncApplicationBase, IApplication {
 		_mainForm.CaptureApplicationCommands();
 	}
 
-	public IBlockManager BlockManager {
-		get {
-			return _mainForm;
-		}
-	}
+	public IBlockManager BlockManager => _mainForm;
 
-	public override IApplicationScreenHost ScreenHost {
-		get {
-			return _mainForm.ScreenHost;
-		}
-	}
+	public override IApplicationScreenHost ScreenHost => _mainForm.ScreenHost;
 
-	public override IApplicationPlugin[] LoadedPlugins {
-		get {
-			return Tools.Array.Clone(_loadedPlugins);
-		}
-	}
+	public override IApplicationPlugin[] LoadedPlugins => Tools.Array.Clone(_loadedPlugins);
 
-	public override IApplicationBlock[] Blocks {
-		get {
-			return ScreenHost.Blocks;
-		}
-	}
+	public override IApplicationBlock[] Blocks => ScreenHost.Blocks;
 
-	public override bool HasUnsavedChanges {
-		get {
-			return ScreenHost.HasUnsavedChanges;
-		}
-	}
+	public override bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 
 	/// <summary>Activates this application's fixed commands, including its actual main form's native commands.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_cachedMenus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_cachedMenus ??= GetMenus());
 
 	/// <summary>Activates the application's fixed toolbar command collection.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
 
 	/// <summary>The actual provider captured by the application's existing lifecycle owner.</summary>
-	internal IServiceProvider ApplicationServices {
-		get {
-			return Services;
-		}
-	}
+	internal IServiceProvider ApplicationServices => Services;
 
 	// The main form already displays its designer controls; only these additional definitions need generated views.
 	internal IApplicationMenu[] AdditionalMenus {

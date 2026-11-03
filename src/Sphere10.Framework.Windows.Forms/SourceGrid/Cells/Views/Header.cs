@@ -49,12 +49,8 @@ public class Header : Cell {
 
 	// Visual Elements
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)base.Background;
+		set => base.Background = value;
 	}
 
 	// Clone

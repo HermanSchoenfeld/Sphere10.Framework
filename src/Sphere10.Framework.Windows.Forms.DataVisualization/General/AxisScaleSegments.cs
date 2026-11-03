@@ -27,20 +27,17 @@ internal sealed class AxisScaleSegment
     // Axis segment position in percent of the axis size
     private double _position;
 
-    // Axis segment size in percent of the axis size
-    private double _size;
+	// Axis segment size in percent of the axis size
 
-    // Axis segment spacing in percent of the axis size
-    private double _spacing;
+	// Axis segment spacing in percent of the axis size
 
-    // Axis segment interval offset.
-    private const double _intervalOffset = 0;
+	// Axis segment interval offset.
+	private const double _intervalOffset = 0;
 
-    // Axis segment interval.
-    private double _interval;
+	// Axis segment interval.
 
-    // Axis segment interval units type.
-    private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
+	// Axis segment interval units type.
+	private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
 
     // Stack used to save/load axis settings
     private readonly Stack _oldAxisSettings = new Stack();
@@ -70,8 +67,10 @@ internal sealed class AxisScaleSegment
     ]
     public double Position
     {
-        get => this._position;
-        set
+		get {
+			return this._position;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
@@ -80,7 +79,7 @@ internal sealed class AxisScaleSegment
 
             this._position = value;
         }
-    }
+	}
 
     /// <summary>
     /// Axis segment size in axis size percentage.
@@ -92,17 +91,19 @@ internal sealed class AxisScaleSegment
     ]
     public double Size
     {
-        get => this._size;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAxisScaleSegmentsSizeInvalid);
             }
 
-            this._size = value;
+            field = value;
         }
-    }
+	}
 
     /// <summary>
     /// Axis segment spacing in axis size percentage.
@@ -114,17 +115,19 @@ internal sealed class AxisScaleSegment
     ]
     public double Spacing
     {
-        get => this._spacing;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAxisScaleSegmentsSpacingInvalid);
             }
 
-            this._spacing = value;
+            field = value;
         }
-    }
+	}
 
     /// <summary>
     /// Axis segment scale maximum value.
@@ -157,20 +160,22 @@ internal sealed class AxisScaleSegment
     ]
     public double Interval
     {
-        get => this._interval;
-        set
+		get {
+			return field;
+		}
+		set
         {
             // Axis interval properties must be set
             if (double.IsNaN(value))
             {
-                this._interval = 0;
+                field = 0;
             }
             else
             {
-                this._interval = value;
+                field = value;
             }
         }
-    }
+	}
 
     /// <summary>
     /// Axis segment interval offset.
@@ -195,8 +200,10 @@ internal sealed class AxisScaleSegment
     ]
     public DateTimeIntervalType IntervalType
     {
-        get => this._intervalType;
-        set
+		get {
+			return this._intervalType;
+		}
+		set
         {
             // Axis interval properties must be set
             if (value == DateTimeIntervalType.NotSet)
@@ -208,7 +215,7 @@ internal sealed class AxisScaleSegment
                 _intervalType = value;
             }
         }
-    }
+	}
 
     /// <summary>
     /// Axis segment interval offset type.

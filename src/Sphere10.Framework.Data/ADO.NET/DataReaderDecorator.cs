@@ -24,17 +24,13 @@ public abstract class DataReaderDecorator : IDataReader {
 		InternalReader.Close();
 	}
 
-	public virtual int Depth {
-		get { return InternalReader.Depth; }
-	}
+	public virtual int Depth => InternalReader.Depth;
 
 	public virtual DataTable GetSchemaTable() {
 		return InternalReader.GetSchemaTable();
 	}
 
-	public virtual bool IsClosed {
-		get { return InternalReader.IsClosed; }
-	}
+	public virtual bool IsClosed => InternalReader.IsClosed;
 
 	public virtual bool NextResult() {
 		return InternalReader.NextResult();
@@ -44,14 +40,10 @@ public abstract class DataReaderDecorator : IDataReader {
 		return InternalReader.Read();
 	}
 
-	public virtual int RecordsAffected {
-		get { return InternalReader.RecordsAffected; }
-	}
+	public virtual int RecordsAffected => InternalReader.RecordsAffected;
 
 
-	public virtual int FieldCount {
-		get { return InternalReader.FieldCount; }
-	}
+	public virtual int FieldCount => InternalReader.FieldCount;
 
 	public virtual bool GetBoolean(int i) {
 		return InternalReader.GetBoolean(i);
@@ -141,13 +133,9 @@ public abstract class DataReaderDecorator : IDataReader {
 		return InternalReader.IsDBNull(i);
 	}
 
-	public virtual object this[string name] {
-		get { return InternalReader[name]; }
-	}
+	public virtual object this[string name] => InternalReader[name];
 
-	public virtual object this[int i] {
-		get { return InternalReader[i]; }
-	}
+	public virtual object this[int i] => InternalReader[i];
 
 	public virtual void Dispose() {
 		InternalReader.Dispose();

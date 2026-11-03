@@ -32,10 +32,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         #region Fields
 
         private Chart _chart;
-        private ChartImage _chartPicture;
 
-        // Reference to Chart Graphics Object
-        internal ChartGraphics graph;
+		// Reference to Chart Graphics Object
+		internal ChartGraphics graph;
 
         /// <summary>
         /// Service Container
@@ -52,79 +51,41 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         internal bool processModeRegions;
 
-        // Private Fields
-        private int _width;
-        private int _height;
+		// Private Fields
 
-        #endregion
+		#endregion
 
-        #region Properties
+		#region Properties
 
-        /// <summary>
-        /// Reference to the Data Manager
-        /// </summary>
-        internal DataManager DataManager
-        {
-            get
-            {
-                return (DataManager)container.GetService(typeof(DataManager));
-            }
-        }
+		/// <summary>
+		/// Reference to the Data Manager
+		/// </summary>
+		internal DataManager DataManager => (DataManager)container.GetService(typeof(DataManager));
 
         /// <summary>
         /// True if painting mode is active
         /// </summary>
-        public bool ProcessModePaint
-        {
-            get
-            {
-                return processModePaint;
-            }
-        }
+        public bool ProcessModePaint => processModePaint;
 
         /// <summary>
         /// True if Hot region or image maps mode is active
         /// </summary>
-        public bool ProcessModeRegions
-        {
-            get
-            {
-                return processModeRegions;
-            }
-        }
+        public bool ProcessModeRegions => processModeRegions;
 
         /// <summary>
         /// Reference to the hot regions object
         /// </summary>
-        public HotRegionsList HotRegionsList
-        {
-            get
-            {
-                return ChartPicture.hotRegionsList;
-            }
-        }
+        public HotRegionsList HotRegionsList => ChartPicture.hotRegionsList;
 
         /// <summary>
         /// Reference to the Data Manipulator
         /// </summary>
-        public DataManipulator DataManipulator
-        {
-            get
-            {
-                return ChartPicture.DataManipulator;
-            }
-        }
+        public DataManipulator DataManipulator => ChartPicture.DataManipulator;
 
         /// <summary>
         /// Reference to the ImageLoader
         /// </summary>
-        internal ImageLoader ImageLoader
-        {
-            get
-            {
-                return (ImageLoader)container.GetService(typeof(ImageLoader));
-            }
-        }
+        internal ImageLoader ImageLoader => (ImageLoader)container.GetService(typeof(ImageLoader));
 
         /// <summary>
         /// Reference to the Chart
@@ -142,35 +103,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Reference to the ChartTypeRegistry
         /// </summary>
-        internal ChartTypeRegistry ChartTypeRegistry
-        {
-            get
-            {
-                return (ChartTypeRegistry)container.GetService(typeof(ChartTypeRegistry));
-            }
-        }
+        internal ChartTypeRegistry ChartTypeRegistry => (ChartTypeRegistry)container.GetService(typeof(ChartTypeRegistry));
 
         /// <summary>
         /// Reference to the BorderTypeRegistry
         /// </summary>
-        internal BorderTypeRegistry BorderTypeRegistry
-        {
-            get
-            {
-                return (BorderTypeRegistry)container.GetService(typeof(BorderTypeRegistry));
-            }
-        }
+        internal BorderTypeRegistry BorderTypeRegistry => (BorderTypeRegistry)container.GetService(typeof(BorderTypeRegistry));
 
         /// <summary>
         /// Reference to the FormulaRegistry
         /// </summary>
-        internal FormulaRegistry FormulaRegistry
-        {
-            get
-            {
-                return (FormulaRegistry)container.GetService(typeof(FormulaRegistry));
-            }
-        }
+        internal FormulaRegistry FormulaRegistry => (FormulaRegistry)container.GetService(typeof(FormulaRegistry));
 
 
 
@@ -181,51 +124,31 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         {
             get
             {
-                if (_chartPicture == null)
-                    _chartPicture = (ChartImage)container.GetService(typeof(ChartImage));
-                return _chartPicture;
+                if (field == null)
+                    field = (ChartImage)container.GetService(typeof(ChartImage));
+                return field;
             }
         }
 
-        /// <summary>
-        /// Width of the chart picture
-        /// </summary>
-        internal int Width
-        {
-            get
-            {
-                return _width;
-            }
-            set
-            {
-                _width = value;
-            }
-        }
+		/// <summary>
+		/// Width of the chart picture
+		/// </summary>
+		internal int Width { get; set; }
 
-        /// <summary>
-        /// Height of the chart picture
-        /// </summary>
-        internal int Height
-        {
-            get
-            {
-                return _height;
-            }
-            set
-            {
-                _height = value;
-            }
-        }
+		/// <summary>
+		/// Height of the chart picture
+		/// </summary>
+		internal int Height { get; set; }
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="container">Service container.</param>
-        internal CommonElements(IServiceContainer container)
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="container">Service container.</param>
+		internal CommonElements(IServiceContainer container)
         {
             this.container = container;
         }

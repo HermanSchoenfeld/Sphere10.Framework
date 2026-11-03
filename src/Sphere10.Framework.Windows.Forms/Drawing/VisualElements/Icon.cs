@@ -49,13 +49,8 @@ public class Icon : VisualElementBase, IIcon {
 	/// </summary>
 	[DefaultValue(null)]
 	public System.Drawing.Icon Value {
-		get {
-			return _value;
-		}
-
-		set {
-			_value = value;
-		}
+		get => _value;
+		set => _value = value;
 	}
 
 	public override object Clone() {

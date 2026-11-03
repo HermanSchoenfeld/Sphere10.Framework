@@ -23,8 +23,8 @@ public partial class EnterTextDialog : Form {
 	}
 
 	public string Instructions {
-		get { return _userInstructionLabel.Text; }
-		set { _userInstructionLabel.Text = value; }
+		get => _userInstructionLabel.Text;
+		set => _userInstructionLabel.Text = value;
 	}
 
 	public string UserInput { get; set; }

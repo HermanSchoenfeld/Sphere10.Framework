@@ -59,14 +59,11 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     private Color _borderColor = Color.Black;
     private int _borderWidth = 1;
     private ChartDashStyle _borderDashStyle = ChartDashStyle.NotSet;
-    private int _shadowOffset;
-    private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
+	private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
     private ElementPosition _areaPosition;
     private ElementPosition _innerPlotPosition;
     internal int IterationCounter;
-
-    private bool _isSameFontSizeForAllAxes;
-    internal float axesAutoFontSize = 8f;
+	internal float axesAutoFontSize = 8f;
 
     private string _alignWithChartArea = Constants.NotSetValue;
     private AreaAlignmentOrientations _alignmentOrientation = AreaAlignmentOrientations.Vertical;
@@ -122,15 +119,17 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Cursor CursorX
     {
-        get => _cursorX;
-        set
+		get {
+			return _cursorX;
+		}
+		set
         {
             _cursorX = value;
 
             // Initialize chart object
             _cursorX.Initialize(this, AxisName.X);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a Cursor object that is used for cursors and selected ranges along the Y-axis.
@@ -145,15 +144,17 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Cursor CursorY
     {
-        get => _cursorY;
-        set
+		get {
+			return _cursorY;
+		}
+		set
         {
             _cursorY = value;
 
             // Initialize chart object
             _cursorY.Initialize(this, AxisName.Y);
         }
-    }
+	}
 
     #endregion Chart Area Cursor properties
 
@@ -177,13 +178,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public virtual bool Visible
     {
-        get => _visible;
-        set
+		get {
+			return _visible;
+		}
+		set
         {
             _visible = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the name of the ChartArea object to which this chart area should be aligned.
@@ -197,8 +200,10 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public string AlignWithChartArea
     {
-        get => _alignWithChartArea;
-        set
+		get {
+			return _alignWithChartArea;
+		}
+		set
         {
             if (value != _alignWithChartArea)
             {
@@ -219,7 +224,7 @@ public partial class ChartArea : ChartNamedElement, IDisposable
                 Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the alignment orientation of a chart area.
@@ -232,13 +237,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public AreaAlignmentOrientations AlignmentOrientation
     {
-        get => _alignmentOrientation;
-        set
+		get {
+			return _alignmentOrientation;
+		}
+		set
         {
             _alignmentOrientation = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the alignment style of the ChartArea.
@@ -251,13 +258,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public AreaAlignmentStyles AlignmentStyle
     {
-        get => _alignmentStyle;
-        set
+		get {
+			return _alignmentStyle;
+		}
+		set
         {
             _alignmentStyle = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets an array that represents all axes for a chart area.
@@ -272,8 +281,10 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Axis[] Axes
     {
-        get => _axisArray;
-        set
+		get {
+			return _axisArray;
+		}
+		set
         {
             AxisX = value[0];
             AxisY = value[1];
@@ -281,7 +292,7 @@ public partial class ChartArea : ChartNamedElement, IDisposable
             AxisY2 = value[3];
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Avoid serialization of the axes array
@@ -305,15 +316,17 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Axis AxisY
     {
-        get => axisY;
-        set
+		get {
+			return axisY;
+		}
+		set
         {
             axisY = value;
             axisY.Initialize(this, AxisName.Y);
             _axisArray[1] = axisY;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets an Axis object that represents the primary X-axis.
@@ -328,15 +341,17 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Axis AxisX
     {
-        get => axisX;
-        set
+		get {
+			return axisX;
+		}
+		set
         {
             axisX = value;
             axisX.Initialize(this, AxisName.X);
             _axisArray[0] = axisX;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets an Axis object that represents the secondary X-axis.
@@ -351,15 +366,17 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Axis AxisX2
     {
-        get => axisX2;
-        set
+		get {
+			return axisX2;
+		}
+		set
         {
             axisX2 = value;
             axisX2.Initialize(this, AxisName.X2);
             _axisArray[2] = axisX2;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets an Axis object that represents the secondary Y-axis.
@@ -374,15 +391,17 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Axis AxisY2
     {
-        get => axisY2;
-        set
+		get {
+			return axisY2;
+		}
+		set
         {
             axisY2 = value;
             axisY2.Initialize(this, AxisName.Y2);
             _axisArray[3] = axisY2;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets an ElementPosition object, which defines the position of a chart area object within the chart image.
@@ -398,7 +417,7 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public ElementPosition Position
     {
-        get
+		get
         {
             // Serialize only position values if Auto set to false
             if (this.Chart != null && this.Chart.serializationStatus == SerializationStatus.Saving)
@@ -420,14 +439,14 @@ public partial class ChartArea : ChartNamedElement, IDisposable
 
             return _areaPosition;
         }
-        set
+		set
         {
             _areaPosition = value;
             _areaPosition.Parent = this;
             _areaPosition.resetAreaAutoPosition = true;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Determines if this position should be serialized.
@@ -452,7 +471,7 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public ElementPosition InnerPlotPosition
     {
-        get
+		get
         {
             // Serialize only position values if Auto set to false
             if (this.Common != null && this.Common.Chart != null && this.Common.Chart.serializationStatus == SerializationStatus.Saving)
@@ -474,13 +493,13 @@ public partial class ChartArea : ChartNamedElement, IDisposable
 
             return _innerPlotPosition;
         }
-        set
+		set
         {
             _innerPlotPosition = value;
             _innerPlotPosition.Parent = this;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Determines if this position should be serialized.
@@ -504,16 +523,10 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Color BackColor
     {
-        get
-        {
-            if (SystemInformation.HighContrast && _backColor.IsEmpty && !_backColorIsSet)
-            {
-                return System.Drawing.SystemColors.Control;
-            }
-
-            return _backColor;
-        }
-        set
+		get {
+			return SystemInformation.HighContrast && _backColor.IsEmpty && !_backColorIsSet ? System.Drawing.SystemColors.Control : _backColor;
+		}
+		set
         {
             _backColor = value;
 
@@ -521,7 +534,7 @@ public partial class ChartArea : ChartNamedElement, IDisposable
 
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the hatching style of a ChartArea object.
@@ -536,13 +549,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public ChartHatchStyle BackHatchStyle
     {
-        get => _backHatchStyle;
-        set
+		get {
+			return _backHatchStyle;
+		}
+		set
         {
             _backHatchStyle = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image of a ChartArea object.
@@ -556,13 +571,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public string BackImage
     {
-        get => _backImage;
-        set
+		get {
+			return _backImage;
+		}
+		set
         {
             _backImage = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the drawing mode of the background image of a ChartArea object.
@@ -576,13 +593,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public ChartImageWrapMode BackImageWrapMode
     {
-        get => _backImageWrapMode;
-        set
+		get {
+			return _backImageWrapMode;
+		}
+		set
         {
             _backImageWrapMode = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the color of a ChartArea object's background image that will be drawn as transparent.
@@ -597,13 +616,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Color BackImageTransparentColor
     {
-        get => _backImageTransparentColor;
-        set
+		get {
+			return _backImageTransparentColor;
+		}
+		set
         {
             _backImageTransparentColor = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the alignment of a ChartArea object.
@@ -617,13 +638,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public ChartImageAlignmentStyle BackImageAlignment
     {
-        get => _backImageAlignment;
-        set
+		get {
+			return _backImageAlignment;
+		}
+		set
         {
             _backImageAlignment = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the orientation of a chart element's gradient,
@@ -639,13 +662,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public GradientStyle BackGradientStyle
     {
-        get => _backGradientStyle;
-        set
+		get {
+			return _backGradientStyle;
+		}
+		set
         {
             _backGradientStyle = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the secondary color of a ChartArea object.
@@ -661,13 +686,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Color BackSecondaryColor
     {
-        get => _backSecondaryColor;
-        set
+		get {
+			return _backSecondaryColor;
+		}
+		set
         {
             _backSecondaryColor = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the shadow color of a ChartArea object.
@@ -682,13 +709,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Color ShadowColor
     {
-        get => _shadowColor;
-        set
+		get {
+			return _shadowColor;
+		}
+		set
         {
             _shadowColor = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the shadow offset (in pixels) of a ChartArea object.
@@ -702,13 +731,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public int ShadowOffset
     {
-        get => _shadowOffset;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _shadowOffset = value;
+            field = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border color of a ChartArea object.
@@ -724,13 +755,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public Color BorderColor
     {
-        get => _borderColor;
-        set
+		get {
+			return _borderColor;
+		}
+		set
         {
             _borderColor = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border width of a ChartArea object.
@@ -745,8 +778,10 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public int BorderWidth
     {
-        get => _borderWidth;
-        set
+		get {
+			return _borderWidth;
+		}
+		set
         {
             if (value < 0)
             {
@@ -756,7 +791,7 @@ public partial class ChartArea : ChartNamedElement, IDisposable
             _borderWidth = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the style of the border line of a ChartArea object.
@@ -771,13 +806,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public ChartDashStyle BorderDashStyle
     {
-        get => _borderDashStyle;
-        set
+		get {
+			return _borderDashStyle;
+		}
+		set
         {
             _borderDashStyle = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the unique name of a ChartArea object.
@@ -791,9 +828,9 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public override string Name
     {
-        get => base.Name;
-        set => base.Name = value;
-    }
+		get => base.Name;
+		set => base.Name = value;
+	}
 
     /// <summary>
     /// Gets or sets a Boolean that determines if the labels of the axes for all chart area
@@ -808,13 +845,15 @@ public partial class ChartArea : ChartNamedElement, IDisposable
     ]
     public bool IsSameFontSizeForAllAxes
     {
-        get => _isSameFontSizeForAllAxes;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _isSameFontSizeForAllAxes = value;
+            field = value;
             Invalidate();
         }
-    }
+	}
 
     #endregion Chart Area properties
 

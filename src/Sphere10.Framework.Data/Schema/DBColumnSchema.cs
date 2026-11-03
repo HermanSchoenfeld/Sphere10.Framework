@@ -25,9 +25,7 @@ public class DBColumnSchema : DBObject {
 	public bool IsNullable { get; set; }
 	public bool IsAutoIncrement { get; set; }
 
-	public bool UsesSequence {
-		get { return !string.IsNullOrEmpty(Sequence); }
-	}
+	public bool UsesSequence => !string.IsNullOrEmpty(Sequence);
 
 	public string Sequence { get; set; }
 	public bool CascadesOnUpdate { get; set; }

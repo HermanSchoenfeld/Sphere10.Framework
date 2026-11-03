@@ -62,8 +62,6 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	private string _errorString = "#ERROR!";
 
 	// Editable settings
-	private bool _enableEdit = true;
-	private EditableMode _editableMode = EditableMode.Default;
 	private bool _enableCellDrawOnEdit = true;
 	private bool _useCellViewProperties = true;
 
@@ -79,99 +77,57 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	/// <summary>
 	/// Cell in editing, if null no cell is in editing state
 	/// </summary>
-	public CellContext EditCellContext {
-		get {
-			return _editCellContext;
-		}
-	}
+	public CellContext EditCellContext => _editCellContext;
 
 	/// <summary>
 	/// Cell in editing, if null no cell is in editing state
 	/// </summary>
-	public Cells.ICellVirtual EditCell {
-		get {
-			return _editCellContext.Cell;
-		}
-	}
+	public Cells.ICellVirtual EditCell => _editCellContext.Cell;
 
 	/// <summary>
 	/// Cell in editing, if Empty no cell is in editing state
 	/// </summary>
-	public Position EditPosition {
-		get {
-			return _editCellContext.Position;
-		}
-	}
+	public Position EditPosition => _editCellContext.Position;
 
 	/// <summary>
 	/// String used when error occurred
 	/// </summary>
 	public string ErrorString {
-		get {
-			return _errorString;
-		}
-		set {
-			_errorString = value;
-		}
+		get => _errorString;
+		set => _errorString = value;
 	}
 
 	/// <summary>
 	/// Enable or disable the cell editor (if disable no visual edit is allowed)
 	/// </summary>
-	public bool EnableEdit {
-		get {
-			return _enableEdit;
-		}
-		set {
-			_enableEdit = value;
-		}
-	}
+	public bool EnableEdit { get; set; } = true;
 
 	/// <summary>
 	/// Mode to edit the cell.
 	/// </summary>
-	public EditableMode EditableMode {
-		get {
-			return _editableMode;
-		}
-		set {
-			_editableMode = value;
-		}
-	}
+	public EditableMode EditableMode { get; set; } = EditableMode.Default;
 
 	/// <summary>
 	/// Indicates if the draw of the cell when in editing mode is enabled.
 	/// </summary>
 	public virtual bool EnableCellDrawOnEdit {
-		get {
-			return _enableCellDrawOnEdit;
-		}
-		set {
-			_enableCellDrawOnEdit = value;
-		}
+		get => _enableCellDrawOnEdit;
+		set => _enableCellDrawOnEdit = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if the editor must assign to the editor control the default view properties: ForeColor, BackColor, Font. This can be disabled if you want to manually assign these properties to the control.
 	/// </summary>
 	public virtual bool UseCellViewProperties {
-		get {
-			return _useCellViewProperties;
-		}
-		set {
-			_useCellViewProperties = value;
-		}
+		get => _useCellViewProperties;
+		set => _useCellViewProperties = value;
 	}
 
 	// StartEdit/EndEdit/IsEditing/ApplyEdit/GetEditedValue
 	/// <summary>
 	/// Indicates if the current editor is in editing state
 	/// </summary>
-	public bool IsEditing {
-		get {
-			return (EditCell != null);
-		}
-	}
+	public bool IsEditing => (EditCell != null);
 
 	/// <summary>
 	/// Returns true if the string passed is equal to the error string rappresentation

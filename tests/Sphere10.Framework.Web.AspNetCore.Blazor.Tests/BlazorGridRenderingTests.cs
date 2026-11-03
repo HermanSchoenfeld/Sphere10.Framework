@@ -930,11 +930,7 @@ public class BlazorGridRenderingTests {
 		public Row Reference { get; set; }
 
 		/// <summary>The row's immutable display value.</summary>
-		public string ReadOnly {
-			get {
-				return "Fixed display";
-			}
-		}
+		public string ReadOnly => "Fixed display";
 	}
 
 	/// <summary>A row with no declared properties for legacy-column coverage.</summary>
@@ -1110,18 +1106,10 @@ public class BlazorGridRenderingTests {
 		public DataSourceCapabilities AvailableCapabilities { get; set; } = DataSourceCapabilities.Default;
 
 		/// <summary>The source's current synchronous capability mask.</summary>
-		public override DataSourceCapabilities Capabilities {
-			get {
-				return AvailableCapabilities;
-			}
-		}
+		public override DataSourceCapabilities Capabilities => AvailableCapabilities;
 
 		/// <summary>The source's current asynchronous capability mask.</summary>
-		public override Task<DataSourceCapabilities> CapabilitiesAsync {
-			get {
-				return Task.FromResult(AvailableCapabilities);
-			}
-		}
+		public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.FromResult(AvailableCapabilities);
 
 		/// <summary>Records a query before reading the requested rows.</summary>
 		public override async Task<DataSourceItems<T>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {

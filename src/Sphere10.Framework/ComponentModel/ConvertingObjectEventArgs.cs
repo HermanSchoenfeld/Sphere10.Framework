@@ -12,39 +12,17 @@ using System;
 namespace Sphere10.Framework.ComponentModel;
 
 public class ConvertingObjectEventArgs : System.EventArgs {
-	private object _value;
-	private Type _destinationType;
-	private ConvertingStatus _convertingStatus = ConvertingStatus.Converting;
-
 	public ConvertingObjectEventArgs(object value, Type destinationType) {
-		_value = value;
-		_destinationType = destinationType;
+		Value = value;
+		DestinationType = destinationType;
 	}
 
-	public object Value {
-		get {
-			return _value;
-		}
-		set {
-			_value = value;
-		}
-	}
+	public object Value { get; set; }
 
 	/// <summary>
 	/// Destination type to convert the Value. Can be null if no destination type is required.
 	/// </summary>
-	public Type DestinationType {
-		get {
-			return _destinationType;
-		}
-	}
+	public Type DestinationType { get; }
 
-	public ConvertingStatus ConvertingStatus {
-		get {
-			return _convertingStatus;
-		}
-		set {
-			_convertingStatus = value;
-		}
-	}
+	public ConvertingStatus ConvertingStatus { get; set; } = ConvertingStatus.Converting;
 }

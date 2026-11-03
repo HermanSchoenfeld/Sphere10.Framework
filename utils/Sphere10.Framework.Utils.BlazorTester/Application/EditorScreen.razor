@@ -37,10 +37,6 @@
 <p>Save or discard the note and clear Prevent tab switching before switching or closing this screen. Saving does not clear the checkbox.</p>
 
 @code {
-	private BlazorUI.IApplicationMenu[] _menus;
-	private BlazorUI.ApplicationMenuItemBase _saveCommand;
-	private BlazorUI.ApplicationMenuItemBase _discardCommand;
-	private BlazorUI.ApplicationMenuItemBase _counterCommand;
 	private string _title = "Single-instance screen";
 	private string _draft = string.Empty;
 	private string _saved = string.Empty;
@@ -49,7 +45,7 @@
 
 	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Single-instance screen" : _title;
 
-	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new BlazorUI.IApplicationMenu[] {
+	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(field ??= new BlazorUI.IApplicationMenu[] {
 		new ApplicationMenuBuilder()
 			.WithId("file")
 			.WithText("File")
@@ -63,7 +59,7 @@
 
 	public override bool HasUnsavedChanges => _draft != _saved;
 
-	private BlazorUI.ApplicationMenuItemBase SaveCommand => _saveCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase SaveCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("save")
 		.WithText("Save in session")
 		.WithIcon("fas fa-save")
@@ -75,7 +71,7 @@
 		})
 		.Build();
 
-	private BlazorUI.ApplicationMenuItemBase DiscardCommand => _discardCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase DiscardCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("discard")
 		.WithText("Discard changes")
 		.WithIcon("fas fa-undo")
@@ -87,7 +83,7 @@
 		})
 		.Build();
 
-	private BlazorUI.ApplicationMenuItemBase CounterCommand => _counterCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase CounterCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("instance-counter")
 		.WithText("Increment instance counter")
 		.WithIcon("fas fa-plus-circle")

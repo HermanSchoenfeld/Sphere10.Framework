@@ -12,17 +12,14 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class DefaultVariableContext : IVariableContext {
-	private IMathContext _mathContext;
 	private IDictionary<string, double> _variableDictionary;
 
 	public DefaultVariableContext(IMathContext context) {
-		_mathContext = context;
+		MathContext = context;
 		_variableDictionary = new Dictionary<string, double>();
 	}
 
-	public IMathContext MathContext {
-		get { return _mathContext; }
-	}
+	public IMathContext MathContext { get; }
 
 	public bool ContainsVariable(string name) {
 		bool containsVariable = false;

@@ -121,31 +121,17 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 
 	// The host's user interaction services.
-	private IUserInterfaceServices UserInterfaceServices {
-		get {
-			return ScreenHost.UserInterfaceServices;
-		}
-	}
+	private IUserInterfaceServices UserInterfaceServices => ScreenHost.UserInterfaceServices;
 
 	// The navigation block currently being browsed.
-	private IApplicationBlock SelectedBlock {
-		get {
-			return ScreenHost.SelectedBlock;
-		}
-	}
+	private IApplicationBlock SelectedBlock => ScreenHost.SelectedBlock;
 
 	// The blocks exposed by the current application.
-	private IApplicationBlock[] Blocks {
-		get {
-			return Application.Blocks;
-		}
-	}
+	private IApplicationBlock[] Blocks => Application.Blocks;
 
 	// The toolbar composition for the active command owners.
 	private IApplicationMenuItem[] MergedToolBarItems {
-		get {
-			return ApplicationHelper.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
-		}
+		get => ApplicationHelper.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
 	}
 
 	/// <summary>Subscribes to retained screen and navigation changes.</summary>

@@ -93,9 +93,7 @@ public class ExpandingCircle : Form {
 		}
 	}
 
-	protected override bool ShowWithoutActivation {
-		get { return true; }
-	}
+	protected override bool ShowWithoutActivation => true;
 
 	public void StartExpanding() {
 		Radius = StartRadius;

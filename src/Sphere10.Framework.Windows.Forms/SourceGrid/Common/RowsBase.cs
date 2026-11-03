@@ -19,30 +19,20 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 public abstract class RowsBase : IRows {
 	public event RowVisibilityChangedHandler RowVisibilityChanged;
 
-	private GridVirtual _grid;
-
 	// Layout
 	private int _suspendedCount = 0;
 
 	protected IHiddenRowCoordinator HiddenRowCoordinator = null;
 
 	public RowsBase(GridVirtual grid) {
-		_grid = grid;
+		Grid = grid;
 
 		HiddenRowCoordinator = new StandardHiddenRowCoordinator(this);
 	}
 
-	public IHiddenRowCoordinator HiddenRowsCoordinator {
-		get {
-			return HiddenRowCoordinator;
-		}
-	}
+	public IHiddenRowCoordinator HiddenRowsCoordinator => HiddenRowCoordinator;
 
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; }
 
 	// Abstract methods
 	public abstract int Count {

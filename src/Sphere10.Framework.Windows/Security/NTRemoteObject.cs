@@ -15,7 +15,6 @@ namespace Sphere10.Framework.Windows.Security;
 /// to the machine making the reference.
 /// </summary>
 public class NTRemoteObject : NTObject {
-	string _domain;
 
 	/// <summary>
 	/// Contructor.
@@ -34,10 +33,7 @@ public class NTRemoteObject : NTObject {
 	/// <summary>
 	/// The domain this remote object is defined in.
 	/// </summary>
-	public string Domain {
-		get { return _domain; }
-		set { _domain = value; }
-	}
+	public string Domain { get; set; }
 
 	public override string ToString() {
 		return string.Format("{0}\\{1}", Domain, Name);

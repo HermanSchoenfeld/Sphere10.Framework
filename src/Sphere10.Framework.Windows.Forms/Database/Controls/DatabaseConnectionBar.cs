@@ -57,10 +57,12 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false)]
 	public virtual DBReference Database {
-		get => new() {
+		get {
+			return new() {
 			DBMSType = SelectedDBMSType,
 			ConnectionString = ConnectionString
 		};
+		}
 		set {
 			this.SelectedDBMSType = value.DBMSType;
 			this.ConnectionString = value.ConnectionString;

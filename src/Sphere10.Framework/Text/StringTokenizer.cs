@@ -35,11 +35,6 @@ public class StringTokenizer {
 	/// </summary>
 	private string source;
 
-	/// <summary>
-	/// The delimiters
-	/// </summary>
-	private string delimiter;
-
 
 	/// <summary>
 	/// Initializes a new instance of the StringTokenizer class with the 
@@ -50,10 +45,10 @@ public class StringTokenizer {
 	public StringTokenizer(string source, string delimiter) {
 		this.tokens = new ArrayList(10);
 		this.source = source;
-		this.delimiter = delimiter;
+		Delimiter = delimiter;
 
 		if (delimiter.Length == 0) {
-			this.delimiter = " ";
+			Delimiter = " ";
 		}
 
 		this.Tokenize();
@@ -96,7 +91,7 @@ public class StringTokenizer {
 		int i = 0;
 
 		while (i < this.source.Length) {
-			if (this.delimiter.IndexOf(this.source[i]) != -1) {
+			if (Delimiter.IndexOf(this.source[i]) != -1) {
 				if (sb.Length > 0) {
 					this.tokens.Add(sb.ToString());
 
@@ -185,17 +180,17 @@ public class StringTokenizer {
 	/// <summary>
 	/// Returns the source string
 	/// </summary>
-	public string Source {
-		get { return this.source; }
-	}
+	public string Source => this.source;
 
 
 	/// <summary>
 	/// Returns a string that contains the delimiters used to 
 	/// parse the source string
 	/// </summary>
-	public string Delimiter {
-		get { return this.delimiter; }
-	}
+
+	/// <remarks>
+	/// The delimiters
+	/// </remarks>
+	public string Delimiter { get; }
 }
 

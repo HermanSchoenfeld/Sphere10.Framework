@@ -220,11 +220,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override VisualGridShowcaseSettings ScreenSettings {
-		get {
-			return (VisualGridShowcaseSettings)base.ScreenSettings;
-		}
-	}
+	public override VisualGridShowcaseSettings ScreenSettings => (VisualGridShowcaseSettings)base.ScreenSettings;
 
 	/// <summary>Joins first binding before the normal accepted-close preference capture.</summary>
 	public override async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {

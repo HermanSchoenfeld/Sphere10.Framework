@@ -15,7 +15,6 @@ namespace Sphere10.Framework.Data;
 
 public class DBSchema : DBObject {
 	private IDictionary<string, DBTableSchema> _tables;
-	private DBTableSchema[] _tablesValues;
 
 	public DBSchema() {
 		_tables = new Dictionary<string, DBTableSchema>();
@@ -29,11 +28,13 @@ public class DBSchema : DBObject {
 	public override string Name { get; set; }
 
 	public DBTableSchema[] Tables {
-		get { return _tablesValues; }
+		get {
+			return field;
+		}
 		set {
 			_tables.Clear();
 			_tables = value.ToDictionary(v => v.Name);
-			_tablesValues = _tables.Values.ToArray();
+			field = _tables.Values.ToArray();
 		}
 	}
 

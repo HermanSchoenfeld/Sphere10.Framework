@@ -24,9 +24,7 @@ public class JsonRpcClientHandler : JsonRpcClient {
 	protected Task<int> Task { get; set; }
 
 	//Context Accessor for RPC functions. For now, ClientContext is the client's UID
-	public static ulong ClientContext {
-		get { return _clientContext.Value; }
-	}
+	public static ulong ClientContext => _clientContext.Value;
 
 	public event EventHandler<JsonRpcClientHandler>? OnStop;
 	public event EventHandler<JsonRpcClientHandler>? OnStart;

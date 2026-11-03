@@ -27,12 +27,8 @@ public partial class ComboBoxEx : ComboBox {
 	[Category("Appearance")]
 	[DefaultValue("")]
 	public string PlaceHolderText {
-		get {
-			return _placeHolderTextExtender.GetPlaceHolderText(this);
-		}
-		set {
-			_placeHolderTextExtender.SetPlaceHolderText(this, value);
-		}
+		get => _placeHolderTextExtender.GetPlaceHolderText(this);
+		set => _placeHolderTextExtender.SetPlaceHolderText(this, value);
 	}
 
 	/// <summary>Gets or sets whether accepted input is formatted when validation completes.</summary>
@@ -65,14 +61,8 @@ public partial class ComboBoxEx : ComboBox {
 	/// <summary>Gets or sets the selected typed value, using display formatting when configured.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object Value {
-		get {
-			if (IsValidValue(out var value))
-				return value;
-			throw new ArgumentOutOfRangeException(nameof(Text));
-		}
-		set {
-			Text = _validator == null ? value?.ToString() ?? string.Empty : _validator.ValueToDisplayString(value);
-		}
+		get => IsValidValue(out var value) ? value : throw new ArgumentOutOfRangeException(nameof(Text));
+		set => Text = _validator == null ? value?.ToString() ?? string.Empty : _validator.ValueToDisplayString(value);
 	}
 
 	/// <summary>Validates selection or input and optionally formats the accepted value.</summary>

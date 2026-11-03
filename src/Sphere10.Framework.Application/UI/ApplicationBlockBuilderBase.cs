@@ -40,11 +40,7 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 
 	protected ScreenKind DefaultScreenKind => DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
 
-	protected ApplicationScreenDefinition[] ScreenDefinitions {
-		get {
-			return _screenDefinitions.ToArray();
-		}
-	}
+	protected ApplicationScreenDefinition[] ScreenDefinitions => _screenDefinitions.ToArray();
 
 	public virtual TBlock Build() {
 		ValidateConfiguration();

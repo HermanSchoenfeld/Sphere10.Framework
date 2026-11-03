@@ -14,8 +14,6 @@ namespace Sphere10.Framework.Application;
 [ComVisible(true)]
 [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
 public sealed class AssemblyProductCodeAttribute : Attribute {
-	private Guid _productCode = Guid.Empty;
-
 	public AssemblyProductCodeAttribute(string code)
 		: this(new Guid(code)) {
 	}
@@ -24,9 +22,6 @@ public sealed class AssemblyProductCodeAttribute : Attribute {
 		ProductCode = guid;
 	}
 
-	public Guid ProductCode {
-		get { return _productCode; }
-		set { _productCode = value; }
-	}
+	public Guid ProductCode { get; set; } = Guid.Empty;
 }
 

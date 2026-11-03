@@ -23,11 +23,7 @@ public partial class PathSelectorTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override PathSelectorScreenSettings ScreenSettings {
-		get {
-			return (PathSelectorScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override PathSelectorScreenSettings ScreenSettings => (PathSelectorScreenSettings)base.ScreenSettings;
 
 	/// <summary>Restores preferences and applies accepted Options through the same visible checkbox.</summary>
 	protected override void CopyModelToUI() {

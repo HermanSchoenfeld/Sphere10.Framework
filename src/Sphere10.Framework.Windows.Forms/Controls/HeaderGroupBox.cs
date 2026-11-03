@@ -15,19 +15,10 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Draws heading text, an optional image and a trailing group rule.</summary>
 public class HeaderGroupBox : System.Windows.Forms.GroupBox {
-	private Image _image = null;
-
 	public HeaderGroupBox() {
 	}
 
-	public Image Image {
-		get {
-			return _image;
-		}
-		set {
-			_image = value;
-		}
-	}
+	public Image Image { get; set; } = null;
 
 	protected override void OnPaint(PaintEventArgs args) {
 		// Configure and render the heading text for the current enabled state.
@@ -52,18 +43,18 @@ public class HeaderGroupBox : System.Windows.Forms.GroupBox {
 		var lineRight = new Point(ClientRectangle.Right, ClientRectangle.Top + (int)(Font.Height / 2f));
 		if (this.RightToLeft != RightToLeft.Yes) {
 			lineLeft.X += (int)stringSize.Width;
-			if (_image != null)
+			if (Image != null)
 				lineRight.X -= 17;
 
-			if (_image != null)
-				args.Graphics.DrawImage(_image, lineRight.X + 1, 0, 16, 16);
+			if (Image != null)
+				args.Graphics.DrawImage(Image, lineRight.X + 1, 0, 16, 16);
 		} else {
 			lineRight.X -= (int)stringSize.Width;
-			if (_image != null)
+			if (Image != null)
 				lineLeft.X += 17;
 
-			if (_image != null)
-				args.Graphics.DrawImage(_image, 0, 0, 16, 16);
+			if (Image != null)
+				args.Graphics.DrawImage(Image, 0, 0, 16, 16);
 		}
 
 		// Render either the flat rule or its two-tone raised edge.

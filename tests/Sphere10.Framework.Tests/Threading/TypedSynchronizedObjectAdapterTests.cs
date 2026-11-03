@@ -98,10 +98,8 @@ public class TypedSynchronizedObjectAdapterTests {
 	}
 
 	private sealed class DirectSynchronizedObject : ISynchronizedObject<ActionScope, ActionScope> {
-		private readonly ReaderWriterLockSlim _threadLock = new();
-
 		public ISynchronizedObject<ActionScope, ActionScope> ParentSyncObject { get; set; }
-		public ReaderWriterLockSlim ThreadLock => ParentSyncObject?.ThreadLock ?? _threadLock;
+		public ReaderWriterLockSlim ThreadLock { get => ParentSyncObject?.ThreadLock ?? field; } = new();
 		public int ReadClosed { get; private set; }
 		public int WriteClosed { get; private set; }
 

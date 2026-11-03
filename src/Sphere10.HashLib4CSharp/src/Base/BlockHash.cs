@@ -33,9 +33,9 @@ namespace HashLib4CSharp.Base
 
         protected ulong ProcessedBytesCount
         {
-            get => _processedBytesCount;
-            set => _processedBytesCount = value;
-        }
+			get => _processedBytesCount;
+			set => _processedBytesCount = value;
+		}
 
         public override void Initialize()
         {

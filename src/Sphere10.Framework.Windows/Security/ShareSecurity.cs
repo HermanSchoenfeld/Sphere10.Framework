@@ -125,16 +125,10 @@ public sealed class ShareSecurity : NativeObjectSecurity {
 
 
 	// Properties
-	public override Type AccessRightType {
-		get { return typeof(ShareRights); }
-	}
+	public override Type AccessRightType => typeof(ShareRights);
 
-	public override Type AccessRuleType {
-		get { return typeof(ShareAccessRule); }
-	}
+	public override Type AccessRuleType => typeof(ShareAccessRule);
 
-	public override Type AuditRuleType {
-		get { return typeof(ShareAuditRule); }
-	}
+	public override Type AuditRuleType => typeof(ShareAuditRule);
 }
 

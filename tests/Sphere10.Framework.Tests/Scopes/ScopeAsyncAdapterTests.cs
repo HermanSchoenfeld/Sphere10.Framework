@@ -86,7 +86,9 @@ public class ScopeAsyncAdapterTests {
 		}
 
 		public override long Position {
-			get => base.Position;
+			get {
+				return base.Position;
+			}
 			set {
 				_finalize();
 				base.Position = value;

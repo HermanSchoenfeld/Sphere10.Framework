@@ -72,33 +72,17 @@ public abstract class SentenceBuilder {
 
 
 	private class DefaultSentenceBuilder : SentenceBuilder {
-		public override Func<string> RequiredWord {
-			get { return () => "Required."; }
-		}
+		public override Func<string> RequiredWord => () => "Required.";
 
-		public override Func<string> ErrorsHeadingText {
-			get { return () => "ERROR(S):"; }
-		}
+		public override Func<string> ErrorsHeadingText => () => "ERROR(S):";
 
-		public override Func<string> UsageHeadingText {
-			get { return () => "USAGE:"; }
-		}
+		public override Func<string> UsageHeadingText => () => "USAGE:";
 
-		public override Func<string> OptionGroupWord {
-			get { return () => "Group"; }
-		}
+		public override Func<string> OptionGroupWord => () => "Group";
 
-		public override Func<bool, string> HelpCommandText {
-			get {
-				return isOption => isOption
-					? "Display this help screen."
-					: "Display more information on a specific command.";
-			}
-		}
+		public override Func<bool, string> HelpCommandText => isOption => isOption ? "Display this help screen." : "Display more information on a specific command.";
 
-		public override Func<bool, string> VersionCommandText {
-			get { return _ => "Display version information."; }
-		}
+		public override Func<bool, string> VersionCommandText => _ => "Display version information.";
 
 		public override Func<Error, string> FormatError {
 			get {

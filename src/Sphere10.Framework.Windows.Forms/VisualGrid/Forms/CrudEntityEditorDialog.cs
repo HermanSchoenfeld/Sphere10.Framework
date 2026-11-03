@@ -118,9 +118,7 @@ public partial class CrudEntityEditorDialog : Form {
 		return true;
 	}
 
-	public bool HasChanges {
-		get { return _crudEntityEditor.HasChanges; }
-	}
+	public bool HasChanges => _crudEntityEditor.HasChanges;
 
 	public bool RequiresGridRefresh { get; protected set; }
 

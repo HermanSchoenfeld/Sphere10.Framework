@@ -18,7 +18,9 @@ public sealed class ApplicationMenuGroup : ApplicationMenuItemBase {
 	private readonly IApplicationMenuItem[] _items = Array.Empty<IApplicationMenuItem>();
 
 	public IApplicationMenuItem[] Items {
-		get => _items.ToArray();
+		get {
+			return _items.ToArray();
+		}
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_items = value.ToArray();

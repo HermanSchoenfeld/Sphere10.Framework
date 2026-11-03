@@ -24,7 +24,9 @@ public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollecti
 	/// Gets or sets the items collection
 	/// </summary>
 	public TItem[] Items {
-		get => Tools.Array.Clone(_items);
+		get {
+			return Tools.Array.Clone(_items);
+		}
 		set {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_items = Tools.Array.Clone(value);
@@ -37,47 +39,49 @@ public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollecti
 	public TItem[] Page => _items.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToArray();
 
 	/// <summary>
-	/// backing field for page size
-	/// </summary>
-	private int _pageSize = 10;
-
-	/// <summary>
 	/// Gets or sets the size of the page to show. When set, updates the current page
 	/// accordingly based on current position.
 	/// </summary>
+
+	/// <remarks>
+	/// backing field for page size
+	/// </remarks>
 	public int PageSize {
-		get => _pageSize;
+		get {
+			return field;
+		}
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
-			if (value == _pageSize)
+			if (value == field)
 				return;
 			if (_items.Length > 0) {
 				int index = (CurrentPage - 1) * PageSize + Page.Length;
-				_pageSize = value;
-				CurrentPage = Math.Max(1, (int)Math.Ceiling((double)index / _pageSize));
+				field = value;
+				CurrentPage = Math.Max(1, (int)Math.Ceiling((double)index / field));
 			} else {
-				_pageSize = value;
+				field = value;
 			}
 		}
-	}
-
-	/// <summary>
-	/// Current page
-	/// </summary>
-	private int _currentPage = 1;
+	} = 10;
 
 	/// <summary>
 	/// Gets or sets the current page
 	/// </summary>
+
+	/// <remarks>
+	/// Current page
+	/// </remarks>
 	public int CurrentPage {
-		get => _currentPage;
+		get {
+			return field;
+		}
 		set {
-			if (_currentPage == value)
+			if (field == value)
 				return;
-			_currentPage = Math.Max(1, value);
+			field = Math.Max(1, value);
 			StateHasChangedDelegate?.Invoke();
 		}
-	}
+	} = 1;
 
 	/// <summary>
 	/// Gets the total number of pages based on total items and page size.

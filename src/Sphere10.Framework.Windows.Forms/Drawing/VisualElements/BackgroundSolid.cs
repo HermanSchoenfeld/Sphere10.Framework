@@ -33,13 +33,8 @@ public class BackgroundSolid : VisualElementBase {
 	/// Gets or sets the back color of the content.
 	/// </summary>
 	public virtual Color BackColor {
-		get {
-			return _backColor;
-		}
-
-		set {
-			_backColor = value;
-		}
+		get => _backColor;
+		set => _backColor = value;
 	}
 
 	/// <summary>

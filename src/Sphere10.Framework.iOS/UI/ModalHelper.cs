@@ -163,7 +163,6 @@ namespace Sphere10.Framework.iOS {
     public class ModalFrameController : UIViewController {
         private Action _doneAction;
         private UIToolbar _toolbar;
-        private UIViewController _contentViewController;
         private UIView _contentView;
 
         public ModalFrameController(UIViewController contentViewController)
@@ -200,34 +199,30 @@ namespace Sphere10.Framework.iOS {
         }
 
         public Action DoneAction {
-            get {
-                return _doneAction;
-            }
-            set {
-                _doneAction = value ?? Tools.Lambda.NoOp;
-            }
-        }
+			get => _doneAction;
+			set => _doneAction = value ?? Tools.Lambda.NoOp;
+		}
 
 
         public UIViewController ContentViewController {
-            get {
-                return _contentViewController;
-            }
-            set {
-                if (_contentViewController != null) {
-                    _contentViewController.RemoveFromParentViewController();
-                    _contentViewController.Dispose();
-                    _contentViewController = null;
+			get {
+				return field;
+			}
+			set {
+                if (field != null) {
+                    field.RemoveFromParentViewController();
+                    field.Dispose();
+                    field = null;
                 }
                 _contentView.RemoveAndDisposeChildSubViews();
-                _contentViewController = value;
+                field = value;
 
-                if (_contentViewController != null) {
-                    this.AddChildViewController(_contentViewController);
-                    _contentView.AddSubviewDockFull(_contentViewController.View);
+                if (field != null) {
+                    this.AddChildViewController(field);
+                    _contentView.AddSubviewDockFull(field.View);
                 }
             }
-        }
+		}
 
         protected override void Dispose(bool disposing) {
             if (disposing) {

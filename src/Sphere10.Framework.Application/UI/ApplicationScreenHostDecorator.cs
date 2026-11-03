@@ -46,63 +46,31 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 	}
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock[] AvailableBlocks {
-		get {
-			return InternalHost.AvailableBlocks;
-		}
-	}
+	public virtual IApplicationBlock[] AvailableBlocks => InternalHost.AvailableBlocks;
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock[] Blocks {
-		get {
-			return InternalHost.Blocks;
-		}
-	}
+	public virtual IApplicationBlock[] Blocks => InternalHost.Blocks;
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock ActiveBlock {
-		get {
-			return InternalHost.ActiveBlock;
-		}
-	}
+	public virtual IApplicationBlock ActiveBlock => InternalHost.ActiveBlock;
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock SelectedBlock {
-		get {
-			return InternalHost.SelectedBlock;
-		}
-	}
+	public virtual IApplicationBlock SelectedBlock => InternalHost.SelectedBlock;
 
 	/// <inheritdoc />
-	public virtual IApplicationScreen ActiveScreen {
-		get {
-			return InternalHost.ActiveScreen;
-		}
-	}
+	public virtual IApplicationScreen ActiveScreen => InternalHost.ActiveScreen;
 
 	/// <inheritdoc />
-	public virtual IUserInterfaceServices UserInterfaceServices {
-		get {
-			return InternalHost.UserInterfaceServices;
-		}
-	}
+	public virtual IUserInterfaceServices UserInterfaceServices => InternalHost.UserInterfaceServices;
 
 	/// <inheritdoc />
 	public virtual ScreenMode ScreenMode {
-		get {
-			return InternalHost.ScreenMode;
-		}
-		set {
-			InternalHost.ScreenMode = value;
-		}
+		get => InternalHost.ScreenMode;
+		set => InternalHost.ScreenMode = value;
 	}
 
 	/// <inheritdoc />
-	public virtual bool HasUnsavedChanges {
-		get {
-			return InternalHost.HasUnsavedChanges;
-		}
-	}
+	public virtual bool HasUnsavedChanges => InternalHost.HasUnsavedChanges;
 
 	/// <summary>Initializes registered screen policies and the initial selection through the guarded transition owner.</summary>
 	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) {
@@ -220,63 +188,31 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 	}
 
 	/// <inheritdoc />
-	public virtual TBlock[] AvailableBlocks {
-		get {
-			return InternalHost.AvailableBlocks;
-		}
-	}
+	public virtual TBlock[] AvailableBlocks => InternalHost.AvailableBlocks;
 
 	/// <inheritdoc />
-	public virtual TBlock[] Blocks {
-		get {
-			return InternalHost.Blocks;
-		}
-	}
+	public virtual TBlock[] Blocks => InternalHost.Blocks;
 
 	/// <inheritdoc />
-	public virtual TBlock ActiveBlock {
-		get {
-			return InternalHost.ActiveBlock;
-		}
-	}
+	public virtual TBlock ActiveBlock => InternalHost.ActiveBlock;
 
 	/// <inheritdoc />
-	public virtual TBlock SelectedBlock {
-		get {
-			return InternalHost.SelectedBlock;
-		}
-	}
+	public virtual TBlock SelectedBlock => InternalHost.SelectedBlock;
 
 	/// <inheritdoc />
-	public virtual TScreen ActiveScreen {
-		get {
-			return InternalHost.ActiveScreen;
-		}
-	}
+	public virtual TScreen ActiveScreen => InternalHost.ActiveScreen;
 
 	/// <inheritdoc />
-	public virtual IUserInterfaceServices UserInterfaceServices {
-		get {
-			return InternalHost.UserInterfaceServices;
-		}
-	}
+	public virtual IUserInterfaceServices UserInterfaceServices => InternalHost.UserInterfaceServices;
 
 	/// <inheritdoc />
 	public virtual ScreenMode ScreenMode {
-		get {
-			return InternalHost.ScreenMode;
-		}
-		set {
-			InternalHost.ScreenMode = value;
-		}
+		get => InternalHost.ScreenMode;
+		set => InternalHost.ScreenMode = value;
 	}
 
 	/// <inheritdoc />
-	public virtual bool HasUnsavedChanges {
-		get {
-			return InternalHost.HasUnsavedChanges;
-		}
-	}
+	public virtual bool HasUnsavedChanges => InternalHost.HasUnsavedChanges;
 
 	/// <summary>Initializes registered screen policies and the initial selection through the guarded transition owner.</summary>
 	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) {
@@ -360,39 +296,19 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 
 	#region Base Interface Bridges
 	// Preserve neutral calls to virtual class members when a subclass explicitly remaps the typed interface.
-	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks {
-		get {
-			return AvailableBlocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.Blocks {
-		get {
-			return Blocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.Blocks => Blocks;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.ActiveBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.ActiveBlock => ActiveBlock;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.SelectedBlock {
-		get {
-			return SelectedBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.SelectedBlock => SelectedBlock;
 
 	/// <inheritdoc />
-	IApplicationScreen IApplicationScreenHost.ActiveScreen {
-		get {
-			return ActiveScreen;
-		}
-	}
+	IApplicationScreen IApplicationScreenHost.ActiveScreen => ActiveScreen;
 
 	/// <inheritdoc />
 	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {

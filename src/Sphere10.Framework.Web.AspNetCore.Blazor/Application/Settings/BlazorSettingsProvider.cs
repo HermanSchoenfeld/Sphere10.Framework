@@ -46,11 +46,7 @@ public sealed class BlazorSettingsProvider : AsyncSettingsProviderBase, IAsyncDi
 	}
 
 	/// <summary>Browser preferences retain the existing value-only serialization without machine-bound encryption.</summary>
-	public override bool EncryptSettings {
-		get {
-			return false;
-		}
-	}
+	public override bool EncryptSettings => false;
 
 	/// <inheritdoc />
 	protected override async Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {

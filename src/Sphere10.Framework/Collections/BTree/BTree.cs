@@ -29,18 +29,15 @@ namespace Sphere10.Framework;
 /// <typeparam name="V">Value type.</typeparam>
 /// <typeparam name="TNode">Handle type representing a node in the storage backend.</typeparam>
 public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
-	private readonly int _maxKeys;
-	private readonly int _minKeys;
-
 	protected BTree(int order, IComparer<K> keyComparer = null)
 		: base(order, keyComparer) {
-		_maxKeys = order - 1;
-		_minKeys = ((order + 1) / 2) - 1; // ceil(order / 2) - 1
+		MaxKeys = order - 1;
+		MinKeys = ((order + 1) / 2) - 1; // ceil(order / 2) - 1
 	}
 
-	protected int MaxKeys => _maxKeys;
+	protected int MaxKeys { get; }
 
-	protected int MinKeys => _minKeys;
+	protected int MinKeys { get; }
 
 	#region Abstract — Root Management
 
@@ -397,7 +394,7 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 		if (IsLeaf(node)) {
 			InsertKey(node, Index, new KeyValuePair<K, V>(key, value));
 			insertedNewKey = true;
-			return GetKeyCount(node) > _maxKeys ? SplitNode(node) : null;
+			return GetKeyCount(node) > MaxKeys ? SplitNode(node) : null;
 		}
 
 		var ChildSplit = InsertRecursive(GetChild(node, Index), key, value, overwriteIfExists, out insertedNewKey);
@@ -408,7 +405,7 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 		SetChild(node, Index, ChildSplit.Left);
 		InsertChild(node, Index + 1, ChildSplit.Right);
 
-		return GetKeyCount(node) > _maxKeys ? SplitNode(node) : null;
+		return GetKeyCount(node) > MaxKeys ? SplitNode(node) : null;
 	}
 
 	private bool RemoveRecursive(TNode node, K key) {
@@ -452,15 +449,15 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 			return;
 
 		var Child = GetChild(parent, childIndex);
-		if (GetKeyCount(Child) >= _minKeys)
+		if (GetKeyCount(Child) >= MinKeys)
 			return;
 
-		if (childIndex > 0 && GetKeyCount(GetChild(parent, childIndex - 1)) > _minKeys) {
+		if (childIndex > 0 && GetKeyCount(GetChild(parent, childIndex - 1)) > MinKeys) {
 			BorrowFromLeft(parent, childIndex);
 			return;
 		}
 
-		if (childIndex < GetChildCount(parent) - 1 && GetKeyCount(GetChild(parent, childIndex + 1)) > _minKeys) {
+		if (childIndex < GetChildCount(parent) - 1 && GetKeyCount(GetChild(parent, childIndex + 1)) > MinKeys) {
 			BorrowFromRight(parent, childIndex);
 			return;
 		}
@@ -557,13 +554,13 @@ public abstract class BTree<K, V, TNode> : BTreeBase<K, V> {
 			return false;
 		}
 
-		if (KeyCount > _maxKeys) {
-			error = $"Node contains {KeyCount} keys, exceeding max {_maxKeys}.";
+		if (KeyCount > MaxKeys) {
+			error = $"Node contains {KeyCount} keys, exceeding max {MaxKeys}.";
 			return false;
 		}
 
-		if (!isRoot && KeyCount < _minKeys) {
-			error = $"Non-root node contains {KeyCount} keys, below min {_minKeys}.";
+		if (!isRoot && KeyCount < MinKeys) {
+			error = $"Non-root node contains {KeyCount} keys, below min {MinKeys}.";
 			return false;
 		}
 

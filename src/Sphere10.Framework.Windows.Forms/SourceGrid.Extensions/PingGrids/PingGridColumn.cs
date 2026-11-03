@@ -19,14 +19,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 /// Mantains the cell used on this grid and manage the binding to the DataSource using a DataGridValueModel class.
 /// </summary>
 public class PingGridColumn : ColumnInfo {
-	private string _propertyName;
-
 	[Obsolete] private PropertyDescriptor _propertyColumn = null;
-
-	private ICellVirtual _headerCell;
-
-	private ICellVirtual _dataCell;
-
 	[Obsolete] private List<Conditions.ICondition> _conditions = new List<Conditions.ICondition>();
 
 	[Obsolete] private Dictionary<Conditions.ICondition, ICellVirtual> _conditionalCells = new Dictionary<Conditions.ICondition, ICellVirtual>();
@@ -37,8 +30,8 @@ public class PingGridColumn : ColumnInfo {
 	/// <param name="grid"></param>
 	public PingGridColumn(PingGrid grid)
 		: base(grid) {
-		_headerCell = new SourceGrid.Extensions.PingGrids.Cells.ColumnHeader(string.Empty);
-		_dataCell = new SourceGrid.Extensions.PingGrids.Cells.Cell();
+		HeaderCell = new SourceGrid.Extensions.PingGrids.Cells.ColumnHeader(string.Empty);
+		DataCell = new SourceGrid.Extensions.PingGrids.Cells.Cell();
 	}
 
 	/// <summary>
@@ -46,23 +39,19 @@ public class PingGridColumn : ColumnInfo {
 	/// </summary>
 	public PingGridColumn(PingGrid grid, ICellVirtual headerCell, ICellVirtual dataCell, string propertyName)
 		: base(grid) {
-		_propertyName = propertyName;
-		_headerCell = headerCell;
-		_dataCell = dataCell;
+		PropertyName = propertyName;
+		HeaderCell = headerCell;
+		DataCell = dataCell;
 	}
 
-	public new PingGrid Grid {
-		get {
-			return (PingGrid)base.Grid;
-		}
-	}
+	public new PingGrid Grid => (PingGrid)base.Grid;
 
 	public string PropertyName {
 		get {
-			return _propertyName;
+			return field;
 		}
 		set {
-			_propertyName = value;
+			field = value;
 			//mPropertyColumn = null;
 		}
 	}
@@ -85,37 +74,19 @@ public class PingGridColumn : ColumnInfo {
 	/// Gets or sets the header cell for this column.
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.ColumnHeader
 	/// </summary>
-	public ICellVirtual HeaderCell {
-		get {
-			return _headerCell;
-		}
-		set {
-			_headerCell = value;
-		}
-	}
+	public ICellVirtual HeaderCell { get; set; }
 
 	/// <summary>
 	/// Gets or sets the cell used for this column for all the rows to disply the data
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.Cell or other classes of the same namespace
 	/// </summary>
-	public ICellVirtual DataCell {
-		get {
-			return _dataCell;
-		}
-		set {
-			_dataCell = value;
-		}
-	}
+	public ICellVirtual DataCell { get; set; }
 
 	/// <summary>
 	/// Gets the conditions used to returns different cell based on the data of the row.
 	/// </summary>
 	[Obsolete]
-	public List<Conditions.ICondition> Conditions {
-		get {
-			return _conditions;
-		}
-	}
+	public List<Conditions.ICondition> Conditions => _conditions;
 
 	/// <summary>
 	/// Gets the ICellVirtual for the current column and the specified row.

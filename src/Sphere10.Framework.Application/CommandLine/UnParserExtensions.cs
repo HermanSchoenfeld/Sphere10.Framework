@@ -16,50 +16,45 @@ namespace CommandLine;
 /// Provides settings for when formatting command line from an options instance../>.
 /// </summary>
 public class UnParserSettings {
-	private bool preferShortName;
-	private bool groupSwitches;
-	private bool useEqualToken;
-	private bool showHidden;
-	private bool skipDefault;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether unparsing process shall prefer short or long names.
 	/// </summary>
 	public bool PreferShortName {
-		get { return preferShortName; }
-		set { PopsicleSetter.Set(Consumed, ref preferShortName, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether unparsing process shall group switches.
 	/// </summary>
 	public bool GroupSwitches {
-		get { return groupSwitches; }
-		set { PopsicleSetter.Set(Consumed, ref groupSwitches, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether unparsing process shall use equal sign with long names.
 	/// </summary>
 	public bool UseEqualToken {
-		get { return useEqualToken; }
-		set { PopsicleSetter.Set(Consumed, ref useEqualToken, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether unparsing process shall expose hidden options.
 	/// </summary>
 	public bool ShowHidden {
-		get { return showHidden; }
-		set { PopsicleSetter.Set(Consumed, ref showHidden, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether unparsing process shall skip options with DefaultValue.
 	/// </summary>
 	public bool SkipDefault {
-		get { return skipDefault; }
-		set { PopsicleSetter.Set(Consumed, ref skipDefault, value); }
+		get => field;
+		set => PopsicleSetter.Set(Consumed, ref field, value);
 	}
 
 	/// <summary>

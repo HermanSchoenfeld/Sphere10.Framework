@@ -124,19 +124,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         private ChartImageWrapMode _backImageWrapMode = ChartImageWrapMode.Tile;
         private Color _backImageTransparentColor = Color.Empty;
         private ChartImageAlignmentStyle _backImageAlignment = ChartImageAlignmentStyle.TopLeft;
-        private Color _borderColor = Color.Black;
-        private int _borderWidth = 1;
-        private ChartDashStyle _borderDashStyle = ChartDashStyle.NotSet;
-        private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
 
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 
-        /// <summary>
-        /// Default public constructor.
-        /// </summary>
-        public BorderSkin() : base()
+		/// <summary>
+		/// Default public constructor.
+		/// </summary>
+		public BorderSkin() : base()
         {
         }
 
@@ -165,13 +161,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color PageColor
         {
-            get => _pageColor;
-            set
+			get {
+				return _pageColor;
+			}
+			set
             {
                 _pageColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
 
         /// <summary>
@@ -187,13 +185,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public BorderSkinStyle SkinStyle
         {
-            get => _skinStyle;
-            set
+			get {
+				return _skinStyle;
+			}
+			set
             {
                 _skinStyle = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of a skin frame.
@@ -209,13 +209,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackColor
         {
-            get => _backColor;
-            set
+			get {
+				return _backColor;
+			}
+			set
             {
                 _backColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the border color of a skin frame.
@@ -231,18 +233,20 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BorderColor
         {
-            get => _borderColor;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                _borderColor = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = Color.Black;
 
-        /// <summary>
-        /// Gets or sets the background hatch style of a skin frame.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the background hatch style of a skin frame.
+		/// </summary>
+		[
 
         SRCategory("CategoryAttributeAppearance"),
         Bindable(true),
@@ -252,18 +256,20 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartHatchStyle BackHatchStyle
         {
-            get => _backHatchStyle;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                _backHatchStyle = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = ChartHatchStyle.None;
 
-        /// <summary>
-        /// Gets or sets the background image of a skin frame.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the background image of a skin frame.
+		/// </summary>
+		[
 
         SRCategory("CategoryAttributeAppearance"),
         Bindable(true),
@@ -273,13 +279,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string BackImage
         {
-            get => _backImage;
-            set
+			get {
+				return _backImage;
+			}
+			set
             {
                 _backImage = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the drawing mode for the background image of a skin frame.
@@ -294,13 +302,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartImageWrapMode BackImageWrapMode
         {
-            get => _backImageWrapMode;
-            set
+			get {
+				return _backImageWrapMode;
+			}
+			set
             {
                 _backImageWrapMode = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a color which will be replaced with a transparent color 
@@ -317,13 +327,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackImageTransparentColor
         {
-            get => _backImageTransparentColor;
-            set
+			get {
+				return _backImageTransparentColor;
+			}
+			set
             {
                 _backImageTransparentColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background image alignment of a skin frame.
@@ -341,13 +353,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartImageAlignmentStyle BackImageAlignment
         {
-            get => _backImageAlignment;
-            set
+			get {
+				return _backImageAlignment;
+			}
+			set
             {
                 _backImageAlignment = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background gradient style of a skin frame.
@@ -362,13 +376,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public GradientStyle BackGradientStyle
         {
-            get => _backGradientStyle;
-            set
+			get {
+				return _backGradientStyle;
+			}
+			set
             {
                 _backGradientStyle = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color of a skin frame.
@@ -388,13 +404,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackSecondaryColor
         {
-            get => _backSecondaryColor;
-            set
+			get {
+				return _backSecondaryColor;
+			}
+			set
             {
                 _backSecondaryColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the width of the border line of a skin frame.
@@ -409,23 +427,25 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int BorderWidth
         {
-            get => _borderWidth;
-            set
+			get {
+				return field;
+			}
+			set
             {
                 if (value < 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionBorderWidthIsNotPositive);
                 }
 
-                _borderWidth = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = 1;
 
-        /// <summary>
-        /// Gets or sets the style of the border line of a skin frame.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the style of the border line of a skin frame.
+		/// </summary>
+		[
 
         SRCategory("CategoryAttributeAppearance"),
         Bindable(true),
@@ -435,16 +455,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartDashStyle BorderDashStyle
         {
-            get => _borderDashStyle;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                _borderDashStyle = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = ChartDashStyle.NotSet;
 
-        #endregion
-    }
+		#endregion
+	}
 }
 
 

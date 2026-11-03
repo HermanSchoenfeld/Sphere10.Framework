@@ -25,7 +25,9 @@ internal class SimpleGraphAdapter<TNode, TEdge, TWeight> : ISimpleGraph
 	}
 
 	public IEnumerable<ISimpleGraph> Connections {
-		get { return (IEnumerable<ISimpleGraph>)_complexGraph.Edges.Select(edge => new SimpleGraphAdapter<TNode, TEdge, TWeight>(edge.Destination, _edgeCreator)); }
+		get {
+			return (IEnumerable<ISimpleGraph>)_complexGraph.Edges.Select(edge => new SimpleGraphAdapter<TNode, TEdge, TWeight>(edge.Destination, _edgeCreator));
+		}
 		set {
 			if (_edgeCreator != null)
 				_complexGraph.Edges = (value ?? Enumerable.Empty<ISimpleGraph>()).Select(node => _edgeCreator(node));

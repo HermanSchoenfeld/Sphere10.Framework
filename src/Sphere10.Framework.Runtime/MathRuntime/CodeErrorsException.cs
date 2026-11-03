@@ -24,10 +24,7 @@ public class CodeErrorsException : CodeErrorException {
 
 	public override int LineNumberOffset {
 		get {
-			if (_errorList.Count > 0) {
-				return _errorList[0].LineNumberOffset;
-			}
-			return 0;
+			return _errorList.Count > 0 ? _errorList[0].LineNumberOffset : 0;
 		}
 		set {
 			foreach (CodeErrorException error in _errorList) {
@@ -38,10 +35,7 @@ public class CodeErrorsException : CodeErrorException {
 
 	public override int PositionOffset {
 		get {
-			if (_errorList.Count > 0) {
-				return _errorList[0].PositionOffset;
-			}
-			return 0;
+			return _errorList.Count > 0 ? _errorList[0].PositionOffset : 0;
 		}
 		set {
 			foreach (CodeErrorException error in _errorList) {

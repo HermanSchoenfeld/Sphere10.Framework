@@ -181,15 +181,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
-            set
-            {
-                base.Name = value;
-            }
-        }
+			get => base.Name;
+			set => base.Name = value;
+		}
 
 
         /// <summary>
@@ -200,16 +194,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
         SerializationVisibility(SerializationVisibility.Hidden),
         ]
-        public virtual Legend Legend
-        {
-            get
-            {
-                if (Parent != null)
-                    return Parent.Parent as Legend;
-                else
-                    return null;
-            }
-        }
+        public virtual Legend Legend => Parent != null ? Parent.Parent as Legend : null;
 
 
         /// <summary>
@@ -223,16 +208,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LegendCellColumnType ColumnType
         {
-            get
-            {
-                return this._columnType;
-            }
-            set
+			get {
+				return this._columnType;
+			}
+			set
             {
                 this._columnType = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets legend column text.  This is only applicable to items that are automatically generated for the series.  
@@ -245,16 +229,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string Text
         {
-            get
-            {
-                return this._text;
-            }
-            set
+			get {
+				return this._text;
+			}
+			set
             {
                 this._text = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text color of the legend column.
@@ -267,16 +250,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color ForeColor
         {
-            get
-            {
-                return this._foreColor;
-            }
-            set
+			get {
+				return this._foreColor;
+			}
+			set
             {
                 this._foreColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of the legend column.
@@ -289,16 +271,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color BackColor
         {
-            get
-            {
-                return this._backColor;
-            }
-            set
+			get {
+				return this._backColor;
+			}
+			set
             {
                 this._backColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
 
         /// <summary>
@@ -311,16 +292,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Font Font
         {
-            get
-            {
-                return this._font;
-            }
-            set
+			get {
+				return this._font;
+			}
+			set
             {
                 this._font = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the series symbol size of the legend column
@@ -333,11 +313,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Size SeriesSymbolSize
         {
-            get
-            {
-                return this._seriesSymbolSize;
-            }
-            set
+			get {
+				return this._seriesSymbolSize;
+			}
+			set
             {
                 if (value.Width < 0 || value.Height < 0)
                 {
@@ -346,7 +325,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._seriesSymbolSize = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the content alignment of the legend column.
@@ -359,16 +338,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual ContentAlignment Alignment
         {
-            get
-            {
-                return this._alignment;
-            }
-            set
+			get {
+				return this._alignment;
+			}
+			set
             {
                 this._alignment = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the margins of the legend column (as a percentage of legend font size).  
@@ -384,11 +362,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Margins Margins
         {
-            get
-            {
-                return this._margins;
-            }
-            set
+			get {
+				return this._margins;
+			}
+			set
             {
                 this._margins = value;
                 this.Invalidate();
@@ -399,7 +376,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this._margins.Common = this.Legend.Common;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Returns true if property should be serialized.  This is for internal use only.
@@ -427,7 +404,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string ToolTip
         {
-            set
+			set
             {
                 this._toolTip = value;
                 if (Chart != null &&
@@ -436,11 +413,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     Chart.selection.enabledChecked = false;
                 }
             }
-            get
-            {
-                return this._toolTip;
-            }
-        }
+			get {
+				return this._toolTip;
+			}
+		}
 
         /// <summary>
         /// Gets or sets the legend column header text.
@@ -452,16 +428,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string HeaderText
         {
-            get
-            {
-                return this._headerText;
-            }
-            set
+			get {
+				return this._headerText;
+			}
+			set
             {
                 this._headerText = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of the legend column header text.
@@ -474,16 +449,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color HeaderForeColor
         {
-            get
-            {
-                return this._headerForeColor;
-            }
-            set
+			get {
+				return this._headerForeColor;
+			}
+			set
             {
                 this._headerForeColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of the legend column header.
@@ -496,16 +470,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color HeaderBackColor
         {
-            get
-            {
-                return this._headerBackColor;
-            }
-            set
+			get {
+				return this._headerBackColor;
+			}
+			set
             {
                 this._headerBackColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the font of the legend column header.
@@ -517,16 +490,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Font HeaderFont
         {
-            get
-            {
-                return this._headerFont;
-            }
-            set
+			get {
+				return this._headerFont;
+			}
+			set
             {
                 this._headerFont = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the horizontal text alignment of the legend column header.
@@ -538,11 +510,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public StringAlignment HeaderAlignment
         {
-            get
-            {
-                return this._headerAlignment;
-            }
-            set
+			get {
+				return this._headerAlignment;
+			}
+			set
             {
                 if (value != this._headerAlignment)
                 {
@@ -550,7 +521,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the minimum width (as a percentage of legend font size) of legend column. Set this property to -1 for automatic calculation.
@@ -563,11 +534,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual int MinimumWidth
         {
-            get
-            {
-                return this._minimumCellWidth;
-            }
-            set
+			get {
+				return this._minimumCellWidth;
+			}
+			set
             {
                 if (value < -1)
                 {
@@ -577,7 +547,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._minimumCellWidth = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the maximum width (as a percentage of legend font size) of legend column.  Set this property to -1 for automatic calculation.
@@ -590,11 +560,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual int MaximumWidth
         {
-            get
-            {
-                return this._maximumCellWidth;
-            }
-            set
+			get {
+				return this._maximumCellWidth;
+			}
+			set
             {
                 if (value < -1)
                 {
@@ -603,7 +572,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._maximumCellWidth = value;
                 this.Invalidate();
             }
-        }
+		}
 
         #endregion // Properties
 
@@ -775,15 +744,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
-            set
-            {
-                base.Name = value;
-            }
-        }
+			get => base.Name;
+			set => base.Name = value;
+		}
 
         /// <summary>
         /// Gets or sets the type of the legend cell.
@@ -796,16 +759,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LegendCellType CellType
         {
-            get
-            {
-                return this._cellType;
-            }
-            set
+			get {
+				return this._cellType;
+			}
+			set
             {
                 this._cellType = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets legend this column/cell belongs too.
@@ -835,16 +797,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
         SerializationVisibility(SerializationVisibility.Hidden),
         ]
-        public virtual LegendItem LegendItem
-        {
-            get
-            {
-                if (Parent != null)
-                    return Parent.Parent as LegendItem;
-                else
-                    return null;
-            }
-        }
+        public virtual LegendItem LegendItem => Parent != null ? Parent.Parent as LegendItem : null;
 
 
 
@@ -858,16 +811,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string Text
         {
-            get
-            {
-                return this._text;
-            }
-            set
+			get {
+				return this._text;
+			}
+			set
             {
                 this._text = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text color of the legend cell. Set CellType to text to use this property.
@@ -880,16 +832,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color ForeColor
         {
-            get
-            {
-                return this._foreColor;
-            }
-            set
+			get {
+				return this._foreColor;
+			}
+			set
             {
                 this._foreColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of the legend cell.
@@ -902,16 +853,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color BackColor
         {
-            get
-            {
-                return this._backColor;
-            }
-            set
+			get {
+				return this._backColor;
+			}
+			set
             {
                 this._backColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the font of the legend cell. Set CellType to text to use this property.
@@ -923,16 +873,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Font Font
         {
-            get
-            {
-                return this._font;
-            }
-            set
+			get {
+				return this._font;
+			}
+			set
             {
                 this._font = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the URL of the image of the legend cell. Set CellType to image to use this property.
@@ -944,16 +893,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string Image
         {
-            get
-            {
-                return this._image;
-            }
-            set
+			get {
+				return this._image;
+			}
+			set
             {
                 this._image = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a color which will be replaced with a transparent color while drawing the image.  Set CellType to image to use this property.
@@ -966,16 +914,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Color ImageTransparentColor
         {
-            get
-            {
-                return this._imageTransparentColor;
-            }
-            set
+			get {
+				return this._imageTransparentColor;
+			}
+			set
             {
                 this._imageTransparentColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the image size (as a percentage of legend font size) of the legend cell. 
@@ -992,11 +939,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Size ImageSize
         {
-            get
-            {
-                return this._imageSize;
-            }
-            set
+			get {
+				return this._imageSize;
+			}
+			set
             {
                 if (value.Width < 0 || value.Height < 0)
                 {
@@ -1005,7 +951,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._imageSize = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the series symbol size (as a percentage of legend font size) of the legend cell. 
@@ -1018,11 +964,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Size SeriesSymbolSize
         {
-            get
-            {
-                return this._seriesSymbolSize;
-            }
-            set
+			get {
+				return this._seriesSymbolSize;
+			}
+			set
             {
                 if (value.Width < 0 || value.Height < 0)
                 {
@@ -1031,7 +976,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._seriesSymbolSize = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the content alignment of the legend cell.
@@ -1043,16 +988,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual ContentAlignment Alignment
         {
-            get
-            {
-                return this._alignment;
-            }
-            set
+			get {
+				return this._alignment;
+			}
+			set
             {
                 this._alignment = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the number of horizontal cells used to draw the content.
@@ -1064,11 +1008,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual int CellSpan
         {
-            get
-            {
-                return this._cellSpan;
-            }
-            set
+			get {
+				return this._cellSpan;
+			}
+			set
             {
                 if (value < 1)
                 {
@@ -1077,7 +1020,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._cellSpan = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend cell margins (as a percentage of legend font size).
@@ -1091,11 +1034,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual Margins Margins
         {
-            get
-            {
-                return this._margins;
-            }
-            set
+			get {
+				return this._margins;
+			}
+			set
             {
                 this._margins = value;
                 this.Invalidate();
@@ -1106,7 +1048,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this._margins.Common = this.Common;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Returns true if property should be serialized.  This method is for internal use only.
@@ -1134,7 +1076,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string ToolTip
         {
-            set
+			set
             {
                 this._toolTip = value;
                 if (this.Chart != null &&
@@ -1143,11 +1085,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Chart.selection.enabledChecked = false;
                 }
             }
-            get
-            {
-                return this._toolTip;
-            }
-        }
+			get {
+				return this._toolTip;
+			}
+		}
 
         #endregion // Properties
 
@@ -2202,11 +2143,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int Top
         {
-            get
-            {
-                return this._top;
-            }
-            set
+			get {
+				return this._top;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -2215,7 +2155,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._top = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the bottom margin.
@@ -2229,11 +2169,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int Bottom
         {
-            get
-            {
-                return this._bottom;
-            }
-            set
+			get {
+				return this._bottom;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -2242,7 +2181,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._bottom = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the left margin.
@@ -2256,11 +2195,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int Left
         {
-            get
-            {
-                return this._left;
-            }
-            set
+			get {
+				return this._left;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -2269,7 +2207,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._left = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the right margin.
@@ -2283,11 +2221,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int Right
         {
-            get
-            {
-                return this._right;
-            }
-            set
+			get {
+				return this._right;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -2296,7 +2233,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._right = value;
                 this.Invalidate();
             }
-        }
+		}
 
         #endregion // Properties
 

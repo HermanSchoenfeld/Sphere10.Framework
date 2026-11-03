@@ -36,7 +36,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         /// <summary>
         /// Formula Module name
         /// </summary>
-        virtual public string Name { get { return SR.FormulaNamePriceIndicators; } }
+        virtual public string Name => SR.FormulaNamePriceIndicators;
 
         #endregion
 

@@ -16,12 +16,8 @@ namespace Sphere10.Framework;
 /// don't fit entirely within any single child quadrant.
 /// </summary>
 public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBounds> {
-	private TBounds _bounds;
-	private readonly List<TBounds> _contents = new();
-	private readonly List<QuadTreeNode<TBounds>> _nodes = new(4);
-
 	public QuadTreeNode(TBounds bounds) {
-		_bounds = bounds;
+		Bounds = bounds;
 	}
 
 	public QuadTreeNode(TBounds bounds, int currentDepth, QuadTree<TBounds> quadTree)
@@ -34,20 +30,20 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 
 	public QuadTree<TBounds> QuadTree { get; set; }
 
-	public TBounds Bounds => _bounds;
+	public TBounds Bounds { get; }
 
-	public List<TBounds> Contents => _contents;
+	public List<TBounds> Contents { get; } = new();
 
-	public List<QuadTreeNode<TBounds>> Nodes => _nodes;
+	public List<QuadTreeNode<TBounds>> Nodes { get; } = new(4);
 
-	public bool IsEmpty => _nodes.Count == 0 && _contents.Count == 0;
+	public bool IsEmpty => Nodes.Count == 0 && Contents.Count == 0;
 
 	public int Count {
 		get {
 			var Count = 0;
-			foreach (var Node in _nodes)
+			foreach (var Node in Nodes)
 				Count += Node.Count;
-			Count += _contents.Count;
+			Count += Contents.Count;
 			return Count;
 		}
 	}
@@ -55,7 +51,7 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 	public int MaxDepth {
 		get {
 			var CurrentDepth = Depth;
-			foreach (var Node in _nodes) {
+			foreach (var Node in Nodes) {
 				var NodeDepth = Node.MaxDepth;
 				if (NodeDepth > CurrentDepth)
 					CurrentDepth = NodeDepth;
@@ -67,41 +63,41 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 	public List<TBounds> SubTreeContents {
 		get {
 			var Results = new List<TBounds>();
-			foreach (var Node in _nodes)
+			foreach (var Node in Nodes)
 				Results.AddRange(Node.SubTreeContents);
-			Results.AddRange(_contents);
+			Results.AddRange(Contents);
 			return Results;
 		}
 	}
 
 	public void Insert(TBounds item) {
-		if (!_bounds.Contains(item))
+		if (!Bounds.Contains(item))
 			throw new ArgumentException("Item is out of the bounds of this quadtree node");
 
-		if (_nodes.Count == 0)
+		if (Nodes.Count == 0)
 			QuadTree.QuadTreeNodeDivider.CreateSubNodes(this);
 
-		foreach (var Node in _nodes) {
+		foreach (var Node in Nodes) {
 			if (Node.Bounds.Contains(item)) {
 				Node.Insert(item);
 				return;
 			}
 		}
-		_contents.Add(item);
+		Contents.Add(item);
 	}
 
 	public bool Remove(TBounds range) {
-		if (!_bounds.Contains(range))
+		if (!Bounds.Contains(range))
 			throw new ArgumentException("Range is out of the bounds of this quadtree node");
 
-		foreach (var Node in _nodes) {
+		foreach (var Node in Nodes) {
 			if (Node.Bounds.Contains(range))
 				return Node.Remove(range);
 		}
 
-		for (var I = 0; I < _contents.Count; I++) {
-			if (_contents[I].Equals(range)) {
-				_contents.RemoveAt(I);
+		for (var I = 0; I < Contents.Count; I++) {
+			if (Contents[I].Equals(range)) {
+				Contents.RemoveAt(I);
 				return true;
 			}
 		}
@@ -118,7 +114,7 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 	public List<TBounds> QueryInternal(TBounds queryArea, bool stopOnFirst) {
 		var Results = new List<TBounds>();
 
-		foreach (var Item in _contents) {
+		foreach (var Item in Contents) {
 			if (queryArea.IntersectsWith(Item)) {
 				Results.Add(Item);
 				if (stopOnFirst)
@@ -126,7 +122,7 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 			}
 		}
 
-		foreach (var Node in _nodes) {
+		foreach (var Node in Nodes) {
 			if (Node.IsEmpty)
 				continue;
 
@@ -150,12 +146,12 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 	public List<TBounds> Query(int row, int column) {
 		var Results = new List<TBounds>();
 
-		foreach (var Item in _contents) {
+		foreach (var Item in Contents) {
 			if (Item.Contains(row, column))
 				Results.Add(Item);
 		}
 
-		foreach (var Node in _nodes) {
+		foreach (var Node in Nodes) {
 			if (Node.IsEmpty)
 				continue;
 			if (Node.Bounds.Contains(row, column)) {
@@ -168,12 +164,12 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 	}
 
 	public TBounds? QueryFirst(int row, int column) {
-		foreach (var Item in _contents) {
+		foreach (var Item in Contents) {
 			if (Item.Contains(row, column))
 				return Item;
 		}
 
-		foreach (var Node in _nodes) {
+		foreach (var Node in Nodes) {
 			if (Node.IsEmpty)
 				continue;
 			if (Node.Bounds.Contains(row, column))
@@ -184,7 +180,7 @@ public class QuadTreeNode<TBounds> where TBounds : struct, IIntegerRectangle<TBo
 
 	public void ForEach(Action<QuadTreeNode<TBounds>> action) {
 		action(this);
-		foreach (var Node in _nodes)
+		foreach (var Node in Nodes)
 			Node.ForEach(action);
 	}
 }

@@ -38,11 +38,7 @@ public class NumericUpDown : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new System.Windows.Forms.NumericUpDown Control {
-		get {
-			return (System.Windows.Forms.NumericUpDown)base.Control;
-		}
-	}
+	public new System.Windows.Forms.NumericUpDown Control => (System.Windows.Forms.NumericUpDown)base.Control;
 
 	/// <summary>
 	/// Set the specified value in the current editor control.

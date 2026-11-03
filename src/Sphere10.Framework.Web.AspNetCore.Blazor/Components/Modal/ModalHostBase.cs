@@ -19,7 +19,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Modal;
 public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsyncDisposable where TComponent : ComponentBase {
 	private readonly CancellationTokenSource _lifetimeCancellation = new();
 	private Task<IJSObjectReference> _moduleTask;
-	private RenderFragment _activeContent;
 	private bool _showing;
 	private bool _disposed;
 
@@ -34,7 +33,10 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 	[Inject]
 	private IJSRuntime JsRuntime { get; set; }
 
-	protected RenderFragment DisplayedContent => _activeContent ?? Content;
+	protected RenderFragment DisplayedContent {
+		get => field ?? Content;
+		private set => field = value;
+	}
 
 	/// <summary>The normal dismissal result returned when the renderer removes this host.</summary>
 	protected virtual TResult CanceledResult => default;
@@ -68,7 +70,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 		var cancellationToken = cancellation.Token;
 		IJSObjectReference module = null;
 		await using var contentCleanup = Tools.Scope.ExecuteOnDisposeAsync<ModalHostBase<TComponent, TResult>>(static async owner => {
-			owner._activeContent = null;
+			owner.DisplayedContent = null;
 			owner._showing = false;
 			if (!owner._disposed)
 				await owner.InvokeAsync(owner.StateHasChanged);
@@ -90,7 +92,7 @@ public abstract class ModalHostBase<TComponent, TResult> : ComponentBase, IAsync
 				return true;
 			}
 		}
-		_activeContent = builder => {
+		DisplayedContent = builder => {
 			builder.OpenComponent<CascadingValue<Func<Task<bool>>>>(0);
 			builder.AddAttribute(1, nameof(CascadingValue<Func<Task<bool>>>.Name), "CloseModal");
 			builder.AddAttribute(2, nameof(CascadingValue<Func<Task<bool>>>.Value), (Func<Task<bool>>)CloseAsync);

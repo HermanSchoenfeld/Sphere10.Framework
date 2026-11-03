@@ -14,29 +14,14 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class ScrollPositionChangedEventArgs : EventArgs {
-	private int _newValue;
-	private int _oldValue;
-
 	public ScrollPositionChangedEventArgs(int newValue, int oldValue) {
-		_newValue = newValue;
-		_oldValue = oldValue;
+		NewValue = newValue;
+		OldValue = oldValue;
 	}
 
-	public int NewValue {
-		get {
-			return _newValue;
-		}
-	}
+	public int NewValue { get; }
 
-	public int OldValue {
-		get {
-			return _oldValue;
-		}
-	}
+	public int OldValue { get; }
 
-	public int Delta {
-		get {
-			return _oldValue - _newValue;
-		}
-	}
+	public int Delta => OldValue - NewValue;
 }

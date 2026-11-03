@@ -22,14 +22,6 @@ public partial class PlanningGrid : UserControlEx {
 
 	public event AppointmentEventHandler AppointmentDoubleClick;
 
-	private DateTime _dateTimeStart;
-
-	private DateTime _dateTimeEnd;
-
-	private int _minAppointmentLength;
-
-	private AppointmentCollection _appointments = new AppointmentCollection();
-
 	private const int _rowsHeader = 2;
 
 	private const int _columnsHeader = 2;
@@ -40,39 +32,19 @@ public partial class PlanningGrid : UserControlEx {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public AppointmentCollection Appointments {
-		get {
-			return _appointments;
-		}
-	}
+	public AppointmentCollection Appointments { get; } = new AppointmentCollection();
 
-	public DateTime DateTimeStart {
-		get {
-			return _dateTimeStart;
-		}
-	}
+	public DateTime DateTimeStart { get; private set; }
 
-	public DateTime DateTimeEnd {
-		get {
-			return _dateTimeEnd;
-		}
-	}
+	public DateTime DateTimeEnd { get; private set; }
 
-	public int MinAppointmentLength {
-		get {
-			return _minAppointmentLength;
-		}
-	}
+	public int MinAppointmentLength { get; private set; }
 
 	/// <summary>
 	/// The grid used internally to display the planning (note that you usually don't need to access directly this class).
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid => _grid;
 
 	/// <summary>
 	/// Load the grid using the parameters specified
@@ -82,9 +54,9 @@ public partial class PlanningGrid : UserControlEx {
 	/// <param name="minAppointmentLength"></param>
 	public void LoadPlanning(DateTime dateTimeStart, DateTime dateTimeEnd, int minAppointmentLength) {
 		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
-		_dateTimeStart = dateTimeStart;
-		_dateTimeEnd = dateTimeEnd;
-		_minAppointmentLength = minAppointmentLength;
+		DateTimeStart = dateTimeStart;
+		DateTimeEnd = dateTimeEnd;
+		MinAppointmentLength = minAppointmentLength;
 
 		if (dateTimeStart >= dateTimeEnd)
 			throw new ApplicationException("Invalid Planning Range");
@@ -162,15 +134,15 @@ public partial class PlanningGrid : UserControlEx {
 
 					var found = false;
 					//Appointments
-					for (var index = 0; index < _appointments.Count; index++) {
-						if (_appointments[index].ContainsDateTime(currentTime)) {
+					for (var index = 0; index < Appointments.Count; index++) {
+						if (Appointments[index].ContainsDateTime(currentTime)) {
 							found = true;
 
 							if (indexAppointment != index) {
-								appointmentCell = new CellAppointment(_appointments[index]);
-								appointmentCell.View = _appointments[index].View;
-								if (_appointments[index].Controller != null)
-									appointmentCell.AddController(_appointments[index].Controller);
+								appointmentCell = new CellAppointment(Appointments[index]);
+								appointmentCell.View = Appointments[index].View;
+								if (Appointments[index].Controller != null)
+									appointmentCell.AddController(Appointments[index].Controller);
 								_grid[rs, c] = appointmentCell;
 								indexAppointment = index;
 							} else {

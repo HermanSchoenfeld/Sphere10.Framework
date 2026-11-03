@@ -17,25 +17,17 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// EventArgs used by the FocusColumnEnter
 /// </summary>
 public class ColumnEventArgs : EventArgs {
-	private int _column;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="column"></param>
 	public ColumnEventArgs(int column) {
-		_column = column;
+		Column = column;
 	}
 
 	/// <summary>
 	/// Column
 	/// </summary>
-	public int Column {
-		get {
-			return _column;
-		}
-		set {
-			_column = value;
-		}
-	}
+	public int Column { get; set; }
 }

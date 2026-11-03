@@ -31,9 +31,7 @@ public class StandardHelpServices : IHelpServices {
 		WebsiteLauncher.LaunchProductWebsite();
 	}
 
-	public virtual HelpType PreferredHelpProvider {
-		get { return HelpType.URL; }
-	}
+	public virtual HelpType PreferredHelpProvider => HelpType.URL;
 
 
 }

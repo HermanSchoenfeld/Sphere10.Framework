@@ -54,23 +54,13 @@ public class Image : VisualElementBase, IImage {
 	/// </summary>
 	[DefaultValue(null)]
 	public System.Drawing.Image Value {
-		get {
-			return _value;
-		}
-
-		set {
-			_value = value;
-		}
+		get => _value;
+		set => _value = value;
 	}
 
 	public bool Enabled {
-		get {
-			return _enabled;
-		}
-
-		set {
-			_enabled = value;
-		}
+		get => _enabled;
+		set => _enabled = value;
 	}
 
 	/// <summary>Optional scaling through Framework.Drawing; null preserves the visual element's native drawing behavior.</summary>

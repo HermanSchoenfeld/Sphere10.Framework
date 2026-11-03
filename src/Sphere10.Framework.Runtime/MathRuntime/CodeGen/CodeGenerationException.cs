@@ -14,9 +14,7 @@ public class CodeGenerationException : CompilerException {
 		: base(errMsg) {
 	}
 
-	public override string Message {
-		get { return string.Format("Code Generation Failed: {0}", base.Message); }
-	}
+	public override string Message => string.Format("Code Generation Failed: {0}", base.Message);
 
 }
 

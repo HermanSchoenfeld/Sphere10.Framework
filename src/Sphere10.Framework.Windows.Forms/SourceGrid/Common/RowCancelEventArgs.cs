@@ -17,35 +17,22 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// EventArgs used by the FocusRowLeaving
 /// </summary>
 public class RowCancelEventArgs : RowEventArgs {
-	private bool _cancel = false;
-	private int _proposedRow;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	public RowCancelEventArgs(int currentFocusedRow, int proposedFocusedRow)
 		: base(currentFocusedRow) {
-		_proposedRow = proposedFocusedRow;
+		ProposedRow = proposedFocusedRow;
 	}
 
 	/// <summary>
 	/// Row
 	/// </summary>
-	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
-	}
+	public bool Cancel { get; set; } = false;
 
 	/// <summary>
 	/// Proposed row
 	/// </summary>
-	public int ProposedRow {
-		get {
-			return _proposedRow;
-		}
-	}
+	public int ProposedRow { get; }
 }

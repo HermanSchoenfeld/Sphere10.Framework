@@ -42,11 +42,7 @@ public class StandardHiddenRowCoordinator : IHiddenRowCoordinator {
 		};
 	}
 
-	public RowsBase Rows {
-		get {
-			return GridRows;
-		}
-	}
+	public RowsBase Rows => GridRows;
 
 	public int GetTotalHiddenRows() {
 		return TotalHiddenRows;

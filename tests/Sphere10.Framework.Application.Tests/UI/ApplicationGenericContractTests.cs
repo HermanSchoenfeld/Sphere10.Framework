@@ -113,7 +113,6 @@ public class ApplicationGenericContractTests {
 
 		private readonly ExplicitMenu _menu;
 		private readonly TestApplicationMenuItem _item;
-		private readonly ApplicationScreenDefinition _definition;
 
 		public IApplication Parent { get; set; }
 
@@ -122,15 +121,15 @@ public class ApplicationGenericContractTests {
 		public ExplicitBlock(ExplicitMenu menu, TestApplicationMenuItem item, ApplicationScreenDefinition definition = null) {
 			_menu = menu;
 			_item = item;
-			_definition = definition;
+			DefaultScreenDefinition = definition;
 			menu.Parent = this;
 		}
 
 		public string Name => "Block";
 		public int Position => 0;
-		public ApplicationScreenDefinition[] ScreenDefinitions => _definition == null ? Array.Empty<ApplicationScreenDefinition>() : new[] { _definition };
+		public ApplicationScreenDefinition[] ScreenDefinitions => DefaultScreenDefinition == null ? Array.Empty<ApplicationScreenDefinition>() : new[] { DefaultScreenDefinition };
 
-		public ApplicationScreenDefinition DefaultScreenDefinition => _definition;
+		public ApplicationScreenDefinition DefaultScreenDefinition { get; }
 		ExplicitMenu[] IApplicationCommandProvider<ExplicitMenu, TestApplicationMenuItem>.Menus => new[] { _menu };
 		TestApplicationMenuItem[] IApplicationCommandProvider<ExplicitMenu, TestApplicationMenuItem>.ToolBarItems => new[] { _item };
 	}

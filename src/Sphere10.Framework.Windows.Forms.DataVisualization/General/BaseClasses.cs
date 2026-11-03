@@ -15,8 +15,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         #region Member variables
 
         private IChartElement _parent;
-        private CommonElements _common;
-        private object _tag;
+		private object _tag;
 
         #endregion Member variables
 
@@ -39,9 +38,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public object Tag
         {
-            get { return _tag; }
-            set { _tag = value; }
-        }
+			get => _tag;
+			set => _tag = value;
+		}
 
         /// <summary>
         /// Gets or sets the parent chart element or collection.
@@ -49,44 +48,31 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <value>The parent chart element or collection.</value>
         internal virtual IChartElement Parent
         {
-            get { return _parent; }
-            set { _parent = value; }
-        }
+			get => _parent;
+			set => _parent = value;
+		}
 
-        /// <summary>
-        /// Gets a shortcut to Common instance providing access to the various chart related services.
-        /// </summary>
-        /// <value>The Common instance.</value>
-        internal CommonElements Common
-        {
-            get
-            {
-                if (_common == null && _parent != null)
-                {
-                    _common = _parent.Common;
-                }
-                return _common;
-            }
-            set
-            {
-                _common = value;
-            }
-        }
+		/// <summary>
+		/// Gets a shortcut to Common instance providing access to the various chart related services.
+		/// </summary>
+		/// <value>The Common instance.</value>
+		internal CommonElements Common {
+			get {
+				if (field == null && _parent != null) {
+					field = _parent.Common;
+				}
+				return field;
+			}
+			set {
+				field = value;
+			}
+		}
 
-        /// <summary>
-        /// Gets the chart.
-        /// </summary>
-        /// <value>The chart.</value>
-        internal Chart Chart
-        {
-            get
-            {
-                if (Common != null)
-                    return Common.Chart;
-                else
-                    return null;
-            }
-        }
+		/// <summary>
+		/// Gets the chart.
+		/// </summary>
+		/// <value>The chart.</value>
+		internal Chart Chart => Common != null ? Common.Chart : null;
 
         #endregion Properties
 
@@ -126,19 +112,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
         IChartElement IChartElement.Parent
         {
-            get { return _parent; }
-            set { this.Parent = value; }
-        }
+			get => _parent;
+			set => this.Parent = value;
+		}
 
         void IChartElement.Invalidate()
         {
             this.Invalidate();
         }
 
-        CommonElements IChartElement.Common
-        {
-            get { return this.Common; }
-        }
+        CommonElements IChartElement.Common => this.Common;
 
         #endregion IChartElement Members
 
@@ -228,8 +211,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [DefaultValue("")]
         public virtual string Name
         {
-            get { return _name; }
-            set
+			get {
+				return _name;
+			}
+			set
             {
                 if (_name != value)
                 {
@@ -252,7 +237,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     Invalidate();
                 }
             }
-        }
+		}
 
         #endregion Properties
 
@@ -313,44 +298,33 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         #region Member variables
 
         private readonly ChartNamedElement _oldElement;
-        private readonly string _oldName;
-        private readonly string _newName;
 
-        #endregion Member variables
+		#endregion Member variables
 
-        #region Properties
+		#region Properties
 
-        public ChartNamedElement OldElement
-        {
-            get { return _oldElement; }
-        }
+		public ChartNamedElement OldElement => _oldElement;
 
-        public string OldName
-        {
-            get { return _oldName; }
-        }
+		public string OldName { get; }
 
-        public string NewName
-        {
-            get { return _newName; }
-        }
+		public string NewName { get; }
 
-        #endregion Properties
+		#endregion Properties
 
-        #region Constructor
+		#region Constructor
 
-        public NameReferenceChangedEventArgs(ChartNamedElement oldElement, ChartNamedElement newElement)
+		public NameReferenceChangedEventArgs(ChartNamedElement oldElement, ChartNamedElement newElement)
         {
             _oldElement = oldElement;
-            _oldName = oldElement?.Name ?? string.Empty;
-            _newName = newElement?.Name ?? string.Empty;
+            OldName = oldElement?.Name ?? string.Empty;
+            NewName = newElement?.Name ?? string.Empty;
         }
 
         public NameReferenceChangedEventArgs(ChartNamedElement oldElement, string oldName, string newName)
         {
             _oldElement = oldElement;
-            _oldName = oldName;
-            _newName = newName;
+            OldName = oldName;
+            NewName = newName;
         }
 
         #endregion Constructor

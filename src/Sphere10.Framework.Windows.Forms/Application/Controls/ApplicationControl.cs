@@ -19,7 +19,6 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Provides application services and refreshes the existing control lifecycle when its actual settings change.</summary>
 public partial class ApplicationControl : UserControlEx {
 	private IServiceProvider _serviceProvider;
-	private SettingsObject _screenSettings;
 	private SettingsObject[] _observedSettings;
 	private ApplicationScreenSettings _settingsBinding;
 	private IFuture<ISettingsServices> _settingsServices;
@@ -27,45 +26,25 @@ public partial class ApplicationControl : UserControlEx {
 
 	/// <summary>The existing user and system settings services for the running application.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected ISettingsServices SettingsServices {
-		get {
-			return TryInitializeServiceCache() ? _settingsServices.Value : null;
-		}
-	}
+	protected ISettingsServices SettingsServices => TryInitializeServiceCache() ? _settingsServices.Value : null;
 
 	/// <summary>The existing interaction service for the running application.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected IUserInterfaceServices UserInterfaceServices {
-		get {
-			return TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
-		}
-	}
+	protected IUserInterfaceServices UserInterfaceServices => TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
 
 	/// <summary>Whether this control has an actual settings instance attached before model initialization.</summary>
-	protected bool HasSettings {
-		get {
-			return _screenSettings != null;
-		}
-	}
+	protected bool HasSettings => DeclaredSettings != null;
 
 	// Keep the actual declared instance available to typed screen properties.
-	private protected SettingsObject DeclaredSettings {
-		get {
-			return _screenSettings;
-		}
-	}
+	private protected SettingsObject DeclaredSettings { get; private set; }
 
 	// Create native grid/log bindings only when this screen has settings to bind.
-	private protected ApplicationScreenSettings SettingsBinding {
-		get {
-			return _screenSettings == null ? null : _settingsBinding ??= new ApplicationScreenSettings(_screenSettings);
-		}
-	}
+	private protected ApplicationScreenSettings SettingsBinding => DeclaredSettings == null ? null : _settingsBinding ??= new ApplicationScreenSettings(DeclaredSettings);
 
 	// Attach actual owner instances before the existing Load/CopyModelToUI lifecycle runs.
 	internal void AttachSettings(SettingsObject screenSettings, SettingsObject blockSettings, SettingsObject pluginSettings) {
 		Guard.Ensure(_observedSettings == null, "A hosted control cannot change its settings owners.");
-		_screenSettings = screenSettings;
+		DeclaredSettings = screenSettings;
 		_observedSettings = new[] { screenSettings, blockSettings, pluginSettings }.Where(settings => settings != null)
 			.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();
 		foreach (var settings in _observedSettings)

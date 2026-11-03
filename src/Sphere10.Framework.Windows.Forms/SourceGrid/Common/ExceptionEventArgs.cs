@@ -14,25 +14,11 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class ExceptionEventArgs : EventArgs {
-	private Exception _exception;
-	private bool _handled = false;
-
 	public ExceptionEventArgs(Exception exception) {
-		_exception = exception;
+		Exception = exception;
 	}
 
-	public Exception Exception {
-		get {
-			return _exception;
-		}
-	}
+	public Exception Exception { get; }
 
-	public bool Handled {
-		get {
-			return _handled;
-		}
-		set {
-			_handled = value;
-		}
-	}
+	public bool Handled { get; set; } = false;
 }

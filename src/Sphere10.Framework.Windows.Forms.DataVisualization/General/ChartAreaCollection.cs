@@ -35,10 +35,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the default chart area name.
         /// </summary>
-        internal string DefaultNameReference
-        {
-            get { return this.Count > 0 ? this[0].Name : String.Empty; }
-        }
+        internal string DefaultNameReference => this.Count > 0 ? this[0].Name : String.Empty;
 
         #endregion Properties
 

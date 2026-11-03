@@ -11,12 +11,10 @@ using System;
 namespace Sphere10.Framework.Windows.Files;
 
 public sealed record FileHandleCapture {
-	private readonly FileHandleInfo[] _rows = Array.Empty<FileHandleInfo>();
-
 	public FileHandleInfo[] Rows {
-		get => (FileHandleInfo[])_rows.Clone();
-		init => _rows = value == null ? Array.Empty<FileHandleInfo>() : (FileHandleInfo[])value.Clone();
-	}
+		get => (FileHandleInfo[])field.Clone();
+		init => field = value == null ? Array.Empty<FileHandleInfo>() : (FileHandleInfo[])value.Clone();
+	} = Array.Empty<FileHandleInfo>();
 	public DateTime CapturedAtUtc { get; init; }
 	public bool IsPartial { get; init; }
 	public string Availability { get; init; } = string.Empty;

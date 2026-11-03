@@ -89,11 +89,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
         private SerializerBase _serializer = new XmlFormatSerializer();
 
-        // Format of the serializer in use
-        private SerializationFormat _format = SerializationFormat.Xml;
+		// Format of the serializer in use
 
-        // Serialization content 
-        private SerializationContents _content = SerializationContents.Default;
+		// Serialization content
+		private SerializationContents _content = SerializationContents.Default;
 
         #endregion
 
@@ -147,11 +146,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public SerializationContents Content
         {
-            get
-            {
-                return _content;
-            }
-            set
+			get {
+				return _content;
+			}
+			set
             {
                 // Set content value
                 _content = value;
@@ -159,7 +157,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 // Automatically set SerializableContent and NonSerializableContent properties
                 SetSerializableContent();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the format used to serialize the chart data.
@@ -171,19 +169,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public SerializationFormat Format
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return _format;
-            }
-            set
-            {
-                if (_format != value)
+                if (field != value)
                 {
-                    _format = value;
+                    field = value;
 
                     // Create new serializer object
                     SerializerBase newSerializer;
-                    if (_format == SerializationFormat.Binary)
+                    if (field == SerializationFormat.Binary)
                     {
                         newSerializer = new BinaryFormatSerializer();
                     }
@@ -199,28 +196,22 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     _serializer = newSerializer;
                 }
             }
-        }
+		} = SerializationFormat.Xml;
 
-        /// <summary>
-        /// Gets or sets a flag which indicates whether object properties are reset to default
-        /// values before loading.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets a flag which indicates whether object properties are reset to default
+		/// values before loading.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeMisc"),
         DefaultValue(true),
         SRDescription("DescriptionAttributeChartSerializer_ResetWhenLoading")
         ]
         public bool IsResetWhenLoading
         {
-            get
-            {
-                return _serializer.IsResetWhenLoading;
-            }
-            set
-            {
-                _serializer.IsResetWhenLoading = value;
-            }
-        }
+			get => _serializer.IsResetWhenLoading;
+			set => _serializer.IsResetWhenLoading = value;
+		}
 
 
 
@@ -235,15 +226,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsUnknownAttributeIgnored
         {
-            get
-            {
-                return _serializer.IsUnknownAttributeIgnored;
-            }
-            set
-            {
-                _serializer.IsUnknownAttributeIgnored = value;
-            }
-        }
+			get => _serializer.IsUnknownAttributeIgnored;
+			set => _serializer.IsUnknownAttributeIgnored = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag which indicates whether chart 
@@ -256,15 +241,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsTemplateMode
         {
-            get
-            {
-                return _serializer.IsTemplateMode;
-            }
-            set
-            {
-                _serializer.IsTemplateMode = value;
-            }
-        }
+			get => _serializer.IsTemplateMode;
+			set => _serializer.IsTemplateMode = value;
+		}
 
 
 
@@ -280,15 +259,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string SerializableContent
         {
-            get
-            {
-                return _serializer.SerializableContent;
-            }
-            set
-            {
-                _serializer.SerializableContent = value;
-            }
-        }
+			get => _serializer.SerializableContent;
+			set => _serializer.SerializableContent = value;
+		}
 
         /// <summary>
         /// Gets or sets the chart properties that will not be serialized.
@@ -302,15 +275,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string NonSerializableContent
         {
-            get
-            {
-                return _serializer.NonSerializableContent;
-            }
-            set
-            {
-                _serializer.NonSerializableContent = value;
-            }
-        }
+			get => _serializer.NonSerializableContent;
+			set => _serializer.NonSerializableContent = value;
+		}
 
         #endregion
 

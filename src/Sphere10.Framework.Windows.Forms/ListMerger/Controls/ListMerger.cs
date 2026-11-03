@@ -62,23 +62,15 @@ public partial class ListMerger : UserControlEx {
 	[Category("Appearance")]
 	[DefaultValue("Left Header")]
 	public string LeftHeader {
-		get {
-			return _leftHeaderLabel.Text;
-		}
-		set {
-			_leftHeaderLabel.Text = value;
-		}
+		get => _leftHeaderLabel.Text;
+		set => _leftHeaderLabel.Text = value;
 	}
 
 	[Category("Appearance")]
 	[DefaultValue("Right Header")]
 	public string RightHeader {
-		get {
-			return _rightHeaderLabel.Text;
-		}
-		set {
-			_rightHeaderLabel.Text = value;
-		}
+		get => _rightHeaderLabel.Text;
+		set => _rightHeaderLabel.Text = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

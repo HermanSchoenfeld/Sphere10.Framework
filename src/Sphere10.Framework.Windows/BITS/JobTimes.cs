@@ -17,16 +17,10 @@ public class JobTimes {
 		this.jobTimes = jobTimes;
 	}
 
-	public DateTime CreationTime {
-		get { return Utils.FileTime2DateTime(jobTimes.CreationTime); }
-	}
+	public DateTime CreationTime => Utils.FileTime2DateTime(jobTimes.CreationTime);
 
-	public DateTime ModificationTime {
-		get { return Utils.FileTime2DateTime(jobTimes.ModificationTime); }
-	}
+	public DateTime ModificationTime => Utils.FileTime2DateTime(jobTimes.ModificationTime);
 
-	public DateTime TransferCompletionTime {
-		get { return Utils.FileTime2DateTime(jobTimes.TransferCompletionTime); }
-	}
+	public DateTime TransferCompletionTime => Utils.FileTime2DateTime(jobTimes.TransferCompletionTime);
 }
 

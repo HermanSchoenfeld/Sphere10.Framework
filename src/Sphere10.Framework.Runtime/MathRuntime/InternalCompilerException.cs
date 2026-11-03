@@ -14,9 +14,7 @@ public class InternalCompilerException : CompilerException {
 		: base(errMsg) {
 	}
 
-	public override string Message {
-		get { return string.Format("Internal Error: {0}", base.Message); }
-	}
+	public override string Message => string.Format("Internal Error: {0}", base.Message);
 
 }
 

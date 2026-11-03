@@ -49,28 +49,16 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	}
 
 	/// <summary>Gets the number of cells in the collection.</summary>
-	public int Count {
-		get {
-			return _items.Count;
-		}
-	}
+	public int Count => _items.Count;
 
 	/// <summary>Gets or sets the allocated capacity without changing collection membership.</summary>
 	public int Capacity {
-		get {
-			return _items.Capacity;
-		}
-		set {
-			_items.Capacity = value;
-		}
+		get => _items.Capacity;
+		set => _items.Capacity = value;
 	}
 
 	/// <summary>Gets whether the collection rejects membership changes.</summary>
-	public bool IsReadOnly {
-		get {
-			return false;
-		}
-	}
+	public bool IsReadOnly => false;
 
 	/// <summary>
 	/// Gets or sets the Cells.ICellVirtual at the given index in this CellBaseCollection.
@@ -233,20 +221,12 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 		/// <summary>
 		///
 		/// </summary>
-		public Cells.ICellVirtual Current {
-			get {
-				return (Cells.ICellVirtual)((IEnumerator)_wrapped).Current;
-			}
-		}
+		public Cells.ICellVirtual Current => (Cells.ICellVirtual)((IEnumerator)_wrapped).Current;
 
 		/// <summary>
 		///
 		/// </summary>
-		object System.Collections.IEnumerator.Current {
-			get {
-				return Current;
-			}
-		}
+		object System.Collections.IEnumerator.Current => Current;
 
 		/// <summary>
 		///

@@ -65,56 +65,31 @@ public class RichText : VisualElementBase, IRichText {
 	/// </summary>
 	[DefaultValue(null)]
 	public virtual Sphere10.Framework.Windows.Forms.RichText Value {
-		get {
-			return _value;
-		}
-
-		set {
-			_value = value;
-		}
+		get => _value;
+		set => _value = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the fore color of the content. System.Windows.Forms.Control.DefaultForeColor
 	/// </summary>
 	public virtual Color ForeColor {
-		get {
-			return _foreColor;
-		}
-
-		set {
-			_foreColor = value;
-		}
+		get => _foreColor;
+		set => _foreColor = value;
 	}
 
 	public System.Drawing.ContentAlignment TextAlignment {
-		get {
-			return _textAlignment;
-		}
-
-		set {
-			_textAlignment = value;
-		}
+		get => _textAlignment;
+		set => _textAlignment = value;
 	}
 
 	public virtual Font Font {
-		get {
-			return _font;
-		}
-
-		set {
-			_font = value;
-		}
+		get => _font;
+		set => _font = value;
 	}
 
 	public RotateFlipType RotateFlipType {
-		get {
-			return _rotateFlipType;
-		}
-
-		set {
-			_rotateFlipType = value;
-		}
+		get => _rotateFlipType;
+		set => _rotateFlipType = value;
 	}
 
 	/// <summary>

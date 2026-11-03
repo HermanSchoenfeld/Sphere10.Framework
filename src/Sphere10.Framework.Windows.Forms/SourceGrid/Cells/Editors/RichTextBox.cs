@@ -28,11 +28,7 @@ public class RichTextBox : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.RichTextBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.RichTextBoxEx)base.Control;
-		}
-	}
+	public new Sphere10.Framework.Windows.Forms.RichTextBoxEx Control => (Sphere10.Framework.Windows.Forms.RichTextBoxEx)base.Control;
 
 	/// <summary>
 	/// Set the specified value in the current editor control.

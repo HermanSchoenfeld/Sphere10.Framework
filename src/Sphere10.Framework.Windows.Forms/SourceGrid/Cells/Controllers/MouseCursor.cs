@@ -16,25 +16,16 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// </summary>
 public class MouseCursor : ControllerBase {
 	private bool _applyOnMouseEnter = false;
-	private System.Windows.Forms.Cursor _cursor = null;
-
 	public readonly static MouseCursor Default = new MouseCursor(System.Windows.Forms.Cursors.Default, true);
 	public readonly static MouseCursor Hand = new MouseCursor(System.Windows.Forms.Cursors.Hand, true);
 
 	// Constructor
 	public MouseCursor(System.Windows.Forms.Cursor cursor, bool applyOnMouseEnter) {
 		_applyOnMouseEnter = applyOnMouseEnter;
-		_cursor = cursor;
+		Cursor = cursor;
 	}
 
-	public System.Windows.Forms.Cursor Cursor {
-		get {
-			return _cursor;
-		}
-		set {
-			_cursor = value;
-		}
-	}
+	public System.Windows.Forms.Cursor Cursor { get; set; } = null;
 
 	// IBehaviorModel Members
 	public override void OnMouseEnter(CellContext sender, EventArgs e) {

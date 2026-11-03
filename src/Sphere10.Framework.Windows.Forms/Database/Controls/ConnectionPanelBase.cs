@@ -26,15 +26,13 @@ public partial class ConnectionPanelBase : UserControlEx, IDatabaseConnectionPro
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false)]
 	public virtual string ConnectionString {
-		get { throw new NotImplementedException(); }
-		set { throw new NotImplementedException(); }
+		get => throw new NotImplementedException();
+		set => throw new NotImplementedException();
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false)]
-	public virtual string DatabaseName {
-		get { throw new NotImplementedException(); }
-	}
+	public virtual string DatabaseName => throw new NotImplementedException();
 
 	protected virtual IDAC GetDACInternal() {
 		throw new NotImplementedException();

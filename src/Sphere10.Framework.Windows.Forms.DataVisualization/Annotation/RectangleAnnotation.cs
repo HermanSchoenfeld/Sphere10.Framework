@@ -68,15 +68,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color LineColor
         {
-            get
-            {
-                return base.LineColor;
-            }
-            set
-            {
-                base.LineColor = value;
-            }
-        }
+			get => base.LineColor;
+			set => base.LineColor = value;
+		}
 
         /// <summary>
         /// Gets or sets the width of an annotation line.
@@ -94,16 +88,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public int LineWidth
         {
-            get
-            {
-                return base.LineWidth;
-            }
-            set
-            {
-                base.LineWidth = value;
-
-            }
-        }
+			get => base.LineWidth;
+			set => base.LineWidth = value;
+		}
 
         /// <summary>
         /// Gets or sets the style of an annotation line.
@@ -121,15 +108,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return base.LineDashStyle;
-            }
-            set
-            {
-                base.LineDashStyle = value;
-            }
-        }
+			get => base.LineDashStyle;
+			set => base.LineDashStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the background color of an annotation.
@@ -150,15 +131,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
-            {
-                base.BackColor = value;
-            }
-        }
+			get => base.BackColor;
+			set => base.BackColor = value;
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style of an annotation.
@@ -181,15 +156,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
-            {
-                base.BackHatchStyle = value;
-            }
-        }
+			get => base.BackHatchStyle;
+			set => base.BackHatchStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the background gradient style of an annotation.
@@ -212,15 +181,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
-            {
-                base.BackGradientStyle = value;
-            }
-        }
+			get => base.BackGradientStyle;
+			set => base.BackGradientStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color of an annotation.
@@ -246,15 +209,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
-            {
-                base.BackSecondaryColor = value;
-            }
-        }
+			get => base.BackSecondaryColor;
+			set => base.BackSecondaryColor = value;
+		}
 
         #endregion
 
@@ -279,13 +236,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Rectangle";
-            }
-        }
+        public override string AnnotationType => "Rectangle";
 
         /// <summary>
         /// Gets or sets an annotation's selection points style.
@@ -307,13 +258,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        override internal SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        override internal SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         #endregion
 
@@ -438,13 +383,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Ellipse";
-            }
-        }
+        public override string AnnotationType => "Ellipse";
 
         #endregion
     }
@@ -508,13 +447,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Border3D";
-            }
-        }
+        public override string AnnotationType => "Border3D";
 
         /// <summary>
         /// Gets or sets the skin style of the 3D border.
@@ -533,16 +466,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public BorderSkin BorderSkin
         {
-            get
-            {
-                return _borderSkin;
-            }
-            set
+			get {
+				return _borderSkin;
+			}
+			set
             {
                 _borderSkin = value;
                 this.Invalidate();
             }
-        }
+		}
 
         #endregion
 

@@ -30,11 +30,7 @@ public partial class SettingsTest : ApplicationScreen {
 	}
 
 	// The class attribute declares the schema; this accessor only reads the existing typed owner value.
-	private SettingsDemoScreenSettings Preferences {
-		get {
-			return (SettingsDemoScreenSettings)base.ScreenSettings;
-		}
-	}
+	private SettingsDemoScreenSettings Preferences => (SettingsDemoScreenSettings)base.ScreenSettings;
 
 	protected override void CopyModelToUI() {
 		base.CopyModelToUI();

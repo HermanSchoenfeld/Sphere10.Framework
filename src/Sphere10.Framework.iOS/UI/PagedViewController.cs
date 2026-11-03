@@ -33,14 +33,16 @@ namespace Sphere10.Framework.iOS
            
             private int _page;
             public int Page {
-                  get { return _page; }
-                  set {
+				get {
+					return _page;
+				}
+				set {
                         _pageControl.CurrentPage = value;
                         _page = value;
                         _scrollView.SetContentOffset(new CGPoint((value*320), 0), true);
                         _pages[value].ViewDidAppear(true);
                   }
-            }
+			}
  
             void HandleScrollViewDecelerationEnded (object sender, EventArgs e)
             {

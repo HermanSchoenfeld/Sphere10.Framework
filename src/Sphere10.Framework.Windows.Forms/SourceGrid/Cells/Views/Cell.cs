@@ -50,12 +50,8 @@ public class Cell : ViewBase {
 	/// Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.TextGDI
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IText ElementText {
-		get {
-			return _elementText;
-		}
-		set {
-			_elementText = value;
-		}
+		get => _elementText;
+		set => _elementText = value;
 	}
 
 	/// <summary>
@@ -63,12 +59,8 @@ public class Cell : ViewBase {
 	/// Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.Image
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IImage ElementImage {
-		get {
-			return _elementImage;
-		}
-		set {
-			_elementImage = value;
-		}
+		get => _elementImage;
+		set => _elementImage = value;
 	}
 
 	// Clone

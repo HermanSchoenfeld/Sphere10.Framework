@@ -21,14 +21,6 @@ public class BitsJob : IDisposable {
 	BitsManager manager;
 	private bool disposed;
 
-	private BitsFiles files;
-	private JobTimes jobTimes;
-	private ProxySettings proxySettings;
-	private BitsError error;
-	private JobProgress progress;
-
-	private Guid guid;
-
 	//notification
 	private EventHandler<JobNotificationEventArgs> onJobModified;
 	private EventHandler<JobNotificationEventArgs> onJobTransfered;
@@ -146,7 +138,6 @@ public class BitsJob : IDisposable {
 				manager.PublishException(this, exception);
 			}
 		}
-
 	}
 
 	public JobProgress Progress {
@@ -154,11 +145,11 @@ public class BitsJob : IDisposable {
 			try {
 				BG_JOB_PROGRESS progress;
 				this.job.GetProgress(out progress);
-				this.progress = new JobProgress(progress);
+				field = new JobProgress(progress);
 			} catch (COMException exception) {
 				manager.PublishException(this, exception);
 			}
-			return this.progress;
+			return field;
 		}
 	}
 
@@ -166,16 +157,14 @@ public class BitsJob : IDisposable {
 		try {
 			IEnumBackgroundCopyFiles fileList = null;
 			this.job.EnumFiles(out fileList);
-			this.files = new BitsFiles(this, fileList);
+			Files = new BitsFiles(this, fileList);
 		} catch (COMException exception) {
 			manager.PublishException(this, exception);
 		}
-		return this.files;
+		return Files;
 	}
 
-	public BitsFiles Files {
-		get { return this.files; }
-	}
+	public BitsFiles Files { get; private set; }
 
 	public uint ErrorCount {
 		get {
@@ -195,31 +184,31 @@ public class BitsJob : IDisposable {
 				JobState state = this.State;
 				if (state == JobState.Error || state == JobState.TransientError) {
 
-					if (null == this.error) {
+					if (null == field) {
 						IBackgroundCopyError error;
 						this.job.GetError(out error);
 						if (null != error) {
-							this.error = new BitsError(this, error);
+							field = new BitsError(this, error);
 						}
 					}
 				}
 			} catch (COMException exception) {
 				manager.PublishException(this, exception);
 			}
-			return this.error;
+			return field;
 		}
 	}
 
 	public Guid JobId {
 		get {
 			try {
-				if (this.guid == Guid.Empty) {
-					this.job.GetId(out guid);
+				if (field == Guid.Empty) {
+					this.job.GetId(out field);
 				}
 			} catch (COMException exception) {
 				manager.PublishException(this, exception);
 			}
-			return this.guid;
+			return field;
 		}
 	}
 
@@ -238,15 +227,15 @@ public class BitsJob : IDisposable {
 	public JobTimes JobTimes {
 		get {
 			try {
-				if (null == this.jobTimes) {
+				if (null == field) {
 					BG_JOB_TIMES times;
 					this.job.GetTimes(out times);
-					this.jobTimes = new JobTimes(times);
+					field = new JobTimes(times);
 				}
 			} catch (COMException exception) {
 				manager.PublishException(this, exception);
 			}
-			return this.jobTimes;
+			return field;
 		}
 	}
 
@@ -264,10 +253,10 @@ public class BitsJob : IDisposable {
 
 	public ProxySettings ProxySettings {
 		get {
-			if (null == proxySettings) {
-				this.proxySettings = new ProxySettings(this.job);
+			if (null == field) {
+				field = new ProxySettings(this.job);
 			}
-			return this.proxySettings;
+			return field;
 		}
 	}
 
@@ -447,9 +436,7 @@ public class BitsJob : IDisposable {
 
 	#region internal
 
-	internal IBackgroundCopyJob Job {
-		get { return this.job; }
-	}
+	internal IBackgroundCopyJob Job => this.job;
 
 	internal void PublishException(COMException exception) {
 		this.manager.PublishException(this, exception);

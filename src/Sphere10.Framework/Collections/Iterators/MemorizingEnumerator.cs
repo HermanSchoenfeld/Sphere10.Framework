@@ -55,14 +55,7 @@ public sealed class MemorizingEnumerator<T> : EnumeratorDecorator<T> {
 		_index = -1;
 	}
 
-	public override T Current {
-		get {
-			if (0 <= _index && _index < _memory.Count) {
-				return _memory[_index];
-			}
-			throw new InternalErrorException();
-		}
-	}
+	public override T Current => 0 <= _index && _index < _memory.Count ? _memory[_index] : throw new InternalErrorException();
 
 	internal int MemorizedCount => _memorized ? _memory.Count : throw new InvalidOperationException();
 }

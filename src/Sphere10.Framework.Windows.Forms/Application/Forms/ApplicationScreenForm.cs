@@ -97,11 +97,7 @@ public class ApplicationScreenForm : Form {
 
 	/// <summary>The actual title area in desktop coordinates, measured at the window's current DPI.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Rectangle CaptionBounds {
-		get {
-			return _caption.RectangleToScreen(_caption.ClientRectangle);
-		}
-	}
+	public Rectangle CaptionBounds => _caption.RectangleToScreen(_caption.ClientRectangle);
 
 	protected override CreateParams CreateParams {
 		get {

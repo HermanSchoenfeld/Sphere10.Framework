@@ -201,10 +201,8 @@ public class ProductServicesProviderTests {
 
 	// Track lazy information access without using process-wide product configuration.
 	private sealed class TestInformationProvider : IProductInformationProvider {
-		private readonly ProductInformation _information;
-
 		public TestInformationProvider(ProductInformation information) {
-			_information = information;
+			ProductInformation = information;
 		}
 
 		public int ReadCount { get; private set; }
@@ -212,7 +210,7 @@ public class ProductServicesProviderTests {
 		public ProductInformation ProductInformation {
 			get {
 				ReadCount++;
-				return _information;
+				return field;
 			}
 		}
 	}

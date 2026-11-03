@@ -16,7 +16,6 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class FlagsCheckedListBox : CheckedListBoxEx {
-	private Type _enumType;
 	private string[] _enumNames;
 	private Enum[] _enumValues;
 	private Int64[] _enumNumericValues;
@@ -33,11 +32,13 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Type EnumType {
-		get { return _enumType; }
+		get {
+			return field;
+		}
 		set {
 			if (value == null) {
 				base.Items.Clear();
-				_enumType = null;
+				field = null;
 				_enumValues = null;
 				_enumNames = null;
 				_enumNumericValues = null;
@@ -52,8 +53,8 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 			if (!Attribute.IsDefined(value, typeof(FlagsAttribute)))
 				throw new ArgumentException("Type dos not have 'Flags' attribute", "value");
 
-			_enumType = value;
-			_enumValues = Enum.GetValues(_enumType).Cast<Enum>().ToArray();
+			field = value;
+			_enumValues = Enum.GetValues(field).Cast<Enum>().ToArray();
 			_enumNames = _enumValues.Select(ev => ev.GetDescription()).ToArray();
 			_enumNumericValues = (from e in _enumValues select Convert.ToInt64(e)).ToArray();
 			_enumToIndexLookup = _enumValues.WithDescriptions().ToLookup(e => e.Item, e => e.Index);
@@ -76,7 +77,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Enum SelectedEnum {
 		get {
-			if (_enumType == null || !HasSelectedValue)
+			if (EnumType == null || !HasSelectedValue)
 				return null;
 
 			Debug.Assert(base.Items.Count == _enumValues.Count(), "base.Items.Count == enumValues.Count()");
@@ -91,12 +92,12 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 			}
 
 			// Parse it back to its enum type
-			return (Enum)Enum.Parse(_enumType, value.ToString());
+			return (Enum)Enum.Parse(EnumType, value.ToString());
 		}
 		set {
 
 			// No enum type specified, ignore set value 
-			if (_enumType == null)
+			if (EnumType == null)
 				return;
 
 			// Setting to null, so clear all checkboxes
@@ -107,8 +108,8 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 			}
 
 			// If supplied enum doesn't match declaring type, its an error
-			if (value.GetType() != _enumType) {
-				throw new ArgumentOutOfRangeException(string.Format("value is not of type '{0}'", _enumType.Name), "value");
+			if (value.GetType() != EnumType) {
+				throw new ArgumentOutOfRangeException(string.Format("value is not of type '{0}'", EnumType.Name), "value");
 			}
 
 			// Check all the relevant boxes using enum value
@@ -118,9 +119,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasSelectedValue {
-		get { return CheckedItems.Count > 0; }
-	}
+	public bool HasSelectedValue => CheckedItems.Count > 0;
 
 	protected override void OnItemCheck(ItemCheckEventArgs ice) {
 		base.OnItemCheck(ice);
@@ -210,9 +209,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 		}
 	}
 
-	protected override bool CanRaiseEvents {
-		get { return base.CanRaiseEvents && !_suspendEvents; }
-	}
+	protected override bool CanRaiseEvents => base.CanRaiseEvents && !_suspendEvents;
 
 	private void CheckBoxesUsingEnum(Enum value) {
 		try {
@@ -240,7 +237,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 			_suspendEvents = true;
 			base.Items.Clear();
 
-			if (_enumType == null)
+			if (EnumType == null)
 				return;
 
 			var items = new List<CheckedBoxItem>();

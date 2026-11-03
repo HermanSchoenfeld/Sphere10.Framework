@@ -53,34 +53,32 @@ public partial class MSSQLConnectionBar : ConnectionBarBase {
 		}
 	}
 
-	public override string DatabaseName {
-		get { return Database; }
-	}
+	public override string DatabaseName => Database;
 
 
 	public string Server {
-		get { return _serverTextBox.Text; }
-		set { _serverTextBox.Text = value; }
+		get => _serverTextBox.Text;
+		set => _serverTextBox.Text = value;
 	}
 
 	public string Database {
-		get { return _databaseTextBox.Text; }
-		set { _databaseTextBox.Text = value; }
+		get => _databaseTextBox.Text;
+		set => _databaseTextBox.Text = value;
 	}
 
 	public string Username {
-		get { return _usernameTextBox.Text; }
-		set { _usernameTextBox.Text = value; }
+		get => _usernameTextBox.Text;
+		set => _usernameTextBox.Text = value;
 	}
 
 	public string Password {
-		get { return _passwordTextBox.Text; }
-		set { _passwordTextBox.Text = value; }
+		get => _passwordTextBox.Text;
+		set => _passwordTextBox.Text = value;
 	}
 
 	public string Port {
-		get { return _portTextBox.Text; }
-		set { _portTextBox.Text = value; }
+		get => _portTextBox.Text;
+		set => _portTextBox.Text = value;
 	}
 
 	private void SplitIntoServerPortParts(string dataSourceText, out string server, out int? port) {

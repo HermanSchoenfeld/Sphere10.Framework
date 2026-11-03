@@ -86,11 +86,7 @@ public class EnumerableKeyDictionary<K, V> : IDictionary<IEnumerable<K>, V> {
 	public virtual ICollection<V> Values => _tree.ValueMap.Values;
 
 	public virtual V this[IEnumerable<K> key] {
-		get {
-			if (!TryGetValue(key, out var val))
-				throw new ArgumentOutOfRangeException(nameof(key));
-			return val;
-		}
+		get => !TryGetValue(key, out var val) ? throw new ArgumentOutOfRangeException(nameof(key)) : val;
 		set => Add(key, value);
 	}
 

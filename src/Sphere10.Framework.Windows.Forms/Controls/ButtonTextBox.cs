@@ -13,23 +13,19 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class ButtonTextBox : TextBox {
-	private readonly Button _button;
-
 	public event EventHandler ButtonClick {
-		add { _button.Click += value; }
-		remove { _button.Click -= value; }
+		add { Button.Click += value; }
+		remove { Button.Click -= value; }
 	}
 
 	public ButtonTextBox() {
-		_button = new Button { Cursor = Cursors.Default };
-		Controls.Add(_button);
-		_button.SizeChanged += (o, e) => OnResize(e);
+		Button = new Button { Cursor = Cursors.Default };
+		Controls.Add(Button);
+		Button.SizeChanged += (o, e) => OnResize(e);
 		FitButton();
 	}
 
-	public Button Button {
-		get { return _button; }
-	}
+	public Button Button { get; }
 
 	protected override void OnResize(EventArgs e) {
 		base.OnResize(e);
@@ -37,10 +33,10 @@ public class ButtonTextBox : TextBox {
 	}
 
 	private void FitButton() {
-		_button.Size = new Size(_button.Width, this.ClientSize.Height + 2);
-		_button.Location = new Point(this.ClientSize.Width - _button.Width, -1);
+		Button.Size = new Size(Button.Width, this.ClientSize.Height + 2);
+		Button.Location = new Point(this.ClientSize.Width - Button.Width, -1);
 		// Send EM_SETMARGINS to prevent text from disappearing underneath the button
-		WinAPI.USER32.SendMessage(this.Handle, WinAPI.WindowMessageFlags.EM_SETMARGINS, (IntPtr)2, (IntPtr)(_button.Width << 16));
+		WinAPI.USER32.SendMessage(this.Handle, WinAPI.WindowMessageFlags.EM_SETMARGINS, (IntPtr)2, (IntPtr)(Button.Width << 16));
 	}
 
 }

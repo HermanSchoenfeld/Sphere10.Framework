@@ -32,9 +32,7 @@ public class ParagraphBuilder {
 		_lastAppendedText = string.Empty;
 	}
 
-	public int Length {
-		get { return _builder.Length; }
-	}
+	public int Length => _builder.Length;
 
 	public void AppendSentence(string text) {
 		AppendSentence(text, true);

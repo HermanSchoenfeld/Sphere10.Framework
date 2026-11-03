@@ -12,21 +12,12 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 public class ToolTip : IToolTipText {
-	private string _toolTipText;
-
-	public string ToolTipText {
-		get {
-			return _toolTipText;
-		}
-		set {
-			_toolTipText = value;
-		}
-	}
+	public string ToolTipText { get; set; }
 
 	// IToolTipText Members
 	public string GetToolTipText(CellContext cellContext) {
-		if (string.IsNullOrEmpty(_toolTipText) && !cellContext.IsEmpty())
+		if (string.IsNullOrEmpty(ToolTipText) && !cellContext.IsEmpty())
 			return cellContext.DisplayText;
-		return _toolTipText;
+		return ToolTipText;
 	}
 }

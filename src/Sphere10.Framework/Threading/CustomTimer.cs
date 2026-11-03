@@ -30,7 +30,9 @@ internal sealed class CustomTimer : IDisposable {
 	public ElapsedEventHandler Elapsed { get; set; }
 
 	public double Interval {
-		get => _interval;
+		get {
+			return _interval;
+		}
 		set {
 			_interval = (int)Math.Round(value);
 			if (Enabled) {

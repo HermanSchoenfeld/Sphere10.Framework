@@ -149,11 +149,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsPositionedInside
         {
-            get
-            {
-                return _isPositionedInside;
-            }
-            set
+			get {
+				return _isPositionedInside;
+			}
+			set
             {
                 if (_isPositionedInside != value)
                 {
@@ -161,7 +160,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a flag which indicates whether the scroll bar is enabled.
@@ -174,11 +173,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool Enabled
         {
-            get
-            {
-                return _enabled;
-            }
-            set
+			get {
+				return _enabled;
+			}
+			set
             {
                 if (_enabled != value)
                 {
@@ -186,7 +184,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets the ChartArea that contains this scrollbar.
@@ -197,13 +195,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
         SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
-        public ChartArea ChartArea
-        {
-            get
-            {
-                return this.axis.ChartArea;
-            }
-        }
+        public ChartArea ChartArea => this.axis.ChartArea;
 
         /// <summary>
         /// Gets the Axis that contains this scrollbar.
@@ -214,13 +206,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
         SerializationVisibilityAttribute(SerializationVisibility.Hidden)
         ]
-        public Axis Axis
-        {
-            get
-            {
-                return this.axis;
-            }
-        }
+        public Axis Axis => this.axis;
 
         /// <summary>
         /// Gets or sets the style of the scrollbar button.
@@ -233,11 +219,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ScrollBarButtonStyles ButtonStyle
         {
-            get
-            {
-                return _scrollBarButtonStyle;
-            }
-            set
+			get {
+				return _scrollBarButtonStyle;
+			}
+			set
             {
                 if (_scrollBarButtonStyle != value)
                 {
@@ -245,7 +230,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the size of the scrollbar.
@@ -258,11 +243,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Size
         {
-            get
-            {
-                return _scrollBarSize;
-            }
-            set
+			get {
+				return _scrollBarSize;
+			}
+			set
             {
                 if (_scrollBarSize != value)
                 {
@@ -275,7 +259,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the button color of the scrollbar.
@@ -289,11 +273,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ButtonColor
         {
-            get
-            {
-                return _buttonColor;
-            }
-            set
+			get {
+				return _buttonColor;
+			}
+			set
             {
                 if (_buttonColor != value)
                 {
@@ -301,7 +284,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the line color of the scrollbar.
@@ -315,11 +298,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color LineColor
         {
-            get
-            {
-                return _lineColor;
-            }
-            set
+			get {
+				return _lineColor;
+			}
+			set
             {
                 if (_lineColor != value)
                 {
@@ -327,7 +309,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of the scrollbar.
@@ -341,11 +323,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackColor
         {
-            get
-            {
-                return _backColor;
-            }
-            set
+			get {
+				return _backColor;
+			}
+			set
             {
                 if (_backColor != value)
                 {
@@ -353,7 +334,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     axis?.ChartArea.Invalidate();
                 }
             }
-        }
+		}
 
         #endregion Scroll bar properties
 
@@ -1739,28 +1720,23 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Private fields for properties values storage
         private readonly Axis _axis;
 
-        private bool _isHandled;
-        private readonly int _mousePositionX;
-        private readonly int _mousePositionY;
-        private readonly ScrollBarButtonType _buttonType = ScrollBarButtonType.ThumbTracker;
+		#endregion Private fields
 
-        #endregion Private fields
+		#region Constructors
 
-        #region Constructors
-
-        /// <summary>
-        /// ScrollBarEventArgs constructor.
-        /// </summary>
-        /// <param name="axis">Axis containing the scrollbar.</param>
-        /// <param name="x">X position of mouse cursor.</param>
-        /// <param name="y">Y position of mouse cursor.</param>
-        /// <param name="buttonType">Button type of the button clicked.</param>
-        public ScrollBarEventArgs(Axis axis, int x, int y, ScrollBarButtonType buttonType)
+		/// <summary>
+		/// ScrollBarEventArgs constructor.
+		/// </summary>
+		/// <param name="axis">Axis containing the scrollbar.</param>
+		/// <param name="x">X position of mouse cursor.</param>
+		/// <param name="y">Y position of mouse cursor.</param>
+		/// <param name="buttonType">Button type of the button clicked.</param>
+		public ScrollBarEventArgs(Axis axis, int x, int y, ScrollBarButtonType buttonType)
         {
             this._axis = axis;
-            this._mousePositionX = x;
-            this._mousePositionY = y;
-            this._buttonType = buttonType;
+			MousePositionX = x;
+			MousePositionY = y;
+			ButtonType = buttonType;
         }
 
         #endregion Constructors
@@ -1773,13 +1749,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [
         SRDescription("DescriptionAttributeAxis"),
         ]
-        public Axis Axis
-        {
-            get
-            {
-                return _axis;
-            }
-        }
+        public Axis Axis => _axis;
 
         /// <summary>
         /// ChartArea containing the scrollbar of the event.
@@ -1787,74 +1757,40 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [
         SRDescription("DescriptionAttributeChartArea"),
         ]
-        public ChartArea ChartArea
-        {
-            get
-            {
-                return _axis.ChartArea;
-            }
-        }
+        public ChartArea ChartArea => _axis.ChartArea;
 
-        /// <summary>
-        /// Button type of the scrollbar button clicked.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeScrollBarEventArgs_ButtonType"),
-        ]
-        public ScrollBarButtonType ButtonType
-        {
-            get
-            {
-                return _buttonType;
-            }
-        }
+		/// <summary>
+		/// Button type of the scrollbar button clicked.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeScrollBarEventArgs_ButtonType"),
+		]
+		public ScrollBarButtonType ButtonType { get; } = ScrollBarButtonType.ThumbTracker;
 
-        /// <summary>
-        /// Indicates if the event is handled by the user and no further processing is required.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeScrollBarEventArgs_Handled"),
-        ]
-        public bool IsHandled
-        {
-            get
-            {
-                return _isHandled;
-            }
-            set
-            {
-                _isHandled = value;
-            }
-        }
+		/// <summary>
+		/// Indicates if the event is handled by the user and no further processing is required.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeScrollBarEventArgs_Handled"),
+		]
+		public bool IsHandled { get; set; }
 
-        /// <summary>
-        /// X position of mouse cursor.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeScrollBarEventArgs_MousePositionX"),
-        ]
-        public int MousePositionX
-        {
-            get
-            {
-                return _mousePositionX;
-            }
-        }
+		/// <summary>
+		/// X position of mouse cursor.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeScrollBarEventArgs_MousePositionX"),
+		]
+		public int MousePositionX { get; }
 
-        /// <summary>
-        /// Y position of mouse cursor.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeScrollBarEventArgs_MousePositionY"),
-        ]
-        public int MousePositionY
-        {
-            get
-            {
-                return _mousePositionY;
-            }
-        }
+		/// <summary>
+		/// Y position of mouse cursor.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeScrollBarEventArgs_MousePositionY"),
+		]
+		public int MousePositionY { get; }
 
-        #endregion Properties
-    }
+		#endregion Properties
+	}
 }

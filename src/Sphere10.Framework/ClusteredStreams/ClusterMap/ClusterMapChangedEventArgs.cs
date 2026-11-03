@@ -12,9 +12,7 @@ using System.Collections.Generic;
 namespace Sphere10.Framework;
 
 public class ClusterMapChangedEventArgs : EventArgs {
-	private ISet<long> _addedClusters;
 	private ISet<long> _modifiedClusters;
-	private ISet<long> _removedClusters;
 	private BijectiveDictionary<long, long> _movedClusters;
 	private IDictionary<long, (long? NewStart, long? NewEnd)> _movedTerminals;
 	private long _firstModifiedCluster;
@@ -33,13 +31,13 @@ public class ClusterMapChangedEventArgs : EventArgs {
 	public ISet<long> AddedClusters {
 		get {
 			if (!_addedClustersInitialized) {
-				_addedClusters = new HashSet<long>();
+				field = new HashSet<long>();
 				_addedClustersInitialized = true;
 			}
-			return _addedClusters;
+			return field;
 		}
 		set {
-			_addedClusters = value;
+			field = value;
 			_addedClustersInitialized = true;
 		}
 	}
@@ -64,13 +62,13 @@ public class ClusterMapChangedEventArgs : EventArgs {
 	public ISet<long> RemovedClusters {
 		get {
 			if (!_removedClustersInitialized) {
-				_removedClusters = new HashSet<long>();
+				field = new HashSet<long>();
 				_removedClustersInitialized = true;
 			}
-			return _removedClusters;
+			return field;
 		}
 		set {
-			_removedClusters = value;
+			field = value;
 			_removedClustersInitialized = true;
 		}
 	}

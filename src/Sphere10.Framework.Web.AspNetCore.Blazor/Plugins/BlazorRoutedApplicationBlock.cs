@@ -16,7 +16,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// Application block
 /// </summary>
 public class BlazorRoutedApplicationBlock : IBlazorRoutedApplicationBlock {
-	private readonly IBlazorRoutedApplicationPage[] _appBlockPages;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BlazorRoutedApplicationBlock"/> class.
@@ -27,7 +26,7 @@ public class BlazorRoutedApplicationBlock : IBlazorRoutedApplicationBlock {
 	public BlazorRoutedApplicationBlock(string name, string icon, IEnumerable<IBlazorRoutedApplicationPage> appBlockPages) {
 		Name = name ?? throw new ArgumentNullException(nameof(name));
 		Guard.ArgumentNotNull(appBlockPages, nameof(appBlockPages));
-		_appBlockPages = appBlockPages.ToArray();
+		AppBlockPages = appBlockPages.ToArray();
 		Icon = icon ?? throw new ArgumentNullException(nameof(icon));
 	}
 
@@ -37,7 +36,7 @@ public class BlazorRoutedApplicationBlock : IBlazorRoutedApplicationBlock {
 	public string Name { get; }
 
 	/// <inheritdoc />
-	public IBlazorRoutedApplicationPage[] AppBlockPages => Tools.Array.Clone(_appBlockPages);
+	public IBlazorRoutedApplicationPage[] AppBlockPages => Tools.Array.Clone(field);
 
 	/// <summary>
 	/// Gets the icon font-awesome ccs classes for this app block.

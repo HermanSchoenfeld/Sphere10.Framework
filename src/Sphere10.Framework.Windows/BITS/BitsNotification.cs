@@ -18,69 +18,48 @@ public class JobNotificationEventArgs : System.EventArgs {
 
 
 public class JobErrorNotificationEventArgs : JobNotificationEventArgs {
-
-	private BitsError error;
-
 	internal JobErrorNotificationEventArgs(BitsError error)
 		: base() {
-		this.error = error;
+		Error = error;
 	}
 
-	public BitsError Error {
-		get { return this.error; }
-	}
+	public BitsError Error { get; }
 }
 
 
 public class NotificationEventArgs : JobNotificationEventArgs {
-	private BitsJob job;
-
 	internal NotificationEventArgs(BitsJob job) {
-		this.job = job;
+		Job = job;
 	}
 
-	public BitsJob Job {
-		get { return job; }
-	}
+	public BitsJob Job { get; }
 }
 
 
 public class ErrorNotificationEventArgs : NotificationEventArgs {
-
-	private BitsError error;
-
 	internal ErrorNotificationEventArgs(BitsJob job, BitsError error)
 		: base(job) {
-		this.error = error;
+		Error = error;
 	}
 
-	public BitsError Error {
-		get { return this.error; }
-	}
+	public BitsError Error { get; }
 }
 
 
 public class BitsInterfaceNotificationEventArgs : NotificationEventArgs {
 	private COMException exception;
-	private string description;
 
 	internal BitsInterfaceNotificationEventArgs(BitsJob job, COMException exception, string description)
 		: base(job) {
-		this.description = description;
+		Description = description;
 		this.exception = exception;
 	}
 
-	public string Message {
-		get { return this.exception.Message; }
-	}
+	public string Message => this.exception.Message;
 
-	public string Description {
-		get { return this.description; }
-	}
+	public string Description { get; }
 
-	public int HResult {
-		get { return this.exception.ErrorCode; }
-	}
+	public int HResult => this.exception.ErrorCode;
 }
 
 #endregion

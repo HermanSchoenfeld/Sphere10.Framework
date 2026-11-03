@@ -62,13 +62,10 @@
 </section>
 
 @code {
-	private BlazorUI.IApplicationMenu[] _menus;
 	private CreativeCollection _saved;
 	private CreativeCollection _draft;
 	private string[] _errors = Array.Empty<string>();
 	private string _savedNotice;
-	private BlazorUI.ApplicationMenuItemBase _saveCommand;
-	private BlazorUI.ApplicationMenuItemBase _discardCommand;
 
 	[Parameter] public string CollectionId { get; set; } = "coastal-notes";
 
@@ -76,7 +73,7 @@
 
 	public override bool HasUnsavedChanges => _draft != null && !_draft.HasSameEdits(_saved);
 
-	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new BlazorUI.IApplicationMenu[] {
+	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(field ??= new BlazorUI.IApplicationMenu[] {
 		new ApplicationMenuBuilder()
 			.WithId("file")
 			.WithText("File")
@@ -97,7 +94,7 @@
 
 	private string StatusId => $"{CollectionId}-status";
 
-	private BlazorUI.ApplicationMenuItemBase SaveCommand => _saveCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase SaveCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("save")
 		.WithText("Save collection")
 		.WithIcon("fas fa-save")
@@ -110,7 +107,7 @@
 		})
 		.Build();
 
-	private BlazorUI.ApplicationMenuItemBase DiscardCommand => _discardCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase DiscardCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("discard")
 		.WithText("Discard changes")
 		.WithIcon("fas fa-undo")

@@ -494,12 +494,11 @@ public class CacheProjectionTests {
 			}
 		}
 
-		private readonly ActionCache<TKey, TValue> _internal;
 		private readonly bool _throwAfterEventRemoval;
 		private readonly int[] _eventRemovalAttempts = new int[4];
 
 		public DirectCache(Func<TKey, TValue> fetch, bool throwAfterEventRemoval = false) {
-			_internal = new ActionCache<TKey, TValue>(fetch);
+			Internal = new ActionCache<TKey, TValue>(fetch);
 			_throwAfterEventRemoval = throwAfterEventRemoval;
 		}
 
@@ -518,10 +517,13 @@ public class CacheProjectionTests {
 		public ExpirationPolicy ExpirationPolicy => Internal.ExpirationPolicy;
 		public CacheReapPolicy ReapPolicy => Internal.ReapPolicy;
 		public NullValuePolicy NullValuePolicy => Internal.NullValuePolicy;
-		public TValue this[TKey index] { get => Internal[index]; set => Internal[index] = value; }
+		public TValue this[TKey index] {
+			get => Internal[index];
+			set => Internal[index] = value;
+		}
 		public IEnumerable<CachedItem<TValue>> CachedItems => Internal.CachedItems;
 
-		private ActionCache<TKey, TValue> Internal => _internal;
+		private ActionCache<TKey, TValue> Internal { get; }
 
 		public void Dispose() {
 			Internal.Dispose();

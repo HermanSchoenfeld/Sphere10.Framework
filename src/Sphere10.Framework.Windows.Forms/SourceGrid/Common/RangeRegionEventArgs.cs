@@ -14,15 +14,9 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class RangeRegionEventArgs : EventArgs {
-	private RangeRegion _gridRangeRegion;
-
 	public RangeRegionEventArgs(RangeRegion gridRangeRegion) {
-		_gridRangeRegion = gridRangeRegion;
+		RangeRegion = gridRangeRegion;
 	}
 
-	public RangeRegion RangeRegion {
-		get {
-			return _gridRangeRegion;
-		}
-	}
+	public RangeRegion RangeRegion { get; }
 }

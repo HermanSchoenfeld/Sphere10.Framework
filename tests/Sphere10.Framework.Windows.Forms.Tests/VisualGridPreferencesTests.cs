@@ -445,11 +445,7 @@ public class VisualGridPreferencesTests {
 
 		public Row[] Rows { get; }
 
-		public QueryRequest[] Requests {
-			get {
-				return _requests.ToArray();
-			}
-		}
+		public QueryRequest[] Requests => _requests.ToArray();
 
 		public override Task<DataSourceItems<Row>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			_requests.Add(new QueryRequest(pageLength, page, sortProperty, sortDirection));

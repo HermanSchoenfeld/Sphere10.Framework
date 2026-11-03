@@ -50,7 +50,9 @@ namespace Sphere10.Framework.iOS {
 		UIFont messageFont = (UIFont)(UIFont.SystemFontOfSize(13));
 	
 		public string Title {
-			get { return _title; }
+			get {
+				return _title;
+			}
 			set {
 				_title = value; 
 				this.SetNeedsDisplay();
@@ -58,7 +60,9 @@ namespace Sphere10.Framework.iOS {
 		}
 	
 		public string Message {
-			get { return _message; }
+			get {
+				return _message;
+			}
 			set {
 				_message = value; 
 				this.SetNeedsDisplay();

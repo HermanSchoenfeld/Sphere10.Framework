@@ -27,14 +27,14 @@ public class Options : LevelDBHandle {
 	/// If true, the database will be created if it is missing.
 	/// </summary>
 	public bool CreateIfMissing {
-		set { LevelDBInterop.leveldb_options_set_create_if_missing(Handle, value ? (byte)1 : (byte)0); }
+		set => LevelDBInterop.leveldb_options_set_create_if_missing(Handle, value ? (byte)1 : (byte)0);
 	}
 
 	/// <summary>
 	/// If true, an error is raised if the database already exists.
 	/// </summary>
 	public bool ErrorIfExists {
-		set { LevelDBInterop.leveldb_options_set_error_if_exists(Handle, value ? (byte)1 : (byte)0); }
+		set => LevelDBInterop.leveldb_options_set_error_if_exists(Handle, value ? (byte)1 : (byte)0);
 	}
 
 	/// <summary>
@@ -45,7 +45,7 @@ public class Options : LevelDBHandle {
 	/// become unreadable or for the entire DB to become unopenable.
 	/// </summary>
 	public bool ParanoidChecks {
-		set { LevelDBInterop.leveldb_options_set_paranoid_checks(Handle, value ? (byte)1 : (byte)0); }
+		set => LevelDBInterop.leveldb_options_set_paranoid_checks(Handle, value ? (byte)1 : (byte)0);
 	}
 
 	/// <summary>
@@ -53,7 +53,9 @@ public class Options : LevelDBHandle {
 	/// e.g. to read/write files, schedule background work, etc.
 	/// </summary>
 	public Env Env {
-		get { return EnvValue; }
+		get {
+			return EnvValue;
+		}
 		set {
 			LevelDBInterop.leveldb_options_set_env(Handle, value.Handle);
 			this.EnvValue = value;
@@ -77,7 +79,7 @@ public class Options : LevelDBHandle {
 	/// Default: 4MB
 	/// </summary>
 	public long WriteBufferSize {
-		set { LevelDBInterop.leveldb_options_set_write_buffer_size(Handle, value); }
+		set => LevelDBInterop.leveldb_options_set_write_buffer_size(Handle, value);
 	}
 
 	/// <summary>
@@ -88,7 +90,7 @@ public class Options : LevelDBHandle {
 	/// Default: 1000
 	/// </summary>
 	public int MaxOpenFiles {
-		set { LevelDBInterop.leveldb_options_set_max_open_files(Handle, value); }
+		set => LevelDBInterop.leveldb_options_set_max_open_files(Handle, value);
 	}
 
 	/// <summary>
@@ -98,7 +100,9 @@ public class Options : LevelDBHandle {
 	/// If not set, leveldb will automatically create and use an 8MB internal cache.
 	/// </summary>
 	public Cache Cache {
-		get { return CacheValue; }
+		get {
+			return CacheValue;
+		}
 		set {
 			LevelDBInterop.leveldb_options_set_cache(Handle, value.Handle);
 			this.CacheValue = value;
@@ -106,7 +110,9 @@ public class Options : LevelDBHandle {
 	}
 
 	public Comparator Comparator {
-		get { return ComparatorValue; }
+		get {
+			return ComparatorValue;
+		}
 		set {
 			LevelDBInterop.leveldb_options_set_comparator(Handle, value.Handle);
 			this.ComparatorValue = value;
@@ -122,7 +128,7 @@ public class Options : LevelDBHandle {
 	/// Default: 4K
 	/// </summary>
 	public long BlockSize {
-		set { LevelDBInterop.leveldb_options_set_block_size(Handle, value); }
+		set => LevelDBInterop.leveldb_options_set_block_size(Handle, value);
 	}
 
 	/// <summary>
@@ -133,7 +139,7 @@ public class Options : LevelDBHandle {
 	/// Default: 16
 	/// </summary>
 	public int RestartInterval {
-		set { LevelDBInterop.leveldb_options_set_block_restart_interval(Handle, value); }
+		set => LevelDBInterop.leveldb_options_set_block_restart_interval(Handle, value);
 	}
 
 	/// <summary>
@@ -152,7 +158,7 @@ public class Options : LevelDBHandle {
 	/// efficiently detect that and will switch to uncompressed mode.
 	/// </summary>
 	public CompressionLevel CompressionLevel {
-		set { LevelDBInterop.leveldb_options_set_compression(Handle, (int)value); }
+		set => LevelDBInterop.leveldb_options_set_compression(Handle, (int)value);
 	}
 
 	protected override void FreeUnManagedObjects() {

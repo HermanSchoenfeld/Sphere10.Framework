@@ -18,17 +18,9 @@ public class PingGridColumns : ColumnInfoCollection {
 		: base(grid) {
 	}
 
-	public new PingGrid Grid {
-		get {
-			return (PingGrid)base.Grid;
-		}
-	}
+	public new PingGrid Grid => (PingGrid)base.Grid;
 
-	public new PingGridColumn this[int index] {
-		get {
-			return base[index] as PingGridColumn;
-		}
-	}
+	public new PingGridColumn this[int index] => base[index] as PingGridColumn;
 
 	/// <summary>
 	/// Return the DataColumn object for a given grid column index. Return null if not applicable, for example if the column index requested is a FixedColumns of an unbound column

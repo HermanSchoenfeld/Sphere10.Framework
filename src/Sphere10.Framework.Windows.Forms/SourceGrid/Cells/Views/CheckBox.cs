@@ -57,24 +57,16 @@ public class CheckBox : Cell {
 	/// Image Alignment
 	/// </summary>
 	public System.Drawing.ContentAlignment CheckBoxAlignment {
-		get {
-			return _checkBoxAlignment;
-		}
-		set {
-			_checkBoxAlignment = value;
-		}
+		get => _checkBoxAlignment;
+		set => _checkBoxAlignment = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the visual element used to draw the checkbox. Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.CheckBoxThemed.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ICheckBox ElementCheckBox {
-		get {
-			return _elementCheckBox;
-		}
-		set {
-			_elementCheckBox = value;
-		}
+		get => _elementCheckBox;
+		set => _elementCheckBox = value;
 	}
 
 	// Clone

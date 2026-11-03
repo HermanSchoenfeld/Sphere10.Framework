@@ -18,17 +18,11 @@ public static class FastLog {
 		[FieldOffset(0)] public uint UnsignedBits;
 		[FieldOffset(0)] public int SignedBits;
 
-		public uint Sign {
-			get { return UnsignedBits >> 31; }
-		}
+		public uint Sign => UnsignedBits >> 31;
 
-		public int Exponent {
-			get { return (SignedBits >> 23) & 0xFF; }
-		}
+		public int Exponent => (SignedBits >> 23) & 0xFF;
 
-		public uint Mantissa {
-			get { return UnsignedBits & 0x007FFFFF; }
-		}
+		public uint Mantissa => UnsignedBits & 0x007FFFFF;
 	}
 
 

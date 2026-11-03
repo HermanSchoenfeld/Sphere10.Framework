@@ -33,11 +33,7 @@ public partial class LoadingCircleTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override LoadingCircleScreenSettings ScreenSettings {
-		get {
-			return (LoadingCircleScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override LoadingCircleScreenSettings ScreenSettings => (LoadingCircleScreenSettings)base.ScreenSettings;
 
 	/// <summary>Primes demonstration rows and starts the visible reference animations.</summary>
 	protected override void InitializeUIPrimingData() {

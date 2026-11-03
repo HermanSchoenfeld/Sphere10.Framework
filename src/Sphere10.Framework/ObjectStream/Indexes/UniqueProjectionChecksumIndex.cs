@@ -193,13 +193,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 			}
 		}
 
-		public long this[TKey key] {
-			get {
-				if (!TryGetValue(key, out long value)) 
-					throw new InvalidOperationException($"Key not found '{key}'");
-				return value;
-			}
-		}
+		public long this[TKey key] => !TryGetValue(key, out long value) ? throw new InvalidOperationException($"Key not found '{key}'") : value;
 
 		public IEnumerable<TKey> Keys => _parent.Store.Select(grouping => _parent._keyHydrator(grouping.Key));
 

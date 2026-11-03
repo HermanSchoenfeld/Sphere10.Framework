@@ -45,17 +45,8 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	private int _showCount;
 
 	private bool _destroyed;
-
-	private ScreenActivationMode _activationMode = ScreenActivationMode.MultiInstance;
-
 	private readonly List<ToolStripItem> _menuStripItems;
-
-	private ToolStrip _screenToolBar;
-
 	private ToolStripStableHeightBehavior _screenToolBarHeight;
-
-	private MenuStrip _screenMenuStrip;
-
 	private IApplicationMenu[] _menus;
 
 	private IApplicationMenuItem[] _toolBarItems;
@@ -93,23 +84,19 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	[Browsable(true), Category("Behavior"), DefaultValue(ScreenActivationMode.MultiInstance), Description("The instance policy declared by this screen type")]
 	public ScreenActivationMode ActivationMode {
 		get {
-			return _activationMode;
+			return field;
 		}
 		protected set {
 			ApplicationHelper.ValidateActivationMode(value);
 			Guard.Ensure(Host == null, "A screen's activation mode cannot change while it belongs to a host");
-			_activationMode = value;
+			field = value;
 		}
-	}
+	} = ScreenActivationMode.MultiInstance;
 
 	[Browsable(true), Category("Appearance"), Description("The title displayed in the screen tab and detached window")]
 	public string Title {
-		get {
-			return Text;
-		}
-		set {
-			Text = value;
-		}
+		get => Text;
+		set => Text = value;
 	}
 
 	/// <summary>A borrowed image supplied before hosting, with registered menu activator images used as the fallback.</summary>
@@ -118,11 +105,7 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>Whether the registered screen can be reopened without session-specific launch state.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual bool CanRestoreAtStartup {
-		get {
-			return true;
-		}
-	}
+	public virtual bool CanRestoreAtStartup => true;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IApplicationScreenHost Host { get; set; }
@@ -132,12 +115,8 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	[Browsable(false)]
 	public IApplicationBlock ApplicationBlock {
-		get {
-			return Block;
-		}
-		set {
-			Block = value;
-		}
+		get => Block;
+		set => Block = value;
 	}
 
 	/// <summary>The registered presentation role. Empty screens occupy the workspace without a tab.</summary>
@@ -147,9 +126,7 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	/// <summary>The actual menu items supplied by this screen.</summary>
 	[Browsable(false)]
 	public ToolStripItem[] MenuItems {
-		get {
-			return ScreenMenuStrip == null ? _menuStripItems.ToArray() : Menus.OfType<NativeToolStripMenu>().Select(menu => (ToolStripItem)menu.Item).ToArray();
-		}
+		get => ScreenMenuStrip == null ? _menuStripItems.ToArray() : Menus.OfType<NativeToolStripMenu>().Select(menu => (ToolStripItem)menu.Item).ToArray();
 	}
 
 	/// <summary>The screen-owned designer menu strip merged while this screen is active.</summary>
@@ -158,13 +135,13 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public MenuStrip ScreenMenuStrip {
 		get {
-			return _screenMenuStrip;
+			return field;
 		}
 		set {
-			if (ReferenceEquals(_screenMenuStrip, value))
+			if (ReferenceEquals(field, value))
 				return;
 			EnsureCommandsNotActivated();
-			_screenMenuStrip = value;
+			field = value;
 			NativeCommandsChanged?.Invoke();
 		}
 	}
@@ -175,14 +152,14 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public ToolStrip ScreenToolBar {
 		get {
-			return _screenToolBar;
+			return field;
 		}
 		set {
-			if (ReferenceEquals(_screenToolBar, value))
+			if (ReferenceEquals(field, value))
 				return;
 			EnsureCommandsNotActivated();
 			_screenToolBarHeight?.Dispose();
-			_screenToolBar = value;
+			field = value;
 			_screenToolBarHeight = value == null ? null : new ToolStripStableHeightBehavior(value);
 			NativeCommandsChanged?.Invoke();
 		}
@@ -190,19 +167,11 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>Activates and caches this screen's fixed command membership.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_menus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= GetMenus());
 
 	/// <summary>Activates and caches the screen's toolbar commands; native item state remains live.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 
 	public HelpType Type { get; }
 
@@ -218,19 +187,11 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>Override with the ordinary settings type to declare this screen's preferences without constructing its control.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual SettingsObject ScreenSettings {
-		get {
-			return DeclaredSettings;
-		}
-	}
+	public virtual SettingsObject ScreenSettings => DeclaredSettings;
 
 	/// <summary>The owning host, for operations on this screen instance.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected SharedUI.IApplicationScreenHost ApplicationScreenHost {
-		get {
-			return Host;
-		}
-	}
+	protected SharedUI.IApplicationScreenHost ApplicationScreenHost => Host;
 
 	// The legacy registration API owns its source strip just as a designer-authored screen does.
 	internal MenuStrip CommandMenuStrip {

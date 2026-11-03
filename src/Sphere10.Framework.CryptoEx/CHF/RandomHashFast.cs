@@ -27,7 +27,6 @@ public sealed class RandomHashFast {
 	private readonly Func<byte[], byte[]>[] _hashAlg = new Func<byte[], byte[]>[18];
 
 	private byte[] _cachedHeader;
-	private uint _cachedNonce;
 	private ChecksummedByteCollection _cachedOutput;
 
 
@@ -43,7 +42,7 @@ public sealed class RandomHashFast {
 		}
 	}
 
-	private uint NextNonce => _cachedNonce;
+	private uint NextNonce { get; set; }
 
 	private static int ValidateInputData(int aBufferLength, int aReadStart, int aWriteStart, int aLength) {
 		int readEnd = aReadStart + aLength - 1;
@@ -324,7 +323,7 @@ public sealed class RandomHashFast {
 
 			// Cache neighbour nonce n-1 calculation if on final round (neighbour will be next nonce)
 			if (aRound == N) {
-				_cachedNonce = neighbourNonce;
+				NextNonce = neighbourNonce;
 				_cachedHeader = neighbourNonceHeader;
 				_cachedOutput = neighbourOutputs.Clone();
 			}
@@ -371,7 +370,6 @@ public sealed class RandomHashFast {
 	public sealed class ChecksummedByteCollection {
 		private List<byte[]> _bytes;
 		private int _computedIndex;
-		private uint _checksum;
 		private Murmur3_x86_32Digest _murMur3;
 
 
@@ -380,7 +378,7 @@ public sealed class RandomHashFast {
 		public uint Checksum {
 			get {
 				if (_computedIndex == _bytes.Count - 1) {
-					return _checksum; // already computed
+					return field; // already computed
 				}
 
 				for (int i = _computedIndex + 1; i < _bytes.Count; i++) {
@@ -389,10 +387,13 @@ public sealed class RandomHashFast {
 				}
 
 				IMemoable clonedMurMur3 = _murMur3.Copy();
-				_checksum = _murMur3.DoFinal();
+				field = _murMur3.DoFinal();
 				// note: original instance should collect with implicit dereference
 				_murMur3 = (Murmur3_x86_32Digest)clonedMurMur3;
-				return _checksum;
+				return field;
+			}
+			private set {
+				field = value;
 			}
 		}
 
@@ -402,7 +403,7 @@ public sealed class RandomHashFast {
 		private ChecksummedByteCollection(byte[][] aManyBytes) {
 			_bytes = new List<byte[]>();
 			_computedIndex = -1;
-			_checksum = 0;
+			Checksum = 0;
 			_murMur3 = new Murmur3_x86_32Digest();
 			AddRange(aManyBytes);
 		}
@@ -411,7 +412,7 @@ public sealed class RandomHashFast {
 			ChecksummedByteCollection result = new ChecksummedByteCollection { _bytes = new List<byte[]>() };
 			result._bytes.AddRange(_bytes);
 			result._computedIndex = _computedIndex;
-			result._checksum = Checksum;
+			result.Checksum = Checksum;
 			result._murMur3 = (Murmur3_x86_32Digest)_murMur3.Copy();
 			return result;
 		}
@@ -432,7 +433,7 @@ public sealed class RandomHashFast {
 			if (_bytes.Count == 0) {
 				// Is empty so just copy checksum from argument
 				_computedIndex = aCollection._computedIndex;
-				_checksum = aCollection.Checksum;
+				Checksum = aCollection.Checksum;
 				_murMur3 = (Murmur3_x86_32Digest)aCollection._murMur3.Copy();
 			}
 
@@ -442,7 +443,7 @@ public sealed class RandomHashFast {
 		public void Clear() {
 			_bytes.Clear();
 			_computedIndex = -1;
-			_checksum = 0;
+			Checksum = 0;
 			// note: original instance should collect with implicit dereference 
 			_murMur3 = new Murmur3_x86_32Digest();
 		}

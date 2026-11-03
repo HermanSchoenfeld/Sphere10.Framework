@@ -9,16 +9,11 @@
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class IfThenElseTree : IfThenTree {
-	private SyntaxTree _elseExpression;
-
 	public IfThenElseTree()
 		: base() {
 	}
 
-	public SyntaxTree ElseExpression {
-		get { return _elseExpression; }
-		set { _elseExpression = value; }
-	}
+	public SyntaxTree ElseExpression { get; set; }
 
 	public override string ToString() {
 		return string.Format(

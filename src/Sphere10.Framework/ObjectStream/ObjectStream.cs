@@ -42,7 +42,10 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		streams.Loaded += _ => NotifyLoaded();
 	}
 
-	public ICriticalObject ParentCriticalObject { get => Streams.ParentCriticalObject; set => Streams.ParentCriticalObject = value; }
+	public ICriticalObject ParentCriticalObject {
+		get => Streams.ParentCriticalObject;
+		set => Streams.ParentCriticalObject = value;
+	}
 
 	public object Lock => Streams.Lock;
 

@@ -14,11 +14,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 /// <summary>Provides the empty data source used before a PingGrid receives items.</summary>
 public class EmptyPingSource : IPingData {
 	/// <summary>Gets the number of items in this empty source.</summary>
-	public int Count {
-		get {
-			return 0;
-		}
-	}
+	public int Count => 0;
 
 	/// <summary>Empty sources do not offer sorting.</summary>
 	public bool AllowSort {

@@ -20,7 +20,6 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public class CHMHelpProvider : IHelpServices {
 	private static readonly object SyncObject;
-	private string _chmFile;
 
 	static CHMHelpProvider() {
 		SyncObject = new object();
@@ -41,9 +40,9 @@ public class CHMHelpProvider : IHelpServices {
 
 	public string CHMFile {
 		get {
-			if (_chmFile == null) {
+			if (field == null) {
 				lock (SyncObject) {
-					if (_chmFile == null) {
+					if (field == null) {
 						var chmQuery = ProductInformationProvider.ProductInformation.HelpResources.Where(hr => hr.Item1 == HelpType.CHM);
 						if (!chmQuery.Any()) {
 							throw new SoftwareException("No default CHM help file is defined");
@@ -52,15 +51,15 @@ public class CHMHelpProvider : IHelpServices {
 					}
 				}
 			}
-			return _chmFile;
+			return field;
 		}
 		private set {
 			if (value == null) {
-				_chmFile = null;
+				field = null;
 			} else {
-				_chmFile = StringFormatter.FormatEx(value);
-				if (!File.Exists(_chmFile)) {
-					throw new SoftwareException("File does not exist '{0}'", _chmFile);
+				field = StringFormatter.FormatEx(value);
+				if (!File.Exists(field)) {
+					throw new SoftwareException("File does not exist '{0}'", field);
 				}
 			}
 		}

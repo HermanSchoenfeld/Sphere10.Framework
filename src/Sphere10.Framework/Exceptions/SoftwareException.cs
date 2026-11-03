@@ -16,14 +16,6 @@ public class SoftwareException : ApplicationException {
 
 	private int _threadID = -1;
 	private int _terminalServicesSessionID = -1;
-	private System.Threading.ThreadState _threadState;
-	private int _processID = -1;
-	private string _machineName = string.Empty;
-	private string _processName = string.Empty;
-	private string _userName = string.Empty;
-	private int _currentCultureID = -1;
-	private int _currentUICultureID = -1;
-
 
 	public SoftwareException()
 		: this("An unexpected error has occured") {
@@ -70,50 +62,29 @@ public class SoftwareException : ApplicationException {
 
 
 	public int TerminalServicesSessionID {
-		get { return _terminalServicesSessionID; }
-		set { _terminalServicesSessionID = value; }
+		get => _terminalServicesSessionID;
+		set => _terminalServicesSessionID = value;
 	}
 
 	public int ThreadID {
-		get { return _threadID; }
-		set { _threadID = value; }
+		get => _threadID;
+		set => _threadID = value;
 	}
 
-	public System.Threading.ThreadState ThreadState {
-		get { return _threadState; }
-		set { _threadState = value; }
-	}
+	public System.Threading.ThreadState ThreadState { get; set; }
 
-	public int ProcessID {
-		get { return _processID; }
-		set { _processID = value; }
-	}
+	public int ProcessID { get; set; } = -1;
 
-	public string MachineName {
-		get { return _machineName; }
-		set { _machineName = value; }
-	}
+	public string MachineName { get; set; } = string.Empty;
 
-	public string ProcessName {
-		get { return _processName; }
-		set { _processName = value; }
-	}
+	public string ProcessName { get; set; } = string.Empty;
 
-	public string UserName {
-		get { return _userName; }
-		set { _userName = value; }
-	}
+	public string UserName { get; set; } = string.Empty;
 
 
-	public int CurrentCultureID {
-		get { return _currentCultureID; }
-		set { _currentCultureID = value; }
-	}
+	public int CurrentCultureID { get; set; } = -1;
 
-	public int CurrentUICultureID {
-		get { return _currentUICultureID; }
-		set { _currentUICultureID = value; }
-	}
+	public int CurrentUICultureID { get; set; } = -1;
 
 }
 

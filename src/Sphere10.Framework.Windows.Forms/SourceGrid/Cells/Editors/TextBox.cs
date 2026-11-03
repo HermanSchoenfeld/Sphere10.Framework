@@ -29,11 +29,7 @@ public class TextBox : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.TextBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.TextBoxEx)base.Control;
-		}
-	}
+	public new Sphere10.Framework.Windows.Forms.TextBoxEx Control => (Sphere10.Framework.Windows.Forms.TextBoxEx)base.Control;
 
 	/// <summary>
 	/// Set the specified value in the current editor control.

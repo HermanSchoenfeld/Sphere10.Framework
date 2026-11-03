@@ -18,15 +18,6 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 public class SortableHeader : ControllerBase {
 	// Sort Methods
 	// Status Properties
-	/// <summary>
-	/// Range to sort
-	/// </summary>
-	private IRangeLoader _rangeToSort;
-
-	/// <summary>
-	/// Header range (can be null).
-	/// </summary>
-	private IRangeLoader _headerRange;
 
 	/// <summary>
 	/// Column header behavior with sort and resize support, same as SortResizeHeader.
@@ -56,27 +47,27 @@ public class SortableHeader : ControllerBase {
 	/// <param name="rangeToSort">If null then the range is automatically calculated.</param>
 	/// <param name="headerRange">If null then the range is automatically calculated.</param>
 	public SortableHeader(IRangeLoader rangeToSort, IRangeLoader headerRange) {
-		_headerRange = headerRange;
-		_rangeToSort = rangeToSort;
+		RangeHeader = headerRange;
+		RangeToSort = rangeToSort;
 	}
 
 	/// <summary>
 	/// Range to sort. If null and EnableSort is true the range is automatically calculated.
 	/// </summary>
-	public IRangeLoader RangeToSort {
-		get {
-			return _rangeToSort;
-		}
-	}
+
+	/// <remarks>
+	/// Range to sort
+	/// </remarks>
+	public IRangeLoader RangeToSort { get; }
 
 	/// <summary>
 	/// Header range. If null and EnableSort is true the range is automatically calculated.
 	/// </summary>
-	public IRangeLoader RangeHeader {
-		get {
-			return _headerRange;
-		}
-	}
+
+	/// <remarks>
+	/// Header range (can be null).
+	/// </remarks>
+	public IRangeLoader RangeHeader { get; }
 
 	// IBehaviorModel Members
 	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
@@ -115,14 +106,14 @@ public class SortableHeader : ControllerBase {
 		if (sender.Position.Row < (sender.Grid.Rows.Count) && sender.Grid.Columns.Count > 0) {
 			CellRange rangeToSort;
 			CellRange rangeHeader;
-			if (_rangeToSort != null)
-				rangeToSort = _rangeToSort.GetRange(sender.Grid);
+			if (RangeToSort != null)
+				rangeToSort = RangeToSort.GetRange(sender.Grid);
 			else
 				//the range to sort is all the grid range without the rows < of the current row
 				rangeToSort = new CellRange(sender.Position.Row + 1, 0, sender.Grid.Rows.Count - 1, sender.Grid.Columns.Count - 1);
 
-			if (_headerRange != null)
-				rangeHeader = _headerRange.GetRange(sender.Grid);
+			if (RangeHeader != null)
+				rangeHeader = RangeHeader.GetRange(sender.Grid);
 			else
 				//the range header is all the grid range with the rows <= of the current row
 				rangeHeader = new CellRange(0, 0, sender.Position.Row, sender.Grid.Columns.Count - 1);

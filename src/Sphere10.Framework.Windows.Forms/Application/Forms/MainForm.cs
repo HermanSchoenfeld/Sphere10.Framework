@@ -54,28 +54,16 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	/// <summary>Activates and caches this form's own menu definitions; contextual owners retain their own commands.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_menus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= GetMenus());
 
 	/// <summary>Activates and caches this form's own toolbar definitions without copying their native state or callbacks.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 
 	[DefaultValue(ScreenMode.SingleView), Category("Behavior"), Description("Display one screen or multiple screens in detachable tabs")]
 	public ScreenMode ScreenMode {
-		get {
-			return ScreenHost.ScreenMode;
-		}
-		set {
-			ScreenHost.ScreenMode = value;
-		}
+		get => ScreenHost.ScreenMode;
+		set => ScreenHost.ScreenMode = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -84,11 +72,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	/// <summary>The UI invoking the current native command; asynchronous handlers capture it before their first await.</summary>
 	/// <remarks>A detached command supplies its local screen host without changing this form's active screen.</remarks>
 	[Browsable(false)]
-	protected IUserInterfaceServices CommandUserInterfaceServices {
-		get {
-			return _commandUserInterfaceServices ?? this;
-		}
-	}
+	protected IUserInterfaceServices CommandUserInterfaceServices => _commandUserInterfaceServices ?? this;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ApplicationScreen ActiveScreen {
@@ -115,56 +99,28 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	public override string Status {
-		get {
-			return _statusLabel.Text;
-		}
-		set {
-			ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
-		}
+		get => _statusLabel.Text;
+		set => ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
 	}
 
 	[Browsable(false)]
-	protected ToolStripMenuItem HelpToolStripMenuItem {
-		get {
-			return _helpToolStripMenuItem;
-		}
-	}
+	protected ToolStripMenuItem HelpToolStripMenuItem => _helpToolStripMenuItem;
 
 	/// <summary>The actual inherited Options header; derived designers append their native option controls here.</summary>
 	[Browsable(false)]
-	protected ToolStripMenuItem OptionsToolStripMenuItem {
-		get {
-			return _optionsMenuItem;
-		}
-	}
+	protected ToolStripMenuItem OptionsToolStripMenuItem => _optionsMenuItem;
 
 	[Browsable(false)]
-	protected ToolStripMenuItem ScreensToolStripMenuItem {
-		get {
-			return _screensMenuItem;
-		}
-	}
+	protected ToolStripMenuItem ScreensToolStripMenuItem => _screensMenuItem;
 
 	[Browsable(false)]
-	protected ToolStrip ToolStrip {
-		get {
-			return _toolStrip;
-		}
-	}
+	protected ToolStrip ToolStrip => _toolStrip;
 
 	[Browsable(false)]
-	protected MenuStrip MenuStrip {
-		get {
-			return _menuStrip;
-		}
-	}
+	protected MenuStrip MenuStrip => _menuStrip;
 
 	[Browsable(false)]
-	protected StatusStrip StatusStrip {
-		get {
-			return _statusStrip;
-		}
-	}
+	protected StatusStrip StatusStrip => _statusStrip;
 
 	#endregion
 
@@ -379,11 +335,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		}
 	}
 
-	SharedUI.IApplicationScreenHost IUserInterfaceServices.ScreenHost {
-		get {
-			return ScreenHost;
-		}
-	}
+	SharedUI.IApplicationScreenHost IUserInterfaceServices.ScreenHost => ScreenHost;
 
 	public virtual Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default) {
 		return WinFormsCommandControls.ExecuteMenuItemAsync(this, item, cancellationToken);

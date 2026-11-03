@@ -20,17 +20,9 @@ public class DataGridColumns : ColumnInfoCollection {
 		: base(grid) {
 	}
 
-	public new DataGrid Grid {
-		get {
-			return (DataGrid)base.Grid;
-		}
-	}
+	public new DataGrid Grid => (DataGrid)base.Grid;
 
-	public new DataGridColumn this[int index] {
-		get {
-			return base[index] as DataGridColumn;
-		}
-	}
+	public new DataGridColumn this[int index] => base[index] as DataGridColumn;
 
 	/// <summary>
 	/// Return the DataColumn object for a given grid column index. Return null if not applicable, for example if the column index requested is a FixedColumns of an unbound column

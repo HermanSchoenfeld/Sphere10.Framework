@@ -15,16 +15,10 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Planning;
 
 public class CellAppointment : Cells.Cell {
-	private IAppointment _appointment;
-
 	public CellAppointment(IAppointment appointment)
 		: base(appointment.Title) {
-		_appointment = appointment;
+		Appointment = appointment;
 	}
 
-	public IAppointment Appointment {
-		get {
-			return _appointment;
-		}
-	}
+	public IAppointment Appointment { get; }
 }

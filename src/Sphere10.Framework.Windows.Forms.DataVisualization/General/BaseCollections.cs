@@ -19,8 +19,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         #region Member variables
 
         private IChartElement _parent;
-        private CommonElements _common;
-        internal int _suspendUpdates;
+		internal int _suspendUpdates;
 
         #endregion Member variables
 
@@ -31,13 +30,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         internal IChartElement Parent
         {
-            get { return _parent; }
-            set
+			get {
+				return _parent;
+			}
+			set
             {
                 _parent = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets the CommonElements of the chart.
@@ -46,40 +47,25 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         {
             get
             {
-                if (_common == null && _parent != null)
+                if (field == null && _parent != null)
                 {
-                    _common = _parent.Common;
+                    field = _parent.Common;
                 }
-                return _common;
+                return field;
             }
         }
 
         /// <summary>
         /// Gets the chart.
         /// </summary>
-        internal Chart Chart
-        {
-            get
-            {
-                if (Common != null)
-                    return Common.Chart;
-                else
-                    return null;
-            }
-        }
+        internal Chart Chart => Common != null ? Common.Chart : null;
 
         /// <summary>
         /// Gets the items as List&lt;T&gt;. Use this property to perform advanced List specific operations (Sorting, etc)
         /// </summary>
-        internal List<T> ItemList
-        {
-            get { return Items as List<T>; }
-        }
+        internal List<T> ItemList => Items as List<T>;
 
-        internal bool IsSuspended
-        {
-            get { return _suspendUpdates > 0; }
-        }
+        internal bool IsSuspended => _suspendUpdates > 0;
 
         #endregion Properties
 
@@ -231,19 +217,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
         IChartElement IChartElement.Parent
         {
-            get { return this.Parent; }
-            set { this.Parent = value; }
-        }
+			get => this.Parent;
+			set => this.Parent = value;
+		}
 
         void IChartElement.Invalidate()
         {
             this.Invalidate();
         }
 
-        CommonElements IChartElement.Common
-        {
-            get { return this.Common; }
-        }
+        CommonElements IChartElement.Common => this.Common;
 
         #endregion IChartElement Members
     }
@@ -272,10 +255,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// Gets the name prefix that is used to create unique chart element names.
         /// </summary>
         /// <value>The default name prefix of the chart elements stored in the collection.</value>
-        protected virtual string NamePrefix
-        {
-            get { return typeof(T).Name; }
-        }
+        protected virtual string NamePrefix => typeof(T).Name;
 
         /// <summary>
         /// Gets or sets the chart element with the specified name.<br/>
@@ -284,7 +264,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <value></value>
         public T this[string name]
         {
-            get
+			get
             {
                 int index = this.IndexOf(name);
                 if (index != -1)
@@ -301,8 +281,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 throw new ArgumentException(SR.ExceptionNameNotFound(name, this.GetType().Name));
             }
-
-            set
+			set
             {
                 int nameIndex = this.IndexOf(name);
                 int itemIndex = this.IndexOf(value);
@@ -318,7 +297,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 else if (nameFound && itemFound && nameIndex != itemIndex)
                     throw new ArgumentException(SR.ExceptionNameAlreadyExistsInCollection(name, this.GetType().Name));
             }
-        }
+		}
 
 #if NET9_0_OR_GREATER
         /// <summary>
@@ -638,16 +617,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </value>
         bool INameController.IsColectionEditing
         {
-            get
-            {
-                return _disableDeleteCount != 0;
-            }
-
-            set
-            {
-                _disableDeleteCount += value ? 1 : -1;
-            }
-        }
+			get => _disableDeleteCount != 0;
+			set => _disableDeleteCount += value ? 1 : -1;
+		}
 
         /// <summary>
         /// Raises the <see cref="E:NameReferenceChanging"/> event.
@@ -716,10 +688,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// Gets the snapshot of saved collection items.
         /// </summary>
         /// <value>The snapshot.</value>
-        IList INameController.Snapshot
-        {
-            get { return _cachedState; }
-        }
+        IList INameController.Snapshot => _cachedState;
 
         #endregion INameController Members
 

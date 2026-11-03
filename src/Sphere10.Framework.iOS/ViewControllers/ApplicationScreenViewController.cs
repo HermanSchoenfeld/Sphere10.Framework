@@ -50,7 +50,10 @@ public class ApplicationScreenViewController : KeyboardAwareViewController {
 		}
 
 
-		public new string Title { get { return this.NavigationItem.Title; } set { this.NavigationItem.Title = value; } }
+		public new string Title {
+			get => this.NavigationItem.Title;
+			set => this.NavigationItem.Title = value;
+		}
 
 		public override void ViewDidLoad() {
 

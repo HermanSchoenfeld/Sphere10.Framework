@@ -37,7 +37,6 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	private bool _updatingControls;
 	private bool _configuring;
 	private bool _detailsOpen;
-	private bool _hasConfiguration;
 	private bool _initialized;
 	private bool _lastNotifiedLoggingState;
 	private readonly List<LogScreen> _logScreens = new();
@@ -82,7 +81,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasConfiguration => _hasConfiguration;
+	public bool HasConfiguration { get; private set; }
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -117,7 +116,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			Guard.Ensure(!IsLogging && !_configuring, "Stop logging before replacing its configuration.");
 			Guard.ArgumentNotNull(value, nameof(value));
 			_configuration = value.Clone();
-			_hasConfiguration = false;
+			HasConfiguration = false;
 			UpdateUiState();
 		}
 	}
@@ -139,7 +138,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			session.LoggingFailed += OnLoggerFailed;
 			Interlocked.Exchange(ref _activeSession, session)?.Dispose();
 			_configuration = normalized;
-			_hasConfiguration = true;
+			HasConfiguration = true;
 			_rememberedEnabled = true;
 			Volatile.Write(ref _lastError, null);
 			var preceding = Volatile.Read(ref _pendingDrain);
@@ -281,7 +280,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 
 	public string GetDetailsText() {
 		var state = IsLogging ? "Logging Is On." : "Logging Is Off.";
-		if (_hasConfiguration)
+		if (HasConfiguration)
 			state += Environment.NewLine + Configuration.Describe();
 		else
 			state += Environment.NewLine + "No logging output has been selected.";
@@ -341,7 +340,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		UpdateUiState();
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (requested) {
-				if (_hasConfiguration)
+				if (HasConfiguration)
 					StartLogging();
 				else
 					await ConfigureAsync();
@@ -454,7 +453,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			return;
 		}
 		_configuration = normalized;
-		_hasConfiguration = true;
+		HasConfiguration = true;
 		_rememberedEnabled = true;
 		Volatile.Write(ref _lastError, null);
 		AcceptLogOutputSettings();
@@ -576,29 +575,29 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 
 	private LogOutputSelectorSettings _outputSettings;
 	private ISettingsProvider _outputSettingsProvider;
-	private string _settingsKey = string.Empty;
 	private bool _restoreCompleted;
 	private bool _restoringSettings;
 	private bool _settingsDirty;
 	private bool _rememberedEnabled;
-	private Exception _lastSettingsError;
 
 	[Category("Behavior"), DefaultValue("")]
 	[Description("Optional stable UserSettings ID. Otherwise the owning screen/control type and named child path identify remembered logging preferences.")]
 	public string SettingsKey {
-		get => _settingsKey;
+		get {
+			return field;
+		}
 		set {
 			value ??= string.Empty;
-			if (_settingsKey == value)
+			if (field == value)
 				return;
 			EnsureOwnerThread();
 			Guard.Ensure(!_restoreCompleted && _outputSettings == null, "Set SettingsKey before restoring or accepting logging preferences.");
-			_settingsKey = value;
+			field = value;
 		}
-	}
+	} = string.Empty;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Exception LastSettingsError => _lastSettingsError;
+	public Exception LastSettingsError { get; private set; }
 
 	/// <summary>Restores optional preferences after the owner has assigned its application logger and preflight/failure handlers.
 	/// Returns false when no stable identity/provider is available yet, allowing the owner to retry after initialization.</summary>
@@ -621,10 +620,10 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			_outputSettings = provider.Get<LogOutputSelectorSettings>(key);
 			_restoreCompleted = true;
 			// A choice already accepted by this instance takes precedence over older stored preferences.
-			if (_hasConfiguration || !exists || !_outputSettings.HasConfiguration || _outputSettings.Configuration?.RememberAfterClose != true)
+			if (HasConfiguration || !exists || !_outputSettings.HasConfiguration || _outputSettings.Configuration?.RememberAfterClose != true)
 				return true;
 			_configuration = _outputSettings.Configuration.ValidateOptionsAndNormalize();
-			_hasConfiguration = true;
+			HasConfiguration = true;
 			_rememberedEnabled = _outputSettings.IsLogging;
 			if (_rememberedEnabled)
 				Tools.Exceptions.Execute(StartLogging, error => LoggingFailed?.Invoke(error));
@@ -650,7 +649,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			if (error != null)
 				RecordSettingsFailure(error, "Could not accept screen-owned logging preferences.");
 			else
-				_lastSettingsError = null;
+				LastSettingsError = null;
 			return;
 		}
 		_settingsDirty = true;
@@ -671,7 +670,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 				_outputSettingsProvider = provider;
 			}
 			_restoreCompleted = true;
-			if (!_hasConfiguration || !_configuration.RememberAfterClose) {
+			if (!HasConfiguration || !_configuration.RememberAfterClose) {
 				_outputSettingsProvider.DeleteSetting(_outputSettings);
 				_outputSettings = null;
 				_outputSettingsProvider = null;
@@ -682,7 +681,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 				_outputSettings.Save();
 			}
 			_settingsDirty = false;
-			_lastSettingsError = null;
+			LastSettingsError = null;
 		}, out var error);
 		if (error != null) {
 			RecordSettingsFailure(error, "Could not save logging preferences.");
@@ -697,8 +696,8 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	}
 
 	private string ResolveLogSettingsKey() {
-		if (!string.IsNullOrWhiteSpace(_settingsKey))
-			return _settingsKey;
+		if (!string.IsNullOrWhiteSpace(SettingsKey))
+			return SettingsKey;
 		var path = new List<string>();
 		for (var control = (Control)this; control != null; control = control.Parent) {
 			if (control is ApplicationScreen || control != this && control is UserControl && control.GetType() != typeof(UserControl))
@@ -715,7 +714,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	}
 
 	private void RecordSettingsFailure(Exception error, string message) {
-		_lastSettingsError = error;
+		LastSettingsError = error;
 		Tools.Exceptions.ExecuteCapturingException<System.Exception>(() => {
 			(ApplicationLogger ?? SystemLog.Logger).Exception(error, message);
 		}, out var capturedError);

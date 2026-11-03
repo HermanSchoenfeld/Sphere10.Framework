@@ -21,7 +21,6 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// </summary>
 [Obsolete("I will soon remove this class. If you need to add a user control to the grid I suggest to manually add or remove it using the Grid.LinkedControls collection.")]
 public class CellControl : Cell {
-	private Control _control;
 	private LinkedControlScrollMode _scrollMode = LinkedControlScrollMode.BasedOnPosition;
 	private bool _useCellBorder = true;
 
@@ -31,7 +30,7 @@ public class CellControl : Cell {
 	/// <param name="control">Control to insert inside the grid</param>
 	public CellControl(Control control)
 		: base(null) {
-		_control = control;
+		Control = control;
 	}
 
 	/// <summary>
@@ -42,7 +41,7 @@ public class CellControl : Cell {
 	/// <param name="useCellBorder"></param>
 	public CellControl(Control control, LinkedControlScrollMode scrollMode, bool useCellBorder)
 		: this(control) {
-		_control = control;
+		Control = control;
 		_scrollMode = scrollMode;
 		_useCellBorder = useCellBorder;
 	}
@@ -50,16 +49,12 @@ public class CellControl : Cell {
 	/// <summary>
 	/// Gets the control associated with this cell.
 	/// </summary>
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control { get; }
 
 	public override void BindToGrid(Grid grid, Position position) {
 		base.BindToGrid(grid, position);
 
-		var linkedValue = new LinkedControlValue(_control, Range.Start);
+		var linkedValue = new LinkedControlValue(Control, Range.Start);
 		linkedValue.ScrollMode = _scrollMode;
 		linkedValue.UseCellBorder = _useCellBorder;
 		Grid.LinkedControls.Add(linkedValue);
@@ -68,8 +63,8 @@ public class CellControl : Cell {
 	}
 
 	public override void UnBindToGrid() {
-		if (Grid.LinkedControls.GetByControl(_control) != null)
-			Grid.LinkedControls.Remove(Grid.LinkedControls.GetByControl(_control));
+		if (Grid.LinkedControls.GetByControl(Control) != null)
+			Grid.LinkedControls.Remove(Grid.LinkedControls.GetByControl(Control));
 
 		base.UnBindToGrid();
 	}

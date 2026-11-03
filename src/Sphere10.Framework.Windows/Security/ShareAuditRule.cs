@@ -74,8 +74,6 @@ public sealed class ShareAuditRule : AuditRule {
 	}
 
 	// Properties
-	public ShareRights ShareRights {
-		get { return ShareAccessRule.RightsFromAccessMask(base.AccessMask); }
-	}
+	public ShareRights ShareRights => ShareAccessRule.RightsFromAccessMask(base.AccessMask);
 }
 

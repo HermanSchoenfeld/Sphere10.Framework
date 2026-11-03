@@ -25,9 +25,6 @@ public partial class HexEditorControl : UserControlEx {
 	private byte[] _bytes = Array.Empty<byte>();
 	private byte[] _originalBytes = Array.Empty<byte>();
 	private int _pageStart;
-	private int _selectionStart;
-	private int _selectionLength;
-	private bool _readOnly;
 	private bool _updating = true;
 	private bool _pushingValue;
 	private bool _pushRejected;
@@ -52,7 +49,7 @@ public partial class HexEditorControl : UserControlEx {
 			var changed = !_bytes.AsSpan().SequenceEqual(input);
 			_bytes = (byte[])input.Clone();
 			_originalBytes = (byte[])input.Clone();
-			_selectionStart = _selectionLength = _pageStart = 0;
+			SelectionStart = SelectionLength = _pageStart = 0;
 			RefreshPage();
 			if (changed) {
 				BytesChanged?.Invoke();
@@ -64,12 +61,11 @@ public partial class HexEditorControl : UserControlEx {
 	[Category("Behavior"), DefaultValue(false)]
 	public bool ReadOnly {
 		get {
-			return _readOnly;
+			return field;
 		}
-
 		set {
 			EnsureOwnerThread();
-			_readOnly = value;
+			field = value;
 			_grid.ReadOnly = value;
 			UpdateCommandState();
 		}
@@ -84,25 +80,13 @@ public partial class HexEditorControl : UserControlEx {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int Length {
-		get {
-			return _bytes.Length;
-		}
-	}
+	public int Length => _bytes.Length;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int SelectionStart {
-		get {
-			return _selectionStart;
-		}
-	}
+	public int SelectionStart { get; private set; }
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int SelectionLength {
-		get {
-			return _selectionLength;
-		}
-	}
+	public int SelectionLength { get; private set; }
 
 	/// <summary>Reports committed buffers and ranges rather than native editing drafts and viewport rebuilding.</summary>
 	protected override bool ShouldObserveChildStateChanges(Control child) {
@@ -130,7 +114,7 @@ public partial class HexEditorControl : UserControlEx {
 	}
 
 	private void GridCellBeginEdit(object sender, DataGridViewCellCancelEventArgs args) {
-		args.Cancel = _readOnly || args.ColumnIndex < 1 || args.ColumnIndex > _bytesPerRow || (long)_pageStart + args.RowIndex * _bytesPerRow + args.ColumnIndex - 1 > _bytes.Length;
+		args.Cancel = ReadOnly || args.ColumnIndex < 1 || args.ColumnIndex > _bytesPerRow || (long)_pageStart + args.RowIndex * _bytesPerRow + args.ColumnIndex - 1 > _bytes.Length;
 	}
 
 	private void GridCellValidating(object sender, DataGridViewCellValidatingEventArgs args) {
@@ -190,23 +174,23 @@ public partial class HexEditorControl : UserControlEx {
 	private void GridSelectionChanged(object sender, EventArgs args) {
 		if (_updating || IsDisposed || Disposing)
 			return;
-		var previousStart = _selectionStart;
-		var previousLength = _selectionLength;
+		var previousStart = SelectionStart;
+		var previousLength = SelectionLength;
 		var selected = _grid.SelectedCells.Cast<DataGridViewCell>().Where(cell => cell.ColumnIndex >= 1 && cell.ColumnIndex <= _bytesPerRow)
 			.Select(cell => _pageStart + cell.RowIndex * _bytesPerRow + cell.ColumnIndex - 1).Where(offset => offset < _bytes.Length).ToArray();
 		if (selected.Length != 0) {
-			_selectionStart = selected.Min();
-			_selectionLength = selected.Max() - _selectionStart + 1;
+			SelectionStart = selected.Min();
+			SelectionLength = selected.Max() - SelectionStart + 1;
 		} else if (_grid.CurrentCell is { ColumnIndex: >= 1 and <= _bytesPerRow } current) {
-			_selectionStart = Math.Min(_bytes.Length, _pageStart + current.RowIndex * _bytesPerRow + current.ColumnIndex - 1);
-			_selectionLength = _selectionStart < _bytes.Length ? 1 : 0;
+			SelectionStart = Math.Min(_bytes.Length, _pageStart + current.RowIndex * _bytesPerRow + current.ColumnIndex - 1);
+			SelectionLength = SelectionStart < _bytes.Length ? 1 : 0;
 		}
 		var previous = _updating;
 		using var update = Tools.Scope.ExecuteOnDispose(() => _updating = previous);
 		_updating = true;
-		_position.Value = _selectionStart;
+		_position.Value = SelectionStart;
 		UpdateCommandState();
-		if (previousStart != _selectionStart || previousLength != _selectionLength)
+		if (previousStart != SelectionStart || previousLength != SelectionLength)
 			NotifyStateChanged();
 	}
 
@@ -240,7 +224,7 @@ public partial class HexEditorControl : UserControlEx {
 		if (!HasChanges)
 			return;
 		_bytes = (byte[])_originalBytes.Clone();
-		_selectionStart = _selectionLength = _pageStart = 0;
+		SelectionStart = SelectionLength = _pageStart = 0;
 		NotifyBufferChanged();
 	}
 
@@ -250,7 +234,7 @@ public partial class HexEditorControl : UserControlEx {
 			if (result.Accepted) {
 				var bytes = ParseHex(result.UserInput);
 				Guard.Argument(bytes.Length != 0, nameof(result.UserInput), "Enter at least one hexadecimal byte pair.");
-				InsertBytes(_selectionStart, bytes);
+				InsertBytes(SelectionStart, bytes);
 			}
 		});
 	}
@@ -263,7 +247,7 @@ public partial class HexEditorControl : UserControlEx {
 	private async void FindClicked(object sender, EventArgs args) {
 		await RunCommandAsync(() => {
 			var pattern = ParseHex(_findText.Text);
-			var found = FindBytes(pattern, Math.Min(_bytes.Length, _selectionStart + Math.Max(1, _selectionLength)));
+			var found = FindBytes(pattern, Math.Min(_bytes.Length, SelectionStart + Math.Max(1, SelectionLength)));
 			if (found < 0)
 				_status.Text = "Byte sequence not found.";
 			else
@@ -290,10 +274,10 @@ public partial class HexEditorControl : UserControlEx {
 		if (args.Control && args.KeyCode == Keys.C) {
 			args.Handled = args.SuppressKeyPress = true;
 			CopyClicked(sender, args);
-		} else if (!_readOnly && args.Control && args.KeyCode == Keys.V) {
+		} else if (!ReadOnly && args.Control && args.KeyCode == Keys.V) {
 			args.Handled = args.SuppressKeyPress = true;
 			PasteClicked(sender, args);
-		} else if (!_readOnly && args.KeyCode == Keys.Delete) {
+		} else if (!ReadOnly && args.KeyCode == Keys.Delete) {
 			args.Handled = args.SuppressKeyPress = true;
 			DeleteClicked(sender, args);
 		} else if (args.Control && args.KeyCode == Keys.A) {
@@ -305,9 +289,9 @@ public partial class HexEditorControl : UserControlEx {
 	public void SelectRange(int start, int length) {
 		EnsureOwnerThread();
 		ValidateRange(start, length);
-		var changed = _selectionStart != start || _selectionLength != length;
-		_selectionStart = start;
-		_selectionLength = length;
+		var changed = SelectionStart != start || SelectionLength != length;
+		SelectionStart = start;
+		SelectionLength = length;
 		_pageStart = start / _bytesPerPage * _bytesPerPage;
 		RefreshPage();
 		if (changed)
@@ -316,7 +300,7 @@ public partial class HexEditorControl : UserControlEx {
 
 	private async void DeleteClicked(object sender, EventArgs args) {
 		await RunCommandAsync(() => {
-			DeleteBytes(_selectionStart, _selectionLength);
+			DeleteBytes(SelectionStart, SelectionLength);
 			return Task.CompletedTask;
 		});
 	}
@@ -337,7 +321,7 @@ public partial class HexEditorControl : UserControlEx {
 		EnsureEditable();
 		var bytes = ParseHex(text);
 		Guard.Argument(bytes.Length != 0, nameof(text), "Enter at least one hexadecimal byte pair.");
-		ReplaceBytes(_selectionStart, _selectionLength, bytes);
+		ReplaceBytes(SelectionStart, SelectionLength, bytes);
 	}
 
 	/// <summary>Replaces a range with the supplied bytes. Offsets and lengths are validated before any mutation.</summary>
@@ -353,15 +337,15 @@ public partial class HexEditorControl : UserControlEx {
 		bytes.AsSpan().CopyTo(updated.AsSpan(offset));
 		_bytes.AsSpan(offset + count).CopyTo(updated.AsSpan(offset + bytes.Length));
 		_bytes = updated;
-		_selectionStart = offset;
-		_selectionLength = bytes.Length;
+		SelectionStart = offset;
+		SelectionLength = bytes.Length;
 		_pageStart = offset / _bytesPerPage * _bytesPerPage;
 		NotifyBufferChanged();
 	}
 
 	private void EnsureEditable() {
 		EnsureOwnerThread();
-		Guard.Ensure(!_readOnly, "This hex editor is read-only.");
+		Guard.Ensure(!ReadOnly, "This hex editor is read-only.");
 	}
 
 	private void ValidateRange(int offset, int count) {
@@ -394,17 +378,17 @@ public partial class HexEditorControl : UserControlEx {
 		_pageStart = Math.Min(_pageStart, _bytes.Length / _bytesPerPage * _bytesPerPage);
 		_grid.RowCount = Math.Min(_bytesPerPage / _bytesPerRow, (_bytes.Length - _pageStart) / _bytesPerRow + 1);
 		_grid.ClearSelection();
-		if (_selectionStart >= _pageStart && _selectionStart < _pageStart + _bytesPerPage) {
-			var relative = _selectionStart - _pageStart;
+		if (SelectionStart >= _pageStart && SelectionStart < _pageStart + _bytesPerPage) {
+			var relative = SelectionStart - _pageStart;
 			_grid.CurrentCell = _grid.Rows[relative / _bytesPerRow].Cells[relative % _bytesPerRow + 1];
 			_grid.ClearSelection();
 		}
-		for (var offset = Math.Max(_selectionStart, _pageStart); offset < Math.Min((long)_selectionStart + _selectionLength, (long)_pageStart + _bytesPerPage); offset++) {
+		for (var offset = Math.Max(SelectionStart, _pageStart); offset < Math.Min((long)SelectionStart + SelectionLength, (long)_pageStart + _bytesPerPage); offset++) {
 			var relative = offset - _pageStart;
 			_grid.Rows[relative / _bytesPerRow].Cells[relative % _bytesPerRow + 1].Selected = true;
 		}
 		_position.Maximum = _bytes.Length;
-		_position.Value = _selectionStart;
+		_position.Value = SelectionStart;
 		_grid.Invalidate();
 		UpdateCommandState();
 	}
@@ -412,20 +396,20 @@ public partial class HexEditorControl : UserControlEx {
 	private void UpdateCommandState() {
 		if (_grid == null)
 			return;
-		_insert.Enabled = _paste.Enabled = !_readOnly;
-		_delete.Enabled = !_readOnly && _selectionLength != 0;
-		_revert.Enabled = !_readOnly && HasChanges;
-		_copy.Enabled = _selectionLength != 0;
+		_insert.Enabled = _paste.Enabled = !ReadOnly;
+		_delete.Enabled = !ReadOnly && SelectionLength != 0;
+		_revert.Enabled = !ReadOnly && HasChanges;
+		_copy.Enabled = SelectionLength != 0;
 		_first.Enabled = _previous.Enabled = _pageStart != 0;
 		_next.Enabled = _last.Enabled = (long)_pageStart + _bytesPerPage <= _bytes.Length;
 		var pageCount = (long)_bytes.Length / _bytesPerPage + 1;
 		_page.Text = $"Page {_pageStart / _bytesPerPage + 1:N0} / {pageCount:N0}";
-		_status.Text = $"{_bytes.Length:N0} bytes  |  Selected: 0x{_selectionStart:X8}, {_selectionLength:N0} bytes" + (HasChanges ? "  |  Modified" : string.Empty);
+		_status.Text = $"{_bytes.Length:N0} bytes  |  Selected: 0x{SelectionStart:X8}, {SelectionLength:N0} bytes" + (HasChanges ? "  |  Modified" : string.Empty);
 	}
 
 	private async void CopyClicked(object sender, EventArgs args) {
 		await RunCommandAsync(() => {
-			if (_selectionLength > 0)
+			if (SelectionLength > 0)
 				Clipboard.SetText(GetSelectedHex());
 			return Task.CompletedTask;
 		});
@@ -433,7 +417,7 @@ public partial class HexEditorControl : UserControlEx {
 
 	public string GetSelectedHex() {
 		EnsureOwnerThread();
-		return HexEncoding.Encode(_bytes.AsSpan(_selectionStart, _selectionLength).ToArray()).ToUpperInvariant();
+		return HexEncoding.Encode(_bytes.AsSpan(SelectionStart, SelectionLength).ToArray()).ToUpperInvariant();
 	}
 
 	private async Task RunCommandAsync(Func<Task> action) {

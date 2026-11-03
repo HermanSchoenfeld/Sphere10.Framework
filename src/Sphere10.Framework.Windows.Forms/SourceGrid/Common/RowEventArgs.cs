@@ -17,25 +17,17 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// EventArgs used by the FocusRowEnter
 /// </summary>
 public class RowEventArgs : EventArgs {
-	private int _row;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="row"></param>
 	public RowEventArgs(int row) {
-		_row = row;
+		Row = row;
 	}
 
 	/// <summary>
 	/// Row
 	/// </summary>
-	public int Row {
-		get {
-			return _row;
-		}
-		set {
-			_row = value;
-		}
-	}
+	public int Row { get; set; }
 }

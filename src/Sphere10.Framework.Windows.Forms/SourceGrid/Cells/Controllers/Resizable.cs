@@ -59,29 +59,17 @@ public class Resizable : ControllerBase {
 	/// <summary>
 	/// Resize mode of the cell
 	/// </summary>
-	public CellResizeMode ResizeMode {
-		get {
-			return _resizeMode;
-		}
-	}
+	public CellResizeMode ResizeMode => _resizeMode;
 
 	/// <summary>
 	/// Indicates if the behavior is currently resizing a cell width
 	/// </summary>
-	public bool IsWidthResizing {
-		get {
-			return _isWidthResize;
-		}
-	}
+	public bool IsWidthResizing => _isWidthResize;
 
 	/// <summary>
 	/// Indicates if the behavior is currently resizing a cell height
 	/// </summary>
-	public bool IsHeightResizing {
-		get {
-			return _isHeightResize;
-		}
-	}
+	public bool IsHeightResizing => _isHeightResize;
 
 	// IBehaviorModel Members
 	public override void OnMouseDown(CellContext sender, MouseEventArgs e) {

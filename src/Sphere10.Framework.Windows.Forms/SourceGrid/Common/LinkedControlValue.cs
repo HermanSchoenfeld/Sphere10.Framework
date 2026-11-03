@@ -16,62 +16,37 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// Linked control value
 /// </summary>
 public class LinkedControlValue {
-	private Control _control;
 	private Position _position;
-	private bool _useCellBorder;
-	private LinkedControlScrollMode _scrollMode;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	public LinkedControlValue(Control control, Position position) {
-		_control = control;
+		Control = control;
 		_position = position;
-		_useCellBorder = true;
-		_scrollMode = LinkedControlScrollMode.BasedOnPosition;
+		UseCellBorder = true;
+		ScrollMode = LinkedControlScrollMode.BasedOnPosition;
 	}
 
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control { get; }
 
 	/// <summary>
 	/// Gets or sets the position of the linked control.
 	/// </summary>
 	public Position Position {
-		get {
-			return _position;
-		}
-		set {
-			_position = value;
-		}
+		get => _position;
+		set => _position = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if show the cell border. True to insert the editor control inside the border of the cell, false to put the editor control over the entire cell. If you use true remember to set EnableCellDrawOnEdit == true.
 	/// </summary>
-	public bool UseCellBorder {
-		get {
-			return _useCellBorder;
-		}
-		set {
-			_useCellBorder = value;
-		}
-	}
+	public bool UseCellBorder { get; set; }
 
 	/// <summary>
 	/// Gets or sets the scrolling mode of the control.
 	/// </summary>
-	public LinkedControlScrollMode ScrollMode {
-		get {
-			return _scrollMode;
-		}
-		set {
-			_scrollMode = value;
-		}
-	}
+	public LinkedControlScrollMode ScrollMode { get; set; }
 
 	/// <summary>
 	///

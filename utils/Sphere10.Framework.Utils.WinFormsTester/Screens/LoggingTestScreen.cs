@@ -30,25 +30,13 @@ public partial class LoggingTestScreen : ApplicationScreen {
 
 	/// <summary>Declares the logging screen's own preferences through the existing settings lifecycle.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override LoggingScreenSettings ScreenSettings {
-		get {
-			return (LoggingScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override LoggingScreenSettings ScreenSettings => (LoggingScreenSettings)base.ScreenSettings;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LogOutputSelectorControl OutputSelector {
-		get {
-			return _logOutputSelector;
-		}
-	}
+	public LogOutputSelectorControl OutputSelector => _logOutputSelector;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Task OutputCompletion {
-		get {
-			return _outputCompletion;
-		}
-	}
+	public Task OutputCompletion => _outputCompletion;
 
 	protected override void OnLoad(EventArgs args) {
 		base.OnLoad(args);

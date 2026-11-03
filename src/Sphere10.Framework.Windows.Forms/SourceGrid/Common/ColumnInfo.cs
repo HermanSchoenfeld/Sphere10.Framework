@@ -15,20 +15,14 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// Column Information
 /// </summary>
 public class ColumnInfo {
-	private int _maximalWidth = -1;
-	private int _minimalWidth = 0;
 	private int _width;
-	private GridVirtual _grid;
-	private object _tag;
-	private AutoSizeMode _autoSizeMode = AutoSizeMode.Default;
-	private bool _visible = true;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="grid"></param>
 	public ColumnInfo(GridVirtual grid) {
-		_grid = grid;
+		Grid = grid;
 		_width = Grid.DefaultWidth;
 	}
 
@@ -37,40 +31,40 @@ public class ColumnInfo {
 	/// </summary>
 	public int MaximalWidth {
 		get {
-			return _maximalWidth;
+			return field;
 		}
 		set {
 			// Maximal width can not be smaller than minimal width
-			if (value < _minimalWidth)
-				value = _minimalWidth;
-			if (value != _maximalWidth && value >= -1) {
-				_maximalWidth = value;
-				if (this.Width > _maximalWidth && _maximalWidth > -1)
-					this.Width = _maximalWidth;
+			if (value < MinimalWidth)
+				value = MinimalWidth;
+			if (value != field && value >= -1) {
+				field = value;
+				if (this.Width > field && field > -1)
+					this.Width = field;
 			}
 		}
-	}
+	} = -1;
 
 	/// <summary>
 	/// Minimal width of the current Column
 	/// </summary>
 	public int MinimalWidth {
 		get {
-			return _minimalWidth;
+			return field;
 		}
 		set {
 			if (value < 0)
 				value = 0;
 			// Minimal width can not be bigger than maximal width
-			if (value > _maximalWidth && _maximalWidth > -1)
-				value = _maximalWidth;
-			if (value != _minimalWidth) {
-				_minimalWidth = value;
-				if (this.Width < _minimalWidth && this.Visible)
-					this.Width = _minimalWidth;
+			if (value > MaximalWidth && MaximalWidth > -1)
+				value = MaximalWidth;
+			if (value != field) {
+				field = value;
+				if (this.Width < field && this.Visible)
+					this.Width = field;
 			}
 		}
-	}
+	} = 0;
 
 	/// <summary>
 	/// Width of the current Column
@@ -80,10 +74,10 @@ public class ColumnInfo {
 			return _width;
 		}
 		set {
-			if (value < _minimalWidth)
-				value = _minimalWidth;
-			if (value > _maximalWidth && _maximalWidth > -1)
-				value = _maximalWidth;
+			if (value < MinimalWidth)
+				value = MinimalWidth;
+			if (value > MaximalWidth && MaximalWidth > -1)
+				value = MaximalWidth;
 
 			if (_width != value) {
 				_width = value;
@@ -96,55 +90,26 @@ public class ColumnInfo {
 	/// <summary>
 	/// Index of the current Column
 	/// </summary>
-	public int Index {
-		get {
-			return ((ColumnInfoCollection)Grid.Columns).IndexOf(this);
-		}
-	}
+	public int Index => ((ColumnInfoCollection)Grid.Columns).IndexOf(this);
 
 	/// <summary>
 	/// Attached Grid
 	/// </summary>
 	[Browsable(false)]
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; }
 
-	public CellRange Range {
-		get {
-			if (_grid == null)
-				throw new SourceGridException("Invalid Grid object");
-
-			return new CellRange(0, Index, Grid.Rows.Count - 1, Index);
-		}
-	}
+	public CellRange Range => Grid == null ? throw new SourceGridException("Invalid Grid object") : new CellRange(0, Index, Grid.Rows.Count - 1, Index);
 
 	/// <summary>
 	/// A property that the user can use to insert custom informations associated to a specific column
 	/// </summary>
 	[Browsable(false)]
-	public object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
-	}
+	public object Tag { get; set; }
 
 	/// <summary>
 	/// Flags for autosize and stretch
 	/// </summary>
-	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
-	}
+	public AutoSizeMode AutoSizeMode { get; set; } = AutoSizeMode.Default;
 
 	/// <summary>
 	/// Gets or sets if the column is visible.
@@ -152,13 +117,13 @@ public class ColumnInfo {
 	/// </summary>
 	public bool Visible {
 		get {
-			return _visible;
+			return field;
 		}
 		set {
-			if (value != _visible) {
-				_visible = value;
+			if (value != field) {
+				field = value;
 				((ColumnInfoCollection)Grid.Columns).OnColumnWidthChanged(new ColumnInfoEventArgs(this));
 			}
 		}
-	}
+	} = true;
 }

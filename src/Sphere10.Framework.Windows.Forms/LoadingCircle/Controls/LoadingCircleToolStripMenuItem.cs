@@ -24,11 +24,7 @@ public class LoadingCircleToolStripMenuItem : ToolStripControlHost {
 	/// <summary>The hosted indicator, including its editable geometry, style and colour.</summary>
 	[RefreshProperties(RefreshProperties.All)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-	public LoadingCircle LoadingCircleControl {
-		get {
-			return (LoadingCircle)Control;
-		}
-	}
+	public LoadingCircle LoadingCircleControl => (LoadingCircle)Control;
 
 	/// <summary>Uses the indicator's complete square preferred size for native tool-strip layout.</summary>
 	public override Size GetPreferredSize(Size constrainingSize) {

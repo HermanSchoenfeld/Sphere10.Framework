@@ -16,8 +16,6 @@ public static class HttpContextEx {
 		m_httpContextAccessor = httpContextAccessor;
 	}
 
-	public static Microsoft.AspNetCore.Http.HttpContext Current {
-		get { return m_httpContextAccessor.HttpContext; }
-	}
+	public static Microsoft.AspNetCore.Http.HttpContext Current => m_httpContextAccessor.HttpContext;
 }
 

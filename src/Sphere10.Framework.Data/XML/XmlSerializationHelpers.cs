@@ -86,16 +86,16 @@ public class TypeInfo {
 	/// Gets or sets the Types name.
 	/// </summary>
 	public string TypeName {
-		get { return typename; }
-		set { typename = value; }
+		get => typename;
+		set => typename = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the Assemblys name.
 	/// </summary>
 	public string AssemblyName {
-		get { return assemblyname; }
-		set { assemblyname = value; }
+		get => assemblyname;
+		set => assemblyname = value;
 	}
 
 	#endregion Members & Properties

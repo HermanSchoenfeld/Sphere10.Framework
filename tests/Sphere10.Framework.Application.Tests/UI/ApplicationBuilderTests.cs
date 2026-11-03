@@ -175,32 +175,16 @@ public class ApplicationBuilderTests {
 		public IApplicationPlugin Source { get; set; }
 
 		/// <inheritdoc />
-		public int Position {
-			get {
-				return 0;
-			}
-		}
+		public int Position => 0;
 
 		/// <inheritdoc />
-		public ApplicationScreenDefinition[] ScreenDefinitions {
-			get {
-				return Array.Empty<ApplicationScreenDefinition>();
-			}
-		}
+		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
 
 		/// <inheritdoc />
-		public ApplicationScreenDefinition DefaultScreenDefinition {
-			get {
-				return null;
-			}
-		}
+		public ApplicationScreenDefinition DefaultScreenDefinition => null;
 
 		/// <inheritdoc />
-		public IApplicationMenu[] Menus {
-			get {
-				return MenuDefinitions;
-			}
-		}
+		public IApplicationMenu[] Menus => MenuDefinitions;
 	}
 
 	/// <summary>Supplies menu definition for the fixture's existing contract checks.</summary>
@@ -209,11 +193,7 @@ public class ApplicationBuilderTests {
 		public IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public IApplicationMenuItem[] Items {
-			get {
-				return ItemDefinitions;
-			}
-		}
+		public IApplicationMenuItem[] Items => ItemDefinitions;
 	}
 
 	/// <summary>Supplies item definition for the fixture's existing contract checks.</summary>

@@ -111,11 +111,7 @@ public class VisualGridColumnsEditorTests {
 			_fail = fail;
 		}
 
-		public IContainer Container {
-			get {
-				return null;
-			}
-		}
+		public IContainer Container => null;
 
 		public object Instance { get; }
 

@@ -45,18 +45,10 @@ public sealed class VisualGridSnapshotController<T> : IVisualGridSnapshotControl
 	}
 
 	/// <summary>The number of rows in the currently published snapshot.</summary>
-	public long Count {
-		get {
-			return _source.Count;
-		}
-	}
+	public long Count => _source.Count;
 
 	/// <summary>The currently published typed source snapshot.</summary>
-	public T[] Rows {
-		get {
-			return _source.Snapshot;
-		}
-	}
+	public T[] Rows => _source.Snapshot;
 
 	/// <summary>Call on the grid's UI thread with its dispatcher context. Collection is caller-supplied; refreshes serialize through a disposable admission scope.</summary>
 	public async Task RefreshAsync(CancellationToken cancellationToken = default) {

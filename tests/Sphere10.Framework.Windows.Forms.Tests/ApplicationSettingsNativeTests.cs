@@ -717,11 +717,7 @@ public class ApplicationSettingsNativeTests {
 
 		public VisualGrid Grid { get; private set; }
 
-		public override Preferences ScreenSettings {
-			get {
-				return (Preferences)base.ScreenSettings;
-			}
-		}
+		public override Preferences ScreenSettings => (Preferences)base.ScreenSettings;
 
 		// Capture the value available before the first real data query.
 		protected override void InitializeUIPrimingData() {
@@ -854,17 +850,9 @@ public class ApplicationSettingsNativeTests {
 
 		public TaskCompletionSource ReleaseFirstWrite { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		public string[] SavedNames {
-			get {
-				return _savedNames.ToArray();
-			}
-		}
+		public string[] SavedNames => _savedNames.ToArray();
 
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -906,11 +894,7 @@ public class ApplicationSettingsNativeTests {
 	private sealed class RejectedLoadStore(string failure, CancellationTokenSource cancellation) : AsyncSettingsProviderBase {
 		public int Writes { get; private set; }
 
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
@@ -962,11 +946,7 @@ public class ApplicationSettingsNativeTests {
 
 		public bool FailSave { get; set; }
 
-		public int Writes {
-			get {
-				return _writes;
-			}
-		}
+		public int Writes => _writes;
 
 		// Test persistence through the same type and identity used by the actual setting.
 		public override bool ContainsSetting(Type settingsObjectType, object id = null) {

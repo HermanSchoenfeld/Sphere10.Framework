@@ -78,46 +78,30 @@ public class ColumnHeader : Cell {
 	/// Status of the sort.
 	/// </summary>
 	public Models.SortStatus SortStatus {
-		get {
-			return SortableHeaderModel.SortStatus;
-		}
-		set {
-			SortableHeaderModel.SortStatus = value;
-		}
+		get => SortableHeaderModel.SortStatus;
+		set => SortableHeaderModel.SortStatus = value;
 	}
 
 	/// <summary>
 	/// Comparer used.
 	/// </summary>
 	public System.Collections.IComparer SortComparer {
-		get {
-			return SortStatus.Comparer;
-		}
-		set {
-			SortStatus = new SourceGrid.Cells.Models.SortStatus(SortStatus.Style, value);
-		}
+		get => SortStatus.Comparer;
+		set => SortStatus = new SourceGrid.Cells.Models.SortStatus(SortStatus.Style, value);
 	}
 
 	/// <summary>
 	/// Sort style.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle SortStyle {
-		get {
-			return SortStatus.Style;
-		}
-		set {
-			SortStatus = new SourceGrid.Cells.Models.SortStatus(value, SortStatus.Comparer);
-		}
+		get => SortStatus.Style;
+		set => SortStatus = new SourceGrid.Cells.Models.SortStatus(value, SortStatus.Comparer);
 	}
 
 	/// <summary>
 	/// Gets the used SortableHeader model.
 	/// </summary>
-	private Models.SortableHeader SortableHeaderModel {
-		get {
-			return (Models.SortableHeader)Model.FindModel(typeof(Models.SortableHeader));
-		}
-	}
+	private Models.SortableHeader SortableHeaderModel => (Models.SortableHeader)Model.FindModel(typeof(Models.SortableHeader));
 
 	/// <summary>
 	/// Sort the column

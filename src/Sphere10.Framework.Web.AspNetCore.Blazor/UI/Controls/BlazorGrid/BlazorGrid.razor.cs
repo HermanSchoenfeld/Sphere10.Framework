@@ -39,7 +39,6 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	private bool _wasSelected;
 	private TItem _lastSelection;
 	private string _searchText = string.Empty;
-	private string _operationError;
 	private int _parameterPageSize;
 	private BlazorGridPageMode _parameterPageMode;
 	private string _settingsKey;
@@ -131,45 +130,24 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	[Parameter] public EventCallback<TItem> ItemDeleted { get; set; }
 
 	/// <summary>The controller that owns querying, selection and buffered edits.</summary>
-	public IBlazorGridController<TItem> Controller {
-		get {
-			return _controller;
-		}
-	}
+	public IBlazorGridController<TItem> Controller => _controller;
 
 	/// <summary>The current zero-based page number.</summary>
-	public int CurrentPage {
-		get {
-			return Controller.CurrentPage;
-		}
-	}
+	public int CurrentPage => Controller.CurrentPage;
 
 	/// <summary>The total row count reported by the source.</summary>
-	public int TotalDataCount {
-		get {
-			return Controller.TotalCount;
-		}
-	}
+	public int TotalDataCount => Controller.TotalCount;
 
 	/// <summary>The current number of available pages.</summary>
-	public int TotalPages {
-		get {
-			return Controller.TotalPages;
-		}
-	}
+	public int TotalPages => Controller.TotalPages;
 
 	/// <summary>The entity currently selected in the grid.</summary>
-	public TItem SelectedItem {
-		get {
-			return Controller.SelectedItem;
-		}
-	}
+	public TItem SelectedItem => Controller.SelectedItem;
 
 	/// <summary>The current action or controller error.</summary>
 	public string ErrorMessage {
-		get {
-			return _operationError ?? Controller.ErrorMessage;
-		}
+		get => field ?? Controller.ErrorMessage;
+		private set => field = value;
 	}
 
 
@@ -177,39 +155,19 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 	[Inject] private IJSRuntime JSRuntime { get; set; }
 
 	// Reports work that prevents conflicting interaction.
-	private bool IsBusy {
-		get {
-			return Controller.IsLoading || Controller.IsSaving || _performingAction;
-		}
-	}
+	private bool IsBusy => Controller.IsLoading || Controller.IsSaving || _performingAction;
 
 	// Prevents navigation during work, edits and confirmation.
-	private bool NavigationDisabled {
-		get {
-			return IsBusy || Controller.IsEditing || _confirmDelete || _settingsDraft != null;
-		}
-	}
+	private bool NavigationDisabled => IsBusy || Controller.IsEditing || _confirmDelete || _settingsDraft != null;
 
 	// Determines whether the row-action column is visible.
-	private bool ShowActions {
-		get {
-			return Actions.Length > 0 && (GridType == 0 || GridType.HasFlag(GridTypes.ActionColumn));
-		}
-	}
+	private bool ShowActions => Actions.Length > 0 && (GridType == 0 || GridType.HasFlag(GridTypes.ActionColumn));
 
 	// Counts the rendered typed, legacy and action columns.
-	private int ColumnCount {
-		get {
-			return Math.Max(1, _columns.Length + ColumnDefinitions.Length + (ShowActions ? 1 : 0));
-		}
-	}
+	private int ColumnCount => Math.Max(1, _columns.Length + ColumnDefinitions.Length + (ShowActions ? 1 : 0));
 
 	// Checks whether paging currently follows the viewport.
-	private bool UsesViewportPageSize {
-		get {
-			return Controller.PageMode == BlazorGridPageMode.Auto && Can(DataSourceCapabilities.CanPage);
-		}
-	}
+	private bool UsesViewportPageSize => Controller.PageMode == BlazorGridPageMode.Auto && Can(DataSourceCapabilities.CanPage);
 
 	// Builds the height constraints for the current paging mode.
 	private string ViewportStyle {
@@ -221,10 +179,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	// Combines column requirements into the minimum table width.
 	private string MinimumTableWidth {
-		get {
-			return Math.Max(40D, _columns.Sum(PreferredColumnWidth) + ColumnDefinitions.Length * 140D + (ShowActions ? 120 : 0))
-				.ToString(CultureInfo.InvariantCulture);
-		}
+		get => Math.Max(40D, _columns.Sum(PreferredColumnWidth) + ColumnDefinitions.Length * 140D + (ShowActions ? 120 : 0)).ToString(CultureInfo.InvariantCulture);
 	}
 
 	/// <summary>Refreshes the current query and publishes any selection change.</summary>
@@ -234,7 +189,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	/// <summary>Refreshes the current query and publishes any selection change.</summary>
 	public async Task RefreshAsync(bool showLoadingIndicator) {
-		_operationError = null;
+		ErrorMessage = null;
 		await Controller.RefreshAsync(showLoadingIndicator);
 		await NotifySelectionAsync();
 	}
@@ -545,7 +500,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 
 	// Opens confirmation for deleting the selected entity.
 	private void RequestDelete() {
-		_operationError = null;
+		ErrorMessage = null;
 		_confirmDelete = true;
 	}
 
@@ -684,7 +639,7 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		if (NavigationDisabled || !(action.IsActionAvailable?.Invoke(item) ?? true))
 			return;
 		_performingAction = true;
-		_operationError = null;
+		ErrorMessage = null;
 		using var scope = Tools.Scope.ExecuteOnDispose(() => _performingAction = false);
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (action.ActionWorkAsync != null)
@@ -696,14 +651,14 @@ public partial class BlazorGrid<TItem> : IAsyncDisposable {
 		});
 		if (error != null) {
 			if (!_disposed)
-				_operationError = error.Message;
+				ErrorMessage = error.Message;
 		}
 	}
 
 	// Clears editor validation and confirmation state.
 	private void ResetEditor() {
 		_editErrors.Clear();
-		_operationError = null;
+		ErrorMessage = null;
 	}
 
 	// Parses a cell input into the row draft and records conversion errors.

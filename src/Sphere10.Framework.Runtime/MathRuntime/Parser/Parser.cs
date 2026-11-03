@@ -33,12 +33,8 @@ namespace Sphere10.Framework.Maths.Compiler {
 	public class Parser {
 
 		private Scanner _scanner;
-		private Token _currentToken;
 
-		public Token CurrentToken {
-			get { return _currentToken; }
-			set { _currentToken = value; }
-		}
+		public Token CurrentToken { get; set; }
 
 		public Parser(Scanner scanner) {
 			_scanner = scanner;

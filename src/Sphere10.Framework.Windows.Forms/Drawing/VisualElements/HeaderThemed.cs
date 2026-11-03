@@ -40,7 +40,6 @@ public class HeaderThemed : HeaderBase {
 		get {
 			return base.Style;
 		}
-
 		set {
 			base.Style = value;
 			_standardHeader.Style = value;

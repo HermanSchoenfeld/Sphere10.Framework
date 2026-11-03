@@ -21,16 +21,6 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 [System.ComponentModel.ToolboxItem(true)]
 public class DataGrid : GridVirtual {
-	private Sphere10.Framework.ComponentModel.IBoundList _boundList;
-
-	private bool _endEditingRowOnValidate = true;
-
-	private bool _deleteRowsWithDeleteKey = true;
-
-	private bool _cancelEditingWithEscapeKey = true;
-
-	private string _deleteQuestionMessage = "Are you sure to delete all the selected rows?";
-
 	private int? _editingRow;
 
 	public DataGrid() {
@@ -62,12 +52,12 @@ public class DataGrid : GridVirtual {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Sphere10.Framework.ComponentModel.IBoundList DataSource {
 		get {
-			return _boundList;
+			return field;
 		}
 		set {
 			Unbind();
-			_boundList = value;
-			if (_boundList != null)
+			field = value;
+			if (field != null)
 				Bind();
 		}
 	}
@@ -75,20 +65,12 @@ public class DataGrid : GridVirtual {
 	/// <summary>
 	/// Gets the rows information as a DataGridRows object.
 	/// </summary>
-	public new DataGridRows Rows {
-		get {
-			return (DataGridRows)base.Rows;
-		}
-	}
+	public new DataGridRows Rows => (DataGridRows)base.Rows;
 
 	/// <summary>
 	/// Gets the columns informations as a DataGridColumns object.
 	/// </summary>
-	public new DataGridColumns Columns {
-		get {
-			return (DataGridColumns)base.Columns;
-		}
-	}
+	public new DataGridColumns Columns => (DataGridColumns)base.Columns;
 
 	/// <summary>
 	/// Gets or sets the selected DataRowView.
@@ -96,7 +78,7 @@ public class DataGrid : GridVirtual {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object[] SelectedDataRows {
 		get {
-			if (_boundList == null)
+			if (DataSource == null)
 				return new System.Data.DataRowView[0];
 
 			// Count only selected rows that map to source items.
@@ -123,7 +105,7 @@ public class DataGrid : GridVirtual {
 		set {
 			Selection.ResetSelection(false);
 
-			if (_boundList != null && value != null) {
+			if (DataSource != null && value != null) {
 				for (var index = 0; index < value.Length; index++) {
 					for (var r = FixedRows; r < Rows.Count; r++) {
 						var row = Rows.IndexToDataSourceRow(r);
@@ -142,52 +124,24 @@ public class DataGrid : GridVirtual {
 	/// Gets or sets a property to force an End Editing when the control loose the focus
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
-	public bool EndEditingRowOnValidate {
-		get {
-			return _endEditingRowOnValidate;
-		}
-		set {
-			_endEditingRowOnValidate = value;
-		}
-	}
+	public bool EndEditingRowOnValidate { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets if enable the delete of the selected rows when pressing Delete key.
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
-	public bool DeleteRowsWithDeleteKey {
-		get {
-			return _deleteRowsWithDeleteKey;
-		}
-		set {
-			_deleteRowsWithDeleteKey = value;
-		}
-	}
+	public bool DeleteRowsWithDeleteKey { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets if enable the Cancel Editing feature when pressing escape key
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
-	public bool CancelEditingWithEscapeKey {
-		get {
-			return _cancelEditingWithEscapeKey;
-		}
-		set {
-			_cancelEditingWithEscapeKey = value;
-		}
-	}
+	public bool CancelEditingWithEscapeKey { get; set; } = true;
 
 	/// <summary>
 	/// Message showed with the DeleteSelectedRowsAsync method. Set to null to not show any message.
 	/// </summary>
-	public string DeleteQuestionMessage {
-		get {
-			return _deleteQuestionMessage;
-		}
-		set {
-			_deleteQuestionMessage = value;
-		}
-	}
+	public string DeleteQuestionMessage { get; set; } = "Are you sure to delete all the selected rows?";
 
 	/// <summary>
 	/// Gets a specified Cell by its row and column.
@@ -196,7 +150,7 @@ public class DataGrid : GridVirtual {
 	/// <param name="column"></param>
 	/// <returns></returns>
 	public override Cells.ICellVirtual GetCell(int row, int column) {
-		if (_boundList == null)
+		if (DataSource == null)
 			return null;
 		if (column >= Columns.Count)
 			return null;
@@ -267,8 +221,8 @@ public class DataGrid : GridVirtual {
 	/// </summary>
 	/// <param name="cancel"></param>
 	public void EndEditingRow(bool cancel) {
-		if (_boundList != null)
-			_boundList.EndEdit(cancel);
+		if (DataSource != null)
+			DataSource.EndEdit(cancel);
 
 		_editingRow = null;
 	}
@@ -279,11 +233,11 @@ public class DataGrid : GridVirtual {
 	/// <returns>Returns true if one or more row is deleted otherwise false.</returns>
 	public virtual async Task<bool> DeleteSelectedRowsAsync() {
 		// Ask once before applying the deletion to the selected source rows.
-		if (string.IsNullOrEmpty(_deleteQuestionMessage) ||
+		if (string.IsNullOrEmpty(DeleteQuestionMessage) ||
 			await DialogEx.ShowAsync(
 				this,
 				SystemIconType.Question,
-				_deleteQuestionMessage,
+				DeleteQuestionMessage,
 				System.Windows.Forms.Application.ProductName,
 				System.Windows.Forms.MessageBoxButtons.YesNo,
 				System.Windows.Forms.MessageBoxIcon.Question
@@ -347,10 +301,10 @@ public class DataGrid : GridVirtual {
 		base.OnKeyDown(args);
 
 		if (args.KeyCode == System.Windows.Forms.Keys.Delete &&
-			_boundList != null &&
-			_boundList.AllowDelete &&
+			DataSource != null &&
+			DataSource.AllowDelete &&
 			args.Handled == false &&
-			_deleteRowsWithDeleteKey) {
+			DeleteRowsWithDeleteKey) {
 			args.Handled = true;
 			var rows = SelectedDataRows;
 			if (rows != null && rows.Length > 0) {
@@ -360,7 +314,7 @@ public class DataGrid : GridVirtual {
 					OnUserException(new ExceptionEventArgs(error));
 				}
 			}
-		} else if (args.KeyCode == System.Windows.Forms.Keys.Escape && args.Handled == false && _cancelEditingWithEscapeKey) {
+		} else if (args.KeyCode == System.Windows.Forms.Keys.Escape && args.Handled == false && CancelEditingWithEscapeKey) {
 			EndEditingRow(true);
 
 			args.Handled = true;
@@ -387,18 +341,18 @@ public class DataGrid : GridVirtual {
 			CreateColumns();
 		InvalidateDataGridColumns();
 
-		_boundList.ListChanged += new ListChangedEventHandler(BoundListChanged);
-		_boundList.ItemDeleted += BoundListItemDeleted;
-		_boundList.ListCleared += new EventHandler(BoundListCleared);
+		DataSource.ListChanged += new ListChangedEventHandler(BoundListChanged);
+		DataSource.ItemDeleted += BoundListItemDeleted;
+		DataSource.ListCleared += new EventHandler(BoundListCleared);
 		Rows.RowsChanged();
 		Rows.ResetRowHeigth();
 	}
 
 	protected virtual void Unbind() {
-		if (_boundList != null) {
-			_boundList.ListChanged -= new ListChangedEventHandler(BoundListChanged);
-			_boundList.ItemDeleted -= BoundListItemDeleted;
-			_boundList.ListCleared -= new EventHandler(BoundListCleared);
+		if (DataSource != null) {
+			DataSource.ListChanged -= new ListChangedEventHandler(BoundListChanged);
+			DataSource.ItemDeleted -= BoundListItemDeleted;
+			DataSource.ListCleared -= new EventHandler(BoundListCleared);
 		}
 
 		Rows.RowsChanged();

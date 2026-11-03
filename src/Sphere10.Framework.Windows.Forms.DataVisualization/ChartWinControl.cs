@@ -103,10 +103,9 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     internal readonly ChartImage chartPicture;
     private readonly ImageLoader _imageLoader;
     internal readonly ServiceContainer serviceContainer;
-    private readonly PrintingManager _printingManager;
 
-    // Selection class
-    internal readonly Selection selection;
+	// Selection class
+	internal readonly Selection selection;
 
     // Formula registry service component
     private readonly FormulaRegistry _formulaRegistry;
@@ -197,7 +196,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
 
         chartPicture = new ChartImage(serviceContainer);
         Serializer = new ChartSerializer(serviceContainer);
-        _printingManager = new PrintingManager(serviceContainer);
+        Printing = new PrintingManager(serviceContainer);
         _formulaRegistry = new FormulaRegistry();
 
         // Add services to the service container
@@ -209,7 +208,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
         serviceContainer.AddService(_imageLoader.GetType(), _imageLoader);          // Image Loader service
         serviceContainer.AddService(chartPicture.GetType(), chartPicture);          // Chart image service
         serviceContainer.AddService(Serializer.GetType(), Serializer);  // Chart serializer service
-        serviceContainer.AddService(_printingManager.GetType(), _printingManager);  // Printing manager service
+        serviceContainer.AddService(Printing.GetType(), Printing);  // Printing manager service
         serviceContainer.AddService(_formulaRegistry.GetType(), _formulaRegistry);  // Formula modules service
         serviceContainer.AddService(_keywordsRegistry.GetType(), _keywordsRegistry);    // Keywords registry
 
@@ -883,7 +882,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public Color[] PaletteCustomColors
     {
-        set
+		set
         {
             this._dataManager.PaletteCustomColors = value;
             if (!this.disableInvalidates)
@@ -891,8 +890,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-        get => this._dataManager.PaletteCustomColors;
-    }
+		get {
+			return this._dataManager.PaletteCustomColors;
+		}
+	}
 
     /// <summary>
     /// Method resets custom colors array. Internal use only.
@@ -928,9 +929,9 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public bool SuppressExceptions
     {
-        set => this.chartPicture.SuppressExceptions = value;
-        get => this.chartPicture.SuppressExceptions;
-    }
+		set => this.chartPicture.SuppressExceptions = value;
+		get => this.chartPicture.SuppressExceptions;
+	}
 
 
     /// <summary>
@@ -946,9 +947,9 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public object DataSource
     {
-        get => chartPicture.DataSource;
-        set => chartPicture.DataSource = value;
-    }
+		get => chartPicture.DataSource;
+		set => chartPicture.DataSource = value;
+	}
 
     /// <summary>
     /// Chart named images collection.
@@ -963,24 +964,24 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     public NamedImagesCollection Images { get; }
 
 
-    /// <summary>
-    /// Chart printing object.
-    /// </summary>
-    [
-    SRCategory("CategoryAttributeChart"),
-    Bindable(false),
-    SRDescription("DescriptionAttributeChart_Printing"),
-    Browsable(false),
-    DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
-    SerializationVisibilityAttribute(SerializationVisibility.Hidden)
-    ]
-    public PrintingManager Printing => _printingManager;
+	/// <summary>
+	/// Chart printing object.
+	/// </summary>
+	[
+	SRCategory("CategoryAttributeChart"),
+	Bindable(false),
+	SRDescription("DescriptionAttributeChart_Printing"),
+	Browsable(false),
+	DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
+	SerializationVisibilityAttribute(SerializationVisibility.Hidden)
+	]
+	public PrintingManager Printing { get; }
 
 
-    /// <summary>
-    /// Chart series collection.
-    /// </summary>
-    [
+	/// <summary>
+	/// Chart series collection.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeChart"),
     SRDescription("DescriptionAttributeChart_Series"),
     DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
@@ -1028,9 +1029,9 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public override Image BackgroundImage
     {
-        get => base.BackgroundImage;
-        set => base.BackgroundImage = value;
-    }
+		get => base.BackgroundImage;
+		set => base.BackgroundImage = value;
+	}
 
     /// <summary>
     /// Color palette to use
@@ -1043,8 +1044,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public ChartColorPalette Palette
     {
-        get => _dataManager.Palette;
-        set
+		get {
+			return _dataManager.Palette;
+		}
+		set
         {
             _dataManager.Palette = value;
             this.dirtyFlag = true;
@@ -1053,7 +1056,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Specifies whether smoothing (antialiasing) is applied while drawing chart.
@@ -1066,8 +1069,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public Sphere10.Framework.Windows.Forms.DataVisualization.AntiAliasingStyles AntiAliasing
     {
-        get => chartPicture.AntiAliasing;
-        set
+		get {
+			return chartPicture.AntiAliasing;
+		}
+		set
         {
             if (chartPicture.AntiAliasing != value)
             {
@@ -1080,7 +1085,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 }
             }
         }
-    }
+	}
 
     /// <summary>
     /// Specifies the quality of text antialiasing.
@@ -1093,8 +1098,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public TextAntiAliasingQuality TextAntiAliasingQuality
     {
-        get => chartPicture.TextAntiAliasingQuality;
-        set
+		get {
+			return chartPicture.TextAntiAliasingQuality;
+		}
+		set
         {
             chartPicture.TextAntiAliasingQuality = value;
             this.dirtyFlag = true;
@@ -1103,7 +1110,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Specifies whether smoothing is applied while drawing shadows.
@@ -1116,8 +1123,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public bool IsSoftShadows
     {
-        get => chartPicture.IsSoftShadows;
-        set
+		get {
+			return chartPicture.IsSoftShadows;
+		}
+		set
         {
             chartPicture.IsSoftShadows = value;
             this.dirtyFlag = true;
@@ -1126,7 +1135,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Reference to chart area collection
@@ -1151,8 +1160,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public override Color BackColor
     {
-        get => chartPicture.BackColor;
-        set
+		get {
+			return chartPicture.BackColor;
+		}
+		set
         {
             if (chartPicture.BackColor != value)
             {
@@ -1167,7 +1178,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.OnBackColorChanged(EventArgs.Empty);
             }
         }
-    }
+	}
 
     /// <summary>
     /// Fore color propery (not used)
@@ -1182,11 +1193,13 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public override Color ForeColor
     {
-        get => Color.Empty;
-        set
+		get {
+			return Color.Empty;
+		}
+		set
         {
         }
-    }
+	}
 
     /// <summary>
     /// Fore color propery (not used)
@@ -1199,13 +1212,15 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public new System.Drawing.Size Size
     {
-        get => base.Size;
-        set
+		get {
+			return base.Size;
+		}
+		set
         {
             chartPicture.InspectChartDimensions(value.Width, value.Height);
             base.Size = value;
         }
-    }
+	}
 
     /// <summary>
     /// Series data manipulator
@@ -1246,9 +1261,9 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public new Font Font
     {
-        get => base.Font;
-        set => base.Font = value;
-    }
+		get => base.Font;
+		set => base.Font = value;
+	}
 
 
     /// <summary>
@@ -1262,8 +1277,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public ChartHatchStyle BackHatchStyle
     {
-        get => chartPicture.BackHatchStyle;
-        set
+		get {
+			return chartPicture.BackHatchStyle;
+		}
+		set
         {
             chartPicture.BackHatchStyle = value;
             this.dirtyFlag = true;
@@ -1272,7 +1289,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
 
 
@@ -1288,8 +1305,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public string BackImage
     {
-        get => chartPicture.BackImage;
-        set
+		get {
+			return chartPicture.BackImage;
+		}
+		set
         {
             chartPicture.BackImage = value;
             this.dirtyFlag = true;
@@ -1298,7 +1317,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Chart area background image drawing mode.
@@ -1312,8 +1331,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public ChartImageWrapMode BackImageWrapMode
     {
-        get => chartPicture.BackImageWrapMode;
-        set
+		get {
+			return chartPicture.BackImageWrapMode;
+		}
+		set
         {
             chartPicture.BackImageWrapMode = value;
             this.dirtyFlag = true;
@@ -1322,7 +1343,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Background image transparent color.
@@ -1337,8 +1358,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public Color BackImageTransparentColor
     {
-        get => chartPicture.BackImageTransparentColor;
-        set
+		get {
+			return chartPicture.BackImageTransparentColor;
+		}
+		set
         {
             chartPicture.BackImageTransparentColor = value;
             this.dirtyFlag = true;
@@ -1347,7 +1370,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Background image alignment used by ClampUnscale drawing mode.
@@ -1361,8 +1384,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public ChartImageAlignmentStyle BackImageAlignment
     {
-        get => chartPicture.BackImageAlignment;
-        set
+		get {
+			return chartPicture.BackImageAlignment;
+		}
+		set
         {
             chartPicture.BackImageAlignment = value;
             this.dirtyFlag = true;
@@ -1371,7 +1396,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// A type for the background gradient
@@ -1384,8 +1409,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public GradientStyle BackGradientStyle
     {
-        get => chartPicture.BackGradientStyle;
-        set
+		get {
+			return chartPicture.BackGradientStyle;
+		}
+		set
         {
             chartPicture.BackGradientStyle = value;
             this.dirtyFlag = true;
@@ -1394,7 +1421,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// The second color which is used for a gradient
@@ -1408,8 +1435,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public Color BackSecondaryColor
     {
-        get => chartPicture.BackSecondaryColor;
-        set
+		get {
+			return chartPicture.BackSecondaryColor;
+		}
+		set
         {
             chartPicture.BackSecondaryColor = value;
             this.dirtyFlag = true;
@@ -1418,7 +1447,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Border color for the Chart
@@ -1436,8 +1465,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public Color BorderColor
     {
-        get => chartPicture.BorderColor;
-        set
+		get {
+			return chartPicture.BorderColor;
+		}
+		set
         {
             chartPicture.BorderColor = value;
             this.dirtyFlag = true;
@@ -1446,7 +1477,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// The width of the border line
@@ -1463,8 +1494,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public int BorderWidth
     {
-        get => chartPicture.BorderWidth;
-        set
+		get {
+			return chartPicture.BorderWidth;
+		}
+		set
         {
             chartPicture.BorderWidth = value;
             this.dirtyFlag = true;
@@ -1473,7 +1506,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// The style of the border line
@@ -1490,8 +1523,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public ChartDashStyle BorderDashStyle
     {
-        get => chartPicture.BorderDashStyle;
-        set
+		get {
+			return chartPicture.BorderDashStyle;
+		}
+		set
         {
             chartPicture.BorderDashStyle = value;
             this.dirtyFlag = true;
@@ -1500,7 +1535,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Border color for the Chart
@@ -1514,8 +1549,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public Color BorderlineColor
     {
-        get => chartPicture.BorderColor;
-        set
+		get {
+			return chartPicture.BorderColor;
+		}
+		set
         {
             chartPicture.BorderColor = value;
             this.dirtyFlag = true;
@@ -1524,7 +1561,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// The width of the border line
@@ -1537,8 +1574,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public int BorderlineWidth
     {
-        get => chartPicture.BorderWidth;
-        set
+		get {
+			return chartPicture.BorderWidth;
+		}
+		set
         {
             chartPicture.BorderWidth = value;
             this.dirtyFlag = true;
@@ -1547,7 +1586,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// The style of the border line
@@ -1560,8 +1599,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public ChartDashStyle BorderlineDashStyle
     {
-        get => chartPicture.BorderDashStyle;
-        set
+		get {
+			return chartPicture.BorderDashStyle;
+		}
+		set
         {
             chartPicture.BorderDashStyle = value;
             this.dirtyFlag = true;
@@ -1570,7 +1611,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
 
     /// <summary>
@@ -1587,8 +1628,10 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
     ]
     public BorderSkin BorderSkin
     {
-        get => chartPicture.BorderSkin;
-        set
+		get {
+			return chartPicture.BorderSkin;
+		}
+		set
         {
             chartPicture.BorderSkin = value;
             this.dirtyFlag = true;
@@ -1597,7 +1640,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Build number of the control
@@ -2848,7 +2891,7 @@ public class Chart : System.Windows.Forms.Control, ISupportInitialize
             // Dispose selection manager
             selection.Dispose();
             // Dispose print manager
-            _printingManager.Dispose();
+            Printing.Dispose();
             // Dispose buffer
             if (paintBufferBitmap is not null)
             {

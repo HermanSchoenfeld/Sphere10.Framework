@@ -40,12 +40,8 @@ public partial class DropDownButton : System.Windows.Forms.Control {
 
 	[Browsable(false)]
 	public new Color BackColor {
-		get {
-			return base.BackColor;
-		}
-		set {
-			base.BackColor = value;
-		}
+		get => base.BackColor;
+		set => base.BackColor = value;
 	}
 
 	/// <summary>

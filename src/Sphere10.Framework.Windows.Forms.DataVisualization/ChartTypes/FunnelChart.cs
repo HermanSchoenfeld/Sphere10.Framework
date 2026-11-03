@@ -242,9 +242,9 @@ internal class FunnelChart : IChartType
     /// </summary>
     internal RectangleF PlotAreaPosition
     {
-        get => _plotAreaPosition;
-        set => _plotAreaPosition = value;
-    }
+		get => _plotAreaPosition;
+		set => _plotAreaPosition = value;
+	}
 
     #endregion // Properties
 

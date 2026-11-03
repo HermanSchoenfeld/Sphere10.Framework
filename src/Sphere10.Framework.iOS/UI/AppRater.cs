@@ -48,21 +48,25 @@ namespace Sphere10.Framework.iOS
 			DidRate = false;
 		}
 		static int RunCount {
-			get{return (int)(settings.IntForKey("runCount"));}
+			get {
+				return (int)(settings.IntForKey("runCount"));
+			}
 			set {settings.SetInt(value,"runCount");
 				settings.Synchronize();
 			}
 		}
 		static DateTime DateVersionInstalled
 		{
-			get{return DateTime.Parse(settings.StringForKey("dateInstalled"));}
+			get {
+				return DateTime.Parse(settings.StringForKey("dateInstalled"));
+			}
 			set{settings.SetString(value.ToString(),"dateInstalled");
 				settings.Synchronize();}
 		}
 		static bool ShouldRateThisVersion
 		{
-			get{return settings.BoolForKey("shouldRate");}
-			set{settings.SetBool(value,"shouldRate");}
+			get => settings.BoolForKey("shouldRate");
+			set => settings.SetBool(value, "shouldRate");
 		}
 		static void TryToRate()
 		{
@@ -70,7 +74,9 @@ namespace Sphere10.Framework.iOS
 				Rate();
 		}
 		public static bool DidRate{
-			get{return settings.BoolForKey("didRateVersion");}
+			get {
+				return settings.BoolForKey("didRateVersion");
+			}
 			set{settings.SetBool(value,"didRateVersion");
 				settings.Synchronize();}
 		}

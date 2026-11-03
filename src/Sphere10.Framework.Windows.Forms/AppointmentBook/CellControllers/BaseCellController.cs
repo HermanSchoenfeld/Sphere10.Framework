@@ -22,8 +22,8 @@ internal class BaseCellController : SourceGrid.Cells.Controllers.ControllerBase 
 	protected BaseAppointmentBook Owner { get; set; }
 
 	protected Cursor CurrentCursor {
-		get { return Owner.Cursor; }
-		set { Owner.Cursor = value; }
+		get => Owner.Cursor;
+		set => Owner.Cursor = value;
 	}
 
 	public override void OnFocusEntering(SourceGrid.CellContext sender, System.ComponentModel.CancelEventArgs e) {

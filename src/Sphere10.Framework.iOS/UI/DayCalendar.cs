@@ -78,14 +78,9 @@ namespace Sphere10.Framework.iOS
 			return (this.BoxStart < e.BoxEnd && this.BoxEnd > e.startDate);
 		}
 		
-		internal DateTime BoxStart {
-			
-			get { return (from e in events.ToArray () select e.BoxStart).Min (); }
-		}
+		internal DateTime BoxStart => ( from e in events.ToArray()select e.BoxStart).Min();
 		
-		internal DateTime BoxEnd {
-			get { return (from e in events.ToArray () select e.BoxEnd).Max (); }
-		}
+		internal DateTime BoxEnd => ( from e in events.ToArray()select e.BoxEnd).Max();
 		
 	}
 	
@@ -95,9 +90,7 @@ namespace Sphere10.Framework.iOS
 		internal Block Block;
 		
 		
-		private bool isLastInBlock {
-			get { return Block.Columns[Block.Columns.Count - 1] == this; }
-		}
+		private bool isLastInBlock => Block.Columns[Block.Columns.Count - 1] == this;
 		
 		internal BlockColumn ()
 		{
@@ -125,14 +118,7 @@ namespace Sphere10.Framework.iOS
 		/// <summary>
 		/// Gets the order number of the column.
 		/// </summary>
-		public int Number {
-			get {
-				if (Block == null)
-					throw new ApplicationException ("This Column doesn't belong to any Block.");
-				
-				return Block.Columns.IndexOf (this);
-			}
-		}
+		public int Number => Block == null ? throw new ApplicationException("This Column doesn't belong to any Block.") : Block.Columns.IndexOf(this);
 	}
 	
 	public class CalendarDayEventView : UIView

@@ -11,15 +11,20 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Utils.Profiler.ObjectSpaces.Lab;
 
 public class ObjectSpaceLabGroup {
-	private int _id = 0;
-	private string _code = string.Empty;
-	private string _name = string.Empty;
+	public int Id {
+		get => field;
+		set => SetField(ref field, value);
+	} = 0;
 
-	public int Id { get => _id; set => SetField(ref _id, value); }
+	public string Code {
+		get => field;
+		set => SetField(ref field, value);
+	} = string.Empty;
 
-	public string Code { get => _code; set => SetField(ref _code, value); }
-
-	public string Name { get => _name; set => SetField(ref _name, value); }
+	public string Name {
+		get => field;
+		set => SetField(ref field, value);
+	} = string.Empty;
 
 	[Transient]
 	public bool Dirty { get; set; }

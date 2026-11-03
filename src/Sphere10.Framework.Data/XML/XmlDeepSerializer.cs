@@ -37,7 +37,6 @@ public class XmlDeepSerializer : IDisposable {
 	private Hashtable typedictionary = new Hashtable();
 
 	// Usage of a type dictionary is optional, but it's advised
-	private bool usetypedictionary = true;
 
 	public const string TYPE_KEY_PREFIX = "TK";
 
@@ -53,8 +52,8 @@ public class XmlDeepSerializer : IDisposable {
 	/// </summary>
 	[Description("Gets or sets Attribute Type which marks a property to be ignored.")]
 	public Type SerializationIgnoredAttributeType {
-		get { return serializationIgnoredAttributeType; }
-		set { serializationIgnoredAttributeType = value; }
+		get => serializationIgnoredAttributeType;
+		set => serializationIgnoredAttributeType = value;
 	}
 
 	/// <summary>
@@ -62,8 +61,8 @@ public class XmlDeepSerializer : IDisposable {
 	/// </summary>
 	[Description("Gets or sets whether errors during serialisation shall be ignored.")]
 	public bool IgnoreSerialisationErrors {
-		get { return ignoreserialisationerrors; }
-		set { ignoreserialisationerrors = value; }
+		get => ignoreserialisationerrors;
+		set => ignoreserialisationerrors = value;
 	}
 
 	/// <summary>
@@ -71,18 +70,15 @@ public class XmlDeepSerializer : IDisposable {
 	/// </summary>
 	[Description("Gets or sets the dictionary of XML-tags.")]
 	public IXmlSerializationTag TagLib {
-		get { return taglib; }
-		set { taglib = value; }
+		get => taglib;
+		set => taglib = value;
 	}
 
 	/// <summary>
 	/// Gets or sets whether a type dictionary is used to store Type information.
 	/// </summary>
 	[Description("Gets or sets whether a type dictionary is used to store Type information.")]
-	public bool UseTypeDictionary {
-		get { return usetypedictionary; }
-		set { usetypedictionary = value; }
-	}
+	public bool UseTypeDictionary { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets whether the ISerializable Attribute is ignored.
@@ -92,8 +88,8 @@ public class XmlDeepSerializer : IDisposable {
 	/// </remarks>
 	[Description("Gets or sets whether the ISerializable Attribute is ignored.")]
 	public bool IgnoreSerializableAttribute {
-		get { return ignoreserializableattribute; }
-		set { ignoreserializableattribute = value; }
+		get => ignoreserializableattribute;
+		set => ignoreserializableattribute = value;
 	}
 
 	#endregion Properties
@@ -234,7 +230,7 @@ public class XmlDeepSerializer : IDisposable {
 		}
 
 		// Use of a TypeDictionary?
-		if (usetypedictionary) {
+		if (UseTypeDictionary) {
 			// TypeDictionary
 			String typekey = GetTypeKey(type);
 

@@ -9,29 +9,17 @@
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class DefaultMathContext : IMathContext {
-
-	private IMathContext _parentContext;
-	private IVariableContext _variableContext;
-	private IFunctionContext _functionContext;
-
 	public DefaultMathContext() {
-		_parentContext = null;
-		_variableContext = new DefaultVariableContext(this);
-		_functionContext = new DefaultFunctionContext(this);
+		ParentContext = null;
+		Variables = new DefaultVariableContext(this);
+		Functions = new DefaultFunctionContext(this);
 	}
 
-	public IMathContext ParentContext {
-		get { return _parentContext; }
-		set { _parentContext = value; }
-	}
+	public IMathContext ParentContext { get; set; }
 
-	public IVariableContext Variables {
-		get { return _variableContext; }
-	}
+	public IVariableContext Variables { get; }
 
-	public IFunctionContext Functions {
-		get { return _functionContext; }
-	}
+	public IFunctionContext Functions { get; }
 
 	public IFunction GenerateFunction(string expression) {
 		return GenerateFunction(expression, "x");

@@ -34,18 +34,10 @@ public class ChangeActivePositionEventArgs : System.ComponentModel.CancelEventAr
 	/// <summary>
 	/// Position that had the focus
 	/// </summary>
-	public Position OldFocusPosition {
-		get {
-			return _oldFocusPosition;
-		}
-	}
+	public Position OldFocusPosition => _oldFocusPosition;
 
 	/// <summary>
 	/// Position that will receive the focus. If Empty there isn't a cell that will receive the focus.
 	/// </summary>
-	public Position NewFocusPosition {
-		get {
-			return _newFocusPosition;
-		}
-	}
+	public Position NewFocusPosition => _newFocusPosition;
 }

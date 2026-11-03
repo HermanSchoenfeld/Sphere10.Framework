@@ -23,15 +23,9 @@ public partial class ListEditor : UserControlEx {
 	/// <summary>Raised after a complete list edit.</summary>
 	public event EventHandler ListChanged;
 
-	private IList _list;
-
-	private Type _itemType;
-
 	private Cells.Editors.EditorBase[] _editors;
 
 	private readonly List<Cells.Editors.EditorBase> _ownedEditors = new();
-
-	private System.Reflection.PropertyInfo[] _properties;
 
 	/// <summary>Creates the grid and its list-editing commands.</summary>
 	public ListEditor() {
@@ -40,30 +34,19 @@ public partial class ListEditor : UserControlEx {
 	}
 
 	/// <summary>Gets or sets the mutable list, including generic lists exposed through their runtime IList contract.</summary>
-	public IList List {
-		get {
-			return _list;
-		}
-		set {
-			_list = value;
-		}
-	}
+	public IList List { get; set; }
 
 	/// <summary>Gets the displayed grid for selection, presentation and export configuration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid => _grid;
 
 	/// <summary>Gets or sets the item schema used to create property editors.</summary>
 	public Type ItemType {
 		get {
-			return _itemType;
+			return field;
 		}
 		set {
-			_itemType = value;
+			field = value;
 			LoadEditors();
 		}
 	}
@@ -86,43 +69,24 @@ public partial class ListEditor : UserControlEx {
 
 	/// <summary>Gets or sets the reflected properties displayed as columns.</summary>
 	[Browsable(false)]
-	public System.Reflection.PropertyInfo[] Properties {
-		get {
-			return _properties;
-		}
-		set {
-			_properties = value;
-		}
-	}
+	public System.Reflection.PropertyInfo[] Properties { get; set; }
 
 	/// <summary>Gets or sets whether the add command is visible.</summary>
 	public bool EnableAdd {
-		get {
-			return _addButton.Visible;
-		}
-		set {
-			_addButton.Visible = value;
-		}
+		get => _addButton.Visible;
+		set => _addButton.Visible = value;
 	}
 
 	/// <summary>Gets or sets whether the remove command is visible.</summary>
 	public bool EnableRemove {
-		get {
-			return _removeButton.Visible;
-		}
-		set {
-			_removeButton.Visible = value;
-		}
+		get => _removeButton.Visible;
+		set => _removeButton.Visible = value;
 	}
 
 	/// <summary>Gets or sets whether the refresh command is visible.</summary>
 	public bool EnableRefresh {
-		get {
-			return _refreshButton.Visible;
-		}
-		set {
-			_refreshButton.Visible = value;
-		}
+		get => _refreshButton.Visible;
+		set => _refreshButton.Visible = value;
 	}
 
 	/// <summary>Gets or sets whether row-movement commands are visible.</summary>
@@ -141,23 +105,23 @@ public partial class ListEditor : UserControlEx {
 		// End any in-place edit before rebuilding the list's cells.
 		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
 		CancelCurrentEdit();
-		if (_itemType == null)
+		if (ItemType == null)
 			throw new ApplicationException("ItemType is null");
-		if (_list == null)
-			_list = new List<object>();
+		if (List == null)
+			List = new List<object>();
 
-		if (_properties.Length != _editors.Length)
+		if (Properties.Length != _editors.Length)
 			throw new ApplicationException("Properteis.Length != Editors.Length");
 
 		// Size the grid from the reflected schema and current list membership.
 		_grid.FixedRows = 1;
 		_grid.FixedColumns = 0;
-		_grid.Redim(_list.Count + _grid.FixedRows, _properties.Length + _grid.FixedColumns);
+		_grid.Redim(List.Count + _grid.FixedRows, Properties.Length + _grid.FixedColumns);
 
 		//HeaderCell
 		//grid[0,0] = new Cells.Header();
-		for (var index = 0; index < _properties.Length; index++) {
-			var header = new Cells.ColumnHeader(_properties[index].Name);
+		for (var index = 0; index < Properties.Length; index++) {
+			var header = new Cells.ColumnHeader(Properties[index].Name);
 			_grid[0, index + _grid.FixedColumns] = header;
 
 			header.AutomaticSortEnabled = false;
@@ -169,8 +133,8 @@ public partial class ListEditor : UserControlEx {
 		}
 
 		// Bind each list item before sizing the completed grid.
-		for (var r = 0; r < _list.Count; r++)
-			PopulateRow(r + _grid.FixedRows, _list[r]);
+		for (var r = 0; r < List.Count; r++)
+			PopulateRow(r + _grid.FixedRows, List[r]);
 
 		_grid.AutoStretchColumnsToFitWidth = true;
 		_grid.AutoSizeCells();
@@ -211,8 +175,8 @@ public partial class ListEditor : UserControlEx {
 			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
 			var row = _grid.RowsCount;
 			_grid.Rows.Insert(row);
-			var item = Tools.Object.Create(_itemType);
-			_list.Add(item);
+			var item = Tools.Object.Create(ItemType);
+			List.Add(item);
 			PopulateRow(row, item);
 			UpdateCommandState(_grid.Selection.ActivePosition.Row);
 
@@ -227,7 +191,7 @@ public partial class ListEditor : UserControlEx {
 		try {
 			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
 			if (_grid.Selection.ActivePosition.IsEmpty() == false && _grid.Selection.ActivePosition.Row >= _grid.FixedRows) {
-				_list.Remove(_grid.Rows[_grid.Selection.ActivePosition.Row].Tag);
+				List.Remove(_grid.Rows[_grid.Selection.ActivePosition.Row].Tag);
 				_grid.Rows.Remove(_grid.Selection.ActivePosition.Row);
 				UpdateCommandState(_grid.Selection.ActivePosition.Row);
 
@@ -254,9 +218,9 @@ public partial class ListEditor : UserControlEx {
 			if (_grid.Selection.ActivePosition.IsEmpty() == false && _grid.Selection.ActivePosition.Row > _grid.FixedRows) {
 				var tag = _grid.Rows[_grid.Selection.ActivePosition.Row].Tag;
 				var gridRow = _grid.Selection.ActivePosition.Row;
-				var listIndex = _list.IndexOf(tag);
-				_list.Remove(tag);
-				_list.Insert(listIndex - 1, tag);
+				var listIndex = List.IndexOf(tag);
+				List.Remove(tag);
+				List.Insert(listIndex - 1, tag);
 				_grid.Rows.Move(gridRow, gridRow - 1);
 
 				_grid.Selection.FocusRow(gridRow - 1);
@@ -278,9 +242,9 @@ public partial class ListEditor : UserControlEx {
 				_grid.Selection.ActivePosition.Row < _grid.Rows.Count - 1) {
 				var tag = _grid.Rows[_grid.Selection.ActivePosition.Row].Tag;
 				var gridRow = _grid.Selection.ActivePosition.Row;
-				var listIndex = _list.IndexOf(tag);
-				_list.Remove(tag);
-				_list.Insert(listIndex + 1, tag);
+				var listIndex = List.IndexOf(tag);
+				List.Remove(tag);
+				List.Insert(listIndex + 1, tag);
 				_grid.Rows.Move(gridRow, gridRow + 1);
 
 				_grid.Selection.FocusRow(gridRow + 1);
@@ -314,24 +278,24 @@ public partial class ListEditor : UserControlEx {
 		CancelCurrentEdit();
 		DetachBorrowedEditors();
 		ReleaseOwnedEditors();
-		if (_itemType != null) {
-			_properties = _itemType.GetProperties();
+		if (ItemType != null) {
+			Properties = ItemType.GetProperties();
 
 			var browsableProperties = new List<PropertyInfo>();
 			//remove not Browsable attribute
-			for (var index = 0; index < _properties.Length; index++) {
-				var attributes = TypeDescriptor.GetProperties(_itemType)[_properties[index].Name].Attributes;
+			for (var index = 0; index < Properties.Length; index++) {
+				var attributes = TypeDescriptor.GetProperties(ItemType)[Properties[index].Name].Attributes;
 
 				// Checks to see if the value of the BrowsableAttribute is Yes.
 				if (attributes[typeof(BrowsableAttribute)].Equals(BrowsableAttribute.Yes))
-					browsableProperties.Add(_properties[index]);
+					browsableProperties.Add(Properties[index]);
 			}
 
 			_editors = new Cells.Editors.EditorBase[browsableProperties.Count];
-			_properties = browsableProperties.ToArray();
+			Properties = browsableProperties.ToArray();
 
-			for (var index = 0; index < _properties.Length; index++) {
-				var property = _properties[index];
+			for (var index = 0; index < Properties.Length; index++) {
+				var property = Properties[index];
 				_editors[index] = Cells.Editors.Factory.Create(property.PropertyType);
 				if (_editors[index] != null) {
 					_ownedEditors.Add(_editors[index]);
@@ -344,8 +308,8 @@ public partial class ListEditor : UserControlEx {
 
 	// Binds an item's properties to one grid row.
 	private void PopulateRow(int gridRow, object item) {
-		for (var c = 0; c < _properties.Length; c++)
-			PopulateCell(gridRow, c + _grid.FixedColumns, _properties[c], _editors[c], item);
+		for (var c = 0; c < Properties.Length; c++)
+			PopulateCell(gridRow, c + _grid.FixedColumns, Properties[c], _editors[c], item);
 
 		_grid.Rows[gridRow].Tag = item;
 	}

@@ -26,11 +26,7 @@ public class DataGridRows : RowsSimpleBase {
 		_headerHeight = grid.DefaultHeight;
 	}
 
-	public new DataGrid Grid {
-		get {
-			return (DataGrid)base.Grid;
-		}
-	}
+	public new DataGrid Grid => (DataGrid)base.Grid;
 
 	/// <summary>
 	/// Gets the number of row of the current DataView. Usually this value is automatically calculated and cannot be changed manually.
@@ -46,12 +42,8 @@ public class DataGridRows : RowsSimpleBase {
 	}
 
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
 	/// <summary>

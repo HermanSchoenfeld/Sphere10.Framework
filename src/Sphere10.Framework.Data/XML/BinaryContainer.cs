@@ -47,9 +47,7 @@ public class BinaryContainer : ISerializable, IObjectReference {
 	/// <summary>
 	/// Read only property returning the size (length) of the binary data.
 	/// </summary>
-	public int Size {
-		get { return _data != null ? _data.Length : 0; }
-	}
+	public int Size => _data != null ? _data.Length : 0;
 
 	/// <summary>
 	/// Sets the data.

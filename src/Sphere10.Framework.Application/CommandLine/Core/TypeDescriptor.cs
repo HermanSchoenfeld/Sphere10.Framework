@@ -16,17 +16,11 @@ struct TypeDescriptor {
 		this.nextValue = nextValue;
 	}
 
-	public TargetType TargetType {
-		get { return targetType; }
-	}
+	public TargetType TargetType => targetType;
 
-	public Maybe<int> MaxItems {
-		get { return maxItems; }
-	}
+	public Maybe<int> MaxItems => maxItems;
 
-	public Maybe<TypeDescriptor> NextValue {
-		get { return this.nextValue; }
-	}
+	public Maybe<TypeDescriptor> NextValue => this.nextValue;
 
 	public static TypeDescriptor Create(TargetType tag, Maybe<int> maximumItems, TypeDescriptor next = default(TypeDescriptor)) {
 		if (maximumItems == null) throw new ArgumentNullException("maximumItems");

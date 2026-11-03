@@ -27,11 +27,7 @@ namespace Sphere10.Framework {
 			return Value;
 		}
 
-		public override string Description {
-			get {
-				return base.Description;
-			}
-		}
+		public override string Description => base.Description;
 
 		public override NSObject Copy() {
 			return new ComboBoxItem(Key, Value);

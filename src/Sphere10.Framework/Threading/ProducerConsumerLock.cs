@@ -30,7 +30,6 @@ namespace Sphere10.Framework;
 /// Returned scopes require synchronous disposal on the acquiring thread.
 /// </remarks>
 public class ProducerConsumerLock : IDisposable {
-	private readonly object _sharedLock;
 	private volatile bool _disposed;
 
 	private readonly SemaphoreSlim _producerSemaphore;
@@ -41,13 +40,13 @@ public class ProducerConsumerLock : IDisposable {
 	}
 
 	public ProducerConsumerLock(object sharedLock) {
-		_sharedLock = sharedLock;
+		SharedLock = sharedLock;
 		_disposed = false;
 		_producerSemaphore = new(1);
 		_consumerSemaphore = new(1);
 	}
 
-	public object SharedLock => _sharedLock;
+	public object SharedLock { get; }
 
 	public ProducerConsumerScope ProducerBlockUntil(Func<bool> condition) => BlockUntil(_producerSemaphore, condition);
 
@@ -61,24 +60,24 @@ public class ProducerConsumerLock : IDisposable {
 		semaphore.Wait(); // note: if MANY more threads than cores start piling up here, this can become very slow!
 		//Tools.Debugger.AddMessage($"{role} TID:{threadID} entered");
 		try {
-			Monitor.Enter(_sharedLock);
+			Monitor.Enter(SharedLock);
 			while (!condition() || _disposed) {
 				ObjectDisposedException.ThrowIf(_disposed, this);
-				Monitor.Pulse(_sharedLock);
-				Monitor.Wait(_sharedLock);
+				Monitor.Pulse(SharedLock);
+				Monitor.Wait(SharedLock);
 				Debug.Assert(Thread.CurrentThread.ManagedThreadId == threadID, "Different thread in lock loop, can lead to forever locks");
 			}
 		} catch {
-			if (Monitor.IsEntered(_sharedLock)) {
-				Monitor.Pulse(_sharedLock);
-				Monitor.Exit(_sharedLock);
+			if (Monitor.IsEntered(SharedLock)) {
+				Monitor.Pulse(SharedLock);
+				Monitor.Exit(SharedLock);
 			}
 			semaphore.Release();
 			throw;
 		}
 
 
-		return new ProducerConsumerScope(_sharedLock, semaphore, threadID);
+		return new ProducerConsumerScope(SharedLock, semaphore, threadID);
 	}
 	public async Task<ProducerConsumerScope> ProducerDelayUntil(Func<bool> condition) {
 		return await Task.Run(() => ProducerBlockUntil(condition));
@@ -89,16 +88,16 @@ public class ProducerConsumerLock : IDisposable {
 	}
 
 	public void Pulse() {
-		lock (_sharedLock)
-			Monitor.Pulse(_sharedLock);
+		lock (SharedLock)
+			Monitor.Pulse(SharedLock);
 	}
 
 	public void Dispose() {
 		if (_disposed)
 			return;
 		_disposed = true;
-		lock (_sharedLock)
-			Monitor.PulseAll(_sharedLock);
+		lock (SharedLock)
+			Monitor.PulseAll(SharedLock);
 		Tools.Exceptions.ExecuteIgnoringException(_producerSemaphore.Dispose);
 		Tools.Exceptions.ExecuteIgnoringException(_consumerSemaphore.Dispose);
 	}

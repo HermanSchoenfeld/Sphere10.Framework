@@ -32,7 +32,6 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 	private readonly byte[] _keyStream;
 	private long _cachedBlock = -1;
 	private readonly bool _leaveOpen;
-	private long _position;
 	private bool _disposed;
 
 	/// <summary>Creates an AES-CTR stream over the supplied backing stream.</summary>
@@ -89,7 +88,10 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 		}
 	}
 
-	private long CipherPosition => InnerStream.CanSeek ? InnerStream.Position : _position;
+	private long CipherPosition {
+		get => InnerStream.CanSeek ? InnerStream.Position : field;
+		set => field = value;
+	}
 
 	public override int Read(byte[] buffer, int offset, int count) {
 		ValidateBuffer(buffer, offset, count);
@@ -103,7 +105,7 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 		ValidateRange(position, readCount);
 		var count = InnerStream.Read(buffer[..readCount]);
 		Transform(buffer[..count], position);
-		_position = checked(position + count);
+		CipherPosition = checked(position + count);
 		return count;
 	}
 
@@ -125,7 +127,7 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 		ValidateRange(position, readCount);
 		var count = await InnerStream.ReadAsync(buffer[..readCount], cancellationToken).ConfigureAwait(false);
 		Transform(buffer.Span[..count], position);
-		_position = checked(position + count);
+		CipherPosition = checked(position + count);
 		return count;
 	}
 
@@ -146,7 +148,7 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 			buffer[..count].CopyTo(scratch);
 			Transform(scratch.AsSpan(0, count), position);
 			InnerStream.Write(scratch, 0, count);
-			_position = checked(position + count);
+			CipherPosition = checked(position + count);
 			buffer = buffer[count..];
 		}
 	}
@@ -175,7 +177,7 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 			buffer.Span[..count].CopyTo(scratch);
 			Transform(scratch.AsSpan(0, count), position);
 			await InnerStream.WriteAsync(scratch.AsMemory(0, count), cancellationToken).ConfigureAwait(false);
-			_position = checked(position + count);
+			CipherPosition = checked(position + count);
 			buffer = buffer[count..];
 		}
 	}

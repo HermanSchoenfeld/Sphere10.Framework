@@ -68,16 +68,12 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	}
 
 	public Position Start {
-		get {
-			return _start;
-		}
+		get => _start;
 		//set{m_Start = value; Normalize();}
 	}
 
 	public Position End {
-		get {
-			return _end;
-		}
+		get => _end;
 		//set{m_End = value; Normalize();}
 	}
 
@@ -109,29 +105,13 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 		}
 	}
 
-	int IIntegerRectangle<CellRange>.StartRow {
-		get {
-			return _start.Row;
-		}
-	}
+	int IIntegerRectangle<CellRange>.StartRow => _start.Row;
 
-	int IIntegerRectangle<CellRange>.StartColumn {
-		get {
-			return _start.Column;
-		}
-	}
+	int IIntegerRectangle<CellRange>.StartColumn => _start.Column;
 
-	int IIntegerRectangle<CellRange>.EndRow {
-		get {
-			return _end.Row;
-		}
-	}
+	int IIntegerRectangle<CellRange>.EndRow => _end.Row;
 
-	int IIntegerRectangle<CellRange>.EndColumn {
-		get {
-			return _end.Column;
-		}
-	}
+	int IIntegerRectangle<CellRange>.EndColumn => _end.Column;
 
 	public static CellRange FromPosition(Position startPosition) {
 		return new CellRange(startPosition);

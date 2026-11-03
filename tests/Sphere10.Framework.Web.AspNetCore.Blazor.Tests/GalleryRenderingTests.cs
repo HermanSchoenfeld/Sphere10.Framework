@@ -331,11 +331,7 @@ public class GalleryRenderingTests {
 		public int Reads { get; private set; }
 
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
 		public override bool ContainsSetting(Type settingsType, object id = null) {

@@ -44,20 +44,17 @@ public partial class ApplicationScreenTabControl : TabControl {
 	private Color _dockPreviewForeColor = _defaultDockPreviewColors.ForeColor;
 	private TabPage? _pressedTab;
 	private TabPage? _contextTab;
-	private int _dockPreviewIndex = -1;
 	private string? _dockPreviewTitle;
 	private Rectangle _dockMarkerBounds;
 	private Rectangle _dockPreviewBounds;
 	private Point _pressLocation;
 	private bool _dragging;
-	private bool _undockPreviewVisible;
 	private bool _completingDrag;
 	private bool _updatingCaptions;
 	private bool _deferringInputRendering;
 	private bool _refreshAfterRecreate;
 	private bool _creatingHandle;
 	private int _originalIndex;
-	private int _maximumTabWidth = 320;
 	private int _metricsDpi = LogicalDpi;
 
 	public ApplicationScreenTabControl() {
@@ -106,19 +103,23 @@ public partial class ApplicationScreenTabControl : TabControl {
 
 	[DefaultValue(320), Category("Layout"), Description("Maximum width of a tab in logical pixels at 96 DPI; longer titles use an ellipsis")]
 	public int MaximumTabWidth {
-		get => _maximumTabWidth;
+		get {
+			return field;
+		}
 		set {
 			Guard.ArgumentGTE(value, LogicalMinimumTabWidth, nameof(value), "The maximum width must leave room for the title and close button");
-			if (_maximumTabWidth == value)
+			if (field == value)
 				return;
-			_maximumTabWidth = value;
+			field = value;
 			RefreshTabCaptions();
 		}
-	}
+	} = 320;
 
 	[Category("Appearance"), Description("Docking preview background, using the ExplorerBar theme blue by default")]
 	public Color DockPreviewBackColor {
-		get => _dockPreviewBackColor;
+		get {
+			return _dockPreviewBackColor;
+		}
 		set {
 			if (_dockPreviewBackColor == value)
 				return;
@@ -130,7 +131,9 @@ public partial class ApplicationScreenTabControl : TabControl {
 
 	[Category("Appearance"), Description("Docking preview caption color")]
 	public Color DockPreviewForeColor {
-		get => _dockPreviewForeColor;
+		get {
+			return _dockPreviewForeColor;
+		}
 		set {
 			if (_dockPreviewForeColor == value)
 				return;
@@ -155,14 +158,14 @@ public partial class ApplicationScreenTabControl : TabControl {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool DockPreviewVisible => _dockPreviewIndex >= 0;
+	public bool DockPreviewVisible => DockPreviewIndex >= 0;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int DockPreviewIndex => _dockPreviewIndex;
+	public int DockPreviewIndex { get; private set; } = -1;
 
 	/// <summary>Whether releasing the current dragged tab at the last pointer position will request undocking.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool UndockPreviewVisible => _undockPreviewVisible;
+	public bool UndockPreviewVisible { get; private set; }
 
 	/// <summary>Shows a highlighted docking tab without adding pages or disturbing their layout and selection.</summary>
 	public void ShowDockPreview(string Title, Point Location) {
@@ -170,10 +173,10 @@ public partial class ApplicationScreenTabControl : TabControl {
 		var Index = GetInsertionIndex(Location);
 		var MarkerBounds = GetDockMarkerBounds(Index);
 		var PreviewBounds = GetDockPreviewBounds(Title, MarkerBounds);
-		if (_dockPreviewIndex == Index && _dockPreviewTitle == Title && _dockMarkerBounds == MarkerBounds && _dockPreviewBounds == PreviewBounds)
+		if (DockPreviewIndex == Index && _dockPreviewTitle == Title && _dockMarkerBounds == MarkerBounds && _dockPreviewBounds == PreviewBounds)
 			return;
 		var PreviousBounds = DockPreviewVisible ? Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds) : Rectangle.Empty;
-		_dockPreviewIndex = Index;
+		DockPreviewIndex = Index;
 		_dockPreviewTitle = Title;
 		_dockMarkerBounds = MarkerBounds;
 		_dockPreviewBounds = PreviewBounds;
@@ -187,7 +190,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 		if (!DockPreviewVisible)
 			return;
 		var PreviousBounds = Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds);
-		_dockPreviewIndex = -1;
+		DockPreviewIndex = -1;
 		_dockPreviewTitle = null;
 		_dockMarkerBounds = Rectangle.Empty;
 		_dockPreviewBounds = Rectangle.Empty;
@@ -217,7 +220,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 			return;
 		var Page = TabPages[Args.Index];
 		var Bounds = Args.Bounds;
-		var undockPreview = _undockPreviewVisible && ReferenceEquals(Page, _pressedTab);
+		var undockPreview = UndockPreviewVisible && ReferenceEquals(Page, _pressedTab);
 		using var Background = new SolidBrush(undockPreview ? SystemColors.ControlDark : Args.Index == SelectedIndex ? SystemColors.Window : SystemColors.Control);
 		Args.Graphics.FillRectangle(Background, Bounds);
 		var CloseBounds = GetCloseBounds(Bounds);
@@ -303,7 +306,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 
 	protected override void OnMouseDown(MouseEventArgs Args) {
 		_dragging = false;
-		_undockPreviewVisible = false;
+		UndockPreviewVisible = false;
 		_pressedTab = GetTabAt(Args.Location);
 		_pressLocation = Args.Location;
 		_originalIndex = _pressedTab == null ? -1 : TabPages.IndexOf(_pressedTab);
@@ -355,7 +358,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 		var UndockingTab = Args.Button == MouseButtons.Left ? GetUndockingTab(Args.Location) : null;
 		_pressedTab = null;
 		_dragging = false;
-		_undockPreviewVisible = false;
+		UndockPreviewVisible = false;
 		Capture = false;
 		if (WasDragging)
 			Invalidate();
@@ -451,7 +454,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 		if (Disposing) {
 			_pressedTab = null;
 			_dragging = false;
-			_undockPreviewVisible = false;
+			UndockPreviewVisible = false;
 			Capture = false;
 			HideDockPreview();
 			components?.Dispose();
@@ -481,9 +484,9 @@ public partial class ApplicationScreenTabControl : TabControl {
 
 	private void UpdateUndockPreview(Point location) {
 		var visible = GetUndockingTab(location) != null;
-		if (_undockPreviewVisible == visible)
+		if (UndockPreviewVisible == visible)
 			return;
-		_undockPreviewVisible = visible;
+		UndockPreviewVisible = visible;
 		if (_pressedTab != null && TabPages.Contains(_pressedTab))
 			Invalidate(GetTabRect(TabPages.IndexOf(_pressedTab)));
 	}
@@ -511,7 +514,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 		var StripBounds = TabStripBounds;
 		var CaptionWidth = TextRenderer.MeasureText($"Release to dock: {Title}", Font, Size.Empty, TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix).Width;
 		var MinimumWidth = ScaleMetric(LogicalDockPreviewMinimumWidth);
-		var MaximumWidth = ScaleMetric(Math.Max(LogicalDockPreviewMinimumWidth, _maximumTabWidth));
+		var MaximumWidth = ScaleMetric(Math.Max(LogicalDockPreviewMinimumWidth, MaximumTabWidth));
 		var Width = Math.Min(StripBounds.Width, Math.Clamp(CaptionWidth + 2 * ScaleMetric(LogicalTextInset), MinimumWidth, MaximumWidth));
 		var Left = Math.Clamp(MarkerBounds.Left, StripBounds.Left, StripBounds.Right - Width);
 		return new Rectangle(Left, StripBounds.Top, Width, StripBounds.Height);
@@ -608,7 +611,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 			Page.ImageKey = Page.ImageKey;
 		Page.ToolTipText = Title;
 		SetNativeCaption(Index, Title);
-		var MaximumWidth = ScaleMetric(_maximumTabWidth);
+		var MaximumWidth = ScaleMetric(MaximumTabWidth);
 		if (GetTabRect(Index).Width <= MaximumWidth)
 			return;
 
@@ -648,7 +651,7 @@ public partial class ApplicationScreenTabControl : TabControl {
 		var RestoreOrder = _dragging && !Disposing && !IsDisposed && Page != null && !Page.IsDisposed && TabPages.Contains(Page);
 		_pressedTab = null;
 		_dragging = false;
-		_undockPreviewVisible = false;
+		UndockPreviewVisible = false;
 		if (RestoreOrder)
 			MoveTab(Page!, Math.Min(_originalIndex, TabCount - 1));
 		Capture = false;

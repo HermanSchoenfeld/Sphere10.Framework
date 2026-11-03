@@ -16,17 +16,9 @@ public class GridRows : RowInfoCollection {
 		: base(grid) {
 	}
 
-	public new Grid Grid {
-		get {
-			return base.Grid as Grid;
-		}
-	}
+	public new Grid Grid => base.Grid as Grid;
 
-	public new GridRow this[int index] {
-		get {
-			return (GridRow)base[index];
-		}
-	}
+	public new GridRow this[int index] => (GridRow)base[index];
 
 	public override void Swap(int rowIndex1, int rowIndex2) {
 		base.Swap(rowIndex1, rowIndex2);

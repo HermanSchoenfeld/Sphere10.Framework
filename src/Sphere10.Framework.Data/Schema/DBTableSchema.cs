@@ -82,9 +82,7 @@ public class DBTableSchema : DBObject {
 		return Columns.Any(c => c.Name == columnName);
 	}
 
-	public DBColumnSchema this[string columnName] {
-		get { return GetColumn(columnName); }
-	}
+	public DBColumnSchema this[string columnName] => GetColumn(columnName);
 
 	internal IDictionary<string, int> ColumnIndex { get; set; }
 

@@ -7,7 +7,6 @@ namespace Sphere10.Framework;
 
 public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeActivatingSerializer {
 	private Func<TItem> _activator;
-	private MemberSerializationBinding[] _memberBindings;
 	private bool _isConstantSize;
 	private long _constantSize;
 	private bool _configured;
@@ -37,9 +36,9 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
 		Guard.Ensure(!_configured, "Serializer has already been configured.");
 		_activator = (Func<TItem>)activator;
-		_memberBindings = memberBindings;
-		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
-		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
+		MemberBindings = memberBindings;
+		_isConstantSize = MemberBindings.All(x => x.Serializer.IsConstantSize);
+		_constantSize =  IsConstantSize ? MemberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
 		_configured = true;
 	}
 
@@ -49,13 +48,13 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 
 	public override long ConstantSize => _constantSize;
 
-	public MemberSerializationBinding[] MemberBindings => _memberBindings;
+	public MemberSerializationBinding[] MemberBindings { get; private set; }
 
 	public override long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemsArr = items as TItem[] ?? items.ToArray();
 		itemSizes = null;
 		var totalSize = 0L;
-		foreach(var (member, serializer) in _memberBindings) {
+		foreach(var (member, serializer) in MemberBindings) {
 			var itemMemberValues = itemsArr.Select(item => member.GetValue(item)).ToArray();
 			var itemMemberSizes = itemMemberValues.Select(serializer.PackedCalculateSize).ToArray();
 			totalSize += itemMemberSizes.Sum();
@@ -76,7 +75,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 
 	public override long CalculateSize(SerializationContext context, TItem item) {
 		var size = 0L;
-		foreach(var binding in _memberBindings) {
+		foreach(var binding in MemberBindings) {
 			var memberValue = binding.Member.GetValue(item);
 			var memberSerializer = binding.Serializer;
 			var itemSize = memberSerializer.PackedCalculateSize(context, memberValue);
@@ -86,7 +85,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 	}
 		
 	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
-		foreach (var binding in _memberBindings) {
+		foreach (var binding in MemberBindings) {
 			var memberValue = binding.Member.GetValue(item);
 			binding.Serializer.PackedSerialize(memberValue, writer, context);
 		}
@@ -96,7 +95,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 		var item = _activator();
 		if (ShouldNotifyInstanceActivation) 
 			context.SetDeserializingItem(item);  // let context know instance now in case needed for cyclic references 
-		foreach (var binding in _memberBindings) {
+		foreach (var binding in MemberBindings) {
 			var memberValue = binding.Serializer.PackedDeserialize(reader, context);
 			binding.Member.SetValue(item, memberValue);
 		}

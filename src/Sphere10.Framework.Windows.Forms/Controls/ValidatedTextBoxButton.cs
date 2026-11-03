@@ -69,17 +69,9 @@ public partial class ValidatedTextBoxButton : EditableControl {
 	/// <summary>
 	/// The button in the right of the editor
 	/// </summary>
-	public System.Windows.Forms.Button Button {
-		get {
-			return _browseButton;
-		}
-	}
+	public System.Windows.Forms.Button Button => _browseButton;
 
-	public System.Windows.Forms.TextBox TextBox {
-		get {
-			return _textBox;
-		}
-	}
+	public System.Windows.Forms.TextBox TextBox => _textBox;
 
 	/// <summary>
 	/// Gets or sets the typed value for the control, using the Validator class.

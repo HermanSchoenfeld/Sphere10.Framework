@@ -12,7 +12,6 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 public class ComboBox : Cell {
-	private Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IDropDownButton _elementDropDown = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.DropDownButtonThemed();
 
 	/// <summary>
 	/// Represents a default CheckBox with the CheckBox image align to the Middle Center of the cell. You must use this VisualModel with a Cell of type ICellCheckBox.
@@ -42,14 +41,7 @@ public class ComboBox : Cell {
 	/// <summary>
 	/// Gets or sets the visual element used to draw the dropdown button. Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.DropDownButtonThemed.
 	/// </summary>
-	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IDropDownButton ElementDropDown {
-		get {
-			return _elementDropDown;
-		}
-		set {
-			_elementDropDown = value;
-		}
-	}
+	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IDropDownButton ElementDropDown { get; set; } = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.DropDownButtonThemed();
 
 	// Clone
 	/// <summary>

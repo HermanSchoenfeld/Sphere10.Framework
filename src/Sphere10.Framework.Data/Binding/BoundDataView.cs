@@ -57,26 +57,14 @@ public class BoundDataView : SyncDisposable, IBoundList {
 		}
 	}
 
-	public System.Data.DataView DataView {
-		get {
-			return _dataView;
-		}
-	}
+	public System.Data.DataView DataView => _dataView;
 
-	public System.Data.DataTable DataTable {
-		get {
-			return _dataTable;
-		}
-	}
+	public System.Data.DataTable DataTable => _dataTable;
 
 	/// <summary>
 	/// Gets the current edited object
 	/// </summary>
-	public virtual object EditedObject {
-		get {
-			return _editingRow;
-		}
-	}
+	public virtual object EditedObject => _editingRow;
 
 	public virtual object this[int index] {
 		get {
@@ -97,46 +85,26 @@ public class BoundDataView : SyncDisposable, IBoundList {
 		}
 	}
 
-	public virtual int Count {
-		get {
-			return _dataView.Count;
-		}
-	}
+	public virtual int Count => _dataView.Count;
 
 	public virtual bool AllowEdit {
-		get {
-			return _dataView.AllowEdit && _allowEdit;
-		}
-		set {
-			_allowEdit = value;
-		}
+		get => _dataView.AllowEdit && _allowEdit;
+		set => _allowEdit = value;
 	}
 
 	public virtual bool AllowNew {
-		get {
-			return _dataView.AllowNew && _allowNew;
-		}
-		set {
-			_allowNew = value;
-		}
+		get => _dataView.AllowNew && _allowNew;
+		set => _allowNew = value;
 	}
 
 	public virtual bool AllowDelete {
-		get {
-			return _dataView.AllowDelete && _allowDelete;
-		}
-		set {
-			_allowDelete = value;
-		}
+		get => _dataView.AllowDelete && _allowDelete;
+		set => _allowDelete = value;
 	}
 
 	public virtual bool AllowSort {
-		get {
-			return _allowSort;
-		}
-		set {
-			_allowSort = value;
-		}
+		get => _allowSort;
+		set => _allowSort = value;
 	}
 
 	public virtual int BeginAddNew() {

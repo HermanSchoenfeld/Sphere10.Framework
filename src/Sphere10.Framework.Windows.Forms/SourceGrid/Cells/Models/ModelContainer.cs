@@ -27,12 +27,8 @@ public class ModelContainer {
 	}
 
 	public virtual IValueModel ValueModel {
-		get {
-			return _valueModel;
-		}
-		set {
-			_valueModel = value;
-		}
+		get => _valueModel;
+		set => _valueModel = value;
 	}
 
 	/// <summary>

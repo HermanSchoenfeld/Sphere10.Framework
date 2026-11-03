@@ -12,10 +12,6 @@ using System.Text;
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class FunctionDeclarationTree : SyntaxTree {
-	private List<Token> _parameters;
-	private SyntaxTree _expression;
-
-
 	public FunctionDeclarationTree() {
 	}
 
@@ -23,23 +19,17 @@ public class FunctionDeclarationTree : SyntaxTree {
 		: base(token) {
 	}
 
-	public SyntaxTree Expression {
-		get { return _expression; }
-		set { _expression = value; }
-	}
+	public SyntaxTree Expression { get; set; }
 
-	public List<Token> Parameters {
-		get { return _parameters; }
-		set { _parameters = value; }
-	}
+	public List<Token> Parameters { get; set; }
 
 	public override string ToString() {
 		StringBuilder paramsText = new StringBuilder();
-		for (int i = 0; i < _parameters.Count; i++) {
+		for (int i = 0; i < Parameters.Count; i++) {
 			if (i > 0) paramsText.Append(",");
-			paramsText.Append(_parameters[i].Value);
+			paramsText.Append(Parameters[i].Value);
 		}
-		return string.Format("FunctionDeclaration({0},Params({1}),{2})", Token.Value, paramsText.ToString(), _expression.ToString());
+		return string.Format("FunctionDeclaration({0},Params({1}),{2})", Token.Value, paramsText.ToString(), Expression.ToString());
 	}
 }
 

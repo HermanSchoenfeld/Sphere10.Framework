@@ -19,18 +19,10 @@ public partial class ImageAttachmentSelectorControl : UserControlEx {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasSelectedImage {
-		get {
-			return !_noneRadioButton.Checked;
-		}
-	}
+	public bool HasSelectedImage => !_noneRadioButton.Checked;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public string Filename {
-		get {
-			return _fileSelectorControl.Path;
-		}
-	}
+	public string Filename => _fileSelectorControl.Path;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ImageAttachmentSource AttachmentSource {

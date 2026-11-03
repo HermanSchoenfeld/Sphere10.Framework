@@ -149,21 +149,13 @@ public class ApplicationSettingsEditorSelectionTests {
 	/// <summary>Declares settings without opting into the automatic editor.</summary>
 	public sealed class OrdinarySettingsScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public override OrdinarySettings ScreenSettings {
-			get {
-				return (OrdinarySettings)base.ScreenSettings;
-			}
-		}
+		public override OrdinarySettings ScreenSettings => (OrdinarySettings)base.ScreenSettings;
 	}
 
 	/// <summary>Declares settings that opt into the automatic editor.</summary>
 	public sealed class EditableSettingsScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public override EditableSettings ScreenSettings {
-			get {
-				return (EditableSettings)base.ScreenSettings;
-			}
-		}
+		public override EditableSettings ScreenSettings => (EditableSettings)base.ScreenSettings;
 	}
 
 	/// <summary>Enables the ordinary property editor through its class marker.</summary>

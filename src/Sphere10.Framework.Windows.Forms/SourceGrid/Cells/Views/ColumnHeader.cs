@@ -47,24 +47,16 @@ public class ColumnHeader : Header {
 
 	// Visual Elements
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IColumnHeader Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IColumnHeader)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IColumnHeader)base.Background;
+		set => base.Background = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the visual element used to draw the sort indicator. Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.SortIndicator
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ISortIndicator ElementSort {
-		get {
-			return _elementSort;
-		}
-		set {
-			_elementSort = value;
-		}
+		get => _elementSort;
+		set => _elementSort = value;
 	}
 
 	// Clone

@@ -31,7 +31,7 @@ namespace Sphere10.Framework.iOS {
 		public UIPaintingViewController (UIInterfaceOrientation forcedOrientation) : base() {
 		}
 
-		public UIPaintingView PaintingView { get { return _paintingView; } }
+		public UIPaintingView PaintingView => _paintingView;
 
 	
 		public override void ViewDidLoad ()

@@ -150,9 +150,9 @@ internal class ColumnChart : PointChart
     /// </summary>
     public override double ShiftedX
     {
-        get => _shiftedX;
-        set => _shiftedX = value;
-    }
+		get => _shiftedX;
+		set => _shiftedX = value;
+	}
 
     /// <summary>
     /// Labels and markers have to be shifted if there
@@ -162,9 +162,9 @@ internal class ColumnChart : PointChart
     /// </summary>
     public override string ShiftedSerName
     {
-        get => _shiftedSerName;
-        set => _shiftedSerName = value;
-    }
+		get => _shiftedSerName;
+		set => _shiftedSerName = value;
+	}
 
     #endregion Properties
 

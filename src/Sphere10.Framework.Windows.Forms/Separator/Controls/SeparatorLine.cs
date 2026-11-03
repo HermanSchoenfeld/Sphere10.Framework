@@ -15,11 +15,6 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Draws a horizontal or vertical two-tone separator.</summary>
 public partial class SeparatorLine : UserControlEx {
-	private System.Drawing.Drawing2D.DashStyle _dashStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-	private Color _firstColor = Color.FromKnownColor(KnownColor.ControlDark);
-	private Color _secondColor = Color.FromKnownColor(KnownColor.ControlLightLight);
-	private LineStyle _lineStyle = LineStyle.Horizontal;
-
 	public SeparatorLine() {
 		// This call is required by the Windows.Forms Form Designer.
 		InitializeComponent();
@@ -31,44 +26,44 @@ public partial class SeparatorLine : UserControlEx {
 
 	public System.Drawing.Drawing2D.DashStyle DashStyle {
 		get {
-			return _dashStyle;
+			return field;
 		}
 		set {
-			_dashStyle = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = System.Drawing.Drawing2D.DashStyle.Solid;
 
 	public Color FirstColor {
 		get {
-			return _firstColor;
+			return field;
 		}
 		set {
-			_firstColor = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = Color.FromKnownColor(KnownColor.ControlDark);
 
 	public Color SecondColor {
 		get {
-			return _secondColor;
+			return field;
 		}
 		set {
-			_secondColor = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = Color.FromKnownColor(KnownColor.ControlLightLight);
 
 	public LineStyle LineStyle {
 		get {
-			return _lineStyle;
+			return field;
 		}
 		set {
-			_lineStyle = value;
+			field = value;
 			Size = new Size(Height, Width);
 			Invalidate();
 		}
-	}
+	} = LineStyle.Horizontal;
 
 	/// <summary>
 	/// Clean up any resources being used.
@@ -108,12 +103,12 @@ public partial class SeparatorLine : UserControlEx {
 			y4 = ClientRectangle.Height;
 		}
 
-		using (var pen = new Pen(_firstColor, 1)) {
-			pen.DashStyle = _dashStyle;
+		using (var pen = new Pen(FirstColor, 1)) {
+			pen.DashStyle = DashStyle;
 			args.Graphics.DrawLine(pen, x1, y1, x2, y2);
 		}
-		using (var pen = new Pen(_secondColor, 1)) {
-			pen.DashStyle = _dashStyle;
+		using (var pen = new Pen(SecondColor, 1)) {
+			pen.DashStyle = DashStyle;
 			args.Graphics.DrawLine(pen, x3, y3, x4, y4);
 		}
 	}

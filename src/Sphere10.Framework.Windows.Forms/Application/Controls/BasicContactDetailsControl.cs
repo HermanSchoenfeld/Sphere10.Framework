@@ -19,12 +19,8 @@ public partial class BasicContactDetailsControl : UserControlEx {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool ContactIsAnonymous {
-		get {
-			return _anonymousButton.Checked;
-		}
-		set {
-			_anonymousButton.Checked = value;
-		}
+		get => _anonymousButton.Checked;
+		set => _anonymousButton.Checked = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

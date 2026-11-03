@@ -14,15 +14,9 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class ColumnInfoEventArgs : EventArgs {
-	private ColumnInfo _columnInfo;
-
 	public ColumnInfoEventArgs(ColumnInfo columnInfo) {
-		_columnInfo = columnInfo;
+		Column = columnInfo;
 	}
 
-	public ColumnInfo Column {
-		get {
-			return _columnInfo;
-		}
-	}
+	public ColumnInfo Column { get; }
 }

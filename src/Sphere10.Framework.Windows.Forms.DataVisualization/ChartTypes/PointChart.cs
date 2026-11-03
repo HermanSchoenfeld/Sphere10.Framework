@@ -1369,11 +1369,13 @@ internal class PointChart : IChartType
     /// </summary>
     public virtual double ShiftedX
     {
-        get => 0;
-        set
+		get {
+			return 0;
+		}
+		set
         {
         }
-    }
+	}
 
     /// <summary>
     /// Labels and markers have to be shifted if there 
@@ -1384,11 +1386,13 @@ internal class PointChart : IChartType
     /// </summary>
     public virtual string ShiftedSerName
     {
-        get => string.Empty;
-        set
+		get {
+			return string.Empty;
+		}
+		set
         {
         }
-    }
+	}
 
     #endregion
 

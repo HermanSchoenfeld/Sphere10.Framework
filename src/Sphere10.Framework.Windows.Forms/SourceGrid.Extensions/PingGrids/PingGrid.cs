@@ -18,16 +18,6 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 [System.ComponentModel.ToolboxItem(true)]
 public class PingGrid : GridVirtual {
-	private IPingData _boundList;
-
-	private bool _endEditingRowOnValidate = true;
-
-	private bool _deleteRowsWithDeleteKey = true;
-
-	private bool _cancelEditingWithEscapeKey = true;
-
-	private string _deleteQuestionMessage = "Are you sure to delete all the selected rows?";
-
 	public PingGrid() {
 		// Configure row binding, editing and selection for the data source.
 		FixedRows = 1;
@@ -55,15 +45,15 @@ public class PingGrid : GridVirtual {
 	/// </summary>
 	public IPingData DataSource {
 		get {
-			return _boundList;
+			return field;
 		}
 		set {
 			Unbind();
 			if (value == null)
-				_boundList = new EmptyPingSource();
+				field = new EmptyPingSource();
 			else
-				_boundList = value;
-			if (_boundList != null)
+				field = value;
+			if (field != null)
 				Bind();
 		}
 	}
@@ -71,20 +61,12 @@ public class PingGrid : GridVirtual {
 	/// <summary>
 	/// Gets the rows information as a PingGridRows object.
 	/// </summary>
-	public new PingGridRows Rows {
-		get {
-			return (PingGridRows)base.Rows;
-		}
-	}
+	public new PingGridRows Rows => (PingGridRows)base.Rows;
 
 	/// <summary>
 	/// Gets the columns informations as a PingGridColumns object.
 	/// </summary>
-	public new PingGridColumns Columns {
-		get {
-			return (PingGridColumns)base.Columns;
-		}
-	}
+	public new PingGridColumns Columns => (PingGridColumns)base.Columns;
 
 	/// <summary>
 	/// Gets or sets the selected DataRowView.
@@ -93,7 +75,7 @@ public class PingGrid : GridVirtual {
 	[Obsolete]
 	public object[] SelectedDataRows {
 		get {
-			if (_boundList == null)
+			if (DataSource == null)
 				return new System.Data.DataRowView[0];
 
 			// Count only selected rows that map to source items.
@@ -120,7 +102,7 @@ public class PingGrid : GridVirtual {
 		set {
 			Selection.ResetSelection(false);
 
-			if (_boundList != null && value != null) {
+			if (DataSource != null && value != null) {
 				for (var index = 0; index < value.Length; index++) {
 					for (var r = FixedRows; r < Rows.Count; r++) {
 						var row = Rows.IndexToDataSourceRow(r);
@@ -140,52 +122,24 @@ public class PingGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	[Obsolete]
-	public bool EndEditingRowOnValidate {
-		get {
-			return _endEditingRowOnValidate;
-		}
-		set {
-			_endEditingRowOnValidate = value;
-		}
-	}
+	public bool EndEditingRowOnValidate { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets if enable the delete of the selected rows when pressing Delete key.
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
-	public bool DeleteRowsWithDeleteKey {
-		get {
-			return _deleteRowsWithDeleteKey;
-		}
-		set {
-			_deleteRowsWithDeleteKey = value;
-		}
-	}
+	public bool DeleteRowsWithDeleteKey { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets if enable the Cancel Editing feature when pressing escape key
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
-	public bool CancelEditingWithEscapeKey {
-		get {
-			return _cancelEditingWithEscapeKey;
-		}
-		set {
-			_cancelEditingWithEscapeKey = value;
-		}
-	}
+	public bool CancelEditingWithEscapeKey { get; set; } = true;
 
 	/// <summary>
 	/// Message showed with the DeleteSelectedRowsAsync method. Set to null to not show any message.
 	/// </summary>
-	public string DeleteQuestionMessage {
-		get {
-			return _deleteQuestionMessage;
-		}
-		set {
-			_deleteQuestionMessage = value;
-		}
-	}
+	public string DeleteQuestionMessage { get; set; } = "Are you sure to delete all the selected rows?";
 
 	/// <summary>
 	/// Gets a specified Cell by its row and column.
@@ -194,7 +148,7 @@ public class PingGrid : GridVirtual {
 	/// <param name="column"></param>
 	/// <returns></returns>
 	public override ICellVirtual GetCell(int row, int column) {
-		if (_boundList == null)
+		if (DataSource == null)
 			return null;
 		if (column >= Columns.Count)
 			return null;
@@ -267,11 +221,11 @@ public class PingGrid : GridVirtual {
 	[Obsolete]
 	public virtual async Task<bool> DeleteSelectedRowsAsync() {
 		// Ask once before applying the deletion to the selected source rows.
-		if (string.IsNullOrEmpty(_deleteQuestionMessage) ||
+		if (string.IsNullOrEmpty(DeleteQuestionMessage) ||
 			await DialogEx.ShowAsync(
 				this,
 				SystemIconType.Question,
-				_deleteQuestionMessage,
+				DeleteQuestionMessage,
 				System.Windows.Forms.Application.ProductName,
 				System.Windows.Forms.MessageBoxButtons.YesNo,
 				System.Windows.Forms.MessageBoxIcon.Question
@@ -380,7 +334,7 @@ public class PingGrid : GridVirtual {
 	}
 
 	protected virtual void Unbind() {
-		if (_boundList != null) {
+		if (DataSource != null) {
 			//mBoundList.ListChanged -= new ListChangedEventHandler(mBoundList_ListChanged);
 			//mBoundList.ItemDeleted -= new ItemDeletedEventHandler(mBoundList_ItemDeleted);
 			//mBoundList.ListCleared -= new EventHandler(mBoundList_ListCleared);

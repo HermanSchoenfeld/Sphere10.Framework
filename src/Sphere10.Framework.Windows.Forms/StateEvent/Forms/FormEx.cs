@@ -18,9 +18,7 @@ public partial class FormEx : Form, IUpdatable {
 	/// <summary>Reports edited UI state after the model copy and template hook complete.</summary>
 	public event EventHandlerEx StateChanged;
 
-	private bool _updating;
 	private bool _changedDuringUpdateScope;
-	private bool _autoSave;
 	private readonly IControlStateEventProvider _stateEventProvider;
 
 	/// <summary>Creates the native form and its independent child state observer.</summary>
@@ -29,7 +27,7 @@ public partial class FormEx : Form, IUpdatable {
 		CloseAction = FormCloseAction.Close;
 		_changedDuringUpdateScope = false;
 		Loaded = false;
-		_updating = false;
+		Updating = false;
 		EnableStateChangeEvent = true;
 		UpdateModelOnStateChanged = true;
 		OpacityBeforeHide = 1;
@@ -62,22 +60,11 @@ public partial class FormEx : Form, IUpdatable {
 	[Category("Behavior")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	[DefaultValue(true)]
-	public bool AutoSave {
-		get {
-			return _autoSave;
-		}
-		set {
-			_autoSave = value;
-		}
-	}
+	public bool AutoSave { get; set; }
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool Updating {
-		get {
-			return _updating;
-		}
-	}
+	public bool Updating { get; private set; }
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -181,9 +168,9 @@ public partial class FormEx : Form, IUpdatable {
 	}
 
 	void IUpdatable.BeginUpdate() {
-		if (_updating == true)
+		if (Updating == true)
 			return;
-		_updating = true;
+		Updating = true;
 		_changedDuringUpdateScope = false;
 	}
 
@@ -201,7 +188,7 @@ public partial class FormEx : Form, IUpdatable {
 					CopyModelToUI();
 			}
 		} finally {
-			_updating = false;
+			Updating = false;
 			_changedDuringUpdateScope = false;
 		}
 

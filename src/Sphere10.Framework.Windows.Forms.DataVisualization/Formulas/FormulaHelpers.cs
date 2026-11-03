@@ -307,55 +307,44 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         #region Fields
 
         private readonly DataField[] _inputFields;
-        private readonly DataField[] _outputFields;
-        private readonly object[] _parameters;
 
-        #endregion Fields
+		#endregion Fields
 
-        #region Properties
+		#region Properties
 
-        /// <summary>
-        /// Gets the input data fields of the formula.
-        /// </summary>
-        /// <value>The input fields.</value>
-        public DataField[] InputFields
-        {
-            get { return _inputFields; }
-        }
+		/// <summary>
+		/// Gets the input data fields of the formula.
+		/// </summary>
+		/// <value>The input fields.</value>
+		public DataField[] InputFields => _inputFields;
 
-        /// <summary>
-        /// Gets the output data fields of the formula.
-        /// </summary>
-        /// <value>The output fields.</value>
-        public DataField[] OutputFields
-        {
-            get { return _outputFields; }
-        }
+		/// <summary>
+		/// Gets the output data fields of the formula.
+		/// </summary>
+		/// <value>The output fields.</value>
+		public DataField[] OutputFields { get; }
 
-        /// <summary>
-        /// Gets the parameters of the formula.
-        /// </summary>
-        /// <value>The parameters.</value>
-        public object[] Parameters
-        {
-            get { return _parameters; }
-        }
+		/// <summary>
+		/// Gets the parameters of the formula.
+		/// </summary>
+		/// <value>The parameters.</value>
+		public object[] Parameters { get; }
 
-        #endregion Properties
+		#endregion Properties
 
-        #region Constructors
+		#region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FormulaInfo"/> class.
-        /// </summary>
-        /// <param name="inputFields">The input data fields.</param>
-        /// <param name="outputFields">The output data fields.</param>
-        /// <param name="defaultParams">The default formula params.</param>
-        public FormulaInfo(DataField[] inputFields, DataField[] outputFields, params object[] defaultParams)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FormulaInfo"/> class.
+		/// </summary>
+		/// <param name="inputFields">The input data fields.</param>
+		/// <param name="outputFields">The output data fields.</param>
+		/// <param name="defaultParams">The default formula params.</param>
+		public FormulaInfo(DataField[] inputFields, DataField[] outputFields, params object[] defaultParams)
         {
             _inputFields = inputFields;
-            _outputFields = outputFields;
-            _parameters = defaultParams;
+            OutputFields = outputFields;
+            Parameters = defaultParams;
         }
 
         #endregion Constructors
@@ -369,10 +358,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         internal virtual string SaveParametersToString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < _parameters.Length; i++)
+            for (int i = 0; i < Parameters.Length; i++)
             {
                 if (i > 0) sb.Append(',');
-                sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", _parameters[i]);
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", Parameters[i]);
             }
             return sb.ToString();
         }
@@ -388,12 +377,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
 
             string[] paramStringList = parameters.Split(',');
             int paramStringIndex = 0;
-            for (int i = 0; i < _parameters.Length && paramStringIndex < paramStringList.Length; i++)
+            for (int i = 0; i < Parameters.Length && paramStringIndex < paramStringList.Length; i++)
             {
                 string newParamValue = paramStringList[paramStringIndex++];
                 if (!string.IsNullOrEmpty(newParamValue))
                 {
-                    _parameters[i] = ParseParameter(i, newParamValue);
+                    Parameters[i] = ParseParameter(i, newParamValue);
                 }
             }
         }
@@ -406,7 +395,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         /// <returns>Parameter value.</returns>
         internal virtual object ParseParameter(int index, string newParamValue)
         {
-            object param = _parameters[index];
+            object param = Parameters[index];
             if (param is int)
             {
                 return Convert.ToInt32(newParamValue, CultureInfo.InvariantCulture);
@@ -433,7 +422,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
 
             string[] paramStringList = parameters.Split(',');
             int paramStringIndex = 0;
-            for (int i = 0; i < _parameters.Length && paramStringIndex < paramStringList.Length; i++)
+            for (int i = 0; i < Parameters.Length && paramStringIndex < paramStringList.Length; i++)
             {
                 string newParamValue = paramStringList[paramStringIndex++];
                 if (!string.IsNullOrEmpty(newParamValue))
@@ -1355,53 +1344,42 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         #region Fields
 
         private readonly Series _series;
-        private readonly string _seriesName;
-        private readonly DataField _dataField;
 
-        #endregion Fields
+		#endregion Fields
 
-        #region Properties
+		#region Properties
 
-        /// <summary>
-        /// Gets the series.
-        /// </summary>
-        /// <value>The series.</value>
-        public Series Series
-        {
-            get { return _series; }
-        }
+		/// <summary>
+		/// Gets the series.
+		/// </summary>
+		/// <value>The series.</value>
+		public Series Series => _series;
 
         /// <summary>
         /// Gets the name of the series.
         /// </summary>
         /// <value>The name of the series.</value>
-        public string SeriesName
-        {
-            get { return _series != null ? _series.Name : _seriesName; }
-        }
+        public string SeriesName => _series != null ? _series.Name : field;
 
-        /// <summary>
-        /// Gets the data field.
-        /// </summary>
-        /// <value>The data field.</value>
-        public DataField DataField
-        {
-            get { return _dataField; }
-        }
+		/// <summary>
+		/// Gets the data field.
+		/// </summary>
+		/// <value>The data field.</value>
+		public DataField DataField { get; }
 
-        #endregion Properties
+		#endregion Properties
 
-        #region Constructors
+		#region Constructors
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SeriesFieldInfo"/> class.
-        /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="dataField">The data field.</param>
-        public SeriesFieldInfo(Series series, DataField dataField)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SeriesFieldInfo"/> class.
+		/// </summary>
+		/// <param name="series">The series.</param>
+		/// <param name="dataField">The data field.</param>
+		public SeriesFieldInfo(Series series, DataField dataField)
         {
             _series = series;
-            _dataField = dataField;
+            DataField = dataField;
         }
 
         /// <summary>
@@ -1411,8 +1389,8 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         /// <param name="dataField">The data field.</param>
         public SeriesFieldInfo(string seriesName, DataField dataField)
         {
-            _seriesName = seriesName;
-            _dataField = dataField;
+            SeriesName = seriesName;
+            DataField = dataField;
         }
 
         #endregion Constructors

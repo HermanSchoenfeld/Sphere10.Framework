@@ -29,9 +29,6 @@ public class SubButtonItem {
 		}
 	}
 
-	private object _tag;
-	private MultiSelectionButton _parentButton;
-
 	internal ToolStripMenuItem MenuItem;
 
 	public SubButtonItem()
@@ -68,32 +65,14 @@ public class SubButtonItem {
 		InitializeMenuItem(text, handler);
 	}
 
-	public object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
-	}
+	public object Tag { get; set; }
 
 	public string Text {
-		get {
-			return MenuItem.Text;
-		}
-		set {
-			MenuItem.Text = value;
-		}
+		get => MenuItem.Text;
+		set => MenuItem.Text = value;
 	}
 
-	public MultiSelectionButton Owner {
-		get {
-			return _parentButton;
-		}
-		set {
-			_parentButton = value;
-		}
-	}
+	public MultiSelectionButton Owner { get; set; }
 
 	public void InvokeItemClick(EventArgs args) {
 		if (_click != null)
@@ -111,7 +90,7 @@ public class SubButtonItem {
 
 	// Forwards the backing menu action through its owning multi-selection button.
 	private void MenuClick(object sender, EventArgs args) {
-		if (_parentButton != null)
-			_parentButton.InvokeSubItemClick(new SubButtonItemEventArgs(this));
+		if (Owner != null)
+			Owner.InvokeSubItemClick(new SubButtonItemEventArgs(this));
 	}
 }

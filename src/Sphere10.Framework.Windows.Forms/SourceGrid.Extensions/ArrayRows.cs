@@ -15,36 +15,17 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 // Rows and Columns
 public class ArrayRows : RowsSimpleBase {
-	private AutoSizeMode _autoSizeMode = AutoSizeMode.Default;
-
 	public ArrayRows(ArrayGrid grid)
 		: base(grid) {
 	}
 
-	public new ArrayGrid Grid {
-		get {
-			return (ArrayGrid)base.Grid;
-		}
-	}
+	public new ArrayGrid Grid => (ArrayGrid)base.Grid;
 
-	public override int Count {
-		get {
-			if (Grid.DataSource == null)
-				return Grid.FixedRows;
-			return Grid.DataSource.GetLength(0) + Grid.FixedRows;
-		}
-	}
+	public override int Count => Grid.DataSource == null ? Grid.FixedRows : Grid.DataSource.GetLength(0) + Grid.FixedRows;
 
-	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
-	}
+	public AutoSizeMode AutoSizeMode { get; set; } = AutoSizeMode.Default;
 
 	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return _autoSizeMode;
+		return AutoSizeMode;
 	}
 }

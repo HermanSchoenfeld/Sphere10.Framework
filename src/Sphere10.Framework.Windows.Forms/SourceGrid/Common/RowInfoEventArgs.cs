@@ -31,15 +31,9 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 //	}
 
 public class RowInfoEventArgs : EventArgs {
-	private RowInfo _rowInfo;
-
 	public RowInfoEventArgs(RowInfo rowInfo) {
-		_rowInfo = rowInfo;
+		Row = rowInfo;
 	}
 
-	public RowInfo Row {
-		get {
-			return _rowInfo;
-		}
-	}
+	public RowInfo Row { get; }
 }

@@ -201,15 +201,17 @@ internal abstract class SerializerBase
     /// </summary>
     internal string SerializableContent
     {
-        get => _serializableContent;
-        set
+		get {
+			return _serializableContent;
+		}
+		set
         {
             _serializableContent = value;
 
             // Reset list
             serializableContentList = null;
         }
-    }
+	}
 
     /// <summary>
     /// Comma separated list of serializable (Save/Load/Reset) properties.
@@ -217,15 +219,17 @@ internal abstract class SerializerBase
     /// </summary>
     internal string NonSerializableContent
     {
-        get => _nonSerializableContent;
-        set
+		get {
+			return _nonSerializableContent;
+		}
+		set
         {
             _nonSerializableContent = value;
 
             // Reset list
             nonSerializableContentList = null;
         }
-    }
+	}
 
     #endregion Public properties
 

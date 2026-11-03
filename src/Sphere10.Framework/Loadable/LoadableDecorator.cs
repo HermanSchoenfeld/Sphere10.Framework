@@ -11,15 +11,9 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework;
 
 public class LoadableDecorator<TLoadableImpl> : ILoadable where TLoadableImpl : ILoadable {
-	public event EventHandlerEx<object> Loading {
-		add => Internal.Loading += value;
-		remove => Internal.Loading -= value;
-	}
+	public event EventHandlerEx<object> Loading { add => Internal.Loading += value; remove => Internal.Loading -= value; }
 
-	public event EventHandlerEx<object> Loaded {
-		add => Internal.Loaded += value;
-		remove => Internal.Loaded -= value;
-	}
+	public event EventHandlerEx<object> Loaded { add => Internal.Loaded += value; remove => Internal.Loaded -= value; }
 
 	protected readonly TLoadableImpl Internal;
 

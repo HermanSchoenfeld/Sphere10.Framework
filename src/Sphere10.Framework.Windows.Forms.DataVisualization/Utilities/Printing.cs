@@ -85,11 +85,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public PrintDocument PrintDocument
         {
-            set
-            {
-                _printDocument = value;
-            }
-            get
+			set {
+				_printDocument = value;
+			}
+			get
             {
                 if (_printDocument == null)
                 {
@@ -101,7 +100,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _printDocument;
             }
-        }
+		}
 
         #endregion
 

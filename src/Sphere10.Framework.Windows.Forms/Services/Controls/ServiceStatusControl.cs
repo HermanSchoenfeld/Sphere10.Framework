@@ -17,8 +17,6 @@ namespace Sphere10.Framework.Windows.Forms;
 public partial class ServiceStatusControl : UserControlEx {
 	public const int RefreshRateSec = 2;
 
-	private ServiceStatus _serviceStatus;
-
 	public ServiceStatusControl() {
 		InitializeComponent();
 	}
@@ -28,12 +26,14 @@ public partial class ServiceStatusControl : UserControlEx {
 	public bool UseNssm { get; set; }
 
 	public ServiceStatus Status {
-		get => _serviceStatus;
+		get {
+			return field;
+		}
 		set {
-			_serviceStatus = value;
+			field = value;
 			if (Tools.Windows.Services.TryGetServiceController(ServiceName, out var serviceController)) {
 
-				switch (_serviceStatus) {
+				switch (field) {
 					case ServiceStatus.NotInstalled:
 						_trafficLight.BackColor = Color.Gray;
 						_trafficLightLabel.Text = "Not installed";
@@ -135,7 +135,7 @@ public partial class ServiceStatusControl : UserControlEx {
 	}
 
 	private async void _serviceButton_Click(object sender, EventArgs e) {
-		if (_serviceStatus is ServiceStatus.Started or ServiceStatus.Starting) {
+		if (Status is ServiceStatus.Started or ServiceStatus.Starting) {
 			if (UseNssm) {
 				var nssmSentry = new NssmSentry();
 				Status = ServiceStatus.Stopping;

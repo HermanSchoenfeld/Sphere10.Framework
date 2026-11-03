@@ -49,21 +49,13 @@ public class RichTextBox : Cell {
 	/// Gets or sets the IText visual element used to draw the cell rich text.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRichText ElementRichText {
-		get {
-			return _elementRichText;
-		}
-		set {
-			_elementRichText = value;
-		}
+		get => _elementRichText;
+		set => _elementRichText = value;
 	}
 
 	public RotateFlipType RotateFlipType {
-		get {
-			return _rotateFlipType;
-		}
-		set {
-			_rotateFlipType = value;
-		}
+		get => _rotateFlipType;
+		set => _rotateFlipType = value;
 	}
 
 	// Clone

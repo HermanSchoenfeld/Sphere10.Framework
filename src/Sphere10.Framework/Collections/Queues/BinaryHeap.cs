@@ -17,31 +17,31 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 
 	// Fields
 	private T[] _data = new T[DEFAULT_SIZE];
-	private int _count = 0;
-	private int _capacity = DEFAULT_SIZE;
 	private bool _sorted;
 
 	// Properties
 	/// <summary>
 	/// Gets the number of values in the heap. 
 	/// </summary>
-	public int Count => _count;
+	public int Count { get; private set; } = 0;
 
 	/// <summary>
 	/// Gets or sets the capacity of the heap.
 	/// </summary>
 	public int Capacity {
-		get => _capacity;
+		get {
+			return field;
+		}
 		set {
-			var previousCapacity = _capacity;
-			_capacity = Math.Max(value, _count);
-			if (_capacity != previousCapacity) {
-				T[] temp = new T[_capacity];
-				Array.Copy(_data, temp, _count);
+			var previousCapacity = field;
+			field = Math.Max(value, Count);
+			if (field != previousCapacity) {
+				T[] temp = new T[field];
+				Array.Copy(_data, temp, Count);
 				_data = temp;
 			}
 		}
-	}
+	} = DEFAULT_SIZE;
 
 	// Methods
 	/// <summary>
@@ -52,7 +52,7 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 
 	private BinaryHeap(T[] data, int count) {
 		Capacity = count;
-		_count = count;
+		Count = count;
 		Array.Copy(data, _data, count);
 	}
 	/// <summary>
@@ -67,20 +67,20 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// Removes all items from the heap.
 	/// </summary>
 	public void Clear() {
-		this._count = 0;
-		_data = new T[_capacity];
+		Count = 0;
+		_data = new T[Capacity];
 	}
 	/// <summary>
 	/// Adds a key and value to the heap.
 	/// </summary>
 	/// <param name="item">The item to add to the heap.</param>
 	public void Add(T item) {
-		if (_count == _capacity) {
+		if (Count == Capacity) {
 			Capacity *= 2;
 		}
-		_data[_count] = item;
+		_data[Count] = item;
 		UpHeap();
-		_count++;
+		Count++;
 	}
 
 	/// <summary>
@@ -88,13 +88,13 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// </summary>
 	/// <returns>The next value in the heap.</returns>
 	public T Pop() {
-		if (this._count == 0) {
+		if (Count == 0) {
 			throw new InvalidOperationException("Cannot remove item, heap is empty.");
 		}
 		T v = _data[0];
-		_count--;
-		_data[0] = _data[_count];
-		_data[_count] = default(T); //Clears the Last Node
+		Count--;
+		_data[0] = _data[Count];
+		_data[Count] = default(T); //Clears the Last Node
 		DownHeap();
 		return v;
 	}
@@ -102,7 +102,7 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	//helper function that performs up-heap bubbling
 	private void UpHeap() {
 		_sorted = false;
-		int p = _count;
+		int p = Count;
 		T item = _data[p];
 		int par = Parent(p);
 		while (par > -1 && item.CompareTo(_data[par]) < 0) {
@@ -121,9 +121,9 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 		T item = _data[p];
 		while (true) {
 			int ch1 = Child1(p);
-			if (ch1 >= _count) break;
+			if (ch1 >= Count) break;
 			int ch2 = Child2(p);
-			if (ch2 >= _count) {
+			if (ch2 >= Count) {
 				n = ch1;
 			} else {
 				n = _data[ch1].CompareTo(_data[ch2]) < 0 ? ch1 : ch2;
@@ -140,7 +140,7 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 
 	private void EnsureSort() {
 		if (_sorted) return;
-		Array.Sort(_data, 0, _count);
+		Array.Sort(_data, 0, Count);
 		_sorted = true;
 	}
 
@@ -164,7 +164,7 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// </summary>
 	/// <returns>A BinaryHeap.</returns>
 	public BinaryHeap<T> Copy() {
-		return new BinaryHeap<T>(_data, _count);
+		return new BinaryHeap<T>(_data, Count);
 	}
 
 	/// <summary>
@@ -173,7 +173,7 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// <returns>An IEnumerator of type T.</returns>
 	public IEnumerator<T> GetEnumerator() {
 		EnsureSort();
-		for (int i = 0; i < _count; i++) {
+		for (int i = 0; i < Count; i++) {
 			yield return _data[i];
 		}
 	}
@@ -189,7 +189,7 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// <returns>A boolean, true if binary heap contains item.</returns>
 	public bool Contains(T item) {
 		EnsureSort();
-		return Array.BinarySearch<T>(_data, 0, _count, item) >= 0;
+		return Array.BinarySearch<T>(_data, 0, Count, item) >= 0;
 	}
 
 	/// <summary>
@@ -199,15 +199,13 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// <param name="arrayIndex">The zero-based index at which copying begins.</param>
 	public void CopyTo(T[] array, int arrayIndex) {
 		EnsureSort();
-		Array.Copy(_data, array, _count);
+		Array.Copy(_data, array, Count);
 	}
 
 	/// <summary>
 	/// Gets whether or not the binary heap is readonly.
 	/// </summary>
-	public bool IsReadOnly {
-		get { return false; }
-	}
+	public bool IsReadOnly => false;
 
 	/// <summary>
 	/// Removes an item from the binary heap. This utilizes the type T's Comparer and will not remove duplicates.
@@ -216,11 +214,11 @@ public class BinaryHeap<T> : ICollection<T>, IHeap<T> where T : IComparable<T> {
 	/// <returns>Boolean true if the item was removed.</returns>
 	public bool Remove(T item) {
 		EnsureSort();
-		int i = Array.BinarySearch<T>(_data, 0, _count, item);
+		int i = Array.BinarySearch<T>(_data, 0, Count, item);
 		if (i < 0) return false;
-		Array.Copy(_data, i + 1, _data, i, _count - i);
-		_data[_count] = default(T);
-		_count--;
+		Array.Copy(_data, i + 1, _data, i, Count - i);
+		_data[Count] = default(T);
+		Count--;
 		return true;
 	}
 

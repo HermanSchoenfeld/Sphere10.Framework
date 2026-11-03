@@ -17,7 +17,6 @@ namespace Sphere10.Framework.Utils.Profiler.BTrees;
 public sealed class BTreeBenchmarkFixture : IDisposable {
 	private readonly BTreeProfilerSettings _settings;
 	private readonly string _workspaceId;
-	private readonly string _workspace;
 	private readonly string _path;
 	private readonly int[] _insertion;
 	private readonly int[] _queries;
@@ -40,9 +39,9 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 		_settings = settings;
 		Profile = profile;
 		_workspaceId = Guid.NewGuid().ToString("N");
-		_workspace = Path.Combine(settings.DataDirectory, settings.RunId, $"{profile.Name}-{_workspaceId}");
-		Directory.CreateDirectory(_workspace);
-		_path = Path.Combine(_workspace, "tree.bin");
+		Workspace = Path.Combine(settings.DataDirectory, settings.RunId, $"{profile.Name}-{_workspaceId}");
+		Directory.CreateDirectory(Workspace);
+		_path = Path.Combine(Workspace, "tree.bin");
 		_insertion = Enumerable.Range(0, settings.RecordCount).ToArray();
 		if (settings.ShuffledInsertion)
 			Shuffle(_insertion, new Random(713));
@@ -64,7 +63,7 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 			OpenIndex();
 		} catch {
 			CloseIndex();
-			Directory.Delete(_workspace, true);
+			Directory.Delete(Workspace, true);
 			throw;
 		}
 	}
@@ -75,7 +74,7 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 
 	public long LogicalBytes => _stream?.Length ?? 0;
 
-	public string Workspace => _workspace;
+	public string Workspace { get; }
 
 	public bool IsTransactional => Profile.Storage == BTreeStorage.TransactionalFile;
 
@@ -241,7 +240,7 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 			return;
 		CloseIndex();
 		// Only this GUID-owned workspace is removed; data-root and sibling runs are untouched.
-		Directory.Delete(_workspace, true);
+		Directory.Delete(Workspace, true);
 		_disposed = true;
 	}
 
@@ -305,7 +304,7 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 			LogicalTreeBytes = LogicalBytes,
 			ProvisionedMappedCapacity = Profile.Storage == BTreeStorage.OSMemoryMapped ? (long?)_mappedCapacity : null,
 			EntryCount = Count,
-			PhysicalStorageBytes = Directory.EnumerateFiles(_workspace, "*", SearchOption.AllDirectories).Sum(path => new FileInfo(path).Length),
+			PhysicalStorageBytes = Directory.EnumerateFiles(Workspace, "*", SearchOption.AllDirectories).Sum(path => new FileInfo(path).Length),
 			Geometry = ReadGeometry(),
 			AppliedPageSize = Profile.Storage is BTreeStorage.FilePaged or BTreeStorage.TransactionalFile ? (long?)Profile.PageSize : null,
 			AppliedCacheBytes = Profile.Storage is BTreeStorage.FilePaged or BTreeStorage.TransactionalFile ? (long?)Profile.CacheBytes : null,

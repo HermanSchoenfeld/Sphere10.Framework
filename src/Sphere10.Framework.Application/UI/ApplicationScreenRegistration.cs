@@ -31,11 +31,7 @@ public class ApplicationScreenRegistration {
 	public Guid Token { get; }
 
 	/// <summary>Indicates a type shortcut rather than an exact registration identity.</summary>
-	public bool IsTypeReference {
-		get {
-			return Token == Guid.Empty;
-		}
-	}
+	public bool IsTypeReference => Token == Guid.Empty;
 
 	/// <summary>Creates a type request; navigation uses declaration order and programmatic lookup requires an unambiguous match.</summary>
 	public static ApplicationScreenRegistration ForType(Type screenType) {

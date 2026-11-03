@@ -25,21 +25,13 @@ public partial class ColorPicker : EditableControl {
 	}
 
 	public virtual Color SelectedColor {
-		get {
-			return _colorPanel.BackColor;
-		}
-		set {
-			_colorPanel.BackColor = value;
-		}
+		get => _colorPanel.BackColor;
+		set => _colorPanel.BackColor = value;
 	}
 
 	public new Color ForeColor {
-		get {
-			return _colorLabel.ForeColor;
-		}
-		set {
-			_colorLabel.ForeColor = value;
-		}
+		get => _colorLabel.ForeColor;
+		set => _colorLabel.ForeColor = value;
 	}
 
 	/// <summary>

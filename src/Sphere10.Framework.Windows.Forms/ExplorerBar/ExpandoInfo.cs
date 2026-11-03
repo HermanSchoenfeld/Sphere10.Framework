@@ -216,8 +216,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The background color of a special Expando")]
 	public Color SpecialBackColor {
-		get { return this.specialBackColor; }
-
+		get {
+			return this.specialBackColor;
+		}
 		set {
 			if (this.specialBackColor != value) {
 				this.specialBackColor = value;
@@ -246,8 +247,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The background color of a normal Expando")]
 	public Color NormalBackColor {
-		get { return this.normalBackColor; }
-
+		get {
+			return this.normalBackColor;
+		}
 		set {
 			if (this.normalBackColor != value) {
 				this.normalBackColor = value;
@@ -277,8 +279,9 @@ public class ExpandoInfo : IDisposable {
 	[DefaultValue(ContentAlignment.BottomRight),
 	 Description("The alignment for the expando's background image")]
 	public ContentAlignment WatermarkAlignment {
-		get { return this.watermarkAlignment; }
-
+		get {
+			return this.watermarkAlignment;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(ContentAlignment), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(ContentAlignment));
@@ -301,8 +304,9 @@ public class ExpandoInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("")]
 	public Image SpecialBackImage {
-		get { return this.specialBackImage; }
-
+		get {
+			return this.specialBackImage;
+		}
 		set {
 			if (this.specialBackImage != value) {
 				this.specialBackImage = value;
@@ -317,8 +321,9 @@ public class ExpandoInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("")]
 	public Image NormalBackImage {
-		get { return this.normalBackImage; }
-
+		get {
+			return this.normalBackImage;
+		}
 		set {
 			if (this.normalBackImage != value) {
 				this.normalBackImage = value;
@@ -335,8 +340,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The width of the Border along each side of a special Expando")]
 	public Border SpecialBorder {
-		get { return this.specialBorder; }
-
+		get {
+			return this.specialBorder;
+		}
 		set {
 			if (this.specialBorder != value) {
 				this.specialBorder = value;
@@ -365,8 +371,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The width of the Border along each side of a normal Expando")]
 	public Border NormalBorder {
-		get { return this.normalBorder; }
-
+		get {
+			return this.normalBorder;
+		}
 		set {
 			if (this.normalBorder != value) {
 				this.normalBorder = value;
@@ -395,8 +402,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The border color for a special Expando")]
 	public Color SpecialBorderColor {
-		get { return this.specialBorderColor; }
-
+		get {
+			return this.specialBorderColor;
+		}
 		set {
 			if (this.specialBorderColor != value) {
 				this.specialBorderColor = value;
@@ -425,8 +433,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The border color for a normal Expando")]
 	public Color NormalBorderColor {
-		get { return this.normalBorderColor; }
-
+		get {
+			return this.normalBorderColor;
+		}
 		set {
 			if (this.normalBorderColor != value) {
 				this.normalBorderColor = value;
@@ -458,8 +467,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The amount of space between the border and items along each side of a special Expando")]
 	public PaddingEx SpecialPadding {
-		get { return this.specialPadding; }
-
+		get {
+			return this.specialPadding;
+		}
 		set {
 			if (this.specialPadding != value) {
 				this.specialPadding = value;
@@ -488,8 +498,9 @@ public class ExpandoInfo : IDisposable {
 	/// </summary>
 	[Description("The amount of space between the border and items along each side of a normal Expando")]
 	public PaddingEx NormalPadding {
-		get { return this.normalPadding; }
-
+		get {
+			return this.normalPadding;
+		}
 		set {
 			if (this.normalPadding != value) {
 				this.normalPadding = value;
@@ -520,9 +531,8 @@ public class ExpandoInfo : IDisposable {
 	/// Gets or sets the Expando that the ExpandoInfo belongs to
 	/// </summary>
 	protected internal Expando Expando {
-		get { return this.owner; }
-
-		set { this.owner = value; }
+		get => this.owner;
+		set => this.owner = value;
 	}
 
 	#endregion

@@ -19,17 +19,35 @@ public class ObjectSpaceLabRecord {
 	private byte[] _payload = Array.Empty<byte>();
 	private string _notes = string.Empty;
 
-	public long Id { get => _id; set => SetField(ref _id, value); }
+	public long Id {
+		get => _id;
+		set => SetField(ref _id, value);
+	}
 
-	public string Code { get => _code; set => SetField(ref _code, value); }
+	public string Code {
+		get => _code;
+		set => SetField(ref _code, value);
+	}
 
-	public int Category { get => _category; set => SetField(ref _category, value); }
+	public int Category {
+		get => _category;
+		set => SetField(ref _category, value);
+	}
 
-	public decimal Balance { get => _balance; set => SetField(ref _balance, value); }
+	public decimal Balance {
+		get => _balance;
+		set => SetField(ref _balance, value);
+	}
 
-	public byte[] Payload { get => _payload; set => SetField(ref _payload, value); }
+	public byte[] Payload {
+		get => _payload;
+		set => SetField(ref _payload, value);
+	}
 
-	public string Notes { get => _notes; set => SetField(ref _notes, value); }
+	public string Notes {
+		get => _notes;
+		set => SetField(ref _notes, value);
+	}
 
 	[Transient]
 	public bool Dirty { get; set; }

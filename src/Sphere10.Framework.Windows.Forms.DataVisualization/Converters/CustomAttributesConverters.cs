@@ -826,18 +826,7 @@ internal sealed class DynamicPropertyDescriptor : PropertyDescriptor
     /// <summary>
     /// Gets the name that can be displayed in a window, such as a Properties window.
     /// </summary>
-    public override string DisplayName
-    {
-        get
-        {
-            if (this._displayName.Length > 0)
-            {
-                return this._displayName;
-            }
-
-            return this._basePropertyDescriptor.DisplayName;
-        }
-    }
+    public override string DisplayName => this._displayName.Length > 0 ? this._displayName : this._basePropertyDescriptor.DisplayName;
 
     /// <summary>
     /// Gets a value indicating whether this property is browsable.

@@ -74,7 +74,9 @@ public class ProcessingQueue<T> {
 	}
 
 	public bool Enabled {
-		get => _enabled;
+		get {
+			return _enabled;
+		}
 		set {
 			if (_enabled == value)
 				return;

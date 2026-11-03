@@ -123,8 +123,9 @@ public class Border {
 	/// Gets or sets the value of the left border
 	/// </summary>
 	public int Left {
-		get { return this.left; }
-
+		get {
+			return this.left;
+		}
 		set {
 			if (value < 0) {
 				value = 0;
@@ -139,8 +140,9 @@ public class Border {
 	/// Gets or sets the value of the right border
 	/// </summary>
 	public int Right {
-		get { return this.right; }
-
+		get {
+			return this.right;
+		}
 		set {
 			if (value < 0) {
 				value = 0;
@@ -155,8 +157,9 @@ public class Border {
 	/// Gets or sets the value of the top border
 	/// </summary>
 	public int Top {
-		get { return this.top; }
-
+		get {
+			return this.top;
+		}
 		set {
 			if (value < 0) {
 				value = 0;
@@ -171,8 +174,9 @@ public class Border {
 	/// Gets or sets the value of the bottom border
 	/// </summary>
 	public int Bottom {
-		get { return this.bottom; }
-
+		get {
+			return this.bottom;
+		}
 		set {
 			if (value < 0) {
 				value = 0;
@@ -188,15 +192,7 @@ public class Border {
 	/// values of zero
 	/// </summary>
 	[Browsable(false)]
-	public bool IsEmpty {
-		get {
-			if (((this.Left == 0) && (this.Top == 0)) && (this.Right == 0)) {
-				return (this.Bottom == 0);
-			}
-
-			return false;
-		}
-	}
+	public bool IsEmpty => ((this.Left == 0) && (this.Top == 0)) && (this.Right == 0) ? (this.Bottom == 0) : false;
 
 	#endregion
 

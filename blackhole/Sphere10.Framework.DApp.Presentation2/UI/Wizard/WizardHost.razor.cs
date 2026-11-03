@@ -56,17 +56,15 @@ namespace Sphere10.Framework.DApp.Presentation2.UI.Wizard {
 		public string Title { get; set; }
 
 		/// <summary>
-		/// Current step instance
-		/// </summary>
-		private WizardStepBase _currentStepInstance;
-
-		/// <summary>
 		/// Gets or sets the component ref instance of the current step.
 		/// </summary>
+		/// <remarks>Current step instance</remarks>
 		private WizardStepBase CurrentStepInstance {
-			get => _currentStepInstance;
+			get {
+				return field;
+			}
 			set {
-				_currentStepInstance = value;
+				field = value;
 				Title = $"{Wizard?.Title} -> {CurrentStepInstance?.Title}";
 				OnStepChange.InvokeAsync();
 			}

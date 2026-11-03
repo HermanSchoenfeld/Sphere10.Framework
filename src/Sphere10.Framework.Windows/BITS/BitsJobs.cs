@@ -12,18 +12,17 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Windows.BITS;
 
 public class BitsJobs : Dictionary<Guid, BitsJob>, IDisposable {
-	private IEnumBackgroundCopyJobs jobList;
 	BitsManager manager;
 	private bool disposed;
 
 	internal BitsJobs(BitsManager manager, IEnumBackgroundCopyJobs jobList) {
 		this.manager = manager;
-		this.jobList = jobList;
+		Jobs = jobList;
 		this.Update();
 	}
 
 	internal void Update(IEnumBackgroundCopyJobs jobList) {
-		this.jobList = jobList;
+		Jobs = jobList;
 		this.Update();
 	}
 
@@ -36,11 +35,11 @@ public class BitsJobs : Dictionary<Guid, BitsJob>, IDisposable {
 		foreach (KeyValuePair<Guid, BitsJob> entry in this) {
 			currentList.Add(entry.Key, entry.Value);
 		}
-		this.jobList.Reset();
+		Jobs.Reset();
 		this.Clear();
-		this.jobList.GetCount(out count);
+		Jobs.GetCount(out count);
 		for (int i = 0; i < count; i++) {
-			this.jobList.Next(1, out currentJob, out fetchedCount);
+			Jobs.Next(1, out currentJob, out fetchedCount);
 			if (fetchedCount == 1) {
 				Guid guid;
 				currentJob.GetId(out guid);
@@ -59,9 +58,7 @@ public class BitsJobs : Dictionary<Guid, BitsJob>, IDisposable {
 		}
 	}
 
-	internal IEnumBackgroundCopyJobs Jobs {
-		get { return this.jobList; }
-	}
+	internal IEnumBackgroundCopyJobs Jobs { get; private set; }
 
 	#region IDisposable Members
 
@@ -74,7 +71,7 @@ public class BitsJobs : Dictionary<Guid, BitsJob>, IDisposable {
 		if (!this.disposed) {
 			if (disposing) {
 				//TODO: release COM resource
-				this.jobList = null;
+				Jobs = null;
 			}
 		}
 		disposed = true;

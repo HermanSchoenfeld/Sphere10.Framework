@@ -38,11 +38,7 @@ public partial class ObjectSpaceScreen : ObjectSpaceScreenBase {
 	}
 
 	// The selected byte order remains fixed while its store is open.
-	private Endianness SelectedEndianness {
-		get {
-			return _endianness.SelectedIndex == 1 ? Endianness.BigEndian : Endianness.LittleEndian;
-		}
-	}
+	private Endianness SelectedEndianness => _endianness.SelectedIndex == 1 ? Endianness.BigEndian : Endianness.LittleEndian;
 
 	/// <summary>Joins optional legacy restoration before the normal accepted-close capture.</summary>
 	public override async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {

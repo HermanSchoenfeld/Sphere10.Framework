@@ -62,11 +62,6 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	private ExplorerBarInfo systemSettings;
 
 	/// <summary>
-	/// Specifies whether the TaskPane is currently initialising
-	/// </summary>
-	private bool initialising;
-
-	/// <summary>
 	/// A Rectangle that specifies the size and location of the watermark
 	/// </summary>
 	private Rectangle watermarkRect;
@@ -83,24 +78,9 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	private int beginUpdateCount;
 
 	/// <summary>
-	/// Specifies the custom settings for the TaskPane
-	/// </summary>
-	private TaskPaneInfo customSettings;
-
-	/// <summary>
-	/// 
-	/// </summary>
-	private bool allowExpandoDragging;
-
-	/// <summary>
 	/// 
 	/// </summary>
 	private Point dropPoint;
-
-	/// <summary>
-	/// 
-	/// </summary>
-	private Color dropIndicatorColor;
 
 	#endregion
 
@@ -126,9 +106,9 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		// get the system theme settings
 		this.systemSettings = ExplorerBarInfo.Default;
 
-		this.customSettings = new TaskPaneInfo();
-		this.customSettings.TaskPane = this;
-		this.customSettings.SetDefaultEmptyValues();
+		CustomSettings = new TaskPaneInfo();
+		CustomSettings.TaskPane = this;
+		CustomSettings.SetDefaultEmptyValues();
 
 		//UseCustomTheme(this.systemSettings);
 
@@ -154,13 +134,13 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		// Listen for changes to the parent
 		this.ParentChanged += new EventHandler(this.OnParentChanged);
 
-		this.allowExpandoDragging = false;
+		AllowExpandoDragging = false;
 		this.dropPoint = Point.Empty;
-		this.dropIndicatorColor = Color.Red;
+		ExpandoDropIndicatorColor = Color.Red;
 
 		this.beginUpdateCount = 0;
 
-		this.initialising = false;
+		Initialising = false;
 		this.layout = false;
 
 	}
@@ -356,7 +336,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Signals the TaskPane that initialization is starting
 	/// </summary>
 	public void BeginInit() {
-		this.initialising = true;
+		Initialising = true;
 	}
 
 
@@ -364,7 +344,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Signals the TaskPane that initialization is complete
 	/// </summary>
 	public void EndInit() {
-		this.initialising = false;
+		Initialising = false;
 
 		this.DoLayout();
 	}
@@ -373,10 +353,12 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// <summary>
 	/// Gets whether the TaskPane is currently initialising
 	/// </summary>
+
+	/// <remarks>
+	/// Specifies whether the TaskPane is currently initialising
+	/// </remarks>
 	[Browsable(false)]
-	public bool Initialising {
-		get { return this.initialising; }
-	}
+	public bool Initialising { get; private set; }
 
 	#endregion
 
@@ -643,9 +625,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	 Description("The Expandos contained in the TaskPane"),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 Editor(typeof(ExpandoCollectionEditor), typeof(UITypeEditor))]
-	public TaskPane.ExpandoCollection Expandos {
-		get { return this.expandoCollection; }
-	}
+	public TaskPane.ExpandoCollection Expandos => this.expandoCollection;
 
 
 	/// <summary>
@@ -653,34 +633,26 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// controls contained within the control
 	/// </summary>
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public new Control.ControlCollection Controls {
-		get { return base.Controls; }
-	}
+	public new Control.ControlCollection Controls => base.Controls;
 
 
 	/// <summary>
 	/// Gets or sets whether Expandos can be dragged around the TaskPane
 	/// </summary>
+
 	[Category("Behavior"),
 	 DefaultValue(false),
 	 Description("Indicates whether Expandos can be dragged around the TaskPane")]
-	public bool AllowExpandoDragging {
-		get { return this.allowExpandoDragging; }
-
-		set { this.allowExpandoDragging = value; }
-	}
+	public bool AllowExpandoDragging { get; set; }
 
 
 	/// <summary>
 	/// Gets or sets the Color that the Expando drop point indicator is drawn in
 	/// </summary>
+
 	[Browsable(false),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Color ExpandoDropIndicatorColor {
-		get { return this.dropIndicatorColor; }
-
-		set { this.dropIndicatorColor = value; }
-	}
+	public Color ExpandoDropIndicatorColor { get; set; }
 
 	#endregion
 
@@ -705,15 +677,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Gets how the TaskPane's background Image is to be drawn
 	/// </summary>
 	[Browsable(false)]
-	public ImageStretchMode StretchMode {
-		get {
-			if (this.CustomSettings.BackImage != null) {
-				return this.CustomSettings.StretchMode;
-			}
-
-			return this.systemSettings.TaskPane.StretchMode;
-		}
-	}
+	public ImageStretchMode StretchMode => this.CustomSettings.BackImage != null ? this.CustomSettings.StretchMode : this.systemSettings.TaskPane.StretchMode;
 
 
 	/// <summary>
@@ -755,15 +719,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Expando's along each side of the TaskPane.
 	/// </summary>
 	[Browsable(false)]
-	public new PaddingEx Padding {
-		get {
-			if (this.CustomSettings.Padding != PaddingEx.Empty) {
-				return this.CustomSettings.Padding;
-			}
-
-			return this.systemSettings.TaskPane.Padding;
-		}
-	}
+	public new PaddingEx Padding => this.CustomSettings.Padding != PaddingEx.Empty ? this.CustomSettings.Padding : this.systemSettings.TaskPane.Padding;
 
 	#endregion
 
@@ -773,8 +729,9 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Gets or sets the system defined settings for the TaskPane
 	/// </summary>
 	protected internal ExplorerBarInfo SystemSettings {
-		get { return this.systemSettings; }
-
+		get {
+			return this.systemSettings;
+		}
 		set {
 			// ignore null values
 			if (value == null) {
@@ -813,15 +770,15 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// <summary>
 	/// Gets the custom settings for the TaskPane
 	/// </summary>
+
+	/// <remarks>
+	/// Specifies the custom settings for the TaskPane
+	/// </remarks>
 	[Category("Appearance"),
 	 Description(""),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 TypeConverter(typeof(TaskPaneInfoConverter))]
-	public TaskPaneInfo CustomSettings {
-		get { return this.customSettings; }
-
-		set { this.customSettings = value; }
-	}
+	public TaskPaneInfo CustomSettings { get; set; }
 
 
 	/// <summary>
@@ -1429,9 +1386,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		/// </summary>
 		/// <param name="index">The index of the expando to retrieve 
 		/// from the expando collection</param>
-		public virtual Expando this[int index] {
-			get { return this.List[index] as Expando; }
-		}
+		public virtual Expando this[int index] => this.List[index] as Expando;
 
 		#endregion
 

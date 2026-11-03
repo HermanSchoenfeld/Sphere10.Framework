@@ -52,9 +52,9 @@ namespace HashLib4CSharp.Adapter
 
         public override byte[] Key
         {
-            get => _hmacNotBuiltIn.WorkingKey;
-            set => _hmacNotBuiltIn.Key = value;
-        }
+			get => _hmacNotBuiltIn.WorkingKey;
+			set => _hmacNotBuiltIn.Key = value;
+		}
 
         public override void Initialize() => _hmacNotBuiltIn.Initialize();
 

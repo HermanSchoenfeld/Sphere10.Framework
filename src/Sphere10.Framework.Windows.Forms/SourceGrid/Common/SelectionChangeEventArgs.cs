@@ -15,22 +15,13 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class SelectionChangeEventArgs : EventArgs {
 	private CellRange _range;
-	private SelectionChangeEventType _type;
 
 	public SelectionChangeEventArgs(SelectionChangeEventType type, CellRange range) {
-		_type = type;
+		EventType = type;
 		_range = range;
 	}
 
-	public CellRange Range {
-		get {
-			return _range;
-		}
-	}
+	public CellRange Range => _range;
 
-	public SelectionChangeEventType EventType {
-		get {
-			return _type;
-		}
-	}
+	public SelectionChangeEventType EventType { get; }
 }

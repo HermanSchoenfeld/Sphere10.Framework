@@ -31,42 +31,38 @@ public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollecti
 		.ToList();
 
 	/// <summary>
-	/// backing field for page size
-	/// </summary>
-	private int _pageSize = 10;
-
-	/// <summary>
 	/// Gets or sets the size of the page to show. When set, updates the current page
 	/// accordingly based on current position.
 	/// </summary>
+	/// <remarks>backing field for page size</remarks>
 	public int PageSize {
-		get => _pageSize;
+		get {
+			return field;
+		}
 		set {
 			if (Items.Any()) {
 				int index = (CurrentPage - 1) * PageSize + Page.Count();
-				_pageSize = value;
-				CurrentPage = (int)Math.Ceiling((double)index / _pageSize);
+				field = value;
+				CurrentPage = (int)Math.Ceiling((double)index / field);
 			} else {
-				_pageSize = value;
+				field = value;
 			}
 		}
-	}
-
-	/// <summary>
-	/// Current page
-	/// </summary>
-	private int _currentPage = 1;
+	} = 10;
 
 	/// <summary>
 	/// Gets or sets the current page
 	/// </summary>
+	/// <remarks>Current page</remarks>
 	public int CurrentPage {
-		get => _currentPage;
+		get {
+			return field;
+		}
 		set {
-			_currentPage = value;
+			field = value;
 			StateHasChangedDelegate?.Invoke();
 		}
-	}
+	} = 1;
 
 	/// <summary>
 	/// Gets the total number of pages based on total items and page size.

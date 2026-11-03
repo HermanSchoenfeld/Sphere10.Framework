@@ -110,7 +110,8 @@ public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollectio
 	}
 
 	public TValue this[TKey key] {
-		get => DoOperation(
+		get {
+			return DoOperation(
 			EventTraits.Fetch,
 			() => InternalCollection[key],
 			() => new FetchingByItemsEventArgs<TKey> { CallArgs = new ItemsCallArgs<TKey>(key) },
@@ -124,8 +125,9 @@ public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollectio
 				Fetched?.Invoke(this, postEventArgs);
 			}
 		);
-
-		set => DoOperation(
+		}
+		set {
+			DoOperation(
 			EventTraits.Update,
 			() => InternalCollection[key] = value,
 			() => new UpdatingByItemsEventArgs<KeyValuePair<TKey, TValue>> { CallArgs = new ItemsCallArgs<KeyValuePair<TKey, TValue>>(new KeyValuePair<TKey, TValue>(key, value)) },
@@ -139,6 +141,7 @@ public class ObservableDictionary<TKey, TValue, TConcrete> : ObservableCollectio
 				Updated?.Invoke(this, postEventArgs);
 			}
 		);
+		}
 	}
 
 

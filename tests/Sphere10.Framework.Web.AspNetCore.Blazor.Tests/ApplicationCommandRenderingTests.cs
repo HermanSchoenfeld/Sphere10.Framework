@@ -346,11 +346,7 @@ public class ApplicationCommandRenderingTests {
 		public int Calls { get; private set; }
 
 		/// <summary>Plugins borrow the executing host's services instead of constructing another container.</summary>
-		public IServiceProvider IoCContainer {
-			get {
-				return null;
-			}
-		}
+		public IServiceProvider IoCContainer => null;
 	}
 
 	public class CommandScreen : ApplicationScreen {

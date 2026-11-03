@@ -13,19 +13,13 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Conditions;
 
 public class ConditionView : ICondition {
-	private IView _view;
-
 	public EvaluateFunctionDelegate EvaluateFunction;
 
 	public ConditionView(IView view) {
-		_view = view;
+		View = view;
 	}
 
-	public IView View {
-		get {
-			return _view;
-		}
-	}
+	public IView View { get; }
 
 	// ICondition Members
 	public bool Evaluate(DataGridColumn column, int gridRow, object itemRow) {

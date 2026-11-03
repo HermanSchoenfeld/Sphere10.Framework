@@ -75,7 +75,9 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 	public override long Length => RequiresLoad ? throw new InvalidOperationException("Stream is not loaded") : _source.Count;
 
 	public override long Position {
-		get => _position;
+		get {
+			return _position;
+		}
 		set {
 			Guard.ArgumentInRange(value, 0, Length, "Value");
 			_position = value;

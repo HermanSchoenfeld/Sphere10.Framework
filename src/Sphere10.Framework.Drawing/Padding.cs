@@ -34,11 +34,7 @@ public struct Padding {
 		Bottom = bottom;
 	}
 
-	public bool IsEmpty {
-		get {
-			return Left == 0 && Right == 0 && Top == 0 && Bottom == 0;
-		}
-	}
+	public bool IsEmpty => Left == 0 && Right == 0 && Top == 0 && Bottom == 0;
 
 	public RectangleF GetContentRectangle(RectangleF backGroundArea) {
 		if (IsEmpty)

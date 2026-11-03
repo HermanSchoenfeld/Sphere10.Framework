@@ -11,27 +11,16 @@ using System.Diagnostics;
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class UnaryOperatorTree : SyntaxTree {
-	private SyntaxTree _operand;
-	private Operator _operator;
-
-
 	public UnaryOperatorTree(Token token)
 		: base(token) {
 	}
 
-	public SyntaxTree Operand {
-		get { return _operand; }
-		set { _operand = value; }
-	}
+	public SyntaxTree Operand { get; set; }
 
-	public Operator Operator {
-		get { return _operator; }
-		set { _operator = value; }
-
-	}
+	public Operator Operator { get; set; }
 
 	public override string ToString() {
-		Debug.Assert(_operand != null);
+		Debug.Assert(Operand != null);
 		return string.Format("{0}({1})", Operator, Operand.ToString());
 	}
 }

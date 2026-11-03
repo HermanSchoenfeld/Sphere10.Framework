@@ -33,13 +33,8 @@ public struct RoundedRectangle {
 	}
 
 	public Rectangle Rectangle {
-		get {
-			return _rectangle;
-		}
-
-		set {
-			_rectangle = value;
-		}
+		get => _rectangle;
+		set => _rectangle = value;
 	}
 
 	/// <summary>
@@ -49,7 +44,6 @@ public struct RoundedRectangle {
 		get {
 			return _roundValue;
 		}
-
 		set {
 			if (double.IsNaN(value) || value < 0 || value > 1)
 				throw new ApplicationException("Invalid value, must be a value from 0 to 1");

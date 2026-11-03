@@ -537,36 +537,39 @@ public class SerializerFactory {
 
 	/// <summary>Associates a persisted type code and CLR data type with a serializer activation function and its owning factory.</summary>
 	public record Registration {
-		private Type _dataType;
-		private Type _serializerType;
-		private Func<Registration, Type, IItemSerializer> _factory;
 
 		/// <summary>The numeric type code under which the registration is stored.</summary>
 		public long TypeCode { get; set; }
 
 		/// <summary>The registered CLR data type; replacing it clears recognized construction provenance.</summary>
 		public Type DataType {
-			get => _dataType;
+			get {
+				return field;
+			}
 			set {
-				_dataType = value;
+				field = value;
 				Construction = RegistrationConstruction.Custom;
 			}
 		}
 
 		/// <summary>The registered serializer type; replacing it clears recognized construction provenance.</summary>
 		public Type SerializerType {
-			get => _serializerType;
+			get {
+				return field;
+			}
 			set {
-				_serializerType = value;
+				field = value;
 				Construction = RegistrationConstruction.Custom;
 			}
 		}
 
 		/// <summary>The serializer activator; replacing it marks the registration as custom and prevents inferred reconstruction.</summary>
 		public Func<Registration, Type, IItemSerializer> Factory {
-			get => _factory;
+			get {
+				return field;
+			}
 			set {
-				_factory = value;
+				field = value;
 				Construction = RegistrationConstruction.Custom;
 			}
 		}

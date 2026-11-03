@@ -49,8 +49,8 @@ public class MoneyBox : NumericBoxBase<decimal> {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public override string FormatString {
-		get { return base.FormatString; }
-		set { base.FormatString = value; }
+		get => base.FormatString;
+		set => base.FormatString = value;
 	}
 
 

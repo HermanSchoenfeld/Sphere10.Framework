@@ -37,13 +37,9 @@
 	private IApplication _application;
 
 	// Operational components never mount during prerender while browser/user restoration is still pending.
-	private bool SettingsReady {
-		get {
-			return _application == null || _application.IsInitialized
-				|| (!_application.LoadedPlugins.Any(plugin => plugin.PluginSettings != null)
-					&& !ScreenHost.AvailableBlocks.Any(block => block.BlockSettings != null || block.ScreenDefinitions.Any(definition => definition.Settings != null)));
-		}
-	}
+	private bool SettingsReady => _application == null || _application.IsInitialized
+		|| (!_application.LoadedPlugins.Any(plugin => plugin.PluginSettings != null)
+			&& !ScreenHost.AvailableBlocks.Any(block => block.BlockSettings != null || block.ScreenDefinitions.Any(definition => definition.Settings != null)));
 
 	protected override void OnInitialized() {
 		_application = Services.GetService<IApplication>();

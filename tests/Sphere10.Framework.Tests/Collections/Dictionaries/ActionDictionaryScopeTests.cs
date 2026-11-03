@@ -140,7 +140,9 @@ public class ActionDictionaryScopeTests {
 				Events.Add("get");
 				return base[key];
 			}
-			set => base[key] = value;
+			set {
+				base[key] = value;
+			}
 		}
 
 		public override IEnumerator<KeyValuePair<int, int>> GetEnumerator() {

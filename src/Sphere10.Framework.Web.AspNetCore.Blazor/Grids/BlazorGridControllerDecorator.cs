@@ -15,10 +15,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public abstract class BlazorGridControllerDecorator<TItem, TConcrete> : IBlazorGridController<TItem>
 	where TConcrete : IBlazorGridController<TItem> {
-	public event EventHandlerEx Changed {
-		add => InternalController.Changed += value;
-		remove => InternalController.Changed -= value;
-	}
+	public event EventHandlerEx Changed { add => InternalController.Changed += value; remove => InternalController.Changed -= value; }
 
 	protected readonly TConcrete InternalController;
 

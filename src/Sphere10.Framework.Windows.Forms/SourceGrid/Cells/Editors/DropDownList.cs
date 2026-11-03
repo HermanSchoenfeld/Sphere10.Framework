@@ -46,11 +46,7 @@ public class DropDownList : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.ComboBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
-		}
-	}
+	public new Sphere10.Framework.Windows.Forms.ComboBoxEx Control => (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
 
 	/// <summary>
 	/// Set the specified value in the current editor control.

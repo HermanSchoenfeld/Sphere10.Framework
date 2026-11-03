@@ -10,7 +10,6 @@ using System;
 
 namespace Sphere10.Framework.iOS {
 	public class DropDownListSelection<T> {
-		private T _selectedItem;
 
 		public DropDownListSelection() {
 			IsItemSelected = false;	
@@ -18,14 +17,12 @@ namespace Sphere10.Framework.iOS {
 
 		public bool IsItemSelected { get; private set; }
 
-		public T SelectedItem { 
+		public T SelectedItem {
 			get {
-				if (!IsItemSelected)
-					throw new Exception(string.Format("No item was selected"));
-				return _selectedItem;
+				return !IsItemSelected ? throw new Exception(string.Format("No item was selected")) : field;
 			}
 			set {
-				_selectedItem = value;
+				field = value;
 				IsItemSelected = true;
 			}
 		}

@@ -10,9 +10,6 @@ namespace CommandLine.Text;
 /// Models a command line usage example.
 /// </summary>
 public sealed class Example : IEquatable<Example> {
-	private readonly string helpText;
-	private readonly IEnumerable<UnParserSettings> formatStyles;
-	private readonly object sample;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CommandLine.Text.Example"/> class.
@@ -25,9 +22,9 @@ public sealed class Example : IEquatable<Example> {
 		if (formatStyles == null) throw new ArgumentNullException("formatStyles");
 		if (sample == null) throw new ArgumentNullException("sample");
 
-		this.helpText = helpText;
-		this.formatStyles = formatStyles;
-		this.sample = sample;
+		HelpText = helpText;
+		FormatStyles = formatStyles;
+		Sample = sample;
 	}
 
 	/// <summary>
@@ -52,23 +49,17 @@ public sealed class Example : IEquatable<Example> {
 	/// <summary>
 	/// Example description. 
 	/// </summary>
-	public string HelpText {
-		get { return helpText; }
-	}
+	public string HelpText { get; }
 
 	/// <summary>
 	/// A sequence of format styles.
 	/// </summary>
-	public IEnumerable<UnParserSettings> FormatStyles {
-		get { return this.formatStyles; }
-	}
+	public IEnumerable<UnParserSettings> FormatStyles { get; }
 
 	/// <summary>
 	/// A sample instance.
 	/// </summary>
-	public object Sample {
-		get { return sample; }
-	}
+	public object Sample { get; }
 
 	/// <summary>
 	/// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="System.Object"/>.

@@ -23,65 +23,65 @@ namespace Tools;
 /// </summary>
 public static class Windows {
 
-	[ThreadStatic] private static FileUtil _files;
-	public static FileUtil Files => _files ??= new();
+	[field: ThreadStatic]
+	public static FileUtil Files => field ??= new();
 
-	[ThreadStatic] private static ComputerUtil _computer;
-	public static ComputerUtil Computer => _computer ??= new();
+	[field: ThreadStatic]
+	public static ComputerUtil Computer => field ??= new();
 
-	[ThreadStatic] private static WindowsDisplayUtil _display;
-	public static WindowsDisplayUtil Display => _display ??= new();
+	[field: ThreadStatic]
+	public static WindowsDisplayUtil Display => field ??= new();
 
-	[ThreadStatic] private static PerformanceCounterUtil _performanceCounters;
-	public static PerformanceCounterUtil PerformanceCounters => _performanceCounters ??= new();
+	[field: ThreadStatic]
+	public static PerformanceCounterUtil PerformanceCounters => field ??= new();
 
-	[ThreadStatic] private static RegistryUtil _registry;
-	public static RegistryUtil Registry => _registry ??= new();
+	[field: ThreadStatic]
+	public static RegistryUtil Registry => field ??= new();
 
-	[ThreadStatic] private static ServiceUtil _services;
-	public static ServiceUtil Services => _services ??= new();
+	[field: ThreadStatic]
+	public static ServiceUtil Services => field ??= new();
 
-	[ThreadStatic] private static PrivilegeUtil _security;
-	public static PrivilegeUtil Security => _security ??= new();
+	[field: ThreadStatic]
+	public static PrivilegeUtil Security => field ??= new();
 
-	[ThreadStatic] private static ProcessSignaler _processes;
-	public static ProcessSignaler Processes => _processes ??= new();
+	[field: ThreadStatic]
+	public static ProcessSignaler Processes => field ??= new();
 
-	[ThreadStatic] private static ThreadUtil _threads;
-	public static ThreadUtil Threads => _threads ??= new();
+	[field: ThreadStatic]
+	public static ThreadUtil Threads => field ??= new();
 
-	[ThreadStatic] private static Win32Util _win32;
-	public static Win32Util Win32 => _win32 ??= new();
+	[field: ThreadStatic]
+	public static Win32Util Win32 => field ??= new();
 
-	[ThreadStatic] private static ShellUtility _shell;
-	public static ShellUtility Shell => _shell ??= new();
+	[field: ThreadStatic]
+	public static ShellUtility Shell => field ??= new();
 
-	[ThreadStatic] private static WindowsNetworkUtil _network;
-	public static WindowsNetworkUtil Network => _network ??= new();
+	[field: ThreadStatic]
+	public static WindowsNetworkUtil Network => field ??= new();
 
-	[ThreadStatic] private static WindowsDriveUtil _drives;
-	public static WindowsDriveUtil Drives => _drives ??= new();
+	[field: ThreadStatic]
+	public static WindowsDriveUtil Drives => field ??= new();
 
-	[ThreadStatic] private static WindowsStartupUtil _startup;
-	public static WindowsStartupUtil Startup => _startup ??= new();
+	[field: ThreadStatic]
+	public static WindowsStartupUtil Startup => field ??= new();
 
-	[ThreadStatic] private static WindowsEventLogUtil _eventLogs;
-	public static WindowsEventLogUtil EventLogs => _eventLogs ??= new();
+	[field: ThreadStatic]
+	public static WindowsEventLogUtil EventLogs => field ??= new();
 
-	[ThreadStatic] private static EnvironmentUtil _environment;
-	public static EnvironmentUtil Environment => _environment ??= new();
+	[field: ThreadStatic]
+	public static EnvironmentUtil Environment => field ??= new();
 
-	[ThreadStatic] private static SecurityDescriptorUtil _securityDescriptors;
-	public static SecurityDescriptorUtil SecurityDescriptors => _securityDescriptors ??= new();
+	[field: ThreadStatic]
+	public static SecurityDescriptorUtil SecurityDescriptors => field ??= new();
 
-	[ThreadStatic] private static NamedPipeUtil _pipes;
-	public static NamedPipeUtil Pipes => _pipes ??= new();
+	[field: ThreadStatic]
+	public static NamedPipeUtil Pipes => field ??= new();
 
-	[ThreadStatic] private static EtwTraceUtil _traceSessions;
-	public static EtwTraceUtil TraceSessions => _traceSessions ??= new();
+	[field: ThreadStatic]
+	public static EtwTraceUtil TraceSessions => field ??= new();
 
-	[ThreadStatic] private static SessionUtil _sessions;
-	public static SessionUtil Sessions => _sessions ??= new();
+	[field: ThreadStatic]
+	public static SessionUtil Sessions => field ??= new();
 
 }
 

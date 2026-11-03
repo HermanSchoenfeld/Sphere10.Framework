@@ -29,18 +29,14 @@ public
 public
 #endif
 	abstract class Maybe<T> {
-	private readonly MaybeType tag;
-
 	protected Maybe(MaybeType tag) {
-		this.tag = tag;
+		Tag = tag;
 	}
 
 	/// <summary>
 	/// Type discriminator.
 	/// </summary>
-	public MaybeType Tag {
-		get { return tag; }
-	}
+	public MaybeType Tag { get; }
 
 	#region Basic Match Methods
 
@@ -96,9 +92,7 @@ public
 	/// <summary>
 	/// The wrapped value.
 	/// </summary>
-	public T Value {
-		get { return value; }
-	}
+	public T Value => value;
 }
 
 

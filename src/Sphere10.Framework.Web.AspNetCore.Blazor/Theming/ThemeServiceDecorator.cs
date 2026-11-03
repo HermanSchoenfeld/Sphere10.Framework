@@ -9,10 +9,7 @@
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 
 public abstract class ThemeServiceDecorator<TConcrete> : IThemeService where TConcrete : IThemeService {
-	public virtual event EventHandlerEx Changed {
-		add => InternalThemeService.Changed += value;
-		remove => InternalThemeService.Changed -= value;
-	}
+	public virtual event EventHandlerEx Changed { add => InternalThemeService.Changed += value; remove => InternalThemeService.Changed -= value; }
 
 	protected readonly TConcrete InternalThemeService;
 

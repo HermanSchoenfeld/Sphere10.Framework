@@ -42,7 +42,9 @@ public class ProductUsageServices : IProductUsageServices {
 	};
 
 	protected virtual DateTime? FirstUTCTimeExecutedByUser {
-		get => _userSettings.FirstRunDate;
+		get {
+			return _userSettings.FirstRunDate;
+		}
 		set {
 			_userSettings.FirstRunDate = value;
 			_userSettings.Save();
@@ -50,7 +52,9 @@ public class ProductUsageServices : IProductUsageServices {
 	}
 
 	protected virtual int NumberOfUsesByUser {
-		get => _userSettings.NumberOfRuns;
+		get {
+			return _userSettings.NumberOfRuns;
+		}
 		set {
 			_userSettings.NumberOfRuns = value;
 			_userSettings.Save();
@@ -58,7 +62,9 @@ public class ProductUsageServices : IProductUsageServices {
 	}
 
 	protected virtual DateTime? FirstUTCTimeExecutedBySystem {
-		get => _systemSettings.FirstRunDate;
+		get {
+			return _systemSettings.FirstRunDate;
+		}
 		set {
 			_systemSettings.FirstRunDate = value;
 			_systemSettings.Save();
@@ -66,7 +72,9 @@ public class ProductUsageServices : IProductUsageServices {
 	}
 
 	protected virtual int NumberOfUsesBySystem {
-		get => _systemSettings.NumberOfRuns;
+		get {
+			return _systemSettings.NumberOfRuns;
+		}
 		set {
 			_systemSettings.NumberOfRuns = value;
 			_systemSettings.Save();

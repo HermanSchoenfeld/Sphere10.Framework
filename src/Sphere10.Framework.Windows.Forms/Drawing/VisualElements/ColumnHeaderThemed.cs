@@ -40,7 +40,6 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 		get {
 			return base.Style;
 		}
-
 		set {
 			base.Style = value;
 			_standardHeader.Style = value;

@@ -13,35 +13,17 @@ namespace Sphere10.Framework.Application.UI;
 
 public abstract class ApplicationDecorator<TConcrete> : IApplication
 	where TConcrete : IApplication {
-	public virtual event EventHandlerEx Changed {
-		add => InternalApplication.Changed += value;
-		remove => InternalApplication.Changed -= value;
-	}
+	public virtual event EventHandlerEx Changed { add => InternalApplication.Changed += value; remove => InternalApplication.Changed -= value; }
 
-	public virtual event EventHandlerEx Initializing {
-		add => InternalApplication.Initializing += value;
-		remove => InternalApplication.Initializing -= value;
-	}
+	public virtual event EventHandlerEx Initializing { add => InternalApplication.Initializing += value; remove => InternalApplication.Initializing -= value; }
 
-	public virtual event EventHandlerEx Initialized {
-		add => InternalApplication.Initialized += value;
-		remove => InternalApplication.Initialized -= value;
-	}
+	public virtual event EventHandlerEx Initialized { add => InternalApplication.Initialized += value; remove => InternalApplication.Initialized -= value; }
 
-	public virtual event EventHandlerEx Finalizing {
-		add => InternalApplication.Finalizing += value;
-		remove => InternalApplication.Finalizing -= value;
-	}
+	public virtual event EventHandlerEx Finalizing { add => InternalApplication.Finalizing += value; remove => InternalApplication.Finalizing -= value; }
 
-	public virtual event EventHandlerEx Finalized {
-		add => InternalApplication.Finalized += value;
-		remove => InternalApplication.Finalized -= value;
-	}
+	public virtual event EventHandlerEx Finalized { add => InternalApplication.Finalized += value; remove => InternalApplication.Finalized -= value; }
 
-	public virtual event ProgressHandler Progress {
-		add => InternalApplication.Progress += value;
-		remove => InternalApplication.Progress -= value;
-	}
+	public virtual event ProgressHandler Progress { add => InternalApplication.Progress += value; remove => InternalApplication.Progress -= value; }
 
 	protected readonly TConcrete InternalApplication;
 
@@ -65,27 +47,15 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication
 	public virtual IApplicationBlock[] Blocks => InternalApplication.Blocks;
 
 	/// <summary>Forwards the wrapped application's current menu descriptors without substituting empty defaults.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return InternalApplication.Menus;
-		}
-	}
+	public virtual IApplicationMenu[] Menus => InternalApplication.Menus;
 
 	/// <summary>Forwards the wrapped application's current toolbar commands with their original identities.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return InternalApplication.ToolBarItems;
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => InternalApplication.ToolBarItems;
 
 	public virtual IApplicationScreenHost ScreenHost => InternalApplication.ScreenHost;
 
 	/// <summary>Forwards the wrapped application's existing settings provider.</summary>
-	public virtual ISettingsProvider Settings {
-		get {
-			return InternalApplication.Settings;
-		}
-	}
+	public virtual ISettingsProvider Settings => InternalApplication.Settings;
 
 	public virtual bool HasUnsavedChanges => InternalApplication.HasUnsavedChanges;
 

@@ -1193,15 +1193,17 @@ public class DataFormula
     /// </summary>
     public bool IsStartFromFirst
     {
-        get => bool.Parse(_extraParameters[0]);
-        set
+		get {
+			return bool.Parse(_extraParameters[0]);
+		}
+		set
         {
             if (value)
                 _extraParameters[0] = true.ToString(System.Globalization.CultureInfo.InvariantCulture);
             else
                 _extraParameters[0] = false.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
-    }
+	}
 
     /// <summary>
     /// Returns a reference to the statistical utility class.

@@ -26,9 +26,7 @@ public class CopyrightInfo {
 	/// <summary>
 	/// An empty object used for initialization.
 	/// </summary>
-	public static CopyrightInfo Empty {
-		get { return new CopyrightInfo("author", DateTime.Now.Year); }
-	}
+	public static CopyrightInfo Empty => new CopyrightInfo("author", DateTime.Now.Year);
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CommandLine.Text.CopyrightInfo"/> class
@@ -116,9 +114,7 @@ public class CopyrightInfo {
 	/// <summary>
 	/// Gets a different copyright word when overridden in a derived class.
 	/// </summary>
-	protected virtual string CopyrightWord {
-		get { return DefaultCopyrightWord; }
-	}
+	protected virtual string CopyrightWord => DefaultCopyrightWord;
 
 	/// <summary>
 	/// Converts the copyright instance to a <see cref="System.String"/>.

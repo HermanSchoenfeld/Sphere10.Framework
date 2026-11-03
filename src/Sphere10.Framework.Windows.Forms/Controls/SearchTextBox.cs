@@ -24,11 +24,7 @@ public partial class SearchTextBox : TextBoxEx {
 	}
 
 	/// <summary>The inline image surface, owned by this control; its resource images remain borrowed.</summary>
-	public PictureBox PictureBox {
-		get {
-			return _pictureBox;
-		}
-	}
+	public PictureBox PictureBox => _pictureBox;
 
 	/// <summary>Updates the action before notifying consumers of the current search text.</summary>
 	protected override void OnTextChanged(EventArgs e) {

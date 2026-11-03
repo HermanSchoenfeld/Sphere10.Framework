@@ -11,14 +11,13 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.Components.BlockFramework;
 
 public class HideScreenEventArgs : EventArgs {
-	private bool _cancel;
 	public HideScreenEventArgs() {
 		Cancel = false;
 	}
 
 	public bool Cancel {
-		get => _cancel;
-		set => _cancel = _cancel || value;
+		get => field;
+		set => field = field || value;
 	}
 
 }

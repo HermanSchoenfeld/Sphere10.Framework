@@ -39,11 +39,7 @@ public class MultiImages : Cell {
 	/// <summary>
 	/// Images of the cells
 	/// </summary>
-	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList SubImages {
-		get {
-			return _images;
-		}
-	}
+	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList SubImages => _images;
 
 	// Clone
 	/// <summary>

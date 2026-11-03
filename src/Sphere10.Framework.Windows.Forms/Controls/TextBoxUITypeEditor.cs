@@ -18,7 +18,6 @@ namespace Sphere10.Framework.Windows.Forms;
 /// Hosts the UITypeEditor associated with the configured value type.
 /// </summary>
 public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvider, System.Windows.Forms.Design.IWindowsFormsEditorService, ITypeDescriptorContext {
-	private UITypeEditor _uiTypeEditor;
 
 	// System.Windows.Forms.Design.IWindowsFormsEditorService
 	private Sphere10.Framework.Windows.Forms.DropDownForm _dropDown = null;
@@ -32,38 +31,19 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 	/// Gets or sets the UITypeEditor to use. If you have specified a validator the TypeDescriptor.GetEditor method is used based on the Validator.ValueType.
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public UITypeEditor UITypeEditor {
-		get {
-			return _uiTypeEditor;
-		}
-		set {
-			_uiTypeEditor = value;
-		}
-	}
+	public UITypeEditor UITypeEditor { get; set; }
 
-	IContainer ITypeDescriptorContext.Container {
-		get {
-			return base.Container;
-		}
-	}
+	IContainer ITypeDescriptorContext.Container => base.Container;
 
-	object ITypeDescriptorContext.Instance {
-		get {
-			return Value;
-		}
-	}
+	object ITypeDescriptorContext.Instance => Value;
 
-	PropertyDescriptor ITypeDescriptorContext.PropertyDescriptor {
-		get {
-			return null;
-		}
-	}
+	PropertyDescriptor ITypeDescriptorContext.PropertyDescriptor => null;
 
 	public override void ShowDialog() {
 		try {
 			OnDialogOpen(EventArgs.Empty);
-			if (_uiTypeEditor != null) {
-				var style = _uiTypeEditor.GetEditStyle();
+			if (UITypeEditor != null) {
+				var style = UITypeEditor.GetEditStyle();
 				if (style == UITypeEditorEditStyle.DropDown ||
 					style == UITypeEditorEditStyle.Modal) {
 					object editObject;
@@ -75,7 +55,7 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 							editObject = null;
 					}
 
-					var temporary = _uiTypeEditor.EditValue(this, this, editObject);
+					var temporary = UITypeEditor.EditValue(this, this, editObject);
 					Value = temporary;
 				}
 			}
@@ -119,10 +99,10 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 	protected override void ApplyValidatorRules() {
 		base.ApplyValidatorRules();
 
-		if (_uiTypeEditor == null && Validator != null) {
+		if (UITypeEditor == null && Validator != null) {
 			var temporary = System.ComponentModel.TypeDescriptor.GetEditor(Validator.ValueType, typeof(UITypeEditor));
 			if (temporary is UITypeEditor)
-				_uiTypeEditor = (UITypeEditor)temporary;
+				UITypeEditor = (UITypeEditor)temporary;
 		}
 	}
 

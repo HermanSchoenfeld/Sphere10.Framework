@@ -18,14 +18,10 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Captured metric history displayed through the reusable DataVisualization graph control.</summary>
 public partial class TelemetryChart : UserControlEx {
 	private TelemetryChartPoint[] _points = Array.Empty<TelemetryChartPoint>();
-	private TelemetryChartUnit _unit;
-	private TelemetryChartStyle _plotStyle;
 	private Color _lineColor = Color.SteelBlue;
 	private Color _fillColor = Color.Empty;
-	private bool _compact;
 	private bool _showHeader = true;
 	private int _hoveredIndex = -1;
-	private string _logSeriesName = string.Empty;
 
 	public TelemetryChart() {
 		InitializeComponent();
@@ -46,21 +42,19 @@ public partial class TelemetryChart : UserControlEx {
 		get {
 			return _title.Text;
 		}
-
 		set {
 			_title.Text = value;
-			_title.Visible = !_compact && _showHeader && !string.IsNullOrWhiteSpace(value);
+			_title.Visible = !Compact && _showHeader && !string.IsNullOrWhiteSpace(value);
 		}
 	}
 
 	[DefaultValue(false)]
 	public bool Compact {
 		get {
-			return _compact;
+			return field;
 		}
-
 		set {
-			_compact = value;
+			field = value;
 			_title.Visible = !value && _showHeader && !string.IsNullOrWhiteSpace(ChartTitle);
 			_value.Visible = !value && _showHeader;
 			Padding = value ? Padding.Empty : new Padding(3);
@@ -74,34 +68,27 @@ public partial class TelemetryChart : UserControlEx {
 		get {
 			return _showHeader;
 		}
-
 		set {
 			_showHeader = value;
-			_title.Visible = value && !_compact && !string.IsNullOrWhiteSpace(ChartTitle);
-			_value.Visible = value && !_compact;
+			_title.Visible = value && !Compact && !string.IsNullOrWhiteSpace(ChartTitle);
+			_value.Visible = value && !Compact;
 		}
 	}
 
 	[DefaultValue(false)]
 	public bool Throughput {
-		get {
-			return Unit == TelemetryChartUnit.BytesPerSecond;
-		}
-
-		set {
-			Unit = value ? TelemetryChartUnit.BytesPerSecond : TelemetryChartUnit.Percent;
-		}
+		get => Unit == TelemetryChartUnit.BytesPerSecond;
+		set => Unit = value ? TelemetryChartUnit.BytesPerSecond : TelemetryChartUnit.Percent;
 	}
 
 	[DefaultValue(TelemetryChartUnit.Percent)]
 	public TelemetryChartUnit Unit {
 		get {
-			return _unit;
+			return field;
 		}
-
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart unit");
-			_unit = value;
+			field = value;
 			SetSamples(_points);
 		}
 	}
@@ -109,12 +96,11 @@ public partial class TelemetryChart : UserControlEx {
 	[DefaultValue(TelemetryChartStyle.Line)]
 	public TelemetryChartStyle PlotStyle {
 		get {
-			return _plotStyle;
+			return field;
 		}
-
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart style");
-			_plotStyle = value;
+			field = value;
 			PublishSamples();
 		}
 	}
@@ -124,7 +110,6 @@ public partial class TelemetryChart : UserControlEx {
 		get {
 			return _lineColor;
 		}
-
 		set {
 			_lineColor = value;
 			_value.ForeColor = value;
@@ -137,7 +122,6 @@ public partial class TelemetryChart : UserControlEx {
 		get {
 			return _fillColor;
 		}
-
 		set {
 			_fillColor = value;
 			PublishSamples();
@@ -146,84 +130,47 @@ public partial class TelemetryChart : UserControlEx {
 
 	[DefaultValue(typeof(Color), "Control")]
 	public Color PlotBackColor {
-		get {
-			return _plot.PlotBackColor;
-		}
-
-		set {
-			_plot.PlotBackColor = value;
-		}
+		get => _plot.PlotBackColor;
+		set => _plot.PlotBackColor = value;
 	}
 
 	[DefaultValue(typeof(Color), "ControlDark")]
 	public Color GridColor {
-		get {
-			return _plot.GridColor;
-		}
-
-		set {
-			_plot.GridColor = value;
-		}
+		get => _plot.GridColor;
+		set => _plot.GridColor = value;
 	}
 
 	[DefaultValue(false)]
 	public bool ShowVerticalGrid {
-		get {
-			return _plot.ShowVerticalGrid;
-		}
-
-		set {
-			_plot.ShowVerticalGrid = value;
-		}
+		get => _plot.ShowVerticalGrid;
+		set => _plot.ShowVerticalGrid = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public TelemetryChartPoint[] Points {
-		get {
-			return (TelemetryChartPoint[])_points.Clone();
-		}
-	}
+	public TelemetryChartPoint[] Points => (TelemetryChartPoint[])_points.Clone();
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LogOutputSelectorControl LogOutput {
-		get {
-			return _plot.LogOutput;
-		}
-	}
+	public LogOutputSelectorControl LogOutput => _plot.LogOutput;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ChartLogOutputBehavior LogOutputBehavior {
-		get {
-			return _plot.LogOutputBehavior;
-		}
-	}
+	public ChartLogOutputBehavior LogOutputBehavior => _plot.LogOutputBehavior;
 
 	[Category("Behavior"), DefaultValue("")]
 	public string LogTitle {
-		get {
-			return _plot.LogTitle;
-		}
-
-		set {
-			_plot.LogTitle = value;
-		}
+		get => _plot.LogTitle;
+		set => _plot.LogTitle = value;
 	}
 
 	/// <summary>Optional descriptive measurement name; empty uses the chart heading or surrounding group caption.</summary>
 	[Category("Behavior"), DefaultValue("")]
 	public string LogSeriesName {
-		get {
-			return _logSeriesName;
-		}
-
-		set {
-			_logSeriesName = value ?? string.Empty;
-		}
-	}
+		get => field;
+		set => field = value ?? string.Empty;
+	} = string.Empty;
 
 	private string ResolvedLogSeriesName {
 		get {
-			return !string.IsNullOrWhiteSpace(_logSeriesName) ? _logSeriesName
+			return !string.IsNullOrWhiteSpace(LogSeriesName) ? LogSeriesName
 					: ChartLogOutputBehavior.IsDescriptive(ChartTitle) ? ChartTitle : ChartLogOutputBehavior.ResolveGroupTitle(this) ?? _plot.ResolvedLogTitle;
 		}
 	}

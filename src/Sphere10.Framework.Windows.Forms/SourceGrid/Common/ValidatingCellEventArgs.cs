@@ -14,19 +14,10 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class ValidatingCellEventArgs : CellCancelEventArgs {
-	private object _newValue;
-
 	public ValidatingCellEventArgs(CellContext cellContext, object newValue)
 		: base(cellContext) {
-		_newValue = newValue;
+		NewValue = newValue;
 	}
 
-	public object NewValue {
-		get {
-			return _newValue;
-		}
-		set {
-			_newValue = value;
-		}
-	}
+	public object NewValue { get; set; }
 }

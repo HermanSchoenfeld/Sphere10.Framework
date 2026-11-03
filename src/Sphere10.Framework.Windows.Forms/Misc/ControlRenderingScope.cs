@@ -118,26 +118,17 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 
 	// Track the scopes sharing one control's native redraw and layout suppression.
 	private sealed class RenderingState {
-		private readonly Control _control;
 		private readonly HashSet<ControlRenderingScope> _scopes = new(ReferenceEqualityComparer.Instance);
 		private IntPtr _suppressedHandle;
 		private bool _layoutResumed;
 
 		public RenderingState(Control control) {
-			_control = control;
+			Control = control;
 		}
 
-		public Control Control {
-			get {
-				return _control;
-			}
-		}
+		public Control Control { get; }
 
-		public bool IsActive {
-			get {
-				return _scopes.Count > 0;
-			}
-		}
+		public bool IsActive => _scopes.Count > 0;
 
 		public bool Enter(ControlRenderingScope scope) {
 			if (!_scopes.Add(scope))
@@ -145,10 +136,10 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 			if (_scopes.Count > 1)
 				return true;
 			_layoutResumed = false;
-			_control.SuspendLayout();
-			_control.HandleCreated += HandleCreated;
-			_control.ControlAdded += ControlAdded;
-			_control.VisibleChanged += VisibleChanged;
+			Control.SuspendLayout();
+			Control.HandleCreated += HandleCreated;
+			Control.ControlAdded += ControlAdded;
+			Control.VisibleChanged += VisibleChanged;
 			SuppressRedraw();
 			return true;
 		}
@@ -156,31 +147,31 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 		public bool Leave(ControlRenderingScope scope) {
 			if (!_scopes.Remove(scope) || IsActive)
 				return false;
-			_control.HandleCreated -= HandleCreated;
-			_control.ControlAdded -= ControlAdded;
-			_control.VisibleChanged -= VisibleChanged;
+			Control.HandleCreated -= HandleCreated;
+			Control.ControlAdded -= ControlAdded;
+			Control.VisibleChanged -= VisibleChanged;
 			return true;
 		}
 
 		public void ResumeLayout() {
-			if (_control.IsDisposed || _control.Disposing)
+			if (Control.IsDisposed || Control.Disposing)
 				return;
-			_control.ResumeLayout(true);
+			Control.ResumeLayout(true);
 			_layoutResumed = true;
 		}
 
 		public void Restore() {
-			if (_control.IsDisposed || _control.Disposing)
+			if (Control.IsDisposed || Control.Disposing)
 				return;
 			using var redraw = Tools.Scope.ExecuteOnDispose(RestoreRedraw);
 			if (!_layoutResumed) {
 				_layoutResumed = true;
-				_control.ResumeLayout(false);
+				Control.ResumeLayout(false);
 			}
 		}
 
 		public void SynchronizeNativeLayout() {
-			if (_control is not TabControl { IsDisposed: false, Disposing: false, IsHandleCreated: true, Alignment: TabAlignment.Top, SelectedTab: { } page } tabs)
+			if (Control is not TabControl { IsDisposed: false, Disposing: false, IsHandleCreated: true, Alignment: TabAlignment.Top, SelectedTab: { } page } tabs)
 				return;
 			if (!tabs.Visible || IsSuppressed(tabs) || _visibleProperty.ShouldSerializeValue(page))
 				return;
@@ -197,12 +188,12 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 		}
 
 		private void RestoreRedraw() {
-			if (_control.IsDisposed || _control.Disposing)
+			if (Control.IsDisposed || Control.Disposing)
 				return;
-			if (_suppressedHandle != IntPtr.Zero && _control.IsHandleCreated && _control.Handle == _suppressedHandle) {
+			if (_suppressedHandle != IntPtr.Zero && Control.IsHandleCreated && Control.Handle == _suppressedHandle) {
 				// The base designer descriptor observes the control's own visibility request, including under a hidden parent.
-				var visible = !_visibleProperty.ShouldSerializeValue(_control);
-				Tools.Windows.Win32.SendMessage(new HandleRef(_control, _suppressedHandle), SetRedrawMessage, 1, 0);
+				var visible = !_visibleProperty.ShouldSerializeValue(Control);
+				Tools.Windows.Win32.SendMessage(new HandleRef(Control, _suppressedHandle), SetRedrawMessage, 1, 0);
 				// WM_SETREDRAW enables WS_VISIBLE. Preserve an explicit Hide without hiding children of a retained tab.
 				if (!visible)
 					USER32.ShowWindow(_suppressedHandle, USER32.ShowWindowCommands.Hide);
@@ -211,12 +202,12 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 		}
 
 		private void SuppressRedraw() {
-			if (!_control.IsHandleCreated || !_control.Visible)
+			if (!Control.IsHandleCreated || !Control.Visible)
 				return;
-			if (_suppressedHandle == _control.Handle)
+			if (_suppressedHandle == Control.Handle)
 				return;
-			_suppressedHandle = _control.Handle;
-			Tools.Windows.Win32.SendMessage(new HandleRef(_control, _suppressedHandle), SetRedrawMessage, 0, 0);
+			_suppressedHandle = Control.Handle;
+			Tools.Windows.Win32.SendMessage(new HandleRef(Control, _suppressedHandle), SetRedrawMessage, 0, 0);
 		}
 
 		private void HandleCreated(object sender, EventArgs args) {

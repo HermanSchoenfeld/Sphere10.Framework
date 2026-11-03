@@ -33,9 +33,7 @@ public sealed class CellViewModel {
 	public CellTraits Traits { get; set; }
 	public object GridCellObject { get; set; }
 
-	public static CellViewModel Empty {
-		get { return new CellViewModel(string.Empty, CellTraits.Empty); }
-	}
+	public static CellViewModel Empty => new CellViewModel(string.Empty, CellTraits.Empty);
 
 	public static CellViewModel[] CreateArray(int count) {
 		try {

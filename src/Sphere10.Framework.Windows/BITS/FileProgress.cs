@@ -25,12 +25,8 @@ public class FileProgress {
 		}
 	}
 
-	public ulong BytesTransferred {
-		get { return this.fileProgress.BytesTransferred; }
-	}
+	public ulong BytesTransferred => this.fileProgress.BytesTransferred;
 
-	public bool Completed {
-		get { return Convert.ToBoolean(this.fileProgress.Completed); }
-	}
+	public bool Completed => Convert.ToBoolean(this.fileProgress.Completed);
 }
 

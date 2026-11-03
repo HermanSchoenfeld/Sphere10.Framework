@@ -15,17 +15,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application;
 
 public class Sphere10FrameworkBuilder {
-	private readonly Sphere10Framework _framework;
 	private readonly List<ICoreModuleConfiguration> _modules;
 	private readonly List<Action<IServiceCollection>> _configureActions;
 
 	internal Sphere10FrameworkBuilder(Sphere10Framework framework) {
-		_framework = framework;
+		Framework = framework;
 		_modules = new List<ICoreModuleConfiguration>();
 		_configureActions = new List<Action<IServiceCollection>>();
 	}
-	
-	public Sphere10Framework Framework => _framework;	
+
+	public Sphere10Framework Framework { get; }
 
 	/// <summary>Selects product information from the supplied assembly, or the application's entry assembly.</summary>
 	public Sphere10FrameworkBuilder UseAssemblyInfo(Assembly assembly = null) {
@@ -80,7 +79,7 @@ public class Sphere10FrameworkBuilder {
 	}
 
 	public Sphere10FrameworkBuilder WithOptions(Sphere10FrameworkOptions options) {
-		_framework.Options = options;
+		Framework.Options = options;
 		return this;
 	}
 
@@ -97,11 +96,11 @@ public class Sphere10FrameworkBuilder {
 	/// <summary>Allows a platform to select its runtime logger after module initialization and before process initializers run.</summary>
 	internal void Start(Func<IServiceProvider, ILogger> loggerSelector) {
 		var ServiceCollection = new ServiceCollection();
-		_framework.FireRegistering();
+		Framework.FireRegistering();
 		RegisterModules(ServiceCollection);
 		var ServiceProvider = ServiceCollection.BuildServiceProvider();
 		try {
-			_framework.StartInternal(ServiceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: true, loggerSelector: loggerSelector);
+			Framework.StartInternal(ServiceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: true, loggerSelector: loggerSelector);
 		} catch (Exception failure) {
 			// Startup did not complete, so dispose constructed services without invoking process finalizers.
 			var errors = new List<Exception> { failure };
@@ -113,6 +112,6 @@ public class Sphere10FrameworkBuilder {
 	}
 
 	public void Start(IServiceProvider serviceProvider) {
-		_framework.StartInternal(serviceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: false);
+		Framework.StartInternal(serviceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: false);
 	}
 }

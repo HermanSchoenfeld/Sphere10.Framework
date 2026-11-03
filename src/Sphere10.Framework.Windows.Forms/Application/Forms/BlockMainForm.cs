@@ -28,7 +28,6 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	private bool _navigationPaneCollapsed;
 	private double _navigationPaneWidth;
 	private double _navigationPaneMinimumContentWidth;
-	private int _maximumNavigationPaneWidth = 480;
 	private int _navigationPaneDpi = 96;
 	private bool _updatingNavigationPaneWidth;
 	private bool _registeringBlocks;
@@ -99,22 +98,18 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	[DefaultValue(480), Category("Layout"), Description("Maximum navigation width in logical pixels at 96 DPI")]
 	public int MaximumNavigationPaneWidth {
 		get {
-			return _maximumNavigationPaneWidth;
+			return field;
 		}
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
-			_maximumNavigationPaneWidth = value;
+			field = value;
 			ApplyNavigationPaneWidth(_navigationPaneWidth);
 		}
-	}
+	} = 480;
 
 	/// <summary>The block owning this window's visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IApplicationBlock ActiveBlock {
-		get {
-			return ScreenHost.ActiveBlock;
-		}
-	}
+	public IApplicationBlock ActiveBlock => ScreenHost.ActiveBlock;
 
 	/// <summary>The block being browsed in the sidebar, independently of the visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -129,19 +124,11 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IApplicationBlock[] Blocks {
-		get {
-			return RegisteredBlocks;
-		}
-	}
+	public IApplicationBlock[] Blocks => RegisteredBlocks;
 
 	/// <summary>The registered blocks owned by the screen host.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationBlock[] RegisteredBlocks {
-		get {
-			return ScreenHost.Blocks;
-		}
-	}
+	public virtual IApplicationBlock[] RegisteredBlocks => ScreenHost.Blocks;
 
 	private bool HasUsableNavigationPaneBounds {
 		get {

@@ -34,8 +34,6 @@
 <p class="mt-3">These temporary notes remain with this instance until its tab closes. They do not set the editor's unsaved-change guard.</p>
 
 @code {
-	private BlazorUI.IApplicationMenu[] _menus;
-	private BlazorUI.ApplicationMenuItemBase _counterCommand;
 	private string _title = "New scratchpad";
 	private string _notes = string.Empty;
 	private int _count;
@@ -43,7 +41,7 @@
 
 	public override string Title => string.IsNullOrWhiteSpace(_title) ? "Scratchpad" : _title;
 
-	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new BlazorUI.IApplicationMenu[] {
+	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(field ??= new BlazorUI.IApplicationMenu[] {
 		new ApplicationMenuBuilder()
 			.WithId("file")
 			.WithText("File")
@@ -53,7 +51,7 @@
 
 	public override BlazorUI.IApplicationMenuItem[] ToolBarItems => new BlazorUI.IApplicationMenuItem[] { CounterCommand };
 
-	private BlazorUI.ApplicationMenuItemBase CounterCommand => _counterCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase CounterCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("instance-counter")
 		.WithText("Increment instance counter")
 		.WithIcon("fas fa-plus-circle")

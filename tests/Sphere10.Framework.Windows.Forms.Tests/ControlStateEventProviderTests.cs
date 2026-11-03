@@ -539,11 +539,7 @@ public class ControlStateEventProviderTests {
 		public int Events { get; private set; }
 		public bool ThrowModelCopy { get; set; }
 		public bool ThrowUICopy { get; set; }
-		public string[] Order {
-			get {
-				return _order.ToArray();
-			}
-		}
+		public string[] Order => _order.ToArray();
 
 		public void Capture(TextBox editor, CheckedListBox choices) {
 			ModelCopies++;
@@ -586,11 +582,7 @@ public class ControlStateEventProviderTests {
 			Choices = new CheckedListBox { Parent = this };
 			Choices.Items.Add("Choice");
 		}
-		public Control Root {
-			get {
-				return this;
-			}
-		}
+		public Control Root => this;
 		public TextBox Editor { get; }
 		public CheckedListBox Choices { get; }
 		public ProbeState State { get; } = new();
@@ -614,11 +606,7 @@ public class ControlStateEventProviderTests {
 			Choices = new CheckedListBox { Parent = this };
 			Choices.Items.Add("Choice");
 		}
-		public Control Root {
-			get {
-				return this;
-			}
-		}
+		public Control Root => this;
 		public TextBox Editor { get; }
 		public CheckedListBox Choices { get; }
 		public ProbeState State { get; } = new();

@@ -12,17 +12,14 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class DefaultFunctionContext : IFunctionContext {
-	private IMathContext _mathContext;
 	private IDictionary<string, IFunction> _functionDictionary;
 
 	public DefaultFunctionContext(IMathContext context) {
-		_mathContext = context;
+		MathContext = context;
 		_functionDictionary = new Dictionary<string, IFunction>();
 	}
 
-	public IMathContext MathContext {
-		get { return _mathContext; }
-	}
+	public IMathContext MathContext { get; }
 
 	public bool ContainsFunction(string name) {
 		bool containsFunction = false;

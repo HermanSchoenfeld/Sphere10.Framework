@@ -108,8 +108,6 @@ public enum ErrorType {
 /// </summary>
 /// <remarks>All errors are defined within the system. There's no reason to create custom derivate types.</remarks>
 public abstract class Error : IEquatable<Error> {
-	private readonly ErrorType tag;
-	private readonly bool stopsProcessing;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CommandLine.Error"/> class.
@@ -117,8 +115,8 @@ public abstract class Error : IEquatable<Error> {
 	/// <param name="tag">Type discriminator tag.</param>
 	/// <param name="stopsProcessing">Tells if error stops parsing process.</param>
 	protected internal Error(ErrorType tag, bool stopsProcessing) {
-		this.tag = tag;
-		this.stopsProcessing = stopsProcessing;
+		Tag = tag;
+		StopsProcessing = stopsProcessing;
 	}
 
 	/// <summary>
@@ -132,17 +130,13 @@ public abstract class Error : IEquatable<Error> {
 	/// <summary>
 	/// Error type discriminator, defined as <see cref="CommandLine.ErrorType"/> enumeration.
 	/// </summary>
-	public ErrorType Tag {
-		get { return tag; }
-	}
+	public ErrorType Tag { get; }
 
 	/// <summary>
 	/// Tells if error stops parsing process.
 	/// Filtered by <see cref="CommandLine.ErrorExtensions.OnlyMeaningfulOnes(System.Collections.Generic.IEnumerable{Error})"/>.
 	/// </summary>
-	public bool StopsProcessing {
-		get { return stopsProcessing; }
-	}
+	public bool StopsProcessing { get; }
 
 	/// <summary>
 	/// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="System.Object"/>.
@@ -185,7 +179,6 @@ public abstract class Error : IEquatable<Error> {
 /// Base type of all errors related to bad token detection.
 /// </summary>
 public abstract class TokenError : Error, IEquatable<TokenError> {
-	private readonly string token;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CommandLine.TokenError"/> class.
@@ -196,15 +189,13 @@ public abstract class TokenError : Error, IEquatable<TokenError> {
 		: base(tag) {
 		if (token == null) throw new ArgumentNullException("token");
 
-		this.token = token;
+		Token = token;
 	}
 
 	/// <summary>
 	/// The string containing the token text.
 	/// </summary>
-	public string Token {
-		get { return token; }
-	}
+	public string Token { get; }
 
 	/// <summary>
 	/// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="System.Object"/>.
@@ -257,7 +248,6 @@ public sealed class BadFormatTokenError : TokenError {
 /// Base type of all erros with name information.
 /// </summary>
 public abstract class NamedError : Error, IEquatable<NamedError> {
-	private readonly NameInfo nameInfo;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="CommandLine.NamedError"/> class.
@@ -266,15 +256,13 @@ public abstract class NamedError : Error, IEquatable<NamedError> {
 	/// <param name="nameInfo">Problematic name.</param>
 	protected internal NamedError(ErrorType tag, NameInfo nameInfo)
 		: base(tag) {
-		this.nameInfo = nameInfo;
+		NameInfo = nameInfo;
 	}
 
 	/// <summary>
 	/// Name information relative to this error instance.
 	/// </summary>
-	public NameInfo NameInfo {
-		get { return nameInfo; }
-	}
+	public NameInfo NameInfo { get; }
 
 	/// <summary>
 	/// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="System.Object"/>.
@@ -347,19 +335,15 @@ public sealed class MissingRequiredOptionError : NamedError {
 /// Models an error generated when a an option from another set is defined.
 /// </summary>
 public sealed class MutuallyExclusiveSetError : NamedError {
-	private readonly string setName;
-
 	internal MutuallyExclusiveSetError(NameInfo nameInfo, string setName)
 		: base(ErrorType.MutuallyExclusiveSetError, nameInfo) {
-		this.setName = setName;
+		SetName = setName;
 	}
 
 	/// <summary>
 	/// Option's set name.
 	/// </summary>
-	public string SetName {
-		get { return setName; }
-	}
+	public string SetName { get; }
 }
 
 
@@ -417,37 +401,29 @@ public sealed class HelpRequestedError : Error {
 /// Models an error generated when a user explicitly requests help in verb commands scenario.
 /// </summary>
 public sealed class HelpVerbRequestedError : Error {
-	private readonly string verb;
 	private readonly Type type;
-	private readonly bool matched;
 
 	internal HelpVerbRequestedError(string verb, Type type, bool matched)
 		: base(ErrorType.HelpVerbRequestedError, true) {
-		this.verb = verb;
+		Verb = verb;
 		this.type = type;
-		this.matched = matched;
+		Matched = matched;
 	}
 
 	/// <summary>
 	/// Verb command string.
 	/// </summary>
-	public string Verb {
-		get { return verb; }
-	}
+	public string Verb { get; }
 
 	/// <summary>
 	/// <see cref="System.Type"/> of verb command.
 	/// </summary>
-	public Type Type {
-		get { return type; }
-	}
+	public Type Type => type;
 
 	/// <summary>
 	/// <value>true</value> if verb command is found; otherwise <value>false</value>.
 	/// </summary>
-	public bool Matched {
-		get { return matched; }
-	}
+	public bool Matched { get; }
 }
 
 
@@ -475,28 +451,23 @@ public sealed class VersionRequestedError : Error {
 /// Models as error generated when exception is thrown at Property.SetValue
 /// </summary>
 public sealed class SetValueExceptionError : NamedError {
-	private readonly Exception exception;
 	private readonly object value;
 
 	internal SetValueExceptionError(NameInfo nameInfo, Exception exception, object value)
 		: base(ErrorType.SetValueExceptionError, nameInfo) {
-		this.exception = exception;
+		Exception = exception;
 		this.value = value;
 	}
 
 	/// <summary>
 	/// The expection thrown from Property.SetValue
 	/// </summary>
-	public Exception Exception {
-		get { return exception; }
-	}
+	public Exception Exception { get; }
 
 	/// <summary>
 	/// The value that had to be set to the property
 	/// </summary>
-	public object Value {
-		get { return value; }
-	}
+	public object Value => value;
 }
 
 
@@ -515,22 +486,15 @@ public sealed class InvalidAttributeConfigurationError : Error {
 public sealed class MissingGroupOptionError : Error, IEquatable<Error>, IEquatable<MissingGroupOptionError> {
 	public const string ErrorMessage = "At least one option in a group must have value.";
 
-	private readonly string group;
-	private readonly IEnumerable<NameInfo> names;
-
 	internal MissingGroupOptionError(string group, IEnumerable<NameInfo> names)
 		: base(ErrorType.MissingGroupOptionError) {
-		this.group = group;
-		this.names = names;
+		Group = group;
+		Names = names;
 	}
 
-	public string Group {
-		get { return group; }
-	}
+	public string Group { get; }
 
-	public IEnumerable<NameInfo> Names {
-		get { return names; }
-	}
+	public IEnumerable<NameInfo> Names { get; }
 
 	public new bool Equals(Error obj) {
 		var other = obj as MissingGroupOptionError;

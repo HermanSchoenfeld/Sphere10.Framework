@@ -17,16 +17,14 @@ namespace Sphere10.Framework;
 /// Base implementation for a single-stream <see cref="IClusteredStreamsAttachment"/>.
 /// </summary>
 public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredStreamsAttachment {
-	private Stream _stream;
 	private readonly long _streamOffset;
-	private bool _attached;
 
 	protected ClusteredStreamsAttachmentBase(ClusteredStreams streams, string attachmentID) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(attachmentID, nameof(attachmentID));
 		AttachmentID = attachmentID;
 		Streams = streams;
-		_attached = false;
+		IsAttached = false;
 		_streamOffset = 0;
 		BaseReservedStreamIndex = -1;
 	}
@@ -42,19 +40,21 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 	protected Stream AttachmentStream {
 		get {
 			CheckAttached();
-			return _stream;
+			return field;
 		}
-		private set => _stream = value;
+		private set {
+			field = value;
+		}
 	}
 
-	public bool IsAttached => _attached;
+	public bool IsAttached { get; private set; }
 
 	public void Attach() {
 		CheckNotAttached();
 		Guard.Ensure(!Streams.RequiresLoad, "Unable to attach to an unloaded Object Container");
 		Guard.Ensure(Streams.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
 		using (Streams.EnterAccessScope()) {
-			_attached = true;
+			IsAttached = true;
 
 			// Calculate the base reserved stream index as the cumulative StreamCount of all preceding attachments
 			BaseReservedStreamIndex = Streams.CalculateAttachmentBaseIndex(AttachmentID);
@@ -92,7 +92,7 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 			AttachmentStream.Dispose();
 			AttachmentStream = null;
 		}
-		_attached = false;
+		IsAttached = false;
 	}
 
 	public virtual void Flush() {
@@ -107,13 +107,13 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckAttached() {
-		if (!_attached)
+		if (!IsAttached)
 			throw new InvalidOperationException("Index is not attached");
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckNotAttached() {
-		if (_attached)
+		if (IsAttached)
 			throw new InvalidOperationException("Index is already attached");
 	}
 

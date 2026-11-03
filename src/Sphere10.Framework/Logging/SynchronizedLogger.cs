@@ -30,7 +30,6 @@ public class SynchronizedLogger : SynchronizedObject, ILogger {
 			using (EnterReadScope())
 				return _internalLogger.Options;
 		}
-
 		set {
 			using (EnterWriteScope())
 				_internalLogger.Options = value;

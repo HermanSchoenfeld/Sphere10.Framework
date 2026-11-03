@@ -31,12 +31,7 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 	public string StatementTerminator { get; protected set; }
 
 	public override IEnumerable<SQLStatement> Statements {
-		get {
-			return base.Statements.Select(s => {
-				s.SQL = s.SQL.Trim().TrimEnd(DefaultStatementTerminator.ToCharArray());
-				return s;
-			});
-		}
+		get => base.Statements.Select(s => { s.SQL = s.SQL.Trim().TrimEnd(DefaultStatementTerminator.ToCharArray()); return s; });
 	}
 
 	public override ISQLBuilder Clear() {

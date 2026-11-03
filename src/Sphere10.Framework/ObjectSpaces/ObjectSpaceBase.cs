@@ -101,9 +101,7 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	/// <summary>Whether the definition requires metadata on the ObjectSpace and each dimension ObjectStream.</summary>
-	protected bool HasMetaData {
-		get => Traits.HasFlag(ObjectSpaceTraits.MetaData);
-	}
+	protected bool HasMetaData => Traits.HasFlag(ObjectSpaceTraits.MetaData);
 
 	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
 
@@ -113,7 +111,10 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public ComparerFactory Comparers { get; }
 
-	public ICriticalObject ParentCriticalObject { get => _streams.ParentCriticalObject; set => _streams.ParentCriticalObject = value; }
+	public ICriticalObject ParentCriticalObject {
+		get => _streams.ParentCriticalObject;
+		set => _streams.ParentCriticalObject = value;
+	}
 
 	public object Lock => _streams.Lock;
 

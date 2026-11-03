@@ -41,7 +41,9 @@ public abstract class DACBase : IDAC {
 	public string ConnectionString { get; private set; }
 
 	public ArtificialKeys ArtificialKeys {
-		get { return _artificialKeys; }
+		get {
+			return _artificialKeys;
+		}
 		set {
 			_artificialKeys = value;
 			SchemaCache.InvalidateSchema(ConnectionString);

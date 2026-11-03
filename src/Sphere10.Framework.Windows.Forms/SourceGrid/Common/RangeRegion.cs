@@ -60,17 +60,9 @@ public class RangeRegion : ICollection<CellRange> {
 		_rangeCollection.AddRange(other._rangeCollection);
 	}
 
-	public int Count {
-		get {
-			return _rangeCollection.Count;
-		}
-	}
+	public int Count => _rangeCollection.Count;
 
-	public bool IsReadOnly {
-		get {
-			return false;
-		}
-	}
+	public bool IsReadOnly => false;
 
 	// GetCellsPositions, GetRanges
 	/// <summary>
@@ -78,11 +70,7 @@ public class RangeRegion : ICollection<CellRange> {
 	/// </summary>
 	/// <param name="index"></param>
 	/// <returns></returns>
-	public CellRange this[int index] {
-		get {
-			return _rangeCollection[index];
-		}
-	}
+	public CellRange this[int index] => _rangeCollection[index];
 
 	// GetRows/GetColumns
 	/// <summary>

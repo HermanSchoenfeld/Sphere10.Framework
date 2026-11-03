@@ -29,11 +29,7 @@ public class DirectoryFileSettingsProvider : SyncSettingsProviderBase {
 	}
 
 	/// <summary>The resolved directory containing this provider's settings files.</summary>
-	public string BaseDirectory {
-		get {
-			return _baseDirectory.Value;
-		}
-	}
+	public string BaseDirectory => _baseDirectory.Value;
 
 	/// <summary>The policy used to derive file names from settings types and identities.</summary>
 	public DirectorySettingsProviderPolicy Policy { get; protected set; }

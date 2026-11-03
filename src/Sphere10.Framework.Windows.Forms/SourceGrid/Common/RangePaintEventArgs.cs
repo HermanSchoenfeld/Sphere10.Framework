@@ -14,37 +14,20 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class RangePaintEventArgs : EventArgs {
-	private GridVirtual _grid;
-	private Sphere10.Framework.Drawing.GraphicsCache _graphicsCache;
 	private CellRange _drawingRange;
 
 	public RangePaintEventArgs(GridVirtual grid, Sphere10.Framework.Drawing.GraphicsCache graphicsCache, CellRange drawingRange) {
-		_grid = grid;
-		_graphicsCache = graphicsCache;
+		Grid = grid;
+		GraphicsCache = graphicsCache;
 		_drawingRange = drawingRange;
 	}
 
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; }
 
-	public Sphere10.Framework.Drawing.GraphicsCache GraphicsCache {
-		get {
-			return _graphicsCache;
-		}
-		set {
-			_graphicsCache = value;
-		}
-	}
+	public Sphere10.Framework.Drawing.GraphicsCache GraphicsCache { get; set; }
 
 	public CellRange DrawingRange {
-		get {
-			return _drawingRange;
-		}
-		set {
-			_drawingRange = value;
-		}
+		get => _drawingRange;
+		set => _drawingRange = value;
 	}
 }

@@ -16,8 +16,6 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// </summary>
 [System.AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class ValueMappingAttribute : System.Attribute {
-	private string _stringValue;
-	private object _fieldValue;
 
 	/// <summary>
 	/// Constructor
@@ -29,21 +27,7 @@ public class ValueMappingAttribute : System.Attribute {
 		FieldValue = fieldValue;
 	}
 
-	public string StringValue {
-		get {
-			return _stringValue;
-		}
-		set {
-			_stringValue = value;
-		}
-	}
+	public string StringValue { get; set; }
 
-	public object FieldValue {
-		get {
-			return _fieldValue;
-		}
-		set {
-			_fieldValue = value;
-		}
-	}
+	public object FieldValue { get; set; }
 }

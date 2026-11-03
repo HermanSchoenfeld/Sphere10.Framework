@@ -34,7 +34,15 @@ namespace Sphere10.Framework.iOS
 		public Period SelectedPeriod {get;set;}
 		
 		private Selecting _selecting = Selecting.From;
-		public Selecting Selecting {get {return _selecting; } set {_selecting = value; ChangedSelecting(); }}
+		public Selecting Selecting {
+			get {
+				return _selecting;
+			}
+			set {
+				_selecting = value;
+				ChangedSelecting();
+			}
+		}
 		
 		public void ChangedSelecting(){
 			MonthView.DeselectDate();

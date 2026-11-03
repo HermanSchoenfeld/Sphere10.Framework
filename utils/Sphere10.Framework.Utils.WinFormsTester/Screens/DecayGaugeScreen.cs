@@ -39,11 +39,7 @@ public partial class DecayGaugeScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override DecayGaugeScreenSettings ScreenSettings {
-		get {
-			return (DecayGaugeScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override DecayGaugeScreenSettings ScreenSettings => (DecayGaugeScreenSettings)base.ScreenSettings;
 
 	/// <summary>Applies restored configuration before starting visible UI refresh.</summary>
 	protected override void InitializeUIPrimingData() {

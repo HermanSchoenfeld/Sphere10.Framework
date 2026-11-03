@@ -41,26 +41,14 @@
 	private readonly Guid _instance = Guid.NewGuid();
 	private string _draft;
 
-	public override RegistrationInspectorSettings ScreenSettings {
-		get {
-			return (RegistrationInspectorSettings)base.ScreenSettings;
-		}
-	}
+	public override RegistrationInspectorSettings ScreenSettings => (RegistrationInspectorSettings)base.ScreenSettings;
 
-	private RegistrationInspectorSettings _settings {
-		get {
-			return ScreenSettings;
-		}
-	}
+	private RegistrationInspectorSettings _settings => ScreenSettings;
 
 	[Parameter]
 	public string Name { get; set; }
 
-	public override string Title {
-		get {
-			return Name + " inspector";
-		}
-	}
+	public override string Title => Name + " inspector";
 
 	// A completed control action is accepted once; layout and pointer movement never save preferences.
 	private async Task ToggleSummaryAsync() {

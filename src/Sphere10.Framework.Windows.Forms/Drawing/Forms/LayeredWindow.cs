@@ -17,13 +17,11 @@ class LayeredWindow : Form {
 	private Rectangle m_rect;
 
 	public Point LayeredPos {
-		get { return m_rect.Location; }
-		set { m_rect.Location = value; }
+		get => m_rect.Location;
+		set => m_rect.Location = value;
 	}
 
-	public Size LayeredSize {
-		get { return m_rect.Size; }
-	}
+	public Size LayeredSize => m_rect.Size;
 
 	public LayeredWindow() {
 		//We need to set this before the window is created, otherwise we

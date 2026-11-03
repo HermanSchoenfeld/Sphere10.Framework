@@ -50,26 +50,16 @@ public class TextGDI : Text {
 	/// </summary>
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public virtual StringFormat StringFormat {
-		get {
-			return _stringFormat;
-		}
-
-		set {
-			_stringFormat = value;
-		}
+		get => _stringFormat;
+		set => _stringFormat = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the alignment of the content.
 	/// </summary>
 	public virtual ContentAlignment Alignment {
-		get {
-			return Tools.Drawing.StringFormatToContentAlignment(StringFormat);
-		}
-
-		set {
-			Tools.Drawing.ApplyContentAlignmentToStringFormat(value, StringFormat);
-		}
+		get => Tools.Drawing.StringFormatToContentAlignment(StringFormat);
+		set => Tools.Drawing.ApplyContentAlignmentToStringFormat(value, StringFormat);
 	}
 
 	/// <summary>

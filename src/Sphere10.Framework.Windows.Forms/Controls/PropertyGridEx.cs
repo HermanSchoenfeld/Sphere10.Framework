@@ -22,10 +22,6 @@ public class PropertyGridEx : PropertyGrid {
 	private static readonly MethodInfo _nativeMoveSplitter = _nativeGridType?.GetMethod("MoveSplitterTo", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(int) }, null);
 	private static readonly FieldInfo _nativeListBox = _nativeGridType?.GetField("_listBox", BindingFlags.Instance | BindingFlags.NonPublic);
 	private readonly HashSet<Control> _keyboardControls = new();
-	private bool _readonly;
-	private bool _autoSizeLabelColumn;
-	private int _maximumLabelColumnWidth = 320;
-	private double _maximumLabelColumnRatio = 0.4;
 	private bool _manualLabelColumn;
 	private bool _sizingLabelColumn;
 	private bool _labelSizingUnsupported;
@@ -43,20 +39,19 @@ public class PropertyGridEx : PropertyGrid {
 	[Category("Behavior")]
 	[Description("Legacy read-only marker; property descriptors and their ReadOnly attributes determine whether values can be edited.")]
 	[DefaultValue(false)]
-	public bool Readonly {
-		get => _readonly;
-		set { _readonly = value; }
-	}
+	public bool Readonly { get; set; }
 
 	[Category("Layout")]
 	[Description("Sizes the label column to its visible captions until the user adjusts the native splitter.")]
 	[DefaultValue(false)]
 	public bool AutoSizeLabelColumn {
-		get => _autoSizeLabelColumn;
+		get {
+			return field;
+		}
 		set {
-			if (_autoSizeLabelColumn == value)
+			if (field == value)
 				return;
-			_autoSizeLabelColumn = value;
+			field = value;
 			_labelSizingDirty = true;
 			FitLabelColumn();
 		}
@@ -66,27 +61,31 @@ public class PropertyGridEx : PropertyGrid {
 	[Description("Maximum automatically measured label width, in logical pixels, subject to native splitter limits.")]
 	[DefaultValue(320)]
 	public int MaximumLabelColumnWidth {
-		get => _maximumLabelColumnWidth;
+		get {
+			return field;
+		}
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
-			_maximumLabelColumnWidth = value;
+			field = value;
 			_labelSizingDirty = true;
 			FitLabelColumn();
 		}
-	}
+	} = 320;
 
 	[Category("Layout")]
 	[Description("Maximum fraction of the available grid width used by automatically measured labels.")]
 	[DefaultValue(0.4)]
 	public double MaximumLabelColumnRatio {
-		get => _maximumLabelColumnRatio;
+		get {
+			return field;
+		}
 		set {
 			Guard.Argument(value > 0 && value < 1, nameof(value), "The label fraction must be greater than zero and less than one.");
-			_maximumLabelColumnRatio = value;
+			field = value;
 			_labelSizingDirty = true;
 			FitLabelColumn();
 		}
-	}
+	} = 0.4;
 
 	/// <summary>Restores automatic caption measurement after a manual splitter adjustment.</summary>
 	public void ResetLabelColumnWidth() {

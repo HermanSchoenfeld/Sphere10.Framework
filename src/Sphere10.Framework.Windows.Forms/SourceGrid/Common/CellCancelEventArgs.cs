@@ -14,18 +14,9 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class CellCancelEventArgs : CellContextEventArgs {
-	private bool _cancel = false;
-
 	public CellCancelEventArgs(CellContext cellContext)
 		: base(cellContext) {
 	}
 
-	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
-	}
+	public bool Cancel { get; set; } = false;
 }

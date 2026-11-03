@@ -16,18 +16,9 @@ public class OldNewEventArgs<T> : EventArgs {
 		NewValue = newValue;
 	}
 
-	public T OldValue {
-		get { return this.m_oldValue; }
-		protected set { this.m_oldValue = value; }
-	}
+	public T OldValue { get; protected set; } = default(T);
 
-	public T NewValue {
-		get { return this.m_newValue; }
-		protected set { this.m_newValue = value; }
-	}
-
-	T m_oldValue = default(T);
-	T m_newValue = default(T);
+	public T NewValue { get; protected set; } = default(T);
 }
 
 

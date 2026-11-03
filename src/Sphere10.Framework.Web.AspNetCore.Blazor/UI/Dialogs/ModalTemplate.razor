@@ -55,15 +55,12 @@
 	[Parameter]
 	public ModalOptions Options { get; set; } = new();
 
-	private string SizeClass {
-		get {
-			return Options.Size switch {
-				ModalSize.Small => "modal-sm",
-				ModalSize.Medium => "modal-md",
-				ModalSize.Large => "modal-lg",
-				_ => throw new ArgumentOutOfRangeException()};
-		}
-	}
+	private string SizeClass => Options.Size switch {
+		ModalSize.Small => "modal-sm",
+		ModalSize.Medium => "modal-md",
+		ModalSize.Large => "modal-lg",
+		_ => throw new ArgumentOutOfRangeException()
+	};
 
 	private async Task OnCloseAsync() {
 		var close = OnCloseFunc ?? CloseModal;

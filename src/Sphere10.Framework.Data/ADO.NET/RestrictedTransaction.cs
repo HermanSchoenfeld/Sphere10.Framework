@@ -25,9 +25,7 @@ public sealed class RestrictedTransaction : DbTransactionDecorator {
 	public bool HasBeenCommitted { get; private set; }
 
 
-	public IDbTransaction DangerousInternalTransaction {
-		get { return base.InternalTransaction; }
-	}
+	public IDbTransaction DangerousInternalTransaction => base.InternalTransaction;
 
 	public override void Commit() {
 		throw new NotSupportedException("Please use DACScope.Commit. Committing Transactions directly is prohibited.");
@@ -41,9 +39,7 @@ public sealed class RestrictedTransaction : DbTransactionDecorator {
 		throw new NotSupportedException("Dispoing transaction is prohibited. Please use DACSCope for connection and transaction management.");
 	}
 
-	public override IDbConnection Connection {
-		get { return _connection; }
-	}
+	public override IDbConnection Connection => _connection;
 
 	public void CommitInternal() {
 		if (!HasBeenRolledBack) {

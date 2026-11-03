@@ -40,7 +40,6 @@ public class ButtonThemed : ButtonBase {
 		get {
 			return base.Style;
 		}
-
 		set {
 			base.Style = value;
 			_standardButton.Style = value;

@@ -22,7 +22,6 @@ public partial class ReviewTextDialog : Form {
 	private readonly int _ownerThreadId;
 	private readonly CancellationTokenSource _lifetime = new();
 	private CancellationToken _dialogCancellationToken;
-	private bool _saving;
 	private bool _resourcesDisposed;
 	private Encoding _outputEncoding = new UTF8Encoding(false);
 	private ILogger _logger = new NoOpLogger();
@@ -35,17 +34,24 @@ public partial class ReviewTextDialog : Form {
 	[Category("Appearance")]
 	[DefaultValue("")]
 	public string Instructions {
-		get => _instructionsLabel.Text;
-		set { EnsureOwnerThread(); _instructionsLabel.Text = value ?? string.Empty; }
+		get {
+			return _instructionsLabel.Text;
+		}
+		set {
+			EnsureOwnerThread();
+			_instructionsLabel.Text = value ?? string.Empty;
+		}
 	}
 
 	[Category("Appearance")]
 	[DefaultValue("")]
 	public string PreviewText {
-		get => _previewTextBox.Text;
+		get {
+			return _previewTextBox.Text;
+		}
 		set {
 			EnsureOwnerThread();
-			Guard.Ensure(!_saving, "Wait for the current save before replacing the preview.");
+			Guard.Ensure(!IsSaving, "Wait for the current save before replacing the preview.");
 			_previewTextBox.Text = value ?? string.Empty;
 		}
 	}
@@ -61,8 +67,13 @@ public partial class ReviewTextDialog : Form {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Encoding OutputEncoding {
-		get => (Encoding)_outputEncoding.Clone();
-		set { EnsureOwnerThread(); _outputEncoding = (Encoding)(value ?? new UTF8Encoding(false)).Clone(); }
+		get {
+			return (Encoding)_outputEncoding.Clone();
+		}
+		set {
+			EnsureOwnerThread();
+			_outputEncoding = (Encoding)(value ?? new UTF8Encoding(false)).Clone();
+		}
 	}
 
 	/// <summary>Borrowed error output. The dialog never changes its options or disposes it.</summary>
@@ -79,12 +90,12 @@ public partial class ReviewTextDialog : Form {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool IsSaving => _saving;
+	public bool IsSaving { get; private set; }
 
 	/// <summary>Copies the complete reviewed text without changing its selection or saving a file.</summary>
 	public void CopyToClipboard() {
 		EnsureOwnerThread();
-		Guard.Ensure(!_saving, "Wait for the current save before copying the preview.");
+		Guard.Ensure(!IsSaving, "Wait for the current save before copying the preview.");
 		if (PreviewText.Length == 0)
 			Clipboard.Clear();
 		else
@@ -125,7 +136,7 @@ public partial class ReviewTextDialog : Form {
 	public async Task<string> SaveAsync(string path, CancellationToken cancellationToken = default) {
 		EnsureOwnerThread();
 		Guard.Ensure(!Tools.Runtime.IsDesignMode, "The review dialog cannot save on the design surface.");
-		Guard.Ensure(!_saving, "A save is already in progress.");
+		Guard.Ensure(!IsSaving, "A save is already in progress.");
 		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
 		using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _dialogCancellationToken, _lifetime.Token);
 		cancellation.Token.ThrowIfCancellationRequested();
@@ -135,12 +146,12 @@ public partial class ReviewTextDialog : Form {
 		var logger = Logger;
 		string temporary = null;
 		var temporaryCreated = false;
-		_saving = true;
+		IsSaving = true;
 		SetSavingState();
 		using var saveLifetime = Tools.Scope.ExecuteOnDispose(() => {
 			if (temporary != null && temporaryCreated)
 				Tools.Exceptions.Execute(() => File.Delete(temporary), error => LogSaveFailure(logger, error));
-			_saving = false;
+			IsSaving = false;
 			if (!IsDisposed && !Disposing)
 				SetSavingState();
 		});
@@ -173,7 +184,7 @@ public partial class ReviewTextDialog : Form {
 	}
 
 	protected override void OnFormClosing(FormClosingEventArgs e) {
-		if (_saving) {
+		if (IsSaving) {
 			e.Cancel = true;
 			return;
 		}
@@ -204,8 +215,8 @@ public partial class ReviewTextDialog : Form {
 	}
 
 	private void SetSavingState() {
-		_copyButton.Enabled = _saveButton.Enabled = _closeButton.Enabled = !_saving;
-		_statusLabel.Text = _saving ? "Saving..." : string.Empty;
+		_copyButton.Enabled = _saveButton.Enabled = _closeButton.Enabled = !IsSaving;
+		_statusLabel.Text = IsSaving ? "Saving..." : string.Empty;
 	}
 
 	private static void LogSaveFailure(ILogger logger, Exception error) {

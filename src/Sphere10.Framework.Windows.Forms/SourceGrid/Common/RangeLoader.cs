@@ -29,12 +29,8 @@ public class RangeLoader : IRangeLoader {
 	/// Gets or sets the Range loaded in the class.
 	/// </summary>
 	public CellRange Range {
-		get {
-			return _range;
-		}
-		set {
-			_range = value;
-		}
+		get => _range;
+		set => _range = value;
 	}
 
 	/// <summary>

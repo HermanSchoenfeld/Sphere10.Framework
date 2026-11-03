@@ -15,15 +15,9 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Planning;
 
 public class AppointmentBase : IAppointment {
-	private DateTime _dateTimeStart;
-
-	private DateTime _dateTimeEnd;
-
 	private string _title;
 
 	private Cells.Views.IView _view;
-
-	private Cells.Controllers.IController _controller;
 
 	public AppointmentBase()
 		: this("", DateTime.Now, DateTime.Now) {
@@ -31,61 +25,32 @@ public class AppointmentBase : IAppointment {
 
 	public AppointmentBase(string title, DateTime dateTimeStart, DateTime dateTimeEnd) {
 		_title = title;
-		_dateTimeEnd = dateTimeEnd;
-		_dateTimeStart = dateTimeStart;
+		DateTimeEnd = dateTimeEnd;
+		DateTimeStart = dateTimeStart;
 
 		_view = new Cells.Views.Cell();
 		_view.Border = Sphere10.Framework.Drawing.RectangleBorder.RectangleBlack1Width;
 	}
 
-	public DateTime DateTimeStart {
-		get {
-			return _dateTimeStart;
-		}
-		set {
-			_dateTimeStart = value;
-		}
-	}
+	public DateTime DateTimeStart { get; set; }
 
-	public DateTime DateTimeEnd {
-		get {
-			return _dateTimeEnd;
-		}
-		set {
-			_dateTimeEnd = value;
-		}
-	}
+	public DateTime DateTimeEnd { get; set; }
 
 	public virtual string Title {
-		get {
-			return _title;
-		}
-		set {
-			_title = value;
-		}
+		get => _title;
+		set => _title = value;
 	}
 
 	[Browsable(false)]
 	public virtual Cells.Views.IView View {
-		get {
-			return _view;
-		}
-		set {
-			_view = value;
-		}
+		get => _view;
+		set => _view = value;
 	}
 
 	[Browsable(false)]
-	public Cells.Controllers.IController Controller {
-		get {
-			return _controller;
-		}
-		set {
-			_controller = value;
-		}
-	}
+	public Cells.Controllers.IController Controller { get; set; }
 
 	public bool ContainsDateTime(DateTime dateTime) {
-		return (_dateTimeStart <= dateTime && _dateTimeEnd > dateTime);
+		return (DateTimeStart <= dateTime && DateTimeEnd > dateTime);
 	}
 }

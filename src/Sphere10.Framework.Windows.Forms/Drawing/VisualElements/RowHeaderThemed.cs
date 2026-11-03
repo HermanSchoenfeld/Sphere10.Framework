@@ -42,7 +42,6 @@ public class RowHeaderThemed : RowHeaderBase {
 		get {
 			return base.Style;
 		}
-
 		set {
 			base.Style = value;
 			_standardRowHeader.Style = value;
@@ -55,13 +54,8 @@ public class RowHeaderThemed : RowHeaderBase {
 	/// This is expecially usefull because for many themes the row header is not defined. Default is true.
 	/// </summary>
 	public virtual bool RotateColHeaderIfNotDefined {
-		get {
-			return _rotateColHeaderIfNotDefined;
-		}
-
-		set {
-			_rotateColHeaderIfNotDefined = value;
-		}
+		get => _rotateColHeaderIfNotDefined;
+		set => _rotateColHeaderIfNotDefined = value;
 	}
 
 	/// <summary>

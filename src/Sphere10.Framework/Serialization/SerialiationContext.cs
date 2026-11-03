@@ -33,14 +33,13 @@ public class SerializationContext : SyncDisposable, IScope {
 	private long _nextDeserializationIndex;
 	private SerializerFactory _serializerFactory;
 	private long _lastNonEphemeralTypeCode;
-	private long _lastClassifiedExternalReferenceSize;
 
 	public SerializationContext() {
 		_currentlyDeserializingIndex = -1;
 		_nextDeserializationIndex = 0;
 		_serializerFactory = null;
 		_lastNonEphemeralTypeCode = 0;
-		_lastClassifiedExternalReferenceSize = 0;
+		LastClassifiedExternalReferenceSize = 0;
 	}
 
 	public static SerializationContext New => new();
@@ -50,7 +49,7 @@ public class SerializationContext : SyncDisposable, IScope {
 	/// Set by <see cref="TryClassifyAsExternalReference"/> when it returns true, and consumed
 	/// immediately by the subsequent CalculateSize call.
 	/// </summary>
-	public long LastClassifiedExternalReferenceSize => _lastClassifiedExternalReferenceSize;
+	public long LastClassifiedExternalReferenceSize { get; private set; }
 
 	public SerializerFactory EphemeralFactory {
 		get  {
@@ -297,7 +296,7 @@ public class SerializationContext : SyncDisposable, IScope {
 	/// The base implementation always returns false (no external references).
 	/// </summary>
 	protected internal virtual bool TryClassifyAsExternalReference(object item) {
-		_lastClassifiedExternalReferenceSize = 0;
+		LastClassifiedExternalReferenceSize = 0;
 		return false;
 	}
 
@@ -326,7 +325,7 @@ public class SerializationContext : SyncDisposable, IScope {
 	/// to the <see cref="ReferenceSerializer{TItem}"/> CalculateSize path.
 	/// </summary>
 	protected void SetLastClassifiedExternalReferenceSize(long size) {
-		_lastClassifiedExternalReferenceSize = size;
+		LastClassifiedExternalReferenceSize = size;
 	}
 
 	// Scalar reference serializers usually register only one object. Keep that entry inline so

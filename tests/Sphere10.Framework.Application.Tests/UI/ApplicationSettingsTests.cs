@@ -330,11 +330,7 @@ public class ApplicationSettingsTests {
 		public Exception SaveError { get; set; }
 
 		/// <inheritdoc />
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		/// <inheritdoc />
 		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
@@ -389,22 +385,14 @@ public class ApplicationSettingsTests {
 		public IApplicationBlock Block { get; set; }
 
 		/// <inheritdoc />
-		public virtual SettingsObject ScreenSettings {
-			get {
-				throw new InvalidOperationException("Metadata discovery must not read a screen property.");
-			}
-		}
+		public virtual SettingsObject ScreenSettings => throw new InvalidOperationException("Metadata discovery must not read a screen property.");
 	}
 
 	// The declared property identifies this screen's own nested settings schema.
 	public sealed class DiscoveryScreen : ScreenSurface {
 
 		/// <inheritdoc />
-		public override Preferences ScreenSettings {
-			get {
-				throw new InvalidOperationException("Metadata discovery must not read a screen property.");
-			}
-		}
+		public override Preferences ScreenSettings => throw new InvalidOperationException("Metadata discovery must not read a screen property.");
 
 		/// <summary>The settings schema belongs to its screen and uses the existing default-value support.</summary>
 		public sealed class Preferences : SettingsObject {
@@ -433,22 +421,14 @@ public class ApplicationSettingsTests {
 	public sealed class MatchingSettingsPropertyScreen : SettingsAttributeScreen {
 
 		/// <inheritdoc />
-		public override DiscoveryScreen.Preferences ScreenSettings {
-			get {
-				throw new InvalidOperationException("Metadata discovery must not read a screen property.");
-			}
-		}
+		public override DiscoveryScreen.Preferences ScreenSettings => throw new InvalidOperationException("Metadata discovery must not read a screen property.");
 	}
 
 	// A derived property cannot silently override the attributed schema.
 	public sealed class ConflictingSettingsPropertyScreen : SettingsAttributeScreen {
 
 		/// <inheritdoc />
-		public override OtherPreferences ScreenSettings {
-			get {
-				throw new InvalidOperationException("Metadata discovery must not read a screen property.");
-			}
-		}
+		public override OtherPreferences ScreenSettings => throw new InvalidOperationException("Metadata discovery must not read a screen property.");
 	}
 
 	// Both public attribute spellings can identify the same schema without ambiguity.
@@ -551,22 +531,14 @@ public class ApplicationSettingsTests {
 	public sealed class MatchingScreen : AttributeScreen {
 
 		/// <summary>The same schema declared by the inherited attribute.</summary>
-		public override DiscoveryScreen.Preferences ScreenSettings {
-			get {
-				throw new InvalidOperationException("Metadata discovery must not read a screen property.");
-			}
-		}
+		public override DiscoveryScreen.Preferences ScreenSettings => throw new InvalidOperationException("Metadata discovery must not read a screen property.");
 	}
 
 	// Ambiguous settings declarations are rejected before control activation.
 	public sealed class ConflictingScreen : AttributeScreen {
 
 		/// <summary>An incompatible schema used to verify declaration rejection.</summary>
-		public override OtherPreferences ScreenSettings {
-			get {
-				throw new InvalidOperationException("Metadata discovery must not read a screen property.");
-			}
-		}
+		public override OtherPreferences ScreenSettings => throw new InvalidOperationException("Metadata discovery must not read a screen property.");
 	}
 
 	// This fixture schema is independent of a screen and needs no custom defaults machinery.
@@ -608,11 +580,7 @@ public class ApplicationSettingsTests {
 		public override IApplicationPlugin[] LoadedPlugins { get; } = Array.Empty<IApplicationPlugin>();
 
 		/// <inheritdoc />
-		public override IApplicationScreenHost ScreenHost {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationScreenHost ScreenHost => null;
 	}
 
 	// Preserve the wrapped application's provider identity through decoration.

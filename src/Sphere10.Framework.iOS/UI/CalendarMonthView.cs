@@ -426,12 +426,60 @@ namespace Sphere10.Framework.iOS
 		string _text;
 		public DateTime Date {get;set;}
         bool _active, _today, _selected, _marked, _available;
-		public bool Available {get {return _available; } set {_available = value; SetNeedsDisplay(); }}
-		public string Text {get { return _text; } set { _text = value; SetNeedsDisplay(); } }
-        public bool Active {get { return _active; } set { _active = value; SetNeedsDisplay();  } }
-        public bool Today {get { return _today; } set { _today = value; SetNeedsDisplay(); } }
-        public bool Selected {get { return _selected; } set { _selected = value; SetNeedsDisplay(); } }
-        public bool Marked {get { return _marked; } set { _marked = value; SetNeedsDisplay(); }  }
+		public bool Available {
+			get {
+				return _available;
+			}
+			set {
+				_available = value;
+				SetNeedsDisplay();
+			}
+		}
+		public string Text {
+			get {
+				return _text;
+			}
+			set {
+				_text = value;
+				SetNeedsDisplay();
+			}
+		}
+        public bool Active {
+			get {
+				return _active;
+			}
+			set {
+				_active = value;
+				SetNeedsDisplay();
+			}
+		}
+        public bool Today {
+			get {
+				return _today;
+			}
+			set {
+				_today = value;
+				SetNeedsDisplay();
+			}
+		}
+        public bool Selected {
+			get {
+				return _selected;
+			}
+			set {
+				_selected = value;
+				SetNeedsDisplay();
+			}
+		}
+        public bool Marked {
+			get {
+				return _marked;
+			}
+			set {
+				_marked = value;
+				SetNeedsDisplay();
+			}
+		}
 		
         public override void Draw(CGRect rect)
         {

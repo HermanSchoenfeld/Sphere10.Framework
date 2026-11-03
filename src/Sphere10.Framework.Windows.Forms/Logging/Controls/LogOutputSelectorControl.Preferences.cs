@@ -22,14 +22,16 @@ public partial class LogOutputSelectorControl {
 	/// <summary>Non-null values select screen ownership and disable the selector's separate legacy record.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public LogOutputSelectorPreferences Preferences {
-		get => _ownsPreferences ? CapturePreferences() : null;
+		get {
+			return _ownsPreferences ? CapturePreferences() : null;
+		}
 		set {
 			EnsureOwnerThread();
 			if (value != null)
 				ApplyPreferences(value);
 			_ownsPreferences = value != null;
 			_settingsDirty = false;
-			_lastSettingsError = null;
+			LastSettingsError = null;
 		}
 	}
 
@@ -37,7 +39,7 @@ public partial class LogOutputSelectorControl {
 	public LogOutputSelectorPreferences CapturePreferences() {
 		EnsureOwnerThread();
 		return new LogOutputSelectorPreferences {
-			HasConfiguration = _hasConfiguration,
+			HasConfiguration = HasConfiguration,
 			Enabled = _rememberedEnabled,
 			Configuration = Configuration
 		};
@@ -52,7 +54,7 @@ public partial class LogOutputSelectorControl {
 		if (preferences.HasConfiguration)
 			configuration = configuration.ValidateOptionsAndNormalize();
 		_configuration = configuration;
-		_hasConfiguration = preferences.HasConfiguration;
+		HasConfiguration = preferences.HasConfiguration;
 		_rememberedEnabled = preferences.HasConfiguration && preferences.Enabled;
 		UpdateUiState();
 	}

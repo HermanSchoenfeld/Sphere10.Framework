@@ -157,8 +157,7 @@ public class Series : DataPointCustomProperties
     // Private data members, which store properties values
     private ChartValueType _xValueType = ChartValueType.Auto;
     private ChartValueType _yValueType = ChartValueType.Auto;
-    private bool _isXValueIndexed;
-    private int _yValuesPerPoint = 1;
+	private int _yValuesPerPoint = 1;
     private int _markersStep = 1;
     private ChartColorPalette _colorPalette = ChartColorPalette.None;
     private AxisType _xAxisType = AxisType.Primary;
@@ -168,8 +167,7 @@ public class Series : DataPointCustomProperties
 	private string _xSubAxisName = string.Empty;
 #endif // SUBAXES
     private DataPointCustomProperties _emptyPointCustomProperties;
-    private int _shadowOffset;
-    private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
+	private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
     private string _chartType = ChartTypeNames.Column;
     private string _chartArea = string.Empty;
 
@@ -1570,7 +1568,7 @@ public class Series : DataPointCustomProperties
 
 
         // Reset original value type which was temp. set to String
-        if (_isXValueIndexed)
+        if (IsXValueIndexed)
         {
             _xValueType = indexedXValueType;
         }
@@ -1852,9 +1850,9 @@ public class Series : DataPointCustomProperties
     ]
     public override string Name
     {
-        get => base.Name;
-        set => base.Name = value;
-    }
+		get => base.Name;
+		set => base.Name = value;
+	}
 
     /// <summary>
     /// Member of the chart data source used to data bind to the X value of the series.
@@ -1869,8 +1867,10 @@ public class Series : DataPointCustomProperties
     ]
     public string XValueMember
     {
-        get => _dataSourceXMember;
-        set
+		get {
+			return _dataSourceXMember;
+		}
+		set
         {
             if (value == "(none)")
             {
@@ -1888,7 +1888,7 @@ public class Series : DataPointCustomProperties
             }
 
         }
-    }
+	}
 
     /// <summary>
     /// Members of the chart data source used to data bind to the Y values of the series.
@@ -1903,8 +1903,10 @@ public class Series : DataPointCustomProperties
     ]
     public string YValueMembers
     {
-        get => _dataSourceYMembers;
-        set
+		get {
+			return _dataSourceYMembers;
+		}
+		set
         {
             if (value == "(none)")
             {
@@ -1922,7 +1924,7 @@ public class Series : DataPointCustomProperties
             }
 
         }
-    }
+	}
 
 
     /// <summary>
@@ -1937,8 +1939,10 @@ public class Series : DataPointCustomProperties
     ]
     public string Legend
     {
-        get => _legend;
-        set
+		get {
+			return _legend;
+		}
+		set
         {
             if (value != _legend)
             {
@@ -1951,7 +1955,7 @@ public class Series : DataPointCustomProperties
                 this.Invalidate(false, true);
             }
         }
-    }
+	}
 
     /// <summary>
     /// The value type of the X axis.
@@ -1964,14 +1968,16 @@ public class Series : DataPointCustomProperties
     ]
     public ChartValueType XValueType
     {
-        get => _xValueType;
-        set
+		get {
+			return _xValueType;
+		}
+		set
         {
             _xValueType = value;
             this.autoXValueType = false;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Indicates whether a data point index (1,2,...) will be used for the X value.
@@ -1984,13 +1990,15 @@ public class Series : DataPointCustomProperties
     ]
     public bool IsXValueIndexed
     {
-        get => _isXValueIndexed;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _isXValueIndexed = value;
+            field = value;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// The value type of the Y axis.
@@ -2004,14 +2012,16 @@ public class Series : DataPointCustomProperties
     ]
     public ChartValueType YValueType
     {
-        get => _yValueType;
-        set
+		get {
+			return _yValueType;
+		}
+		set
         {
             _yValueType = value;
             this.autoYValueType = false;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Number of Y values stored for each Data Point.
@@ -2025,7 +2035,7 @@ public class Series : DataPointCustomProperties
     ]
     public int YValuesPerPoint
     {
-        get
+		get
         {
             // If number of Y value(s) is not set - get one from the chart type
             if (this._checkPointsNumber && this.ChartTypeName.Length > 0 && this.Common != null)
@@ -2051,7 +2061,7 @@ public class Series : DataPointCustomProperties
 
             return _yValuesPerPoint;
         }
-        set
+		set
         {
             // Check if argument is in range
             if (value < 1 || value > 32)
@@ -2074,7 +2084,7 @@ public class Series : DataPointCustomProperties
             _yValuesPerPoint = value;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Collection of data points in the series.
@@ -2098,8 +2108,10 @@ public class Series : DataPointCustomProperties
     ]
     public DataPointCustomProperties EmptyPointStyle
     {
-        get => _emptyPointCustomProperties;
-        set
+		get {
+			return _emptyPointCustomProperties;
+		}
+		set
         {
             if (value.series == null && _emptyPointCustomProperties.series != null)
             {
@@ -2112,7 +2124,7 @@ public class Series : DataPointCustomProperties
             _emptyPointCustomProperties.Parent = this;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Color palette to use.
@@ -2125,13 +2137,15 @@ public class Series : DataPointCustomProperties
     ]
     public ChartColorPalette Palette
     {
-        get => _colorPalette;
-        set
+		get {
+			return _colorPalette;
+		}
+		set
         {
             _colorPalette = value;
             this.Invalidate(true, true);
         }
-    }
+	}
 
     /// <summary>
     /// Specify how often to display data point markers.
@@ -2144,8 +2158,10 @@ public class Series : DataPointCustomProperties
     ]
     public int MarkerStep
     {
-        get => _markersStep;
-        set
+		get {
+			return _markersStep;
+		}
+		set
         {
             if (value <= 0)
             {
@@ -2154,7 +2170,7 @@ public class Series : DataPointCustomProperties
             _markersStep = value;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Shadow offset of series.
@@ -2168,13 +2184,15 @@ public class Series : DataPointCustomProperties
     ]
     public int ShadowOffset
     {
-        get => _shadowOffset;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _shadowOffset = value;
+            field = value;
             this.Invalidate(true, true);
         }
-    }
+	}
 
     /// <summary>
     /// Shadow color of series.
@@ -2187,13 +2205,15 @@ public class Series : DataPointCustomProperties
     ]
     public Color ShadowColor
     {
-        get => _shadowColor;
-        set
+		get {
+			return _shadowColor;
+		}
+		set
         {
             _shadowColor = value;
             this.Invalidate(true, true);
         }
-    }
+	}
 
 
 #if SUBAXES
@@ -2254,11 +2274,13 @@ public class Series : DataPointCustomProperties
     ]
     internal string YSubAxisName
     {
-        get => string.Empty;
-        set
+		get {
+			return string.Empty;
+		}
+		set
         {
         }
-    }
+	}
 
     /// <summary>
     /// Name of the X sub-axis this series is attached to.
@@ -2270,11 +2292,13 @@ public class Series : DataPointCustomProperties
     DefaultValue("")]
     internal string XSubAxisName
     {
-        get => string.Empty;
-        set
+		get {
+			return string.Empty;
+		}
+		set
         {
         }
-    }
+	}
 #endif // SUBAXES
 
     /// <summary>
@@ -2288,13 +2312,15 @@ public class Series : DataPointCustomProperties
     ]
     public AxisType XAxisType
     {
-        get => _xAxisType;
-        set
+		get {
+			return _xAxisType;
+		}
+		set
         {
             _xAxisType = value;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Axis type of vertical axes.
@@ -2307,13 +2333,15 @@ public class Series : DataPointCustomProperties
     ]
     public AxisType YAxisType
     {
-        get => _yAxisType;
-        set
+		get {
+			return _yAxisType;
+		}
+		set
         {
             _yAxisType = value;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether the series is enabled.
@@ -2328,13 +2356,15 @@ public class Series : DataPointCustomProperties
     ]
     public bool Enabled
     {
-        get => _enabled;
-        set
+		get {
+			return _enabled;
+		}
+		set
         {
             _enabled = value;
             this.Invalidate(true, true);
         }
-    }
+	}
 
     /// <summary>
     /// Chart type used to draw the series.
@@ -2348,7 +2378,7 @@ public class Series : DataPointCustomProperties
     ]
     public SeriesChartType ChartType
     {
-        get
+		get
         {
             SeriesChartType type = SeriesChartType.Column;
             if (string.Equals(this.ChartTypeName, ChartTypeNames.OneHundredPercentStackedArea, StringComparison.OrdinalIgnoreCase))
@@ -2376,9 +2406,10 @@ public class Series : DataPointCustomProperties
 
             return type;
         }
-
-        set => this.ChartTypeName = ChartTypeNames.GetChartTypeName(value);
-    }
+		set {
+			this.ChartTypeName = ChartTypeNames.GetChartTypeName(value);
+		}
+	}
 
     /// <summary>
     /// Chart type used to draw the series.
@@ -2397,8 +2428,10 @@ public class Series : DataPointCustomProperties
     ]
     public string ChartTypeName
     {
-        get => _chartType;
-        set
+		get {
+			return _chartType;
+		}
+		set
         {
             if (_chartType != value && value.Length > 0 && Common?.ChartTypeRegistry is not null)
             {
@@ -2427,7 +2460,7 @@ public class Series : DataPointCustomProperties
             _chartType = value;
             this.Invalidate(false, true);
         }
-    }
+	}
 
 
     /// <summary>
@@ -2442,8 +2475,10 @@ public class Series : DataPointCustomProperties
     ]
     public string ChartArea
     {
-        get => _chartArea;
-        set
+		get {
+			return _chartArea;
+		}
+		set
         {
             if (value != _chartArea)
             {
@@ -2455,7 +2490,7 @@ public class Series : DataPointCustomProperties
                 this.Invalidate(false, true);
             }
         }
-    }
+	}
 
     /*
     /// <summary>
@@ -2493,13 +2528,15 @@ public class Series : DataPointCustomProperties
     ]
     public override string AxisLabel
     {
-        get => base.AxisLabel;
-        set
+		get {
+			return base.AxisLabel;
+		}
+		set
         {
             base.AxisLabel = value;
             this.Invalidate(true, false);
         }
-    }
+	}
 
     /// <summary>
     /// Style of the SmartLabel.
@@ -2513,14 +2550,16 @@ public class Series : DataPointCustomProperties
     ]
     public SmartLabelStyle SmartLabelStyle
     {
-        get => _smartLabelStyle;
-        set
+		get {
+			return _smartLabelStyle;
+		}
+		set
         {
             value.chartElement = this;
             _smartLabelStyle = value;
             this.Invalidate(false, false);
         }
-    }
+	}
 
     #endregion
 

@@ -137,15 +137,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     /// </summary>
     private Color _interlacedColor = Color.Empty;
 
-    /// <summary>
-    /// Axis interval offset.
-    /// </summary>
-    private double _intervalOffset;
-
-    /// <summary>
-    /// Axis interval.
-    /// </summary>
-    internal double interval;
+	/// <summary>
+	/// Axis interval.
+	/// </summary>
+	internal double interval;
 
     /// <summary>
     /// Axis interval units type.
@@ -301,13 +296,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public TextOrientation TextOrientation
     {
-        get => this._textOrientation;
-        set
+		get {
+			return this._textOrientation;
+		}
+		set
         {
             this._textOrientation = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Returns sub-axis name.
@@ -360,13 +357,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public bool IsInterlaced
     {
-        get => _isInterlaced;
-        set
+		get {
+			return _isInterlaced;
+		}
+		set
         {
             _isInterlaced = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the color used to draw interlaced strip lines for the axis.
@@ -381,13 +380,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public Color InterlacedColor
     {
-        get => _interlacedColor;
-        set
+		get {
+			return _interlacedColor;
+		}
+		set
         {
             _interlacedColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Axis name. This field is reserved for internal use only.
@@ -403,9 +404,9 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public override string Name
     {
-        get => base.Name;
-        set => base.Name = value;
-    }
+		get => base.Name;
+		set => base.Name = value;
+	}
 
     /// <summary>
     /// Axis name. This field is reserved for internal use only.
@@ -433,13 +434,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public AxisArrowStyle ArrowStyle
     {
-        get => _arrowStyle;
-        set
+		get {
+			return _arrowStyle;
+		}
+		set
         {
             _arrowStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the properties used for the major gridlines.
@@ -454,8 +457,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public Grid MajorGrid
     {
-        get => majorGrid;
-        set
+		get {
+			return majorGrid;
+		}
+		set
         {
             majorGrid = value;
             majorGrid.Axis = this;
@@ -472,7 +477,7 @@ public partial class Axis : ChartNamedElement, IDisposable
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the properties used for the minor gridlines.
@@ -487,14 +492,16 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public Grid MinorGrid
     {
-        get => minorGrid;
-        set
+		get {
+			return minorGrid;
+		}
+		set
         {
             minorGrid = value;
             minorGrid.Initialize(this, false);
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the properties used for the major tick marks.
@@ -509,8 +516,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public TickMark MajorTickMark
     {
-        get => majorTickMark;
-        set
+		get {
+			return majorTickMark;
+		}
+		set
         {
             majorTickMark = value;
             majorTickMark.Axis = this;
@@ -527,7 +536,7 @@ public partial class Axis : ChartNamedElement, IDisposable
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the properties used for the minor tick marks.
@@ -542,14 +551,16 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public TickMark MinorTickMark
     {
-        get => minorTickMark;
-        set
+		get {
+			return minorTickMark;
+		}
+		set
         {
             minorTickMark = value;
             minorTickMark.Initialize(this, false);
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether auto-fitting of labels is enabled.
@@ -564,13 +575,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public bool IsLabelAutoFit
     {
-        get => _isLabelAutoFit;
-        set
+		get {
+			return _isLabelAutoFit;
+		}
+		set
         {
             _isLabelAutoFit = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the minimum font size that can be used by
@@ -586,8 +599,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public int LabelAutoFitMinFontSize
     {
-        get => this._labelAutoFitMinFontSize;
-        set
+		get {
+			return this._labelAutoFitMinFontSize;
+		}
+		set
         {
             // Font size cannot be less than 5
             if (value < 5)
@@ -598,7 +613,7 @@ public partial class Axis : ChartNamedElement, IDisposable
             this._labelAutoFitMinFontSize = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the maximum font size that can be used by
@@ -614,8 +629,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public int LabelAutoFitMaxFontSize
     {
-        get => this._labelAutoFitMaxFontSize;
-        set
+		get {
+			return this._labelAutoFitMaxFontSize;
+		}
+		set
         {
             // Font size cannot be less than 5
             if (value < 5)
@@ -626,7 +643,7 @@ public partial class Axis : ChartNamedElement, IDisposable
             this._labelAutoFitMaxFontSize = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the auto-fitting style used for the labels.
@@ -641,13 +658,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public LabelAutoFitStyles LabelAutoFitStyle
     {
-        get => this._labelAutoFitStyle;
-        set
+		get {
+			return this._labelAutoFitStyle;
+		}
+		set
         {
             this._labelAutoFitStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether
@@ -663,13 +682,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public virtual bool IsMarksNextToAxis
     {
-        get => _isMarksNextToAxis;
-        set
+		get {
+			return _isMarksNextToAxis;
+		}
+		set
         {
             _isMarksNextToAxis = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the axis title.
@@ -683,13 +704,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public string Title
     {
-        get => _title;
-        set
+		get {
+			return _title;
+		}
+		set
         {
             _title = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the color of the axis title.
@@ -704,13 +727,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public Color TitleForeColor
     {
-        get => _titleForeColor;
-        set
+		get {
+			return _titleForeColor;
+		}
+		set
         {
             _titleForeColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the alignment of the axis title.
@@ -724,13 +749,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public StringAlignment TitleAlignment
     {
-        get => _titleAlignment;
-        set
+		get {
+			return _titleAlignment;
+		}
+		set
         {
             _titleAlignment = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the font used for the axis title.
@@ -744,13 +771,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public Font TitleFont
     {
-        get => _titleFont;
-        set
+		get {
+			return _titleFont;
+		}
+		set
         {
             _titleFont = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the line color of the axis.
@@ -765,13 +794,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public Color LineColor
     {
-        get => _lineColor;
-        set
+		get {
+			return _lineColor;
+		}
+		set
         {
             _lineColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the line width of the axis.
@@ -785,8 +816,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public int LineWidth
     {
-        get => _lineWidth;
-        set
+		get {
+			return _lineWidth;
+		}
+		set
         {
             if (value < 0)
             {
@@ -796,7 +829,7 @@ public partial class Axis : ChartNamedElement, IDisposable
             _lineWidth = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the line style of the axis.
@@ -810,13 +843,15 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public ChartDashStyle LineDashStyle
     {
-        get => _lineDashStyle;
-        set
+		get {
+			return _lineDashStyle;
+		}
+		set
         {
             _lineDashStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// The collection of strip lines of the axis.
@@ -842,8 +877,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public float MaximumAutoSize
     {
-        get => this._maximumAutoSize;
-        set
+		get {
+			return this._maximumAutoSize;
+		}
+		set
         {
             if (value < 0f || value > 100f)
             {
@@ -853,7 +890,7 @@ public partial class Axis : ChartNamedElement, IDisposable
             this._maximumAutoSize = value;
             this.Invalidate();
         }
-    }
+	}
 
     #endregion Axis properties
 
@@ -887,8 +924,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public double Interval
     {
-        get => interval;
-        set
+		get {
+			return interval;
+		}
+		set
         {
             // Axis interval properties must be set
             if (double.IsNaN(value))
@@ -909,11 +948,12 @@ public partial class Axis : ChartNamedElement, IDisposable
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Axis interval offset.
     /// </summary>
+
     [
     SRCategory("CategoryAttributeInterval"),
     Bindable(true),
@@ -924,22 +964,24 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public double IntervalOffset
     {
-        get => _intervalOffset;
-        set
+		get {
+			return field;
+		}
+		set
         {
             // Axis interval properties must be set
             if (double.IsNaN(value))
             {
-                _intervalOffset = 0;
+                field = 0;
             }
             else
             {
-                _intervalOffset = value;
+                field = value;
             }
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Axis interval type.
@@ -953,8 +995,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public DateTimeIntervalType IntervalType
     {
-        get => intervalType;
-        set
+		get {
+			return intervalType;
+		}
+		set
         {
             // Axis interval properties must be set
             if (value == DateTimeIntervalType.NotSet)
@@ -973,7 +1017,7 @@ public partial class Axis : ChartNamedElement, IDisposable
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Axis interval offset type.
@@ -987,8 +1031,10 @@ public partial class Axis : ChartNamedElement, IDisposable
     ]
     public DateTimeIntervalType IntervalOffsetType
     {
-        get => intervalOffsetType;
-        set
+		get {
+			return intervalOffsetType;
+		}
+		set
         {
             // Axis interval properties must be set
             if (value == DateTimeIntervalType.NotSet)
@@ -1002,7 +1048,7 @@ public partial class Axis : ChartNamedElement, IDisposable
 
             this.Invalidate();
         }
-    }
+	}
 
     #endregion
 

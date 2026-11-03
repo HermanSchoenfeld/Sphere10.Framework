@@ -13,7 +13,6 @@ using System.IO;
 namespace Sphere10.Framework.Windows;
 
 public class SoundPlayerEx : IDisposable {
-	private byte[] _bytesToPlay;
 	GCHandle? _gcHandle;
 
 	public SoundPlayerEx(Stream stream) {
@@ -56,10 +55,12 @@ public class SoundPlayerEx : IDisposable {
 	}
 
 	public byte[] BytesToPlay {
-		get { return _bytesToPlay; }
+		get {
+			return field;
+		}
 		set {
 			FreeHandle();
-			_bytesToPlay = value;
+			field = value;
 		}
 	}
 

@@ -47,7 +47,9 @@ public sealed class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBije
 	}
 
 	public override V this[U key] {
-		get => base[key];
+		get {
+			return base[key];
+		}
 		set {
 			var isUpdate = base.TryGetValue(key, out var oldValue);
 			base[key] = value;

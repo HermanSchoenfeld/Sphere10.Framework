@@ -16,10 +16,6 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Displays borrowed images with bounded previous and next navigation.</summary>
 public partial class ImageNavigator : UserControlEx {
-	private string _statusFormat = "{0} of {1}";
-	private Image[] _images;
-	private int _currentImageIndex = -1;
-
 	public ImageNavigator() {
 		// This call is required by the Windows.Forms Form Designer.
 		InitializeComponent();
@@ -27,22 +23,15 @@ public partial class ImageNavigator : UserControlEx {
 		SetStyle(ControlStyles.Selectable, true);
 	}
 
-	public string StatusFormat {
-		get {
-			return _statusFormat;
-		}
-		set {
-			_statusFormat = value;
-		}
-	}
+	public string StatusFormat { get; set; } = "{0} of {1}";
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Image[] Images {
 		get {
-			return _images;
+			return field;
 		}
 		set {
-			_images = value;
+			field = value;
 			using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
 				RefreshImageList();
 			}
@@ -51,16 +40,16 @@ public partial class ImageNavigator : UserControlEx {
 
 	public int CurrentImageIndex {
 		get {
-			return _currentImageIndex;
+			return field;
 		}
 		set {
-			var changed = _currentImageIndex != value;
-			_currentImageIndex = value;
+			var changed = field != value;
+			field = value;
 			RefreshImage();
 			if (changed)
 				NotifyStateChanged();
 		}
-	}
+	} = -1;
 
 	public Size ImageAreaSize {
 		get {
@@ -73,30 +62,22 @@ public partial class ImageNavigator : UserControlEx {
 	}
 
 	public System.Windows.Forms.BorderStyle ImageAreaBorderStyle {
-		get {
-			return _pictureBox.BorderStyle;
-		}
-		set {
-			_pictureBox.BorderStyle = value;
-		}
+		get => _pictureBox.BorderStyle;
+		set => _pictureBox.BorderStyle = value;
 	}
 
 	public PictureBoxSizeMode ImageAreaSizeMode {
-		get {
-			return _pictureBox.SizeMode;
-		}
-		set {
-			_pictureBox.SizeMode = value;
-		}
+		get => _pictureBox.SizeMode;
+		set => _pictureBox.SizeMode = value;
 	}
 
 	public void PreviousImage() {
-		if (Images != null && _currentImageIndex > 0)
+		if (Images != null && CurrentImageIndex > 0)
 			CurrentImageIndex--;
 	}
 
 	public void NextImage() {
-		if (Images != null && _currentImageIndex < (Images.Length - 1))
+		if (Images != null && CurrentImageIndex < (Images.Length - 1))
 			CurrentImageIndex++;
 	}
 
@@ -132,20 +113,20 @@ public partial class ImageNavigator : UserControlEx {
 	}
 
 	private void RefreshImage() {
-		if (_currentImageIndex < 0 || Images == null || _currentImageIndex >= Images.Length) {
+		if (CurrentImageIndex < 0 || Images == null || CurrentImageIndex >= Images.Length) {
 			_pictureBox.Image = null;
 			_statusLabel.Text = "";
 			_nextButton.Enabled = false;
 			_previousButton.Enabled = false;
 		} else {
-			_pictureBox.Image = Images[_currentImageIndex];
-			_statusLabel.Text = string.Format(StatusFormat, _currentImageIndex + 1, Images.Length);
+			_pictureBox.Image = Images[CurrentImageIndex];
+			_statusLabel.Text = string.Format(StatusFormat, CurrentImageIndex + 1, Images.Length);
 
 			_nextButton.Enabled = true;
 			_previousButton.Enabled = true;
-			if (_currentImageIndex == 0)
+			if (CurrentImageIndex == 0)
 				_previousButton.Enabled = false;
-			if (_currentImageIndex >= Images.Length - 1)
+			if (CurrentImageIndex >= Images.Length - 1)
 				_nextButton.Enabled = false;
 		}
 	}

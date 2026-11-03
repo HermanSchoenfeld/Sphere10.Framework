@@ -36,7 +36,9 @@ public class UnallocatedBookViewModel : AppointmentBookViewModel {
 	}
 
 	public virtual ColumnViewModel UnallocatedColumn {
-		get { return _unallocatedColumn; }
+		get {
+			return _unallocatedColumn;
+		}
 		set {
 			_unallocatedColumn = value;
 			// "Render" the model 

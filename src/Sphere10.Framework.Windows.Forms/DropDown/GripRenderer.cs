@@ -17,18 +17,13 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Draws the existing native popup resize grip in the requested corner.</summary>
 public sealed class GripRenderer {
 	// Attributes
-	private static Bitmap _sGripBitmap;
 
 	// Construction and destruction
 	private GripRenderer() {
 	}
 
 	// Properties
-	private static Bitmap GripBitmap {
-		get {
-			return _sGripBitmap;
-		}
-	}
+	private static Bitmap GripBitmap { get; set; }
 
 	public static void RefreshSystemColors(Graphics g, Size size) {
 		InitializeGripBitmap(g, size, true);
@@ -68,10 +63,10 @@ public sealed class GripRenderer {
 
 	// Methods
 	private static void InitializeGripBitmap(Graphics graphics, Size size, bool forceRefresh) {
-		if (_sGripBitmap == null || forceRefresh || size != _sGripBitmap.Size) {
+		if (GripBitmap == null || forceRefresh || size != GripBitmap.Size) {
 			// Draw size grip into a bitmap image.
-			_sGripBitmap = new Bitmap(size.Width, size.Height, graphics);
-			using (var gripG = Graphics.FromImage(_sGripBitmap))
+			GripBitmap = new Bitmap(size.Width, size.Height, graphics);
+			using (var gripG = Graphics.FromImage(GripBitmap))
 				ControlPaint.DrawSizeGrip(gripG, SystemColors.ButtonFace, 0, 0, size.Width, size.Height);
 		}
 	}

@@ -42,12 +42,8 @@ public class RichText : IComparable, IComparable<RichText> {
 	}
 
 	public string Rtf {
-		get {
-			return _rtf;
-		}
-		set {
-			_rtf = value;
-		}
+		get => _rtf;
+		set => _rtf = value;
 	}
 
 	// IComparable Members

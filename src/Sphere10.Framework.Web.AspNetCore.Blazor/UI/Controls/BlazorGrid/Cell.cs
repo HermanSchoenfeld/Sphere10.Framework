@@ -19,17 +19,11 @@ public class Cell {
 	public object Tag { get; private set; } // this is the full row of data
 	public int DataIndex { get; set; }
 
-	public string Name {
-		get { return Header.Name; }
-	}
+	public string Name => Header.Name;
 
-	public int Width {
-		get { return Header.Width; }
-	}
+	public int Width => Header.Width;
 
-	public int Height {
-		get { return Row.Height; }
-	}
+	public int Height => Row.Height;
 
 	public bool IsEnum { get; set; }
 

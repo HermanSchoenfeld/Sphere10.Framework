@@ -16,16 +16,13 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 public class RowInfo {
 	private int _height;
-	private GridVirtual _grid;
-	private object _tag;
-	private AutoSizeMode _autoSizeMode = AutoSizeMode.Default;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="grid"></param>
 	public RowInfo(GridVirtual grid) {
-		_grid = grid;
+		Grid = grid;
 		_height = Grid.DefaultHeight;
 	}
 
@@ -42,7 +39,7 @@ public class RowInfo {
 
 			if (_height != value) {
 				_height = value;
-				((RowInfoCollection)_grid.Rows).OnRowHeightChanged(new RowInfoEventArgs(this));
+				((RowInfoCollection)Grid.Rows).OnRowHeightChanged(new RowInfoEventArgs(this));
 			}
 		}
 	}
@@ -51,66 +48,33 @@ public class RowInfo {
 	/// <summary>
 	/// Index of the current row
 	/// </summary>
-	public int Index {
-		get {
-			return ((RowInfoCollection)Grid.Rows).IndexOf(this);
-		}
-	}
+	public int Index => ((RowInfoCollection)Grid.Rows).IndexOf(this);
 
 	/// <summary>
 	/// Attached Grid
 	/// </summary>
 	[Browsable(false)]
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; }
 
-	public CellRange Range {
-		get {
-			if (_grid == null)
-				throw new SourceGridException("Invalid Grid object");
-
-			return new CellRange(Index, 0, Index, Grid.Columns.Count - 1);
-		}
-	}
+	public CellRange Range => Grid == null ? throw new SourceGridException("Invalid Grid object") : new CellRange(Index, 0, Index, Grid.Columns.Count - 1);
 
 	/// <summary>
 	/// A property that the user can use to insert custom informations associated to a specific row
 	/// </summary>
 	[Browsable(false)]
-	public object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
-	}
+	public object Tag { get; set; }
 
 	/// <summary>
 	/// Flags for autosize and stretch
 	/// </summary>
-	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
-	}
+	public AutoSizeMode AutoSizeMode { get; set; } = AutoSizeMode.Default;
 
 	/// <summary>
 	/// Gets or sets if the row is visible.
 	/// Internally set the height to 0 to hide a row.
 	/// </summary>
 	public bool Visible {
-		get {
-			return Grid.Rows.IsRowVisible(this.Index);
-		}
-		set {
-			Grid.Rows.ShowRow(this.Index, value);
-		}
+		get => Grid.Rows.IsRowVisible(this.Index);
+		set => Grid.Rows.ShowRow(this.Index, value);
 	}
 }

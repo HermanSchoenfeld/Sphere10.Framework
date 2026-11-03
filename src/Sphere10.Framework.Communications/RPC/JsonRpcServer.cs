@@ -22,8 +22,11 @@ public class JsonRpcServer {
 	protected SynchronizedList<JsonRpcClientHandler> ActiveClients = new SynchronizedList<JsonRpcClientHandler>();
 
 	public int ActiveClientsCount {
-		get { return ActiveClients.Count; }
-		private set { }
+		get {
+			return ActiveClients.Count;
+		}
+		private set {
+		}
 	}
 
 	public event EventHandlerEx<JsonRpcClientHandler> OnNewClient;

@@ -18,11 +18,7 @@ public class ArrayColumns : ColumnInfoCollection {
 		: base(grid) {
 	}
 
-	public new ArrayGrid Grid {
-		get {
-			return (ArrayGrid)base.Grid;
-		}
-	}
+	public new ArrayGrid Grid => (ArrayGrid)base.Grid;
 
 	/*public override int Count
 	{

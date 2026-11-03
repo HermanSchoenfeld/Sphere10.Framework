@@ -20,7 +20,9 @@ public static class GlobalSettings {
 			CheckProvider();
 			return _provider;
 		}
-		set => _provider = value;
+		set {
+			_provider = value;
+		}
 	}
 
 	public static bool Has<T>(object id = null)

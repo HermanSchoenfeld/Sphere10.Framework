@@ -19,10 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Owns native screen presentation while the shared wizard owns navigation and terminal state.</summary>
 public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFormsWizard<T> {
 	public event EventHandlerEx Finished;
-	public event EventHandlerEx Changed {
-		add => Workflow.Changed += value;
-		remove => Workflow.Changed -= value;
-	}
+	public event EventHandlerEx Changed { add => Workflow.Changed += value; remove => Workflow.Changed -= value; }
 
 	private WinFormsWizardDialog<T> _dialog;
 	private WinFormsWizardScreen<T> _currentVisibleScreen;
@@ -43,7 +40,9 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 	}
 
 	public string Title {
-		get => _title;
+		get {
+			return _title;
+		}
 		set {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_title = value;
@@ -59,7 +58,9 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 	public WinFormsWizardScreen<T> CurrentStep => Workflow.CurrentStep;
 	public int CurrentStepIndex => Workflow.CurrentStepIndex;
 	public Func<WinFormsWizardScreen<T>, WizardStepTraits> StepTraitsResolver {
-		get => Workflow.StepTraitsResolver;
+		get {
+			return Workflow.StepTraitsResolver;
+		}
 		set {
 			Workflow.StepTraitsResolver = value;
 			RefreshNavigationButtons();
@@ -74,18 +75,36 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 	public bool HasPrevious => Workflow.HasPrevious;
 
 	public bool HideNext {
-		get { CheckStarted(); return _dialog._nextButton.Enabled; }
-		set { CheckStarted(); _dialog._nextButton.Enabled = value; }
+		get {
+			CheckStarted();
+			return _dialog._nextButton.Enabled;
+		}
+		set {
+			CheckStarted();
+			_dialog._nextButton.Enabled = value;
+		}
 	}
 
 	public bool HidePrevious {
-		get { CheckStarted(); return _dialog._previousButton.Visible; }
-		set { CheckStarted(); _dialog._previousButton.Visible = !value; }
+		get {
+			CheckStarted();
+			return _dialog._previousButton.Visible;
+		}
+		set {
+			CheckStarted();
+			_dialog._previousButton.Visible = !value;
+		}
 	}
 
 	public string NextText {
-		get { CheckStarted(); return _dialog._nextButton.Text; }
-		set { CheckStarted(); _dialog._nextButton.Text = value; }
+		get {
+			CheckStarted();
+			return _dialog._nextButton.Text;
+		}
+		set {
+			CheckStarted();
+			_dialog._nextButton.Text = value;
+		}
 	}
 
 	public WizardResult WizardResult { get; private set; }

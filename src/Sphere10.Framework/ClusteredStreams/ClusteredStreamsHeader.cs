@@ -82,16 +82,30 @@ public class ClusteredStreamsHeader {
 		_mappedExtensionPropertyFlushes = new List<Action>();
 	}
 
-	public byte Version { get => _versionProperty.Value; internal set => _versionProperty.Value = value; }
+	public byte Version {
+		get => _versionProperty.Value;
+		internal set => _versionProperty.Value = value;
+	}
 
-	public ClusteredStreamsPolicy Policy { get => _policyProperty.Value; internal set => _policyProperty.Value = value; }
+	public ClusteredStreamsPolicy Policy {
+		get => _policyProperty.Value;
+		internal set => _policyProperty.Value = value;
+	}
 
-	public long StreamCount { get => _streamCountProperty.Value; internal set => _streamCountProperty.Value = value; }
+	public long StreamCount {
+		get => _streamCountProperty.Value;
+		internal set => _streamCountProperty.Value = value;
+	}
 
-	public long StreamDescriptorsEndCluster { get => _streamDescriptorsClusterProperty.Value; internal set => _streamDescriptorsClusterProperty.Value = value; }
+	public long StreamDescriptorsEndCluster {
+		get => _streamDescriptorsClusterProperty.Value;
+		internal set => _streamDescriptorsClusterProperty.Value = value;
+	}
 
 	public long ReservedStreams {
-		get => _reservedStreamsProperty.Value;
+		get {
+			return _reservedStreamsProperty.Value;
+		}
 		internal set {
 			if (StreamCount > _reservedStreamsProperty.Value)
 				throw new InvalidOperationException($"Cannot set {nameof(ReservedStreams)} to {value} as records already exist with value");
@@ -105,7 +119,10 @@ public class ClusteredStreamsHeader {
 		set => _clusterSizeProperty.Value = value;
 	}
 
-	public long TotalClusters { get => _totalClustersProperty.Value; set => _totalClustersProperty.Value = value; }
+	public long TotalClusters {
+		get => _totalClustersProperty.Value;
+		set => _totalClustersProperty.Value = value;
+	}
 
 	/// <summary>Whether an opaque metadata region follows the fixed header.</summary>
 	public bool HasMetaData => Policy.HasFlag(ClusteredStreamsPolicy.MetaData);

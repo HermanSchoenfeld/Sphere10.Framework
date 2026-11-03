@@ -16,11 +16,7 @@ public class GridColumns : ColumnInfoCollection {
 		: base(grid) {
 	}
 
-	public new Grid Grid {
-		get {
-			return base.Grid as Grid;
-		}
-	}
+	public new Grid Grid => base.Grid as Grid;
 
 	/// <summary>
 	/// Insert a column at the specified position

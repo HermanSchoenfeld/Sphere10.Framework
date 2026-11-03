@@ -15,16 +15,14 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// A class for parsing fixed length string and loading the fields into a class.
 /// </summary>
 public class LineParser {
-	private FieldList _fields;
 	private System.Text.RegularExpressions.Regex _regEx;
-	private char _separator = '\0';
 	private System.Text.RegularExpressions.Match _regExMatch;
 
 	/// <summary>
 	/// Constructor. Fill the Fields list fot specify the columns.
 	/// </summary>
 	public LineParser() {
-		_fields = new FieldList();
+		Fields = new FieldList();
 	}
 
 	/// <summary>
@@ -32,26 +30,15 @@ public class LineParser {
 	/// </summary>
 	/// <param name="lineClassType"></param>
 	public LineParser(Type lineClassType) {
-		_fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
+		Fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
 	}
 
 	/// <summary>
 	/// Gets a collection of fields.
 	/// </summary>
-	public FieldList Fields {
-		get {
-			return _fields;
-		}
-	}
+	public FieldList Fields { get; }
 
-	public char Separator {
-		get {
-			return _separator;
-		}
-		set {
-			_separator = value;
-		}
-	}
+	public char Separator { get; set; } = '\0';
 
 	/// <summary>
 	/// Load the specified line in the parser.
@@ -100,7 +87,7 @@ public class LineParser {
 		if (group.Success == false)
 			throw new RegExException(fieldName);
 
-		return _fields[fieldName].StringToValue(group.Value);
+		return Fields[fieldName].StringToValue(group.Value);
 	}
 
 	/// <summary>
@@ -117,7 +104,7 @@ public class LineParser {
 		// + Specifies one or more matches; for example, \w+ or (abc)+. Equivalent to {1,}.
 
 		// Assemble capture groups in field order, retaining the configured separator.
-		var fields = _fields.GetSortedList();
+		var fields = Fields.GetSortedList();
 		var pattern = "^";
 		for (var index = 0; index < fields.Length; index++) {
 			pattern += fields[index].RegularExpressionPattern;

@@ -343,11 +343,7 @@ public class ApplicationStartupScreenTests {
 	public class SessionScreen : ApplicationScreen {
 
 		/// <summary>Declines restoration for a session-only screen.</summary>
-		public override bool CanRestoreAtStartup {
-			get {
-				return false;
-			}
-		}
+		public override bool CanRestoreAtStartup => false;
 	}
 
 	// Applies an application policy before constructing a startup screen.

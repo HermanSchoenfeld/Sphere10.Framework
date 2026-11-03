@@ -17,11 +17,9 @@ namespace Sphere10.Framework.Windows.Forms;
 /// those limitations by allowing you to merge a (hidden) tool strip on the sub form with the readonly inherited base form.
 /// </summary>
 public class MergeableToolStrip : ToolStrip {
-	private readonly ToolStripVisualInheritanceFixer _fixer;
-
 	public MergeableToolStrip() {
-		_fixer = new ToolStripVisualInheritanceFixer();
-		_fixer.ToolStrip = this;
+		MergeFixer = new ToolStripVisualInheritanceFixer();
+		MergeFixer.ToolStrip = this;
 	}
 
 	/// <summary>
@@ -31,35 +29,27 @@ public class MergeableToolStrip : ToolStrip {
 	[Description("Set this to the base forms ToolStrip. If you can't find it, make sure it's modifer is set to to 'protected' or greater.")]
 	[Category("Behavior")]
 	public ToolStrip InheritedToolStrip {
-		get {
-			return _fixer.InheritedToolStrip;
-		}
-		set {
-			_fixer.InheritedToolStrip = value;
-		}
+		get => MergeFixer.InheritedToolStrip;
+		set => MergeFixer.InheritedToolStrip = value;
 	}
 
 	// Incoming mergers use the fixer's disposal notification before the target disposes borrowed items.
-	internal ToolStripVisualInheritanceFixer MergeFixer {
-		get {
-			return _fixer;
-		}
-	}
+	internal ToolStripVisualInheritanceFixer MergeFixer { get; }
 
 	/// <summary>Merges the original toolbar items into the target while retaining their handlers and hosted controls.</summary>
 	/// <remarks>Unmerge before disposing a plain ToolStrip target; mergeable targets return borrowed items automatically.</remarks>
 	public bool MergeInto(ToolStrip target, bool matchMenuText = false) {
-		return _fixer.MergeInto(target, matchMenuText);
+		return MergeFixer.MergeInto(target, matchMenuText);
 	}
 
 	/// <summary>Merges newly added items into the configured inherited toolbar.</summary>
 	public bool Merge() {
-		return _fixer.Merge();
+		return MergeFixer.Merge();
 	}
 
 	/// <summary>Returns this toolbar's merged items before it is hidden, detached or disposed.</summary>
 	public bool Unmerge() {
-		return _fixer.Unmerge();
+		return MergeFixer.Unmerge();
 	}
 
 	// Visual inheritance source strips stay hidden on the derived form's designer surface.
@@ -71,7 +61,7 @@ public class MergeableToolStrip : ToolStrip {
 	/// <summary>Returns merged items before the source toolbar disposes its own items.</summary>
 	protected override void Dispose(bool disposing) {
 		if (disposing)
-			_fixer?.Dispose();
+			MergeFixer?.Dispose();
 		base.Dispose(disposing);
 	}
 

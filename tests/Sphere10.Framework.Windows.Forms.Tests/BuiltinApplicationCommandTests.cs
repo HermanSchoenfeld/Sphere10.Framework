@@ -329,17 +329,9 @@ public class BuiltinApplicationCommandTests {
 
 		public int ToolBarActivations { get; private set; }
 
-		public ToolStripMenuItem[] Headers {
-			get {
-				return MenuStrip.Items.OfType<ToolStripMenuItem>().ToArray();
-			}
-		}
+		public ToolStripMenuItem[] Headers => MenuStrip.Items.OfType<ToolStripMenuItem>().ToArray();
 
-		public ToolStripItem[] ToolbarItems {
-			get {
-				return ToolStrip.Items.Cast<ToolStripItem>().ToArray();
-			}
-		}
+		public ToolStripItem[] ToolbarItems => ToolStrip.Items.Cast<ToolStripItem>().ToArray();
 
 		public ToolStripMenuItem MenuCommand(string text) {
 			return Headers.SelectMany(header => header.DropDownItems.OfType<ToolStripMenuItem>()).Single(item => item.Text == text);

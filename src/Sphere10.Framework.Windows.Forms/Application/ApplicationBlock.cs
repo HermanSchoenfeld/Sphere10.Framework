@@ -45,21 +45,13 @@ public class ApplicationBlock : ApplicationBlockBase, IApplicationBlock {
 	}
 
 	public new virtual IApplication Parent {
-		get {
-			return (IApplication)base.Parent;
-		}
-		set {
-			base.Parent = value;
-		}
+		get => (IApplication)base.Parent;
+		set => base.Parent = value;
 	}
 
 	public new virtual IApplicationPlugin Source {
-		get {
-			return (IApplicationPlugin)base.Source;
-		}
-		set {
-			base.Source = value;
-		}
+		get => (IApplicationPlugin)base.Source;
+		set => base.Source = value;
 	}
 
 	public bool ShowInToolStrip { get; set; }
@@ -71,33 +63,17 @@ public class ApplicationBlock : ApplicationBlockBase, IApplicationBlock {
 	public Image Image8x8 { get; set; }
 
 	/// <summary>Activates this block's fixed menu definitions once and preserves their identity for its lifetime.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_cachedMenus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_cachedMenus ??= GetMenus());
 
 	/// <summary>Activates this block's own toolbar definitions independently of its current presentation.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
 
 	public string HelpFileCHM { get; set; }
 
-	protected internal IApplicationMenu[] MenuCollection {
-		get {
-			return _menus.ToArray();
-		}
-	}
+	protected internal IApplicationMenu[] MenuCollection => _menus.ToArray();
 
 	/// <summary>Facades override this to bind menus to the public native block.</summary>
-	protected virtual IApplicationBlock MenuOwner {
-		get {
-			return this;
-		}
-	}
+	protected virtual IApplicationBlock MenuOwner => this;
 
 	/// <summary>Navigation references must be removed before their canonical screen definition.</summary>
 	public override void RemoveScreenDefinition(SharedUI.ApplicationScreenDefinition definition) {

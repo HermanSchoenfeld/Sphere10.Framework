@@ -15,8 +15,6 @@ namespace Sphere10.Framework.Windows.BITS;
 /// Good for monitoring jobs over application load boundary.
 /// </summary>
 public abstract class JobEx {
-	private BitsJob _underlyingJob;
-
 	public JobEx() {
 
 	}
@@ -62,10 +60,7 @@ public abstract class JobEx {
 
 	abstract public bool DeleteOnFailure { get; }
 
-	public BitsJob UnderlyingJob {
-		get { return _underlyingJob; }
-		set { _underlyingJob = value; }
-	}
+	public BitsJob UnderlyingJob { get; set; }
 
 	public abstract void OnCreate(BitsJob jobToConfigure);
 

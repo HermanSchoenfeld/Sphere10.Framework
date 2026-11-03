@@ -47,11 +47,6 @@ public class ParseErrorEventArgs
 	/// </summary>
 	private MalformedCsvException _error;
 
-	/// <summary>
-	/// Contains the action to take.
-	/// </summary>
-	private ParseErrorAction _action;
-
 	#endregion
 
 	#region Constructors
@@ -64,7 +59,7 @@ public class ParseErrorEventArgs
 	public ParseErrorEventArgs(MalformedCsvException error, ParseErrorAction defaultAction)
 		: base() {
 		_error = error;
-		_action = defaultAction;
+		Action = defaultAction;
 	}
 
 	#endregion
@@ -75,18 +70,17 @@ public class ParseErrorEventArgs
 	/// Gets the error that occured.
 	/// </summary>
 	/// <value>The error that occured.</value>
-	public MalformedCsvException Error {
-		get { return _error; }
-	}
+	public MalformedCsvException Error => _error;
 
 	/// <summary>
 	/// Gets or sets the action to take.
 	/// </summary>
 	/// <value>The action to take.</value>
-	public ParseErrorAction Action {
-		get { return _action; }
-		set { _action = value; }
-	}
+
+	/// <remarks>
+	/// Contains the action to take.
+	/// </remarks>
+	public ParseErrorAction Action { get; set; }
 
 	#endregion
 

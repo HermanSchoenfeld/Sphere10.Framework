@@ -49,11 +49,6 @@ public class TaskItem : Button {
 	private int preferredWidth;
 
 	/// <summary>
-	/// The cached preferred height of the TaskItem
-	/// </summary>
-	private int preferredHeight;
-
-	/// <summary>
 	/// The focus state of the TaskItem
 	/// </summary>
 	private FocusStates focusState;
@@ -68,16 +63,6 @@ public class TaskItem : Button {
 	/// when it has focus
 	/// </summary>
 	private bool showFocusCues;
-
-	/// <summary>
-	/// Specifies the custom settings for the TaskItem
-	/// </summary>
-	private TaskItemInfo customSettings;
-
-	/// <summary>
-	/// 
-	/// </summary>
-	private StringFormat stringFormat;
 
 	///// <summary>
 	///// 
@@ -107,13 +92,13 @@ public class TaskItem : Button {
 		// get the system theme settings
 		this.systemSettings = ExplorerBarInfo.Default;
 
-		this.customSettings = new TaskItemInfo();
-		this.customSettings.TaskItem = this;
-		this.customSettings.SetDefaultEmptyValues();
+		CustomSettings = new TaskItemInfo();
+		CustomSettings.TaskItem = this;
+		CustomSettings.SetDefaultEmptyValues();
 
 		// preferred size
 		this.preferredWidth = -1;
-		this.preferredHeight = -1;
+		PreferredHeight = -1;
 
 		// unfocused item
 		this.focusState = FocusStates.None;
@@ -140,45 +125,21 @@ public class TaskItem : Button {
 	/// Gets the color of the TaskItem's text
 	/// </summary>
 	[Browsable(false)]
-	public Color LinkColor {
-		get {
-			if (this.CustomSettings.LinkColor != Color.Empty) {
-				return this.CustomSettings.LinkColor;
-			}
-
-			return this.systemSettings.TaskItem.LinkColor;
-		}
-	}
+	public Color LinkColor => this.CustomSettings.LinkColor != Color.Empty ? this.CustomSettings.LinkColor : this.systemSettings.TaskItem.LinkColor;
 
 
 	/// <summary>
 	/// Gets the color of the TaskItem's text when highlighted.
 	/// </summary>
 	[Browsable(false)]
-	public Color LinkHotColor {
-		get {
-			if (this.CustomSettings.HotLinkColor != Color.Empty) {
-				return this.CustomSettings.HotLinkColor;
-			}
-
-			return this.systemSettings.TaskItem.HotLinkColor;
-		}
-	}
+	public Color LinkHotColor => this.CustomSettings.HotLinkColor != Color.Empty ? this.CustomSettings.HotLinkColor : this.systemSettings.TaskItem.HotLinkColor;
 
 
 	/// <summary>
 	/// Gets the current color of the TaskItem's text
 	/// </summary>
 	[Browsable(false)]
-	public Color FocusLinkColor {
-		get {
-			if (this.FocusState == FocusStates.Mouse) {
-				return this.LinkHotColor;
-			}
-
-			return this.LinkColor;
-		}
-	}
+	public Color FocusLinkColor => this.FocusState == FocusStates.Mouse ? this.LinkHotColor : this.LinkColor;
 
 	#endregion
 
@@ -190,8 +151,9 @@ public class TaskItem : Button {
 	[Browsable(false),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Expando Expando {
-		get { return this.expando; }
-
+		get {
+			return this.expando;
+		}
 		set {
 			this.expando = value;
 
@@ -209,9 +171,8 @@ public class TaskItem : Button {
 	/// Overrides Button.FlatStyle
 	/// </summary>
 	public new FlatStyle FlatStyle {
-		get { throw new NotSupportedException(); }
-
-		set { throw new NotSupportedException(); }
+		get => throw new NotSupportedException();
+		set => throw new NotSupportedException();
 	}
 
 	#endregion
@@ -226,8 +187,9 @@ public class TaskItem : Button {
 	 DefaultValue(false),
 	 Description("Determines whether the TaskItem should display a focus rectangle.")]
 	public new bool ShowFocusCues {
-		get { return this.showFocusCues; }
-
+		get {
+			return this.showFocusCues;
+		}
 		set {
 			if (this.showFocusCues != value) {
 				this.showFocusCues = value;
@@ -270,8 +232,9 @@ public class TaskItem : Button {
 
 			return base.Font;
 		}
-
-		set { base.Font = value; }
+		set {
+			base.Font = value;
+		}
 	}
 
 	#endregion
@@ -282,8 +245,9 @@ public class TaskItem : Button {
 	/// Gets or sets the Image displayed by the TaskItem
 	/// </summary>
 	public new Image Image {
-		get { return base.Image; }
-
+		get {
+			return base.Image;
+		}
 		set {
 			// make sure the image is 16x16
 			if (value != null && (value.Width != 16 || value.Height != 16)) {
@@ -296,7 +260,7 @@ public class TaskItem : Button {
 
 			// invalidate the preferred size cache
 			this.preferredWidth = -1;
-			this.preferredHeight = -1;
+			PreferredHeight = -1;
 
 			this.textRect.Width = 0;
 			this.textRect.Height = 0;
@@ -315,8 +279,9 @@ public class TaskItem : Button {
 	/// display in the TaskItem
 	/// </summary>
 	public new ImageList ImageList {
-		get { return base.ImageList; }
-
+		get {
+			return base.ImageList;
+		}
 		set {
 			// make sure the images inside the ImageList are 16x16
 			if (value != null && (value.ImageSize.Width != 16 || value.ImageSize.Height != 16)) {
@@ -339,7 +304,7 @@ public class TaskItem : Button {
 
 			// invalidate the preferred size cache
 			this.preferredWidth = -1;
-			this.preferredHeight = -1;
+			PreferredHeight = -1;
 
 			this.textRect.Width = 0;
 			this.textRect.Height = 0;
@@ -357,14 +322,15 @@ public class TaskItem : Button {
 	/// Gets or sets the index value of the image displayed on the TaskItem
 	/// </summary>
 	public new int ImageIndex {
-		get { return base.ImageIndex; }
-
+		get {
+			return base.ImageIndex;
+		}
 		set {
 			base.ImageIndex = value;
 
 			// invalidate the preferred size cache
 			this.preferredWidth = -1;
-			this.preferredHeight = -1;
+			PreferredHeight = -1;
 
 			this.textRect.Width = 0;
 			this.textRect.Height = 0;
@@ -386,15 +352,7 @@ public class TaskItem : Button {
 	/// along each side of the TaskItem
 	/// </summary>
 	[Browsable(false)]
-	public new Margin Margin {
-		get {
-			if (this.CustomSettings.Margin != Margin.Empty) {
-				return this.CustomSettings.Margin;
-			}
-
-			return this.systemSettings.TaskItem.Margin;
-		}
-	}
+	public new Margin Margin => this.CustomSettings.Margin != Margin.Empty ? this.CustomSettings.Margin : this.systemSettings.TaskItem.Margin;
 
 	#endregion
 
@@ -405,15 +363,7 @@ public class TaskItem : Button {
 	/// side of the TaskItem
 	/// </summary>
 	[Browsable(false)]
-	public new PaddingEx Padding {
-		get {
-			if (this.CustomSettings.Padding != PaddingEx.Empty) {
-				return this.CustomSettings.Padding;
-			}
-
-			return this.systemSettings.TaskItem.Padding;
-		}
-	}
+	public new PaddingEx Padding => this.CustomSettings.Padding != PaddingEx.Empty ? this.CustomSettings.Padding : this.systemSettings.TaskItem.Padding;
 
 	#endregion
 
@@ -466,12 +416,16 @@ public class TaskItem : Button {
 	/// Assumes that the text is required to fit within the
 	/// current width of the TaskItem
 	/// </summary>
+
+	/// <remarks>
+	/// The cached preferred height of the TaskItem
+	/// </remarks>
 	[Browsable(false)]
 	public int PreferredHeight {
 		get {
 			//
-			if (this.preferredHeight != -1) {
-				return this.preferredHeight;
+			if (field != -1) {
+				return field;
 			}
 
 			//
@@ -487,12 +441,16 @@ public class TaskItem : Button {
 
 			//
 			if (textHeight > 16) {
-				this.preferredHeight = textHeight;
-			} else {
-				this.preferredHeight = 16;
+				field = textHeight;
+			}
+			else {
+				field = 16;
 			}
 
-			return this.preferredHeight;
+			return field;
+		}
+		private set {
+			field = value;
 		}
 	}
 
@@ -524,9 +482,7 @@ public class TaskItem : Button {
 	/// This member overrides Button.DefaultSize
 	/// </summary>
 	[Browsable(false)]
-	protected override Size DefaultSize {
-		get { return new Size(162, 16); }
-	}
+	protected override Size DefaultSize => new Size(162, 16);
 
 	#endregion
 
@@ -536,8 +492,9 @@ public class TaskItem : Button {
 	/// Gets or sets whether the TaskItem is in a highlighted state.
 	/// </summary>
 	protected FocusStates FocusState {
-		get { return this.focusState; }
-
+		get {
+			return this.focusState;
+		}
 		set {
 			if (this.focusState != value) {
 				this.focusState = value;
@@ -556,8 +513,9 @@ public class TaskItem : Button {
 	/// </summary>
 	[Browsable(false)]
 	protected internal ExplorerBarInfo SystemSettings {
-		get { return this.systemSettings; }
-
+		get {
+			return this.systemSettings;
+		}
 		set {
 			// make sure we have a new value
 			if (this.systemSettings != value) {
@@ -578,14 +536,15 @@ public class TaskItem : Button {
 	/// <summary>
 	/// Gets the custom settings for the TaskItem
 	/// </summary>
+
+	/// <remarks>
+	/// Specifies the custom settings for the TaskItem
+	/// </remarks>
 	[Category("Appearance"),
 	 Description(""),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 TypeConverter(typeof(TaskItemInfoConverter))]
-	public TaskItemInfo CustomSettings {
-		get { return this.customSettings; }
-		internal set { this.customSettings = value; }
-	}
+	public TaskItemInfo CustomSettings { get; internal set; }
 
 
 	/// <summary>
@@ -605,13 +564,14 @@ public class TaskItem : Button {
 	/// Gets or sets the text associated with this TaskItem
 	/// </summary>
 	public override string Text {
-		get { return base.Text; }
-
+		get {
+			return base.Text;
+		}
 		set {
 			base.Text = value;
 
 			// reset the preferred width and height
-			this.preferredHeight = -1;
+			PreferredHeight = -1;
 			this.preferredWidth = -1;
 
 			if (this.Expando != null) {
@@ -629,7 +589,6 @@ public class TaskItem : Button {
 		get {
 			return base.TextAlign;
 		}
-
 		set {
 			if (value != base.TextAlign) {
 				this.InitStringFormat();
@@ -637,19 +596,19 @@ public class TaskItem : Button {
 
 				// should the text be aligned to the left/center/right
 				if (Tools.Drawing.IsLeft(value)) {
-					this.stringFormat.Alignment = StringAlignment.Near;
+					StringFormat.Alignment = StringAlignment.Near;
 
 					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_CENTER;
 					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RIGHT;
 					//this.drawTextFlags |= Win32.DrawTextFlags.DT_LEFT;
 				} else if (Tools.Drawing.IsCenter(value)) {
-					this.stringFormat.Alignment = StringAlignment.Center;
+					StringFormat.Alignment = StringAlignment.Center;
 
 					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_LEFT;
 					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RIGHT;
 					//this.drawTextFlags |= Win32.DrawTextFlags.DT_CENTER;
 				} else if (Tools.Drawing.IsRight(value)) {
-					this.stringFormat.Alignment = StringAlignment.Far;
+					StringFormat.Alignment = StringAlignment.Far;
 
 					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_LEFT;
 					//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_CENTER;
@@ -665,19 +624,18 @@ public class TaskItem : Button {
 	/// <summary>
 	/// Gets the StringFormat object used to draw the TaskItem's text
 	/// </summary>
-	protected StringFormat StringFormat {
-		get { return this.stringFormat; }
-	}
+
+	protected StringFormat StringFormat { get; private set; }
 
 
 	/// <summary>
 	/// Initializes the TaskItem's StringFormat object
 	/// </summary>
 	private void InitStringFormat() {
-		if (this.stringFormat == null) {
-			this.stringFormat = new StringFormat();
-			this.stringFormat.LineAlignment = StringAlignment.Near;
-			this.stringFormat.Alignment = StringAlignment.Near;
+		if (StringFormat == null) {
+			StringFormat = new StringFormat();
+			StringFormat.LineAlignment = StringAlignment.Near;
+			StringFormat.Alignment = StringAlignment.Near;
 		}
 	}
 
@@ -707,9 +665,7 @@ public class TaskItem : Button {
 	/// <summary>
 	/// Gets the Rectangle that the TaskItem's text is drawn in
 	/// </summary>
-	protected Rectangle TextRect {
-		get { return this.textRect; }
-	}
+	protected Rectangle TextRect => this.textRect;
 
 	#endregion
 
@@ -873,10 +829,10 @@ public class TaskItem : Button {
 			}
 
 			if (this.RightToLeft == RightToLeft.Yes) {
-				this.stringFormat.FormatFlags |= StringFormatFlags.DirectionRightToLeft;
+				StringFormat.FormatFlags |= StringFormatFlags.DirectionRightToLeft;
 				//this.drawTextFlags |= Win32.DrawTextFlags.DT_RTLREADING;
 			} else {
-				this.stringFormat.FormatFlags &= ~StringFormatFlags.DirectionRightToLeft;
+				StringFormat.FormatFlags &= ~StringFormatFlags.DirectionRightToLeft;
 				//this.drawTextFlags &= ~Win32.DrawTextFlags.DT_RTLREADING;
 			}
 
@@ -1002,7 +958,7 @@ public class TaskItem : Button {
 	protected override void OnSizeChanged(EventArgs e) {
 		// Native layout and SizeChanged observers must measure the new width rather than the previous cached size.
 		this.preferredWidth = -1;
-		this.preferredHeight = -1;
+		PreferredHeight = -1;
 
 		this.textRect.Width = 0;
 		this.textRect.Height = 0;

@@ -22,9 +22,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 /// <summary>The logical Blazor screen retained by the host, with renderer-local identity and immutable component parameters.</summary>
 /// <remarks>The renderer creates and disposes Screen. This proxy delegates its portable screen lifecycle to that component.</remarks>
 public sealed class ApplicationScreenSession : IApplicationScreen {
-	private readonly string _registeredTitle;
-	private readonly SharedUI.ApplicationScreenDefinition _definition;
-	private readonly string _navigationId;
 	private readonly List<IApplicationMenu> _ownedMenus = new();
 	private readonly List<IApplicationMenuItem> _componentToolBarItems = new();
 	private ApplicationMenu _toolbarOwner;
@@ -37,10 +34,10 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 		Id = Guid.NewGuid();
 		Block = block;
 		MenuItem = menuItem;
-		_definition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, definition.Registration);
-		_navigationId = menuItem?.HasExplicitId == true ? menuItem.Id : (_definition.StableKey != null || block.ScreenDefinitions.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1
-			? ApplicationBlockSnapshot.GetDefinitionScreenId(block, _definition) : null);
-		_registeredTitle = definition.Title;
+		Definition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, definition.Registration);
+		MenuItemId = menuItem?.HasExplicitId == true ? menuItem.Id : (Definition.StableKey != null || block.ScreenDefinitions.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1
+			? ApplicationBlockSnapshot.GetDefinitionScreenId(block, Definition) : null);
+		Title = definition.Title;
 		var parameters = new Dictionary<string, object>((definition as ApplicationScreenDefinition)?.Parameters ?? new Dictionary<string, object>(), StringComparer.OrdinalIgnoreCase);
 		if (preparedActivation != null)
 			foreach (var parameter in preparedActivation.Parameters)
@@ -63,21 +60,21 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 
 	public string MenuItemId {
 		get {
-			Guard.Ensure(_navigationId != null, "Configure WithStableKey on this registration before creating its browser route.");
-			return _navigationId;
+			Guard.Ensure(field != null, "Configure WithStableKey on this registration before creating its browser route.");
+			return field;
 		}
 	}
 
 	/// <summary>The canonical registration in this session's own block graph.</summary>
-	public SharedUI.ApplicationScreenDefinition Definition => _definition;
+	public SharedUI.ApplicationScreenDefinition Definition { get; }
 
-	public Type ScreenType => _definition.ScreenType;
+	public Type ScreenType => Definition.ScreenType;
 
-	public ScreenActivationMode ActivationMode => _definition.ActivationMode ?? ScreenActivationMode.MultiInstance;
+	public ScreenActivationMode ActivationMode => Definition.ActivationMode ?? ScreenActivationMode.MultiInstance;
 
 	public bool IsPermanent => ActivationMode == ScreenActivationMode.PermanentSingleton;
 
-	public ScreenKind ScreenKind => _definition.ScreenKind;
+	public ScreenKind ScreenKind => Definition.ScreenKind;
 
 	public string InstanceKey { get; }
 
@@ -85,14 +82,10 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 
 	public IApplicationScreen Screen { get; private set; }
 
-	public string Title => Screen?.Title ?? _registeredTitle;
+	public string Title => Screen?.Title ?? field;
 
 	/// <summary>The renderer component's current typed settings, exposed through the portable state contract.</summary>
-	public SettingsObject ScreenSettings {
-		get {
-			return Screen?.ScreenSettings;
-		}
-	}
+	public SettingsObject ScreenSettings => Screen?.ScreenSettings;
 
 	public bool HasUnsavedChanges => Screen?.HasUnsavedChanges ?? false;
 

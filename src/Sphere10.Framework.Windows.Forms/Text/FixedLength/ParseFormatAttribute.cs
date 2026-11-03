@@ -16,10 +16,6 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// </summary>
 [System.AttributeUsage(AttributeTargets.Property)]
 public class ParseFormatAttribute : System.Attribute {
-	private string _dateTimeFormat;
-	private string _numberFormat;
-	private bool _trimBeforeParse;
-	private System.Globalization.CultureInfo _cultureInfo;
 
 	/// <summary>
 	/// Constructor. Use one of these properties to customize the format: CultureInfo, DateTimeFormat, NumberFormat, TrimBeforeParse.
@@ -34,39 +30,11 @@ public class ParseFormatAttribute : System.Attribute {
 		CultureInfo = invariant;
 	}
 
-	public System.Globalization.CultureInfo CultureInfo {
-		get {
-			return _cultureInfo;
-		}
-		set {
-			_cultureInfo = value;
-		}
-	}
+	public System.Globalization.CultureInfo CultureInfo { get; set; }
 
-	public string DateTimeFormat {
-		get {
-			return _dateTimeFormat;
-		}
-		set {
-			_dateTimeFormat = value;
-		}
-	}
+	public string DateTimeFormat { get; set; }
 
-	public string NumberFormat {
-		get {
-			return _numberFormat;
-		}
-		set {
-			_numberFormat = value;
-		}
-	}
+	public string NumberFormat { get; set; }
 
-	public bool TrimBeforeParse {
-		get {
-			return _trimBeforeParse;
-		}
-		set {
-			_trimBeforeParse = value;
-		}
-	}
+	public bool TrimBeforeParse { get; set; }
 }

@@ -12,10 +12,8 @@ using System.Diagnostics;
 namespace Sphere10.Framework;
 
 public class TextBank {
-	private List<string> _data;
-
 	public TextBank() {
-		_data = new List<string>();
+		Data = new List<string>();
 	}
 
 	public TextBank(IEnumerable<object> collection) {
@@ -23,15 +21,12 @@ public class TextBank {
 	}
 
 
-	public List<string> Data {
-		get { return _data; }
-		set { _data = value; }
-	}
+	public List<string> Data { get; set; }
 
 	public void AddObjects(IEnumerable<object> array) {
 		Debug.Assert(array != null);
 		foreach (object obj in array) {
-			_data.Add(obj.ToString());
+			Data.Add(obj.ToString());
 		}
 	}
 
@@ -43,7 +38,7 @@ public class TextBank {
 	public string[] SearchText(string subStringToMatch, bool caseSensitive) {
 		Debug.Assert(subStringToMatch != null);
 		List<string> res = new List<string>();
-		foreach (string str in _data) {
+		foreach (string str in Data) {
 			string strToUse = caseSensitive ? str.ToUpper() : str;
 			string strToFind = caseSensitive ? subStringToMatch.ToUpper() : subStringToMatch;
 			if (strToUse.Contains(strToFind)) {
@@ -61,7 +56,7 @@ public class TextBank {
 	public bool ContainsText(string subStringToMatch, bool caseSensitive) {
 		Debug.Assert(subStringToMatch != null);
 		bool found = false;
-		foreach (string str in _data) {
+		foreach (string str in Data) {
 			string strToUse = caseSensitive ? str.ToUpper() : str;
 			string strToFind = caseSensitive ? subStringToMatch.ToUpper() : subStringToMatch;
 			if (strToUse.Contains(strToFind)) {

@@ -84,16 +84,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LineAnchorCapStyle StartCap
         {
-            get
-            {
-                return _startCap;
-            }
-            set
+			get {
+				return _startCap;
+			}
+			set
             {
                 _startCap = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a cap style used at the end of an annotation line.
@@ -109,16 +108,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LineAnchorCapStyle EndCap
         {
-            get
-            {
-                return _endCap;
-            }
-            set
+			get {
+				return _endCap;
+			}
+			set
             {
                 _endCap = value;
                 Invalidate();
             }
-        }
+		}
 
         #endregion Polyline Visual Attributes
 
@@ -137,15 +135,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ContentAlignment Alignment
         {
-            get
-            {
-                return base.Alignment;
-            }
-            set
-            {
-                base.Alignment = value;
-            }
-        }
+			get => base.Alignment;
+			set => base.Alignment = value;
+		}
 
         /// <summary>
         /// Gets or sets an annotation's text style.
@@ -159,15 +151,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override TextStyle TextStyle
         {
-            get
-            {
-                return base.TextStyle;
-            }
-            set
-            {
-                base.TextStyle = value;
-            }
-        }
+			get => base.TextStyle;
+			set => base.TextStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -185,15 +171,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color ForeColor
         {
-            get
-            {
-                return base.ForeColor;
-            }
-            set
-            {
-                base.ForeColor = value;
-            }
-        }
+			get => base.ForeColor;
+			set => base.ForeColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -209,15 +189,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Font Font
         {
-            get
-            {
-                return base.Font;
-            }
-            set
-            {
-                base.Font = value;
-            }
-        }
+			get => base.Font;
+			set => base.Font = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -231,15 +205,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
-            {
-                base.BackColor = value;
-            }
-        }
+			get => base.BackColor;
+			set => base.BackColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -252,15 +220,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
-            {
-                base.BackHatchStyle = value;
-            }
-        }
+			get => base.BackHatchStyle;
+			set => base.BackHatchStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -273,15 +235,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
-            {
-                base.BackGradientStyle = value;
-            }
-        }
+			get => base.BackGradientStyle;
+			set => base.BackGradientStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -295,15 +251,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
-            {
-                base.BackSecondaryColor = value;
-            }
-        }
+			get => base.BackSecondaryColor;
+			set => base.BackSecondaryColor = value;
+		}
 
         #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -328,13 +278,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Polyline";
-            }
-        }
+        public override string AnnotationType => "Polyline";
 
         /// <summary>
         /// Gets or sets an annotation selection points style.
@@ -356,13 +300,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        internal override SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        internal override SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         /// <summary>
         /// Gets or sets a flag that determines whether an annotation should be placed using the free-draw mode.
@@ -383,15 +321,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual bool IsFreeDrawPlacement
         {
-            get
-            {
-                return isFreeDrawPlacement;
-            }
-            set
-            {
-                isFreeDrawPlacement = value;
-            }
-        }
+			get => isFreeDrawPlacement;
+			set => isFreeDrawPlacement = value;
+		}
 
         /// <summary>
         /// Gets or sets the path points of a polyline at run-time.
@@ -417,16 +349,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual GraphicsPath GraphicsPath
         {
-            get
-            {
-                return _graphicsPath;
-            }
-            set
+			get {
+				return _graphicsPath;
+			}
+			set
             {
                 _graphicsPath = value;
                 this.pathChanged = true;
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the path points of the polyline at design-time.
@@ -1129,15 +1060,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override LineAnchorCapStyle StartCap
         {
-            get
-            {
-                return base.StartCap;
-            }
-            set
-            {
-                base.StartCap = value;
-            }
-        }
+			get => base.StartCap;
+			set => base.StartCap = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -1153,15 +1078,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override LineAnchorCapStyle EndCap
         {
-            get
-            {
-                return base.EndCap;
-            }
-            set
-            {
-                base.EndCap = value;
-            }
-        }
+			get => base.EndCap;
+			set => base.EndCap = value;
+		}
 
         #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -1186,15 +1105,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
-            {
-                base.BackColor = value;
-            }
-        }
+			get => base.BackColor;
+			set => base.BackColor = value;
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style of an annotation.
@@ -1217,15 +1130,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
-            {
-                base.BackHatchStyle = value;
-            }
-        }
+			get => base.BackHatchStyle;
+			set => base.BackHatchStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the background gradient style of an annotation.
@@ -1248,15 +1155,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
-            {
-                base.BackGradientStyle = value;
-            }
-        }
+			get => base.BackGradientStyle;
+			set => base.BackGradientStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color of an annotation.
@@ -1282,15 +1183,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
-            {
-                base.BackSecondaryColor = value;
-            }
-        }
+			get => base.BackSecondaryColor;
+			set => base.BackSecondaryColor = value;
+		}
 
         #endregion Applicable Annotation Appearance Attributes (set as Browsable)
 
@@ -1315,13 +1210,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Polygon";
-            }
-        }
+        public override string AnnotationType => "Polygon";
 
         /// <summary>
         /// Gets or sets an annotation's selection points style.
@@ -1343,13 +1232,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        internal override SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        internal override SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         #endregion Other
 
@@ -1480,20 +1363,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Point X value
         private float _x;
 
-        // Point Y value
-        private float _y;
+		// Point Y value
 
-        // Point type
-        private byte _pointType = 1;
+		// Point type
 
-        #endregion Fields
+		#endregion Fields
 
-        #region Constructors
+		#region Constructors
 
-        /// <summary>
-        /// Default public constructor.
-        /// </summary>
-        public AnnotationPathPoint()
+		/// <summary>
+		/// Default public constructor.
+		/// </summary>
+		public AnnotationPathPoint()
         {
         }
 
@@ -1507,7 +1388,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         public AnnotationPathPoint(float x, float y)
         {
             this._x = x;
-            this._y = y;
+			Y = y;
         }
 
         /// <summary>
@@ -1521,8 +1402,8 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         public AnnotationPathPoint(float x, float y, byte type)
         {
             this._x = x;
-            this._y = y;
-            this._pointType = type;
+			Y = y;
+			PointType = type;
         }
 
         #endregion Constructors
@@ -1544,76 +1425,50 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "X")]
         public float X
         {
-            get
-            {
-                return _x;
-            }
-            set
-            {
-                _x = value;
-            }
-        }
+			get => _x;
+			set => _x = value;
+		}
 
-        /// <summary>
-        /// Gets or sets an annotation path point's Y coordinate.
-        /// </summary>
-        /// <value>
-        /// A float value for the point's Y coordinate.
-        /// </value>
-        [
-        SRCategory("CategoryAttributePosition"),
-        DefaultValue(0f),
-        Browsable(true),
-        SRDescription("DescriptionAttributeAnnotationPathPoint_Y"),
-        ]
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Y")]
-        public float Y
-        {
-            get
-            {
-                return _y;
-            }
-            set
-            {
-                _y = value;
-            }
-        }
+		/// <summary>
+		/// Gets or sets an annotation path point's Y coordinate.
+		/// </summary>
+		/// <value>
+		/// A float value for the point's Y coordinate.
+		/// </value>
+		[
+		SRCategory("CategoryAttributePosition"),
+		DefaultValue(0f),
+		Browsable(true),
+		SRDescription("DescriptionAttributeAnnotationPathPoint_Y"),
+		]
+		[SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Y")]
+		public float Y { get; set; }
 
-        /// <summary>
-        /// Gets or sets an annotation path point's type.
-        /// </summary>
-        /// <value>
-        /// A byte value.
-        /// </value>
-        /// <remarks>
-        /// See the <see cref="PathPointType"/> enumeration for more details.
-        /// </remarks>
-        [
-        SRCategory("CategoryAttributePosition"),
-        DefaultValue(typeof(byte), "1"),
-        Browsable(false),
-        EditorBrowsableAttribute(EditorBrowsableState.Never),
-        SRDescription("DescriptionAttributeAnnotationPathPoint_Name"),
-        ]
-        public byte PointType
-        {
-            get
-            {
-                return _pointType;
-            }
-            set
-            {
-                _pointType = value;
-            }
-        }
+		/// <summary>
+		/// Gets or sets an annotation path point's type.
+		/// </summary>
+		/// <value>
+		/// A byte value.
+		/// </value>
+		/// <remarks>
+		/// See the <see cref="PathPointType"/> enumeration for more details.
+		/// </remarks>
+		[
+		SRCategory("CategoryAttributePosition"),
+		DefaultValue(typeof(byte), "1"),
+		Browsable(false),
+		EditorBrowsableAttribute(EditorBrowsableState.Never),
+		SRDescription("DescriptionAttributeAnnotationPathPoint_Name"),
+		]
+		public byte PointType { get; set; } = 1;
 
-        /// <summary>
-        /// Gets or sets an annotation path point's name.
-        /// </summary>
-        /// <para>
-        /// This property is for internal use and is hidden at design and run time.
-        /// </para>
-        [
+		/// <summary>
+		/// Gets or sets an annotation path point's name.
+		/// </summary>
+		/// <para>
+		/// This property is for internal use and is hidden at design and run time.
+		/// </para>
+		[
         SRCategory("CategoryAttributeMisc"),
         DefaultValue("PathPoint"),
         Browsable(false),
@@ -1622,13 +1477,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         ]
-        public string Name
-        {
-            get
-            {
-                return "PathPoint";
-            }
-        }
+        public string Name => "PathPoint";
 
         #endregion Properties
     }

@@ -13,16 +13,11 @@ using System.Reflection;
 namespace Sphere10.Framework;
 
 public class ErrorMessageAttribute : Attribute {
-	private string _errMsg;
-
 	public ErrorMessageAttribute(string errMsg) {
 		ErrorMessage = errMsg;
 	}
 
-	public string ErrorMessage {
-		get { return _errMsg; }
-		set { _errMsg = value; }
-	}
+	public string ErrorMessage { get; set; }
 
 	public static bool HasErrorMessage(Enum enumeration) {
 		return enumeration.GetType().GetCustomAttributes(typeof(ErrorMessageAttribute), true).Length > 0;

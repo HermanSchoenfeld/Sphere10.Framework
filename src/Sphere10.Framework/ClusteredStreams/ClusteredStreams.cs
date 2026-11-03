@@ -171,7 +171,10 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 	}
 
-	public ICriticalObject ParentCriticalObject { get => _rootStream.ParentCriticalObject; set => _rootStream.ParentCriticalObject = value; }
+	public ICriticalObject ParentCriticalObject {
+		get => _rootStream.ParentCriticalObject;
+		set => _rootStream.ParentCriticalObject = value;
+	}
 
 	public object Lock => _rootStream.Lock;
 
@@ -190,7 +193,9 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			CheckInitialized();
 			return _header;
 		}
-		private set => _header = value;
+		private set {
+			_header = value;
+		}
 	}
 
 	public ClusteredStreamsPolicy Policy { get; }
@@ -232,7 +237,9 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	public bool SuppressEvents {
-		get => _suppressEvents && _clusters.SuppressEvents;
+		get {
+			return _suppressEvents && _clusters.SuppressEvents;
+		}
 		set {
 			_suppressEvents = value;
 			_clusters.SuppressEvents = value;

@@ -1232,9 +1232,7 @@ public static partial class WinAPI {
 			// e.g. in x32, would be FieldOffset(4) but in x64 would be FieldOffset(8). This approach works on both.
 			internal DEVICEINPUTUNION di;
 
-			public static int Size {
-				get { return Marshal.SizeOf(typeof(INPUT)); }
-			}
+			public static int Size => Marshal.SizeOf(typeof(INPUT));
 		}
 
 

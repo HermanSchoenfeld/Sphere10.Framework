@@ -31,27 +31,15 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	/// <summary>
 	/// Gets a collection containing the keys in this ControlsRepository.
 	/// </summary>
-	public virtual ICollection<Guid> Keys {
-		get {
-			return _controls.Keys;
-		}
-	}
+	public virtual ICollection<Guid> Keys => _controls.Keys;
 
 	/// <summary>
 	/// Gets a collection containing the values in this ControlsRepository.
 	/// </summary>
-	public virtual ICollection<Control> Values {
-		get {
-			return _controls.Values;
-		}
-	}
+	public virtual ICollection<Control> Values => _controls.Values;
 
 	/// <summary>Gets the number of registered controls.</summary>
-	public int Count {
-		get {
-			return _controls.Count;
-		}
-	}
+	public int Count => _controls.Count;
 
 	/// <summary>
 	/// Gets or sets the Control associated with the given Guid
@@ -60,9 +48,7 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	/// The Guid whose value to get or set.
 	/// </param>
 	public virtual Control this[Guid key] {
-		get {
-			return _controls.TryGetValue(key, out var control) ? control : null;
-		}
+		get => _controls.TryGetValue(key, out var control) ? control : null;
 		/*			set
 					{
 						this.Dictionary[key] = value;
@@ -70,17 +56,9 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	}
 
 	// Read-only dictionary views retain the same live membership as the public typed collections.
-	IEnumerable<Guid> IReadOnlyDictionary<Guid, Control>.Keys {
-		get {
-			return Keys;
-		}
-	}
+	IEnumerable<Guid> IReadOnlyDictionary<Guid, Control>.Keys => Keys;
 
-	IEnumerable<Control> IReadOnlyDictionary<Guid, Control>.Values {
-		get {
-			return Values;
-		}
-	}
+	IEnumerable<Control> IReadOnlyDictionary<Guid, Control>.Values => Values;
 
 	/// <summary>
 	/// Adds an element with the specified key and value to this ControlsRepository.

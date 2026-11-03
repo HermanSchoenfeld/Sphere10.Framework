@@ -221,29 +221,13 @@ public class DrawingExtractionTests {
 		private readonly List<Color> _renderedColors = new();
 		private readonly List<bool> _renderedBold = new();
 
-		public RichTextBoxEx[] Editors {
-			get {
-				return _editors.ToArray();
-			}
-		}
+		public RichTextBoxEx[] Editors => _editors.ToArray();
 
-		public string[] RenderedText {
-			get {
-				return _renderedText.ToArray();
-			}
-		}
+		public string[] RenderedText => _renderedText.ToArray();
 
-		public Color[] RenderedColors {
-			get {
-				return _renderedColors.ToArray();
-			}
-		}
+		public Color[] RenderedColors => _renderedColors.ToArray();
 
-		public bool[] RenderedBold {
-			get {
-				return _renderedBold.ToArray();
-			}
-		}
+		public bool[] RenderedBold => _renderedBold.ToArray();
 
 		protected override RichTextBoxEx CreateRenderControl() {
 			var editor = base.CreateRenderControl();

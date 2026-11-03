@@ -26,7 +26,6 @@ public partial class ValidationIndicator : UserControlEx {
 	[Description("When validation state changes")]
 	public event EventHandlerEx<ValidationIndicator, ValidationState, ValidationState> ValidationStateChanged;
 
-	private ValidationState _validationState;
 	private string _validationMessage;
 	private int _validationRequests;
 
@@ -56,7 +55,7 @@ public partial class ValidationIndicator : UserControlEx {
 	[DefaultValue(ValidationState.Valid)]
 	public ValidationState State {
 		get {
-			return _validationState;
+			return field;
 		}
 		set {
 			switch (value) {
@@ -99,12 +98,11 @@ public partial class ValidationIndicator : UserControlEx {
 					_validationMessage = "Validation is running";
 					break;
 			}
-			var previousState = _validationState;
-			_validationState = value;
-			if (previousState != _validationState)
-				RaiseValidationStateChangedEvent(previousState, _validationState);
+			var previousState = field;
+			field = value;
+			if (previousState != field)
+				RaiseValidationStateChangedEvent(previousState, field);
 		}
-
 	}
 
 	[Category("Behavior")]

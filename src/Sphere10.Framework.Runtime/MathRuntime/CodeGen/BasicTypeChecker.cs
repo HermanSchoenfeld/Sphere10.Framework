@@ -16,9 +16,6 @@ namespace Sphere10.Framework.Maths.Compiler;
 /// variable 'x' is defined as a parameter.
 /// </summary>
 public class BasicTypeChecker {
-	private IMathContext _mathContext;
-	private string _functionParameterName;
-
 	public BasicTypeChecker(IMathContext mathContext) {
 		MathContext = mathContext;
 	}
@@ -28,15 +25,9 @@ public class BasicTypeChecker {
 	/// tree. If parameter is explicitly declared then the typechecker sets this, and the variable can be
 	/// retrieved by caller.
 	/// </summary>
-	public string FunctionParameterName {
-		get { return _functionParameterName; }
-		set { _functionParameterName = value; }
-	}
+	public string FunctionParameterName { get; set; }
 
-	public IMathContext MathContext {
-		get { return _mathContext; }
-		set { _mathContext = value; }
-	}
+	public IMathContext MathContext { get; set; }
 
 	public virtual List<CodeErrorException> TypeCheckFunctionDeclaration(FunctionDeclarationTree tree) {
 		List<CodeErrorException> errors = new List<CodeErrorException>();

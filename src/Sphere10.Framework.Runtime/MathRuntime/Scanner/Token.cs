@@ -9,12 +9,6 @@
 namespace Sphere10.Framework.Maths.Compiler;
 
 public class Token {
-	private TokenType _type;
-	private string _value;
-	private int _line;
-	private int _startPosition;
-	private int _endPosition;
-
 	public Token(TokenType type, string value, int line, int startPos, int endPos) {
 		TokenType = type;
 		Value = value;
@@ -23,30 +17,15 @@ public class Token {
 		EndPosition = endPos;
 	}
 
-	public string Value {
-		get { return _value; }
-		set { _value = value; }
-	}
+	public string Value { get; set; }
 
-	public TokenType TokenType {
-		get { return _type; }
-		set { _type = value; }
-	}
+	public TokenType TokenType { get; set; }
 
-	public int Line {
-		get { return _line; }
-		set { _line = value; }
-	}
+	public int Line { get; set; }
 
-	public int StartPosition {
-		get { return _startPosition; }
-		set { _startPosition = value; }
-	}
+	public int StartPosition { get; set; }
 
-	public int EndPosition {
-		get { return _endPosition; }
-		set { _endPosition = value; }
-	}
+	public int EndPosition { get; set; }
 
 
 }

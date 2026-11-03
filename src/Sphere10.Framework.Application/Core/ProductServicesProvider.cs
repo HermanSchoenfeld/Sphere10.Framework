@@ -35,39 +35,19 @@ public class ProductServicesProvider : IProductServicesProvider {
 	}
 
 	/// <inheritdoc />
-	public ProductInformation ProductInformation {
-		get {
-			return _productInformation.Value;
-		}
-	}
+	public ProductInformation ProductInformation => _productInformation.Value;
 
 	/// <inheritdoc />
-	public ProductUsageInformation ProductUsageInformation {
-		get {
-			return UsageServices.ProductUsageInformation;
-		}
-	}
+	public ProductUsageInformation ProductUsageInformation => UsageServices.ProductUsageInformation;
 
 	/// <inheritdoc />
-	public IDictionary<string, object> UserEncryptedProperties {
-		get {
-			return UsageServices.UserEncryptedProperties;
-		}
-	}
+	public IDictionary<string, object> UserEncryptedProperties => UsageServices.UserEncryptedProperties;
 
 	/// <inheritdoc />
-	public IDictionary<string, object> SystemEncryptedProperties {
-		get {
-			return UsageServices.SystemEncryptedProperties;
-		}
-	}
+	public IDictionary<string, object> SystemEncryptedProperties => UsageServices.SystemEncryptedProperties;
 
 	// Resolve the existing usage service only when the caller requests its state or operations.
-	private IProductUsageServices UsageServices {
-		get {
-			return _services.GetRequiredService<IProductUsageServices>();
-		}
-	}
+	private IProductUsageServices UsageServices => _services.GetRequiredService<IProductUsageServices>();
 
 	/// <inheritdoc />
 	public void IncrementUsageByOne() {

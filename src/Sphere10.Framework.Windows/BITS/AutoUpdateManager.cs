@@ -20,7 +20,6 @@ public interface IPatch {
 
 
 public class AutoUpdater {
-	Uri _patchFile;
 	BitsJob _downloadJob;
 	BitsManager _bitsManager;
 	string _productName;
@@ -28,7 +27,7 @@ public class AutoUpdater {
 	public AutoUpdater(string productName, Uri patchUri) {
 		_productName = productName;
 		_downloadJob = null;
-		_patchFile = patchUri;
+		PatchUrl = patchUri;
 		_bitsManager = new BitsManager();
 
 		// delete the downloaded patch file if it exists
@@ -84,7 +83,7 @@ public class AutoUpdater {
 				}
 			}
 			_downloadJob.AddFile(
-				_patchFile.ToString(),
+				PatchUrl.ToString(),
 				LocalPatchFile
 			);
 			_downloadJob.Resume();
@@ -107,10 +106,7 @@ public class AutoUpdater {
 	}
 
 
-	public Uri PatchUrl {
-		get { return _patchFile; }
-		set { _patchFile = value; }
-	}
+	public Uri PatchUrl { get; set; }
 
 	private void AddEventListenersToJob(BitsJob job) {
 		job.OnJobErrorEvent += new EventHandler<JobErrorNotificationEventArgs>(downloadJob_OnJobErrorEvent);

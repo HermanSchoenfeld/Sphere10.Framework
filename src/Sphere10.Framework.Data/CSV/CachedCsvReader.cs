@@ -184,22 +184,13 @@ public partial class CachedCsvReader
 	/// Gets the current record index in the CSV file.
 	/// </summary>
 	/// <value>The current record index in the CSV file.</value>
-	public override long CurrentRecordIndex {
-		get { return _currentRecordIndex; }
-	}
+	public override long CurrentRecordIndex => _currentRecordIndex;
 
 	/// <summary>
 	/// Gets a value that indicates whether the current stream position is at the end of the stream.
 	/// </summary>
 	/// <value><see langword="true"/> if the current stream position is at the end of the stream; otherwise <see langword="false"/>.</value>
-	public override bool EndOfStream {
-		get {
-			if (_currentRecordIndex < base.CurrentRecordIndex)
-				return false;
-			else
-				return base.EndOfStream;
-		}
-	}
+	public override bool EndOfStream => _currentRecordIndex < base.CurrentRecordIndex ? false : base.EndOfStream;
 
 	#endregion
 
@@ -355,9 +346,7 @@ public partial class CachedCsvReader
 
 	#region IListSource Members
 
-	bool IListSource.ContainsListCollection {
-		get { return false; }
-	}
+	bool IListSource.ContainsListCollection => false;
 
 	System.Collections.IList IListSource.GetList() {
 		if (_bindingList == null)

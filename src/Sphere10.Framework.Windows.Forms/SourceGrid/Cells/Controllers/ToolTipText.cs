@@ -15,61 +15,21 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Allow to customize the tooltiptext of a cell. This class read the tooltiptext from the ICellToolTipText.GetToolTipText.  This behavior can be shared between multiple cells.
 /// </summary>
 public class ToolTipText : ControllerBase {
-	private string _toolTipTitle = string.Empty;
-	private System.Windows.Forms.ToolTipIcon _toolTipIcon = System.Windows.Forms.ToolTipIcon.None;
-	private bool _isBalloon = false;
-	private System.Drawing.Color _backColor = System.Drawing.Color.Empty;
-	private System.Drawing.Color _foreColor = System.Drawing.Color.Empty;
 
 	/// <summary>
 	/// Default tooltiptext
 	/// </summary>
 	public readonly static ToolTipText Default = new ToolTipText();
 
-	public string ToolTipTitle {
-		get {
-			return _toolTipTitle;
-		}
-		set {
-			_toolTipTitle = value;
-		}
-	}
+	public string ToolTipTitle { get; set; } = string.Empty;
 
-	public System.Windows.Forms.ToolTipIcon ToolTipIcon {
-		get {
-			return _toolTipIcon;
-		}
-		set {
-			_toolTipIcon = value;
-		}
-	}
+	public System.Windows.Forms.ToolTipIcon ToolTipIcon { get; set; } = System.Windows.Forms.ToolTipIcon.None;
 
-	public bool IsBalloon {
-		get {
-			return _isBalloon;
-		}
-		set {
-			_isBalloon = value;
-		}
-	}
+	public bool IsBalloon { get; set; } = false;
 
-	public System.Drawing.Color BackColor {
-		get {
-			return _backColor;
-		}
-		set {
-			_backColor = value;
-		}
-	}
+	public System.Drawing.Color BackColor { get; set; } = System.Drawing.Color.Empty;
 
-	public System.Drawing.Color ForeColor {
-		get {
-			return _foreColor;
-		}
-		set {
-			_foreColor = value;
-		}
-	}
+	public System.Drawing.Color ForeColor { get; set; } = System.Drawing.Color.Empty;
 
 	// IBehaviorModel Members
 	public override void OnMouseEnter(CellContext sender, EventArgs e) {

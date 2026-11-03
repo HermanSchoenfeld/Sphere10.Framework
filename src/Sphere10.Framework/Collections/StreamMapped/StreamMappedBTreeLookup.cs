@@ -24,7 +24,6 @@ namespace Sphere10.Framework;
 /// <typeparam name="V">Lookup value type. Must have a constant-size serializer.</typeparam>
 public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDisposable {
 	private readonly IBTree<CompoundKey<K, int>, V> _btree;
-	private readonly Stream _stream;
 	private readonly BTreeLookup<K, V> _lookup;
 
 	/// <summary>Creates a new lookup in an empty stream using the framework's recommended order.</summary>
@@ -75,7 +74,7 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 		var compoundKeySerializer = new ConstantSizeCompoundKeySerializer<K, int>(keySerializer, PrimitiveSerializer<int>.Instance);
 		var compoundComparer = new CompoundKeyComparer<K, int>(keyComparer, Comparer<int>.Default);
 
-		_stream = stream;
+		Stream = stream;
 		_btree = Spec.Type == BTreeType.BTree
 			? new StreamMappedBTree<CompoundKey<K, int>, V>(Spec.Order, stream, compoundKeySerializer, valueSerializer, compoundComparer, endianness)
 			: new StreamMappedBTreePlus<CompoundKey<K, int>, V>(Spec.Order, stream, compoundKeySerializer, valueSerializer, compoundComparer, endianness);
@@ -107,7 +106,7 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 	/// <summary>
 	/// The underlying B-tree stream.
 	/// </summary>
-	public Stream Stream => _stream;
+	public Stream Stream { get; }
 
 	public BTreeSpec Spec { get; }
 

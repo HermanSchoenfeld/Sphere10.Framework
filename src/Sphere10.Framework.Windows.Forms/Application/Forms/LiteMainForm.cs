@@ -312,9 +312,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	#region IApplicationIconProvider Implementation
 
-	public virtual Icon ApplicationIcon {
-		get { return Sphere10Framework.Instance.GetAppIcon() ?? Icon; }
-	}
+	public virtual Icon ApplicationIcon => Sphere10Framework.Instance.GetAppIcon() ?? Icon;
 
 	#endregion
 
@@ -397,9 +395,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 
 
-	public virtual object PrimaryUIController {
-		get { return this; }
-	}
+	public virtual object PrimaryUIController => this;
 
 	#endregion
 

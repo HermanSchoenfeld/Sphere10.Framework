@@ -34,18 +34,10 @@ public class BoundList<T> : BoundListBase<T> {
 	}
 
 	/// <summary>Returns the item at the requested list index.</summary>
-	public override object this[int index] {
-		get {
-			return _list[index];
-		}
-	}
+	public override object this[int index] => _list[index];
 
 	/// <summary>Gets the current number of items in the wrapped list.</summary>
-	public override int Count {
-		get {
-			return _list.Count;
-		}
-	}
+	public override int Count => _list.Count;
 
 	/// <summary>Locates an item in the wrapped list.</summary>
 	public override int IndexOf(object item) {

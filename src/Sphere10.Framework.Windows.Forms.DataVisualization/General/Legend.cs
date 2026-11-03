@@ -191,8 +191,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         private LegendStyle _legendStyle = LegendStyle.Table;
 
         private LegendTableStyle _legendTableStyle = LegendTableStyle.Auto;
-        private LegendItemsCollection _customLegends;
-        private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
+		private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
         private string _backImage = string.Empty;
         private ChartImageWrapMode _backImageWrapMode = ChartImageWrapMode.Tile;
         private Color _backImageTransparentColor = Color.Empty;
@@ -209,8 +208,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         private Color _foreColor = Color.Black;
         private StringAlignment _legendAlignment = StringAlignment.Near;
         private Docking _legendDocking = Docking.Right;
-        private int _shadowOffset;
-        private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
+		private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
         private bool _isTextAutoFit = true;
         private string _dockedToChartArea = Constants.NotSetValue;
         private bool _isDockedInsideChartArea = true;
@@ -233,11 +231,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Indicates that all items in the legend should be equally spaced
         private bool _isEquallySpacedItems;
 
-        // Indicate that legend rows should be drawn with isInterlaced background color.
-        private bool _interlacedRows;
+		// Indicate that legend rows should be drawn with isInterlaced background color.
 
-        // Legend isInterlaced rows color
-        private Color _interlacedRowsColor = Color.Empty;
+		// Legend isInterlaced rows color
+		private Color _interlacedRowsColor = Color.Empty;
 
         // Legend offsets
         private Size _offset = Size.Empty;
@@ -251,12 +248,11 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Value used to calculate auto-fit font size from the legend Font.
         private int _autoFitFontSizeAdjustment;
 
-        // Legend column collection
-        private LegendCellColumnCollection _cellColumns;
+		// Legend column collection
 
-        // Indicates that legend items automatically added based on the exsisting
-        // series in reversed order.
-        private LegendItemOrder _legendItemOrder = LegendItemOrder.Auto;
+		// Indicates that legend items automatically added based on the exsisting
+		// series in reversed order.
+		private LegendItemOrder _legendItemOrder = LegendItemOrder.Auto;
 
         // Legend title text
         private string _title = String.Empty;
@@ -351,9 +347,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         {
             _position = new ElementPosition(this);
             // Initialize custom items collection
-            _customLegends = new LegendItemsCollection(this);
+            CustomItems = new LegendItemsCollection(this);
             legendItems = new LegendItemsCollection(this);
-            _cellColumns = new LegendCellColumnCollection(this);
+            CellColumns = new LegendCellColumnCollection(this);
             _font = FontCache.DefaultFont;
             _titleFont = FontCache.DefaultBoldFont;
         }
@@ -366,9 +362,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         {
             _position = new ElementPosition(this);
             // Initialize custom items collection
-            _customLegends = new LegendItemsCollection(this);
+            CustomItems = new LegendItemsCollection(this);
             legendItems = new LegendItemsCollection(this);
-            _cellColumns = new LegendCellColumnCollection(this);
+            CellColumns = new LegendCellColumnCollection(this);
             _font = FontCache.DefaultFont;
             _titleFont = FontCache.DefaultBoldFont;
         }
@@ -2196,7 +2192,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
             }
 
             // Add custom items
-            foreach (LegendItem item in this._customLegends)
+            foreach (LegendItem item in CustomItems)
             {
                 if (item.Enabled)
                 {
@@ -2500,15 +2496,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
-            set
-            {
-                base.Name = value;
-            }
-        }
+			get => base.Name;
+			set => base.Name = value;
+		}
 
         /// <summary>
         /// Gets or sets the name of the chart area where the legend
@@ -2524,11 +2514,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string DockedToChartArea
         {
-            get
-            {
-                return _dockedToChartArea;
-            }
-            set
+			get {
+				return _dockedToChartArea;
+			}
+			set
             {
                 if (value != _dockedToChartArea)
                 {
@@ -2547,7 +2536,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property which indicates whether
@@ -2563,11 +2552,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsDockedInsideChartArea
         {
-            get
-            {
-                return _isDockedInsideChartArea;
-            }
-            set
+			get {
+				return _isDockedInsideChartArea;
+			}
+			set
             {
                 if (value != _isDockedInsideChartArea)
                 {
@@ -2575,7 +2563,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the position of the legend.
@@ -2591,7 +2579,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ElementPosition Position
         {
-            get
+			get
             {
                 // Serialize only position values if Auto set to false
                 if (this.Common != null && this.Common.Chart != null && this.Common.Chart.serializationStatus == SerializationStatus.Saving)
@@ -2612,12 +2600,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _position;
             }
-            set
+			set
             {
                 _position = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Determines if this position should be serialized.
@@ -2641,16 +2629,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsEquallySpacedItems
         {
-            get
-            {
-                return _isEquallySpacedItems;
-            }
-            set
+			get {
+				return _isEquallySpacedItems;
+			}
+			set
             {
                 _isEquallySpacedItems = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a flag which indicates whether the legend is enabled.
@@ -2665,16 +2652,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool Enabled
         {
-            get
-            {
-                return _enabled;
-            }
-            set
+			get {
+				return _enabled;
+			}
+			set
             {
                 _enabled = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a value that indicates if legend text is automatically sized.
@@ -2688,12 +2674,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsTextAutoFit
         {
-            get
-            {
-                return _isTextAutoFit;
-            }
-
-            set
+			get {
+				return _isTextAutoFit;
+			}
+			set
             {
                 if (value != _isTextAutoFit)
                 {
@@ -2722,7 +2706,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend style.
@@ -2737,16 +2721,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendStyle LegendStyle
         {
-            get
-            {
-                return _legendStyle;
-            }
-            set
+			get {
+				return _legendStyle;
+			}
+			set
             {
                 _legendStyle = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the minimum font size that can be used by the legend text's auto-fitting algorithm.
@@ -2758,11 +2741,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int AutoFitMinFontSize
         {
-            get
-            {
-                return this._autoFitMinFontSize;
-            }
-            set
+			get {
+				return this._autoFitMinFontSize;
+			}
+			set
             {
                 // Font size cannot be less than 5
                 if (value < 5)
@@ -2773,7 +2755,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._autoFitMinFontSize = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the maximum size (in percentage) of the legend used in the automatic layout algorithm.
@@ -2789,11 +2771,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public float MaximumAutoSize
         {
-            get
-            {
-                return this._maximumLegendAutoSize;
-            }
-            set
+			get {
+				return this._maximumLegendAutoSize;
+			}
+			set
             {
                 if (value < 0f || value > 100f)
                 {
@@ -2802,28 +2783,22 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._maximumLegendAutoSize = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
-        /// <summary>
-        /// Gets a collection of legend columns.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeCellColumns"),
-        SRDescription("DescriptionAttributeLegend_CellColumns"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        ]
-        public LegendCellColumnCollection CellColumns
-        {
-            get
-            {
-                return this._cellColumns;
-            }
-        }
+		/// <summary>
+		/// Gets a collection of legend columns.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeCellColumns"),
+		SRDescription("DescriptionAttributeLegend_CellColumns"),
+		DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
+		]
+		public LegendCellColumnCollection CellColumns { get; }
 
-        /// <summary>
-        /// Gets the legend table style.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets the legend table style.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAppearance"),
         Bindable(true),
         DefaultValue(LegendTableStyle.Auto),
@@ -2833,16 +2808,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendTableStyle TableStyle
         {
-            get
-            {
-                return this._legendTableStyle;
-            }
-            set
+			get {
+				return this._legendTableStyle;
+			}
+			set
             {
                 this._legendTableStyle = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets the legend header separator style.
@@ -2854,11 +2828,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendSeparatorStyle HeaderSeparator
         {
-            get
-            {
-                return this._headerSeparator;
-            }
-            set
+			get {
+				return this._headerSeparator;
+			}
+			set
             {
                 if (value != this._headerSeparator)
                 {
@@ -2866,7 +2839,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of the legend header separator.
@@ -2879,11 +2852,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color HeaderSeparatorColor
         {
-            get
-            {
-                return this._headerSeparatorColor;
-            }
-            set
+			get {
+				return this._headerSeparatorColor;
+			}
+			set
             {
                 if (value != this._headerSeparatorColor)
                 {
@@ -2891,7 +2863,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the separator style of the legend table columns.
@@ -2903,11 +2875,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendSeparatorStyle ItemColumnSeparator
         {
-            get
-            {
-                return this._itemColumnSeparator;
-            }
-            set
+			get {
+				return this._itemColumnSeparator;
+			}
+			set
             {
                 if (value != this._itemColumnSeparator)
                 {
@@ -2915,7 +2886,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of the separator of the legend table columns.
@@ -2928,11 +2899,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ItemColumnSeparatorColor
         {
-            get
-            {
-                return this._itemColumnSeparatorColor;
-            }
-            set
+			get {
+				return this._itemColumnSeparatorColor;
+			}
+			set
             {
                 if (value != this._itemColumnSeparatorColor)
                 {
@@ -2940,7 +2910,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend table column spacing, as a percentage of the legend text font.
@@ -2952,11 +2922,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int ItemColumnSpacing
         {
-            get
-            {
-                return this._itemColumnSpacing;
-            }
-            set
+			get {
+				return this._itemColumnSpacing;
+			}
+			set
             {
                 if (value != this._itemColumnSpacing)
                 {
@@ -2968,7 +2937,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend background color.
@@ -2983,16 +2952,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackColor
         {
-            get
-            {
-                return _backColor;
-            }
-            set
+			get {
+				return _backColor;
+			}
+			set
             {
                 _backColor = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend border color.
@@ -3007,16 +2975,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BorderColor
         {
-            get
-            {
-                return _borderColor;
-            }
-            set
+			get {
+				return _borderColor;
+			}
+			set
             {
                 _borderColor = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend border style.
@@ -3031,16 +2998,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartDashStyle BorderDashStyle
         {
-            get
-            {
-                return _borderDashStyle;
-            }
-            set
+			get {
+				return _borderDashStyle;
+			}
+			set
             {
                 _borderDashStyle = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend border width.
@@ -3055,11 +3021,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int BorderWidth
         {
-            get
-            {
-                return _borderWidth;
-            }
-            set
+			get {
+				return _borderWidth;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -3068,7 +3033,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _borderWidth = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend background image.
@@ -3082,16 +3047,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string BackImage
         {
-            get
-            {
-                return _backImage;
-            }
-            set
+			get {
+				return _backImage;
+			}
+			set
             {
                 _backImage = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend background image drawing mode.
@@ -3105,16 +3069,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartImageWrapMode BackImageWrapMode
         {
-            get
-            {
-                return _backImageWrapMode;
-            }
-            set
+			get {
+				return _backImageWrapMode;
+			}
+			set
             {
                 _backImageWrapMode = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a color which will be replaced with a transparent color while drawing the background image.
@@ -3129,16 +3092,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackImageTransparentColor
         {
-            get
-            {
-                return _backImageTransparentColor;
-            }
-            set
+			get {
+				return _backImageTransparentColor;
+			}
+			set
             {
                 _backImageTransparentColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background image alignment used for the unscaled drawing mode.
@@ -3152,16 +3114,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartImageAlignmentStyle BackImageAlignment
         {
-            get
-            {
-                return _backImageAlignment;
-            }
-            set
+			get {
+				return _backImageAlignment;
+			}
+			set
             {
                 _backImageAlignment = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets background gradient style of the legend.
@@ -3176,16 +3137,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public GradientStyle BackGradientStyle
         {
-            get
-            {
-                return _backGradientStyle;
-            }
-            set
+			get {
+				return _backGradientStyle;
+			}
+			set
             {
                 _backGradientStyle = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color.
@@ -3212,16 +3172,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackSecondaryColor
         {
-            get
-            {
-                return _backSecondaryColor;
-            }
-            set
+			get {
+				return _backSecondaryColor;
+			}
+			set
             {
                 _backSecondaryColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style.
@@ -3245,16 +3204,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return _backHatchStyle;
-            }
-            set
+			get {
+				return _backHatchStyle;
+			}
+			set
             {
                 _backHatchStyle = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the font of the legend text.
@@ -3269,18 +3227,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Font Font
         {
-            get
-            {
-                return _font;
-            }
-
-            set
+			get {
+				return _font;
+			}
+			set
             {
                 this.IsTextAutoFit = false;
                 _font = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of the legend text.
@@ -3296,16 +3252,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ForeColor
         {
-            get
-            {
-                return _foreColor;
-            }
-            set
+			get {
+				return _foreColor;
+			}
+			set
             {
                 _foreColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text alignment.
@@ -3319,16 +3274,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public StringAlignment Alignment
         {
-            get
-            {
-                return _legendAlignment;
-            }
-            set
+			get {
+				return _legendAlignment;
+			}
+			set
             {
                 _legendAlignment = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the property that specifies where the legend docks.
@@ -3342,51 +3296,47 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Docking Docking
         {
-            get
-            {
-                return _legendDocking;
-            }
-            set
+			get {
+				return _legendDocking;
+			}
+			set
             {
                 _legendDocking = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
-        /// <summary>
-        /// Gets or sets the offset between the legend and its shadow.
-        /// <seealso cref="ShadowColor"/>
-        /// </summary>
-        /// <value>
-        /// An integer value that represents the offset between the legend and its shadow.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the offset between the legend and its shadow.
+		/// <seealso cref="ShadowColor"/>
+		/// </summary>
+		/// <value>
+		/// An integer value that represents the offset between the legend and its shadow.
+		/// </value>
 		[
-        SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        DefaultValue(0),
-        SRDescription("DescriptionAttributeShadowOffset"),
-        NotifyParentProperty(true)
-        ]
-        public int ShadowOffset
-        {
-            get
-            {
-                return _shadowOffset;
-            }
-            set
-            {
-                _shadowOffset = value;
-                this.Invalidate(false);
-            }
-        }
+		SRCategory("CategoryAttributeAppearance"),
+		Bindable(true),
+		DefaultValue(0),
+		SRDescription("DescriptionAttributeShadowOffset"),
+		NotifyParentProperty(true)
+		]
+		public int ShadowOffset {
+			get {
+				return field;
+			}
+			set {
+				field = value;
+				this.Invalidate(false);
+			}
+		}
 
-        /// <summary>
-        /// Gets or sets the color of a legend's shadow.
-        /// <seealso cref="ShadowOffset"/>
-        /// </summary>
-        /// <value>
-        /// A <see cref="Color"/> value used to draw a legend's shadow.
-        /// </value>
+		/// <summary>
+		/// Gets or sets the color of a legend's shadow.
+		/// <seealso cref="ShadowOffset"/>
+		/// </summary>
+		/// <value>
+		/// A <see cref="Color"/> value used to draw a legend's shadow.
+		/// </value>
 		[
         SRCategory("CategoryAttributeAppearance"),
         Bindable(true),
@@ -3397,16 +3347,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ShadowColor
         {
-            get
-            {
-                return _shadowColor;
-            }
-            set
+			get {
+				return _shadowColor;
+			}
+			set
             {
                 _shadowColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the name of the chart area name inside which the legend is drawn.
@@ -3425,17 +3374,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string InsideChartArea
         {
-            get
-            {
-                if (this.Common != null &&
-                    this.Common.Chart != null &&
-                    this.Common.Chart.serializing)
-                {
-                    return "NotSet";
-                }
-                return this.DockedToChartArea;
-            }
-            set
+			get {
+				return this.Common != null && this.Common.Chart != null && this.Common.Chart.serializing ? "NotSet" : this.DockedToChartArea;
+			}
+			set
             {
                 if (value.Length == 0)
                 {
@@ -3447,46 +3389,39 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 this.Invalidate(false);
             }
-        }
+		}
 
-        /// <summary>
-        /// Gets the custom legend items.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeAppearance"),
-        Bindable(true),
-        NotifyParentProperty(true),
-        SRDescription("DescriptionAttributeLegend_CustomItems"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        ]
-        public LegendItemsCollection CustomItems
-        {
-            get
-            {
-                return _customLegends;
-            }
-        }
+		/// <summary>
+		/// Gets the custom legend items.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeAppearance"),
+		Bindable(true),
+		NotifyParentProperty(true),
+		SRDescription("DescriptionAttributeLegend_CustomItems"),
+		DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
+		]
+		public LegendItemsCollection CustomItems { get; }
 
-        /// <summary>
-        /// Gets or sets a property that defines the preferred number of characters in a line of the legend text.
-        /// </summary>
-        /// <remarks>
-        /// When legend text exceeds the value defined in the <b>TextWrapThreshold</b> property, it will be
-        /// automatically wrapped on the next whitespace. Text will not be wrapped if there is no whitespace
-        /// characters in the text. Set this property to zero to disable the feature.
-        /// </remarks>
-        [
+		/// <summary>
+		/// Gets or sets a property that defines the preferred number of characters in a line of the legend text.
+		/// </summary>
+		/// <remarks>
+		/// When legend text exceeds the value defined in the <b>TextWrapThreshold</b> property, it will be
+		/// automatically wrapped on the next whitespace. Text will not be wrapped if there is no whitespace
+		/// characters in the text. Set this property to zero to disable the feature.
+		/// </remarks>
+		[
         SRCategory("CategoryAttributeAppearance"),
         DefaultValue(25),
         SRDescription("DescriptionAttributeLegend_TextWrapThreshold"),
         ]
         public int TextWrapThreshold
         {
-            get
-            {
-                return this._textWrapThreshold;
-            }
-            set
+			get {
+				return this._textWrapThreshold;
+			}
+			set
             {
                 if (value != this._textWrapThreshold)
                 {
@@ -3498,7 +3433,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property that specifies the order that legend items are shown. This property only affects
@@ -3515,11 +3450,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendItemOrder LegendItemOrder
         {
-            get
-            {
-                return this._legendItemOrder;
-            }
-            set
+			get {
+				return this._legendItemOrder;
+			}
+			set
             {
                 if (value != this._legendItemOrder)
                 {
@@ -3527,37 +3461,33 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
-        /// <summary>
-        /// Gets or sets a flag which indicates whether
-        /// legend rows should be drawn with interlaced background color.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeAppearance"),
-        DefaultValue(false),
-        SRDescription("DescriptionAttributeLegend_InterlacedRows"),
-        ]
-        public bool InterlacedRows
-        {
-            get
-            {
-                return this._interlacedRows;
-            }
-            set
-            {
-                if (value != this._interlacedRows)
-                {
-                    this._interlacedRows = value;
-                    this.Invalidate(false);
-                }
-            }
-        }
+		/// <summary>
+		/// Gets or sets a flag which indicates whether
+		/// legend rows should be drawn with interlaced background color.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeAppearance"),
+		DefaultValue(false),
+		SRDescription("DescriptionAttributeLegend_InterlacedRows"),
+		]
+		public bool InterlacedRows {
+			get {
+				return field;
+			}
+			set {
+				if (value != field) {
+					field = value;
+					this.Invalidate(false);
+				}
+			}
+		}
 
-        /// <summary>
-        /// Gets or sets the legend interlaced row's background color. Only applicable if interlaced rows are used.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the legend interlaced row's background color. Only applicable if interlaced rows are used.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAppearance"),
         DefaultValue(typeof(Color), ""),
         SRDescription("DescriptionAttributeLegend_InterlacedRowsColor"),
@@ -3565,11 +3495,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color InterlacedRowsColor
         {
-            get
-            {
-                return this._interlacedRowsColor;
-            }
-            set
+			get {
+				return this._interlacedRowsColor;
+			}
+			set
             {
                 if (value != this._interlacedRowsColor)
                 {
@@ -3577,7 +3506,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         #endregion
 
@@ -3593,11 +3522,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string Title
         {
-            get
-            {
-                return this._title;
-            }
-            set
+			get {
+				return this._title;
+			}
+			set
             {
                 if (value != this._title)
                 {
@@ -3605,7 +3533,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text color of the legend title.
@@ -3618,11 +3546,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color TitleForeColor
         {
-            get
-            {
-                return this._titleForeColor;
-            }
-            set
+			get {
+				return this._titleForeColor;
+			}
+			set
             {
                 if (value != this._titleForeColor)
                 {
@@ -3630,7 +3557,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of the legend title.
@@ -3643,11 +3570,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color TitleBackColor
         {
-            get
-            {
-                return this._titleBackColor;
-            }
-            set
+			get {
+				return this._titleBackColor;
+			}
+			set
             {
                 if (value != this._titleBackColor)
                 {
@@ -3655,7 +3581,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the font of the legend title.
@@ -3667,11 +3593,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Font TitleFont
         {
-            get
-            {
-                return this._titleFont;
-            }
-            set
+			get {
+				return this._titleFont;
+			}
+			set
             {
                 if (value != this._titleFont)
                 {
@@ -3679,7 +3604,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text alignment of the legend title.
@@ -3691,11 +3616,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public StringAlignment TitleAlignment
         {
-            get
-            {
-                return this._titleAlignment;
-            }
-            set
+			get {
+				return this._titleAlignment;
+			}
+			set
             {
                 if (value != this._titleAlignment)
                 {
@@ -3703,7 +3627,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the separator style of the legend title.
@@ -3715,11 +3639,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendSeparatorStyle TitleSeparator
         {
-            get
-            {
-                return this._titleSeparator;
-            }
-            set
+			get {
+				return this._titleSeparator;
+			}
+			set
             {
                 if (value != this._titleSeparator)
                 {
@@ -3727,7 +3650,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the separator color of the legend title.
@@ -3740,11 +3663,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color TitleSeparatorColor
         {
-            get
-            {
-                return this._titleSeparatorColor;
-            }
-            set
+			get {
+				return this._titleSeparatorColor;
+			}
+			set
             {
                 if (value != this._titleSeparatorColor)
                 {
@@ -3752,7 +3674,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate(false);
                 }
             }
-        }
+		}
 
         #endregion // Legend Title Properties
 
@@ -4597,10 +4519,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the default legend name.
         /// </summary>
-        internal string DefaultNameReference
-        {
-            get { return this.Count > 0 ? this[0].Name : String.Empty; }
-        }
+        internal string DefaultNameReference => this.Count > 0 ? this[0].Name : String.Empty;
 
         #endregion
 
@@ -4942,17 +4861,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Series marker border width
         private int _markerBorderWidth = 1;
 
-        // Collection of legend item cells
-        private LegendCellCollection _cells;
+		// Collection of legend item cells
 
-        // Legend item visual separator
-        private LegendSeparatorStyle _separatorType = LegendSeparatorStyle.None;
+		// Legend item visual separator
 
-        // Legend item visual separator color
-        private Color _separatorColor = Color.Black;
+		// Legend item visual separator color
 
-        // Indicates that temporary cells where added and thet have to be removed
-        internal bool clearTempCells;
+		// Indicates that temporary cells where added and thet have to be removed
+		internal bool clearTempCells;
 
         #endregion
 
@@ -4963,8 +4879,8 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         public LegendItem()
         {
-            // Create collection of legend item cells
-            this._cells = new LegendCellCollection(this);
+			// Create collection of legend item cells
+			Cells = new LegendCellCollection(this);
         }
 
         /// <summary>
@@ -4978,8 +4894,8 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
             this._color = color;
             this._image = image;
 
-            // Create collection of legend item cells
-            this._cells = new LegendCellCollection(this);
+			// Create collection of legend item cells
+			Cells = new LegendCellCollection(this);
         }
 
         #endregion
@@ -4995,16 +4911,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden),
         SerializationVisibility(SerializationVisibility.Hidden),
         ]
-        public Legend Legend
-        {
-            get
-            {
-                if (Parent != null)
-                    return Parent.Parent as Legend;
-                else
-                    return null;
-            }
-        }
+        public Legend Legend => Parent != null ? Parent.Parent as Legend : null;
 
         /// <summary>
         /// Gets or sets the name of the legend item.
@@ -5018,15 +4925,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
-            set
-            {
-                base.Name = value;
-            }
-        }
+			get => base.Name;
+			set => base.Name = value;
+		}
 
         /// <summary>
         /// Gets or sets the color of the legend item.
@@ -5041,16 +4942,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color Color
         {
-            get
-            {
-                return _color;
-            }
-            set
+			get {
+				return _color;
+			}
+			set
             {
                 _color = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a string value that represents a URL to an image file, which will be used for the legend item's symbol.
@@ -5064,16 +4964,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string Image
         {
-            get
-            {
-                return _image;
-            }
-            set
+			get {
+				return _image;
+			}
+			set
             {
                 _image = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the picture style of the legend item image.
@@ -5087,16 +4986,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendImageStyle ImageStyle
         {
-            get
-            {
-                return style;
-            }
-            set
+			get {
+				return style;
+			}
+			set
             {
                 style = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the border color of the legend item.
@@ -5110,16 +5008,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BorderColor
         {
-            get
-            {
-                return borderColor;
-            }
-            set
+			get {
+				return borderColor;
+			}
+			set
             {
                 borderColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style of the legend item.
@@ -5132,16 +5029,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return backHatchStyle;
-            }
-            set
+			get {
+				return backHatchStyle;
+			}
+			set
             {
                 backHatchStyle = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a color which will be replaced with a transparent color while drawing the background image.
@@ -5156,16 +5052,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackImageTransparentColor
         {
-            get
-            {
-                return backImageTransparentColor;
-            }
-            set
+			get {
+				return backImageTransparentColor;
+			}
+			set
             {
                 backImageTransparentColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets background gradient style of the legend item.
@@ -5178,16 +5073,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public GradientStyle BackGradientStyle
         {
-            get
-            {
-                return backGradientStyle;
-            }
-            set
+			get {
+				return backGradientStyle;
+			}
+			set
             {
                 backGradientStyle = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color.
@@ -5212,11 +5106,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color BackSecondaryColor
         {
-            get
-            {
-                return backSecondaryColor;
-            }
-            set
+			get {
+				return backSecondaryColor;
+			}
+			set
             {
                 if (value != Color.Empty && (value.A != 255 || value == Color.Transparent))
                 {
@@ -5227,7 +5120,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the border width of the legend item.
@@ -5240,11 +5133,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 ]
         public int BorderWidth
         {
-            get
-            {
-                return borderWidth;
-            }
-            set
+			get {
+				return borderWidth;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -5253,7 +5145,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 borderWidth = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a flag which indicates whether the Legend item is enabled.
@@ -5266,16 +5158,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool Enabled
         {
-            get
-            {
-                return this._enabled;
-            }
-            set
+			get {
+				return this._enabled;
+			}
+			set
             {
                 this._enabled = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the marker border width of the legend item.
@@ -5287,11 +5178,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 ]
         public int MarkerBorderWidth
         {
-            get
-            {
-                return this._markerBorderWidth;
-            }
-            set
+			get {
+				return this._markerBorderWidth;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -5300,7 +5190,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._markerBorderWidth = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the legend item border style.
@@ -5313,16 +5203,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 ]
         public ChartDashStyle BorderDashStyle
         {
-            get
-            {
-                return borderDashStyle;
-            }
-            set
+			get {
+				return borderDashStyle;
+			}
+			set
             {
                 borderDashStyle = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the offset between the legend item and its shadow.
@@ -5339,16 +5228,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int ShadowOffset
         {
-            get
-            {
-                return shadowOffset;
-            }
-            set
+			get {
+				return shadowOffset;
+			}
+			set
             {
                 shadowOffset = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of a legend item's shadow.
@@ -5366,16 +5254,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ShadowColor
         {
-            get
-            {
-                return shadowColor;
-            }
-            set
+			get {
+				return shadowColor;
+			}
+			set
             {
                 shadowColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the marker style of the legend item.
@@ -5389,16 +5276,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public MarkerStyle MarkerStyle
         {
-            get
-            {
-                return markerStyle;
-            }
-            set
+			get {
+				return markerStyle;
+			}
+			set
             {
                 markerStyle = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the marker size of the legend item.
@@ -5412,16 +5298,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int MarkerSize
         {
-            get
-            {
-                return markerSize;
-            }
-            set
+			get {
+				return markerSize;
+			}
+			set
             {
                 markerSize = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the marker image of the legend item.
@@ -5435,16 +5320,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string MarkerImage
         {
-            get
-            {
-                return markerImage;
-            }
-            set
+			get {
+				return markerImage;
+			}
+			set
             {
                 markerImage = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a color which will be replaced with a transparent color while drawing the marker image.
@@ -5459,16 +5343,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color MarkerImageTransparentColor
         {
-            get
-            {
-                return markerImageTransparentColor;
-            }
-            set
+			get {
+				return markerImageTransparentColor;
+			}
+			set
             {
                 markerImageTransparentColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the marker color of the legend item.
@@ -5483,16 +5366,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color MarkerColor
         {
-            get
-            {
-                return markerColor;
-            }
-            set
+			get {
+				return markerColor;
+			}
+			set
             {
                 markerColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the marker border color of the legend item.
@@ -5507,16 +5389,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color MarkerBorderColor
         {
-            get
-            {
-                return markerBorderColor;
-            }
-            set
+			get {
+				return markerBorderColor;
+			}
+			set
             {
                 markerBorderColor = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the series name of the legend item..
@@ -5530,15 +5411,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string SeriesName
         {
-            get
-            {
-                return _seriesName;
-            }
-            set
-            {
-                _seriesName = value;
-            }
-        }
+			get => _seriesName;
+			set => _seriesName = value;
+		}
 
         /// <summary>
         /// Gets or sets the index of the legend item's associated DataPoint object.
@@ -5552,15 +5427,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int SeriesPointIndex
         {
-            get
-            {
-                return _seriesPointIndex;
-            }
-            set
-            {
-                _seriesPointIndex = value;
-            }
-        }
+			get => _seriesPointIndex;
+			set => _seriesPointIndex = value;
+		}
 
         /// <summary>
         /// Gets or sets the separator style of the legend item.
@@ -5572,24 +5441,23 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LegendSeparatorStyle SeparatorType
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return this._separatorType;
-            }
-            set
-            {
-                if (value != this._separatorType)
+                if (value != field)
                 {
-                    this._separatorType = value;
+                    field = value;
                     this.Invalidate(false);
                 }
             }
-        }
+		} = LegendSeparatorStyle.None;
 
-        /// <summary>
-        /// Gets or sets the separator color of the legend item.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the separator color of the legend item.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAppearance"),
         DefaultValue(typeof(Color), "Black"),
         SRDescription("DescriptionAttributeLegendItem_SeparatorColor"),
@@ -5597,44 +5465,37 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color SeparatorColor
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return this._separatorColor;
-            }
-            set
-            {
-                if (value != this._separatorColor)
+                if (value != field)
                 {
-                    this._separatorColor = value;
+                    field = value;
                     this.Invalidate(false);
                 }
             }
-        }
+		} = Color.Black;
 
-        /// <summary>
-        /// The LegendCellCollection class is a collection of legend item cells.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeAppearance"),
-        SRDescription("DescriptionAttributeLegendItem_Cells"),
-        DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
-        ]
-        public LegendCellCollection Cells
-        {
-            get
-            {
-                return this._cells;
-            }
-        }
+		/// <summary>
+		/// The LegendCellCollection class is a collection of legend item cells.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeAppearance"),
+		SRDescription("DescriptionAttributeLegendItem_Cells"),
+		DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
+		]
+		public LegendCellCollection Cells { get; }
 
-        #endregion
+		#endregion
 
-        #region	IMapAreaAttributesutes Properties implementation
+		#region	IMapAreaAttributesutes Properties implementation
 
-        /// <summary>
-        /// Tooltip of the area.
-        /// </summary>
-        [
+		/// <summary>
+		/// Tooltip of the area.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeMapArea"),
         Bindable(true),
         SRDescription("DescriptionAttributeToolTip"),
@@ -5642,7 +5503,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string ToolTip
         {
-            set
+			set
             {
                 _toolTip = value;
                 if (Chart != null && Chart.selection != null)
@@ -5650,11 +5511,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     Chart.selection.enabledChecked = false;
                 }
             }
-            get
-            {
-                return _toolTip;
-            }
-        }
+			get {
+				return _toolTip;
+			}
+		}
 
         #endregion
 

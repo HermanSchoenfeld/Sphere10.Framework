@@ -22,9 +22,7 @@ public class MSSQLDAC : DACBase {
 		: base(connectionString, logger) {
 	}
 
-	public override DBMSType DBMSType {
-		get { return DBMSType.SQLServer; }
-	}
+	public override DBMSType DBMSType => DBMSType.SQLServer;
 
 	public override IDbConnection CreateConnection() {
 		var builder = new SqlConnectionStringBuilder(ConnectionString);

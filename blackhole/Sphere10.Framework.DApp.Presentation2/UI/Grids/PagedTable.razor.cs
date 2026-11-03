@@ -48,26 +48,24 @@ namespace Sphere10.Framework.DApp.Presentation2.UI.Grids {
 			.ToList();
 
 		/// <summary>
-		/// backing field for page size
-		/// </summary>
-		private int _pageSize = 10;
-
-		/// <summary>
 		/// Gets or sets the size of the page to show. When set, updates the current page
 		/// accordingly based on current position.
 		/// </summary>
+		/// <remarks>backing field for page size</remarks>
 		private int PageSize {
-			get => _pageSize;
+			get {
+				return field;
+			}
 			set {
 				if (Items.Any()) {
 					int index = (CurrentPage - 1) * PageSize + Page.Count();
-					_pageSize = value;
-					CurrentPage = (int)Math.Ceiling((double)index / _pageSize);
+					field = value;
+					CurrentPage = (int)Math.Ceiling((double)index / field);
 				} else {
-					_pageSize = value;
+					field = value;
 				}
 			}
-		}
+		} = 10;
 
 		/// <summary>
 		/// Gets or sets the current page

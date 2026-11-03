@@ -20,7 +20,7 @@
 
 
 @code {
-	public override string Title { get; } = "Restore wallet";
+	public override string Title => "Restore wallet";
 
 	public override Task<Result> OnNextAsync() {
 		if (string.IsNullOrEmpty(Model.Seed)) {

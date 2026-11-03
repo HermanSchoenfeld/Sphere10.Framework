@@ -22,9 +22,7 @@ public class MultiKeyDictionary<K1, K2, V> : Dictionary<K1, Dictionary<K2, V>> {
 
 	public V this[K1 key1, K2 key2] {
 		get {
-			if (!ContainsKey(key1) || !this[key1].ContainsKey(key2))
-				throw new ArgumentOutOfRangeException();
-			return base[key1][key2];
+			return !ContainsKey(key1) || !this[key1].ContainsKey(key2) ? throw new ArgumentOutOfRangeException() : base[key1][key2];
 		}
 		set {
 			if (!ContainsKey(key1))
@@ -68,7 +66,9 @@ public class MultiKeyDictionary<K1, K2, K3, V> : Dictionary<K1, MultiKeyDictiona
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3] {
-		get => ContainsKey(key1) ? this[key1][key2, key3] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, V>(_key2Comparer, _key3Comparer);
@@ -113,7 +113,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, V> : Dictionary<K1, MultiKeyDict
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, V>(_key2Comparer, _key3Comparer, _key4Comparer);
@@ -161,7 +163,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, V> : Dictionary<K1, MultiKey
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer);
@@ -203,7 +207,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, V> : Dictionary<K1, Mult
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, K6, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer, _key6Comparer);
@@ -247,7 +253,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, V> : Dictionary<K1, 
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, K6, K7, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer, _key6Comparer, _key7Comparer);
@@ -293,7 +301,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, V> : Dictionary<
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer, _key6Comparer, _key7Comparer, _key8Comparer);
@@ -341,7 +351,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, K9, V> : Diction
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8, key9] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8, key9] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, K9, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer, _key6Comparer, _key7Comparer, _key8Comparer, _key9Comparer);
@@ -393,7 +405,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, K9, K10, V> : Di
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, K10 key10] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8, key9, key10] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8, key9, key10] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, K9, K10, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer, _key6Comparer, _key7Comparer, _key8Comparer, _key9Comparer, _key10Comparer);
@@ -446,7 +460,9 @@ public class MultiKeyDictionary<K1, K2, K3, K4, K5, K6, K7, K8, K9, K10, K11, V>
 	}
 
 	public V this[K1 key1, K2 key2, K3 key3, K4 key4, K5 key5, K6 key6, K7 key7, K8 key8, K9 key9, K10 key10, K11 key11] {
-		get => ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8, key9, key10, key11] : default(V);
+		get {
+			return ContainsKey(key1) ? this[key1][key2, key3, key4, key5, key6, key7, key8, key9, key10, key11] : default(V);
+		}
 		set {
 			if (!ContainsKey(key1))
 				this[key1] = new MultiKeyDictionary<K2, K3, K4, K5, K6, K7, K8, K9, K10, K11, V>(_key2Comparer, _key3Comparer, _key4Comparer, _key5Comparer, _key6Comparer, _key7Comparer, _key8Comparer, _key9Comparer, _key10Comparer, _key11Comparer);

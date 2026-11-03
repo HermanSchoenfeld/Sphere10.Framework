@@ -39,8 +39,13 @@ public class NTShare : NTLocalObject {
 
 	/// <summary>Owned managed descriptor snapshot. Native inventory buffers never escape the read operation.</summary>
 	public byte[] SecurityDescriptorBytes {
-		get => _securityDescriptorBytes == null ? null : (byte[])_securityDescriptorBytes.Clone();
-		set { _securityDescriptorBytes = value == null ? null : (byte[])value.Clone(); SecurityDescriptor = IntPtr.Zero; }
+		get {
+			return _securityDescriptorBytes == null ? null : (byte[])_securityDescriptorBytes.Clone();
+		}
+		set {
+			_securityDescriptorBytes = value == null ? null : (byte[])value.Clone();
+			SecurityDescriptor = IntPtr.Zero;
+		}
 	}
 
 	public override void Update() {
@@ -130,9 +135,7 @@ public class NTShare : NTLocalObject {
 		}
 	}
 
-	public override string FullName {
-		get { return string.Format("{0}{1}{2}", NTCompatibleHostName, Path.DirectorySeparatorChar, Name); }
-	}
+	public override string FullName => string.Format("{0}{1}{2}", NTCompatibleHostName, Path.DirectorySeparatorChar, Name);
 
 	public ShareSecurity GetAccessControl() {
 		return GetAccessControl(AccessControlSections.All);

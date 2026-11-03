@@ -41,12 +41,8 @@ namespace Sphere10.Framework {
 		}
 
 		public new TObject Object {
-			get {
-				return base.Object as TObject;
-			}
-			protected set {
-				base.Object = value;
-			}
+			get => base.Object as TObject;
+			protected set => base.Object = value;
 		}
 
 

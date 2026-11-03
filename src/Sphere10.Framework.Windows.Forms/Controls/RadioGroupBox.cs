@@ -86,7 +86,9 @@ public partial class RadioGroupBox : GroupBox {
 	[Category("Appearance")]
 	[DefaultValue(false)]
 	public bool Checked {
-		get { return this.m_radioButton.Checked; }
+		get {
+			return this.m_radioButton.Checked;
+		}
 		set {
 			if (this.m_radioButton.Checked != value) {
 				this.m_radioButton.Checked = value;
@@ -101,7 +103,9 @@ public partial class RadioGroupBox : GroupBox {
 	[Category("Appearance")]
 	[DefaultValue(false)]
 	public bool DisableChildrenIfUnchecked {
-		get { return this.m_bDisableChildrenIfUnchecked; }
+		get {
+			return this.m_bDisableChildrenIfUnchecked;
+		}
 		set {
 			if (this.m_bDisableChildrenIfUnchecked != value) {
 				this.m_bDisableChildrenIfUnchecked = value;

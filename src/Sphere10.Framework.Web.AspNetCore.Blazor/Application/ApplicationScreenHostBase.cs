@@ -20,7 +20,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Hosts logical Blazor screen proxies while the renderer owns their component instances.</summary>
 public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost<IApplicationBlock, ApplicationScreenSession>, IApplicationScreenHost {
-	private ApplicationScreenActivation _activation;
 	private BlazorScreenMenuItem _menuItem;
 	private BlazorUserInterfaceServices _ownedUserInterface;
 
@@ -88,13 +87,13 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		return RunTransitionAsync(async token => {
 			Guard.Argument(block != null && Blocks.Any(candidate => ReferenceEquals(candidate, block)), nameof(block), "The block is not registered.");
 			Guard.Argument(block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, registration ?? definition)), nameof(definition), "The screen definition is not owned by this block.");
-			var previous = _activation;
+			var previous = CurrentActivation;
 			var previousMenuItem = _menuItem;
 			using var request = Tools.Scope.ExecuteOnDispose(() => {
-				_activation = previous;
+				CurrentActivation = previous;
 				_menuItem = previousMenuItem;
 			});
-			_activation = activation;
+			CurrentActivation = activation;
 			_menuItem = menuItem;
 			return await ActivateCoreAsync(block, definition, token, registration);
 		}, cancellationToken);
@@ -212,16 +211,16 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		return selected != null && CanRestoreScreenAtStartup(block, selected) ? selected : null;
 	}
 
-	protected ApplicationScreenActivation CurrentActivation => _activation;
+	protected ApplicationScreenActivation CurrentActivation { get; private set; }
 
 	protected override ApplicationScreenSession FindReusableScreen(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition, SharedUI.ApplicationScreenDefinition registration) {
 		var reusable = base.FindReusableScreen(block, definition, registration);
-		if (reusable != null || definition.ActivationMode != ScreenActivationMode.MultiInstance || _activation?.InstanceKey == null)
+		if (reusable != null || definition.ActivationMode != ScreenActivationMode.MultiInstance || CurrentActivation?.InstanceKey == null)
 			return reusable;
 		// Instance identity comes from the retained sessions; failed preparation cannot leave a second retention index behind.
 		return Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, block)
 			&& screen.Definition.Registration.Token == registration.Registration.Token
-			&& string.Equals(screen.InstanceKey, _activation.InstanceKey, StringComparison.Ordinal));
+			&& string.Equals(screen.InstanceKey, CurrentActivation.InstanceKey, StringComparison.Ordinal));
 	}
 
 	protected override void OnScreenRemoved(ApplicationScreenSession screen) {

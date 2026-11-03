@@ -98,12 +98,8 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	/// </summary>
 	[Browsable(false)]
 	public Control DropDownControl {
-		get {
-			return _dropDownCtrl;
-		}
-		set {
-			AssignControl(value);
-		}
+		get => _dropDownCtrl;
+		set => AssignControl(value);
 	}
 
 	/// <summary>
@@ -121,12 +117,8 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	/// </summary>
 	[Category("Custom Drop-Down"), Description("Indicates if drop-down is resizable.")]
 	public bool AllowResizeDropDown {
-		get {
-			return _isResizable;
-		}
-		set {
-			_isResizable = value;
-		}
+		get => _isResizable;
+		set => _isResizable = value;
 	}
 
 	/// <summary>
@@ -182,11 +174,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
-	public new ObjectCollection Items {
-		get {
-			return base.Items;
-		}
-	}
+	public new ObjectCollection Items => base.Items;
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]

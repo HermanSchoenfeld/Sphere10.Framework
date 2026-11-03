@@ -29,7 +29,7 @@
 </EditForm>
 
 @code {
-	public override string Title { get; } = "Wallet Type";
+	public override string Title => "Wallet Type";
 
 	public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
 

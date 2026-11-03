@@ -18,12 +18,8 @@ public class IndexItemsCallArgs<T> : CallArgs {
 	}
 
 	public long Index {
-		get {
-			return (long)base[0];
-		}
-		set {
-			base[0] = value;
-		}
+		get => (long)base[0];
+		set => base[0] = value;
 	}
 
 	public IEnumerable<T> Items {

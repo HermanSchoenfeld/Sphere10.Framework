@@ -46,11 +46,7 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 		: base(grid) {
 	}
 
-	public override int Count {
-		get {
-			return _list.Count;
-		}
-	}
+	public override int Count => _list.Count;
 
 	/// <summary>
 	/// Indexer. Returns a ColumnInfo at the specified position

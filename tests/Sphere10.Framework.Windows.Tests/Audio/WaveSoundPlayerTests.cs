@@ -299,7 +299,10 @@ public class WaveSoundPlayerTests {
 		public override bool CanSeek => false;
 		public override bool CanWrite => false;
 		public override long Length => throw new NotSupportedException();
-		public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+		public override long Position {
+			get => throw new NotSupportedException();
+			set => throw new NotSupportedException();
+		}
 
 		public override int Read(byte[] buffer, int offset, int count) {
 			var read = _source.Read(buffer, offset, Math.Min(count, 17));

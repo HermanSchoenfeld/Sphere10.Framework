@@ -18,9 +18,6 @@ namespace Sphere10.Framework;
 /// You can top-up the level by calling RegisterEvent
 /// </summary>
 public sealed class DecayGauge {
-	private double _decayCoefficient;
-	private double _decayExponent;
-	private double _decayOffset;
 	private double _level;
 	private DateTime _lastEventTime;
 
@@ -64,26 +61,32 @@ public sealed class DecayGauge {
 	}
 
 	public double DecayCoefficient {
-		get { return _decayCoefficient; }
+		get {
+			return field;
+		}
 		set {
 			_level = Level;
-			_decayCoefficient = value;
+			field = value;
 		}
 	}
 
 	public double DecayExponent {
-		get { return _decayExponent; }
+		get {
+			return field;
+		}
 		set {
 			_level = Level;
-			_decayExponent = value;
+			field = value;
 		}
 	}
 
 	public double DecayOffset {
-		get { return _decayOffset; }
+		get {
+			return field;
+		}
 		set {
 			_level = Level;
-			_decayOffset = value;
+			field = value;
 		}
 	}
 

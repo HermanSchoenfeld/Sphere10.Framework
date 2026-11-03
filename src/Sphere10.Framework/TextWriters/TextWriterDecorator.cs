@@ -67,9 +67,7 @@ public abstract class TextWriterDecorator<TTextWriter> : TextWriter where TTextW
 	/// </summary>
 	/// <returns>The Encoding in which the output is written.</returns>
 	/// <remarks></remarks>
-	public override Encoding Encoding {
-		get { return InternalTextWriter.Encoding; }
-	}
+	public override Encoding Encoding => InternalTextWriter.Encoding;
 }
 
 

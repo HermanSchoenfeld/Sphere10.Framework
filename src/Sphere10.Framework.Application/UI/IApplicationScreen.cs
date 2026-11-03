@@ -24,11 +24,7 @@ public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvid
 	string Title => null;
 
 	/// <summary>Optional screen preferences; platform screens can override this with their concrete value type.</summary>
-	SettingsObject ScreenSettings {
-		get {
-			return null;
-		}
-	}
+	SettingsObject ScreenSettings => null;
 
 	bool HasUnsavedChanges => false;
 

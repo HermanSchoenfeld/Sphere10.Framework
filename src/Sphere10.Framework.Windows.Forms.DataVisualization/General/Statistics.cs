@@ -1078,114 +1078,54 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the mean of the first series.
         /// </summary>
-        public double FirstSeriesMean
-        {
-            get
-            {
-                return firstSeriesMean;
-            }
-        }
+        public double FirstSeriesMean => firstSeriesMean;
 
         /// <summary>
         /// Gets the mean of the second series.
         /// </summary>
-        public double SecondSeriesMean
-        {
-            get
-            {
-                return secondSeriesMean;
-            }
-        }
+        public double SecondSeriesMean => secondSeriesMean;
 
         /// <summary>
         /// Gets the variance of the first series.
         /// </summary>
-        public double FirstSeriesVariance
-        {
-            get
-            {
-                return firstSeriesVariance;
-            }
-        }
+        public double FirstSeriesVariance => firstSeriesVariance;
 
         /// <summary>
         /// Gets the variance of the second series.
         /// </summary>
-        public double SecondSeriesVariance
-        {
-            get
-            {
-                return secondSeriesVariance;
-            }
-        }
+        public double SecondSeriesVariance => secondSeriesVariance;
 
         /// <summary>
         /// Gets the T value.
         /// </summary>
-        public double TValue
-        {
-            get
-            {
-                return tValue;
-            }
-        }
+        public double TValue => tValue;
 
         /// <summary>
         /// Gets the degree of freedom.
         /// </summary>
-        public double DegreeOfFreedom
-        {
-            get
-            {
-                return degreeOfFreedom;
-            }
-        }
+        public double DegreeOfFreedom => degreeOfFreedom;
 
         /// <summary>
         /// Gets the probability T one tail value.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
             Justification = "T One Tail is a statistics term. 'Tone' is not the intended word here.")]
-        public double ProbabilityTOneTail
-        {
-            get
-            {
-                return probabilityTOneTail;
-            }
-        }
+        public double ProbabilityTOneTail => probabilityTOneTail;
 
         /// <summary>
         /// Gets the critical T one tail value.
         /// </summary>
-        public double TCriticalValueOneTail
-        {
-            get
-            {
-                return tCriticalValueOneTail;
-            }
-        }
+        public double TCriticalValueOneTail => tCriticalValueOneTail;
 
         /// <summary>
         /// Gets the probability T two tails value.
         /// </summary>
-        public double ProbabilityTTwoTail
-        {
-            get
-            {
-                return probabilityTTwoTail;
-            }
-        }
+        public double ProbabilityTTwoTail => probabilityTTwoTail;
 
         /// <summary>
         /// Gets the critical T two tails value.
         /// </summary>
-        public double TCriticalValueTwoTail
-        {
-            get
-            {
-                return tCriticalValueTwoTail;
-            }
-        }
+        public double TCriticalValueTwoTail => tCriticalValueTwoTail;
 
         #endregion
     }
@@ -1239,79 +1179,37 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the mean of the first series.
         /// </summary>
-        public double FirstSeriesMean
-        {
-            get
-            {
-                return firstSeriesMean;
-            }
-        }
+        public double FirstSeriesMean => firstSeriesMean;
 
         /// <summary>
         /// Gets the mean of the second series.
         /// </summary>
-        public double SecondSeriesMean
-        {
-            get
-            {
-                return secondSeriesMean;
-            }
-        }
+        public double SecondSeriesMean => secondSeriesMean;
 
         /// <summary>
         /// Gets the variance of the first series.
         /// </summary>
-        public double FirstSeriesVariance
-        {
-            get
-            {
-                return firstSeriesVariance;
-            }
-        }
+        public double FirstSeriesVariance => firstSeriesVariance;
 
         /// <summary>
         /// Gets the variance of the second series.
         /// </summary>
-        public double SecondSeriesVariance
-        {
-            get
-            {
-                return secondSeriesVariance;
-            }
-        }
+        public double SecondSeriesVariance => secondSeriesVariance;
 
         /// <summary>
         /// Gets the F value.
         /// </summary>
-        public double FValue
-        {
-            get
-            {
-                return fValue;
-            }
-        }
+        public double FValue => fValue;
 
         /// <summary>
         /// Gets the probability F one tail.
         /// </summary>
-        public double ProbabilityFOneTail
-        {
-            get
-            {
-                return probabilityFOneTail;
-            }
-        }
+        public double ProbabilityFOneTail => probabilityFOneTail;
 
         /// <summary>
         /// Gets the critical F one tail.
         /// </summary>
-        public double FCriticalValueOneTail
-        {
-            get
-            {
-                return fCriticalValueOneTail;
-            }
-        }
+        public double FCriticalValueOneTail => fCriticalValueOneTail;
 
         #endregion
     }
@@ -1380,113 +1278,53 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the sum of squares between groups.
         /// </summary>
-        public double SumOfSquaresBetweenGroups
-        {
-            get
-            {
-                return sumOfSquaresBetweenGroups;
-            }
-        }
+        public double SumOfSquaresBetweenGroups => sumOfSquaresBetweenGroups;
 
         /// <summary>
         /// Gets the sum of squares within groups.
         /// </summary>
-        public double SumOfSquaresWithinGroups
-        {
-            get
-            {
-                return sumOfSquaresWithinGroups;
-            }
-        }
+        public double SumOfSquaresWithinGroups => sumOfSquaresWithinGroups;
 
 
         /// <summary>
         /// Gets the total sum of squares.
         /// </summary>
-        public double SumOfSquaresTotal
-        {
-            get
-            {
-                return sumOfSquaresTotal;
-            }
-        }
+        public double SumOfSquaresTotal => sumOfSquaresTotal;
 
         /// <summary>
         /// Gets the degree of freedom between groups.
         /// </summary>
-        public double DegreeOfFreedomBetweenGroups
-        {
-            get
-            {
-                return degreeOfFreedomBetweenGroups;
-            }
-        }
+        public double DegreeOfFreedomBetweenGroups => degreeOfFreedomBetweenGroups;
 
         /// <summary>
         /// Gets the degree of freedom within groups.
         /// </summary>
-        public double DegreeOfFreedomWithinGroups
-        {
-            get
-            {
-                return degreeOfFreedomWithinGroups;
-            }
-        }
+        public double DegreeOfFreedomWithinGroups => degreeOfFreedomWithinGroups;
 
         /// <summary>
         /// Gets the total degree of freedom.
         /// </summary>
-        public double DegreeOfFreedomTotal
-        {
-            get
-            {
-                return degreeOfFreedomTotal;
-            }
-        }
+        public double DegreeOfFreedomTotal => degreeOfFreedomTotal;
 
         /// <summary>
         /// Gets the mean square variance between groups.
         /// </summary>
-        public double MeanSquareVarianceBetweenGroups
-        {
-            get
-            {
-                return meanSquareVarianceBetweenGroups;
-            }
-        }
+        public double MeanSquareVarianceBetweenGroups => meanSquareVarianceBetweenGroups;
 
         /// <summary>
         /// Gets the mean square variance within groups.
         /// </summary>
-        public double MeanSquareVarianceWithinGroups
-        {
-            get
-            {
-                return meanSquareVarianceWithinGroups;
-            }
-        }
+        public double MeanSquareVarianceWithinGroups => meanSquareVarianceWithinGroups;
 
         /// <summary>
         /// Gets the F ratio.
         /// </summary>
-        public double FRatio
-        {
-            get
-            {
-                return fRatio;
-            }
-        }
+        public double FRatio => fRatio;
 
         /// <summary>
         /// Gets the F critical value.
         /// </summary>
-        public double FCriticalValue
-        {
-            get
-            {
-                return fCriticalValue;
-            }
-        }
+        public double FCriticalValue => fCriticalValue;
 
         #endregion
     }
@@ -1528,103 +1366,49 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets the mean of the first series.
         /// </summary>
-        public double FirstSeriesMean
-        {
-            get
-            {
-                return firstSeriesMean;
-            }
-        }
+        public double FirstSeriesMean => firstSeriesMean;
 
         /// <summary>
         /// Gets the mean of the second series.
         /// </summary>
-        public double SecondSeriesMean
-        {
-            get
-            {
-                return secondSeriesMean;
-            }
-        }
+        public double SecondSeriesMean => secondSeriesMean;
 
         /// <summary>
         /// Gets the variance of the first series.
         /// </summary>
-        public double FirstSeriesVariance
-        {
-            get
-            {
-                return firstSeriesVariance;
-            }
-        }
+        public double FirstSeriesVariance => firstSeriesVariance;
 
         /// <summary>
         /// Gets the variance of the second series.
         /// </summary>
-        public double SecondSeriesVariance
-        {
-            get
-            {
-                return secondSeriesVariance;
-            }
-        }
+        public double SecondSeriesVariance => secondSeriesVariance;
 
         /// <summary>
         /// Gets the Z Value
         /// </summary>
-        public double ZValue
-        {
-            get
-            {
-                return zValue;
-            }
-        }
+        public double ZValue => zValue;
 
         /// <summary>
         /// Gets the probability Z one tail value.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly",
             Justification = "Z One Tail is a statistics term. 'Zone' is not the intended word here.")]
-        public double ProbabilityZOneTail
-        {
-            get
-            {
-                return probabilityZOneTail;
-            }
-        }
+        public double ProbabilityZOneTail => probabilityZOneTail;
 
         /// <summary>
         /// Gets the Z critical value one tail value.
         /// </summary>
-        public double ZCriticalValueOneTail
-        {
-            get
-            {
-                return zCriticalValueOneTail;
-            }
-        }
+        public double ZCriticalValueOneTail => zCriticalValueOneTail;
 
         /// <summary>
         /// Gets the probability Z two tail value.
         /// </summary>
-        public double ProbabilityZTwoTail
-        {
-            get
-            {
-                return probabilityZTwoTail;
-            }
-        }
+        public double ProbabilityZTwoTail => probabilityZTwoTail;
 
         /// <summary>
         /// Gets the Z critical value two tail value.
         /// </summary>
-        public double ZCriticalValueTwoTail
-        {
-            get
-            {
-                return zCriticalValueTwoTail;
-            }
-        }
+        public double ZCriticalValueTwoTail => zCriticalValueTwoTail;
 
         #endregion // Properties
     }

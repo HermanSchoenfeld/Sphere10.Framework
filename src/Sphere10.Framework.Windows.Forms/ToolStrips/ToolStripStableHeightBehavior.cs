@@ -51,7 +51,9 @@ public sealed class ToolStripStableHeightBehavior : IDisposable {
 
 	/// <summary>The fixed row height in logical pixels at the standard menu font, or zero for content-based sizing.</summary>
 	public int LogicalHeight {
-		get => _logicalHeight;
+		get {
+			return _logicalHeight;
+		}
 		set {
 			Guard.ArgumentGTE(value, 0, nameof(value));
 			if (_logicalHeight == value)

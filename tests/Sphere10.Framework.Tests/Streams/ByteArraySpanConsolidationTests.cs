@@ -285,7 +285,9 @@ public class ByteArraySpanConsolidationTests {
 				PositionReads++;
 				return _stream.Position;
 			}
-			set => _stream.Position = value;
+			set {
+				_stream.Position = value;
+			}
 		}
 
 		public byte[] ToArray() => _stream.ToArray();

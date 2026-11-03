@@ -78,9 +78,7 @@ public partial class CsvReader {
 		/// <summary>
 		/// Gets the current record.
 		/// </summary>
-		public string[] Current {
-			get { return _current; }
-		}
+		public string[] Current => _current;
 
 		/// <summary>
 		/// Advances the enumerator to the next record of the CSV.

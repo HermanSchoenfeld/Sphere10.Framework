@@ -14,14 +14,12 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 
 public class AppViewModel {
-	private readonly Assembly[] _routingAssemblies;
-
-	public Assembly[] RoutingAssemblies => Tools.Array.Clone(_routingAssemblies);
+	public Assembly[] RoutingAssemblies => Tools.Array.Clone(field);
 
 	public AppViewModel(IBlazorRoutedPluginLocator pluginLocator) {
 		Guard.ArgumentNotNull(pluginLocator, nameof(pluginLocator));
 
-		_routingAssemblies = pluginLocator.LocatePlugins().Select(x => x.Assembly)
+		RoutingAssemblies = pluginLocator.LocatePlugins().Select(x => x.Assembly)
 			.Where(x => x.FullName != typeof(Program).Assembly.FullName)
 			.Distinct().ToArray();
 	}

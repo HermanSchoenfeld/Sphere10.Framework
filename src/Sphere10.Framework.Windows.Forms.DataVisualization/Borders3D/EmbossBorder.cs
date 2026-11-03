@@ -44,7 +44,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public virtual string Name { get { return "Emboss"; } }
+        public virtual string Name => "Emboss";
 
 
         public virtual float Resolution

@@ -93,7 +93,9 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 
 	/// <summary>Disable when the shared output is fed by a caller-owned raw sampler; the context menu remains available.</summary>
 	public bool CaptureEnabled {
-		get => _captureEnabled;
+		get {
+			return _captureEnabled;
+		}
 		set {
 			EnsureOwnerThread();
 			_captureEnabled = value;
@@ -106,8 +108,13 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 
 	/// <summary>Optional descriptive chart title. Empty uses the title provider or native chart/owning screen context.</summary>
 	public string LogTitle {
-		get => _logTitle;
-		set { EnsureOwnerThread(); _logTitle = value ?? string.Empty; }
+		get {
+			return _logTitle;
+		}
+		set {
+			EnsureOwnerThread();
+			_logTitle = value ?? string.Empty;
+		}
 	}
 
 	/// <summary>The current retained snapshot's logged identities; clearing or disposal releases this metadata.</summary>

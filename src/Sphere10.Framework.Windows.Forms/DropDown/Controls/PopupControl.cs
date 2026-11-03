@@ -27,10 +27,8 @@ public class PopupControl : IDisposable {
 
 	private ToolStripControlHost _host;
 	private PopupDropDown _dropDown;
-	private Control _control;
 	private Padding _padding = Padding.Empty;
 	private Padding _margin = new(1, 1, 1, 1);
-	private bool _autoReset;
 
 	/// <summary>Creates the owned native dropdown.</summary>
 	public PopupControl() {
@@ -38,48 +36,25 @@ public class PopupControl : IDisposable {
 	}
 
 	/// <summary>Gets whether the native dropdown is visible.</summary>
-	public bool Visible {
-		get {
-			return _dropDown != null && _dropDown.Visible;
-		}
-	}
+	public bool Visible => _dropDown != null && _dropDown.Visible;
 
 	/// <summary>Gets the borrowed content currently hosted by the popup.</summary>
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control { get; private set; }
 
 	/// <summary>Gets or sets the padding applied to the content host.</summary>
 	public Padding Padding {
-		get {
-			return _padding;
-		}
-		set {
-			_padding = value;
-		}
+		get => _padding;
+		set => _padding = value;
 	}
 
 	/// <summary>Gets or sets the margin applied to the content host.</summary>
 	public Padding Margin {
-		get {
-			return _margin;
-		}
-		set {
-			_margin = value;
-		}
+		get => _margin;
+		set => _margin = value;
 	}
 
 	/// <summary>Gets or sets whether native close releases the current content host.</summary>
-	public bool AutoResetWhenClosed {
-		get {
-			return _autoReset;
-		}
-		set {
-			_autoReset = value;
-		}
-	}
+	public bool AutoResetWhenClosed { get; set; }
 
 	/// <summary>Gets or sets the popup control host, this is used to hide/show popup.</summary>
 	public IPopupControlHost PopupControlHost {
@@ -153,7 +128,7 @@ public class PopupControl : IDisposable {
 				Margin = Padding.Empty,
 				Padding = Padding.Empty
 			};
-			_control = control;
+			Control = control;
 			surface.Controls.Add(control);
 			control.Bounds = surface.ClientRectangle;
 			_host = new ToolStripControlHost(surface) {
@@ -183,9 +158,9 @@ public class PopupControl : IDisposable {
 	// Make sure the host is removed from the drop down without transferring ownership of its content.
 	protected void DisposeHost() {
 		var host = _host;
-		var control = _control;
+		var control = Control;
 		_host = null;
-		_control = null;
+		Control = null;
 		PopupControlHost = null;
 		if (host == null)
 			return;
@@ -205,14 +180,14 @@ public class PopupControl : IDisposable {
 
 	// Synchronize the borrowed control without changing the caller's Dock or Anchor values.
 	private void SurfaceSizeChanged(object sender, EventArgs args) {
-		if (_control != null)
-			_control.Bounds = ((Control)sender).ClientRectangle;
+		if (Control != null)
+			Control.Bounds = ((Control)sender).ClientRectangle;
 	}
 
 	// Content-driven sizing remains available to controls that resize themselves while displayed.
 	private void ContentSizeChanged(object sender, EventArgs args) {
-		if (_host != null && _host.Control.ClientSize != _control.Size)
-			_host.Control.ClientSize = _control.Size;
+		if (_host != null && _host.Control.ClientSize != Control.Size)
+			_host.Control.ClientSize = Control.Size;
 	}
 
 	// Hide drop down within popup control and release reset-on-close hosts.

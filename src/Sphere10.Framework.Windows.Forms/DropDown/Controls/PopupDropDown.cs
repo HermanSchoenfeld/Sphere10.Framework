@@ -50,12 +50,8 @@ public class PopupDropDown : ToolStripDropDown {
 	/// Bounds of active grip box position.
 	/// </summary>
 	protected Rectangle GripBounds {
-		get {
-			return _gripBounds;
-		}
-		set {
-			_gripBounds = value;
-		}
+		get => _gripBounds;
+		set => _gripBounds = value;
 	}
 
 	/// <summary>

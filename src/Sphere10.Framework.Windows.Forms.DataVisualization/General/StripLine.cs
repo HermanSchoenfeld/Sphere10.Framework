@@ -71,12 +71,10 @@ public class StripLine : ChartElement
 
     // Private data members, which store properties values
     private double _intervalOffset;
-    private double _interval;
-    private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
+	private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
     internal DateTimeIntervalType intervalOffsetType = DateTimeIntervalType.Auto;
     internal bool interlaced;
-    private double _stripWidth;
-    private DateTimeIntervalType _stripWidthType = DateTimeIntervalType.Auto;
+	private DateTimeIntervalType _stripWidthType = DateTimeIntervalType.Auto;
     private Color _backColor = Color.Empty;
     private ChartHatchStyle _backHatchStyle = ChartHatchStyle.None;
     private string _backImage = string.Empty;
@@ -109,16 +107,7 @@ public class StripLine : ChartElement
     /// Gets axes to which this object attached to.
     /// </summary>
     /// <returns>Axis object reference.</returns>
-    internal Axis Axis
-    {
-        get
-        {
-            if (Parent != null)
-                return Parent.Parent as Axis;
-            else
-                return null;
-        }
-    }
+    internal Axis Axis => Parent != null ? Parent.Parent as Axis : null;
     #endregion
 
     #region Constructors
@@ -238,7 +227,7 @@ public class StripLine : ChartElement
         // Too many tick marks
         if (this.Interval != 0)
         {
-            if ((Axis.ViewMaximum - Axis.ViewMinimum) / ChartHelper.GetIntervalSize(currentPosition, this._interval, this._intervalType, axisSeries, 0, DateTimeIntervalType.Number, false) > ChartHelper.MaxNumOfGridlines)
+            if ((Axis.ViewMaximum - Axis.ViewMinimum) / ChartHelper.GetIntervalSize(currentPosition, Interval, this._intervalType, axisSeries, 0, DateTimeIntervalType.Number, false) > ChartHelper.MaxNumOfGridlines)
                 return;
         }
 
@@ -734,13 +723,15 @@ public class StripLine : ChartElement
     ]
     public TextOrientation TextOrientation
     {
-        get => this._textOrientation;
-        set
+		get {
+			return this._textOrientation;
+		}
+		set
         {
             this._textOrientation = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the strip or line starting position offset.
@@ -754,13 +745,15 @@ public class StripLine : ChartElement
     ]
     public double IntervalOffset
     {
-        get => _intervalOffset;
-        set
+		get {
+			return _intervalOffset;
+		}
+		set
         {
             _intervalOffset = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the unit of measurement of the strip or line offset.
@@ -774,13 +767,15 @@ public class StripLine : ChartElement
     ]
     public DateTimeIntervalType IntervalOffsetType
     {
-        get => intervalOffsetType;
-        set
+		get {
+			return intervalOffsetType;
+		}
+		set
         {
             intervalOffsetType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the strip or line step size.
@@ -794,13 +789,15 @@ public class StripLine : ChartElement
     ]
     public double Interval
     {
-        get => _interval;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _interval = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the unit of measurement of the strip or line step.
@@ -814,13 +811,15 @@ public class StripLine : ChartElement
     ]
     public DateTimeIntervalType IntervalType
     {
-        get => _intervalType;
-        set
+		get {
+			return _intervalType;
+		}
+		set
         {
             _intervalType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the strip width.
@@ -833,18 +832,20 @@ public class StripLine : ChartElement
     ]
     public double StripWidth
     {
-        get => _stripWidth;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 0)
             {
                 throw new ArgumentException(SR.ExceptionStripLineWidthIsNegative, nameof(value));
             }
 
-            _stripWidth = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the unit of measurement of the strip width.
@@ -858,13 +859,15 @@ public class StripLine : ChartElement
     ]
     public DateTimeIntervalType StripWidthType
     {
-        get => _stripWidthType;
-        set
+		get {
+			return _stripWidthType;
+		}
+		set
         {
             _stripWidthType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background color.
@@ -878,13 +881,15 @@ public class StripLine : ChartElement
     ]
     public Color BackColor
     {
-        get => _backColor;
-        set
+		get {
+			return _backColor;
+		}
+		set
         {
             _backColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border color.
@@ -898,13 +903,15 @@ public class StripLine : ChartElement
     ]
     public Color BorderColor
     {
-        get => _borderColor;
-        set
+		get {
+			return _borderColor;
+		}
+		set
         {
             _borderColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border style.
@@ -917,13 +924,15 @@ public class StripLine : ChartElement
     ]
     public ChartDashStyle BorderDashStyle
     {
-        get => _borderDashStyle;
-        set
+		get {
+			return _borderDashStyle;
+		}
+		set
         {
             _borderDashStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border width.
@@ -936,13 +945,15 @@ public class StripLine : ChartElement
     ]
     public int BorderWidth
     {
-        get => _borderWidth;
-        set
+		get {
+			return _borderWidth;
+		}
+		set
         {
             _borderWidth = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image.
@@ -956,13 +967,15 @@ public class StripLine : ChartElement
     ]
     public string BackImage
     {
-        get => _backImage;
-        set
+		get {
+			return _backImage;
+		}
+		set
         {
             _backImage = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image drawing mode.
@@ -976,13 +989,15 @@ public class StripLine : ChartElement
     ]
     public ChartImageWrapMode BackImageWrapMode
     {
-        get => _backImageWrapMode;
-        set
+		get {
+			return _backImageWrapMode;
+		}
+		set
         {
             _backImageWrapMode = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a color which will be replaced with a transparent color while drawing the background image.
@@ -997,13 +1012,15 @@ public class StripLine : ChartElement
     ]
     public Color BackImageTransparentColor
     {
-        get => _backImageTransparentColor;
-        set
+		get {
+			return _backImageTransparentColor;
+		}
+		set
         {
             _backImageTransparentColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image alignment used by unscale drawing mode.
@@ -1017,13 +1034,15 @@ public class StripLine : ChartElement
     ]
     public ChartImageAlignmentStyle BackImageAlignment
     {
-        get => _backImageAlignment;
-        set
+		get {
+			return _backImageAlignment;
+		}
+		set
         {
             _backImageAlignment = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background gradient style.
@@ -1045,13 +1064,15 @@ public class StripLine : ChartElement
     ]
     public GradientStyle BackGradientStyle
     {
-        get => _backGradientStyle;
-        set
+		get {
+			return _backGradientStyle;
+		}
+		set
         {
             _backGradientStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the secondary background color.
@@ -1076,13 +1097,15 @@ public class StripLine : ChartElement
     ]
     public Color BackSecondaryColor
     {
-        get => _backSecondaryColor;
-        set
+		get {
+			return _backSecondaryColor;
+		}
+		set
         {
             _backSecondaryColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background hatch style.
@@ -1104,13 +1127,15 @@ public class StripLine : ChartElement
     ]
     public ChartHatchStyle BackHatchStyle
     {
-        get => _backHatchStyle;
-        set
+		get {
+			return _backHatchStyle;
+		}
+		set
         {
             _backHatchStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the name of the strip line.
@@ -1138,13 +1163,15 @@ public class StripLine : ChartElement
     ]
     public string Text
     {
-        get => _text;
-        set
+		get {
+			return _text;
+		}
+		set
         {
             _text = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the fore color of the strip line.
@@ -1159,13 +1186,15 @@ public class StripLine : ChartElement
     ]
     public Color ForeColor
     {
-        get => _foreColor;
-        set
+		get {
+			return _foreColor;
+		}
+		set
         {
             _foreColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the text alignment of the strip line.
@@ -1179,13 +1208,15 @@ public class StripLine : ChartElement
     ]
     public StringAlignment TextAlignment
     {
-        get => _textAlignment;
-        set
+		get {
+			return _textAlignment;
+		}
+		set
         {
             _textAlignment = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the text line alignment of the strip line.
@@ -1199,13 +1230,15 @@ public class StripLine : ChartElement
     ]
     public StringAlignment TextLineAlignment
     {
-        get => _textLineAlignment;
-        set
+		get {
+			return _textLineAlignment;
+		}
+		set
         {
             _textLineAlignment = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the title font.
@@ -1219,13 +1252,15 @@ public class StripLine : ChartElement
     ]
     public Font Font
     {
-        get => _font;
-        set
+		get {
+			return _font;
+		}
+		set
         {
             _font = value;
             this.Invalidate();
         }
-    }
+	}
 
 
     /// <summary>
@@ -1240,13 +1275,15 @@ public class StripLine : ChartElement
     ]
     public string ToolTip
     {
-        set
+		set
         {
             this.Invalidate();
             _toolTip = value;
         }
-        get => _toolTip;
-    }
+		get {
+			return _toolTip;
+		}
+	}
 
     #endregion
 

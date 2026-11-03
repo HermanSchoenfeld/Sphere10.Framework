@@ -18,8 +18,8 @@ namespace Sphere10.Framework.iOS
 	public partial class UIDecimalField : UITextField
 	{
 		public decimal Value {
-				get { return UIDecimalField.GetAmountFromString(Text); }
-				set { Text = value.ToString("N2"); }
+			get => UIDecimalField.GetAmountFromString(Text);
+			set => Text = value.ToString("N2");
 		}
 		
 		public UIDecimalField (Decimal currentValue): base()

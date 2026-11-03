@@ -27,21 +27,15 @@ public partial class SqliteConnectionPanel : ConnectionPanelBase, IDatabaseConne
 
 	}
 
-	public bool HasPassword {
-		get { return _passwordTextBox.Text.Trim().Length > 0; }
-	}
+	public bool HasPassword => _passwordTextBox.Text.Trim().Length > 0;
 
-	public string Password {
-		get { return _passwordTextBox.Text; }
-	}
+	public string Password => _passwordTextBox.Text;
 
-	public string Filename {
-		get { return _fileSelectorControl.Path; }
-	}
+	public string Filename => _fileSelectorControl.Path;
 
 	public PathSelectionMode Mode {
-		get { return _fileSelectorControl.Mode; }
-		set { _fileSelectorControl.Mode = value; }
+		get => _fileSelectorControl.Mode;
+		set => _fileSelectorControl.Mode = value;
 	}
 
 	protected override IDAC GetDACInternal() {

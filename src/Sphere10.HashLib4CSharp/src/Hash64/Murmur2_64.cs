@@ -178,9 +178,10 @@ namespace HashLib4CSharp.Hash64
 
         public unsafe byte[] Key
         {
-            get => Converters.ReadUInt64AsBytesLE(_key);
-
-            set
+			get {
+				return Converters.ReadUInt64AsBytesLE(_key);
+			}
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 if (value.Length == 0)
@@ -196,7 +197,7 @@ namespace HashLib4CSharp.Hash64
                     }
                 }
             }
-        }
+		}
     }
 }
 

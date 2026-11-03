@@ -27,20 +27,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Annotation image name
         private string _imageName = String.Empty;
 
-        // Image wrapping mode
-        private ChartImageWrapMode _imageWrapMode = ChartImageWrapMode.Scaled;
+		// Image wrapping mode
 
-        // Image transparent color
-        private Color _imageTransparentColor = Color.Empty;
+		// Image transparent color
 
-        #endregion Fields
+		#endregion Fields
 
-        #region Construction and Initialization
+		#region Construction and Initialization
 
-        /// <summary>
-        /// Default public constructor.
-        /// </summary>
-        public ImageAnnotation()
+		/// <summary>
+		/// Default public constructor.
+		/// </summary>
+		public ImageAnnotation()
             : base()
         {
         }
@@ -70,16 +68,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual string Image
         {
-            get
-            {
-                return _imageName;
-            }
-            set
+			get {
+				return _imageName;
+			}
+			set
             {
                 _imageName = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the drawing mode of the image.
@@ -95,24 +92,23 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartImageWrapMode ImageWrapMode
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return _imageWrapMode;
-            }
-            set
-            {
-                _imageWrapMode = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = ChartImageWrapMode.Scaled;
 
-        /// <summary>
-        /// Gets or sets a color which will be replaced with a transparent color while drawing the image.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Color"/> value which will be replaced with a transparent color while drawing the image.
-        /// </value>
-        [
+		/// <summary>
+		/// Gets or sets a color which will be replaced with a transparent color while drawing the image.
+		/// </summary>
+		/// <value>
+		/// A <see cref="Color"/> value which will be replaced with a transparent color while drawing the image.
+		/// </value>
+		[
         SRCategory("CategoryAttributeImage"),
         Bindable(true),
         DefaultValue(typeof(Color), ""),
@@ -121,28 +117,27 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ImageTransparentColor
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return _imageTransparentColor;
-            }
-            set
-            {
-                _imageTransparentColor = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = Color.Empty;
 
-        /// <summary>
-        /// Gets or sets an annotation's content alignment.
-        /// </summary>
-        /// <value>
-        /// A <see cref="ContentAlignment"/> value that represents the content alignment.
-        /// </value>
-        /// <remarks>
-        /// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,  
-        /// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align 
-        /// a non-scaled image inside an <see cref="ImageAnnotation"/> object.
-        /// </remarks>
+		/// <summary>
+		/// Gets or sets an annotation's content alignment.
+		/// </summary>
+		/// <value>
+		/// A <see cref="ContentAlignment"/> value that represents the content alignment.
+		/// </value>
+		/// <remarks>
+		/// This property is used to align text for <see cref="TextAnnotation"/>, <see cref="RectangleAnnotation"/>,
+		/// <see cref="EllipseAnnotation"/> and <see cref="CalloutAnnotation"/> objects, and to align
+		/// a non-scaled image inside an <see cref="ImageAnnotation"/> object.
+		/// </remarks>
 		[
         SRCategory("CategoryAttributeImage"),
         DefaultValue(typeof(ContentAlignment), "MiddleCenter"),
@@ -150,16 +145,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ContentAlignment Alignment
         {
-            get
-            {
-                return base.Alignment;
-            }
-            set
+			get {
+				return base.Alignment;
+			}
+			set
             {
                 base.Alignment = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation's text style.
@@ -173,15 +167,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override TextStyle TextStyle
         {
-            get
-            {
-                return base.TextStyle;
-            }
-            set
-            {
-                base.TextStyle = value;
-            }
-        }
+			get => base.TextStyle;
+			set => base.TextStyle = value;
+		}
 
         #endregion Image properties
 
@@ -206,13 +194,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Image";
-            }
-        }
+        public override string AnnotationType => "Image";
 
         /// <summary>
         /// Gets or sets annotation selection points style.
@@ -234,13 +216,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        internal override SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        internal override SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         #endregion Other
 
@@ -261,15 +237,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color ForeColor
         {
-            get
-            {
-                return base.ForeColor;
-            }
-            set
-            {
-                base.ForeColor = value;
-            }
-        }
+			get => base.ForeColor;
+			set => base.ForeColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this type of annotation.
@@ -284,15 +254,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Font Font
         {
-            get
-            {
-                return base.Font;
-            }
-            set
-            {
-                base.Font = value;
-            }
-        }
+			get => base.Font;
+			set => base.Font = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -306,15 +270,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
-            {
-                base.BackColor = value;
-            }
-        }
+			get => base.BackColor;
+			set => base.BackColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -327,15 +285,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
-            {
-                base.BackHatchStyle = value;
-            }
-        }
+			get => base.BackHatchStyle;
+			set => base.BackHatchStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -348,15 +300,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
-            {
-                base.BackGradientStyle = value;
-            }
-        }
+			get => base.BackGradientStyle;
+			set => base.BackGradientStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -370,15 +316,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
-            {
-                base.BackSecondaryColor = value;
-            }
-        }
+			get => base.BackSecondaryColor;
+			set => base.BackSecondaryColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -391,15 +331,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color LineColor
         {
-            get
-            {
-                return base.LineColor;
-            }
-            set
-            {
-                base.LineColor = value;
-            }
-        }
+			get => base.LineColor;
+			set => base.LineColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -412,15 +346,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override int LineWidth
         {
-            get
-            {
-                return base.LineWidth;
-            }
-            set
-            {
-                base.LineWidth = value;
-            }
-        }
+			get => base.LineWidth;
+			set => base.LineWidth = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -433,15 +361,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return base.LineDashStyle;
-            }
-            set
-            {
-                base.LineDashStyle = value;
-            }
-        }
+			get => base.LineDashStyle;
+			set => base.LineDashStyle = value;
+		}
 
         #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -501,8 +423,8 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                         this.BackColor,
                         this.BackHatchStyle,
                         this._imageName,
-                        this._imageWrapMode,
-                        this._imageTransparentColor,
+						ImageWrapMode,
+						ImageTransparentColor,
                         GetImageAlignment(this.Alignment),
                         this.BackGradientStyle,
                         this.BackSecondaryColor,
@@ -535,8 +457,8 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                         Color.Transparent,
                         this.BackHatchStyle,
                         this._imageName,
-                        this._imageWrapMode,
-                        this._imageTransparentColor,
+						ImageWrapMode,
+						ImageTransparentColor,
                         GetImageAlignment(this.Alignment),
                         this.BackGradientStyle,
                         Color.Transparent,

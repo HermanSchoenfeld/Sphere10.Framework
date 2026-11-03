@@ -28,11 +28,7 @@ public partial class ParagraphBuilderScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ParagraphBuilderScreenSettings ScreenSettings {
-		get {
-			return (ParagraphBuilderScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ParagraphBuilderScreenSettings ScreenSettings => (ParagraphBuilderScreenSettings)base.ScreenSettings;
 
 	protected override void CopyModelToUI() {
 		base.CopyModelToUI();

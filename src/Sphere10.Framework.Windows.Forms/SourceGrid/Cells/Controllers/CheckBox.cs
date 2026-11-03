@@ -39,7 +39,6 @@ public class CheckBox : ControllerBase {
 	/// Consider also that I cannot use the Click event because in that event I don't have informations about the button pressed.
 	/// </summary>
 	private MouseButtons _lastButton = MouseButtons.None;
-	private bool _autoChangeValueOfSelectedCells = false;
 
 	/// <summary>
 	/// Default behavior checkbox
@@ -57,17 +56,13 @@ public class CheckBox : ControllerBase {
 	/// </summary>
 	/// <param name="autoChangeValueOfSelectedCells">Indicates if this cells when checked or uncheck must change also the value of the selected cells of type CellCheckBox.</param>
 	public CheckBox(bool autoChangeValueOfSelectedCells) {
-		_autoChangeValueOfSelectedCells = autoChangeValueOfSelectedCells;
+		AutoChangeValueOfSelectedCells = autoChangeValueOfSelectedCells;
 	}
 
 	/// <summary>
 	/// Indicates if this cells when checked or uncheck must change also the value of the selected cells of type CellCheckBox. Default is false
 	/// </summary>
-	public bool AutoChangeValueOfSelectedCells {
-		get {
-			return _autoChangeValueOfSelectedCells;
-		}
-	}
+	public bool AutoChangeValueOfSelectedCells { get; } = false;
 
 	// Controller Events
 	public override void OnKeyPress(CellContext sender, KeyPressEventArgs e) {

@@ -21,19 +21,8 @@ public partial class GraphChart : UserControlEx {
 	private static readonly Color[] _defaultColors = { Color.SteelBlue, Color.Firebrick, Color.SeaGreen, Color.DarkOrange, Color.MediumPurple, Color.Teal };
 	private readonly int _ownerThreadId = Environment.CurrentManagedThreadId;
 	private GraphChartSeries[] _series = Array.Empty<GraphChartSeries>();
-	private GraphChartStyle _style;
-	private double? _minimumX;
-	private double? _maximumX;
-	private double? _minimumY;
-	private double? _maximumY;
-	private bool _showAxes = true;
-	private bool _showToolTips = true;
 	private bool _hasRendered;
-	private Func<double, string> _xLabelFormatter;
-	private Func<double, string> _yLabelFormatter;
 	private ChartLogOutputBehavior _logOutputBehavior;
-	private string _logTitle = string.Empty;
-	private string _logUnit = string.Empty;
 
 	public GraphChart() {
 		InitializeComponent();
@@ -42,14 +31,13 @@ public partial class GraphChart : UserControlEx {
 	[DefaultValue(GraphChartStyle.Line)]
 	public GraphChartStyle Style {
 		get {
-			return _style;
+			return field;
 		}
-
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown chart style");
-			if (_style == value)
+			if (field == value)
 				return;
-			_style = value;
+			field = value;
 			PublishSeries();
 		}
 	}
@@ -57,12 +45,11 @@ public partial class GraphChart : UserControlEx {
 	[DefaultValue(null)]
 	public double? MinimumX {
 		get {
-			return _minimumX;
+			return field;
 		}
-
 		set {
-			ValidateBounds(value, _maximumX);
-			_minimumX = value;
+			ValidateBounds(value, MaximumX);
+			field = value;
 			UpdateAxes();
 		}
 	}
@@ -70,12 +57,11 @@ public partial class GraphChart : UserControlEx {
 	[DefaultValue(null)]
 	public double? MaximumX {
 		get {
-			return _maximumX;
+			return field;
 		}
-
 		set {
-			ValidateBounds(_minimumX, value);
-			_maximumX = value;
+			ValidateBounds(MinimumX, value);
+			field = value;
 			UpdateAxes();
 		}
 	}
@@ -83,12 +69,11 @@ public partial class GraphChart : UserControlEx {
 	[DefaultValue(null)]
 	public double? MinimumY {
 		get {
-			return _minimumY;
+			return field;
 		}
-
 		set {
-			ValidateBounds(value, _maximumY);
-			_minimumY = value;
+			ValidateBounds(value, MaximumY);
+			field = value;
 			UpdateAxes();
 		}
 	}
@@ -96,79 +81,52 @@ public partial class GraphChart : UserControlEx {
 	[DefaultValue(null)]
 	public double? MaximumY {
 		get {
-			return _maximumY;
+			return field;
 		}
-
 		set {
-			ValidateBounds(_minimumY, value);
-			_maximumY = value;
+			ValidateBounds(MinimumY, value);
+			field = value;
 			UpdateAxes();
 		}
 	}
 
 	[DefaultValue("")]
 	public string XAxisTitle {
-		get {
-			return PlotArea.AxisX.Title;
-		}
-
-		set {
-			PlotArea.AxisX.Title = value ?? string.Empty;
-		}
+		get => PlotArea.AxisX.Title;
+		set => PlotArea.AxisX.Title = value ?? string.Empty;
 	}
 
 	[DefaultValue("")]
 	public string YAxisTitle {
-		get {
-			return PlotArea.AxisY.Title;
-		}
-
-		set {
-			PlotArea.AxisY.Title = value ?? string.Empty;
-		}
+		get => PlotArea.AxisY.Title;
+		set => PlotArea.AxisY.Title = value ?? string.Empty;
 	}
 
 	[DefaultValue("")]
 	public string XValueFormat {
-		get {
-			return PlotArea.AxisX.LabelStyle.Format;
-		}
-
-		set {
-			PlotArea.AxisX.LabelStyle.Format = value ?? string.Empty;
-		}
+		get => PlotArea.AxisX.LabelStyle.Format;
+		set => PlotArea.AxisX.LabelStyle.Format = value ?? string.Empty;
 	}
 
 	[DefaultValue("")]
 	public string YValueFormat {
-		get {
-			return PlotArea.AxisY.LabelStyle.Format;
-		}
-
-		set {
-			PlotArea.AxisY.LabelStyle.Format = value ?? string.Empty;
-		}
+		get => PlotArea.AxisY.LabelStyle.Format;
+		set => PlotArea.AxisY.LabelStyle.Format = value ?? string.Empty;
 	}
 
 	[DefaultValue(false)]
 	public bool ShowLegend {
-		get {
-			return _chart.Legends[0].Enabled;
-		}
-
-		set {
-			_chart.Legends[0].Enabled = value;
-		}
+		get => _chart.Legends[0].Enabled;
+		set => _chart.Legends[0].Enabled = value;
 	}
 
 	[DefaultValue(true)]
 	public bool ShowAxes {
 		get {
-			return _showAxes;
+			return field;
 		}
-
 		set {
-			_showAxes = value;
+			field = value;
 			PlotArea.AxisX.LabelStyle.Enabled = PlotArea.AxisY.LabelStyle.Enabled = value;
 			PlotArea.AxisX.MajorTickMark.Enabled = PlotArea.AxisY.MajorTickMark.Enabled = value;
 			PlotArea.AxisX.LineWidth = PlotArea.AxisY.LineWidth = value ? 1 : 0;
@@ -176,39 +134,24 @@ public partial class GraphChart : UserControlEx {
 			PlotArea.InnerPlotPosition = value ? new ElementPosition() : new ElementPosition(0, 0, 100, 100);
 			_chart.Invalidate();
 		}
-	}
+	} = true;
 
 	[DefaultValue(false)]
 	public bool ShowVerticalGrid {
-		get {
-			return PlotArea.AxisX.MajorGrid.Enabled;
-		}
-
-		set {
-			PlotArea.AxisX.MajorGrid.Enabled = value;
-		}
+		get => PlotArea.AxisX.MajorGrid.Enabled;
+		set => PlotArea.AxisX.MajorGrid.Enabled = value;
 	}
 
 	[DefaultValue(typeof(Color), "ControlDark")]
 	public Color GridColor {
-		get {
-			return PlotArea.AxisY.MajorGrid.LineColor;
-		}
-
-		set {
-			PlotArea.AxisX.MajorGrid.LineColor = PlotArea.AxisY.MajorGrid.LineColor = value;
-		}
+		get => PlotArea.AxisY.MajorGrid.LineColor;
+		set => PlotArea.AxisX.MajorGrid.LineColor = PlotArea.AxisY.MajorGrid.LineColor = value;
 	}
 
 	[DefaultValue(typeof(Color), "Control")]
 	public Color PlotBackColor {
-		get {
-			return PlotArea.BackColor;
-		}
-
-		set {
-			PlotArea.BackColor = _chart.BackColor = _emptyState.BackColor = value;
-		}
+		get => PlotArea.BackColor;
+		set => PlotArea.BackColor = _chart.BackColor = _emptyState.BackColor = value;
 	}
 
 	[DefaultValue("NO DATA"), Localizable(true)]
@@ -216,7 +159,6 @@ public partial class GraphChart : UserControlEx {
 		get {
 			return _emptyState.Text;
 		}
-
 		set {
 			_emptyState.Text = value ?? string.Empty;
 			UpdateEmptyState();
@@ -226,23 +168,21 @@ public partial class GraphChart : UserControlEx {
 	[DefaultValue(true)]
 	public bool ShowToolTips {
 		get {
-			return _showToolTips;
+			return field;
 		}
-
 		set {
-			_showToolTips = value;
+			field = value;
 			PublishSeries();
 		}
-	}
+	} = true;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Func<double, string> XLabelFormatter {
 		get {
-			return _xLabelFormatter;
+			return field;
 		}
-
 		set {
-			_xLabelFormatter = value;
+			field = value;
 			_chart.Invalidate();
 		}
 	}
@@ -250,61 +190,38 @@ public partial class GraphChart : UserControlEx {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Func<double, string> YLabelFormatter {
 		get {
-			return _yLabelFormatter;
+			return field;
 		}
-
 		set {
-			_yLabelFormatter = value;
+			field = value;
 			_chart.Invalidate();
 		}
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public GraphChartSeries[] Series {
-		get {
-			return (GraphChartSeries[])_series.Clone();
-		}
-	}
+	public GraphChartSeries[] Series => (GraphChartSeries[])_series.Clone();
 
 	/// <summary>The owned chart engine, for advanced chart-area, legend and rendering configuration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Chart NativeChart {
-		get {
-			return _chart;
-		}
-	}
+	public Chart NativeChart => _chart;
 
 	/// <summary>Optional output title; empty derives the native title or owning screen/group context.</summary>
 	[Category("Behavior"), DefaultValue("")]
 	public string LogTitle {
-		get {
-			return _logTitle;
-		}
-
-		set {
-			_logTitle = value ?? string.Empty;
-		}
-	}
+		get => field;
+		set => field = value ?? string.Empty;
+	} = string.Empty;
 
 	/// <summary>Optional units for numeric log values; empty derives the Y-axis title.</summary>
 	[Category("Behavior"), DefaultValue("")]
 	public string LogUnit {
-		get {
-			return _logUnit;
-		}
-
-		set {
-			_logUnit = value ?? string.Empty;
-		}
-	}
+		get => field;
+		set => field = value ?? string.Empty;
+	} = string.Empty;
 
 	/// <summary>The shared output selector used by this chart's Log Output context command.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LogOutputSelectorControl LogOutput {
-		get {
-			return LogOutputBehavior.OutputSelector;
-		}
-	}
+	public LogOutputSelectorControl LogOutput => LogOutputBehavior.OutputSelector;
 
 	/// <summary>Coordinates optional capture and the selector's output queue. A caller may bind a borrowed shared selector.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -325,11 +242,7 @@ public partial class GraphChart : UserControlEx {
 		get; set;
 	}
 
-	internal string ResolvedLogTitle {
-		get {
-			return string.IsNullOrWhiteSpace(_logTitle) ? ChartLogOutputBehavior.ResolveTitle(this) : _logTitle;
-		}
-	}
+	internal string ResolvedLogTitle => string.IsNullOrWhiteSpace(LogTitle) ? ChartLogOutputBehavior.ResolveTitle(this) : LogTitle;
 
 	/// <summary>The actual plot rectangle, in this control's coordinates, after chart layout.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -345,11 +258,7 @@ public partial class GraphChart : UserControlEx {
 		}
 	}
 
-	private ChartArea PlotArea {
-		get {
-			return _chart.ChartAreas[0];
-		}
-	}
+	private ChartArea PlotArea => _chart.ChartAreas[0];
 
 	public bool TryGetPointAt(Point location, out GraphChartSeries series, out GraphChartPoint point) {
 		series = null;
@@ -357,8 +266,8 @@ public partial class GraphChart : UserControlEx {
 		var bounds = PlotBounds;
 		if (!bounds.Contains(location) || bounds.Width <= 0)
 			return false;
-		var minimum = _minimumX ?? FindXBound(false);
-		var maximum = _maximumX ?? FindXBound(true);
+		var minimum = MinimumX ?? FindXBound(false);
+		var maximum = MaximumX ?? FindXBound(true);
 		var horizontalBars = Style == GraphChartStyle.Bar || _series.Length > 0 && _series[0].Style == GraphChartStyle.Bar;
 		var fraction = horizontalBars ? (bounds.Bottom - location.Y) / bounds.Height : (location.X - bounds.Left) / bounds.Width;
 		var x = minimum + fraction * (maximum - minimum);
@@ -431,7 +340,7 @@ public partial class GraphChart : UserControlEx {
 				occurrences[position] = occurrence + 1;
 				samples.Add(new ChartLogSample(series.Name, position + ":" + occurrence, position,
 					new[] { point.Y?.ToString("R", CultureInfo.InvariantCulture) ?? "Unavailable" }) {
-					Units = string.IsNullOrWhiteSpace(_logUnit) ? ChartLogOutputBehavior.ExtractUnits(YAxisTitle) : _logUnit,
+					Units = string.IsNullOrWhiteSpace(LogUnit) ? ChartLogOutputBehavior.ExtractUnits(YAxisTitle) : LogUnit,
 					PositionLabel = !string.IsNullOrWhiteSpace(XAxisTitle) ? XAxisTitle : point.Label == null ? "X" : "Category"
 				});
 			}
@@ -448,8 +357,8 @@ public partial class GraphChart : UserControlEx {
 	}
 
 	private void ChartCustomize(object sender, EventArgs args) {
-		FormatAxis(PlotArea.AxisX, _xLabelFormatter);
-		FormatAxis(PlotArea.AxisY, _yLabelFormatter);
+		FormatAxis(PlotArea.AxisX, XLabelFormatter);
+		FormatAxis(PlotArea.AxisY, YLabelFormatter);
 	}
 
 	private void ChartPostPaint(object sender, ChartPaintEventArgs args) {
@@ -488,10 +397,10 @@ public partial class GraphChart : UserControlEx {
 	}
 
 	private void UpdateAxes() {
-		PlotArea.AxisX.Minimum = _minimumX ?? double.NaN;
-		PlotArea.AxisX.Maximum = _maximumX ?? double.NaN;
-		PlotArea.AxisY.Minimum = _minimumY ?? double.NaN;
-		PlotArea.AxisY.Maximum = _maximumY ?? double.NaN;
+		PlotArea.AxisX.Minimum = MinimumX ?? double.NaN;
+		PlotArea.AxisX.Maximum = MaximumX ?? double.NaN;
+		PlotArea.AxisY.Minimum = MinimumY ?? double.NaN;
+		PlotArea.AxisY.Maximum = MaximumY ?? double.NaN;
 		_chart.Invalidate();
 	}
 

@@ -106,9 +106,6 @@
 	};
 	private readonly HashSet<string> _reviewedDocuments = new();
 	private readonly List<string> _activity = new() { "Ready. Select a document and explore the host menus." };
-	private BlazorUI.ApplicationMenuItemBase _previewCommand;
-	private BlazorUI.ApplicationMenuItemBase _exportCommand;
-	private BlazorUI.IApplicationMenu[] _menus;
 	private bool _menuDiagnosticsVisibility;
 	private int _selectedSample = -1;
 	private bool _allowReview = true;
@@ -120,15 +117,15 @@
 
 	public override BlazorUI.IApplicationMenu[] Menus {
 		get {
-			if (_menus == null || _menuDiagnosticsVisibility != _showDiagnostics) {
-				if (_menus != null)
-					foreach (var menu in _menus)
+			if (field == null || _menuDiagnosticsVisibility != _showDiagnostics) {
+				if (field != null)
+					foreach (var menu in field)
 						if (ReferenceEquals(menu.Parent, Block))
 							menu.Parent = null;
 				_menuDiagnosticsVisibility = _showDiagnostics;
-				_menus = CreateMenus();
+				field = CreateMenus();
 			}
-			return Tools.Array.Clone(_menus);
+			return Tools.Array.Clone(field);
 		}
 	}
 
@@ -177,7 +174,7 @@
 
 	private bool CanReview => HasSample && _allowReview && !IsReviewed;
 
-	private BlazorUI.ApplicationMenuItemBase PreviewCommand => _previewCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase PreviewCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("showcase-preview")
 		.WithText("Preview document")
 		.WithIcon("fas fa-eye")
@@ -185,7 +182,7 @@
 		.WithAction(PreviewAsync)
 		.Build();
 
-	private BlazorUI.ApplicationMenuItemBase ExportCommand => _exportCommand ??= new ApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase ExportCommand => field ??= new ApplicationMenuItemBuilder()
 		.WithId("showcase-export")
 		.WithText("Export")
 		.WithIcon("fas fa-file-export")

@@ -22,10 +22,7 @@ public abstract class ApplicationScreenHostBase : UserControlEx, IApplicationScr
 	public event EventHandlerEx<ApplicationScreen?>? ActiveScreenChanging;
 	public event EventHandlerEx<ApplicationScreen?>? ActiveScreenChanged;
 
-	public event EventHandlerEx Changed {
-		add => ApplicationHost.Changed += value;
-		remove => ApplicationHost.Changed -= value;
-	}
+	public event EventHandlerEx Changed { add => ApplicationHost.Changed += value; remove => ApplicationHost.Changed -= value; }
 
 	public event EventHandlerEx<SharedUI.IApplicationScreen> ScreenSelected {
 		add => ApplicationHost.ScreenSelected += value;
@@ -55,11 +52,7 @@ public abstract class ApplicationScreenHostBase : UserControlEx, IApplicationScr
 
 	/// <summary>The block currently browsed in navigation, independently of the active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationBlock SelectedBlock {
-		get {
-			return ApplicationHost.SelectedBlock;
-		}
-	}
+	public virtual IApplicationBlock SelectedBlock => ApplicationHost.SelectedBlock;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public abstract IUserInterfaceServices UserInterfaceServices { get; }

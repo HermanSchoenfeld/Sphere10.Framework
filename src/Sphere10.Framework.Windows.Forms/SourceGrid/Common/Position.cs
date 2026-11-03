@@ -46,20 +46,12 @@ public struct Position {
 	/// <summary>
 	/// Row
 	/// </summary>
-	public int Row {
-		get {
-			return _row;
-		}
-	}
+	public int Row => _row;
 
 	/// <summary>
 	/// Column
 	/// </summary>
-	public int Column {
-		get {
-			return _col;
-		}
-	}
+	public int Column => _col;
 
 	/// <summary>
 	/// Returns true if the current struct is empty

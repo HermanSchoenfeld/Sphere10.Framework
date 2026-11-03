@@ -28,8 +28,6 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	private byte[] _internalArray;
 	private long _length;
 	private readonly long _initialCapacity;
-	private readonly long _blockGrowthSize;
-	private readonly long _maxCapacity;
 
 	public MemoryBuffer() : this(0, DefaultBlockGrowth) {
 	}
@@ -50,13 +48,13 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		_internalArray = internalArray;
 		_initialCapacity = internalArray.Length;
 		_length = currentSize;
-		_blockGrowthSize = capacityGrowthSize;
-		_maxCapacity = maxCapacity;
+		CapacityGrowthSize = capacityGrowthSize;
+		MaxCapacity = maxCapacity;
 	}
 
-	public long CapacityGrowthSize => _blockGrowthSize;
+	public long CapacityGrowthSize { get; }
 
-	public long MaxCapacity => _maxCapacity;
+	public long MaxCapacity { get; }
 
 	public override long Count => _length;
 
@@ -252,7 +250,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 			return;
 
 		// check if growth exceeds max
-		if (newCapacity > _maxCapacity || _blockGrowthSize == 0)
+		if (newCapacity > MaxCapacity || CapacityGrowthSize == 0)
 			throw new ArgumentException("Insufficient capacity");
 
 		// determine how many new bytes are actually needed
@@ -260,9 +258,9 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		Debug.Assert(actualNewBytes > 0);
 
 		// calc the new capacity (grows in blocks)
-		var remainingGrowthCapacity = _maxCapacity - _internalArray.Length;
-		var growAmount = (int)Math.Min(Math.Ceiling(actualNewBytes / (double)_blockGrowthSize) * _blockGrowthSize, remainingGrowthCapacity);
-		Debug.Assert(_internalArray.Length + growAmount <= _maxCapacity);
+		var remainingGrowthCapacity = MaxCapacity - _internalArray.Length;
+		var growAmount = (int)Math.Min(Math.Ceiling(actualNewBytes / (double)CapacityGrowthSize) * CapacityGrowthSize, remainingGrowthCapacity);
+		Debug.Assert(_internalArray.Length + growAmount <= MaxCapacity);
 
 		// Re-allocate internal array
 		Array.Resize(ref _internalArray, _internalArray.Length + growAmount);

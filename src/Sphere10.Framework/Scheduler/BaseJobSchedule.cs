@@ -92,8 +92,8 @@ public abstract class BaseJobSchedule<T> : BaseJobSchedule where T : class, IJob
 	}
 
 	public new T Job {
-		get { return (T)base.Job; }
-		set { base.Job = value; }
+		get => (T)base.Job;
+		set => base.Job = value;
 	}
 }
 

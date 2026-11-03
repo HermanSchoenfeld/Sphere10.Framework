@@ -29,12 +29,8 @@ public abstract class DbTransactionDecorator : IDbTransaction {
 		InternalTransaction.Rollback();
 	}
 
-	public virtual IDbConnection Connection {
-		get { return InternalTransaction.Connection; }
-	}
+	public virtual IDbConnection Connection => InternalTransaction.Connection;
 
-	public virtual IsolationLevel IsolationLevel {
-		get { return InternalTransaction.IsolationLevel; }
-	}
+	public virtual IsolationLevel IsolationLevel => InternalTransaction.IsolationLevel;
 }
 

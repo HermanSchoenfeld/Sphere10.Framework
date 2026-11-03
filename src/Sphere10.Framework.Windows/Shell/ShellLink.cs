@@ -494,21 +494,17 @@ public class ShellLink : IDisposable {
 	#region Implementation
 
 	public string ShortCutFile {
-		get { return this.shortcutFile; }
-		set { this.shortcutFile = value; }
+		get => this.shortcutFile;
+		set => this.shortcutFile = value;
 	}
 
 	/// <summary>
 	/// Gets a System.Drawing.Icon containing the icon for this
 	/// ShellLink object.
 	/// </summary>
-	public Icon LargeIcon {
-		get { return getIcon(true); }
-	}
+	public Icon LargeIcon => getIcon(true);
 
-	public Icon SmallIcon {
-		get { return getIcon(false); }
-	}
+	public Icon SmallIcon => getIcon(false);
 
 	private Icon getIcon(bool large) {
 		// Get icon index and path:

@@ -1450,9 +1450,9 @@ namespace HashLib4CSharp.Crypto
 
         public ulong XofSizeInBits
         {
-            get => _xofSizeInBits;
-            set => SetXofSizeInBitsInternal(value);
-        }
+			get => _xofSizeInBits;
+			set => SetXofSizeInBitsInternal(value);
+		}
 
         public unsafe void DoOutput(Span<byte> dest)
         {

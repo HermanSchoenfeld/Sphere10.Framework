@@ -63,14 +63,10 @@
 
 @code {
 	// Render the same actual block and settings-bearing registrations at their existing owner depth.
-	private RenderFragment<IApplicationBlock> BlockNode {
-		get {
-			return block => @<details open>
+	private RenderFragment<IApplicationBlock> BlockNode => block => @<details open>
 				<summary><button type="button" class="@PageClass(block)" @onclick="() => SelectOwnerAsync(block)">@block.Name@(_dirty.Contains(GetSettings(block)) ? " *" : "")</button></summary>
 				@foreach (var definition in block.ScreenDefinitions.Where(definition => definition.Settings != null)) {
 					<button type="button" class="@PageClass(definition)" @onclick="() => SelectOwnerAsync(definition)">@definition.Title@(_dirty.Contains(definition.Settings) ? " *" : "")</button>
 				}
 			</details>;
-		}
-	}
 }

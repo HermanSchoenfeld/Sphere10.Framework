@@ -14,25 +14,13 @@ namespace Sphere10.Framework;
 
 /// <summary>Typed cache engine with synchronized admission, expiration and capacity management.</summary>
 public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey, TValue>, IDisposable {
-	public event EventHandlerEx<TKey> ItemFetching {
-		add => AddTypedHandler(0, value);
-		remove => RemoveTypedHandler(0, value);
-	}
+	public event EventHandlerEx<TKey> ItemFetching { add => AddTypedHandler(0, value); remove => RemoveTypedHandler(0, value); }
 
-	public event EventHandlerEx<TKey, TValue> ItemFetched {
-		add => AddTypedHandler(1, value);
-		remove => RemoveTypedHandler(1, value);
-	}
+	public event EventHandlerEx<TKey, TValue> ItemFetched { add => AddTypedHandler(1, value); remove => RemoveTypedHandler(1, value); }
 
-	public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoving {
-		add => AddTypedHandler(3, value);
-		remove => RemoveTypedHandler(3, value);
-	}
+	public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoving { add => AddTypedHandler(3, value); remove => RemoveTypedHandler(3, value); }
 
-	public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
-		add => AddTypedHandler(2, value);
-		remove => RemoveTypedHandler(2, value);
-	}
+	public event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved { add => AddTypedHandler(2, value); remove => RemoveTypedHandler(2, value); }
 
 	private EventHandlerEx<TKey> _itemFetching;
 	private EventHandlerEx<TKey, TValue> _itemFetched;

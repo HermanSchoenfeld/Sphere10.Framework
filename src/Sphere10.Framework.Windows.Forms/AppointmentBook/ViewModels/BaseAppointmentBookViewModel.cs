@@ -11,7 +11,6 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 public abstract class BaseAppointmentBookViewModel {
-	private TimePeriodType _timeView;
 	private DateTime _timePeriodStart;
 	private DateTime _timePeriodEnd;
 
@@ -20,7 +19,7 @@ public abstract class BaseAppointmentBookViewModel {
 	}
 
 	protected void Initialize(DateTime timePeriodStart, TimePeriodType timeView) {
-		_timeView = timeView;
+		TimeView = timeView;
 		switch (timeView) {
 			case TimePeriodType.Monthly:
 				_timePeriodStart = timePeriodStart.ToBeginningOfMonth();
@@ -33,26 +32,20 @@ public abstract class BaseAppointmentBookViewModel {
 		}
 	}
 
-	public TimePeriodType TimeView {
-		get { return _timeView; }
-	}
+	public TimePeriodType TimeView { get; private set; }
 
-	public virtual DateTime TimePeriodStart {
-		get { return _timePeriodStart; }
-	}
+	public virtual DateTime TimePeriodStart => _timePeriodStart;
 
-	public virtual DateTime TimePeriodEnd {
-		get { return _timePeriodEnd; }
-	}
+	public virtual DateTime TimePeriodEnd => _timePeriodEnd;
 
 	public void SetTimePeriod(TimePeriodType timePeriodType, DateTime timePeriodStart) {
-		_timeView = timePeriodType;
+		TimeView = timePeriodType;
 		_timePeriodStart = timePeriodStart;
 		RecreateCellDisplays();
 	}
 
 	public void SetTimePeriodType(TimePeriodType timePeriodType) {
-		_timeView = timePeriodType;
+		TimeView = timePeriodType;
 		RecreateCellDisplays();
 	}
 

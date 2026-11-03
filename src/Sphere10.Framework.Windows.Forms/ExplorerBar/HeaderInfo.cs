@@ -41,16 +41,6 @@ public class HeaderInfo : IDisposable {
 	private Image normalBackImage;
 
 	/// <summary>
-	///  The width of the Image used as the title bar's background
-	/// </summary>
-	private int backImageWidth;
-
-	/// <summary>
-	/// The height of the Image used as the title bar's background
-	/// </summary>
-	private int backImageHeight;
-
-	/// <summary>
 	/// The Color of the text on the title bar for a special Expando
 	/// </summary>
 	private Color specialTitle;
@@ -218,11 +208,6 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	private Expando owner;
 
-	/// <summary>
-	/// 
-	/// </summary>
-	private bool rightToLeft;
-
 	#endregion
 
 
@@ -273,8 +258,8 @@ public class HeaderInfo : IDisposable {
 		this.specialBackImage = null;
 		this.normalBackImage = null;
 
-		this.backImageWidth = -1;
-		this.backImageHeight = -1;
+		BackImageWidth = -1;
+		BackImageHeight = -1;
 
 		// set arrow values
 		this.specialArrowUp = null;
@@ -296,7 +281,7 @@ public class HeaderInfo : IDisposable {
 		this.titleRadius = 5;
 
 		this.owner = null;
-		this.rightToLeft = false;
+		RightToLeft = false;
 	}
 
 	#endregion
@@ -361,8 +346,8 @@ public class HeaderInfo : IDisposable {
 		this.specialBackImage = null;
 		this.normalBackImage = null;
 
-		this.backImageWidth = 186;
-		this.backImageHeight = 25;
+		BackImageWidth = 186;
+		BackImageHeight = 25;
 
 		// set arrow values
 		this.specialArrowUp = null;
@@ -383,7 +368,7 @@ public class HeaderInfo : IDisposable {
 		this.gradientOffset = 0.5f;
 		this.titleRadius = 2;
 
-		this.rightToLeft = false;
+		RightToLeft = false;
 	}
 
 
@@ -423,8 +408,8 @@ public class HeaderInfo : IDisposable {
 		this.specialBackImage = null;
 		this.normalBackImage = null;
 
-		this.backImageWidth = 186;
-		this.backImageHeight = 25;
+		BackImageWidth = 186;
+		BackImageHeight = 25;
 
 		// set arrow values
 		this.specialArrowUp = null;
@@ -445,7 +430,7 @@ public class HeaderInfo : IDisposable {
 		this.gradientOffset = 0.5f;
 		this.titleRadius = 2;
 
-		this.rightToLeft = false;
+		RightToLeft = false;
 	}
 
 
@@ -517,8 +502,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The width of the border along each side of a special Expando's Title Bar")]
 	public Border SpecialBorder {
-		get { return this.specialBorder; }
-
+		get {
+			return this.specialBorder;
+		}
 		set {
 			if (this.specialBorder != value) {
 				this.specialBorder = value;
@@ -547,8 +533,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The border color for a special Expandos titlebar")]
 	public Color SpecialBorderColor {
-		get { return this.specialBorderColor; }
-
+		get {
+			return this.specialBorderColor;
+		}
 		set {
 			if (this.specialBorderColor != value) {
 				this.specialBorderColor = value;
@@ -577,8 +564,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The background Color for a special Expandos titlebar")]
 	public Color SpecialBackColor {
-		get { return this.specialBackColor; }
-
+		get {
+			return this.specialBackColor;
+		}
 		set {
 			if (this.specialBackColor != value) {
 				this.specialBackColor = value;
@@ -607,8 +595,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The width of the border along each side of a normal Expando's Title Bar")]
 	public Border NormalBorder {
-		get { return this.normalBorder; }
-
+		get {
+			return this.normalBorder;
+		}
 		set {
 			if (this.normalBorder != value) {
 				this.normalBorder = value;
@@ -637,8 +626,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The border color for a normal Expandos titlebar")]
 	public Color NormalBorderColor {
-		get { return this.normalBorderColor; }
-
+		get {
+			return this.normalBorderColor;
+		}
 		set {
 			if (this.normalBorderColor != value) {
 				this.normalBorderColor = value;
@@ -667,8 +657,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The background Color for a normal Expandos titlebar")]
 	public Color NormalBackColor {
-		get { return this.normalBackColor; }
-
+		get {
+			return this.normalBackColor;
+		}
 		set {
 			if (this.normalBackColor != value) {
 				this.normalBackColor = value;
@@ -701,8 +692,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("The Font used to render the titlebar's text")]
 	public Font TitleFont {
-		get { return this.titleFont; }
-
+		get {
+			return this.titleFont;
+		}
 		set {
 			if (this.titleFont != value) {
 				this.titleFont = value;
@@ -719,9 +711,8 @@ public class HeaderInfo : IDisposable {
 	/// Gets or sets the name of the font used to render the header's text. 
 	/// </summary>
 	protected internal string FontName {
-		get { return this.TitleFont.Name; }
-
-		set { this.TitleFont = new Font(value, this.TitleFont.SizeInPoints, this.TitleFont.Style); }
+		get => this.TitleFont.Name;
+		set => this.TitleFont = new Font(value, this.TitleFont.SizeInPoints, this.TitleFont.Style);
 	}
 
 
@@ -729,9 +720,8 @@ public class HeaderInfo : IDisposable {
 	/// Gets or sets the size of the font used to render the header's text. 
 	/// </summary>
 	protected internal float FontSize {
-		get { return this.TitleFont.SizeInPoints; }
-
-		set { this.TitleFont = new Font(this.TitleFont.Name, value, this.TitleFont.Style); }
+		get => this.TitleFont.SizeInPoints;
+		set => this.TitleFont = new Font(this.TitleFont.Name, value, this.TitleFont.Style);
 	}
 
 
@@ -739,8 +729,9 @@ public class HeaderInfo : IDisposable {
 	/// Gets or sets the weight of the font used to render the header's text. 
 	/// </summary>
 	protected internal FontStyle FontWeight {
-		get { return this.TitleFont.Style; }
-
+		get {
+			return this.TitleFont.Style;
+		}
 		set {
 			value |= this.TitleFont.Style;
 
@@ -753,8 +744,9 @@ public class HeaderInfo : IDisposable {
 	/// Gets or sets the style of the Font used to render the header's text. 
 	/// </summary>
 	protected internal FontStyle FontStyle {
-		get { return this.TitleFont.Style; }
-
+		get {
+			return this.TitleFont.Style;
+		}
 		set {
 			value |= this.TitleFont.Style;
 
@@ -772,15 +764,16 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("The background image for a special titlebar")]
 	public Image SpecialBackImage {
-		get { return this.specialBackImage; }
-
+		get {
+			return this.specialBackImage;
+		}
 		set {
 			if (this.specialBackImage != value) {
 				this.specialBackImage = value;
 
 				if (value != null) {
-					this.backImageWidth = value.Width;
-					this.backImageHeight = value.Height;
+					BackImageWidth = value.Width;
+					BackImageHeight = value.Height;
 				}
 
 				if (this.Expando != null) {
@@ -797,15 +790,16 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("The background image for a normal titlebar")]
 	public Image NormalBackImage {
-		get { return this.normalBackImage; }
-
+		get {
+			return this.normalBackImage;
+		}
 		set {
 			if (this.normalBackImage != value) {
 				this.normalBackImage = value;
 
 				if (value != null) {
-					this.backImageWidth = value.Width;
-					this.backImageHeight = value.Height;
+					BackImageWidth = value.Width;
+					BackImageHeight = value.Height;
 				}
 
 				if (this.Expando != null) {
@@ -819,32 +813,26 @@ public class HeaderInfo : IDisposable {
 	/// <summary>
 	/// Gets or sets the width of the header's background image
 	/// </summary>
+
+	/// <remarks>
+	///  The width of the Image used as the title bar's background
+	/// </remarks>
 	protected internal int BackImageWidth {
-		get {
-			if (this.backImageWidth == -1) {
-				return 186;
-			}
-
-			return this.backImageWidth;
-		}
-
-		set { this.backImageWidth = value; }
+		get => field == -1 ? 186 : field;
+		set => field = value;
 	}
 
 
 	/// <summary>
 	/// Gets or sets the height of the header's background image
 	/// </summary>
+
+	/// <remarks>
+	/// The height of the Image used as the title bar's background
+	/// </remarks>
 	protected internal int BackImageHeight {
-		get {
-			if (this.backImageHeight < 23) {
-				return 23;
-			}
-
-			return this.backImageHeight;
-		}
-
-		set { this.backImageHeight = value; }
+		get => field < 23 ? 23 : field;
+		set => field = value;
 	}
 
 
@@ -854,8 +842,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A special Expando's collapse arrow image in it's normal state")]
 	public Image SpecialArrowUp {
-		get { return this.specialArrowUp; }
-
+		get {
+			return this.specialArrowUp;
+		}
 		set {
 			if (this.specialArrowUp != value) {
 				this.specialArrowUp = value;
@@ -874,8 +863,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A special Expando's collapse arrow image in it's highlighted state")]
 	public Image SpecialArrowUpHot {
-		get { return this.specialArrowUpHot; }
-
+		get {
+			return this.specialArrowUpHot;
+		}
 		set {
 			if (this.specialArrowUpHot != value) {
 				this.specialArrowUpHot = value;
@@ -894,8 +884,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A special Expando's expand arrow image in it's normal state")]
 	public Image SpecialArrowDown {
-		get { return this.specialArrowDown; }
-
+		get {
+			return this.specialArrowDown;
+		}
 		set {
 			if (this.specialArrowDown != value) {
 				this.specialArrowDown = value;
@@ -914,8 +905,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A special Expando's expand arrow image in it's highlighted state")]
 	public Image SpecialArrowDownHot {
-		get { return this.specialArrowDownHot; }
-
+		get {
+			return this.specialArrowDownHot;
+		}
 		set {
 			if (this.specialArrowDownHot != value) {
 				this.specialArrowDownHot = value;
@@ -934,8 +926,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A normal Expando's collapse arrow image in it's normal state")]
 	public Image NormalArrowUp {
-		get { return this.normalArrowUp; }
-
+		get {
+			return this.normalArrowUp;
+		}
 		set {
 			if (this.normalArrowUp != value) {
 				this.normalArrowUp = value;
@@ -954,8 +947,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A normal Expando's collapse arrow image in it's highlighted state")]
 	public Image NormalArrowUpHot {
-		get { return this.normalArrowUpHot; }
-
+		get {
+			return this.normalArrowUpHot;
+		}
 		set {
 			if (this.normalArrowUpHot != value) {
 				this.normalArrowUpHot = value;
@@ -974,8 +968,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A normal Expando's expand arrow image in it's normal state")]
 	public Image NormalArrowDown {
-		get { return this.normalArrowDown; }
-
+		get {
+			return this.normalArrowDown;
+		}
 		set {
 			if (this.normalArrowDown != value) {
 				this.normalArrowDown = value;
@@ -994,8 +989,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("A normal Expando's expand arrow image in it's highlighted state")]
 	public Image NormalArrowDownHot {
-		get { return this.normalArrowDownHot; }
-
+		get {
+			return this.normalArrowDownHot;
+		}
 		set {
 			if (this.normalArrowDownHot != value) {
 				this.normalArrowDownHot = value;
@@ -1038,8 +1034,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(15),
 	 Description("The margin around the titlebar")]
 	public int Margin {
-		get { return this.margin; }
-
+		get {
+			return this.margin;
+		}
 		set {
 			if (this.margin != value) {
 				this.margin = value;
@@ -1060,8 +1057,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The amount of space between the border and items along each side of a special Expandos Title Bar")]
 	public PaddingEx SpecialPadding {
-		get { return this.specialPadding; }
-
+		get {
+			return this.specialPadding;
+		}
 		set {
 			if (this.specialPadding != value) {
 				this.specialPadding = value;
@@ -1090,8 +1088,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The amount of space between the border and items along each side of a normal Expandos Title Bar")]
 	public PaddingEx NormalPadding {
-		get { return this.normalPadding; }
-
+		get {
+			return this.normalPadding;
+		}
 		set {
 			if (this.normalPadding != value) {
 				this.normalPadding = value;
@@ -1124,8 +1123,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The color of the text displayed in a special Expandos titlebar in it's normal state")]
 	public Color SpecialTitleColor {
-		get { return this.specialTitle; }
-
+		get {
+			return this.specialTitle;
+		}
 		set {
 			if (this.specialTitle != value) {
 				this.specialTitle = value;
@@ -1161,8 +1161,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The color of the text displayed in a special Expandos titlebar in it's highlighted state")]
 	public Color SpecialTitleHotColor {
-		get { return this.specialTitleHot; }
-
+		get {
+			return this.specialTitleHot;
+		}
 		set {
 			if (this.specialTitleHot != value) {
 				this.specialTitleHot = value;
@@ -1192,8 +1193,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The color of the text displayed in a normal Expandos titlebar in it's normal state")]
 	public Color NormalTitleColor {
-		get { return this.normalTitle; }
-
+		get {
+			return this.normalTitle;
+		}
 		set {
 			if (this.normalTitle != value) {
 				this.normalTitle = value;
@@ -1229,8 +1231,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("The color of the text displayed in a normal Expandos titlebar in it's highlighted state")]
 	public Color NormalTitleHotColor {
-		get { return this.normalTitleHot; }
-
+		get {
+			return this.normalTitleHot;
+		}
 		set {
 			if (this.normalTitleHot != value) {
 				this.normalTitleHot = value;
@@ -1260,8 +1263,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(ContentAlignment.MiddleLeft),
 	 Description("The alignment of the text displayed in a special Expandos titlebar")]
 	public ContentAlignment SpecialAlignment {
-		get { return this.specialAlignment; }
-
+		get {
+			return this.specialAlignment;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(ContentAlignment), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(ContentAlignment));
@@ -1284,8 +1288,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(ContentAlignment.MiddleLeft),
 	 Description("The alignment of the text displayed in a normal Expandos titlebar")]
 	public ContentAlignment NormalAlignment {
-		get { return this.normalAlignment; }
-
+		get {
+			return this.normalAlignment;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(ContentAlignment), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(ContentAlignment));
@@ -1308,8 +1313,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(false),
 	 Description("")]
 	public bool TitleGradient {
-		get { return this.useTitleGradient; }
-
+		get {
+			return this.useTitleGradient;
+		}
 		set {
 			if (this.useTitleGradient != value) {
 				this.useTitleGradient = value;
@@ -1328,8 +1334,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("")]
 	public Color SpecialGradientStartColor {
-		get { return this.specialGradientStartColor; }
-
+		get {
+			return this.specialGradientStartColor;
+		}
 		set {
 			if (this.specialGradientStartColor != value) {
 				this.specialGradientStartColor = value;
@@ -1359,8 +1366,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("")]
 	public Color SpecialGradientEndColor {
-		get { return this.specialGradientEndColor; }
-
+		get {
+			return this.specialGradientEndColor;
+		}
 		set {
 			if (this.specialGradientEndColor != value) {
 				this.specialGradientEndColor = value;
@@ -1390,8 +1398,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("")]
 	public Color NormalGradientStartColor {
-		get { return this.normalGradientStartColor; }
-
+		get {
+			return this.normalGradientStartColor;
+		}
 		set {
 			if (this.normalGradientStartColor != value) {
 				this.normalGradientStartColor = value;
@@ -1421,8 +1430,9 @@ public class HeaderInfo : IDisposable {
 	/// </summary>
 	[Description("")]
 	public Color NormalGradientEndColor {
-		get { return this.normalGradientEndColor; }
-
+		get {
+			return this.normalGradientEndColor;
+		}
 		set {
 			if (this.normalGradientEndColor != value) {
 				this.normalGradientEndColor = value;
@@ -1452,8 +1462,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(0.5f),
 	 Description("")]
 	public float GradientOffset {
-		get { return this.gradientOffset; }
-
+		get {
+			return this.gradientOffset;
+		}
 		set {
 			if (value < 0) {
 				value = 0f;
@@ -1478,8 +1489,9 @@ public class HeaderInfo : IDisposable {
 	[DefaultValue(2),
 	 Description("")]
 	public int TitleRadius {
-		get { return this.titleRadius; }
-
+		get {
+			return this.titleRadius;
+		}
 		set {
 			if (value < 0) {
 				value = 0;
@@ -1505,20 +1517,16 @@ public class HeaderInfo : IDisposable {
 	/// Gets or sets the Expando the HeaderInfo belongs to
 	/// </summary>
 	protected internal Expando Expando {
-		get { return this.owner; }
-
-		set { this.owner = value; }
+		get => this.owner;
+		set => this.owner = value;
 	}
 
 
 	/// <summary>
 	/// 
 	/// </summary>
-	internal bool RightToLeft {
-		get { return this.rightToLeft; }
 
-		set { this.rightToLeft = value; }
-	}
+	internal bool RightToLeft { get; set; }
 
 	#endregion
 

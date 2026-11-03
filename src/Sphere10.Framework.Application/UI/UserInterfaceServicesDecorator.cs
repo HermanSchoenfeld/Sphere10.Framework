@@ -23,10 +23,7 @@ public abstract class UserInterfaceServicesDecorator<TConcrete> : IUserInterface
 		InternalServices = services;
 	}
 
-	public virtual event EventHandlerEx Changed {
-		add => InternalServices.Changed += value;
-		remove => InternalServices.Changed -= value;
-	}
+	public virtual event EventHandlerEx Changed { add => InternalServices.Changed += value; remove => InternalServices.Changed -= value; }
 
 	public virtual IApplicationScreenHost ScreenHost => InternalServices.ScreenHost;
 

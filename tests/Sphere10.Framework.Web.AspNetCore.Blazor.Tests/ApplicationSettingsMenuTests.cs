@@ -84,11 +84,7 @@ public class ApplicationSettingsMenuTests {
 	// This composition test restores declared defaults without invoking browser storage or writing preferences.
 	private sealed class MissingSettingsProvider : SyncSettingsProviderBase {
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
 		public override bool ContainsSetting(Type settingsType, object id = null) {

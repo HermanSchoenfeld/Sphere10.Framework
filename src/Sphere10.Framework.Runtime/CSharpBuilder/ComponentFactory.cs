@@ -96,14 +96,12 @@ internal class ReturnBaseImpl : MethodImplementationAttribute {
 public class ComponentFactory {
 
 	static private readonly ComponentFactory _instance = new ComponentFactory();
-	private List<string> _references;
-	IDictionary<Type, Type> _proxifiedClasses;
 
 	private ComponentFactory() {
-		_proxifiedClasses = new Dictionary<Type, Type>();
-		_references = new List<string>();
+		ProxifiedClasses = new Dictionary<Type, Type>();
+		References = new List<string>();
 		// add System.dll by default
-		_references.Add("System.dll");
+		References.Add("System.dll");
 	}
 
 	public static ComponentFactory Instance {
@@ -113,15 +111,9 @@ public class ComponentFactory {
 		}
 	}
 
-	public List<string> References {
-		get { return _references; }
-		set { _references = value; }
-	}
+	public List<string> References { get; set; }
 
-	public IDictionary<Type, Type> ProxifiedClasses {
-		get { return _proxifiedClasses; }
-		set { _proxifiedClasses = value; }
-	}
+	public IDictionary<Type, Type> ProxifiedClasses { get; set; }
 
 	public T New<T>() where T : class {
 		if (!ProxifiedClasses.Keys.Contains(typeof(T))) {

@@ -71,14 +71,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Defines which axis the cursor attached to X or Y
         private AxisName _attachedToXAxis = AxisName.X;
 
-        // Enables/Disables chart area cursor.
-        private bool _isUserEnabled;
+		// Enables/Disables chart area cursor.
 
-        // Enables/Disables chart area selection.
-        private bool _isUserSelectionEnabled;
+		// Enables/Disables chart area selection.
 
-        // Indicates that cursor will automatically scroll the area scaleView if necessary.
-        private bool _autoScroll = true;
+		// Indicates that cursor will automatically scroll the area scaleView if necessary.
+		private bool _autoScroll = true;
 
         // Cursor line color
         private Color _lineColor = Color.Red;
@@ -110,11 +108,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Cursor movement interval type
         private DateTimeIntervalType _intervalType = DateTimeIntervalType.Auto;
 
-        // Cursor movement interval offset current & original values
-        private double _intervalOffset;
+		// Cursor movement interval offset current & original values
 
-        // Cursor movement interval offset type
-        private DateTimeIntervalType _intervalOffsetType = DateTimeIntervalType.Auto;
+		// Cursor movement interval offset type
+		private DateTimeIntervalType _intervalOffsetType = DateTimeIntervalType.Auto;
 
         // Reference to the axis object
         private Axis _axis;
@@ -157,11 +154,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Position
         {
-            get
-            {
-                return _position;
-            }
-            set
+			get {
+				return _position;
+			}
+			set
             {
                 if (_position != value)
                 {
@@ -184,7 +180,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the starting position of a cursor's selected range.
@@ -198,11 +194,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double SelectionStart
         {
-            get
-            {
-                return _selectionStart;
-            }
-            set
+			get {
+				return _selectionStart;
+			}
+			set
             {
                 if (_selectionStart != value)
                 {
@@ -225,7 +220,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the ending position of a range selection.
@@ -239,11 +234,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double SelectionEnd
         {
-            get
-            {
-                return _selectionEnd;
-            }
-            set
+			get {
+				return _selectionEnd;
+			}
+			set
             {
                 if (_selectionEnd != value)
                 {
@@ -266,55 +260,35 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		}
 
-        /// <summary>
-        /// Gets or sets a property that enables or disables the cursor interface.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeBehavior"),
-        Bindable(true),
-        DefaultValue(false),
-        SRDescription("DescriptionAttributeCursor_UserEnabled"),
-        ]
-        public bool IsUserEnabled
-        {
-            get
-            {
-                return _isUserEnabled;
-            }
-            set
-            {
-                _isUserEnabled = value;
-            }
-        }
+		/// <summary>
+		/// Gets or sets a property that enables or disables the cursor interface.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeBehavior"),
+		Bindable(true),
+		DefaultValue(false),
+		SRDescription("DescriptionAttributeCursor_UserEnabled"),
+		]
+		public bool IsUserEnabled { get; set; }
 
-        /// <summary>
-        /// Gets or sets a property that enables or disables the range selection interface.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeBehavior"),
-        Bindable(true),
-        DefaultValue(false),
-        SRDescription("DescriptionAttributeCursor_UserSelection"),
-        ]
-        public bool IsUserSelectionEnabled
-        {
-            get
-            {
-                return _isUserSelectionEnabled;
-            }
-            set
-            {
-                _isUserSelectionEnabled = value;
-            }
-        }
+		/// <summary>
+		/// Gets or sets a property that enables or disables the range selection interface.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeBehavior"),
+		Bindable(true),
+		DefaultValue(false),
+		SRDescription("DescriptionAttributeCursor_UserSelection"),
+		]
+		public bool IsUserSelectionEnabled { get; set; }
 
-        /// <summary>
-        /// Determines if scrolling will occur if a range selection operation
-        /// extends beyond a boundary of the chart area.
-        /// </summary>
-        [
+		/// <summary>
+		/// Determines if scrolling will occur if a range selection operation
+		/// extends beyond a boundary of the chart area.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeBehavior"),
         Bindable(true),
         DefaultValue(true),
@@ -322,15 +296,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool AutoScroll
         {
-            get
-            {
-                return _autoScroll;
-            }
-            set
-            {
-                _autoScroll = value;
-            }
-        }
+			get => _autoScroll;
+			set => _autoScroll = value;
+		}
 
         /// <summary>
         ///  Gets or sets the type of axis that the cursor is attached to.
@@ -343,11 +311,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public AxisType AxisType
         {
-            get
-            {
-                return _axisType;
-            }
-            set
+			get {
+				return _axisType;
+			}
+			set
             {
                 _axisType = value;
 
@@ -356,7 +323,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the cursor movement interval.
@@ -369,15 +336,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Interval
         {
-            get
-            {
-                return _interval;
-            }
-            set
-            {
-                _interval = value;
-            }
-        }
+			get => _interval;
+			set => _interval = value;
+		}
 
         /// <summary>
         /// Gets or sets the unit of measurement of the Interval property.
@@ -390,48 +351,38 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType IntervalType
         {
-            get
-            {
-                return _intervalType;
-            }
-            set
-            {
-                _intervalType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
-            }
-        }
+			get => _intervalType;
+			set => _intervalType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+		}
 
-        /// <summary>
-        /// Gets or sets the interval offset, which determines
-        /// where to draw the cursor and range selection.
-        /// </summary>
-        [
-        SRCategory("CategoryAttributeBehavior"),
-        Bindable(true),
-        DefaultValue(0.0),
-        SRDescription("DescriptionAttributeCursor_IntervalOffset"),
-        ]
-        public double IntervalOffset
-        {
-            get
-            {
-                return _intervalOffset;
-            }
-            set
-            {
-                // Validation
-                if (value < 0.0)
-                {
-                    throw new ArgumentException(SR.ExceptionCursorIntervalOffsetIsNegative, nameof(value));
-                }
+		/// <summary>
+		/// Gets or sets the interval offset, which determines
+		/// where to draw the cursor and range selection.
+		/// </summary>
+		[
+		SRCategory("CategoryAttributeBehavior"),
+		Bindable(true),
+		DefaultValue(0.0),
+		SRDescription("DescriptionAttributeCursor_IntervalOffset"),
+		]
+		public double IntervalOffset {
+			get {
+				return field;
+			}
+			set {
+				// Validation
+				if (value < 0.0) {
+					throw new ArgumentException(SR.ExceptionCursorIntervalOffsetIsNegative, nameof(value));
+				}
 
-                _intervalOffset = value;
-            }
-        }
+				field = value;
+			}
+		}
 
-        /// <summary>
-        /// Gets or sets the unit of measurement of the IntervalOffset property.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the unit of measurement of the IntervalOffset property.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeBehavior"),
         Bindable(true),
         DefaultValue(DateTimeIntervalType.Auto),
@@ -439,15 +390,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType IntervalOffsetType
         {
-            get
-            {
-                return _intervalOffsetType;
-            }
-            set
-            {
-                _intervalOffsetType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
-            }
-        }
+			get => _intervalOffsetType;
+			set => _intervalOffsetType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+		}
 
         #endregion Cursor "Behavior" public properties.
 
@@ -465,16 +410,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color LineColor
         {
-            get
-            {
-                return _lineColor;
-            }
-            set
+			get {
+				return _lineColor;
+			}
+			set
             {
                 _lineColor = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the style of the cursor line.
@@ -487,16 +431,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return _lineDashStyle;
-            }
-            set
+			get {
+				return _lineDashStyle;
+			}
+			set
             {
                 _lineDashStyle = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the width of the cursor line.
@@ -509,11 +452,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int LineWidth
         {
-            get
-            {
-                return _lineWidth;
-            }
-            set
+			get {
+				return _lineWidth;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -522,7 +464,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _lineWidth = value;
                 this.Invalidate(true);
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a semi-transparent color that highlights a range of data.
@@ -536,16 +478,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color SelectionColor
         {
-            get
-            {
-                return _selectionColor;
-            }
-            set
+			get {
+				return _selectionColor;
+			}
+			set
             {
                 _selectionColor = value;
                 this.Invalidate(false);
             }
-        }
+		}
 
         #endregion Cursor "Appearance" public properties
 
@@ -1509,28 +1450,23 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Private fields for properties values storage
         private readonly ChartArea _chartArea;
 
-        private readonly Axis _axis;
-        private double _newPosition = double.NaN;
-        private double _newSelectionStart = double.NaN;
-        private double _newSelectionEnd = double.NaN;
+		#endregion Private fields
 
-        #endregion Private fields
+		#region Constructors
 
-        #region Constructors
-
-        /// <summary>
-        /// CursorEventArgs constructor.
-        /// </summary>
-        /// <param name="chartArea">ChartArea of the cursor.</param>
-        /// <param name="axis">Axis of the cursor.</param>
-        /// <param name="newPosition">New cursor position.</param>
-        public CursorEventArgs(ChartArea chartArea, Axis axis, double newPosition)
+		/// <summary>
+		/// CursorEventArgs constructor.
+		/// </summary>
+		/// <param name="chartArea">ChartArea of the cursor.</param>
+		/// <param name="axis">Axis of the cursor.</param>
+		/// <param name="newPosition">New cursor position.</param>
+		public CursorEventArgs(ChartArea chartArea, Axis axis, double newPosition)
         {
             this._chartArea = chartArea;
-            this._axis = axis;
-            this._newPosition = newPosition;
-            this._newSelectionStart = double.NaN;
-            this._newSelectionEnd = double.NaN;
+			Axis = axis;
+			NewPosition = newPosition;
+			NewSelectionStart = double.NaN;
+			NewSelectionEnd = double.NaN;
         }
 
         /// <summary>
@@ -1543,10 +1479,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         public CursorEventArgs(ChartArea chartArea, Axis axis, double newSelectionStart, double newSelectionEnd)
         {
             this._chartArea = chartArea;
-            this._axis = axis;
-            this._newPosition = double.NaN;
-            this._newSelectionStart = newSelectionStart;
-            this._newSelectionEnd = newSelectionEnd;
+			Axis = axis;
+			NewPosition = double.NaN;
+			NewSelectionStart = newSelectionStart;
+			NewSelectionEnd = newSelectionEnd;
         }
 
         #endregion Constructors
@@ -1559,82 +1495,40 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [
         SRDescription("DescriptionAttributeChartArea"),
         ]
-        public ChartArea ChartArea
-        {
-            get
-            {
-                return _chartArea;
-            }
-        }
+        public ChartArea ChartArea => _chartArea;
 
-        /// <summary>
-        /// Axis of the event.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeAxis"),
-        ]
-        public Axis Axis
-        {
-            get
-            {
-                return _axis;
-            }
-        }
+		/// <summary>
+		/// Axis of the event.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeAxis"),
+		]
+		public Axis Axis { get; }
 
-        /// <summary>
-        /// New cursor position.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeCursorEventArgs_NewPosition"),
-        ]
-        public double NewPosition
-        {
-            get
-            {
-                return _newPosition;
-            }
-            set
-            {
-                _newPosition = value;
-            }
-        }
+		/// <summary>
+		/// New cursor position.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeCursorEventArgs_NewPosition"),
+		]
+		public double NewPosition { get; set; } = double.NaN;
 
-        /// <summary>
-        /// New range selection starting position.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeCursorEventArgs_NewSelectionStart"),
-        ]
-        public double NewSelectionStart
-        {
-            get
-            {
-                return _newSelectionStart;
-            }
-            set
-            {
-                _newSelectionStart = value;
-            }
-        }
+		/// <summary>
+		/// New range selection starting position.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeCursorEventArgs_NewSelectionStart"),
+		]
+		public double NewSelectionStart { get; set; } = double.NaN;
 
-        /// <summary>
-        /// New range selection ending position.
-        /// </summary>
-        [
-        SRDescription("DescriptionAttributeCursorEventArgs_NewSelectionEnd"),
-        ]
-        public double NewSelectionEnd
-        {
-            get
-            {
-                return _newSelectionEnd;
-            }
-            set
-            {
-                _newSelectionEnd = value;
-            }
-        }
+		/// <summary>
+		/// New range selection ending position.
+		/// </summary>
+		[
+		SRDescription("DescriptionAttributeCursorEventArgs_NewSelectionEnd"),
+		]
+		public double NewSelectionEnd { get; set; } = double.NaN;
 
-        #endregion Properties
-    }
+		#endregion Properties
+	}
 }

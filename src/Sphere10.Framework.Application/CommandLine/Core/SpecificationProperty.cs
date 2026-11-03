@@ -7,13 +7,11 @@ using CSharpx;
 namespace CommandLine.Core;
 
 class SpecificationProperty {
-	private readonly Specification specification;
-	private readonly PropertyInfo property;
 	private readonly Maybe<object> value;
 
 	private SpecificationProperty(Specification specification, PropertyInfo property, Maybe<object> value) {
-		this.property = property;
-		this.specification = specification;
+		Property = property;
+		Specification = specification;
 		this.value = value;
 	}
 
@@ -23,16 +21,10 @@ class SpecificationProperty {
 		return new SpecificationProperty(specification, property, value);
 	}
 
-	public Specification Specification {
-		get { return specification; }
-	}
+	public Specification Specification { get; }
 
-	public PropertyInfo Property {
-		get { return property; }
-	}
+	public PropertyInfo Property { get; }
 
-	public Maybe<object> Value {
-		get { return value; }
-	}
+	public Maybe<object> Value => value;
 }
 

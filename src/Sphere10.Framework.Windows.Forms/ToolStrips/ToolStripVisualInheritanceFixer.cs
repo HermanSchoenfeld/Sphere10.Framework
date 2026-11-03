@@ -42,7 +42,6 @@ public class ToolStripVisualInheritanceFixer : Component {
 	private readonly List<MergedItem> _mergedItems = new();
 	private readonly List<MatchedMenu> _matchedMenus = new();
 	private readonly List<MenuAdjustment> _menuAdjustments = new();
-	private ToolStrip _toolStrip;
 	private ToolStrip _inheritedToolStrip;
 	private bool _toolStripVisible;
 	private bool _merging;
@@ -90,20 +89,20 @@ public class ToolStripVisualInheritanceFixer : Component {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public ToolStrip ToolStrip {
 		get {
-			return _toolStrip;
+			return field;
 		}
 		set {
-			if (ReferenceEquals(_toolStrip, value))
+			if (ReferenceEquals(field, value))
 				return;
 			Unmerge();
-			if (_toolStrip != null) {
-				_toolStrip.VisibleChanged -= ToolStripVisibleChanged;
-				_toolStrip.Layout -= ToolStripLayout;
-				_toolStrip.Disposed -= ToolStripDisposed;
-				if (!_toolStrip.IsDisposed && !_toolStrip.Disposing)
-					_toolStrip.Visible = _toolStripVisible;
+			if (field != null) {
+				field.VisibleChanged -= ToolStripVisibleChanged;
+				field.Layout -= ToolStripLayout;
+				field.Disposed -= ToolStripDisposed;
+				if (!field.IsDisposed && !field.Disposing)
+					field.Visible = _toolStripVisible;
 			}
-			_toolStrip = value;
+			field = value;
 			if (value != null) {
 				_toolStripVisible = !_visibleProperty.ShouldSerializeValue(value);
 				value.VisibleChanged += ToolStripVisibleChanged;

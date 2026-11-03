@@ -30,15 +30,6 @@ public enum PolymorphicLevel {
 
 
 public class ClassBuilder {
-	private ProtectionLevel _protectionLevel;
-	private string _name;
-	private string _baseTypeName;
-	private List<MethodBuilder> _methods;
-	private List<FieldBuilder> _fields;
-	private string _namespace;
-	private List<string> _imports;
-	private MethodBuilder _constructor;
-
 	public ClassBuilder() {
 		ProtectionLevel = ProtectionLevel.Public;
 		Name = string.Empty;
@@ -48,64 +39,38 @@ public class ClassBuilder {
 		Namespace = string.Empty;
 		Imports = new List<string>();
 		Imports.Add("System");
-		_constructor = new MethodBuilder();
+		Constructor = new MethodBuilder();
 		Constructor.ProtectionLevel = ProtectionLevel.Public;
 		Constructor.ReturnTypeName = string.Empty;
 	}
 
-	public List<string> Imports {
-		get { return _imports; }
-		set { _imports = value; }
-	}
+	public List<string> Imports { get; set; }
 
-	public string Namespace {
-		get { return _namespace; }
-		set { _namespace = value; }
-	}
+	public string Namespace { get; set; }
 
-	public ProtectionLevel ProtectionLevel {
-		get { return _protectionLevel; }
-		set { _protectionLevel = value; }
-	}
+	public ProtectionLevel ProtectionLevel { get; set; }
 
 	public string Name {
-		get { return _name; }
+		get {
+			return field;
+		}
 		set {
-			_name = value;
+			field = value;
 			if (Constructor != null) {
-				Constructor.Name = _name;
+				Constructor.Name = field;
 			}
 		}
 	}
 
-	public string FullName {
-		get {
-			return string.Format(
-				"{0}.{1}",
-				string.IsNullOrEmpty(Namespace) ? string.Empty : Namespace,
-				string.IsNullOrEmpty(Name) ? string.Empty : Name
-			);
-		}
-	}
+	public string FullName => string.Format("{0}.{1}", string.IsNullOrEmpty(Namespace) ? string.Empty : Namespace, string.IsNullOrEmpty(Name) ? string.Empty : Name);
 
-	public string BaseTypeName {
-		get { return _baseTypeName; }
-		set { _baseTypeName = value; }
-	}
+	public string BaseTypeName { get; set; }
 
-	public MethodBuilder Constructor {
-		get { return _constructor; }
-	}
+	public MethodBuilder Constructor { get; }
 
-	public List<FieldBuilder> Fields {
-		get { return _fields; }
-		set { _fields = value; }
-	}
+	public List<FieldBuilder> Fields { get; set; }
 
-	public List<MethodBuilder> Methods {
-		get { return _methods; }
-		set { _methods = value; }
-	}
+	public List<MethodBuilder> Methods { get; set; }
 
 	public bool ContainsField(string name) {
 		foreach (FieldBuilder field in Fields) {
@@ -215,32 +180,18 @@ public class ClassBuilder {
 
 
 public class FieldBuilder {
-	private ProtectionLevel _protectionLevel;
-	private string _typeName;
-	private string _name;
-
-
 	public FieldBuilder() {
 		ProtectionLevel = ProtectionLevel.Private;
 		TypeName = string.Empty;
 		Name = string.Empty;
 	}
 
-	public ProtectionLevel ProtectionLevel {
-		get { return _protectionLevel; }
-		set { _protectionLevel = value; }
-	}
+	public ProtectionLevel ProtectionLevel { get; set; }
 
-	public string TypeName {
-		get { return _typeName; }
-		set { _typeName = value; }
-	}
+	public string TypeName { get; set; }
 
 
-	public string Name {
-		get { return _name; }
-		set { _name = value; }
-	}
+	public string Name { get; set; }
 
 	public override string ToString() {
 		return string.Format(
@@ -262,57 +213,38 @@ public class PropertyBuilder {
 
 
 public class MethodBuilder {
-	private ProtectionLevel _protectionLevel;
-	private PolymorphicLevel _polymorphicLevel;
-	private string _returnTypeName;
-	private string _name;
-	private List<ParameterBuilder> _parameters;
-	private string _bodyCode;
-
 	public MethodBuilder() {
 		ProtectionLevel = ProtectionLevel.Public;
 		PolymorphicLevel = PolymorphicLevel.None;
 		ReturnTypeName = string.Empty;
 		Name = string.Empty;
-		_parameters = new List<ParameterBuilder>();
+		Parameters = new List<ParameterBuilder>();
 		BodyCode = string.Empty;
 	}
 
-	public ProtectionLevel ProtectionLevel {
-		get { return _protectionLevel; }
-		set { _protectionLevel = value; }
-	}
+	public ProtectionLevel ProtectionLevel { get; set; }
 
-	public PolymorphicLevel PolymorphicLevel {
-		get { return _polymorphicLevel; }
-		set { _polymorphicLevel = value; }
-	}
+	public PolymorphicLevel PolymorphicLevel { get; set; }
 
-	public string Name {
-		get { return _name; }
-		set { _name = value; }
-	}
+	public string Name { get; set; }
 
 	public string ReturnTypeName {
-		get { return _returnTypeName; }
+		get {
+			return field;
+		}
 		set {
 			if (value == typeof(void).FullName) {
-				_returnTypeName = "void";
-			} else {
-				_returnTypeName = value;
+				field = "void";
+			}
+			else {
+				field = value;
 			}
 		}
 	}
 
-	public List<ParameterBuilder> Parameters {
-		get { return _parameters; }
-		set { _parameters = value; }
-	}
+	public List<ParameterBuilder> Parameters { get; set; }
 
-	public string BodyCode {
-		get { return _bodyCode; }
-		set { _bodyCode = value; }
-	}
+	public string BodyCode { get; set; }
 
 	public ParameterBuilder AppendParameter() {
 		return AppendParameter(
@@ -422,9 +354,6 @@ public class MethodBuilder {
 
 
 public class ParameterBuilder {
-	private string _typeName;
-	private string _parameterName;
-
 	public ParameterBuilder(string typeName, string parameterName) {
 		TypeName = typeName;
 		ParameterName = parameterName;
@@ -434,15 +363,9 @@ public class ParameterBuilder {
 		: this(string.Empty, string.Empty) {
 	}
 
-	public string TypeName {
-		get { return _typeName; }
-		set { _typeName = value; }
-	}
+	public string TypeName { get; set; }
 
-	public string ParameterName {
-		get { return _parameterName; }
-		set { _parameterName = value; }
-	}
+	public string ParameterName { get; set; }
 
 	public override string ToString() {
 		return string.Format("{0} {1}", TypeName, ParameterName);

@@ -24,8 +24,6 @@ public class ApplicationBlock : IApplicationBlock {
 	private readonly BlockMetadata _definition;
 	private readonly List<IApplicationMenu> _menus = new();
 	private readonly ApplicationMenu _toolbarOwner;
-	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
-	private string _id;
 	private Type _defaultScreen;
 
 	/// <summary>Initializes independent block metadata and toolbar ownership.</summary>
@@ -42,49 +40,29 @@ public class ApplicationBlock : IApplicationBlock {
 
 	/// <inheritdoc />
 	public string Id {
-		get {
-			return _id ?? Title;
-		}
-		init {
-			_id = value;
-		}
+		get => field ?? Title;
+		init => field = value;
 	}
 
 	/// <inheritdoc />
 	public int Position {
-		get {
-			return _definition.Position;
-		}
-		init {
-			_definition.Position = value;
-		}
+		get => _definition.Position;
+		init => _definition.Position = value;
 	}
 
 	/// <inheritdoc />
 	public string Title {
-		get {
-			return _definition.Name;
-		}
-		init {
-			_definition.Name = value;
-		}
+		get => _definition.Name;
+		init => _definition.Name = value;
 	}
 
 	/// <inheritdoc />
-	public string Name {
-		get {
-			return _definition.Name;
-		}
-	}
+	public string Name => _definition.Name;
 
 	/// <summary>The block's ordinary settings defaults, copied into each circuit's runtime profile.</summary>
 	public SettingsObject BlockSettings {
-		get {
-			return _definition.BlockSettings;
-		}
-		set {
-			_definition.BlockSettings = value;
-		}
+		get => _definition.BlockSettings;
+		set => _definition.BlockSettings = value;
 	}
 
 	/// <inheritdoc />
@@ -114,46 +92,30 @@ public class ApplicationBlock : IApplicationBlock {
 	/// <summary>The web toolbar commands owned by this block.</summary>
 	public IApplicationMenuItem[] ToolBarItems {
 		get {
-			return _toolBarItems.ToArray();
+			return field.ToArray();
 		}
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
-			_toolBarItems = value.ToArray();
-			foreach (var item in _toolBarItems.Where(item => item.Parent == null))
+			field = value.ToArray();
+			foreach (var item in field.Where(item => item.Parent == null))
 				_toolbarOwner.AddItem(item);
 		}
-	}
+	} = Array.Empty<IApplicationMenuItem>();
 
 	/// <inheritdoc />
 	public Type DefaultScreen {
-		get {
-			return _defaultScreen ?? _definition.DefaultScreenDefinition?.ScreenType;
-		}
-		init {
-			_defaultScreen = value;
-		}
+		get => _defaultScreen ?? _definition.DefaultScreenDefinition?.ScreenType;
+		init => _defaultScreen = value;
 	}
 
 	/// <inheritdoc />
-	public ScreenActivationMode? DefaultScreenActivationMode {
-		get {
-			return DefaultScreenDefinition?.ActivationMode;
-		}
-	}
+	public ScreenActivationMode? DefaultScreenActivationMode => DefaultScreenDefinition?.ActivationMode;
 
 	/// <inheritdoc />
-	public ScreenKind DefaultScreenKind {
-		get {
-			return DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
-		}
-	}
+	public ScreenKind DefaultScreenKind => DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
 
 	/// <inheritdoc />
-	public string DefaultScreenTitle {
-		get {
-			return DefaultScreenDefinition?.Title;
-		}
-	}
+	public string DefaultScreenTitle => DefaultScreenDefinition?.Title;
 
 	/// <inheritdoc />
 	public SharedUI.ApplicationScreenDefinition[] ScreenDefinitions {

@@ -136,11 +136,10 @@ public partial class ChartGraphics : ChartElement, IDisposable
     // Indicates that smoothing is applied while drawing shadows
     internal bool softShadows = true;
 
-    // Anti aliasing flags
-    private AntiAliasingStyles _antiAliasing = AntiAliasingStyles.All;
+	// Anti aliasing flags
 
-    // True if rendering into the metafile
-    internal bool IsMetafile;
+	// True if rendering into the metafile
+	internal bool IsMetafile;
 
     private bool _disposedValue;
 
@@ -5504,17 +5503,19 @@ public partial class ChartGraphics : ChartElement, IDisposable
     /// </summary>
     internal AntiAliasingStyles AntiAliasing
     {
-        get => _antiAliasing;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _antiAliasing = value;
+            field = value;
 
             // Graphics mode not set
             if (Graphics == null)
                 return;
 
             // Convert Chart's anti alias enumeration to GDI+ SmoothingMode
-            if ((_antiAliasing & AntiAliasingStyles.Graphics) == AntiAliasingStyles.Graphics)
+            if ((field & AntiAliasingStyles.Graphics) == AntiAliasingStyles.Graphics)
             {
                 this.SmoothingMode = SmoothingMode.AntiAlias;
             }
@@ -5523,12 +5524,12 @@ public partial class ChartGraphics : ChartElement, IDisposable
                 this.SmoothingMode = SmoothingMode.None;
             }
         }
-    }
+	} = AntiAliasingStyles.All;
 
-    /// <summary>
-    /// Gets reusable pen.
-    /// </summary>
-    internal Pen Pen { get; private set; }
+	/// <summary>
+	/// Gets reusable pen.
+	/// </summary>
+	internal Pen Pen { get; private set; }
 
     /// <summary>
     /// Sets the clipping region of this Graphics object
@@ -5599,18 +5600,7 @@ public partial class ChartGraphics : ChartElement, IDisposable
     /// <summary>
     /// Returns chart right to left flag
     /// </summary>
-    internal bool IsRightToLeft
-    {
-        get
-        {
-            if (Common == null)
-            {
-                return false;
-            }
-
-            return Common.ChartPicture.RightToLeft == RightToLeft.Yes;
-        }
-    }
+    internal bool IsRightToLeft => Common == null ? false : Common.ChartPicture.RightToLeft == RightToLeft.Yes;
 
     #endregion RightToLeft
 

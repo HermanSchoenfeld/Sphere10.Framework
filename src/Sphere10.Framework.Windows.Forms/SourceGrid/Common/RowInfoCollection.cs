@@ -47,11 +47,7 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 		HiddenRowCoordinator = new RowInfoCollectoinHiddenRowCoordinator(this);
 	}
 
-	public override int Count {
-		get {
-			return _list.Count;
-		}
-	}
+	public override int Count => _list.Count;
 
 	/// <summary>
 	/// Indexer. Returns a RowInfo at the specified position

@@ -20,18 +20,18 @@ public class ProxySettings {
 	}
 
 	public ProxyUsage ProxyUsage {
-		get { return (ProxyUsage)this.proxyUsage; }
-		set { this.proxyUsage = (BG_JOB_PROXY_USAGE)value; }
+		get => (ProxyUsage)this.proxyUsage;
+		set => this.proxyUsage = (BG_JOB_PROXY_USAGE)value;
 	}
 
 	public string ProxyList {
-		get { return this.proxyList; }
-		set { this.proxyList = value; }
+		get => this.proxyList;
+		set => this.proxyList = value;
 	}
 
 	public string ProxyBypassList {
-		get { return this.proxyBypassList; }
-		set { this.proxyBypassList = value; }
+		get => this.proxyBypassList;
+		set => this.proxyBypassList = value;
 	}
 
 	public void Update() {

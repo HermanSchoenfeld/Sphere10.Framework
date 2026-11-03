@@ -51,7 +51,9 @@ public partial class BlazorWizardHost : IDisposable {
 	public bool CanCancel => Wizard?.IsCancellable == true && (CurrentStepInstance?.IsCancellable ?? true);
 
 	private BlazorWizardStepBase CurrentStepInstance {
-		get => _currentStepInstance;
+		get {
+			return _currentStepInstance;
+		}
 		set {
 			_currentStepInstance = value;
 			_stepTraitsResolver ??= ResolveStepTraits;

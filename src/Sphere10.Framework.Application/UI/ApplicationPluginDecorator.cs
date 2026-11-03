@@ -13,15 +13,9 @@ namespace Sphere10.Framework.Application.UI;
 /// <summary>Forwards plugin definitions and startup lifetime without taking separate ownership.</summary>
 public abstract class ApplicationPluginDecorator<TConcrete> : IApplicationPlugin
 	where TConcrete : IApplicationPlugin {
-	public virtual event EventHandlerEx Loaded {
-		add => InternalPlugin.Loaded += value;
-		remove => InternalPlugin.Loaded -= value;
-	}
+	public virtual event EventHandlerEx Loaded { add => InternalPlugin.Loaded += value; remove => InternalPlugin.Loaded -= value; }
 
-	public virtual event EventHandlerEx Unloaded {
-		add => InternalPlugin.Unloaded += value;
-		remove => InternalPlugin.Unloaded -= value;
-	}
+	public virtual event EventHandlerEx Unloaded { add => InternalPlugin.Unloaded += value; remove => InternalPlugin.Unloaded -= value; }
 
 	protected readonly TConcrete InternalPlugin;
 
@@ -34,29 +28,17 @@ public abstract class ApplicationPluginDecorator<TConcrete> : IApplicationPlugin
 
 	/// <summary>Forwards the actual settings instance owned by the wrapped plugin.</summary>
 	public virtual SettingsObject PluginSettings {
-		get {
-			return InternalPlugin.PluginSettings;
-		}
-		set {
-			InternalPlugin.PluginSettings = value;
-		}
+		get => InternalPlugin.PluginSettings;
+		set => InternalPlugin.PluginSettings = value;
 	}
 
 	public virtual IApplicationBlock[] Blocks => InternalPlugin.Blocks;
 
 	/// <summary>Forwards the wrapped plugin's own command definitions.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return InternalPlugin.Menus;
-		}
-	}
+	public virtual IApplicationMenu[] Menus => InternalPlugin.Menus;
 
 	/// <summary>Forwards the wrapped plugin's own toolbar definitions.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return InternalPlugin.ToolBarItems;
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => InternalPlugin.ToolBarItems;
 
 	public virtual void Load(IServiceCollection serviceCollection) => InternalPlugin.Load(serviceCollection);
 

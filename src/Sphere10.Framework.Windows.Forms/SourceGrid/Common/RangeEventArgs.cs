@@ -20,9 +20,5 @@ public class RangeEventArgs : EventArgs {
 		_gridRange = gridRange;
 	}
 
-	public CellRange Range {
-		get {
-			return _gridRange;
-		}
-	}
+	public CellRange Range => _gridRange;
 }

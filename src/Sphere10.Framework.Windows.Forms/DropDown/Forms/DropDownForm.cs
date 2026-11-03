@@ -20,9 +20,6 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	public event EventHandler DropDownClosed;
 
 	private bool _calculatingLocation;
-	private Control _parentControl = null;
-	private Control _innerControl = null;
-	private DropDownFlags _flags = DropDownFlags.CloseOnEnter | DropDownFlags.CloseOnEscape;
 	private bool _isOpen = false;
 
 	public DropDownForm() {
@@ -42,36 +39,15 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	public DropDownForm(Control innerControl, Control parentControl, System.Windows.Forms.Form owner)
 		: this() {
 		Owner = owner;
-		_innerControl = innerControl;
-		_parentControl = parentControl;
+		InnerControl = innerControl;
+		ParentControl = parentControl;
 	}
 
-	public Control ParentControl {
-		get {
-			return _parentControl;
-		}
-		set {
-			_parentControl = value;
-		}
-	}
+	public Control ParentControl { get; set; } = null;
 
-	public Control InnerControl {
-		get {
-			return _innerControl;
-		}
-		set {
-			_innerControl = value;
-		}
-	}
+	public Control InnerControl { get; set; } = null;
 
-	public DropDownFlags DropDownFlags {
-		get {
-			return _flags;
-		}
-		set {
-			_flags = value;
-		}
-	}
+	public DropDownFlags DropDownFlags { get; set; } = DropDownFlags.CloseOnEnter | DropDownFlags.CloseOnEscape;
 
 	public void ShowDropDown() {
 		if (_isOpen)
@@ -101,12 +77,12 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 		if (DropDownOpen != null)
 			DropDownOpen(this, args);
 
-		_containerPanel.Controls.Add(_innerControl);
-		_innerControl.SizeChanged += InnerControlSizeChanged;
+		_containerPanel.Controls.Add(InnerControl);
+		InnerControl.SizeChanged += InnerControlSizeChanged;
 		using var contentScope = Tools.Scope.ExecuteOnDispose(() => {
-			_innerControl.SizeChanged -= InnerControlSizeChanged;
+			InnerControl.SizeChanged -= InnerControlSizeChanged;
 			// The editor owns the control; removing it prevents disposal by this form.
-			_containerPanel.Controls.Remove(_innerControl);
+			_containerPanel.Controls.Remove(InnerControl);
 		});
 		CalcLocation();
 
@@ -130,7 +106,7 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	}
 
 	protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-		if ((_flags & DropDownFlags.CloseOnEscape) == DropDownFlags.CloseOnEscape) {
+		if ((DropDownFlags & DropDownFlags.CloseOnEscape) == DropDownFlags.CloseOnEscape) {
 			if (keyData == Keys.Escape) {
 				DialogResult = DialogResult.Cancel;
 				CloseDropDown();
@@ -138,7 +114,7 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 			}
 		}
 
-		if ((_flags & DropDownFlags.CloseOnEnter) == DropDownFlags.CloseOnEnter) {
+		if ((DropDownFlags & DropDownFlags.CloseOnEnter) == DropDownFlags.CloseOnEnter) {
 			if (keyData == Keys.Enter) {
 				DialogResult = DialogResult.OK;
 				CloseDropDown();
@@ -174,23 +150,23 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	// Fits the hosted content and popup to the available monitor work area.
 	private void CalcLocation() {
 		// Skip unavailable controls and suppress recursive size-change layout.
-		if (_calculatingLocation || _innerControl == null || _parentControl == null || _innerControl.IsDisposed || _parentControl.IsDisposed)
+		if (_calculatingLocation || InnerControl == null || ParentControl == null || InnerControl.IsDisposed || ParentControl.IsDisposed)
 			return;
 		_calculatingLocation = true;
 		using var locationScope = Tools.Scope.ExecuteOnDispose(() => _calculatingLocation = false);
 
 		// Fit the hosted content within the monitor work area and available vertical space.
-		var parentRectangle = _parentControl.RectangleToScreen(_parentControl.ClientRectangle);
+		var parentRectangle = ParentControl.RectangleToScreen(ParentControl.ClientRectangle);
 		var workingArea = Screen.FromRectangle(parentRectangle).WorkingArea;
 		var spaceAbove = Tools.Values.ClipValue(parentRectangle.Top - workingArea.Top, 0, workingArea.Height);
 		var spaceBelow = Tools.Values.ClipValue(workingArea.Bottom - parentRectangle.Bottom, 0, workingArea.Height);
 		var maximumHeight = Math.Max(1, Math.Max(spaceAbove, spaceBelow));
 		var borderSize = _containerPanel.Size - _containerPanel.ClientSize;
 		var contentSize = new Size(
-			Math.Min(_innerControl.Width, Math.Max(1, workingArea.Width - borderSize.Width)),
-			Math.Min(_innerControl.Height, Math.Max(1, maximumHeight - borderSize.Height))
+			Math.Min(InnerControl.Width, Math.Max(1, workingArea.Width - borderSize.Width)),
+			Math.Min(InnerControl.Height, Math.Max(1, maximumHeight - borderSize.Height))
 		);
-		_innerControl.Size = contentSize;
+		InnerControl.Size = contentSize;
 		ClientSize = contentSize + borderSize;
 
 		// Align with the owner and clamp the popup to the visible monitor bounds.

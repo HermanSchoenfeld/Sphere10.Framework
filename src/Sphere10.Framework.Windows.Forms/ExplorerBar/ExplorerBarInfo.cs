@@ -33,8 +33,6 @@ namespace Sphere10.Framework.Windows.Forms;
 /// A class that contains system defined settings for an XPExplorerBar
 /// </summary>
 public class ExplorerBarInfo : IDisposable {
-	private static ExplorerBarInfo _default = null;
-
 	static ExplorerBarInfo() {
 		//if (Tools.DesignModeTool.IsDesignMode) {
 		//    XmlSerializer xmlSerializer = new XmlSerializer(typeof(ExplorerBarInfoSurrogate));
@@ -46,35 +44,15 @@ public class ExplorerBarInfo : IDisposable {
 		//        .ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme)
 		//        .Save();
 		//}
-		_default = Tools.Xml.ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme).Save();
+		Default = Tools.Xml.ReadFromString<ExplorerBarInfoSurrogate>(Resources.LunaExplorerBarTheme).Save();
 	}
 
 	public static ExplorerBarInfo Default {
 		get {
 			var cloner = new WinFormsCompatibleDeepObjectCloner();
-			return (ExplorerBarInfo)cloner.Clone(_default);
+			return (ExplorerBarInfo)cloner.Clone(field);
 		}
-	}
-
-	/// <summary>
-	/// System defined settings for a TaskPane
-	/// </summary>
-	private TaskPaneInfo taskPane;
-
-	/// <summary>
-	/// System defined settings for a TaskItem
-	/// </summary>
-	private TaskItemInfo taskItem;
-
-	/// <summary>
-	/// System defined settings for an Expando
-	/// </summary>
-	private ExpandoInfo expando;
-
-	/// <summary>
-	/// System defined settings for an Expando's header
-	/// </summary>
-	private HeaderInfo header;
+	} = null;
 
 
 	/// <summary>
@@ -82,10 +60,10 @@ public class ExplorerBarInfo : IDisposable {
 	/// default settings
 	/// </summary>
 	public ExplorerBarInfo() {
-		this.taskPane = new TaskPaneInfo();
-		this.taskItem = new TaskItemInfo();
-		this.expando = new ExpandoInfo();
-		this.header = new HeaderInfo();
+		TaskPane = new TaskPaneInfo();
+		TaskItem = new TaskItemInfo();
+		Expando = new ExpandoInfo();
+		Header = new HeaderInfo();
 	}
 
 	/// <summary>
@@ -114,46 +92,46 @@ public class ExplorerBarInfo : IDisposable {
 	/// Releases all resources used by the ExplorerBarInfo
 	/// </summary>
 	public void Dispose() {
-		this.taskPane.Dispose();
-		this.header.Dispose();
-		this.expando.Dispose();
+		TaskPane.Dispose();
+		Header.Dispose();
+		Expando.Dispose();
 	}
 
 	/// <summary>
 	/// Gets the ExplorerPane settings
 	/// </summary>
-	public TaskPaneInfo TaskPane {
-		get { return this.taskPane; }
 
-		set { this.taskPane = value; }
-	}
+	/// <remarks>
+	/// System defined settings for a TaskPane
+	/// </remarks>
+	public TaskPaneInfo TaskPane { get; set; }
 
 	/// <summary>
 	/// Gets the TaskLink settings
 	/// </summary>
-	public TaskItemInfo TaskItem {
-		get { return this.taskItem; }
 
-		set { this.taskItem = value; }
-	}
+	/// <remarks>
+	/// System defined settings for a TaskItem
+	/// </remarks>
+	public TaskItemInfo TaskItem { get; set; }
 
 	/// <summary>
 	/// Gets the Group settings
 	/// </summary>
-	public ExpandoInfo Expando {
-		get { return this.expando; }
 
-		set { this.expando = value; }
-	}
+	/// <remarks>
+	/// System defined settings for an Expando
+	/// </remarks>
+	public ExpandoInfo Expando { get; set; }
 
 	/// <summary>
 	/// Gets the Header settings
 	/// </summary>
-	public HeaderInfo Header {
-		get { return this.header; }
 
-		set { this.header = value; }
-	}
+	/// <remarks>
+	/// System defined settings for an Expando's header
+	/// </remarks>
+	public HeaderInfo Header { get; set; }
 
 
 }

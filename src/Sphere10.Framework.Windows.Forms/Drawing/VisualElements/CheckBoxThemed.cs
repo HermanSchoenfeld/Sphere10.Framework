@@ -40,7 +40,6 @@ public class CheckBoxThemed : CheckBoxBase {
 		get {
 			return base.Style;
 		}
-
 		set {
 			base.Style = value;
 			_standardCheckBox.Style = value;
@@ -51,7 +50,6 @@ public class CheckBoxThemed : CheckBoxBase {
 		get {
 			return base.CheckBoxState;
 		}
-
 		set {
 			base.CheckBoxState = value;
 			_standardCheckBox.CheckBoxState = value;

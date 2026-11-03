@@ -43,18 +43,10 @@ internal sealed class DetachedApplicationScreenHost : ApplicationScreenHostDecor
 	}
 
 	/// <summary>The screen presented by this detached window.</summary>
-	public override ApplicationScreen ActiveScreen {
-		get {
-			return _window.Screen;
-		}
-	}
+	public override ApplicationScreen ActiveScreen => _window.Screen;
 
 	/// <summary>The command context is the detached screen's owning block.</summary>
-	public override IApplicationBlock ActiveBlock {
-		get {
-			return ActiveScreen.Block;
-		}
-	}
+	public override IApplicationBlock ActiveBlock => ActiveScreen.Block;
 
 	/// <summary>Provides the local active-screen host while forwarding application interactions to the root UI.</summary>
 	public override IUserInterfaceServices UserInterfaceServices {
@@ -66,11 +58,7 @@ internal sealed class DetachedApplicationScreenHost : ApplicationScreenHostDecor
 	}
 
 	/// <summary>The borrowed owner used to validate canonical screen membership and restore docking.</summary>
-	internal IApplicationScreenHost RootHost {
-		get {
-			return InternalHost;
-		}
-	}
+	internal IApplicationScreenHost RootHost => InternalHost;
 
 	/// <summary>Closes this window's screen through the root host's existing guard and cleanup path.</summary>
 	public override Task<bool> CloseActiveScreenAsync(CancellationToken cancellationToken = default) {
@@ -101,11 +89,7 @@ internal sealed class DetachedApplicationScreenHost : ApplicationScreenHostDecor
 			_host = host;
 		}
 
-		public override SharedUI.IApplicationScreenHost ScreenHost {
-			get {
-				return _host;
-			}
-		}
+		public override SharedUI.IApplicationScreenHost ScreenHost => _host;
 
 		/// <summary>Executes with this window's active-screen context while navigation delegates through its root-backed host.</summary>
 		public override Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default) {

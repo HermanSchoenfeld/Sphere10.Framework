@@ -17,9 +17,8 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 /// <summary>Small, deterministic simulated datasets, constructed only when a gallery example is selected.</summary>
 public static class ChartGallerySamples {
 	private static readonly Color[] _colors = { Color.FromArgb(47, 112, 193), Color.FromArgb(228, 132, 58), Color.FromArgb(52, 151, 124), Color.FromArgb(152, 105, 189), Color.FromArgb(205, 87, 103) };
-	private static readonly IReadOnlyList<ChartGallerySample> _all = Array.AsReadOnly(CreateSamples());
 
-	public static IReadOnlyList<ChartGallerySample> All => _all;
+	public static IReadOnlyList<ChartGallerySample> All { get; } = Array.AsReadOnly(CreateSamples());
 
 	private static ChartGallerySample[] CreateSamples() => new[] {
 		Sample(SeriesChartType.Line, "Trends", "Daily Orders", "Two sales channels over fourteen days, with date labels, markers and one deliberately missing observation.", chart => Orders(chart, SeriesChartType.Line)),

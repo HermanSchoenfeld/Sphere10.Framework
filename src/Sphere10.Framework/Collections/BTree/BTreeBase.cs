@@ -23,15 +23,12 @@ namespace Sphere10.Framework;
 /// <typeparam name="K">Key type.</typeparam>
 /// <typeparam name="V">Value type.</typeparam>
 public abstract class BTreeBase<K, V> : IBTree<K, V> {
-	private readonly int _order;
-	private readonly IComparer<K> _comparer;
-
 	protected BTreeBase(int order, IComparer<K> keyComparer = null) {
 		if (order < 3)
 			throw new ArgumentOutOfRangeException(nameof(order), "B-tree order must be at least 3.");
 
-		_order = order;
-		_comparer = keyComparer ?? Comparer<K>.Default;
+		Order = order;
+		Comparer = keyComparer ?? Comparer<K>.Default;
 	}
 
 	public int Count { get; protected set; }
@@ -59,17 +56,13 @@ public abstract class BTreeBase<K, V> : IBTree<K, V> {
 	}
 
 	public V this[K key] {
-		get {
-			if (TryGetValue(key, out var value))
-				return value;
-			throw new KeyNotFoundException();
-		}
+		get => TryGetValue(key, out var value) ? value : throw new KeyNotFoundException();
 		set => Set(key, value, overwriteIfExists: true);
 	}
 
-	public int Order => _order;
+	public int Order { get; }
 
-	public IComparer<K> Comparer => _comparer;
+	public IComparer<K> Comparer { get; }
 
 	public void Add(K key, V value) => Set(key, value, overwriteIfExists: false);
 
@@ -116,7 +109,7 @@ public abstract class BTreeBase<K, V> : IBTree<K, V> {
 
 	public abstract bool Validate(out string error);
 
-	protected int Compare(K x, K y) => _comparer.Compare(x, y);
+	protected int Compare(K x, K y) => Comparer.Compare(x, y);
 
 	[Conditional("DIAGNOSTIC")]
 	protected void DebugValidate() {

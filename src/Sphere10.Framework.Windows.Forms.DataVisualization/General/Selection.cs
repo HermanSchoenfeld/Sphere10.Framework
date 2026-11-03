@@ -199,17 +199,16 @@ internal class HotRegion : IDisposable
     // Private data members, which store properties values
     private RectangleF _boundingRectangle = RectangleF.Empty;
     private string _seriesName = string.Empty;
-    private object _selectedSubObject;
 
 
-    #endregion // Fields
+	#endregion // Fields
 
-    #region Properties
+	#region Properties
 
-    /// <summary>
-    /// Region is Graphics path
-    /// </summary>
-    internal GraphicsPath Path { get; set; }
+	/// <summary>
+	/// Region is Graphics path
+	/// </summary>
+	internal GraphicsPath Path { get; set; }
 
     /// <summary>
     /// Relative coordinates are used 
@@ -222,9 +221,9 @@ internal class HotRegion : IDisposable
     /// </summary>
     internal RectangleF BoundingRectangle
     {
-        get => _boundingRectangle;
-        set => _boundingRectangle = value;
-    }
+		get => _boundingRectangle;
+		set => _boundingRectangle = value;
+	}
 
     /// <summary>
     /// Object which is presented with this region
@@ -233,30 +232,26 @@ internal class HotRegion : IDisposable
 
 
 
-    /// <summary>
-    /// Sub-Object which is presented with this region
-    /// </summary>
-    internal object SelectedSubObject
-    {
-        get => _selectedSubObject;
-        set => _selectedSubObject = value;
-    }
+	/// <summary>
+	/// Sub-Object which is presented with this region
+	/// </summary>
+	internal object SelectedSubObject { get; set; }
 
 
 
-    /// <summary>
-    /// Index of the data point which is presented with this region
-    /// </summary>
-    internal int PointIndex { get; set; } = -1;
+	/// <summary>
+	/// Index of the data point which is presented with this region
+	/// </summary>
+	internal int PointIndex { get; set; } = -1;
 
     /// <summary>
     /// Name of the series which is presented with the region
     /// </summary>
     internal string SeriesName
     {
-        get => _seriesName;
-        set => _seriesName = value;
-    }
+		get => _seriesName;
+		set => _seriesName = value;
+	}
 
     /// <summary>
     /// Chart Element AxisName
@@ -347,8 +342,10 @@ internal class HotRegionsList : IDisposable
     /// </summary>
     internal ProcessMode ProcessChartMode
     {
-        get => _processChartMode;
-        set
+		get {
+			return _processChartMode;
+		}
+		set
         {
             _processChartMode = value;
             if (this._common != null)
@@ -360,7 +357,7 @@ internal class HotRegionsList : IDisposable
                     (_processChartMode & ProcessMode.ImageMaps) == ProcessMode.ImageMaps;
             }
         }
-    }
+	}
 
     /// <summary>
     /// Collection with Hor Region Elements
@@ -803,16 +800,15 @@ public class HitTestResult
 
     // Private members
     private ChartArea _chartArea;
-    private object _subObject;
 
-    #endregion
+	#endregion
 
-    #region Properties
+	#region Properties
 
-    /// <summary>
-    /// Gets or sets the data series object.
-    /// </summary>
-    public Series Series { get; set; }
+	/// <summary>
+	/// Gets or sets the data series object.
+	/// </summary>
+	public Series Series { get; set; }
 
     /// <summary>
     /// Gets or sets the data point index.
@@ -824,9 +820,9 @@ public class HitTestResult
     /// </summary>
     public ChartArea ChartArea
     {
-        get => _chartArea;
-        set => _chartArea = value;
-    }
+		get => _chartArea;
+		set => _chartArea = value;
+	}
 
     /// <summary>
     /// Gets or sets the axis object.
@@ -845,16 +841,12 @@ public class HitTestResult
 
 
 
-    /// <summary>
-    ///  Gets or sets the selected sub object.
-    /// </summary>
-    public object SubObject
-    {
-        get => _subObject;
-        set => _subObject = value;
-    }
+	/// <summary>
+	///  Gets or sets the selected sub object.
+	/// </summary>
+	public object SubObject { get; set; }
 
-    #endregion
+	#endregion
 }
 
 
@@ -1030,52 +1022,39 @@ internal sealed class Selection : IServiceProvider
         }
     }
 
-    private ChartPicture _chartPicture;
-    /// <summary>
-    /// Returns the attached ChartPicture
-    /// </summary>
-    internal ChartPicture ChartPicture
+	/// <summary>
+	/// Returns the attached ChartPicture
+	/// </summary>
+	internal ChartPicture ChartPicture
     {
         get
         {
-            if (this._chartPicture == null)
+            if (field == null)
             {
-                this._chartPicture = ((IServiceProvider)this).GetService(typeof(ChartImage)) as ChartPicture;
-                this._chartPicture ??= ((IServiceProvider)this).GetService(typeof(ChartPicture)) as ChartPicture;
+                field = ((IServiceProvider)this).GetService(typeof(ChartImage)) as ChartPicture;
+                field ??= ((IServiceProvider)this).GetService(typeof(ChartPicture)) as ChartPicture;
             }
 
-            return this._chartPicture;
+            return field;
         }
     }
 
-    private Data.DataManager _dataManager;
-    /// <summary>
-    /// Gets the chart data manager ( for series access )
-    /// </summary>
-    internal Data.DataManager DataManager
+	/// <summary>
+	/// Gets the chart data manager ( for series access )
+	/// </summary>
+	internal Data.DataManager DataManager
     {
         get
         {
-            this._dataManager ??= ((IServiceProvider)this).GetService(typeof(Data.DataManager)) as Data.DataManager;
-            return this._dataManager;
+            field ??= ((IServiceProvider)this).GetService(typeof(Data.DataManager)) as Data.DataManager;
+            return field;
         }
     }
 
     /// <summary>
     /// Gets the chart ChartGraphics
     /// </summary>
-    internal ChartGraphics Graph
-    {
-        get
-        {
-            if (this.ChartPicture != null)
-            {
-                return this.ChartPicture.Common.graph;
-            }
-
-            return null;
-        }
-    }
+    internal ChartGraphics Graph => this.ChartPicture != null ? this.ChartPicture.Common.graph : null;
 
     #endregion //Private Properties
 

@@ -30,10 +30,10 @@ namespace Sphere10.Framework.iOS
 		public CGPoint ContentOffset = new CGPoint(0,0);
 		public EventHandler Scrolled{get;set;}
 		public CGSize ContentSize{get;private set;}
-		public float ZoomScale { 
+		public float ZoomScale {
 			get {
 				return (float)_mainContent.ZoomScale;
-			}			
+			}
 			set {
 				_mainContent.SetZoomScale(value,false);	
 				ZoomHeader();

@@ -765,7 +765,9 @@ public class ApplicationExitTests {
 		public Action Detaching { get; set; }
 
 		public override IApplication Parent {
-			get => base.Parent;
+			get {
+				return base.Parent;
+			}
 			set {
 				if (value == null && base.Parent != null)
 					Detaching?.Invoke();
@@ -812,7 +814,9 @@ public class ApplicationExitTests {
 		public Action<bool> ExitStateChanged { get; set; }
 
 		public override bool ApplicationExiting {
-			get => base.ApplicationExiting;
+			get {
+				return base.ApplicationExiting;
+			}
 			set {
 				base.ApplicationExiting = value;
 				ExitStateChanged?.Invoke(value);
@@ -828,11 +832,7 @@ public class ApplicationExitTests {
 	}
 
 	private sealed class NavigationHost(IApplicationScreenHost host, IApplicationBlock selectedBlock) : ApplicationScreenHostDecorator(host) {
-		public override IApplicationBlock SelectedBlock {
-			get {
-				return selectedBlock;
-			}
-		}
+		public override IApplicationBlock SelectedBlock => selectedBlock;
 	}
 
 	private sealed class ExitDecorator(IApplication application) : ApplicationDecorator(application);

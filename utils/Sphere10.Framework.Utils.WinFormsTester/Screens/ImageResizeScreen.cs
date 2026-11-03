@@ -34,11 +34,7 @@ public partial class ImageResizeScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ImageResizeScreenSettings ScreenSettings {
-		get {
-			return (ImageResizeScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ImageResizeScreenSettings ScreenSettings => (ImageResizeScreenSettings)base.ScreenSettings;
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();

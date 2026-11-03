@@ -62,8 +62,6 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// Indica la cella che ha subito l'ultimo evento di DragEnter
 	/// </summary>
 	private Position _dragCellPosition = Position.Empty;
-	private IGridSelection _selection;
-	private GridSelectionMode _selectionMode;
 	private CellRange _oldMouseSelectionRange = CellRange.Empty;
 	private CellRange _mouseSelectionRange = CellRange.Empty;
 
@@ -95,13 +93,10 @@ public abstract class GridVirtual : CustomScrollControl {
 	private bool _autoFocusFirstCellOnEnter = true;
 
 	// Controls linked
-	private LinkedControlsList _linkedControls;
 
 	// Rows, Columns
 	private int _fixedRows = 0;
 	private int _fixedCols = 0;
-	private RowsBase _rows;
-	private ColumnsBase _columns;
 
 	// Right To Left Support
 	//With Visual Studio 2005 probably I can use the new RightToLeftLayout and TextRenderer class
@@ -148,8 +143,8 @@ public abstract class GridVirtual : CustomScrollControl {
 		TabStop = true;
 		EnableSort = true;
 
-		_rows = CreateRowsObject();
-		_columns = CreateColumnsObject();
+		Rows = CreateRowsObject();
+		Columns = CreateColumnsObject();
 
 		SelectionMode = GridSelectionMode.Cell;
 
@@ -158,7 +153,7 @@ public abstract class GridVirtual : CustomScrollControl {
 		Controller.AddController(Cells.Controllers.MouseSelection.Default);
 		Controller.AddController(Cells.Controllers.CellEventDispatcher.Default);
 
-		_linkedControls = new LinkedControlsList(this);
+		LinkedControls = new LinkedControlsList(this);
 
 		//ToolTip
 		_toolTip = new System.Windows.Forms.ToolTip();
@@ -170,12 +165,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(20)]
 	public int DefaultHeight {
-		get {
-			return _defaultHeight;
-		}
-		set {
-			_defaultHeight = value;
-		}
+		get => _defaultHeight;
+		set => _defaultHeight = value;
 	}
 
 	/// <summary>
@@ -183,12 +174,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(50)]
 	public int DefaultWidth {
-		get {
-			return _defaultWidth;
-		}
-		set {
-			_defaultWidth = value;
-		}
+		get => _defaultWidth;
+		set => _defaultWidth = value;
 	}
 
 	/// <summary>
@@ -196,12 +183,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(0)]
 	public int MinimumHeight {
-		get {
-			return _minimumHeight;
-		}
-		set {
-			_minimumHeight = value;
-		}
+		get => _minimumHeight;
+		set => _minimumHeight = value;
 	}
 
 	/// <summary>
@@ -209,12 +192,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(0)]
 	public int MinimumWidth {
-		get {
-			return _minimumWidth;
-		}
-		set {
-			_minimumWidth = value;
-		}
+		get => _minimumWidth;
+		set => _minimumWidth = value;
 	}
 
 	/// <summary>
@@ -223,12 +202,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(false)]
 	public bool AutoStretchColumnsToFitWidth {
-		get {
-			return _autoStretchColumnsToFitWidth;
-		}
-		set {
-			_autoStretchColumnsToFitWidth = value;
-		}
+		get => _autoStretchColumnsToFitWidth;
+		set => _autoStretchColumnsToFitWidth = value;
 	}
 
 	/// <summary>
@@ -237,23 +212,15 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(false)]
 	public bool AutoStretchRowsToFitHeight {
-		get {
-			return _autoStretchRowsToFitHeight;
-		}
-		set {
-			_autoStretchRowsToFitHeight = value;
-		}
+		get => _autoStretchRowsToFitHeight;
+		set => _autoStretchRowsToFitHeight = value;
 	}
 
 	/// <summary>
 	/// The last cell that has received a DragEnter event.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Position DragCellPosition {
-		get {
-			return _dragCellPosition;
-		}
-	}
+	public Position DragCellPosition => _dragCellPosition;
 
 	/// <summary>
 	/// Gets or sets the Selection object that represents the selected cells and the active cell.
@@ -263,16 +230,16 @@ public abstract class GridVirtual : CustomScrollControl {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IGridSelection Selection {
 		get {
-			return _selection;
+			return field;
 		}
 		protected set {
-			if (_selection != null)
-				_selection.UnBindToGrid();
+			if (field != null)
+				field.UnBindToGrid();
 
-			_selection = value;
+			field = value;
 
-			if (_selection != null)
-				_selection.BindToGrid(this);
+			if (field != null)
+				field.BindToGrid(this);
 		}
 	}
 
@@ -281,10 +248,10 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	public GridSelectionMode SelectionMode {
 		get {
-			return _selectionMode;
+			return field;
 		}
 		set {
-			_selectionMode = value;
+			field = value;
 			Selection = CreateSelectionObject();
 			Invalidate(true);
 		}
@@ -294,44 +261,28 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// Represents the cell that have received the MouseDown event. You can use this cell for contextmenu logic. Can be null.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Position MouseDownPosition {
-		get {
-			return MouseDownCellPosition;
-		}
-	}
+	public Position MouseDownPosition => MouseDownCellPosition;
 
 	/// <summary>
 	/// The cell position currently under the mouse cursor (row, col).
 	/// If you MouseDown on a cell this cell is the MouseCellPosition until an MouseUp is fired
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Position MouseCellPosition {
-		get {
-			return MouseOverCellPosition;
-		}
-	}
+	public Position MouseCellPosition => MouseOverCellPosition;
 
 	/// <summary>
 	/// Returns the cells that are selected with the mouse. Range.Empty if no cells are selected. Consider that this method returns valid cells only during the mouse down operations, when release the mouse the cells are selected and you can read them using Grid.Selection object.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual CellRange MouseSelectionRange {
-		get {
-			return _mouseSelectionRange;
-		}
-	}
+	public virtual CellRange MouseSelectionRange => _mouseSelectionRange;
 
 	/// <summary>
 	/// True to override with the ProcessCmdKey the common Command Key: Enter, Escape, Tab
 	/// </summary>
 	[DefaultValue(true)]
 	public bool OverrideCommonCmdKey {
-		get {
-			return _overrideCommonCmdKey;
-		}
-		set {
-			_overrideCommonCmdKey = value;
-		}
+		get => _overrideCommonCmdKey;
+		set => _overrideCommonCmdKey = value;
 	}
 
 	/// <summary>
@@ -339,12 +290,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(GridSpecialKeys.Default)]
 	public GridSpecialKeys SpecialKeys {
-		get {
-			return _gridSpecialKeys;
-		}
-		set {
-			_gridSpecialKeys = value;
-		}
+		get => _gridSpecialKeys;
+		set => _gridSpecialKeys = value;
 	}
 
 	/// <summary>
@@ -354,12 +301,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(true)]
 	public bool AcceptsInputChar {
-		get {
-			return _acceptsInputChar;
-		}
-		set {
-			_acceptsInputChar = value;
-		}
+		get => _acceptsInputChar;
+		set => _acceptsInputChar = value;
 	}
 
 	/// <summary>
@@ -369,11 +312,7 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// collection
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LinkedControlsList LinkedControls {
-		get {
-			return _linkedControls;
-		}
-	}
+	public LinkedControlsList LinkedControls { get; }
 
 	// Sort Range
 	/// <summary>
@@ -402,13 +341,7 @@ public abstract class GridVirtual : CustomScrollControl {
 		}
 	}
 
-	public int ActualFixedRows {
-		get {
-			if (FixedRows > Rows.Count)
-				return Rows.Count;
-			return FixedRows;
-		}
-	}
+	public int ActualFixedRows => FixedRows > Rows.Count ? Rows.Count : FixedRows;
 
 	/// <summary>
 	/// Gets or Sets how many cols are not scrollable
@@ -426,45 +359,25 @@ public abstract class GridVirtual : CustomScrollControl {
 		}
 	}
 
-	public int ActualFixedColumns {
-		get {
-			if (FixedColumns > Columns.Count)
-				return Columns.Count;
-			return FixedColumns;
-		}
-	}
+	public int ActualFixedColumns => FixedColumns > Columns.Count ? Columns.Count : FixedColumns;
 
 	/// <summary>
 	/// RowsCount informations
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public RowsBase Rows {
-		get {
-			return _rows;
-		}
-	}
+	public RowsBase Rows { get; }
 
 	/// <summary>
 	/// Columns informations
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ColumnsBase Columns {
-		get {
-			return _columns;
-		}
-	}
+	public ColumnsBase Columns { get; }
 
 	/// <summary>
 	/// Returns a Range that represents the complete cells of the grid
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public CellRange CompleteRange {
-		get {
-			if (Rows.Count > 0 && Columns.Count > 0)
-				return new CellRange(0, 0, Rows.Count - 1, Columns.Count - 1);
-			return CellRange.Empty;
-		}
-	}
+	public CellRange CompleteRange => Rows.Count > 0 && Columns.Count > 0 ? new CellRange(0, 0, Rows.Count - 1, Columns.Count - 1) : CellRange.Empty;
 
 	[Description("Change the right-to-left layout."), DefaultValue(false),
 											Localizable(true), Category("Appearance"), Browsable(true)]
@@ -498,49 +411,29 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// ToolTip text
 	/// </summary>
 	public string ToolTipText {
-		get {
-			return _toolTip.GetToolTip(this);
-		}
-		set {
-			_toolTip.SetToolTip(this, value);
-		}
+		get => _toolTip.GetToolTip(this);
+		set => _toolTip.SetToolTip(this, value);
 	}
 
 	/// <summary>
 	/// Gets the tooltip control used when showing tooltip text.
 	/// </summary>
-	public ToolTip ToolTip {
-		get {
-			return _toolTip;
-		}
-	}
+	public ToolTip ToolTip => _toolTip;
 
 	/// <summary>
 	/// Grid decorators, used to draw additiona contents on the drawing surface
 	/// </summary>
-	public Decorators.DecoratorList Decorators {
-		get {
-			return _decorators;
-		}
-	}
+	public Decorators.DecoratorList Decorators => _decorators;
 
-	public Cells.Controllers.ControllerContainer Controller {
-		get {
-			return _controller;
-		}
-	}
+	public Cells.Controllers.ControllerContainer Controller => _controller;
 
 	/// <summary>
 	/// Gets or sets the clipboard operation mode. Default is none
 	/// </summary>
 	[DefaultValue(ClipboardMode.None)]
 	public ClipboardMode ClipboardMode {
-		get {
-			return _clipboardMode;
-		}
-		set {
-			_clipboardMode = value;
-		}
+		get => _clipboardMode;
+		set => _clipboardMode = value;
 	}
 
 	/// <summary>
@@ -548,12 +441,8 @@ public abstract class GridVirtual : CustomScrollControl {
 	/// </summary>
 	[DefaultValue(false)]
 	public bool ClipboardUseOnlyActivePosition {
-		get {
-			return _clipboardUseOnlyActivePosition;
-		}
-		set {
-			_clipboardUseOnlyActivePosition = value;
-		}
+		get => _clipboardUseOnlyActivePosition;
+		set => _clipboardUseOnlyActivePosition = value;
 	}
 
 	protected override CreateParams CreateParams {
@@ -1683,7 +1572,7 @@ ref Message msg, Keys keyData) {
 	/// </summary>
 	public virtual void ArrangeLinkedControls() {
 		SuspendLayout();
-		foreach (var linked in _linkedControls) {
+		foreach (var linked in LinkedControls) {
 			if (linked.Position.IsEmpty())
 				continue;
 
@@ -2081,7 +1970,7 @@ ref Message msg, Keys keyData) {
 			var top = drawRectangle.Top;
 			int width;
 			int height;
-			foreach (var r in _rows.HiddenRowsCoordinator.LoopVisibleRows(e.DrawingRange.Start.Row, e.DrawingRange.End.Row - e.DrawingRange.Start.Row)) {
+			foreach (var r in Rows.HiddenRowsCoordinator.LoopVisibleRows(e.DrawingRange.Start.Row, e.DrawingRange.End.Row - e.DrawingRange.Start.Row)) {
 				//for (int r = e.DrawingRange.Start.Row; r <= e.DrawingRange.End.Row; r++)
 
 				if (Rows.IsRowVisible(r) == false)

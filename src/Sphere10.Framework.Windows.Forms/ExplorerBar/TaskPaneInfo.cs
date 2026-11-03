@@ -171,8 +171,9 @@ public class TaskPaneInfo : IDisposable {
 	/// </summary>
 	[Description("The TaskPane's first gradient background color")]
 	public Color GradientStartColor {
-		get { return this.gradientStartColor; }
-
+		get {
+			return this.gradientStartColor;
+		}
 		set {
 			if (this.gradientStartColor != value) {
 				this.gradientStartColor = value;
@@ -201,8 +202,9 @@ public class TaskPaneInfo : IDisposable {
 	/// </summary>
 	[Description("The TaskPane's second gradient background color")]
 	public Color GradientEndColor {
-		get { return this.gradientEndColor; }
-
+		get {
+			return this.gradientEndColor;
+		}
 		set {
 			if (this.gradientEndColor != value) {
 				this.gradientEndColor = value;
@@ -232,8 +234,9 @@ public class TaskPaneInfo : IDisposable {
 	[DefaultValue(LinearGradientMode.Vertical),
 	 Description("The direction of the TaskPane's background gradient")]
 	public LinearGradientMode GradientDirection {
-		get { return this.direction; }
-
+		get {
+			return this.direction;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(LinearGradientMode), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(LinearGradientMode));
@@ -259,8 +262,9 @@ public class TaskPaneInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("The Image that is used as the TaskPane's background")]
 	public Image BackImage {
-		get { return this.backImage; }
-
+		get {
+			return this.backImage;
+		}
 		set {
 			if (this.backImage != value) {
 				this.backImage = value;
@@ -280,8 +284,9 @@ public class TaskPaneInfo : IDisposable {
 	 DefaultValue(ImageStretchMode.Tile),
 	 Description("Specifies how the TaskPane's background Image is drawn")]
 	public ImageStretchMode StretchMode {
-		get { return this.stretchMode; }
-
+		get {
+			return this.stretchMode;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(ImageStretchMode), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(ImageStretchMode));
@@ -304,8 +309,9 @@ public class TaskPaneInfo : IDisposable {
 	[DefaultValue(null),
 	 Description("The Image that is used as the TaskPane's watermark")]
 	public Image Watermark {
-		get { return this.watermark; }
-
+		get {
+			return this.watermark;
+		}
 		set {
 			if (this.watermark != value) {
 				this.watermark = value;
@@ -325,8 +331,9 @@ public class TaskPaneInfo : IDisposable {
 	[DefaultValue(ContentAlignment.BottomCenter),
 	 Description("The alignment of the Image that is used as the TaskPane's watermark")]
 	public ContentAlignment WatermarkAlignment {
-		get { return this.watermarkAlignment; }
-
+		get {
+			return this.watermarkAlignment;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(ContentAlignment), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(ContentAlignment));
@@ -356,7 +363,6 @@ public class TaskPaneInfo : IDisposable {
 			var isNotZero = this.padding.Left;
 			return this.padding;
 		}
-
 		set {
 			var isZero = value.Left;
 			var isNotZero = value.Left;
@@ -389,9 +395,8 @@ public class TaskPaneInfo : IDisposable {
 	/// Gets or sets the TaskPane the TaskPaneInfo belongs to
 	/// </summary>
 	protected internal TaskPane TaskPane {
-		get { return this.owner; }
-
-		set { this.owner = value; }
+		get => this.owner;
+		set => this.owner = value;
 	}
 
 	#endregion

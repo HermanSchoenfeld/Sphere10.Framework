@@ -17,5 +17,8 @@ public partial class BarChart : GraphChart {
 	}
 
 	[DefaultValue(GraphChartStyle.Column)]
-	public new GraphChartStyle Style { get => base.Style; set => base.Style = value; }
+	public new GraphChartStyle Style {
+		get => base.Style;
+		set => base.Style = value;
+	}
 }

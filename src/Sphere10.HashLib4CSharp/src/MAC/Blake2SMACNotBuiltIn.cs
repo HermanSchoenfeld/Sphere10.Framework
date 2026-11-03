@@ -38,11 +38,9 @@ namespace HashLib4CSharp.MAC
 
         public byte[] Key
         {
-            get => ArrayUtils.Clone(_key);
-            set => _key = value != null
-                ? ArrayUtils.Clone(value)
-                : throw new ArgumentNullException(nameof(value));
-        }
+			get => ArrayUtils.Clone(_key);
+			set => _key = value != null ? ArrayUtils.Clone(value) : throw new ArgumentNullException(nameof(value));
+		}
 
         public override IHash Clone() => new Blake2SMACNotBuiltIn(_hash.Clone(), Key) { BufferSize = BufferSize };
 

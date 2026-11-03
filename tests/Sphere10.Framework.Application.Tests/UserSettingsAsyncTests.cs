@@ -327,11 +327,7 @@ public class UserSettingsAsyncTests {
 			_autoSave = autoSave;
 		}
 
-		public override bool AutoSaveNewSettings {
-			get {
-				return _autoSave;
-			}
-		}
+		public override bool AutoSaveNewSettings => _autoSave;
 
 		public Task ContainsRelease { get; init; } = Task.CompletedTask;
 
@@ -361,11 +357,7 @@ public class UserSettingsAsyncTests {
 
 		public SynchronizationContext ClearContext { get; private set; }
 
-		public int RecordCount {
-			get {
-				return _records.Count;
-			}
-		}
+		public int RecordCount => _records.Count;
 
 		// A creation count detects facade code that bypasses the provider's creation path or duplicates autosave.
 		public override Task<SettingsObject> NewSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {

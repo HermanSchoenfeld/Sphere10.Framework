@@ -19,9 +19,6 @@ using System.Windows.Forms.VisualStyles;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class SplitButton : Button {
-	PushButtonState _state;
-
-
 	const int SplitSectionWidth = 18;
 
 	static int BorderSize = SystemInformation.Border3DSize.Width * 2;
@@ -31,8 +28,6 @@ public class SplitButton : Button {
 
 	bool isSplitMenuVisible;
 
-
-	ContextMenuStrip m_SplitMenuStrip;
 	//ContextMenu m_SplitMenu;
 
 	TextFormatFlags textFormatFlags = TextFormatFlags.Default;
@@ -45,8 +40,8 @@ public class SplitButton : Button {
 
 	[Browsable(false)]
 	public override ContextMenuStrip ContextMenuStrip {
-		get { return SplitMenuStrip; }
-		set { SplitMenuStrip = value; }
+		get => SplitMenuStrip;
+		set => SplitMenuStrip = value;
 	}
 
 	//[DefaultValue(null)]
@@ -76,12 +71,14 @@ public class SplitButton : Button {
 
 	[DefaultValue(null)]
 	public ContextMenuStrip SplitMenuStrip {
-		get { return m_SplitMenuStrip; }
+		get {
+			return field;
+		}
 		set {
 			//remove the event handlers for the old SplitMenuStrip
-			if (m_SplitMenuStrip != null) {
-				m_SplitMenuStrip.Closing -= SplitMenuStrip_Closing;
-				m_SplitMenuStrip.Opening -= SplitMenuStrip_Opening;
+			if (field != null) {
+				field.Closing -= SplitMenuStrip_Closing;
+				field.Opening -= SplitMenuStrip_Opening;
 			}
 
 			//add the event handlers for the new SplitMenuStrip
@@ -93,7 +90,7 @@ public class SplitButton : Button {
 				ShowSplit = false;
 
 
-			m_SplitMenuStrip = value;
+			field = value;
 		}
 	}
 
@@ -111,10 +108,12 @@ public class SplitButton : Button {
 	}
 
 	private PushButtonState State {
-		get { return _state; }
+		get {
+			return field;
+		}
 		set {
-			if (!_state.Equals(value)) {
-				_state = value;
+			if (!field.Equals(value)) {
+				field = value;
 				Invalidate();
 			}
 		}
@@ -238,7 +237,7 @@ public class SplitButton : Button {
 		// if the right button was released inside the button
 		if (mevent.Button == MouseButtons.Right && ClientRectangle.Contains(mevent.Location) && !isSplitMenuVisible) {
 			ShowContextMenuStrip();
-		} else if (m_SplitMenuStrip == null || !isSplitMenuVisible) {
+		} else if (SplitMenuStrip == null || !isSplitMenuVisible) {
 			SetButtonDrawState();
 
 			if (ClientRectangle.Contains(mevent.Location) && !dropDownRectangle.Contains(mevent.Location)) {
@@ -427,7 +426,7 @@ public class SplitButton : Button {
 				textRectangle = OverlayObjectRect(ref content_rect, ref text_size, TextAlign); // Rectangle.Inflate(content_rect, -4, -4);
 
 				//Offset on Windows 98 style when button is pressed
-				if (_state == PushButtonState.Pressed && !System.Windows.Forms.Application.RenderWithVisualStyles)
+				if (State == PushButtonState.Pressed && !System.Windows.Forms.Application.RenderWithVisualStyles)
 					textRectangle.Offset(1, 1);
 
 				// Image is dependent on ImageAlign
@@ -617,8 +616,8 @@ public class SplitButton : Button {
 
 		State = PushButtonState.Pressed;
 
-		if (m_SplitMenuStrip != null) {
-			m_SplitMenuStrip.Show(this, new Point(0, Height), ToolStripDropDownDirection.BelowRight);
+		if (SplitMenuStrip != null) {
+			SplitMenuStrip.Show(this, new Point(0, Height), ToolStripDropDownDirection.BelowRight);
 		}
 	}
 

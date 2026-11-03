@@ -24,7 +24,6 @@ namespace Sphere10.Framework.Windows.Security;
 /// <remarks>Native inventory uses the caller's Windows credentials and the remote server's access policy.
 /// Reachable DNS does not establish permission to enumerate or modify its users, groups or shares.</remarks>
 public class NTHost : NTObject {
-	static private readonly NTHost _currentMachine = new NTHost(null);
 	internal delegate bool AccountNameLookup(string host, string accountName, out SecurityIdentifier sid, out string domain,
 		out WinAPI.ADVAPI32.SidNameUse usage, out int win32Error);
 
@@ -113,13 +112,9 @@ public class NTHost : NTObject {
 	/// <summary>
 	/// Gets the current machine.
 	/// </summary>
-	public static NTHost CurrentMachine {
-		get { return NTHost._currentMachine; }
-	}
+	public static NTHost CurrentMachine { get; } = new NTHost(null);
 
-	public override string FullName {
-		get { return Name; }
-	}
+	public override string FullName => Name;
 
 	public string[] Aliases { get; set; }
 

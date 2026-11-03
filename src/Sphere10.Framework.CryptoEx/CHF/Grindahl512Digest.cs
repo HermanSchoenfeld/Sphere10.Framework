@@ -335,9 +335,7 @@ public class Grindahl512Digest : IDigest, IMemoable {
 		Reset(t);
 	}
 
-	public string AlgorithmName {
-		get { return "Grindahl512"; }
-	}
+	public string AlgorithmName => "Grindahl512";
 
 	public int GetDigestSize() {
 		return DigestLengthBytes;

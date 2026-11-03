@@ -27,8 +27,6 @@ public partial class LoadingCircle : Control {
 	private int _outerCircleRadius = 10;
 	private int _frame;
 	private bool _active;
-	private StylePresets _stylePreset = StylePresets.Custom;
-	private LoadingCircleAnimationStyle _animationStyle;
 
 	/// <summary>Creates an inactive indicator without creating a native window or starting a timer.</summary>
 	public LoadingCircle() {
@@ -59,11 +57,11 @@ public partial class LoadingCircle : Control {
 	[DefaultValue(LoadingCircleAnimationStyle.Spokes)]
 	public LoadingCircleAnimationStyle AnimationStyle {
 		get {
-			return _animationStyle;
+			return field;
 		}
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown loading animation style.");
-			_animationStyle = value;
+			field = value;
 			Invalidate();
 		}
 	}
@@ -169,11 +167,11 @@ public partial class LoadingCircle : Control {
 	[DefaultValue(StylePresets.Custom)]
 	public StylePresets StylePreset {
 		get {
-			return _stylePreset;
+			return field;
 		}
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown loading geometry preset.");
-			_stylePreset = value;
+			field = value;
 			switch (value) {
 				case StylePresets.MacOSX:
 					SetCircleAppearance(12, 2, 5, 11);
@@ -189,7 +187,7 @@ public partial class LoadingCircle : Control {
 					break;
 			}
 		}
-	}
+	} = StylePresets.Custom;
 
 	/// <summary>An optional borrowed control shown while StartAnimating is active and hidden when it stops.</summary>
 	[Category("LoadingCircle")]
@@ -303,7 +301,7 @@ public partial class LoadingCircle : Control {
 			var state = e.Graphics.Save();
 			try {
 				e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-				switch (_animationStyle) {
+				switch (AnimationStyle) {
 					case LoadingCircleAnimationStyle.Spokes:
 						DrawSpokes(e.Graphics, center, innerRadius, outerRadius, thickness);
 						break;

@@ -54,8 +54,6 @@ public abstract class SelectionBase : IGridSelection {
 	/// </summary>
 	public event RangeRegionChangedEventHandler SelectionChanged;
 
-	private GridVirtual _grid;
-
 	// Focus
 	private Position _activePosition = Position.Empty;
 	private Color _focusBackColor = Color.Transparent;
@@ -76,23 +74,15 @@ public abstract class SelectionBase : IGridSelection {
 	/// <summary>
 	/// The Grid object
 	/// </summary>
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; private set; }
 
 	/// <summary>
 	/// Gets the active cell position. The cell with the focus.
 	/// Returns Position.Empty if there isn't an active cell.
 	/// </summary>
 	public Position ActivePosition {
-		get {
-			return _activePosition;
-		}
-		protected set {
-			_activePosition = value;
-		}
+		get => _activePosition;
+		protected set => _activePosition = value;
 	}
 
 	/// <summary>
@@ -112,24 +102,16 @@ public abstract class SelectionBase : IGridSelection {
 	/// Gets or sets the behavior of the focus and selection. Default is FocusStyle.Default.
 	/// </summary>
 	public FocusStyle FocusStyle {
-		get {
-			return _focusStyle;
-		}
-		set {
-			_focusStyle = value;
-		}
+		get => _focusStyle;
+		set => _focusStyle = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if enable multi selection using Ctrl key or Shift Key or with mouse. Default is true.
 	/// </summary>
 	public bool EnableMultiSelection {
-		get {
-			return _enableMultiSelection;
-		}
-		set {
-			_enableMultiSelection = value;
-		}
+		get => _enableMultiSelection;
+		set => _enableMultiSelection = value;
 	}
 
 	/// <summary>
@@ -166,7 +148,7 @@ public abstract class SelectionBase : IGridSelection {
 	/// </summary>
 	/// <param name="grid"></param>
 	public virtual void BindToGrid(GridVirtual grid) {
-		_grid = grid;
+		Grid = grid;
 	}
 
 	/// <summary>
@@ -174,7 +156,7 @@ public abstract class SelectionBase : IGridSelection {
 	/// For internal use only.
 	/// </summary>
 	public virtual void UnBindToGrid() {
-		_grid = null;
+		Grid = null;
 	}
 
 	/// <summary>

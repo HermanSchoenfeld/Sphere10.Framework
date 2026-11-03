@@ -28,7 +28,6 @@ public class Grid : GridVirtual {
 	private bool _allowOverlappingCells = false;
 
 	// Row/Col Span
-	[Obsolete] private static int _maxSpan = 100;
 
 	// PaintCell
 	/// <summary>
@@ -37,7 +36,6 @@ public class Grid : GridVirtual {
 	private RangeCollection _drawnRange = new RangeCollection();
 
 	// Sort
-	private bool _customSort = false;
 
 	// Constructor
 	/// <summary>
@@ -57,11 +55,7 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// Allows to check what spanned cells we have.
 	/// Do not use this property directly from client code
 	/// </summary>
-	public ISpannedCellRangesController SpannedCellReferences {
-		get {
-			return _spannedCellReferences;
-		}
-	}
+	public ISpannedCellRangesController SpannedCellReferences => _spannedCellReferences;
 
 	// Rows/Columns
 	/// <summary>
@@ -69,12 +63,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[DefaultValue(0)]
 	public int ColumnsCount {
-		get {
-			return Columns.Count;
-		}
-		set {
-			Columns.SetCount(value);
-		}
+		get => Columns.Count;
+		set => Columns.SetCount(value);
 	}
 
 	/// <summary>
@@ -82,54 +72,34 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[DefaultValue(0)]
 	public int RowsCount {
-		get {
-			return Rows.Count;
-		}
-		set {
-			Rows.SetCount(value);
-		}
+		get => Rows.Count;
+		set => Rows.SetCount(value);
 	}
 
 	/// <summary>
 	/// Returns the maximum number of rows that can fit without a vertical scrollbar
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int RowsPerPage {
-		get {
-			return base.VerticalPage;
-		}
-	}
+	public int RowsPerPage => base.VerticalPage;
 
 	/// <summary>
 	/// RowsCount informations
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public new GridRows Rows {
-		get {
-			return (GridRows)base.Rows;
-		}
-	}
+	public new GridRows Rows => (GridRows)base.Rows;
 
 	/// <summary>
 	/// Columns informations
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public new GridColumns Columns {
-		get {
-			return (GridColumns)base.Columns;
-		}
-	}
+	public new GridColumns Columns => (GridColumns)base.Columns;
 
 	/// <summary>
 	/// Gets or sets the optimize mode. Default is ForRows
 	/// </summary>
 	public CellOptimizeMode OptimizeMode {
-		get {
-			return _optimizeMode;
-		}
-		set {
-			_optimizeMode = value;
-		}
+		get => _optimizeMode;
+		set => _optimizeMode = value;
 	}
 
 	/// <summary>
@@ -141,12 +111,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[DefaultValue(false)]
 	public bool AllowOverlappingCells {
-		get {
-			return _allowOverlappingCells;
-		}
-		set {
-			_allowOverlappingCells = value;
-		}
+		get => _allowOverlappingCells;
+		set => _allowOverlappingCells = value;
 	}
 
 	/// <summary>
@@ -155,28 +121,15 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// This value is automatically calculated based on the current cells. Do not change this value manually.
 	/// Default is 100.
 	/// </summary>
+	[field: Obsolete]
 	[Obsolete("This property is not needed anymore. It has completely no effect")]
-	public static int MaxSpan {
-		get {
-			return _maxSpan;
-		}
-		set {
-			_maxSpan = value;
-		}
-	}
+	public static int MaxSpan { get; set; } = 100;
 
 	/// <summary>
 	/// Gets or sets if when calling SortRangeRows method use a custom sort or an automatic sort. Default = false (automatic)
 	/// </summary>
 	[DefaultValue(false)]
-	public bool CustomSort {
-		get {
-			return _customSort;
-		}
-		set {
-			_customSort = value;
-		}
-	}
+	public bool CustomSort { get; set; } = false;
 
 	public override bool EnableSort {
 		get; set;
@@ -200,12 +153,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// and EnableRowColSpan is true, this method returns the cell with Row/Col span.
 	/// </summary>
 	public Cells.ICell this[int row, int column] {
-		get {
-			return this[new Position(row, column)];
-		}
-		set {
-			this[new Position(row, column)] = value;
-		}
+		get => this[new Position(row, column)];
+		set => this[new Position(row, column)] = value;
 	}
 
 	// GetCell methods
@@ -741,20 +690,12 @@ spanRange);
 		/// <summary>
 		/// Returns the role of the grid control
 		/// </summary>
-		public override AccessibleRole Role {
-			get {
-				return AccessibleRole.Table;
-			}
-		}
+		public override AccessibleRole Role => AccessibleRole.Table;
 
 		/// <summary>
 		/// Retrieves the accessible name of the grid control
 		/// </summary>
-		public override string Name {
-			get {
-				return _grid.Name;
-			}
-		}
+		public override string Name => _grid.Name;
 
 		/// <summary>
 		/// Retrieves the accessibility object of a row in the grid.
@@ -845,29 +786,17 @@ spanRange);
 		/// <summary>
 		/// Returns the name of the grid row.
 		/// </summary>
-		public override string Name {
-			get {
-				return "Row " + _gridRow.Index;
-			}
-		}
+		public override string Name => "Row " + _gridRow.Index;
 
 		/// <summary>
 		/// Returns the role of the grid row.
 		/// </summary>
-		public override AccessibleRole Role {
-			get {
-				return AccessibleRole.Row;
-			}
-		}
+		public override AccessibleRole Role => AccessibleRole.Row;
 
 		/// <summary>
 		/// Returns the parent grid of the grid row.
 		/// </summary>
-		public override AccessibleObject Parent {
-			get {
-				return _parent;
-			}
-		}
+		public override AccessibleObject Parent => _parent;
 
 		/// <summary>
 		/// Returns a child cell of the row.
@@ -956,11 +885,7 @@ spanRange);
 		/// <summary>
 		/// Returns the role of the grid cell.
 		/// </summary>
-		public override AccessibleRole Role {
-			get {
-				return AccessibleRole.Cell;
-			}
-		}
+		public override AccessibleRole Role => AccessibleRole.Cell;
 
 		/// <summary>
 		/// Returns the name of the cell.
@@ -968,33 +893,19 @@ spanRange);
 		/// <remarks>
 		/// If display text not found, returns a default name containing the column index.
 		/// </remarks>
-		public override string Name {
-			get {
-				if (_cell.DisplayText != null)
-					return _cell.DisplayText;
-				return "Column " + _cell.Column.Index;
-			}
-		}
+		public override string Name => _cell.DisplayText != null ? _cell.DisplayText : "Column " + _cell.Column.Index;
 
 		/// <summary>
 		/// Set or get the value of the cell.
 		/// </summary>
 		public override string Value {
-			get {
-				return _cell.DisplayText;
-			}
-			set {
-				_cell.Value = value;
-			}
+			get => _cell.DisplayText;
+			set => _cell.Value = value;
 		}
 
 		/// <summary>
 		/// Returns the parent row of the cell.
 		/// </summary>
-		public override AccessibleObject Parent {
-			get {
-				return _parent;
-			}
-		}
+		public override AccessibleObject Parent => _parent;
 	}
 }

@@ -137,10 +137,101 @@ public APIs when consolidating physical source locations.
 
 ### Callable bodies
 
-Use multiline block bodies for methods, constructors, finalizers, operators and
-property accessors, including trivial forwarding methods and getters. Do not use
-one-line or expression-bodied implementations. Automatic properties may retain
-their ordinary compact declaration. Apply this rule to source, tests and examples.
+Use multiline block bodies for methods, constructors, finalizers and operators,
+including trivial forwarding methods. Property syntax follows the rules below.
+Apply these conventions to source, tests, utilities and C# examples.
+
+### Custom events
+
+Custom events are an exception to the general multiline callable-body rule.
+Their declarations and `add`/`remove` block bodies may stay compact on one line;
+expression-bodied accessors are also accepted. Prefer a compact declaration for
+simple forwarding events when it fits within about 170 characters.
+
+```csharp
+public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
+
+public event EventHandler Changed { add { EnsureReady(); _changed += value; } remove { EnsureReady(); _changed -= value; } }
+```
+
+Preserve existing compact event declarations and accessor blocks, including
+longer forms and multiple-statement blocks the author chose to keep compact.
+Do not automatically expand them for general line-length or method-body rules.
+Keep multiline bodies where the logic or comments need them; do not force
+compact forms. These event conventions are separate from the paired property-
+accessor rules below.
+
+### Properties and backing fields
+
+Prefer expression-bodied getter-only properties when their expression fits on
+one line: `public int Count => Items.Length;`. A compact switch expression is
+appropriate when it fits the same line.
+
+For a paired getter and setter, use `get => ...;` and `set => ...;` only when
+both accessors qualify as simple single-line expressions. Put each accessor on
+its own line. If either accessor needs a block, write both accessors as multiline
+blocks, including a simple getter that only returns `field`. Apply the same rule
+to getter/`init` pairs. Several statements, comments between logical steps or an
+expression that does not fit clearly require a block.
+
+Ordinary auto-properties keep their compact `{ get; set; }`, `{ get; init; }` or
+`{ get; }` declarations. When either accessor has custom behavior, use matching
+explicit accessor forms: do not combine `get;` with a custom `set` or `init`
+accessor, or an automatic `set`/`init` accessor with a custom getter.
+
+Use C# 14's contextual `field` keyword when a property needs custom accessors
+over ordinary backing storage. Remove the separate private backing field;
+use an auto-property when neither accessor needs custom behavior. For example:
+
+```csharp
+public string Name {
+	get => field;
+	set => field = value.Trim();
+} = string.Empty;
+
+public ILogger Logger {
+	get {
+		return field;
+	}
+	set {
+		field = value;
+		SetLogger(value);
+	}
+}
+
+public bool IsActive { get; set; }
+
+public string StatusText => IsActive switch { true => "Active", false => "Inactive" };
+```
+
+EditorConfig cannot express the dependency between the two accessor bodies.
+The independent accessor-body and auto-property fixer suggestions are disabled
+because they can introduce mixed forms. Apply the paired-accessor rule when
+editing or reviewing properties; the standard options do not enforce it.
+
+Retain explicit fields for a concrete requirement such as `volatile` storage,
+ref/out access outside an accessor, interop layout, a field-name-dependent
+serialization/reflection contract or demonstrated performance needs. A field
+used outside its property is not automatically exempt: use the property where
+that preserves behavior. Preserve direct-access semantics where routing through
+the property would introduce validation, notifications, virtual dispatch or a
+different initialization order. Keep the reason clear when retaining such storage.
+
+Property initializers assign the synthesized field directly. Constructor
+assignments invoke a setter when one exists, including a virtual setter, so these
+forms are not interchangeable during conversion. Preserve field-targeted
+attributes and observable `nameof` results. Escape an existing identifier as
+`@field` when necessary to keep its meaning inside an accessor.
+
+Check every partial declaration, including Razor markup references, before
+removing storage. Qualified references must still address that storage after
+conversion; they must not become recursive calls to the same property.
+
+Microsoft's [field-keyword specification](https://learn.microsoft.com/dotnet/csharp/language-reference/proposals/csharp-14.0/field-keyword)
+describes constructor assignment, initializers and field-targeted attributes.
+
+These property rules supersede the former requirement for block-bodied getters
+and setters. They do not shorten ordinary methods, constructors or Pascal routines.
 
 ### Naming Conventions
 

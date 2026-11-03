@@ -19,23 +19,13 @@ namespace Sphere10.Framework.Maths.Compiler;
 /// Compiles a function declaration and returns an object which can be evaluated as such
 /// </summary>
 public class BasicFunctionGenerator {
-	private IMathContext _mathContext;
-	private string _functionParameterName = "x";
-
-
 	public BasicFunctionGenerator(IMathContext mathContext) {
 		MathContext = mathContext;
 	}
 
-	public string FunctionParameterName {
-		get { return _functionParameterName; }
-		set { _functionParameterName = value; }
-	}
+	public string FunctionParameterName { get; set; } = "x";
 
-	public IMathContext MathContext {
-		get { return _mathContext; }
-		set { _mathContext = value; }
-	}
+	public IMathContext MathContext { get; set; }
 
 	public IFunction GenerateFunctionFromExpression(string functionExpression) {
 		Parser parser = new Parser(new Scanner(new StringReader(functionExpression)));

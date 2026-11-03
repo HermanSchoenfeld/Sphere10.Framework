@@ -31,7 +31,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle1"; } }
+        public override string Name => "FrameTitle1";
 
 
         public override float Resolution
@@ -77,7 +77,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle2"; } }
+        public override string Name => "FrameTitle2";
 
 
         public override float Resolution
@@ -124,7 +124,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle3"; } }
+        public override string Name => "FrameTitle3";
 
 
         public override float Resolution
@@ -170,7 +170,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle4"; } }
+        public override string Name => "FrameTitle4";
 
 
         public override float Resolution
@@ -218,7 +218,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle5"; } }
+        public override string Name => "FrameTitle5";
 
 
         public override float Resolution
@@ -265,7 +265,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle6"; } }
+        public override string Name => "FrameTitle6";
 
         public override float Resolution
         {
@@ -313,7 +313,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle7"; } }
+        public override string Name => "FrameTitle7";
 
 
         public override float Resolution
@@ -353,7 +353,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameTitle8"; } }
+        public override string Name => "FrameTitle8";
 
 
         public override float Resolution
@@ -393,7 +393,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameThin2"; } }
+        public override string Name => "FrameThin2";
 
 
         public override float Resolution
@@ -433,7 +433,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameThin3"; } }
+        public override string Name => "FrameThin3";
 
 
         public override float Resolution
@@ -470,7 +470,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameThin4"; } }
+        public override string Name => "FrameThin4";
 
 
         public override float Resolution
@@ -504,7 +504,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameThin5"; } }
+        public override string Name => "FrameThin5";
 
         #endregion
     }
@@ -528,7 +528,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameThin6"; } }
+        public override string Name => "FrameThin6";
 
 
         public override float Resolution
@@ -569,7 +569,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "FrameThin1"; } }
+        public override string Name => "FrameThin1";
 
 
         public override float Resolution
@@ -697,7 +697,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public override string Name { get { return "Raised"; } }
+        public override string Name => "Raised";
 
         #endregion
     }
@@ -768,7 +768,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Borders3D
         /// <summary>
         /// Chart type name
         /// </summary>
-        public virtual string Name { get { return "Sunken"; } }
+        public virtual string Name => "Sunken";
 
 
         public virtual float Resolution

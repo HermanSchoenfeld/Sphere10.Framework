@@ -21,13 +21,6 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 public class DataGridColumn : ColumnInfo {
 	private string _propertyName;
-
-	private PropertyDescriptor _propertyColumn;
-
-	private Cells.ICellVirtual _headerCell;
-
-	private Cells.ICellVirtual _dataCell;
-
 	private List<Conditions.ICondition> _conditions = new List<Conditions.ICondition>();
 
 	private Dictionary<Conditions.ICondition, Cells.ICellVirtual> _conditionalCells = new Dictionary<Conditions.ICondition, Cells.ICellVirtual>();
@@ -38,8 +31,8 @@ public class DataGridColumn : ColumnInfo {
 	/// <param name="grid"></param>
 	public DataGridColumn(DataGrid grid)
 		: base(grid) {
-		_headerCell = new Cells.DataGrid.ColumnHeader(string.Empty);
-		_dataCell = new Cells.DataGrid.Cell();
+		HeaderCell = new Cells.DataGrid.ColumnHeader(string.Empty);
+		DataCell = new Cells.DataGrid.Cell();
 	}
 
 	/// <summary>
@@ -48,15 +41,11 @@ public class DataGridColumn : ColumnInfo {
 	public DataGridColumn(DataGrid grid, Cells.ICellVirtual headerCell, Cells.ICellVirtual dataCell, string propertyName)
 		: base(grid) {
 		_propertyName = propertyName;
-		_headerCell = headerCell;
-		_dataCell = dataCell;
+		HeaderCell = headerCell;
+		DataCell = dataCell;
 	}
 
-	public new DataGrid Grid {
-		get {
-			return (DataGrid)base.Grid;
-		}
-	}
+	public new DataGrid Grid => (DataGrid)base.Grid;
 
 	public string PropertyName {
 		get {
@@ -64,7 +53,7 @@ public class DataGridColumn : ColumnInfo {
 		}
 		set {
 			_propertyName = value;
-			_propertyColumn = null;
+			PropertyColumn = null;
 		}
 	}
 
@@ -74,10 +63,13 @@ public class DataGridColumn : ColumnInfo {
 	/// </summary>
 	public PropertyDescriptor PropertyColumn {
 		get {
-			if (_propertyColumn == null && Grid.DataSource != null)
-				_propertyColumn = Grid.DataSource.GetItemProperty(PropertyName, StringComparison.InvariantCultureIgnoreCase);
+			if (field == null && Grid.DataSource != null)
+				field = Grid.DataSource.GetItemProperty(PropertyName, StringComparison.InvariantCultureIgnoreCase);
 
-			return _propertyColumn;
+			return field;
+		}
+		private set {
+			field = value;
 		}
 	}
 
@@ -85,36 +77,18 @@ public class DataGridColumn : ColumnInfo {
 	/// Gets or sets the header cell for this column.
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.ColumnHeader
 	/// </summary>
-	public Cells.ICellVirtual HeaderCell {
-		get {
-			return _headerCell;
-		}
-		set {
-			_headerCell = value;
-		}
-	}
+	public Cells.ICellVirtual HeaderCell { get; set; }
 
 	/// <summary>
 	/// Gets or sets the cell used for this column for all the rows to disply the data
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.Cell or other classes of the same namespace
 	/// </summary>
-	public Cells.ICellVirtual DataCell {
-		get {
-			return _dataCell;
-		}
-		set {
-			_dataCell = value;
-		}
-	}
+	public Cells.ICellVirtual DataCell { get; set; }
 
 	/// <summary>
 	/// Gets the conditions used to returns different cell based on the data of the row.
 	/// </summary>
-	public List<Conditions.ICondition> Conditions {
-		get {
-			return _conditions;
-		}
-	}
+	public List<Conditions.ICondition> Conditions => _conditions;
 
 	/// <summary>
 	/// Gets the ICellVirtual for the current column and the specified row.
@@ -155,6 +129,6 @@ public class DataGridColumn : ColumnInfo {
 	/// this link</remarks>
 	/// </summary>
 	public void Invalidate() {
-		_propertyColumn = null;
+		PropertyColumn = null;
 	}
 }

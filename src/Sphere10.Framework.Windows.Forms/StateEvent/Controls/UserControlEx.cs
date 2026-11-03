@@ -18,14 +18,13 @@ public class UserControlEx : UserControl, IUpdatable {
 	/// <summary>Reports edited UI state after the model copy and template hook complete.</summary>
 	public event EventHandlerEx StateChanged;
 
-	private bool _updating;
 	private bool _changedDuringUpdateScope;
 	private readonly IControlStateEventProvider _stateEventProvider;
 
 	/// <summary>Creates an ordinary control without requiring application services or a native handle.</summary>
 	public UserControlEx() {
 		Loaded = false;
-		_updating = false;
+		Updating = false;
 		EnableStateChangeEvent = true;
 		Disposables = new Disposables();
 		UpdateModelOnStateChanged = true;
@@ -50,11 +49,7 @@ public class UserControlEx : UserControl, IUpdatable {
 	/// <summary>Whether the current model/UI update scope is active.</summary>
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool Updating {
-		get {
-			return _updating;
-		}
-	}
+	public bool Updating { get; private set; }
 
 	/// <summary>Copies edited UI state to the model before notifying observers.</summary>
 	[Category("Behavior")]
@@ -123,9 +118,9 @@ public class UserControlEx : UserControl, IUpdatable {
 
 	// Nested UpdateScope values leave the first acquisition responsible for completion.
 	void IUpdatable.BeginUpdate() {
-		if (_updating)
+		if (Updating)
 			return;
-		_updating = true;
+		Updating = true;
 		_changedDuringUpdateScope = false;
 	}
 
@@ -144,7 +139,7 @@ public class UserControlEx : UserControl, IUpdatable {
 					CopyModelToUI();
 			}
 		} finally {
-			_updating = false;
+			Updating = false;
 			_changedDuringUpdateScope = false;
 		}
 

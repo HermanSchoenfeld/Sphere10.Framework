@@ -16,7 +16,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// BlazorRoutedApplication block page.
 /// </summary>
 public class BlazorRoutedApplicationPage : IBlazorRoutedApplicationPage {
-	private readonly BlazorRoutedMenuItem[] _menuItems;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BlazorRoutedApplicationPage"/> class.
@@ -30,7 +29,7 @@ public class BlazorRoutedApplicationPage : IBlazorRoutedApplicationPage {
 		Name = name ?? throw new ArgumentNullException(nameof(name));
 		Icon = icon ?? throw new ArgumentNullException(nameof(icon));
 		Guard.ArgumentNotNull(menuItems, nameof(menuItems));
-		_menuItems = menuItems.ToArray();
+		MenuItems = menuItems.ToArray();
 	}
 
 	/// <summary>
@@ -60,7 +59,7 @@ public class BlazorRoutedApplicationPage : IBlazorRoutedApplicationPage {
 	/// <summary>
 	/// Gets the menu items
 	/// </summary>
-	public BlazorRoutedMenuItem[] MenuItems => Tools.Array.Clone(_menuItems);
+	public BlazorRoutedMenuItem[] MenuItems => Tools.Array.Clone(field);
 }
 
 

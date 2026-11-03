@@ -431,8 +431,6 @@ public class ApplicationSettingsResetTests {
 
 		/// <summary>Uses attributes for defaults while exposing no automatic editor until marked.</summary>
 		public class Preferences : SettingsObject {
-			private int _resetCalls;
-
 			[DefaultValue(10)]
 			public int Value { get; set; }
 
@@ -440,16 +438,12 @@ public class ApplicationSettingsResetTests {
 			public bool RejectSave { get; set; }
 
 			[Transient]
-			public int ResetCalls {
-				get {
-					return _resetCalls;
-				}
-			}
+			public int ResetCalls { get; private set; }
 
 			/// <summary>Counts actual default restoration so aliases cannot conceal repeated resets.</summary>
 			public override void RestoreDefaultValues() {
 				base.RestoreDefaultValues();
-				_resetCalls++;
+				ResetCalls++;
 			}
 
 			/// <summary>Allows the fixture to reject an unmarked pending page through its normal validation lifecycle.</summary>
@@ -475,11 +469,7 @@ public class ApplicationSettingsResetTests {
 
 		public bool RejectAfterFirstWrite { get; set; }
 
-		public string[] Writes {
-			get {
-				return _writes.ToArray();
-			}
-		}
+		public string[] Writes => _writes.ToArray();
 
 		// Supplied fixture settings have no earlier backing record.
 		public override bool ContainsSetting(Type settingsObjectType, object id = null) {

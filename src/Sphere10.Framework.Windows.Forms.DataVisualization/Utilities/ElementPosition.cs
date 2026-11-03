@@ -269,8 +269,10 @@ public class ElementPosition : ChartElement
     ]
     public float X
     {
-        get => _x;
-        set
+		get {
+			return _x;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
@@ -287,7 +289,7 @@ public class ElementPosition : ChartElement
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Y position of element.
@@ -302,8 +304,10 @@ public class ElementPosition : ChartElement
     ]
     public float Y
     {
-        get => _y;
-        set
+		get {
+			return _y;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
@@ -320,7 +324,7 @@ public class ElementPosition : ChartElement
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Width of element.
@@ -335,8 +339,10 @@ public class ElementPosition : ChartElement
     ]
     public float Width
     {
-        get => _width;
-        set
+		get {
+			return _width;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
@@ -353,7 +359,7 @@ public class ElementPosition : ChartElement
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Height of element.
@@ -368,8 +374,10 @@ public class ElementPosition : ChartElement
     ]
     public float Height
     {
-        get => _height;
-        set
+		get {
+			return _height;
+		}
+		set
         {
             if (value < 0.0 || value > 100.0)
             {
@@ -387,7 +395,7 @@ public class ElementPosition : ChartElement
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether positioning is on.
@@ -402,8 +410,10 @@ public class ElementPosition : ChartElement
     ]
     public bool Auto
     {
-        get => _auto;
-        set
+		get {
+			return _auto;
+		}
+		set
         {
             if (value != _auto)
             {
@@ -421,7 +431,7 @@ public class ElementPosition : ChartElement
                 this.Invalidate();
             }
         }
-    }
+	}
 
     #endregion
 }

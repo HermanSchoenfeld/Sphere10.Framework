@@ -15,7 +15,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 
 public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollectionViewModel, IDisposable {
 	private TItem[] _page = Array.Empty<TItem>();
-	private int _currentPage = 1;
 	private int _requestVersion;
 	private bool _disposed;
 
@@ -28,9 +27,9 @@ public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedC
 	public int TotalItems { get; private set; }
 
 	public int CurrentPage {
-		get => _currentPage;
-		set => _currentPage = Math.Max(1, value);
-	}
+		get => field;
+		set => field = Math.Max(1, value);
+	} = 1;
 
 	public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
 

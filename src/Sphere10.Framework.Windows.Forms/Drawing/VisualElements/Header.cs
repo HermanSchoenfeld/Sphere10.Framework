@@ -52,52 +52,32 @@ public class Header : HeaderBase {
 	/// Back Color
 	/// </summary>
 	public Color BackColor {
-		get {
-			return _backColor;
-		}
-
-		set {
-			_backColor = value;
-		}
+		get => _backColor;
+		set => _backColor = value;
 	}
 
 	/// <summary>
 	/// Border
 	/// </summary>
 	public RectangleBorder Border {
-		get {
-			return _border;
-		}
-
-		set {
-			_border = value;
-		}
+		get => _border;
+		set => _border = value;
 	}
 
 	/// <summary>
 	/// Gradient angle used for linear gradient.
 	/// </summary>
 	public float GradientAngle {
-		get {
-			return _gradientAngle;
-		}
-
-		set {
-			_gradientAngle = value;
-		}
+		get => _gradientAngle;
+		set => _gradientAngle = value;
 	}
 
 	/// <summary>
 	/// Draw mode for the header. Default is Linear.
 	/// </summary>
 	public BackgroundColorStyle BackgroundColorStyle {
-		get {
-			return _backgroundColorStyle;
-		}
-
-		set {
-			_backgroundColorStyle = value;
-		}
+		get => _backgroundColorStyle;
+		set => _backgroundColorStyle = value;
 	}
 
 	/// <summary>

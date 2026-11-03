@@ -15,49 +15,27 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Exposes an owner's activated menu membership while retaining the original native controls and their live state.</summary>
 internal sealed class NativeToolStripMenu : IApplicationMenu {
-	private readonly NativeToolStripCommand _header;
-
 	public NativeToolStripMenu(ToolStripMenuItem item, Func<ToolStripItem, bool> isSourceItem) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.ArgumentNotNull(isSourceItem, nameof(isSourceItem));
 		Item = item;
 		// Membership is activated once by the owner; the original native items retain their live state.
-		_header = new NativeToolStripCommand(item, this, isSourceItem);
+		Header = new NativeToolStripCommand(item, this, isSourceItem);
 	}
 
 	public ToolStripMenuItem Item { get; }
 
-	internal NativeToolStripCommand Header {
-		get {
-			return _header;
-		}
-	}
+	internal NativeToolStripCommand Header { get; }
 
 	public IApplicationBlock Parent { get; set; }
 
-	public string Text {
-		get {
-			return Item.Text;
-		}
-	}
+	public string Text => Item.Text;
 
-	public bool ShowInMenuStrip {
-		get {
-			return Item.Available;
-		}
-	}
+	public bool ShowInMenuStrip => Item.Available;
 
-	public Image Image32x32 {
-		get {
-			return Item.Image;
-		}
-	}
+	public Image Image32x32 => Item.Image;
 
-	public IApplicationMenuItem[] Items {
-		get {
-			return _header.Children.Cast<IApplicationMenuItem>().ToArray();
-		}
-	}
+	public IApplicationMenuItem[] Items => Header.Children.Cast<IApplicationMenuItem>().ToArray();
 
 	// Native headers and their children retain the form's existing disposal owner.
 	public void Dispose() {

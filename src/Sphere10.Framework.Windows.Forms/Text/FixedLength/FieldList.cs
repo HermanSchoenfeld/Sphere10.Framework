@@ -44,20 +44,12 @@ public class FieldList : DictionaryDecorator<string, IField, Dictionary<string, 
 	/// <summary>
 	/// Gets a collection containing the keys in this FieldList.
 	/// </summary>
-	public override ICollection<string> Keys {
-		get {
-			return InternalDictionary.Keys;
-		}
-	}
+	public override ICollection<string> Keys => InternalDictionary.Keys;
 
 	/// <summary>
 	/// Gets a collection containing the values in this FieldList.
 	/// </summary>
-	public override ICollection<IField> Values {
-		get {
-			return InternalDictionary.Values;
-		}
-	}
+	public override ICollection<IField> Values => InternalDictionary.Values;
 
 	/// <summary>
 	/// Adds an element with the specified key and value to this FieldList.

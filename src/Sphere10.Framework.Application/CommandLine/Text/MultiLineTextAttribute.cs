@@ -10,11 +10,6 @@ namespace CommandLine.Text;
 /// Provides base properties for creating an attribute, used to define multiple lines of text.
 /// </summary>
 public abstract class MultilineTextAttribute : Attribute {
-	private readonly string line1;
-	private readonly string line2;
-	private readonly string line3;
-	private readonly string line4;
-	private readonly string line5;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MultilineTextAttribute"/> class. Used in derived type
@@ -74,11 +69,11 @@ public abstract class MultilineTextAttribute : Attribute {
 		if (line4 == null) throw new ArgumentException("line4");
 		if (line5 == null) throw new ArgumentException("line5");
 
-		this.line1 = line1;
-		this.line2 = line2;
-		this.line3 = line3;
-		this.line4 = line4;
-		this.line5 = line5;
+		Line1 = line1;
+		Line2 = line2;
+		Line3 = line3;
+		Line4 = line4;
+		Line5 = line5;
 	}
 
 	/// <summary>
@@ -88,7 +83,7 @@ public abstract class MultilineTextAttribute : Attribute {
 	public virtual string Value {
 		get {
 			var value = new StringBuilder(string.Empty);
-			var strArray = new[] { line1, line2, line3, line4, line5 };
+			var strArray = new[] { Line1, Line2, Line3, Line4, Line5 };
 
 			for (var i = 0; i < GetLastLineWithText(strArray); i++) {
 				value.AppendLine(strArray[i]);
@@ -101,40 +96,30 @@ public abstract class MultilineTextAttribute : Attribute {
 	/// <summary>
 	/// Gets the first line of text.
 	/// </summary>
-	public string Line1 {
-		get { return line1; }
-	}
+	public string Line1 { get; }
 
 	/// <summary>
 	/// Gets the second line of text.
 	/// </summary>
-	public string Line2 {
-		get { return line2; }
-	}
+	public string Line2 { get; }
 
 	/// <summary>
 	/// Gets third line of text.
 	/// </summary>
-	public string Line3 {
-		get { return line3; }
-	}
+	public string Line3 { get; }
 
 	/// <summary>
 	/// Gets the fourth line of text.
 	/// </summary>
-	public string Line4 {
-		get { return line4; }
-	}
+	public string Line4 { get; }
 
 	/// <summary>
 	/// Gets the fifth line of text.
 	/// </summary>
-	public string Line5 {
-		get { return line5; }
-	}
+	public string Line5 { get; }
 
 	internal HelpText AddToHelpText(HelpText helpText, Func<string, HelpText> func) {
-		var strArray = new[] { line1, line2, line3, line4, line5 };
+		var strArray = new[] { Line1, Line2, Line3, Line4, Line5 };
 		return strArray.Take(GetLastLineWithText(strArray)).Aggregate(helpText, (current, line) => func(line));
 	}
 

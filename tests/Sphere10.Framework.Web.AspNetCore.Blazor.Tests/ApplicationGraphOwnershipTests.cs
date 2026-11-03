@@ -801,25 +801,13 @@ public class ApplicationGraphOwnershipTests {
 		public BlazorUI.IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public string Text {
-			get {
-				return "Typed";
-			}
-		}
+		public string Text => "Typed";
 
 		/// <inheritdoc />
-		public string Icon {
-			get {
-				return null;
-			}
-		}
+		public string Icon => null;
 
 		/// <inheritdoc />
-		public BlazorUI.IApplicationMenuItem[] Items {
-			get {
-				return Array.Empty<BlazorUI.IApplicationMenuItem>();
-			}
-		}
+		public BlazorUI.IApplicationMenuItem[] Items => Array.Empty<BlazorUI.IApplicationMenuItem>();
 	}
 
 	// Supplies a typed command implementation for bridge validation.
@@ -844,18 +832,10 @@ public class ApplicationGraphOwnershipTests {
 		public BlazorUI.IApplicationMenu Parent { get; set; }
 
 		/// <inheritdoc />
-		public string Title {
-			get {
-				return "Typed";
-			}
-		}
+		public string Title => "Typed";
 
 		/// <inheritdoc />
-		public string Icon {
-			get {
-				return null;
-			}
-		}
+		public string Icon => null;
 	}
 
 	// Supplies a shared menu that a typed web bridge must reject.
@@ -864,18 +844,10 @@ public class ApplicationGraphOwnershipTests {
 		public SharedUI.IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public string Text {
-			get {
-				return "Neutral";
-			}
-		}
+		public string Text => "Neutral";
 
 		/// <inheritdoc />
-		public SharedUI.IApplicationMenuItem[] Items {
-			get {
-				return Array.Empty<SharedUI.IApplicationMenuItem>();
-			}
-		}
+		public SharedUI.IApplicationMenuItem[] Items => Array.Empty<SharedUI.IApplicationMenuItem>();
 	}
 
 	#endregion

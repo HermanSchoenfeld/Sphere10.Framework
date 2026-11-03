@@ -42,22 +42,22 @@ namespace HashLib4CSharp.MAC
 
         public byte[] Key
         {
-            get => ArrayUtils.Clone(_key);
-            set
+			get {
+				return ArrayUtils.Clone(_key);
+			}
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 _key = ArrayUtils.Clone(value);
                 TransformKey();
             }
-        }
+		}
 
         public byte[] WorkingKey
         {
-            get => ArrayUtils.Clone(_workingKey);
-            private set => _workingKey = value != null
-                ? ArrayUtils.Clone(value)
-                : throw new ArgumentNullException(nameof(value));
-        }
+			get => ArrayUtils.Clone(_workingKey);
+			private set => _workingKey = value != null ? ArrayUtils.Clone(value) : throw new ArgumentNullException(nameof(value));
+		}
 
         public void Clear()
         {

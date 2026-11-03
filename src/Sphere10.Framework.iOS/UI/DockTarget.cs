@@ -70,21 +70,9 @@ namespace Sphere10.Framework.iOS {
             }
         }
 
-        public float Percentage {
-            get {
-                if (TargetType != DockTargetType.PercentageOfContainer)
-                    throw new Exception("Not docked to a view");
-                return _percentage;
-            }
-        }
+        public float Percentage => TargetType != DockTargetType.PercentageOfContainer ? throw new Exception("Not docked to a view") : _percentage;
 
-        public float FixedLength {
-            get {
-                if (TargetType != DockTargetType.FixedLength)
-                    throw new Exception("Not docked to a view");
-                return _fixedLength;
-            }
-        }
+        public float FixedLength => TargetType != DockTargetType.FixedLength ? throw new Exception("Not docked to a view") : _fixedLength;
 
     }
 }

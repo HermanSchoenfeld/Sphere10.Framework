@@ -323,30 +323,23 @@ public class SharedFluentBuilderTests {
 
 	// Tracks a screen definition and reverse activator membership for shared builder checks.
 	private sealed class ScreenItem : TestApplicationMenuItem, IScreenMenuItem {
-		private ApplicationScreenDefinition _definition;
-		private ApplicationScreenRegistration _registration;
-
 		/// <summary>Gets or sets the test command's exact registration reference.</summary>
 		public ApplicationScreenRegistration Registration {
-			get {
-				return _registration ?? _definition?.Registration;
-			}
-			set {
-				_registration = value;
-			}
+			get => field ?? ScreenDefinition?.Registration;
+			set => field = value;
 		}
 
 		/// <summary>Gets or sets the test command's canonical definition and reverse membership.</summary>
 		public ApplicationScreenDefinition ScreenDefinition {
 			get {
-				return _definition;
+				return field;
 			}
 			set {
 				if (Parent != null)
-					_definition?.RemoveActivator(this);
-				_definition = value;
+					field?.RemoveActivator(this);
+				field = value;
 				if (Parent != null)
-					_definition?.AddActivator(this);
+					field?.AddActivator(this);
 			}
 		}
 

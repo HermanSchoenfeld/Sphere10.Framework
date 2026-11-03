@@ -27,15 +27,11 @@ public
 public
 #endif
 	abstract class Either<TLeft, TRight> {
-	private readonly EitherType tag;
-
 	protected Either(EitherType tag) {
-		this.tag = tag;
+		Tag = tag;
 	}
 
-	public EitherType Tag {
-		get { return this.tag; }
-	}
+	public EitherType Tag { get; }
 
 	#region Basic Match Methods
 
@@ -65,9 +61,7 @@ public
 		this.value = value;
 	}
 
-	public TLeft Value {
-		get { return value; }
-	}
+	public TLeft Value => value;
 }
 
 
@@ -82,9 +76,7 @@ public
 		this.value = value;
 	}
 
-	public TRight Value {
-		get { return value; }
-	}
+	public TRight Value => value;
 }
 
 #endregion

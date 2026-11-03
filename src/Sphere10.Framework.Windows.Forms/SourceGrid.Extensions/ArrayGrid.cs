@@ -20,14 +20,6 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 public class ArrayGrid : GridVirtual {
 	private Array _dataSource = null;
 
-	private ICellVirtual _columnHeader = new ArrayColumnHeader();
-
-	private ICellVirtual _rowHeader = new ArrayRowHeader();
-
-	private ICellVirtual _header = new ArrayHeader();
-
-	private ICellVirtual _valueCell;
-
 	public ArrayGrid()
 		: base() {
 	}
@@ -38,19 +30,11 @@ public class ArrayGrid : GridVirtual {
 
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-	public new ArrayRows Rows {
-		get {
-			return (ArrayRows)base.Rows;
-		}
-	}
+	public new ArrayRows Rows => (ArrayRows)base.Rows;
 
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-	public new ArrayColumns Columns {
-		get {
-			return (ArrayColumns)base.Columns;
-		}
-	}
+	public new ArrayColumns Columns => (ArrayColumns)base.Columns;
 
 	/// <summary>
 	/// Gets or sets the data source array used to bind the grid.
@@ -75,62 +59,34 @@ public class ArrayGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-	public ICellVirtual ColumnHeader {
-		get {
-			return _columnHeader;
-		}
-		set {
-			_columnHeader = value;
-		}
-	}
+	public ICellVirtual ColumnHeader { get; set; } = new ArrayColumnHeader();
 
 	/// <summary>
 	/// Gets or sets the cell used for the row headers. Only used when FixedColumns is greater than 0.
 	/// </summary>
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-	public ICellVirtual RowHeader {
-		get {
-			return _rowHeader;
-		}
-		set {
-			_rowHeader = value;
-		}
-	}
+	public ICellVirtual RowHeader { get; set; } = new ArrayRowHeader();
 
 	/// <summary>
 	/// Gets or sets the cell used for the left top position header. Only used when FixedRows and FixedColumns are greater than 0.
 	/// </summary>
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-	public ICellVirtual Header {
-		get {
-			return _header;
-		}
-		set {
-			_header = value;
-		}
-	}
+	public ICellVirtual Header { get; set; } = new ArrayHeader();
 
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-	public ICellVirtual ValueCell {
-		get {
-			return _valueCell;
-		}
-		set {
-			_valueCell = value;
-		}
-	}
+	public ICellVirtual ValueCell { get; set; }
 
 	public override ICellVirtual GetCell(int row, int column) {
 		if (row < FixedRows && column < FixedColumns)
-			return _header;
+			return Header;
 		if (row < FixedRows)
-			return _columnHeader;
+			return ColumnHeader;
 		if (column < FixedColumns)
-			return _rowHeader;
-		return _valueCell;
+			return RowHeader;
+		return ValueCell;
 	}
 
 	protected override RowsBase CreateRowsObject() {
@@ -144,9 +100,9 @@ public class ArrayGrid : GridVirtual {
 	protected virtual void Bind() {
 		ValueCell = null;
 		if (_dataSource != null) {
-			_valueCell = new SourceGrid.Cells.Virtual.CellVirtual();
-			_valueCell.Model.AddModel(new ArrayValueModel());
-			_valueCell.Editor = Cells.Editors.Factory.Create(_dataSource.GetType().GetElementType());
+			ValueCell = new SourceGrid.Cells.Virtual.CellVirtual();
+			ValueCell.Model.AddModel(new ArrayValueModel());
+			ValueCell.Editor = Cells.Editors.Factory.Create(_dataSource.GetType().GetElementType());
 		}
 
 		Rows.RowsChanged();

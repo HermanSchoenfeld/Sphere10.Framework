@@ -130,11 +130,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual CalloutStyle CalloutStyle
         {
-            get
-            {
-                return _calloutStyle;
-            }
-            set
+			get {
+				return _calloutStyle;
+			}
+			set
             {
                 _calloutStyle = value;
                 this.ResetCurrentRelativePosition();
@@ -144,7 +143,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the anchor cap style of a callout line.
@@ -165,16 +164,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LineAnchorCapStyle CalloutAnchorCap
         {
-            get
-            {
-                return _calloutAnchorCap;
-            }
-            set
+			get {
+				return _calloutAnchorCap;
+			}
+			set
             {
                 _calloutAnchorCap = value;
                 Invalidate();
             }
-        }
+		}
 
         #endregion Properties
 
@@ -197,15 +195,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color LineColor
         {
-            get
-            {
-                return base.LineColor;
-            }
-            set
-            {
-                base.LineColor = value;
-            }
-        }
+			get => base.LineColor;
+			set => base.LineColor = value;
+		}
 
         /// <summary>
         /// Gets or sets the width of an annotation line.
@@ -223,15 +215,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override int LineWidth
         {
-            get
-            {
-                return base.LineWidth;
-            }
-            set
-            {
-                base.LineWidth = value;
-            }
-        }
+			get => base.LineWidth;
+			set => base.LineWidth = value;
+		}
 
         /// <summary>
         /// Gets or sets the style of an annotation line.
@@ -249,15 +235,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return base.LineDashStyle;
-            }
-            set
-            {
-                base.LineDashStyle = value;
-            }
-        }
+			get => base.LineDashStyle;
+			set => base.LineDashStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the background color of an annotation.
@@ -278,15 +258,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
-            {
-                base.BackColor = value;
-            }
-        }
+			get => base.BackColor;
+			set => base.BackColor = value;
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style of an annotation.
@@ -309,15 +283,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
-            {
-                base.BackHatchStyle = value;
-            }
-        }
+			get => base.BackHatchStyle;
+			set => base.BackHatchStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the background gradient style of an annotation.
@@ -340,15 +308,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
-            {
-                base.BackGradientStyle = value;
-            }
-        }
+			get => base.BackGradientStyle;
+			set => base.BackGradientStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color of an annotation.
@@ -374,15 +336,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
-            {
-                base.BackSecondaryColor = value;
-            }
-        }
+			get => base.BackSecondaryColor;
+			set => base.BackSecondaryColor = value;
+		}
 
         #endregion Applicable Annotation Appearance Attributes (set as Browsable)
 
@@ -411,15 +367,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override double AnchorOffsetX
         {
-            get
-            {
-                return base.AnchorOffsetX;
-            }
-            set
-            {
-                base.AnchorOffsetX = value;
-            }
-        }
+			get => base.AnchorOffsetX;
+			set => base.AnchorOffsetX = value;
+		}
 
         /// <summary>
         /// Gets or sets the y-coordinate offset between the positions of an annotation and its anchor point.
@@ -444,15 +394,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override double AnchorOffsetY
         {
-            get
-            {
-                return base.AnchorOffsetY;
-            }
-            set
-            {
-                base.AnchorOffsetY = value;
-            }
-        }
+			get => base.AnchorOffsetY;
+			set => base.AnchorOffsetY = value;
+		}
 
         /// <summary>
         /// Gets or sets an annotation position's alignment to the anchor point.
@@ -478,15 +422,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ContentAlignment AnchorAlignment
         {
-            get
-            {
-                return base.AnchorAlignment;
-            }
-            set
-            {
-                base.AnchorAlignment = value;
-            }
-        }
+			get => base.AnchorAlignment;
+			set => base.AnchorAlignment = value;
+		}
 
         #endregion Anchor
 
@@ -511,13 +449,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Callout";
-            }
-        }
+        public override string AnnotationType => "Callout";
 
         /// <summary>
         /// Gets or sets annotation selection points style.
@@ -539,13 +471,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        internal override SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        internal override SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         #endregion Other
 

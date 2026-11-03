@@ -34,11 +34,7 @@ public partial class WAMSTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override WamsScreenSettings ScreenSettings {
-		get {
-			return (WamsScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override WamsScreenSettings ScreenSettings => (WamsScreenSettings)base.ScreenSettings;
 
 	protected override void CopyModelToUI() {
 		base.CopyModelToUI();

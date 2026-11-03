@@ -22,26 +22,21 @@ namespace Sphere10.Framework;
 /// <typeparam name="V">Value type.</typeparam>
 /// <typeparam name="TNode">Handle type representing a node in the storage backend.</typeparam>
 public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
-	private readonly int _maxInternalKeys;
-	private readonly int _maxLeafKeys;
-	private readonly int _minInternalKeys;
-	private readonly int _minLeafKeys;
-
 	protected BTreePlus(int order, IComparer<K> keyComparer = null)
 		: base(order, keyComparer) {
-		_maxInternalKeys = order - 1;
-		_maxLeafKeys = order - 1;
-		_minInternalKeys = ((order + 1) / 2) - 1;
-		_minLeafKeys = order / 2;
+		MaxInternalKeys = order - 1;
+		MaxLeafKeys = order - 1;
+		MinInternalKeys = ((order + 1) / 2) - 1;
+		MinLeafKeys = order / 2;
 	}
 
-	protected int MaxInternalKeys => _maxInternalKeys;
+	protected int MaxInternalKeys { get; }
 
-	protected int MaxLeafKeys => _maxLeafKeys;
+	protected int MaxLeafKeys { get; }
 
-	protected int MinInternalKeys => _minInternalKeys;
+	protected int MinInternalKeys { get; }
 
-	protected int MinLeafKeys => _minLeafKeys;
+	protected int MinLeafKeys { get; }
 
 	#region Abstract — Root Management
 
@@ -453,7 +448,7 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 
 			InsertLeafEntry(node, LeafIndex, new KeyValuePair<K, V>(key, value));
 			insertedNewKey = true;
-			return GetKeyCount(node) > _maxLeafKeys ? SplitLeafNode(node) : null;
+			return GetKeyCount(node) > MaxLeafKeys ? SplitLeafNode(node) : null;
 		}
 
 		var ChildIndex = FindInternalChildIndex(node, key);
@@ -465,7 +460,7 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 		SetChild(node, ChildIndex, ChildSplit.Left);
 		InsertChild(node, ChildIndex + 1, ChildSplit.Right);
 
-		return GetKeyCount(node) > _maxInternalKeys ? SplitInternalNode(node) : null;
+		return GetKeyCount(node) > MaxInternalKeys ? SplitInternalNode(node) : null;
 	}
 
 	private bool RemoveRecursive(TNode node, K key) {
@@ -496,7 +491,7 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 			return;
 
 		var Child = GetChild(parent, childIndex);
-		var MinKeys = IsLeaf(Child) ? _minLeafKeys : _minInternalKeys;
+		var MinKeys = IsLeaf(Child) ? MinLeafKeys : MinInternalKeys;
 		if (GetKeyCount(Child) >= MinKeys)
 			return;
 
@@ -646,13 +641,13 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 		var KeyCount = GetKeyCount(node);
 
 		if (IsLeaf(node)) {
-			if (!isRoot && KeyCount < _minLeafKeys) {
-				error = $"Leaf node contains {KeyCount} keys, below min {_minLeafKeys}.";
+			if (!isRoot && KeyCount < MinLeafKeys) {
+				error = $"Leaf node contains {KeyCount} keys, below min {MinLeafKeys}.";
 				return false;
 			}
 
-			if (KeyCount > _maxLeafKeys) {
-				error = $"Leaf node contains {KeyCount} keys, exceeding max {_maxLeafKeys}.";
+			if (KeyCount > MaxLeafKeys) {
+				error = $"Leaf node contains {KeyCount} keys, exceeding max {MaxLeafKeys}.";
 				return false;
 			}
 
@@ -693,13 +688,13 @@ public abstract class BTreePlus<K, V, TNode> : BTreeBase<K, V> {
 			return true;
 		}
 
-		if (!isRoot && KeyCount < _minInternalKeys) {
-			error = $"Internal node contains {KeyCount} keys, below min {_minInternalKeys}.";
+		if (!isRoot && KeyCount < MinInternalKeys) {
+			error = $"Internal node contains {KeyCount} keys, below min {MinInternalKeys}.";
 			return false;
 		}
 
-		if (KeyCount > _maxInternalKeys) {
-			error = $"Internal node contains {KeyCount} keys, exceeding max {_maxInternalKeys}.";
+		if (KeyCount > MaxInternalKeys) {
+			error = $"Internal node contains {KeyCount} keys, exceeding max {MaxInternalKeys}.";
 			return false;
 		}
 

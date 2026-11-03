@@ -14,15 +14,10 @@ namespace Sphere10.Framework.Application;
 [ComVisible(true)]
 [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
 public sealed class AssemblyCompanyLinkAttribute : Attribute {
-	private string _companyLink = null;
-
 	public AssemblyCompanyLinkAttribute(string url) {
 		CompanyLink = url;
 	}
 
-	public string CompanyLink {
-		get { return _companyLink; }
-		set { _companyLink = value; }
-	}
+	public string CompanyLink { get; set; } = null;
 }
 

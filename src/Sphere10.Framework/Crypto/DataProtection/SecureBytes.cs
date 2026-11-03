@@ -37,13 +37,7 @@ public sealed class SecureBytes : ISecureItem<byte[]> {
 		}
 	}
 
-	public byte[] Item {
-		get {
-			if (Protected)
-				throw new InvalidOperationException("No open scope is present, bytes are encrypted");
-			return _unencrypted;
-		}
-	}
+	public byte[] Item => Protected ? throw new InvalidOperationException("No open scope is present, bytes are encrypted") : _unencrypted;
 
 	public ActionScope EnterUnprotectedScope() {
 		using (_scopes.EnterWriteScope()) {

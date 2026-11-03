@@ -33,7 +33,7 @@ public class WriteOptions : LevelDBHandle {
 	/// system call followed by "fsync()".
 	/// </summary>
 	public bool Sync {
-		set { LevelDBInterop.leveldb_writeoptions_set_sync(Handle, value ? (byte)1 : (byte)0); }
+		set => LevelDBInterop.leveldb_writeoptions_set_sync(Handle, value ? (byte)1 : (byte)0);
 	}
 
 	protected override void FreeUnManagedObjects() {

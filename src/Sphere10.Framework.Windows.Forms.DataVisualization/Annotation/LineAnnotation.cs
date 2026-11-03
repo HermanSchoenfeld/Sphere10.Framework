@@ -64,16 +64,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual bool IsInfinitive
         {
-            get
-            {
-                return _isInfinitive;
-            }
-            set
+			get {
+				return _isInfinitive;
+			}
+			set
             {
                 _isInfinitive = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a cap style used at the start of an annotation line.
@@ -89,16 +88,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LineAnchorCapStyle StartCap
         {
-            get
-            {
-                return _startCap;
-            }
-            set
+			get {
+				return _startCap;
+			}
+			set
             {
                 _startCap = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a cap style used at the end of an annotation line.
@@ -114,16 +112,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual LineAnchorCapStyle EndCap
         {
-            get
-            {
-                return _endCap;
-            }
-            set
+			get {
+				return _endCap;
+			}
+			set
             {
                 _endCap = value;
                 Invalidate();
             }
-        }
+		}
 
         #endregion Line Visual Attributes
 
@@ -142,15 +139,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ContentAlignment Alignment
         {
-            get
-            {
-                return base.Alignment;
-            }
-            set
-            {
-                base.Alignment = value;
-            }
-        }
+			get => base.Alignment;
+			set => base.Alignment = value;
+		}
 
         /// <summary>
         /// Gets or sets an annotation's text style.
@@ -164,15 +155,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override TextStyle TextStyle
         {
-            get
-            {
-                return base.TextStyle;
-            }
-            set
-            {
-                base.TextStyle = value;
-            }
-        }
+			get => base.TextStyle;
+			set => base.TextStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -190,15 +175,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color ForeColor
         {
-            get
-            {
-                return base.ForeColor;
-            }
-            set
-            {
-                base.ForeColor = value;
-            }
-        }
+			get => base.ForeColor;
+			set => base.ForeColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -214,15 +193,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Font Font
         {
-            get
-            {
-                return base.Font;
-            }
-            set
-            {
-                base.Font = value;
-            }
-        }
+			get => base.Font;
+			set => base.Font = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -236,15 +209,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
-            {
-                base.BackColor = value;
-            }
-        }
+			get => base.BackColor;
+			set => base.BackColor = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -260,15 +227,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
-            {
-                base.BackHatchStyle = value;
-            }
-        }
+			get => base.BackHatchStyle;
+			set => base.BackHatchStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -281,15 +242,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
-            {
-                base.BackGradientStyle = value;
-            }
-        }
+			get => base.BackGradientStyle;
+			set => base.BackGradientStyle = value;
+		}
 
         /// <summary>
         /// Not applicable to this annotation type.
@@ -303,15 +258,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
-            {
-                base.BackSecondaryColor = value;
-            }
-        }
+			get => base.BackSecondaryColor;
+			set => base.BackSecondaryColor = value;
+		}
 
         #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -343,15 +292,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override bool IsSizeAlwaysRelative
         {
-            get
-            {
-                return base.IsSizeAlwaysRelative;
-            }
-            set
-            {
-                base.IsSizeAlwaysRelative = value;
-            }
-        }
+			get => base.IsSizeAlwaysRelative;
+			set => base.IsSizeAlwaysRelative = value;
+		}
 
         #endregion Position
 
@@ -383,15 +326,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ContentAlignment AnchorAlignment
         {
-            get
-            {
-                return base.AnchorAlignment;
-            }
-            set
-            {
-                base.AnchorAlignment = value;
-            }
-        }
+			get => base.AnchorAlignment;
+			set => base.AnchorAlignment = value;
+		}
 
         #endregion Anchor
 
@@ -416,13 +353,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Line";
-            }
-        }
+        public override string AnnotationType => "Line";
 
         /// <summary>
         /// Gets or sets an annotation's selection points style.
@@ -444,13 +375,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        internal override SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.TwoPoints;
-            }
-        }
+        internal override SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.TwoPoints;
 
         #endregion Other
 
@@ -706,13 +631,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "VerticalLine";
-            }
-        }
+        public override string AnnotationType => "VerticalLine";
 
         #endregion Properties
 
@@ -791,13 +710,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "HorizontalLine";
-            }
-        }
+        public override string AnnotationType => "HorizontalLine";
 
         #endregion Properties
 

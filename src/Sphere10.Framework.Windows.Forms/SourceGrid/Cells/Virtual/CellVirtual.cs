@@ -17,13 +17,11 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual;
 /// </summary>
 public class CellVirtual : ICellVirtual {
 	// Model
-	private Models.ModelContainer _model;
 
 	// View
 	private Views.IView _view;
 
 	// Controller
-	private Controllers.ControllerContainer _controller;
 
 	// Editor
 	private Editors.EditorBase _editor = null;
@@ -52,12 +50,12 @@ public class CellVirtual : ICellVirtual {
 	/// </summary>
 	public Models.ModelContainer Model {
 		get {
-			return _model;
+			return field;
 		}
 		set {
 			if (value == null)
 				throw new SourceGridException("Model cannot be null");
-			_model = value;
+			field = value;
 		}
 	}
 
@@ -80,23 +78,15 @@ public class CellVirtual : ICellVirtual {
 	/// <summary>
 	/// Controller of the cell.
 	/// </summary>
-	public Controllers.ControllerContainer Controller {
-		get {
-			return _controller;
-		}
-	}
+	public Controllers.ControllerContainer Controller { get; private set; }
 
 	/// <summary>
 	/// Editor of this cell and others cells. If null no edit is supported.
 	///  You can share the same model between many cells to optimize memory size. Warning Changing this property can affect many cells
 	/// </summary>
 	public Editors.EditorBase Editor {
-		get {
-			return _editor;
-		}
-		set {
-			_editor = value;
-		}
+		get => _editor;
+		set => _editor = value;
 	}
 
 	/// <summary>
@@ -104,9 +94,9 @@ public class CellVirtual : ICellVirtual {
 	/// </summary>
 	/// <param name="controller"></param>
 	public void AddController(Controllers.IController controller) {
-		if (_controller == null)
-			_controller = new SourceGrid.Cells.Controllers.ControllerContainer();
-		_controller.AddController(controller);
+		if (Controller == null)
+			Controller = new SourceGrid.Cells.Controllers.ControllerContainer();
+		Controller.AddController(controller);
 	}
 
 	/// <summary>
@@ -114,8 +104,8 @@ public class CellVirtual : ICellVirtual {
 	/// </summary>
 	/// <param name="controller"></param>
 	public void RemoveController(Controllers.IController controller) {
-		if (_controller != null)
-			_controller.RemoveController(controller);
+		if (Controller != null)
+			Controller.RemoveController(controller);
 	}
 
 	/// <summary>
@@ -124,8 +114,8 @@ public class CellVirtual : ICellVirtual {
 	/// <param name="controllerType"></param>
 	/// <returns></returns>
 	public Controllers.IController FindController(Type controllerType) {
-		if (_controller != null)
-			return _controller.FindController(controllerType);
+		if (Controller != null)
+			return Controller.FindController(controllerType);
 		return null;
 	}
 

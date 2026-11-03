@@ -18,7 +18,6 @@ namespace Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
 /// View model for topbar menu
 /// </summary>
 public class MainMenuViewModel : ComponentViewModelBase, IDisposable {
-	private BlazorRoutedMenuItem[] _menuItems;
 
 	/// <summary>
 	/// Gets the app manager
@@ -33,7 +32,10 @@ public class MainMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// <summary>
 	/// Gets the list of menu items.
 	/// </summary>
-	public BlazorRoutedMenuItem[] MenuItems => Tools.Array.Clone(_menuItems);
+	public BlazorRoutedMenuItem[] MenuItems {
+		get => Tools.Array.Clone(field);
+		private set => field = value;
+	}
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="MainMenuViewModel"/> class.
@@ -47,12 +49,12 @@ public class MainMenuViewModel : ComponentViewModelBase, IDisposable {
 			new("Help", "/", new List<BlazorRoutedMenuItem>(), "fa-info")
 		};
 
-		_menuItems = Tools.Array.Clone(DefaultMenuItems);
+		MenuItems = Tools.Array.Clone(DefaultMenuItems);
 
 		AppManager.AppBlockPageSelected += AppManagerOnAppBlockPageSelected;
 
 		if (AppManager.SelectedPage is not null) {
-			_menuItems = DefaultMenuItems.Merge(AppManager.SelectedPage.MenuItems).ToArray();
+			MenuItems = DefaultMenuItems.Merge(AppManager.SelectedPage.MenuItems).ToArray();
 		}
 	}
 
@@ -62,7 +64,7 @@ public class MainMenuViewModel : ComponentViewModelBase, IDisposable {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	private void AppManagerOnAppBlockPageSelected(object sender, BlazorRoutedApplicationPageSelectedEventArgs e) {
-		_menuItems = DefaultMenuItems.Merge(e.AppBlockPage.MenuItems).ToArray();
+		MenuItems = DefaultMenuItems.Merge(e.AppBlockPage.MenuItems).ToArray();
 		StateHasChangedDelegate?.Invoke();
 	}
 	public void Dispose() {

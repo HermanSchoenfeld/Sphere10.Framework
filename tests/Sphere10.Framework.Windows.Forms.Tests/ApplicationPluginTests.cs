@@ -580,14 +580,12 @@ public class ApplicationPluginTests {
 	}
 
 	public sealed class TrackingMainForm : BlockMainForm {
-		private int _registerCount;
-
-		public int RegisterCount => _registerCount;
+		public int RegisterCount { get; private set; }
 
 		public void ClickNavigationButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
 
 		public override void RegisterBlock(FormsUI.IApplicationBlock block) {
-			_registerCount++;
+			RegisterCount++;
 			base.RegisterBlock(block);
 		}
 	}

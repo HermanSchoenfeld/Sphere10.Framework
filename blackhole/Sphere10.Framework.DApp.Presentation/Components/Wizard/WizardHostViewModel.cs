@@ -48,7 +48,9 @@ public class WizardHostViewModel : ComponentViewModelBase {
 	/// Gets or sets the component ref instance of the current step.
 	/// </summary>
 	public WizardStepBase? CurrentStepInstance {
-		get => _currentStepInstance;
+		get {
+			return _currentStepInstance;
+		}
 		private set {
 			_currentStepInstance = value;
 			Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";

@@ -28,8 +28,6 @@ public partial class SquareButton : ButtonBase {
 	protected Color _gradientButtonSelectedLight = Color.FromArgb(251, 230, 148);
 	protected Image image = null;
 	protected bool _selected = false;
-	private bool _isHovering = false;
-	private bool _pressed = false;
 
 	public event EventHandler ButtonStateChanged;
 
@@ -39,68 +37,70 @@ public partial class SquareButton : ButtonBase {
 
 	[Description("Dark gradient color of the button"), Category("Appearance")]
 	public Color GradientButtonNormalDark {
-		get { return _gradientButtonDark; }
-		set { _gradientButtonDark = value; }
+		get => _gradientButtonDark;
+		set => _gradientButtonDark = value;
 	}
 
 	[Description("Light gradient color of the button"), Category("Appearance")]
 	public Color GradientButtonNormalLight {
-		get { return _gradientButtonLight; }
-		set { _gradientButtonLight = value; }
+		get => _gradientButtonLight;
+		set => _gradientButtonLight = value;
 	}
 
 	[Description("Dark gradient color of the button when the mouse is moving over it"), Category("Appearance")]
 	public Color GradientButtonHoverDark {
-		get { return _gradientButtonHoverDark; }
-		set { _gradientButtonHoverDark = value; }
+		get => _gradientButtonHoverDark;
+		set => _gradientButtonHoverDark = value;
 	}
 
 	[Description("Light gradient color of the button when the mouse is moving over it"), Category("Appearance")]
 	public Color GradientButtonHoverLight {
-		get { return _gradientButtonHoverLight; }
-		set { _gradientButtonHoverLight = value; }
+		get => _gradientButtonHoverLight;
+		set => _gradientButtonHoverLight = value;
 	}
 
 	[Description("Dark gradient color of the seleced button"), Category("Appearance")]
 	public Color GradientButtonSelectedDark {
-		get { return _gradientButtonSelectedDark; }
-		set { _gradientButtonSelectedDark = value; }
+		get => _gradientButtonSelectedDark;
+		set => _gradientButtonSelectedDark = value;
 	}
 
 	[Description("Light gradient color of the seleced button"), Category("Appearance")]
 	public Color GradientButtonSelectedLight {
-		get { return _gradientButtonSelectedLight; }
-		set { _gradientButtonSelectedLight = value; }
+		get => _gradientButtonSelectedLight;
+		set => _gradientButtonSelectedLight = value;
 	}
 
 	[Description("Color of border"), Category("Appearance")]
 	public Color TopBorderColor {
-		get { return _topBorderColor; }
-		set { _topBorderColor = value; }
+		get => _topBorderColor;
+		set => _topBorderColor = value;
 	}
 
 	public Color LeftBorderColor {
-		get { return _leftBorderColor; }
-		set { _leftBorderColor = value; }
+		get => _leftBorderColor;
+		set => _leftBorderColor = value;
 	}
 
 	public Color RightBorderColor {
-		get { return _rightBorderColor; }
-		set { _rightBorderColor = value; }
+		get => _rightBorderColor;
+		set => _rightBorderColor = value;
 	}
 
 	public Color BottomBorderColor {
-		get { return _bottomBorderColor; }
-		set { _bottomBorderColor = value; }
+		get => _bottomBorderColor;
+		set => _bottomBorderColor = value;
 	}
 
 	public bool Pressed {
-		get { return _pressed; }
+		get {
+			return field;
+		}
 		set {
-			_pressed = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = false;
 
 	protected override void OnPaint(PaintEventArgs pevent) {
 		Brush br;
@@ -165,10 +165,7 @@ public partial class SquareButton : ButtonBase {
 
 	}
 
-	protected bool IsHovering {
-		get { return _isHovering; }
-		set { _isHovering = value; }
-	}
+	protected bool IsHovering { get; set; } = false;
 
 	protected override void OnClick(EventArgs e) {
 		if (!Pressed) {

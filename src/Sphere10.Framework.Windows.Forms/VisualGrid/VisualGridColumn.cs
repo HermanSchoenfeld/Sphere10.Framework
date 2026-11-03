@@ -13,8 +13,6 @@ using System.Drawing;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class VisualGridColumn<TEntity> : IVisualGridColumn {
-	private string _preferenceKey;
-
 	public VisualGridColumn() {
 		DropDownItemsNullDisplayString = string.Empty;
 	}
@@ -23,8 +21,8 @@ public class VisualGridColumn<TEntity> : IVisualGridColumn {
 
 	/// <summary>Stable preference identity for projected columns without a property or sort name.</summary>
 	public string PreferenceKey {
-		get => _preferenceKey ?? PropertyName ?? SortName;
-		set => _preferenceKey = value;
+		get => field ?? PropertyName ?? SortName;
+		set => field = value;
 	}
 	public CrudCellDisplayType DisplayType { get; set; }
 	public Sphere10.Framework.ResizeAlignment ImageAlignment { get; set; } = Sphere10.Framework.ResizeAlignment.CenterCenter;

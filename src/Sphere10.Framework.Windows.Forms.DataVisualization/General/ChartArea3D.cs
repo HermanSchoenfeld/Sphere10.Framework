@@ -113,41 +113,33 @@ public class ChartArea3DStyle
     // Indicates that axes are set at the right angle independent of the rotation.
     private bool _isRightAngleAxes = true;
 
-    // Indicates that series should be drawn as isClustered.
-    private bool _isClustered;
+	// Indicates that series should be drawn as isClustered.
 
-    private bool _zDepthRealCalc;
 
-    // 3D area lightStyle style.
-    private LightStyle _lightStyle = LightStyle.Simplistic;
+	// 3D area lightStyle style.
 
-    // 3D area perspective which controls the scaleView of the chart depth.
-    private int _perspective;
+	// 3D area perspective which controls the scaleView of the chart depth.
+	private int _perspective;
 
-    // Chart area rotation angle around the X axis.
-    private int _inclination = 30;
+	// Chart area rotation angle around the X axis.
 
-    // Chart area rotation angle around the Y axis.
-    private int _rotation = 30;
+	// Chart area rotation angle around the Y axis.
 
-    // Chart area walls width.
-    private int _wallWidth = 7;
+	// Chart area walls width.
 
-    // Series points depth in percentages
-    private int _pointDepth = 100;
+	// Series points depth in percentages
 
-    // Series points gap depth in percentages
-    private int _pointGapDepth = 100;
+	// Series points gap depth in percentages
 
-    #endregion Fields
+	#endregion Fields
 
-    #region Properties
+	#region Properties
 
-    /// <summary>
-    /// Gets or sets a Boolean value that toggles 3D for a chart area on and off.
-    /// </summary>
-    [
-    SRCategory("CategoryAttribute3D"),
+	/// <summary>
+	/// Gets or sets a Boolean value that toggles 3D for a chart area on and off.
+	/// </summary>
+	[
+	SRCategory("CategoryAttribute3D"),
     Bindable(true),
     DefaultValue(false),
     SRDescription("DescriptionAttributeChartArea3DStyle_Enable3D"),
@@ -155,8 +147,10 @@ public class ChartArea3DStyle
     ]
     public bool Enable3D
     {
-        get => this._enable3D;
-        set
+		get {
+			return this._enable3D;
+		}
+		set
         {
             if (this._enable3D != value)
             {
@@ -182,7 +176,7 @@ public class ChartArea3DStyle
 #pragma warning restore IDE0031 // Use null propagation
             }
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a Boolean that determines if a chart area  is displayed using an isometric projection.
@@ -196,8 +190,10 @@ public class ChartArea3DStyle
     ]
     public bool IsRightAngleAxes
     {
-        get => _isRightAngleAxes;
-        set
+		get {
+			return _isRightAngleAxes;
+		}
+		set
         {
             _isRightAngleAxes = value;
 
@@ -210,7 +206,7 @@ public class ChartArea3DStyle
 
             this._chartArea?.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a Boolean value that determines if bar chart or column
@@ -224,13 +220,15 @@ public class ChartArea3DStyle
     ]
     public bool IsClustered
     {
-        get => _isClustered;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _isClustered = value;
+            field = value;
             this._chartArea?.Invalidate();
         }
-    }
+	}
 
 
 
@@ -245,13 +243,15 @@ public class ChartArea3DStyle
     ]
     public bool ZDepthRealCalc
     {
-        get => _zDepthRealCalc;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _zDepthRealCalc = value;
+            field = value;
             this._chartArea?.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the style of lighting for a 3D chart area.
@@ -264,18 +264,20 @@ public class ChartArea3DStyle
     ]
     public LightStyle LightStyle
     {
-        get => _lightStyle;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _lightStyle = value;
+            field = value;
             this._chartArea?.Invalidate();
         }
-    }
+	} = LightStyle.Simplistic;
 
-    /// <summary>
-    /// Gets or sets the percent of perspective for a 3D chart area.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the percent of perspective for a 3D chart area.
+	/// </summary>
+	[
     SRCategory("CategoryAttribute3D"),
     Bindable(true),
     DefaultValue(0),
@@ -284,8 +286,10 @@ public class ChartArea3DStyle
     ]
     public int Perspective
     {
-        get => _perspective;
-        set
+		get {
+			return _perspective;
+		}
+		set
         {
             if (value < 0 || value > 100)
             {
@@ -303,7 +307,7 @@ public class ChartArea3DStyle
 
             this._chartArea?.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the inclination for a 3D chart area.
@@ -317,24 +321,26 @@ public class ChartArea3DStyle
     ]
     public int Inclination
     {
-        get => _inclination;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < -90 || value > 90)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionChartArea3DInclinationInvalid);
             }
 
-            _inclination = value;
+            field = value;
 
             this._chartArea?.Invalidate();
         }
-    }
+	} = 30;
 
-    /// <summary>
-    /// Gets or sets the rotation angle for a 3D chart area.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the rotation angle for a 3D chart area.
+	/// </summary>
+	[
     SRCategory("CategoryAttribute3D"),
     Bindable(true),
     DefaultValue(30),
@@ -343,24 +349,26 @@ public class ChartArea3DStyle
     ]
     public int Rotation
     {
-        get => _rotation;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < -180 || value > 180)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionChartArea3DRotationInvalid);
             }
 
-            _rotation = value;
+            field = value;
 
             this._chartArea?.Invalidate();
         }
-    }
+	} = 30;
 
-    /// <summary>
-    /// Gets or sets the width of the walls displayed in 3D chart areas.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the width of the walls displayed in 3D chart areas.
+	/// </summary>
+	[
     SRCategory("CategoryAttribute3D"),
     Bindable(true),
     DefaultValue(7),
@@ -369,23 +377,25 @@ public class ChartArea3DStyle
     ]
     public int WallWidth
     {
-        get => _wallWidth;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 0 || value > 30)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionChartArea3DWallWidthInvalid);
             }
 
-            _wallWidth = value;
+            field = value;
             this._chartArea?.Invalidate();
         }
-    }
+	} = 7;
 
-    /// <summary>
-    /// Gets or sets the depth of data points displayed in 3D chart areas (0-1000%).
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the depth of data points displayed in 3D chart areas (0-1000%).
+	/// </summary>
+	[
     SRCategory("CategoryAttribute3D"),
     Bindable(true),
     DefaultValue(100),
@@ -394,23 +404,25 @@ public class ChartArea3DStyle
     ]
     public int PointDepth
     {
-        get => _pointDepth;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 0 || value > 1000)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionChartArea3DPointsDepthInvalid);
             }
 
-            _pointDepth = value;
+            field = value;
             this._chartArea?.Invalidate();
         }
-    }
+	} = 100;
 
-    /// <summary>
-    /// Gets or sets the distance between series rows in 3D chart areas (0-1000%).
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the distance between series rows in 3D chart areas (0-1000%).
+	/// </summary>
+	[
     SRCategory("CategoryAttribute3D"),
     Bindable(true),
     DefaultValue(100),
@@ -419,20 +431,22 @@ public class ChartArea3DStyle
     ]
     public int PointGapDepth
     {
-        get => _pointGapDepth;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 0 || value > 1000)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionChartArea3DPointsGapInvalid);
             }
 
-            _pointGapDepth = value;
+            field = value;
             this._chartArea?.Invalidate();
         }
-    }
+	} = 100;
 
-    #endregion Properties
+	#endregion Properties
 }
 
 /// <summary>
@@ -506,15 +520,17 @@ public partial class ChartArea
     ]
     public ChartArea3DStyle Area3DStyle
     {
-        get => _area3DStyle;
-        set
+		get {
+			return _area3DStyle;
+		}
+		set
         {
             _area3DStyle = value;
 
             // Initialize style object
             _area3DStyle.Initialize(this);
         }
-    }
+	}
 
     /// <summary>
     /// Indicates that series order should be reversed to simulate Y axis rotation.

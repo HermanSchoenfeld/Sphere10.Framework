@@ -87,29 +87,22 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Axis data scaleView position
         private double _position = double.NaN;
 
-        // Axis data scaleView size
-        private double _size = double.NaN;
+		// Axis data scaleView size
 
-        // Axis data scaleView size units type
-        private DateTimeIntervalType _sizeType = DateTimeIntervalType.Auto;
+		// Axis data scaleView size units type
 
-        // Axis data scaleView minimum scaleView/scrolling size units type
-        private DateTimeIntervalType _minSizeType = DateTimeIntervalType.Auto;
+		// Axis data scaleView minimum scaleView/scrolling size units type
 
-        // Axis data scaleView scroll line size
-        private double _smallScrollSize = double.NaN;
+		// Axis data scaleView scroll line size
 
-        // Axis data scaleView scroll line size units type
-        private DateTimeIntervalType _smallScrollSizeType = DateTimeIntervalType.Auto;
+		// Axis data scaleView scroll line size units type
 
-        // Axis data scaleView scroll line minimum size
-        private double _smallScrollMinSize = 1.0;
+		// Axis data scaleView scroll line minimum size
 
-        // Axis data scaleView scroll line minimum size units type
-        private DateTimeIntervalType _smallScrollMinSizeType = DateTimeIntervalType.Auto;
+		// Axis data scaleView scroll line minimum size units type
 
-        // Axis data scaleView scroll line minimum size
-        private double _currentSmallScrollSize = double.NaN;
+		// Axis data scaleView scroll line minimum size
+		private double _currentSmallScrollSize = double.NaN;
 
         // Axis data scaleView scroll line minimum size units type
         private DateTimeIntervalType _currentSmallScrollSizeType = DateTimeIntervalType.Auto;
@@ -158,7 +151,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Position
         {
-            get
+			get
             {
                 // Axis scaleView is not supported in circular chart areas
                 if (this.axis != null && this.axis.ChartArea != null && this.axis.ChartArea.chartAreaIsCurcular)
@@ -168,7 +161,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 return _position;
             }
-            set
+			set
             {
                 // Axis scaleView is not supported in circular chart areas
                 if (this.axis != null && this.axis.ChartArea != null && this.axis.ChartArea.chartAreaIsCurcular)
@@ -199,7 +192,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the size of the AxisScaleView
@@ -214,7 +207,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Size
         {
-            get
+			get
             {
                 // Axis scaleView is not supported in circular chart areas
                 if (this.axis != null && this.axis.ChartArea != null && this.axis.ChartArea.chartAreaIsCurcular)
@@ -222,9 +215,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     return double.NaN;
                 }
 
-                return _size;
+                return field;
             }
-            set
+			set
             {
                 // Axis scaleView is not supported in circular chart areas
                 if (this.axis != null && this.axis.ChartArea != null && this.axis.ChartArea.chartAreaIsCurcular)
@@ -232,10 +225,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     return;
                 }
 
-                if (_size != value)
+                if (field != value)
                 {
                     // Set size value
-                    _size = value;
+                    field = value;
 
                     // Align scaleView in connected areas
                     if (this.axis != null && this.axis.ChartArea != null && this.axis.Common != null && this.axis.Common.ChartPicture != null)
@@ -257,12 +250,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		} = double.NaN;
 
-        /// <summary>
-        /// Gets or sets the unit of measurement of the Size property.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the unit of measurement of the Size property.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAxisView"),
         Bindable(true),
         DefaultValue(DateTimeIntervalType.Auto),
@@ -271,13 +264,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType SizeType
         {
-            get => _sizeType;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                if (_sizeType != value)
+                if (field != value)
                 {
                     // Set size type
-                    _sizeType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+                    field = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
 
                     // Align scaleView in connected areas
                     if (this.axis != null && this.axis.ChartArea != null && this.axis.Common != null && this.axis.Common.ChartPicture != null)
@@ -297,12 +292,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		} = DateTimeIntervalType.Auto;
 
-        /// <summary>
-        /// Indicates if axis is zoomed-in.
-        /// </summary>
-        [
+		/// <summary>
+		/// Indicates if axis is zoomed-in.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAxisView"),
         Bindable(false),
         Browsable(false),
@@ -337,14 +332,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType MinSizeType
         {
-            get => _minSizeType;
-            set => _minSizeType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
-        }
+			get => field;
+			set => field = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+		} = DateTimeIntervalType.Auto;
 
-        /// <summary>
-        /// Gets or sets a flag which indicates whether the zooming user interface is enabled.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets a flag which indicates whether the zooming user interface is enabled.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAxisView"),
         Bindable(true),
         DefaultValue(true),
@@ -364,13 +359,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double SmallScrollSize
         {
-            get => _smallScrollSize;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                if (_smallScrollSize != value)
+                if (field != value)
                 {
                     // Set size value
-                    _smallScrollSize = value;
+                    field = value;
 
                     // Validate chart
                     if (!_ignoreValidation && axis != null)
@@ -379,12 +376,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		} = double.NaN;
 
-        /// <summary>
-        /// Gets or sets the unit of measurement for the SmallScrollMinSize property
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the unit of measurement for the SmallScrollMinSize property
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAxisView"),
         Bindable(true),
         DefaultValue(DateTimeIntervalType.Auto),
@@ -392,13 +389,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType SmallScrollSizeType
         {
-            get => _smallScrollSizeType;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                if (_smallScrollSizeType != value)
+                if (field != value)
                 {
                     // Set size type
-                    _smallScrollSizeType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+                    field = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
 
                     // Validate chart
                     if (!_ignoreValidation && axis != null)
@@ -407,13 +406,13 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		} = DateTimeIntervalType.Auto;
 
-        /// <summary>
-        /// Gets or sets the minimum small scrolling size.
-        /// Only used if the small scrolling size is not set.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the minimum small scrolling size.
+		/// Only used if the small scrolling size is not set.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAxisView"),
         Bindable(true),
         DefaultValue(1.0),
@@ -421,13 +420,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double SmallScrollMinSize
         {
-            get => _smallScrollMinSize;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                if (_smallScrollMinSize != value)
+                if (field != value)
                 {
                     // Set size value
-                    _smallScrollMinSize = value;
+                    field = value;
 
                     _currentSmallScrollSize = double.NaN;
 
@@ -438,12 +439,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		} = 1.0;
 
-        /// <summary>
-        /// Gets or sets the unit of measurement for the SmallScrollMinSize property.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the unit of measurement for the SmallScrollMinSize property.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeAxisView"),
         Bindable(true),
         DefaultValue(DateTimeIntervalType.Auto),
@@ -451,13 +452,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType SmallScrollMinSizeType
         {
-            get => _smallScrollMinSizeType;
-            set
+			get {
+				return field;
+			}
+			set
             {
-                if (_smallScrollMinSizeType != value)
+                if (field != value)
                 {
                     // Set size type
-                    _smallScrollMinSizeType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+                    field = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
 
                     _currentSmallScrollSize = double.NaN;
 
@@ -468,17 +471,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     }
                 }
             }
-        }
+		} = DateTimeIntervalType.Auto;
 
-        #endregion Axis data scaleView properties
+		#endregion Axis data scaleView properties
 
-        #region ScaleView position internal methods
+		#region ScaleView position internal methods
 
-        /// <summary>
-        /// Call this method to get the minimum axis value of a data view.
+		/// <summary>
+		/// Call this method to get the minimum axis value of a data view.
 		/// </summary>
 		/// <returns>The minimum axis value for the data view.</returns>
-        [Browsable(false)]
+		[Browsable(false)]
         [Utilities.SerializationVisibility(Utilities.SerializationVisibility.Hidden)]
         public double ViewMinimum
         {
@@ -1283,9 +1286,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType NewSizeType
         {
-            get => _newSizeType;
-            set => _newSizeType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
-        }
+			get => _newSizeType;
+			set => _newSizeType = (value != DateTimeIntervalType.NotSet) ? value : DateTimeIntervalType.Auto;
+		}
 
         #endregion Properties
     }

@@ -96,41 +96,17 @@ public class AnchorArea : ICloneable, IComparable {
 			Middle = true;
 	}
 
-	public static AnchorArea Empty {
-		get {
-			return new AnchorArea();
-		}
-	}
+	public static AnchorArea Empty => new AnchorArea();
 
-	public bool IsEmpty {
-		get {
-			return HasRight == false && HasLeft == false && HasTop == false && HasBottom == false && Middle == false && Center == false;
-		}
-	}
+	public bool IsEmpty => HasRight == false && HasLeft == false && HasTop == false && HasBottom == false && Middle == false && Center == false;
 
-	public bool HasRight {
-		get {
-			return float.IsNaN(Right) == false;
-		}
-	}
+	public bool HasRight => float.IsNaN(Right) == false;
 
-	public bool HasLeft {
-		get {
-			return float.IsNaN(Left) == false;
-		}
-	}
+	public bool HasLeft => float.IsNaN(Left) == false;
 
-	public bool HasTop {
-		get {
-			return float.IsNaN(Top) == false;
-		}
-	}
+	public bool HasTop => float.IsNaN(Top) == false;
 
-	public bool HasBottom {
-		get {
-			return float.IsNaN(Bottom) == false;
-		}
-	}
+	public bool HasBottom => float.IsNaN(Bottom) == false;
 
 	/// <summary>
 	/// Calculate the destination area of

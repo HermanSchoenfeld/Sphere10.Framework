@@ -48,24 +48,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Utilities
         /// <summary>
         /// Position of the chart in screen coordinates (optional can be set to empty)
         /// </summary>
-        public Point ChartScreenPosition
-        {
-            get
-            {
-                return this._chartScreenPosition;
-            }
-        }
+        public Point ChartScreenPosition => this._chartScreenPosition;
 
         /// <summary>
         /// Gets the role for the Chart. This is used by accessibility programs.
         /// </summary>
-        public override AccessibleRole Role
-        {
-            get
-            {
-                return AccessibleRole.Chart;
-            }
-        }
+        public override AccessibleRole Role => AccessibleRole.Chart;
 
         #endregion Properties
 
@@ -439,10 +427,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Utilities
         /// </summary>
         public override Rectangle Bounds
         {
-            get
-            {
-                return this.chartAccessibleObject.GetChildBounds(this.chartChildObject, this.chartChildObjectType, this.seriesName, this.dataPointIndex);
-            }
+            get => this.chartAccessibleObject.GetChildBounds(this.chartChildObject, this.chartChildObjectType, this.seriesName, this.dataPointIndex);
         }
 
         /// <summary>
@@ -465,26 +450,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Utilities
         /// </summary>
         public override string Value
         {
-            get
-            {
-                return this.objectValue;
-            }
-            set
-            {
-                this.objectValue = value;
-            }
-        }
+			get => this.objectValue;
+			set => this.objectValue = value;
+		}
 
         /// <summary>
         /// Gets accessible object role
         /// </summary>
-        public override AccessibleRole Role
-        {
-            get
-            {
-                return this.role;
-            }
-        }
+        public override AccessibleRole Role => this.role;
 
         /// <summary>
         /// Gets accessible object state.
@@ -507,15 +480,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Utilities
         /// </summary>
         public override string Name
         {
-            get
-            {
-                return this.name;
-            }
-            set
-            {
-                this.name = value;
-            }
-        }
+			get => this.name;
+			set => this.name = value;
+		}
 
         #endregion Properties
 

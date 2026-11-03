@@ -34,11 +34,7 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 	public abstract TBlock ActiveBlock { get; }
 
 	/// <summary>The navigation selection; hosts with separate browsing state override this projection.</summary>
-	public virtual TBlock SelectedBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	public virtual TBlock SelectedBlock => ActiveBlock;
 
 	/// <inheritdoc />
 	public abstract TScreen ActiveScreen { get; }
@@ -126,39 +122,19 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 
 	#region Base Interface Bridges
 	// Preserve neutral calls to virtual class members when a subclass explicitly remaps the typed interface.
-	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks {
-		get {
-			return AvailableBlocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.Blocks {
-		get {
-			return Blocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.Blocks => Blocks;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.ActiveBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.ActiveBlock => ActiveBlock;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.SelectedBlock {
-		get {
-			return SelectedBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.SelectedBlock => SelectedBlock;
 
 	/// <inheritdoc />
-	IApplicationScreen IApplicationScreenHost.ActiveScreen {
-		get {
-			return ActiveScreen;
-		}
-	}
+	IApplicationScreen IApplicationScreenHost.ActiveScreen => ActiveScreen;
 
 	/// <inheritdoc />
 	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
@@ -211,18 +187,10 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 	}
 
 	/// <inheritdoc />
-	IApplicationScreen[] IMultiApplicationScreenHost.Screens {
-		get {
-			return Screens;
-		}
-	}
+	IApplicationScreen[] IMultiApplicationScreenHost.Screens => Screens;
 
 	/// <inheritdoc />
-	IApplicationScreen[] IMultiApplicationScreenHost.OpenScreens {
-		get {
-			return OpenScreens;
-		}
-	}
+	IApplicationScreen[] IMultiApplicationScreenHost.OpenScreens => OpenScreens;
 
 	/// <inheritdoc />
 	Task IMultiApplicationScreenHost.MoveScreenAsync(IApplicationScreen screen, int index, CancellationToken cancellationToken) {

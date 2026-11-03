@@ -24,7 +24,9 @@ public class AppointmentBookViewModel : BaseAppointmentBookViewModel {
 	}
 
 	public AppointmentBookViewModelFilter ColumnFilter {
-		get { return _columnFilter; }
+		get {
+			return _columnFilter;
+		}
 		set {
 			_columnFilter = value;
 			SetVisibleColumns();

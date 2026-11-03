@@ -49,9 +49,7 @@ public class TableSpecification2 : BaseSQLSpecificationObject {
 
 		public IEnumerable<string> Columns { get; set; }
 
-		public override ConstraintType ConstraintType {
-			get { return ConstraintType.PrimaryKey; }
-		}
+		public override ConstraintType ConstraintType => ConstraintType.PrimaryKey;
 
 		public SQLSortDirection? SortDirection { get; set; }
 
@@ -60,9 +58,7 @@ public class TableSpecification2 : BaseSQLSpecificationObject {
 
 	public class UniqueConstraint : Constraint {
 
-		public override ConstraintType ConstraintType {
-			get { return ConstraintType.Unique; }
-		}
+		public override ConstraintType ConstraintType => ConstraintType.Unique;
 
 	}
 
@@ -71,9 +67,7 @@ public class TableSpecification2 : BaseSQLSpecificationObject {
 
 		public SQLExpression Expression { get; set; }
 
-		public override ConstraintType ConstraintType {
-			get { return ConstraintType.Check; }
-		}
+		public override ConstraintType ConstraintType => ConstraintType.Check;
 
 	}
 

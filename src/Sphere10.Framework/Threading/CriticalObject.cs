@@ -12,20 +12,17 @@ using System.Threading;
 namespace Sphere10.Framework;
 
 public class CriticalObject : ICriticalObject {
-	
-	private readonly object _lock;
-
 	public CriticalObject() : this(new object()) {
 	}
 
 	public CriticalObject(object @lock) {
 		Guard.ArgumentNotNull(@lock, nameof(@lock));
-		_lock = @lock; 
+		Lock = @lock;
 	}
 
 	public ICriticalObject ParentCriticalObject { get; set; }
 
-	public object Lock => ParentCriticalObject?.Lock ?? _lock;
+	public object Lock => ParentCriticalObject?.Lock ?? field;
 
 	public bool IsLocked => Monitor.IsEntered(Lock);
 

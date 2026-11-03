@@ -12,23 +12,14 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
 public class Image : IImage {
-	private System.Drawing.Image _image;
-
 	public Image() {
 	}
 
 	public Image(System.Drawing.Image image) {
-		_image = image;
+		ImageValue = image;
 	}
 
-	public System.Drawing.Image ImageValue {
-		get {
-			return _image;
-		}
-		set {
-			_image = value;
-		}
-	}
+	public System.Drawing.Image ImageValue { get; set; }
 
 	// IImage Members
 	/// <summary>
@@ -36,6 +27,6 @@ public class Image : IImage {
 	/// </summary>
 	/// <returns></returns>
 	public System.Drawing.Image GetImage(CellContext cellContext) {
-		return _image;
+		return ImageValue;
 	}
 }

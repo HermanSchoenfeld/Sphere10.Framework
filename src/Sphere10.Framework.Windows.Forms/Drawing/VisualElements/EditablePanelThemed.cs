@@ -41,7 +41,6 @@ public class EditablePanelThemed : EditablePanelBase {
 		get {
 			return base.BorderStyle;
 		}
-
 		set {
 			base.BorderStyle = value;
 			_standard.BorderStyle = value;

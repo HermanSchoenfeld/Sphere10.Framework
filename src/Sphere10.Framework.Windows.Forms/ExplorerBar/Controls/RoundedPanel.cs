@@ -21,16 +21,14 @@ public partial class RoundedPanel : Panel {
 	int _borderWidth = 1;
 	int _shadowOffSet = 5;
 	int _roundCornerRadius = 4;
-	Image _image;
 	Point _imageLocation = new Point(4, 4);
-	Color _borderColor = Color.Gray;
-	Color _gradientStartColor = Color.White;
-	Color _gradientEndColor = Color.Gray;
 
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue(1)]
 	public int BorderWidth {
-		get { return _borderWidth; }
+		get {
+			return _borderWidth;
+		}
 		set {
 			_borderWidth = value;
 			Invalidate();
@@ -40,21 +38,23 @@ public partial class RoundedPanel : Panel {
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue(true)]
 	public bool DrawBorder {
-		get { return _drawBorder; }
-		set { _drawBorder = value; }
+		get => _drawBorder;
+		set => _drawBorder = value;
 	}
 
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue(true)]
 	public bool DrawShadow {
-		get { return _drawShadow; }
-		set { _drawShadow = value; }
+		get => _drawShadow;
+		set => _drawShadow = value;
 	}
 
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue(5)]
 	public int ShadowOffSet {
-		get { return _shadowOffSet; }
+		get {
+			return _shadowOffSet;
+		}
 		set {
 			_shadowOffSet = Math.Abs(value);
 			Invalidate();
@@ -64,7 +64,9 @@ public partial class RoundedPanel : Panel {
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue(4)]
 	public int RoundCornerRadius {
-		get { return _roundCornerRadius; }
+		get {
+			return _roundCornerRadius;
+		}
 		set {
 			_roundCornerRadius = Math.Abs(value);
 			Invalidate();
@@ -73,9 +75,11 @@ public partial class RoundedPanel : Panel {
 
 	[Browsable(true), Category("Appearance")]
 	public Image Image {
-		get { return _image; }
+		get {
+			return field;
+		}
 		set {
-			_image = value;
+			field = value;
 			Invalidate();
 		}
 	}
@@ -83,7 +87,9 @@ public partial class RoundedPanel : Panel {
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue("4,4")]
 	public Point ImageLocation {
-		get { return _imageLocation; }
+		get {
+			return _imageLocation;
+		}
 		set {
 			_imageLocation = value;
 			Invalidate();
@@ -93,32 +99,38 @@ public partial class RoundedPanel : Panel {
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue("Color.Gray")]
 	public Color BorderColor {
-		get { return _borderColor; }
+		get {
+			return field;
+		}
 		set {
-			_borderColor = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = Color.Gray;
 
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue("Color.White")]
 	public Color GradientStartColor {
-		get { return _gradientStartColor; }
+		get {
+			return field;
+		}
 		set {
-			_gradientStartColor = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = Color.White;
 
 	[Browsable(true), Category("Appearance")]
 	[DefaultValue("Color.Gray")]
 	public Color GradientEndColor {
-		get { return _gradientEndColor; }
+		get {
+			return field;
+		}
 		set {
-			_gradientEndColor = value;
+			field = value;
 			Invalidate();
 		}
-	}
+	} = Color.Gray;
 
 	public RoundedPanel() {
 		this.SetStyle(ControlStyles.DoubleBuffer, true);
@@ -165,23 +177,23 @@ public partial class RoundedPanel : Panel {
 			// Draw backgroup
 			LinearGradientBrush brush = new LinearGradientBrush(
 				rect,
-				this._gradientStartColor,
-				this._gradientEndColor,
+				GradientStartColor,
+				GradientEndColor,
 				LinearGradientMode.BackwardDiagonal
 			);
 			e.Graphics.FillPath(brush, graphPath);
 
 			if (DrawBorder) {
-				Color actualBorderColor = this._borderColor.GetShade(-0.5f); //Color.FromArgb(180, this._borderColor);
-				if (actualBorderColor.A > _borderColor.A) {
-					actualBorderColor = _borderColor;
+				Color actualBorderColor = BorderColor.GetShade(-0.5f); //Color.FromArgb(180, this._borderColor);
+				if (actualBorderColor.A > BorderColor.A) {
+					actualBorderColor = BorderColor;
 				}
 				e.Graphics.DrawPath(new Pen(actualBorderColor, _borderWidth), graphPath);
 			}
 
 			// Draw Image
-			if (_image != null) {
-				e.Graphics.DrawImageUnscaled(_image, _imageLocation);
+			if (Image != null) {
+				e.Graphics.DrawImageUnscaled(Image, _imageLocation);
 			}
 		}
 	}

@@ -110,10 +110,9 @@ public partial class Axis
 
     private readonly List<double> _stripLineOffsets = [];
 
-    // Data members, which store properties values
-    private bool _isLogarithmic;
+	// Data members, which store properties values
 
-    internal double logarithmBase = 10.0;
+	internal double logarithmBase = 10.0;
     internal bool isReversed;
     internal bool isStartedFromZero = true;
     internal TickMark minorTickMark;
@@ -230,8 +229,10 @@ public partial class Axis
     ]
     internal virtual AxisPosition AxisPosition
     {
-        get => this._axisPosition;
-        set
+		get {
+			return this._axisPosition;
+		}
+		set
         {
             this._axisPosition = value;
 #if SUBAXES
@@ -247,7 +248,7 @@ public partial class Axis
 #endif // SUBAXES
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether the number of intervals
@@ -260,13 +261,15 @@ public partial class Axis
     ]
     public IntervalAutoMode IntervalAutoMode
     {
-        get => this._intervalAutoMode;
-        set
+		get {
+			return this._intervalAutoMode;
+		}
+		set
         {
             this._intervalAutoMode = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether the axis is reversed.
@@ -282,13 +285,15 @@ public partial class Axis
     ]
     public bool IsReversed
     {
-        get => isReversed;
-        set
+		get {
+			return isReversed;
+		}
+		set
         {
             isReversed = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether the minimum value
@@ -305,13 +310,15 @@ public partial class Axis
     ]
     public bool IsStartedFromZero
     {
-        get => isStartedFromZero;
-        set
+		get {
+			return isStartedFromZero;
+		}
+		set
         {
             isStartedFromZero = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag to add a margin to the axis.
@@ -327,14 +334,10 @@ public partial class Axis
     ]
     public bool IsMarginVisible
     {
-        get
-        {
-            if (margin > 0)
-                return true;
-            else
-                return false;
-        }
-        set
+		get {
+			return margin > 0;
+		}
+		set
         {
             if (value == true)
                 margin = 100;
@@ -343,7 +346,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Date and time interval type.
@@ -358,8 +361,10 @@ public partial class Axis
     ]
     internal DateTimeIntervalType InternalIntervalType
     {
-        get => _internalIntervalType;
-        set
+		get {
+			return _internalIntervalType;
+		}
+		set
         {
             // Set intervals for labels, grids and tick marks. ( Auto interval type )
             if (tempMajorGridInterval <= 0.0 ||
@@ -384,7 +389,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Sets auto interval values to grids, tick marks
@@ -460,15 +465,15 @@ public partial class Axis
     ]
     public double Maximum
     {
-        get
+		get
         {
             // Get maximum
-            if (_isLogarithmic && logarithmicConvertedToLinear && !double.IsNaN(maximum))
+            if (IsLogarithmic && logarithmicConvertedToLinear && !double.IsNaN(maximum))
                 return logarithmicMaximum;
             else
                 return maximum;
         }
-        set
+		set
         {
             // Split a value to maximum and auto maximum
             if (double.IsNaN(value))
@@ -496,7 +501,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the minimum axis value
@@ -512,15 +517,15 @@ public partial class Axis
     ]
     public double Minimum
     {
-        get
+		get
         {
             // Get minimum
-            if (_isLogarithmic && logarithmicConvertedToLinear && !double.IsNaN(maximum))
+            if (IsLogarithmic && logarithmicConvertedToLinear && !double.IsNaN(maximum))
                 return logarithmicMinimum;
             else
                 return minimum;
         }
-        set
+		set
         {
             // Split a value to minimum and auto minimum
             if (double.IsNaN(value))
@@ -547,7 +552,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the point where axis is crossed by another axis.
@@ -562,11 +567,11 @@ public partial class Axis
     ]
     public virtual double Crossing
     {
-        get
+		get
         {
             if (paintMode)
             {
-                if (_isLogarithmic)
+                if (IsLogarithmic)
                     return Math.Pow(this.logarithmBase, GetCrossing());
                 else
                     return GetCrossing();
@@ -574,7 +579,7 @@ public partial class Axis
             else
                 return crossing;
         }
-        set
+		set
         {
             crossing = value;
 
@@ -583,7 +588,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Enables or disables the axis.
@@ -597,7 +602,7 @@ public partial class Axis
     ]
     public AxisEnabled Enabled
     {
-        get
+		get
         {
             // Take Enabled from two fields: enabled and auto enabled
             if (autoEnabled)
@@ -613,7 +618,7 @@ public partial class Axis
                 return AxisEnabled.False;
             }
         }
-        set
+		set
         { // Split Enabled to two fields: enabled and auto enabled
             if (value == AxisEnabled.Auto)
             {
@@ -632,7 +637,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a flag which indicates whether the axis is logarithmic.
@@ -647,13 +652,15 @@ public partial class Axis
     ]
     public bool IsLogarithmic
     {
-        get => _isLogarithmic;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _isLogarithmic = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Base of the logarithm used in logarithmic scale.
@@ -668,8 +675,10 @@ public partial class Axis
     ]
     public double LogarithmBase
     {
-        get => logarithmBase;
-        set
+		get {
+			return logarithmBase;
+		}
+		set
         {
             if (value < 2.0)
             {
@@ -680,7 +689,7 @@ public partial class Axis
 
             this.Invalidate();
         }
-    }
+	}
 
     #endregion Axis scale properties
 
@@ -701,14 +710,16 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 ]
     public virtual AxisScaleBreakStyle ScaleBreakStyle
     {
-        get => this.axisScaleBreakStyle;
-        set
+		get {
+			return this.axisScaleBreakStyle;
+		}
+		set
         {
             this.axisScaleBreakStyle = value;
             this.axisScaleBreakStyle.axis = this;
             //this.Invalidate();
         }
-    }
+	}
 
     // Field that stores axis scale segments
     internal AxisScaleSegmentCollection scaleSegments;
@@ -742,14 +753,16 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
     ]
     public AxisScaleView ScaleView
     {
-        get => _scaleView;
-        set
+		get {
+			return _scaleView;
+		}
+		set
         {
             _scaleView = value;
             _scaleView.axis = this;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the scroll bar settings of the axis.
@@ -763,8 +776,10 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
     ]
     public AxisScrollBar ScrollBar
     {
-        get => scrollBar;
-        set
+		get {
+			return scrollBar;
+		}
+		set
         {
             if (scrollBar != value)
             {
@@ -779,7 +794,7 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
                 this.Invalidate();
             }
         }
-    }
+	}
 
     /// <summary>
     /// Gets axis data scaleView minimum position.
@@ -816,7 +831,7 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
     public double GetPosition(double axisValue)
     {
         // Adjust for the IsLogarithmic axis
-        if (_isLogarithmic && axisValue != 0.0)
+        if (IsLogarithmic && axisValue != 0.0)
         {
             axisValue = Math.Log(axisValue, this.logarithmBase);
         }
@@ -1803,7 +1818,7 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
             double viewMinimum = ViewMinimum;
 
             // IsLogarithmic axes
-            if (this._isLogarithmic)
+            if (IsLogarithmic)
             {
                 viewMaximum = Math.Pow(this.logarithmBase, viewMaximum);
                 viewMinimum = Math.Pow(this.logarithmBase, viewMinimum);
@@ -1886,7 +1901,7 @@ DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         ChartValueType dateType = GetDateTimeType();
 
         // Axis type is logarithmic
-        if (_isLogarithmic)
+        if (IsLogarithmic)
         {
             axisInterval = EstimateLogarithmicAxis(ref minimumValue, ref maximumValue, crossing, autoMaximum, autoMinimum);
         }

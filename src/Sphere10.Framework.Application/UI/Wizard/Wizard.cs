@@ -49,7 +49,9 @@ public class Wizard<TModel, TStep> : WizardBase<TModel, TStep> {
 	public override TStep CurrentStep => _steps[_currentStepIndex];
 	public override int CurrentStepIndex => _currentStepIndex;
 	public override Func<TStep, WizardStepTraits> StepTraitsResolver {
-		get => _stepTraitsResolver;
+		get {
+			return _stepTraitsResolver;
+		}
 		set {
 			if (ReferenceEquals(_stepTraitsResolver, value))
 				return;

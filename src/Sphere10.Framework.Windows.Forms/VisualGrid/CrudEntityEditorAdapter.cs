@@ -65,9 +65,7 @@ public class CrudEntityEditorAdapter<TEntity> : CrudEntityEditorAdapter {
 		return _adaptee.GetEntityWithChanges();
 	}
 
-	public override bool HasChanges {
-		get { return _adaptee.HasChanges; }
-	}
+	public override bool HasChanges => _adaptee.HasChanges;
 
 	public override void UndoChanges() {
 		_adaptee.UndoChanges();

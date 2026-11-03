@@ -400,11 +400,7 @@ public class ApplicationMetadataTests {
 		/// <inheritdoc />
 		public IApplicationBlock Parent { get; set; }
 
-		public IApplicationMenuItem[] Items {
-			get {
-				return Array.Empty<IApplicationMenuItem>();
-			}
-		}
+		public IApplicationMenuItem[] Items => Array.Empty<IApplicationMenuItem>();
 	}
 
 	// Supplies a platform-neutral screen for metadata validation.
@@ -428,35 +424,19 @@ public class ApplicationMetadataTests {
 	// Supplies malformed menu data at the presentation boundary.
 	private sealed class NullMenuBlock : Block {
 		/// <inheritdoc />
-		public override string Name {
-			get {
-				return "Invalid";
-			}
-		}
+		public override string Name => "Invalid";
 
 		/// <inheritdoc />
-		public override IApplicationMenu[] Menus {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationMenu[] Menus => null;
 	}
 
 	// Supplies invalid owned/default definitions at the validation boundary.
 	private sealed class MalformedBlock(ApplicationScreenDefinition[] definitions, ApplicationScreenDefinition defaultScreen) : Block {
 		/// <inheritdoc />
-		public override string Name {
-			get {
-				return "Invalid";
-			}
-		}
+		public override string Name => "Invalid";
 
 		/// <inheritdoc />
-		public override ApplicationScreenDefinition[] ScreenDefinitions {
-			get {
-				return definitions;
-			}
-		}
+		public override ApplicationScreenDefinition[] ScreenDefinitions => definitions;
 
 		/// <inheritdoc />
 		public override ApplicationScreenDefinition DefaultScreenDefinition {
@@ -471,18 +451,10 @@ public class ApplicationMetadataTests {
 	// Supplies a null toolbar command without changing host ownership requirements.
 	private sealed class NullToolbarItemBlock : Block, IApplicationCommandProvider {
 		/// <inheritdoc />
-		public override string Name {
-			get {
-				return "Invalid toolbar";
-			}
-		}
+		public override string Name => "Invalid toolbar";
 
 		/// <inheritdoc />
-		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems {
-			get {
-				return new IApplicationMenuItem[] { null };
-			}
-		}
+		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => new IApplicationMenuItem[] { null };
 	}
 
 	// Exposes mutable toolbar membership for definition-removal checks.
@@ -491,11 +463,7 @@ public class ApplicationMetadataTests {
 		public IApplicationMenuItem[] Commands { get; set; } = commands;
 
 		/// <inheritdoc />
-		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems {
-			get {
-				return Commands;
-			}
-		}
+		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => Commands;
 	}
 
 	// Uses value equality to ensure ownership operations use reference identity.

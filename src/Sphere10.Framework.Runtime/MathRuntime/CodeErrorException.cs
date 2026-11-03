@@ -31,34 +31,34 @@ public class CodeErrorException : CompilerException {
 	}
 
 	public virtual int LineNumber {
-		get { return _lineNumber; }
-		set { _lineNumber = value; }
+		get => _lineNumber;
+		set => _lineNumber = value;
 	}
 
 	public virtual int StartPosition {
-		get { return _startPosition; }
-		set { _startPosition = value; }
+		get => _startPosition;
+		set => _startPosition = value;
 	}
 
 	public virtual int EndPosition {
-		get { return _endPosition; }
-		set { _endPosition = value; }
+		get => _endPosition;
+		set => _endPosition = value;
 	}
 
 	/// <summary>
 	/// When constructing error messages this can be used to offset the line number of reported error message.
 	/// </summary>
 	public virtual int LineNumberOffset {
-		get { return _lineNumberOffset; }
-		set { _lineNumberOffset = value; }
+		get => _lineNumberOffset;
+		set => _lineNumberOffset = value;
 	}
 
 	/// <summary>
 	/// When constructing error messages this can be used to offset the line position of reported error message.
 	/// </summary>
 	public virtual int PositionOffset {
-		get { return _positionOffset; }
-		set { _positionOffset = value; }
+		get => _positionOffset;
+		set => _positionOffset = value;
 	}
 
 	public override string Message {

@@ -38,7 +38,9 @@ public abstract class Screen : View {
 	}
 
 	public bool Enabled {
-		get => _enabled;
+		get {
+			return _enabled;
+		}
 		set {
 			if (value == _enabled)
 				return;
@@ -164,14 +166,15 @@ public abstract class Screen : View {
 
 
 public abstract class Screen<T> : Screen {
-	private T _model;
 
 	public virtual T Model {
-		get => _model;
+		get {
+			return field;
+		}
 		set {
-			if (value.Equals(_model))
+			if (value.Equals(field))
 				return;
-			_model = value;
+			field = value;
 			OnModelChanged();
 		}
 	}

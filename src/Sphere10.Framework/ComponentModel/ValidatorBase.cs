@@ -76,7 +76,6 @@ public abstract class ValidatorBase : Component, IValidator {
 	private bool _allowNull;
 	private string _nullString;
 	private string _nullDisplayString;
-	private bool _allowStringConversion = true;
 
 	// Events
 	/// <summary>
@@ -99,7 +98,6 @@ public abstract class ValidatorBase : Component, IValidator {
 	private object _maximumValue = null;
 
 	// Type
-	private Type _valueType;
 
 	// Default Value
 	private object _defaultValue;
@@ -109,7 +107,6 @@ public abstract class ValidatorBase : Component, IValidator {
 	private bool _standardValuesExclusive;
 
 	// Culture
-	private CultureInfo _cultureInfo = null;
 	private EventHandler _changed;
 
 	// Constructors
@@ -184,15 +181,15 @@ public abstract class ValidatorBase : Component, IValidator {
 	[DefaultValue(true), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool AllowStringConversion {
 		get {
-			return _allowStringConversion;
+			return field;
 		}
 		set {
-			if (_allowStringConversion != value) {
-				_allowStringConversion = value;
+			if (field != value) {
+				field = value;
 				OnChanged(EventArgs.Empty);
 			}
 		}
-	}
+	} = true;
 
 	/// <summary>
 	/// Minimum value allowed. If null no check is performed. The value must derive from IComparable interface to use Minimum or Maximum feature.
@@ -232,11 +229,11 @@ public abstract class ValidatorBase : Component, IValidator {
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Type ValueType {
 		get {
-			return _valueType;
+			return field;
 		}
 		set {
-			if (_valueType != value) {
-				_valueType = value;
+			if (field != value) {
+				field = value;
 				OnLoadingValueType();
 				OnChanged(EventArgs.Empty);
 			}
@@ -250,9 +247,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	[DefaultValue(""), Browsable(true)]
 	public string ValueTypeName {
 		get {
-			if (ValueType == null)
-				return string.Empty;
-			return ValueType.AssemblyQualifiedName;
+			return ValueType == null ? string.Empty : ValueType.AssemblyQualifiedName;
 		}
 		set {
 			if (value == null || value.Trim().Length == 0)
@@ -316,15 +311,15 @@ public abstract class ValidatorBase : Component, IValidator {
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public CultureInfo CultureInfo {
 		get {
-			return _cultureInfo;
+			return field;
 		}
 		set {
-			if (_cultureInfo != value) {
-				_cultureInfo = value;
+			if (field != value) {
+				field = value;
 				OnChanged(EventArgs.Empty);
 			}
 		}
-	}
+	} = null;
 
 	// Conversion
 	/// <summary>

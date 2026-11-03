@@ -233,27 +233,27 @@ public class MiningSimScreen : TabbedScreen<MiningSimScreen.MiningSimModel> {
 
 		public static MiningSimModel Default => new MiningSimModel();
 
-		private int _minerCount;
-
 		public int MinerCount {
-			get => _minerCount;
+			get {
+				return field;
+			}
 			set {
 				Guard.ArgumentInRange(value, MinMiners, MaxMiners, nameof(value));
-				_minerCount = value;
+				field = value;
 				if (IsStarted) {
 					// _miners is created, need to adjust
-					if (_miners.Count > _minerCount) {
+					if (_miners.Count > field) {
 						// remove
-						for (var i = _miners.Count - 1; i >= _minerCount; i--) {
+						for (var i = _miners.Count - 1; i >= field; i--) {
 							_miners[i].Stop();
 							_miners[i].Dispose();
 							_miners.Remove(_miners[i]);
 						}
 						Debug.Assert(_miners.Count > 0);
 						Debug.Assert(_miners[0].Status == MinerStatus.Mining);
-					} else if (_miners.Count < _minerCount) {
+					} else if (_miners.Count < field) {
 						// add
-						for (var i = _miners.Count; i < _minerCount; i++) {
+						for (var i = _miners.Count; i < field; i++) {
 							var miner = new SingleThreadedMiner($"Miner {i + 1}", _miningManager);
 							_miners.Add(miner);
 							miner.Start();

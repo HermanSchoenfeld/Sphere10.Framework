@@ -16,7 +16,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// Menu item view model
 /// </summary>
 public class BlazorRoutedMenuItem {
-	private readonly BlazorRoutedMenuItem[] _children;
 
 	/// <summary>
 	/// Gets the menu heading
@@ -26,7 +25,7 @@ public class BlazorRoutedMenuItem {
 	/// <summary>
 	/// Gets the child menu items.
 	/// </summary>
-	public BlazorRoutedMenuItem[] Children => Tools.Array.Clone(_children);
+	public BlazorRoutedMenuItem[] Children => Tools.Array.Clone(field);
 
 	/// <summary>
 	/// Gets the route / path that this menu item should navigate to.
@@ -48,7 +47,7 @@ public class BlazorRoutedMenuItem {
 	public BlazorRoutedMenuItem(string heading, string route, List<BlazorRoutedMenuItem> children, string? iconPath = null) {
 		Heading = heading ?? throw new ArgumentNullException(nameof(heading));
 		Guard.ArgumentNotNull(children, nameof(children));
-		_children = children.ToArray();
+		Children = children.ToArray();
 		Route = route ?? throw new ArgumentNullException(nameof(route));
 
 		IconPath = iconPath;

@@ -159,8 +159,10 @@ namespace HashLib4CSharp.Hash128
 
         public unsafe byte[] Key
         {
-            get => Converters.ReadUInt32AsBytesLE(_key);
-            set
+			get {
+				return Converters.ReadUInt32AsBytesLE(_key);
+			}
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 if (value.Length == 0)
@@ -176,7 +178,7 @@ namespace HashLib4CSharp.Hash128
                     }
                 }
             }
-        }
+		}
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ByteUpdate(byte value)

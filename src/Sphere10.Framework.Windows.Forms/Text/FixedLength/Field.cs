@@ -15,63 +15,42 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// Class for define a field, implements IField interface.
 /// </summary>
 public class Field : IField {
-	private int _index;
-	private string _name;
-	private int _length;
-	private bool _trimBeforeParse = true;
-	private Sphere10.Framework.ComponentModel.IValidator _validator;
-
 	public Field(int index, string name, int length, Type type)
 		: this(index, name, length, new Sphere10.Framework.ComponentModel.TypeConverterValidator(type)) {
 	}
 
 	public Field(int index, string name, int length, Sphere10.Framework.ComponentModel.IValidator validator) {
-		_index = index;
-		_name = name;
+		Index = index;
+		Name = name;
 		Length = length;
 		Validator = validator;
 	}
 
-	public int Index {
-		get {
-			return _index;
-		}
-	}
+	public int Index { get; }
 
-	public string Name {
-		get {
-			return _name;
-		}
-	}
+	public string Name { get; }
 
 	public int Length {
 		get {
-			return _length;
+			return field;
 		}
 		set {
 			if (value <= 0)
 				throw new InvalidFieldLengthException(value);
-			_length = value;
+			field = value;
 		}
 	}
 
-	public bool TrimBeforeParse {
-		get {
-			return _trimBeforeParse;
-		}
-		set {
-			_trimBeforeParse = value;
-		}
-	}
+	public bool TrimBeforeParse { get; set; } = true;
 
 	public Sphere10.Framework.ComponentModel.IValidator Validator {
 		get {
-			return _validator;
+			return field;
 		}
 		set {
 			if (value == null)
 				throw new ArgumentNullException("Validator");
-			_validator = value;
+			field = value;
 		}
 	}
 

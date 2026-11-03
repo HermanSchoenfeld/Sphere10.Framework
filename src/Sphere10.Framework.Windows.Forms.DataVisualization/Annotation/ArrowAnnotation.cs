@@ -97,16 +97,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual ArrowStyle ArrowStyle
         {
-            get
-            {
-                return _arrowStyle;
-            }
-            set
+			get {
+				return _arrowStyle;
+			}
+			set
             {
                 _arrowStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the arrow size in pixels of an arrow annotation.
@@ -124,11 +123,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public virtual int ArrowSize
         {
-            get
-            {
-                return _arrowSize;
-            }
-            set
+			get {
+				return _arrowSize;
+			}
+			set
             {
                 if (value <= 0)
                 {
@@ -141,7 +139,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _arrowSize = value;
                 Invalidate();
             }
-        }
+		}
 
         #endregion Arrow properties
 
@@ -173,15 +171,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override ContentAlignment AnchorAlignment
         {
-            get
-            {
-                return base.AnchorAlignment;
-            }
-            set
-            {
-                base.AnchorAlignment = value;
-            }
-        }
+			get => base.AnchorAlignment;
+			set => base.AnchorAlignment = value;
+		}
 
         #endregion Anchor
 
@@ -206,13 +198,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Arrow";
-            }
-        }
+        public override string AnnotationType => "Arrow";
 
         /// <summary>
         /// Gets or sets annotation selection points style.
@@ -234,13 +220,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        internal override SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.TwoPoints;
-            }
-        }
+        internal override SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.TwoPoints;
 
         #endregion Other
 

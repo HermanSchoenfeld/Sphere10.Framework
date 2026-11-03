@@ -608,86 +608,50 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         public Matrix Transform
         {
-            get
-            {
-                return _graphics.Transform;
-            }
-            set
-            {
-                _graphics.Transform = value;
-            }
-        }
+			get => _graphics.Transform;
+			set => _graphics.Transform = value;
+		}
 
         /// <summary>
         /// Gets or sets the rendering quality for this Graphics object.
         /// </summary>
         public SmoothingMode SmoothingMode
         {
-            get
-            {
-                return _graphics.SmoothingMode;
-            }
-            set
-            {
-                _graphics.SmoothingMode = value;
-            }
-        }
+			get => _graphics.SmoothingMode;
+			set => _graphics.SmoothingMode = value;
+		}
 
         /// <summary>
         /// Gets or sets the rendering mode for text associated with this Graphics object.
         /// </summary>
         public TextRenderingHint TextRenderingHint
         {
-            get
-            {
-                return _graphics.TextRenderingHint;
-            }
-            set
-            {
-                _graphics.TextRenderingHint = value;
-            }
-        }
+			get => _graphics.TextRenderingHint;
+			set => _graphics.TextRenderingHint = value;
+		}
 
         /// <summary>
         /// Gets or sets a Region object that limits the drawing region of this Graphics object.
         /// </summary>
         public Region Clip
         {
-            get
-            {
-                return _graphics.Clip;
-            }
-            set
-            {
-                _graphics.Clip = value;
-            }
-        }
+			get => _graphics.Clip;
+			set => _graphics.Clip = value;
+		}
 
         /// <summary>
         /// Gets a value indicating whether the clipping region of this Graphics object is empty.
         /// </summary>
-        public bool IsClipEmpty
-        {
-            get
-            {
-                return _graphics.IsClipEmpty;
-            }
-        }
+        public bool IsClipEmpty => _graphics.IsClipEmpty;
 
         /// <summary>
         /// Reference to the Graphics object
         /// </summary>
         public Graphics Graphics
         {
-            get
-            {
-                return _graphics;
-            }
-            set
-            {
-                _graphics = value;
-            }
-        }
+			get => _graphics;
+			set => _graphics = value;
+		}
 
         #endregion // Properties
 

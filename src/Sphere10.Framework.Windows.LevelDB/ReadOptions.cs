@@ -21,7 +21,7 @@ public class ReadOptions : LevelDBHandle {
 	/// verified against corresponding checksums.
 	/// </summary>
 	public bool VerifyCheckSums {
-		set { LevelDBInterop.leveldb_readoptions_set_verify_checksums(Handle, value ? (byte)1 : (byte)0); }
+		set => LevelDBInterop.leveldb_readoptions_set_verify_checksums(Handle, value ? (byte)1 : (byte)0);
 	}
 
 	/// <summary>
@@ -30,7 +30,7 @@ public class ReadOptions : LevelDBHandle {
 	/// Default: true
 	/// </summary>
 	public bool FillCache {
-		set { LevelDBInterop.leveldb_readoptions_set_fill_cache(Handle, value ? (byte)1 : (byte)0); }
+		set => LevelDBInterop.leveldb_readoptions_set_fill_cache(Handle, value ? (byte)1 : (byte)0);
 	}
 
 	/// <summary>
@@ -41,7 +41,7 @@ public class ReadOptions : LevelDBHandle {
 	/// snapshot of the state at the beginning of this read operation.
 	/// </summary>
 	public SnapShot Snapshot {
-		set { LevelDBInterop.leveldb_readoptions_set_snapshot(Handle, value.Handle); }
+		set => LevelDBInterop.leveldb_readoptions_set_snapshot(Handle, value.Handle);
 	}
 
 	protected override void FreeUnManagedObjects() {

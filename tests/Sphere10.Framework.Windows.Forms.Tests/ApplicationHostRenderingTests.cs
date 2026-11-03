@@ -689,8 +689,13 @@ public class ApplicationHostRenderingTests {
 			: base(caption) { }
 
 		public override string Text {
-			get => base.Text;
-			set { TextAssignments++; base.Text = value; }
+			get {
+				return base.Text;
+			}
+			set {
+				TextAssignments++;
+				base.Text = value;
+			}
 		}
 	}
 

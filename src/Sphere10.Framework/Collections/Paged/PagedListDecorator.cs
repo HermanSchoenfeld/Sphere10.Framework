@@ -14,25 +14,13 @@ namespace Sphere10.Framework;
 
 public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecorator<TItem, TPagedList>, IPagedList<TItem> where TPagedList : IPagedList<TItem> {
 
-	public event EventHandlerEx<object> Accessing {
-		add => InternalCollection.Accessing += value;
-		remove => InternalCollection.Accessing -= value;
-	}
+	public event EventHandlerEx<object> Accessing { add => InternalCollection.Accessing += value; remove => InternalCollection.Accessing -= value; }
 
-	public event EventHandlerEx<object> Accessed {
-		add => InternalCollection.Accessed += value;
-		remove => InternalCollection.Accessed -= value;
-	}
+	public event EventHandlerEx<object> Accessed { add => InternalCollection.Accessed += value; remove => InternalCollection.Accessed -= value; }
 
-	public event EventHandlerEx<object> Loading {
-		add => InternalCollection.Loading += value;
-		remove => InternalCollection.Loading -= value;
-	}
+	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
 
-	public event EventHandlerEx<object> Loaded {
-		add => InternalCollection.Loaded += value;
-		remove => InternalCollection.Loaded -= value;
-	}
+	public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
 
 	public event EventHandlerEx<object, IPage<TItem>> PageAccessing {
 		add => InternalCollection.PageAccessing += value;
@@ -44,45 +32,24 @@ public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecora
 		remove => InternalCollection.PageAccessed -= value;
 	}
 
-	public event EventHandlerEx<object, long> PageCreating {
-		add => InternalCollection.PageCreating += value;
-		remove => InternalCollection.PageCreating -= value;
-	}
+	public event EventHandlerEx<object, long> PageCreating { add => InternalCollection.PageCreating += value; remove => InternalCollection.PageCreating -= value; }
 
-	public event EventHandlerEx<object, IPage<TItem>> PageCreated {
-		add => InternalCollection.PageCreated += value;
-		remove => InternalCollection.PageCreated -= value;
-	}
+	public event EventHandlerEx<object, IPage<TItem>> PageCreated { add => InternalCollection.PageCreated += value; remove => InternalCollection.PageCreated -= value; }
 
-	public event EventHandlerEx<object, IPage<TItem>> PageReading {
-		add => InternalCollection.PageReading += value;
-		remove => InternalCollection.PageReading -= value;
-	}
+	public event EventHandlerEx<object, IPage<TItem>> PageReading { add => InternalCollection.PageReading += value; remove => InternalCollection.PageReading -= value; }
 
-	public event EventHandlerEx<object, IPage<TItem>> PageRead {
-		add => InternalCollection.PageRead += value;
-		remove => InternalCollection.PageRead -= value;
-	}
+	public event EventHandlerEx<object, IPage<TItem>> PageRead { add => InternalCollection.PageRead += value; remove => InternalCollection.PageRead -= value; }
 
-	public event EventHandlerEx<object, IPage<TItem>> PageWriting {
-		add => InternalCollection.PageWriting += value;
-		remove => InternalCollection.PageWriting -= value;
-	}
+	public event EventHandlerEx<object, IPage<TItem>> PageWriting { add => InternalCollection.PageWriting += value; remove => InternalCollection.PageWriting -= value; }
 
-	public event EventHandlerEx<object, IPage<TItem>> PageWrite {
-		add => InternalCollection.PageWrite += value;
-		remove => InternalCollection.PageWrite -= value;
-	}
+	public event EventHandlerEx<object, IPage<TItem>> PageWrite { add => InternalCollection.PageWrite += value; remove => InternalCollection.PageWrite -= value; }
 
 	public event EventHandlerEx<object, IPage<TItem>> PageDeleting {
 		add => InternalCollection.PageDeleting += value;
 		remove => InternalCollection.PageDeleting -= value;
 	}
 
-	public event EventHandlerEx<object, IPage<TItem>> PageDeleted {
-		add => InternalCollection.PageDeleted += value;
-		remove => InternalCollection.PageDeleted -= value;
-	}
+	public event EventHandlerEx<object, IPage<TItem>> PageDeleted { add => InternalCollection.PageDeleted += value; remove => InternalCollection.PageDeleted -= value; }
 
 	protected PagedListDecorator(TPagedList internalPagedList)
 		: base(internalPagedList) {

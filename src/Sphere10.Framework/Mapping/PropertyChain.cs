@@ -38,17 +38,11 @@ public class PropertyChain : IAccessor {
 		return _innerMember.GetValue(target);
 	}
 
-	public string FieldName {
-		get { return _innerMember.FieldName; }
-	}
+	public string FieldName => _innerMember.FieldName;
 
-	public Type PropertyType {
-		get { return _innerMember.PropertyType; }
-	}
+	public Type PropertyType => _innerMember.PropertyType;
 
-	public Member InnerMember {
-		get { return _innerMember.InnerMember; }
-	}
+	public Member InnerMember => _innerMember.InnerMember;
 
 	public IAccessor GetChildAccessor<T>(Expression<Func<T, object>> expression) {
 		var member = expression.ToMember();

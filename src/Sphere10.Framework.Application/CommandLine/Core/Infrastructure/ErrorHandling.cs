@@ -30,15 +30,11 @@ namespace RailwaySharp.ErrorHandling {
 	public
 #endif
 		abstract class Result<TSuccess, TMessage> {
-		private readonly ResultType _tag;
-
 		protected Result(ResultType tag) {
-			_tag = tag;
+			Tag = tag;
 		}
 
-		public ResultType Tag {
-			get { return _tag; }
-		}
+		public ResultType Tag { get; }
 
 		public override string ToString() {
 			switch (Tag) {
@@ -76,13 +72,9 @@ namespace RailwaySharp.ErrorHandling {
 			_value = Tuple.Create(success, messages);
 		}
 
-		public TSuccess Success {
-			get { return _value.Item1; }
-		}
+		public TSuccess Success => _value.Item1;
 
-		public IEnumerable<TMessage> Messages {
-			get { return _value.Item2; }
-		}
+		public IEnumerable<TMessage> Messages => _value.Item2;
 	}
 
 
@@ -95,18 +87,14 @@ namespace RailwaySharp.ErrorHandling {
 	public
 #endif
 		sealed class Bad<TSuccess, TMessage> : Result<TSuccess, TMessage> {
-		private readonly IEnumerable<TMessage> _messages;
-
 		public Bad(IEnumerable<TMessage> messages)
 			: base(ResultType.Bad) {
 			if (messages == null) throw new ArgumentException(nameof(messages));
 
-			_messages = messages;
+			Messages = messages;
 		}
 
-		public IEnumerable<TMessage> Messages {
-			get { return _messages; }
-		}
+		public IEnumerable<TMessage> Messages { get; }
 	}
 
 

@@ -25,7 +25,6 @@ public class LongMerkleTree : IDynamicMerkleTree {
 	private List<MerkleCoordinate> _subRootCoords;
 	private readonly ObservableExtendedList<byte[]> _observableLeafs;
 	private MerkleSize _size;
-	private byte[] _root;
 	private bool _dirty;
 
 	/// <summary>
@@ -76,7 +75,10 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		get {
 			if (_dirty)
 				CalculateTree();
-			return _root;
+			return field;
+		}
+		private set {
+			field = value;
 		}
 	}
 
@@ -144,7 +146,7 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		// note: _subRoots is always up to date
 		_subRootCoords = MerkleMath.CalculateSubRoots(_subRoots.Select(x => x.Height)).ToList();
 		_size = MerkleSize.FromLeafCount(_subRoots.Aggregate(0, (sum, subRoot) => sum + (1 << subRoot.Height)));
-		_root = _size.LeafCount > 0 ? Hashers.Aggregate(HashAlgorithm, _subRoots.Select(x => x.Hash).Reverse(), true) : null;
+		Root = _size.LeafCount > 0 ? Hashers.Aggregate(HashAlgorithm, _subRoots.Select(x => x.Hash).Reverse(), true) : null;
 		_dirty = false;
 	}
 

@@ -24,8 +24,6 @@ public abstract class EditorControlBase : EditorBase {
 	public event KeyPressEventHandler KeyPress;
 
 	// Editor Control
-	private Control _control;
-	private GridVirtual _grid;
 	private LinkedControlValue _linkedControl;
 
 	/// <summary>
@@ -40,7 +38,7 @@ public abstract class EditorControlBase : EditorBase {
 	/// <param name="type">The type of this model</param>
 	public EditorControlBase(Type type)
 		: base(type) {
-		_control = CreateControl();
+		Control = CreateControl();
 		if (Control == null)
 			throw new SourceGridException("Control cannot be null");
 		Control.Hide();
@@ -49,20 +47,12 @@ public abstract class EditorControlBase : EditorBase {
 	/// <summary>
 	/// The Control used to edit the Cell.
 	/// </summary>
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control { get; }
 
 	/// <summary>
 	/// The grid used by this editor. Null if the editor is not attached on a grid.
 	/// </summary>
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; private set; }
 
 	// Send Keys
 	/// <summary>
@@ -244,7 +234,7 @@ public abstract class EditorControlBase : EditorBase {
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
 			DetachControl();
-			_control.Dispose();
+			Control.Dispose();
 		}
 		base.Dispose(disposing);
 	}
@@ -285,12 +275,12 @@ public abstract class EditorControlBase : EditorBase {
 	/// <summary>Removes the native editing surface from its grid without disposing this editor's control.</summary>
 	internal void DetachControl() {
 		// Detach callbacks before changing parentage or disposing the editing surface.
-		_control.Validated -= InnerControlValidated;
-		_control.KeyPress -= InnerControlKeyPress;
+		Control.Validated -= InnerControlValidated;
+		Control.KeyPress -= InnerControlKeyPress;
 		SetEditCell(CellContext.Empty);
-		if (_grid != null && _linkedControl != null)
-			_grid.LinkedControls.Remove(_linkedControl);
-		_grid = null;
+		if (Grid != null && _linkedControl != null)
+			Grid.LinkedControls.Remove(_linkedControl);
+		Grid = null;
 		_linkedControl = null;
 	}
 
@@ -298,14 +288,14 @@ public abstract class EditorControlBase : EditorBase {
 	/// Check if the Control is attached to a grid.
 	/// </summary>
 	private bool IsControlAttached() {
-		return _grid != null;
+		return Grid != null;
 	}
 
 	/// <summary>
 	/// Add the Control to the specified grid. Consider that a Control can only be a child of one Container.
 	/// </summary>
 	private void AttachControl(GridVirtual grid) {
-		_grid = grid;
+		Grid = grid;
 		_linkedControl = new LinkedControlValue(Control, Position.Empty);
 		Control.Hide();
 		grid.LinkedControls.Add(_linkedControl);

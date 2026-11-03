@@ -59,39 +59,24 @@ public class BackgroundLinearGradient : VisualElementBase {
 	/// Gets or sets the first back color of the content.
 	/// </summary>
 	public virtual Color FirstColor {
-		get {
-			return _firstColor;
-		}
-
-		set {
-			_firstColor = value;
-		}
+		get => _firstColor;
+		set => _firstColor = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the second back color of the content.
 	/// </summary>
 	public virtual Color SecondColor {
-		get {
-			return _secondColor;
-		}
-
-		set {
-			_secondColor = value;
-		}
+		get => _secondColor;
+		set => _secondColor = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the angle of the gradient
 	/// </summary>
 	public virtual float Angle {
-		get {
-			return _angle;
-		}
-
-		set {
-			_angle = value;
-		}
+		get => _angle;
+		set => _angle = value;
 	}
 
 	/// <summary>
@@ -101,13 +86,8 @@ public class BackgroundLinearGradient : VisualElementBase {
 	/// See System.Drawing.Drawing2D.Blend for details
 	/// </summary>
 	public virtual float[] BlendFactors {
-		get {
-			return _blendFactors;
-		}
-
-		set {
-			_blendFactors = value;
-		}
+		get => _blendFactors;
+		set => _blendFactors = value;
 	}
 
 	/// <summary>
@@ -117,13 +97,8 @@ public class BackgroundLinearGradient : VisualElementBase {
 	/// See System.Drawing.Drawing2D.Blend for details
 	/// </summary>
 	public virtual float[] BlendPositions {
-		get {
-			return _blendPositions;
-		}
-
-		set {
-			_blendPositions = value;
-		}
+		get => _blendPositions;
+		set => _blendPositions = value;
 	}
 
 	/// <summary>

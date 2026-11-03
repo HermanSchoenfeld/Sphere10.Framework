@@ -455,15 +455,9 @@ public class PluginBuilderTests {
 
 		public SettingsObject PluginSettings { get; set; }
 
-		event EventHandlerEx SharedUI.IApplicationPlugin.Loaded {
-			add => _loaded += value;
-			remove => _loaded -= value;
-		}
+		event EventHandlerEx SharedUI.IApplicationPlugin.Loaded { add => _loaded += value; remove => _loaded -= value; }
 
-		event EventHandlerEx SharedUI.IApplicationPlugin.Unloaded {
-			add => _unloaded += value;
-			remove => _unloaded -= value;
-		}
+		event EventHandlerEx SharedUI.IApplicationPlugin.Unloaded { add => _unloaded += value; remove => _unloaded -= value; }
 
 		string SharedUI.IApplicationPlugin.Name => "Explicit";
 

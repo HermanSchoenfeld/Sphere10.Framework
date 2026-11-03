@@ -16,9 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class ApplicationBanner : ApplicationControl {
-	private string _companyName;
-	private string _version;
-	private string _title;
 	private Image _iconImage;
 
 	public ApplicationBanner()
@@ -54,14 +51,16 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public new string CompanyName {
-		get { return _companyName; }
+		get {
+			return field;
+		}
 		set {
-			_companyName = value;
+			field = value;
 			if (Tools.Runtime.IsDesignMode) {
-				_companyNameLabel.Text = _companyName;
+				_companyNameLabel.Text = field;
 			}
 			if (Loaded) {
-				_companyNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(_companyName);
+				_companyNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(field);
 			}
 			Invalidate();
 		}
@@ -70,14 +69,16 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public string Version {
-		get { return _version; }
+		get {
+			return field;
+		}
 		set {
-			_version = value;
+			field = value;
 			if (Tools.Runtime.IsDesignMode) {
-				_versionLabel.Text = _version;
+				_versionLabel.Text = field;
 			}
 			if (Loaded) {
-				_versionLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(_version);
+				_versionLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(field);
 			}
 			Invalidate();
 		}
@@ -86,14 +87,16 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public string Title {
-		get { return _title; }
+		get {
+			return field;
+		}
 		set {
-			_title = value;
+			field = value;
 			if (Tools.Runtime.IsDesignMode) {
-				_productNameLabel.Text = _title;
+				_productNameLabel.Text = field;
 			}
 			if (Loaded) {
-				_productNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(_title);
+				_productNameLabel.Text = Sphere10.Framework.StringFormatter.FormatEx(field);
 			}
 			Invalidate();
 		}
@@ -102,7 +105,9 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public Color FromColor {
-		get { return _gradientPanel.FromColor; }
+		get {
+			return _gradientPanel.FromColor;
+		}
 		set {
 			_gradientPanel.FromColor = value;
 			Invalidate();
@@ -112,7 +117,9 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public Color ToColor {
-		get { return _gradientPanel.ToColor; }
+		get {
+			return _gradientPanel.ToColor;
+		}
 		set {
 			_gradientPanel.ToColor = value;
 			Invalidate();

@@ -28,8 +28,8 @@ internal class ResizableAppointmentCellController : BaseCellController {
 	}
 
 	public new AppointmentBook Owner {
-		get { return base.Owner as AppointmentBook; }
-		set { base.Owner = value as AppointmentBook; }
+		get => base.Owner as AppointmentBook;
+		set => base.Owner = value as AppointmentBook;
 	}
 
 	public ResizedAppointmentBorder ResizeBorder1 { get; set; }

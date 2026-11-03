@@ -78,23 +78,15 @@ public struct CellContext {
 	/// Gets or sets the cell value.
 	/// </summary>
 	public object Value {
-		get {
-			return Cell.Model.ValueModel.GetValue(this);
-		}
-		set {
-			Cell.Model.ValueModel.SetValue(this, value);
-		}
+		get => Cell.Model.ValueModel.GetValue(this);
+		set => Cell.Model.ValueModel.SetValue(this, value);
 	}
 
 	/// <summary>
 	/// Calculate the Range occupied by the current cell. Usually it is simply the Position property, only if RowSpan or ColumnSpan is used this property returns a larger range.
 	/// Internally use the Grid.PositionToCellRange method.
 	/// </summary>
-	public CellRange CellRange {
-		get {
-			return Grid.PositionToCellRange(Position);
-		}
-	}
+	public CellRange CellRange => Grid.PositionToCellRange(Position);
 
 	// Methods
 	/// <summary>

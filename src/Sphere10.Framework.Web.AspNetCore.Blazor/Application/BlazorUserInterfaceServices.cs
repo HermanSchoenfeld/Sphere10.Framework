@@ -36,7 +36,9 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 			var application = Services.GetService<SharedUI.IApplication>();
 			return base.ApplicationExiting || application?.IsExiting == true || application?.HasExited == true;
 		}
-		set => base.ApplicationExiting = value;
+		set {
+			base.ApplicationExiting = value;
+		}
 	}
 
 	/// <summary>Legacy exit commands are observed asynchronously; callers requiring the result await IApplication.ExitAsync.</summary>

@@ -80,11 +80,10 @@ public class AxisScaleBreakStyle
     // Associated axis
     internal Axis axis;
 
-    // True if scale breaks are enabled
-    private bool _enabled;
+	// True if scale breaks are enabled
 
-    // AxisName of the break line
-    private BreakLineStyle _breakLineStyle = BreakLineStyle.Ragged;
+	// AxisName of the break line
+	private BreakLineStyle _breakLineStyle = BreakLineStyle.Ragged;
 
     // Spacing between scale segments created by scale breaks
     private double _segmentSpacing = 1.5;
@@ -92,26 +91,22 @@ public class AxisScaleBreakStyle
     // Break line color
     private Color _breakLineColor = Color.Black;
 
-    // Break line width
-    private int _breakLineWidth = 1;
+	// Break line width
 
-    // Break line style
-    private ChartDashStyle _breakLineDashStyle = ChartDashStyle.Solid;
+	// Break line style
 
-    // Minimum segment size in axis length percentage
-    private readonly double _minSegmentSize = 10.0;
+	// Minimum segment size in axis length percentage
+	private readonly double _minSegmentSize = 10.0;
 
     // Number of segments the axis is decided into to perform statistical analysis
     private readonly int _totalNumberOfSegments = 100;
 
-    // Minimum "empty" size to be replace by the scale break
-    private int _minimumNumberOfEmptySegments = 25;
+	// Minimum "empty" size to be replace by the scale break
 
-    // Maximum number of breaks
-    private int _maximumNumberOfBreaks = 2;
+	// Maximum number of breaks
 
-    // Indicates if scale segment should start from zero.
-    private StartFromZero _startFromZero = StartFromZero.Auto;
+	// Indicates if scale segment should start from zero.
+	private StartFromZero _startFromZero = StartFromZero.Auto;
 
     #endregion Fields
 
@@ -152,13 +147,15 @@ public class AxisScaleBreakStyle
     ]
     public StartFromZero StartFromZero
     {
-        get => this._startFromZero;
-        set
+		get {
+			return this._startFromZero;
+		}
+		set
         {
             this._startFromZero = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Maximum number of scale breaks that can be used.
@@ -170,47 +167,51 @@ public class AxisScaleBreakStyle
     ]
     public int MaxNumberOfBreaks
     {
-        get => this._maximumNumberOfBreaks;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 1 || value > 5)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAxisScaleBreaksNumberInvalid);
             }
 
-            this._maximumNumberOfBreaks = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	} = 2;
 
-    /// <summary>
-    /// Minimum axis scale region size, in percentage of the total axis length,
-    /// that can be collapsed with the scale break.
-    /// </summary>
-    [
+	/// <summary>
+	/// Minimum axis scale region size, in percentage of the total axis length,
+	/// that can be collapsed with the scale break.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeMisc"),
     DefaultValue(25),
     SRDescription("DescriptionAttributeAxisScaleBreakStyle_CollapsibleSpaceThreshold"),
     ]
     public int CollapsibleSpaceThreshold
     {
-        get => this._minimumNumberOfEmptySegments;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 10 || value > 90)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAxisScaleBreaksCollapsibleSpaceInvalid);
             }
 
-            this._minimumNumberOfEmptySegments = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	} = 25;
 
-    /// <summary>
-    /// Gets or sets a flag which determines if axis automatic scale breaks are enabled.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets a flag which determines if axis automatic scale breaks are enabled.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeMisc"),
     DefaultValue(false),
     SRDescription("DescriptionAttributeAxisScaleBreakStyle_Enabled"),
@@ -218,13 +219,15 @@ public class AxisScaleBreakStyle
     ]
     public bool Enabled
     {
-        get => this._enabled;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            this._enabled = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the style of the scale break line.
@@ -236,13 +239,15 @@ public class AxisScaleBreakStyle
     ]
     public BreakLineStyle BreakLineStyle
     {
-        get => this._breakLineStyle;
-        set
+		get {
+			return this._breakLineStyle;
+		}
+		set
         {
             this._breakLineStyle = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the spacing of the scale break.
@@ -254,8 +259,10 @@ public class AxisScaleBreakStyle
     ]
     public double Spacing
     {
-        get => this._segmentSpacing;
-        set
+		get {
+			return this._segmentSpacing;
+		}
+		set
         {
             if (value < 0.0 || value > 10)
             {
@@ -265,7 +272,7 @@ public class AxisScaleBreakStyle
             this._segmentSpacing = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the color of the scale break line.
@@ -278,13 +285,15 @@ public class AxisScaleBreakStyle
     ]
     public Color LineColor
     {
-        get => this._breakLineColor;
-        set
+		get {
+			return this._breakLineColor;
+		}
+		set
         {
             this._breakLineColor = value;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the width of the scale break line.
@@ -296,46 +305,50 @@ public class AxisScaleBreakStyle
     ]
     public int LineWidth
     {
-        get => this._breakLineWidth;
-        set
+		get {
+			return field;
+		}
+		set
         {
             if (value < 1.0 || value > 10)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionAxisScaleBreaksLineWidthInvalid);
             }
 
-            this._breakLineWidth = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	} = 1;
 
-    /// <summary>
-    /// Gets or sets the line style of the scale break line.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the line style of the scale break line.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeAppearance"),
     DefaultValue(ChartDashStyle.Solid),
     SRDescription("DescriptionAttributeLineDashStyle"),
     ]
     public ChartDashStyle LineDashStyle
     {
-        get => this._breakLineDashStyle;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            this._breakLineDashStyle = value;
+            field = value;
             this.Invalidate();
         }
-    }
+	} = ChartDashStyle.Solid;
 
-    #endregion Properties
+	#endregion Properties
 
-    #region Helper Methods
+	#region Helper Methods
 
-    /// <summary>
-    /// Checks if automatic scale breaks are currently enabled.
-    /// </summary>
-    /// <returns>True if scale breaks are currently enabled.</returns>
-    internal bool IsEnabled()
+	/// <summary>
+	/// Checks if automatic scale breaks are currently enabled.
+	/// </summary>
+	/// <returns>True if scale breaks are currently enabled.</returns>
+	internal bool IsEnabled()
     {
         // Axis scale breaks must be enabled AND supported by the axis.
         if (this.Enabled &&
@@ -724,7 +737,7 @@ public class AxisScaleBreakStyle
                 out int numberOfSegments);
 
             // Adjust minimum empty segments  number depending on current segments
-            int minEmptySegments = (int)(this._minimumNumberOfEmptySegments * (100.0 / dataRangePercent));
+            int minEmptySegments = (int)(CollapsibleSpaceThreshold * (100.0 / dataRangePercent));
             if (axisSegments.Count > 0 && numberOfSegments > 0)
             {
                 // Find the segment which contain newly found empty segments sequence
@@ -828,7 +841,7 @@ public class AxisScaleBreakStyle
             }
 
             // Make sure we do not exceed specified number of breaks
-            if (axisSegments.Count - 1 >= this._maximumNumberOfBreaks)
+            if (axisSegments.Count - 1 >= MaxNumberOfBreaks)
             {
                 doneFlag = true;
             }

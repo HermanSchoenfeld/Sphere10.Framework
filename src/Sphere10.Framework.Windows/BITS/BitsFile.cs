@@ -13,7 +13,6 @@ namespace Sphere10.Framework.Windows.BITS;
 
 public class BitsFile : IDisposable {
 	private IBackgroundCopyFile file;
-	private FileProgress progress;
 	private bool disposed;
 	private BitsJob job;
 
@@ -52,16 +51,16 @@ public class BitsFile : IDisposable {
 
 	public FileProgress Progress {
 		get {
-			if (null == this.progress) {
+			if (null == field) {
 				BG_FILE_PROGRESS progress;
 				try {
 					this.file.GetProgress(out progress);
-					this.progress = new FileProgress(progress);
+					field = new FileProgress(progress);
 				} catch (COMException exception) {
 					this.job.PublishException(exception);
 				}
 			}
-			return this.progress;
+			return field;
 		}
 	}
 

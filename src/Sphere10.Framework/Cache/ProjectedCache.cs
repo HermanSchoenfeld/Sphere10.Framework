@@ -17,25 +17,13 @@ namespace Sphere10.Framework;
 /// <summary>Exposes another key/value representation without replacing the source cache's typed storage or behavior.</summary>
 public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICache<TProjectedKey, TProjectedValue>, IDisposable {
 
-	public event EventHandlerEx<TProjectedKey> ItemFetching {
-		add => AddHandler(0, value);
-		remove => RemoveHandler(0, value);
-	}
+	public event EventHandlerEx<TProjectedKey> ItemFetching { add => AddHandler(0, value); remove => RemoveHandler(0, value); }
 
-	public event EventHandlerEx<TProjectedKey, TProjectedValue> ItemFetched {
-		add => AddHandler(1, value);
-		remove => RemoveHandler(1, value);
-	}
+	public event EventHandlerEx<TProjectedKey, TProjectedValue> ItemFetched { add => AddHandler(1, value); remove => RemoveHandler(1, value); }
 
-	public event EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> ItemRemoving {
-		add => AddHandler(3, value);
-		remove => RemoveHandler(3, value);
-	}
+	public event EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> ItemRemoving { add => AddHandler(3, value); remove => RemoveHandler(3, value); }
 
-	public event EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> ItemRemoved {
-		add => AddHandler(2, value);
-		remove => RemoveHandler(2, value);
-	}
+	public event EventHandlerEx<TProjectedKey, CachedItem<TProjectedValue>> ItemRemoved { add => AddHandler(2, value); remove => RemoveHandler(2, value); }
 
 	private readonly ICache<TKey, TValue> _source;
 	private readonly Func<TKey, TProjectedKey> _keyProjection;
@@ -120,7 +108,9 @@ public class ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue> : ICac
 			CheckNotDisposed();
 			return value;
 		}
-		set => Source[_inverseKeyProjection(key)] = _inverseValueProjection(value);
+		set {
+			Source[_inverseKeyProjection(key)] = _inverseValueProjection(value);
+		}
 	}
 
 	private ICache<TKey, TValue> Source {

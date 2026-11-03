@@ -42,11 +42,6 @@ public partial class CachedCsvReader
 		private CachedCsvReader _csv;
 
 		/// <summary>
-		/// Contains the cached record count.
-		/// </summary>
-		private int _count;
-
-		/// <summary>
 		/// Contains the cached property descriptors.
 		/// </summary>
 		private PropertyDescriptorCollection _properties;
@@ -55,11 +50,6 @@ public partial class CachedCsvReader
 		/// Contains the current sort property.
 		/// </summary>
 		private CsvPropertyDescriptor _sort;
-
-		/// <summary>
-		/// Contains the current sort direction.
-		/// </summary>
-		private ListSortDirection _direction;
 
 		#endregion
 
@@ -71,8 +61,8 @@ public partial class CachedCsvReader
 		/// <param name="csv"></param>
 		public CsvBindingList(CachedCsvReader csv) {
 			_csv = csv;
-			_count = -1;
-			_direction = ListSortDirection.Ascending;
+			Count = -1;
+			SortDirection = ListSortDirection.Ascending;
 		}
 
 		#endregion
@@ -82,22 +72,18 @@ public partial class CachedCsvReader
 		public void AddIndex(PropertyDescriptor property) {
 		}
 
-		public bool AllowNew {
-			get { return false; }
-		}
+		public bool AllowNew => false;
 
 		public void ApplySort(PropertyDescriptor property, System.ComponentModel.ListSortDirection direction) {
 			_sort = (CsvPropertyDescriptor)property;
-			_direction = direction;
+			SortDirection = direction;
 
 			_csv.ReadToEnd();
 
-			_csv._records.Sort(new CsvRecordComparer(_sort.Index, _direction));
+			_csv._records.Sort(new CsvRecordComparer(_sort.Index, SortDirection));
 		}
 
-		public PropertyDescriptor SortProperty {
-			get { return _sort; }
-		}
+		public PropertyDescriptor SortProperty => _sort;
 
 		public int Find(PropertyDescriptor property, object key) {
 			int fieldIndex = ((CsvPropertyDescriptor)property).Index;
@@ -115,47 +101,37 @@ public partial class CachedCsvReader
 				return recordIndex;
 		}
 
-		public bool SupportsSorting {
-			get { return true; }
-		}
+		public bool SupportsSorting => true;
 
-		public bool IsSorted {
-			get { return _sort != null; }
-		}
+		public bool IsSorted => _sort != null;
 
-		public bool AllowRemove {
-			get { return false; }
-		}
+		public bool AllowRemove => false;
 
-		public bool SupportsSearching {
-			get { return true; }
-		}
+		public bool SupportsSearching => true;
 
-		public System.ComponentModel.ListSortDirection SortDirection {
-			get { return _direction; }
-		}
+
+		/// <summary>
+		/// Contains the current sort direction.
+		/// </summary>
+		public System.ComponentModel.ListSortDirection SortDirection { get; private set; }
 
 		public event System.ComponentModel.ListChangedEventHandler ListChanged {
 			add { }
 			remove { }
 		}
 
-		public bool SupportsChangeNotification {
-			get { return false; }
-		}
+		public bool SupportsChangeNotification => false;
 
 		public void RemoveSort() {
 			_sort = null;
-			_direction = ListSortDirection.Ascending;
+			SortDirection = ListSortDirection.Ascending;
 		}
 
 		public object AddNew() {
 			throw new NotSupportedException();
 		}
 
-		public bool AllowEdit {
-			get { return false; }
-		}
+		public bool AllowEdit => false;
 
 		public void RemoveIndex(PropertyDescriptor property) {
 		}
@@ -202,7 +178,9 @@ public partial class CachedCsvReader
 				_csv.MoveTo(index);
 				return _csv._records[index];
 			}
-			set { throw new NotSupportedException(); }
+			set {
+				throw new NotSupportedException();
+			}
 		}
 
 		#endregion
@@ -228,20 +206,22 @@ public partial class CachedCsvReader
 				_csv.CopyCurrentRecordTo(array[arrayIndex++]);
 		}
 
+
+		/// <summary>
+		/// Contains the cached record count.
+		/// </summary>
 		public int Count {
 			get {
-				if (_count < 0) {
+				if (field < 0) {
 					_csv.ReadToEnd();
-					_count = (int)_csv.CurrentRecordIndex + 1;
+					field = (int)_csv.CurrentRecordIndex + 1;
 				}
 
-				return _count;
+				return field;
 			}
 		}
 
-		public bool IsReadOnly {
-			get { return true; }
-		}
+		public bool IsReadOnly => true;
 
 		public bool Remove(string[] item) {
 			throw new NotSupportedException();
@@ -275,17 +255,15 @@ public partial class CachedCsvReader
 			throw new NotSupportedException();
 		}
 
-		public bool IsFixedSize {
-			get { return true; }
-		}
+		public bool IsFixedSize => true;
 
 		public void Remove(object value) {
 			throw new NotSupportedException();
 		}
 
 		object IList.this[int index] {
-			get { return this[index]; }
-			set { throw new NotSupportedException(); }
+			get => this[index];
+			set => throw new NotSupportedException();
 		}
 
 		#endregion
@@ -299,13 +277,9 @@ public partial class CachedCsvReader
 				_csv.CopyCurrentRecordTo((string[])array.GetValue(index++));
 		}
 
-		public bool IsSynchronized {
-			get { return false; }
-		}
+		public bool IsSynchronized => false;
 
-		public object SyncRoot {
-			get { return null; }
-		}
+		public object SyncRoot => null;
 
 		#endregion
 

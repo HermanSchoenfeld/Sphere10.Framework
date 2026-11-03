@@ -20,9 +20,5 @@ public class CellContextEventArgs : EventArgs {
 		_cellContext = cellContext;
 	}
 
-	public CellContext CellContext {
-		get {
-			return _cellContext;
-		}
-	}
+	public CellContext CellContext => _cellContext;
 }

@@ -28,11 +28,7 @@ public partial class EmailTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override EmailScreenSettings ScreenSettings {
-		get {
-			return (EmailScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override EmailScreenSettings ScreenSettings => (EmailScreenSettings)base.ScreenSettings;
 
 	// Restoring transport choices does not replace message or password drafts.
 	protected override void CopyModelToUI() {

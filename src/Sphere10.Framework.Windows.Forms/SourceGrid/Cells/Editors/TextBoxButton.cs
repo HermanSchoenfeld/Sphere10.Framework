@@ -29,11 +29,7 @@ public class TextBoxButton : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton)base.Control;
-		}
-	}
+	public new Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton Control => (Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton)base.Control;
 
 	/// <summary>
 	/// Set the specified value in the current editor control.

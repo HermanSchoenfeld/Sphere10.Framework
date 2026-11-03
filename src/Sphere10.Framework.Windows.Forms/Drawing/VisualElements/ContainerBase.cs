@@ -54,46 +54,26 @@ public abstract class ContainerBase : VisualElementBase, IContainer {
 	/// Gets or sets a property that specify how to draw the elements.
 	/// </summary>
 	protected ElementsDrawMode ElementsDrawMode {
-		get {
-			return _drawMode;
-		}
-
-		set {
-			_drawMode = value;
-		}
+		get => _drawMode;
+		set => _drawMode = value;
 	}
 
 	/// <summary>
 	/// The background used to draw
 	/// </summary>
 	protected IVisualElement Background {
-		get {
-			return _background;
-		}
-
-		set {
-			_background = value;
-		}
+		get => _background;
+		set => _background = value;
 	}
 
 	protected Padding Padding {
-		get {
-			return _padding;
-		}
-
-		set {
-			_padding = value;
-		}
+		get => _padding;
+		set => _padding = value;
 	}
 
 	protected IBorder Border {
-		get {
-			return _border;
-		}
-
-		set {
-			_border = value;
-		}
+		get => _border;
+		set => _border = value;
 	}
 
 	/// <summary>

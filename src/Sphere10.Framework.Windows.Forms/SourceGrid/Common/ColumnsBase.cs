@@ -17,20 +17,15 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// Abstract base class for manage columns informations.
 /// </summary>
 public abstract class ColumnsBase {
-	private GridVirtual _grid;
 
 	// Layout
 	private int _suspendedCount = 0;
 
 	public ColumnsBase(GridVirtual grid) {
-		_grid = grid;
+		Grid = grid;
 	}
 
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid { get; }
 
 	// Abstract methods
 	public abstract int Count {

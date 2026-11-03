@@ -14,7 +14,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 /// <summary>Immutable Blazor facade over shared menu metadata.</summary>
 public class ApplicationMenu : IApplicationMenu {
 	private readonly MenuMetadata _definition;
-	private string _id;
 
 	public ApplicationMenu()
 		: this(true) {
@@ -30,8 +29,8 @@ public class ApplicationMenu : IApplicationMenu {
 	}
 
 	public string Id {
-		get => _id ?? Text;
-		init => _id = value;
+		get => field ?? Text;
+		init => field = value;
 	}
 
 	public string Icon { get; init; }
@@ -42,7 +41,9 @@ public class ApplicationMenu : IApplicationMenu {
 	}
 
 	public IApplicationMenuItem[] Items {
-		get => _definition.Items;
+		get {
+			return _definition.Items;
+		}
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			foreach (var item in value)

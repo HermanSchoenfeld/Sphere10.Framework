@@ -14,23 +14,12 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class IndexRangeEventArgs : EventArgs {
-	private int _startIndex;
-	private int _count;
-
 	public IndexRangeEventArgs(int startIndex, int count) {
-		_startIndex = startIndex;
-		_count = count;
+		StartIndex = startIndex;
+		Count = count;
 	}
 
-	public int StartIndex {
-		get {
-			return _startIndex;
-		}
-	}
+	public int StartIndex { get; }
 
-	public int Count {
-		get {
-			return _count;
-		}
-	}
+	public int Count { get; }
 }

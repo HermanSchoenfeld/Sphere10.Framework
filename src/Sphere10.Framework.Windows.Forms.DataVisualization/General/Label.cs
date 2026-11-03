@@ -101,10 +101,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         #endregion
 
         #region Properties
-        internal Axis Axis
-        {
-            get { return Parent as Axis; }
-        }
+        internal Axis Axis => Parent as Axis;
         #endregion
 
         #region Labels adding methods
@@ -381,18 +378,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Label tooltip
         private string _tooltip = string.Empty;
 
-        private Axis _axis;
 
 
+		#endregion
 
-        #endregion
+		#region Constructors
 
-        #region Constructors
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public CustomLabel()
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public CustomLabel()
         {
         }
 
@@ -470,45 +465,38 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
         internal override IChartElement Parent
         {
-            get
-            {
-                return base.Parent;
-            }
-            set
+			get {
+				return base.Parent;
+			}
+			set
             {
                 base.Parent = value;
                 if (value != null)
                 {
-                    _axis = Parent.Parent as Axis;
+                    Axis = Parent.Parent as Axis;
                 }
             }
-        }
+		}
 
-        /// <summary>
-        /// Gets the axis to which this object is attached to.
-        /// </summary>
-        /// <returns>Axis.</returns>
-        [
-        Browsable(false),
-        DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
-        SerializationVisibilityAttribute(SerializationVisibility.Hidden),
-        ]
-        public Axis Axis
-        {
-            get
-            {
-                return _axis;
-            }
-        }
+		/// <summary>
+		/// Gets the axis to which this object is attached to.
+		/// </summary>
+		/// <returns>Axis.</returns>
+		[
+		Browsable(false),
+		DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
+		SerializationVisibilityAttribute(SerializationVisibility.Hidden),
+		]
+		public Axis Axis { get; private set; }
 
-        #endregion
+		#endregion
 
-        #region	CustomLabel properties
+		#region	CustomLabel properties
 
-        /// <summary>
-        /// Gets or sets the tooltip of the custom label.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the tooltip of the custom label.
+		/// </summary>
+		[
         SRCategory("CategoryAttributeMapArea"),
         Bindable(true),
         SRDescription("DescriptionAttributeToolTip"),
@@ -516,15 +504,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string ToolTip
         {
-            set
-            {
-                this._tooltip = value;
-            }
-            get
-            {
-                return this._tooltip;
-            }
-        }
+			set => this._tooltip = value;
+			get => this._tooltip;
+		}
 
         /// <summary>
 		/// Gets or sets the label image.
@@ -538,16 +520,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string Image
         {
-            get
-            {
-                return _image;
-            }
-            set
+			get {
+				return _image;
+			}
+			set
             {
                 _image = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a color which will be replaced with a transparent color while drawing the image.
@@ -562,16 +543,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ImageTransparentColor
         {
-            get
-            {
-                return _imageTransparentColor;
-            }
-            set
+			get {
+				return _imageTransparentColor;
+			}
+			set
             {
                 _imageTransparentColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
 
 
@@ -588,15 +568,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
-            set
-            {
-                base.Name = value;
-            }
-        }
+			get => base.Name;
+			set => base.Name = value;
+		}
 
         /// <summary>
         /// Gets or sets a property which specifies whether
@@ -610,16 +584,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public GridTickTypes GridTicks
         {
-            get
-            {
-                return _gridTick;
-            }
-            set
+			get {
+				return _gridTick;
+			}
+			set
             {
                 _gridTick = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the end position of the custom label in axis coordinates.
@@ -633,16 +606,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double FromPosition
         {
-            get
-            {
-                return _fromPosition;
-            }
-            set
+			get {
+				return _fromPosition;
+			}
+			set
             {
                 _fromPosition = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the starting position of the custom label in axis coordinates.
@@ -656,16 +628,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double ToPosition
         {
-            get
-            {
-                return _toPosition;
-            }
-            set
+			get {
+				return _toPosition;
+			}
+			set
             {
                 _toPosition = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text of the custom label.
@@ -678,18 +649,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string Text
         {
-            get
-            {
-                return _text;
-            }
-            set
+			get {
+				return _text;
+			}
+			set
             {
                 _text = value ?? string.Empty;
                 TextReal = _text.Replace("\\n", "\n");
                 TextRealI = TextReal + "I";
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Contains <see cref="Text"/>.Replace("\\n", "\n")
@@ -714,16 +684,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ForeColor
         {
-            get
-            {
-                return _foreColor;
-            }
-            set
+			get {
+				return _foreColor;
+			}
+			set
             {
                 _foreColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of the label mark line of the custom label.
@@ -738,16 +707,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color MarkColor
         {
-            get
-            {
-                return _markColor;
-            }
-            set
+			get {
+				return _markColor;
+			}
+			set
             {
                 _markColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the row index of the custom label.
@@ -760,11 +728,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int RowIndex
         {
-            get
-            {
-                return this._labelRowIndex;
-            }
-            set
+			get {
+				return this._labelRowIndex;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -774,7 +741,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this._labelRowIndex = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property which define the marks for the labels in the second row. 
@@ -787,16 +754,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public LabelMarkStyle LabelMark
         {
-            get
-            {
-                return _labelMark;
-            }
-            set
+			get {
+				return _labelMark;
+			}
+			set
             {
                 _labelMark = value;
                 this.Invalidate();
             }
-        }
+		}
 
         #endregion
 
@@ -832,8 +798,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         internal int angle;
         internal bool isStaggered;
         private bool _isEndLabelVisible = true;
-        private bool _truncatedLabels;
-        private string _format = string.Empty;
+		private string _format = string.Empty;
 
         #endregion
 
@@ -2272,7 +2237,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <returns>Axis object.</returns>
         internal Axis Axis
         {
-            set { _axis = value; }
+            set => _axis = value;
         }
 
 
@@ -2306,16 +2271,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double IntervalOffset
         {
-            get
-            {
-                return intervalOffset;
-            }
-            set
+			get {
+				return intervalOffset;
+			}
+			set
             {
                 intervalOffset = value;
                 this.Invalidate();
             }
-        }
+		}
 
 
 
@@ -2344,16 +2308,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType IntervalOffsetType
         {
-            get
-            {
-                return intervalOffsetType;
-            }
-            set
+			get {
+				return intervalOffsetType;
+			}
+			set
             {
                 intervalOffsetType = value;
                 this.Invalidate();
             }
-        }
+		}
 
 
         /// <summary>
@@ -2381,11 +2344,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Interval
         {
-            get
-            {
-                return interval;
-            }
-            set
+			get {
+				return interval;
+			}
+			set
             {
                 interval = value;
 
@@ -2397,7 +2359,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate();
             }
-        }
+		}
 
 
         /// <summary>
@@ -2425,11 +2387,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType IntervalType
         {
-            get
-            {
-                return intervalType;
-            }
-            set
+			get {
+				return intervalType;
+			}
+			set
             {
                 intervalType = value;
 
@@ -2441,7 +2402,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate();
             }
-        }
+		}
 
 
         /// <summary>
@@ -2468,11 +2429,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Font Font
         {
-            get
-            {
-                return _font;
-            }
-            set
+			get {
+				return _font;
+			}
+			set
             {
                 // Turn off labels autofitting 
                 if (this._axis != null && this._axis.Common != null && this._axis.Common.Chart != null)
@@ -2486,7 +2446,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _font = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the fore color of the label.
@@ -2501,16 +2461,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color ForeColor
         {
-            get
-            {
-                return _foreColor;
-            }
-            set
+			get {
+				return _foreColor;
+			}
+			set
             {
                 _foreColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a value that represents the angle at which font is drawn.
@@ -2524,11 +2483,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int Angle
         {
-            get
-            {
-                return angle;
-            }
-            set
+			get {
+				return angle;
+			}
+			set
             {
                 if (value < -90 || value > 90)
                 {
@@ -2553,7 +2511,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 angle = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property which specifies whether the labels are shown with offset.
@@ -2567,11 +2525,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsStaggered
         {
-            get
-            {
-                return isStaggered;
-            }
-            set
+			get {
+				return isStaggered;
+			}
+			set
             {
                 // Make sure that angle is 0, 90 or -90
                 if (value && (this.Angle != 0 || this.Angle != -90 || this.Angle != 90))
@@ -2592,7 +2549,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property which specifies whether the labels are shown at axis ends.
@@ -2605,16 +2562,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool IsEndLabelVisible
         {
-            get
-            {
-                return _isEndLabelVisible;
-            }
-            set
+			get {
+				return _isEndLabelVisible;
+			}
+			set
             {
                 _isEndLabelVisible = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property which specifies whether the label can be truncated.
@@ -2627,16 +2583,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool TruncatedLabels
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return _truncatedLabels;
-            }
-            set
-            {
-                _truncatedLabels = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the formatting string for the label text.
@@ -2649,16 +2604,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public string Format
         {
-            get
-            {
-                return _format;
-            }
-            set
+			get {
+				return _format;
+			}
+			set
             {
                 _format = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a property which indicates whether the label is enabled.
@@ -2671,16 +2625,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool Enabled
         {
-            get
-            {
-                return _enabled;
-            }
-            set
+			get {
+				return _enabled;
+			}
+			set
             {
                 _enabled = value;
                 this.Invalidate();
             }
-        }
+		}
         #endregion
     }
 }

@@ -43,14 +43,16 @@ public partial class Axis
     ]
     public LabelStyle LabelStyle
     {
-        get => labelStyle;
-        set
+		get {
+			return labelStyle;
+		}
+		set
         {
             labelStyle = value;
             labelStyle.Axis = this;
             this.Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets a collection of custom labels.

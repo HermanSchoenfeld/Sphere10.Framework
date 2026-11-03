@@ -22,9 +22,9 @@ namespace Sphere10.Framework.iOS {
 			ShowBadgeView = true;
 		}
 
-		public BadgeView BadgeView { get { return AccessoryView as BadgeView; } }
+		public BadgeView BadgeView => AccessoryView as BadgeView;
 
-		public bool ShowBadgeView { 
+		public bool ShowBadgeView {
 			get {
 				return AccessoryView == _badgeView;
 			}

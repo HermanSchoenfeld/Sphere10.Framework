@@ -11,21 +11,30 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Utils.Profiler.ObjectSpaces.Lab;
 
 public class ObjectSpaceLabEvent {
-	private long _id = 0;
-	private long _recordId = 0;
-	private int _kind = 0;
-	private long _timestampTicks = 0;
-	private string _message = string.Empty;
+	public long Id {
+		get => field;
+		set => SetField(ref field, value);
+	} = 0;
 
-	public long Id { get => _id; set => SetField(ref _id, value); }
+	public long RecordId {
+		get => field;
+		set => SetField(ref field, value);
+	} = 0;
 
-	public long RecordId { get => _recordId; set => SetField(ref _recordId, value); }
+	public int Kind {
+		get => field;
+		set => SetField(ref field, value);
+	} = 0;
 
-	public int Kind { get => _kind; set => SetField(ref _kind, value); }
+	public long TimestampTicks {
+		get => field;
+		set => SetField(ref field, value);
+	} = 0;
 
-	public long TimestampTicks { get => _timestampTicks; set => SetField(ref _timestampTicks, value); }
-
-	public string Message { get => _message; set => SetField(ref _message, value); }
+	public string Message {
+		get => field;
+		set => SetField(ref field, value);
+	} = string.Empty;
 
 	[Transient]
 	public bool Dirty { get; set; }

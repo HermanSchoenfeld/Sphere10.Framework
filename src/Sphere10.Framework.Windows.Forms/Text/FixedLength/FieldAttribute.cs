@@ -16,8 +16,6 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// </summary>
 [System.AttributeUsage(AttributeTargets.Property)]
 public class FieldAttribute : System.Attribute {
-	private int _fieldIndex;
-	private int _length;
 
 	/// <summary>
 	/// Constructor.
@@ -25,19 +23,11 @@ public class FieldAttribute : System.Attribute {
 	/// <param name="fieldIndex">Index of the field, 0 based. Each field must have a unique progressive index</param>
 	/// <param name="length">Lenght of the field when readed and writed to the string.</param>
 	public FieldAttribute(int fieldIndex, int length) {
-		_fieldIndex = fieldIndex;
-		_length = length;
+		FieldIndex = fieldIndex;
+		Length = length;
 	}
 
-	public int FieldIndex {
-		get {
-			return _fieldIndex;
-		}
-	}
+	public int FieldIndex { get; }
 
-	public int Length {
-		get {
-			return _length;
-		}
-	}
+	public int Length { get; }
 }

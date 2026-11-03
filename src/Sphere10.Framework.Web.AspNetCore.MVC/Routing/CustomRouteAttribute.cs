@@ -38,7 +38,6 @@ namespace Sphere10.Framework.Web.AspNetCore.MVC;
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
 public sealed class CustomRouteAttribute : Attribute {
-	private string _defaults;
 
 	/// <summary>
 	/// The default action for this route
@@ -52,13 +51,15 @@ public sealed class CustomRouteAttribute : Attribute {
 	public string Defaults {
 		get {
 			// concatenate _defaults and DefaultAction into a key=value string
-			var toReturn = _defaults ?? string.Empty;
+			var toReturn = field ?? string.Empty;
 			if (!string.IsNullOrEmpty(DefaultAction)) {
 				toReturn += (toReturn.Length > 0 ? "&" : string.Empty) + "action=" + DefaultAction;
 			}
 			return toReturn;
 		}
-		set { _defaults = value; }
+		set {
+			field = value;
+		}
 	}
 
 

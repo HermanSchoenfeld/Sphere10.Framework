@@ -23,15 +23,15 @@ namespace Sphere10.Framework.iOS
 		public UIColor HighlightColor { get; set; }
 		
 		public string _Title = string.Empty;
-		public new string Title 
-		{ 
-			get { return _Title; } 
-			set 
-			{ 
+		public new string Title {
+			get {
+				return _Title;
+			}
+			set {
 				_Title = value;
 				
 				SetNeedsDisplay();
-			} 
+			}
 		}
 		
 		public UIGlassyButton(CGRect rect): base(rect)

@@ -126,17 +126,9 @@ public class ApplicationCommandProviderContractTests {
 
 	// The running application has the same portable provider defaults as its other command scopes.
 	private sealed class EmptyApplication : SyncApplicationBase {
-		public override IApplicationPlugin[] LoadedPlugins {
-			get {
-				return Array.Empty<IApplicationPlugin>();
-			}
-		}
+		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
 
-		public override IApplicationScreenHost ScreenHost {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationScreenHost ScreenHost => null;
 	}
 
 	// A platform specialization bridges its real descriptor arrays over the inherited empty defaults.
@@ -146,17 +138,9 @@ public class ApplicationCommandProviderContractTests {
 
 		public TestApplicationMenuItem[] ToolBarItems { get; set; }
 
-		public override IApplicationPlugin[] LoadedPlugins {
-			get {
-				return Array.Empty<IApplicationPlugin>();
-			}
-		}
+		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
 
-		public override IApplicationScreenHost ScreenHost {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationScreenHost ScreenHost => null;
 	}
 
 	// A real decorator consumer must observe current application commands rather than interface defaults.

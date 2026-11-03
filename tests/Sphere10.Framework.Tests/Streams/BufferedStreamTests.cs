@@ -1265,26 +1265,14 @@ public class BufferedStreamTests {
 
 		public CancellationToken LastWriteCancellationToken { get; private set; }
 
-		public byte[] Bytes {
-			get {
-				return _storage.ToArray();
-			}
-		}
+		public byte[] Bytes => _storage.ToArray();
 
 		public long PhysicalPosition {
-			get {
-				return _storage.Position;
-			}
-			set {
-				_storage.Position = value;
-			}
+			get => _storage.Position;
+			set => _storage.Position = value;
 		}
 
-		public int Operations {
-			get {
-				return ReadCalls + WriteCalls + SeekCalls + LengthQueries + PositionQueries + ResizeCalls + FlushCalls;
-			}
-		}
+		public int Operations => ReadCalls + WriteCalls + SeekCalls + LengthQueries + PositionQueries + ResizeCalls + FlushCalls;
 
 		public override bool CanRead {
 			get {
@@ -1479,37 +1467,17 @@ public class BufferedStreamTests {
 
 		public int LargestRead { get; private set; }
 
-		public override bool CanRead {
-			get {
-				return true;
-			}
-		}
+		public override bool CanRead => true;
 
-		public override bool CanSeek {
-			get {
-				return true;
-			}
-		}
+		public override bool CanSeek => true;
 
-		public override bool CanWrite {
-			get {
-				return true;
-			}
-		}
+		public override bool CanWrite => true;
 
-		public override long Length {
-			get {
-				return _length;
-			}
-		}
+		public override long Length => _length;
 
 		public override long Position {
-			get {
-				return _position;
-			}
-			set {
-				_position = value;
-			}
+			get => _position;
+			set => _position = value;
 		}
 
 		public override int Read(byte[] buffer, int offset, int count) {

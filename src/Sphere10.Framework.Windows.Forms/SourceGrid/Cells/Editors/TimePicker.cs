@@ -34,11 +34,7 @@ public class TimePicker : DateTimePicker {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new System.Windows.Forms.DateTimePicker Control {
-		get {
-			return (System.Windows.Forms.DateTimePicker)base.Control;
-		}
-	}
+	public new System.Windows.Forms.DateTimePicker Control => (System.Windows.Forms.DateTimePicker)base.Control;
 
 	// Edit Control
 	/// <summary>

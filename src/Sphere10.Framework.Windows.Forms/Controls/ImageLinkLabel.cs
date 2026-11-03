@@ -19,9 +19,6 @@ namespace Sphere10.Framework.Windows.Forms;
 /// </summary>
 [DefaultEvent("Click")]
 public partial class ImageLinkLabel : UserControlEx {
-	private Image _image;
-	private Image _mouseOverImage;
-	private Image _disabledImage;
 	private System.Drawing.ContentAlignment _imageAlignment = System.Drawing.ContentAlignment.MiddleLeft;
 	private StringFormat _stringFormat = new StringFormat(StringFormat.GenericDefault);
 	private bool _alignTextToImage = true;
@@ -55,10 +52,10 @@ public partial class ImageLinkLabel : UserControlEx {
 	[DefaultValue(null)]
 	public Image Image {
 		get {
-			return _image;
+			return field;
 		}
 		set {
-			_image = value;
+			field = value;
 			Invalidate(true);
 		}
 	}
@@ -67,27 +64,13 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// Specifies the image to display when the mouse is inside the link area. If null is used the normal image.
 	/// </summary>
 	[DefaultValue(null)]
-	public Image MouseOverImage {
-		get {
-			return _mouseOverImage;
-		}
-		set {
-			_mouseOverImage = value;
-		}
-	}
+	public Image MouseOverImage { get; set; }
 
 	/// <summary>
 	/// Specifies the image to display when the link is disabled.
 	/// </summary>
 	[DefaultValue(null)]
-	public Image DisabledImage {
-		get {
-			return _disabledImage;
-		}
-		set {
-			_disabledImage = value;
-		}
-	}
+	public Image DisabledImage { get; set; }
 
 	[DefaultValue(System.Drawing.ContentAlignment.MiddleLeft)]
 	public System.Drawing.ContentAlignment ImageAlignment {
@@ -145,22 +128,14 @@ public partial class ImageLinkLabel : UserControlEx {
 
 	[DefaultValue(false)]
 	public bool EnableMouseEffect {
-		get {
-			return _enableMouseEffect;
-		}
-		set {
-			_enableMouseEffect = value;
-		}
+		get => _enableMouseEffect;
+		set => _enableMouseEffect = value;
 	}
 
 	[Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public override string Text {
-		get {
-			return base.Text;
-		}
-		set {
-			base.Text = value;
-		}
+		get => base.Text;
+		set => base.Text = value;
 	}
 
 	/// <summary>
@@ -247,14 +222,14 @@ public partial class ImageLinkLabel : UserControlEx {
 
 		// Select the image for the current enabled and pointer state.
 		var disabledImage = false;
-		var image = _image;
+		var image = Image;
 		if (Enabled == false) {
-			if (_disabledImage != null)
-				image = _disabledImage;
+			if (DisabledImage != null)
+				image = DisabledImage;
 			else
 				disabledImage = true;
-		} else if (_isMouseOver && _mouseOverImage != null)
-			image = _mouseOverImage;
+		} else if (_isMouseOver && MouseOverImage != null)
+			image = MouseOverImage;
 
 		// Lay out the text and image inside the visible border.
 		var contentRect = ClientRectangle;

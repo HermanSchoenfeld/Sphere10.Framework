@@ -12,15 +12,13 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class SpannedCellRangesController : ISpannedCellRangesController {
-	Grid _grid = null;
-
 	public SpannedCellRangesController(Grid grid, ISpannedRangesCollection spannedRangeCollection)
 		: this(grid) {
 		SpannedRangesCollection = spannedRangeCollection;
 	}
 
 	public SpannedCellRangesController(Grid grid) {
-		_grid = grid;
+		Grid = grid;
 		SpannedRangesCollection = new SpannedRangesList();
 	}
 
@@ -28,11 +26,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		get; private set;
 	}
 
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid { get; } = null;
 
 	/// <summary>
 	/// Adds or updates given range.
@@ -142,7 +136,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 			var isInsideEnd = (range.End.Column >= startIndex) && (range.End.Column <= startIndex + count - 1);
 			var isInside = isInsideStart || isInsideEnd;
 			if (isInside) {
-				var cell = _grid[range.Start];
+				var cell = Grid[range.Start];
 				cell.ColumnSpan += count;
 			}
 		}
@@ -154,7 +148,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 			var isInsideEnd = (range.End.Row >= startIndex) && (range.End.Row <= startIndex + count - 1);
 			var isInside = isInsideStart || isInsideEnd;
 			if (isInside) {
-				var cell = _grid[range.Start];
+				var cell = Grid[range.Start];
 				cell.RowSpan += count;
 			}
 		}
@@ -167,7 +161,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			var intersection = range.Intersect(removeRange);
 			if (intersection.IsEmpty() == false) {
-				var cell = _grid[range.Start];
+				var cell = Grid[range.Start];
 				var span = cell.RowSpan - count;
 				if (span <= 1 && cell.ColumnSpan <= 1) {
 					cell.RowSpan = 1;
@@ -185,7 +179,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			var intersection = range.Intersect(removeRange);
 			if (intersection.IsEmpty() == false) {
-				var cell = _grid[range.Start];
+				var cell = Grid[range.Start];
 				var span = cell.ColumnSpan - count;
 				if (span <= 1 && cell.ColumnSpan <= 1) {
 					cell.ColumnSpan = 1;

@@ -39,7 +39,9 @@ public class RpcMiningManager : MiningManagerBase, IMiningBlockProducer {
 	public event EventHandlerEx<SynchronizedList<BlockChainTransaction>> OnBlockAccepted;
 
 	public ILogger Logger {
-		get { return _logger; }
+		get {
+			return _logger;
+		}
 		set {
 			_logger = value;
 			StratumMiningServer?.SetLogger(value);

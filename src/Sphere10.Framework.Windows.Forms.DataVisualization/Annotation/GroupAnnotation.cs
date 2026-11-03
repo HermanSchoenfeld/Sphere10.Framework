@@ -73,11 +73,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public string ClipToChartArea
         {
-            get
-            {
-                return base.ClipToChartArea;
-            }
-            set
+			get {
+				return base.ClipToChartArea;
+			}
+			set
             {
                 base.ClipToChartArea = value;
                 foreach (Annotation annotation in this.annotations)
@@ -85,7 +84,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.ClipToChartArea = value;
                 }
             }
-        }
+		}
 
         #endregion
 
@@ -117,15 +116,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool IsSizeAlwaysRelative
         {
-            get
-            {
-                return base.IsSizeAlwaysRelative;
-            }
-            set
-            {
-                base.IsSizeAlwaysRelative = value;
-            }
-        }
+			get => base.IsSizeAlwaysRelative;
+			set => base.IsSizeAlwaysRelative = value;
+		}
 
         #endregion
 
@@ -146,11 +139,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool IsSelected
         {
-            get
-            {
-                return base.IsSelected;
-            }
-            set
+			get {
+				return base.IsSelected;
+			}
+			set
             {
                 base.IsSelected = value;
 
@@ -160,7 +152,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.IsSelected = false;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation is visible.
@@ -176,15 +168,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool Visible
         {
-            get
-            {
-                return base.Visible;
-            }
-            set
-            {
-                base.Visible = value;
-            }
-        }
+			get => base.Visible;
+			set => base.Visible = value;
+		}
 
         /// <summary>
         /// Gets or sets an annotation's content alignment.
@@ -205,11 +191,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public ContentAlignment Alignment
         {
-            get
-            {
-                return base.Alignment;
-            }
-            set
+			get {
+				return base.Alignment;
+			}
+			set
             {
                 base.Alignment = value;
                 foreach (Annotation annotation in this.annotations)
@@ -217,7 +202,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.Alignment = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation's text style.
@@ -231,15 +216,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override TextStyle TextStyle
         {
-            get
-            {
-                return base.TextStyle;
-            }
-            set
-            {
-                base.TextStyle = value;
-            }
-        }
+			get => base.TextStyle;
+			set => base.TextStyle = value;
+		}
 
         /// <summary>
         /// Gets or sets the text color of an annotation.
@@ -257,11 +236,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color ForeColor
         {
-            get
-            {
-                return base.ForeColor;
-            }
-            set
+			get {
+				return base.ForeColor;
+			}
+			set
             {
                 base.ForeColor = value;
                 foreach (Annotation annotation in this.annotations)
@@ -269,7 +247,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.ForeColor = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the font of an annotation's text.
@@ -286,11 +264,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Font Font
         {
-            get
-            {
-                return base.Font;
-            }
-            set
+			get {
+				return base.Font;
+			}
+			set
             {
                 base.Font = value;
                 foreach (Annotation annotation in this.annotations)
@@ -298,7 +275,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.Font = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of an annotation line.
@@ -317,11 +294,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color LineColor
         {
-            get
-            {
-                return base.LineColor;
-            }
-            set
+			get {
+				return base.LineColor;
+			}
+			set
             {
                 base.LineColor = value;
                 foreach (Annotation annotation in this.annotations)
@@ -329,7 +305,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.LineColor = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the width of an annotation line.
@@ -347,11 +323,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public int LineWidth
         {
-            get
-            {
-                return base.LineWidth;
-            }
-            set
+			get {
+				return base.LineWidth;
+			}
+			set
             {
                 base.LineWidth = value;
                 foreach (Annotation annotation in this.annotations)
@@ -359,7 +334,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.LineWidth = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the style of an annotation line.
@@ -377,11 +352,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return base.LineDashStyle;
-            }
-            set
+			get {
+				return base.LineDashStyle;
+			}
+			set
             {
                 base.LineDashStyle = value;
                 foreach (Annotation annotation in this.annotations)
@@ -389,7 +363,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.LineDashStyle = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of an annotation.
@@ -410,11 +384,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color BackColor
         {
-            get
-            {
-                return base.BackColor;
-            }
-            set
+			get {
+				return base.BackColor;
+			}
+			set
             {
                 base.BackColor = value;
                 foreach (Annotation annotation in this.annotations)
@@ -422,7 +395,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.BackColor = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style of an annotation.
@@ -445,11 +418,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return base.BackHatchStyle;
-            }
-            set
+			get {
+				return base.BackHatchStyle;
+			}
+			set
             {
                 base.BackHatchStyle = value;
                 foreach (Annotation annotation in this.annotations)
@@ -457,7 +429,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.BackHatchStyle = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background gradient style of an annotation.
@@ -480,11 +452,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public GradientStyle BackGradientStyle
         {
-            get
-            {
-                return base.BackGradientStyle;
-            }
-            set
+			get {
+				return base.BackGradientStyle;
+			}
+			set
             {
                 base.BackGradientStyle = value;
                 foreach (Annotation annotation in this.annotations)
@@ -492,7 +463,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.BackGradientStyle = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color of an annotation.
@@ -518,11 +489,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color BackSecondaryColor
         {
-            get
-            {
-                return base.BackSecondaryColor;
-            }
-            set
+			get {
+				return base.BackSecondaryColor;
+			}
+			set
             {
                 base.BackSecondaryColor = value;
                 foreach (Annotation annotation in this.annotations)
@@ -530,7 +500,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.BackSecondaryColor = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of an annotation's shadow.
@@ -548,11 +518,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public Color ShadowColor
         {
-            get
-            {
-                return base.ShadowColor;
-            }
-            set
+			get {
+				return base.ShadowColor;
+			}
+			set
             {
                 base.ShadowColor = value;
                 foreach (Annotation annotation in this.annotations)
@@ -560,7 +529,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.ShadowColor = value;
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the offset between an annotation and its shadow.
@@ -577,11 +546,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public int ShadowOffset
         {
-            get
-            {
-                return base.ShadowOffset;
-            }
-            set
+			get {
+				return base.ShadowOffset;
+			}
+			set
             {
                 base.ShadowOffset = value;
                 foreach (Annotation annotation in this.annotations)
@@ -589,7 +557,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     annotation.ShadowOffset = value;
                 }
             }
-        }
+		}
 
         #endregion
 
@@ -609,15 +577,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool AllowSelecting
         {
-            get
-            {
-                return base.AllowSelecting;
-            }
-            set
-            {
-                base.AllowSelecting = value;
-            }
-        }
+			get => base.AllowSelecting;
+			set => base.AllowSelecting = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation may be moved 
@@ -633,15 +595,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool AllowMoving
         {
-            get
-            {
-                return base.AllowMoving;
-            }
-            set
-            {
-                base.AllowMoving = value;
-            }
-        }
+			get => base.AllowMoving;
+			set => base.AllowMoving = value;
+		}
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation anchor may be moved 
         /// with a mouse by the end user.
@@ -656,15 +612,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool AllowAnchorMoving
         {
-            get
-            {
-                return base.AllowAnchorMoving;
-            }
-            set
-            {
-                base.AllowAnchorMoving = value;
-            }
-        }
+			get => base.AllowAnchorMoving;
+			set => base.AllowAnchorMoving = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation may be resized 
@@ -680,15 +630,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool AllowResizing
         {
-            get
-            {
-                return base.AllowResizing;
-            }
-            set
-            {
-                base.AllowResizing = value;
-            }
-        }
+			get => base.AllowResizing;
+			set => base.AllowResizing = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation's text may be edited 
@@ -704,15 +648,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool AllowTextEditing
         {
-            get
-            {
-                return base.AllowTextEditing;
-            }
-            set
-            {
-                base.AllowTextEditing = value;
-            }
-        }
+			get => base.AllowTextEditing;
+			set => base.AllowTextEditing = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether a polygon annotation's points 
@@ -728,15 +666,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         override public bool AllowPathEditing
         {
-            get
-            {
-                return base.AllowPathEditing;
-            }
-            set
-            {
-                base.AllowPathEditing = value;
-            }
-        }
+			get => base.AllowPathEditing;
+			set => base.AllowPathEditing = value;
+		}
 
 
         #endregion
@@ -758,13 +690,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SRDescription("DescriptionAttributeAnnotationGroup_Annotations"),
         DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
         ]
-        public AnnotationCollection Annotations
-        {
-            get
-            {
-                return annotations;
-            }
-        }
+        public AnnotationCollection Annotations => annotations;
 
         /// <summary>
         /// Gets or sets an annotation's type name.
@@ -785,13 +711,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeAnnotationType"),
         ]
-        public override string AnnotationType
-        {
-            get
-            {
-                return "Group";
-            }
-        }
+        public override string AnnotationType => "Group";
 
         /// <summary>
         /// Gets or sets annotation selection points style.
@@ -813,13 +733,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        override internal SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        override internal SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         #endregion
 

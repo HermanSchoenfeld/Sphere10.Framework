@@ -13,11 +13,7 @@ public interface IScreenMenuItem : IApplicationMenuItem {
 	ApplicationScreenDefinition ScreenDefinition { get; }
 
 	/// <summary>The exact registration or unambiguous type request to resolve in the owning block.</summary>
-	ApplicationScreenRegistration Registration {
-		get {
-			return ScreenDefinition?.Registration;
-		}
-	}
+	ApplicationScreenRegistration Registration => ScreenDefinition?.Registration;
 
 	/// <summary>Binds a command to its graph's canonical definition without registering another screen.</summary>
 	void ResolveScreenDefinition(ApplicationScreenDefinition definition) {

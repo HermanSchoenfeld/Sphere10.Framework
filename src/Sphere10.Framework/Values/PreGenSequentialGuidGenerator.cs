@@ -24,9 +24,7 @@ public class PreGenSequentialGuidGenerator : ISequentialGuidGenerator {
 
 	public bool RegenerateWhenEmpty { get; set; }
 
-	public int Count {
-		get { return _guidStack.Count; }
-	}
+	public int Count => _guidStack.Count;
 
 	public Guid NextSequentialGuid() {
 		if (_guidStack.Count == 0) {

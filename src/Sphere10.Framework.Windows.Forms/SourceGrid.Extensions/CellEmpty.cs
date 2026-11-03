@@ -15,25 +15,13 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Planning;
 
 public class CellEmpty : Cells.Cell {
-	private DateTime _start;
-
-	private DateTime _end;
-
 	public CellEmpty(DateTime start, DateTime end)
 		: base(null) {
-		_start = start;
-		_end = end;
+		Start = start;
+		End = end;
 	}
 
-	public DateTime Start {
-		get {
-			return _start;
-		}
-	}
+	public DateTime Start { get; }
 
-	public DateTime End {
-		get {
-			return _end;
-		}
-	}
+	public DateTime End { get; }
 }

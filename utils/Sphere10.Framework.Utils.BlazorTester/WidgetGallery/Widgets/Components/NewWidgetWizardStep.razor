@@ -35,7 +35,7 @@
 </EditForm>
 
 @code {
-	public override string Title { get; } = "Details";
+	public override string Title => "Details";
 
 	public override WizardStepTraits Traits => WizardStepTraits.AssumeHasNext;
 }

@@ -40,11 +40,7 @@ public partial class ApplicationSettingsDialog : ModalComponent {
 	[Parameter] public object SelectedOwner { get; set; }
 
 	// Settings remain persistent even when their classes have not enabled automatic editing.
-	private bool CanEditSelected {
-		get {
-			return CanEdit(_selected);
-		}
-	}
+	private bool CanEditSelected => CanEdit(_selected);
 
 	// Custom editors belong to the settings class or the existing screen registration.
 	private Type EditorType {

@@ -356,7 +356,6 @@ public class CrudReferencePickerTests {
 	}
 
 	public class Employee {
-		private Address? _address;
 		public string Name { get; set; } = "";
 		public Employee? Manager { get; set; }
 		[Browsable(false)]
@@ -364,9 +363,11 @@ public class CrudReferencePickerTests {
 		public Address? Address {
 			get {
 				Guard.Ensure(!ThrowOnAddressRead, "The picker must not traverse referenced entities.");
-				return _address;
+				return field;
 			}
-			set => _address = value;
+			set {
+				field = value;
+			}
 		}
 		public override string ToString() => Name;
 	}

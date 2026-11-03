@@ -60,11 +60,7 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override SourceGridGalleryScreenSettings ScreenSettings {
-		get {
-			return (SourceGridGalleryScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override SourceGridGalleryScreenSettings ScreenSettings => (SourceGridGalleryScreenSettings)base.ScreenSettings;
 
 	/// <summary>Initializes grid controllers and data only outside the Visual Studio designer.</summary>
 	protected override void InitializeUIPrimingData() {

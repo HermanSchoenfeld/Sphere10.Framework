@@ -15,8 +15,6 @@ namespace Sphere10.Framework.Application;
 public class AssemblyAttributesProductInformationProvider : IProductInformationProvider {
 	private readonly Assembly _assembly;
 
-	private ProductInformation _productInformation;
-
 	/// <summary>Uses the application's entry assembly for product information.</summary>
 	public AssemblyAttributesProductInformationProvider()
 		: this(Tools.Runtime.GetEntryAssembly()) {
@@ -31,12 +29,12 @@ public class AssemblyAttributesProductInformationProvider : IProductInformationP
 	/// <summary>The product information read once from this provider's assembly.</summary>
 	public ProductInformation ProductInformation {
 		get {
-			if (_productInformation != null)
-				return _productInformation;
+			if (field != null)
+				return field;
 			lock (this) {
-				_productInformation ??= GetProductInformation();
+				field ??= GetProductInformation();
 			}
-			return _productInformation;
+			return field;
 		}
 	}
 

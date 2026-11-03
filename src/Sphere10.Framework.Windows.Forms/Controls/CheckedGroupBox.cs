@@ -93,7 +93,9 @@ public partial class CheckedGroupBox : GroupBox {
 	[Category("Appearance")]
 	[DefaultValue(true)]
 	public bool Checked {
-		get { return this.m_checkBox.Checked; }
+		get {
+			return this.m_checkBox.Checked;
+		}
 		set {
 			if (this.m_checkBox.Checked != value) {
 				this.m_checkBox.Checked = value;
@@ -108,7 +110,9 @@ public partial class CheckedGroupBox : GroupBox {
 	[Category("Appearance")]
 	[DefaultValue(CheckState.Checked)]
 	public CheckState CheckState {
-		get { return this.m_checkBox.CheckState; }
+		get {
+			return this.m_checkBox.CheckState;
+		}
 		set {
 			if (this.m_checkBox.CheckState != value) {
 				this.m_checkBox.CheckState = value;
@@ -123,7 +127,9 @@ public partial class CheckedGroupBox : GroupBox {
 	[Category("Appearance")]
 	[DefaultValue(true)]
 	public bool DisableChildrenIfUnchecked {
-		get { return this.m_bDisableChildrenIfUnchecked; }
+		get {
+			return this.m_bDisableChildrenIfUnchecked;
+		}
 		set {
 			if (this.m_bDisableChildrenIfUnchecked != value) {
 				this.m_bDisableChildrenIfUnchecked = value;

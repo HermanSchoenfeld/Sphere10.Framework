@@ -14,31 +14,15 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class RangeRegionChangingEventArgs : EventArgs {
-	private RangeRegion _regionToExclude;
-	private RangeRegion _regionToInclude;
-	private RangeRegion _currentRegion;
-
 	public RangeRegionChangingEventArgs(RangeRegion currentRegion, RangeRegion rangeToExclude, RangeRegion rangeToInclude) {
-		_regionToExclude = rangeToExclude;
-		_currentRegion = currentRegion;
-		_regionToInclude = rangeToInclude;
+		RegionToExclude = rangeToExclude;
+		CurrentRegion = currentRegion;
+		RegionToInclude = rangeToInclude;
 	}
 
-	public RangeRegion CurrentRegion {
-		get {
-			return _currentRegion;
-		}
-	}
+	public RangeRegion CurrentRegion { get; }
 
-	public RangeRegion RegionToInclude {
-		get {
-			return _regionToInclude;
-		}
-	}
+	public RangeRegion RegionToInclude { get; }
 
-	public RangeRegion RegionToExclude {
-		get {
-			return _regionToExclude;
-		}
-	}
+	public RangeRegion RegionToExclude { get; }
 }

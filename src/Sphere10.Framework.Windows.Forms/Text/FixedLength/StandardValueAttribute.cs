@@ -17,22 +17,14 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// </summary>
 [System.AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class StandardValueAttribute : System.Attribute {
-	private object _standardValue;
 
 	/// <summary>
 	/// Construcotr
 	/// </summary>
 	/// <param name="standardValue">Required value</param>
 	public StandardValueAttribute(object standardValue) {
-		_standardValue = standardValue;
+		StandardValue = standardValue;
 	}
 
-	public object StandardValue {
-		get {
-			return _standardValue;
-		}
-		set {
-			_standardValue = value;
-		}
-	}
+	public object StandardValue { get; set; }
 }

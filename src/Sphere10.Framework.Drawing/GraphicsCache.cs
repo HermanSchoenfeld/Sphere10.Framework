@@ -19,68 +19,49 @@ namespace Sphere10.Framework.Drawing;
 [SupportedOSPlatform("windows")]
 public class GraphicsCache : IDisposable {
 	private Rectangle _clipRectangle;
-	private Graphics _graphics;
-	private PenCache _penCache;
-	private BrushCache _brushCache;
 
 	/// <summary>Borrows graphics and owns the pens and brushes created while drawing.</summary>
 	public GraphicsCache(Graphics graphics) {
-		_graphics = graphics;
+		Graphics = graphics;
 		_clipRectangle = Rectangle.Empty;
-		_penCache = new PenCache(20);
-		_brushCache = new BrushCache(20);
+		PenCache = new PenCache(20);
+		BrushCache = new BrushCache(20);
 	}
 
 	/// <summary>Borrows graphics with an explicit clipping rectangle.</summary>
 	public GraphicsCache(Graphics graphics, Rectangle clipRectangle) {
-		_graphics = graphics;
+		Graphics = graphics;
 		_clipRectangle = clipRectangle;
-		_penCache = new PenCache(20);
-		_brushCache = new BrushCache(20);
+		PenCache = new PenCache(20);
+		BrushCache = new BrushCache(20);
 	}
 
 	/// <summary>Borrows graphics and configures the capacities of its owned drawing caches.</summary>
 	public GraphicsCache(Graphics graphics, Rectangle clipRectangle, int pensCapacity, int brushCapacity) {
-		_graphics = graphics;
+		Graphics = graphics;
 		_clipRectangle = clipRectangle;
-		_penCache = new PenCache(pensCapacity);
-		_brushCache = new BrushCache(brushCapacity);
+		PenCache = new PenCache(pensCapacity);
+		BrushCache = new BrushCache(brushCapacity);
 	}
 
 	/// <summary>Gets the caller-supplied clipping rectangle.</summary>
-	public Rectangle ClipRectangle {
-		get {
-			return _clipRectangle;
-		}
-	}
+	public Rectangle ClipRectangle => _clipRectangle;
 
 	/// <summary>Gets the borrowed graphics without transferring ownership.</summary>
-	public Graphics Graphics {
-		get {
-			return _graphics;
-		}
-	}
+	public Graphics Graphics { get; private set; }
 
 	/// <summary>Gets the pen cache owned by this drawing operation.</summary>
-	public PenCache PenCache {
-		get {
-			return _penCache;
-		}
-	}
+	public PenCache PenCache { get; private set; }
 
 	/// <summary>Gets the brush cache owned by this drawing operation.</summary>
-	public BrushCache BrushCache {
-		get {
-			return _brushCache;
-		}
-	}
+	public BrushCache BrushCache { get; private set; }
 
 	/// <summary>Disposes cached drawing resources while leaving the borrowed graphics open.</summary>
 	public void Dispose() {
-		_penCache?.Dispose();
-		_penCache = null;
-		_brushCache?.Dispose();
-		_brushCache = null;
-		_graphics = null;
+		PenCache?.Dispose();
+		PenCache = null;
+		BrushCache?.Dispose();
+		BrushCache = null;
+		Graphics = null;
 	}
 }

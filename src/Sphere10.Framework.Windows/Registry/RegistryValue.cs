@@ -13,21 +13,19 @@ namespace Sphere10.Framework.Windows;
 
 /// <summary>A captured Windows registry value, retaining its exact type, raw data and native read failure.</summary>
 public sealed record RegistryValue {
-	private readonly object _data;
-
 	public RegistryValue(RegistryAddress address, string name, RegistryValueKind kind, object data, Exception readError = null) {
 		Guard.ArgumentNotNull(name, nameof(name));
 		Address = address;
 		Name = name;
 		Kind = kind;
-		_data = Copy(data);
+		Data = Copy(data);
 		ReadError = readError;
 	}
 
 	public RegistryAddress Address { get; }
 	public string Name { get; }
 	public RegistryValueKind Kind { get; }
-	public object Data => Copy(_data);
+	public object Data => Copy(field);
 	public Exception ReadError { get; }
 
 	private static object Copy(object data) => data is Array array ? array.Clone() : data;

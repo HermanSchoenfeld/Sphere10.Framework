@@ -18,7 +18,9 @@ public abstract class ApplicationMenuItemBase : IApplicationMenuItem {
 	private IApplicationMenu _parent;
 
 	public virtual IApplicationMenu Parent {
-		get => _parent;
+		get {
+			return _parent;
+		}
 		set {
 			if (ReferenceEquals(_parent, value))
 				return;

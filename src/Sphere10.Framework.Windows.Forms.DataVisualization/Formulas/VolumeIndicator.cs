@@ -24,7 +24,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         /// <summary>
         /// Formula Module name
         /// </summary>
-        override public string Name { get { return SR.FormulaNameVolumeIndicators; } }
+        override public string Name => SR.FormulaNameVolumeIndicators;
 
         #endregion
 

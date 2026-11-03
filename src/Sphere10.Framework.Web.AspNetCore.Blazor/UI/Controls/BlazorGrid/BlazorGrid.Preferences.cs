@@ -37,10 +37,7 @@ public partial class BlazorGrid<TItem> {
 
 	// The settings value owns the schema; the flag controls editing without hiding its presence.
 	private bool CanEditGridSettings {
-		get {
-			return Preferences != null && GridType.HasFlag(GridTypes.AllowsSettingsChange)
-				&& Attribute.IsDefined(Preferences.GetType(), typeof(UserEditableAttribute), true);
-		}
+		get => Preferences != null && GridType.HasFlag(GridTypes.AllowsSettingsChange) && Attribute.IsDefined(Preferences.GetType(), typeof(UserEditableAttribute), true);
 	}
 
 	/// <summary>Captures query choices and deliberate widths without retaining controls or row edits.</summary>

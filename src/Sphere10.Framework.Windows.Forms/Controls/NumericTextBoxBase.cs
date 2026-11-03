@@ -58,12 +58,8 @@ public abstract class NumericBoxBase<T> : TextBoxEx
 
 	[Browsable(false)]
 	public override string Text {
-		get {
-			return base.Text;
-		}
-		set {
-			base.Text = value;
-		}
+		get => base.Text;
+		set => base.Text = value;
 	}
 
 	[DefaultValue(_defaultNullText)]

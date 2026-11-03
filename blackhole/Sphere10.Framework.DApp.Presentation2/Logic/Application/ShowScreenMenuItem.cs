@@ -11,14 +11,15 @@ using System;
 namespace Sphere10.Framework.DApp.Presentation2.Logic {
 
 	public class ShowScreenMenuItem : ApplicationMenuItem {
-		private Type _screenType;
 
 		public Type ScreenType {
-			get => _screenType;
+			get {
+				return field;
+			}
 			set {
 				Guard.ArgumentNotNull(value, nameof(value));
 				Guard.Argument(IsValidScreenType(value), nameof(value), "Not an IApplicationScreen");
-				_screenType = value;
+				field = value;
 			}
 		}
 

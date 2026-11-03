@@ -91,7 +91,8 @@ public class ObservableList<TItem, TConcrete> : ObservableCollection<TItem, TCon
 	);
 
 	public TItem this[int index] {
-		get => DoOperation(
+		get {
+			return DoOperation(
 			EventTraits.Fetch,
 			() => InternalCollection[index],
 			() => new FetchingByRangeEventArgs { CallArgs = new IndexCountCallArgs(index, 1) },
@@ -105,8 +106,9 @@ public class ObservableList<TItem, TConcrete> : ObservableCollection<TItem, TCon
 				Fetched?.Invoke(this, postEventArgs);
 			}
 		);
-
-		set => DoOperation(
+		}
+		set {
+			DoOperation(
 			EventTraits.Update,
 			() => InternalCollection[index] = value,
 			() => new UpdatingByRangeEventArgs<TItem> { CallArgs = new IndexItemsCallArgs<TItem>(index, value) },
@@ -120,6 +122,7 @@ public class ObservableList<TItem, TConcrete> : ObservableCollection<TItem, TCon
 				Updated?.Invoke(this, postEventArgs);
 			}
 		);
+		}
 	}
 
 	protected virtual void OnSearchingLocation(SearchingLocationEventArgs<TItem> args) {

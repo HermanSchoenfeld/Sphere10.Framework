@@ -22,8 +22,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization.Formulas
         /// <summary>
         /// Formula Module name
         /// </summary>
-        public override string Name
-        { get { return SR.FormulaNameGeneralTechnicalIndicators; } }
+        public override string Name => SR.FormulaNameGeneralTechnicalIndicators;
 
         #endregion Properties
 

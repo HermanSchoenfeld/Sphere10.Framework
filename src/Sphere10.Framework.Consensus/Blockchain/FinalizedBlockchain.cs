@@ -21,9 +21,6 @@ namespace Sphere10.Framework.Consensus;
 public class FinalizedBlockchain<TBlock, TState, TBlockID, TWeight, TOperationID> : BlockchainDecorator<TBlock, TState, TBlockID, TWeight, TOperationID, Blockchain<TBlock, TState, TBlockID, TWeight, TOperationID>>
 	where TBlock : IBlockchainBlock<TState, TBlockID, TWeight, TOperationID>
 	where TState : IBlockchainState {
-
-	private readonly UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperationID> _unfinalizedSector;
-
 	public FinalizedBlockchain(Blockchain<TBlock, TState, TBlockID, TWeight, TOperationID> blockchain)
 		: this(blockchain, new UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperationID>(blockchain.WeightAggregator)) {
 	}
@@ -31,10 +28,10 @@ public class FinalizedBlockchain<TBlock, TState, TBlockID, TWeight, TOperationID
 	public FinalizedBlockchain(Blockchain<TBlock, TState, TBlockID, TWeight, TOperationID> blockchain, UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperationID> unfinalizedSector)
 		: base(blockchain) {
 		Guard.ArgumentNotNull(unfinalizedSector, nameof(unfinalizedSector));
-		_unfinalizedSector = unfinalizedSector;
+		UnfinalizedSector = unfinalizedSector;
 	}
 
-	public UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperationID> UnfinalizedSector => _unfinalizedSector;
+	public UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperationID> UnfinalizedSector { get; }
 
 	/// <summary>
 	/// Adds a block to the unfinalized sector as the new root. This is the genesis of the unfinalized frontier.

@@ -45,7 +45,9 @@ public sealed class BTreeProfile {
 
 	/// <summary>Optional complete type and order override. When omitted, the named family selects its existing implementation.</summary>
 	public BTreeSpec Spec {
-		get => _spec;
+		get {
+			return _spec;
+		}
 		set {
 			_spec = value;
 			if (value != null)
@@ -54,7 +56,9 @@ public sealed class BTreeProfile {
 	}
 
 	public int Order {
-		get => _spec?.Order ?? _order;
+		get {
+			return _spec?.Order ?? _order;
+		}
 		set {
 			if (_spec != null)
 				_spec = new BTreeSpec(_spec.Type, value);

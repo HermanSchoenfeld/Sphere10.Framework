@@ -96,7 +96,9 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 	}
 
 	public override long Count {
-		get => base.Count;
+		get {
+			return base.Count;
+		}
 		set {
 			Guard.ArgumentInRange(value, 0, long.MaxValue, "Value");
 			base.Count = value;
@@ -106,7 +108,9 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 	}
 
 	public long MaxItems {
-		get => _itemSizes.Length;
+		get {
+			return _itemSizes.Length;
+		}
 		set {
 			Guard.ArgumentInRange(value, 1, long.MaxValue, "Value");
 			var valueI = Tools.Collection.CheckNotImplemented64bitAddressingLength(value);
@@ -119,7 +123,9 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 	}
 
 	public long PreviousPagePosition {
-		get => _previousPagePosition;
+		get {
+			return _previousPagePosition;
+		}
 		set {
 			_previousPagePosition = value;
 			Guard.ArgumentInRange(value, 0, long.MaxValue, "Value");
@@ -129,7 +135,9 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 	}
 
 	public long NextPagePosition {
-		get => _nextPagePosition;
+		get {
+			return _nextPagePosition;
+		}
 		set {
 			_nextPagePosition = value;
 			Guard.ArgumentInRange(value, 0, long.MaxValue, "Value");

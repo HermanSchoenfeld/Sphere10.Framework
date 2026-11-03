@@ -29,7 +29,9 @@ public class ApplicationPlugin : ApplicationPluginBase {
 	}
 
 	public override string Name {
-		get => _name;
+		get {
+			return _name;
+		}
 		init {
 			Guard.Argument(!string.IsNullOrWhiteSpace(value), nameof(value), "A plugin name is required.");
 			_name = value;

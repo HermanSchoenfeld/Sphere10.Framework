@@ -44,12 +44,8 @@ public class Button : Cell {
 
 	// Visual Elements
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)base.Background;
+		set => base.Background = value;
 	}
 
 	// Clone

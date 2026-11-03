@@ -71,8 +71,6 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	private readonly EndianBitConverter _bitConverter;
 	private readonly EndianBinaryReader _reader;
 	private readonly EndianBinaryWriter _writer;
-	private readonly IItemSerializer<K> _keySerializer;
-	private readonly IItemSerializer<V> _valueSerializer;
 	private readonly Endianness _endianness;
 	private readonly int _keySize;
 	private readonly int _valueSize;
@@ -123,8 +121,8 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 		Guard.Argument(valueSerializer.IsConstantSize, nameof(valueSerializer), "Value serializer must be constant-size.");
 
 		_stream = stream;
-		_keySerializer = keySerializer;
-		_valueSerializer = valueSerializer;
+		KeySerializer = keySerializer;
+		ValueSerializer = valueSerializer;
 		_endianness = endianness;
 		_bitConverter = EndianBitConverter.For(endianness);
 		_reader = new EndianBinaryReader(_bitConverter, stream);
@@ -170,9 +168,9 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 
 	public Stream Stream => _stream;
 
-	public IItemSerializer<K> KeySerializer => _keySerializer;
+	public IItemSerializer<K> KeySerializer { get; }
 
-	public IItemSerializer<V> ValueSerializer => _valueSerializer;
+	public IItemSerializer<V> ValueSerializer { get; }
 
 	protected override bool HasRoot => _rootIndexProperty.Value != NoNode;
 
@@ -242,7 +240,7 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 		// The generic serializer needs an owned array; avoid a scratch span followed by its ToArray copy.
 		var keyBytes = new byte[_keySize];
 		_stream.ReadExactly(keyBytes);
-		return _keySerializer.DeserializeBytes(keyBytes, _endianness);
+		return KeySerializer.DeserializeBytes(keyBytes, _endianness);
 	}
 
 	protected override KeyValuePair<K, V> GetKey(long node, int index) {
@@ -250,13 +248,13 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 		var KeyBytes = _reader.ReadBytes(_keySize);
 		var ValueBytes = _reader.ReadBytes(_valueSize);
 		return new KeyValuePair<K, V>(
-			_keySerializer.DeserializeBytes(KeyBytes, _endianness),
-			_valueSerializer.DeserializeBytes(ValueBytes, _endianness));
+			KeySerializer.DeserializeBytes(KeyBytes, _endianness),
+			ValueSerializer.DeserializeBytes(ValueBytes, _endianness));
 	}
 
 	protected override void SetKey(long node, int index, KeyValuePair<K, V> entry) {
-		var KeyBytes = _keySerializer.SerializeToBytes(entry.Key, _endianness);
-		var ValueBytes = _valueSerializer.SerializeToBytes(entry.Value, _endianness);
+		var KeyBytes = KeySerializer.SerializeToBytes(entry.Key, _endianness);
+		var ValueBytes = ValueSerializer.SerializeToBytes(entry.Value, _endianness);
 		_stream.Seek(GetNodeOffset(node) + KeysOffset + (index * _keyEntrySize), SeekOrigin.Begin);
 		_writer.Write(KeyBytes, 0, _keySize);
 		_writer.Write(ValueBytes, 0, _valueSize);
@@ -282,8 +280,8 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 	protected override void AddKey(long node, KeyValuePair<K, V> entry) {
 		var KeyCount = GetKeyCount(node);
 		var NodeOffset = GetNodeOffset(node);
-		var KeyBytes = _keySerializer.SerializeToBytes(entry.Key, _endianness);
-		var ValueBytes = _valueSerializer.SerializeToBytes(entry.Value, _endianness);
+		var KeyBytes = KeySerializer.SerializeToBytes(entry.Key, _endianness);
+		var ValueBytes = ValueSerializer.SerializeToBytes(entry.Value, _endianness);
 		_stream.Seek(NodeOffset + KeysOffset + (KeyCount * _keyEntrySize), SeekOrigin.Begin);
 		_writer.Write(KeyBytes, 0, _keySize);
 		_writer.Write(ValueBytes, 0, _valueSize);
@@ -497,9 +495,9 @@ public class StreamMappedBTree<K, V> : BTree<K, V, long>, IDisposable {
 
 	private void SerializeKeyEntry(Span<byte> record, int keyIndex, KeyValuePair<K, V> entry) {
 		var offset = KeysOffset + (keyIndex * _keyEntrySize);
-		var keyBytes = _keySerializer.SerializeToBytes(entry.Key, _endianness);
+		var keyBytes = KeySerializer.SerializeToBytes(entry.Key, _endianness);
 		keyBytes.AsSpan(0, _keySize).CopyTo(record.Slice(offset, _keySize));
-		var valueBytes = _valueSerializer.SerializeToBytes(entry.Value, _endianness);
+		var valueBytes = ValueSerializer.SerializeToBytes(entry.Value, _endianness);
 		valueBytes.AsSpan(0, _valueSize).CopyTo(record.Slice(offset + _keySize, _valueSize));
 	}
 

@@ -13,8 +13,6 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class PadLockButton : Button {
-	private PadLockState _lockState;
-
 	[Description("Raised when the pad lock changes from closed to locked states")]
 	[Category("Action")]
 	public event EventHandlerEx<PadLockButton, PadLockState> PadLockStateChanged;
@@ -31,20 +29,22 @@ public class PadLockButton : Button {
 	}
 
 	public override string Text {
-		get { return string.Empty; }
-		set { base.Text = value; }
+		get => string.Empty;
+		set => base.Text = value;
 	}
 
 
 	[Category("Behavior")]
 	[DefaultValue(PadLockState.Locked)]
 	public PadLockState LockState {
-		get { return _lockState; }
+		get {
+			return field;
+		}
 		set {
-			var valueChanged = _lockState != value;
-			_lockState = value;
+			var valueChanged = field != value;
+			field = value;
 			if (valueChanged) {
-				switch (_lockState) {
+				switch (field) {
 					case PadLockState.Unlocked:
 						BackgroundImage = Resources.PadLockOpen;
 						break;
@@ -74,7 +74,7 @@ public class PadLockButton : Button {
 	private void RaisePadLockStateChangedEvent() {
 		OnPadLockStateChanged();
 		if (PadLockStateChanged != null)
-			PadLockStateChanged(this, _lockState);
+			PadLockStateChanged(this, LockState);
 	}
 
 	private async void PadLockButton_Click(object sender, EventArgs e) {

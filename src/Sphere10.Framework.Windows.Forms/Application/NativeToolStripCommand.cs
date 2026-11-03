@@ -37,41 +37,17 @@ internal class NativeToolStripCommand : IWinFormsLinkMenuItem {
 
 	internal IReadOnlyList<NativeToolStripCommand> Children { get; }
 
-	public string Title {
-		get {
-			return string.IsNullOrEmpty(Item.Text) ? Item.ToolTipText : Item.Text;
-		}
-	}
+	public string Title => string.IsNullOrEmpty(Item.Text) ? Item.ToolTipText : Item.Text;
 
-	public string Text {
-		get {
-			return Title;
-		}
-	}
+	public string Text => Title;
 
-	public Image Image16x16 {
-		get {
-			return Item.Image;
-		}
-	}
+	public Image Image16x16 => Item.Image;
 
-	public bool ShowOnExplorerBar {
-		get {
-			return false;
-		}
-	}
+	public bool ShowOnExplorerBar => false;
 
-	public bool ShowOnToolStrip {
-		get {
-			return Item.Owner is ToolStrip and not MenuStrip and not ToolStripDropDown;
-		}
-	}
+	public bool ShowOnToolStrip => Item.Owner is ToolStrip and not MenuStrip and not ToolStripDropDown;
 
-	public bool ExecuteOnLoad {
-		get {
-			return false;
-		}
-	}
+	public bool ExecuteOnLoad => false;
 
 	// Programmatic command execution follows the same native handler and checked/disabled behavior as a click.
 	public void OnSelect() {

@@ -35,7 +35,9 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 	public virtual bool ApplicationExiting { get; set; }
 
 	public virtual string Status {
-		get => _status;
+		get {
+			return _status;
+		}
 		set {
 			if (_status == value)
 				return;

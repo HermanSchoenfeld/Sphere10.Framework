@@ -76,9 +76,7 @@ public partial class TextBoxEx : TextBox {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object Value {
 		get {
-			if (IsValidValue(out var value))
-				return value;
-			throw new ArgumentOutOfRangeException(nameof(Text));
+			return IsValidValue(out var value) ? value : throw new ArgumentOutOfRangeException(nameof(Text));
 		}
 		set {
 			Text = _validator == null

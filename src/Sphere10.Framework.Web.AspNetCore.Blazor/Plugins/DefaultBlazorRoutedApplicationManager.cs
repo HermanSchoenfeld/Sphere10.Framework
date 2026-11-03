@@ -28,12 +28,10 @@ public class DefaultBlazorRoutedApplicationManager : IBlazorRoutedApplicationMan
 	/// </summary>
 	public event EventHandler<BlazorRoutedApplicationPageSelectedEventArgs>? AppBlockPageSelected;
 
-	private readonly IBlazorRoutedApplication[] _apps;
-
 	/// <summary>
 	/// Gets the available apps.
 	/// </summary>
-	public IBlazorRoutedApplication[] Apps => Tools.Array.Clone(_apps);
+	public IBlazorRoutedApplication[] Apps => Tools.Array.Clone(field);
 
 	/// <summary>
 	/// Gets or sets the selected app.
@@ -57,7 +55,7 @@ public class DefaultBlazorRoutedApplicationManager : IBlazorRoutedApplicationMan
 	/// <param name="navigationManager"></param>
 	public DefaultBlazorRoutedApplicationManager(IBlazorRoutedPluginManager pluginManager, NavigationManager navigationManager) {
 		Guard.ArgumentNotNull(pluginManager, nameof(pluginManager));
-		_apps = pluginManager.Plugins.SelectMany(plugin => plugin.Apps).ToArray();
+		Apps = pluginManager.Plugins.SelectMany(plugin => plugin.Apps).ToArray();
 		NavigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
 
 		NavigationManager.LocationChanged += NavigationManagerOnLocationChanged;

@@ -147,33 +147,25 @@ public class MalformedCsvException
 	/// Gets the raw data when the error occured.
 	/// </summary>
 	/// <value>The raw data when the error occured.</value>
-	public string RawData {
-		get { return _rawData; }
-	}
+	public string RawData => _rawData;
 
 	/// <summary>
 	/// Gets the current position in the raw data.
 	/// </summary>
 	/// <value>The current position in the raw data.</value>
-	public int CurrentPosition {
-		get { return _currentPosition; }
-	}
+	public int CurrentPosition => _currentPosition;
 
 	/// <summary>
 	/// Gets the current record index.
 	/// </summary>
 	/// <value>The current record index.</value>
-	public long CurrentRecordIndex {
-		get { return _currentRecordIndex; }
-	}
+	public long CurrentRecordIndex => _currentRecordIndex;
 
 	/// <summary>
 	/// Gets the current field index.
 	/// </summary>
 	/// <value>The current record index.</value>
-	public int CurrentFieldIndex {
-		get { return _currentFieldIndex; }
-	}
+	public int CurrentFieldIndex => _currentFieldIndex;
 
 	#endregion
 
@@ -183,9 +175,7 @@ public class MalformedCsvException
 	/// Gets a message that describes the current exception.
 	/// </summary>
 	/// <value>A message that describes the current exception.</value>
-	public override string Message {
-		get { return _message; }
-	}
+	public override string Message => _message;
 
 	/// <summary>
 	/// When overridden in a derived class, sets the <see cref="T:SerializationInfo"/> with information about the exception.

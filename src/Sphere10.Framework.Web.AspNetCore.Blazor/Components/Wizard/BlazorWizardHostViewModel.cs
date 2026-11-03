@@ -63,7 +63,9 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase, IDisposable {
 	/// Gets or sets the component ref instance of the current step.
 	/// </summary>
 	public BlazorWizardStepBase CurrentStepInstance {
-		get => _currentStepInstance;
+		get {
+			return _currentStepInstance;
+		}
 		private set {
 			_currentStepInstance = value;
 			if (value != null) {

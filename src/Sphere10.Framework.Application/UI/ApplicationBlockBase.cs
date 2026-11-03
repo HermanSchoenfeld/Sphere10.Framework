@@ -33,7 +33,9 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 	public virtual ApplicationScreenDefinition[] ScreenDefinitions => _screenDefinitions.ToArray();
 
 	public virtual ApplicationScreenDefinition DefaultScreenDefinition {
-		get => _defaultScreenDefinition;
+		get {
+			return _defaultScreenDefinition;
+		}
 		set {
 			Guard.Argument(value == null || ContainsScreenDefinition(value), nameof(value), "The default screen must already be registered by this block.");
 			_defaultScreenDefinition = value;

@@ -33,7 +33,6 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 	private IBuffer _nodeBuffer;
 	private BitArray _dirtyNodes;
 	private readonly int _digestSize;
-	private MerkleSize _size;
 
 	public FlatMerkleTree(CHF hashAlgorithm) : this(hashAlgorithm, 0, DefaultLeafGrowth) {
 	}
@@ -83,9 +82,9 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 	public CHF HashAlgorithm { get; }
 
-	public byte[] Root => _size.LeafCount > 0 ? GetValue(MerkleCoordinate.Root(Size)).ToArray() : null;
+	public byte[] Root => Size.LeafCount > 0 ? GetValue(MerkleCoordinate.Root(Size)).ToArray() : null;
 
-	public MerkleSize Size => _size;
+	public MerkleSize Size { get; private set; }
 
 	public IExtendedList<byte[]> Leafs { get; }
 
@@ -93,13 +92,13 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 	public ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) {
 		// perfect nodes exist within a perfect tree and are maintained
-		if (MerkleMath.IsPerfectNode(_size, coordinate)) {
+		if (MerkleMath.IsPerfectNode(Size, coordinate)) {
 			var index = coordinate.ToFlatIndex();
 			EnsureComputed(coordinate, index);
 			return _nodeBuffer.ReadSpan(index * _digestSize, _digestSize);
 		}
 		// it's an imperfect node, so calculate it on-the-fly
-		var childNodes = MerkleMath.GetChildren(_size, coordinate);
+		var childNodes = MerkleMath.GetChildren(Size, coordinate);
 		if (childNodes.Right == MerkleCoordinate.Null) {
 			return GetValue(childNodes.Left); // Bubble-up left
 		}
@@ -112,10 +111,10 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 	}
 
 	public void EnsureComputed() {
-		if (_size.LeafCount == 0)
+		if (Size.LeafCount == 0)
 			return;
 
-		var rootCoord =  MerkleCoordinate.Root(_size.LeafCount);
+		var rootCoord =  MerkleCoordinate.Root(Size.LeafCount);
 		EnsureComputed(rootCoord, checked((long)MerkleMath.ToFlatIndex(rootCoord)));
 	}
 
@@ -126,8 +125,8 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 	private void EnsureComputed(MerkleCoordinate coordinate, long flatIndex) {
 		// Imperfect nodes don't exist in the flat array, so just recurse into their children
-		if (!MerkleMath.IsPerfectNode(_size, coordinate)) {
-			var subNodes = MerkleMath.GetChildren(_size, coordinate);
+		if (!MerkleMath.IsPerfectNode(Size, coordinate)) {
+			var subNodes = MerkleMath.GetChildren(Size, coordinate);
 			EnsureComputed(subNodes.Left, checked((long)MerkleMath.ToFlatIndex(subNodes.Left)));
 			if (subNodes.Right != MerkleCoordinate.Null)
 				EnsureComputed(subNodes.Right, checked((long)MerkleMath.ToFlatIndex(subNodes.Right)));
@@ -143,7 +142,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		if (!IsDirty(flatIndex))
 			return;
 
-		var childs = MerkleMath.GetChildren(_size, coordinate);
+		var childs = MerkleMath.GetChildren(Size, coordinate);
 		if (childs.Right == MerkleCoordinate.Null)
 			throw new InternalErrorException("Imperfect nodes can't be marked dirty");
 		var leftIX = childs.Left.ToFlatIndex();
@@ -171,7 +170,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		var flatNodeCount = buffer.Count / _digestSize;
 		var flatNodeCountI = Tools.Collection.CheckNotImplemented64bitAddressingLength(flatNodeCount);
 		_dirtyNodes = new BitArray(flatNodeCountI);
-		_size = MerkleSize.FromLeafCount(leafCount);
+		Size = MerkleSize.FromLeafCount(leafCount);
 		//Guard.Ensure((ulong)flatNodeCount == MerkleMath.CountFlatNodes(_size.LeafCount), $"Inconsistent buffer size (flatNodes: {flatNodeCount}, leafCount: {leafCount})");
 	}
 
@@ -200,14 +199,14 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 			_parent = parent;
 		}
 
-		public override long Count => _parent._size.LeafCount;
+		public override long Count => _parent.Size.LeafCount;
 
 		public override void AddRange(IEnumerable<byte[]> items) {
 			var itemsArr = items as byte[][] ?? items.ToArray();
 			Guard.Argument(itemsArr.All(x => x.Length == _parent._digestSize), nameof(items), "Improper digest size(s)");
 
 			// Expand node buffer for new tree nodes
-			var newLeafCount = _parent._size.LeafCount + itemsArr.Length;
+			var newLeafCount = _parent.Size.LeafCount + itemsArr.Length;
 			var oldTotalFlatNodes = _parent._nodeBuffer.Count / _parent._digestSize;
 			var newTotalFlatNodes = checked((long)MerkleMath.CountFlatNodes(newLeafCount));
 			var newFlatNodes = newTotalFlatNodes - oldTotalFlatNodes;
@@ -220,11 +219,11 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 			// Add each leaf node
 			foreach (var (item, i) in itemsArr.WithIndex()) {
-				var flatIndex = MerkleCoordinate.From(0, _parent._size.LeafCount + i).ToFlatIndex();
+				var flatIndex = MerkleCoordinate.From(0, _parent.Size.LeafCount + i).ToFlatIndex();
 				_parent._nodeBuffer.UpdateRange(flatIndex * _parent._digestSize, item);
 				_parent.SetDirty(flatIndex, false); // leaf node marked not dirty
 			}
-			_parent._size = MerkleSize.FromLeafCount(_parent._size.LeafCount + itemsArr.Length);
+			_parent.Size = MerkleSize.FromLeafCount(_parent.Size.LeafCount + itemsArr.Length);
 		}
 
 		public override long[] IndexOfRange(IEnumerable<byte[]> items) {
@@ -308,7 +307,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 				_parent.SetDirty(flatIndex, movedLeafsDirtyBit[i]); // leaf node marked not dirty
 			}
 
-			_parent._size = MerkleSize.FromLeafCount(newLeafCount);
+			_parent.Size = MerkleSize.FromLeafCount(newLeafCount);
 		}
 
 		public override void RemoveRange(long index, long count) {
@@ -317,7 +316,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 
 			// Expand node buffer for new tree nodes
 			var oldLeafCount = _parent.Size.LeafCount;
-			var newLeafCount = _parent._size.LeafCount - count;
+			var newLeafCount = _parent.Size.LeafCount - count;
 			var movedLeafCount = oldLeafCount - (index + count);
 			var oldTotalFlatNodes = _parent.FlatNodeCount;
 			var newTotalFlatNodes = (int)MerkleMath.CountFlatNodes(newLeafCount);
@@ -351,7 +350,7 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 				_parent.SetDirty(flatIndex, movedLeafDirtyBit[i]);
 			}
 
-			_parent._size = MerkleSize.FromLeafCount(newLeafCount);
+			_parent.Size = MerkleSize.FromLeafCount(newLeafCount);
 		}
 	}
 }

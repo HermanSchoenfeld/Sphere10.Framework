@@ -16,8 +16,6 @@ namespace CommandLine;
 /// </summary>
 public class Parser : IDisposable {
 	private bool disposed;
-	private readonly ParserSettings settings;
-
 	private static readonly Lazy<Parser> DefaultParser = new Lazy<Parser>(
 		() => new Parser(new ParserSettings { HelpWriter = Console.Error }));
 
@@ -25,7 +23,7 @@ public class Parser : IDisposable {
 	/// Initializes a new instance of the <see cref="CommandLine.Parser"/> class.
 	/// </summary>
 	public Parser() {
-		settings = new ParserSettings { Consumed = true };
+		Settings = new ParserSettings { Consumed = true };
 	}
 
 	/// <summary>
@@ -37,14 +35,14 @@ public class Parser : IDisposable {
 	public Parser(Action<ParserSettings> configuration) {
 		if (configuration == null) throw new ArgumentNullException("configuration");
 
-		settings = new ParserSettings();
-		configuration(settings);
-		settings.Consumed = true;
+		Settings = new ParserSettings();
+		configuration(Settings);
+		Settings.Consumed = true;
 	}
 
 	internal Parser(ParserSettings settings) {
-		this.settings = settings;
-		this.settings.Consumed = true;
+		Settings = settings;
+		Settings.Consumed = true;
 	}
 
 	/// <summary>
@@ -57,16 +55,12 @@ public class Parser : IDisposable {
 	/// <summary>
 	/// Gets the singleton instance created with basic defaults.
 	/// </summary>
-	public static Parser Default {
-		get { return DefaultParser.Value; }
-	}
+	public static Parser Default => DefaultParser.Value;
 
 	/// <summary>
 	/// Gets the instance that implements <see cref="CommandLine.ParserSettings"/> in use.
 	/// </summary>
-	public ParserSettings Settings {
-		get { return settings; }
-	}
+	public ParserSettings Settings { get; }
 
 	/// <summary>
 	/// Parses a string array of command line arguments constructing values in an instance of type <typeparamref name="T"/>.
@@ -87,16 +81,16 @@ public class Parser : IDisposable {
 		return MakeParserResult(
 			InstanceBuilder.Build(
 				factory,
-				(arguments, optionSpecs) => Tokenize(arguments, optionSpecs, settings),
+				(arguments, optionSpecs) => Tokenize(arguments, optionSpecs, Settings),
 				args,
-				settings.NameComparer,
-				settings.CaseInsensitiveEnumValues,
-				settings.ParsingCulture,
-				settings.AutoHelp,
-				settings.AutoVersion,
-				settings.AllowMultiInstance,
-				HandleUnknownArguments(settings.IgnoreUnknownArguments)),
-			settings);
+				Settings.NameComparer,
+				Settings.CaseInsensitiveEnumValues,
+				Settings.ParsingCulture,
+				Settings.AutoHelp,
+				Settings.AutoVersion,
+				Settings.AllowMultiInstance,
+				HandleUnknownArguments(Settings.IgnoreUnknownArguments)),
+			Settings);
 	}
 
 	/// <summary>
@@ -117,16 +111,16 @@ public class Parser : IDisposable {
 		return MakeParserResult(
 			InstanceBuilder.Build(
 				Maybe.Just(factory),
-				(arguments, optionSpecs) => Tokenize(arguments, optionSpecs, settings),
+				(arguments, optionSpecs) => Tokenize(arguments, optionSpecs, Settings),
 				args,
-				settings.NameComparer,
-				settings.CaseInsensitiveEnumValues,
-				settings.ParsingCulture,
-				settings.AutoHelp,
-				settings.AutoVersion,
-				settings.AllowMultiInstance,
-				HandleUnknownArguments(settings.IgnoreUnknownArguments)),
-			settings);
+				Settings.NameComparer,
+				Settings.CaseInsensitiveEnumValues,
+				Settings.ParsingCulture,
+				Settings.AutoHelp,
+				Settings.AutoVersion,
+				Settings.AllowMultiInstance,
+				HandleUnknownArguments(Settings.IgnoreUnknownArguments)),
+			Settings);
 	}
 
 	/// <summary>
@@ -148,17 +142,17 @@ public class Parser : IDisposable {
 
 		return MakeParserResult(
 			InstanceChooser.Choose(
-				(arguments, optionSpecs) => Tokenize(arguments, optionSpecs, settings),
+				(arguments, optionSpecs) => Tokenize(arguments, optionSpecs, Settings),
 				types,
 				args,
-				settings.NameComparer,
-				settings.CaseInsensitiveEnumValues,
-				settings.ParsingCulture,
-				settings.AutoHelp,
-				settings.AutoVersion,
-				settings.AllowMultiInstance,
-				HandleUnknownArguments(settings.IgnoreUnknownArguments)),
-			settings);
+				Settings.NameComparer,
+				Settings.CaseInsensitiveEnumValues,
+				Settings.ParsingCulture,
+				Settings.AutoHelp,
+				Settings.AutoVersion,
+				Settings.AllowMultiInstance,
+				HandleUnknownArguments(Settings.IgnoreUnknownArguments)),
+			Settings);
 	}
 
 	/// <summary>
@@ -213,8 +207,8 @@ public class Parser : IDisposable {
 		if (disposed) return;
 
 		if (disposing) {
-			if (settings != null)
-				settings.Dispose();
+			if (Settings != null)
+				Settings.Dispose();
 
 			disposed = true;
 		}

@@ -44,13 +44,8 @@ public abstract class VisualElementBase : IVisualElement {
 	/// You can also set more than one properties to allign the content to more than one side.
 	/// </summary>
 	public virtual AnchorArea AnchorArea {
-		get {
-			return _anchorArea;
-		}
-
-		set {
-			_anchorArea = value;
-		}
+		get => _anchorArea;
+		set => _anchorArea = value;
 	}
 
 	/// <summary>

@@ -52,17 +52,13 @@ public class ExpandoEventArgs : EventArgs {
 	/// <summary>
 	/// Gets the Expando that generated the event
 	/// </summary>
-	public Expando Expando {
-		get { return this.expando; }
-	}
+	public Expando Expando => this.expando;
 
 
 	/// <summary>
 	/// Gets whether the Expando is collapsed
 	/// </summary>
-	public bool Collapsed {
-		get { return this.expando.Collapsed; }
-	}
+	public bool Collapsed => this.expando.Collapsed;
 
 	#endregion
 

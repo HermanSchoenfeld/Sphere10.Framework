@@ -378,11 +378,7 @@ public class SettingsProviderDirectionTests {
 		}
 
 		// Selects whether creation must persist before returning.
-		public override bool AutoSaveNewSettings {
-			get {
-				return _autoSave;
-			}
-		}
+		public override bool AutoSaveNewSettings => _autoSave;
 
 		// Releases a pending synchronous storage write.
 		public ManualResetEventSlim ReleaseSave { get; } = new(true);
@@ -455,11 +451,7 @@ public class SettingsProviderDirectionTests {
 		}
 
 		// Selects whether creation must persist before returning.
-		public override bool AutoSaveNewSettings {
-			get {
-				return _autoSave;
-			}
-		}
+		public override bool AutoSaveNewSettings => _autoSave;
 
 		// Delays asynchronous storage completion until the test releases it.
 		public Task SaveRelease { get; set; } = Task.CompletedTask;
@@ -480,11 +472,7 @@ public class SettingsProviderDirectionTests {
 		public int SaveCalls { get; private set; }
 
 		// Returns the contexts observed by the asynchronous primitives.
-		public SynchronizationContext[] PrimitiveContexts {
-			get {
-				return _primitiveContexts.ToArray();
-			}
-		}
+		public SynchronizationContext[] PrimitiveContexts => _primitiveContexts.ToArray();
 
 		// Check record presence through the asynchronous fixture contract.
 		public override async Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
@@ -541,11 +529,7 @@ public class SettingsProviderDirectionTests {
 		private int _posts;
 
 		// Counts continuations sent to the caller context.
-		public int Posts {
-			get {
-				return Volatile.Read(ref _posts);
-			}
-		}
+		public int Posts => Volatile.Read(ref _posts);
 
 		// Count captured continuations and dispatch them without blocking the test.
 		public override void Post(SendOrPostCallback callback, object state) {

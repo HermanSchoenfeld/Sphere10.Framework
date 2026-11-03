@@ -44,12 +44,8 @@ public class HTML {
 	/// Export mode
 	/// </summary>
 	public virtual ExportHTMLMode Mode {
-		get {
-			return ExportMode;
-		}
-		set {
-			ExportMode = value;
-		}
+		get => ExportMode;
+		set => ExportMode = value;
 	}
 
 	/// <summary>
@@ -63,11 +59,7 @@ public class HTML {
 		}
 	}
 
-	public virtual System.IO.Stream Stream {
-		get {
-			return OutputStream;
-		}
-	}
+	public virtual System.IO.Stream Stream => OutputStream;
 
 	/// <summary>
 	/// Clear the list of embedded images. This method don't delete the files only clear the list.

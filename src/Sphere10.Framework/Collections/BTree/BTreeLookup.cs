@@ -24,7 +24,6 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 	private readonly IBTree<CompoundKey<K, int>, V> _btree;
 	private readonly IComparer<K> _keyComparer;
 	private readonly IEqualityComparer<V> _valueEqualityComparer;
-	private int _distinctKeyCount;
 
 	public BTreeLookup(BTreeBase<CompoundKey<K, int>, V> btree, IComparer<K> keyComparer, IEqualityComparer<V> valueEqualityComparer = null)
 		: this((IBTree<CompoundKey<K, int>, V>)btree, keyComparer, valueEqualityComparer) {
@@ -36,7 +35,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 		_btree = btree;
 		_keyComparer = keyComparer;
 		_valueEqualityComparer = valueEqualityComparer ?? EqualityComparer<V>.Default;
-		_distinctKeyCount = ComputeDistinctKeyCount();
+		DistinctKeyCount = ComputeDistinctKeyCount();
 	}
 
 	/// <summary>
@@ -47,7 +46,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 	/// <summary>
 	/// The number of distinct keys in the lookup.
 	/// </summary>
-	public int DistinctKeyCount => _distinctKeyCount;
+	public int DistinctKeyCount { get; private set; }
 
 	/// <summary>
 	/// Adds a key-value pair to the lookup.
@@ -57,7 +56,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 		var nextIndex = TryFindMaxGroupIndex(key, out var maxIndex) ? maxIndex + 1 : 0;
 		_btree.Add(CompoundKey.From(key, nextIndex), value);
 		if (!wasPresent)
-			_distinctKeyCount++;
+			DistinctKeyCount++;
 	}
 
 	/// <summary>
@@ -87,7 +86,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 		}
 
 		if (!ContainsKey(key))
-			_distinctKeyCount--;
+			DistinctKeyCount--;
 
 		return true;
 	}
@@ -102,7 +101,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 		for (var index = maxIndex; index >= 0; index--)
 			_btree.Remove(CompoundKey.From(key, index));
 
-		_distinctKeyCount--;
+		DistinctKeyCount--;
 	}
 
 	/// <summary>
@@ -135,7 +134,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 	/// </summary>
 	public void Clear() {
 		_btree.Clear();
-		_distinctKeyCount = 0;
+		DistinctKeyCount = 0;
 	}
 
 	/// <summary>

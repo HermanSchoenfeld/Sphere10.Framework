@@ -4641,9 +4641,9 @@ public class Point3D
     ]
     public float X
     {
-        get => this._coordXY.X;
-        set => this._coordXY.X = value;
-    }
+		get => this._coordXY.X;
+		set => this._coordXY.X = value;
+	}
 
     /// <summary>
     /// Gets or sets the Y coordinate of the point.
@@ -4655,9 +4655,9 @@ public class Point3D
     ]
     public float Y
     {
-        get => this._coordXY.Y;
-        set => this._coordXY.Y = value;
-    }
+		get => this._coordXY.Y;
+		set => this._coordXY.Y = value;
+	}
 
     /// <summary>
     /// Gets or sets the Z coordinate of the point.
@@ -4679,9 +4679,9 @@ public class Point3D
     ]
     public PointF PointF
     {
-        get => this._coordXY;
-        set => this._coordXY = new PointF(value.X, value.Y);
-    }
+		get => this._coordXY;
+		set => this._coordXY = new PointF(value.X, value.Y);
+	}
 
     #endregion
 

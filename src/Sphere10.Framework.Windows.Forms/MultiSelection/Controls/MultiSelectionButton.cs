@@ -29,8 +29,6 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 	}
 
 	private ContextMenuStrip _contextMenu = new ContextMenuStrip();
-	private ExtendedList<SubButtonItem> _buttonsItems = new ExtendedList<SubButtonItem>();
-	private MultiSelectionButtonMode _mode = MultiSelectionButtonMode.InvokeFirstAction;
 
 	public MultiSelectionButton() {
 		// This call is required by the Windows.Forms Form Designer.
@@ -55,12 +53,8 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 
 	[Browsable(false)]
 	public new Color BackColor {
-		get {
-			return base.BackColor;
-		}
-		set {
-			base.BackColor = value;
-		}
+		get => base.BackColor;
+		set => base.BackColor = value;
 	}
 
 	[Browsable(true)]
@@ -92,68 +86,38 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual System.Drawing.ContentAlignment TextAlign {
-		get {
-			return _mainButton.TextAlign;
-		}
-		set {
-			_mainButton.TextAlign = value;
-		}
+		get => _mainButton.TextAlign;
+		set => _mainButton.TextAlign = value;
 	}
 
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual Image Image {
-		get {
-			return _mainButton.Image;
-		}
-		set {
-			_mainButton.Image = value;
-		}
+		get => _mainButton.Image;
+		set => _mainButton.Image = value;
 	}
 
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual System.Drawing.ContentAlignment ImageAlign {
-		get {
-			return _mainButton.ImageAlign;
-		}
-		set {
-			_mainButton.ImageAlign = value;
-		}
+		get => _mainButton.ImageAlign;
+		set => _mainButton.ImageAlign = value;
 	}
 
 	// IButtonControl Members
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual DialogResult DialogResult {
-		get {
-			return _mainButton.DialogResult;
-		}
-		set {
-			_mainButton.DialogResult = value;
-		}
+		get => _mainButton.DialogResult;
+		set => _mainButton.DialogResult = value;
 	}
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ExtendedList<SubButtonItem> ButtonsItems {
-		get {
-			return _buttonsItems;
-		}
-		set {
-			_buttonsItems = value;
-		}
-	}
+	public ExtendedList<SubButtonItem> ButtonsItems { get; set; } = new ExtendedList<SubButtonItem>();
 
 	[DefaultValue(MultiSelectionButtonMode.InvokeFirstAction)]
-	public MultiSelectionButtonMode Mode {
-		get {
-			return _mode;
-		}
-		set {
-			_mode = value;
-		}
-	}
+	public MultiSelectionButtonMode Mode { get; set; } = MultiSelectionButtonMode.InvokeFirstAction;
 
 	public void PerformClick() {
 		_mainButton.PerformClick();
@@ -189,9 +153,9 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 
 	// Invokes the first action or opens its alternatives according to the button mode.
 	private void MainClick(object sender, System.EventArgs args) {
-		if (_mode == MultiSelectionButtonMode.InvokeFirstAction) {
-			if (_buttonsItems != null && _buttonsItems.Count > 0)
-				OnClick(new SubButtonItemEventArgs(_buttonsItems[0]));
+		if (Mode == MultiSelectionButtonMode.InvokeFirstAction) {
+			if (ButtonsItems != null && ButtonsItems.Count > 0)
+				OnClick(new SubButtonItemEventArgs(ButtonsItems[0]));
 			else
 				OnClick(new SubButtonItemEventArgs(null));
 		} else
@@ -200,9 +164,9 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 
 	// Presents the existing item definitions in the button-owned popup menu.
 	private void ArrowClick(object sender, System.EventArgs args) {
-		if (_buttonsItems != null && _buttonsItems.Count > 0) {
+		if (ButtonsItems != null && ButtonsItems.Count > 0) {
 			_contextMenu.Items.Clear();
-			foreach (var buttonItem in _buttonsItems) {
+			foreach (var buttonItem in ButtonsItems) {
 				buttonItem.Owner = this;
 				_contextMenu.Items.Add(buttonItem.MenuItem);
 			}

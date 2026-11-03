@@ -15,7 +15,6 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenMenuItem {
 	private SharedUI.ApplicationScreenDefinition _screenDefinition;
-	private ApplicationScreenRegistration _registration;
 
 	public WinFormsScreenMenuItem()
 		: this(string.Empty, null) {
@@ -32,7 +31,7 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 
 	public WinFormsScreenMenuItem(string text, Type screenType, Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool isStartScreen)
 		: base(text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
-		_registration = screenType == null ? null : ApplicationScreenRegistration.ForType(screenType);
+		Registration = screenType == null ? null : ApplicationScreenRegistration.ForType(screenType);
 	}
 
 	/// <summary>Creates a navigation command for a separately registered screen.</summary>
@@ -41,7 +40,7 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 		: base(text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
 		Guard.ArgumentNotNull(registration, nameof(registration));
 		ApplicationHelper.ValidateScreenType(registration.ScreenType, typeof(ApplicationScreen));
-		_registration = registration;
+		Registration = registration;
 	}
 
 	/// <summary>Creates a command without adding the supplied definition to a block.</summary>
@@ -51,21 +50,19 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 		ScreenDefinition = definition;
 	}
 
-	public ApplicationScreenRegistration Registration {
-		get {
-			return _registration;
-		}
-	}
+	public ApplicationScreenRegistration Registration { get; private set; }
 
 	public virtual SharedUI.ApplicationScreenDefinition ScreenDefinition {
-		get => _screenDefinition;
+		get {
+			return _screenDefinition;
+		}
 		set {
 			if (ReferenceEquals(_screenDefinition, value))
 				return;
 			if (Parent != null)
 				_screenDefinition?.RemoveActivator(this);
 			_screenDefinition = value;
-			_registration = value?.Registration ?? _registration;
+			Registration = value?.Registration ?? Registration;
 			if (Parent != null)
 				_screenDefinition?.AddActivator(this);
 		}
@@ -74,9 +71,9 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 	/// <summary>Binds this command to its owner's canonical registration and supplies an omitted caption.</summary>
 	public void ResolveScreenDefinition(SharedUI.ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		var registration = _registration;
+		var registration = Registration;
 		ScreenDefinition = definition;
-		_registration = registration;
+		Registration = registration;
 		if (string.IsNullOrWhiteSpace(Text))
 			Text = definition.Title;
 	}

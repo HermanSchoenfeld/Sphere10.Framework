@@ -16,12 +16,8 @@ public class DecoratorHighlight : DecoratorBase {
 	/// Gets or sets the range to draw
 	/// </summary>
 	public CellRange Range {
-		get {
-			return _range;
-		}
-		set {
-			_range = value;
-		}
+		get => _range;
+		set => _range = value;
 	}
 
 	public override bool IntersectWith(CellRange range) {

@@ -35,23 +35,13 @@ public abstract class CheckBoxBase : VisualElementBase, ICheckBox {
 	}
 
 	public virtual ControlDrawStyle Style {
-		get {
-			return _controlDrawStyle;
-		}
-
-		set {
-			_controlDrawStyle = value;
-		}
+		get => _controlDrawStyle;
+		set => _controlDrawStyle = value;
 	}
 
 	public virtual CheckBoxState CheckBoxState {
-		get {
-			return _checkBoxState;
-		}
-
-		set {
-			_checkBoxState = value;
-		}
+		get => _checkBoxState;
+		set => _checkBoxState = value;
 	}
 
 	protected virtual bool ShouldSerializeStyle() {

@@ -39,11 +39,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override TransactionalCollectionScreenSettings ScreenSettings {
-		get {
-			return (TransactionalCollectionScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override TransactionalCollectionScreenSettings ScreenSettings => (TransactionalCollectionScreenSettings)base.ScreenSettings;
 
 	// Preferences restore before the user creates a temporary storage session.
 

@@ -18,7 +18,6 @@ namespace Sphere10.Framework.ObjectSpaces;
 /// </summary>
 public class ObjectSpaceDefinition {
 	private BTreeSpec _indexBTreeSpec = BTreeSpec.Default;
-	private int _metaDataCapacity;
 
 	/// <summary>Creates an empty definition with default member-index settings and no optional traits.</summary>
 	public ObjectSpaceDefinition() : this(false, false) {
@@ -44,10 +43,12 @@ public class ObjectSpaceDefinition {
 
 	/// <summary>Creation-time metadata budget. Zero requests the exact record size; activation records the allocated capacity.</summary>
 	public int MetaDataCapacity {
-		get => _metaDataCapacity;
+		get {
+			return field;
+		}
 		set {
 			Guard.ArgumentNotNegative(value, nameof(value));
-			_metaDataCapacity = value;
+			field = value;
 		}
 	}
 
@@ -56,7 +57,9 @@ public class ObjectSpaceDefinition {
 	/// Preserve the same configuration when reopening storage.
 	/// </summary>
 	public BTreeSpec IndexBTreeSpec {
-		get => _indexBTreeSpec;
+		get {
+			return _indexBTreeSpec;
+		}
 		set {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_indexBTreeSpec = value;
@@ -70,7 +73,9 @@ public class ObjectSpaceDefinition {
 	/// B-tree order used by the dimension's member indexes. Must be at least 3 and must remain unchanged when reopening existing storage.
 	/// </summary>
 	public int IndexBTreeOrder {
-		get => _indexBTreeSpec.Order;
+		get {
+			return _indexBTreeSpec.Order;
+		}
 		set {
 			_indexBTreeSpec = new BTreeSpec(_indexBTreeSpec.Type, value);
 			foreach (var index in Dimensions.SelectMany(dimension => dimension.Indexes).Where(index => index.BTreeSpec != null))

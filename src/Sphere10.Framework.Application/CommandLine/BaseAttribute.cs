@@ -10,7 +10,6 @@ namespace CommandLine;
 public abstract class BaseAttribute : Attribute {
 	private int min;
 	private int max;
-	private object @default;
 	private Infrastructure.LocalizableAttributeProperty helpText;
 	private string metaValue;
 	private Type resourceType;
@@ -37,7 +36,9 @@ public abstract class BaseAttribute : Attribute {
 	/// </summary>
 	/// <remarks>If not set, no lower range is enforced.</remarks>
 	public int Min {
-		get { return min; }
+		get {
+			return min;
+		}
 		set {
 			if (value < 0) {
 				throw new ArgumentNullException("value");
@@ -53,7 +54,9 @@ public abstract class BaseAttribute : Attribute {
 	/// </summary>
 	/// <remarks>If not set, no upper range is enforced.</remarks>
 	public int Max {
-		get { return max; }
+		get {
+			return max;
+		}
 		set {
 			if (value < 0) {
 				throw new ArgumentNullException("value");
@@ -66,10 +69,7 @@ public abstract class BaseAttribute : Attribute {
 	/// <summary>
 	/// Gets or sets mapped property default value.
 	/// </summary>
-	public object Default {
-		get { return @default; }
-		set { @default = value; }
-	}
+	public object Default { get; set; }
 
 	/// <summary>
 	/// Gets or sets a short description of this command line option. Usually a sentence summary.
@@ -83,7 +83,9 @@ public abstract class BaseAttribute : Attribute {
 	/// Gets or sets mapped property meta value. Usually an uppercase hint of required value type.
 	/// </summary>
 	public string MetaValue {
-		get { return metaValue; }
+		get {
+			return metaValue;
+		}
 		set {
 			if (value == null) {
 				throw new ArgumentNullException("value");
@@ -102,11 +104,8 @@ public abstract class BaseAttribute : Attribute {
 	/// Gets or sets the <see cref="System.Type"/> that contains the resources for <see cref="HelpText"/>.
 	/// </summary>
 	public Type ResourceType {
-		get { return resourceType; }
-		set {
-			resourceType =
-				helpText.ResourceType = value;
-		}
+		get => resourceType;
+		set => resourceType = helpText.ResourceType = value;
 	}
 }
 

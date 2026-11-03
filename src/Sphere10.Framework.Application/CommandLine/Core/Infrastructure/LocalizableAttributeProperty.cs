@@ -14,7 +14,9 @@ internal class LocalizableAttributeProperty {
 	}
 
 	public string Value {
-		get { return GetLocalizedValue(); }
+		get {
+			return GetLocalizedValue();
+		}
 		set {
 			_localizationPropertyInfo = null;
 			_value = value;

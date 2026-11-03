@@ -75,11 +75,9 @@ namespace HashLib4CSharp.MAC
 
         public virtual byte[] Key
         {
-            get => ArrayUtils.Clone(_key);
-            set => _key = value != null
-                ? ArrayUtils.Clone(value)
-                : throw new ArgumentNullException(nameof(value));
-        }
+			get => ArrayUtils.Clone(_key);
+			set => _key = value != null ? ArrayUtils.Clone(value) : throw new ArgumentNullException(nameof(value));
+		}
 
         public override string Name => GetType().Name;
 
@@ -177,9 +175,9 @@ namespace HashLib4CSharp.MAC
 
         public ulong XofSizeInBits
         {
-            get => ((IXOF)Hash).XofSizeInBits;
-            set => SetXofSizeInBitsInternal(value);
-        }
+			get => ((IXOF)Hash).XofSizeInBits;
+			set => SetXofSizeInBitsInternal(value);
+		}
     }
 
     internal sealed class KMAC128XOF : KMACXOF

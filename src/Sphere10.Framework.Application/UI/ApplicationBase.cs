@@ -64,7 +64,9 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	}
 
 	public virtual ILogger Logger {
-		get => _logger;
+		get {
+			return _logger;
+		}
 		set {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_logger = value;
@@ -97,11 +99,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	public abstract IApplicationScreenHost ScreenHost { get; }
 
 	/// <summary>The existing user settings provider, resolved once for this application.</summary>
-	public virtual ISettingsProvider Settings {
-		get {
-			return _settings.Value;
-		}
-	}
+	public virtual ISettingsProvider Settings => _settings.Value;
 
 	public virtual bool HasUnsavedChanges => ScreenHost?.HasUnsavedChanges ?? false;
 

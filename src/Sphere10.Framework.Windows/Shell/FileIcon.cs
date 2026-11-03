@@ -73,10 +73,7 @@ public class FileIcon {
 	#region Member Variables
 
 	private string fileName;
-	private string displayName;
-	private string typeName;
 	private SHGetFileInfoConstants flags;
-	private Icon fileIcon;
 
 	#endregion
 
@@ -113,49 +110,43 @@ public class FileIcon {
 	/// Gets/sets the flags used to extract the icon
 	/// </summary>
 	public FileIcon.SHGetFileInfoConstants Flags {
-		get { return flags; }
-		set { flags = value; }
+		get => flags;
+		set => flags = value;
 	}
 
 	/// <summary>
 	/// Gets/sets the filename to get the icon for
 	/// </summary>
 	public string FileName {
-		get { return fileName; }
-		set { fileName = value; }
+		get => fileName;
+		set => fileName = value;
 	}
 
 	/// <summary>
 	/// Gets the icon for the chosen file
 	/// </summary>
-	public Icon ShellIcon {
-		get { return fileIcon; }
-	}
+	public Icon ShellIcon { get; private set; }
 
 	/// <summary>
 	/// Gets the display name for the selected file
 	/// if the SHGFI_DISPLAYNAME flag was set.
 	/// </summary>
-	public string DisplayName {
-		get { return displayName; }
-	}
+	public string DisplayName { get; private set; }
 
 	/// <summary>
 	/// Gets the type name for the selected file
 	/// if the SHGFI_TYPENAME flag was set.
 	/// </summary>
-	public string TypeName {
-		get { return typeName; }
-	}
+	public string TypeName { get; private set; }
 
 	/// <summary>
 	///  Gets the information for the specified 
 	///  file name and flags.
 	/// </summary>
 	public void GetInfo() {
-		fileIcon = null;
-		typeName = "";
-		displayName = "";
+		ShellIcon = null;
+		TypeName = "";
+		DisplayName = "";
 
 		SHFILEINFO shfi = new SHFILEINFO();
 		uint shfiSize = (uint)Marshal.SizeOf(shfi.GetType());
@@ -168,12 +159,12 @@ public class FileIcon {
 			(uint)(flags));
 		if (ret != 0) {
 			if (shfi.hIcon != IntPtr.Zero) {
-				fileIcon = System.Drawing.Icon.FromHandle(shfi.hIcon);
+				ShellIcon = System.Drawing.Icon.FromHandle(shfi.hIcon);
 				// Now owned by the GDI+ object
 				//DestroyIcon(shfi.hIcon);
 			}
-			typeName = shfi.szTypeName;
-			displayName = shfi.szDisplayName;
+			TypeName = shfi.szTypeName;
+			DisplayName = shfi.szDisplayName;
 		} else {
 
 			int err = GetLastError();

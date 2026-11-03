@@ -24,10 +24,13 @@ public class JsonRpcClient : ApiRemoteService {
 
 	//NOTE: to have all byte[] properties serialized using hexa strings, you must also add this attribute to them : JsonConverter(typeof(ByteArrayHexConverter))] on byte array property 
 	public static JsonSerializerSettings JsonSettings {
-		get => new JsonSerializerSettings {
+		get {
+			return new JsonSerializerSettings {
 			/*Formatting = Formatting.Indented,*/ Converters = { { new ByteArrayHexConverter() } }
 		};
-		private set { }
+		}
+		private set {
+		}
 	}
 
 	public JsonRpcClient(IEndPoint endPoint, JsonRpcConfig config) : base(endPoint) {

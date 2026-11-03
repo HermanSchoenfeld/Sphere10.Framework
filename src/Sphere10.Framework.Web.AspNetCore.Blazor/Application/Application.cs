@@ -62,39 +62,19 @@ public class Application : AsyncApplicationBase, IApplication {
 	public override IApplicationScreenHost ScreenHost { get; }
 
 	/// <inheritdoc />
-	public override IBlazorPlugin[] LoadedPlugins {
-		get {
-			return Tools.Array.Clone(_loadedPlugins);
-		}
-	}
+	public override IBlazorPlugin[] LoadedPlugins => Tools.Array.Clone(_loadedPlugins);
 
 	/// <inheritdoc />
-	public override IApplicationBlock[] Blocks {
-		get {
-			return ScreenHost.Blocks;
-		}
-	}
+	public override IApplicationBlock[] Blocks => ScreenHost.Blocks;
 
 	/// <inheritdoc />
-	public override bool HasUnsavedChanges {
-		get {
-			return ScreenHost.HasUnsavedChanges;
-		}
-	}
+	public override bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 
 	/// <summary>The web menu definitions also exposed through the shared application's command-provider contract.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_menus);
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus);
 
 	/// <summary>The web application's toolbar definitions.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_toolBarItems);
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems);
 
 	/// <summary>Runs the full application initialization and its user tasks with this circuit's facade provider bound.</summary>
 	public override async Task InitializeAsync(CancellationToken cancellationToken = default) {

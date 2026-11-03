@@ -23,16 +23,10 @@ public class JobProgress {
 		}
 	}
 
-	public ulong BytesTransferred {
-		get { return this.jobProgress.BytesTransferred; }
-	}
+	public ulong BytesTransferred => this.jobProgress.BytesTransferred;
 
-	public uint FilesTotal {
-		get { return this.jobProgress.FilesTotal; }
-	}
+	public uint FilesTotal => this.jobProgress.FilesTotal;
 
-	public uint FilesTransferred {
-		get { return this.jobProgress.FilesTransferred; }
-	}
+	public uint FilesTransferred => this.jobProgress.FilesTransferred;
 }
 

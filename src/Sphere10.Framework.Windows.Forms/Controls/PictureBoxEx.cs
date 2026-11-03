@@ -13,8 +13,6 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class PictureBoxEx : PictureBox {
-	private SystemIconType _systemIcon;
-
 	public PictureBoxEx() {
 		SystemIcon = SystemIconType.None;
 		SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -32,10 +30,12 @@ public class PictureBoxEx : PictureBox {
 
 
 	public SystemIconType SystemIcon {
-		get => _systemIcon;
+		get {
+			return field;
+		}
 		set {
-			_systemIcon = value;
-			if (_systemIcon != SystemIconType.None)
+			field = value;
+			if (field != SystemIconType.None)
 				SetSystemImage();
 		}
 	}
@@ -43,7 +43,7 @@ public class PictureBoxEx : PictureBox {
 	private void SetSystemImage() {
 		Icon icon;
 		var preferredIconSize = Size;
-		switch (_systemIcon) {
+		switch (SystemIcon) {
 			case SystemIconType.None:
 				icon = null;
 				break;
@@ -86,7 +86,7 @@ public class PictureBoxEx : PictureBox {
 				; //new Icon(SystemIcons.Shield, Size);
 				break;
 			default:
-				throw new Exception($"Unsupported SystemIconType '{_systemIcon}'");
+				throw new Exception($"Unsupported SystemIconType '{SystemIcon}'");
 
 		}
 

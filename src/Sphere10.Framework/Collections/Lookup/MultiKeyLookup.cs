@@ -37,9 +37,7 @@ public class MultiKeyLookup<K, V> : ILookup<IEnumerable<K>, V> {
 		return InternalLookup.ContainsKey(key);
 	}
 
-	public int Count {
-		get { return InternalLookup.Count; }
-	}
+	public int Count => InternalLookup.Count;
 
 	public IEnumerable<V> this[IEnumerable<K> key] {
 		get {
@@ -52,9 +50,7 @@ public class MultiKeyLookup<K, V> : ILookup<IEnumerable<K>, V> {
 
 	#region Convenience Methods
 
-	public IEnumerable<V> this[params K[] key] {
-		get { return this[key.AsEnumerable()]; }
-	}
+	public IEnumerable<V> this[params K[] key] => this[key.AsEnumerable()];
 
 	public void Add(V value, params K[] key) {
 		Add(key, value);

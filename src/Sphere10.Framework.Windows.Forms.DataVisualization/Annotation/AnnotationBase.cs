@@ -183,11 +183,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         internal RectangleF currentPositionRel = new RectangleF(float.NaN, float.NaN, float.NaN, float.NaN);
         internal PointF currentAnchorLocationRel = new PointF(float.NaN, float.NaN);
 
-        // Smart labels style
-        private AnnotationSmartLabelStyle _smartLabelStyle;
+		// Smart labels style
 
-        // Index of last selected point in the annotation path
-        internal int currentPathPointIndex = -1;
+		// Index of last selected point in the annotation path
+		internal int currentPathPointIndex = -1;
 
         // Group this annotation belongs too
         internal AnnotationGroup annotationGroup;
@@ -251,15 +250,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
-            set
-            {
-                base.Name = value;
-            }
-        }
+			get => base.Name;
+			set => base.Name = value;
+		}
 
         /// <summary>
         /// Gets or sets an annotation's type name.
@@ -308,11 +301,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public string ClipToChartArea
         {
-            get
-            {
-                return _clipToChartArea;
-            }
-            set
+			get {
+				return _clipToChartArea;
+			}
+			set
             {
                 if (value != _clipToChartArea)
                 {
@@ -331,7 +323,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     this.Invalidate();
                 }
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the smart labels style of an annotation.
@@ -356,18 +348,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public AnnotationSmartLabelStyle SmartLabelStyle
         {
-            get
+			get
             {
-                this._smartLabelStyle ??= new AnnotationSmartLabelStyle(this);
-                return _smartLabelStyle;
+                field ??= new AnnotationSmartLabelStyle(this);
+                return field;
             }
-            set
+			set
             {
                 value.chartElement = this;
-                _smartLabelStyle = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets the group, if any, the annotation belongs to.
@@ -377,10 +369,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         DesignerSerializationVisibilityAttribute(DesignerSerializationVisibility.Hidden),
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         ]
-        public AnnotationGroup AnnotationGroup
-        {
-            get { return this.annotationGroup; }
-        }
+        public AnnotationGroup AnnotationGroup => this.annotationGroup;
 
         #endregion
 
@@ -412,17 +401,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool IsSizeAlwaysRelative
         {
-            get
-            {
-                return _isSizeAlwaysRelative;
-            }
-            set
+			get {
+				return _isSizeAlwaysRelative;
+			}
+			set
             {
                 _isSizeAlwaysRelative = value;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the X coordinate of an annotation.
@@ -455,17 +443,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double X
         {
-            get
-            {
-                return _x;
-            }
-            set
+			get {
+				return _x;
+			}
+			set
             {
                 _x = value;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the Y coordinate of an annotation.
@@ -498,17 +485,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double Y
         {
-            get
-            {
-                return _y;
-            }
-            set
+			get {
+				return _y;
+			}
+			set
             {
                 _y = value;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation's width.
@@ -546,11 +532,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double Width
         {
-            get
-            {
-                return _width;
-            }
-            set
+			get {
+				return _width;
+			}
+			set
             {
                 if (value < -WidthHightLimit || value > WidthHightLimit)
                 {
@@ -560,7 +545,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation's height.
@@ -598,11 +583,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double Height
         {
-            get
-            {
-                return _height;
-            }
-            set
+			get {
+				return _height;
+			}
+			set
             {
                 if (value < -WidthHightLimit || value > WidthHightLimit)
                 {
@@ -612,7 +596,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation position's right boundary.
@@ -640,17 +624,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double Right
         {
-            get
-            {
-                return _x + _width;
-            }
-            set
+			get {
+				return _x + _width;
+			}
+			set
             {
                 _width = value - _x;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation position's bottom boundary.
@@ -678,17 +661,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double Bottom
         {
-            get
-            {
-                return _y + _height;
-            }
-            set
+			get {
+				return _y + _height;
+			}
+			set
             {
                 _height = value - _y;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         #endregion
 
@@ -709,16 +691,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool IsSelected
         {
-            get
-            {
-                return _isSelected;
-            }
-            set
+			get {
+				return _isSelected;
+			}
+			set
             {
                 _isSelected = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation selection points style.
@@ -740,13 +721,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         SerializationVisibilityAttribute(SerializationVisibility.Hidden),
         SRDescription("DescriptionAttributeSelectionPointsStyle"),
         ]
-        virtual internal SelectionPointsStyle SelectionPointsStyle
-        {
-            get
-            {
-                return SelectionPointsStyle.Rectangle;
-            }
-        }
+        virtual internal SelectionPointsStyle SelectionPointsStyle => SelectionPointsStyle.Rectangle;
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation is visible.
@@ -762,16 +737,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool Visible
         {
-            get
-            {
-                return _visible;
-            }
-            set
+			get {
+				return _visible;
+			}
+			set
             {
                 _visible = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation's content alignment.
@@ -791,16 +765,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public ContentAlignment Alignment
         {
-            get
-            {
-                return _alignment;
-            }
-            set
+			get {
+				return _alignment;
+			}
+			set
             {
                 _alignment = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the text color of an annotation.
@@ -817,16 +790,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color ForeColor
         {
-            get
-            {
-                return _foreColor;
-            }
-            set
+			get {
+				return _foreColor;
+			}
+			set
             {
                 _foreColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the font of an annotation's text.
@@ -842,16 +814,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Font Font
         {
-            get
-            {
-                return _textFont;
-            }
-            set
+			get {
+				return _textFont;
+			}
+			set
             {
                 _textFont = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation's text style.
@@ -868,16 +839,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public TextStyle TextStyle
         {
-            get
-            {
-                return _textStyle;
-            }
-            set
+			get {
+				return _textStyle;
+			}
+			set
             {
                 _textStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of an annotation line.
@@ -895,16 +865,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color LineColor
         {
-            get
-            {
-                return lineColor;
-            }
-            set
+			get {
+				return lineColor;
+			}
+			set
             {
                 lineColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the width of an annotation line.
@@ -921,11 +890,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public int LineWidth
         {
-            get
-            {
-                return _lineWidth;
-            }
-            set
+			get {
+				return _lineWidth;
+			}
+			set
             {
                 if (value < 0)
                 {
@@ -934,7 +902,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 _lineWidth = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the style of an annotation line.
@@ -951,16 +919,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return _lineDashStyle;
-            }
-            set
+			get {
+				return _lineDashStyle;
+			}
+			set
             {
                 _lineDashStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background color of an annotation.
@@ -980,16 +947,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color BackColor
         {
-            get
-            {
-                return _backColor;
-            }
-            set
+			get {
+				return _backColor;
+			}
+			set
             {
                 _backColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the background hatch style of an annotation.
@@ -1011,16 +977,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public ChartHatchStyle BackHatchStyle
         {
-            get
-            {
-                return _backHatchStyle;
-            }
-            set
+			get {
+				return _backHatchStyle;
+			}
+			set
             {
                 _backHatchStyle = value;
                 Invalidate();
             }
-        }
+		}
         /// <summary>
         /// Gets or sets the background gradient style of an annotation.
         /// <seealso cref="BackSecondaryColor"/>
@@ -1041,16 +1006,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public GradientStyle BackGradientStyle
         {
-            get
-            {
-                return _backGradientStyle;
-            }
-            set
+			get {
+				return _backGradientStyle;
+			}
+			set
             {
                 _backGradientStyle = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the secondary background color of an annotation.
@@ -1075,16 +1039,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color BackSecondaryColor
         {
-            get
-            {
-                return _backSecondaryColor;
-            }
-            set
+			get {
+				return _backSecondaryColor;
+			}
+			set
             {
                 _backSecondaryColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the color of an annotation's shadow.
@@ -1101,16 +1064,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Color ShadowColor
         {
-            get
-            {
-                return _shadowColor;
-            }
-            set
+			get {
+				return _shadowColor;
+			}
+			set
             {
                 _shadowColor = value;
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the offset between an annotation and its shadow.
@@ -1126,16 +1088,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public int ShadowOffset
         {
-            get
-            {
-                return _shadowOffset;
-            }
-            set
+			get {
+				return _shadowOffset;
+			}
+			set
             {
                 _shadowOffset = value;
                 Invalidate();
             }
-        }
+		}
 
         #endregion
 
@@ -1161,7 +1122,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public string AxisXName
         {
-            get
+			get
             {
                 if (_axisXName.Length == 0 && _axisX != null)
                 {
@@ -1169,14 +1130,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _axisXName;
             }
-            set
+			set
             {
                 _axisXName = value;
                 _axisX = null;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the name of the Y axis which an annotation is attached to.
@@ -1199,17 +1160,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public string AxisYName
         {
-            get
+			get
             {
                 //  Always return empty string to prevent property serialization
                 // "YAxisName" property will be used instead.
                 return string.Empty;
             }
-            set
-            {
-                this.YAxisName = value;
-            }
-        }
+			set {
+				this.YAxisName = value;
+			}
+		}
 
 
         /// <summary>
@@ -1234,7 +1194,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public string YAxisName
         {
-            get
+			get
             {
                 if (_axisYName.Length == 0 && _axisY != null)
                 {
@@ -1242,14 +1202,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _axisYName;
             }
-            set
+			set
             {
                 _axisYName = value;
                 _axisY = null;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the X axis which an annotation is attached to.
@@ -1277,7 +1237,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Axis AxisX
         {
-            get
+			get
             {
                 if (_axisX == null && _axisXName.Length > 0)
                 {
@@ -1285,14 +1245,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _axisX;
             }
-            set
+			set
             {
                 _axisX = value;
                 _axisXName = String.Empty;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the Y axis which an annotation is attached to.
@@ -1320,7 +1280,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public Axis AxisY
         {
-            get
+			get
             {
                 if (_axisY == null && _axisYName.Length > 0)
                 {
@@ -1328,14 +1288,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _axisY;
             }
-            set
+			set
             {
                 _axisY = value;
                 _axisYName = String.Empty;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         #endregion
 
@@ -1361,7 +1321,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public string AnchorDataPointName
         {
-            get
+			get
             {
                 if (_anchorDataPointName.Length == 0 && _anchorDataPoint != null)
                 {
@@ -1369,14 +1329,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _anchorDataPointName;
             }
-            set
+			set
             {
                 _anchorDataPointName = value;
                 _anchorDataPoint = null;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the data point an annotation is anchored to.
@@ -1419,7 +1379,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public DataPoint AnchorDataPoint
         {
-            get
+			get
             {
                 if (_anchorDataPoint == null && _anchorDataPointName.Length > 0)
                 {
@@ -1427,14 +1387,14 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 }
                 return _anchorDataPoint;
             }
-            set
+			set
             {
                 _anchorDataPoint = value;
                 _anchorDataPointName = String.Empty;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the X coordinate the annotation is anchored to.
@@ -1473,17 +1433,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double AnchorX
         {
-            get
-            {
-                return _anchorX;
-            }
-            set
+			get {
+				return _anchorX;
+			}
+			set
             {
                 _anchorX = value;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the Y coordinate which an annotation is anchored to.
@@ -1522,17 +1481,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double AnchorY
         {
-            get
-            {
-                return _anchorY;
-            }
-            set
+			get {
+				return _anchorY;
+			}
+			set
             {
                 _anchorY = value;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the x-coordinate offset between the positions of an annotation and its anchor point.
@@ -1557,11 +1515,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double AnchorOffsetX
         {
-            get
-            {
-                return anchorOffsetX;
-            }
-            set
+			get {
+				return anchorOffsetX;
+			}
+			set
             {
                 if (value > 100.0 || value < -100.0)
                 {
@@ -1571,7 +1528,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the y-coordinate offset between the positions of an annotation and its anchor point.
@@ -1596,11 +1553,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public double AnchorOffsetY
         {
-            get
-            {
-                return anchorOffsetY;
-            }
-            set
+			get {
+				return anchorOffsetY;
+			}
+			set
             {
                 if (value > 100.0 || value < -100.0)
                 {
@@ -1610,7 +1566,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets an annotation position's alignment to the anchor point.
@@ -1636,17 +1592,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public ContentAlignment AnchorAlignment
         {
-            get
-            {
-                return anchorAlignment;
-            }
-            set
+			get {
+				return anchorAlignment;
+			}
+			set
             {
                 anchorAlignment = value;
                 this.ResetCurrentRelativePosition();
                 Invalidate();
             }
-        }
+		}
 
         #endregion // Anchoring
 
@@ -1666,15 +1621,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool AllowSelecting
         {
-            get
-            {
-                return _allowSelecting;
-            }
-            set
-            {
-                _allowSelecting = value;
-            }
-        }
+			get => _allowSelecting;
+			set => _allowSelecting = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation may be moved
@@ -1690,15 +1639,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool AllowMoving
         {
-            get
-            {
-                return _allowMoving;
-            }
-            set
-            {
-                _allowMoving = value;
-            }
-        }
+			get => _allowMoving;
+			set => _allowMoving = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation anchor may be moved
@@ -1714,15 +1657,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool AllowAnchorMoving
         {
-            get
-            {
-                return _allowAnchorMoving;
-            }
-            set
-            {
-                _allowAnchorMoving = value;
-            }
-        }
+			get => _allowAnchorMoving;
+			set => _allowAnchorMoving = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation may be resized
@@ -1738,15 +1675,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool AllowResizing
         {
-            get
-            {
-                return _allowResizing;
-            }
-            set
-            {
-                _allowResizing = value;
-            }
-        }
+			get => _allowResizing;
+			set => _allowResizing = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether an annotation's text may be edited
@@ -1762,15 +1693,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool AllowTextEditing
         {
-            get
-            {
-                return _allowTextEditing;
-            }
-            set
-            {
-                _allowTextEditing = value;
-            }
-        }
+			get => _allowTextEditing;
+			set => _allowTextEditing = value;
+		}
 
         /// <summary>
         /// Gets or sets a flag that specifies whether a polygon annotation's points
@@ -1786,15 +1711,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public bool AllowPathEditing
         {
-            get
-            {
-                return _allowPathEditing;
-            }
-            set
-            {
-                _allowPathEditing = value;
-            }
-        }
+			get => _allowPathEditing;
+			set => _allowPathEditing = value;
+		}
 
         #endregion
 
@@ -1819,16 +1738,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         virtual public string ToolTip
         {
-            get
-            {
-                return _tooltip;
-            }
-            set
-            {
-                _tooltip = value;
-
-            }
-        }
+			get => _tooltip;
+			set => _tooltip = value;
+		}
 
 
         #endregion // Interactivity
@@ -4057,100 +3969,65 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         public Annotation Annotation
         {
-            get { return _Annotation; }
-            set { _Annotation = value; }
-        }
+			get => _Annotation;
+			set => _Annotation = value;
+		}
 
-        private double _NewLocationX;
-        /// <summary>
-        /// Gets or sets the new X location of the annotation.
-        /// </summary>
-        public double NewLocationX
-        {
-            get { return _NewLocationX; }
-            set { _NewLocationX = value; }
-        }
+		/// <summary>
+		/// Gets or sets the new X location of the annotation.
+		/// </summary>
+		public double NewLocationX { get; set; }
 
-        private double _NewLocationY;
-        /// <summary>
-        /// Gets or sets the new Y location of the annotation.
-        /// </summary>
-        public double NewLocationY
-        {
-            get { return _NewLocationY; }
-            set { _NewLocationY = value; }
-        }
+		/// <summary>
+		/// Gets or sets the new Y location of the annotation.
+		/// </summary>
+		public double NewLocationY { get; set; }
 
-        private double _NewSizeWidth;
-        /// <summary>
-        /// Gets or sets the new width of the annotation.
-        /// </summary>
-        public double NewSizeWidth
-        {
-            get { return _NewSizeWidth; }
-            set { _NewSizeWidth = value; }
-        }
+		/// <summary>
+		/// Gets or sets the new width of the annotation.
+		/// </summary>
+		public double NewSizeWidth { get; set; }
 
-        private double _NewSizeHeight;
-        /// <summary>
-        /// Gets or sets the new height of the annotation.
-        /// </summary>
-        public double NewSizeHeight
-        {
-            get { return _NewSizeHeight; }
-            set { _NewSizeHeight = value; }
-        }
+		/// <summary>
+		/// Gets or sets the new height of the annotation.
+		/// </summary>
+		public double NewSizeHeight { get; set; }
 
-        private double _NewAnchorLocationX;
-        /// <summary>
-        /// Gets or sets the new annotation anchor point X location.
-        /// </summary>
-        public double NewAnchorLocationX
-        {
-            get { return _NewAnchorLocationX; }
-            set { _NewAnchorLocationX = value; }
-        }
+		/// <summary>
+		/// Gets or sets the new annotation anchor point X location.
+		/// </summary>
+		public double NewAnchorLocationX { get; set; }
 
-        private double _NewAnchorLocationY;
-        /// <summary>
-        /// Gets or sets the new annotation anchor point Y location.
-        /// </summary>
-        public double NewAnchorLocationY
-        {
-            get { return _NewAnchorLocationY; }
-            set { _NewAnchorLocationY = value; }
-        }
+		/// <summary>
+		/// Gets or sets the new annotation anchor point Y location.
+		/// </summary>
+		public double NewAnchorLocationY { get; set; }
 
-        #endregion // Fields
+		#endregion // Fields
 
-        #region Properties
+		#region Properties
 
 
-        /// <summary>
-        /// Gets or sets the new location and size of the annotation.
-        /// </summary>
-        [
+		/// <summary>
+		/// Gets or sets the new location and size of the annotation.
+		/// </summary>
+		[
         Browsable(false),
         EditorBrowsableAttribute(EditorBrowsableState.Never),
         ]
         public RectangleF NewPosition
         {
-            get
-            {
-                return new RectangleF(
-                    (float)this.NewLocationX,
-                    (float)this.NewLocationY,
-                    (float)this.NewSizeWidth,
-                    (float)this.NewSizeHeight);
-            }
-            set
+			get {
+				return new RectangleF((float)this.NewLocationX, (float)this.NewLocationY, (float)this.NewSizeWidth, (float)this.NewSizeHeight);
+			}
+			set
             {
                 this.NewLocationX = value.X;
                 this.NewLocationY = value.Y;
                 this.NewSizeWidth = value.Width;
                 this.NewSizeHeight = value.Height;
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets the new anchor location of the annotation.
@@ -4161,18 +4038,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public PointF NewAnchorLocation
         {
-            get
-            {
-                return new PointF(
-                    (float)this.NewAnchorLocationX,
-                    (float)this.NewAnchorLocationY);
-            }
-            set
+			get {
+				return new PointF((float)this.NewAnchorLocationX, (float)this.NewAnchorLocationY);
+			}
+			set
             {
                 this.NewAnchorLocationX = value.X;
                 this.NewAnchorLocationY = value.Y;
             }
-        }
+		}
 
         #endregion // Properties
     }

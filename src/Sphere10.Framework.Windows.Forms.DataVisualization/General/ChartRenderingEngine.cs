@@ -702,39 +702,21 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// <summary>
         /// Gets current rendering object.
         /// </summary>
-        internal IChartRenderingEngine RenderingObject
-        {
-            get
-            {
-                return _gdiGraphics;
-            }
-        }
+        internal IChartRenderingEngine RenderingObject => _gdiGraphics;
 
         /// <summary>
         /// Gets the active rendering type.
         /// </summary>
-        internal RenderingType ActiveRenderingType
-        {
-            get
-            {
-                return _activeRenderingType;
-            }
-        }
+        internal RenderingType ActiveRenderingType => _activeRenderingType;
 
         /// <summary>
         /// Gets or sets the rendering mode for text associated with this Graphics object.
         /// </summary>
         internal TextRenderingHint TextRenderingHint
         {
-            get
-            {
-                return RenderingObject.TextRenderingHint;
-            }
-            set
-            {
-                RenderingObject.TextRenderingHint = value;
-            }
-        }
+			get => RenderingObject.TextRenderingHint;
+			set => RenderingObject.TextRenderingHint = value;
+		}
 
 
         /// <summary>
@@ -744,71 +726,41 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         internal Matrix Transform
         {
-            get
-            {
-                return RenderingObject.Transform;
-            }
-            set
-            {
-                RenderingObject.Transform = value;
-            }
-        }
+			get => RenderingObject.Transform;
+			set => RenderingObject.Transform = value;
+		}
 
         /// <summary>
         /// Gets or sets the rendering quality for this Graphics object.
         /// </summary>
         internal SmoothingMode SmoothingMode
         {
-            get
-            {
-                return RenderingObject.SmoothingMode;
-            }
-            set
-            {
-                RenderingObject.SmoothingMode = value;
-            }
-        }
+			get => RenderingObject.SmoothingMode;
+			set => RenderingObject.SmoothingMode = value;
+		}
 
         /// <summary>
         /// Gets or sets a Region object that limits the drawing region of this Graphics object.
         /// </summary>
         internal Region Clip
         {
-            get
-            {
-                return RenderingObject.Clip;
-            }
-            set
-            {
-                RenderingObject.Clip = value;
-            }
-        }
+			get => RenderingObject.Clip;
+			set => RenderingObject.Clip = value;
+		}
 
         /// <summary>
         /// Gets a value indicating whether the clipping region of this Graphics object is empty.
         /// </summary>
-        internal bool IsClipEmpty
-        {
-            get
-            {
-                return RenderingObject.IsClipEmpty;
-            }
-        }
+        internal bool IsClipEmpty => RenderingObject.IsClipEmpty;
 
         /// <summary>
         /// Gets or sets the reference to the Graphics object.
         /// </summary>
         public Graphics Graphics
         {
-            get
-            {
-                return RenderingObject.Graphics;
-            }
-            set
-            {
-                RenderingObject.Graphics = value;
-            }
-        }
+			get => RenderingObject.Graphics;
+			set => RenderingObject.Graphics = value;
+		}
 
         #endregion // Properties
     }

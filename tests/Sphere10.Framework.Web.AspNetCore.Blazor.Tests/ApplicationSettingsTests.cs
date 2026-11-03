@@ -1142,11 +1142,7 @@ public class ApplicationSettingsTests {
 	/// <summary>Rejects operational construction so Options discovery must use registration metadata.</summary>
 	public class UnopenedScreen : ApplicationScreen {
 		/// <inheritdoc />
-		public override Options ScreenSettings {
-			get {
-				return (Options)base.ScreenSettings;
-			}
-		}
+		public override Options ScreenSettings => (Options)base.ScreenSettings;
 
 		/// <summary>Rejects operational construction during metadata-only Options checks.</summary>
 		public UnopenedScreen() {
@@ -1235,11 +1231,7 @@ public class ApplicationSettingsTests {
 	/// <summary>Captures actual settings, business drafts and screen deactivation behavior.</summary>
 	public class LifecycleScreen : ApplicationScreen {
 		/// <inheritdoc />
-		public override Options ScreenSettings {
-			get {
-				return (Options)base.ScreenSettings;
-			}
-		}
+		public override Options ScreenSettings => (Options)base.ScreenSettings;
 
 		/// <summary>The current actual settings instance applied to this screen.</summary>
 		public Options Values { get; private set; }
@@ -1316,18 +1308,10 @@ public class ApplicationSettingsTests {
 		public SettingsObject Settings { get; private set; }
 
 		/// <summary>The first renderer-created screen component.</summary>
-		public LifecycleScreen FirstScreen {
-			get {
-				return (LifecycleScreen)First.Screen;
-			}
-		}
+		public LifecycleScreen FirstScreen => (LifecycleScreen)First.Screen;
 
 		/// <summary>The second renderer-created screen component.</summary>
-		public LifecycleScreen SecondScreen {
-			get {
-				return (LifecycleScreen)Second.Screen;
-			}
-		}
+		public LifecycleScreen SecondScreen => (LifecycleScreen)Second.Screen;
 
 		/// <summary>Creates the actual application, host and two retained renderer components for lifecycle checks.</summary>
 		public static async Task<LifecycleOwner> CreateAsync(ISettingsProvider store) {
@@ -1386,11 +1370,7 @@ public class ApplicationSettingsTests {
 	// Exercise the existing provider contract that may return a different loaded record.
 	private sealed class DistinctRecordProvider : SyncSettingsProviderBase {
 		/// <inheritdoc />
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		/// <inheritdoc />
 		public override bool ContainsSetting(Type settingsObjectType, object id = null) {

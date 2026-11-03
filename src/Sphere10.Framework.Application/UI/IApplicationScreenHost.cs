@@ -30,11 +30,7 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 	IApplicationBlock ActiveBlock { get; }
 
 	/// <summary>The block selected for navigation, which may differ from the active screen's owner.</summary>
-	IApplicationBlock SelectedBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock SelectedBlock => ActiveBlock;
 
 	/// <summary>Gets the currently visible retained screen.</summary>
 	IApplicationScreen ActiveScreen { get; }
@@ -109,11 +105,7 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 	new TBlock ActiveBlock { get; }
 
 	/// <summary>Gets the independently browsed navigation block.</summary>
-	new TBlock SelectedBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	new TBlock SelectedBlock => ActiveBlock;
 
 	/// <summary>Gets the currently visible retained screen.</summary>
 	new TScreen ActiveScreen { get; }
@@ -153,39 +145,19 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	#region Base Interface Bridges
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks {
-		get {
-			return AvailableBlocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.Blocks {
-		get {
-			return Blocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.Blocks => Blocks;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.ActiveBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.ActiveBlock => ActiveBlock;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.SelectedBlock {
-		get {
-			return SelectedBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.SelectedBlock => SelectedBlock;
 
 	/// <inheritdoc />
-	IApplicationScreen IApplicationScreenHost.ActiveScreen {
-		get {
-			return ActiveScreen;
-		}
-	}
+	IApplicationScreen IApplicationScreenHost.ActiveScreen => ActiveScreen;
 
 	/// <inheritdoc />
 	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {

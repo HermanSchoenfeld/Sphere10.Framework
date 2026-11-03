@@ -98,19 +98,7 @@ public partial class ChartArea
     /// <summary>
     /// True if sub axis supported on this chart area
     /// </summary>
-    internal bool IsSubAxesSupported
-    {
-        get
-        {
-            if (this.Area3DStyle.Enable3D ||
-                this.chartAreaIsCurcular)
-            {
-                return false;
-            }
-
-            return true;
-        }
-    }
+    internal bool IsSubAxesSupported => !(this.Area3DStyle.Enable3D || this.chartAreaIsCurcular);
 
     /// <summary>
     /// Data series which belongs to this chart area. Disabled series are not included.

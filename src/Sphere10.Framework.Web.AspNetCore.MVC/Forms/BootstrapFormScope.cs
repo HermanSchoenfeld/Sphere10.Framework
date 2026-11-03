@@ -46,7 +46,6 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 	public const string SmallerFormBlockerOverlaySnippet = """<div class="form-blocker-overlay invisible" style="position: absolute; width: 90%; height: 90%; display:block; z-index: 999; background-color:white; opacity: 0.25;"></div>""";
 
 	// Marker emission and form completion belong to one shared rendering session.
-	private readonly string _formID;
 	private readonly IHtmlHelper _htmlHelper;
 	private readonly FormScopeOptions _options;
 	private bool _messageMarkerWritten;
@@ -67,7 +66,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 		Guard.Against((!string.IsNullOrEmpty(action) || !string.IsNullOrEmpty(action)) && options.HasFlag(FormScopeOptions.BotProtect),
 			"Cannot use controller/action when BotProtect option is enabled, instead use overload method and pass explicit form action url");
 
-		_formID = formModel.ID;
+		FormID = formModel.ID;
 		_htmlHelper = htmlHelper;
 		_options = options;
 		_messageMarkerWritten = false;
@@ -76,7 +75,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 			url = url.ToBase64();
 
 		attributes ??= new AttributeDictionary();
-		attributes["id"] = _formID;
+		attributes["id"] = FormID;
 		if (url != null)
 			attributes["action"] = url;
 
@@ -91,7 +90,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 			if (options.HasFlag(FormScopeOptions.AddAntiForgeryToken))
 				Write(htmlHelper.AntiForgeryToken());
 
-			Write(htmlHelper.HiddenFor(m => m.ID, _formID));
+			Write(htmlHelper.HiddenFor(m => m.ID, FormID));
 			Write(htmlHelper.HiddenFor(m => m.SubmitCount));
 			if (options.HasFlag(FormScopeOptions.SmallerBlockerOverlay))
 				Write(SmallerFormBlockerOverlaySnippet);
@@ -100,7 +99,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 		}
 	}
 
-	public string FormID => _formID;
+	public string FormID { get; }
 
 	public IHtmlContent MessageMarker() {
 		Guard.Ensure(_messageMarkerWritten == false, "Message marker has already been written");
@@ -142,7 +141,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 		=> Tools.Text.FormatWithDictionary(
 			text,
 			new Dictionary<string, object> {
-				["formId"] = _formID,
+				["formId"] = FormID,
 				["formOptions"] = JsonConvert.SerializeObject(ToSerializableSurrogate(_options), Formatting.None)
 			},
 			false

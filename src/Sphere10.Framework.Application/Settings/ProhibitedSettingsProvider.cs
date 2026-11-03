@@ -25,18 +25,10 @@ public class ProhibitedSettingsProvider : SyncSettingsProviderBase {
 	private const string _exceptionMessage = "Settings are prohibited in this application";
 
 	/// <inheritdoc />
-	public override bool AutoSaveNewSettings {
-		get {
-			throw new NotSupportedException(_exceptionMessage);
-		}
-	}
+	public override bool AutoSaveNewSettings => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override bool EncryptSettings {
-		get {
-			throw new NotSupportedException(_exceptionMessage);
-		}
-	}
+	public override bool EncryptSettings => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
 	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) {

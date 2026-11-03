@@ -22,7 +22,6 @@ public partial class SplashScreen : Form {
 	private SplashLogger _logger;
 	private SharedUI.IApplication _application;
 	private int _applicationDisplayVersion;
-	private bool _progressOverImage;
 
 	public SplashScreen() {
 		InitializeComponent();
@@ -49,14 +48,16 @@ public partial class SplashScreen : Form {
 
 	[Category("Appearance"), DefaultValue(false)]
 	public bool ProgressOverImage {
-		get => _progressOverImage;
+		get {
+			return field;
+		}
 		set {
-			if (_progressOverImage == value)
+			if (field == value)
 				return;
 			var imageSize = _pictureBox.Size;
 			SuspendLayout();
 			using var layout = Tools.Scope.ExecuteOnDispose(() => ResumeLayout(false));
-			_progressOverImage = value;
+			field = value;
 			ClientSize = new Size(imageSize.Width, imageSize.Height + (value ? 0 : _progressPanel.Height));
 			_pictureBox.Bounds = new Rectangle(Point.Empty, imageSize);
 			_progressPanel.Bounds = new Rectangle(0, value ? Math.Max(0, imageSize.Height - _progressPanel.Height) : imageSize.Height, imageSize.Width, _progressPanel.Height);
@@ -66,7 +67,9 @@ public partial class SplashScreen : Form {
 
 	[Category("Appearance")]
 	public Rectangle ProgressBounds {
-		get => _progressPanel.Bounds;
+		get {
+			return _progressPanel.Bounds;
+		}
 		set {
 			Guard.Argument(value.Width > 24 && value.Height >= 52 && ClientRectangle.Contains(value), nameof(value), "The progress area must fit inside the splash and contain both text rows.");
 			_progressPanel.Bounds = value;
@@ -75,13 +78,22 @@ public partial class SplashScreen : Form {
 	}
 
 	[Category("Appearance")]
-	public Color ProgressBackColor { get => _progressPanel.BackColor; set => _progressPanel.BackColor = value; }
+	public Color ProgressBackColor {
+		get => _progressPanel.BackColor;
+		set => _progressPanel.BackColor = value;
+	}
 
 	[Category("Appearance")]
-	public Color ProgressTitleColor { get => _titleLabel.ForeColor; set => _titleLabel.ForeColor = value; }
+	public Color ProgressTitleColor {
+		get => _titleLabel.ForeColor;
+		set => _titleLabel.ForeColor = value;
+	}
 
 	[Category("Appearance")]
-	public Color ProgressMessageColor { get => _subTitleLabel.ForeColor; set => _subTitleLabel.ForeColor = value; }
+	public Color ProgressMessageColor {
+		get => _subTitleLabel.ForeColor;
+		set => _subTitleLabel.ForeColor = value;
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Func<string, string> ProgressTextFormatter { get; set; }

@@ -41,20 +41,18 @@ public class VirtualPagedTableViewModel<TItem> : ComponentViewModelBase, IPagedC
 	public int TotalItems { get; private set; }
 
 	/// <summary>
-	/// Current page
-	/// </summary>
-	private int _currentPage = 1;
-
-	/// <summary>
 	/// Gets or sets the current page
 	/// </summary>
+	/// <remarks>Current page</remarks>
 	public int CurrentPage {
-		get => _currentPage;
+		get {
+			return field;
+		}
 		set {
-			_currentPage = value;
+			field = value;
 			StateHasChangedDelegate?.Invoke();
 		}
-	}
+	} = 1;
 
 	/// <summary>
 	/// Gets the total number of pages based on total items and page size.

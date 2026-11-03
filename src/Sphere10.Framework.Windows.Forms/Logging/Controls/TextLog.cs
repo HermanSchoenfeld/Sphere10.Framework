@@ -35,32 +35,20 @@ public partial class TextLog : UserControlEx {
 	/// <summary>Gets or sets the first selected character using the native editor's range rules.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int SelectionStart {
-		get {
-			return _textBox.SelectionStart;
-		}
-		set {
-			_textBox.SelectionStart = value;
-		}
+		get => _textBox.SelectionStart;
+		set => _textBox.SelectionStart = value;
 	}
 
 	/// <summary>Gets or sets the selected character count using the native editor's range rules.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int SelectionLength {
-		get {
-			return _textBox.SelectionLength;
-		}
-		set {
-			_textBox.SelectionLength = value;
-		}
+		get => _textBox.SelectionLength;
+		set => _textBox.SelectionLength = value;
 	}
 
 	/// <summary>Gets the text currently selected in the embedded editor.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public string SelectedText {
-		get {
-			return _textBox.SelectedText;
-		}
-	}
+	public string SelectedText => _textBox.SelectedText;
 
 	/// <summary>Appends text using the existing native editor on its owning UI thread.</summary>
 	public void AppendText(string text) {

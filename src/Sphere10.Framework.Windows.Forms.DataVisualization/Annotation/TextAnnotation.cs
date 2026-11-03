@@ -71,8 +71,10 @@ public class TextAnnotation : Annotation
     ]
     public virtual string Text
     {
-        get => _text;
-        set
+		get {
+			return _text;
+		}
+		set
         {
             _text = value;
             Invalidate();
@@ -80,7 +82,7 @@ public class TextAnnotation : Annotation
             // Reset content size to empty
             contentSize = SizeF.Empty;
         }
-    }
+	}
 
     /// <summary>
     /// Indicates whether the annotation text is multiline.
@@ -92,13 +94,15 @@ public class TextAnnotation : Annotation
     ]
     public virtual bool IsMultiline
     {
-        get => _isMultiline;
-        set
+		get {
+			return _isMultiline;
+		}
+		set
         {
             _isMultiline = value;
             Invalidate();
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the font of an annotation's text.
@@ -114,15 +118,17 @@ public class TextAnnotation : Annotation
     ]
     public override Font Font
     {
-        get => base.Font;
-        set
+		get {
+			return base.Font;
+		}
+		set
         {
             base.Font = value;
 
             // Reset content size to empty
             contentSize = SizeF.Empty;
         }
-    }
+	}
 
     #endregion Text Visual Attributes
 
@@ -139,8 +145,9 @@ public class TextAnnotation : Annotation
     ]
     public override Color LineColor
     {
-        get => base.LineColor; set => base.LineColor = value;
-    }
+		get => base.LineColor;
+		set => base.LineColor = value;
+	}
 
     /// <summary>
     /// Not applicable to this annotation type.
@@ -153,8 +160,9 @@ public class TextAnnotation : Annotation
     ]
     public override int LineWidth
     {
-        get => base.LineWidth; set => base.LineWidth = value;
-    }
+		get => base.LineWidth;
+		set => base.LineWidth = value;
+	}
 
     /// <summary>
     /// Not applicable to this annotation type.
@@ -166,8 +174,9 @@ public class TextAnnotation : Annotation
     ]
     public override ChartDashStyle LineDashStyle
     {
-        get => base.LineDashStyle; set => base.LineDashStyle = value;
-    }
+		get => base.LineDashStyle;
+		set => base.LineDashStyle = value;
+	}
 
     /// <summary>
     /// Not applicable to this annotation type.
@@ -181,8 +190,9 @@ public class TextAnnotation : Annotation
     ]
     public override Color BackColor
     {
-        get => base.BackColor; set => base.BackColor = value;
-    }
+		get => base.BackColor;
+		set => base.BackColor = value;
+	}
 
     /// <summary>
     /// Not applicable to this annotation type.
@@ -195,8 +205,9 @@ public class TextAnnotation : Annotation
     ]
     public override ChartHatchStyle BackHatchStyle
     {
-        get => base.BackHatchStyle; set => base.BackHatchStyle = value;
-    }
+		get => base.BackHatchStyle;
+		set => base.BackHatchStyle = value;
+	}
 
     /// <summary>
     /// Not applicable to this annotation type.
@@ -209,8 +220,9 @@ public class TextAnnotation : Annotation
     ]
     public override GradientStyle BackGradientStyle
     {
-        get => base.BackGradientStyle; set => base.BackGradientStyle = value;
-    }
+		get => base.BackGradientStyle;
+		set => base.BackGradientStyle = value;
+	}
 
     /// <summary>
     /// Not applicable to this annotation type.
@@ -224,8 +236,9 @@ public class TextAnnotation : Annotation
     ]
     public override Color BackSecondaryColor
     {
-        get => base.BackSecondaryColor; set => base.BackSecondaryColor = value;
-    }
+		get => base.BackSecondaryColor;
+		set => base.BackSecondaryColor = value;
+	}
 
     #endregion Non Applicable Annotation Appearance Attributes (set as Non-Browsable)
 
@@ -955,8 +968,9 @@ public class AnnotationSmartLabelStyle : SmartLabelStyle
     ]
     public override LabelCalloutStyle CalloutStyle
     {
-        get => base.CalloutStyle; set => base.CalloutStyle = value;
-    }
+		get => base.CalloutStyle;
+		set => base.CalloutStyle = value;
+	}
 
     /// <summary>
     /// Label callout line color.
@@ -974,8 +988,9 @@ public class AnnotationSmartLabelStyle : SmartLabelStyle
     ]
     public override Color CalloutLineColor
     {
-        get => base.CalloutLineColor; set => base.CalloutLineColor = value;
-    }
+		get => base.CalloutLineColor;
+		set => base.CalloutLineColor = value;
+	}
 
     /// <summary>
     /// Label callout line style.
@@ -992,8 +1007,9 @@ public class AnnotationSmartLabelStyle : SmartLabelStyle
     ]
     public override ChartDashStyle CalloutLineDashStyle
     {
-        get => base.CalloutLineDashStyle; set => base.CalloutLineDashStyle = value;
-    }
+		get => base.CalloutLineDashStyle;
+		set => base.CalloutLineDashStyle = value;
+	}
 
     /// <summary>
     /// Label callout back color. Applies to the Box style only.
@@ -1011,8 +1027,9 @@ public class AnnotationSmartLabelStyle : SmartLabelStyle
     ]
     public override Color CalloutBackColor
     {
-        get => base.CalloutBackColor; set => base.CalloutBackColor = value;
-    }
+		get => base.CalloutBackColor;
+		set => base.CalloutBackColor = value;
+	}
 
     /// <summary>
     /// Label callout line width.
@@ -1029,8 +1046,9 @@ public class AnnotationSmartLabelStyle : SmartLabelStyle
     ]
     public override int CalloutLineWidth
     {
-        get => base.CalloutLineWidth; set => base.CalloutLineWidth = value;
-    }
+		get => base.CalloutLineWidth;
+		set => base.CalloutLineWidth = value;
+	}
 
     /// <summary>
     /// Label callout line anchor cap.
@@ -1047,8 +1065,9 @@ public class AnnotationSmartLabelStyle : SmartLabelStyle
     ]
     public override LineAnchorCapStyle CalloutLineAnchorCapStyle
     {
-        get => base.CalloutLineAnchorCapStyle; set => base.CalloutLineAnchorCapStyle = value;
-    }
+		get => base.CalloutLineAnchorCapStyle;
+		set => base.CalloutLineAnchorCapStyle = value;
+	}
 
     #endregion Non Applicable Appearance Attributes (set as Non-Browsable)
 }

@@ -34,11 +34,7 @@
 	private bool _legacyChecked;
 
 	/// <summary>The actual preferences shared by Screen Options and both gallery grids.</summary>
-	public override GallerySettings ScreenSettings {
-		get {
-			return (GallerySettings)base.ScreenSettings;
-		}
-	}
+	public override GallerySettings ScreenSettings => (GallerySettings)base.ScreenSettings;
 
 	// A saved typed root owns both grid roles; first-use legacy reads finish before either child grid is created.
 	protected override async Task OnSettingsChangedAsync(SettingsObject values) {

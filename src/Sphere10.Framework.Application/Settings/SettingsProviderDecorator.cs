@@ -30,25 +30,13 @@ public class SettingsProviderDecorator : ISettingsProvider {
 	}
 
 	/// <inheritdoc />
-	public virtual bool AutoSaveNewSettings {
-		get {
-			return InternalSettingsProvider.AutoSaveNewSettings;
-		}
-	}
+	public virtual bool AutoSaveNewSettings => InternalSettingsProvider.AutoSaveNewSettings;
 
 	/// <inheritdoc />
-	public virtual bool EncryptSettings {
-		get {
-			return InternalSettingsProvider.EncryptSettings;
-		}
-	}
+	public virtual bool EncryptSettings => InternalSettingsProvider.EncryptSettings;
 
 	/// <summary>The borrowed provider, available for inspecting an existing provider chain.</summary>
-	public ISettingsProvider Inner {
-		get {
-			return InternalSettingsProvider;
-		}
-	}
+	public ISettingsProvider Inner => InternalSettingsProvider;
 
 	/// <summary>The provider used by every forwarded operation and notification.</summary>
 	protected virtual ISettingsProvider InternalSettingsProvider { get; }

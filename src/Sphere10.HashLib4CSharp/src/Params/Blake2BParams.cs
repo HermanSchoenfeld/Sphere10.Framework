@@ -34,20 +34,24 @@ namespace HashLib4CSharp.Params
 
         public int HashSize
         {
-            get => _hashSize;
-            set
+			get {
+				return _hashSize;
+			}
+			set
             {
                 if (value < 1 || value > 64)
                     throw new ArgumentException(string.Format(Blake2BErrorStrings.InvalidHashSize,
                         value));
                 _hashSize = value;
             }
-        }
+		}
 
         public byte[] Key
         {
-            get => ArrayUtils.Clone(_key);
-            set
+			get {
+				return ArrayUtils.Clone(_key);
+			}
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 var keyLength = value.Length;
@@ -56,12 +60,14 @@ namespace HashLib4CSharp.Params
                         keyLength));
                 _key = ArrayUtils.Clone(value);
             }
-        }
+		}
 
         public byte[] Salt
         {
-            get => ArrayUtils.Clone(_salt);
-            set
+			get {
+				return ArrayUtils.Clone(_salt);
+			}
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 var saltLength = value.Length;
@@ -70,12 +76,14 @@ namespace HashLib4CSharp.Params
                         saltLength));
                 _salt = ArrayUtils.Clone(value);
             }
-        }
+		}
 
         public byte[] Personalization
         {
-            get => ArrayUtils.Clone(_personalization);
-            set
+			get {
+				return ArrayUtils.Clone(_personalization);
+			}
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 var personalizationLength = value.Length;
@@ -84,7 +92,7 @@ namespace HashLib4CSharp.Params
                         string.Format(Blake2BErrorStrings.InvalidPersonalizationLength, personalizationLength));
                 _personalization = ArrayUtils.Clone(value);
             }
-        }
+		}
 
         public Blake2BConfig(int hashSize)
         {
@@ -126,97 +134,78 @@ namespace HashLib4CSharp.Params
 
     public sealed class Blake2BTreeConfig
     {
-        private byte _innerHashSize, _maxDepth, _fanOut, _nodeDepth;
-        private uint _leafSize;
-        private ulong _nodeOffset;
-        private bool _isLastNode;
+        private byte _innerHashSize, _maxDepth;
 
-        public byte FanOut
-        {
-            get => _fanOut;
-            set => _fanOut = value;
-        }
+		public byte FanOut { get; set; }
 
-        public byte NodeDepth
-        {
-            get => _nodeDepth;
-            set => _nodeDepth = value;
-        }
+		public byte NodeDepth { get; set; }
 
-        public uint LeafSize
-        {
-            get => _leafSize;
-            set => _leafSize = value;
-        }
+		public uint LeafSize { get; set; }
 
-        public ulong NodeOffset
-        {
-            get => _nodeOffset;
-            set => _nodeOffset = value;
-        }
+		public ulong NodeOffset { get; set; }
 
-        public bool IsLastNode
-        {
-            get => _isLastNode;
-            set => _isLastNode = value;
-        }
+		public bool IsLastNode { get; set; }
 
-        public byte MaxDepth
+		public byte MaxDepth
         {
-            get => _maxDepth;
-            set
+			get {
+				return _maxDepth;
+			}
+			set
             {
                 if (value < 1)
                     throw new ArgumentException(string.Format(Blake2BErrorStrings.InvalidMaxDepth,
                         value));
                 _maxDepth = value;
             }
-        }
+		}
 
         public byte InnerHashSize
         {
-            get => _innerHashSize;
-            set
+			get {
+				return _innerHashSize;
+			}
+			set
             {
                 if (value > 64)
                     throw new ArgumentException(
                         string.Format(Blake2BErrorStrings.InvalidInnerHashSize, value));
                 _innerHashSize = value;
             }
-        }
+		}
 
         public Blake2BTreeConfig()
         {
-            _fanOut = 0;
+            FanOut = 0;
             _maxDepth = 0;
-            _leafSize = 64;
-            _nodeOffset = 0;
-            _nodeDepth = 0;
+            LeafSize = 64;
+            NodeOffset = 0;
+            NodeDepth = 0;
             _innerHashSize = 64;
-            _isLastNode = false;
+            IsLastNode = false;
         }
 
         public Blake2BTreeConfig Clone() =>
             new Blake2BTreeConfig
             {
-                _fanOut = _fanOut,
+                FanOut = FanOut,
                 _innerHashSize = _innerHashSize,
                 _maxDepth = _maxDepth,
-                _nodeDepth = _nodeDepth,
-                _leafSize = _leafSize,
-                _nodeOffset = _nodeOffset,
-                _isLastNode = _isLastNode
+                NodeDepth = NodeDepth,
+                LeafSize = LeafSize,
+                NodeOffset = NodeOffset,
+                IsLastNode = IsLastNode
             };
 
         internal static Blake2BTreeConfig SequentialTreeConfig => new Blake2BTreeConfig
         {
-            _fanOut = 1,
+            FanOut = 1,
             _maxDepth = 1,
-            _leafSize = 0,
-            _nodeOffset = 0,
-            _nodeDepth = 0,
+            LeafSize = 0,
+            NodeOffset = 0,
+            NodeDepth = 0,
             _innerHashSize = 0,
-            _isLastNode = false
+            IsLastNode = false
         };
 
         public static Blake2BTreeConfig DefaultTreeConfig => new Blake2BTreeConfig();

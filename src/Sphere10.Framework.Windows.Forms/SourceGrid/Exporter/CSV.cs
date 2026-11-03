@@ -18,34 +18,18 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 /// Exports grid display text through the shared CSV row and field writers.
 /// </summary>
 public class CSV {
-	private string _fieldSeparator;
-	private string _lineSeparator;
 
 	/// <summary>Uses the current culture’s list separator and the platform line separator.</summary>
 	public CSV() {
-		_fieldSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
-		_lineSeparator = Environment.NewLine;
+		FieldSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+		LineSeparator = Environment.NewLine;
 	}
 
 	/// <summary>The separator written between fields.</summary>
-	public string FieldSeparator {
-		get {
-			return _fieldSeparator;
-		}
-		set {
-			_fieldSeparator = value;
-		}
-	}
+	public string FieldSeparator { get; set; }
 
 	/// <summary>The separator written after each row; null or empty omits it.</summary>
-	public string LineSeparator {
-		get {
-			return _lineSeparator;
-		}
-		set {
-			_lineSeparator = value;
-		}
-	}
+	public string LineSeparator { get; set; }
 
 	/// <summary>Writes every grid row and leaves the caller’s writer open.</summary>
 	public virtual void Export(GridVirtual grid, TextWriter stream) {
@@ -54,7 +38,7 @@ public class CSV {
 				var cell = grid.GetCell(row, column);
 				var context = new CellContext(grid, new Position(row, column), cell);
 				ExportCSVCell(context, destination);
-			}, _fieldSeparator, _lineSeparator);
+			}, FieldSeparator, LineSeparator);
 	}
 
 	/// <summary>Flattens display-text line endings before the shared writer escapes one field.</summary>
@@ -63,6 +47,6 @@ public class CSV {
 		text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
 
 		// Reuse the shared escaping rules for separators and embedded quotation marks.
-		Tools.Data.WriteCsvField(stream, text, _fieldSeparator);
+		Tools.Data.WriteCsvField(stream, text, FieldSeparator);
 	}
 }

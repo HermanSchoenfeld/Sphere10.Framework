@@ -15,14 +15,8 @@ namespace Sphere10.Framework.Data;
 public abstract class DACDecorator : IDAC {
 	protected readonly IDAC DecoratedDAC;
 
-	public event EventHandlerEx<IDAC, string> Executing {
-		add => DecoratedDAC.Executing += value;
-		remove => DecoratedDAC.Executing -= value;
-	}
-	public event EventHandlerEx<IDAC, string> Executed {
-		add => DecoratedDAC.Executed += value;
-		remove => DecoratedDAC.Executed -= value;
-	}
+	public event EventHandlerEx<IDAC, string> Executing { add => DecoratedDAC.Executing += value; remove => DecoratedDAC.Executing -= value; }
+	public event EventHandlerEx<IDAC, string> Executed { add => DecoratedDAC.Executed += value; remove => DecoratedDAC.Executed -= value; }
 
 
 	protected DACDecorator(IDAC decoratedDAC) {
@@ -34,36 +28,30 @@ public abstract class DACDecorator : IDAC {
 
 	#region IDAC Implementation
 
-	public Guid InstanceID {
-		get { return DecoratedDAC.InstanceID; }
-	}
+	public Guid InstanceID => DecoratedDAC.InstanceID;
 
 	public virtual bool UseScopeOsmosis {
-		get { return DecoratedDAC.UseScopeOsmosis; }
-		set { DecoratedDAC.UseScopeOsmosis = value; }
+		get => DecoratedDAC.UseScopeOsmosis;
+		set => DecoratedDAC.UseScopeOsmosis = value;
 	}
 
 	public IsolationLevel DefaultIsolationLevel {
-		get { return DecoratedDAC.DefaultIsolationLevel; }
-		set { DecoratedDAC.DefaultIsolationLevel = value; }
+		get => DecoratedDAC.DefaultIsolationLevel;
+		set => DecoratedDAC.DefaultIsolationLevel = value;
 	}
 
-	public virtual DBMSType DBMSType {
-		get { return DecoratedDAC.DBMSType; }
-	}
+	public virtual DBMSType DBMSType => DecoratedDAC.DBMSType;
 
-	public virtual string ConnectionString {
-		get { return DecoratedDAC.ConnectionString; }
-	}
+	public virtual string ConnectionString => DecoratedDAC.ConnectionString;
 
 	public virtual ArtificialKeys ArtificialKeys {
-		get { return DecoratedDAC.ArtificialKeys; }
-		set { DecoratedDAC.ArtificialKeys = value; }
+		get => DecoratedDAC.ArtificialKeys;
+		set => DecoratedDAC.ArtificialKeys = value;
 	}
 
 	public virtual ILogger Log {
-		get { return DecoratedDAC.Log; }
-		set { DecoratedDAC.Log = value; }
+		get => DecoratedDAC.Log;
+		set => DecoratedDAC.Log = value;
 	}
 
 	public virtual IDbConnection CreateConnection() {

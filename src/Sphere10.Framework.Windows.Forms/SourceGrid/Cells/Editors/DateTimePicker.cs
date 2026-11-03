@@ -27,11 +27,7 @@ public class DateTimePicker : EditorControlBase {
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new System.Windows.Forms.DateTimePicker Control {
-		get {
-			return (System.Windows.Forms.DateTimePicker)base.Control;
-		}
-	}
+	public new System.Windows.Forms.DateTimePicker Control => (System.Windows.Forms.DateTimePicker)base.Control;
 
 	/// <summary>
 	/// Set the specified value in the current editor control.

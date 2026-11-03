@@ -48,7 +48,6 @@ public class SortIndicator : Icon, ISortIndicator {
 		get {
 			return _headerSortStyle;
 		}
-
 		set {
 			_headerSortStyle = value;
 			if (_headerSortStyle == HeaderSortStyle.Ascending)

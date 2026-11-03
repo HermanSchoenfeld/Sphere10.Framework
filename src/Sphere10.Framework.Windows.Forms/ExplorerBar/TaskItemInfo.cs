@@ -129,8 +129,9 @@ public class TaskItemInfo {
 	/// </summary>
 	[Description("The amount of space between individual TaskItems along each side of the TaskItem")]
 	public Margin Margin {
-		get { return this.margin; }
-
+		get {
+			return this.margin;
+		}
 		set {
 			if (this.margin != value) {
 				this.margin = value;
@@ -163,8 +164,9 @@ public class TaskItemInfo {
 	/// </summary>
 	[Description("The amount of space around the text along each side of the TaskItem")]
 	public PaddingEx Padding {
-		get { return this.padding; }
-
+		get {
+			return this.padding;
+		}
 		set {
 			if (this.padding != value) {
 				this.padding = value;
@@ -196,8 +198,9 @@ public class TaskItemInfo {
 	/// </summary>
 	[Description("The foreground color of a normal link")]
 	public Color LinkColor {
-		get { return this.linkNormal; }
-
+		get {
+			return this.linkNormal;
+		}
 		set {
 			if (this.linkNormal != value) {
 				this.linkNormal = value;
@@ -226,8 +229,9 @@ public class TaskItemInfo {
 	/// </summary>
 	[Description("The foreground color of a highlighted link")]
 	public Color HotLinkColor {
-		get { return this.linkHot; }
-
+		get {
+			return this.linkHot;
+		}
 		set {
 			if (this.linkHot != value) {
 				this.linkHot = value;
@@ -257,8 +261,9 @@ public class TaskItemInfo {
 	[DefaultValue(FontStyle.Underline),
 	 Description("")]
 	public FontStyle FontDecoration {
-		get { return this.fontDecoration; }
-
+		get {
+			return this.fontDecoration;
+		}
 		set {
 			if (!Enum.IsDefined(typeof(FontStyle), value)) {
 				throw new InvalidEnumArgumentException("value", (int)value, typeof(FontStyle));
@@ -282,9 +287,8 @@ public class TaskItemInfo {
 	/// Gets or sets the TaskItem the TaskItemInfo belongs to
 	/// </summary>
 	protected internal TaskItem TaskItem {
-		get { return this.owner; }
-
-		set { this.owner = value; }
+		get => this.owner;
+		set => this.owner = value;
 	}
 
 	#endregion

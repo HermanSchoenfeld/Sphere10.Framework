@@ -62,7 +62,9 @@ public struct ShortGuid {
 	/// Gets/sets the underlying Guid
 	/// </summary>
 	public Guid Guid {
-		get { return _guid; }
+		get {
+			return _guid;
+		}
 		set {
 			if (value != _guid) {
 				_guid = value;
@@ -75,7 +77,9 @@ public struct ShortGuid {
 	/// Gets/sets the underlying base64 encoded string
 	/// </summary>
 	public string Value {
-		get { return _value; }
+		get {
+			return _value;
+		}
 		set {
 			if (value != _value) {
 				_value = value;

@@ -32,7 +32,6 @@ public class GridPrintDocument : PrintDocument {
 	private string _pageFooterText = string.Empty;
 	private Font _pageTitleFont = null;
 	private string _pageTitleText = string.Empty;
-	private bool _repeatFixedRows = false;
 	private int _nextRowToPrint = 0;
 	private int _nextColumnToPrint = 0;
 	private float _headerHeight = 0;
@@ -63,20 +62,12 @@ public class GridPrintDocument : PrintDocument {
 	/// <summary>
 	/// Cell view when printing.
 	/// </summary>
-	public Cells.Views.Cell CellPrintView {
-		get {
-			return _cellPrintView;
-		}
-	}
+	public Cells.Views.Cell CellPrintView => _cellPrintView;
 
 	/// <summary>
 	/// Header cell view when printing.
 	/// </summary>
-	public Cells.Views.Cell HeaderCellPrintView {
-		get {
-			return _headerCellPrintView;
-		}
-	}
+	public Cells.Views.Cell HeaderCellPrintView => _headerCellPrintView;
 
 	public CellRange RangeToPrint {
 		get {
@@ -93,83 +84,46 @@ public class GridPrintDocument : PrintDocument {
 
 	/// <summary>Gets or sets the header font; caller-supplied replacements remain caller-owned.</summary>
 	public Font PageHeaderFont {
-		get {
-			return _pageHeaderFont;
-		}
-		set {
-			_pageHeaderFont = value;
-		}
+		get => _pageHeaderFont;
+		set => _pageHeaderFont = value;
 	}
 
 	public string PageHeaderText {
-		get {
-			return _pageHeaderText;
-		}
-		set {
-			_pageHeaderText = value;
-		}
+		get => _pageHeaderText;
+		set => _pageHeaderText = value;
 	}
 
 	/// <summary>Gets or sets the footer font; caller-supplied replacements remain caller-owned.</summary>
 	public Font PageFooterFont {
-		get {
-			return _pageFooterFont;
-		}
-		set {
-			_pageFooterFont = value;
-		}
+		get => _pageFooterFont;
+		set => _pageFooterFont = value;
 	}
 
 	public string PageFooterText {
-		get {
-			return _pageFooterText;
-		}
-		set {
-			_pageFooterText = value;
-		}
+		get => _pageFooterText;
+		set => _pageFooterText = value;
 	}
 
 	/// <summary>Gets or sets the title font; caller-supplied replacements remain caller-owned.</summary>
 	public Font PageTitleFont {
-		get {
-			return _pageTitleFont;
-		}
-		set {
-			_pageTitleFont = value;
-		}
+		get => _pageTitleFont;
+		set => _pageTitleFont = value;
 	}
 
 	public string PageTitleText {
-		get {
-			return _pageTitleText;
-		}
-		set {
-			_pageTitleText = value;
-		}
+		get => _pageTitleText;
+		set => _pageTitleText = value;
 	}
 
 	/// <summary>
 	/// Property if fixed rows should be repeated on each page.
 	/// </summary>
-	public bool RepeatFixedRows {
-		get {
-			return _repeatFixedRows;
-		}
-		set {
-			_repeatFixedRows = value;
-		}
-	}
+	public bool RepeatFixedRows { get; set; } = false;
 
 	/// <summary>
 	/// Return calculated page count.
 	/// </summary>
-	public int PageCount {
-		get {
-			if (_pageCount == 0)
-				throw new ArgumentNullException("Page count not yet calculated");
-			return _pageCount;
-		}
-	}
+	public int PageCount => _pageCount == 0 ? throw new ArgumentNullException("Page count not yet calculated") : _pageCount;
 
 	protected override void OnBeginPrint(PrintEventArgs e) {
 		base.OnBeginPrint(e);
@@ -449,7 +403,7 @@ public class GridPrintDocument : PrintDocument {
 				// If fixed rows takes whole page, disable fixed row repeating
 				if (r <= _grid.ActualFixedRows) {
 					fixedRowHeight = 0;
-					_repeatFixedRows = false;
+					RepeatFixedRows = false;
 				}
 				totalHeight = e.MarginBounds.Height - _headerHeight - _footerHeight - fixedRowHeight;
 				pageCount++;

@@ -29,13 +29,9 @@ public class TestCrudDataSource : ListDataSource<Employee> {
 	public bool GenerateCreateError { get; set; }
 	public bool GenerateUpdateError { get; set; }
 
-	public IEnumerable<Employee> AllEmployees {
-		get { return Future.Value; }
-	}
+	public IEnumerable<Employee> AllEmployees => Future.Value;
 
-	public Employee FirstEntity {
-		get { return Future.Value[0]; }
-	}
+	public Employee FirstEntity => Future.Value[0];
 
 	public Employee RandomEmployee() {
 		return Future.Value.Count == 0 ? null : Future.Value[Tools.Maths.RNG.Next(0, (int)Future.Value.Count)];

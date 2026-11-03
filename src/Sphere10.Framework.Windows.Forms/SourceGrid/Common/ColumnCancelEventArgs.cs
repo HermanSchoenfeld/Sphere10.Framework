@@ -17,35 +17,22 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// EventArgs used by the FocusColumnLeaving
 /// </summary>
 public class ColumnCancelEventArgs : ColumnEventArgs {
-	private bool _cancel;
-	private int _proposedColumn;
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	public ColumnCancelEventArgs(int currentFocusedColumn, int proposedFocusedColumn)
 		: base(currentFocusedColumn) {
-		_proposedColumn = proposedFocusedColumn;
+		ProposedColumn = proposedFocusedColumn;
 	}
 
 	/// <summary>
 	/// Column
 	/// </summary>
-	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
-	}
+	public bool Cancel { get; set; }
 
 	/// <summary>
 	/// Proposed column
 	/// </summary>
-	public int ProposedColumn {
-		get {
-			return _proposedColumn;
-		}
-	}
+	public int ProposedColumn { get; }
 }

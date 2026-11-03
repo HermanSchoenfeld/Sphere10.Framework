@@ -28,8 +28,10 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		Terminal = terminal;
 	}
 
-	public long TotalBytes { 
-		get => _totalBytes; 
+	public long TotalBytes {
+		get {
+			return _totalBytes;
+		}
 		private set {
 			if (_totalBytes != value) {
 				_totalBytes = value;

@@ -76,30 +76,16 @@ public enum Aryness {
 
 
 public class OpAttr : Attribute {
-	int _precedence;
-	Associativity _associativity;
-	Aryness _aryness;
-
-
 	public OpAttr(int precedence, Aryness aryness, Associativity associativity) {
 		Precedence = precedence;
 		Associativity = associativity;
 		Aryness = aryness;
 	}
 
-	public int Precedence {
-		get { return _precedence; }
-		set { _precedence = value; }
-	}
+	public int Precedence { get; set; }
 
-	public Associativity Associativity {
-		get { return _associativity; }
-		set { _associativity = value; }
-	}
+	public Associativity Associativity { get; set; }
 
-	public Aryness Aryness {
-		get { return _aryness; }
-		set { _aryness = value; }
-	}
+	public Aryness Aryness { get; set; }
 }
 

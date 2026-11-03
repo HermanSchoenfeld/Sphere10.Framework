@@ -886,17 +886,9 @@ public class NativeScreenCommandProviderTests {
 			ClientSize = new Size(1000, 700);
 		}
 
-		public ToolStripItem[] MenuEntries {
-			get {
-				return MenuStrip.Items.Cast<ToolStripItem>().ToArray();
-			}
-		}
+		public ToolStripItem[] MenuEntries => MenuStrip.Items.Cast<ToolStripItem>().ToArray();
 
-		public ToolStripItem[] ToolEntries {
-			get {
-				return ToolStrip.Items.Cast<ToolStripItem>().ToArray();
-			}
-		}
+		public ToolStripItem[] ToolEntries => ToolStrip.Items.Cast<ToolStripItem>().ToArray();
 
 		public void RebuildCommands() {
 			RebuildApplicationCommands();
@@ -940,11 +932,7 @@ public class NativeScreenCommandProviderTests {
 
 		public ToolStripSplitButton DesignerSplit { get; }
 
-		public ToolStripMenuItem OptionsCommand {
-			get {
-				return OptionsToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screenOptionsMenuItem");
-			}
-		}
+		public ToolStripMenuItem OptionsCommand => OptionsToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screenOptionsMenuItem");
 
 		public int DesignerClicks { get; private set; }
 
@@ -960,11 +948,7 @@ public class NativeScreenCommandProviderTests {
 
 		public SharedUI.IApplicationScreen HelpScreen { get; private set; }
 
-		public SharedUI.IApplicationScreenHost InvocationHost {
-			get {
-				return CommandUserInterfaceServices.ScreenHost;
-			}
-		}
+		public SharedUI.IApplicationScreenHost InvocationHost => CommandUserInterfaceServices.ScreenHost;
 
 		// Observe the actual native event's explicit host without starting a browser or help process.
 		protected override void ContextHelp_Click(object sender, EventArgs args) {
@@ -976,11 +960,7 @@ public class NativeScreenCommandProviderTests {
 	[Settings(typeof(PreferencesScreen.Preferences))]
 	public sealed class PreferencesScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public override Preferences ScreenSettings {
-			get {
-				return (Preferences)base.ScreenSettings;
-			}
-		}
+		public override Preferences ScreenSettings => (Preferences)base.ScreenSettings;
 
 		#region Inner Types
 

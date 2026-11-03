@@ -92,7 +92,9 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	public override string ErrorMessage => _errorMessage;
 
 	public override BlazorGridColumn<TItem>[] Columns {
-		get => Tools.Array.Clone(_columns);
+		get {
+			return Tools.Array.Clone(_columns);
+		}
 		set {
 			EnsureUsable();
 			Guard.ArgumentNotNull(value, nameof(value));
@@ -107,7 +109,9 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	}
 
 	public override IEqualityComparer<TItem> EntityComparer {
-		get => _entityComparer;
+		get {
+			return _entityComparer;
+		}
 		set {
 			EnsureNoDraft();
 			Guard.ArgumentNotNull(value, nameof(value));

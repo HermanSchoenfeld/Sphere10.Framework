@@ -105,11 +105,7 @@ public class ApplicationOwnerSettingsTests {
 	// A successful store boundary isolates runtime ownership from browser/authentication tests covered elsewhere.
 	private sealed class MemorySettingsProvider : SyncSettingsProviderBase {
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
 		public override bool ContainsSetting(Type settingsType, object id = null) {

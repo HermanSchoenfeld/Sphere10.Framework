@@ -26,11 +26,7 @@ namespace Sphere10.Framework.iOS {
 			_productCache = new SynchronizedDictionary<string, SKProduct>();
 		}
 
-		public bool CanMakePayments {
-			get {
-				return SKPaymentQueue.CanMakePayments;
-			}
-		}
+		public bool CanMakePayments => SKPaymentQueue.CanMakePayments;
 
 		public async Task PrefetchProductData(IEnumerable<string> productIDs) {
 			await GetProductDataInternal(productIDs.Except(_productCache.Keys));

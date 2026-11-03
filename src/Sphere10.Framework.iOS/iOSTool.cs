@@ -44,9 +44,7 @@ namespace Tools {
 			return keyboardRect.Height;
 		}
 
-		public static bool IsiOS7 {
-			get { return UIDevice.CurrentDevice.CheckSystemVersion(7, 0); }
-		}
+		public static bool IsiOS7 => UIDevice.CurrentDevice.CheckSystemVersion(7, 0);
 
 		public static float DefaultGroupedTableViewHeaderHeight {
 			get {
@@ -274,21 +272,13 @@ namespace Tools {
 			};
 		}
 
-		public static UIImage MissingImage {
-			get { return EmbeddedImage("missing-image"); }
-		}
+		public static UIImage MissingImage => EmbeddedImage("missing-image");
 
-		public static UIImage MissingFile {
-			get { return EmbeddedImage("missing-file"); }
-		}
+		public static UIImage MissingFile => EmbeddedImage("missing-file");
 
-		public static UIImage ErrorImage {
-			get { return EmbeddedImage("error-image"); }
-		}
+		public static UIImage ErrorImage => EmbeddedImage("error-image");
 
-		public static UIImage BlankImage {
-			get { return EmbeddedImage("blank"); }
-		}
+		public static UIImage BlankImage => EmbeddedImage("blank");
 
 		//public static UIImage CloseBoxImage {
 		//    get { return UIImage.FromResource(Assembly.GetCallingAssembly(), "closebox.png"); }
@@ -303,11 +293,7 @@ namespace Tools {
 			var yyy = xxx.GetManifestResourceNames();
 			return UIImage.FromResource(Assembly.GetCallingAssembly(), name);
 		}
-		public static UIWindow PrimaryWindow {
-			get {
-				return UIApplication.SharedApplication.Windows.OrderBy(w => w.WindowLevel).First();
-			}
-		}
+		public static UIWindow PrimaryWindow => UIApplication.SharedApplication.Windows.OrderBy(w => w.WindowLevel).First();
 
 		public static UIViewController GetTopMostController() {
 			var window = PrimaryWindow;
@@ -769,17 +755,9 @@ namespace Tools {
 			return GetCurrentViewController().View;
 		}
 
-		public static bool IsCameraAvailable {
-			get {
-				return UIImagePickerController.IsCameraDeviceAvailable(UIImagePickerControllerCameraDevice.Rear);
-			}
-		}
+		public static bool IsCameraAvailable => UIImagePickerController.IsCameraDeviceAvailable(UIImagePickerControllerCameraDevice.Rear);
 
-		public static UIInterfaceOrientation CurrentInterfaceOrientation {
-			get {
-				return UIApplication.SharedApplication.StatusBarOrientation;
-			}
-		}
+		public static UIInterfaceOrientation CurrentInterfaceOrientation => UIApplication.SharedApplication.StatusBarOrientation;
 
 		public static CGRect FrameForOrientation(UIInterfaceOrientation orientation, bool subtractStatusBarHeight = true) {
 			var screen = UIScreen.MainScreen;

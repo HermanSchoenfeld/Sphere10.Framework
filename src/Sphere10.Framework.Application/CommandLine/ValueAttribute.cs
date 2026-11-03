@@ -23,16 +23,14 @@ public sealed class ValueAttribute : BaseAttribute {
 	/// <summary>
 	/// Gets the position this option has on the command line.
 	/// </summary>
-	public int Index {
-		get { return index; }
-	}
+	public int Index => index;
 
 	/// <summary>
 	/// Gets or sets name of this positional value specification.
 	/// </summary>
 	public string MetaName {
-		get { return metaName; }
-		set { metaName = value ?? throw new ArgumentNullException("value"); }
+		get => metaName;
+		set => metaName = value ?? throw new ArgumentNullException("value");
 	}
 }
 

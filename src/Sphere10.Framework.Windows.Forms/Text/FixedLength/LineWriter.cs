@@ -15,33 +15,20 @@ namespace Sphere10.Framework.Windows.Forms.Text.FixedLength;
 /// A class used to create fixed lenght string.
 /// </summary>
 public class LineWriter {
-	private FieldList _fields;
 	private IField[] _sortedList;
-	private char _separator = '\0';
 	private object[] _lineValues;
 
 	public LineWriter(FieldList fields) {
-		_fields = fields;
+		Fields = fields;
 	}
 
 	public LineWriter(Type lineClassType) {
-		_fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
+		Fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
 	}
 
-	public FieldList Fields {
-		get {
-			return _fields;
-		}
-	}
+	public FieldList Fields { get; }
 
-	public char Separator {
-		get {
-			return _separator;
-		}
-		set {
-			_separator = value;
-		}
-	}
+	public char Separator { get; set; } = '\0';
 
 	public string CreateLineFromClass(object schemaClass) {
 		// Capture only the schema properties that declare a fixed-length field.
@@ -61,7 +48,7 @@ public class LineWriter {
 		if (_lineValues == null)
 			throw new ArgumentNullException("_lineValues", "SetValue not called");
 		if (_sortedList == null)
-			_sortedList = _fields.GetSortedList();
+			_sortedList = Fields.GetSortedList();
 
 		// Write each value in field order with the optional separator.
 		var builder = new System.Text.StringBuilder();
@@ -78,11 +65,11 @@ public class LineWriter {
 	public void SetValue(string fieldName, object val) {
 		// Allocate the value slots and field ordering on first use.
 		if (_lineValues == null)
-			_lineValues = new object[_fields.Count];
+			_lineValues = new object[Fields.Count];
 		if (_sortedList == null)
-			_sortedList = _fields.GetSortedList();
+			_sortedList = Fields.GetSortedList();
 
-		_lineValues[_fields[fieldName].Index] = val;
+		_lineValues[Fields[fieldName].Index] = val;
 	}
 
 	public void Reset() {

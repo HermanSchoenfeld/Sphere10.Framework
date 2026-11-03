@@ -49,12 +49,14 @@ namespace Sphere10.Framework.iOS {
 		}
 
 		public int BadgeNumber {
-			get { return _badgeNumber; }
-			set { Text = (_badgeNumber = value).ToString(); }
+			get => _badgeNumber;
+			set => Text = (_badgeNumber = value).ToString();
 		}
 
 		public override string Text {
-			get { return base.Text; }
+			get {
+				return base.Text;
+			}
 			set
 			{
 				base.Text = value;

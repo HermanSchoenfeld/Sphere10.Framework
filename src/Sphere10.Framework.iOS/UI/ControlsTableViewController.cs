@@ -161,12 +161,8 @@ namespace Sphere10.Framework.iOS
 		}
 		
 		public override bool WantsFullScreenLayout {
-			get {
-				return true;
-			}
-			set {
-				base.WantsFullScreenLayout = value;
-			}
+			get => true;
+			set => base.WantsFullScreenLayout = value;
 		}
 
 	}
@@ -191,7 +187,7 @@ namespace Sphere10.Framework.iOS
 		
 		public void Reload(){}
 		
-		public int Pages {get {return 4;} }
+		public int Pages => 4;
 	}
 		
 }

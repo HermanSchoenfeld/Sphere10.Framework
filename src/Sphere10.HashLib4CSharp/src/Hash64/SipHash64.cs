@@ -236,14 +236,14 @@ namespace HashLib4CSharp.Hash64
 
         public virtual unsafe byte[] Key
         {
-            get
+			get
             {
                 var key = new byte[KeyLength];
                 Converters.ReadUInt64AsBytesLE(Key00, key, 0);
                 Converters.ReadUInt64AsBytesLE(Key01, key, 8);
                 return key;
             }
-            set
+			set
             {
                 if (value == null) throw new ArgumentNullException(nameof(value));
                 if (value.Length == 0)
@@ -263,7 +263,7 @@ namespace HashLib4CSharp.Hash64
                     }
                 }
             }
-        }
+		}
     }
 
     internal abstract class SipHash64 : SipHash

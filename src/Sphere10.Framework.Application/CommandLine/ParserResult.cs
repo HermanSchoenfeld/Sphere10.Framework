@@ -7,21 +7,14 @@ using System.Linq;
 namespace CommandLine;
 
 public sealed class TypeInfo {
-	private readonly Type current;
-	private readonly IEnumerable<Type> choices;
-
 	private TypeInfo(Type current, IEnumerable<Type> choices) {
-		this.current = current;
-		this.choices = choices;
+		Current = current;
+		Choices = choices;
 	}
 
-	public Type Current {
-		get { return this.current; }
-	}
+	public Type Current { get; }
 
-	public IEnumerable<Type> Choices {
-		get { return this.choices; }
-	}
+	public IEnumerable<Type> Choices { get; }
 
 	internal static TypeInfo Create(Type current) {
 		return new TypeInfo(current, Enumerable.Empty<Type>());
@@ -56,33 +49,26 @@ public enum ParserResultType {
 /// </summary>
 /// <typeparam name="T">The type with attributes that define the syntax of parsing rules.</typeparam>
 public abstract class ParserResult<T> {
-	private readonly ParserResultType tag;
-	private readonly TypeInfo typeInfo;
-
 	internal ParserResult(IEnumerable<Error> errors, TypeInfo typeInfo) {
-		this.tag = ParserResultType.NotParsed;
-		this.typeInfo = typeInfo ?? TypeInfo.Create(typeof(T));
+		Tag = ParserResultType.NotParsed;
+		TypeInfo = typeInfo ?? TypeInfo.Create(typeof(T));
 		Errors = errors ?? new Error[0];
 		Value = default;
 	}
 
 	internal ParserResult(T value, TypeInfo typeInfo) {
 		Value = value ?? throw new ArgumentNullException(nameof(value));
-		this.tag = ParserResultType.Parsed;
-		this.typeInfo = typeInfo ?? TypeInfo.Create(value.GetType());
+		Tag = ParserResultType.Parsed;
+		TypeInfo = typeInfo ?? TypeInfo.Create(value.GetType());
 		Errors = new Error[0];
 	}
 
 	/// <summary>
 	/// Parser result type discriminator, defined as <see cref="CommandLine.ParserResultType"/> enumeration.
 	/// </summary>
-	public ParserResultType Tag {
-		get { return this.tag; }
-	}
+	public ParserResultType Tag { get; }
 
-	public TypeInfo TypeInfo {
-		get { return typeInfo; }
-	}
+	public TypeInfo TypeInfo { get; }
 
 	/// <summary>
 	/// Gets the instance with parsed values. If one or more errors occures, <see langword="default"/> is returned.

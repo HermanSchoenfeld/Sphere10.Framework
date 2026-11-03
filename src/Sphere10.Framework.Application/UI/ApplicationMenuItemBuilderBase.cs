@@ -20,11 +20,7 @@ public abstract class ApplicationMenuItemBuilderBase {
 
 	protected ApplicationScreenRegistration ScreenRegistration { get; private set; }
 
-	protected Type ScreenType {
-		get {
-			return ScreenRegistration?.ScreenType;
-		}
-	}
+	protected Type ScreenType => ScreenRegistration?.ScreenType;
 
 	protected Action Action { get; private set; }
 

@@ -77,8 +77,10 @@ internal sealed class ChartImage : ChartPicture
     ]
     public object DataSource
     {
-        get => _dataSource;
-        set
+		get {
+			return _dataSource;
+		}
+		set
         {
             if (_dataSource != value)
             {
@@ -86,7 +88,7 @@ internal sealed class ChartImage : ChartPicture
                 this.boundToDataSource = false;
             }
         }
-    }
+	}
 
     /// <summary>
     /// Image compression value
@@ -99,8 +101,10 @@ internal sealed class ChartImage : ChartPicture
     ]
     public int Compression
     {
-        get => _compression;
-        set
+		get {
+			return _compression;
+		}
+		set
         {
             if (value < 0 || value > 100)
             {
@@ -109,7 +113,7 @@ internal sealed class ChartImage : ChartPicture
 
             _compression = value;
         }
-    }
+	}
 
     #endregion Properties
 
@@ -1979,9 +1983,9 @@ internal class ChartPicture : ChartElement, IServiceProvider, IDisposable
     ]
     public RightToLeft RightToLeft
     {
-        get => this.Common.Chart.RightToLeft;
-        set => this.Common.Chart.RightToLeft = value;
-    }
+		get => this.Common.Chart.RightToLeft;
+		set => this.Common.Chart.RightToLeft = value;
+	}
 
     /// <summary>
     /// Indicates that non-critical chart exceptions will be suppressed.
@@ -2077,14 +2081,16 @@ internal class ChartPicture : ChartElement, IServiceProvider, IDisposable
     ]
     public int Width
     {
-        get => _width;
-        set
+		get {
+			return _width;
+		}
+		set
         {
             this.InspectChartDimensions(value, this.Height);
             _width = value;
             Common.Width = _width;
         }
-    }
+	}
 
     /// <summary>
     /// Series Data Manipulator
@@ -2109,14 +2115,16 @@ internal class ChartPicture : ChartElement, IServiceProvider, IDisposable
     ]
     public int Height
     {
-        get => _height;
-        set
+		get {
+			return _height;
+		}
+		set
         {
             this.InspectChartDimensions(this.Width, value);
             _height = value;
             Common.Height = value;
         }
-    }
+	}
 
     /// <summary>
     /// Back Hatch style
@@ -2249,8 +2257,10 @@ internal class ChartPicture : ChartElement, IServiceProvider, IDisposable
     ]
     public int BorderWidth
     {
-        get => _borderWidth;
-        set
+		get {
+			return _borderWidth;
+		}
+		set
         {
             if (value < 0)
             {
@@ -2259,7 +2269,7 @@ internal class ChartPicture : ChartElement, IServiceProvider, IDisposable
 
             _borderWidth = value;
         }
-    }
+	}
 
     /// <summary>
     /// The style of the border line

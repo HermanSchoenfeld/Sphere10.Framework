@@ -51,26 +51,16 @@ public class Text : VisualElementBase, IText {
 	/// Gets or sets the Font of the content. Default is System.Windows.Forms.Control.DefaultFont.
 	/// </summary>
 	public virtual Font Font {
-		get {
-			return _font;
-		}
-
-		set {
-			_font = value;
-		}
+		get => _font;
+		set => _font = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the fore color of the content. System.Windows.Forms.Control.DefaultForeColor
 	/// </summary>
 	public virtual Color ForeColor {
-		get {
-			return _foreColor;
-		}
-
-		set {
-			_foreColor = value;
-		}
+		get => _foreColor;
+		set => _foreColor = value;
 	}
 
 	/// <summary>
@@ -78,23 +68,13 @@ public class Text : VisualElementBase, IText {
 	/// </summary>
 	[DefaultValue(null)]
 	public virtual string Value {
-		get {
-			return _value;
-		}
-
-		set {
-			_value = value;
-		}
+		get => _value;
+		set => _value = value;
 	}
 
 	public bool Enabled {
-		get {
-			return _enabled;
-		}
-
-		set {
-			_enabled = value;
-		}
+		get => _enabled;
+		set => _enabled = value;
 	}
 
 	/// <summary>

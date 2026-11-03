@@ -47,9 +47,7 @@ internal sealed class LogOutputSession : SynchronizedObject, ILogger, IDisposabl
 		set => _options = value;
 	}
 
-	public bool IsLogging {
-		get => _accepting && System.Threading.Volatile.Read(ref _sink) != null;
-	}
+	public bool IsLogging => _accepting && System.Threading.Volatile.Read(ref _sink) != null;
 
 	public static LogOutputSession Create(LogOutputConfiguration configuration, ILogger applicationLogger, ILogger screenLogger = null) {
 		IDisposable resource = null;

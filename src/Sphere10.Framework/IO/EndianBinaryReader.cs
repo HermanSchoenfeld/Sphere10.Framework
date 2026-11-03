@@ -97,9 +97,9 @@ public class EndianBinaryReader : IDisposable {
 		if (!stream.CanRead) {
 			throw new ArgumentException("Stream isn't writable", "stream");
 		}
-		this._stream = stream;
+		BaseStream = stream;
 		this._bitConverter = bitConverter;
-		this._encoding = encoding;
+		Encoding = encoding;
 		this._decoder = encoding.GetDecoder();
 		this._minBytesPerChar = 1;
 		_leaveOpen = leaveOpen;
@@ -118,27 +118,17 @@ public class EndianBinaryReader : IDisposable {
 	/// <summary>
 	/// The bit converter used to read values from the stream
 	/// </summary>
-	public EndianBitConverter BitConverter {
-		get { return _bitConverter; }
-	}
-
-	private readonly Encoding _encoding;
+	public EndianBitConverter BitConverter => _bitConverter;
 
 	/// <summary>
 	/// The encoding used to read strings
 	/// </summary>
-	public Encoding Encoding {
-		get { return _encoding; }
-	}
-
-	private readonly Stream _stream;
+	public Encoding Encoding { get; }
 
 	/// <summary>
 	/// Gets the underlying stream of the EndianBinaryReader.
 	/// </summary>
-	public Stream BaseStream {
-		get { return _stream; }
-	}
+	public Stream BaseStream { get; }
 
 	#endregion
 
@@ -158,7 +148,7 @@ public class EndianBinaryReader : IDisposable {
 	/// <param name="origin">Origin of seek operation.</param>
 	public void Seek(int offset, SeekOrigin origin) {
 		CheckDisposed();
-		_stream.Seek(offset, origin);
+		BaseStream.Seek(offset, origin);
 	}
 
 	/// <summary>
@@ -253,13 +243,13 @@ public class EndianBinaryReader : IDisposable {
 	/// Reads a VarInt
 	/// </summary>
 	public VarInt ReadVarInt()
-		=> VarInt.Read(_stream);
+		=> VarInt.Read(BaseStream);
 
 	/// <summary>
 	/// Reads a Compact-encoded integer
 	/// </summary>
 	public CVarInt ReadCVarInt()
-		=> CVarInt.Read(_stream);
+		=> CVarInt.Read(BaseStream);
 
 
 	/// <summary>
@@ -313,47 +303,47 @@ public class EndianBinaryReader : IDisposable {
 	public object ReadOrThrow(Type type, Func<Exception> exceptionActivator) {
 		Guard.ArgumentNotNull(exceptionActivator, nameof(exceptionActivator));
 		if (type == typeof(char)) {
-			if (!_stream.CanRead(sizeof(char)))
+			if (!BaseStream.CanRead(sizeof(char)))
 				throw exceptionActivator();
 			return Read();
 		} else if (type == typeof(byte)) {
-			if (!_stream.CanRead(sizeof(byte)))
+			if (!BaseStream.CanRead(sizeof(byte)))
 				throw exceptionActivator();
 			return ReadByte();
 		} else if (type == typeof(ushort)) {
-			if (!_stream.CanRead(sizeof(ushort)))
+			if (!BaseStream.CanRead(sizeof(ushort)))
 				throw exceptionActivator();
 			return ReadUInt16();
 		} else if (type == typeof(short)) {
-			if (!_stream.CanRead(sizeof(short)))
+			if (!BaseStream.CanRead(sizeof(short)))
 				throw exceptionActivator();
 			return ReadInt16();
 		} else if (type == typeof(uint)) {
-			if (!_stream.CanRead(sizeof(uint)))
+			if (!BaseStream.CanRead(sizeof(uint)))
 				throw exceptionActivator();
 			return ReadUInt32();
 		} else if (type == typeof(int)) {
-			if (!_stream.CanRead(sizeof(int)))
+			if (!BaseStream.CanRead(sizeof(int)))
 				throw exceptionActivator();
 			return ReadInt32();
 		} else if (type == typeof(ulong)) {
-			if (!_stream.CanRead(sizeof(ulong)))
+			if (!BaseStream.CanRead(sizeof(ulong)))
 				throw exceptionActivator();
 			return ReadUInt64();
 		} else if (type == typeof(long)) {
-			if (!_stream.CanRead(sizeof(long)))
+			if (!BaseStream.CanRead(sizeof(long)))
 				throw exceptionActivator();
 			return ReadInt64();
 		} else if (type == typeof(float)) {
-			if (!_stream.CanRead(sizeof(float)))
+			if (!BaseStream.CanRead(sizeof(float)))
 				throw exceptionActivator();
 			return ReadSingle();
 		} else if (type == typeof(double)) {
-			if (!_stream.CanRead(sizeof(double)))
+			if (!BaseStream.CanRead(sizeof(double)))
 				throw exceptionActivator();
 			return ReadDouble();
 		} else if (type == typeof(decimal)) {
-			if (!_stream.CanRead(sizeof(decimal)))
+			if (!BaseStream.CanRead(sizeof(decimal)))
 				throw exceptionActivator();
 			return ReadDecimal();
 		} else if (type.HasSubType(typeof(Enum))) {
@@ -461,7 +451,7 @@ public class EndianBinaryReader : IDisposable {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public int Read(Span<byte> buffer) {
 		CheckDisposed();
-		return _stream.Read(buffer);
+		return BaseStream.Read(buffer);
 	}
 
 
@@ -547,7 +537,7 @@ public class EndianBinaryReader : IDisposable {
 
 		int ret = 0;
 		for (int shift = 0; shift < 35; shift += 7) {
-			int b = _stream.ReadByte();
+			int b = BaseStream.ReadByte();
 			if (b == -1) {
 				throw new EndOfStreamException();
 			}
@@ -572,7 +562,7 @@ public class EndianBinaryReader : IDisposable {
 
 		int ret = 0;
 		for (int i = 0; i < 5; i++) {
-			int b = _stream.ReadByte();
+			int b = BaseStream.ReadByte();
 			if (b == -1) {
 				throw new EndOfStreamException();
 			}
@@ -597,7 +587,7 @@ public class EndianBinaryReader : IDisposable {
 
 		byte[] data = new byte[bytesToRead];
 		ReadInternal(data, bytesToRead);
-		return _encoding.GetString(data, 0, data.Length);
+		return Encoding.GetString(data, 0, data.Length);
 	}
 
 	#endregion
@@ -635,7 +625,7 @@ public class EndianBinaryReader : IDisposable {
 		CheckDisposed();
 		int index = 0;
 		while (index < size) {
-			int read = _stream.Read(data.Slice(index, size - index));
+			int read = BaseStream.Read(data.Slice(index, size - index));
 			if (read == 0) {
 				return index;
 			}
@@ -655,7 +645,7 @@ public class EndianBinaryReader : IDisposable {
 		if (!_disposed) {
 			_disposed = true;
 			if (!_leaveOpen)
-				((IDisposable)_stream).Dispose();
+				((IDisposable)BaseStream).Dispose();
 		}
 	}
 

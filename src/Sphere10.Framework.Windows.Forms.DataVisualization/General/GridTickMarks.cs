@@ -64,13 +64,12 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         // Tick marks style
         private TickMarkStyle _style = TickMarkStyle.OutsideArea;
 
-        // Tick marks size
-        private float _size = 1;
+		// Tick marks size
 
-        /// <summary>
-        /// Public default constructor
-        /// </summary>
-        public TickMark() : base(null, true)
+		/// <summary>
+		/// Public default constructor
+		/// </summary>
+		public TickMark() : base(null, true)
         {
         }
 
@@ -226,17 +225,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 if (_style == TickMarkStyle.InsideArea)
                 {
                     first.X = axisPosition;
-                    second.X = axisPosition + _size;
+                    second.X = axisPosition + Size;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
-                    first.X = axisPosition - _size - scrollBarSize;
+                    first.X = axisPosition - Size - scrollBarSize;
                     second.X = axisPosition;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.X = axisPosition - _size / 2 - scrollBarSize;
-                    second.X = axisPosition + _size / 2;
+                    first.X = axisPosition - Size / 2 - scrollBarSize;
+                    second.X = axisPosition + Size / 2;
                 }
             }
 
@@ -252,18 +251,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 if (_style == TickMarkStyle.InsideArea)
                 {
-                    first.X = axisPosition - _size;
+                    first.X = axisPosition - Size;
                     second.X = axisPosition;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
                     first.X = axisPosition;
-                    second.X = axisPosition + _size + scrollBarSize;
+                    second.X = axisPosition + Size + scrollBarSize;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.X = axisPosition - _size / 2;
-                    second.X = axisPosition + _size / 2 + scrollBarSize;
+                    first.X = axisPosition - Size / 2;
+                    second.X = axisPosition + Size / 2 + scrollBarSize;
                 }
             }
 
@@ -280,17 +279,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 if (_style == TickMarkStyle.InsideArea)
                 {
                     first.Y = axisPosition;
-                    second.Y = axisPosition + _size;
+                    second.Y = axisPosition + Size;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
-                    first.Y = axisPosition - _size - scrollBarSize;
+                    first.Y = axisPosition - Size - scrollBarSize;
                     second.Y = axisPosition;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.Y = axisPosition - _size / 2 - scrollBarSize;
-                    second.Y = axisPosition + _size / 2;
+                    first.Y = axisPosition - Size / 2 - scrollBarSize;
+                    second.Y = axisPosition + Size / 2;
                 }
             }
 
@@ -306,18 +305,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 if (_style == TickMarkStyle.InsideArea)
                 {
-                    first.Y = axisPosition - _size;
+                    first.Y = axisPosition - Size;
                     second.Y = axisPosition;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
                     first.Y = axisPosition;
-                    second.Y = axisPosition + _size + scrollBarSize;
+                    second.Y = axisPosition + Size + scrollBarSize;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.Y = axisPosition - _size / 2;
-                    second.Y = axisPosition + _size / 2 + scrollBarSize;
+                    first.Y = axisPosition - Size / 2;
+                    second.Y = axisPosition + Size / 2 + scrollBarSize;
                 }
             }
 
@@ -561,17 +560,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 if (_style == TickMarkStyle.InsideArea)
                 {
                     first.X = axisPosition;
-                    second.X = axisPosition + _size;
+                    second.X = axisPosition + Size;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
-                    first.X = axisPosition - _size - scrollBarSize;
+                    first.X = axisPosition - Size - scrollBarSize;
                     second.X = axisPosition;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.X = axisPosition - _size / 2 - scrollBarSize;
-                    second.X = axisPosition + _size / 2;
+                    first.X = axisPosition - Size / 2 - scrollBarSize;
+                    second.X = axisPosition + Size / 2;
                 }
             }
 
@@ -587,18 +586,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 if (_style == TickMarkStyle.InsideArea)
                 {
-                    first.X = axisPosition - _size;
+                    first.X = axisPosition - Size;
                     second.X = axisPosition;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
                     first.X = axisPosition;
-                    second.X = axisPosition + _size + scrollBarSize;
+                    second.X = axisPosition + Size + scrollBarSize;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.X = axisPosition - _size / 2;
-                    second.X = axisPosition + _size / 2 + scrollBarSize;
+                    first.X = axisPosition - Size / 2;
+                    second.X = axisPosition + Size / 2 + scrollBarSize;
                 }
             }
 
@@ -615,17 +614,17 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                 if (_style == TickMarkStyle.InsideArea)
                 {
                     first.Y = axisPosition;
-                    second.Y = axisPosition + _size;
+                    second.Y = axisPosition + Size;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
-                    first.Y = axisPosition - _size - scrollBarSize;
+                    first.Y = axisPosition - Size - scrollBarSize;
                     second.Y = axisPosition;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.Y = axisPosition - _size / 2 - scrollBarSize;
-                    second.Y = axisPosition + _size / 2;
+                    first.Y = axisPosition - Size / 2 - scrollBarSize;
+                    second.Y = axisPosition + Size / 2;
                 }
             }
 
@@ -641,18 +640,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 if (_style == TickMarkStyle.InsideArea)
                 {
-                    first.Y = axisPosition - _size;
+                    first.Y = axisPosition - Size;
                     second.Y = axisPosition;
                 }
                 else if (_style == TickMarkStyle.OutsideArea)
                 {
                     first.Y = axisPosition;
-                    second.Y = axisPosition + _size + scrollBarSize;
+                    second.Y = axisPosition + Size + scrollBarSize;
                 }
                 else if (_style == TickMarkStyle.AcrossAxis)
                 {
-                    first.Y = axisPosition - _size / 2;
-                    second.Y = axisPosition + _size / 2 + scrollBarSize;
+                    first.Y = axisPosition - Size / 2;
+                    second.Y = axisPosition + Size / 2 + scrollBarSize;
                 }
             }
 
@@ -808,7 +807,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     if (_style == TickMarkStyle.InsideArea)
                     {
                         point1.Y = axisPosition;
-                        point2.Y = axisPosition + _size;
+                        point2.Y = axisPosition + Size;
 
                         point3 = new Point3D(point1.X, point1.Y, -area.areaSceneWallWidth.Width);
                         point4 = new Point3D(point1.X, point1.Y, 0f);
@@ -819,15 +818,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                         point2.Y = axisPosition;
 
                         point3 = new Point3D(point1.X, axisPosition, wallZPosition);
-                        point4 = new Point3D(point1.X, point1.Y, -_size - area.areaSceneWallWidth.Width);
+                        point4 = new Point3D(point1.X, point1.Y, -Size - area.areaSceneWallWidth.Width);
                     }
                     else if (_style == TickMarkStyle.AcrossAxis)
                     {
                         point1.Y = axisPosition;
-                        point2.Y = axisPosition + _size / 2;
+                        point2.Y = axisPosition + Size / 2;
 
                         point3 = new Point3D(point1.X, axisPosition, wallZPosition);
-                        point4 = new Point3D(point1.X, point1.Y, -_size / 2 - area.areaSceneWallWidth.Width);
+                        point4 = new Point3D(point1.X, point1.Y, -Size / 2 - area.areaSceneWallWidth.Width);
                     }
 
                     // Do not show "bent" tick marks on the top surface
@@ -849,7 +848,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                     if (_style == TickMarkStyle.InsideArea)
                     {
                         point1.X = axisPosition;
-                        point2.X = axisPosition + _size;
+                        point2.X = axisPosition + Size;
 
                         point3 = new Point3D(point1.X, point1.Y, -area.areaSceneWallWidth.Width);
                         point4 = new Point3D(point1.X, point1.Y, 0f);
@@ -860,15 +859,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                         point2.X = axisPosition;
 
                         point3 = new Point3D(axisPosition, point1.Y, wallZPosition);
-                        point4 = new Point3D(axisPosition, point1.Y, -_size - area.areaSceneWallWidth.Width);
+                        point4 = new Point3D(axisPosition, point1.Y, -Size - area.areaSceneWallWidth.Width);
                     }
                     else if (_style == TickMarkStyle.AcrossAxis)
                     {
                         point1.X = axisPosition;
-                        point2.X = axisPosition + _size / 2;
+                        point2.X = axisPosition + Size / 2;
 
                         point3 = new Point3D(axisPosition, point1.Y, wallZPosition);
-                        point4 = new Point3D(axisPosition, point1.Y, -_size / 2 - area.areaSceneWallWidth.Width);
+                        point4 = new Point3D(axisPosition, point1.Y, -Size / 2 - area.areaSceneWallWidth.Width);
                     }
 
                     // Do not show "bent" tick marks on the left surface
@@ -889,7 +888,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                     if (_style == TickMarkStyle.InsideArea)
                     {
-                        point1.X = axisPosition - _size;
+                        point1.X = axisPosition - Size;
                         point2.X = axisPosition;
 
                         point3 = new Point3D(point2.X, point2.Y, -area.areaSceneWallWidth.Width);
@@ -901,16 +900,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
                         point2.X = axisPosition;
 
                         point3 = new Point3D(axisPosition, point1.Y, wallZPosition);
-                        point4 = new Point3D(axisPosition, point1.Y, -_size - area.areaSceneWallWidth.Width);
+                        point4 = new Point3D(axisPosition, point1.Y, -Size - area.areaSceneWallWidth.Width);
 
                     }
                     else if (_style == TickMarkStyle.AcrossAxis)
                     {
-                        point1.X = axisPosition - _size / 2;
+                        point1.X = axisPosition - Size / 2;
                         point2.X = axisPosition;
 
                         point3 = new Point3D(axisPosition, point1.Y, wallZPosition);
-                        point4 = new Point3D(axisPosition, point1.Y, -_size / 2 - area.areaSceneWallWidth.Width);
+                        point4 = new Point3D(axisPosition, point1.Y, -Size / 2 - area.areaSceneWallWidth.Width);
                     }
 
                     // Do not show "bent" tick marks on the right surface
@@ -968,16 +967,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public TickMarkStyle TickMarkStyle
         {
-            get
-            {
-                return _style;
-            }
-            set
+			get {
+				return _style;
+			}
+			set
             {
                 _style = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Tick mark size.
@@ -990,19 +988,18 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public float Size
         {
-            get
+			get {
+				return field;
+			}
+			set
             {
-                return _size;
-            }
-            set
-            {
-                _size = value;
+                field = value;
                 this.Invalidate();
             }
-        }
+		} = 1;
 
-        #endregion
-    }
+		#endregion
+	}
 
     /// <summary>
     /// The Grid class represents axis grid lines which are drawn in the 
@@ -1574,17 +1571,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double IntervalOffset
         {
-            get
-            {
-                return intervalOffset;
-            }
-            set
+			get {
+				return intervalOffset;
+			}
+			set
             {
                 intervalOffset = value;
                 intervalOffsetChanged = true;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Determines if Enabled property should be serialized.
@@ -1626,17 +1622,16 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType IntervalOffsetType
         {
-            get
-            {
-                return intervalOffsetType;
-            }
-            set
+			get {
+				return intervalOffsetType;
+			}
+			set
             {
                 intervalOffsetType = value;
                 intervalOffsetTypeChanged = true;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Determines if IntervalOffsetType property should be serialized.
@@ -1676,11 +1671,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public double Interval
         {
-            get
-            {
-                return interval;
-            }
-            set
+			get {
+				return interval;
+			}
+			set
             {
                 // Validation
                 if (value < 0.0)
@@ -1731,8 +1725,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate();
             }
-
-        }
+		}
 
         /// <summary>
         /// Determines if IntervalOffsetType property should be serialized.
@@ -1771,11 +1764,10 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public DateTimeIntervalType IntervalType
         {
-            get
-            {
-                return intervalType;
-            }
-            set
+			get {
+				return intervalType;
+			}
+			set
             {
                 intervalType = value;
                 intervalTypeChanged = true;
@@ -1795,7 +1787,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Determines if IntervalOffsetType property should be serialized.
@@ -1837,16 +1829,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public Color LineColor
         {
-            get
-            {
-                return borderColor;
-            }
-            set
+			get {
+				return borderColor;
+			}
+			set
             {
                 borderColor = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets grid or tick mark line style.
@@ -1859,16 +1850,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public ChartDashStyle LineDashStyle
         {
-            get
-            {
-                return borderDashStyle;
-            }
-            set
+			get {
+				return borderDashStyle;
+			}
+			set
             {
                 borderDashStyle = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets grid or tick mark line width.
@@ -1881,16 +1871,15 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public int LineWidth
         {
-            get
-            {
-                return borderWidth;
-            }
-            set
+			get {
+				return borderWidth;
+			}
+			set
             {
                 borderWidth = value;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Gets or sets a flag which indicates if the grid or tick mark is enabled.
@@ -1902,7 +1891,7 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         ]
         public bool Enabled
         {
-            get
+			get
             {
                 //// Never serialize this property for minor elements
                 //// "Disabled" property should be serialized instead.
@@ -1917,13 +1906,13 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
 
                 return enabled;
             }
-            set
+			set
             {
                 enabled = value;
                 enabledChanged = true;
                 this.Invalidate();
             }
-        }
+		}
 
         /// <summary>
         /// Determines if Enabled property should be serialized.
@@ -1943,9 +1932,9 @@ namespace Sphere10.Framework.Windows.Forms.DataVisualization
         /// </summary>
         internal Axis Axis
         {
-            get { return _axis; }
-            set { _axis = value; }
-        }
+			get => _axis;
+			set => _axis = value;
+		}
 
         #endregion
     }

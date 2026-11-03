@@ -21,17 +21,11 @@ public class BitsFileInfo {
 		this.fileInfo.LocalName = localName;
 	}
 
-	public string RemoteName {
-		get { return this.fileInfo.RemoteName; }
-	}
+	public string RemoteName => this.fileInfo.RemoteName;
 
-	public string LocalName {
-		get { return this.fileInfo.LocalName; }
-	}
+	public string LocalName => this.fileInfo.LocalName;
 
 
-	internal BG_FILE_INFO _BG_FILE_INFO {
-		get { return this.fileInfo; }
-	}
+	internal BG_FILE_INFO _BG_FILE_INFO => this.fileInfo;
 }
 

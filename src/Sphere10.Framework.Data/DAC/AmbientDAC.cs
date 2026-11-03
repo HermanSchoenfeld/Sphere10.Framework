@@ -73,9 +73,7 @@ public sealed class AmbientDAC : DACDecorator {
 		public sealed override void Commit() {
 		}
 
-		public sealed override IDbConnection Connection {
-			get { return _connection; }
-		}
+		public sealed override IDbConnection Connection => _connection;
 	}
 
 }

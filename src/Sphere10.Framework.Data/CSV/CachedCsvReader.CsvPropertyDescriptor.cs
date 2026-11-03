@@ -61,9 +61,7 @@ public partial class CachedCsvReader
 		/// Gets the field index.
 		/// </summary>
 		/// <value>The field index.</value>
-		public int Index {
-			get { return _index; }
-		}
+		public int Index => _index;
 
 		#endregion
 
@@ -87,17 +85,11 @@ public partial class CachedCsvReader
 			return false;
 		}
 
-		public override Type ComponentType {
-			get { return typeof(CachedCsvReader); }
-		}
+		public override Type ComponentType => typeof(CachedCsvReader);
 
-		public override bool IsReadOnly {
-			get { return true; }
-		}
+		public override bool IsReadOnly => true;
 
-		public override Type PropertyType {
-			get { return typeof(string); }
-		}
+		public override Type PropertyType => typeof(string);
 
 		#endregion
 

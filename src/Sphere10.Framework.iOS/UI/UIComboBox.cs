@@ -51,11 +51,7 @@ namespace Sphere10.Framework.iOS
 			};
 			pickerView.AddSubview(closeBtn);
 		}
-		public override bool CanBecomeFirstResponder {
-			get {
-				return false;
-			}
-		}
+		public override bool CanBecomeFirstResponder => false;
 		public override void LayoutSubviews ()
 		{
 			base.LayoutSubviews ();
@@ -70,21 +66,21 @@ namespace Sphere10.Framework.iOS
 		/// Can be a collection of anyting. If you don't set the ValueMember or DisplayMember, it will use ToString() for the value and Title.
 		/// </summary>
 		public object [] Items {
-			get{return pickerView.Items;}
-			set{pickerView.Items = value;}
+			get => pickerView.Items;
+			set => pickerView.Items = value;
 		}
 		
 		public string DisplayMember {
-			get{return pickerView.DisplayMember;}
-			set {pickerView.DisplayMember = value;}
+			get => pickerView.DisplayMember;
+			set => pickerView.DisplayMember = value;
 		}
 		public string ValueMember {
-			get{return pickerView.ValueMember;}
-			set {pickerView.ValueMember = value;}
+			get => pickerView.ValueMember;
+			set => pickerView.ValueMember = value;
 		}
 		public float Width {
-			get{return pickerView.Width;}
-			set {pickerView.Width = value;}
+			get => pickerView.Width;
+			set => pickerView.Width = value;
 		}
 		
 		bool pickerVisible;
@@ -163,9 +159,7 @@ namespace Sphere10.Framework.iOS
 			}
 		}
 		
-		public object SelectedItem {
-			get {return pickerView.SelectedItem;}
-		}
+		public object SelectedItem => pickerView.SelectedItem;
 		
 		[Foundation.Export("fadeOutDidFinish")]
 		public void FadeOutDidFinish ()
@@ -199,7 +193,9 @@ namespace Sphere10.Framework.iOS
 		object[] items;
 		public object[] Items
 		{
-			get{return items;}
+			get {
+				return items;
+			}
 			set{
 				items = value;
 				this.Model = new PickerData(this);
@@ -214,7 +210,9 @@ namespace Sphere10.Framework.iOS
 		
 		nint selectedIndex;
 		public nint SelectedIndex{
-			get {return selectedIndex;}
+			get {
+				return selectedIndex;
+			}
 			set{
 				if(selectedIndex == value)
 					return;
@@ -224,15 +222,9 @@ namespace Sphere10.Framework.iOS
 			}
 		}
 		
-		public object SelectedItem {get{return items[SelectedIndex];}}
+		public object SelectedItem => items[SelectedIndex];
 		
-		public string StringValue {
-			get{
-				if(string.IsNullOrEmpty(ValueMember))
-					return SelectedItem.ToString();
-                return Tools.iOSTool.GetPropertyValue(SelectedItem, ValueMember);
-			}
-		}
+		public string StringValue => string.IsNullOrEmpty(ValueMember) ? SelectedItem.ToString() : Tools.iOSTool.GetPropertyValue(SelectedItem, ValueMember);
 		
 		public event EventHandler IndexChanged;
 	}

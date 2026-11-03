@@ -168,7 +168,9 @@ public class ValuePageScopeTests {
 		public Action Restoring { get; set; }
 
 		public override CachedItemTraits Traits {
-			get => base.Traits;
+			get {
+				return base.Traits;
+			}
 			internal set {
 				if ((value & CachedItemTraits.CanPurge) != 0) {
 					RestoreAttempts++;

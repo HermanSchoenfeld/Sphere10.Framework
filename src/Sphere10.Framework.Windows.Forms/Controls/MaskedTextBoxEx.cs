@@ -16,21 +16,13 @@ namespace Sphere10.Framework.Windows.Forms;
 /// A TextBox that allows to set the type of value to edit, then you can use the Value property to read and write the specific type.
 /// </summary>
 public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
-	private bool _formatValue = false;
 	private Sphere10.Framework.ComponentModel.IValidator _validator = null;
 
 	/// <summary>
 	/// Gets or sets a property to enable or disable the automatic format of the Text when validating the control
 	/// </summary>
 	[DefaultValue(false)]
-	public bool FormatValue {
-		get {
-			return _formatValue;
-		}
-		set {
-			_formatValue = value;
-		}
-	}
+	public bool FormatValue { get; set; } = false;
 
 	/// <summary>
 	/// Gets or sets the Validator class useded to validate the value and convert the text when using the Value property.

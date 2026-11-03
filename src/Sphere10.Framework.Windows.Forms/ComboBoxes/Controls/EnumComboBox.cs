@@ -15,7 +15,6 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class EnumComboBox : ComboBoxEx {
-	private Type _enumType;
 	private object[] _ignoreVals;
 
 	public EnumComboBox() {
@@ -38,11 +37,13 @@ public class EnumComboBox : ComboBoxEx {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Type EnumType {
-		get { return _enumType; }
+		get {
+			return field;
+		}
 		set {
 			if (value != null && !value.IsEnum)
 				throw new ArgumentException("Type is not enum", "value");
-			_enumType = value;
+			field = value;
 			if (!DesignMode)
 				PopulateCombo();
 		}
@@ -74,10 +75,12 @@ public class EnumComboBox : ComboBoxEx {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object[] IgnoreEnums {
-		get { return _ignoreVals; }
+		get {
+			return _ignoreVals;
+		}
 		set {
 			_ignoreVals = value ?? new object[0];
-			if (!DesignMode && _enumType != null)
+			if (!DesignMode && EnumType != null)
 				PopulateCombo();
 		}
 	}
@@ -88,8 +91,8 @@ public class EnumComboBox : ComboBoxEx {
 		if (AllowEmptyOption) {
 			comboItems.Add(new ComboItem { Display = EmptyOptionText ?? string.Empty, Value = null });
 		}
-		if (_enumType != null) {
-			foreach (Enum enumValue in Enum.GetValues(_enumType)) {
+		if (EnumType != null) {
+			foreach (Enum enumValue in Enum.GetValues(EnumType)) {
 				if (_ignoreVals.Contains(enumValue))
 					continue;
 				if (Filter != null && !Filter(enumValue))

@@ -60,7 +60,9 @@ public class MulticastLogger : ILogger {
 	/// Applies log options to every child logger.
 	/// </summary>
 	public LogOptions Options {
-		get => throw new NotSupportedException("Options can only be set in MultiCastLogger");
+		get {
+			throw new NotSupportedException("Options can only be set in MultiCastLogger");
+		}
 		set {
 			using (_loggers.EnterWriteScope()) {
 				_loggers.ForEach(l => l.Options = value);

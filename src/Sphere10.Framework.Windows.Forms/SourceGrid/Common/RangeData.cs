@@ -51,49 +51,29 @@ public class RangeData {
 	/// <summary>
 	/// Range source
 	/// </summary>
-	public CellRange SourceRange {
-		get {
-			return _sourceRange;
-		}
-	}
+	public CellRange SourceRange => _sourceRange;
 
 	/// <summary>
 	/// String array for values.
 	/// </summary>
-	public object[,] SourceValues {
-		get {
-			return _sourceValues;
-		}
-	}
+	public object[,] SourceValues => _sourceValues;
 
 	/// <summary>
 	/// Starting drag position. Used only for calculating drop destination range.
 	/// </summary>
 	[Obsolete]
-	public Position StartDragPosition {
-		get {
-			return _startDragPosition;
-		}
-	}
+	public Position StartDragPosition => _startDragPosition;
 
 	/// <summary>
 	/// Working grid.
 	/// </summary>
-	public GridVirtual SourceGrid {
-		get {
-			return _sourceGrid;
-		}
-	}
+	public GridVirtual SourceGrid => _sourceGrid;
 
 	/// <summary>
 	/// Cut mode. Default is none.
 	/// </summary>
 	[Obsolete]
-	public CutMode CutMode {
-		get {
-			return _cutMode;
-		}
-	}
+	public CutMode CutMode => _cutMode;
 
 	// Write data
 	/// <summary>

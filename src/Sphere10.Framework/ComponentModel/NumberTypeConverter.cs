@@ -20,9 +20,6 @@ namespace Sphere10.Framework.ComponentModel;
 /// </summary>
 public class NumberTypeConverter : TypeConverter {
 	// Conversion configuration.
-	private TypeConverter _baseTypeConverter;
-	private Type _baseType;
-	private string _format = "G";
 
 	//		private IFormatProvider _formatProvider = null;
 	//		public IFormatProvider FormatProvider
@@ -31,7 +28,6 @@ public class NumberTypeConverter : TypeConverter {
 	//			set{_formatProvider = value;}
 	//		}
 	//
-	private NumberStyles _numberStyles = NumberStyles.Number;
 
 	// Constructors
 	/// <summary>Creates a converter with the selected parsing and display configuration.</summary>
@@ -46,19 +42,12 @@ public class NumberTypeConverter : TypeConverter {
 	}
 
 	/// <summary>Gets or sets the fallback converter used for operations outside the custom string conversion.</summary>
-	public TypeConverter BaseTypeConverter {
-		get {
-			return _baseTypeConverter;
-		}
-		set {
-			_baseTypeConverter = value;
-		}
-	}
+	public TypeConverter BaseTypeConverter { get; set; }
 
 	/// <summary>Gets or sets the supported numeric type, including its nullable form where available.</summary>
 	public Type BaseType {
 		get {
-			return _baseType;
+			return field;
 		}
 		set {
 			if (value != typeof(double) &&
@@ -72,30 +61,16 @@ public class NumberTypeConverter : TypeConverter {
 				throw new ArgumentException("Type not supported", "BaseType");
 
 			// Keep the selected numeric type and its fallback converter together.
-			_baseTypeConverter = TypeDescriptor.GetConverter(value);
-			_baseType = value;
+			BaseTypeConverter = TypeDescriptor.GetConverter(value);
+			field = value;
 		}
 	}
 
 	/// <summary>Gets or sets the numeric display format.</summary>
-	public string Format {
-		get {
-			return _format;
-		}
-		set {
-			_format = value;
-		}
-	}
+	public string Format { get; set; } = "G";
 
 	/// <summary>Gets or sets the numeric styles accepted while parsing strings.</summary>
-	public NumberStyles NumberStyles {
-		get {
-			return _numberStyles;
-		}
-		set {
-			_numberStyles = value;
-		}
-	}
+	public NumberStyles NumberStyles { get; set; } = NumberStyles.Number;
 
 	/// <summary>Converts configured string values and delegates other inputs to the fallback converter.</summary>
 	public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
@@ -115,7 +90,7 @@ public class NumberTypeConverter : TypeConverter {
 				return StringToInt(text, NumberStyles, GetCulture(culture).NumberFormat);
 			throw new ArgumentException("Not supported type");
 		}
-		return _baseTypeConverter.ConvertFrom(context, culture, value);
+		return BaseTypeConverter.ConvertFrom(context, culture, value);
 	}
 
 	/// <summary>Formats configured values and delegates other destinations to the fallback converter.</summary>
@@ -131,9 +106,9 @@ public class NumberTypeConverter : TypeConverter {
 				return FloatToString((float)value, Format, GetCulture(culture).NumberFormat);
 			if (numberType == typeof(int))
 				return IntToString((int)value, Format, GetCulture(culture).NumberFormat);
-			return _baseTypeConverter.ConvertTo(context, culture, value, destinationType);
+			return BaseTypeConverter.ConvertTo(context, culture, value, destinationType);
 		}
-		return _baseTypeConverter.ConvertTo(context, culture, value, destinationType);
+		return BaseTypeConverter.ConvertTo(context, culture, value, destinationType);
 	}
 
 	/// <summary>Checks strings through conversion and delegates other values to the fallback converter.</summary>
@@ -142,7 +117,7 @@ public class NumberTypeConverter : TypeConverter {
 			// Validate strings through the same conversion pipeline used by callers.
 			return Tools.Exceptions.Execute(() => ConvertFrom(context, CultureInfo.CurrentCulture, value));
 		}
-		return _baseTypeConverter.IsValid(context, value);
+		return BaseTypeConverter.IsValid(context, value);
 	}
 
 	// Implementation TypeConverter
@@ -150,49 +125,49 @@ public class NumberTypeConverter : TypeConverter {
 	public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) {
 		if (sourceType == typeof(string))
 			return true;
-		return _baseTypeConverter.CanConvertFrom(context, sourceType);
+		return BaseTypeConverter.CanConvertFrom(context, sourceType);
 	}
 
 	/// <summary>Reports whether string output or the fallback destination type is supported.</summary>
 	public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 		if (destinationType == typeof(string))
 			return true;
-		return _baseTypeConverter.CanConvertTo(context, destinationType);
+		return BaseTypeConverter.CanConvertTo(context, destinationType);
 	}
 
 	/// <summary>Delegates instance creation from property values to the fallback converter.</summary>
 	public override object CreateInstance(ITypeDescriptorContext context, IDictionary propertyValues) {
-		return _baseTypeConverter.CreateInstance(context, propertyValues);
+		return BaseTypeConverter.CreateInstance(context, propertyValues);
 	}
 
 	/// <summary>Reports whether the fallback converter supports instance creation.</summary>
 	public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetCreateInstanceSupported(context);
+		return BaseTypeConverter.GetCreateInstanceSupported(context);
 	}
 
 	/// <summary>Returns the properties supplied by the fallback converter.</summary>
 	public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
-		return _baseTypeConverter.GetProperties(context, value, attributes);
+		return BaseTypeConverter.GetProperties(context, value, attributes);
 	}
 
 	/// <summary>Reports whether the fallback converter supplies editable properties.</summary>
 	public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetPropertiesSupported(context);
+		return BaseTypeConverter.GetPropertiesSupported(context);
 	}
 
 	/// <summary>Returns the fallback converter's standard values.</summary>
 	public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValues(context);
+		return BaseTypeConverter.GetStandardValues(context);
 	}
 
 	/// <summary>Reports whether the fallback converter restricts values to its standard list.</summary>
 	public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValuesExclusive(context);
+		return BaseTypeConverter.GetStandardValuesExclusive(context);
 	}
 
 	/// <summary>Reports whether the fallback converter supplies standard values.</summary>
 	public override bool GetStandardValuesSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValuesSupported(context);
+		return BaseTypeConverter.GetStandardValuesSupported(context);
 	}
 
 	// Conversion String Methods

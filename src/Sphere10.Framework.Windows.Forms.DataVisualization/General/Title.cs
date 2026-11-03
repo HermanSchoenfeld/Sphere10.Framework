@@ -173,8 +173,7 @@ public class Title : ChartNamedElement
     private ChartImageAlignmentStyle _backImageAlignment = ChartImageAlignmentStyle.TopLeft;
     private GradientStyle _backGradientStyle = GradientStyle.None;
     private Color _backSecondaryColor = Color.Empty;
-    private int _shadowOffset;
-    private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
+	private Color _shadowColor = Color.FromArgb(128, 0, 0, 0);
 
     // Border properties
     private Color _borderColor = Color.Empty;
@@ -185,25 +184,20 @@ public class Title : ChartNamedElement
     internal Font _font;
     private Color _foreColor = Color.Black;
 
-    // Docking and Alignment properties
-    private ContentAlignment _alignment = ContentAlignment.MiddleCenter;
-    private Docking _docking = Docking.Top;
-    private string _dockedToChartArea = Constants.NotSetValue;
-    private bool _isDockedInsideChartArea = true;
-    private int _dockingOffset;
+	// Docking and Alignment properties
+	private Docking _docking = Docking.Top;
 
 
-    // Default text orientation
-    private TextOrientation _textOrientation = TextOrientation.Auto;
+	// Default text orientation
 
-    #endregion
+	#endregion
 
-    #region Constructors and Initialization
+	#region Constructors and Initialization
 
-    /// <summary>
-    /// Title constructor.
-    /// </summary>
-    public Title()
+	/// <summary>
+	/// Title constructor.
+	/// </summary>
+	public Title()
     {
         Initialize(string.Empty, Docking.Top, null, Color.Black);
     }
@@ -274,8 +268,9 @@ public class Title : ChartNamedElement
     ]
     public override string Name
     {
-        get => base.Name; set => base.Name = value;
-    }
+		get => base.Name;
+		set => base.Name = value;
+	}
 
     /// <summary>
     /// Gets or sets the text orientation.
@@ -289,21 +284,23 @@ public class Title : ChartNamedElement
     ]
     public TextOrientation TextOrientation
     {
-        get => this._textOrientation;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            this._textOrientation = value;
+            field = value;
             this.Invalidate(true);
         }
-    }
+	} = TextOrientation.Auto;
 
-    /// <summary>
-    /// Gets or sets a flag that specifies whether the title is visible.
-    /// </summary>
-    /// <value>
-    /// <b>True</b> if the title is visible; <b>false</b> otherwise.
-    /// </value>
-    [
+	/// <summary>
+	/// Gets or sets a flag that specifies whether the title is visible.
+	/// </summary>
+	/// <value>
+	/// <b>True</b> if the title is visible; <b>false</b> otherwise.
+	/// </value>
+	[
     SRCategory("CategoryAttributeAppearance"),
     DefaultValue(true),
     SRDescription("DescriptionAttributeTitle_Visible"),
@@ -311,13 +308,15 @@ public class Title : ChartNamedElement
     ]
     public virtual bool Visible
     {
-        get => _visible;
-        set
+		get {
+			return _visible;
+		}
+		set
         {
             _visible = value;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the chart area name which the title is docked to inside or outside.
@@ -332,14 +331,16 @@ public class Title : ChartNamedElement
     ]
     public string DockedToChartArea
     {
-        get => _dockedToChartArea;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            if (value != _dockedToChartArea)
+            if (value != field)
             {
                 if (value.Length == 0)
                 {
-                    _dockedToChartArea = Constants.NotSetValue;
+                    field = Constants.NotSetValue;
                 }
                 else
                 {
@@ -348,19 +349,19 @@ public class Title : ChartNamedElement
                         Chart.ChartAreas.VerifyNameReference(value);
                     }
 
-                    _dockedToChartArea = value;
+                    field = value;
                 }
 
                 this.Invalidate(false);
             }
         }
-    }
+	} = Constants.NotSetValue;
 
-    /// <summary>
-    /// Gets or sets a property which indicates whether the title is docked inside chart area. 
-    /// DockedToChartArea property must be set first.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets a property which indicates whether the title is docked inside chart area.
+	/// DockedToChartArea property must be set first.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeDocking"),
     Bindable(true),
     DefaultValue(true),
@@ -369,21 +370,23 @@ public class Title : ChartNamedElement
     ]
     public bool IsDockedInsideChartArea
     {
-        get => _isDockedInsideChartArea;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            if (value != _isDockedInsideChartArea)
+            if (value != field)
             {
-                _isDockedInsideChartArea = value;
+                field = value;
                 this.Invalidate(false);
             }
         }
-    }
+	} = true;
 
-    /// <summary>
-    /// Gets or sets the positive or negative offset of the docked title position.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the positive or negative offset of the docked title position.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeDocking"),
     Bindable(true),
     DefaultValue(0),
@@ -392,21 +395,23 @@ public class Title : ChartNamedElement
     ]
     public int DockingOffset
     {
-        get => _dockingOffset;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            if (value != _dockingOffset)
+            if (value != field)
             {
                 if (value < -100 || value > 100)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), SR.ExceptionValueMustBeInRange(nameof(DockingOffset), (-100).ToString(CultureInfo.CurrentCulture), 100.ToString(CultureInfo.CurrentCulture)));
                 }
 
-                _dockingOffset = value;
+                field = value;
                 this.Invalidate(false);
             }
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the position of the title.
@@ -422,7 +427,7 @@ public class Title : ChartNamedElement
     ]
     public ElementPosition Position
     {
-        get
+		get
         {
             // Serialize only position values if Auto set to false
             if (Chart != null && Chart.serializationStatus == SerializationStatus.Saving)
@@ -442,13 +447,13 @@ public class Title : ChartNamedElement
 
             return _position;
         }
-        set
+		set
         {
             _position = value;
             _position.Parent = this;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Determines if this position should be serialized.
@@ -470,14 +475,16 @@ public class Title : ChartNamedElement
     ]
     public string Text
     {
-        get => _text;
-        set
+		get {
+			return _text;
+		}
+		set
         {
             _text = value ?? string.Empty;
             _textReal = _text.Replace("\\n", "\n");
             this.Invalidate(false);
         }
-    }
+	}
 
 
     /// <summary>
@@ -492,13 +499,15 @@ public class Title : ChartNamedElement
     ]
     public TextStyle TextStyle
     {
-        get => _style;
-        set
+		get {
+			return _style;
+		}
+		set
         {
             _style = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background color of the title.
@@ -513,13 +522,15 @@ public class Title : ChartNamedElement
     ]
     public Color BackColor
     {
-        get => _backColor;
-        set
+		get {
+			return _backColor;
+		}
+		set
         {
             _backColor = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border color of the title.
@@ -534,13 +545,15 @@ public class Title : ChartNamedElement
     ]
     public Color BorderColor
     {
-        get => _borderColor;
-        set
+		get {
+			return _borderColor;
+		}
+		set
         {
             _borderColor = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border style of the title.
@@ -554,13 +567,15 @@ public class Title : ChartNamedElement
     ]
     public ChartDashStyle BorderDashStyle
     {
-        get => _borderDashStyle;
-        set
+		get {
+			return _borderDashStyle;
+		}
+		set
         {
             _borderDashStyle = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the border width of the title.
@@ -574,8 +589,10 @@ public class Title : ChartNamedElement
     ]
     public int BorderWidth
     {
-        get => _borderWidth;
-        set
+		get {
+			return _borderWidth;
+		}
+		set
         {
             if (value < 0)
             {
@@ -585,7 +602,7 @@ public class Title : ChartNamedElement
             _borderWidth = value;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image.
@@ -599,13 +616,15 @@ public class Title : ChartNamedElement
     ]
     public string BackImage
     {
-        get => _backImage;
-        set
+		get {
+			return _backImage;
+		}
+		set
         {
             _backImage = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image drawing mode.
@@ -619,13 +638,15 @@ public class Title : ChartNamedElement
     ]
     public ChartImageWrapMode BackImageWrapMode
     {
-        get => _backImageWrapMode;
-        set
+		get {
+			return _backImageWrapMode;
+		}
+		set
         {
             _backImageWrapMode = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets a color which will be replaced with a transparent color while drawing the background image.
@@ -640,13 +661,15 @@ public class Title : ChartNamedElement
     ]
     public Color BackImageTransparentColor
     {
-        get => _backImageTransparentColor;
-        set
+		get {
+			return _backImageTransparentColor;
+		}
+		set
         {
             _backImageTransparentColor = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background image alignment used by unscale drawing mode.
@@ -660,13 +683,15 @@ public class Title : ChartNamedElement
     ]
     public ChartImageAlignmentStyle BackImageAlignment
     {
-        get => _backImageAlignment;
-        set
+		get {
+			return _backImageAlignment;
+		}
+		set
         {
             _backImageAlignment = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background gradient style.
@@ -689,13 +714,15 @@ public class Title : ChartNamedElement
     ]
     public GradientStyle BackGradientStyle
     {
-        get => _backGradientStyle;
-        set
+		get {
+			return _backGradientStyle;
+		}
+		set
         {
             _backGradientStyle = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the secondary background color.
@@ -721,13 +748,15 @@ public class Title : ChartNamedElement
     ]
     public Color BackSecondaryColor
     {
-        get => _backSecondaryColor;
-        set
+		get {
+			return _backSecondaryColor;
+		}
+		set
         {
             _backSecondaryColor = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the background hatch style.
@@ -750,13 +779,15 @@ public class Title : ChartNamedElement
     ]
     public ChartHatchStyle BackHatchStyle
     {
-        get => _backHatchStyle;
-        set
+		get {
+			return _backHatchStyle;
+		}
+		set
         {
             _backHatchStyle = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the title font.
@@ -770,13 +801,15 @@ public class Title : ChartNamedElement
     ]
     public Font Font
     {
-        get => _font;
-        set
+		get {
+			return _font;
+		}
+		set
         {
             _font = value;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the title fore color.
@@ -791,13 +824,15 @@ public class Title : ChartNamedElement
     ]
     public Color ForeColor
     {
-        get => _foreColor;
-        set
+		get {
+			return _foreColor;
+		}
+		set
         {
             _foreColor = value;
             this.Invalidate(true);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets title alignment.
@@ -811,18 +846,20 @@ public class Title : ChartNamedElement
     ]
     public ContentAlignment Alignment
     {
-        get => _alignment;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _alignment = value;
+            field = value;
             this.Invalidate(false);
         }
-    }
+	} = ContentAlignment.MiddleCenter;
 
-    /// <summary>
-    /// Gets or sets the title docking style.
-    /// </summary>
-    [
+	/// <summary>
+	/// Gets or sets the title docking style.
+	/// </summary>
+	[
     SRCategory("CategoryAttributeDocking"),
     Bindable(true),
     DefaultValue(Docking.Top),
@@ -831,13 +868,15 @@ public class Title : ChartNamedElement
     ]
     public Docking Docking
     {
-        get => _docking;
-        set
+		get {
+			return _docking;
+		}
+		set
         {
             _docking = value;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the title shadow offset.
@@ -851,13 +890,15 @@ public class Title : ChartNamedElement
     ]
     public int ShadowOffset
     {
-        get => _shadowOffset;
-        set
+		get {
+			return field;
+		}
+		set
         {
-            _shadowOffset = value;
+            field = value;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the title shadow color.
@@ -872,13 +913,15 @@ public class Title : ChartNamedElement
     ]
     public Color ShadowColor
     {
-        get => _shadowColor;
-        set
+		get {
+			return _shadowColor;
+		}
+		set
         {
             _shadowColor = value;
             this.Invalidate(false);
         }
-    }
+	}
 
     /// <summary>
     /// Gets or sets the tooltip.

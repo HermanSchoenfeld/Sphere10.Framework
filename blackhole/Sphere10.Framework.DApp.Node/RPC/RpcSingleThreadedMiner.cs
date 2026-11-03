@@ -50,9 +50,7 @@ public class RpcSingleThreadedMiner : IDisposable {
 
 	public MinerStatus Status { get; private set; }
 
-	public Dictionary<string, uint> Statistics {
-		get => _stats;
-	}
+	public Dictionary<string, uint> Statistics => _stats;
 
 	public void Start() {
 		Guard.Ensure(Status == MinerStatus.Idle, "Already Started");

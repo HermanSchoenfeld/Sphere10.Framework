@@ -34,11 +34,7 @@ public partial class MerkleTreeTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override MerkleTreeScreenSettings ScreenSettings {
-		get {
-			return (MerkleTreeScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override MerkleTreeScreenSettings ScreenSettings => (MerkleTreeScreenSettings)base.ScreenSettings;
 
 	// Apply restored calculation choices after profile attachment.
 

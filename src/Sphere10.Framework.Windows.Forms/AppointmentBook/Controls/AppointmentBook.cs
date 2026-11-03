@@ -78,17 +78,8 @@ public class AppointmentBook : BaseAppointmentBook {
 
 	// Properties
 	public override bool CanResize {
-		get {
-			switch (TimePeriodType) {
-				case TimePeriodType.Monthly:
-					return false;
-				default:
-					return base.CanResize;
-			}
-		}
-		set {
-			base.CanResize = value;
-		}
+		get => TimePeriodType switch { TimePeriodType.Monthly => false, _ => base.CanResize };
+		set => base.CanResize = value;
 	}
 
 	public virtual IAppointmentBookDataSource DataSource {
@@ -101,13 +92,7 @@ public class AppointmentBook : BaseAppointmentBook {
 		}
 	}
 
-	public Appointment SelectedAppointment {
-		get {
-			if (_selectedAppointment != null)
-				return _selectedAppointment.AppointmentDataObject;
-			return null;
-		}
-	}
+	public Appointment SelectedAppointment => _selectedAppointment != null ? _selectedAppointment.AppointmentDataObject : null;
 
 	protected DataSourceToViewModelConverter ViewModelGenerator {
 		get; set;
@@ -122,17 +107,9 @@ public class AppointmentBook : BaseAppointmentBook {
 		}
 	}
 
-	public virtual DateTime TimePeriodStart {
-		get {
-			return _timePeriodStart;
-		}
-	}
+	public virtual DateTime TimePeriodStart => _timePeriodStart;
 
-	public virtual TimePeriodType TimePeriodType {
-		get {
-			return _timePeriodType;
-		}
-	}
+	public virtual TimePeriodType TimePeriodType => _timePeriodType;
 
 	public virtual AppointmentBookViewModelFilter ColumnFilter {
 		get {

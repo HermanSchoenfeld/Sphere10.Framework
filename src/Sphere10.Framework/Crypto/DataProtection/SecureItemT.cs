@@ -13,25 +13,21 @@ namespace Sphere10.Framework;
 public sealed class SecureItem<T> : ISecureItem<T> {
 	private SecureBytes _secureBytes;
 	private IItemSerializer<T> _serializer;
-	private T _unencrypted;
 
 	public SecureItem(T item, IItemSerializer<T> serializer) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		_serializer = serializer;
 		_secureBytes = new SecureBytes(_serializer.SerializeBytesLE(item));
-		_secureBytes.Encrypted += () => { _unencrypted = default; };
-		_secureBytes.Decrypted += () => { _unencrypted = _serializer.DeserializeBytesLE(_secureBytes.Item); };
+		_secureBytes.Encrypted += () => { Item = default; };
+		_secureBytes.Decrypted += () => { Item = _serializer.DeserializeBytesLE(_secureBytes.Item); };
 	}
 
 	public bool Protected => _secureBytes.Protected;
 
 	public T Item {
-		get {
-			if (Protected)
-				throw new InvalidOperationException("No open scope is present, bytes are encrypted");
-			return _unencrypted;
-		}
+		get => Protected ? throw new InvalidOperationException("No open scope is present, bytes are encrypted") : field;
+		private set => field = value;
 	}
 
 	public ActionScope EnterUnprotectedScope() => _secureBytes.EnterUnprotectedScope();

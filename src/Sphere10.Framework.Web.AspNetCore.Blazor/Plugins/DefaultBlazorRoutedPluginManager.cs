@@ -18,7 +18,6 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 /// Default plugin managers
 /// </summary>
 public class DefaultBlazorRoutedPluginManager : IBlazorRoutedPluginManager {
-	private readonly IBlazorRoutedPlugin[] _plugins;
 
 	/// <summary>
 	/// Gets the plugin locator
@@ -30,7 +29,7 @@ public class DefaultBlazorRoutedPluginManager : IBlazorRoutedPluginManager {
 	/// <summary>
 	/// Gets the available loaded plugins.
 	/// </summary>
-	public IBlazorRoutedPlugin[] Plugins => Tools.Array.Clone(_plugins);
+	public IBlazorRoutedPlugin[] Plugins => Tools.Array.Clone(field);
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DefaultBlazorRoutedPluginManager"/> class.
@@ -43,7 +42,7 @@ public class DefaultBlazorRoutedPluginManager : IBlazorRoutedPluginManager {
 
 		IEnumerable<Type> types = PluginLocator.LocatePlugins();
 
-		_plugins = types.Select(type => type.ActivateWithCompatibleArgs())
+		Plugins = types.Select(type => type.ActivateWithCompatibleArgs())
 			.Cast<IBlazorRoutedPlugin>().ToArray();
 	}
 

@@ -14,15 +14,11 @@ namespace Sphere10.Framework.Windows.Security;
 /// Represents a local object like a local user or local group. 
 /// </summary>
 public abstract class NTLocalObject : NTObject {
-	private string _description;
 
 	/// <summary>Optional cooperative checkpoint before native operations. Never aborts an operation already in Windows.</summary>
 	public Action Checkpoint { get; set; } = () => { };
 
-	public string Description {
-		get { return _description; }
-		set { _description = value; }
-	}
+	public string Description { get; set; }
 
 	/// <summary>
 	/// Updates local state of object to host.

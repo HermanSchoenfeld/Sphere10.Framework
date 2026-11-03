@@ -35,11 +35,7 @@ public partial class VisualGridConfigurationContextMenu : ContextMenuStrip {
 	/// <summary>The fixed commands are created by this component's designer, rather than serialized again by each consuming form.</summary>
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public new ToolStripItemCollection Items {
-		get {
-			return base.Items;
-		}
-	}
+	public new ToolStripItemCollection Items => base.Items;
 
 	// Only already configured screen-owned grids can execute these commands; opening never reads storage.
 	private void ConfigurationMenuOpening(object sender, CancelEventArgs args) {

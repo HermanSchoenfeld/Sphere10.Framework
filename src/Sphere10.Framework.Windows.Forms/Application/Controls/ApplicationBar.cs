@@ -18,7 +18,6 @@ public delegate void ButtonPressedHandler(ApplicationBar source, ApplicationBar.
 
 public partial class ApplicationBar : ApplicationControl {
 	private List<Item> _items;
-	private int _buttonHeight = 32;
 	private int _buttonsToShow = 0;
 	public event ButtonPressedHandler ButtonPressed;
 
@@ -34,13 +33,13 @@ public partial class ApplicationBar : ApplicationControl {
 
 	public int ButtonHeight {
 		get {
-			return _buttonHeight;
+			return field;
 		}
 		set {
-			_buttonHeight = value;
-			_splitContainer.SplitterIncrement = _buttonHeight;
+			field = value;
+			_splitContainer.SplitterIncrement = field;
 		}
-	}
+	} = 32;
 
 	public void AddItem(Item item) {
 		// set up the button
@@ -93,11 +92,7 @@ public partial class ApplicationBar : ApplicationControl {
 		return _items.Contains(item);
 	}
 
-	public Item[] Items {
-		get {
-			return _items.ToArray();
-		}
-	}
+	public Item[] Items => _items.ToArray();
 
 	public Item SelectedItem {
 		get {
@@ -131,26 +126,26 @@ public partial class ApplicationBar : ApplicationControl {
 					if (_items != null) {
 						for (int i = 0; i < _items.Count && i < _buttonsToShow; i++) {
 							Item item = _items[i];
-							item.Button.Location = new Point(0, _buttonHeight * i);
-							item.Button.Height = _buttonHeight;
+							item.Button.Location = new Point(0, ButtonHeight * i);
+							item.Button.Height = ButtonHeight;
 							item.Button.Width = _splitContainer.Panel2.Width;
 						}
 						// show rest of buttons as 8x8 images in bottom toolbar
 					}
 					// make the height of panel1 correct
 					_splitContainer.Panel1MinSize = 0;
-					int buttonPanelHeight = _buttonHeight * _buttonsToShow;
+					int buttonPanelHeight = ButtonHeight * _buttonsToShow;
 
 					_splitContainer.Panel1MinSize =
 						Tools.Values.ClipValue(
 							_splitContainer.Height - _splitContainer.SplitterWidth
-							                       - _items.Count * _buttonHeight,
+							                       - _items.Count * ButtonHeight,
 							0,
 							_splitContainer.Height
 						);
 
 
-					if (_splitContainer.Height > _buttonHeight) {
+					if (_splitContainer.Height > ButtonHeight) {
 						_splitContainer.SplitterDistance =
 							Tools.Values.ClipValue(
 								_splitContainer.Height - buttonPanelHeight -
@@ -202,7 +197,7 @@ public partial class ApplicationBar : ApplicationControl {
 		if (!Updating) {
 			// calculate the buttons to show
 			_buttonsToShow = (int)Math.Ceiling(
-				(float)_splitContainer.Panel2.Height / (float)_buttonHeight
+				(float)_splitContainer.Panel2.Height / (float)ButtonHeight
 			);
 
 			PerformCustomLayout();
@@ -241,58 +236,24 @@ public partial class ApplicationBar : ApplicationControl {
 
 
 	public class Item {
-		private SquareButton _button;
-		private Control _menuControl;
-		private Image _image;
-		private string _text;
-
-
 		public Item(Control menuControl, Image image, string text)
 			: this(null, menuControl, image, text) {
 		}
 
 		public Item(SquareButton button, Control menuControl, Image image, string text) {
-			_button = button;
-			_menuControl = menuControl;
-			_image = image;
-			_text = text;
+			Button = button;
+			MenuControl = menuControl;
+			Image = image;
+			Text = text;
 		}
 
-		public SquareButton Button {
-			get {
-				return _button;
-			}
-			set {
-				_button = value;
-			}
-		}
+		public SquareButton Button { get; set; }
 
-		public Control MenuControl {
-			get {
-				return _menuControl;
-			}
-			set {
-				_menuControl = value;
-			}
-		}
+		public Control MenuControl { get; set; }
 
-		public Image Image {
-			get {
-				return _image;
-			}
-			set {
-				_image = value;
-			}
-		}
+		public Image Image { get; set; }
 
-		public string Text {
-			get {
-				return _text;
-			}
-			set {
-				_text = value;
-			}
-		}
+		public string Text { get; set; }
 
 
 	}

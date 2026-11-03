@@ -50,11 +50,7 @@ public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 	public IDictionary<TKey,TValue> UnderlyingDictionary => InternalDictionary;
 
 	public override TValue this[TKey key] {
-		get {
-			if (TryGetValue(key, out var value))
-				return value;
-			throw new KeyNotFoundException($"The key '{key}' was not found");
-		}
+		get => TryGetValue(key, out var value) ? value : throw new KeyNotFoundException($"The key '{key}' was not found");
 		set => Add(key, value);
 	}
 

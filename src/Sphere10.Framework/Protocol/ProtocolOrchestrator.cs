@@ -20,7 +20,6 @@ public class ProtocolOrchestrator {
 	public const int DefaultTimeoutMS = 5000;
 	private readonly SynchronizedDictionary<int, object> _unfulfilledRequests; // TODO add expiration 
 	private ProtocolOrchestratorState _state;
-	private int _activeMode;
 	private volatile int _messageID;
 	private HandshakeState _handshakeState;
 	private object _handshakeSync, _handshakeAck, _handshakeVerack;
@@ -63,7 +62,9 @@ public class ProtocolOrchestrator {
 	public Protocol Protocol { get; }
 
 	public ProtocolOrchestratorState State {
-		get => _state;
+		get {
+			return _state;
+		}
 		set {
 			if (_state == value)
 				return;
@@ -73,11 +74,13 @@ public class ProtocolOrchestrator {
 	}
 
 	public int ActiveMode {
-		get => _activeMode;
+		get {
+			return field;
+		}
 		set {
 			Guard.Ensure(Protocol is not null, "Protocol not set");
 			Guard.ArgumentInRange(value, 0, Protocol.Modes.Length, nameof(value), "Protocol has no such mode");
-			_activeMode = value;
+			field = value;
 			//_messageID = 0;  // do not reset message id on mode-change
 			EnvelopeSerializer = new ProtocolMessageEnvelopeSerializer(Protocol.Factory.GetSerializer<object>());
 		}
