@@ -28,8 +28,8 @@ public class EncryptedStringAttribute : Attribute {
 
 	public virtual string Encrypt(string value) {
 		CheckSecret();
-		if (value == null)
-			return null;
+		if (string.IsNullOrEmpty(value))
+			return value;
 		var salt = CalculateSalt() ?? string.Empty;
 		var pepper = Pepper ?? string.Empty;
 		return Tools.Crypto.EncryptStringAES(value, ApplicationSharedSecret, salt + pepper);
@@ -37,8 +37,8 @@ public class EncryptedStringAttribute : Attribute {
 
 	public virtual string Decrypt(string value) {
 		CheckSecret();
-		if (value == null)
-			return null;
+		if (string.IsNullOrEmpty(value))
+			return value;
 		var salt = CalculateSalt() ?? string.Empty;
 		var pepper = Pepper ?? string.Empty;
 		return Tools.Crypto.DecryptStringAES(value, ApplicationSharedSecret, salt + pepper);

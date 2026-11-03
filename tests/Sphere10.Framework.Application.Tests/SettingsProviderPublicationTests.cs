@@ -82,30 +82,40 @@ public class SettingsProviderPublicationTests {
 		}
 	}
 
-	private sealed class MemoryProvider : BaseSettingsProvider {
+	// Supplies isolated provider storage for this fixture without changing its lifecycle contract.
+	private sealed class MemoryProvider : SyncSettingsProviderBase {
+		// Configure the fixture provider without performing storage work.
 		public MemoryProvider(ConcurrentDictionary<(Type, object), string> records = null) {
 			Records = records ?? new ConcurrentDictionary<(Type, object), string>();
 		}
 
+		// Shares serialized fixture records between provider instances.
 		public ConcurrentDictionary<(Type, object), string> Records { get; }
+
+		// Rejects a write before the fixture publishes it.
 		public bool FailSave { get; set; }
 
+		// Check whether this fixture has a persisted record.
 		public override bool ContainsSetting(Type type, object id = null) {
 			return Records.ContainsKey((type, id));
 		}
 
+		// Remove this fixture record.
 		public override void DeleteSetting(SettingsObject settings) {
 			Records.TryRemove((settings.GetType(), settings.ID), out _);
 		}
 
+		// Clear this fixture storage.
 		public override void ClearSettings() {
 			Records.Clear();
 		}
 
+		// Read fixture storage without bypassing the base provider lifecycle.
 		protected override SettingsObject LoadInternal(Type type, object id = null) {
 			return (SettingsObject)Tools.Json.ReadFromString(type, Records[(type, id)]);
 		}
 
+		// Persist fixture values after the base provider prepares them.
 		protected override void SaveInternal(SettingsObject settings) {
 			if (FailSave)
 				throw new InvalidOperationException("Inner storage rejected the write.");

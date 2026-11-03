@@ -9,7 +9,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 using Sphere10.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Tools;
@@ -386,4 +390,33 @@ public static class UI {
 
 	public static void ValidateActivationMode(ScreenActivationMode activationMode) =>
 		Guard.Argument(activationMode is ScreenActivationMode.SingleInstance or ScreenActivationMode.MultiInstance or ScreenActivationMode.PermanentSingleton, nameof(activationMode), "Unknown activation mode.");
+
+	/// <summary>Identifies persistent public value members independently of editor visibility or read-only metadata.</summary>
+	public static bool IsSettingsMember(MemberInfo member) {
+		Guard.ArgumentNotNull(member, nameof(member));
+		// PropertyInfo's instance API ignores inheritance; the attribute API follows overridden properties.
+		var attributes = Attribute.GetCustomAttributes(member, true);
+		return member switch {
+			PropertyInfo property => IsSettingsMember(property.PropertyType, attributes),
+			FieldInfo field => IsSettingsMember(field.FieldType, attributes),
+			_ => IsSettingsMember(attributes)
+		};
+	}
+
+	/// <summary>Excludes runtime ownership and ignored values using component-model property metadata.</summary>
+	public static bool IsSettingsMember(Type memberType, IEnumerable<Attribute> attributes) {
+		Guard.ArgumentNotNull(memberType, nameof(memberType));
+		Guard.ArgumentNotNull(attributes, nameof(attributes));
+		return !typeof(Delegate).IsAssignableFrom(memberType) && !typeof(IServiceProvider).IsAssignableFrom(memberType)
+			&& !typeof(ISettingsProvider).IsAssignableFrom(memberType) && !typeof(IApplication).IsAssignableFrom(memberType)
+			&& !typeof(IApplicationScreen).IsAssignableFrom(memberType) && !typeof(IApplicationScreenHost).IsAssignableFrom(memberType)
+			&& IsSettingsMember(attributes);
+	}
+
+	/// <summary>Supports component-model descriptors using the same transient and serialization exclusions.</summary>
+	public static bool IsSettingsMember(IEnumerable<Attribute> attributes) {
+		Guard.ArgumentNotNull(attributes, nameof(attributes));
+		return !attributes.Any(attribute => attribute is TransientAttribute or JsonIgnoreAttribute or XmlIgnoreAttribute or NonSerializedAttribute);
+	}
+
 }

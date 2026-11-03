@@ -10,31 +10,76 @@ using System;
 
 namespace Sphere10.Framework.Application;
 
-public class ProhibitedSettingsProvider : ISettingsProvider {
-	private const string ExceptionMessage = "Settings are prohibited in this application";
-	
-	public event EventHandlerEx Changed { add => throw new NotSupportedException(ExceptionMessage); remove => throw new NotSupportedException(ExceptionMessage); }
-	public bool AutoSaveNewSettings => throw new NotSupportedException(ExceptionMessage);
+/// <summary>Rejects settings access while retaining the standard synchronous provider direction.</summary>
+public class ProhibitedSettingsProvider : SyncSettingsProviderBase {
+	/// <inheritdoc />
+	public override event EventHandlerEx Changed {
+		add {
+			throw new NotSupportedException(_exceptionMessage);
+		}
+		remove {
+			throw new NotSupportedException(_exceptionMessage);
+		}
+	}
 
-	public bool EncryptSettings => throw new NotSupportedException(ExceptionMessage);
+	private const string _exceptionMessage = "Settings are prohibited in this application";
 
-	public void ClearSettings() => throw new NotSupportedException(ExceptionMessage);
+	/// <inheritdoc />
+	public override bool AutoSaveNewSettings {
+		get {
+			throw new NotSupportedException(_exceptionMessage);
+		}
+	}
 
+	/// <inheritdoc />
+	public override bool EncryptSettings {
+		get {
+			throw new NotSupportedException(_exceptionMessage);
+		}
+	}
 
-	public bool ContainsSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
+	/// <inheritdoc />
+	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
+	/// <inheritdoc />
+	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
-	public void DeleteSetting(SettingsObject settings) => throw new NotSupportedException(ExceptionMessage);
+	/// <inheritdoc />
+	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
+	/// <inheritdoc />
+	public override SettingsObject LoadSetting(SettingsObject defaults) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
-	public SettingsObject LoadSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
+	/// <inheritdoc />
+	public override void SaveSetting(SettingsObject settings) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
+	/// <inheritdoc />
+	public override void DeleteSetting(SettingsObject settings) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
-	public SettingsObject NewSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(ExceptionMessage);
+	/// <inheritdoc />
+	public override void ClearSettings() {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
+	// No persistence primitive is available when the host prohibits settings.
+	protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 
-	public void SaveSetting(SettingsObject settings) => throw new NotSupportedException(ExceptionMessage);
-
-
+	// Reject writes through the primitive contract as well as the public operation.
+	protected override void SaveInternal(SettingsObject settings) {
+		throw new NotSupportedException(_exceptionMessage);
+	}
 }
-
