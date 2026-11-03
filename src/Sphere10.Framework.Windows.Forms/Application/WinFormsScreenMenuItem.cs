@@ -40,7 +40,7 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 		bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false)
 		: base(text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
 		Guard.ArgumentNotNull(registration, nameof(registration));
-		Tools.UI.ValidateScreenType(registration.ScreenType, typeof(ApplicationScreen));
+		ApplicationHelper.ValidateScreenType(registration.ScreenType, typeof(ApplicationScreen));
 		_registration = registration;
 	}
 

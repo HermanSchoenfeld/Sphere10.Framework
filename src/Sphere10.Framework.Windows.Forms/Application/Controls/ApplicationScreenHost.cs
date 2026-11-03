@@ -189,9 +189,9 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		ObjectDisposedException.ThrowIf(_disposing, this);
 		using var update = EnterUpdateScope();
 		var blocks = _engine.RegistrationBlocks.Contains(Block, ReferenceEqualityComparer.Instance) ? _engine.RegistrationBlocks : _engine.RegistrationBlocks.Append(Block).ToArray();
-		var definitions = Tools.UI.GetScreenDefinitions(blocks);
+		var definitions = ApplicationHelper.GetScreenDefinitions(blocks);
 		foreach (var definition in definitions)
-			Tools.UI.ValidateScreenType(definition.ScreenType, typeof(ApplicationScreen));
+			ApplicationHelper.ValidateScreenType(definition.ScreenType, typeof(ApplicationScreen));
 		_engine.RegisterDefinitions(definitions);
 		_engine.RegisterBlock(Block);
 	}
@@ -202,7 +202,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
 		var allBlocks = ordered.Concat(_engine.RegistrationBlocks.Where(block => !ordered.Contains(block, ReferenceEqualityComparer.Instance))).ToArray();
-		var definitions = Tools.UI.GetScreenDefinitions(allBlocks);
+		var definitions = ApplicationHelper.GetScreenDefinitions(allBlocks);
 		var replaceEmpty = ActiveScreen?.ScreenKind == ScreenKind.Empty && definitions.Any(definition =>
 			IsPermanentDefinition(definition) && allBlocks.Any(block => block.ScreenDefinitions.Contains(definition, ReferenceEqualityComparer.Instance)
 				&& !Screens.Any(screen => ReferenceEquals(screen.Block, block) && ReferenceEquals(GetBinding(screen).Definition, definition))));
@@ -219,7 +219,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		EnsurePermanentScreens(definitions);
 		IApplicationBlock startupOwner = null;
 		var rememberedStartup = previous == null || replaceEmpty ? ResolveStartupScreen(allBlocks, out startupOwner) : null;
-		var startup = previous == null ? Tools.UI.GetDefaultScreen(allBlocks) ?? (allBlocks.FirstOrDefault() is { } first ? _engine.GetBlockDefault(first) : null) : null;
+		var startup = previous == null ? ApplicationHelper.GetDefaultScreen(allBlocks) ?? (allBlocks.FirstOrDefault() is { } first ? _engine.GetBlockDefault(first) : null) : null;
 		var restoredStartup = rememberedStartup != null && TryActivateStartupScreen(startupOwner, rememberedStartup);
 		if (!restoredStartup) {
 			if (replaceEmpty)
@@ -298,14 +298,14 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		Guard.ArgumentNotNull(ScreenType, nameof(ScreenType));
-		Tools.UI.ValidateScreenType(ScreenType, typeof(ApplicationScreen));
+		ApplicationHelper.ValidateScreenType(ScreenType, typeof(ApplicationScreen));
 		using var update = EnterUpdateScope();
 		if (registerBlock)
 			RegisterScreenTypes(Block);
-		var definition = requestedDefinition ?? Tools.UI.ResolveScreenRegistration(Block.ScreenDefinitions, ApplicationScreenRegistration.ForType(ScreenType));
+		var definition = requestedDefinition ?? ApplicationHelper.ResolveScreenRegistration(Block.ScreenDefinitions, ApplicationScreenRegistration.ForType(ScreenType));
 		if (definition?.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
 			return null;
-		var Existing = Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, Block) && ReferenceEquals(GetBinding(screen).Definition, definition) && Tools.UI.IsSingleton(screen.ActivationMode));
+		var Existing = Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, Block) && ReferenceEquals(GetBinding(screen).Definition, definition) && ApplicationHelper.IsSingleton(screen.ActivationMode));
 		if (Existing != null)
 			return (!startupRestoration || Existing.CanRestoreAtStartup) && ShowScreen(Existing) ? Existing : null;
 
@@ -334,7 +334,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		cancellationToken.ThrowIfCancellationRequested();
 		Guard.ArgumentNotNull(screen, nameof(screen));
 		Guard.ArgumentNotNull(screen.Block, nameof(screen));
-		var definition = Tools.UI.ResolveScreenRegistration(screen.Block.ScreenDefinitions, registration);
+		var definition = ApplicationHelper.ResolveScreenRegistration(screen.Block.ScreenDefinitions, registration);
 		Guard.Argument(definition.ScreenType.IsInstanceOfType(screen), nameof(screen), "The supplied screen must match its registration.");
 		Guard.Argument(!TryGetBinding(screen, out var binding) || ReferenceEquals(binding.Definition, definition), nameof(registration), "A retained screen cannot change registrations.");
 		return Task.FromResult(ShowScreenCore(screen, true, definition));
@@ -357,12 +357,12 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			Screen.ConfigureActivationMode(activationMode);
 		if (Screen.Host == null && definition != null)
 			Screen.ScreenKind = definition.ScreenKind;
-		Tools.UI.ValidateScreenPolicy(Screen.ActivationMode, Screen.ScreenKind);
+		ApplicationHelper.ValidateScreenPolicy(Screen.ActivationMode, Screen.ScreenKind);
 		if (undocked && (ScreenMode != ScreenMode.MultiView || Screen.ScreenKind != ScreenKind.Normal || Screen.ActivationMode == ScreenActivationMode.PermanentSingleton))
 			return false;
 		if (Screen.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
 			return false;
-		Guard.Argument(!Tools.UI.IsSingleton(Screen.ActivationMode)
+		Guard.Argument(!ApplicationHelper.IsSingleton(Screen.ActivationMode)
 			|| !Screens.Any(existing => !ReferenceEquals(existing, Screen) && (definition != null ? ReferenceEquals(existing.Block, Screen.Block) && ReferenceEquals(GetBinding(existing).Definition, definition)
 				: existing.GetType() == ScreenType && ReferenceEquals(existing.Block, Screen.Block))),
 			nameof(Screen), "A single-instance screen for this registration already exists; use OpenScreenAsync to select it");
@@ -747,7 +747,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 	private sealed record StartupScreenIdentity(string PluginName, string BlockName, string ScreenTypeName, string ScreenAssemblyName, string RegistrationKey) {
 		public static StartupScreenIdentity FromScreen(ApplicationScreen screen, SharedUI.ApplicationScreenDefinition definition) {
 			return new(screen.Block.Source?.Name ?? string.Empty, screen.Block.Name,
-				definition.ScreenType.FullName, definition.ScreenType.Assembly.GetName().Name, Tools.UI.GetScreenRegistrationKey(screen.Block, definition));
+				definition.ScreenType.FullName, definition.ScreenType.Assembly.GetName().Name, ApplicationHelper.GetScreenRegistrationKey(screen.Block, definition));
 		}
 
 		public static StartupScreenIdentity FromSettings(ApplicationStartupScreenSettings settings) => new(settings.PluginName ?? string.Empty, settings.BlockName ?? string.Empty,
@@ -767,7 +767,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			if (string.IsNullOrEmpty(RegistrationKey))
 				return uniqueType;
 			return (definition.StableKey != null || uniqueType)
-				&& string.Equals(RegistrationKey, Tools.UI.GetScreenRegistrationKey(block, definition), StringComparison.Ordinal);
+				&& string.Equals(RegistrationKey, ApplicationHelper.GetScreenRegistrationKey(block, definition), StringComparison.Ordinal);
 		}
 
 		public void CopyTo(ApplicationStartupScreenSettings settings) {
@@ -911,7 +911,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		}
 		if (!showEmptyScreen || OpenScreens.Length > 0)
 			return;
-		var empty = Tools.UI.GetEmptyScreen(_engine.RegistrationBlocks);
+		var empty = ApplicationHelper.GetEmptyScreen(_engine.RegistrationBlocks);
 		if (empty != null)
 			ActivateScreenCore(_engine.GetDefinitionOwner(empty), empty.ScreenType, empty.Title, requestedDefinition: empty, registerBlock: false);
 	}
@@ -1143,7 +1143,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			cancellationToken.ThrowIfCancellationRequested();
 			EnsureUsable();
 			EnsureRegistered(block);
-			var definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, ApplicationScreenRegistration.ForType(screenType));
+			var definition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, ApplicationScreenRegistration.ForType(screenType));
 			RegisterDefinitions(GetDefinitions());
 			return Task.FromResult(_owner.ActivateScreenCore(block, definition.ScreenType, title ?? definition.Title, definition, false));
 		}
@@ -1163,7 +1163,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 			Guard.ArgumentNotNull(definition, nameof(definition));
 			EnsureRegistered(block);
 			Guard.Argument(block.ScreenDefinitions.Contains(definition, ReferenceEqualityComparer.Instance), nameof(definition), "The screen definition is not owned by this block.");
-			Tools.UI.ValidateScreenType(definition.ScreenType, typeof(ApplicationScreen));
+			ApplicationHelper.ValidateScreenType(definition.ScreenType, typeof(ApplicationScreen));
 			RegisterDefinitions(GetDefinitions());
 			return Task.FromResult(_owner.ActivateScreenCore(block, definition.ScreenType, definition.Title,
 				definition, false, cancellationToken: cancellationToken));

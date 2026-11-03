@@ -28,9 +28,9 @@ public class ApplicationScreenDefinitionTests {
 		var third = CreateBlock("Third", Definition(typeof(ThirdScreen)));
 		third.DefaultScreenDefinition = third.ScreenDefinitions.Single();
 		var plugins = new[] { new ApplicationPlugin("First plugin", new[] { first, second }), new ApplicationPlugin("Second plugin", new[] { third }) };
-		var ordered = Tools.UI.OrderApplicationBlocks(plugins, new[] { third, second, first });
+		var ordered = ApplicationHelper.OrderApplicationBlocks(plugins, new[] { third, second, first });
 		Assert.That(ordered, Is.EqualTo(new[] { first, second, third }));
-		Assert.That(Tools.UI.GetDefaultScreen(ordered), Is.SameAs(first.DefaultScreenDefinition));
+		Assert.That(ApplicationHelper.GetDefaultScreen(ordered), Is.SameAs(first.DefaultScreenDefinition));
 	}
 
 	[Test]
@@ -39,10 +39,10 @@ public class ApplicationScreenDefinitionTests {
 		var removed = new TestApplicationBlock { Name = "Removed" };
 		var standalone = new TestApplicationBlock { Name = "Declared" };
 		var plugin = new ApplicationPlugin("Plugin", new[] { removed, declared });
-		var ordered = Tools.UI.OrderApplicationBlocks(new[] { plugin }, new[] { standalone, declared });
+		var ordered = ApplicationHelper.OrderApplicationBlocks(new[] { plugin }, new[] { standalone, declared });
 		Assert.That(ordered, Is.EqualTo(new[] { declared, standalone }));
 		ordered[0] = removed;
-		Assert.That(Tools.UI.OrderApplicationBlocks(new[] { plugin }, new[] { standalone, declared })[0], Is.SameAs(declared));
+		Assert.That(ApplicationHelper.OrderApplicationBlocks(new[] { plugin }, new[] { standalone, declared })[0], Is.SameAs(declared));
 	}
 
 	[Test]
@@ -51,14 +51,14 @@ public class ApplicationScreenDefinitionTests {
 		var second = Definition(typeof(SecondScreen));
 		var block = CreateBlock("Block", first, second);
 		block.DefaultScreenDefinition = second;
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.SameAs(second));
+		Assert.That(ApplicationHelper.GetDefaultScreen(new[] { block }), Is.SameAs(second));
 		Assert.That(block.ScreenDefinitions, Is.EqualTo(new[] { first, second }));
 	}
 
 	[Test]
 	public void RegisteredScreensDoNotBecomeExplicitDefaults() {
 		var block = CreateBlock("Block", Definition(typeof(FirstScreen)));
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.Null);
+		Assert.That(ApplicationHelper.GetDefaultScreen(new[] { block }), Is.Null);
 	}
 
 	[Test]
@@ -70,9 +70,9 @@ public class ApplicationScreenDefinitionTests {
 		var item = new ScreenItem { Title = "Open home", ScreenDefinition = definition };
 		menu.AddItem(item);
 		block.AddMenu(menu);
-		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
+		Assert.That(ApplicationHelper.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
 		Assert.That(item.ScreenDefinition, Is.SameAs(block.DefaultScreenDefinition));
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.SameAs(definition));
+		Assert.That(ApplicationHelper.GetDefaultScreen(new[] { block }), Is.SameAs(definition));
 	}
 
 	[TestCase(ScreenActivationMode.SingleInstance)]
@@ -80,10 +80,10 @@ public class ApplicationScreenDefinitionTests {
 	public void StandaloneEmptyDefaultRetainsItsConfiguredLifetime(ScreenActivationMode mode) {
 		var definition = new ApplicationScreenDefinition(typeof(FirstScreen), "Welcome", mode, ScreenKind.Empty);
 		var block = new TestApplicationBlock("Empty", definition);
-		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
+		Assert.That(ApplicationHelper.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
 		Assert.That(definition.ActivationMode, Is.EqualTo(mode));
 		Assert.That(definition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(Tools.UI.GetEmptyScreen(new[] { block }), Is.SameAs(definition));
+		Assert.That(ApplicationHelper.GetEmptyScreen(new[] { block }), Is.SameAs(definition));
 	}
 
 	[Test]
@@ -92,8 +92,8 @@ public class ApplicationScreenDefinitionTests {
 		var permanent = Definition(typeof(SecondScreen), ScreenActivationMode.PermanentSingleton);
 		var block = CreateBlock("Block", empty, permanent);
 		block.DefaultScreenDefinition = empty;
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.Null);
-		Assert.That(Tools.UI.GetEmptyScreen(new[] { block }), Is.SameAs(empty));
+		Assert.That(ApplicationHelper.GetDefaultScreen(new[] { block }), Is.Null);
+		Assert.That(ApplicationHelper.GetEmptyScreen(new[] { block }), Is.SameAs(empty));
 	}
 
 	[Test]
@@ -102,15 +102,15 @@ public class ApplicationScreenDefinitionTests {
 		var second = Definition(typeof(SecondScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty);
 		var block = CreateBlock("Block", first, second);
 		block.DefaultScreenDefinition = second;
-		Assert.That(Tools.UI.GetEmptyScreen(new[] { block }), Is.SameAs(second));
+		Assert.That(ApplicationHelper.GetEmptyScreen(new[] { block }), Is.SameAs(second));
 		block.DefaultScreenDefinition = null;
-		Assert.That(Tools.UI.GetEmptyScreen(new[] { block }), Is.SameAs(first));
+		Assert.That(ApplicationHelper.GetEmptyScreen(new[] { block }), Is.SameAs(first));
 	}
 
 	[Test]
 	public void IndependentSameTypeRegistrationsCanDeclareDifferentScreenKinds() {
 		var block = CreateBlock("Block", Definition(typeof(FirstScreen)), Definition(typeof(FirstScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty));
-		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }), Has.Length.EqualTo(2));
+		Assert.That(ApplicationHelper.GetScreenDefinitions(new[] { block }), Has.Length.EqualTo(2));
 	}
 
 	[Test]
@@ -119,7 +119,7 @@ public class ApplicationScreenDefinitionTests {
 		var selected = Definition(typeof(FirstScreen), ScreenActivationMode.PermanentSingleton);
 		block.AddScreenDefinition(selected);
 		block.DefaultScreenDefinition = selected;
-		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }), Has.Length.EqualTo(2));
+		Assert.That(ApplicationHelper.GetScreenDefinitions(new[] { block }), Has.Length.EqualTo(2));
 		Assert.That(block.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.PermanentSingleton));
 	}
 
@@ -129,7 +129,7 @@ public class ApplicationScreenDefinitionTests {
 	public void LifetimeClassificationIncludesPermanentSingleton(ScreenActivationMode mode, bool expected) {
 		var definition = new ApplicationScreenDefinition(typeof(FirstScreen), activationMode: mode);
 		Assert.That(() => ApplicationScreenDefinition.ValidateDefinitions(new[] { definition }), Throws.Nothing);
-		Assert.That(Tools.UI.IsSingleton(mode), Is.EqualTo(expected));
+		Assert.That(ApplicationHelper.IsSingleton(mode), Is.EqualTo(expected));
 		Assert.That(definition.ActivationMode, Is.EqualTo(mode));
 	}
 
@@ -143,14 +143,14 @@ public class ApplicationScreenDefinitionTests {
 	[TestCase(true)]
 	public void SelectionRejectsMalformedDefinitionMembership(bool empty) {
 		var block = new MalformedBlock(Array.Empty<IApplicationMenu>(), new ApplicationScreenDefinition[] { null });
-		Assert.That(() => empty ? Tools.UI.GetEmptyScreen(new[] { block }) : Tools.UI.GetDefaultScreen(new[] { block }), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => empty ? ApplicationHelper.GetEmptyScreen(new[] { block }) : ApplicationHelper.GetDefaultScreen(new[] { block }), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[TestCase(true)]
 	[TestCase(false)]
 	public void ResolutionRejectsMalformedMenuMembership(bool nullMenu) {
 		var block = new MalformedBlock(nullMenu ? new IApplicationMenu[] { null } : new IApplicationMenu[] { new NullItemsMenu() }, Array.Empty<ApplicationScreenDefinition>());
-		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => ApplicationHelper.ResolveScreenReferences(block, block), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]

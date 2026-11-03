@@ -72,5 +72,5 @@ public class ApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<Applica
 
 	protected override void ValidateText(string text) => Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 
-	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
+	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 }

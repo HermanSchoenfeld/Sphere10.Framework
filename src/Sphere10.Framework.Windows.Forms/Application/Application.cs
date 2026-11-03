@@ -49,7 +49,7 @@ public class Application : AsyncApplicationBase, IApplication {
 	/// <summary>Adapts blocks and plugins that the caller has already loaded; this constructor does not invoke plugin lifecycle methods.</summary>
 	public Application(BlockMainForm mainForm, IEnumerable<IApplicationBlock> blocks, IEnumerable<IApplicationPlugin> loadedPlugins,
 		string settingsKey = null)
-		: this(mainForm, blocks, Tools.UI.ValidatePlugins(loadedPlugins).Cast<IApplicationPlugin>()
+		: this(mainForm, blocks, ApplicationHelper.ValidatePlugins(loadedPlugins).Cast<IApplicationPlugin>()
 			.Select(plugin => new ApplicationPluginRegistration<IApplicationPlugin>(plugin, plugin.Blocks)), null, settingsKey) {
 	}
 
@@ -63,7 +63,7 @@ public class Application : AsyncApplicationBase, IApplication {
 		Guard.ArgumentNotNull(loadedPluginRegistrations, nameof(loadedPluginRegistrations));
 		_mainForm = mainForm;
 		_uiThread = Environment.CurrentManagedThreadId;
-		_loadedPluginRegistrations = Tools.UI.ValidatePluginRegistrations(loadedPluginRegistrations);
+		_loadedPluginRegistrations = ApplicationHelper.ValidatePluginRegistrations(loadedPluginRegistrations);
 		_loadedPlugins = _loadedPluginRegistrations.Select(registration => registration.Plugin).ToArray();
 		var contributedBlocks = _loadedPluginRegistrations.SelectMany(registration => registration.Blocks).Cast<IApplicationBlock>();
 		_configuredBlocks = blocks.Concat(contributedBlocks).Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
@@ -252,7 +252,7 @@ public class Application : AsyncApplicationBase, IApplication {
 			// Load actual owner settings before registration creates permanent or default screens.
 			await InitializeSettingsAsync(cancellationToken);
 			await _mainForm.ScreenHost.LoadStartupScreenSettingsAsync(cancellationToken);
-			var ordered = Tools.UI.OrderApplicationBlocks(_loadedPluginRegistrations,
+			var ordered = ApplicationHelper.OrderApplicationBlocks(_loadedPluginRegistrations,
 				_configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance));
 			_blocksInitialized = _mainForm.RegisterBlocks(ordered.Cast<IApplicationBlock>());
 		}
@@ -365,7 +365,7 @@ public class Application : AsyncApplicationBase, IApplication {
 			block.BlockSettings = await LoadSettingsAsync(block.BlockSettings, block.BlockSettings?.ID, cancellationToken);
 			foreach (var definition in block.ScreenDefinitions)
 				if (definition.Settings != null)
-					definition.Settings = await LoadSettingsAsync(definition.Settings, Tools.UI.GetScreenSettingsId(SettingsKey, block, definition), cancellationToken);
+					definition.Settings = await LoadSettingsAsync(definition.Settings, ApplicationHelper.GetScreenSettingsId(SettingsKey, block, definition), cancellationToken);
 		}
 	}
 

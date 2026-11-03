@@ -37,7 +37,7 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 		Id = Guid.NewGuid();
 		Block = block;
 		MenuItem = menuItem;
-		_definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, definition.Registration);
+		_definition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, definition.Registration);
 		_navigationId = menuItem?.HasExplicitId == true ? menuItem.Id : (_definition.StableKey != null || block.ScreenDefinitions.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1
 			? ApplicationBlockSnapshot.GetDefinitionScreenId(block, _definition) : null);
 		_registeredTitle = definition.Title;

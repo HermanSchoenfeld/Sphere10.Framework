@@ -79,7 +79,7 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 	/// <summary>Resolves the retained source moniker within this host's canonical graph before opening.</summary>
 	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		return OpenScreenAsync(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
+		return OpenScreenAsync(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
 	}
 
 	/// <summary>Shows a retained screen through the platform's detached presentation support.</summary>

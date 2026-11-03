@@ -66,7 +66,7 @@ public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<Application
 
 	/// <inheritdoc />
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 	}
 }
 

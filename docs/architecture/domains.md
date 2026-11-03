@@ -50,7 +50,7 @@ Application lifecycle, DI, configuration, plugin management, and UI-independent 
 | **Configuration** | Settings management, environment-aware configuration | Tools.Config / SettingsObject |
 | **Plugin System** | Named startup contributors, block contributions and application lifecycle tasks | ApplicationPluginBuilderBase |
 | **Command-Line** | CLI argument parsing, command execution, help text generation | CommandLineParser |
-| **UI** | Application ownership, menus, definition-owned activation, screen hosts, lifecycle and guarded exit | Tools.UI / Tools.Application |
+| **UI** | Application ownership, menus, definition-owned activation, screen hosts, lifecycle and guarded exit | ApplicationBase / IApplicationScreenHost |
 
 The [shared UI framework](../../src/Sphere10.Framework.Application/README.md#shared-ui-framework) has no UI framework dependencies. WinForms and Blazor supply their control/component types, rendering, UI dispatch and resource ownership through platform adapters.
 

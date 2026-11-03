@@ -19,7 +19,7 @@ public class ApplicationScreenRegistration {
 
 	// Type-only references have no exact token and are resolved by their owning command or host.
 	private protected ApplicationScreenRegistration(Type screenType, Guid token) {
-		Tools.UI.ValidateScreenType(screenType);
+		ApplicationHelper.ValidateScreenType(screenType);
 		ScreenType = screenType;
 		Token = token;
 	}

@@ -171,7 +171,7 @@ public class ApplicationBlock : IApplicationBlock {
 	public SharedUI.ApplicationScreenDefinition DefaultScreenDefinition {
 		get {
 			if (_definition.DefaultScreenDefinition == null && _defaultScreen != null)
-				_definition.DefaultScreenDefinition = Tools.UI.ResolveScreenRegistration(_definition.ScreenDefinitions, ApplicationScreenRegistration.ForType(_defaultScreen));
+				_definition.DefaultScreenDefinition = ApplicationHelper.ResolveScreenRegistration(_definition.ScreenDefinitions, ApplicationScreenRegistration.ForType(_defaultScreen));
 			return _definition.DefaultScreenDefinition;
 		}
 		init {

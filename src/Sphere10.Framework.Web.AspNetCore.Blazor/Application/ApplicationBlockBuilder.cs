@@ -266,7 +266,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 
 	/// <inheritdoc />
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 	}
 
 	/// <inheritdoc />
@@ -302,8 +302,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, SettingsObject settings,
 		IReadOnlyDictionary<string, object> parameters,
 		Func<ApplicationScreenActivationContext, ApplicationScreenActivation> activator, Type settingsEditor) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
-		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
+		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(title == null || title.Length > 0, nameof(title), "A screen title cannot be empty.");
 
 		return new ApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, parameters, activator, settings, settingsEditor);

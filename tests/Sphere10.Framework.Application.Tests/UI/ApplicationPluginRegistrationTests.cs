@@ -43,7 +43,7 @@ public class ApplicationPluginRegistrationTests {
 		var registration = new ApplicationPluginRegistration<MutablePlugin>(plugin, new[] { second });
 		plugin.RejectBlockReads = true;
 		var input = new[] { registration };
-		var validated = Tools.UI.ValidatePluginRegistrations(input);
+		var validated = ApplicationHelper.ValidatePluginRegistrations(input);
 		input[0] = null;
 		Assert.That(validated.Single(), Is.SameAs(registration));
 		Assert.That(validated.Single().Blocks.Single(), Is.SameAs(second));
@@ -57,7 +57,7 @@ public class ApplicationPluginRegistrationTests {
 		var plugin = new MutablePlugin { Name = "Work", CurrentBlocks = new[] { first } };
 		var registration = new ApplicationPluginRegistration<MutablePlugin>(plugin, new[] { second, first });
 		plugin.RejectBlockReads = true;
-		var ordered = Tools.UI.OrderApplicationBlocks(new[] { registration }, new[] { standalone, first, second });
+		var ordered = ApplicationHelper.OrderApplicationBlocks(new[] { registration }, new[] { standalone, first, second });
 		Assert.That(ordered, Is.EqualTo(new[] { second, first, standalone }));
 		Assert.That(ordered[0], Is.SameAs(second));
 		Assert.That(ordered[2], Is.SameAs(standalone));
@@ -70,11 +70,11 @@ public class ApplicationPluginRegistrationTests {
 		var sameName = new ApplicationPluginRegistration<MutablePlugin>(new MutablePlugin { Name = "First" }, Array.Empty<IApplicationBlock>());
 		var sameBlock = new ApplicationPluginRegistration<MutablePlugin>(new MutablePlugin { Name = "Second" }, new[] { block });
 		var blankName = new ApplicationPluginRegistration<MutablePlugin>(new MutablePlugin { Name = " " }, Array.Empty<IApplicationBlock>());
-		Assert.That(() => Tools.UI.ValidatePluginRegistrations(new[] { first, sameName }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePluginRegistrations(new[] { first, sameBlock }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePluginRegistrations(new[] { blankName }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePluginRegistrations(new ApplicationPluginRegistration<MutablePlugin>[] { null }), Throws.ArgumentNullException);
-		Assert.That(() => Tools.UI.ValidatePluginRegistrations<MutablePlugin>(null), Throws.ArgumentNullException);
+		Assert.That(() => ApplicationHelper.ValidatePluginRegistrations(new[] { first, sameName }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ValidatePluginRegistrations(new[] { first, sameBlock }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ValidatePluginRegistrations(new[] { blankName }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ValidatePluginRegistrations(new ApplicationPluginRegistration<MutablePlugin>[] { null }), Throws.ArgumentNullException);
+		Assert.That(() => ApplicationHelper.ValidatePluginRegistrations<MutablePlugin>(null), Throws.ArgumentNullException);
 	}
 
 	[Test]
@@ -101,9 +101,9 @@ public class ApplicationPluginRegistrationTests {
 	public void EmptyAndServiceOnlyRegistrationsAreValid() {
 		var plugin = new MutablePlugin { Name = "Services" };
 		var registration = new ApplicationPluginRegistration<MutablePlugin>(plugin, Array.Empty<IApplicationBlock>());
-		Assert.That(Tools.UI.ValidatePluginRegistrations(Array.Empty<ApplicationPluginRegistration<MutablePlugin>>()), Is.Empty);
-		Assert.That(Tools.UI.ValidatePluginRegistrations(new[] { registration }).Single().Plugin, Is.SameAs(plugin));
-		Assert.That(Tools.UI.OrderApplicationBlocks(new[] { registration }, Array.Empty<IApplicationBlock>()), Is.Empty);
+		Assert.That(ApplicationHelper.ValidatePluginRegistrations(Array.Empty<ApplicationPluginRegistration<MutablePlugin>>()), Is.Empty);
+		Assert.That(ApplicationHelper.ValidatePluginRegistrations(new[] { registration }).Single().Plugin, Is.SameAs(plugin));
+		Assert.That(ApplicationHelper.OrderApplicationBlocks(new[] { registration }, Array.Empty<IApplicationBlock>()), Is.Empty);
 	}
 
 	[Test]

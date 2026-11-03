@@ -206,7 +206,6 @@ The Firebird provider exposes
 |---|---|---|
 | `Tools.Config` | Sphere10.Framework.Application | `GetAppSetting` over `ConfigurationManager.AppSettings`: [ConfigTool.cs](../src/Sphere10.Framework.Application/Settings/ConfigTool.cs) |
 | `Tools.Application` | Sphere10.Framework.Application | `ExecuteInitializers`/`ExecuteFinalizers` and their async forms: [ApplicationTool.cs](../src/Sphere10.Framework.Application/Lifecycle/ApplicationTool.cs) |
-| `Tools.UI` | Sphere10.Framework.Application | Definition validation, `GetCommandLayers`, `MergeApplicationMenus` and `MergeApplicationToolBarItems`: [UITool.cs](../src/Sphere10.Framework.Application/UI/UITool.cs) |
 | `Tools.NUnit` | Sphere10.Framework.NUnit | `Convert2DArrayToString` and test diagnostics: [NUnitTool.cs](../src/Sphere10.Framework.NUnit/NUnitTool.cs) |
 | `Tools.Drawing` | Sphere10.Framework.Drawing | Color conversion/gradients, image encoding and disabled images: [DrawingTool.cs](../src/Sphere10.Framework.Drawing/DrawingTool.cs) |
 

@@ -9,6 +9,7 @@
 using System;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.BlazorTester.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -21,7 +22,7 @@ public class ScreenSettingsOwnershipTests {
 	public void ActualWebScreensDeclareTheirOwnPublicNestedSettingsWithoutActivation(Type screenType, Type settingsType) {
 		Assert.That(settingsType.IsNestedPublic, Is.True);
 		Assert.That(settingsType.DeclaringType, Is.EqualTo(screenType));
-		Assert.That(Tools.UI.GetScreenSettingsType(screenType), Is.EqualTo(settingsType));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(screenType), Is.EqualTo(settingsType));
 	}
 
 	// Both real component preferences must remain discoverable before the renderer creates a component instance.

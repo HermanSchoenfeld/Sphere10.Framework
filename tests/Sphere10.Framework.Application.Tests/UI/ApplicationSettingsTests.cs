@@ -26,7 +26,7 @@ public class ApplicationSettingsTests {
 	public void StaticDeclarationsDiscoverSettingsWithoutConstructingScreensOrReadingTheirProperties() {
 		var definition = new ApplicationScreenDefinition(typeof(DiscoveryScreen));
 
-		Assert.That(Tools.UI.GetScreenSettingsType(typeof(DiscoveryScreen)), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(typeof(DiscoveryScreen)), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
 		Assert.That(definition.Settings, Is.TypeOf<DiscoveryScreen.Preferences>());
 		Assert.That(((DiscoveryScreen.Preferences)definition.Settings).Number, Is.EqualTo(10));
 		Assert.That(() => new ApplicationScreenBuilder<DiscoveryScreen>().UseSettings<OtherPreferences>().Build(), Throws.ArgumentException);
@@ -34,9 +34,9 @@ public class ApplicationSettingsTests {
 
 	[Test]
 	public void ExistingAttributeDeclarationsAndCovariantPropertiesIdentifyTheSameSettingsType() {
-		Assert.That(Tools.UI.GetScreenSettingsType(typeof(AttributeScreen)), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(typeof(AttributeScreen)), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
 		Assert.That(new ApplicationScreenDefinition(typeof(AttributeScreen)).Settings, Is.TypeOf<DiscoveryScreen.Preferences>());
-		Assert.That(Tools.UI.GetScreenSettingsType(typeof(MatchingScreen)), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(typeof(MatchingScreen)), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
 		Assert.That(() => new ApplicationScreenDefinition(typeof(ConflictingScreen)), Throws.ArgumentException);
 	}
 
@@ -49,7 +49,7 @@ public class ApplicationSettingsTests {
 			.WithScreen(screenType)
 			.Build();
 
-		Assert.That(Tools.UI.GetScreenSettingsType(screenType), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(screenType), Is.EqualTo(typeof(DiscoveryScreen.Preferences)));
 		Assert.That(definition.Settings, Is.TypeOf<DiscoveryScreen.Preferences>());
 		Assert.That(((DiscoveryScreen.Preferences)definition.Settings).Number, Is.EqualTo(10));
 	}
@@ -147,7 +147,7 @@ public class ApplicationSettingsTests {
 		Assert.That(((DiscoveryScreen.Preferences)cpu.Settings).Number, Is.EqualTo(21));
 		Assert.That(((DiscoveryScreen.Preferences)gpu.Settings).Number, Is.EqualTo(32));
 		Assert.That(gpu.Settings, Is.Not.SameAs(cpu.Settings));
-		Assert.That(Tools.UI.GetScreenSettingsId("application", block, gpu), Is.Not.EqualTo(Tools.UI.GetScreenSettingsId("application", block, cpu)));
+		Assert.That(ApplicationHelper.GetScreenSettingsId("application", block, gpu), Is.Not.EqualTo(ApplicationHelper.GetScreenSettingsId("application", block, cpu)));
 	}
 	[Test]
 	public void ResetUsesTheExistingDefaultValueAttributesOnTheActualSettings() {
@@ -173,8 +173,8 @@ public class ApplicationSettingsTests {
 		block.RemoveScreenDefinition(definition);
 		block.AddScreenDefinition(renamed);
 
-		Assert.That(Tools.UI.GetScreenSettingsKey("application", block, renamed), Is.EqualTo("application/screen/standalone/Inspect/preferences"));
-		Assert.That(Tools.UI.GetScreenSettingsId("application", block, renamed),
+		Assert.That(ApplicationHelper.GetScreenSettingsKey("application", block, renamed), Is.EqualTo("application/screen/standalone/Inspect/preferences"));
+		Assert.That(ApplicationHelper.GetScreenSettingsId("application", block, renamed),
 			Is.EqualTo("1888ec4cba1007baa12506b40aefb57ad2f6e080aefbf4e833d9ff5f2fa4eda6"));
 	}
 
@@ -185,7 +185,7 @@ public class ApplicationSettingsTests {
 			Source = new ApplicationPluginBuilder().WithName("Diagnostics/plugin").Build()
 		};
 
-		Assert.That(Tools.UI.GetScreenSettingsKey("app/key", block, definition, "stable/block"),
+		Assert.That(ApplicationHelper.GetScreenSettingsKey("app/key", block, definition, "stable/block"),
 			Is.EqualTo("app%2Fkey/screen/Diagnostics%2Fplugin/stable%2Fblock/cpu%2Fgpu"));
 	}
 
@@ -195,10 +195,10 @@ public class ApplicationSettingsTests {
 		var definition = new ApplicationScreenDefinition(typeof(DiscoveryScreen), settings: new DiscoveryScreen.Preferences { ID = identity });
 		var block = new TestApplicationBlock("Inspect", definition);
 
-		Assert.That(Tools.UI.GetScreenSettingsId("application", block, definition), Is.EqualTo(identity).And.TypeOf<Guid>());
+		Assert.That(ApplicationHelper.GetScreenSettingsId("application", block, definition), Is.EqualTo(identity).And.TypeOf<Guid>());
 		definition.Settings.ID = null;
 		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(DiscoveryScreen)));
-		Assert.That(() => Tools.UI.GetScreenSettingsId("application", block, definition), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.GetScreenSettingsId("application", block, definition), Throws.ArgumentException);
 	}
 
 	[TestCase(false)]
@@ -297,8 +297,8 @@ public class ApplicationSettingsTests {
 		Assert.That(restored.Provider, Is.Null);
 		Assert.That(restored.RuntimeValue, Is.Null);
 		Assert.That(writer.ToString(), Does.Not.Contain(nameof(RuntimePreferences.Callback)).And.Not.Contain(nameof(SettingsObject.OnChanged)));
-		Assert.That(Tools.UI.IsSettingsMember(typeof(RuntimePreferences).GetProperty(nameof(RuntimePreferences.Callback))), Is.False);
-		Assert.That(Tools.UI.IsSettingsMember(typeof(RuntimePreferences).GetProperty(nameof(RuntimePreferences.HiddenColumn))), Is.True);
+		Assert.That(ApplicationHelper.IsSettingsMember(typeof(RuntimePreferences).GetProperty(nameof(RuntimePreferences.Callback))), Is.False);
+		Assert.That(ApplicationHelper.IsSettingsMember(typeof(RuntimePreferences).GetProperty(nameof(RuntimePreferences.HiddenColumn))), Is.True);
 	}
 
 	[Test]

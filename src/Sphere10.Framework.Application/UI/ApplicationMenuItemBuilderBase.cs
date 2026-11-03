@@ -90,7 +90,7 @@ public abstract class ApplicationMenuItemBuilderBase {
 	}
 
 	protected virtual void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType);
+		ApplicationHelper.ValidateScreenType(screenType);
 	}
 }
 

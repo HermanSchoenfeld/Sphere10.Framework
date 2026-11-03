@@ -58,7 +58,7 @@ public class ApplicationSettingsNativeTests {
 			using var block = CreateBlock("First");
 			var definition = block.ScreenDefinitions.Single();
 			var supplied = (ProbeScreen.Preferences)definition.Settings;
-			var id = Tools.UI.GetScreenSettingsId("NativeActualSettings", block, definition);
+			var id = ApplicationHelper.GetScreenSettingsId("NativeActualSettings", block, definition);
 			ISettingsProvider provider = store;
 			var earlier = new ProbeScreen.Preferences { ID = id, Provider = provider, Name = "Restored before activation" };
 			await earlier.SaveAsync();
@@ -554,7 +554,7 @@ public class ApplicationSettingsNativeTests {
 			var definition = new FormsUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe", settings: settings);
 			block.AddScreenDefinition(definition);
 			block.DefaultScreenDefinition = definition;
-			var id = Tools.UI.GetScreenSettingsId("NativeActualSettings", block, definition);
+			var id = ApplicationHelper.GetScreenSettingsId("NativeActualSettings", block, definition);
 			await using var services = CreateApplication(provider, block);
 			var application = services.GetRequiredService<FormsUI.IApplication>();
 

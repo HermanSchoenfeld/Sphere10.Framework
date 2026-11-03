@@ -65,7 +65,7 @@ public class ApplicationSettingsStartupTests {
 		using (var seedBlock = new SettingsBlock()) {
 			var definition = seedBlock.DefaultScreenDefinition;
 			var settings = (Preferences)definition.Settings;
-			settings.ID = Tools.UI.GetScreenSettingsId("SettingsTests", seedBlock, definition);
+			settings.ID = ApplicationHelper.GetScreenSettingsId("SettingsTests", seedBlock, definition);
 			settings.Provider = store;
 			settings.Name = "Restored before query";
 			await settings.SaveAsync();

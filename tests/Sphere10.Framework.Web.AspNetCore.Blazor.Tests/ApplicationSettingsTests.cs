@@ -418,7 +418,7 @@ public class ApplicationSettingsTests {
 		actual.OnChanged += () => changes++;
 		if (legacyEnvelope) {
 			var prefix = key[..(key.IndexOf(":app/", StringComparison.Ordinal) + 1)];
-			var legacyKey = Tools.UI.GetScreenSettingsKey(Tools.Runtime.GetEntryAssembly().GetName().Name, block, definition, block.Id);
+			var legacyKey = ApplicationHelper.GetScreenSettingsKey(Tools.Runtime.GetEntryAssembly().GetName().Name, block, definition, block.Id);
 			browser.Values.Clear();
 			key = prefix + legacyKey;
 			browser.Values[key] = "{\"values\":" + payload + "}";

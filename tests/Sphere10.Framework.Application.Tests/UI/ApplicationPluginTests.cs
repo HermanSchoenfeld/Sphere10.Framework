@@ -123,22 +123,22 @@ public class ApplicationPluginTests {
 		var first = new ApplicationPlugin("First", new[] { firstBlock });
 		var sameName = new ApplicationPlugin("First", Array.Empty<IApplicationBlock>());
 		var sameBlock = new ApplicationPlugin("Second", new[] { firstBlock });
-		Assert.That(() => Tools.UI.ValidatePlugins(new[] { first, sameName }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePlugins(new[] { first, sameBlock }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePlugins(new IApplicationPlugin[] { null }), Throws.ArgumentNullException);
-		Assert.That(() => Tools.UI.ValidatePlugins(new[] { new UnvalidatedPlugin { Name = " " } }), Throws.ArgumentException);
-		Assert.That(() => Tools.UI.ValidatePlugins(new[] { new UnvalidatedPlugin { Name = "Invalid", Blocks = null } }), Throws.ArgumentNullException);
+		Assert.That(() => ApplicationHelper.ValidatePlugins(new[] { first, sameName }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ValidatePlugins(new[] { first, sameBlock }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ValidatePlugins(new IApplicationPlugin[] { null }), Throws.ArgumentNullException);
+		Assert.That(() => ApplicationHelper.ValidatePlugins(new[] { new UnvalidatedPlugin { Name = " " } }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ValidatePlugins(new[] { new UnvalidatedPlugin { Name = "Invalid", Blocks = null } }), Throws.ArgumentNullException);
 	}
 
 	[Test]
 	public void EmptyApplicationsAndServiceOnlyPluginsAreSupportedAndValidationCopiesMembership() {
-		Assert.That(Tools.UI.ValidatePlugins(Array.Empty<IApplicationPlugin>()), Is.Empty);
+		Assert.That(ApplicationHelper.ValidatePlugins(Array.Empty<IApplicationPlugin>()), Is.Empty);
 		var plugin = new ApplicationPluginBuilder()
 			.WithName("Services")
 			.AddServices(services => services.AddSingleton<Marker>())
 			.Build();
 		var input = new IApplicationPlugin[] { plugin };
-		var validated = Tools.UI.ValidatePlugins(input);
+		var validated = ApplicationHelper.ValidatePlugins(input);
 		input[0] = null;
 		Assert.That(validated.Single(), Is.SameAs(plugin));
 		Assert.That(plugin.Blocks, Is.Empty);
@@ -262,7 +262,7 @@ public class ApplicationPluginTests {
 		private readonly IApplicationPlugin[] _loadedPlugins;
 
 		public PluginApplication(IEnumerable<IApplicationPlugin> loadedPlugins, IApplicationScreenHost host) {
-			_loadedPlugins = Tools.UI.ValidatePlugins(loadedPlugins);
+			_loadedPlugins = ApplicationHelper.ValidatePlugins(loadedPlugins);
 			ScreenHost = host;
 			ObserveScreenHost();
 		}

@@ -171,7 +171,7 @@ public static class IServiceCollectionExtensions {
 		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IBlazorPlugin>>();
 		var blocks = ApplicationBlockSnapshot.CreateBlocks(plugin.Blocks, orderByPosition: false);
-		Tools.UI.ValidatePluginRegistrations(registrations.Append(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<SharedUI.IApplicationBlock>().ToArray())));
+		ApplicationHelper.ValidatePluginRegistrations(registrations.Append(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<SharedUI.IApplicationBlock>().ToArray())));
 		var existingBlocks = services.Where(descriptor => descriptor.ServiceType == typeof(IApplicationBlock))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<IApplicationBlock>();
 		_ = ApplicationBlockSnapshot.CreateBlocks(existingBlocks.Concat(blocks));

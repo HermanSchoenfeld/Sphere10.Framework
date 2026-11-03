@@ -63,7 +63,7 @@ public class ApplicationMenuItemBuilder : IApplicationUIBuilder<IApplicationMenu
 			return new WinFormsScreenMenuItem(ScreenRegistration, Text, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen);
 		}
 
-		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
+		protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 	}
 
 	public class WinFormsActionMenuItemBuilder : ApplicationMenuItemBuilderBase<WinFormsActionMenuItemBuilder>, IApplicationUIBuilder<WinFormsActionMenuItem> {

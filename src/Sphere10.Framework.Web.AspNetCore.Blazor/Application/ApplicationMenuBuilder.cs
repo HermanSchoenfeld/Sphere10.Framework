@@ -86,7 +86,7 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text, out IApplicationMenuItem registration,
 		string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
 		Guard.ArgumentNotNull(screen, nameof(screen));
-		Tools.UI.ValidateScreenType(screen.ScreenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screen.ScreenType, typeof(IApplicationScreen));
 		Guard.Argument(id == null || id.Length > 0, nameof(id), "A command ID cannot be empty.");
 		return AddItem(new BlazorScreenMenuItem {
 			Id = id, Title = text, Icon = icon, IsVisible = isVisible, CanExecute = canExecute, Registration = screen

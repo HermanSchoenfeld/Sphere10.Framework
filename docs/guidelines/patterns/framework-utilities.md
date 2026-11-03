@@ -2,9 +2,9 @@
 
 Use the existing framework utility that covers the required semantics. Read the [Tools reference](../../tools-reference.md) and [resource-scope practice](resource-scopes.md) for the selected domain. The [framework reuse guide](framework-reuse.md) explains adoption of existing framework code.
 
-## Tools Namespace (Maximal Use)
+## Tools namespace for client utilities
 
-Static utility/tool classes live in the **`Tools`** global namespace so consumers can discover them via `Tools.` intellisense. Always prefer `Tools.*` over raw BCL calls when a tool exists. Key tools include:
+Public utility facades intended for Framework clients live in the **`Tools`** global namespace so consumers can discover them via `Tools.` intellisense. Prefer an existing `Tools.*` API over raw BCL calls when its contract fits. Internal validation and implementation helpers belong to their owning domain, not this public discovery surface. Key tools include:
 
 - **`Tools.Array`** — concatenation, cloning, filling and transposition.
 - **`Tools.Collection`** — generation, repetition, partitioning, searching, `RangeL` and `ResizeArray`.
@@ -26,7 +26,9 @@ Static utility/tool classes live in the **`Tools`** global namespace so consumer
 return instance utilities. Read the Windows-specific rules below before adding
 a utility, and read [process Sentries](process-sentries.md) for executable wrappers.
 
-To add a new tool, create a `static class` in the `Tools` namespace anywhere in the codebase — it becomes discoverable via `Tools.` intellisense automatically.
+Before adding a tool, identify its actual client-facing contract and owning project/domain. A public facade must have a coherent domain name; Application/UI utilities would belong under an application/UI facade rather than an unrelated root `Tools.UI`. Do not export internal methods merely because several Framework assemblies use them.
+
+Keep internal implementation work in an internal domain helper, such as `ApplicationHelper` in `Sphere10.Framework.Application.UI`. Clients use the owning builder, host, settings object or editor control. Platform libraries may share internal implementation through the existing Framework assembly boundaries; do not grant product assemblies friend access to bypass that boundary.
 
 Use the exact existing facade names. `Tools.Expressions` is plural and exposes
 `CreateExpression`; it has no `BuildPredicate` or `CombinePredicates` methods.

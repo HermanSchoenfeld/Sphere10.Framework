@@ -20,7 +20,7 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 	public Type ScreenType {
 		get => _screenDefinition?.ScreenType ?? Registration?.ScreenType;
 		init {
-			Tools.UI.ValidateScreenType(value, typeof(IApplicationScreen));
+			ApplicationHelper.ValidateScreenType(value, typeof(IApplicationScreen));
 			_registration = ApplicationScreenRegistration.ForType(value);
 		}
 	}
@@ -40,7 +40,7 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 		get => _screenDefinition;
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
-			Tools.UI.ValidateScreenType(value.ScreenType, typeof(IApplicationScreen));
+			ApplicationHelper.ValidateScreenType(value.ScreenType, typeof(IApplicationScreen));
 			_screenDefinition = value;
 		}
 	}
@@ -54,7 +54,7 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 	/// <summary>Binds the command to its own graph's canonical definition and updates reverse membership.</summary>
 	public void ResolveScreenDefinition(SharedUI.ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		Tools.UI.ValidateScreenType(definition.ScreenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenType(definition.ScreenType, typeof(IApplicationScreen));
 		Guard.Argument(Registration == null || Registration.ScreenType == definition.ScreenType
 			&& (Registration.IsTypeReference || Registration.Token == definition.Registration.Token), nameof(definition), "The definition must match this command's registration reference.");
 		if (!ReferenceEquals(_screenDefinition, definition)) {

@@ -228,8 +228,8 @@ detached native screen has its own presentation host with independent active
 screen/block; that adapter delegates navigation and application lifetime to the
 root host. Its menu/toolbar composition uses its own visible screen's owners.
 
-[Tools.UI.GetCommandLayers and MergeApplicationMenus/ToolBarItems](../../../src/Sphere10.Framework.Application/UI/UITool.cs)
-accept explicit platform command providers and keep application and contextual
+[The internal ApplicationHelper](../../../src/Sphere10.Framework.Application/UI/ApplicationHelper.cs)
+accepts explicit platform command providers and keeps application and contextual
 replacement keys in separate scopes for platforms composing portable definitions.
 Native WinForms presentation uses `MergeableMenuStrip` / `MergeableToolStrip`
 and their shared fixer with native `MergeAction` / `MergeIndex` semantics. The

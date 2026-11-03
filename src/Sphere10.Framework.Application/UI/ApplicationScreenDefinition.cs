@@ -18,8 +18,8 @@ public class ApplicationScreenDefinition {
 
 	public ApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal,
 		ApplicationScreenRegistration registration = null, string stableKey = null, SettingsObject settings = null) {
-		Tools.UI.ValidateScreenType(screenType);
-		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
+		ApplicationHelper.ValidateScreenType(screenType);
+		ApplicationHelper.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(registration == null || registration.ScreenType == screenType && !registration.IsTypeReference, nameof(registration), "A definition requires an exact registration of its screen type.");
 		Guard.Argument(stableKey == null || !string.IsNullOrWhiteSpace(stableKey), nameof(stableKey), "A stable registration key cannot be blank.");
 		ScreenType = screenType;
@@ -28,7 +28,7 @@ public class ApplicationScreenDefinition {
 		ScreenKind = screenKind;
 		Registration = registration ?? new ApplicationScreenRegistration(screenType);
 		StableKey = stableKey;
-		var declaredSettingsType = Tools.UI.GetScreenSettingsType(screenType);
+		var declaredSettingsType = ApplicationHelper.GetScreenSettingsType(screenType);
 		if (settings == null && declaredSettingsType != null) {
 			Guard.Argument(!declaredSettingsType.IsAbstract && declaredSettingsType.GetConstructor(Type.EmptyTypes) != null, nameof(settings),
 				"The declared screen settings need a public parameterless constructor or explicit registration defaults.");
@@ -73,8 +73,8 @@ public class ApplicationScreenDefinition {
 		Guard.ArgumentNotNull(definitions, nameof(definitions));
 		foreach (var definition in definitions) {
 			Guard.ArgumentNotNull(definition, nameof(definitions));
-			Tools.UI.ValidateScreenType(definition.ScreenType);
-			Tools.UI.ValidateScreenPolicy(definition.ActivationMode, definition.ScreenKind);
+			ApplicationHelper.ValidateScreenType(definition.ScreenType);
+			ApplicationHelper.ValidateScreenPolicy(definition.ActivationMode, definition.ScreenKind);
 			validateScreenType?.Invoke(definition.ScreenType);
 		}
 	}
@@ -85,7 +85,7 @@ public class ApplicationScreenDefinition {
 	}
 
 	public virtual ApplicationScreenDefinition WithActivationMode(ScreenActivationMode activationMode) {
-		Tools.UI.ValidateScreenPolicy(activationMode, ScreenKind);
+		ApplicationHelper.ValidateScreenPolicy(activationMode, ScreenKind);
 		var definition = Clone();
 		definition.ActivationMode = activationMode;
 		return definition;

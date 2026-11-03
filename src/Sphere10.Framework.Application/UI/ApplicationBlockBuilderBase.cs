@@ -54,7 +54,7 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 			block.BlockSettings = BlockSettings;
 		RegisterScreenDefinitions(block);
 		ResolveScreenReferences(block);
-		Tools.UI.GetScreenDefinitions(new IApplicationBlock[] { block });
+		ApplicationHelper.GetScreenDefinitions(new IApplicationBlock[] { block });
 		Guard.Ensure(ScreenDefinitions.All(definition => block.ScreenDefinitions.Any(candidate => candidate.Registration.Token == definition.Registration.Token)),
 			"The block factory must own every configured screen definition.");
 		return block;
@@ -65,13 +65,13 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 			foreach (var definition in ScreenDefinitions)
 				storage.AddScreenDefinition(definition);
 			if (DefaultScreenDefinition != null)
-				storage.DefaultScreenDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, DefaultScreenDefinition.Registration);
+				storage.DefaultScreenDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, DefaultScreenDefinition.Registration);
 		}
 	}
 
 	/// <summary>Completes pending navigation bindings against this product's canonical registrations.</summary>
 	protected virtual void ResolveScreenReferences(TBlock block) {
-		Tools.UI.ResolveScreenReferences(block, block);
+		ApplicationHelper.ResolveScreenReferences(block, block);
 	}
 
 	protected void SetBlockSettings(SettingsObject settings) {
@@ -145,13 +145,13 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
 	}
 
-	protected virtual void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType);
+	protected virtual void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType);
 
 	protected abstract TBlock CreateBlock(IReadOnlyList<TMenu> menus);
 
 	/// <summary>Resolves a default reference without creating or changing registration metadata.</summary>
 	protected virtual void ResolveDefaultScreen() {
-		DefaultScreenDefinition = _defaultScreenRegistration == null ? null : Tools.UI.ResolveScreenRegistration(ScreenDefinitions, _defaultScreenRegistration);
+		DefaultScreenDefinition = _defaultScreenRegistration == null ? null : ApplicationHelper.ResolveScreenRegistration(ScreenDefinitions, _defaultScreenRegistration);
 	}
 }
 

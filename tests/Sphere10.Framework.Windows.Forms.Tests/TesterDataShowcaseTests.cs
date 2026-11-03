@@ -51,7 +51,7 @@ public class TesterDataShowcaseTests {
 
 	[Test]
 	public void ObjectSpaceSettingsDeclarationPreservesItsLegacyRecordTypeWithoutRegisteringTheCompatibilityBase() {
-		Assert.That(Tools.UI.GetScreenSettingsType(typeof(ObjectSpaceScreen)), Is.EqualTo(typeof(ObjectSpaceScreen.ObjectSpaceScreenSettings)));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(typeof(ObjectSpaceScreen)), Is.EqualTo(typeof(ObjectSpaceScreen.ObjectSpaceScreenSettings)));
 		Assert.That(typeof(ObjectSpaceScreen.ScreenSettings).FullName, Is.EqualTo("Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+ScreenSettings"));
 		Assert.That(typeof(ObjectSpaceScreenBase).IsAbstract, Is.False);
 		Assert.That(typeof(ObjectSpaceScreenBase).IsGenericType, Is.False);
@@ -65,7 +65,7 @@ public class TesterDataShowcaseTests {
 
 	[TestCaseSource(nameof(TypedSettingsScreenTypes))]
 	public void TypedScreenSettingsRemainHiddenFromDesignerSerialization(Type screenType) {
-		var settingsType = Tools.UI.GetScreenSettingsType(screenType);
+		var settingsType = ApplicationHelper.GetScreenSettingsType(screenType);
 		var descriptor = TypeDescriptor.GetProperties(screenType)[nameof(ApplicationScreen.ScreenSettings)];
 		Assert.That(descriptor, Is.Not.Null);
 		Assert.That(typeof(SettingsObject).IsAssignableFrom(descriptor.PropertyType), Is.True);

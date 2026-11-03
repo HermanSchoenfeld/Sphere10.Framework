@@ -24,7 +24,7 @@ public class ApplicationPlugin : ApplicationPluginBase {
 
 	public ApplicationPlugin(string name, IEnumerable<IApplicationBlock> blocks, Action<IServiceCollection> configureServices) {
 		Name = name;
-		_blocks = Tools.UI.ValidatePluginBlocks(blocks);
+		_blocks = ApplicationHelper.ValidatePluginBlocks(blocks);
 		_configureServices = configureServices;
 	}
 
@@ -39,7 +39,7 @@ public class ApplicationPlugin : ApplicationPluginBase {
 	/// <summary>Copies membership on assignment and retrieval; platform adapters may snapshot their block definitions.</summary>
 	public override IApplicationBlock[] Blocks {
 		get => GetBlocks();
-		init => _blocks = Tools.UI.ValidatePluginBlocks(value);
+		init => _blocks = ApplicationHelper.ValidatePluginBlocks(value);
 	}
 
 	protected override void ConfigureServices(IServiceCollection serviceCollection) => _configureServices?.Invoke(serviceCollection);

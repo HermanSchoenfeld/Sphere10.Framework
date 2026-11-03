@@ -31,7 +31,7 @@ public class ScreenSettingsOwnershipTests {
 	public void ActualNativeScreensDeclareTheirOwnPublicNestedSettingsWithoutActivation(Type screenType, Type settingsType) {
 		Assert.That(settingsType.IsNestedPublic, Is.True);
 		Assert.That(settingsType.DeclaringType, Is.EqualTo(screenType));
-		Assert.That(Tools.UI.GetScreenSettingsType(screenType), Is.EqualTo(settingsType));
+		Assert.That(ApplicationHelper.GetScreenSettingsType(screenType), Is.EqualTo(settingsType));
 
 		var properties = screenType.GetProperties().Where(candidate => candidate.Name == nameof(SharedUI.IApplicationScreen.ScreenSettings)).ToArray();
 		var property = properties.FirstOrDefault(candidate => candidate.PropertyType == settingsType)
@@ -132,7 +132,7 @@ public class ScreenSettingsOwnershipTests {
 		var definition = new FormsUI.ApplicationScreenDefinition(typeof(ScreenHostingDesignTestScreen), "Inspector", stableKey: "inspector");
 		block.AddScreenDefinition(definition);
 		var settings = (ScreenHostingDesignTestScreen.ScreenHostingPreferences)definition.Settings;
-		settings.ID = Tools.UI.GetScreenSettingsId("ScreenSettingsOwnership", block, definition);
+		settings.ID = ApplicationHelper.GetScreenSettingsId("ScreenSettingsOwnership", block, definition);
 		settings.Provider = provider;
 		if (await provider.ContainsSettingAsync(settings.GetType(), settings.ID))
 			return (ScreenHostingDesignTestScreen.ScreenHostingPreferences)await provider.LoadSettingAsync(settings);

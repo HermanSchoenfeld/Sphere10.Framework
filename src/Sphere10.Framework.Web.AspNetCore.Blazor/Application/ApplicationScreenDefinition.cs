@@ -25,7 +25,7 @@ public sealed class ApplicationScreenDefinition : SharedUI.ApplicationScreenDefi
 		Func<ApplicationScreenActivationContext, ApplicationScreenActivation> activator = null,
 		SettingsObject settings = null, Type settingsEditor = null)
 		: base(screenType, title, activationMode, screenKind, registration, stableKey, settings) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 		Guard.Argument(settingsEditor == null || !settingsEditor.IsAbstract && !settingsEditor.ContainsGenericParameters
 			&& typeof(IComponent).IsAssignableFrom(settingsEditor)
 			&& typeof(IApplicationSettingsEditor).IsAssignableFrom(settingsEditor),

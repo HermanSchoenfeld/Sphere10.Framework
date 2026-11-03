@@ -41,7 +41,7 @@ public class Application : AsyncApplicationBase, IApplication {
 		string settingsKey = null)
 		: base(services, settingsKey) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
-		var registrations = Tools.UI.ValidatePluginRegistrations(pluginRegistrations);
+		var registrations = ApplicationHelper.ValidatePluginRegistrations(pluginRegistrations);
 		ScreenHost = screenHost;
 		// Startup definitions remain application-lifetime owners; settings-bearing plugin values belong to this circuit.
 		_loadedPlugins = registrations.Select(registration => registration.Plugin.PluginSettings == null ? registration.Plugin
@@ -163,9 +163,9 @@ public class Application : AsyncApplicationBase, IApplication {
 			foreach (var definition in block.ScreenDefinitions) {
 				if (definition.Settings == null)
 					continue;
-				definition.Settings.ID = Tools.UI.GetScreenSettingsId(SettingsKey, block, definition, block.Id);
+				definition.Settings.ID = ApplicationHelper.GetScreenSettingsId(SettingsKey, block, definition, block.Id);
 				definition.Settings = await RestoreSettingsAsync(definition.Settings, provider, cancellationToken,
-					Tools.UI.GetScreenSettingsKey(SettingsKey, block, definition, block.Id));
+					ApplicationHelper.GetScreenSettingsKey(SettingsKey, block, definition, block.Id));
 			}
 		}
 		if (LoadedPlugins.Any(plugin => plugin.PluginSettings != null)
@@ -270,7 +270,7 @@ public class Application : AsyncApplicationBase, IApplication {
 	/// <summary>Captures successful startup membership without replaying plugin lifecycle operations.</summary>
 	private static ApplicationPluginRegistration<IBlazorPlugin>[] CaptureLoadedPlugins(IEnumerable<IBlazorPlugin> loadedPlugins) {
 		Guard.ArgumentNotNull(loadedPlugins, nameof(loadedPlugins));
-		return Tools.UI.ValidatePlugins(loadedPlugins)
+		return ApplicationHelper.ValidatePlugins(loadedPlugins)
 			.Select(plugin => new ApplicationPluginRegistration<IBlazorPlugin>((IBlazorPlugin)plugin, plugin.Blocks)).ToArray();
 	}
 }

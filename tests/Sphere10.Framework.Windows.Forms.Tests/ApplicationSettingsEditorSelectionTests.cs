@@ -26,6 +26,39 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [Apartment(ApartmentState.STA)]
 public class ApplicationSettingsEditorSelectionTests {
 
+	/// <summary>Applies settings visibility to the real native descriptors without hiding ordinary nested values.</summary>
+	[Test]
+	public void ReusableEditorFiltersRuntimeValuesAndTracksTheActualSettingsObject() {
+		RunWithMessageLoop(owner => {
+			var settings = new EditableSettings { Provider = new MemoryStore() };
+			using var editor = new ApplicationSettingsEditor();
+			editor.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, settings, false);
+			var propertyGrid = editor.Controls.OfType<PropertyGrid>().Single();
+			var properties = TypeDescriptor.GetProperties(propertyGrid.SelectedObject);
+			Assert.That(properties[nameof(SettingsObject.ID)], Is.Null);
+			Assert.That(properties[nameof(SettingsObject.Provider)], Is.Null);
+			Assert.That(properties[nameof(EditableSettings.SessionToken)], Is.Null);
+			Assert.That(editor.GetEntityWithChanges(), Is.SameAs(settings));
+
+			// Ownership names on ordinary nested records remain editable values.
+			var details = properties[nameof(EditableSettings.Details)];
+			var nested = details.Converter.GetProperties(details.GetValue(propertyGrid.SelectedObject));
+			Assert.That(nested[nameof(EditorDetails.ID)], Is.Not.Null);
+			Assert.That(nested[nameof(EditorDetails.Provider)], Is.Not.Null);
+			Assert.That(nested[nameof(EditorDetails.TransientValue)], Is.Null);
+
+			// Existing descriptor edit and undo behavior still owns the actual values.
+			properties[nameof(OrdinarySettings.Number)].SetValue(propertyGrid.SelectedObject, 37);
+			Assert.That(settings.Number, Is.EqualTo(37));
+			Assert.That(editor.HasChanges, Is.True);
+			editor.UndoChanges();
+			Assert.That(settings.Number, Is.EqualTo(10));
+			Assert.That(editor.HasChanges, Is.False);
+			Assert.That(((MemoryStore)settings.Provider).Saves, Is.Zero);
+			return Task.CompletedTask;
+		});
+	}
+
 	[Test]
 	public void AutomaticOptionsEditingRequiresTheClassMarkerAndExplicitEditorsCanEditUnmarkedSettings() {
 		RunWithMessageLoop(async owner => {
@@ -136,6 +169,27 @@ public class ApplicationSettingsEditorSelectionTests {
 	/// <summary>Enables the ordinary property editor through its class marker.</summary>
 	[UserEditable]
 	public sealed class EditableSettings : OrdinarySettings {
+
+		/// <summary>Ordinary nested values that share names with settings ownership members.</summary>
+		public EditorDetails Details { get; set; } = new();
+
+		/// <summary>Runtime-only values do not appear in the settings editor.</summary>
+		[Transient]
+		public string SessionToken { get; set; }
+	}
+
+	/// <summary>Exercises nested value filtering independently of SettingsObject ownership.</summary>
+	public sealed class EditorDetails {
+
+		/// <summary>A user value rather than the settings root's persistent identity.</summary>
+		public int ID { get; set; } = 7;
+
+		/// <summary>A user value rather than a settings persistence provider.</summary>
+		public string Provider { get; set; } = "Sample";
+
+		/// <summary>A nested runtime value excluded by the same settings visibility rules.</summary>
+		[Transient]
+		public string TransientValue { get; set; }
 	}
 
 	// Supplies isolated provider storage for this fixture without changing its lifecycle contract.

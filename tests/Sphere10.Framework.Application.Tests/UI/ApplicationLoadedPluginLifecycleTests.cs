@@ -127,7 +127,7 @@ public class ApplicationLoadedPluginLifecycleTests {
 
 		public ProbeApplication(IServiceProvider services, IApplicationPlugin[] plugins)
 			: base(services) {
-			_plugins = Tools.UI.ValidatePlugins(plugins);
+			_plugins = ApplicationHelper.ValidatePlugins(plugins);
 		}
 
 		public override IApplicationPlugin[] LoadedPlugins => Tools.Array.Clone(_plugins);

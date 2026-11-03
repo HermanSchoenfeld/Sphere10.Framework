@@ -615,7 +615,7 @@ public class ApplicationScreenHostTests {
 		var block = CreateBlock("records", Item("editor", typeof(OtherScreen)));
 		using var typedHost = new TrackingHost(new[] { block }, provider);
 		using IApplicationScreenHost host = new TrackingDecorator(typedHost);
-		var definition = Tools.UI.GetScreenDefinitions(new[] { block }).Single();
+		var definition = ApplicationHelper.GetScreenDefinitions(new[] { block }).Single();
 		var notifications = 0;
 		EventHandlerEx handler = () => notifications++;
 		host.Changed += handler;
@@ -685,7 +685,7 @@ public class ApplicationScreenHostTests {
 
 	private class TestHost : ApplicationScreenHost<TestApplicationBlock, ProbeScreen> {
 		public TestHost(IServiceProvider provider, params TestApplicationBlock[] blocks) : base(blocks, provider) {
-			Definitions = Tools.UI.GetScreenDefinitions(blocks);
+			Definitions = ApplicationHelper.GetScreenDefinitions(blocks);
 		}
 
 		public ApplicationScreenDefinition[] Definitions { get; }

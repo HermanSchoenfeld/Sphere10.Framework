@@ -33,8 +33,8 @@ internal static class ApplicationBlockSnapshot {
 		Guard.ArgumentNotNullOrEmpty(block.Name, nameof(block), "Block name is required.");
 		Guard.ArgumentNotNullOrEmpty(block.Id, nameof(block));
 		Guard.ArgumentNotNull(block.ToolBarItems, nameof(block));
-		Tools.UI.ResolveScreenReferences(block, block);
-		var sourceDefinitions = Tools.UI.GetScreenDefinitions(new[] { block });
+		ApplicationHelper.ResolveScreenReferences(block, block);
+		var sourceDefinitions = ApplicationHelper.GetScreenDefinitions(new[] { block });
 		var definitions = new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
 		foreach (var definition in sourceDefinitions) {
 			ValidateScreenType(definition.ScreenType);
@@ -55,7 +55,7 @@ internal static class ApplicationBlockSnapshot {
 			DefaultScreenDefinition = SnapshotDefinition(block.DefaultScreenDefinition, definitions),
 			Source = block.Source
 		};
-		Tools.UI.GetScreenDefinitions(new[] { result });
+		ApplicationHelper.GetScreenDefinitions(new[] { result });
 		return result;
 	}
 
@@ -64,7 +64,7 @@ internal static class ApplicationBlockSnapshot {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var snapshots = blocks.Select(Create).Cast<IApplicationBlock>().ToArray();
 		Guard.Argument(snapshots.Select(block => block.Id).Distinct(StringComparer.Ordinal).Count() == snapshots.Length, nameof(blocks), "Block IDs must be unique.");
-		var definitions = Tools.UI.GetScreenDefinitions(snapshots);
+		var definitions = ApplicationHelper.GetScreenDefinitions(snapshots);
 		SharedUI.ApplicationScreenDefinition.ValidateDefinitions(definitions);
 		return orderByPosition ? snapshots.OrderBy(block => block.Position).ToArray() : snapshots;
 	}
@@ -140,7 +140,7 @@ internal static class ApplicationBlockSnapshot {
 
 	/// <summary>Rejects screen types that cannot be hosted as Blazor application screens.</summary>
 	internal static void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 	}
 
 	/// <summary>Maps successful startup contribution order to the host's immutable browser snapshots using platform-local IDs.</summary>
@@ -182,7 +182,7 @@ internal static class ApplicationBlockSnapshot {
 
 	/// <summary>Creates a caption-independent URL identity for menu-free registrations.</summary>
 	internal static string GetDefinitionScreenId(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
-		return DefinitionScreenItemPrefix + Uri.EscapeDataString(Tools.UI.GetScreenRegistrationKey(block, definition));
+		return DefinitionScreenItemPrefix + Uri.EscapeDataString(ApplicationHelper.GetScreenRegistrationKey(block, definition));
 	}
 
 	/// <summary>Checks whether a browser ID identifies an owned menu-free registration.</summary>

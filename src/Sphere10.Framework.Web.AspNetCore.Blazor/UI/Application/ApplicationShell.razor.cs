@@ -144,7 +144,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	// The toolbar composition for the active command owners.
 	private IApplicationMenuItem[] MergedToolBarItems {
 		get {
-			return Tools.UI.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
+			return ApplicationHelper.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
 		}
 	}
 
@@ -410,7 +410,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	// Keep existing menu order and reuse a contextual Options heading before adding a heading of our own.
 	private IApplicationMenu[] MergedMenus {
 		get {
-			var menus = Tools.UI.MergeApplicationMenus<IApplicationMenu, IApplicationMenuItem>(
+			var menus = ApplicationHelper.MergeApplicationMenus<IApplicationMenu, IApplicationMenuItem>(
 				(menu, items) => new ApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
 				menu => menu.Id, item => item.Id, GetApplicationCommandLayers()).ToList();
 			var settings = menus.FirstOrDefault(menu => menu.Id == global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.SettingsMenuId);
@@ -440,7 +440,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	// Commands follow the visible screen's owners; sidebar browsing contributes no presentation commands.
 	private ApplicationCommandLayer[] GetApplicationCommandLayers() {
 		var screen = ScreenHost.ActiveScreen;
-		return Tools.UI.GetCommandLayers(Application, screen?.Block, screen);
+		return ApplicationHelper.GetCommandLayers(Application, screen?.Block, screen);
 	}
 
 	// Selects a stable render key for a command.

@@ -69,7 +69,7 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 	/// <summary>Opens an exact registration in this host's own block graph.</summary>
 	Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		return OpenScreenAsync(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
+		return OpenScreenAsync(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
 	}
 
 	/// <summary>Shows a supplied instance directly in a modeless detached window without changing the main-frame selection.</summary>
@@ -136,7 +136,7 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 	/// <summary>Opens the exact registration owned by the supplied block.</summary>
 	Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		return OpenScreenAsync(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
+		return OpenScreenAsync(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, registration), cancellationToken);
 	}
 
 	/// <summary>Shows a retained screen through the platform's detached presentation support.</summary>

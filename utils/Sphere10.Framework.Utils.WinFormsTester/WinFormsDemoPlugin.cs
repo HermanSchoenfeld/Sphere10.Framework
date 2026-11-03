@@ -112,7 +112,7 @@ public static class WinFormsDemoPlugin {
 					.AddShowScreenItem(gpuInspector)
 					.AddActionItem("Open Menu-free Inspector", userInterface => {
 						var host = ((BlockMainForm)userInterface.PrimaryUIController).ScreenHost;
-						host.ActivateScreen(workspace, Tools.UI.ResolveScreenRegistration(workspace.ScreenDefinitions, menuFreeInspector));
+						host.ActivateScreen(workspace, workspace.ScreenDefinitions.Single(definition => definition.Registration.Token == menuFreeInspector.Token && definition.ScreenType == menuFreeInspector.ScreenType));
 					})
 					.AddActionItem("Use SingleView", userInterface => SetScreenMode(userInterface, ScreenMode.SingleView), (Image)Resources.Generic16x16.Clone())
 					.AddActionItem("Use MultiView", userInterface => SetScreenMode(userInterface, ScreenMode.MultiView), (Image)Resources.Generic16x16.Clone())

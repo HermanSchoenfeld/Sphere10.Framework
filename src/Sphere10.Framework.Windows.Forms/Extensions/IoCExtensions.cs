@@ -78,13 +78,13 @@ public static class IoCExtensions {
 		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IApplicationPlugin>))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IApplicationPlugin>>();
 		var registration = new ApplicationPluginRegistration<IApplicationPlugin>(plugin, plugin.Blocks);
-		Tools.UI.ValidatePluginRegistrations(registrations.Append(registration));
+		ApplicationHelper.ValidatePluginRegistrations(registrations.Append(registration));
 		plugin.Load(services);
 		// Load hooks can finish block definitions or register another plugin; revalidate before exposing this one.
 		registration = new ApplicationPluginRegistration<IApplicationPlugin>(plugin, plugin.Blocks);
 		registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IApplicationPlugin>))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IApplicationPlugin>>();
-		Tools.UI.ValidatePluginRegistrations(registrations.Append(registration));
+		ApplicationHelper.ValidatePluginRegistrations(registrations.Append(registration));
 		foreach (var block in registration.Blocks.Cast<IApplicationBlock>())
 			if (!services.Any(descriptor => descriptor.ServiceType == typeof(IApplicationBlock) && ReferenceEquals(descriptor.ImplementationInstance, block)))
 				services.AddApplicationBlock(block);

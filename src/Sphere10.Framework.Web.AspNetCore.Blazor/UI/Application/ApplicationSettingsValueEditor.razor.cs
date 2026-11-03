@@ -47,7 +47,7 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 	private PropertyDescriptor[] Properties {
 		get {
 			return Value == null ? Array.Empty<PropertyDescriptor>() : TypeDescriptor.GetProperties(Value).Cast<PropertyDescriptor>()
-				.Where(property => property.IsBrowsable && Tools.UI.IsSettingsMember(property.PropertyType, property.Attributes.Cast<Attribute>())
+				.Where(property => property.IsBrowsable && ApplicationHelper.IsSettingsMember(property.PropertyType, property.Attributes.Cast<Attribute>())
 					&& !(Value is SettingsObject && property.Name is nameof(SettingsObject.ID) or nameof(SettingsObject.Provider)))
 				.OrderBy(property => property.Category, StringComparer.CurrentCulture)
 				.ThenBy(property => property.DisplayName, StringComparer.CurrentCulture).ToArray();

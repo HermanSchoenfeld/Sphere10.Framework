@@ -62,7 +62,7 @@ public class ScreenActivationBuilderTests {
 			)
 			.WithDefaultScreen(cpu);
 		using var block = builder.Build();
-		var definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
+		var definition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
 		Assert.That(returned, Is.SameAs(builder));
 		Assert.That(builder.Build(), Is.SameAs(block), "The native builder retains its product.");
 		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(2));
@@ -148,8 +148,8 @@ public class ScreenActivationBuilderTests {
 			})
 			.Build();
 		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		var cpuDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
-		var gpuDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, gpu);
+		var cpuDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
+		var gpuDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, gpu);
 		var first = host.ActivateScreen(block, reverse ? gpuDefinition : cpuDefinition);
 		var second = host.ActivateScreen(block, reverse ? cpuDefinition : gpuDefinition);
 		Assert.That(first, Is.Not.SameAs(second));
@@ -180,12 +180,12 @@ public class ScreenActivationBuilderTests {
 			)
 			.Build();
 		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		var firstDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? unspecified : configured);
-		var secondDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? configured : unspecified);
+		var firstDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? unspecified : configured);
+		var secondDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? configured : unspecified);
 		host.ActivateScreen(block, firstDefinition);
 		host.ActivateScreen(block, secondDefinition);
-		var explicitDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, configured);
-		var defaultDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, unspecified);
+		var explicitDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, configured);
+		var defaultDefinition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, unspecified);
 		var explicitFirst = host.ActivateScreen(block, explicitDefinition);
 		var defaultFirst = host.ActivateScreen(block, defaultDefinition);
 		Assert.That(defaultFirst.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
@@ -255,8 +255,8 @@ public class ScreenActivationBuilderTests {
 			)
 			.Build();
 		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		retained = (ArgumentScreen)host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, first));
-		Assert.That(() => host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, second)), Throws.InvalidOperationException);
+		retained = (ArgumentScreen)host.ActivateScreen(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, first));
+		Assert.That(() => host.ActivateScreen(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, second)), Throws.InvalidOperationException);
 		Assert.That(retained.IsDisposed, Is.False);
 		Assert.That(retained.Host, Is.SameAs(host));
 		Assert.That(host.ActiveScreen, Is.SameAs(retained));
@@ -301,9 +301,9 @@ public class ScreenActivationBuilderTests {
 			)
 			.Build();
 		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		var first = (GuardScreen)host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, guarded));
+		var first = (GuardScreen)host.ActivateScreen(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, guarded));
 		first.Veto = true;
-		Assert.That(host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, next)), Is.Null);
+		Assert.That(host.ActivateScreen(block, ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, next)), Is.Null);
 		Assert.That(attempt.IsDisposed, Is.True);
 		Assert.That(first.IsDisposed, Is.False);
 		Assert.That(host.ActiveScreen, Is.SameAs(first));
@@ -325,7 +325,7 @@ public class ScreenActivationBuilderTests {
 				.AddShowScreenItem(reference)
 			)
 			.Build();
-		var definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reference);
+		var definition = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, reference);
 		var copy = (FormsUI.ApplicationScreenDefinition)definition.WithTitle("Copy");
 		Assert.That(copy.Activator, Is.SameAs(activator));
 		Assert.That(copy.Registration, Is.SameAs(reference));

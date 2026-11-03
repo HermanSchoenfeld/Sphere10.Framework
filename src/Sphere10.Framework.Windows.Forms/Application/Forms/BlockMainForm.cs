@@ -189,7 +189,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 						RegisterBlockCore(block);
 				}
 			}
-			var hasDefault = Tools.UI.GetDefaultScreen(ordered) != null;
+			var hasDefault = ApplicationHelper.GetDefaultScreen(ordered) != null;
 			foreach (var item in definitions.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)) {
 				if (item.ExecuteOnLoad && (item is not IWinFormsScreenMenuItem || !hasDefault))
 					ExecuteMenuItem(item);

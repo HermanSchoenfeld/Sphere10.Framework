@@ -160,6 +160,12 @@ For native class editors use
 `[Editor(typeof(MySettingsEditor), typeof(ICrudEntityEditor<object>))]`; the editor
 can accept `ApplicationSettingsEditorContext` or have a parameterless
 constructor. `WithSettingsEditor` supplies a registration-specific override.
+
+Custom native editors that embed a property grid can use `ApplicationSettingsEditor`,
+which inherits `DefaultCrudEntityEditor` and filters transient, ignored and runtime
+settings members. It also hides the settings root's ID and provider. This is the
+same editor used by automatic native Options pages; clients do not call internal
+settings-validation or property-filter helpers.
 The editor context's `Settings` is the actual object; the dialog owns validation
 and persistence.
 

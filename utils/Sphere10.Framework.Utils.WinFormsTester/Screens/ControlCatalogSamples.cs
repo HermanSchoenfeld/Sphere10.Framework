@@ -40,6 +40,7 @@ public static class ControlCatalogSamples {
 			Sample<ApplicationBannerHost>("Application", () => new ApplicationBannerHost()),
 			Sample<ApplicationBar>("Application", CreateApplicationBar, "Select a section using the real application bar buttons."),
 			Sample<ApplicationControl>("Application", () => Composed(new ApplicationControl())),
+			Sample<ApplicationSettingsEditor>("Application", CreateSettingsEditor, "Edit private inspector preferences using the shared settings editor. These sample values are not saved."),
 			Window<ApplicationForm>(() => new ApplicationForm()),
 			Sample<BarChart>("Charts", () => new ChartTestScreen(), "Use the columns and bars tabs; add samples, change scenarios and inspect the axes."),
 			Sample<BasicContactDetailsControl>("Application", () => new BasicContactDetailsControl { ContactIsAnonymous = false, ContactEmail = "sample@example.invalid" }),
@@ -244,6 +245,13 @@ public static class ControlCatalogSamples {
 	private static Control CreateEntityEditor() {
 		var editor = new DefaultCrudEntityEditor();
 		editor.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, CreateEmployee(), false);
+		return editor;
+	}
+
+	// Keep this settings sample detached from any provider or operational screen.
+	private static Control CreateSettingsEditor() {
+		var editor = new ApplicationSettingsEditor();
+		editor.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, new Screens.ScreenHostingDesignTestScreen.ScreenHostingPreferences(), false);
 		return editor;
 	}
 

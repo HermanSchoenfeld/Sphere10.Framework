@@ -67,7 +67,7 @@ public class ApplicationGenericContractTests {
 		using var decorator = new TrackingHostDecorator(implementation);
 		IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen> typed = decorator;
 		IMultiApplicationScreenHost neutral = decorator;
-		var definition = Tools.UI.GetScreenDefinitions(new[] { first }).Single();
+		var definition = ApplicationHelper.GetScreenDefinitions(new[] { first }).Single();
 		var notifications = 0;
 		EventHandlerEx handler = () => notifications++;
 		neutral.Changed += handler;

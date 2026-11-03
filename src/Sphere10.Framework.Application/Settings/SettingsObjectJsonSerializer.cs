@@ -13,6 +13,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Application;
 
@@ -77,7 +78,7 @@ public class SettingsObjectJsonSerializer : JsonSerializer {
 		// Filter runtime members without changing the existing population of getter-only collections.
 		protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization) {
 			var property = base.CreateProperty(member, memberSerialization);
-			if (!Tools.UI.IsSettingsMember(member))
+			if (!ApplicationHelper.IsSettingsMember(member))
 				property.Ignored = true;
 			if (property.Writable && property.PropertyType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
 				property.ObjectCreationHandling = ObjectCreationHandling.Replace;

@@ -96,7 +96,7 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 			return _activationMode;
 		}
 		protected set {
-			Tools.UI.ValidateActivationMode(value);
+			ApplicationHelper.ValidateActivationMode(value);
 			Guard.Ensure(Host == null, "A screen's activation mode cannot change while it belongs to a host");
 			_activationMode = value;
 		}

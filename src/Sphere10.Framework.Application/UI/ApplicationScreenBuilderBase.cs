@@ -37,7 +37,7 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 	/// <summary>Validates and captures the declared registration metadata.</summary>
 	public virtual ApplicationScreenDefinition Build() {
 		Guard.Ensure(ScreenType != null, "A screen type is required.");
-		Tools.UI.ValidateScreenPolicy(ActivationMode, ScreenKind);
+		ApplicationHelper.ValidateScreenPolicy(ActivationMode, ScreenKind);
 		return CreateDefinition();
 	}
 
@@ -62,14 +62,14 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 
 	/// <summary>Overrides the lifetime policy for this registration alone.</summary>
 	public TSelf WithActivationMode(ScreenActivationMode activationMode) {
-		Tools.UI.ValidateActivationMode(activationMode);
+		ApplicationHelper.ValidateActivationMode(activationMode);
 		ActivationMode = activationMode;
 		return (TSelf)(object)this;
 	}
 
 	/// <summary>Sets this registration's normal or empty-workspace role.</summary>
 	public TSelf WithScreenKind(ScreenKind screenKind) {
-		Tools.UI.ValidateScreenKind(screenKind);
+		ApplicationHelper.ValidateScreenKind(screenKind);
 		ScreenKind = screenKind;
 		return (TSelf)(object)this;
 	}
@@ -116,7 +116,7 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 
 	// Platform builders additionally validate their supported screen contract.
 	protected virtual void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType);
+		ApplicationHelper.ValidateScreenType(screenType);
 	}
 
 	// Keep one token and one immutable type throughout this child's configuration.

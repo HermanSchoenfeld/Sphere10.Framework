@@ -249,9 +249,7 @@ public partial class ApplicationSettingsDialog : Form {
 			var constructor = editorType.GetConstructor(new[] { typeof(ApplicationSettingsEditorContext) });
 			editor = (ICrudEntityEditor<object>)(constructor == null ? Tools.Object.Create(editorType) : constructor.Invoke(new object[] { context }));
 		} else
-			editor = new DefaultCrudEntityEditor {
-				PropertyFilter = (owner, property) => Tools.UI.IsSettingsMember(property.PropertyType, property.Attributes.Cast<Attribute>())
-					&& (owner is not SettingsObject || property.Name is not (nameof(SettingsObject.ID) or nameof(SettingsObject.Provider))),
+			editor = new ApplicationSettingsEditor {
 				PropertySort = PropertySort.CategorizedAlphabetical
 			};
 
@@ -332,7 +330,7 @@ public partial class ApplicationSettingsDialog : Form {
 		nodes.Add(node);
 		foreach (var definition in block.ScreenDefinitions.Where(definition => definition.Settings != null)) {
 			var duplicate = block.ScreenDefinitions.Count(other => other.Settings != null && other.Title == definition.Title) > 1;
-			var caption = duplicate ? $"{definition.Title} ({Tools.UI.GetScreenRegistrationKey(block, definition)})" : definition.Title;
+			var caption = duplicate ? $"{definition.Title} ({ApplicationHelper.GetScreenRegistrationKey(block, definition)})" : definition.Title;
 			node.Nodes.Add(new TreeNode(caption) { Tag = definition });
 		}
 	}

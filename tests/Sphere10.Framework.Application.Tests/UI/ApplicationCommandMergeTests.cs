@@ -28,14 +28,14 @@ public class ApplicationCommandMergeTests {
 		var block = new[] { Menu("work", blockAction) };
 		var screen = new[] { Menu("work", screenSave, extra), Menu("screen", extra) };
 
-		var merged = Tools.UI.MergeMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
+		var merged = ApplicationHelper.MergeMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
 			(menu, items) => Menu(menu.Text, items), app, block, screen);
 		Assert.That(merged.Select(menu => menu.Text), Is.EqualTo(new[] { "work", "screen", "help" }));
 		Assert.That(merged[0].Items, Is.EqualTo(new[] { screenSave, blockAction, extra }));
 		Assert.That(app[0].Items.Single(), Is.SameAs(original));
 		merged[0].RemoveItem(screenSave);
 		Assert.That(screen[0].Items, Has.Length.EqualTo(2));
-		Assert.That(Tools.UI.MergeMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
+		Assert.That(ApplicationHelper.MergeMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
 			(menu, items) => Menu(menu.Text, items), app, block)[0].Items, Is.EqualTo(new[] { original, blockAction }));
 	}
 
@@ -45,13 +45,13 @@ public class ApplicationCommandMergeTests {
 		var replacement = new TestApplicationMenuItem { Title = "First" };
 		var last = new TestApplicationMenuItem { Title = "Last" };
 		var separator = new Separator();
-		var merged = Tools.UI.MergeMenuItems<IApplicationMenuItem>(
+		var merged = ApplicationHelper.MergeMenuItems<IApplicationMenuItem>(
 			new IApplicationMenuItem[] { separator, first, separator, separator },
 			new IApplicationMenuItem[] { replacement, separator, last, separator });
 		Assert.That(merged, Is.EqualTo(new IApplicationMenuItem[] { replacement, separator, last }));
 		merged[0] = last;
 		Assert.That(first.Title, Is.EqualTo("First"));
-		Assert.That(Tools.UI.MergeMenuItems<IApplicationMenuItem>(new IApplicationMenuItem[] { separator }), Is.Empty);
+		Assert.That(ApplicationHelper.MergeMenuItems<IApplicationMenuItem>(new IApplicationMenuItem[] { separator }), Is.Empty);
 	}
 
 	[Test]
@@ -61,7 +61,7 @@ public class ApplicationCommandMergeTests {
 		var item = new TestApplicationMenuItem { Title = "Save" };
 		source.AddItem(item);
 		block.AddMenu(source);
-		var composed = Tools.UI.MergeMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
+		var composed = ApplicationHelper.MergeMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
 			(menu, items) => Menu(menu.Text, items), new[] { source }).Single();
 		Assert.That(composed.Items.Single(), Is.SameAs(item));
 		Assert.That(item.Parent, Is.SameAs(source));
@@ -73,9 +73,9 @@ public class ApplicationCommandMergeTests {
 
 	[Test]
 	public void InvalidCommandLayersFailBeforeRendering() {
-		Assert.That(() => Tools.UI.MergeMenuItems<IApplicationMenuItem>((IApplicationMenuItem[][])null), Throws.ArgumentNullException);
-		Assert.That(() => Tools.UI.MergeMenuItems(new IApplicationMenuItem[] { null }), Throws.ArgumentNullException);
-		Assert.That(() => Tools.UI.MergeMenuItems(new[] { new TestApplicationMenuItem { Title = "" } }), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.MergeMenuItems<IApplicationMenuItem>((IApplicationMenuItem[][])null), Throws.ArgumentNullException);
+		Assert.That(() => ApplicationHelper.MergeMenuItems(new IApplicationMenuItem[] { null }), Throws.ArgumentNullException);
+		Assert.That(() => ApplicationHelper.MergeMenuItems(new[] { new TestApplicationMenuItem { Title = "" } }), Throws.ArgumentException);
 	}
 
 	[TestCase(false)]
@@ -94,8 +94,8 @@ public class ApplicationCommandMergeTests {
 			new ApplicationCommandLayer(ApplicationCommandLevel.Block, block)
 		};
 		var composed = toolbar
-			? Tools.UI.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
-			: Tools.UI.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
+			? ApplicationHelper.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
+			: ApplicationHelper.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
 				(menu, items) => ActionMenu(menu.Text, items), menu => menu.Text, item => item.Key, layers).Single().Items;
 
 		Assert.That(composed, Is.EqualTo(new[] { applicationSave, screenSave }));
@@ -122,8 +122,8 @@ public class ApplicationCommandMergeTests {
 			new ApplicationCommandLayer(ApplicationCommandLevel.Screen, Provider(global))
 		};
 		var composed = toolbar
-			? Tools.UI.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
-			: Tools.UI.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
+			? ApplicationHelper.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
+			: ApplicationHelper.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
 				(menu, items) => ActionMenu(menu.Text, items), menu => menu.Text, item => item.Key, layers).Single().Items;
 		Assert.That(composed.Single(), Is.SameAs(global));
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -145,8 +145,8 @@ public class ApplicationCommandMergeTests {
 			new ApplicationCommandLayer(ApplicationCommandLevel.Screen, screen)
 		};
 		var composed = toolbar
-			? Tools.UI.MergeApplicationToolBarItems<TestApplicationMenuItem>(layers)
-			: Tools.UI.MergeApplicationMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
+			? ApplicationHelper.MergeApplicationToolBarItems<TestApplicationMenuItem>(layers)
+			: ApplicationHelper.MergeApplicationMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
 				(menu, items) => Menu(menu.Text, items), layers).Single().Items;
 		Assert.That(composed, Is.EqualTo(new[] { global, contextual }));
 	}
@@ -156,12 +156,12 @@ public class ApplicationCommandMergeTests {
 		var application = new Commands();
 		var block = new Commands();
 		var screen = new Commands();
-		var layers = Tools.UI.GetCommandLayers(application, block, screen);
+		var layers = ApplicationHelper.GetCommandLayers(application, block, screen);
 
 		Assert.That(layers.Select(layer => layer.Level), Is.EqualTo(new[] { ApplicationCommandLevel.Application, ApplicationCommandLevel.Block, ApplicationCommandLevel.Screen }));
 		Assert.That(layers.Select(layer => layer.Provider), Is.EqualTo(new[] { application, block, screen }));
-		Assert.That(Tools.UI.GetCommandLayers(application, screen: screen).Select(layer => layer.Provider), Is.EqualTo(new[] { application, screen }));
-		Assert.That(Tools.UI.GetCommandLayers(application).Single().Provider, Is.SameAs(application));
+		Assert.That(ApplicationHelper.GetCommandLayers(application, screen: screen).Select(layer => layer.Provider), Is.EqualTo(new[] { application, screen }));
+		Assert.That(ApplicationHelper.GetCommandLayers(application).Single().Provider, Is.SameAs(application));
 	}
 
 	/// <summary>A real block contributes its source plugin before its own commands.</summary>
@@ -173,7 +173,7 @@ public class ApplicationCommandMergeTests {
 		block.Source = plugin;
 		var screen = new Commands();
 
-		var layers = Tools.UI.GetCommandLayers(application, block, screen);
+		var layers = ApplicationHelper.GetCommandLayers(application, block, screen);
 
 		Assert.That(layers.Select(layer => layer.Level), Is.EqualTo(new[] {
 			ApplicationCommandLevel.Application, ApplicationCommandLevel.Plugin, ApplicationCommandLevel.Block, ApplicationCommandLevel.Screen
@@ -200,8 +200,8 @@ public class ApplicationCommandMergeTests {
 		};
 
 		var composed = toolbar
-			? Tools.UI.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
-			: Tools.UI.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
+			? ApplicationHelper.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
+			: ApplicationHelper.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
 				(menu, items) => ActionMenu(menu.Text, items), menu => menu.Text, item => item.Key, layers).Single().Items;
 
 		Assert.That(composed, Is.EqualTo(new[] { applicationSave, screenSave, pluginOnly, blockOnly, screenOnly }));
@@ -211,10 +211,10 @@ public class ApplicationCommandMergeTests {
 	public void AnIndependentApplicationCommandProviderContributesItsGlobalCommands() {
 		var save = new TestApplicationMenuItem { Title = "Save" };
 		var application = new Commands { Menus = new[] { Menu("File", save) } };
-		var layers = Tools.UI.GetCommandLayers(application);
+		var layers = ApplicationHelper.GetCommandLayers(application);
 		Assert.That(layers.Single().Level, Is.EqualTo(ApplicationCommandLevel.Application));
 		Assert.That(layers.Single().Provider, Is.SameAs(application));
-		Assert.That(Tools.UI.MergeApplicationMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
+		Assert.That(ApplicationHelper.MergeApplicationMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
 			(menu, items) => Menu(menu.Text, items), layers).Single().Items.Single(), Is.SameAs(save));
 	}
 
@@ -225,9 +225,9 @@ public class ApplicationCommandMergeTests {
 		var layer = new ApplicationCommandLayer(ApplicationCommandLevel.Application,
 			new Commands { Menus = new[] { Menu("File", empty) }, ToolBarItems = new[] { empty } });
 		if (toolbar)
-			Assert.That(() => Tools.UI.MergeApplicationToolBarItems<TestApplicationMenuItem>(layer), Throws.ArgumentException);
+			Assert.That(() => ApplicationHelper.MergeApplicationToolBarItems<TestApplicationMenuItem>(layer), Throws.ArgumentException);
 		else
-			Assert.That(() => Tools.UI.MergeApplicationMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
+			Assert.That(() => ApplicationHelper.MergeApplicationMenus<TestApplicationMenu<TestApplicationMenuItem>, TestApplicationMenuItem>(
 				(menu, items) => Menu(menu.Text, items), layer), Throws.ArgumentException);
 	}
 

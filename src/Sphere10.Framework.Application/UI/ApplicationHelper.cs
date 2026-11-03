@@ -15,13 +15,14 @@ using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
-using Sphere10.Framework.Application.UI;
 
-namespace Tools;
+namespace Sphere10.Framework.Application.UI;
 
-public static class UI {
+/// <summary>Supports internal application composition, registration validation and settings inspection.</summary>
+internal static class ApplicationHelper {
+
 	/// <summary>Validates unique plugin names and block ownership, preserving definition identity in a new membership array.</summary>
-	public static IApplicationPlugin[] ValidatePlugins(IEnumerable<IApplicationPlugin> plugins) {
+	internal static IApplicationPlugin[] ValidatePlugins(IEnumerable<IApplicationPlugin> plugins) {
 		Guard.ArgumentNotNull(plugins, nameof(plugins));
 		var definitions = plugins.ToArray();
 		var names = new HashSet<string>(StringComparer.Ordinal);
@@ -40,7 +41,7 @@ public static class UI {
 	}
 
 	/// <summary>Validates completed startup registrations using their captured block membership without rereading plugin definitions.</summary>
-	public static ApplicationPluginRegistration<TPlugin>[] ValidatePluginRegistrations<TPlugin>(IEnumerable<ApplicationPluginRegistration<TPlugin>> registrations)
+	internal static ApplicationPluginRegistration<TPlugin>[] ValidatePluginRegistrations<TPlugin>(IEnumerable<ApplicationPluginRegistration<TPlugin>> registrations)
 		where TPlugin : class, IApplicationPlugin {
 		Guard.ArgumentNotNull(registrations, nameof(registrations));
 		var definitions = registrations.ToArray();
@@ -61,7 +62,7 @@ public static class UI {
 	}
 
 	/// <summary>Validates portable block membership and returns an owned array without cloning platform definitions.</summary>
-	public static IApplicationBlock[] ValidatePluginBlocks(IEnumerable<IApplicationBlock> blocks) {
+	internal static IApplicationBlock[] ValidatePluginBlocks(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var definitions = blocks.ToArray();
 		var members = new HashSet<IApplicationBlock>(ReferenceEqualityComparer.Instance);
@@ -77,14 +78,16 @@ public static class UI {
 	/// Merges broader-to-narrower command layers. Matching semantic keys keep their original position and take the
 	/// narrower command; separators are normalized. Results own their membership but retain command identity.
 	/// </summary>
-	public static TItem[] MergeMenuItems<TItem>(params TItem[][] layers)
-		where TItem : class, IApplicationMenuItem => MergeMenuItems(item => {
+	internal static TItem[] MergeMenuItems<TItem>(params TItem[][] layers)
+		where TItem : class, IApplicationMenuItem {
+		return MergeMenuItems(item => {
 			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
 			return item.Title;
 		}, layers);
+	}
 
 	/// <summary>Lets adapters supply their own command identity without adding platform identifiers to shared metadata.</summary>
-	public static TItem[] MergeMenuItems<TItem>(Func<TItem, object> keySelector, params TItem[][] layers)
+	internal static TItem[] MergeMenuItems<TItem>(Func<TItem, object> keySelector, params TItem[][] layers)
 		where TItem : class, IApplicationMenuItem {
 		Guard.ArgumentNotNull(keySelector, nameof(keySelector));
 		Guard.ArgumentNotNull(layers, nameof(layers));
@@ -121,18 +124,20 @@ public static class UI {
 	/// Extends matching menus across application, block and screen layers. The narrower menu supplies its
 	/// caption and platform metadata. The Help menu remains last, after screen contributions.
 	/// </summary>
-	public static TMenu[] MergeMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu, params TMenu[][] layers)
+	internal static TMenu[] MergeMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu, params TMenu[][] layers)
 		where TMenu : class, IApplicationMenu
-		where TItem : class, IApplicationMenuItem => MergeMenus(createMenu, menu => {
+		where TItem : class, IApplicationMenuItem {
+		return MergeMenus(createMenu, menu => {
 			Guard.ArgumentNotNullOrEmpty(menu.Text, nameof(layers), "A menu caption is required for merging.");
 			return menu.Text;
 		}, item => {
 			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
 			return item.Title;
 		}, layers);
+	}
 
 	/// <summary>Merges menus using adapter-supplied semantic keys.</summary>
-	public static TMenu[] MergeMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu,
+	internal static TMenu[] MergeMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu,
 		Func<TMenu, object> menuKeySelector, Func<TItem, object> itemKeySelector, params TMenu[][] layers)
 		where TMenu : class, IApplicationMenu
 		where TItem : class, IApplicationMenuItem {
@@ -163,7 +168,7 @@ public static class UI {
 
 
 	/// <summary>Composes supplied owners in application, source plugin, block and screen order.</summary>
-	public static ApplicationCommandLayer[] GetCommandLayers(IApplicationCommandProvider application, IApplicationCommandProvider block = null, IApplicationCommandProvider screen = null) {
+	internal static ApplicationCommandLayer[] GetCommandLayers(IApplicationCommandProvider application, IApplicationCommandProvider block = null, IApplicationCommandProvider screen = null) {
 		Guard.ArgumentNotNull(application, nameof(application));
 		var result = new List<ApplicationCommandLayer> { new(ApplicationCommandLevel.Application, application) };
 		if (block is IApplicationBlock { Source: { } plugin })
@@ -176,18 +181,20 @@ public static class UI {
 	}
 
 	/// <summary>Composes menus while protecting application commands from contextual replacements.</summary>
-	public static TMenu[] MergeApplicationMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu, params ApplicationCommandLayer[] layers)
+	internal static TMenu[] MergeApplicationMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu, params ApplicationCommandLayer[] layers)
 		where TMenu : class, IApplicationMenu
-		where TItem : class, IApplicationMenuItem => MergeApplicationMenus(createMenu, menu => {
+		where TItem : class, IApplicationMenuItem {
+		return MergeApplicationMenus(createMenu, menu => {
 			Guard.ArgumentNotNullOrEmpty(menu.Text, nameof(layers), "A menu caption is required for merging.");
 			return menu.Text;
 		}, item => {
 			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
 			return item.Title;
 		}, layers);
+	}
 
 	/// <summary>Adapters supply their own semantic keys; application and contextual commands have separate identity scopes.</summary>
-	public static TMenu[] MergeApplicationMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu,
+	internal static TMenu[] MergeApplicationMenus<TMenu, TItem>(Func<TMenu, TItem[], TMenu> createMenu,
 		Func<TMenu, object> menuKeySelector, Func<TItem, object> itemKeySelector, params ApplicationCommandLayer[] layers)
 		where TMenu : class, IApplicationMenu
 		where TItem : class, IApplicationMenuItem {
@@ -206,13 +213,16 @@ public static class UI {
 	}
 
 	/// <summary>Composes toolbar items while preserving global commands and contextual block-to-screen overrides.</summary>
-	public static TItem[] MergeApplicationToolBarItems<TItem>(params ApplicationCommandLayer[] layers)
-		where TItem : class, IApplicationMenuItem => MergeApplicationToolBarItems<TItem>(item => {
+	internal static TItem[] MergeApplicationToolBarItems<TItem>(params ApplicationCommandLayer[] layers)
+		where TItem : class, IApplicationMenuItem {
+		return MergeApplicationToolBarItems<TItem>(item => {
 			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(layers), "A command caption is required for merging.");
 			return item.Title;
 		}, layers);
+	}
 
-	public static TItem[] MergeApplicationToolBarItems<TItem>(Func<TItem, object> itemKeySelector, params ApplicationCommandLayer[] layers)
+	/// <summary>Merges toolbar commands using adapter-supplied semantic keys within their owner scopes.</summary>
+	internal static TItem[] MergeApplicationToolBarItems<TItem>(Func<TItem, object> itemKeySelector, params ApplicationCommandLayer[] layers)
 		where TItem : class, IApplicationMenuItem {
 		Guard.ArgumentNotNull(itemKeySelector, nameof(itemKeySelector));
 		var ordered = OrderCommandLayers(layers);
@@ -228,6 +238,7 @@ public static class UI {
 		}, applicationItems, contextualItems);
 	}
 
+	// Validate supplied command owners and preserve their broader-to-narrower precedence.
 	private static ApplicationCommandLayer[] OrderCommandLayers(ApplicationCommandLayer[] layers) {
 		Guard.ArgumentNotNull(layers, nameof(layers));
 		Guard.Argument(layers.All(layer => layer != null), nameof(layers), "Command layers cannot be null.");
@@ -246,7 +257,7 @@ public static class UI {
 	}
 
 	/// <summary>Orders live definitions by plugin membership, then appends directly registered blocks in their supplied order.</summary>
-	public static IApplicationBlock[] OrderApplicationBlocks(IEnumerable<IApplicationPlugin> plugins, IEnumerable<IApplicationBlock> blocks) {
+	internal static IApplicationBlock[] OrderApplicationBlocks(IEnumerable<IApplicationPlugin> plugins, IEnumerable<IApplicationBlock> blocks) {
 		var definitions = ValidatePlugins(plugins);
 		var available = ValidatePluginBlocks(blocks).ToDictionary(block => block, ReferenceEqualityComparer.Instance);
 		var ordered = new List<IApplicationBlock>();
@@ -259,7 +270,7 @@ public static class UI {
 	}
 
 	/// <summary>Orders registered blocks by captured startup membership, then appends directly registered blocks in their supplied order.</summary>
-	public static IApplicationBlock[] OrderApplicationBlocks<TPlugin>(IEnumerable<ApplicationPluginRegistration<TPlugin>> registrations, IEnumerable<IApplicationBlock> blocks)
+	internal static IApplicationBlock[] OrderApplicationBlocks<TPlugin>(IEnumerable<ApplicationPluginRegistration<TPlugin>> registrations, IEnumerable<IApplicationBlock> blocks)
 		where TPlugin : class, IApplicationPlugin {
 		var definitions = ValidatePluginRegistrations(registrations);
 		var available = ValidatePluginBlocks(blocks).ToDictionary(block => block, ReferenceEqualityComparer.Instance);
@@ -273,7 +284,7 @@ public static class UI {
 	}
 
 	/// <summary>Preserves an explicit record identity or derives this screen registration's existing persistent ID.</summary>
-	public static object GetScreenSettingsId(string applicationKey, IApplicationBlock block, ApplicationScreenDefinition definition, string blockKey = null) {
+	internal static object GetScreenSettingsId(string applicationKey, IApplicationBlock block, ApplicationScreenDefinition definition, string blockKey = null) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		if (definition.Settings?.ID != null)
 			return definition.Settings.ID;
@@ -283,7 +294,7 @@ public static class UI {
 	}
 
 	/// <summary>Returns the existing escaped application, plugin, block and screen registration key.</summary>
-	public static string GetScreenSettingsKey(string applicationKey, IApplicationBlock block, ApplicationScreenDefinition definition, string blockKey = null) {
+	internal static string GetScreenSettingsKey(string applicationKey, IApplicationBlock block, ApplicationScreenDefinition definition, string blockKey = null) {
 		Guard.ArgumentNotNullOrEmpty(applicationKey, nameof(applicationKey));
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.ArgumentNotNull(definition, nameof(definition));
@@ -295,7 +306,7 @@ public static class UI {
 	}
 
 	/// <summary>Reads a screen's declared preference type without constructing it or invoking a property getter.</summary>
-	public static Type GetScreenSettingsType(Type screenType) {
+	internal static Type GetScreenSettingsType(Type screenType) {
 		Guard.ArgumentNotNull(screenType, nameof(screenType));
 		Type propertySettingsType = null;
 		for (var type = screenType; type != null; type = type.BaseType) {
@@ -321,7 +332,7 @@ public static class UI {
 	}
 
 	/// <summary>Identifies persistent public value members independently of editor visibility or read-only metadata.</summary>
-	public static bool IsSettingsMember(MemberInfo member) {
+	internal static bool IsSettingsMember(MemberInfo member) {
 		Guard.ArgumentNotNull(member, nameof(member));
 		// PropertyInfo's instance API ignores inheritance; the attribute API follows overridden properties.
 		var attributes = Attribute.GetCustomAttributes(member, true);
@@ -333,7 +344,7 @@ public static class UI {
 	}
 
 	/// <summary>Excludes runtime ownership and ignored values using component-model property metadata.</summary>
-	public static bool IsSettingsMember(Type memberType, IEnumerable<Attribute> attributes) {
+	internal static bool IsSettingsMember(Type memberType, IEnumerable<Attribute> attributes) {
 		Guard.ArgumentNotNull(memberType, nameof(memberType));
 		Guard.ArgumentNotNull(attributes, nameof(attributes));
 		return !typeof(Delegate).IsAssignableFrom(memberType) && !typeof(IServiceProvider).IsAssignableFrom(memberType)
@@ -343,13 +354,13 @@ public static class UI {
 	}
 
 	/// <summary>Supports component-model descriptors using the same transient and serialization exclusions.</summary>
-	public static bool IsSettingsMember(IEnumerable<Attribute> attributes) {
+	internal static bool IsSettingsMember(IEnumerable<Attribute> attributes) {
 		Guard.ArgumentNotNull(attributes, nameof(attributes));
 		return !attributes.Any(attribute => attribute is TransientAttribute or JsonIgnoreAttribute or XmlIgnoreAttribute or NonSerializedAttribute);
 	}
 
 	/// <summary>Returns block-owned screen definitions in declaration order, preserving reference identity.</summary>
-	public static ApplicationScreenDefinition[] GetScreenDefinitions(IEnumerable<IApplicationBlock> blocks) {
+	internal static ApplicationScreenDefinition[] GetScreenDefinitions(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var definitions = new List<ApplicationScreenDefinition>();
 		foreach (var block in blocks) {
@@ -368,13 +379,13 @@ public static class UI {
 	}
 
 	/// <summary>Binds navigation commands to existing registrations without changing block membership or activating screens.</summary>
-	public static void ResolveScreenReferences(IApplicationBlock block, IApplicationCommandProvider commands) {
+	internal static void ResolveScreenReferences(IApplicationBlock block, IApplicationCommandProvider commands) {
 		Guard.ArgumentNotNull(commands, nameof(commands));
 		ResolveScreenReferences(block, commands.Menus, commands.ToolBarItems);
 	}
 
 	/// <summary>Binds configured command collections without activating their owner's cached presentation properties.</summary>
-	public static void ResolveScreenReferences(IApplicationBlock block, IEnumerable<IApplicationMenu> menus, IEnumerable<IApplicationMenuItem> toolBarItems) {
+	internal static void ResolveScreenReferences(IApplicationBlock block, IEnumerable<IApplicationMenu> menus, IEnumerable<IApplicationMenuItem> toolBarItems) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		Guard.ArgumentNotNull(toolBarItems, nameof(toolBarItems));
@@ -397,7 +408,7 @@ public static class UI {
 	}
 
 	/// <summary>Resolves an exact moniker or an unambiguous type within the owning block's registration scope.</summary>
-	public static ApplicationScreenDefinition ResolveScreenRegistration(IEnumerable<ApplicationScreenDefinition> definitions, ApplicationScreenRegistration registration) {
+	internal static ApplicationScreenDefinition ResolveScreenRegistration(IEnumerable<ApplicationScreenDefinition> definitions, ApplicationScreenRegistration registration) {
 		Guard.ArgumentNotNull(definitions, nameof(definitions));
 		Guard.ArgumentNotNull(registration, nameof(registration));
 		var matching = definitions.Where(definition => registration.IsTypeReference ? definition.ScreenType == registration.ScreenType
@@ -408,7 +419,7 @@ public static class UI {
 	}
 
 	/// <summary>Returns a caption-independent persistent key, requiring an explicit key for duplicate screen types.</summary>
-	public static string GetScreenRegistrationKey(IApplicationBlock block, ApplicationScreenDefinition definition) {
+	internal static string GetScreenRegistrationKey(IApplicationBlock block, ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.Argument(definition != null && block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, definition)), nameof(definition), "The screen registration must belong to this block.");
 		if (definition.StableKey != null)
@@ -419,7 +430,7 @@ public static class UI {
 	}
 
 	/// <summary>Validates one block's independent registration identities and explicitly supplied persistent keys.</summary>
-	public static void ValidateScreenRegistrations(IEnumerable<ApplicationScreenDefinition> definitions) {
+	internal static void ValidateScreenRegistrations(IEnumerable<ApplicationScreenDefinition> definitions) {
 		Guard.ArgumentNotNull(definitions, nameof(definitions));
 		var owned = definitions.ToArray();
 		ApplicationScreenDefinition.ValidateDefinitions(owned);
@@ -432,7 +443,7 @@ public static class UI {
 	}
 
 	/// <summary>Returns the first block's marked startup screen. Permanent screens exclude empty placeholders.</summary>
-	public static ApplicationScreenDefinition GetDefaultScreen(IEnumerable<IApplicationBlock> blocks) {
+	internal static ApplicationScreenDefinition GetDefaultScreen(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var members = blocks.ToArray();
 		var definitions = GetScreenDefinitions(members);
@@ -441,7 +452,7 @@ public static class UI {
 	}
 
 	/// <summary>Returns a block's explicitly selected placeholder before the first remaining placeholder.</summary>
-	public static ApplicationScreenDefinition GetEmptyScreen(IEnumerable<IApplicationBlock> blocks) {
+	internal static ApplicationScreenDefinition GetEmptyScreen(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var members = blocks.ToArray();
 		var definitions = GetScreenDefinitions(members);
@@ -449,15 +460,19 @@ public static class UI {
 			?? definitions.FirstOrDefault(screen => screen.ScreenKind == ScreenKind.Empty);
 	}
 
-	public static bool IsSingleton(ScreenActivationMode activationMode) {
+	/// <summary>Identifies activation policies that retain a single screen per registration.</summary>
+	internal static bool IsSingleton(ScreenActivationMode activationMode) {
 		ValidateActivationMode(activationMode);
 		return activationMode is ScreenActivationMode.SingleInstance or ScreenActivationMode.PermanentSingleton;
 	}
 
-	public static void ValidateScreenKind(ScreenKind screenKind) =>
+	/// <summary>Rejects unknown screen hosting roles.</summary>
+	internal static void ValidateScreenKind(ScreenKind screenKind) {
 		Guard.Argument(screenKind is ScreenKind.Normal or ScreenKind.Empty, nameof(screenKind), "Unknown screen kind.");
+	}
 
-	public static void ValidateScreenPolicy(ScreenActivationMode? activationMode, ScreenKind screenKind) {
+	/// <summary>Checks activation and hosting roles without changing the registration.</summary>
+	internal static void ValidateScreenPolicy(ScreenActivationMode? activationMode, ScreenKind screenKind) {
 		ValidateScreenKind(screenKind);
 		if (activationMode.HasValue)
 			ValidateActivationMode(activationMode.Value);
@@ -465,7 +480,8 @@ public static class UI {
 			nameof(activationMode), "An empty-workspace screen cannot also be a permanently open screen.");
 	}
 
-	public static void ValidateScreenType(Type screenType, Type screenContract = null) {
+	/// <summary>Requires a concrete shared screen type and any supplied platform screen contract.</summary>
+	internal static void ValidateScreenType(Type screenType, Type screenContract = null) {
 		Guard.ArgumentNotNull(screenType, nameof(screenType));
 		Guard.Argument(typeof(IApplicationScreen).IsAssignableFrom(screenType) && !screenType.IsAbstract && !screenType.ContainsGenericParameters,
 			nameof(screenType), "A concrete application screen type is required.");
@@ -473,6 +489,8 @@ public static class UI {
 			Guard.Argument(screenContract.IsAssignableFrom(screenType), nameof(screenType), $"The screen must implement or derive from {screenContract.Name}.");
 	}
 
-	public static void ValidateActivationMode(ScreenActivationMode activationMode) =>
+	/// <summary>Rejects unknown screen activation policies.</summary>
+	internal static void ValidateActivationMode(ScreenActivationMode activationMode) {
 		Guard.Argument(activationMode is ScreenActivationMode.SingleInstance or ScreenActivationMode.MultiInstance or ScreenActivationMode.PermanentSingleton, nameof(activationMode), "Unknown activation mode.");
+	}
 }

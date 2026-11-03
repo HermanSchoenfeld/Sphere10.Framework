@@ -42,7 +42,7 @@ public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<Application
 
 	// Keeps incompatible screen types out of the native registration graph.
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 	}
 
 	// Builds metadata only; activation remains deferred until the host opens this registration.

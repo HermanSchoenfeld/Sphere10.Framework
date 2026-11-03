@@ -84,7 +84,7 @@ public class ScreenActivationPolicyTests {
 		var validatedTypes = new List<Type>();
 		Assert.That(() => ApplicationScreenDefinition.ValidateDefinitions(new[] { adapted, incompatible }, screenType => {
 			validatedTypes.Add(screenType);
-			Tools.UI.ValidateScreenType(screenType, typeof(IAdapterScreen));
+			ApplicationHelper.ValidateScreenType(screenType, typeof(IAdapterScreen));
 		}), Throws.ArgumentException);
 		Assert.That(validatedTypes, Is.EqualTo(new[] { typeof(AdaptedScreen), typeof(FirstScreen) }));
 		Assert.That(adapted.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));

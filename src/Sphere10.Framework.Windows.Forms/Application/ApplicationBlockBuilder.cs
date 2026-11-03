@@ -195,7 +195,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 
 	// Resolving navigation during composition must not activate the block's immutable runtime command collections.
 	protected override void ResolveScreenReferences(ApplicationBlock block) {
-		Tools.UI.ResolveScreenReferences(block, block.MenuCollection, Array.Empty<SharedUI.IApplicationMenuItem>());
+		ApplicationHelper.ResolveScreenReferences(block, block.MenuCollection, Array.Empty<SharedUI.IApplicationMenuItem>());
 	}
 
 	/// <summary>Retained native products keep direct metadata edits as the authoritative configuration.</summary>
@@ -205,7 +205,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 
 	/// <summary>Rejects screen types that cannot be hosted by native application controls.</summary>
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
+		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 	}
 
 	/// <summary>Builds the configured native block and attaches its owned menus.</summary>
@@ -229,8 +229,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, SettingsObject settings,
 		Func<ApplicationScreenActivationContext, ApplicationScreen> activator,
 		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor) {
-		Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
-		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
+		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
+		ApplicationHelper.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(title == null || title.Length > 0, nameof(title), "A screen title cannot be empty.");
 
 		return new ApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, activator, settings, settingsEditor);

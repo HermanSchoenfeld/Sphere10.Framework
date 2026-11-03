@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -22,6 +23,17 @@ namespace Sphere10.Framework.Application.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationMetadataTests {
+
+	/// <summary>Keeps internal application coordination outside the public Tools API.</summary>
+	[Test]
+	public void ApplicationCoordinationIsInternalAndDoesNotExportAToolsFacade() {
+		var assembly = typeof(ApplicationBase).Assembly;
+		Assert.That(assembly.GetType("Tools.UI"), Is.Null);
+		Assert.That(assembly.GetExportedTypes(), Does.Not.Contain(typeof(ApplicationHelper)));
+		Assert.That(typeof(ApplicationHelper).IsNotPublic, Is.True);
+		Assert.That(typeof(ApplicationHelper).GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly), Is.Empty);
+	}
+
 	/// <summary>Verifies block stores different menu implementations through the shared contract.</summary>
 	[Test]
 	public void BlockStoresDifferentMenuImplementationsThroughTheSharedContract() {
@@ -200,7 +212,7 @@ public class ApplicationMetadataTests {
 		block.AddScreenDefinition(second);
 		block.AddMenu(menu);
 		block.DefaultScreenDefinition = second;
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.SameAs(second));
+		Assert.That(ApplicationHelper.GetDefaultScreen(new[] { block }), Is.SameAs(second));
 	}
 
 	/// <summary>Verifies subscription copies retain their own invocation lists.</summary>
@@ -266,14 +278,14 @@ public class ApplicationMetadataTests {
 	[Test]
 	public void DirectDefaultResolutionRejectsMissingMenus() {
 		var block = new NullMenuBlock();
-		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => ApplicationHelper.ResolveScreenReferences(block, block), Throws.InstanceOf<ArgumentException>());
 	}
 
 	/// <summary>Verifies direct default resolution rejects an unowned default.</summary>
 	[Test]
 	public void DirectDefaultResolutionRejectsAnUnownedDefault() {
 		var block = new MalformedBlock(Array.Empty<ApplicationScreenDefinition>(), new(typeof(PlainScreen)));
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => ApplicationHelper.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
 	}
 
 	/// <summary>Verifies direct default resolution rejects malformed owned definitions.</summary>
@@ -281,7 +293,7 @@ public class ApplicationMetadataTests {
 	[TestCase(true)]
 	public void DirectDefaultResolutionRejectsMalformedOwnedDefinitions(bool nullArray) {
 		var block = new MalformedBlock(nullArray ? null : new ApplicationScreenDefinition[] { null }, null);
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => ApplicationHelper.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
 	}
 
 	/// <summary>Verifies presentation resolution rejects null toolbar commands without making them a host requirement.</summary>
@@ -290,7 +302,7 @@ public class ApplicationMetadataTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var block = new NullToolbarItemBlock();
 		using var host = new ApplicationScreenHost(new[] { block }, provider);
-		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ResolveScreenReferences(block, block), Throws.ArgumentException);
 		Assert.That(host.Blocks.Single(), Is.SameAs(block));
 	}
 
@@ -352,7 +364,7 @@ public class ApplicationMetadataTests {
 	[Test]
 	public void ActionOnlyBlockHasNoDefaultScreen() {
 		var block = CreateBlockWithItem(new TestApplicationMenuItem { Title = "Action" });
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.Null);
+		Assert.That(ApplicationHelper.GetDefaultScreen(new[] { block }), Is.Null);
 	}
 
 	// Creates a block owning one command and any referenced screen definition.

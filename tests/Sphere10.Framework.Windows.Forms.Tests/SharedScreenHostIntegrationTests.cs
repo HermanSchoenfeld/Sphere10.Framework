@@ -118,7 +118,7 @@ public class SharedScreenHostIntegrationTests {
 	public void SharedScreenOpeningRequiresTheRegisteredOwnersCanonicalDefinition() {
 		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
-		var definition = Tools.UI.GetScreenDefinitions(new[] { block }).Single();
+		var definition = ApplicationHelper.GetScreenDefinitions(new[] { block }).Single();
 		IMultiApplicationScreenHost<FormsUI.IApplicationBlock, ApplicationScreen> host = native;
 		Assert.That(() => host.OpenScreenAsync(block, definition), Throws.ArgumentException);
 		Assert.That(host.Blocks, Is.Empty);

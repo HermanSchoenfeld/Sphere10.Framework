@@ -16,7 +16,7 @@ public sealed record ApplicationPluginRegistration<TPlugin>
 	public ApplicationPluginRegistration(TPlugin plugin, IApplicationBlock[] blocks) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		Plugin = plugin;
-		_blocks = Tools.UI.ValidatePluginBlocks(blocks);
+		_blocks = ApplicationHelper.ValidatePluginBlocks(blocks);
 		foreach (var block in _blocks)
 			Guard.Argument(block.Source == null || ReferenceEquals(block.Source, plugin), nameof(blocks), "The block already has another source plugin.");
 	}

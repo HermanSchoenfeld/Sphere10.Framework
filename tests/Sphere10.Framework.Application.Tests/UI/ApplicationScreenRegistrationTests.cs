@@ -29,7 +29,7 @@ public class ApplicationScreenRegistrationTests {
 		menu.AddItem(command);
 		var commands = new PresentationCommands { Menus = new[] { menu } };
 
-		Tools.UI.ResolveScreenReferences(block, commands);
+		ApplicationHelper.ResolveScreenReferences(block, commands);
 
 		Assert.That(command.ScreenDefinition, Is.SameAs(definition));
 		Assert.That(definition.Activators.Single(), Is.SameAs(command));
@@ -49,7 +49,7 @@ public class ApplicationScreenRegistrationTests {
 		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
 
-		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
+		Assert.That(ApplicationHelper.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
 		using var host = new ApplicationScreenHost(new[] { block }, services);
 		await host.InitializeAsync();
 		var screen = await host.OpenScreenAsync(block, definition);
@@ -115,7 +115,7 @@ public class ApplicationScreenRegistrationTests {
 		menu.AddItem(exactCommand);
 		block.AddMenu(menu);
 
-		Tools.UI.ResolveScreenReferences(block, block);
+		ApplicationHelper.ResolveScreenReferences(block, block);
 
 		Assert.That(typeCommand.ScreenDefinition, Is.SameAs(first));
 		Assert.That(exactCommand.ScreenDefinition, Is.SameAs(second));
@@ -147,7 +147,7 @@ public class ApplicationScreenRegistrationTests {
 		menu.AddItem(command);
 		block.AddMenu(menu);
 
-		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.ArgumentException);
+		Assert.That(() => ApplicationHelper.ResolveScreenReferences(block, block), Throws.ArgumentException);
 
 		Assert.That(block.ScreenDefinitions, Is.Empty);
 		Assert.That(command.ScreenDefinition, Is.Null);
@@ -162,7 +162,7 @@ public class ApplicationScreenRegistrationTests {
 		var nextBlock = new TestApplicationBlock("Work", nextSession);
 
 		Assert.That(first.Registration.Token, Is.Not.EqualTo(nextSession.Registration.Token));
-		Assert.That(Tools.UI.GetScreenRegistrationKey(firstBlock, first), Is.EqualTo(Tools.UI.GetScreenRegistrationKey(nextBlock, nextSession)));
+		Assert.That(ApplicationHelper.GetScreenRegistrationKey(firstBlock, first), Is.EqualTo(ApplicationHelper.GetScreenRegistrationKey(nextBlock, nextSession)));
 	}
 
 	[Test]
@@ -172,9 +172,9 @@ public class ApplicationScreenRegistrationTests {
 		var block = new TestApplicationBlock("Work", first);
 		block.AddScreenDefinition(second);
 
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.Nothing);
-		Assert.That(() => Tools.UI.GetScreenRegistrationKey(block, first), Throws.ArgumentException.With.Message.Contains("WithStableKey"));
-		Assert.That(Tools.UI.GetScreenRegistrationKey(block, second), Is.EqualTo("secondary"));
+		Assert.That(() => ApplicationHelper.GetScreenDefinitions(new[] { block }), Throws.Nothing);
+		Assert.That(() => ApplicationHelper.GetScreenRegistrationKey(block, first), Throws.ArgumentException.With.Message.Contains("WithStableKey"));
+		Assert.That(ApplicationHelper.GetScreenRegistrationKey(block, second), Is.EqualTo("secondary"));
 	}
 
 	[TestCase(false)]
@@ -182,10 +182,10 @@ public class ApplicationScreenRegistrationTests {
 	public void ExplicitPersistentKeysCannotCollideWithOtherExplicitOrGeneratedKeys(bool generatedKey) {
 		var first = new ApplicationScreenDefinition(typeof(Screen), stableKey: generatedKey ? null : "shared");
 		var block = new TestApplicationBlock("Work", first);
-		var duplicate = new ApplicationScreenDefinition(typeof(OtherScreen), stableKey: generatedKey ? Tools.UI.GetScreenRegistrationKey(block, first) : "shared");
+		var duplicate = new ApplicationScreenDefinition(typeof(OtherScreen), stableKey: generatedKey ? ApplicationHelper.GetScreenRegistrationKey(block, first) : "shared");
 		block.AddScreenDefinition(duplicate);
 
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.ArgumentException.With.Message.Contains("stable keys"));
+		Assert.That(() => ApplicationHelper.GetScreenDefinitions(new[] { block }), Throws.ArgumentException.With.Message.Contains("stable keys"));
 	}
 
 	[Test]

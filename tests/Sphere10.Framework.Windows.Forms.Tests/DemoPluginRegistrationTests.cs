@@ -174,8 +174,8 @@ public class DemoPluginRegistrationTests {
 			foreach (var block in freshBlocks)
 				block.Dispose();
 		});
-		var normalScreens = Tools.UI.GetScreenDefinitions(contributedBlocks).Select(screen => screen.ScreenType).Distinct().ToArray();
-		var freshScreens = Tools.UI.GetScreenDefinitions(freshBlocks).Select(screen => screen.ScreenType).Distinct().ToArray();
+		var normalScreens = ApplicationHelper.GetScreenDefinitions(contributedBlocks).Select(screen => screen.ScreenType).Distinct().ToArray();
+		var freshScreens = ApplicationHelper.GetScreenDefinitions(freshBlocks).Select(screen => screen.ScreenType).Distinct().ToArray();
 		Assert.That(normalScreens.Distinct().Count(), Is.EqualTo(normalScreens.Length));
 		Assert.That(freshScreens.Distinct().Count(), Is.EqualTo(freshScreens.Length));
 		Assert.That(normalScreens.Concat(freshScreens).Select(type => type.Name).Distinct(), Is.EquivalentTo(new[] {
@@ -248,7 +248,7 @@ public class DemoPluginRegistrationTests {
 	[TestCase("Utilities", typeof(LoggingTestScreen))]
 	public async Task ScreenBelongsToItsFeatureBlock(string blockName, Type screenType) {
 		var form = await StartDemoAsync();
-		var definition = Tools.UI.GetScreenDefinitions(form.RegisteredBlocks).Single(screen => screen.ScreenType == screenType);
+		var definition = ApplicationHelper.GetScreenDefinitions(form.RegisteredBlocks).Single(screen => screen.ScreenType == screenType);
 		Assert.That(form.RegisteredBlocks.Single(block => block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, definition))).Name, Is.EqualTo(blockName));
 	}
 

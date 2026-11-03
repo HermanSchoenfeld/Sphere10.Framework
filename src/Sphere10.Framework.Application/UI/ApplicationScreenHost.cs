@@ -55,7 +55,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		var definitions = blocks.Select(block => snapshot == null ? block : snapshot(block)).ToArray();
 		Guard.Argument(definitions.All(block => block != null), nameof(blocks), "Block definitions cannot be null.");
 		Guard.Argument(definitions.Distinct(ReferenceEqualityComparer.Instance).Count() == definitions.Length, nameof(blocks), "A block cannot be registered twice.");
-		ValidateDefinitions(Tools.UI.GetScreenDefinitions(definitions));
+		ValidateDefinitions(ApplicationHelper.GetScreenDefinitions(definitions));
 		foreach (var block in definitions) {
 			AddAvailableBlock(block);
 			RegisterTrackedBlock(block);
@@ -244,7 +244,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return RunTransitionAsync(token => {
 			RequireRegisteredBlock(block);
 			RegisterTrackedDefinitions(GetDefinitions());
-			var definition = Tools.UI.ResolveScreenRegistration(GetDefinitions(new[] { block }), ApplicationScreenRegistration.ForType(screenType));
+			var definition = ApplicationHelper.ResolveScreenRegistration(GetDefinitions(new[] { block }), ApplicationScreenRegistration.ForType(screenType));
 			Guard.Argument(definition != null, nameof(screenType), "The screen type is not registered in this block.");
 			var registration = definition;
 			if (title != null)
@@ -408,7 +408,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	/// <summary>Returns canonical definitions in their existing host or supplied-block declaration order.</summary>
 	protected virtual ApplicationScreenDefinition[] GetDefinitions(TBlock[] blocks) {
-		var definitions = Tools.UI.GetScreenDefinitions(blocks);
+		var definitions = ApplicationHelper.GetScreenDefinitions(blocks);
 		foreach (var block in blocks)
 			IndexBlockDefinitions(block);
 		return definitions;
@@ -416,7 +416,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	/// <summary>Returns the screen selected for startup when a platform overrides the default policy.</summary>
 	protected virtual ApplicationScreenDefinition GetStartupScreen() {
-		return Tools.UI.GetDefaultScreen(Blocks)
+		return ApplicationHelper.GetDefaultScreen(Blocks)
 		?? (Blocks.FirstOrDefault() is { } first ? GetDefaultScreen(first) : null);
 	}
 
@@ -441,7 +441,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	/// <summary>Finds a retained instance matching this block, registration and lifetime policy.</summary>
 	protected virtual TScreen FindReusableScreen(TBlock block, ApplicationScreenDefinition definition) {
-		return Tools.UI.IsSingleton(definition.ActivationMode ?? ScreenActivationMode.MultiInstance)
+		return ApplicationHelper.IsSingleton(definition.ActivationMode ?? ScreenActivationMode.MultiInstance)
 			&& _singleInstances.TryGetValue((object)block ?? this, out var registrations)
 			&& registrations.TryGetValue(definition.Registration.Token, out var screen) ? screen : null;
 	}
@@ -485,8 +485,8 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	/// <summary>Checks activation policy compatibility for the supplied screen type.</summary>
 	protected void ValidateScreenActivation(Type screenType, ScreenActivationMode activationMode) {
-		Tools.UI.ValidateScreenType(screenType);
-		Tools.UI.ValidateActivationMode(activationMode);
+		ApplicationHelper.ValidateScreenType(screenType);
+		ApplicationHelper.ValidateActivationMode(activationMode);
 	}
 
 	/// <summary>Resolves lifetime reuse and commits activation only after the current screen accepts navigation.</summary>
@@ -554,10 +554,10 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		var type = definition?.ScreenType ?? screen.GetType();
 		var mode = activationMode ?? (definition == null ? null : ResolveDefinition(definition).ActivationMode) ?? ScreenActivationMode.MultiInstance;
 		var kind = screenKind ?? definition?.ScreenKind ?? ScreenKind.Normal;
-		Tools.UI.ValidateScreenPolicy(mode, kind);
+		ApplicationHelper.ValidateScreenPolicy(mode, kind);
 		var registrationKey = (object)definition?.Registration.Token ?? type;
 		var ownerKey = (object)block ?? this;
-		if (Tools.UI.IsSingleton(mode))
+		if (ApplicationHelper.IsSingleton(mode))
 			Guard.Ensure(!_singleInstances.TryGetValue(ownerKey, out var existingRegistrations) || !existingRegistrations.ContainsKey(registrationKey),
 				"A singleton screen for this registration is already retained in this block.");
 		ValidateScreenActivation(type, mode);
@@ -578,7 +578,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		_screens.Add(screen, new ScreenState(definition, type, mode, kind));
 		if (kind == ScreenKind.Normal)
 			_openOrder.Add(screen);
-		if (Tools.UI.IsSingleton(mode)) {
+		if (ApplicationHelper.IsSingleton(mode)) {
 			if (!_singleInstances.TryGetValue(ownerKey, out var registrations)) {
 				registrations = new Dictionary<object, TScreen>();
 				_singleInstances.Add(ownerKey, registrations);
@@ -964,7 +964,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			await _activeScreen.OnActivatedAsync(CancellationToken.None);
 			return;
 		}
-		var empty = Tools.UI.GetEmptyScreen(Blocks);
+		var empty = ApplicationHelper.GetEmptyScreen(Blocks);
 		if (empty != null)
 			await ActivateCoreAsync(GetDefinitionBlock(empty), empty, token);
 	}

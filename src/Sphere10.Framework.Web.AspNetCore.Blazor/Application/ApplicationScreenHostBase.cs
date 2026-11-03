@@ -73,7 +73,7 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 	public override Task<ApplicationScreenSession> ActivateScreenAsync(IApplicationBlock block, Type screenType, string title = null,
 		CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		var registration = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, ApplicationScreenRegistration.ForType(screenType));
+		var registration = ApplicationHelper.ResolveScreenRegistration(block.ScreenDefinitions, ApplicationScreenRegistration.ForType(screenType));
 		return OpenScreenAsync(block, title == null ? registration : registration.WithTitle(title), null, null, cancellationToken, registration);
 	}
 
@@ -188,7 +188,7 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 
 	private static ApplicationStartupScreen CreateStartupScreenIdentity(ApplicationScreenSession screen) {
 		return new ApplicationStartupScreen(screen.Block.Source?.Name ?? string.Empty, screen.Block.Id, null, screen.ScreenType.FullName,
-			screen.ScreenType.Assembly.GetName().Name, Tools.UI.GetScreenRegistrationKey(screen.Block, screen.Definition));
+			screen.ScreenType.Assembly.GetName().Name, ApplicationHelper.GetScreenRegistrationKey(screen.Block, screen.Definition));
 	}
 
 	private SharedUI.ApplicationScreenDefinition ResolveStartupScreen(ApplicationStartupScreen identity) {
@@ -208,7 +208,7 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 				|| ReferenceEquals(ApplicationBlockSnapshot.ResolveScreenDefinition(block, identity.MenuItemId), matches[0]))
 				&& CanRestoreScreenAtStartup(block, matches[0]) ? matches[0] : null;
 		var selected = matches.SingleOrDefault(definition => definition.StableKey == identity.RegistrationKey
-			|| definition.StableKey == null && matches.Length == 1 && Tools.UI.GetScreenRegistrationKey(block, definition) == identity.RegistrationKey);
+			|| definition.StableKey == null && matches.Length == 1 && ApplicationHelper.GetScreenRegistrationKey(block, definition) == identity.RegistrationKey);
 		return selected != null && CanRestoreScreenAtStartup(block, selected) ? selected : null;
 	}
 
@@ -238,10 +238,10 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		if (startup != null)
 			return startup;
 		var blocks = ApplicationBlockSnapshot.OrderBlocks(Services.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Blocks);
-		return Tools.UI.GetDefaultScreen(blocks) ?? (blocks.FirstOrDefault() is { } first ? GetDefaultScreen(first) : null);
+		return ApplicationHelper.GetDefaultScreen(blocks) ?? (blocks.FirstOrDefault() is { } first ? GetDefaultScreen(first) : null);
 	}
 
-	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
+	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 
 	protected override void NotifyScreenActivated(ApplicationScreenSession screen) {
 		base.NotifyScreenActivated(screen);

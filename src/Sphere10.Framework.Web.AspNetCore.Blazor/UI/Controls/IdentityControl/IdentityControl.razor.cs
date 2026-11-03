@@ -78,7 +78,7 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Items, nameof(Items));
-		_items = Tools.UI.MergeMenuItems<IApplicationMenuItem>(item => item.Id, Items);
+		_items = ApplicationHelper.MergeMenuItems<IApplicationMenuItem>(item => item.Id, Items);
 		if (!ReferenceEquals(_lastUser, EffectiveUser)) {
 			_lastUser = EffectiveUser;
 			CloseMenu(false);
