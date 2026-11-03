@@ -54,8 +54,8 @@
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\Line.resources" />
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\LinkLabel.resources" />
 		<None Remove="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.resources" />
-		<None Remove="SourceGrid\SourceGrid\Grid.bmp" />
-		<None Remove="SourceGrid\SourceGrid\GridVirtual.bmp" />
+		<None Remove="SourceGrid\Grid.bmp" />
+		<None Remove="SourceGrid\GridVirtual.bmp" />
 		<None Remove="Resources\Add.ico" />
 		<None Remove="Resources\ArrowDown.ICO" />
 		<None Remove="Resources\ArrowUp.ICO" />
@@ -316,17 +316,17 @@
 		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\Line.cs" />
 		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\LinkLabel.cs" />
 		<Compile Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.cs" />
-		<Compile Update="SourceGrid\SourceGrid.Extensions\ArrayGrid.cs" />
-		<Compile Update="SourceGrid\SourceGrid.Extensions\DataGrid.cs" />
-		<Compile Update="SourceGrid\SourceGrid.Extensions\ListEditor.cs" />
-		<Compile Update="SourceGrid\SourceGrid.Extensions\PingGrids\PingGrid.cs" />
-		<Compile Update="SourceGrid\SourceGrid.Extensions\PlanningGrid.cs" />
-		<Compile Update="SourceGrid\SourceGrid\Common\CustomScrollControl.cs" />
-		<Compile Update="SourceGrid\SourceGrid\Exporter\GridPrintDocument.cs" />
-		<Compile Update="SourceGrid\SourceGrid\Grids\Grid.Accessibility.cs" />
-		<Compile Update="SourceGrid\SourceGrid\Grids\Grid.Columns.cs" />
-		<Compile Update="SourceGrid\SourceGrid\Grids\Grid.cs" />
-		<Compile Update="SourceGrid\SourceGrid\Grids\GridVirtual.cs" />
+		<Compile Update="SourceGrid.Extensions\ArrayGrid.cs" />
+		<Compile Update="SourceGrid.Extensions\DataGrid.cs" />
+		<Compile Update="SourceGrid.Extensions\ListEditor.cs" />
+		<Compile Update="SourceGrid.Extensions\PingGrids\PingGrid.cs" />
+		<Compile Update="SourceGrid.Extensions\PlanningGrid.cs" />
+		<Compile Update="SourceGrid\Common\CustomScrollControl.cs" />
+		<Compile Update="SourceGrid\Exporter\GridPrintDocument.cs" />
+		<Compile Update="SourceGrid\Grids\Grid.Accessibility.cs" />
+		<Compile Update="SourceGrid\Grids\Grid.Columns.cs" />
+		<Compile Update="SourceGrid\Grids\Grid.cs" />
+		<Compile Update="SourceGrid\Grids\GridVirtual.cs" />
 		<Compile Update="Controls\ButtonTextBox.cs" />
 		<Compile Update="Controls\DecimalBox.cs" />
 		<Compile Update="Controls\IntBox.cs" />
@@ -504,13 +504,13 @@
 		<EmbeddedResource Update="SourceGrid\DevAge.Windows.Forms\Windows\Forms\TextBoxUITypeEditor.resx">
 			<DependentUpon>TextBoxUITypeEditor.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\SourceGrid.Extensions\DataGrid.resx">
+		<EmbeddedResource Update="SourceGrid.Extensions\DataGrid.resx">
 			<DependentUpon>DataGrid.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\SourceGrid.Extensions\ListEditor.resx">
+		<EmbeddedResource Update="SourceGrid.Extensions\ListEditor.resx">
 			<DependentUpon>ListEditor.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="SourceGrid\SourceGrid.Extensions\PlanningGrid.resx">
+		<EmbeddedResource Update="SourceGrid.Extensions\PlanningGrid.resx">
 			<DependentUpon>PlanningGrid.cs</DependentUpon>
 		</EmbeddedResource>
 		<EmbeddedResource Update="Controls\SearchTextBox.resx">
@@ -566,7 +566,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="SourceGrid\SourceGrid\QuadTree\" />
+	  <Folder Include="SourceGrid\QuadTree\" />
 	</ItemGroup>
 
 </Project>
