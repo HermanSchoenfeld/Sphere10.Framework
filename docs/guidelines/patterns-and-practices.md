@@ -36,6 +36,7 @@ and source headers. These topic files describe the implementation practices.
 | ObjectSpace schemas, identity, indexed CRUD, file transactions or configuration profiling | [Object spaces](patterns/object-spaces.md) |
 | Data-source CRUD, paging or batch/single operations | [Data sources](patterns/data-sources.md) |
 | Remembered form/control preferences, grid paging/sorting or stable settings IDs | [Per-user form and control settings](patterns/user-ui-settings.md) |
+| Native screen settings declarations, block/plugin preferences and model/UI lifecycle | [WinForms screen settings](patterns/winforms-screen-settings.md) |
 | Application logging, sinks or logger decorators | [Logging](patterns/logging.md) |
 | Acquisition, cleanup, locking, transactions or disposal scopes | [Resource scopes](patterns/resource-scopes.md) |
 | Background jobs or schedules | [Scheduling](patterns/scheduling.md) |

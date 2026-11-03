@@ -19,15 +19,14 @@ dotnet add package Sphere10.Framework.Application
 | Shared responsibility | Types |
 |---|---|
 | Plugin definitions and startup registration | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>` |
-| Running application, lifecycle and commands | `IApplication`, `ApplicationBase`, `SyncApplicationBase`, `AsyncApplicationBase`, `ApplicationDecorator`, `IApplicationCommandProvider` |
+| Running application and lifecycle | `IApplication`, `ApplicationBase`, `SyncApplicationBase`, `AsyncApplicationBase`, `ApplicationDecorator` |
 | Application interactions and command execution | `IUserInterfaceServices`, `ApplicationUserInterfaceServices`, `UserInterfaceServicesDecorator` |
-| Application command composition | `ApplicationCommandLevel`, `ApplicationCommandLayer`, `Tools.UI.GetCommandLayers`, `Tools.UI.MergeApplicationMenus`, `Tools.UI.MergeApplicationToolBarItems` |
+| Optional presentation command composition | `IApplicationCommandProvider`, `ApplicationCommandLevel`, `ApplicationCommandLayer`, `Tools.UI.GetCommandLayers`, `Tools.UI.MergeApplicationMenus`, `Tools.UI.MergeApplicationToolBarItems` |
 | General menu and toolbar merging | `Tools.UI.MergeMenus`, `Tools.UI.MergeMenuItems`, `IApplicationMenuSeparator` |
 | Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardStep`, `WizardStepTraits`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
 | Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
 | Mutable metadata and notification handlers | `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, `ApplicationMenuItemBase` |
 | Fluent builder composition and validation | `IApplicationUIBuilder<TProduct>`, `ApplicationBuilderBase`, `ApplicationPluginBuilderBase`, `ApplicationBlockBuilderBase`, `ApplicationMenuBuilderBase`, `ApplicationMenuItemBuilderBase` |
-| Snapshot traversal and ownership validation | `ApplicationBlockSnapshotBase<TBlock, TMenu, TItem>` |
 | Screen metadata validation and lifecycle | `ScreenActivationMode`, `ScreenKind`, `ApplicationScreenDefinition`, `IApplicationScreen` |
 | Block navigation and screen hosting | `IApplicationScreenHost`, `IApplicationScreenHost<TBlock, TScreen>`, `ApplicationScreenHostBase<TBlock, TScreen>`, `ApplicationScreenHost<TBlock, TScreen>`, `ApplicationScreenHost`, `ApplicationScreenHostDecorator` |
 | Single-screen operations | `ISingleApplicationScreenHost`, `ISingleApplicationScreenHost<TBlock, TScreen>`, `SingleApplicationScreenHostDecorator` |
@@ -36,7 +35,7 @@ dotnet add package Sphere10.Framework.Application
 
 Platform-specific extensions use explicit names: `IBlazorApplicationBlock : IApplicationBlock` and `IWinFormsApplicationBlock : IApplicationBlock`, implemented by `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Their menus, builders and screen hosts follow the same convention. Import the shared UI namespace normally alongside the platform namespace; the APIs do not require namespace aliases. Both platforms use the shared `ScreenActivationMode` directly.
 
-The shared storage classes are abstract extension foundations. Platform adapters provide concrete blocks and menus. A block owns `ApplicationScreenDefinition` objects with immutable screen type, title, activation mode and kind. Its `DefaultScreenDefinition` references one of its `ScreenDefinitions`; screen commands reference those same objects. `Activators` returns the attached commands targeting that definition. Navigation is optional: a screen can be registered and activated without a menu entry.
+The shared block base stores screen-registration metadata. `IApplication`, `IApplicationBlock`, `IApplicationScreen` and `IApplicationPlugin` inherit `IApplicationCommandProvider`, exposing portable `Menus` and `ToolBarItems` descriptors with empty defaults. Platform adapters own the native controls, rendering and merging. A block owns `ApplicationScreenDefinition` objects with immutable screen type, title, activation mode and kind. Its `DefaultScreenDefinition` references one of its `ScreenDefinitions`; screen commands reference those same objects. `Activators` returns the attached commands targeting that definition. Navigation is optional: a screen can be registered and activated without a menu entry.
 
 ```csharp
 using Sphere10.Framework.Application.UI;
@@ -83,85 +82,54 @@ The [WinForms adapter](../Sphere10.Framework.Windows.Forms/README.md) retains co
 
 The [Application test suite](../../tests/Sphere10.Framework.Application.Tests/README.md) exercises the shared behavior using ordinary .NET classes and checks the framework assembly dependency graph. [NuGet validation](../../scripts/package-consumers/README.md) also builds a consumer referencing only the Application package and rejects UI dependencies in its resolved packages and framework references.
 
-## Application and screen preferences
+## Screen, block and plugin preferences
 
-Attach an ordinary object to a screen registration with `UseSettings`. The object
-contains editable values and useful defaults; no settings base class is required.
+Screens declare their nested `SettingsObject` subclass with
+`[Settings(typeof(...))]`; an optional typed `ScreenSettings` override provides
+convenient access. Existing `[UseSettings(typeof(...))]` declarations remain
+supported. Registration normally needs only `AddScreen<TScreen>("Title")`.
+Explicit settings instances may supply independent initial values for registrations
+of one screen type. Attribute, property and builder declarations must agree or
+registration throws. Discovery reads type metadata without constructing controls
+or invoking their getters; there is no settings-value factory.
 
-```csharp
-using System.ComponentModel.DataAnnotations;
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Application.UI;
+Blocks and plugins declare `BlockSettings` / `PluginSettings` through their own
+builder's `UseSettings<T>()` or `UseSettings(instance)`. Standard Options includes
+those owners, service-only plugins and unopened screens with settings; screens
+without settings are omitted. A class marked
+`[UserEditable]` enables the automatic editor; `[Transient]` excludes runtime
+members from editing and storage. All settings roots must derive from
+`SettingsObject`; nested value DTOs need no settings base. Validation combines
+`SettingsObject.Validate()`, property annotations and `IValidatableObject`. A
+registration editor overrides `[Editor]` on the settings class, which in turn
+precedes the `[UserEditable]` automatic editor.
 
-var definition = new ApplicationScreenBuilder<UsersScreen>()
-	.WithTitle("Users")
-	.UseSettings<UsersPreferences>()
-	.Build();
+Native screens use `ApplicationControl`'s existing initialization and model/UI
+hooks. Typed `ScreenSettings` overrides must explicitly be non-browsable and
+hidden from designer serialization. `GetBlockSettings<T>()` and
+`GetPluginSettings<T>()` read accepted runtime owner values, including when the
+screen has no own settings. Nonvisual services read the actual plugin/block
+settings objects, observe `OnChanged` and save through those objects' existing
+`Save()` / `SaveAsync()` methods. `application.Settings` exposes their provider.
 
-[UserEditable]
-public class UsersPreferences {
-	public bool ShowArchived { get; set; }
+Persistence uses the existing native `SettingsServices.UserSettings` /
+`UserSettings.Provider` through `ISettingsProvider` asynchronous methods, preserving
+cache/encryption behavior. Blazor uses the same `UserSettings` facade with its
+specialized `BlazorSettingsProvider` bound during Framework/circuit initialization
+and circuit activities. The browser provider does not replace the process default
+shared by other users. The persisted value is the
+actual settings class, without an envelope, token record or parallel store.
+Standard dialogs edit actual owner values, keep local Cancel backups and handle
+Reset, validation, accepted writes and failure/retry. No application-root settings
+definition, profile, capture or settings-factory layer is required. Preserve
+independent registration keys, original provider identity, encryption, cached
+values and window-placement ownership. Legacy values are imported only when the
+typed record is absent; Reset does not reimport them after restart.
 
-	[Range(1, 10000)]
-	public int PageSize { get; set; } = 100;
-}
-```
-
-Use `UseSettings(instance)` for an existing ordinary object, or
-`UseSettings(() => new UsersPreferences { PageSize = 50 })` for fresh factory
-defaults. Supplied instances are detached when declared, so later edits cannot
-change **Reset Defaults**. A supplied instance or factory can use a class whose
-constructor requires arguments. Factories construct only settings values;
-registration discovery never constructs the operational screen.
-
-Standard validation attributes and `IValidatableObject` validate ordinary
-objects. Existing `SettingsObject` classes remain supported and retain their
-`Validate()` method. Validate nested/grid sections explicitly where needed.
-`[UserEditable]` enables the automatic Options editor. Public properties can use
-`[ReadOnly(true)]` or `[Browsable(false)]` to opt out of editing without changing
-persistence. Explicit custom editors also work with unmarked classes.
-Stored values restore over the declared defaults: missing members retain their
-defaults, explicit collections replace defaults, and explicit null remains null.
-
-Native and web hosts provide **Options → Screen Options...**, including unopened
-and no-options registrations. Editors receive a detached ordinary value. Apply
-validates and awaits persistence; Reset changes only the provisional draft;
-Cancel discards unapplied nested/collection changes. Failed validation or storage
-keeps the draft and error available for retry. Custom native editors receive
-`WinFormsApplicationSettingsEditorContext.Settings`; web editors receive `Value`
-and an awaited `Changed` callback. They do not manage persistence.
-
-Read screen values through `GetSettings<T>()`. Bind named grid roles before their
-first query using the platform's grid preference helpers. A screen-owned grid
-uses its existing `VisualGridSettings` (native) or `BlazorGridSettings` (web)
-section instead of an independent
-record. Columns have stable keys, readable titles and optional manual widths in
-native logical 96-DPI units or web CSS pixels. Null restores natural sizing.
-Changes to preferences preserve the screen's operational/business draft.
-
-Application roots use `AddSettings` or
-`new ApplicationSettingsDefinition("sampling", "Sampling", settings)`.
-`WithSettingsKey` supplies the stable application namespace; same-type screen
-registrations use distinct `WithStableKey` values. Captions do not identify saved
-preferences. `ApplicationSettingsDefinition.WithStorageId` retains a compatible
-native legacy `SettingsObject` record, including an explicitly null ID. Native
-plain main forms can contribute roots through their existing DI composition.
-
-Internally, `IApplication.Settings` exposes the application-owned catalog used by
-the platform dialogs and screen helpers. Profiles hold accepted values; edit
-sessions hold provisional copies. Ordered saves publish only after persistence,
-reject stale instance captures and preserve newer local edits when an older own
-save completes. Stores serialize/encrypt only exclusive snapshots off the
-UI/renderer thread. Accepted close and approved finalization capture dirty values
-and await writes before provider disposal; hide, vetoed close and unchanged
-restoration/disposal do not save.
-
-Migration presence is separate from resettable values. A first control binding
-imports only an absent section; explicit Options Apply marks public root value
-members and declared grid paths present even for unopened controls. Reset cannot
-revive retired legacy values. Explicit legacy type/ID roots keep their original
-value-only format. The [Screen Options guide](../../docs/usage/screen-options.md)
-explains custom editors, ownership, adapters and failure/retry behavior.
+See the [native screen settings pattern](../../docs/guidelines/patterns/winforms-screen-settings.md),
+[Screen Options](../../docs/usage/screen-options.md) and
+[per-user settings](../../docs/guidelines/patterns/user-ui-settings.md) for complete
+examples, provider boundaries and verification.
 
 ## Application plugins
 
@@ -169,6 +137,7 @@ The runtime hierarchy is `IApplication` → `Blocks` → menus and screen defini
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 var plugin = new ApplicationPluginBuilder()
@@ -181,7 +150,7 @@ var services = new ServiceCollection();
 plugin.Load(services); // Startup owner calls this before building its service provider.
 // A startup owner can call plugin.Unload() during its own shutdown sequence.
 
-public class AdministrationSettings {
+public class AdministrationSettings : SettingsObject {
 	public string Title { get; set; } = "Administration";
 }
 ```
@@ -200,13 +169,13 @@ Typed plugin implementations derive from `ApplicationPluginBase<TBlock>` to shar
 
 ## Running application and command scopes
 
-`IApplication` represents the running application rather than service-container startup. It exposes array-valued `Blocks` and `LoadedPlugins`, `ScreenHost`, `HasUnsavedChanges` and a `Changed` event, alongside application menus and toolbar commands. `Blocks` reflects the host's current registered membership; `LoadedPlugins` preserves startup provenance, including service-only plugins with no blocks. Navigate through `ScreenHost`, inspect its `ActiveBlock` and `ActiveScreen`, and obtain interactions through `ScreenHost.UserInterfaceServices`. The application keeps no duplicate navigation state. `IBlazorApplication` and `IWinFormsApplication` specialize that contract. Resolving the shared interface returns the same platform application instance. Disposal finalizes application tasks and owned resources, then releases subscriptions without taking ownership of the host, its interaction services, screens or plugin registrations.
+`IApplication` represents the running application rather than service-container startup. It exposes array-valued `Blocks` and `LoadedPlugins`, `ScreenHost`, `HasUnsavedChanges` and a `Changed` event. `Blocks` reflects the host's current registered membership; `LoadedPlugins` preserves startup provenance, including service-only plugins with no blocks. Navigate through `ScreenHost`, inspect its `ActiveBlock` and `ActiveScreen`, and obtain interactions through `ScreenHost.UserInterfaceServices`. The application keeps no duplicate navigation state. `IBlazorApplication` and `IWinFormsApplication` specialize that contract. Resolving the shared interface returns the same platform application instance. Disposal finalizes application tasks and owned resources, then releases subscriptions without taking ownership of the host, its interaction services, screens or plugin registrations.
 
-`IApplication<TPlugin, THost>`, `IApplicationPlugin<TBlock>`, `IApplicationBlock<TMenu, TItem>`, `IApplicationMenu<TItem>` and `IApplicationCommandProvider<TMenu, TItem>` provide typed platform collections and a typed host while centrally projecting the same instances through their neutral contracts. Platform interfaces inherit these generic contracts instead of redeclaring common members. Consumers should inject the neutral contract for shared behavior and use a typed platform contract when they need platform presentation details.
+`IApplication<TPlugin, THost>` and `IApplicationPlugin<TBlock>` provide typed plugin collections and a typed host. Applications, blocks, screens and plugins are shared command providers. Platforms specialize their descriptors through `IApplicationMenu<TItem>` and `IApplicationCommandProvider<TMenu, TItem>`; the inline bridges expose those same arrays through the shared owner interfaces. Consumers can read portable commands through the neutral contracts and use platform contracts for native presentation details. `ApplicationDecorator` forwards the running application's current command arrays rather than substituting empty defaults.
 
 Platform ownership properties specialize the shared object relationships and bridge them inline at interface level. Keep these projections together under `#region Base Interface Bridges`; execution-direction adapters belong in the directional base classes described below.
 
-`ApplicationBase` shares lifecycle tasks, owned resource cleanup, command storage, notifications and live projections of the host's blocks and dirty state. Derived applications call `ObserveScreenHost()` after assigning their host; it maintains each registered block's `Parent`, clears it on unregistration or application disposal, and preserves startup `Source`. `IApplicationCommandProvider` supplies array-valued `Menus` and `ToolBarItems`. `Tools.UI.GetCommandLayers(application)` identifies the application, the active screen's owning block and the active screen. With no active screen, it uses the browsed navigation block. Application commands also work when no block is selected.
+`ApplicationBase` shares lifecycle tasks, owned resource cleanup, notifications and live projections of the host's blocks and dirty state. Derived applications call `ObserveScreenHost()` after assigning their host; it maintains each registered block's `Parent`, clears it on unregistration or application disposal, and preserves startup `Source`. Applications, blocks, screens and plugins expose array-valued `Menus` and `ToolBarItems` through their inherited command-provider contract. A presentation shell passes the active screen and its owning block to `Tools.UI.GetCommandLayers(application, block, screen)`. The helper contributes application, source plugin, block and screen commands in that order. Without an active screen, the shell contributes only application commands. Browsing a different block does not alter this path; the shared helper never inspects the host.
 
 Use `MergeApplicationMenus` and `MergeApplicationToolBarItems` to compose those layers. Application contributions survive matching contextual captions or platform keys; within contextual contributions, a screen replaces a matching block command in its original position. Reusing the exact application command object in a screen replaces matching block context without duplicating that global command. Matching menus combine items and take the narrower menu's display metadata. Separators are normalized and Help remains last. The results retain original command references and callbacks. UI adapters distinguish application and contextual rendering keys when both use the same local command ID.
 
@@ -215,10 +184,12 @@ using System;
 using Sphere10.Framework.Application.UI;
 
 public static class ApplicationCommands {
-	public static TMenu[] ComposeMenus<TMenu, TItem>(IApplication application, Func<TMenu, TItem[], TMenu> createMenu)
+	public static TMenu[] ComposeMenus<TMenu, TItem>(IApplicationCommandProvider application, Func<TMenu, TItem[], TMenu> createMenu,
+		IApplicationCommandProvider block = null, IApplicationCommandProvider screen = null)
 		where TMenu : class, IApplicationMenu
-		where TItem : class, IApplicationMenuItem =>
-		Tools.UI.MergeApplicationMenus<TMenu, TItem>(createMenu, Tools.UI.GetCommandLayers(application));
+		where TItem : class, IApplicationMenuItem {
+		return Tools.UI.MergeApplicationMenus<TMenu, TItem>(createMenu, Tools.UI.GetCommandLayers(application, block, screen));
+	}
 }
 ```
 
@@ -309,7 +280,9 @@ The generic screen-host interfaces provide neutral property and method projectio
 
 `SelectBlockAsync(block)` browses its navigation without leaving the current screen. `ActivateBlockAsync(block)` opens its configured default; `ActivateScreenAsync(block, type)` and the screen-menu overload resolve type policy before creating or selecting a screen. `OpenScreenAsync(block, definition)` accepts a canonical definition owned by that block. `AvailableBlocks` retains startup definitions while `Blocks` reflects registration. Removing a block preflights its owned screens, including permanent screens, before updating membership. Registering a known block restores its definitions and permanent screens after the current placeholder's leave guard permits the transition.
 
-On `IMultiApplicationScreenHost`, `Screens` includes hidden singletons and `OpenScreens` contains normal screens in presentation order. An empty placeholder has no tab. `ActiveBlock` may differ from the active screen's owner after browsing another block; `GetCommandLayers` resolves the owner when composing that screen's commands. Explicit screen selection restores its owner's navigation. Dirty-state notifications preserve a separately browsed block.
+On `IMultiApplicationScreenHost`, `Screens` includes hidden singletons and `OpenScreens` contains normal screens in presentation order. An empty placeholder has no tab. `SelectedBlock` identifies the browsed navigation block; `ActiveBlock` identifies the active screen's owner, falling back to that selected block when no screen is active. Explicit screen selection restores its owner's navigation. Dirty-state notifications preserve a separately browsed block.
+
+Command owners activate `Menus` / `ToolBarItems` once through protected template hooks and return membership snapshots. Configure command membership before activation. Native shells rebuild views from the host form and active plugin/block/screen, using their existing merge controls; mutable captions and checked/enabled state remain on the original commands. Detached native windows have a local active-screen adapter that delegates navigation and lifetime to the root host.
 
 The host assigns a screen's `Host` and `Block` before activation and lifecycle hooks. They remain attached while a single instance is hidden, and clear after actual removal cleanup or host disposal. A rejected deactivation guard preserves ownership. Shared host cleanup detaches those slots; platform adapters retain responsibility for disposing their views and screen instances.
 
@@ -626,7 +599,7 @@ bool hasSettings = UserSettings.Has<AutoMouseSettings>();
 - **`UserSettings`**: Per-user settings stored in `{UserDataDir}/{ProductName}/`
 - **`GlobalSettings`**: System-wide settings stored in `{SystemDataDir}/{ProductName}/`
 
-These static facades use the process's operating-system user and configured providers. A Blazor circuit needing per-browser or per-account preferences should use scoped application services and appropriate storage. See the [settings guide](Settings/README.md) for provider registration, caching, encryption and lifetime details.
+Native initialization supplies these facades with the configured process providers. Blazor uses the same `UserSettings` facade with its circuit-bound browser provider, isolating browser/account preferences from the operating-system user and other circuits. See the [settings guide](Settings/README.md) for provider registration, caching, encryption and lifetime details.
 
 ```csharp
 // User-specific settings
@@ -638,33 +611,17 @@ var globalConfig = GlobalSettings.Get<SystemConfiguration>();
 
 ### Settings in UI Controls
 
-WinForms controls can use `[UseSettings]` with their existing `ApplicationControl` model/UI hooks. Copy accepted values into the provider-backed settings object and call `Save()`:
+Hosted screens declare `[Settings(typeof(...))]` and use the existing
+`ApplicationControl` model/UI lifecycle. `CopyModelToUI` presents the actual
+owner values; `CopyUIToModel` captures deliberate edits and marks changed settings.
+The accepted save/close boundary awaits persistence. Copying values does not itself
+authorize a write. See the [native screen settings pattern](../../docs/guidelines/patterns/winforms-screen-settings.md).
 
-```csharp
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Windows.Forms;
-
-[UseSettings(typeof(AutoMouseSettings))]
-public partial class AutoMouseSettingsControl : ApplicationControl {
-
-	public AutoMouseSettings Settings => UserSettings.Get<AutoMouseSettings>();
-
-	protected override void CopyModelToUI() {
-		// Copy settings to UI controls
-		_autoStartCheckBox.Checked = Settings.AutoStartProgram;
-		_timeoutNumeric.Value = Settings.ScreenMouseTimeoutMS;
-		_soundCheckBox.Checked = Settings.MakeClickSound;
-	}
-
-	protected override void CopyUIToModel() {
-		// Copy UI values back to settings
-		Settings.AutoStartProgram = _autoStartCheckBox.Checked;
-		Settings.ScreenMouseTimeoutMS = (int)_timeoutNumeric.Value;
-		Settings.MakeClickSound = _soundCheckBox.Checked;
-		Settings.Save();
-	}
-}
-```
+Standalone controls can retain a provider-bound `SettingsObject` obtained through
+`UserSettings`, present/capture its values through their existing hooks, and save
+it from an explicit accepted action. A screen declaration attribute does not
+replace a standalone control's persistence owner. Reusable grid/log controls bind
+to a screen's typed section when hosted, suppressing their independent record.
 
 ## 🚀 Process initialization and finalization
 
@@ -750,6 +707,34 @@ using Sphere10.Framework.Application;
 ```
 
 ### Using Product Information
+
+Application builders can select assembly attributes with `.UseAssemblyInfo()` or
+`.UseAssemblyInfo(typeof(Program).Assembly)`, or supply information directly:
+
+```csharp
+Sphere10Framework.Instance
+	.Build()
+	.WithProductInformation(product => {
+		product.ProductName = "Operations";
+		product.CompanyName = "Example Company";
+		product.ProductVersion = new ApplicationVersion { Major = 1 };
+	})
+	.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.Start();
+```
+
+The native `BuildWinFormsApplication()` and web `BuildBlazorApplication()` builders
+expose the same selection methods. `AssemblyInfoProductServicesProvider` reuses
+the existing attribute reader; `ProductServicesProvider` retains explicitly
+supplied information. Both expose `IProductServicesProvider`, which combines the
+existing information, usage and instance contracts. Usage and instance services
+are resolved only when requested, so reading a product name does not load usage
+settings. The existing `IProductInformationProvider` resolves the selected provider;
+module defaults preserve an already registered information provider. Explicit
+selections replace earlier selections. No DRM configuration is added here.
+
+Options uses the product name for its application root. `WithTitle` remains the
+web host's displayed caption; settings IDs remain independent of both captions.
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -863,7 +848,8 @@ The framework registers these services by default:
 | Service | Description |
 |---------|-------------|
 | `ISettingsServices` | Settings save/load operations |
-| `IProductInformationProvider` | Product metadata from assembly |
+| `IProductInformationProvider` | Product information selected from assembly attributes or the builder |
+| `IProductServicesProvider` | Selected product information and the existing usage/instance services |
 | `IProductUsageServices` | Usage tracking and statistics |
 | `IHelpServices` | Help file/URL launching |
 | `IWebsiteLauncher` | Open URLs in default browser |

@@ -507,11 +507,11 @@ For a row action, await `RefreshRowsAsync(rows)`, `Controller.RefreshEntityAsync
 
 `await grid.ReadFilteredEntitiesAsync(cancellationToken)` captures all matching rows across pages in the current sort order. It asks the bound source for page zero and `int.MaxValue`, without recollecting a snapshot, changing the visible page/filter/selection or starting a loading indicator. The typed array is suitable for the caller's CSV/JSON/export policy; reporting and download UI remain with the application. Cancellation is checked before queued work and after the source read completes; it does not interrupt an in-flight `IDataSource<T>` read, which has no cancellation-token contract.
 
-Opt into browser preferences with `PersistSettings="true"` and a stable `SettingsKey`, distinct for independent tables. The browser retains paging mode, manual page size, page number, sort state and explicit column widths under that key. Search text is not saved. Auto viewport measurements do not overwrite the remembered manual size or continuously save preferences during resize. Storage is local to that browser and origin; the application still owns account-level preferences. Persistence is optional, so isolated or short-lived grids can leave it disabled.
+Opt into standalone preferences with `PersistSettings="true"` and a stable `SettingsKey`, distinct for independent tables. The grid awaits `UserSettings.HasAsync<BlazorGridSettings>` / `GetAsync<BlazorGridSettings>` and saves the actual settings object with `SaveAsync()`. Framework circuit initialization binds the specialized browser provider; controls do not assign a global provider or write browser storage themselves. Paging mode, manual page size, page number, sort state and explicit widths are retained. Search text is not saved. Auto viewport measurements do not overwrite the remembered manual size or continuously save during resize. Existing untyped grid keys are a read-only fallback when no typed record exists. Persistence is optional, so isolated or short-lived grids can leave it disabled.
 
-For a hosted screen, pass a non-null `BlazorGridSettings` through `Preferences` and await `PreferencesChanged` in the owning screen. This selects the screen's named settings role and disables the grid's separate browser record. `CaptureGridPreferences()` returns detached values; `ApplyGridPreferencesAsync(values)` restores them without saving or replacing an active row draft. Accepted query changes wait until that draft is saved or cancelled. The owning screen updates its settings root and uses its profile's capture/save path, so Options, direct controls and shutdown share one authority. The tester's gallery demonstrates independent `Grid` and `LiveGrid` roles and a separate standalone grid.
+For a hosted screen, pass a non-null `BlazorGridSettings` through `Preferences` and await `PreferencesChanged` in the owning screen. This selects the screen's named settings role and disables the grid's separate browser record. `CaptureGridPreferences()` returns detached values; `ApplyGridPreferencesAsync(values)` restores them without saving or replacing an active row draft. Accepted query changes wait until that draft is saved or cancelled. The owning screen updates its settings root and uses its actual SettingsObject's save lifecycle, so Options, direct controls and shutdown share one authority. The tester's gallery demonstrates independent `Grid` and `LiveGrid` roles and a separate standalone grid.
 
-Each persistent column needs a unique `PreferenceKey`, falling back to its `PropertyName` or `SortName`. Computed columns supply an explicit key; captions and positions are not persistent identities. Only a completed header drag records a manual CSS pixel width; natural and stretch widths stay unspecified. Reset removes overrides and returns to the configured natural/stretch layout. Page, sort and width values restore before the first data query and first browser layout. `ReadLegacyPreferencesAsync(runtime, key, columns)` reads an old standalone value without writing it; the screen uses its profile's section marker to import that value once. A completed drag/page/sort change is an accepted save boundary, so browser reload does not depend on a teardown callback.
+Each persistent column needs a unique `PreferenceKey`, falling back to its `PropertyName` or `SortName`. Computed columns supply an explicit key; captions and positions are not persistent identities. Only a completed header drag records a manual CSS pixel width; natural and stretch widths stay unspecified. Reset removes overrides and returns to the configured natural/stretch layout. Page, sort and width values restore before the first data query and first browser layout. `ReadLegacyPreferencesAsync(runtime, key, columns)` reads an old standalone value without writing it; the screen consults it only when its typed settings record is absent. An existing typed record remains authoritative, including after Reset. A completed drag/page/sort change is an accepted save boundary, so browser reload does not depend on a teardown callback.
 
 
 See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/grids-and-screen-hosts.md)
@@ -621,7 +621,7 @@ Sequence-valued data properties use arrays: grid `Columns`, `Actions`, `ColumnDe
 
 The application APIs use explicit `Blazor*` and `IBlazor*` names in the root `Sphere10.Framework.Web.AspNetCore.Blazor` namespace as facades over `Sphere10.Framework.Application.UI`. Shared contracts and models retain unprefixed names, so both namespaces can be imported together without aliases. WinForms and Blazor share block/menu storage, builder state and validation, menu notifications, action execution and activation-policy checks. Blazor also delegates registration snapshots and block traversal to shared algorithms. The shared library has no ASP.NET Core or desktop UI dependency.
 
-`IBlazorApplicationScreen` extends the shared `IApplicationScreen` and Blazor's `IComponent`. Derive from `BlazorApplicationScreen` for automatic renderer attachment, or implement that interface directly and attach the renderer-created instance to the host. The Blazor host retains a `BlazorApplicationScreenSession` implementing that screen contract as a logical proxy. The proxy delegates lifecycle, commands, help and dynamic title to its renderer-created `Screen` component. `IApplication.ScreenHost.ActiveScreen` exposes that screen identity; only Blazor retains tab IDs, immutable component parameters and renderer attachment.
+`IBlazorApplicationScreen` extends the shared `IApplicationScreen`, Blazor's `IComponent` and the typed web command provider. Shared applications, blocks, screens and plugins all inherit `IApplicationCommandProvider`; their portable command descriptors remain separate from native controls and web rendering. The typed web provider bridges its actual menu and toolbar arrays to that shared contract. Derive from `BlazorApplicationScreen` for automatic renderer attachment, or implement that interface directly and attach the renderer-created instance to the host. The Blazor host retains a `BlazorApplicationScreenSession` implementing that screen contract as a logical proxy. The proxy delegates lifecycle, commands, help and dynamic title to its renderer-created `Screen` component. `IApplication.ScreenHost.ActiveScreen` exposes that screen identity; only Blazor retains tab IDs, immutable component parameters and renderer attachment.
 
 | WinForms concept | Blazor implementation |
 | --- | --- |
@@ -648,7 +648,7 @@ Each block owns its independently added `ScreenDefinitions` and optional `Defaul
 
 The optional `AddScreen(configure, out registration)` overload keeps the callback first and returns the parent builder. The moniker is an identity, not a live component or a mutable pointer to the last graph built. A retained source moniker resolves against each independently built block or circuit. Each graph owns its canonical definition and reverse `Activators` membership; opening a foreign graph's definition is rejected. `host.OpenScreenAsync(block, registration)` and the canonical-definition overload use the same guards and lifecycle as ordinary navigation, including for menu-free screens.
 
-Ownership is explicit: `item.Parent` is its menu, `menu.Parent` is its block, and `block.Parent` is the circuit's application. `block.Source` retains the original successfully loaded plugin; standalone blocks have no source. Unregistering a block clears its application parent while preserving its source and graph for registration again. Toolbar commands use a nonvisual owner menu. Menu-free opening does not fabricate a command. `ExecuteMenuItemAsync(item, cancellationToken)` accepts the command object. Screen command execution follows `item.Parent.Parent` and requires the current circuit's canonical block and definition references; commands from other circuits are rejected. Application menus, toolbars and merged presentation menus can borrow block-owned commands while retaining their original references and parents.
+Ownership is explicit: `item.Parent` is its menu, `menu.Parent` is its block, and `block.Parent` is the circuit's application. `block.Source` references its circuit’s successfully loaded plugin owner; settings-bearing owners are copied per circuit while startup registrations retain one-time loading ownership. Standalone blocks have no source. Unregistering a block clears its application parent while preserving its source and graph for registration again. Toolbar commands use a nonvisual owner menu. Menu-free opening does not fabricate a command. `ExecuteMenuItemAsync(item, cancellationToken)` accepts the command object. Screen command execution follows `item.Parent.Parent` and requires the current circuit's canonical block and definition references; commands from other circuits are rejected. Application menus, toolbars and merged presentation menus can borrow block-owned commands while retaining their original references and parents.
 
 Platform interfaces specialize these ownership properties and project them to the shared contracts through inline default interface members in `#region Base Interface Bridges`. An attached screen can use `Block.Parent.Logger` for its application's logger and its own `Host` for navigation. Use these object relationships instead of searching all blocks or resolving command IDs during ordinary execution.
 
@@ -751,7 +751,7 @@ For named plugin definitions, place the fluent configuration in `public static v
 
 Plugin names must be nonblank and unique within a host. Explicit IDs must be unique within their scope; item IDs are unique across all menus in a block. Register a concrete Razor component implementing `IBlazorApplicationScreen`, normally by inheriting `BlazorApplicationScreen`. Each registration validates its own policy and kind. Registrations of the same type can differ, and a default screen need not appear in a menu.
 
-`AddApplicationBlock` also registers the shared `IApplicationBlock` view. The Blazor screen host captures validated structural snapshots and exposes `AvailableBlocks`, `Blocks` and `ActiveBlock`; there is no separate public block catalogue service. Resolve it from the current circuit scope to inspect or change navigation:
+`AddApplicationBlock` also registers the shared `IApplicationBlock` view. The Blazor screen host captures validated structural snapshots and exposes `AvailableBlocks`, `Blocks`, `SelectedBlock` and `ActiveBlock`; there is no separate public block catalogue service. Resolve it from the current circuit scope to inspect or change navigation:
 
 ```csharp
 using System.Linq;
@@ -816,26 +816,49 @@ Bookmarks identify registered screens, never arbitrary component type names. A s
 
 ### Screen Options
 
-Attach an ordinary object to an independent screen registration with
-`UseSettings<TSettings>()`, `UseSettings(instance)` or a supplied defaults factory.
-No settings base class is required. Use `WithSettingsEditor<TEditor>()` or
-`UseSettings<TSettings, TEditor>()` for a dedicated
-`IBlazorApplicationSettingsEditor` component. The editor receives the detached
-`Value` object and an awaited `Changed` callback; the dialog validates and saves.
-The scoped application
-catalog restores the browser/user profile during interactive startup before
-operational screens query data. The default store persists in origin-local
-browser storage, qualified by application/registration and authenticated subject
-or anonymous browser identity; cross-device synchronization requires a product
-store. Prerender does not perform browser interop or activate preference-dependent
-screens with another user's defaults.
+A screen declares its public nested `SettingsObject` class with
+`[Settings(typeof(...))]`; an optional covariant `ScreenSettings` override provides
+typed access. Matching builder-supplied values retain their identity, while a
+conflicting schema throws during registration. The registration owns the actual settings instance;
+the screen, Options and its bound controls use that same instance. Block and
+plugin builders likewise expose `UseSettings` for `BlockSettings` and
+`PluginSettings`. Options enumerates the actual owners, including unopened,
+menu-free screens with settings and service-only plugins. Screens without
+settings are omitted. The active screen's page is preferred when Options opens;
+an explicitly requested valid owner takes precedence. Screens access owner settings through
+`GetBlockSettings<T>()` and `GetPluginSettings<T>()`.
 
-**Options → Screen Options...** exposes unopened and no-options registrations,
-detached nested/collection editing, selected-page Apply/OK/Reset and Cancel.
-Accepted values publish only after validated persistence succeeds. Existing
-Options commands remain available; a new heading is placed before Help without
-reordering the product menus. See [Screen Options](../../docs/usage/screen-options.md)
-for profile ownership, failure/retry, custom editors and grid-role bindings.
+`IApplication.Settings` is the provider captured from `UserSettings` during circuit initialization. Ordinary demo and component code uses the same `UserSettings` facade as native code: await `HasAsync<T>` / `GetAsync<T>`, then save the actual object with `SaveAsync()`. Framework circuit initialization and inbound activity bind the scoped browser provider without replacing the process-wide native provider. Interactive startup
+restores each owner before operational screens or queries run. Each circuit has
+its own settings-bearing plugin owners, block owners and screen definitions;
+startup plugin registrations continue to own one-time service loading. The
+scoped `BlazorSettingsProvider` uses awaited browser IO and preserves application,
+registration and authenticated-user/anonymous-browser identities. A product can
+supply its own provider for cross-device storage. Prerender does not access the
+browser or construct operational screens with another user's defaults.
+
+A successful `SettingsObject.Save()` or `SaveAsync()` raises its `OnChanged` event.
+Screens observe their own, block and plugin settings directly and refresh on the
+renderer. The existing accepted-close hook saves completed local edits, while a
+veto or hiding a retained screen does not save. Failed saves keep the screen and
+its existing ownership available for retry.
+
+Use `WithSettingsEditor<TEditor>()` or `UseSettings<TSettings, TEditor>()` for a
+custom `IBlazorApplicationSettingsEditor`. Its `Value` is the actual settings
+object and `Changed` marks a completed editor input. An explicit registration
+editor takes precedence over `[Editor(typeof(MyEditor), typeof(IBlazorApplicationSettingsEditor))]`
+on the settings class, followed by the class-level `[UserEditable]` automatic
+editor. Public properties are editable; `[Transient]` excludes runtime members
+from both editing and storage.
+
+**Options → Screen Options...** validates and saves the selected owner on Apply
+or OK. Cancel restores the dialog's local serialized backup of unapplied edits;
+it retains earlier successful Apply operations. Reset calls the actual settings object's existing `RestoreDefaultValues()` lifecycle,
+using `[DefaultValue]` attributes and domain overrides for nested defaults. It stays
+provisional until accepted. The dialog has no separate catalog, profile, revision
+protocol or persistence service. Existing Options commands remain available.
+See [Screen Options](../../docs/usage/screen-options.md) and the
+[settings ownership practice](../../docs/guidelines/patterns/user-ui-settings.md).
 
 ### Compact block menus
 
@@ -844,7 +867,7 @@ for profile ownership, failure/retry, custom editors and grid-role bindings.
 Supply `Href`, a `Func<IBlazorApplicationBlock, string>`, to render ordinary navigation links instead of `OnSelect` buttons:
 
 ```razor
-<ApplicationBlockMenu Blocks="ScreenHost.Blocks" ActiveBlock="ScreenHost.ActiveBlock"
+<ApplicationBlockMenu Blocks="ScreenHost.Blocks" ActiveBlock="ScreenHost.SelectedBlock"
 	Compact="true" Href="GetBlockHref" />
 
 @code {
@@ -892,11 +915,11 @@ Place the control in `ApplicationShell.ToolBarContent` beside search and theme s
 
 ## Running application, tabs and merged commands
 
-By default, the bottom block dock browses navigation independently of the displayed screen. `SelectBlockAsync` changes `ActiveBlock` and its left-hand menus without activating a screen, invoking screen guards or adding browser history. `ActivateBlockAsync` explicitly opens a block's default screen. Choosing a menu screen or a tab goes through the existing guards and restores that screen's owning block in the navigation pane. The active tab, its toolbar and its menu contributions stay in place while another block is browsed.
+By default, the bottom block dock browses navigation independently of the displayed screen. `SelectBlockAsync` changes `SelectedBlock` and its left-hand menus without activating a screen, invoking screen guards or adding browser history. `ActivateBlockAsync` explicitly opens a block's default screen. Choosing a menu screen or a tab goes through the existing guards and restores that screen's owning block in the navigation pane. The active tab, its toolbar and its menu contributions stay in place while another block is browsed. `ActiveBlock` follows the visible screen's owner, with `SelectedBlock` as the fallback when no screen is active. Command owners cache membership on activation and return snapshots; checked/enabled predicates remain live.
 
 Set `ApplicationShell.ActivateBlockOnSelection="true"` when selecting a dock button should enter that block immediately. The shell then calls the screen host's guarded `ActivateBlockAsync` through its normal interaction path: an accepted transition activates the default screen, refreshes command scope, closes the mobile navigation drawer and adds the corresponding browser-history entry. Action-only blocks can become active with no selected screen. If a leave guard rejects the transition, the current block, screen, menus, drawer and URL remain unchanged. The parameter defaults to false to preserve navigation browsing for existing consumers.
 
-`AddSphere10Blazor` registers one `BlazorApplication` per circuit through both `IBlazorApplication : IApplication` and the shared `IApplication`. The runtime hierarchy is **Application → Blocks → Menus/screens**. `Blocks` projects the live screen host's canonical block snapshots. `LoadedPlugins` returns the original plugin instances whose startup registration completed successfully. One plugin can contribute several independently selectable blocks; each bottom-left navigation icon represents a block. Every collection property returns a membership array that callers can change without changing stored membership.
+`AddSphere10Blazor` registers one `BlazorApplication` per circuit through both `IBlazorApplication : IApplication` and the shared `IApplication`. The runtime hierarchy is **Application → Blocks → Menus/screens**. `Blocks` projects the live screen host's canonical block snapshots. `LoadedPlugins` returns the circuit’s plugin owners whose startup registration completed successfully; settings-bearing owners are isolated per circuit. One plugin can contribute several independently selectable blocks; each bottom-left navigation icon represents a block. Every collection property returns a membership array that callers can change without changing stored membership.
 
 ### Application lifecycle
 
@@ -972,7 +995,7 @@ services
 
 Configuration runs once per scope. The callback configures that scope's application; command callbacks resolve their services from the executing circuit. `SetMenus` and `SetToolBarItems` snapshot ordinary action definitions, freezing their registration metadata. Block-owned commands borrowed for application presentation retain their canonical references and parents; screen commands must already belong to the circuit's block graph. A later `AddSphere10BlazorApplication` call replaces the earlier application configuration. The builder delegates to that same API. Its inherited `OnApplicationCreated` calls compose before `Build()`; the shared `ApplicationBuilderBase` also owns title/plugin composition and the terminal build guard. Blazor retains favicon settings and the actual DI registration. The tester uses the builder with [WorkspaceCommands.Configure](../../utils/Sphere10.Framework.Utils.BlazorTester/Application/WorkspaceCommands.cs) and its existing fluent plugin definitions.
 
-`ApplicationShell` composes command layers from the application, the active screen's owning block and the active screen using `Tools.UI.GetCommandLayers`, `MergeApplicationMenus` and `MergeApplicationToolBarItems`. When no screen is selected, the contextual layer comes from the navigation block. Application commands remain available even when a contextual command has the same local ID. A screen can replace a matching block command and extend File while keeping application commands. Register block toolbar commands with `BlazorApplicationBlockBuilder.AddToolBarItem`, or build them with `AddToolBarItem`; override the typed arrays on `BlazorApplicationScreen` for screen contributions. `BlazorMenuSeparator` supplies boundaries; composition removes redundant separators and keeps Help last. Toolbar screen commands may reference any definition owned by their block.
+`ApplicationShell` composes commands from the application, the active screen's source plugin, its owning block and the screen, in that order, using `Tools.UI.GetCommandLayers`, `MergeApplicationMenus` and `MergeApplicationToolBarItems`. With no active screen, only application commands appear. Browsing a different navigation block does not change the active owner path. Application commands remain available even when a contextual command has the same local ID. A screen can replace a matching block command and extend File while keeping application commands. Register block toolbar commands with `BlazorApplicationBlockBuilder.AddToolBarItem`, or build them with `AddToolBarItem`; override the typed arrays on `BlazorApplicationScreen` for screen contributions. `BlazorMenuSeparator` supplies boundaries; composition removes redundant separators and keeps Help last. Toolbar screen commands may reference any definition owned by their block.
 
 Keep commands shared by every workspace at application level. A block command belongs to the active screen's owning block; a screen command disappears when that screen is deactivated. Browsing another sidebar does not change the displayed screen's command context. Within the contextual layer, matching uses local IDs and a narrower action group replaces the matching block group as one command. Application groups remain separate. `ApplicationCommandBar.CommandKeySelector` lets independent layouts namespace renderer identities when different levels share an ID; the shell supplies this automatically without changing command registrations. Hidden items remain registered but are omitted from rendered controls, and menus containing only hidden items are omitted.
 
@@ -1065,7 +1088,7 @@ command **Make Startup Screen**:
                   BlockId="@BlockId" ScreenId="@ScreenId" InstanceId="@InstanceId" />
 ```
 
-An ordinary root/blank route reads browser storage at the first interactive
+An ordinary root/blank route reads `ApplicationShell.StartupSettings` through `UserSettings` at the first interactive
 render before choosing its default. Prerendering displays the workspace loading
 content until storage is available. A route that explicitly specifies a screen
 wins over the saved preference. Pass no implicit screen target for your root
@@ -1077,8 +1100,7 @@ full screen type and simple assembly name. The host resolves this only against
 its current registered definitions; it never loads a type from preference text.
 Missing/obsolete records fall back without overwriting the browser's choice.
 Storage failures are shown in the shell and do not replace an accepted choice.
-This setting is local to the browser/origin, not a server-global user setting or
-a saved copy of the component's fields.
+The circuit-bound provider keeps this record local to the application and current browser/user; it does not save the component’s fields. The original untyped startup key remains a read-only fallback when no typed record exists.
 
 `BlazorApplicationScreen.CanRestoreAtStartup` can veto choosing a live screen.
 Runtime activation parameters, keyed sessions, Empty screens and unattached
@@ -1090,7 +1112,7 @@ application upgrade makes it require transient arguments. Custom hosts can use
 `GetStartupScreenIdentity`, `SetStartupScreen`, `CanMakeStartupScreen`,
 `GetStartupScreenUnavailableReason` and `IsStartupScreen` without adding another
 screen registry. `ApplicationShell.MakeStartupScreenAsync(sessionId)` saves
-through the same browser path as the context command.
+through the same `SettingsObject.SaveAsync()` path as the context command.
 
 The [cross-platform guide](../../docs/guidelines/patterns/grids-and-screen-hosts.md#application-screen-hosts)
 maps all screen lifetimes, tabs, startup preferences and close/exit behavior to

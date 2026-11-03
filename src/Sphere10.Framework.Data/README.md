@@ -413,12 +413,21 @@ var loadedObject = Tools.Xml.ReadFromFile<MyClass>("data.xml");
 ### CSV Reader
 
 For exports, reuse `DataTable.ToCSV(delimiter, includeHeader)` from
-`Sphere10.Framework.Data`. It uses the shared `EscapeCSV` field escaper for
-headers and rows; raw delimiter, quote, carriage-return and newline characters
-are quoted and embedded quotes doubled. Pass raw field values rather than
+`Sphere10.Framework.Data`. It uses `Tools.Data.WriteCsvRow` for row framing and
+`Tools.Data.WriteCsvField` for raw-field escaping. The same writer methods support
+SourceGrid exports without adding grid dependencies to Data. Raw delimiter, quote,
+carriage-return and newline characters are quoted and embedded quotes doubled. Pass raw field values rather than
 pre-escaped CSV. Round-trip generated output with `CsvReader` in tests.
 SystemExpert converts diagnostic fields/timestamps into a string-valued table
 and uses these facilities for every CSV snapshot export.
+
+`WriteCsvRow` writes delimiters between fields and one supplied line separator;
+it leaves the caller’s `TextWriter` open. Its field callback allows existing
+formatters to participate without duplicating CSV row framing. `WriteCsvField`
+accepts a raw string, treating null as empty, and delegates quoting to `EscapeCSV`.
+`DataTable.ToCSV` retains culture-sensitive value conversion and embedded newlines.
+SourceGrid applies its established display-text newline flattening before writing
+the field and keeps its virtual cell-export hook.
 
 Full-featured CSV parser with streaming support:
 

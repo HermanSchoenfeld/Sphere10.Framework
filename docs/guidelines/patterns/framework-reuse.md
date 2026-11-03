@@ -14,6 +14,13 @@ and the relevant [engineering practices](../patterns-and-practices.md).
 - Extend or compose the existing framework where it falls short. Add a new
   abstraction only when the existing architecture cannot reasonably support the
   requirement; explain that gap and keep the addition consistent with the framework.
+- Keep fixes and updates narrow. Reuse or adoption does not authorize adjacent
+  redesigns, new policies or unrelated cleanup. When an existing helper needs a
+  compatibility fix, change only the demonstrated gap required by its actual
+  consumer and preserve the surrounding behavior.
+- When consolidating imported code, adapt the import to the existing Framework
+  contracts first. Merge useful behavior where appropriate and remove superseded
+  implementations; narrow scope is not a reason to retain parallel versions.
 - Extend the existing class in its owning source file. Do not introduce partial
   extension files merely to separate a new feature's methods. Retain the existing
   native DLL declaration partition and designer-generated visual partials.

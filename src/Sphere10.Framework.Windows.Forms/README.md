@@ -9,13 +9,16 @@ Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application dev
 ## Source organization
 
 Domain folders such as `Application`, `AppointmentBook`, `Charts`, `Database`,
-`ExplorerBar`, `Logging`, `VisualGrid` and `Wizard` own their related functionality.
+`ExplorerBar`, `ListMerger`, `Logging`, `RichText`, `ToolStrips`, `VisualGrid` and
+`Wizard` own their related functionality.
 Their `Controls` folders contain reusable visual controls; their `Forms` folders
 contain forms, dialogs and hosted screens. Nonvisual contracts, settings, builders
-and helpers remain with the domain. General controls live in the root `Controls`
-folder, general dialogs and forms in `Forms`, and common helpers at the project
-root. Existing CLR namespaces and persisted control identities are independent
-of these source locations.
+and helpers remain with the domain. A control or form with dedicated support
+classes receives its own domain; apply that rule to `Misc` and the general visual
+folders alike. Standalone general controls live in `Controls`, and general dialogs
+and forms in `Forms`. Cross-domain helpers belong in `Misc`; extension classes
+belong in `Extensions` or their owning domain's `Extensions`. Existing CLR
+namespaces and persisted control identities are independent of these locations.
 
 ## 📦 Installation
 
@@ -585,13 +588,13 @@ Columns take their natural widths from the first nonempty result for a binding s
 
 `PersistSettings` defaults to true. Each logical grid uses a typed `VisualGridSettings` object through `UserSettings` to remember its page mode, manual size, page number and source sort name/direction across sessions. Older settings without `PageMode` migrate through their retained `AutoPageSize` flag. The default settings ID uses its concrete screen/control type and named child path, so docking and caption changes do not change it. Set `SettingsKey` for an explicit stable identity when names are dynamic or ambiguous; set `PersistSettings = false` for transient grids. Reference pickers already opt out. Settings restore after bindings and the provider are available, validate obsolete values, and preserve the consumer's configured defaults on first use. Accepted preference changes save; viewport resizing and source refreshes do not write settings. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
 
-A non-null `VisualGrid.Preferences` selects screen-owned `VisualGridSettings` and suppresses the separate standalone record. Use a distinct named role for each grid in the root settings object. `CaptureGridPreferences()` returns detached values; `ApplyGridPreferences(values)` applies accepted values without changing the chosen persistence owner, saving, or discarding a live cell draft. Query changes defer until the editor ends. `PreferencesChanged` reports accepted page/sort choices and completed header drags; the screen captures and saves its root through the same profile used by Options.
+A non-null `VisualGrid.Preferences` selects screen-owned `VisualGridSettings` and suppresses the separate standalone record. Use a distinct named role for each grid in the root settings object. `CaptureGridPreferences()` returns detached values; `ApplyGridPreferences(values)` applies accepted values without changing the chosen persistence owner, saving, or discarding a live cell draft. Query changes defer until the editor ends. `PreferencesChanged` reports accepted page/sort choices and completed header drags. The binding updates the actual screen settings object, which saves through its existing provider at the accepted-close boundary; Options edits that same object.
 
-The grid's top **Grid settings** button appears when it has bound preferences or a restored standalone settings object. `Traits` defaults to `VisualGridTraits.AllowsSettingsChange`; the designer-friendly `AllowsSettingsChange` property wraps that flag. Turning it off keeps the button visible and disabled. Without a settings object the button is hidden. The button opens an ordinary value editor for the same `VisualGridSettings` used by Options. OK validates and publishes through the existing preference-change path; Cancel discards the detached edit. It does not create another profile or persistence provider.
+The grid's top **Grid settings** button appears when it has bound preferences or a restored standalone settings object. `Traits` defaults to `VisualGridTraits.AllowsSettingsChange`; the designer-friendly `AllowsSettingsChange` property wraps that flag. Turning it off keeps the button visible and disabled. Without a settings object the button is hidden. The button opens an ordinary value editor for the same `VisualGridSettings` used by Options. OK validates and applies through the existing preference-change path; Cancel discards the local edit. Persistence remains with the existing screen or standalone settings owner.
 
 Existing JSON/XML grid records remain readable under their original internal storage type names. Restoration copies those values into `VisualGridSettings` without writing during load; an existing record with the new name takes precedence. The compatibility types remain internal and do not retain the old public grid API.
 
-Persisted manual widths use `IVisualGridColumn.PreferenceKey`, which normally falls back to the property or source sort name. Supply an explicit key for computed columns and keep keys unique. Captions and column positions can change without losing widths. Widths use logical pixels at 96 DPI, remain stable across rebinds and DPI changes, and leave untouched natural/stretch columns unspecified. Reset clears deliberate overrides. Legacy standalone records are read with `ReadLegacyPreferencesAsync(provider)` into detached values; the screen imports them once under its named section marker. Standalone reads finish before the first query, and detached accepted saves run off the UI thread through the captured provider. Await `FlushPreferencesAsync()` during an accepted standalone close/shutdown; `PreferenceSaveError` exposes a failed write and flush retries it.
+Persisted manual widths use `IVisualGridColumn.PreferenceKey`, which normally falls back to the property or source sort name. Supply an explicit key for computed columns and keep keys unique. Captions and column positions can change without losing widths. Widths use logical pixels at 96 DPI, remain stable across rebinds and DPI changes, and leave untouched natural/stretch columns unspecified. Reset clears deliberate overrides. Before an actual screen settings record exists, its binding can read legacy standalone values with `ReadLegacyPreferencesAsync(provider)`. The typed root becomes authoritative when it is first saved. Standalone reads finish before the first query, and accepted standalone saves run off the UI thread through the captured provider. Await `FlushPreferencesAsync()` during an accepted standalone close/shutdown; `PreferenceSaveError` exposes a failed write and flush retries it.
 
 
 ### Snapshot collection and binding
@@ -634,6 +637,8 @@ var ManagerColumn = new VisualGridColumn<Employee> {
 The picker is read-only, automatically fits complete rows, and supports paging, search, and sorting when the data source supports them. Create, edit, delete, and action columns are omitted. Selecting a row assigns that exact record; **Clear** assigns null when allowed, and **Cancel** or Escape preserves the current reference. Set `AllowNull = false` to remove Clear. `DropDownSize` (also exposed as `MaximumDropDownSize`) sets the popup's content size in device pixels, defaulting to 760 × 380 and capped to the available screen space. The grid fills the popup. Search, paging, and empty results keep its dimensions stable; manual resizing lasts for that open picker.
 
 Set `ExpandsToFit = true` on the column that should occupy spare width, such as the Name column in a reference picker. Other columns keep their initial measured widths. Multiple configured columns share extra space; none stretch implicitly when no column is configured. Resizing redistributes spare width from remembered minimum widths. Explicitly resized columns retain the chosen width and leave automatic stretching. Pages, search and refresh do not remeasure columns from their new values. Existing columns wider than the viewport use horizontal scrolling. Automatic page sizing continues to fit complete rows in the available grid height.
+
+The grid settings editor exposes **Manual width** and **Stretch to fit** under each column. The latter overrides the binding's `ExpandsToFit`; clearing it restores the binding's default. A manual width takes precedence over stretch. Accepted settings update the visible columns and survive refresh. Set `ShowGridSettings = false` to hide the settings button; it otherwise appears when a settings object exists, with `AllowsSettingsChange` controlling whether it is enabled.
 
 `VisualGrid.ReferenceBindings` and `DefaultCrudEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
 
@@ -748,7 +753,7 @@ Hosted log views retain the originating navigation block, including after the so
 
 With **Remember After Close**, `LogOutputSelectorSettings` persists the accepted configuration and enabled choice through `UserSettings`. Call `RestoreSettings()` explicitly after the application logger and consumer hooks are ready. Construction/handle creation never read preferences or open output. The method returns false while a stable owner/provider is unavailable and can then be retried; completed restoration is idempotent. `SettingsKey` can supply an explicit stable ID; otherwise the owning screen/control type and named child path identify this selector independently of captions or docking. Set the key before restoring or accepting output. Restoration and unchanged disposal do not write preferences, and disposal closes a remembered active sink without changing its saved enabled choice. Turning Remember off deletes only that selector's stored preferences, including its cached record. Optional preference failures appear in `LastSettingsError`; output remains usable and failed accepted saves retry on disposal. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md#reusable-logging-preferences).
 
-Hosted screens can instead bind a plain `LogOutputSelectorPreferences` through the screen's `BindLogOutputPreferencesAsync<TSettings>` helper under a named role such as `LogOutput`. An unopened Options Apply or Reset already owns public root value properties, so a `LogOutput` property needs no separate declaration. A non-null selector `Preferences` disables its separate standalone record. `CapturePreferences()` returns detached configuration and the remembered `Enabled` choice; `ReadLegacyPreferencesAsync(provider)` reads only values through the captured provider and never creates a record or opens output. The owning profile imports that legacy section once.
+Hosted screens bind a `LogOutputSelectorPreferences` property on their actual `ScreenSettings` object through `BindLogOutputPreferencesAsync`, for example `nameof(MyScreenSettings.LogOutput)`. A non-null selector `Preferences` selects screen ownership. `CapturePreferences()` returns configuration and the remembered `Enabled` choice; `ReadLegacyPreferencesAsync(provider)` reads existing standalone values without creating a record or opening output. Binding may import those values before the screen has its first typed settings record. Subsequent edits update the actual root object, and its successful `SaveAsync()` raises `OnChanged` for the screen and Options consumers.
 
 `ApplyPreferences(values)` is a pure value/UI operation: the selector must be stopped and its drain awaited first. It neither starts logging nor saves preferences. The real owning screen supplies its application logger and preflight before explicitly starting remembered enabled output. Accepted configuration and On/Off changes raise `PreferencesChanged` through the overridable `OnPreferencesChanged` hook; disposal does not invent an Off preference. Output choices with Remember After Close disabled remain available in the current session but their configuration/enabled fields are omitted from the root's JSON persistence. Standalone `RestoreSettings()` and its existing Remember/delete/preflight behavior remain available when no screen owner is assigned.
 
@@ -900,6 +905,28 @@ editors, registration requirements, ownership and current limitations.
 | `AppointmentBook` | Appointment/calendar UI |
 | `WinFormsApplicationBlock` | Modular application sections with menus |
 
+## Loading indicators
+
+`LoadingCircle.AnimationStyle` offers `Spokes`, `Dots`, `Arc` and `Pulse` animations.
+Set `Color` for your palette and `RotationSpeed` for the frame interval in milliseconds.
+The existing `StylePreset` values and radius/spoke properties remain available for
+older designer files and custom geometry. Use `LoadingCircleToolStripMenuItem`
+when the indicator belongs in a native toolbar or menu.
+
+```csharp
+loadingCircle.AnimationStyle = LoadingCircleAnimationStyle.Arc;
+loadingCircle.Color = Color.Teal;
+using (loadingCircle.BeginAnimationScope(editorPanel, cancelButton)) {
+	await LoadItemsAsync();
+}
+```
+
+The caller retains ownership of an existing indicator. Its scope stops animation
+and restores controls it disabled; controls already disabled remain disabled.
+`LoadingCircle.EnterAnimationScope(...)` creates a temporary overlay and disposes
+that owned indicator on exit. Animation uses the native UI timer and does not
+publish edited-state events. The Loading Indicator screen in WinForms Tester
+shows all four styles, colour choices and both scope patterns.
 ## 🏗️ Application Blocks
 
 Application blocks provide a modular way to organize application features with menu structures. The builder pattern provides a fluent API for construction:
@@ -986,7 +1013,7 @@ var block = new WinFormsApplicationBlockBuilder()
 ```
 
 `AddScreen<TScreen>("Title")` requires no callback or moniker. Optional named arguments
-cover activation mode, screen kind, stable key, ordinary settings/defaults, activator
+cover activation mode, screen kind, stable key, typed settings/defaults, activator
 and settings editor. The runtime form is `AddScreen(typeof(MyScreen), "Title")`;
 both forms can capture `out var registration` after the title. `AddMenu` and
 `AddMenuItem` use the same owned-menu path, with optional image, menu-strip flag
@@ -1020,6 +1047,27 @@ The builder pattern supports:
 ### Grouping blocks into application plugins
 
 The running UI hierarchy is `IApplication` → `IApplicationBlock` → menus and screens. Native extensions use `IWinFormsApplication`, `IWinFormsApplicationBlock` and their native menu and screen contracts. A plugin contributes startup services and any number of blocks, including zero. `LoadedPlugins` records those startup contributors; every contributed block has its own navigation icon and menus.
+
+Shared applications, blocks, screens and plugins inherit `IApplicationCommandProvider` for
+portable `Menus` and `ToolBarItems` descriptors. Native blocks project their typed
+menu definitions through that contract. A main form supplies its actual
+designer-owned menu and toolbar commands through `IMainForm`; the running
+`WinFormsApplication` exposes that provider together with explicitly supplied
+application contributions. Editing a main form's native menu/toolbar is enough
+to publish its Exit, About, feedback and help commands. Native callbacks and
+resources retain their original control/form owner.
+
+For a screen, set `ScreenMenuStrip` to its designer-owned `MenuStrip` and
+`ScreenToolBar` to its designer-owned `ToolStrip`. Its provider projects the
+actual controls, and the host moves those same native items into the active
+frame through the reusable merge controls, restoring their source owners on navigation or detach.
+Owners cache command membership through `GetMenus()` / `GetToolBarItems()` hooks;
+configure membership before activation. Captions and checked/enabled state remain
+live on the native items. `MainForm` composes the host form plus the active
+plugin, block and screen on demand, without command binding registries.
+`MergeAction` / `MergeIndex` retain their native meaning.
+`ScreenToolBar` replaces the previous screen `ToolBar` property. Legacy
+`RegisterMenuItem`/`MenuItems` consumers retain their existing native path.
 
 In your existing module's `RegisterComponents(IServiceCollection serviceCollection)` method, group blocks with the native plugin builder:
 
@@ -1098,32 +1146,85 @@ The same plugin instance remains available through native and shared DI contract
 
 Existing `AddApplicationBlock` calls and the `WinFormsApplication(form, blocks)` constructor remain supported. Their blocks appear directly in the application's live `Blocks` array without creating a plugin. The three-argument constructor accepts `loadedPlugins` that the caller has already loaded and captures their contributions without invoking lifecycle methods. Successfully registered plugin names must be unique, and a block reference cannot be contributed by two plugins.
 
-`IWinFormsApplication.LoadedPlugins` returns a snapshot of the original loaded plugin instances. `Blocks` projects the host's current registered blocks and follows direct registration and guarded removal. Removing a contributed block does not unload its plugin. Select navigation through `ScreenHost.ActiveBlock` and screen operations through the host; plugins have no active UI selection. The shared `IApplication` resolves to the same application object and projects the same loaded plugins and live blocks. `BlockMainForm.BlockBindings` maps each block to its native navigation pane.
+`IWinFormsApplication.LoadedPlugins` returns a snapshot of the original loaded plugin instances. `Blocks` projects the host's current registered blocks and follows direct registration and guarded removal. Removing a contributed block does not unload its plugin. Browse navigation through `ScreenHost.SelectBlock` and perform screen operations through the host; plugins have no active UI selection. The shared `IApplication` resolves to the same application object and projects the same loaded plugins and live blocks. The selected block's navigation pane is rebuilt on demand.
+
+### Native command context
+
+A detached window projects the application's original native commands alongside
+its own active plugin, block and screen. The main form retains its controls,
+images and callbacks; each detached window owns its generated views. Command
+membership is captured recursively at owner activation, including nested menus,
+while captions and checked/enabled state stay live. The **Screens** menu adds
+current navigation entries to its original application commands.
+
+In a derived `MainForm` handler, capture
+`var userInterface = CommandUserInterfaceServices;` before the first `await`.
+Capture `userInterface.ScreenHost?.ActiveScreen` there too when the operation
+targets that screen. This protected property supplies the invoking window's UI
+context during the original native callback; the context is restored when that
+callback returns. A detached invocation does not change the main form's active
+screen. The original designer event handlers still run once.
+
+Keep popup availability logic in the original `DropDownOpening` handler. The
+generic merge controls forward preparation for matching headings, return the
+source's children while it prepares them, and merge the prepared children back.
+Detached projections run the original preparation without displaying the main
+form's popup. This also applies when a screen supplies a matching **Options** or
+**Screens** heading.
 
 ### Screen Options
 
-Attach an ordinary settings object with `UseSettings<TSettings>()`,
-`UseSettings(instance)` or `UseSettings(() => new Preferences(...))` in the
-block's `AddScreen` callback. No settings base class is required. The application restores values
-before permanent/default screen work, includes unopened/no-options registrations,
-and contributes **Screen Options...** to the existing main **Options** menu.
-The designer-compatible dialog edits detached ordinary objects with
-PropertyGrid defaults, nested/collection values, selected-page Apply/OK/Reset,
-Cancel and retryable validation/storage errors.
+Declare a public nested `SettingsObject` subclass inside the screen it configures,
+and declare `[Settings(typeof(...))]` on the screen class. An optional covariant
+`ScreenSettings` override provides typed access; mark that property
+`[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]`.
+`AddScreen<UsersScreen>("Users")` discovers the declared type before constructing
+the control. Existing `[UseSettings(typeof(...))]` metadata remains supported.
+`UseSettings(actualSettings)` supplies an actual instance for a particular
+registration, including independent CPU/GPU registrations of the same screen type.
+Attribute, property and explicit builder schemas must agree; a clash throws.
 
-Use `GetSettings<TSettings>()` after attachment and
-`BindGridPreferencesAsync(grid, nameof(MySettings.Grid))` after configuring
-columns but before their first query. Named grid dictionaries additionally take
-the role name. Screen-owned grid roles suppress independent standalone records;
-accepted closure/finalization awaits the owning profile's detached saves.
-`WithSettingsEditor` receives the ordinary draft as `context.Settings` and
-supplies a specialized native entity editor without changing
-constructor selection or creating a generic visual base. Its context supplies
-the detached `Settings` value, real services and owner; the dialog handles saving.
-Plain main forms can
-use `AddApplicationSettings` and the same catalog. See
-[Screen Options](../../docs/usage/screen-options.md) for examples, editor
-contracts, legacy section migration and provider ownership.
+Declare reset defaults with `[DefaultValue(...)]` on settings members.
+`RestoreDefaultValues()` applies those attributes to the actual instance; override
+that existing method for domain-specific nested values, such as resetting a grid's
+layout while retaining its column identities. Constructor or registration-time
+assignments are initial values, and do not become a separate stored reset baseline.
+
+Blocks and plugins expose their actual `BlockSettings` and `PluginSettings`
+objects and accept them through their builders' `UseSettings` methods. Screens read
+those same instances through `GetBlockSettings<T>()` and `GetPluginSettings<T>()`.
+`IApplication.Settings` exposes the existing `ISettingsProvider`, with native
+applications using `ISettingsServices.UserSettings` and their configured user-provider
+fallback. Startup loads declared values before screen activation, retaining the
+supplied root identities and existing provider IDs. Screen registrations without
+an explicit ID use a stable identity derived from their application, owner and
+registration keys.
+
+Keep screen initialization in `InitializeUIPrimingData`, `CopyModelToUI` and
+`CopyUIToModel`. Bind grid and log settings before the first query through the
+screen's awaited initialization task. `ApplicationControl` listens directly to the
+actual screen, block and plugin settings objects' `OnChanged` events and uses the
+existing `Refresh()` lifecycle on the UI thread. Handle recreation reapplies current
+values, and disposal removes those subscriptions. `SettingsObject.Save()` and
+`SaveAsync()` notify listeners after their existing provider successfully persists
+the actual object. Cache and encryption behavior remain with that provider.
+
+Options enumerates existing plugin, block and screen-definition owners, including
+unopened screens with settings. Screens without settings are omitted. Opening
+Options prefers the active screen's settings unless the caller requests an owner;
+existing block/first-page selection remains the fallback. It supplies the selected owner's actual settings object to a
+registration-specific editor, the class's `[Editor]` editor, or the `[UserEditable]`
+automatic editor, in that order. `[UserEditable]` marks the class; public properties
+are eligible for editing, and `[Transient]` excludes runtime members from editing
+and storage. Hidden or readonly presentation attributes retain their persistence
+meaning.
+
+Apply validates the actual object and awaits `SaveAsync()`. Cancel restores local
+dialog backups for unapplied edits while retaining earlier successful Apply
+operations. Reset calls the actual object's `RestoreDefaultValues()`; saving those
+defaults remains an explicit Apply or OK operation. See the complete
+[native pattern](../../docs/guidelines/patterns/winforms-screen-settings.md) and
+[Screen Options](../../docs/usage/screen-options.md).
 
 ### Remembering the main window
 
@@ -1150,7 +1251,7 @@ Other forms can keep `Tools.WinForms.AutoPersistWindowSettings(Form, SettingsID)
 
 ### Shared presentation contracts
 
-The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock`, `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend their shared counterparts with typed collections and native presentation options. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared navigation has no menu string IDs. Screen registrations have block-local identity; `WithStableKey` gives a registration a deliberate persistent key. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit block-owned screen registration and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `AddBlock`, block `AddScreen`/`AddMenu`, menu `AddItem` and common setters live in `Sphere10.Framework.Application.UI`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
+The portable contracts and implementation state live in `Sphere10.Framework.Application.UI`. Native adapters use explicit `WinForms` names, so both namespaces can be imported together without aliases. `ScreenActivationMode` comes directly from the shared namespace; there is no separate native enum. WinForms `IWinFormsApplicationBlock` specializes the shared menu and toolbar provider with native descriptor types. `IWinFormsApplicationMenu`, `IWinFormsApplicationMenuItem` and `IWinFormsScreenMenuItem` extend standalone shared presentation contracts with native options. `IWinFormsApplicationScreen` exposes designer-owned `ScreenMenuStrip` and `ScreenToolBar` controls; their commands project through the inherited portable provider alongside lifecycle, ownership and help. Custom blocks supply `ScreenDefinitions` and `DefaultScreenDefinition`; custom screen items supply a canonical `ScreenDefinition` reference. Shared navigation has no menu string IDs. Screen registrations have block-local identity; `WithStableKey` gives a registration a deliberate persistent key. `WinFormsApplicationBlock` and `WinFormsApplicationMenu` derive from abstract `ApplicationBlockBase` and `ApplicationMenuBase<TItem>`. `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` are abstract native intermediates above the concrete screen and action items. Native APIs retain images, menu parents, array views and disposal ownership. The fluent native builders inherit block-owned screen registration and child-builder composition from typed shared bases, then create WinForms products on the first `Build()`. Plugin `AddBlock`, block `AddScreen`/`AddMenu`, menu `AddItem` and common setters live in `Sphere10.Framework.Application.UI`; native adapters retain images, menu/explorer/toolbar flags and control factories. Subsequent builds return the same product and incorporate additional canonical definitions. Later name, position, default and menu configuration updates the existing native product, preserving one owner for menus, items and images.
 
 `IWinFormsApplicationScreen` extends the shared `IApplicationScreen` contract with synchronous native hooks. `WinFormsApplicationScreen` maps those hooks to its existing display and cancelable hide events on the calling UI thread. Shared `CanDeactivateAsync` invokes the native hide guard; `OnDeactivatedAsync` does not emit the hide notification again. Cancellation is checked before invoking a native hook. The native presentation hooks remain synchronous; the host also exposes the shared asynchronous operations for controls, tabs, docking and screen disposal.
 
@@ -1158,7 +1259,14 @@ Screen definitions carry activation modes for both UI hosts. The native adapter 
 
 ### Running application and shared wizards
 
-`IWinFormsApplication : Sphere10.Framework.Application.UI.IApplication` exposes the running `BlockMainForm` through live blocks, loaded startup plugins, its screen host, retained unsaved state and change notifications. The host owns active block and screen selection. For `BlockMainForm` and its subclasses, `AddMainForm` registers the native and shared interfaces to the same adapter; framework startup initializes its configured blocks. The adapter borrows the form and screen host rather than creating a second owner. `SetMenus` and `SetToolBarItems` accept native command definitions and update the actual application menu and toolbar using the form's existing bindings and execution path.
+`IWinFormsApplication : Sphere10.Framework.Application.UI.IApplication` exposes the running `BlockMainForm` through live blocks, loaded startup plugins, its screen host, retained unsaved state and change notifications. The host exposes `SelectedBlock` for navigation browsing and `ActiveBlock` for the
+visible screen's owner, with the selected block as a no-screen fallback. A detached
+screen has a local host adapter with its own active context; navigation and
+application lifetime delegate to the originating root host. For `BlockMainForm` and its subclasses, `AddMainForm` registers the native and shared interfaces to the same adapter; framework startup initializes its configured blocks. The adapter borrows the form and screen host rather than creating a second owner. `SetMenus` and `SetToolBarItems` accept native command definitions and update the actual application menu and toolbar before command activation. The owner caches their membership; the form rebuilds
+the current native presentation through its merge controls and original callbacks.
+Command composition follows the visible `ActiveScreen.Block` and its plugin;
+sidebar selection does not contribute commands. Without an active screen, only
+application commands remain in the main menu and toolbar.
 
 `WinFormsWizardBuilder<TModel>`, `WinFormsActionWizard<TModel>`, `IWinFormsWizard<TModel>`, `WinFormsWizardScreen<TModel>` and `WinFormsWizardDialog<TModel>` replace the unprefixed native wizard names. Navigation, step membership, callbacks and completion policy use the shared `Application.UI` wizard workflow; native adapters retain control initialization, validation, presentation, sizing and disposal. Dynamically removed screens remain owned by their wizard and are disposed with it. `WizardResult`, `WizardStepUpdateType` and `ScreenMode` now come directly from the shared UI namespace.
 
@@ -1224,7 +1332,7 @@ Screen registration builders declare each definition's instance policy with `.As
 
 Tab widths grow with their titles up to `WinFormsApplicationScreenTabControl.MaximumTabWidth`, which defaults to 320 logical pixels. Native caption measurements reserve room for the owner-drawn icon, its spacing and the close action, including when the image list retains its original pixel size on a higher-DPI monitor. Longer titles display an ellipsis, with the full title available on hover. Tab spacing, close buttons, docking markers, and the width limit scale for the current monitor's DPI.
 
-Selecting a tab restores the previous screen's toolbar items and removes its screen menu, then merges the selected screen's `ToolBar` and registered `MenuItems` into the main form. The same item instances and event handlers are retained. When detached, `WinFormsApplicationScreenForm` displays the registered `MenuItems` directly as top-level menus, including File when supplied, regardless of `ShowInApplicationMenuStrip`. It retains the original `ToolBar` control, layout, and handlers instead of copying its items into a replacement strip. The selected docked screen continues to supply the main window's menu and toolbar. Redocking selects the returned tab and merges its items back into the main form.
+Selecting a tab restores the previous screen's command views, then borrows the selected screen's `ScreenMenuStrip` and `ScreenToolBar` items into the main form. The same native items, handlers, state and images are retained. Matching headings combine actual native children, and leaving the screen restores their exact source ownership and order. Detached hosting preserves those commands and their native callbacks; redocking selects the returned tab and merges its items back into the main form. The legacy registered `MenuItems` path remains supported.
 
 The application toolbar has one frame-owned row height. `MainForm.ToolBarRowHeight` defaults to 32 logical pixels at the standard menu font and scales for global font and DPI changes; switching between empty, ordinary and logging toolbars does not resize it. Configure a larger common row explicitly when an application supplies larger hosted controls. `ToolStripStableHeightBehavior.LogicalHeight` supplies this fixed-row mode independently of the current command set.
 
@@ -1375,7 +1483,7 @@ Ordinary custom forms can override `OnFormClosing(FormClosingEventArgs)`. `LiteM
 Legacy DES stream helpers retain their existing full-length input buffer and zero-filled tail at end of input; short reads are completed before encryption or decryption. The existing DES key, IV, and ciphertext format are preserved.
 
 
-Application, block and screen command layers compose through `Tools.UI.MergeApplicationMenus` and `MergeApplicationToolBarItems`. Application commands survive contextual commands with the same caption; screen commands replace matching block commands. Native captions merge without mnemonic markers, including contributions to the existing File and Help headers. Exit and help commands survive screen changes, with Help last. Native presentation honors block/menu placement flags and preserves caller-owned menu and item references.
+Native application and block descriptor commands compose through `Tools.UI.MergeApplicationMenus` and `MergeApplicationToolBarItems`. Application commands survive contextual commands with the same caption. Screens contribute their actual `ScreenMenuStrip` and `ScreenToolBar` commands; the native host transfers and restores those same item instances as screens are selected or detached. Native captions merge without mnemonic markers, including contributions to the existing File and Help headers. Exit and help commands survive screen changes, with Help last. Native presentation honors block/menu placement flags and preserves caller-owned menu and item references.
 
 `Control.EnterRenderingScope()` defers layout and native redraw across the control tree. Nested scopes, added controls, newly created handles and newly shown controls share suppression. The last scope flushes parent/child layout and performs one redraw; disposed and intentionally hidden controls remain so. Controls moved into another window receive their final full-tree invalidation at their current surviving root, including when the original root was disposed. A subtree still held by another rendering scope waits for that owner to release it. `EnterRenderingScope(repaintImmediately: false)` restores layout and native visibility synchronously but queues painting for the next normal native paint cycle, appropriate inside native input/selection callbacks. The existing no-argument overload retains immediate painting. Dispose scopes on the creating UI thread; never keep one across an await or BeginInvoke. Screen-host transitions use this scope around the form and publish one completed selection and command update.
 

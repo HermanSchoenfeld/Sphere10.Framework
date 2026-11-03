@@ -30,11 +30,13 @@ guides for concrete configuration and examples.
 | Preferences | `VisualGridSettings` in the owning screen object, or standalone through the captured application provider. | `BlazorGridSettings` in the owning screen object, or standalone in browser storage with an explicit `SettingsKey`. |
 | Persistent manual widths | Stable column `PreferenceKey`, logical 96-DPI width, captured after a deliberate drag. | Stable column `PreferenceKey`, CSS-pixel width, applied before first markup/sizing. |
 
-For screen-owned preferences, declare named grid roles on the registration's
-typed settings root and bind non-null `Preferences`. That suppresses independent
+For screen-owned preferences, declare `[Settings(typeof(...))]` on the screen
+with its nested `SettingsObject` schema, declare named grid roles on that root
+and bind non-null `Preferences`. That suppresses independent
 standalone writes while retaining the same grid capture/apply path. Default
-column schemas serve unopened Options pages. Import only absent legacy sections
-and retain presence across Reset/restart. See
+column schemas serve unopened Options pages; screens without settings are omitted.
+Import legacy standalone records only while the typed screen record is absent;
+Reset of an existing typed record must not reimport them after restart. See
 [Screen Options](../../usage/screen-options.md) for startup, detached editing,
 ordered accepted persistence and custom native/web editors.
 
@@ -82,7 +84,7 @@ Actual bitmap resizing continues to use Drawing's existing API.
 
 ### Examples and verification
 
-- [WinForms grid guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#crudgrid)
+- [WinForms grid guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#visualgrid)
   and [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md).
 - [Blazor grid guide](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#grid-configuration-and-behavior)
   and [Blazor tester](../../../utils/Sphere10.Framework.Utils.BlazorTester/README.md).
@@ -147,9 +149,9 @@ is one preferred startup screen, not an automatic replay of every previously
 open tab or its unsaved state.
 
 WinForms startup settings belong to the application user's settings provider.
-Blazor preferences belong to the browser and origin under an explicit
-application-qualified key; they must not use a process-wide server user-settings
-object shared by different users. Browser startup restoration requires an
+Blazor preferences use the same `UserSettings` facade with its circuit-bound
+browser provider and an application-qualified key. Do not install one browser
+user's provider as the process default. Browser startup restoration requires an
 interactive render; a prerender cannot access browser storage.
 
 ### Platform presentation

@@ -16,7 +16,8 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 | [**Keys, graphs and mapped properties**](usage/keys-graphs-and-stream-properties.md) | Compound keys, graph construction/traversal, IBTree and optional property caching |
 | [**Self-describing storage**](usage/self-describing-storage.md) | Binary ObjectSpace/ObjectStream metadata, factory registrations and packet layouts |
 | [**Builder API migration**](usage/builder-api-migration.md) | Add-style child composition, runtime callbacks and independent screen registrations |
-| [**Screen Options**](usage/screen-options.md) | Registration-owned typed preferences, native/web editors and persistent grid layouts |
+| [**Screen Options**](usage/screen-options.md) | Screen, block and plugin preferences, native/web editors and persistent grid layouts |
+| [**SourceGrid**](usage/sourcegrid.md) | Low-level engine gallery, extracted reusable components and resource ownership |
 
 ---
 
@@ -51,6 +52,7 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Interface bridges](guidelines/patterns/interface-bridges.md) | Inline projections between specialized and base contracts. |
 | [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins and lifecycle ownership. |
 | [WinForms designer](guidelines/patterns/winforms-designer.md) | Concrete visual bases, editable layouts and runtime composition. |
+| [WinForms screen settings](guidelines/patterns/winforms-screen-settings.md) | Typed screen, block and plugin settings through the existing model/UI lifecycle and provider. |
 | [Reusable WinForms controls](guidelines/patterns/winforms-controls.md) | Selectors, database provider controls, grids, editors and presentation components. |
 | [Grids and screen hosts](guidelines/patterns/grids-and-screen-hosts.md) | WinForms/Blazor feature mapping, paging, live refresh, retained layouts, tabs and startup choices. |
 | [Windows API facades](guidelines/patterns/windows-interop.md) | Native bindings, ownership and application consumption. |

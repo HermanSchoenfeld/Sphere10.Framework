@@ -136,9 +136,10 @@ screen objects uses reference identity. A platform route or renderer may need
 its own named identifiers; those identifiers should not become requirements
 of an otherwise reference-based shared contract.
 
-The running application exposes blocks, application commands, its screen host
-and loaded startup plugins. Its runtime hierarchy is application → blocks →
-menus and screen definitions; a plugin can contribute several blocks.
+The portable running application exposes blocks, its screen host and loaded
+startup plugins. Its runtime hierarchy is application → blocks → screen
+definitions; a plugin can contribute several blocks. Platform application, block
+and screen adapters own their menus and toolbars.
 `IApplication.Blocks` projects the host's live registered membership, keeping
 one membership owner. `LoadedPlugins` records actual successful startup
 registrations rather than creating plugins for standalone blocks. Navigation
@@ -148,7 +149,7 @@ multiple-screen contract should expose the operations their consumers need
 without requiring every host to provide tab collections and ordering.
 
 [Blazor registration](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/IServiceCollectionExtensions.cs)
-and [WinForms registration](../../../src/Sphere10.Framework.Windows.Forms/IoCExtensions.cs)
+and [WinForms registration](../../../src/Sphere10.Framework.Windows.Forms/Extensions/IoCExtensions.cs)
 validate contributions before and after `Load(IServiceCollection)` and publish
 [ApplicationPluginRegistration](../../../src/Sphere10.Framework.Application/UI/ApplicationPluginRegistration.cs)
 only after successful registration. A DI plugin registration alone is not a
@@ -186,10 +187,9 @@ Validate complete definition collections before changing host state. The screen
 host captures each retained instance's lifetime and owns its type-to-definition
 index directly.
 
-[ApplicationBlockSnapshotBase](../../../src/Sphere10.Framework.Application/UI/ApplicationBlockSnapshotBase.cs)
-maintains one reference-keyed definition map per copied graph. The
-[Blazor snapshot adapter](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/BlazorApplicationBlockSnapshot.cs)
-uses that map for menus, toolbar commands and the selected default. Its
+The [Blazor block-copy implementation](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/BlazorApplicationBlockSnapshot.cs)
+maintains one reference-keyed definition map per copied graph and uses that map
+for menus, toolbar commands and the selected default. Its
 [graph tests](../../../tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/ApplicationGraphOwnershipTests.cs)
 verify independent ownership and canonical definitions across builds and circuits.
 
@@ -200,10 +200,41 @@ may replace matching block commands. Preserve the original command objects
 and callbacks; composition must not rewrite reusable registrations with
 per-render ownership state.
 
+`IApplication`, `IApplicationBlock`, `IApplicationScreen` and `IApplicationPlugin` inherit
+`IApplicationCommandProvider`: menu and toolbar command definitions are portable
+application concepts. Empty defaults require no redundant owner state. Typed
+platform providers bridge their actual descriptor arrays through the shared
+contract. Native `MenuStrip`/`ToolStrip` controls, rendering, attachment and merging
+remain platform responsibilities.
+
+In WinForms, the main form's designer-owned strips supply the application's
+commands through `IMainForm`. `IApplication` exposes that source; native adapters
+project existing controls and callbacks. Screens explicitly assign their local
+strips through `ScreenMenuStrip` and `ScreenToolBar`. Composition borrows native
+items through the generic merge controls and restores their source ownership.
+Command definitions do not duplicate those designer declarations. Owners cache
+`Menus` and `ToolBarItems` on first access through protected `GetMenus()` /
+`GetToolBarItems()` hooks; returned arrays protect membership. Configure membership
+before activation; checked/enabled state and captions remain live afterward.
+The main form rebuilds presentation from the host form, active plugin, active
+block and active screen rather than retaining command binding registries.
+The visible screen determines this owner path on each rebuild. Browsing another
+block does not contribute commands; when no screen is active, only application
+commands remain. Native merge controls return outgoing items to their owners.
+
+`SelectedBlock` is navigation browsing. `ActiveBlock` is the visible screen's
+owner, falling back to the selected block when there is no active screen. A
+detached native screen has its own presentation host with independent active
+screen/block; that adapter delegates navigation and application lifetime to the
+root host. Its menu/toolbar composition uses its own visible screen's owners.
+
 [Tools.UI.GetCommandLayers and MergeApplicationMenus/ToolBarItems](../../../src/Sphere10.Framework.Application/UI/UITool.cs)
-select the active screen's owning block before the browsed block and keep
-application and contextual replacement keys in separate scopes. Platform
-adapters supply their own semantic keys; the original command objects remain
+accept explicit platform command providers and keep application and contextual
+replacement keys in separate scopes for platforms composing portable definitions.
+Native WinForms presentation uses `MergeableMenuStrip` / `MergeableToolStrip`
+and their shared fixer with native `MergeAction` / `MergeIndex` semantics. The
+platform shell selects the active screen's owning block and supplies semantic keys;
+the original command objects remain
 the execution targets. The lower-level `MergeMenus` and `MergeMenuItems`
 helpers do not introduce application-level protection; use the application-aware
 variants when composing those tiers. See
@@ -212,7 +243,8 @@ variants when composing those tiers. See
 Assign a screen's `Host` and `Block` before lifecycle hooks, keep them while a
 single instance is hidden, and clear them after actual removal cleanup or host
 disposal. A rejected navigation guard leaves those links intact. Shared hosts
-detach ownership; platform adapters own view and screen disposal.
+detach only lifecycle ownership; platform adapters own menu/toolbar attachment,
+view and screen disposal.
 
 [ApplicationScreenHost](../../../src/Sphere10.Framework.Application/UI/ApplicationScreenHost.cs)
 wires and detaches the retained instance's ownership. Blazor additionally
@@ -232,17 +264,25 @@ and use the framework's disposable scopes for cleanup and state transitions.
 
 ## Registration-owned preferences
 
-Settings metadata belongs to the canonical screen definition; the application
-owns the catalog, persistence scope and accepted profile revisions. Menus only
-reference registrations. Catalog enumeration uses declarations/default values
-without constructing operational screens or acquiring their resources. Native
-catalogs resolve the application's actual configured blocks; web catalogs and
-stores belong to the circuit and user/browser profile.
+Screen definitions, blocks and plugins own their actual `SettingsObject`
+instances; `IApplication.Settings` exposes the existing captured provider. Every
+root schema derives from `SettingsObject`; screen-specific schemas are public
+inner classes of their screen, declared by `[Settings(typeof(...))]`. A typed
+`ScreenSettings` override remains available for access. Attribute, property and
+explicit builder declarations must agree rather than silently replacing a schema.
+Menus reference registrations. Options enumerates these owners without constructing
+operational screens or acquiring their resources, and omits screens without
+settings. Blazor settings-bearing runtime owners and their provider belong to
+the circuit and user/browser identity. There is no catalog, profile or edit-session
+layer.
 
-Editors own detached drafts, controls own UI-thread capture, and the profile
-orders exclusive persistence snapshots before publishing accepted changes.
+Editors borrow the actual owner values and may keep local backups for Cancel.
+Controls retain their existing UI-thread capture lifecycle. Accepted saves await
+`SettingsObject.SaveAsync()` before its `OnChanged` event refreshes consumers.
 Accepted close/finalization owns capture/flush; hide, veto and unchanged disposal
-do not. Bind reusable controls to that profile's plain section rather than
+do not. Bind reusable controls to that root's typed settings section rather than
 retaining a competing standalone persistence owner. Runtime activators, services,
-providers and business drafts never become preference payloads. See
+providers and business drafts never become preference payloads. Save the actual
+settings type through the existing provider, without token-backed carriers,
+envelopes or a parallel store contract. See
 [Screen Options](../../usage/screen-options.md) for the implementation contract.

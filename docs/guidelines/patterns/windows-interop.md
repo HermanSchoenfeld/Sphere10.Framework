@@ -54,7 +54,7 @@ returns verified outer bounds in physical desktop pixels;
 temporarily sets the native thread context and restores its exact previous value.
 It supports synchronous disposal only: use `using`, dispose on the creating
 thread in reverse nesting order, and never hold it across an `await`. Native
-window creation inherits that context. [WindowHighlightScope](../../../src/Sphere10.Framework.Windows.Forms/WindowHighlightScope.cs)
+window creation inherits that context. [WindowHighlightScope](../../../src/Sphere10.Framework.Windows.Forms/WindowHighlight/WindowHighlightScope.cs)
 uses the same physical space for its per-monitor-aware HWND and cancels a second
 automatic DPI resize. This keeps an app's existing DPI policy intact. See
 Microsoft's [GetWindowRect](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect)

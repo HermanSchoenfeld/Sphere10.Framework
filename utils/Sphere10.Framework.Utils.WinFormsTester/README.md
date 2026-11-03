@@ -35,16 +35,18 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p
 |---|---|
 | Workspace | Screen Hosting, single/multi-view switching, navigation samples, and wizard. The empty workspace is a hidden screen definition in this block. |
 | Notes | Permanent Notes and guarded removal of the Notes block. |
-| Controls | Input controls, layout, and visual feedback. |
-| Data And Collections | Visual Grid, ObjectSpace, transactional/observable collections, Merkle trees, and Bloom filters. |
+| Controls | The complete searchable control catalog, input controls, layout, and visual feedback. |
+| Data And Collections | Visual Grid, the separate raw SourceGrid engine gallery, ObjectSpace, transactional/observable collections, Merkle trees, and Bloom filters. |
 | Integration | Email, WebSockets, database connection controls, Windows input/hooks, sounds, and application services. |
 | Utilities | Compression, cryptography, text/image/file transformations, logging output, user settings, scheduling, and visual inheritance. |
 
 Choose a block from the bottom navigation buttons, then open a screen from its menus. Block selection changes the available navigation without changing the active screen. The former generic Block 1/Block 2 and repeated Opt entries are replaced by these functional groups; the original Screen A/B/C examples are under **Workspace > Navigation Samples** as **Calendar And Toolbar**, **Expandable Panels**, and **Task Pane Grids**.
 
+**Controls > Input > All controls by class name** opens the complete native control catalog. Search a class name, namespace or category, select its exact fully qualified class label, and interact with the real example. **Show live properties** opens the selected instance's property inspector; complete workbenches start with more preview space. Complex chart, SourceGrid, appointment, database and CRUD controls use populated workbenches and select the chosen control's tab automatically. Forms, popups and wizard steps open through owned native windows. Abstract bases explicitly identify the concrete example, and generic wizard types use a closed `LogOutputConfiguration` model. Examples are constructed only when selected and disposed when replaced or closed. `ControlCatalogTests` compares the catalog against exported `Control` and `ToolStripItem` types from all referenced native UI and database-provider assemblies, so an added public native widget cannot silently remain absent.
+
 The shared `IApplicationScreenHost` owns block registration, navigation and screen lifecycle. It exposes actual native controls by reference. The form's `IUserInterfaceServices` provides interactions and object-based menu execution through `ExecuteMenuItemAsync(item)`. Each item reaches its declaring block through `item.Parent.Parent`; each registered block reaches the application through `Parent` and its contributor through `Source`. Screen examples use their own `Host` and `Block` to navigate or close themselves, including when detached, and can log through `Block.Parent.Logger`. Typed hosting uses the generic base contract; native tab and docking commands remain on `IWinFormsApplicationScreenHost`. `SharedScreenHostIntegrationTests` verifies service identity, shared reference operations and native presentation behavior.
 
-Blocks own their `ScreenDefinitions` independently of navigation. Each screen menu item references its canonical registration held by the block; the default is a `DefaultScreenDefinition` reference, and the definition's `Activators` array records its attached menu commands. Definitions carry lifetime and screen-kind policies directly. Native menus merge by their visible text and commands by title. Screen registrations have block-local identity and can declare stable persistence keys; navigation captions do not define that identity. The shared metadata classes are abstract `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, and `ApplicationMenuItemBase`; native `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` remain abstract intermediates. Concrete screen and action items add images, placement, and resource ownership.
+Blocks own their `ScreenDefinitions` independently of navigation. Each screen menu item references its canonical registration held by the block; the default is a `DefaultScreenDefinition` reference, and the definition's `Activators` array records its attached menu commands. Definitions carry lifetime and screen-kind policies directly. Native menu/toolbars use the reusable merge controls: compatible headings combine by displayed caption while explicit `MergeAction` / `MergeIndex` retain their meaning. Screen registrations have block-local identity and can declare stable persistence keys; navigation captions do not define that identity. The shared metadata classes are abstract `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, and `ApplicationMenuItemBase`; native `WinFormsApplicationMenuItemBase` and `WinFormsLinkMenuItemBase` remain abstract intermediates. Concrete screen and action items add images, placement, and resource ownership.
 
 ## Default, permanent, and empty screens
 
@@ -66,7 +68,7 @@ Ordinary screens use the framework's **MultiInstance** default: every menu activ
 
 1. In **Workspace > Screen Hosting**, click **Settings** repeatedly. The Settings registration is single-instance; the same tab and instance number remain selected.
 2. Click **New Design** twice. The Design registration is multi-instance; each tab has its own instance number, editable notes, counter, and event log.
-3. Type different notes in each tab. Switch between tabs and use **Settings N** / **Design N > Actions**, or its counter toolbar button. Both must operate on the selected instance, and only its menu and toolbar should be merged into the main window.
+3. Type different notes in each tab. Switch between tabs and use **Settings N** / **Design N > Actions**, or its counter toolbar button. Both must operate on the selected instance, and only its menu and toolbar should be merged into the main window. Browse another block while keeping the screen visible: `SelectedBlock` changes navigation, while `ActiveBlock` and its commands still follow that visible screen. Detach another screen and check that its window composes its own active owner commands independently.
 4. Right-click a tab and choose **Undock**, or drag a selected tab away from the tab headers and release. Try the rightmost tab and the last remaining tab as well. Its notes and counter remain intact. The compact detached window shows its own **File** and **Actions** menus directly, and retains the screen's original toolbar. Check its caption icons for **Re-dock**, **Minimize**, **Maximize/Restore**, and **Close**. Minimize and restore through the taskbar, double-click the title to maximize/restore, and resize using the window edges. The main window continues to show the selected docked screen's controls, or an empty content panel when all screens are detached.
 5. Undock Settings and click **Settings** in the main window's navigation again. This should focus the existing detached window without creating another tab.
 6. Move the detached window's title bar close to the main tab strip. A highlighted tab-sized **Release to dock** preview and text hint show the insertion point and screen title, using the navigation pane's blue. The tabs should stay stationary without flickering while the pointer remains at that position. Moving the screen body over the workspace should not offer docking. Release to dock, or move away to dismiss the preview. The caption's **Re-dock** icon or **Ctrl+Shift+D** also returns it directly.
@@ -79,7 +81,16 @@ Ordinary screens use the framework's **MultiInstance** default: every menu activ
 13. Move the application and detached screens between monitors at different scaling settings (for example 100%, 150%, and 200%). Windows should bitmap-scale the complete windows. Check that navigation labels and dialog buttons remain visible and that tab titles, close buttons, docking previews, and menu collapse/restore retain their layout.
 14. Open **Plain Screen (no bars)** and detach it. Its content should start directly below the caption, with no empty menu, toolbar, or tab row. Edit the notes, re-dock, and detach again to check that the same content survives. Also check a regular Settings or Design screen: only their actual menus and toolbar should occupy space.
 
-The remaining demonstrations are grouped by function as listed above and can be opened side by side. **Integration > Connections > WebSockets** polls reports on a component-owned UI timer that stops when its handle is destroyed and resumes when recreated. Switching, detaching, re-docking, and closing that screen must not leave a callback invoking a missing handle. The **Integration > Windows Integration > Input Hooks** screen batches worker events for a UI timer, stops its hooks while its handle is unavailable, and releases hook subscriptions and resources on close or direct disposal. Reopening or re-docking it must not leave callbacks updating a disposed screen.
+The remaining demonstrations are grouped by function as listed above and can be opened side by side. **Integration > Connections > WebSockets** polls reports on a UI-owned timer that stops when its handle is destroyed and resumes when recreated. Switching, detaching, re-docking, and closing that screen must not leave a callback invoking a missing handle. The **Integration > Windows Integration > Input Hooks** screen batches worker events for a UI timer, stops its hooks while its handle is unavailable, and releases hook subscriptions and resources on close or direct disposal. Reopening or re-docking it must not leave callbacks updating a disposed screen.
+
+Open **Controls > Layout > Miscellaneous Controls**, then select **Framework
+utility experiments > Compression comparison**. The action compares four sample
+sizes and verifies compression, compression with
+encryption, and encryption round trips. Its button becomes **Cancel comparison**
+while running. Cancellation or actual screen destruction stops further codec
+calls; closing the screen or application does not wait on the worker. Hiding a
+retained screen does not cancel its operation. Results and cancellation feedback
+are written on the screen's owning UI thread.
 
 ## Independent screen registrations
 
@@ -259,6 +270,17 @@ is visible, has a handle and Live is selected; closing the screen disposes it.
 In both dashboards, the screen owns capture and retention. The chart controls
 render supplied snapshots and do not collect telemetry themselves.
 
+## Loading Indicator gallery
+
+Open **Controls > Feedback > Loading Indicator** to compare the four native animations:
+Spokes, Dots, Arc and Pulse. The gallery shows them together in different colours.
+Use the interactive preview to change the style, colour, frame interval and geometry,
+and pause or restart it to inspect the appearance.
+
+The work queue demonstrates a temporary scoped overlay and a designer-placed inline
+indicator. Each explicitly simulated operation can be cancelled. Watch the queue and
+status message, then repeat the operation; closing the screen must cancel
+its work and release the indicator. These examples perform no network or disk work.
 ## Visual Grid walkthrough
 
 Choose **Data And Collections > Data Editing > Visual Grid** to open a fresh screen each time; each tab has its own data and grid settings.
@@ -323,8 +345,24 @@ The application-level **Views > Toggle Screen Mode** command is also a toolbar b
 
 ## Inspector preferences
 
-Open **Workspace > CPU Inspector** and **GPU Inspector**, then **Options > Screen Options...**. Both commands create the existing `ScreenHostingDesignTestScreen` with their original constructor labels and separate stable registrations. `ScreenHostingPreferences` is an ordinary class with standard .NET validation, without a `SettingsObject` base. CPU uses the shared default editor; GPU adds a custom provisional preview while retaining the same nested, collection and grid editor. Each registration declares its own heading/defaults, detail enum, nested presentation, saved-view collection, two named grid roles and logging section. Options metadata and defaults are available before either inspector opens.
+Two attribute-based examples are available:
 
-The **Preferences and grids** tab contains two screen-owned grids and a standalone comparison. Drag a column edge, change a page, Apply or Reset options, close and reopen the inspector to compare persistence. A computed Summary column has an explicit stable key. The standalone grid retains its ordinary independent record; the owned grids and Log Output selector save only through the inspector's root profile. Remembered logging starts only after the screen's logger and normal readiness/preflight path are available.
+- **Utilities > Application Utilities > User Settings** declares
+  `[Settings(typeof(SettingsTest.SettingsDemoScreenSettings))]` without a typed
+  `ScreenSettings` override or builder settings registration. Open **Options >
+  Screen Options...**, change **PreferGlobalScope**, then Apply. Its **Global
+  scope** checkbox updates immediately. Reset Defaults restores false; Cancel
+  discards unapplied edits. Close and reopen the screen to check persistence.
+- **Workspace > Screen Hosting > CPU Inspector / GPU Inspector** declare their
+  nested settings through `[Settings]` and retain a typed accessor. Their builder
+  supplies matching per-registration values. These examples include nested
+  settings, grids, validation and a custom editor.
+
+Options lists only screens that have settings. **Plain Screen (No Bars)**,
+**Permanent Notes** and the lifecycle-only **Settings** screen do not appear.
+
+Open **Workspace > CPU Inspector** and **GPU Inspector**, then **Options > Screen Options...**. Both commands create the existing `ScreenHostingDesignTestScreen` with their original constructor labels and separate stable registrations. `ScreenHostingDesignTestScreen.ScreenHostingPreferences` is a nested `SettingsObject` subclass with standard .NET validation. CPU uses the shared default editor; GPU adds a custom provisional preview while retaining the same nested, collection and grid editor. Each registration supplies its own initial heading; the settings class declares Reset defaults for its detail enum, nested presentation, saved views, two named grid roles and logging section. Options metadata and defaults are available before either inspector opens.
+
+The **Preferences and grids** tab contains two screen-owned grids and a standalone comparison. Drag a column edge, change a page, Apply or Reset options, close and reopen the inspector to compare persistence. A computed Summary column has an explicit stable key. The standalone grid retains its ordinary independent record; the owned grids and Log Output selector save only through the inspector's actual settings root. Remembered logging starts only after the screen's logger and normal readiness/preflight path are available.
 
 Use the **Lifecycle and draft** tab to edit the original notes, then apply preferences or switch between CPU and GPU. Preference changes update the summary and controls without replacing those operational notes. A cancelled Options page remains provisional; successful earlier Apply actions remain accepted. Turning Remember After Close off keeps transient output usable in the current session while omitting that output from persisted preferences.

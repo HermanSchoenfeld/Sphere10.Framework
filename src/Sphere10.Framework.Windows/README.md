@@ -752,7 +752,7 @@ accumulator; the caller selects metrics, units and lifetime. Follow the
 `WM_HOTKEY`, the modifier flags and the message-only window parent. Register and
 release a shortcut on its owning window thread, and use `MOD_NOREPEAT` when one
 notification per press is required. WinForms consumers can use the owned
-[GlobalHotKey component](../Sphere10.Framework.Windows.Forms/GlobalHotKey.cs)
+[GlobalHotKey component](../Sphere10.Framework.Windows.Forms/HotKeys/GlobalHotKey.cs)
 instead of maintaining native window registration themselves. Product settings
 and toggle behavior remain in the consuming application.
 

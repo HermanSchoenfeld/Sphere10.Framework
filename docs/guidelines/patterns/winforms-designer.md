@@ -52,6 +52,31 @@ Declare each screen's editable command toolbar in that screen's designer;
 compose shared commands into it at runtime while preserving the static command
 layout on the concrete screen's design surface. The existing application host
 composes that screen-owned toolbar with block/application commands.
+Assign the screen's actual `MenuStrip` to `ScreenMenuStrip` and its actual
+`ToolStrip` to `ScreenToolBar`. Both properties are designer-editable and supply
+the screen's `IApplicationCommandProvider` projections. Native click handlers,
+checked/disabled state, images and command identity stay on those same controls.
+The active host borrows their items and restores the source strips on navigation,
+undocking or final disposal. Membership is configured before command activation
+and is read-only afterward; captions and checked/enabled state remain live.
+Use the existing merge controls and their `MergeAction` / `MergeIndex` behavior
+for presentation, without a second command-definition list or host binding registry.
+Capture nested command membership at owner activation as well; a currently
+merged menu can contain another screen's borrowed items. Detached windows own
+views of application commands while their original controls and callbacks remain
+with the main form.
+
+Keep popup preparation in the owner's original `DropDownOpening` handlers.
+For matched headings, the generic merger returns the source children, invokes
+their owner's preparation, and merges them back into the visible menu. Do not
+show the original popup or duplicate its availability logic in detached windows.
+Derived `MainForm` handlers use `CommandUserInterfaceServices` for the invoking
+window's context and capture it, plus any intended active screen, before their
+first `await`. See [native command context](../../../src/Sphere10.Framework.Windows.Forms/README.md#native-command-context).
+
+Derived main forms append application-specific options to the inherited
+`OptionsToolStripMenuItem`, keeping the framework's Screen Options action and
+the product's native commands in the same header.
 Edit reusable common controls through their own
 design surface rather than relying on protected modifiers to bypass these limits.
 

@@ -163,7 +163,7 @@ Reference the declaring project and meet its platform requirements.
 | Facade | Project | Existing entrypoints and source |
 |---|---|---|
 | `Tools.Windows` | Sphere10.Framework.Windows | Thread-static `Registry`, `Services`, `Security`, `Processes`, `Win32` and `Shell` utility instances: [WindowsTool.cs](../src/Sphere10.Framework.Windows/WindowsTool.cs) |
-| `Tools.WinForms` | Sphere10.Framework.Windows.Forms | Cursor helpers in [Tool.cs](../src/Sphere10.Framework.Windows.Forms/Tool.cs) and window capture/restore/automatic persistence in [WindowSettingsTool.cs](../src/Sphere10.Framework.Windows.Forms/WindowSettingsTool.cs) |
+| `Tools.WinForms` | Sphere10.Framework.Windows.Forms | Cursor helpers in [Tool.cs](../src/Sphere10.Framework.Windows.Forms/Misc/Tool.cs) and window capture/restore/automatic persistence in [WindowSettingsTool.cs](../src/Sphere10.Framework.Windows.Forms/Application/WindowSettingsTool.cs) |
 | `Tools.Web.Html` | Sphere10.Framework.Web | `Percent`, `Beautify` and animation classes: [HtmlTool.cs](../src/Sphere10.Framework.Web/HtmlTool.cs) |
 | `Tools.Web.AspNetCore` | Sphere10.Framework.Web.AspNetCore | `ParseNetwork`: [AspNetCoreTool.cs](../src/Sphere10.Framework.Web.AspNetCore/AspNetCoreTool.cs) |
 | `Tools.Web.Mvc` | Sphere10.Framework.Web.AspNetCore.MVC | `ToSelectList` enum helpers: [MvcTool.cs](../src/Sphere10.Framework.Web.AspNetCore.MVC/MvcTool.cs) |

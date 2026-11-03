@@ -1,103 +1,118 @@
 # Per-user form and control settings
 
-Attach ordinary settings objects to screen registrations for integrated Options; use the existing
-settings provider for independent controls and window placement. Follow
-[Code Styling](../code-styling.md) and the
-[Screen Options guide](../../usage/screen-options.md) for the shared catalog,
-native/web bindings, detached editors and ordered accepted saves.
+Use the existing settings library for screen, block, plugin and standalone UI
+preferences. Every settings root derives from `SettingsObject`; nested data
+records may remain ordinary values. See [native screen settings](winforms-screen-settings.md)
+and [Screen Options](../../usage/screen-options.md) for declarations and editors.
 
-## Choose the owning profile
+## Owned instances and defaults
 
-Declare screen preferences through the block's `AddScreen` callback with
-`UseSettings<TSettings>()`, `UseSettings(instance)` or `UseSettings(() => new Preferences(...))`;
-use `AddSettings` for application-root preferences. Screen settings need no base
-class: editors edit the supplied ordinary values. Standard validation attributes
-and `IValidatableObject` are supported; existing `SettingsObject.Validate()` still
-applies when that base is used. Factories create settings values, never screens.
-Mark a settings class `[UserEditable]` for automatic Options editing. Its public
-properties remain editable unless `[ReadOnly(true)]` or `[Browsable(false)]`
-restricts their presentation; those attributes do not affect persistence.
-Unmarked values may still use an explicit custom editor and the same storage.
-Instance defaults are copied at declaration; factory defaults are fresh for Reset.
-The application enumerates unopened
-and no-options registrations without constructing operational UI. Platform startup
-restores profiles before default/permanent screen work. Native screens use
-`GetSettings<TSettings>()` and `BindGridPreferencesAsync`; web screens use the
-corresponding typed access and awaited preference callbacks.
+Screens declare `[Settings(typeof(...))]` with their nested `SettingsObject`
+type; an optional covariant `ScreenSettings` override provides typed access.
+Attribute, property and explicit builder settings declarations must agree;
+conflicts throw. Blocks and plugins expose `BlockSettings` and `PluginSettings`.
+A supplied instance is the actual settings object retained by that owner.
+Options enumerates these owners without constructing operational screens and
+omits screen registrations without settings. No catalog, profiles, edit sessions
+or settings factories are required.
 
-Keep one owner per preference. Bind screen-owned grids to a named plain
-`VisualGridSettings` (native) or `BlazorGridSettings` (web) section, suppressing
-their independent record. The
-same grid capture/apply path still serves standalone controls. Preserve window
-placement through the existing main-form finalizer rather than moving it into
-an unrelated screen profile. Web catalogs/stores belong to the circuit and its
-authenticated subject or anonymous browser profile; never use native static
-`UserSettings` as shared mutable web-user state.
+Declare default values with `[DefaultValue]`. `SettingsObject` already applies
+attributes during activation through `ObjectWithDefaultValues`. Reset calls its
+existing `RestoreDefaultValues()` method. Complex domain defaults can override
+that method, call base and reset their nested values. Do not capture instances
+as immutable defaults or construct hidden copies to implement Reset.
 
-Editors and screens work on detached copies. Capture on the UI/renderer owner,
-serialize/persist exclusive snapshots off that owner, and publish only after a
-successful save. Use the profile's ordered capture/version mechanism to prevent
-stale instances or older pending writes replacing accepted values. Failed saves
-remain visible and retryable. Hide, vetoed close and unchanged disposal do not
-save; accepted closure and approved finalization await pending saves before the
-provider is disposed.
+Class-level `[UserEditable]` enables the automatic editor. `[Browsable]` and
+`[ReadOnly]` affect editing; `[Transient]` excludes editing and persistence.
+`[Editor]` selects a dedicated settings editor. Keep screen-specific settings
+classes inside their screens under `#region Inner Types`.
 
-Standard dialogs and screen helpers handle detached drafts, Reset, validation and
-ordered persistence. Application code need not construct profiles or edit
-sessions to declare or edit its settings.
+## Persistence and change events
 
-## Standalone provider contract
+Use `SettingsServices.UserSettings`, backed by the established
+`Local<ISettingsProvider>` / native `UserSettings.Provider`. `IApplication.Settings`
+exposes that same provider. Preserve the outer provider, record type and ID,
+cache and encryption behavior. Controls do not replace the provider.
 
-- Define a public `SettingsObject` subclass with a public parameterless constructor, serializable properties, and useful defaults. Use a feature-specific name such as `EmployeeSearchSettings`; the default file provider uses the short type name, so unrelated nested classes named `FormSettings` can collide.
-- Retrieve it with `UserSettings.Get<EmployeeSearchSettings>()`. An optional stable ID separates instances, for example `UserSettings.Get<EmployeeSearchSettings>("ArchivedEmployees")`.
-- The returned object's instance `Save()` uses its bound provider; there is no static `UserSettings.Save()`. For asynchronous UI persistence, save a detached snapshot through the captured provider's `SaveSetting` rather than mutating/encrypting a live cached object.
-- `Get<T>()` returns stored settings or a new object with defaults. The default provider does not automatically save new objects. It caches objects by type and ID, so modifying them can affect other consumers even before saving; keep provisional dialog edits in controls or a separate model until accepted.
-- Use `GlobalSettings` only for values deliberately shared between system users. Window placement, personal filters, and recent selections belong in `UserSettings`.
+An accepted `settings.Save()` or awaited `settings.SaveAsync(token)` persists
+through the attached provider, then calls internal `NotifyChanged()` to raise
+public `OnChanged`. Failure or cancellation does not raise that event. Screens
+listen to their own, block and plugin instances, refresh on the UI/renderer owner,
+and unsubscribe on removal. Nonvisual services use those same objects and events.
+
+Native screens use the existing `ApplicationControl` / `UserControlEx` lifecycle:
+restore before work, present in `CopyModelToUI`, capture deliberate UI changes in
+`CopyUIToModel`, and use `Refresh` after accepted settings changes. Scalar changes
+call `MarkSettingsChanged()` when they need accepted-close persistence; bound
+grid/log controls already track their edits. Hide, vetoed close, painting,
+layout and unchanged disposal do not authorize saves.
+
+Options editors borrow the actual object. Local dialog backups restore unapplied
+edits on Cancel; earlier successful Applies remain saved. Reset only changes
+memory. Apply validates and awaits `SaveAsync`; it needs no publication/session
+coordinator. Runtime references, providers and transient members are excluded
+from local backups and persistence. Local backups retain values omitted only by
+persistence-specific `ShouldSerialize` policies, so Cancel and Reset remain useful.
+An explicitly requested Options owner takes precedence; otherwise prefer the
+active screen's settings and retain the existing owner/first-page fallback.
+
+## Standalone settings
+
+Give settings types feature-specific names: the default file provider uses short
+type names, so unrelated nested types named `FormSettings` can collide. Supply a
+stable ID to distinguish records of one type. `Get<T>()` returns stored settings
+or provider-bound defaults; new objects are not saved automatically by the default
+provider. Cached values can be shared by type/ID.
 
 ```csharp
-using Sphere10.Framework;
+using System.ComponentModel;
 using Sphere10.Framework.Application;
 
 public class EmployeeSearchSettings : SettingsObject {
-	public int PageSize { get; set; } = 100;
-	public string SearchText { get; set; } = string.Empty;
+	[DefaultValue(100)]
+	public int PageSize { get; set; }
+
+	[DefaultValue("")]
+	public string SearchText { get; set; }
 }
 ```
 
-For standalone controls, capture the initialized provider and restore away from
-the UI thread; then apply the returned values on the owner:
-
 ```csharp
-var provider = UserSettings.Provider;
-var settings = await Task.Run(() => provider.Get<EmployeeSearchSettings>());
-_pageSize.Value = Tools.Values.ClipValue(settings.PageSize, 1, 9999);
-_searchBox.Text = settings.SearchText ?? string.Empty;
+var settings = UserSettings.Get<EmployeeSearchSettings>("ArchivedEmployees");
+settings.PageSize = 50;
+settings.Validate().ThrowOnFailure();
+await settings.SaveAsync();
 ```
 
-Capture a detached snapshot when the preference is accepted. Serialize/save it
-away from the UI thread through the same captured provider; order repeated saves
-and keep provisional edits out of its cached object:
+`LoadSetting(defaults)` and its async counterpart select the record using the
+supplied object's type and ID. Set the ID before loading. Providers may return
+an existing cached instance; application adapters retain a supplied owner's
+identity and populate its persisted values through the existing settings serializer.
+Missing values retain declared defaults. Writable collections replace defaults,
+including explicitly empty collections; explicit null remains distinct from absence.
 
-```csharp
-var snapshot = new EmployeeSearchSettings {
-	PageSize = (int)_pageSize.Value,
-	SearchText = _searchBox.Text
-};
-snapshot.Validate().ThrowOnFailure();
-await Task.Run(() => provider.SaveSetting(snapshot));
-```
+## Provider execution directions
 
-Use the control's actual supported range.
+`ISettingsProvider` declares paired sync and async create, contains, load, save,
+delete and clear operations. `SettingsProviderBase` shares policies without
+choosing IO direction. `SyncSettingsProviderBase` owns sync primitives and worker
+adapters; `AsyncSettingsProviderBase` owns awaited primitives and standard sync
+adapters. `NewSettingAsync` awaits optional autosave. Decorators forward both
+directions. See [provider directions](sync-async.md#settings-providers).
 
-## Lifetime and storage
+Directory providers retain JSON `.setting` writes, legacy XML reads and existing
+encryption. The user directory remains `{UserDataDir}/{ProductName}`. Keep record
+types/IDs stable. Store preference values and identifiers, not services, controls,
+live sources or business entity graphs. Optional preference-load failures should
+be logged at the UI boundary while defaults keep the form usable.
 
-The application module registers `Local<ISettingsProvider>` as a `CachedSettingsProvider` around `DirectoryFileSettingsProvider`, then assigns it to `UserSettings.Provider` during framework module initialization. Normal framework applications should use that setup. Do not replace the provider in individual forms or read settings before that assignment. `StartWinFormsApplication` starts the framework before the root's application tasks and main-window display, so those consumers use the established provider.
-
-The default user directory is `{UserDataDir}/{ProductName}`. The file provider writes JSON to `.setting` files and can read legacy XML. Public settings properties are serialized; `SettingsObject.Provider` is excluded. Persist values and stable identifiers, not controls, services, live data sources, or an entire entity graph. Keep existing setting names and IDs stable; plan a migration when changing them.
-
-Restore once after controls exist and before the user starts interacting. Validate persisted numbers, enums, and selections against current constraints; defaults must work on first launch and when older files lack newly added properties. For optional UI preferences, catch load/save errors at the UI boundary, log through the owning `IApplication.Logger` when available (or `SystemLog.Exception` for a standalone form), and keep the form usable. Avoid swallowing failures for required application configuration.
-
-Save when the preference is accepted. Persist main-window placement through the existing framework shutdown task: capture placement in memory after exit permissions and native closing observers approve shutdown, then call the settings instance's `Save()` during `MainFormSettingsFinalizer.Finalize()` while the main window is alive and before service-provider disposal. Completed closure remains the capture boundary for standalone persistence scopes. A cancelled close must not queue a save. Explicit Apply/Save actions may persist sooner. Move, resize, splitter, and keystroke handlers must not serialize or write preferences; keep any needed tracking lightweight and in memory. Custom lifecycle tasks use the existing sync/async directional bases; see [the sync/async guide](../../../docs/guidelines/patterns/sync-async.md#synchronous-and-asynchronous-implementation-hierarchies).
+Browser preferences use `UserSettings` with the circuit-scoped
+`BlazorSettingsProvider` and current user/browser identity. Blazor Framework
+initialization and circuit activities establish the facade's provider binding.
+Settings-bearing runtime owners are circuit-local; never replace the process
+default with one browser user's provider. Await IO after interactive
+startup and before operational screen work. Loading preferences does not start
+loggers, files, hardware collectors or management operations.
 
 ## Main-window placement
 
@@ -164,14 +179,10 @@ web widths use CSS pixels. Columns without an override retain natural/stretch
 sizing. Restore before first sizing/query and preserve a live cell draft when
 accepted Options changes alter layout or defer query settings.
 
-Import old paging/sorting only when the destination section is absent.
-`ApplicationSettingsProfile.TryInitializeSection` records presence separately
-from resettable values, persisted alongside the next accepted root snapshot.
-Explicit Options Apply owns the root's public value members and declared grid
-paths even before they open. A root `LogOutput` property needs no separate section
-declaration. Reset/restart must not reimport a retired record merely
-because the accepted width collection is intentionally empty. Standalone grids
-retain their built-in persistence using the same value capture/apply mechanism.
+A stored typed screen root is authoritative. Consult old standalone records only
+when that typed root is absent; do not maintain a section-version registry or
+sidecar. Resetting saved values must not cause a later restart to reimport old
+control records. Standalone grids retain their own existing persistence.
 
 ## Reusable logging preferences
 
@@ -211,7 +222,7 @@ Verify next-session behavior with a fresh provider, including remembered On/Off,
 consumer preflight, invalid options, cache eviction and unchanged-instance disposal.
 
 Screen-owned logging preferences use the selector's plain-value ownership seam
-and the root profile rather than its independent record. Applying values must
+and the actual screen settings root rather than an independent record. Applying values must
 not acquire a logger or open a file. The screen stops/drains existing output
 through its normal lifetime, applies accepted configuration and honors remembered
 On only after its preflight is ready. Disabling Remember excludes transient
@@ -227,7 +238,7 @@ Inspect these current implementations before extending their behavior:
 - [UserSettings](../../../src/Sphere10.Framework.Application/Settings/UserSettings.cs), [SettingsObject](../../../src/Sphere10.Framework.Application/Settings/SettingsObject.cs), and [ISettingsProvider](../../../src/Sphere10.Framework.Application/Settings/ISettingsProvider.cs).
 - [Application module registration](../../../src/Sphere10.Framework.Application/ModuleConfiguration.cs).
 - [DirectoryFileSettingsProvider](../../../src/Sphere10.Framework.Application/Settings/DirectoryFileSettingsProvider.cs) and [CachedSettingsProvider](../../../src/Sphere10.Framework.Application/Settings/CachedSettingsProvider.cs).
-- [MainFormSettingsFinalizer](../../../src/Sphere10.Framework.Windows.Forms/Application/MainFormSettingsFinalizer.cs) and [window tracking helpers](../../../src/Sphere10.Framework.Windows.Forms/WindowSettingsTool.cs).
+- [MainFormSettingsFinalizer](../../../src/Sphere10.Framework.Windows.Forms/Application/MainFormSettingsFinalizer.cs) and [window tracking helpers](../../../src/Sphere10.Framework.Windows.Forms/Application/WindowSettingsTool.cs).
 - [WinForms usage](../../../src/Sphere10.Framework.Windows.Forms/README.md).
 - [VisualGrid preference and layout tests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/VisualGridAutoPageSizeTests.cs), including fresh-provider round trips and concurrent instances sharing a settings ID.
 

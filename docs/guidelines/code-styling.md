@@ -108,6 +108,40 @@ When splitting files, preserve namespaces, access, behavior and source history;
 update project/solution references, tests and documentation. File organization
 does not determine architectural ownership.
 
+Give multi-field data records explicit names instead of declaring tuple-shaped
+types in fields, collections, parameters or return values. Keep a class-local
+record as an inner type. Only compact, one-line record declarations go near the
+top of the owner. Full inner types go at the bottom of the class inside
+`#region Inner Types`. Each folder uses its own `SpecialTypes.cs` for the explicitly named data
+records shared by classes in that folder. This shared-record file is an exception
+to the ordinary one-type-per-file rule above; it is not a place for behavior or
+unrelated helpers. The types keep their own names; do not wrap them in repeated
+`SpecialTypes` classes across folders sharing a namespace.
+
+### Domain source organization
+
+Keep supporting types with the domain that owns their behavior. Apply this rule
+across `Misc`, general `Controls` and general `Forms`; inspect the classes and
+their actual consumers rather than treating those folders as default destinations.
+When a control or form has dedicated support classes, give that family its own
+domain folder. For example, `ListMerger` owns its merge/side definitions at the
+domain root and its visual control under `ListMerger/Controls`.
+
+A native domain's root contains its contracts, state, builders and helpers;
+`Controls` contains visual controls, and `Forms` contains forms, dialogs and hosted
+screens. General `Controls` and `Forms` hold standalone reusable widgets without
+a dedicated supporting family. Reserve `Misc` for helpers genuinely shared across
+domains. Put extension classes in `Extensions`, or the owning domain's `Extensions`
+when their behavior belongs specifically to that domain. Preserve namespaces and
+public APIs when consolidating physical source locations.
+
+### Callable bodies
+
+Use multiline block bodies for methods, constructors, finalizers, operators and
+property accessors, including trivial forwarding methods and getters. Do not use
+one-line or expression-bodied implementations. Automatic properties may retain
+their ordinary compact declaration. Apply this rule to source, tests and examples.
+
 ### Naming Conventions
 
 The naming conventions should follow the default C# conventions as suggested by Visual Studio IDE and/or Resharper intellisense. These include
@@ -131,9 +165,13 @@ public class PascalCasedClassName {
 		_privateFieldName = initialValue;
 	}
 
-	public int PublicMethodName() => _privateFieldName;
+	public int PublicMethodName() {
+		return _privateFieldName;
+	}
 
-	private int PrivateMethodName() => NonPrivateFieldName;
+	private int PrivateMethodName() {
+		return NonPrivateFieldName;
+	}
 }
 
 ```

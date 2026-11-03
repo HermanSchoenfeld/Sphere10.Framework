@@ -88,6 +88,45 @@ all its work. Callers can use either API through `IWork`. Reuse the existing
 directional base for the abstraction instead of repeating adapters in concrete
 classes or introducing a helper class to choose the execution direction.
 
+## Settings providers
+
+The settings library follows the same direction split as
+[`Disposable`](../../../src/Sphere10.Framework/Disposables/Disposable.cs),
+[`SyncDisposable`](../../../src/Sphere10.Framework/Disposables/SyncDisposable.cs)
+and [`AsyncDisposable`](../../../src/Sphere10.Framework/Disposables/AsyncDisposable.cs).
+Use the existing provider bases rather than implementing bridge methods in every
+provider or supplying execution adapters in `ISettingsProvider`.
+
+| Layer | Settings responsibility |
+|---|---|
+| `ISettingsProvider` | Declares creation, existence, load, save, delete and clear in both directions. |
+| `SettingsProviderBase` | Shares provider policies, provider-bound creation and notifications; leaves persistence directions abstract. |
+| `SyncSettingsProviderBase` | Implements synchronous load/save wrappers around `LoadInternal` and `SaveInternal`; async calls schedule the complete synchronous operation. |
+| `AsyncSettingsProviderBase` | Implements awaited load/save wrappers around `LoadInternalAsync` and `SaveInternalAsync`; sync calls start and join the complete async operation outside the caller's synchronization context. |
+
+A synchronous provider implements synchronous `ContainsSetting`, `DeleteSetting`
+and `ClearSettings` plus its protected load/save primitives. An asynchronous
+provider implements their asynchronous counterparts plus its protected async
+load/save primitives. Override the supplied-default load primitive when the
+storage format can populate an existing typed settings object while preserving
+omitted registration defaults. Keep encryption, ID/provider attachment and
+notifications in the existing wrappers rather than duplicating them in storage.
+
+[`DirectoryFileSettingsProvider`](../../../src/Sphere10.Framework.Application/Settings/DirectoryFileSettingsProvider.cs)
+is sync-first; the circuit-scoped
+[`BlazorSettingsProvider`](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/Settings/BlazorSettingsProvider.cs)
+is async-first. Both expose the full contract. Browser UI normally awaits its
+provider and never blocks the renderer for settings IO. `NewSettingAsync` must
+await automatic persistence when `AutoSaveNewSettings` is enabled; a returned
+value or cache entry must not precede that acknowledgement. Decorators forward
+creation and persistence in the caller's chosen direction.
+
+Keep the `// Sync-over-async pattern` comment at each blocking adapter. Do not
+replace it with a synchronous method that throws merely because the provider is
+async-first, evaluate an async factory on the caller before sending its task to
+a worker, or return before a pending primitive completes. The normal disposal
+primitive names are `DisposeInternal` and `DisposeInternalAsync`.
+
 ## Adapter completion and cancellation
 
 The sync-first asynchronous adapter returns the worker task. It must complete
@@ -222,7 +261,7 @@ can deadlock. Prefer awaited calls on UI execution paths.
 Keep platform dispatch in the owning UI implementation; general disposable
 bases do not need creator-thread IDs or UI context machinery.
 The abstract
-[`WinFormsSyncDisposableBase`](../../../src/Sphere10.Framework.Windows.Forms/WinFormsSyncDisposableBase.cs)
+[`WinFormsSyncDisposableBase`](../../../src/Sphere10.Framework.Windows.Forms/Misc/WinFormsSyncDisposableBase.cs)
 specializes the sync-first async hook for rendering, highlight, screen-transition,
 hot-key and wizard owners. It captures their WinForms context in one place.
 Synchronous cleanup remains inline on the calling UI thread and leaves queued

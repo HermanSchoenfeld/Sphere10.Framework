@@ -1,244 +1,223 @@
 # Screen registrations and Options
 
-Attach an ordinary settings object to the block-owned screen registration with
-`UseSettings`. The application restores its values before the screen works and
-provides Options even before that screen opens. Editors edit the supplied value;
-the application handles persistence and acceptance.
+Screens, blocks and plugins own actual `SettingsObject` instances. A screen
+declares its settings with `[Settings(typeof(...))]`; blocks and plugins expose
+`BlockSettings` and `PluginSettings`. Options enumerates those existing owners,
+including unopened screen definitions with settings and service-only plugins.
+Screens with no settings are omitted. It does not
+construct operational screens to discover preferences.
 
-Mark the settings class `[UserEditable]` to use the automatic editor. Public
-properties are editable unless `[ReadOnly(true)]` makes them read-only or
-`[Browsable(false)]` hides them. These attributes affect editing, not persistence.
-An unmarked object can still load and save, and can use an explicitly supplied editor.
+The navigation hierarchy is application → plugin → block → screen. The application
+caption comes from the configured `IProductInformationProvider.ProductInformation.ProductName`,
+not the application's CLR class name. Select assembly attributes with
+`.UseAssemblyInfo()` (or supply an assembly), or configure `ProductInformation`
+through `.WithProductInformation(...)` on the native or Blazor application builder.
+The same selected provider supplies existing product-information consumers. Caption
+changes do not change settings IDs. Plugin and block nodes retain their owners' names.
 
-## Declare values and defaults
+## Declare settings and their defaults
 
-Settings can be an ordinary class with public editable values. Constructor/property
-defaults, a supplied instance, or a supplied factory also provide **Reset Defaults**.
-The factory creates only the settings value; it never constructs the screen.
-Managed profile records restore over those authoritative defaults: missing
-members retain their defaults, including members of an existing nested object.
-An explicitly stored collection replaces its default collection, even when
-empty; explicit null stays distinct from a missing member. Compatible legacy
-type/ID records continue to use their original provider's serialization contract.
+Every settings root derives from `SettingsObject`. Keep each screen-specific
+schema as a public inner type inside its screen, at the bottom under
+`#region Inner Types`. Native typed properties explicitly hide themselves from
+the designer; covariance does not reliably inherit that metadata.
 
 ```csharp
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Sphere10.Framework.Application;
-using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Windows.Forms;
 
-[UserEditable]
-public class UsersPreferences {
-	[Category("Display")]
-	[DisplayName("Show archived users")]
-	public bool ShowArchived { get; set; }
+[Settings(typeof(UsersScreen.UsersPreferences))]
+public partial class UsersScreen : WinFormsApplicationScreen {
 
-	[Category("Display")]
-	[Range(1, 10000)]
-	public int PageSize { get; set; } = 100;
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override UsersPreferences ScreenSettings {
+		get {
+			return (UsersPreferences)base.ScreenSettings;
+		}
+	}
+
+	#region Inner Types
+
+	[UserEditable]
+	public class UsersPreferences : SettingsObject {
+
+		[Category("Display")]
+		[DefaultValue(false)]
+		public bool ShowArchived { get; set; }
+
+		[Category("Display")]
+		[DefaultValue(100)]
+		[Range(1, 10000)]
+		public int PageSize { get; set; }
+	}
+
+	#endregion
 }
 ```
 
-The platform block builder uses the same registration shape:
+`SettingsObject` activation applies `[DefaultValue]` attributes through its
+existing `ObjectWithDefaultValues` base. Reset calls the actual object's
+`RestoreDefaultValues()`. For complex nested values, override that existing
+method, call base, and restore the domain's own values there. Activation and
+Reset then use the same defaults. There is no settings factory, captured-default
+snapshot or constructor-cloning mechanism in a builder or editor.
 
-```csharp
-block
-	.AddScreen<UsersScreen>(screen => screen
-		.WithTitle("Users")
-		.UseSettings<UsersPreferences>(),
-		out var users
-	)
-	.AddMenu(menu => menu
-		.WithText("View")
-		.AddShowScreenItem(users)
-		.AddShowScreenItem<UsersScreen>()
-	);
-```
+Normal registration only needs `AddScreen<UsersScreen>("Users")`. The attribute
+is equivalent to declaring that settings type through the builder. A covariant
+`ScreenSettings` override is optional and provides convenient typed access.
+Existing `[UseSettings(typeof(...))]` declarations remain supported. Attribute,
+typed property and explicit builder settings must agree; conflicting schemas
+throw while the screen definition is built. An explicit
+`UseSettings(instance)` retains that actual supplied instance. It is a live
+owner value, not an immutable Reset template.
 
-Use `.UseSettings(new UsersPreferences { PageSize = 50 })` to supply an instance,
-or `.UseSettings(() => new UsersPreferences { PageSize = 50 })` for fresh factory
-defaults. Instance defaults are copied when declared, so later edits cannot
-change Reset. A supplied instance or factory can use a class whose constructor
-requires arguments. No settings base class is required. Existing `SettingsObject`
-classes remain supported and use their `Validate()` method. Ordinary objects can
-use validation attributes and `IValidatableObject`; validate nested/grid sections
-there when they need product constraints.
+Class-level `[UserEditable]` enables automatic editing of public properties.
+`[ReadOnly(true)]` makes a property read-only; `[Browsable(false)]` hides it while
+retaining persistence. `[Transient]` excludes editing and persistence. Hide the
+inherited provider and ID. Validation combines `SettingsObject.Validate()`,
+data annotations and `IValidatableObject`.
 
-The type command chooses the first matching registration in that owning block.
-Use the moniker to select an exact registration when a screen type is registered
-several times. Defaults and programmatic type lookup still require an unambiguous
-registration. See [builder migration](builder-api-migration.md) for the complete
-API migration and activation rules.
+## Ownership, identity and loading
 
-Profiles use stable application/plugin/block/registration identities. Set
-`WithSettingsKey` on the application and `WithStableKey` on otherwise ambiguous
-same-type registrations. Changing a displayed title does not change a profile.
-Several instances of one registration share accepted preferences; different
-registrations of the same type have separate profiles. `AddSettings` contributes
-application-root preferences without inventing a screen.
+Several instances of one registration share its settings object. Distinct
+registrations can use separate supplied instances and stable keys. Type menu
+commands select the first matching registration in the owning block; use a
+registration moniker for an exact choice. See [builder migration](builder-api-migration.md).
 
-## Restore before work and save accepted snapshots
+Screen storage IDs derive from application/plugin/block/registration identity,
+not display captions. Use `WithSettingsKey` on the application and
+`WithStableKey` for otherwise ambiguous same-type registrations. Explicit
+settings IDs retain their existing record identity. Shared preferences belong
+on their actual block or plugin; no application-root settings definition is needed.
 
-`IApplication.Settings` exposes the catalog. Platform startup restores declared
-profiles before default/permanent screens and their first query. Catalog
-enumeration and editor navigation never run activators. A no-options screen
-still appears in the catalog with a no-options explanation.
+`IApplication.Settings` exposes the established `ISettingsProvider`. Native
+startup uses `SettingsServices.UserSettings` / `UserSettings.Provider`, preserving
+its existing encryption and cache behavior. Adapters restore actual owner values
+before default/permanent screens and their first query. When a provider returns
+a separate cached object, the adapter populates the supplied owner's values
+without replacing its identity. Missing members retain declared defaults;
+explicitly stored collections replace defaults, including empty collections.
+Explicit null is distinct from absence.
 
-Native screens use `GetSettings<TSettings>()` after their normal application
-attachment. Bind grid roles with `BindGridPreferencesAsync<TSettings>` after
-configuring columns and before the first refresh. It imports absent legacy grid
-sections and subscribes the control to the registration profile. Use
-`OnSettingsChanged()` for other value-only presentation changes, and
-`MarkSettingsChanged()` for deliberate local scalar edits.
-`BindLogOutputPreferencesAsync<TSettings>` binds a named plain logging section
-without opening output during restoration. Foreign accepted changes stop/drain
-existing output through its normal lifetime, apply values and explicitly honor
-remembered On through the consumer's preflight. An own-save acknowledgement does
-not restart a live output.
+Loaded values must pass the settings object's validation and data annotations.
+An invalid or partially read optional record restores the supplied defaults,
+retaining the actual root, ID and provider without writing. Cancellation restores
+those values before propagating. Encrypted writes use a shallow storage copy of
+root string members so the live object stays in cleartext during IO.
 
-Blazor screens consume the supplied typed `values` in
-`OnSettingsChangedAsync()` before their first data load. That snapshot also carries
-working edits preserved by a later section initialization. Use
-`GetSettings<TSettings>()` when explicitly reading a separate accepted profile
-snapshot. Bind each grid's
-`Preferences` and awaited `PreferencesChanged` callback to a named root section.
-For accepted direct-control changes, update the working values, call
-`MarkSettingsChanged()`, and await `SaveSettingsChangesAsync()`. Override
-`CaptureSettings()` to copy UI-owned values at an accepted save boundary.
-Do not replace an unsaved business draft when preferences change.
+## Saving and screen refresh
 
-Capture values on their UI/renderer owner. Stores serialize and perform IO away
-from that owner using detached snapshots; they never encrypt or serialize a live
-editor or shared cached root. Optional restore failures expose `LastLoadError`
-and use validated defaults. Failed saves expose `LastSaveError`, retain dirty
-values and allow retry. Hide, a rejected close, refresh and unchanged disposal
-do not authorize a save. Accepted close and approved application finalization
-capture remaining changes and await persistence. Screen captures wait for pending
-preference applications; a section initialized during capture is rebased before
-an obsolete snapshot is retried.
+Call the actual settings object's `Save()` or await `SaveAsync(token)`. It writes
+through its attached provider and only then calls internal `NotifyChanged()`,
+which raises public parameterless `OnChanged`. Failed or cancelled persistence
+does not publish a change. Provider decorators must not duplicate that event.
+An edit made while a save is pending remains dirty for the next accepted save.
 
-## Native and web Options
+Screens observe their own, block and plugin settings instances. Native screens
+dispatch accepted changes to the UI thread and reuse `Refresh()` /
+`CopyModelToUI`. Capture deliberate edits in `CopyUIToModel` and call
+`MarkSettingsChanged()` when scalar changes require accepted-close persistence.
+Use the existing `SaveSettingsAsync()` boundary; do not add a second settings
+lifecycle or block synchronous model/UI hooks on IO.
 
-Applications with declared options add **Options → Screen Options...**. Existing
-Options commands and headings remain in place. The web shell places a newly
-needed heading before Help while preserving the product's menu order.
+Blazor screens use their typed `ScreenSettings` and renderer-owned
+`OnSettingsChangedAsync` path. Mark deliberate edits, then await
+`SaveSettingsChangesAsync`. Retain operational drafts when preferences change.
+Both adapters unsubscribe when the screen is removed. Nonvisual services read,
+observe and save the same actual plugin/block objects.
 
-Both dialogs group application/plugin/block/registration pages, show no-options
-screens, hide persistence IDs/providers, and support scalar, enum, nested and
-collection values. Ordinary properties named `ID` or `Provider` remain ordinary
-values; only the persistence members of `SettingsObject` are hidden. The native default editor reuses
-`DefaultCrudEntityEditor<object>` and its PropertyGrid mechanisms. The web
-default editor uses the same value metadata with renderer-owned controls.
+Hide, a vetoed close, paint, layout and unchanged disposal do not save settings.
+Accepted close and approved finalization await the existing save boundary while
+the provider is available. Failures remain visible and retryable.
 
-**Apply**, **Reset Defaults** and **OK** operate on the selected page. Apply
-validates and awaits storage before clearing that page's dirty state; a failure
-keeps the draft and error visible. OK applies the selected page and closes only
-when no other page has unapplied edits. **Cancel** discards all unapplied drafts,
-including nested/collection edits, while preserving earlier successful Applies.
-Opening Options and displaying/resetting defaults do not write preferences.
+## Options editors
 
-For dedicated native UI, use `WithSettingsEditor` on the screen builder. Its
-`WinFormsApplicationSettingsEditorContext` supplies the detached `Settings` object,
-real services and owner. Application-root definitions can use
-`WinFormsApplicationSettingsDefinition`. Custom editors implement the existing
-entity-editor contract; the dialog owns validation and persistence.
+Applications with declared preferences offer **Options → Screen Options...**
+while preserving existing menu commands. Both dialogs enumerate plugins, blocks
+and registrations directly; there is no catalog, profile or edit-session layer.
 
-For dedicated web UI, use `UseSettings<TSettings, TEditor>()` with a component
-implementing `IBlazorApplicationSettingsEditor`. It receives the ordinary `Value` and
-an awaited `Changed` callback. `ValidateAsync` validates pending editor text;
-the dialog still invokes object validation and owns persistence. A screen can also
-use `UseSettings(instance).WithSettingsEditor<TEditor>()`; application-root
-definitions accept `settingsEditor: typeof(TEditor)`.
-The selected page remains fixed while asynchronous validation or storage runs.
-Editor factories/components are runtime metadata and are never serialized.
+Options initially selects the active screen's settings, even when another
+block is selected for navigation. An explicitly requested owner takes precedence.
+If the active screen has no settings, its block settings are preferred; otherwise
+the dialog falls back to an available settings page.
 
-## One persistence owner per control
+Editors receive the actual owner object. The dialog may keep local serialized
+backups for Cancel, excluding runtime/transient members but retaining values
+omitted only by persistence-specific `ShouldSerialize` rules. Apply validates
+and awaits `SaveAsync`; success updates that page's backup and clears its dirty
+state. Failure retains the edits and error for retry. Reset calls
+`RestoreDefaultValues` in memory and does not write. Cancel restores unapplied
+edits, including nested values and collections, while retaining earlier
+successful Applies. Opening and navigating Options does not save.
 
-Use the existing native `VisualGridSettings` or web `BlazorGridSettings` value per
-logical grid, with distinct
-named roles for screens containing several grids. Declare readable column
-schemas in defaults so unopened screens have useful Options pages. Stable
-`PreferenceKey` values identify computed/icon columns; captions and indexes do
-not identify saved widths.
+Editor selection is an explicit registration editor, then `[Editor]` on the
+settings class (including inherited attributes), then `[UserEditable]`.
+For native class editors use
+`[Editor(typeof(MySettingsEditor), typeof(ICrudEntityEditor<object>))]`; the editor
+can accept `WinFormsApplicationSettingsEditorContext` or have a parameterless
+constructor. `WithSettingsEditor` supplies a registration-specific override.
+The editor context's `Settings` is the actual object; the dialog owns validation
+and persistence.
 
-A non-null grid `Preferences` selects screen-owned mode and suppresses the
-independent standalone record. The same capture/apply mechanism serves standalone
-grids. Native widths are logical 96-DPI units; web widths use CSS pixels.
+Web class editors use
+`[Editor(typeof(MySettingsEditor), typeof(IBlazorApplicationSettingsEditor))]`.
+`UseSettings<TSettings, TEditor>()` or `WithSettingsEditor<TEditor>()` selects a
+component explicitly. It receives `Value` and an awaited `Changed` callback.
+`ValidateAsync` checks pending editor input before object validation and save.
+The selected page stays fixed while asynchronous validation or storage runs.
+Editor metadata is not serialized.
 
-The grid's top settings button edits that same `VisualGridSettings` or
-`BlazorGridSettings` value through a detached draft. It appears when settings
-exist; `AllowsSettingsChange` controls whether the button is enabled. Apply/OK
-uses the existing grid binding, while Cancel discards the provisional edits.
-The compact page-mode menu offers Single, Auto and Manual; Manual retains the
-existing `Paged` enum value.
-Only deliberate manual overrides persist. Natural and stretch sizing remain
-active for other columns. Apply before first sizing, keep overrides through
-refresh/paging/rebinding, and defer query changes while a cell draft is active.
-Completed drags update values without file IO on every movement.
+## Grids and logging
 
-Import legacy values only when the destination section is absent. Presence lives
-outside resettable values and persists with the next accepted snapshot. Explicit
-Options Apply owns the root's public value properties and declared grid paths
-even if their controls have never opened. A `LogOutput` property therefore needs
-no separate declaration to prevent a later legacy import. Reset must not cause
-a future restart to reimport an intentionally retired record. Do not delete
-unrelated or standalone settings as a side effect.
+Each logical grid uses its own existing `VisualGridSettings` or
+`BlazorGridSettings` value inside the screen root. Bind before first sizing/query,
+with stable column keys and readable default titles. Non-null grid `Preferences`
+selects screen ownership and suppresses its separate standalone record.
 
-Native `WinFormsApplicationSettingsStore` captures the application's provider,
-keeps existing encryption rules, and supports `ApplicationSettingsDefinition.WithStorageId`
-for a compatible legacy `SettingsObject` type/ID, including explicit null. Those
-legacy records retain their value-only format. Plain main forms can register the same
-catalog with `AddApplicationSettings`.
+The grid settings button edits that same value. Native `ShowGridSettings`
+controls visibility; `AllowsSettingsChange` controls enablement. Column settings
+expose **Manual width** and **Stretch to fit**. Null restores natural width or
+the column definition's stretch choice; a manual width takes precedence.
+Native widths use logical 96-DPI pixels; browser widths use CSS pixels. Preserve
+layout overrides across refresh/paging/rebinding and protect active cell drafts.
 
-The default scoped `BlazorApplicationSettingsStore` uses origin-local browser
-storage. Keys include application/profile identity plus authenticated
-NameIdentifier/sub/name, or a persisted anonymous browser identity. A new circuit
-is required after the authenticated subject changes. Values survive reload in
-the same browser profile; this default does **not** synchronize across devices.
-For server-backed per-user persistence supply `IApplicationSettingsStore` in the
-product. Do not use process-static native `UserSettings` for web users, or store
-credentials/business entity graphs in browser preferences. Browser interop begins
-only in the interactive circuit, before operational screen work.
+The footer's compact page-mode button offers Single, Auto and Manual; Manual
+retains the `Paged` enum value. Automatic fitted capacity does not replace the
+remembered manual size. Resize and refresh do not authorize writes.
 
-Loading values never starts loggers, hardware access or management operations.
-Products apply such choices through their existing guarded lifecycle/preflight;
-the settings catalog and editors remain resource-free.
+Typed screen records are authoritative. Optional legacy standalone imports are
+used only before that record exists; Reset must not reimport retired records
+after restart. Bound logging likewise uses the actual screen root. Loading or
+editing values does not start loggers, files, hardware or management operations;
+the product applies those choices through its existing guarded lifecycle.
 
-## Adapter coordination
+## Provider direction and browser scope
 
-`IApplication.Settings` exposes the application-owned catalog used by the standard
-dialogs and screen helpers. Application code using those helpers does not need to
-create profiles or edit sessions. Internally, a profile holds accepted values;
-an Options edit session holds a detached provisional copy. Apply validates and
-awaits persistence before publishing, and Cancel discards only unapplied edits.
+`ISettingsProvider` declares sync and async APIs. `SettingsProviderBase` shares
+policies; `SyncSettingsProviderBase` owns sync primitives;
+`AsyncSettingsProviderBase` owns awaited primitives. Their opposite-direction
+adapters follow the existing [directional pattern](../guidelines/patterns/sync-async.md#settings-providers).
+Normal UI/browser callers await `UserSettings.GetAsync<T>()`,
+`HasAsync<T>()` and the returned settings object's `SaveAsync()`. No extra settings
+store or token-backed record is involved.
 
-Custom owners can use `GetValues<T>(out revision)`, `Capture` and
-`SaveCaptureAsync` to preserve the same ordering. Producer identity, local version
-and applied revision prevent old instances or delayed acknowledgements from
-replacing newer accepted/local values. `FlushAsync` joins accepted writes before
-provider disposal. Stores receive exclusive ordinary objects: `LoadAsync` hydrates
-the supplied default value, and `SaveAsync` persists its detached snapshot.
+Browser storage uses the circuit-scoped `BlazorSettingsProvider`, application
+identity and authenticated subject or anonymous browser identity. Settings-bearing
+runtime owners are circuit-local; startup declarations retain startup ownership.
+Start a new circuit after an authenticated subject change. Preferences survive
+reload in that browser profile; this storage does not synchronize devices. A
+product may supply a server-backed provider through the same contract. Never use
+a process-global browser provider for all users. The same `UserSettings` facade
+uses the provider bound during Blazor Framework/circuit initialization and each
+inbound activity. Restore after interactive startup,
+before operational screen work.
 
-For late-bound controls, `TryInitializeSection` initializes one absent section
-and takes a section-copy callback. Consumers receive isolated copies of that
-frozen section, preserving unrelated dirty values, save errors and local versions.
-Initialization does not save. `WaitForPendingWritesAsync` joins queued writes
-without rethrowing a previous optional save error; `FlushAsync` still reports it.
-
-## Verification and examples
-
-Use a fresh provider/circuit to prove persistence, independent profiles,
-import → Reset → restart, and first-query/first-sizing restoration. Exercise
-invalid input, storage failure/retry, ordered delayed saves, accepted versus
-vetoed closure, stale-instance disposal and actual UI button/keyboard visibility.
-Use the [startup measurement procedure](../guidelines/patterns/testing.md#startup-memory-regressions)
-for comparable before/after readiness and memory evidence.
-
-The [WinForms tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md)
+Verify unopened discovery, actual instance identity, attribute activation/Reset,
+Apply/Cancel/failure/retry, notification timing, owner-to-screen updates,
+first-query restoration, fresh-provider persistence and browser isolation. The
+[WinForms tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md)
 and [Blazor tester](../../utils/Sphere10.Framework.Utils.BlazorTester/README.md)
-demonstrate independent registrations and Options. See the platform
-[native grid](../../src/Sphere10.Framework.Windows.Forms/README.md#crudgrid) and
-[web grid](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#grid-configuration-and-behavior)
-guides for control bindings, and
-[per-user UI settings](../guidelines/patterns/user-ui-settings.md) for standalone
-providers and window placement.
+demonstrate these paths. See [per-user settings](../guidelines/patterns/user-ui-settings.md)
+for standalone records and window placement.
