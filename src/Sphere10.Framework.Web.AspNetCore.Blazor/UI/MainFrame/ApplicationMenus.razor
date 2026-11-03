@@ -10,6 +10,9 @@
 
 
 @using Sphere10.Framework.Application.UI
+@using ApplicationMenuItemBase = Sphere10.Framework.Web.AspNetCore.Blazor.ApplicationMenuItemBase
+@using IApplicationBlock = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationBlock
+@using IApplicationMenuItem = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationMenuItem
 
 @if (Block != null) {
 	<nav aria-label="@($"{Block.Title} menus")" class="application-menus @(NavigationPalette ? "application-menus-navigation" : null)">
@@ -26,19 +29,19 @@
 }
 
 @code {
-	[Parameter] public IBlazorApplicationBlock Block { get; set; }
+	[Parameter] public IApplicationBlock Block { get; set; }
 
 	[Parameter] public string ActiveItemId { get; set; }
 
 	[Parameter] public bool NavigationPalette { get; set; }
 
-	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
+	[Parameter] public EventCallback<IApplicationMenuItem> OnSelect { get; set; }
 
-	private RenderFragment MenuItems(IBlazorApplicationMenuItem[] items, bool ancestorEnabled = true) => @<ul>
+	private RenderFragment MenuItems(IApplicationMenuItem[] items, bool ancestorEnabled = true) => @<ul>
 		@foreach (var item in items.Where(item => item.IsVisible)) {
 			@if (item is IApplicationMenuSeparator) {
 				<li role="separator"><hr /></li>
-			} else if (item is BlazorApplicationMenuGroup group) {
+			} else if (item is ApplicationMenuGroup group) {
 				<li><span>@group.Title</span>@MenuItems(group.Items, ancestorEnabled && group.IsEnabled)</li>
 			} else {
 				<li>
@@ -52,8 +55,8 @@
 		}
 	</ul>;
 
-	private static void NotifyHover(IBlazorApplicationMenuItem item) {
-		if (item is BlazorApplicationMenuItemBase menuItem)
+	private static void NotifyHover(IApplicationMenuItem item) {
+		if (item is ApplicationMenuItemBase menuItem)
 			menuItem.NotifyHover();
 	}
 }

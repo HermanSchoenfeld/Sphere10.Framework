@@ -17,6 +17,7 @@ using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Validators;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery;
 
@@ -27,8 +28,8 @@ public static class WidgetGalleryPlugin {
 		const string pluginName = "Widget Gallery";
 		plugin
 			.WithName(pluginName)
-			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.AddServices(services => {
 				services.AddTransient<IRandomNumberService, RandomNumberService>();
 				services.AddTransient<IValidator<NewWidgetModel>, NewWidgetModelValidator>();

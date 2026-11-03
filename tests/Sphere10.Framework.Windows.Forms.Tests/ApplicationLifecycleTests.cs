@@ -21,13 +21,15 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class WinFormsApplicationLifecycleTests {
+public class ApplicationLifecycleTests {
 	private Form _dispatcher;
 
 	[SetUp]
@@ -53,11 +55,11 @@ public class WinFormsApplicationLifecycleTests {
 		var modulesInitialized = false;
 		var screenCreations = 0;
 		LifecycleMainForm form = null;
-		WinFormsApplication application = null;
+		FormsUI.Application application = null;
 		Exception watchdogFailure = null;
 		LoggingScreen.InstanceCreated = () => screenCreations++;
 		using var resetScreen = Tools.Scope.ExecuteOnDispose(() => LoggingScreen.InstanceCreated = null);
-		using var block = new WinFormsApplicationBlockBuilder().WithName("Logging block")
+		using var block = new ApplicationBlockBuilder().WithName("Logging block")
 			.AddScreen<LoggingScreen>(screen => screen
 				.WithTitle("Logging screen")
 				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
@@ -99,15 +101,15 @@ public class WinFormsApplicationLifecycleTests {
 			.AddServices(services => {
 				services.AddSingleton<ILogger>(processLogger);
 				services.AddApplicationBlock(block);
-				services.AddSingleton<IWinFormsApplication>(provider => {
+				services.AddSingleton<FormsUI.IApplication>(provider => {
 					Assert.That(modulesInitialized, Is.True, "Modules must configure process services before root construction.");
-					application = new WinFormsApplication((BlockMainForm)provider.GetRequiredService<IMainForm>(), new[] { block }) { Logger = rootLogger };
+					application = new FormsUI.Application((BlockMainForm)provider.GetRequiredService<IMainForm>(), new[] { block }) { Logger = rootLogger };
 					return application;
 				});
 				services.AddTransient<IApplicationInitializer>(provider => new CallbackInitializer(() => {
 					Assert.That(form.Icon, Is.SameAs(icon), "The configured application icon must reach the actual form before initializers or child dialogs run.");
 					Assert.That(provider.GetRequiredService<IApplicationIconProvider>().ApplicationIcon, Is.SameAs(icon));
-					var root = provider.GetRequiredService<IApplication>();
+					var root = provider.GetRequiredService<SharedUI.IApplication>();
 					Assert.That(root, Is.SameAs(application));
 					Assert.That(root.Logger, Is.SameAs(rootLogger));
 					Assert.That(root.IsInitialized, Is.False);
@@ -151,7 +153,7 @@ public class WinFormsApplicationLifecycleTests {
 		var ownedDisposals = 0;
 		var providerDisposals = 0;
 		LifecycleMainForm form = null;
-		WinFormsApplication application = null;
+		FormsUI.Application application = null;
 		var splashEnabledField = typeof(Sphere10FrameworkExtensions).GetField("_splashEnabled", BindingFlags.Static | BindingFlags.NonPublic);
 		var originalSplashEnabled = splashEnabledField.GetValue(null);
 		splashEnabledField.SetValue(null, false);
@@ -160,11 +162,11 @@ public class WinFormsApplicationLifecycleTests {
 			.UseMainForm<LifecycleMainForm>(mainForm => form = mainForm)
 			.AddServices(services => {
 				services.AddSingleton(_ => new ProviderResource(() => providerDisposals++));
-				services.AddSingleton<IWinFormsApplication>(provider => {
+				services.AddSingleton<FormsUI.IApplication>(provider => {
 					provider.GetRequiredService<ProviderResource>();
 					if (failConstruction)
 						throw expectedFailure;
-					var runtime = new ConfigurableApplication((BlockMainForm)provider.GetRequiredService<IMainForm>(), Array.Empty<IWinFormsApplicationBlock>());
+					var runtime = new ConfigurableApplication((BlockMainForm)provider.GetRequiredService<IMainForm>(), Array.Empty<FormsUI.IApplicationBlock>());
 					runtime.ConfigureFinalizers(new[] { new CallbackFinalizer(() => finalizations++) });
 					application = runtime;
 					application.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => ownedDisposals++));
@@ -172,7 +174,7 @@ public class WinFormsApplicationLifecycleTests {
 				});
 				services.AddSingleton<IApplicationInitializer>(new CallbackInitializer(() => throw expectedFailure));
 				services.AddSingleton<IApplicationFinalizer>(new CallbackFinalizer(() => finalizations++));
-				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(IApplication), new CallbackFinalizer(() => finalizations++));
+				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(SharedUI.IApplication), new CallbackFinalizer(() => finalizations++));
 			});
 		Tools.Exceptions.ExecuteCapturingException(builder.StartWinFormsApplication, out var failure);
 		Assert.That(failure, Is.SameAs(expectedFailure), failure?.ToString());
@@ -182,8 +184,8 @@ public class WinFormsApplicationLifecycleTests {
 		Assert.That(providerDisposals, Is.EqualTo(1));
 		Assert.That(ownedDisposals, Is.EqualTo(failConstruction ? 0 : 1));
 		if (application != null) {
-			Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
-			Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
+			Assert.That(() => application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
+			Assert.That(() => application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
 		}
 	});
 
@@ -195,7 +197,7 @@ public class WinFormsApplicationLifecycleTests {
 		var applicationInitializations = 0;
 		var applicationFinalizations = 0;
 		var ownedDisposals = 0;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Plugin block")
 			.Build();
 		using var frameworkLifetime = Tools.Scope.ExecuteOnDispose(() => {
@@ -211,26 +213,26 @@ public class WinFormsApplicationLifecycleTests {
 				services.AddWinFormsApplicationPlugin(plugin => plugin
 					.WithName("Lifecycle plugin")
 					.AddInitializer<CallbackInitializer>(provider => new CallbackInitializer(() => {
-						var application = provider.GetRequiredService<IApplication>();
+						var application = provider.GetRequiredService<SharedUI.IApplication>();
 						Assert.That(application.Blocks, Is.EqualTo(new[] { block }), "Native block installation must precede application tasks.");
 						application.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => ownedDisposals++));
 						applicationInitializations++;
 					}))
 					.AddFinalizer<CallbackFinalizer>(provider => new CallbackFinalizer(() => {
-						Assert.That(provider.GetRequiredService<IApplication>().IsInitialized, Is.False);
+						Assert.That(provider.GetRequiredService<SharedUI.IApplication>().IsInitialized, Is.False);
 						applicationFinalizations++;
 					}))
 					.AddBlock(block)
 				);
 			})
 			.Start();
-		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 		Assert.That(processInitializations, Is.EqualTo(1));
 		Assert.That(applicationInitializations, Is.Zero);
 		Assert.That(Sphere10Framework.Instance.ServiceProvider.GetKeyedServices<IApplicationInitializer>("Lifecycle plugin").Count(), Is.EqualTo(1));
 		Assert.That(Sphere10Framework.Instance.ServiceProvider.GetKeyedServices<IApplicationFinalizer>("Lifecycle plugin").Count(), Is.EqualTo(1));
-		Assert.That(Sphere10Framework.Instance.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(IApplication)), Is.Empty);
-		Assert.That(Sphere10Framework.Instance.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(IApplication)), Is.Empty);
+		Assert.That(Sphere10Framework.Instance.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(SharedUI.IApplication)), Is.Empty);
+		Assert.That(Sphere10Framework.Instance.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(SharedUI.IApplication)), Is.Empty);
 		if (asynchronous)
 			await application.InitializeAsync();
 		else
@@ -266,8 +268,8 @@ public class WinFormsApplicationLifecycleTests {
 			.Build()
 			.AddServices(services => {
 				services.AddMainForm<LifecycleMainForm>();
-				services.AddKeyedSingleton<IApplicationInitializer>(typeof(IApplication), new CallbackInitializer(() => calls.Add("Host initialized")));
-				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(IApplication), new CallbackFinalizer(() => calls.Add("Host finalized")));
+				services.AddKeyedSingleton<IApplicationInitializer>(typeof(SharedUI.IApplication), new CallbackInitializer(() => calls.Add("Host initialized")));
+				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(SharedUI.IApplication), new CallbackFinalizer(() => calls.Add("Host finalized")));
 				services
 					.AddWinFormsApplicationPlugin(plugin => plugin
 						.WithName("First")
@@ -298,7 +300,7 @@ public class WinFormsApplicationLifecycleTests {
 			})
 			.Start();
 		var provider = Sphere10Framework.Instance.ServiceProvider;
-		var application = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		Assert.That(initializers, Is.Empty, "Application task construction remains lazy.");
 		Assert.That(provider.GetServices<IApplicationInitializer>().OfType<CallbackInitializer>(), Is.Empty);
 		Assert.That(provider.GetServices<IApplicationFinalizer>().OfType<CallbackFinalizer>(), Is.Empty);
@@ -311,7 +313,7 @@ public class WinFormsApplicationLifecycleTests {
 		Assert.That(finalizers, Has.Count.EqualTo(2));
 		Assert.That(initializers[0], Is.Not.SameAs(initializers[1]));
 		Assert.That(finalizers[0], Is.Not.SameAs(finalizers[1]));
-		Assert.That(provider.GetKeyedServices<IApplicationInitializer>(typeof(IApplication)).Single(), Is.Not.SameAs(initializers[0]).And.Not.SameAs(initializers[1]));
+		Assert.That(provider.GetKeyedServices<IApplicationInitializer>(typeof(SharedUI.IApplication)).Single(), Is.Not.SameAs(initializers[0]).And.Not.SameAs(initializers[1]));
 		Assert.That(calls, Is.EqualTo(new[] { "Host initialized", "First initialized", "Second initialized", "Host finalized", "First finalized", "Second finalized" }));
 	});
 
@@ -321,7 +323,7 @@ public class WinFormsApplicationLifecycleTests {
 		Sphere10Framework.Instance.Build().Start();
 		using var frameworkLifetime = Tools.Scope.ExecuteOnDispose(Sphere10Framework.Instance.EndFramework);
 		using var form = new LifecycleMainForm { ScreenMode = ScreenMode.MultiView };
-		using var emptyBlock = new WinFormsApplicationBlockBuilder()
+		using var emptyBlock = new ApplicationBlockBuilder()
 			.WithName("Empty")
 			.AddScreen<GuardedEmptyScreen>(screen => screen
 				.WithTitle("Empty workspace")
@@ -330,7 +332,7 @@ public class WinFormsApplicationLifecycleTests {
 			)
 			.WithDefaultScreen<GuardedEmptyScreen>()
 			.Build();
-		using var permanentBlock = new WinFormsApplicationBlockBuilder()
+		using var permanentBlock = new ApplicationBlockBuilder()
 			.WithName("Permanent")
 			.AddScreen<PermanentScreen>(screen => screen
 				.WithTitle("Permanent")
@@ -373,7 +375,7 @@ public class WinFormsApplicationLifecycleTests {
 		using var frameworkLifetime = Tools.Scope.ExecuteOnDispose(Sphere10Framework.Instance.EndFramework);
 		using var form = new LifecycleMainForm();
 		Assert.That(form.IsHandleCreated, Is.False, "Worker startup must find the existing dispatcher before the main window is shown.");
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Native lifecycle")
 			.Build();
 		await using var application = new ConfigurableApplication(form, new[] { block });
@@ -462,7 +464,7 @@ public class WinFormsApplicationLifecycleTests {
 			splashConfigurationField.SetValue(null, originalSplashConfiguration);
 		});
 		splashEnabledField.SetValue(null, false);
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Runner block")
 			.Build();
 		void FrameworkInitialized() => events.Add("Framework initialized");
@@ -518,13 +520,13 @@ public class WinFormsApplicationLifecycleTests {
 			.AddServices(services => {
 				services.AddSingleton<ProviderResource>(_ => resource = new ProviderResource(() => events.Add("Provider disposed")));
 				services.AddApplicationBlock(block);
-				services.AddKeyedSingleton<IApplicationInitializer>(typeof(IApplication), (provider, _) => new AsyncCallbackInitializer(async () => {
+				services.AddKeyedSingleton<IApplicationInitializer>(typeof(SharedUI.IApplication), (provider, _) => new AsyncCallbackInitializer(async () => {
 					Assert.That(form.Visible, Is.False, "Startup tasks must finish before showing the main window.");
 					var uiThread = Environment.CurrentManagedThreadId;
 					await Task.Delay(25);
 					Assert.That(Environment.CurrentManagedThreadId, Is.EqualTo(uiThread));
 					Assert.That(form.Visible, Is.False);
-					Assert.That(provider.GetRequiredService<IApplication>().Blocks, Is.EqualTo(new[] { block }));
+					Assert.That(provider.GetRequiredService<SharedUI.IApplication>().Blocks, Is.EqualTo(new[] { block }));
 					provider.GetRequiredService<ProviderResource>();
 					if (showSplash) {
 						startupSplash = System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>().Single(splash => splash.Visible);
@@ -533,7 +535,7 @@ public class WinFormsApplicationLifecycleTests {
 					}
 					events.Add("Application initialized");
 				}));
-				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(IApplication), (_, _) => new AsyncCallbackFinalizer(async () => {
+				services.AddKeyedSingleton<IApplicationFinalizer>(typeof(SharedUI.IApplication), (_, _) => new AsyncCallbackFinalizer(async () => {
 					var uiThread = Environment.CurrentManagedThreadId;
 					await Task.Delay(25);
 					Assert.That(Environment.CurrentManagedThreadId, Is.EqualTo(uiThread));
@@ -605,10 +607,10 @@ public class WinFormsApplicationLifecycleTests {
 		Sphere10Framework.Instance.Build().Start();
 		using var frameworkLifetime = Tools.Scope.ExecuteOnDispose(Sphere10Framework.Instance.EndFramework);
 		using var form = new LifecycleMainForm();
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Uninitialized block")
 			.Build();
-		using var application = new WinFormsApplication(form, new[] { block });
+		using var application = new FormsUI.Application(form, new[] { block });
 		application.Finalize();
 		Tools.Exceptions.ExecuteCapturingException(application.Initialize, out var failure);
 		Assert.That(failure, Is.InstanceOf<InvalidOperationException>());
@@ -766,16 +768,16 @@ public class WinFormsApplicationLifecycleTests {
 		protected override Task<bool> ConfirmExitAsync() => Task.FromResult(true);
 	}
 
-	public class GuardedEmptyScreen : WinFormsApplicationScreen {
+	public class GuardedEmptyScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public bool CancelHide { get; set; }
 
 		protected override void OnHide(ref bool cancelHide) => cancelHide |= CancelHide;
 	}
 
-	public class PermanentScreen : WinFormsApplicationScreen { }
+	public class PermanentScreen : ApplicationScreen { }
 
-	public class LoggingScreen : WinFormsApplicationScreen {
+	public class LoggingScreen : ApplicationScreen {
 		public static Action InstanceCreated { get; set; }
 
 		public LoggingScreen() => InstanceCreated?.Invoke();
@@ -794,14 +796,14 @@ public class WinFormsApplicationLifecycleTests {
 	}
 
 	private sealed class ProgressApplication : SyncApplicationBase {
-		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
+		public override SharedUI.IApplicationPlugin[] LoadedPlugins => Array.Empty<SharedUI.IApplicationPlugin>();
 
-		public override IApplicationScreenHost ScreenHost => null;
+		public override SharedUI.IApplicationScreenHost ScreenHost => null;
 
 		public void ConfigureInitializers(IApplicationInitializer[] initializers) => SetInitializers(initializers);
 	}
 
-	private sealed class ConfigurableApplication(BlockMainForm form, IWinFormsApplicationBlock[] blocks) : WinFormsApplication(form, blocks) {
+	private sealed class ConfigurableApplication(BlockMainForm form, FormsUI.IApplicationBlock[] blocks) : FormsUI.Application(form, blocks) {
 		public void ConfigureInitializers(IApplicationInitializer[] initializers) => SetInitializers(initializers);
 
 		public void ConfigureFinalizers(IApplicationFinalizer[] finalizers) => SetFinalizers(finalizers);

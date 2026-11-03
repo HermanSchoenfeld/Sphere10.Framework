@@ -13,17 +13,19 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationScreenContractTests {
+public class ApplicationScreenContractTests {
 	[Test]
 	public async Task ExplicitSharedLifecycleDispatchesThroughSharedAndBlazorInterfaces() {
 		var screen = new ExplicitScreen { IsDirty = true, AllowDeactivation = false };
-		IApplicationScreen sharedScreen = screen;
-		IBlazorApplicationScreen blazorScreen = screen;
+		SharedUI.IApplicationScreen sharedScreen = screen;
+		BlazorUI.IApplicationScreen blazorScreen = screen;
 
 		Assert.That(sharedScreen.HasUnsavedChanges, Is.True);
 		Assert.That(blazorScreen.HasUnsavedChanges, Is.True);
@@ -46,7 +48,7 @@ public class BlazorApplicationScreenContractTests {
 		screen.IsDirty = true;
 		screen.AllowDeactivation = false;
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
 			.AddScreen(registration => registration
@@ -54,9 +56,9 @@ public class BlazorApplicationScreenContractTests {
 			)
 			.WithDefaultScreen(screen.GetType())
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var session = await host.ActivateBlockAsync("workspace");
-		await host.AttachScreenAsync(session.Id, (IBlazorApplicationScreen)screen);
+		await host.AttachScreenAsync(session.Id, (BlazorUI.IApplicationScreen)screen);
 
 		Assert.That(host.HasUnsavedChanges, Is.True);
 		Assert.That(screen.Activations, Is.EqualTo(1));
@@ -77,8 +79,8 @@ public class BlazorApplicationScreenContractTests {
 	[Test]
 	public async Task ComponentBaseProtectedHooksDispatchThroughBlazorAndSharedContracts() {
 		await using var screen = new DerivedScreen();
-		IBlazorApplicationScreen blazorScreen = screen;
-		IApplicationScreen sharedScreen = screen;
+		BlazorUI.IApplicationScreen blazorScreen = screen;
+		SharedUI.IApplicationScreen sharedScreen = screen;
 
 		Assert.That(blazorScreen.HasUnsavedChanges, Is.True);
 		Assert.That(sharedScreen.HasUnsavedChanges, Is.True);
@@ -95,9 +97,9 @@ public class BlazorApplicationScreenContractTests {
 	}
 
 	public abstract class ProbeScreen : ComponentBase {
-		public IBlazorApplicationScreenHost Host { get; set; }
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 		public bool IsDirty { get; set; }
 
@@ -125,17 +127,17 @@ public class BlazorApplicationScreenContractTests {
 		}
 	}
 
-	public sealed class ExplicitScreen : ProbeScreen, IBlazorApplicationScreen {
-		bool IApplicationScreen.HasUnsavedChanges => IsDirty;
+	public sealed class ExplicitScreen : ProbeScreen, BlazorUI.IApplicationScreen {
+		bool SharedUI.IApplicationScreen.HasUnsavedChanges => IsDirty;
 
-		Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) => CheckGuardAsync();
+		Task<bool> SharedUI.IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) => CheckGuardAsync();
 
-		Task IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) => ActivateAsync();
+		Task SharedUI.IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) => ActivateAsync();
 
-		Task IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) => DeactivateAsync();
+		Task SharedUI.IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) => DeactivateAsync();
 	}
 
-	public sealed class PublicScreen : ProbeScreen, IBlazorApplicationScreen {
+	public sealed class PublicScreen : ProbeScreen, BlazorUI.IApplicationScreen {
 		public bool HasUnsavedChanges => IsDirty;
 
 		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) => CheckGuardAsync();
@@ -145,7 +147,7 @@ public class BlazorApplicationScreenContractTests {
 		public Task OnDeactivatedAsync(CancellationToken cancellationToken) => DeactivateAsync();
 	}
 
-	private sealed class DerivedScreen : BlazorApplicationScreen {
+	private sealed class DerivedScreen : ApplicationScreen {
 		public override bool HasUnsavedChanges => true;
 
 		public int GuardCalls { get; private set; }

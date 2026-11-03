@@ -22,7 +22,7 @@ using Sphere10.Framework.Windows.Forms.DataVisualization;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ChartGalleryScreen : WinFormsApplicationScreen {
+public partial class ChartGalleryScreen : ApplicationScreen {
 	private ChartGallerySample[] _filtered = Array.Empty<ChartGallerySample>();
 	private ChartGalleryTile[] _tiles;
 	private ChartGallerySample _selected;

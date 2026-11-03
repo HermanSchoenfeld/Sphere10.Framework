@@ -30,7 +30,7 @@ anonymous `Form` and its entire layout inside the helper.
 
 The WinForms designer must instantiate the base surface. Do not put an abstract
 or generic visual class directly in a designer-edited inheritance chain. The
-existing [WinFormsApplicationScreen](../../../src/Sphere10.Framework.Windows.Forms/Application/Forms/WinFormsApplicationScreen.cs),
+existing [ApplicationScreen](../../../src/Sphere10.Framework.Windows.Forms/Application/Forms/ApplicationScreen.cs),
 [ApplicationControl](../../../src/Sphere10.Framework.Windows.Forms/Application/Controls/ApplicationControl.cs)
 and [BlockMainForm](../../../src/Sphere10.Framework.Windows.Forms/Application/Forms/BlockMainForm.cs)
 show the framework's concrete native surface and design-mode guards.
@@ -40,7 +40,7 @@ compose them behind a concrete nongeneric visual surface. Typed grid behavior
 can live in a nonvisual controller, leaving the designer to instantiate an
 ordinary control. Use the framework's
 [VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
-behind a concrete designer-owned `VisualGrid`/`WinFormsApplicationScreen` surface.
+behind a concrete designer-owned `VisualGrid`/`ApplicationScreen` surface.
 This visual-design requirement is an explicit exception
 to inheritance-only abstract-base naming; do not apply it to nonvisual classes.
 

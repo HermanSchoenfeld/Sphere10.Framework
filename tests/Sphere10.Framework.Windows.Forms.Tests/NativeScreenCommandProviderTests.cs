@@ -16,6 +16,8 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -48,8 +50,8 @@ public class NativeScreenCommandProviderTests {
 			using var screen = new NativeCommandScreen("Screen tools", image) { Dock = DockStyle.Fill };
 			owner.Controls.Add(screen);
 			await Task.Yield();
-			IWinFormsApplicationScreen native = screen;
-			IApplicationScreen portable = screen;
+			FormsUI.IApplicationScreen native = screen;
+			SharedUI.IApplicationScreen portable = screen;
 			var menu = native.Menus.Single();
 			var menuAction = menu.Items.Single(item => item.Title == "Screen action");
 			var toolAction = native.ToolBarItems.Single(item => item.Title == "Screen refresh");
@@ -84,13 +86,13 @@ public class NativeScreenCommandProviderTests {
 		RunWithMessageLoop(async owner => {
 			using var form = new CommandMainForm { ScreenMode = ScreenMode.MultiView };
 			using var screen = new NativeCommandScreen("Screen tools") { Title = "Native commands" };
-			using var other = new WinFormsApplicationScreen { Title = "Other screen" };
-			await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			using var other = new ApplicationScreen { Title = "Other screen" };
+			await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(screen);
 			await Task.Yield();
-			IWinFormsApplicationScreen native = screen;
+			FormsUI.IApplicationScreen native = screen;
 			var menu = native.Menus.Single();
 			var action = menu.Items.Single(item => item.Title == "Screen action");
 			var refresh = native.ToolBarItems.Single(item => item.Title == "Screen refresh");
@@ -158,12 +160,12 @@ public class NativeScreenCommandProviderTests {
 			using var docked = new NativeCommandScreen("Application designer") { Block = rootBlock };
 			detached.ScreenMenuStrip.Visible = !hideLocalStrips;
 			detached.ScreenToolBar.Visible = !hideLocalStrips;
-			await using var application = new WinFormsApplication(form, new[] { detachedBlock, rootBlock });
+			await using var application = new FormsUI.Application(form, new[] { detachedBlock, rootBlock });
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(detached);
 			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (WinFormsApplicationScreenForm)detached.FindForm();
+			var window = (ApplicationScreenForm)detached.FindForm();
 			window.Location = owner.Location;
 			form.ShowScreen(docked);
 			await Task.Yield();
@@ -183,8 +185,8 @@ public class NativeScreenCommandProviderTests {
 
 			// All original handlers run once, and a nested invocation restores the outer explicit context.
 			var extraClicks = 0;
-			IApplicationScreenHost beforeNested = null;
-			IApplicationScreenHost afterNested = null;
+			SharedUI.IApplicationScreenHost beforeNested = null;
+			SharedUI.IApplicationScreenHost afterNested = null;
 			var toolbarDefinition = (IWinFormsLinkMenuItem)application.ToolBarItems.Single(item => item.Title == "Designer refresh");
 			form.DesignerAction.Click += (_, _) => {
 				extraClicks++;
@@ -255,7 +257,7 @@ public class NativeScreenCommandProviderTests {
 			screenNavigation.DropDownItems.Add(activeNavigationAction);
 			screenNavigation.DropDownItems.Add(new ToolStripMenuItem("Close All") { Name = "activeScreenCloseAll", MergeAction = activeMergeAction });
 			active.ScreenMenuStrip.Items.Add(screenNavigation);
-			await using var application = new WinFormsApplication(form, new[] { detachedBlock, activeBlock });
+			await using var application = new FormsUI.Application(form, new[] { detachedBlock, activeBlock });
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(detached);
@@ -268,7 +270,7 @@ public class NativeScreenCommandProviderTests {
 			Assert.That(rootNavigation.DropDownItems, Does.Contain(activeNavigationAction));
 			Assert.That(rootNavigation.DropDownItems.Cast<ToolStripItem>().Any(item => item.Name == "_closeAllScreensMenuItem"), Is.False);
 			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (WinFormsApplicationScreenForm)detached.FindForm();
+			var window = (ApplicationScreenForm)detached.FindForm();
 			window.Location = owner.Location;
 			var header = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerHeader.Name);
 			var projectedSubmenu = header.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Text == "Nested actions");
@@ -289,7 +291,7 @@ public class NativeScreenCommandProviderTests {
 				Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Select(item => item.Text), Does.Not.Contain(activeNavigationAction.Text));
 				Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Count(item => item.Name == "_closeAllScreensMenuItem"), Is.EqualTo(1));
 				Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Any(item => item.Name == "activeScreenCloseAll"), Is.False);
-				Assert.That(projectedNavigation.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is WinFormsApplicationScreen)
+				Assert.That(projectedNavigation.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is ApplicationScreen)
 					.Select(item => item.Tag), Is.EquivalentTo(new[] { detached, active }));
 				Assert.That(rootNavigation.DropDownItems, Does.Contain(activeNavigationAction));
 			} finally {
@@ -327,19 +329,19 @@ public class NativeScreenCommandProviderTests {
 			using var block = new CommandBlock { Name = "Popup owner" };
 			using var detached = new NativeCommandScreen(matchScreenCaption ? "Application designer" : "Detached tools") { Block = block };
 			using var docked = new NativeCommandScreen("Docked tools") { Block = block };
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(detached);
 			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (WinFormsApplicationScreenForm)detached.FindForm();
+			var window = (ApplicationScreenForm)detached.FindForm();
 			window.Location = owner.Location;
 			form.ShowScreen(docked);
 			var originalSubmenu = (ToolStripMenuItem)form.DesignerHeader.DropDownItems[0];
 			var headerOpenings = 0;
 			var nestedOpenings = 0;
-			IApplicationScreenHost headerHost = null;
-			IApplicationScreenHost nestedHost = null;
+			SharedUI.IApplicationScreenHost headerHost = null;
+			SharedUI.IApplicationScreenHost nestedHost = null;
 			form.DesignerHeader.DropDownOpening += (_, _) => {
 				headerOpenings++;
 				headerHost = form.InvocationHost;
@@ -395,16 +397,16 @@ public class NativeScreenCommandProviderTests {
 			var provider = new NoWriteSettingsProvider();
 			using var detachedBlock = PreferencesBlock("Detached", provider);
 			using var rootBlock = PreferencesBlock("Root", provider);
-			await using var application = new WinFormsApplication(form, new[] { rootBlock, detachedBlock });
+			await using var application = new FormsUI.Application(form, new[] { rootBlock, detachedBlock });
 			await application.InitializeAsync();
 			form.Show(owner);
 			var detached = (PreferencesScreen)await form.ScreenHost.OpenScreenAsync(detachedBlock, detachedBlock.ScreenDefinitions.Single());
 			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (WinFormsApplicationScreenForm)detached.FindForm();
+			var window = (ApplicationScreenForm)detached.FindForm();
 			window.Location = owner.Location;
 			var docked = await form.ScreenHost.OpenScreenAsync(rootBlock, rootBlock.ScreenDefinitions.Single());
 			var extraOptionsClicks = 0;
-			IApplicationScreenHost optionsHost = null;
+			SharedUI.IApplicationScreenHost optionsHost = null;
 			form.OptionsCommand.Click += (_, _) => {
 				extraOptionsClicks++;
 				optionsHost = form.InvocationHost;
@@ -412,8 +414,8 @@ public class NativeScreenCommandProviderTests {
 
 			var options = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == "_optionsMenuItem");
 			options.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screenOptionsMenuItem").PerformClick();
-			await WaitUntilAsync(() => System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Any());
-			var dialog = System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Single();
+			await WaitUntilAsync(() => System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Any());
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Single();
 			try {
 				Assert.That(dialog.SelectedOwner, Is.SameAs(detachedBlock.ScreenDefinitions.Single()));
 				Assert.That(dialog.Owner, Is.SameAs(window));
@@ -460,14 +462,14 @@ public class NativeScreenCommandProviderTests {
 			using var form = new CommandMainForm { ScreenMode = ScreenMode.MultiView };
 			using var activeBlock = new CommandBlock { Name = "Active", ShowInMenuStrip = true, ShowInToolStrip = true };
 			using var browsedBlock = new CommandBlock { Name = "Browsed", ShowInMenuStrip = true, ShowInToolStrip = true };
-			using var pluginMenu = new WinFormsApplicationMenu("File") { ShowInMenuStrip = true };
+			using var pluginMenu = new ApplicationMenu("File") { ShowInMenuStrip = true };
 			using var pluginTool = new WinFormsActionMenuItem("Plugin refresh", () => {
 			});
-			var blockMenu = new WinFormsApplicationMenu("File") { ShowInMenuStrip = true };
+			var blockMenu = new ApplicationMenu("File") { ShowInMenuStrip = true };
 			blockMenu.AddItem(new WinFormsActionMenuItem("Active block action", () => {
 			}));
 			activeBlock.AddMenu(blockMenu);
-			var browsedMenu = new WinFormsApplicationMenu("Browsed commands") { ShowInMenuStrip = true };
+			var browsedMenu = new ApplicationMenu("Browsed commands") { ShowInMenuStrip = true };
 			browsedMenu.AddItem(new WinFormsActionMenuItem("Browsed action", () => {
 			}));
 			browsedBlock.AddMenu(browsedMenu);
@@ -479,7 +481,7 @@ public class NativeScreenCommandProviderTests {
 			var file = applicationMenus.OfType<ToolStripMenuItem>().Single(item => Caption(item.Text) == "File");
 			var applicationFileItems = file.DropDownItems.Cast<ToolStripItem>().ToArray();
 			var applicationTools = form.ToolEntries;
-			await using var application = new WinFormsApplication(form, new[] { browsedBlock }, new[] { plugin });
+			await using var application = new FormsUI.Application(form, new[] { browsedBlock }, new[] { plugin });
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.SelectedBlock = browsedBlock;
@@ -511,8 +513,8 @@ public class NativeScreenCommandProviderTests {
 		RunWithMessageLoop(async owner => {
 			using var form = new CommandMainForm { ScreenMode = ScreenMode.MultiView };
 			using var block = new CommandBlock { Name = "Command block", ShowInMenuStrip = true, ShowInToolStrip = true };
-			using var blockMenu = new WinFormsApplicationMenu("Shared tools") { ShowInMenuStrip = true };
-			using var pluginMenu = new WinFormsApplicationMenu("Shared tools") { ShowInMenuStrip = true };
+			using var blockMenu = new ApplicationMenu("Shared tools") { ShowInMenuStrip = true };
+			using var pluginMenu = new ApplicationMenu("Shared tools") { ShowInMenuStrip = true };
 			var blockClicks = 0;
 			var pluginClicks = 0;
 			var pluginToolClicks = 0;
@@ -524,7 +526,7 @@ public class NativeScreenCommandProviderTests {
 			block.AddMenu(blockMenu);
 			var plugin = new CommandPlugin(block, pluginMenu, pluginTool);
 			using var screen = new NativeCommandScreen("Shared tools") { Block = block };
-			await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>(), new[] { plugin });
+			await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>(), new[] { plugin });
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(screen);
@@ -565,7 +567,7 @@ public class NativeScreenCommandProviderTests {
 			Assert.That(block.ToolBarActivations, Is.EqualTo(1));
 			Assert.That(screen.MenuActivations, Is.EqualTo(1));
 			Assert.That(screen.ToolBarActivations, Is.EqualTo(1));
-			using var extraMenu = new WinFormsApplicationMenu("Too late");
+			using var extraMenu = new ApplicationMenu("Too late");
 			Assert.That(() => block.AddMenu(extraMenu), Throws.InvalidOperationException);
 		});
 	}
@@ -575,8 +577,8 @@ public class NativeScreenCommandProviderTests {
 		RunWithMessageLoop(async owner => {
 			using var form = new CommandMainForm { ScreenMode = ScreenMode.MultiView };
 			using var screen = new NativeCommandScreen("File");
-			using var other = new WinFormsApplicationScreen { Title = "Other screen" };
-			await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			using var other = new ApplicationScreen { Title = "Other screen" };
+			await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			await application.InitializeAsync();
 			form.Show(owner);
 			await Task.Yield();
@@ -592,7 +594,7 @@ public class NativeScreenCommandProviderTests {
 			Assert.That(screen.Visible, Is.True);
 			Assert.That(screen.ScreenMenuStrip.Visible, Is.False,
 				"Moving the File children must also collapse the now-empty local menu row.");
-			Assert.That(((IApplicationScreen)screen).Menus.Single().Items.Select(item => item.Title),
+			Assert.That(((SharedUI.IApplicationScreen)screen).Menus.Single().Items.Select(item => item.Title),
 				Is.EqualTo(new[] { "Screen action", "Screen details" }));
 
 			form.ShowScreen(other);
@@ -639,13 +641,13 @@ public class NativeScreenCommandProviderTests {
 			tools.Disposed += (_, _) => toolDisposals++;
 
 			using var form = new CommandMainForm { ScreenMode = ScreenMode.MultiView };
-			using var screen = new WinFormsApplicationScreen { Title = "External commands", ScreenMenuStrip = menu, ScreenToolBar = tools };
-			await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			using var screen = new ApplicationScreen { Title = "External commands", ScreenMenuStrip = menu, ScreenToolBar = tools };
+			await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(screen);
 			Assert.That(form.ScreenHost.UndockScreen(screen), Is.True);
-			var window = (WinFormsApplicationScreenForm)screen.FindForm();
+			var window = (ApplicationScreenForm)screen.FindForm();
 			window.Location = owner.Location;
 			await Task.Yield();
 			Assert.That(window.MainMenuStrip, Is.SameAs(menu));
@@ -659,7 +661,7 @@ public class NativeScreenCommandProviderTests {
 			Assert.That(screen.ScreenToolBar, Is.SameAs(tools));
 			Assert.That(replacementMenu.Parent, Is.SameAs(source));
 			Assert.That(replacementTools.Parent, Is.SameAs(source));
-			IApplicationScreen commands = screen;
+			SharedUI.IApplicationScreen commands = screen;
 			((IWinFormsLinkMenuItem)commands.Menus.Single().Items.Single()).OnSelect();
 			((IWinFormsLinkMenuItem)commands.ToolBarItems.Single()).OnSelect();
 			Assert.That(clicks, Is.EqualTo(2));
@@ -674,7 +676,7 @@ public class NativeScreenCommandProviderTests {
 
 			// Window disposal returns the borrowed source layout before the screen's one native disposal owner runs.
 			Assert.That(form.ScreenHost.UndockScreen(screen), Is.True);
-			window = (WinFormsApplicationScreenForm)screen.FindForm();
+			window = (ApplicationScreenForm)screen.FindForm();
 			var restoredBeforeScreenDisposal = false;
 			screen.ScreenDestroyed += (_, _) => {
 				restoredBeforeScreenDisposal = ReferenceEquals(menu.Parent, source) && ReferenceEquals(tools.Parent, source)
@@ -703,15 +705,15 @@ public class NativeScreenCommandProviderTests {
 			owner.Controls.Add(targetTools);
 			using var form = new CommandMainForm { ScreenMode = ScreenMode.MultiView };
 			using var screen = new NativeCommandScreen("File");
-			using var other = new WinFormsApplicationScreen { Title = "Other screen" };
+			using var other = new ApplicationScreen { Title = "Other screen" };
 			using var removedMenuItem = screen.Details;
 			using var removedToolButton = screen.CopyButton;
-			await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(screen);
 			await Task.Yield();
-			IApplicationScreen commands = screen;
+			SharedUI.IApplicationScreen commands = screen;
 			Assert.That(commands.Menus.Single().Items.Count(), Is.EqualTo(2));
 			Assert.That(commands.ToolBarItems.Count(), Is.EqualTo(2));
 			var file = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => Caption(item.Text) == "File");
@@ -746,8 +748,8 @@ public class NativeScreenCommandProviderTests {
 			using var screen = new LegacyCommandScreen { Dock = DockStyle.Fill };
 			owner.Controls.Add(screen);
 			await Task.Yield();
-			IWinFormsApplicationScreen native = screen;
-			IApplicationScreen portable = screen;
+			FormsUI.IApplicationScreen native = screen;
+			SharedUI.IApplicationScreen portable = screen;
 
 			Assert.That(screen.ScreenMenuStrip, Is.Null);
 			Assert.That(screen.MenuItems, Is.EqualTo(new[] { screen.Action }));
@@ -772,7 +774,7 @@ public class NativeScreenCommandProviderTests {
 			var header = screen.Header;
 			var action = screen.Action;
 			var refresh = screen.RefreshButton;
-			IWinFormsApplicationScreen commands = screen;
+			FormsUI.IApplicationScreen commands = screen;
 
 			// Provider definitions borrow the native views and images; they are not a second disposal owner.
 			commands.Menus.Single().Dispose();
@@ -864,9 +866,9 @@ public class NativeScreenCommandProviderTests {
 	}
 
 	// Configure exact owner values without touching workstation settings files.
-	private static WinFormsApplicationBlock PreferencesBlock(string name, ISettingsProvider provider) {
-		var block = new WinFormsApplicationBlock { Name = name };
-		var definition = new WinFormsApplicationScreenDefinition(typeof(PreferencesScreen), name, stableKey: name,
+	private static ApplicationBlock PreferencesBlock(string name, ISettingsProvider provider) {
+		var block = new ApplicationBlock { Name = name };
+		var definition = new FormsUI.ApplicationScreenDefinition(typeof(PreferencesScreen), name, stableKey: name,
 			settings: new PreferencesScreen.Preferences { Name = name, Provider = provider });
 		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
@@ -952,13 +954,13 @@ public class NativeScreenCommandProviderTests {
 
 		public int SplitItemClicks { get; private set; }
 
-		public IApplicationScreenHost LastToolbarHost { get; private set; }
+		public SharedUI.IApplicationScreenHost LastToolbarHost { get; private set; }
 
-		public IApplicationScreenHost LastSplitHost { get; private set; }
+		public SharedUI.IApplicationScreenHost LastSplitHost { get; private set; }
 
-		public IApplicationScreen HelpScreen { get; private set; }
+		public SharedUI.IApplicationScreen HelpScreen { get; private set; }
 
-		public IApplicationScreenHost InvocationHost {
+		public SharedUI.IApplicationScreenHost InvocationHost {
 			get {
 				return CommandUserInterfaceServices.ScreenHost;
 			}
@@ -972,7 +974,7 @@ public class NativeScreenCommandProviderTests {
 
 	/// <summary>A minimal hosted settings owner for real native Options selection.</summary>
 	[Settings(typeof(PreferencesScreen.Preferences))]
-	public sealed class PreferencesScreen : WinFormsApplicationScreen {
+	public sealed class PreferencesScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public override Preferences ScreenSettings {
 			get {
@@ -1012,11 +1014,11 @@ public class NativeScreenCommandProviderTests {
 	}
 
 	// Both owners expose their definitions once, while each displaying window owns its generated views.
-	private sealed class CommandPlugin : WinFormsApplicationPlugin {
-		private readonly IWinFormsApplicationMenu _menu;
-		private readonly IWinFormsApplicationMenuItem _tool;
+	private sealed class CommandPlugin : FormsUI.ApplicationPlugin {
+		private readonly FormsUI.IApplicationMenu _menu;
+		private readonly FormsUI.IApplicationMenuItem _tool;
 
-		public CommandPlugin(IWinFormsApplicationBlock block, IWinFormsApplicationMenu menu, IWinFormsApplicationMenuItem tool)
+		public CommandPlugin(FormsUI.IApplicationBlock block, FormsUI.IApplicationMenu menu, FormsUI.IApplicationMenuItem tool)
 			: base("Command plugin", new[] { block }) {
 			_menu = menu;
 			_tool = tool;
@@ -1026,36 +1028,36 @@ public class NativeScreenCommandProviderTests {
 
 		public int ToolBarActivations { get; private set; }
 
-		protected override IWinFormsApplicationMenu[] GetMenus() {
+		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
 			return new[] { _menu };
 		}
 
-		protected override IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		protected override FormsUI.IApplicationMenuItem[] GetToolBarItems() {
 			ToolBarActivations++;
 			return new[] { _tool };
 		}
 	}
 
 	// The ordinary block implementation still supplies and owns its configured menu definitions.
-	private sealed class CommandBlock : WinFormsApplicationBlock {
+	private sealed class CommandBlock : ApplicationBlock {
 		public int MenuActivations { get; private set; }
 
 		public int ToolBarActivations { get; private set; }
 
-		protected override IWinFormsApplicationMenu[] GetMenus() {
+		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
 			return base.GetMenus();
 		}
 
-		protected override IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		protected override FormsUI.IApplicationMenuItem[] GetToolBarItems() {
 			ToolBarActivations++;
 			return base.GetToolBarItems();
 		}
 	}
 
 	// A designer-like screen assigns real native strips and Click handlers, with no parallel command definitions.
-	private sealed class NativeCommandScreen : WinFormsApplicationScreen {
+	private sealed class NativeCommandScreen : ApplicationScreen {
 		public NativeCommandScreen(string caption, Image image = null) {
 			Title = "Native commands";
 			ScreenMenuStrip = new MenuStrip();
@@ -1104,19 +1106,19 @@ public class NativeScreenCommandProviderTests {
 
 		public int ToolBarActivations { get; private set; }
 
-		protected override IWinFormsApplicationMenu[] GetMenus() {
+		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
 			return base.GetMenus();
 		}
 
-		protected override IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		protected override FormsUI.IApplicationMenuItem[] GetToolBarItems() {
 			ToolBarActivations++;
 			return base.GetToolBarItems();
 		}
 	}
 
 	// Existing screens can keep RegisterMenuItem until their designer owns a dedicated MenuStrip.
-	private sealed class LegacyCommandScreen : WinFormsApplicationScreen {
+	private sealed class LegacyCommandScreen : ApplicationScreen {
 		public LegacyCommandScreen() {
 			ApplicationMenuStripText = "Legacy commands";
 			ShowInApplicationMenuStrip = true;

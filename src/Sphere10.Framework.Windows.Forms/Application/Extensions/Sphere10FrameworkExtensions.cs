@@ -84,8 +84,8 @@ public static class Sphere10FrameworkExtensions {
 	public static void StartWinFormsApplication(this Sphere10FrameworkBuilder builder) {
 		SplashScreen splash = null;
 		SplashScreen completedStartupSplash = null;
-		IWinFormsApplication application = null;
-		WinFormsApplication nativeApplication = null;
+		IApplication application = null;
+		Application nativeApplication = null;
 		MainFormSettingsFinalizer settingsFinalizer = null;
 		Form mainForm = null;
 		ActionScope? windowSettings = null;
@@ -161,7 +161,7 @@ public static class Sphere10FrameworkExtensions {
 					var icon = provider.GetService<IApplicationIconProvider>()?.ApplicationIcon;
 					if (icon != null)
 						mainForm.Icon = icon;
-					application = provider.GetService<IWinFormsApplication>();
+					application = provider.GetService<IApplication>();
 					if (application != null)
 						splash?.AttachToApplication(application);
 					return application?.Logger ?? provider.GetService<ILogger>() ?? SystemLog.Logger;
@@ -169,7 +169,7 @@ public static class Sphere10FrameworkExtensions {
 				if (application != null) {
 					await application.InitializeAsync();
 				} else if (mainForm is IBlockManager blockManager) {
-					var blocks = builder.Framework.ServiceProvider.GetServices<IWinFormsApplicationBlock>().OrderBy(block => block.Position);
+					var blocks = builder.Framework.ServiceProvider.GetServices<IApplicationBlock>().OrderBy(block => block.Position);
 					blocks.ForEach(blockManager.RegisterBlock);
 				}
 				if (stopping)
@@ -183,7 +183,7 @@ public static class Sphere10FrameworkExtensions {
 				windowSettings = settingsOptions?.AutoPersist == true
 					? settingsFinalizer.Attach(mainForm, settingsOptions.SettingsID)
 					: null;
-				if (application is WinFormsApplication runtimeApplication) {
+				if (application is Application runtimeApplication) {
 					nativeApplication = runtimeApplication;
 					previousShutdown = runtimeApplication.ShutdownAsync;
 					runtimeApplication.ShutdownAsync = ShutdownAsync;

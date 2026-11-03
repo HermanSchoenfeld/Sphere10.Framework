@@ -93,7 +93,7 @@ chart observations by captured time or their shared numeric/category identity.
 Keep different samples separate. Rendering, retained history and polling of an
 unchanged observation must not duplicate capture output.
 
-Screen output reuses `LogScreen` and the actual `IWinFormsApplicationScreenHost`.
+Screen output reuses `LogScreen` and the actual `IApplicationScreenHost`.
 Assign the borrowed `ScreenHost` when toolbar composition removes the selector
 from its screen's parent chain; the containing native frame is also resolved.
 `ScreenTitle` names the source, producing `Log Output - <NAME>` in both detached

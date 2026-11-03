@@ -55,7 +55,7 @@
 								value="@FormatValue(entry.Value, itemType)" @onchange="args => ChangeDictionaryItemAsync(property, key, args.Value)"
 								aria-invalid="@(Errors.ContainsKey(itemPath) ? "true" : "false")" />
 						} else if (entry.Value != null && !Ancestors.Append(Value).Any(ancestor => ReferenceEquals(ancestor, entry.Value))) {
-							<BlazorApplicationSettingsValueEditor Value="entry.Value" Prefix="@itemPath" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
+							<ApplicationSettingsValueEditor Value="entry.Value" Prefix="@itemPath" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
 						}
 						@if (!disabled && itemType != typeof(BlazorGridSettings)) {
 							<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RemoveDictionaryItemAsync(property, key)">Remove @key</button>
@@ -85,7 +85,7 @@
 								value="@FormatValue(item, GetElementType(property.PropertyType))" @onchange="args => ChangeItemAsync(property, itemIndex, args.Value)"
 								aria-invalid="@(Errors.ContainsKey(itemPath) ? "true" : "false")" />
 						} else if (item != null) {
-							<BlazorApplicationSettingsValueEditor Value="item" Prefix="@($"{path}.{index}")" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
+							<ApplicationSettingsValueEditor Value="item" Prefix="@($"{path}.{index}")" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
 						}
 						@if (!disabled && !IsColumnSchema(property.PropertyType)) {
 							<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RemoveItemAsync(property, itemIndex)">Remove</button>
@@ -103,7 +103,7 @@
 			<fieldset>
 				<legend>@property.DisplayName</legend>
 				@if (value != null && !Ancestors.Append(Value).Any(ancestor => ReferenceEquals(ancestor, value))) {
-					<BlazorApplicationSettingsValueEditor Value="value" Prefix="@path" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
+					<ApplicationSettingsValueEditor Value="value" Prefix="@path" Errors="Errors" Changed="Changed" ReadOnly="disabled" Ancestors="@(Ancestors.Append(Value).ToArray())" />
 				} else if (value == null && !disabled && CanCreate(property.PropertyType)) {
 					<button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => CreateValueAsync(property)">Set @property.DisplayName</button>
 				} else {

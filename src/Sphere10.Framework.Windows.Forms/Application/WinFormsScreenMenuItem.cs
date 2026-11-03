@@ -9,11 +9,12 @@
 using System;
 using System.Drawing;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenMenuItem {
-	private ApplicationScreenDefinition _screenDefinition;
+	private SharedUI.ApplicationScreenDefinition _screenDefinition;
 	private ApplicationScreenRegistration _registration;
 
 	public WinFormsScreenMenuItem()
@@ -39,12 +40,12 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 		bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false)
 		: base(text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
 		Guard.ArgumentNotNull(registration, nameof(registration));
-		Tools.UI.ValidateScreenType(registration.ScreenType, typeof(WinFormsApplicationScreen));
+		Tools.UI.ValidateScreenType(registration.ScreenType, typeof(ApplicationScreen));
 		_registration = registration;
 	}
 
 	/// <summary>Creates a command without adding the supplied definition to a block.</summary>
-	public WinFormsScreenMenuItem(ApplicationScreenDefinition definition, string text = null, Image image16x16 = null,
+	public WinFormsScreenMenuItem(SharedUI.ApplicationScreenDefinition definition, string text = null, Image image16x16 = null,
 		bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false)
 		: this(definition?.Registration, text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen) {
 		ScreenDefinition = definition;
@@ -56,7 +57,7 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 		}
 	}
 
-	public virtual ApplicationScreenDefinition ScreenDefinition {
+	public virtual SharedUI.ApplicationScreenDefinition ScreenDefinition {
 		get => _screenDefinition;
 		set {
 			if (ReferenceEquals(_screenDefinition, value))
@@ -71,7 +72,7 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 	}
 
 	/// <summary>Binds this command to its owner's canonical registration and supplies an omitted caption.</summary>
-	public void ResolveScreenDefinition(ApplicationScreenDefinition definition) {
+	public void ResolveScreenDefinition(SharedUI.ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		var registration = _registration;
 		ScreenDefinition = definition;

@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -80,7 +81,7 @@ public class ApplicationSettingsStartupTests {
 		services.AddApplicationBlock<SettingsBlock>();
 		services.AddApplicationSettings("SettingsTests");
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(application.Settings, Is.SameAs(store));
 		Assert.That(application.Blocks.Single().ScreenDefinitions.Single().Settings.Provider, Is.SameAs(store));
@@ -91,14 +92,14 @@ public class ApplicationSettingsStartupTests {
 	// Verify a block uses its ordinary typed provider record without a synthetic screen.
 	[Test]
 	public async Task BlockPreferencesUseTheExistingLegacyUserRecordWithoutAnArtificialScreen() {
-		using var block = new WinFormsApplicationBlock { Name = "Preferences", BlockSettings = new Preferences() };
+		using var block = new ApplicationBlock { Name = "Preferences", BlockSettings = new Preferences() };
 		var services = new ServiceCollection();
 		services.AddSingleton(new Local<ISettingsProvider>(new DirectoryFileSettingsProvider(_directory)));
 		services.AddMainForm<BlockMainForm>();
 		services.AddApplicationBlock(block);
 		services.AddApplicationSettings("PlainSettingsTests");
 		await using var provider = services.BuildServiceProvider();
-		await provider.GetRequiredService<IWinFormsApplication>().InitializeAsync();
+		await provider.GetRequiredService<FormsUI.IApplication>().InitializeAsync();
 		Assert.That(block.ScreenDefinitions, Is.Empty);
 		Assert.That(Directory.GetFiles(_directory), Is.Empty);
 		var settings = (Preferences)block.BlockSettings;
@@ -115,7 +116,7 @@ public class ApplicationSettingsStartupTests {
 		var unrelatedDirectory = Directory.CreateDirectory(Path.Combine(_directory, "unrelated")).FullName;
 		ISettingsProvider intended = new DirectoryFileSettingsProvider(intendedDirectory);
 		ISettingsProvider unrelated = new DirectoryFileSettingsProvider(unrelatedDirectory);
-		using var block = new WinFormsApplicationBlock { Name = "Preferences", BlockSettings = new Preferences() };
+		using var block = new ApplicationBlock { Name = "Preferences", BlockSettings = new Preferences() };
 		var services = new ServiceCollection();
 		services.AddSingleton<ISettingsServices>(new ExistingSettingsServices(intended));
 		services.AddSingleton(new Local<ISettingsProvider>(unrelated));
@@ -123,7 +124,7 @@ public class ApplicationSettingsStartupTests {
 		services.AddApplicationBlock(block);
 		services.AddApplicationSettings("Existing native user provider");
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		var values = (Preferences)block.BlockSettings;
 		values.Name = "Existing provider accepted";
@@ -139,15 +140,15 @@ public class ApplicationSettingsStartupTests {
 		public string Name { get; set; } = "Default";
 	}
 
-	public class SettingsBlock : WinFormsApplicationBlock {
+	public class SettingsBlock : ApplicationBlock {
 		public static int Created;
 
-		public static Action<WinFormsApplicationScreenActivationContext> Activating;
+		public static Action<ApplicationScreenActivationContext> Activating;
 
 		public SettingsBlock() {
 			Created++;
 			Name = "Workspace";
-			var definition = new WinFormsApplicationScreenDefinition(typeof(SettingsProbe), "Settings probe", stableKey: "probe",
+			var definition = new FormsUI.ApplicationScreenDefinition(typeof(SettingsProbe), "Settings probe", stableKey: "probe",
 				activator: context => {
 					Activating?.Invoke(context);
 					return new SettingsProbe();
@@ -157,7 +158,7 @@ public class ApplicationSettingsStartupTests {
 		}
 	}
 
-	public class SettingsProbe : WinFormsApplicationScreen {
+	public class SettingsProbe : ApplicationScreen {
 		public static int CreationCount;
 
 		public override Preferences ScreenSettings {

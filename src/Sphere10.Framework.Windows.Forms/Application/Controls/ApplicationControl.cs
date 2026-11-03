@@ -21,7 +21,7 @@ public partial class ApplicationControl : UserControlEx {
 	private IServiceProvider _serviceProvider;
 	private SettingsObject _screenSettings;
 	private SettingsObject[] _observedSettings;
-	private WinFormsApplicationScreenSettings _settingsBinding;
+	private ApplicationScreenSettings _settingsBinding;
 	private IFuture<ISettingsServices> _settingsServices;
 	private IFuture<IUserInterfaceServices> _userInterfaceServices;
 
@@ -56,9 +56,9 @@ public partial class ApplicationControl : UserControlEx {
 	}
 
 	// Create native grid/log bindings only when this screen has settings to bind.
-	private protected WinFormsApplicationScreenSettings SettingsBinding {
+	private protected ApplicationScreenSettings SettingsBinding {
 		get {
-			return _screenSettings == null ? null : _settingsBinding ??= new WinFormsApplicationScreenSettings(_screenSettings);
+			return _screenSettings == null ? null : _settingsBinding ??= new ApplicationScreenSettings(_screenSettings);
 		}
 	}
 

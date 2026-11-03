@@ -7,13 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Blazor menu metadata and registration-time notification handlers.</summary>
 /// <remarks>Shared registrations must not capture scoped services or mutable per-user state in handlers.</remarks>
-public interface IBlazorApplicationMenuItem : IApplicationMenuItem {
-	new IBlazorApplicationMenu Parent { get; set; }
+public interface IApplicationMenuItem : SharedUI.IApplicationMenuItem {
+	new IApplicationMenu Parent { get; set; }
 
 	string Id => Title;
 
@@ -31,9 +32,9 @@ public interface IBlazorApplicationMenuItem : IApplicationMenuItem {
 
 	#region Base Interface Bridges
 
-	IApplicationMenu IApplicationMenuItem.Parent {
+	SharedUI.IApplicationMenu SharedUI.IApplicationMenuItem.Parent {
 		get => Parent;
-		set => Parent = value == null ? null : Guard.ArgumentCast<IBlazorApplicationMenu>(value, nameof(value));
+		set => Parent = value == null ? null : Guard.ArgumentCast<IApplicationMenu>(value, nameof(value));
 	}
 
 	#endregion

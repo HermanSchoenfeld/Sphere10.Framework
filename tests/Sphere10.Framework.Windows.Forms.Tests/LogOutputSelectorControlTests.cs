@@ -21,6 +21,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using FormsApplication = System.Windows.Forms.Application;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -847,9 +848,9 @@ public class LogOutputSelectorControlTests {
 
 	[Test]
 	public void HostedScreenReceivesWorkerMessagesAndRemainsInspectableAfterOriginCloses() => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
-		var origin = new WinFormsApplicationScreen { Title = "Origin" };
+		var origin = new ApplicationScreen { Title = "Origin" };
 		var control = new LogOutputSelectorControl { ScreenTitle = "Captured Measurements" };
 		origin.Controls.Add(control);
 		Assert.That(host.ShowScreen(origin), Is.True);
@@ -888,9 +889,9 @@ public class LogOutputSelectorControlTests {
 	[TestCase("Log Output - Custom Capture", "Custom Capture")]
 	[TestCase("Log Output - Log Output - Custom Capture", "Custom Capture")]
 	public void ScreenOutputUsesOnePrefixAndTheSourceNameThroughDocking(string sourceName, string expectedSource) => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
-		var source = new WinFormsApplicationScreen { Title = "Capture Source" };
+		var source = new ApplicationScreen { Title = "Capture Source" };
 		var control = new LogOutputSelectorControl { ScreenTitle = sourceName };
 		source.Controls.Add(control);
 		Assert.That(host.ShowScreen(source), Is.True);
@@ -908,7 +909,7 @@ public class LogOutputSelectorControlTests {
 
 	[Test]
 	public void ClosingTheActiveHostedLogScreenStopsItsSelector() => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
 		using var control = new LogOutputSelectorControl { ScreenHost = host };
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
@@ -925,18 +926,18 @@ public class LogOutputSelectorControlTests {
 
 	[Test]
 	public void ToolStripHostedSelectorResolvesTheRealFormScreenHost() => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		using var strip = new ToolStrip { Dock = DockStyle.Top };
 		using var control = new LogOutputSelectorControl();
 		using var item = new ToolStripControlHost(control);
 		owner.Controls.Add(host);
 		owner.Controls.Add(strip);
 		strip.Items.Add(item);
-		var source = new WinFormsApplicationScreen { Title = "Active Hardware Capture" };
+		var source = new ApplicationScreen { Title = "Active Hardware Capture" };
 		Assert.That(host.ShowScreen(source), Is.True);
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
 		var output = host.OpenScreens.OfType<LogScreen>().Single();
-		Assert.That(output.Host, Is.SameAs(((WinFormsApplicationScreenForm)output.FindForm()).ScreenHost));
+		Assert.That(output.Host, Is.SameAs(((ApplicationScreenForm)output.FindForm()).ScreenHost));
 		Assert.That(output.Host.ActiveScreen, Is.SameAs(output));
 		Assert.That(host.ActiveScreen, Is.SameAs(source), "The root host retains its own active screen.");
 		Assert.That(host.IsScreenUndocked(output), Is.True);
@@ -951,7 +952,7 @@ public class LogOutputSelectorControlTests {
 		using var control = new LogOutputSelectorControl();
 		owner.Controls.Add(control);
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
-		var output = owner.OwnedForms.OfType<WinFormsApplicationScreenForm>().Single().Screen as LogScreen;
+		var output = owner.OwnedForms.OfType<ApplicationScreenForm>().Single().Screen as LogScreen;
 		Assert.That(output, Is.Not.Null);
 		Assert.That(output.FindForm().Text, Is.EqualTo("Log Output - " + expectedSource));
 		Assert.That(output.Host.IsScreenUndocked(output), Is.True);
@@ -965,7 +966,7 @@ public class LogOutputSelectorControlTests {
 
 	[Test]
 	public void LogScreenContinuesAfterDockUndockAndTemporaryHandleRecreation() => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
 		using var control = new LogOutputSelectorControl { ScreenHost = host };
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
@@ -990,7 +991,7 @@ public class LogOutputSelectorControlTests {
 
 	[Test]
 	public void ScreenDestinationUsesTheSharedWizardWithoutFileSteps() => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
 		using var control = new LogOutputSelectorControl { ScreenHost = host };
 		owner.Controls.Add(control);

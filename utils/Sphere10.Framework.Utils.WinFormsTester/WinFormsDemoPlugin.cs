@@ -16,15 +16,16 @@ using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using Sphere10.Framework.Utils.WinFormsTester.Wizard;
 using Sphere10.Framework.Windows.Forms;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Registers the running tester's workspace and notes demonstrations through the framework's plugin builder.</summary>
 public static class WinFormsDemoPlugin {
 	/// <summary>Keeps the live mode toggle in the application layer while individual blocks contribute contextual commands.</summary>
-	public static void ConfigureApplicationCommands(WinFormsApplication application) {
+	public static void ConfigureApplicationCommands(FormsUI.Application application) {
 		Guard.ArgumentNotNull(application, nameof(application));
-		var menu = new WinFormsApplicationMenuBuilder()
+		var menu = new ApplicationMenuBuilder()
 			.WithText("Views")
 			.AddActionItem("Toggle Screen Mode", userInterface => {
 				var mode = userInterface.ScreenHost.ScreenMode == ScreenMode.MultiView ? ScreenMode.SingleView : ScreenMode.MultiView;
@@ -37,11 +38,11 @@ public static class WinFormsDemoPlugin {
 			form.Disposed += (_, _) => menu.Dispose();
 	}
 
-	public static void Configure(WinFormsApplicationPluginBuilder plugin, bool freshEmptyWorkspace = false) {
+	public static void Configure(FormsUI.ApplicationPluginBuilder plugin, bool freshEmptyWorkspace = false) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		var emptyScreen = freshEmptyWorkspace ? typeof(ScreenHostingEmptyMultiTestScreen) : typeof(ScreenHostingEmptyTestScreen);
 		var emptyLifetime = freshEmptyWorkspace ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance;
-		IWinFormsApplicationBlock workspace = null;
+		FormsUI.IApplicationBlock workspace = null;
 
 		// Native definitions own their images; copies keep block removal from disposing resources used by another block or demo run.
 		plugin
@@ -175,7 +176,7 @@ public static class WinFormsDemoPlugin {
 			: "Notes block removed. Close the remaining ordinary screens to reveal the empty workspace.";
 	}
 
-	private static void CloseOrdinaryScreens(IUserInterfaceServices userInterface, IWinFormsApplicationBlock workspace) {
+	private static void CloseOrdinaryScreens(IUserInterfaceServices userInterface, FormsUI.IApplicationBlock workspace) {
 		var form = (BlockMainForm)userInterface.PrimaryUIController;
 		var closing = form.ScreenHost.OpenScreens.Where(screen => screen.ActivationMode != ScreenActivationMode.PermanentSingleton).ToArray();
 		var closed = form.ScreenHost.CloseScreens(closing);

@@ -285,7 +285,7 @@ public partial class VisualGrid {
 
 	private ILogger ResolveSettingsLogger() {
 		for (var control = Parent; control != null; control = control.Parent)
-			if (control is WinFormsApplicationScreen screen && screen.Block?.Parent?.Logger is { } logger)
+			if (control is ApplicationScreen screen && screen.Block?.Parent?.Logger is { } logger)
 				return logger;
 		return SystemLog.Logger;
 	}

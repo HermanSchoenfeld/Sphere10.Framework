@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -34,7 +35,7 @@ public class ApplicationNestedMenuTests {
 			ApplicationCommandBar bar = null;
 			var rendered = await renderer.RenderComponentAsync<ApplicationCommandStateTests.CommandBarHarness>(Parameters(
 				new[] { active }, component => bar = component,
-				EventCallback.Factory.Create<IBlazorApplicationMenuItem>(new object(), item => selections.Add(item.Id))));
+				EventCallback.Factory.Create<BlazorUI.IApplicationMenuItem>(new object(), item => selections.Add(item.Id))));
 			Invoke(bar, "ToggleMenu", "menu:views");
 			await bar.SetParametersAsync(ParameterView.Empty);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Active Sites").And.Not.Contain("Ridge North"));
@@ -120,7 +121,7 @@ public class ApplicationNestedMenuTests {
 			await bar.SetParametersAsync(ParameterView.Empty);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Ridge North"));
 			var replacement = disableGroup
-				? new BlazorApplicationMenuItemBuilder()
+				? new ApplicationMenuItemBuilder()
 					.WithId("active")
 					.WithText("Active Sites")
 					.EnabledWhen(() => false)
@@ -150,7 +151,7 @@ public class ApplicationNestedMenuTests {
 			await bar.SetParametersAsync(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationCommandBar.Menus)] = new[] {
 					Menu(first, second),
-					new BlazorApplicationMenu { Id = "views/active", Text = "Other Views", Items = new[] { Command("site", "Other project") } }
+					new ApplicationMenu { Id = "views/active", Text = "Other Views", Items = new[] { Command("site", "Other project") } }
 				}
 			}));
 			Invoke(bar, "ToggleMenu", "menu:views");
@@ -183,28 +184,28 @@ public class ApplicationNestedMenuTests {
 		});
 	}
 
-	private static IBlazorApplicationMenuItem Command(string id, string title, bool enabled = true) =>
-		new BlazorApplicationMenuItemBuilder()
+	private static BlazorUI.IApplicationMenuItem Command(string id, string title, bool enabled = true) =>
+		new ApplicationMenuItemBuilder()
 			.WithId(id)
 			.WithText(title)
 			.EnabledWhen(() => enabled)
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
 
-	private static IBlazorApplicationMenuItem Group(string id, string title, params IBlazorApplicationMenuItem[] children) =>
-		new BlazorApplicationMenuItemBuilder()
+	private static BlazorUI.IApplicationMenuItem Group(string id, string title, params BlazorUI.IApplicationMenuItem[] children) =>
+		new ApplicationMenuItemBuilder()
 			.WithId(id)
 			.WithText(title)
 			.WithChildren(children)
 			.Build();
 
-	private static IBlazorApplicationMenu Menu(params IBlazorApplicationMenuItem[] items) =>
-		new BlazorApplicationMenu(ownsItems: false) { Id = "views", Text = "Views", Items = items };
+	private static BlazorUI.IApplicationMenu Menu(params BlazorUI.IApplicationMenuItem[] items) =>
+		new ApplicationMenu(ownsItems: false) { Id = "views", Text = "Views", Items = items };
 
-	private static ParameterView Parameters(IBlazorApplicationMenuItem[] items, Action<ApplicationCommandBar> capture, EventCallback<IBlazorApplicationMenuItem> select = default) =>
+	private static ParameterView Parameters(BlazorUI.IApplicationMenuItem[] items, Action<ApplicationCommandBar> capture, EventCallback<BlazorUI.IApplicationMenuItem> select = default) =>
 		ParameterView.FromDictionary(new Dictionary<string, object> {
 			[nameof(ApplicationCommandStateTests.CommandBarHarness.Menus)] = new[] { Menu(items) },
-			[nameof(ApplicationCommandStateTests.CommandBarHarness.Items)] = Array.Empty<IBlazorApplicationMenuItem>(),
+			[nameof(ApplicationCommandStateTests.CommandBarHarness.Items)] = Array.Empty<BlazorUI.IApplicationMenuItem>(),
 			[nameof(ApplicationCommandStateTests.CommandBarHarness.Capture)] = capture,
 			[nameof(ApplicationCommandStateTests.CommandBarHarness.Select)] = select
 		});

@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -39,7 +40,7 @@ public class ScreenActivationBuilderTests {
 	[Test]
 	public void RegistrationsOwnMetadataAndCommandsOnlyReferenceTheConfiguredScreen() {
 		var creations = 0;
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Inspectors");
+		var builder = new ApplicationBlockBuilder().WithName("Inspectors");
 		var returned = builder
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithTitle("CPU Inspector")
@@ -70,7 +71,7 @@ public class ScreenActivationBuilderTests {
 		Assert.That(block.Menus[0].Items[0].Title, Is.EqualTo("CPU Inspector"));
 		Assert.That(block.Menus[0].Items[1].Title, Is.EqualTo("Inspect Again"));
 		Assert.That(creations, Is.Zero, "Configuration, enumeration and repeated builds must not activate screens.");
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var first = host.ActivateScreen(block, definition);
 		var second = host.ActivateScreen(block, ((IWinFormsScreenMenuItem)block.Menus[0].Items[1]).ScreenDefinition);
 		Assert.That(second, Is.SameAs(first));
@@ -80,8 +81,8 @@ public class ScreenActivationBuilderTests {
 
 	[Test]
 	public async Task StartupActivatorReceivesTheOwningApplicationProviderAndNativeContext() {
-		WinFormsApplicationScreenActivationContext context = null;
-		using var block = new WinFormsApplicationBlockBuilder()
+		ApplicationScreenActivationContext context = null;
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Context")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithTitle("Contextual screen")
@@ -97,7 +98,7 @@ public class ScreenActivationBuilderTests {
 		services.AddMainForm<BlockMainForm>();
 		services.AddApplicationBlock(block);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(context, Is.Not.Null);
 		Assert.That(context.Services, Is.SameAs(provider.GetRequiredService<IServiceProvider>()));
@@ -115,7 +116,7 @@ public class ScreenActivationBuilderTests {
 	public void SameTypeRegistrationsRetainIndependentSingletonsAndArguments(bool reverse, bool runtimeType) {
 		var counts = new int[2];
 		var uiThread = Environment.CurrentManagedThreadId;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Hardware")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithTitle("CPU")
@@ -146,7 +147,7 @@ public class ScreenActivationBuilderTests {
 				menu.AddShowScreenItem(gpu);
 			})
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var cpuDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, cpu);
 		var gpuDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, gpu);
 		var first = host.ActivateScreen(block, reverse ? gpuDefinition : cpuDefinition);
@@ -166,7 +167,7 @@ public class ScreenActivationBuilderTests {
 	[TestCase(true, false)]
 	[TestCase(true, true)]
 	public void ExplicitAndConstructorDefaultPoliciesDoNotLeakAcrossRegistrations(bool reverse, bool explicitSingleton) {
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Policies")
 			.AddScreen<DefaultSingleScreen>(screen => screen
 				.WithTitle("Explicit")
@@ -178,7 +179,7 @@ public class ScreenActivationBuilderTests {
 				.WithStableKey("default"), out var unspecified
 			)
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var firstDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? unspecified : configured);
 		var secondDefinition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reverse ? configured : unspecified);
 		host.ActivateScreen(block, firstDefinition);
@@ -196,7 +197,7 @@ public class ScreenActivationBuilderTests {
 	public void CancellationAfterCustomCreationDisposesOnlyTheUnretainedAttempt() {
 		using var cancellation = new CancellationTokenSource();
 		ArgumentScreen created = null;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Cancellation")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithActivator(context => {
@@ -207,7 +208,7 @@ public class ScreenActivationBuilderTests {
 				out var registration
 			)
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		host.RegisterScreenTypes(block);
 		Assert.That(() => host.OpenScreenAsync(block, registration, cancellation.Token).GetAwaiter().GetResult(), Throws.InstanceOf<OperationCanceledException>());
 		Assert.That(created.IsDisposed, Is.True);
@@ -220,16 +221,16 @@ public class ScreenActivationBuilderTests {
 	[TestCase("Incompatible")]
 	[TestCase("Disposed")]
 	public void InvalidActivatorResultsDoNotLeaveRetainedState(string invalidResult) {
-		WinFormsApplicationScreen result = invalidResult == "Null" ? null : invalidResult == "Incompatible" ? new OtherScreen() : new ArgumentScreen("Disposed");
+		ApplicationScreen result = invalidResult == "Null" ? null : invalidResult == "Incompatible" ? new OtherScreen() : new ArgumentScreen("Disposed");
 		if (invalidResult == "Disposed")
 			result.Dispose();
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Invalid")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithActivator(context => result)
 			)
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		Assert.That(() => host.ActivateScreen(block, block.ScreenDefinitions[0]), Throws.InvalidOperationException);
 		Assert.That(host.Screens, Is.Empty);
 		Assert.That(host.ActiveScreen, Is.Null);
@@ -240,7 +241,7 @@ public class ScreenActivationBuilderTests {
 	[Test]
 	public void ReturningAnAlreadyHostedControlDoesNotStealOrDisposeIt() {
 		ArgumentScreen retained = null;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Ownership")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithStableKey("first")
@@ -253,7 +254,7 @@ public class ScreenActivationBuilderTests {
 				.AsSingleInstance(), out var second
 			)
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		retained = (ArgumentScreen)host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, first));
 		Assert.That(() => host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, second)), Throws.InvalidOperationException);
 		Assert.That(retained.IsDisposed, Is.False);
@@ -265,7 +266,7 @@ public class ScreenActivationBuilderTests {
 	[Test]
 	public async Task MenuFreeProgrammaticOpeningAndCancelledActivationUseTheSameRegistration() {
 		var creations = 0;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Menu-free")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithActivator(context => {
@@ -275,7 +276,7 @@ public class ScreenActivationBuilderTests {
 				.AsSingleInstance(), out var registration
 			)
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		host.RegisterScreenTypes(block);
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
@@ -290,7 +291,7 @@ public class ScreenActivationBuilderTests {
 	[Test]
 	public void FailedLeaveGuardDisposesOnlyTheNewActivationAttempt() {
 		ArgumentScreen attempt = null;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Guards")
 			.AddScreen<GuardScreen>(screen => screen
 				.AsSingleInstance(), out var guarded
@@ -299,7 +300,7 @@ public class ScreenActivationBuilderTests {
 				.WithActivator(context => attempt = new ArgumentScreen("Attempt")), out var next
 			)
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var first = (GuardScreen)host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, guarded));
 		first.Veto = true;
 		Assert.That(host.ActivateScreen(block, Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, next)), Is.Null);
@@ -311,8 +312,8 @@ public class ScreenActivationBuilderTests {
 
 	[Test]
 	public void DefinitionCopiesPreserveActivationWithoutSharingCommandMembership() {
-		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator = context => new ArgumentScreen("Copy");
-		using var block = new WinFormsApplicationBlockBuilder()
+		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = context => new ArgumentScreen("Copy");
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Copies")
 			.AddScreen<ArgumentScreen>(screen => screen
 				.WithTitle("Original")
@@ -325,7 +326,7 @@ public class ScreenActivationBuilderTests {
 			)
 			.Build();
 		var definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, reference);
-		var copy = (WinFormsApplicationScreenDefinition)definition.WithTitle("Copy");
+		var copy = (FormsUI.ApplicationScreenDefinition)definition.WithTitle("Copy");
 		Assert.That(copy.Activator, Is.SameAs(activator));
 		Assert.That(copy.Registration, Is.SameAs(reference));
 		Assert.That(copy.StableKey, Is.EqualTo("copy"));
@@ -334,7 +335,7 @@ public class ScreenActivationBuilderTests {
 		Assert.That(definition.Activators, Has.Length.EqualTo(1));
 	}
 
-	public class ArgumentScreen : WinFormsApplicationScreen {
+	public class ArgumentScreen : ApplicationScreen {
 		public ArgumentScreen(string argument) {
 			Argument = argument;
 		}
@@ -342,16 +343,16 @@ public class ScreenActivationBuilderTests {
 		public string Argument { get; }
 	}
 
-	public class OtherScreen : WinFormsApplicationScreen {
+	public class OtherScreen : ApplicationScreen {
 	}
 
-	public class DefaultSingleScreen : WinFormsApplicationScreen {
+	public class DefaultSingleScreen : ApplicationScreen {
 		public DefaultSingleScreen() {
 			ActivationMode = ScreenActivationMode.SingleInstance;
 		}
 	}
 
-	public class GuardScreen : WinFormsApplicationScreen {
+	public class GuardScreen : ApplicationScreen {
 		public bool Veto;
 
 		protected override void OnHide(ref bool cancelHide) {

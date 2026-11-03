@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.WinFormsTester;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -88,8 +89,8 @@ public class MiscCompressionComparisonTests {
 	[TestCase(true)]
 	public void ClosingOrDisposingAnActiveScreenCancelsWithoutWaitingForItsWorker(bool closeThroughHost) {
 		RunWithMessageLoop(async owner => {
-			using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
-			using var block = new WinFormsApplicationBlockBuilder()
+			using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+			using var block = new ApplicationBlockBuilder()
 				.WithName("Compression comparison")
 				.AddScreen<MiscTestScreen>("Utility comparison")
 				.Build();
@@ -101,7 +102,7 @@ public class MiscCompressionComparisonTests {
 			Find<Button>(screen, "_compressTestButton").PerformClick();
 			var cancellation = CompressionCancellation(screen);
 			Assert.That(cancellation, Is.Not.Null);
-			Assert.That(((IWinFormsApplicationScreen)screen).CanDeactivate(), Is.True);
+			Assert.That(((FormsUI.IApplicationScreen)screen).CanDeactivate(), Is.True);
 			Assert.That(cancellation.IsCancellationRequested, Is.False, "Preflight must not tear down a still-running screen.");
 
 			// Keep the dispatcher alive after destruction to observe the actual worker's cleanup.

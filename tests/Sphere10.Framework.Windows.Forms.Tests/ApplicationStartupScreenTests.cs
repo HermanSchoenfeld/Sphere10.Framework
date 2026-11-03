@@ -19,6 +19,8 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -62,7 +64,7 @@ public class ApplicationStartupScreenTests {
 		var uiThread = Environment.CurrentManagedThreadId;
 		using (var block = CreateBlock())
 		using (var form = CreateForm(owner)) {
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			Assert.That(form.ActiveScreen, Is.TypeOf<OverviewScreen>());
 			var tool = form.ScreenHost.ActivateScreen(block, typeof(ToolScreen));
@@ -82,7 +84,7 @@ public class ApplicationStartupScreenTests {
 		UseFreshProvider(_directory);
 		using (var block = CreateBlock())
 		using (var form = CreateForm(owner)) {
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			Assert.That(form.ActiveScreen, Is.TypeOf<ToolScreen>());
 			Assert.That(form.ActiveScreen.Title, Is.EqualTo("Tool"), "The registered identity is restored, independently of a prior session's display caption.");
@@ -103,7 +105,7 @@ public class ApplicationStartupScreenTests {
 		RunWithMessageLoop(async owner => {
 			using (var block = CreateSameTypeBlock())
 			using (var form = CreateForm(owner)) {
-				await using var application = new WinFormsApplication(form, new[] { block });
+				await using var application = new FormsUI.Application(form, new[] { block });
 				await application.InitializeAsync();
 				var gpu = block.ScreenDefinitions.Single(definition => definition.StableKey == "gpu");
 				var screen = form.ScreenHost.ActivateScreen(block, gpu);
@@ -113,7 +115,7 @@ public class ApplicationStartupScreenTests {
 			UseFreshProvider(_directory);
 			using (var block = CreateSameTypeBlock(reverse: true))
 			using (var form = CreateForm(owner)) {
-				await using var application = new WinFormsApplication(form, new[] { block });
+				await using var application = new FormsUI.Application(form, new[] { block });
 				await application.InitializeAsync();
 				Assert.That(form.ActiveScreen.Title, Is.EqualTo("Renamed GPU"));
 				Assert.That(form.ScreenHost.IsStartupScreen(form.ActiveScreen), Is.True);
@@ -135,7 +137,7 @@ public class ApplicationStartupScreenTests {
 			UseFreshProvider(_directory);
 			using var block = CreateBlock();
 			using var form = CreateForm(owner);
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			Assert.That(form.ActiveScreen, Is.TypeOf<ToolScreen>());
 			Assert.That(form.ScreenHost.IsStartupScreen(form.ActiveScreen), Is.True);
@@ -158,7 +160,7 @@ public class ApplicationStartupScreenTests {
 			}
 			using var block = CreateSameTypeBlock(stableKeys: false);
 			using var form = CreateForm(owner);
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			Assert.That(form.ActiveScreen.Title, Is.EqualTo("CPU"), "An ambiguous legacy choice falls back to the explicitly registered default.");
 			Assert.That(form.ScreenHost.CanMakeStartupScreen(form.ActiveScreen), Is.False);
@@ -172,14 +174,14 @@ public class ApplicationStartupScreenTests {
 	public void AnotherApplicationStoreKeepsItsOwnDefault() => RunWithMessageLoop(async owner => {
 		using (var block = CreateBlock())
 		using (var form = CreateForm(owner)) {
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			await form.ScreenHost.MakeStartupScreenAsync(form.ScreenHost.ActivateScreen(block, typeof(ToolScreen)));
 		}
 		UseFreshProvider(Path.Combine(_directory, "OtherApplication"));
 		using (var block = CreateBlock())
 		using (var form = CreateForm(owner)) {
-			await using var application = new WinFormsApplication(form, new[] { block });
+			await using var application = new FormsUI.Application(form, new[] { block });
 			await application.InitializeAsync();
 			Assert.That(form.ActiveScreen, Is.TypeOf<OverviewScreen>());
 			Assert.That(_files.Saves, Is.Zero);
@@ -202,7 +204,7 @@ public class ApplicationStartupScreenTests {
 		UseFreshProvider(_directory);
 		using var block = CreateBlock();
 		using var form = CreateForm(owner);
-		await using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new FormsUI.Application(form, new[] { block });
 		await application.InitializeAsync();
 		Assert.That(form.ActiveScreen, Is.TypeOf<OverviewScreen>());
 		Assert.That(form.ScreenHost.Screens.OfType<SessionOnlyScreen>(), Is.Empty);
@@ -215,7 +217,7 @@ public class ApplicationStartupScreenTests {
 	public void SessionOnlyAndUnregisteredTabsExplainWhyTheyCannotBeStartupScreens() => RunWithMessageLoop(async owner => {
 		using var block = CreateBlock();
 		using var form = CreateForm(owner);
-		await using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new FormsUI.Application(form, new[] { block });
 		await application.InitializeAsync();
 		var sessionOnly = form.ScreenHost.ActivateScreen(block, typeof(SessionOnlyScreen));
 		var command = StartupCommand(form.ScreenHost, sessionOnly);
@@ -281,7 +283,7 @@ public class ApplicationStartupScreenTests {
 	public void FailedAcceptedSavePreservesThePreviousCachedAndPersistedChoice() => RunWithMessageLoop(async owner => {
 		using var block = CreateBlock();
 		using var form = CreateForm(owner);
-		await using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new FormsUI.Application(form, new[] { block });
 		await application.InitializeAsync();
 		var first = form.ScreenHost.ActivateScreen(block, typeof(ToolScreen));
 		await form.ScreenHost.MakeStartupScreenAsync(first);
@@ -300,7 +302,7 @@ public class ApplicationStartupScreenTests {
 		UserSettings.Provider = new CachedSettingsProvider(_files);
 	}
 
-	private static WinFormsApplicationBlock CreateBlock() => new WinFormsApplicationBlockBuilder()
+	private static ApplicationBlock CreateBlock() => new ApplicationBlockBuilder()
 		.WithName("Workspace")
 		.AddScreen<OverviewScreen>(screen => screen
 			.WithTitle("Overview")
@@ -325,12 +327,12 @@ public class ApplicationStartupScreenTests {
 		.Build();
 
 	// Recreates registrations with new transient tokens while retaining explicit persistent identities.
-	private static WinFormsApplicationBlock CreateSameTypeBlock(bool reverse = false, bool stableKeys = true) {
-		var cpu = new ApplicationScreenDefinition(typeof(ToolScreen), reverse ? "Renamed CPU" : "CPU",
+	private static ApplicationBlock CreateSameTypeBlock(bool reverse = false, bool stableKeys = true) {
+		var cpu = new SharedUI.ApplicationScreenDefinition(typeof(ToolScreen), reverse ? "Renamed CPU" : "CPU",
 			ScreenActivationMode.SingleInstance, stableKey: stableKeys ? "cpu" : null);
-		var gpu = new ApplicationScreenDefinition(typeof(ToolScreen), reverse ? "Renamed GPU" : "GPU",
+		var gpu = new SharedUI.ApplicationScreenDefinition(typeof(ToolScreen), reverse ? "Renamed GPU" : "GPU",
 			ScreenActivationMode.SingleInstance, stableKey: stableKeys ? "gpu" : null);
-		return new WinFormsApplicationBlockBuilder()
+		return new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen(reverse ? gpu : cpu)
 			.AddScreen(reverse ? cpu : gpu)
@@ -345,12 +347,12 @@ public class ApplicationStartupScreenTests {
 		return form;
 	}
 
-	private static ToolStripMenuItem StartupCommand(WinFormsApplicationScreenHost host, WinFormsApplicationScreen screen) {
+	private static ToolStripMenuItem StartupCommand(FormsUI.ApplicationScreenHost host, ApplicationScreen screen) {
 		var tabs = host.TabControl;
 		var page = tabs.TabPages.Cast<TabPage>().Single(tab => ReferenceEquals(tab.Tag, screen));
-		typeof(WinFormsApplicationScreenTabControl).GetField("_contextTab", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(tabs, page);
-		typeof(WinFormsApplicationScreenTabControl).GetMethod("TabMenuOpening", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(tabs, new object[] { tabs, new CancelEventArgs() });
-		var menu = (ContextMenuStrip)typeof(WinFormsApplicationScreenTabControl).GetField("_tabMenu", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(tabs);
+		typeof(ApplicationScreenTabControl).GetField("_contextTab", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(tabs, page);
+		typeof(ApplicationScreenTabControl).GetMethod("TabMenuOpening", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(tabs, new object[] { tabs, new CancelEventArgs() });
+		var menu = (ContextMenuStrip)typeof(ApplicationScreenTabControl).GetField("_tabMenu", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(tabs);
 		return (ToolStripMenuItem)menu.Items["_makeStartupMenuItem"];
 	}
 
@@ -398,8 +400,8 @@ public class ApplicationStartupScreenTests {
 		}
 	}
 
-	private sealed class FinalizingApplication : WinFormsApplication {
-		public FinalizingApplication(BlockMainForm form, IWinFormsApplicationBlock[] blocks, Action finalizing) : base(form, blocks) =>
+	private sealed class FinalizingApplication : FormsUI.Application {
+		public FinalizingApplication(BlockMainForm form, FormsUI.IApplicationBlock[] blocks, Action finalizing) : base(form, blocks) =>
 			SetFinalizers(new[] { new CallbackFinalizer(finalizing) });
 	}
 
@@ -409,11 +411,11 @@ public class ApplicationStartupScreenTests {
 #pragma warning restore CS0465
 	}
 
-	public sealed class OverviewScreen : WinFormsApplicationScreen { }
-	public sealed class ToolScreen : WinFormsApplicationScreen { }
-	public sealed class OtherScreen : WinFormsApplicationScreen { }
-	public sealed class UnregisteredScreen : WinFormsApplicationScreen { }
-	public sealed class SessionOnlyScreen : WinFormsApplicationScreen {
+	public sealed class OverviewScreen : ApplicationScreen { }
+	public sealed class ToolScreen : ApplicationScreen { }
+	public sealed class OtherScreen : ApplicationScreen { }
+	public sealed class UnregisteredScreen : ApplicationScreen { }
+	public sealed class SessionOnlyScreen : ApplicationScreen {
 		public override bool CanRestoreAtStartup => false;
 	}
 }

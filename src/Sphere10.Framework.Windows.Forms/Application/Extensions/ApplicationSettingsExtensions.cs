@@ -13,7 +13,7 @@ using Sphere10.Framework.Application;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Configures native settings identity while reusing the existing user settings provider.</summary>
-public static class WinFormsApplicationSettingsExtensions {
+public static class ApplicationSettingsExtensions {
 	/// <summary>Sets the stable namespace used for the application's registered screen settings.</summary>
 	public static IServiceCollection AddApplicationSettings(this IServiceCollection services, string applicationKey) {
 		Guard.ArgumentNotNull(services, nameof(services));

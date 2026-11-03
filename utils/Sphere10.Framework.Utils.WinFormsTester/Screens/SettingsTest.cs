@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates attribute-declared screen preferences alongside standalone user/global records.</summary>
 [Settings(typeof(SettingsTest.SettingsDemoScreenSettings))]
-public partial class SettingsTest : WinFormsApplicationScreen {
+public partial class SettingsTest : ApplicationScreen {
 	private const string _demoRecordId = "WinFormsTester.SettingsDemo";
 
 	/// <summary>Creates the example without loading or writing a user's settings.</summary>

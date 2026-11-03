@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -53,8 +55,8 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void DisposedHostRejectsBlockSelection() {
-		using var host = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock();
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock();
 		host.Dispose();
 		Assert.That(() => host.SelectBlock(block), Throws.TypeOf<ObjectDisposedException>());
 		host.Dispose();
@@ -62,8 +64,8 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void DisposedHostRejectsScreenTypeRegistrationAfterValidatingItsArgument() {
-		using var host = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock();
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock();
 		host.Dispose();
 		Assert.That(() => host.RegisterScreenTypes(null), Throws.TypeOf<ArgumentNullException>());
 		Assert.That(() => host.RegisterScreenTypes(block), Throws.TypeOf<ObjectDisposedException>());
@@ -72,7 +74,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void DisposedHostRejectsShowingScreens(bool undocked) {
-		using var host = new WinFormsApplicationScreenHost();
+		using var host = new FormsUI.ApplicationScreenHost();
 		using var screen = new MultiProbeScreen();
 		host.Dispose();
 		if (undocked)
@@ -85,7 +87,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenMode.SingleView)]
 	[TestCase(ScreenMode.MultiView)]
 	public void SingleInstanceIsReusedWithinEachOwningBlock(ScreenMode Mode) {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = Mode };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = Mode };
 		using var Block = CreateRegisteredBlock();
 		using var OtherBlock = CreateRegisteredBlock();
 		var First = (ProbeScreen)Host.ActivateScreen(Block, typeof(ProbeScreen))!;
@@ -106,7 +108,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenMode.SingleView)]
 	[TestCase(ScreenMode.MultiView)]
 	public void MultiInstanceCreatesIndependentScreens(ScreenMode Mode) {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = Mode };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = Mode };
 		using var Block = CreateRegisteredBlock();
 		var First = (MultiProbeScreen)Host.ActivateScreen(Block, typeof(MultiProbeScreen))!;
 		var Second = Host.ActivateScreen(Block, typeof(MultiProbeScreen));
@@ -118,10 +120,10 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ScreenArraysAreSnapshotsWithoutTransferringOwnership() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateRegisteredBlock();
 		var first = host.ActivateScreen(block, typeof(MultiProbeScreen));
-		IWinFormsApplicationScreenHost contract = host;
+		FormsUI.IApplicationScreenHost contract = host;
 		var screens = contract.Screens;
 		var openScreens = contract.OpenScreens;
 		screens[0] = null;
@@ -147,15 +149,15 @@ public class ApplicationScreenHostTests {
 			graphics.Clear(Color.Lime);
 		using (var graphics = Graphics.FromImage(menuImage))
 			graphics.Clear(Color.Red);
-		using var block = new WinFormsApplicationBlock();
-		var definition = new ApplicationScreenDefinition(typeof(MultiProbeScreen), "Direct screen", ScreenActivationMode.MultiInstance);
+		using var block = new ApplicationBlock();
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(MultiProbeScreen), "Direct screen", ScreenActivationMode.MultiInstance);
 		block.AddScreenDefinition(definition);
 		if (hasActivator)
-			block.AddMenu(new WinFormsApplicationMenu("Tools", new IWinFormsApplicationMenuItem[] {
+			block.AddMenu(new ApplicationMenu("Tools", new FormsUI.IApplicationMenuItem[] {
 				new WinFormsScreenMenuItem("Direct screen", typeof(MultiProbeScreen), menuImage) { ScreenDefinition = definition }
 			}));
 		Assert.That(definition.Activators.Length, Is.EqualTo(hasActivator ? 1 : 0));
-		using (var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView }) {
+		using (var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView }) {
 			var screen = new MultiProbeScreen { Block = block, ScreenImage = hasExplicitImage ? screenImage : null };
 			Assert.That(host.ShowScreen(screen), Is.True);
 			var tab = host.TabControl.SelectedTab;
@@ -175,12 +177,12 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public void RegisteredBlockArraysAreSnapshotsWithoutChangingRegistration() {
 		using var form = new BlockMainForm();
-		form.RegisterBlock(new WinFormsApplicationBlock { Name = "First" });
+		form.RegisterBlock(new ApplicationBlock { Name = "First" });
 		IBlockManager manager = form;
 		var registered = manager.RegisteredBlocks;
 		var first = registered[0];
 		registered[0] = null;
-		var second = new WinFormsApplicationBlock { Name = "Second" };
+		var second = new ApplicationBlock { Name = "Second" };
 		form.RegisterBlock(second);
 		Assert.That(registered, Has.Length.EqualTo(1));
 		Assert.That(manager.IsBlockRegistered(first), Is.True);
@@ -189,7 +191,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ScreenDeclaredMultiInstanceIsHonored() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var Block = CreateRegisteredBlock();
 		var First = Host.ActivateScreen(Block, typeof(MultiProbeScreen));
 		Assert.That(Host.ActivateScreen(Block, typeof(MultiProbeScreen)), Is.Not.SameAs(First));
@@ -198,7 +200,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenMode.SingleView)]
 	[TestCase(ScreenMode.MultiView)]
 	public void ProgrammaticShowCannotBypassTheSingleInstanceLimit(ScreenMode Mode) {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = Mode };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = Mode };
 		using var Block = CreateRegisteredBlock();
 		var First = Host.ActivateScreen(Block, typeof(ProbeScreen));
 		var Selected = Host.ActivateScreen(Block, typeof(OtherProbeScreen));
@@ -211,7 +213,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ProgrammaticShowCannotDuplicateADetachedSingleton() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var Block = CreateRegisteredBlock();
 		var First = Host.ActivateScreen(Block, typeof(ProbeScreen))!;
 		Host.UndockScreen(First);
@@ -226,9 +228,9 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenActivationMode.MultiInstance, false)]
 	[TestCase(ScreenActivationMode.MultiInstance, true)]
 	public void ExplicitRegistrationOverridesSuppliedConstructorPolicies(ScreenActivationMode Mode, bool CloseFirst) {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		using var Block = new WinFormsApplicationBlock();
-		Block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ConfigurableProbeScreen), activationMode: Mode));
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Block = new ApplicationBlock();
+		Block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(ConfigurableProbeScreen), activationMode: Mode));
 		var OtherMode = Mode == ScreenActivationMode.SingleInstance ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance;
 		var First = new ConfigurableProbeScreen(OtherMode) { Block = Block };
 		Assert.That(Host.ShowScreen(First), Is.True);
@@ -247,7 +249,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.MultiInstance)]
 	public void ActivationModeCannotBeMutatedWhileHosted(ScreenActivationMode Mode) {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var Screen = new ConfigurableProbeScreen(Mode);
 		Host.ShowScreen(Screen);
 		var OtherMode = Mode == ScreenActivationMode.SingleInstance ? ScreenActivationMode.MultiInstance : ScreenActivationMode.SingleInstance;
@@ -273,7 +275,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void NativeTabSelectionHonorsCancellationAndUpdatesLifecycle() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var First = new MultiProbeScreen();
 		using var Second = new MultiProbeScreen();
 		Host.ShowScreen(First);
@@ -292,7 +294,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ModeChangeIsAtomicAndKeepsTheSelectedScreen() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var First = new MultiProbeScreen();
 		var Second = new MultiProbeScreen();
 		var Third = new MultiProbeScreen();
@@ -314,7 +316,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ClosedSingleInstanceCanBeCreatedAgain() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var Block = CreateRegisteredBlock();
 		var First = (ProbeScreen)Host.ActivateScreen(Block, typeof(ProbeScreen))!;
 		Assert.That(Host.CloseScreen(First), Is.True);
@@ -326,7 +328,7 @@ public class ApplicationScreenHostTests {
 	[TestCase(1, 2)]
 	[TestCase(2, 1)]
 	public void ClosingTheActiveTabSelectsItsNextVisualNeighborThenItsPrevious(int activeIndex, int expectedIndex) {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var screens = Enumerable.Range(0, 3).Select(index => new MultiProbeScreen { Title = $"Screen {index}" }).ToArray();
 		foreach (var screen in screens)
 			host.ShowScreen(screen);
@@ -338,7 +340,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void BatchCloseResolvesTheNextSurvivorBeforeRemovingEarlierTabs() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var screens = Enumerable.Range(0, 5).Select(index => new MultiProbeScreen { Title = $"Screen {index}" }).ToArray();
 		foreach (var screen in screens)
 			host.ShowScreen(screen);
@@ -350,7 +352,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ClosingATabUsesReorderedVisualNeighborsAndPreservesInactiveSelection() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var first = new MultiProbeScreen();
 		var second = new MultiProbeScreen();
 		var third = new MultiProbeScreen();
@@ -370,7 +372,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ExplicitScreenDisposalRemovesItsTabAndCacheEntry() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var Screen = new ProbeScreen();
 		Host.ShowScreen(Screen);
 		Screen.Dispose();
@@ -415,7 +417,7 @@ public class ApplicationScreenHostTests {
 		Form.ShowScreen(Second);
 		for (var Index = 0; Index < 3; Index++) {
 			Assert.That(Form.ScreenHost.UndockScreen(Second), Is.True);
-			var Detached = (WinFormsApplicationScreenForm)Second.FindForm()!;
+			var Detached = (ApplicationScreenForm)Second.FindForm()!;
 			Assert.That(Form.ActiveScreen, Is.SameAs(First));
 			Assert.That(First.Button.Owner, Is.SameAs(Form.ApplicationToolBar));
 			Assert.That(Second.Button.Owner, Is.SameAs(Second.ScreenToolBar));
@@ -436,12 +438,12 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void DetachedSingleInstanceIsFocusedAndCloseCanBeCancelled() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var Block = CreateRegisteredBlock();
 		using var OtherBlock = CreateRegisteredBlock();
 		var Screen = (ProbeScreen)Host.ActivateScreen(Block, typeof(ProbeScreen))!;
 		Host.UndockScreen(Screen);
-		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
+		var Window = (ApplicationScreenForm)Screen.FindForm()!;
 		Assert.That(Host.ActivateScreen(Block, typeof(ProbeScreen)), Is.SameAs(Screen));
 		Assert.That(Host.TabControl.TabCount, Is.Zero);
 		Screen.CancelHide = true;
@@ -483,7 +485,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public void UnregisterBlockClosesEveryInstanceAndHonorsCancellation() {
 		using var Form = new ProbeMainForm { ScreenMode = ScreenMode.MultiView };
-		var Block = new WinFormsApplicationBlockBuilder()
+		var Block = new ApplicationBlockBuilder()
 			.WithName("Test")
 			.AddScreen<MultiProbeScreen>(screen => screen
 				.WithTitle("Open")
@@ -511,7 +513,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void BuildersApplyScreenTypesTitlesAndMainFormConfiguration() {
-		using var Block = new WinFormsApplicationBlockBuilder()
+		using var Block = new ApplicationBlockBuilder()
 			.WithName("Test")
 			.AddScreen<MultiProbeScreen>(screen => screen
 				.WithTitle("Default title")
@@ -556,7 +558,7 @@ public class ApplicationScreenHostTests {
 	[Test]
 	public void BuilderMenuExecutionHonorsScreenTypeModesAndSwitchesChrome() {
 		using var Form = new ProbeMainForm { ScreenMode = ScreenMode.MultiView };
-		using var Block = new WinFormsApplicationBlockBuilder()
+		using var Block = new ApplicationBlockBuilder()
 			.WithName("Test")
 			.AddScreen<ProbeScreen>(screen => screen
 				.WithTitle("Settings shortcut")
@@ -600,7 +602,7 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void DisposingDetachedWindowRemovesTheOwnedScreen() {
-		using var Host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var Host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		var Screen = new ProbeScreen();
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
@@ -612,8 +614,8 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void ScreenCannotBeOwnedByTwoHosts() {
-		using var First = new WinFormsApplicationScreenHost();
-		using var Second = new WinFormsApplicationScreenHost();
+		using var First = new FormsUI.ApplicationScreenHost();
+		using var Second = new FormsUI.ApplicationScreenHost();
 		var Screen = new ProbeScreen();
 		First.ShowScreen(Screen);
 		Assert.That(() => Second.ShowScreen(Screen), Throws.ArgumentException);
@@ -638,26 +640,26 @@ public class ApplicationScreenHostTests {
 
 	[Test]
 	public void SingleViewRejectsUndockingAndInvalidModesAreRejected() {
-		using var Host = new WinFormsApplicationScreenHost();
+		using var Host = new FormsUI.ApplicationScreenHost();
 		var Screen = new ProbeScreen();
 		Host.ShowScreen(Screen);
 		Assert.That(Host.UndockScreen(Screen), Is.False);
 		Assert.That(() => Host.TrySetScreenMode((ScreenMode)42), Throws.ArgumentException);
 		Assert.That(() => new ConfigurableProbeScreen((ScreenActivationMode)42), Throws.ArgumentException);
-		Assert.That(() => new WinFormsApplicationMenuBuilder().AddShowScreenItem(typeof(Form), "Bad"), Throws.ArgumentException);
-		Assert.That(() => new WinFormsApplicationBlockBuilder().WithDefaultScreen(typeof(Form)), Throws.ArgumentException);
+		Assert.That(() => new ApplicationMenuBuilder().AddShowScreenItem(typeof(Form), "Bad"), Throws.ArgumentException);
+		Assert.That(() => new ApplicationBlockBuilder().WithDefaultScreen(typeof(Form)), Throws.ArgumentException);
 	}
 
 	// Native type-based activation requires the owning block's independent registrations.
-	private static WinFormsApplicationBlock CreateRegisteredBlock() {
-		var block = new WinFormsApplicationBlock();
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ProbeScreen)));
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(MultiProbeScreen)));
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(OtherProbeScreen)));
+	private static ApplicationBlock CreateRegisteredBlock() {
+		var block = new ApplicationBlock();
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen)));
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(MultiProbeScreen)));
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(OtherProbeScreen)));
 		return block;
 	}
 
-	public class ProbeScreen : WinFormsApplicationScreen {
+	public class ProbeScreen : ApplicationScreen {
 		public ProbeScreen() {
 			ActivationMode = ScreenActivationMode.SingleInstance;
 			ScreenToolBar = new ToolStrip();
@@ -697,9 +699,9 @@ public class ApplicationScreenHostTests {
 		public void ChangeActivationMode(ScreenActivationMode Mode) => ActivationMode = Mode;
 	}
 
-	private class TrackingHost : WinFormsApplicationScreenHost {
-		public WinFormsApplicationScreen? LastCreated { get; private set; }
-		protected override WinFormsApplicationScreen CreateScreen(IWinFormsApplicationBlock Block, Type ScreenType) => LastCreated = base.CreateScreen(Block, ScreenType);
+	private class TrackingHost : FormsUI.ApplicationScreenHost {
+		public ApplicationScreen? LastCreated { get; private set; }
+		protected override ApplicationScreen CreateScreen(FormsUI.IApplicationBlock Block, Type ScreenType) => LastCreated = base.CreateScreen(Block, ScreenType);
 	}
 
 	public class ProbeMainForm : BlockMainForm {
@@ -713,7 +715,7 @@ public class ApplicationScreenHostTests {
 		}
 	}
 	// Detects nested HWND replacement while the native creation callback is still active.
-	private sealed class HandleCreationProbeTabs : WinFormsApplicationScreenTabControl {
+	private sealed class HandleCreationProbeTabs : ApplicationScreenTabControl {
 		private const int WmCreate = 0x0001;
 		private bool _handlingCreate;
 

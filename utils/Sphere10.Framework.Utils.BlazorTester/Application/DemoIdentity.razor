@@ -14,18 +14,19 @@
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls
+@using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor
 @inject Sphere10.Framework.Application.IUserInterfaceServices UserInterfaceServices
 
 <IdentityControl User="_user" SecondaryText="Local demo account" Items="@(_user.Identity.IsAuthenticated ? _signedInItems : _guestItems)" OnSelect="ExecuteAsync" />
 
 @code {
 	private ClaimsPrincipal _user = CreateDemoUser();
-	private IBlazorApplicationMenuItem[] _signedInItems = Array.Empty<IBlazorApplicationMenuItem>();
-	private IBlazorApplicationMenuItem[] _guestItems = Array.Empty<IBlazorApplicationMenuItem>();
+	private BlazorUI.IApplicationMenuItem[] _signedInItems = Array.Empty<BlazorUI.IApplicationMenuItem>();
+	private BlazorUI.IApplicationMenuItem[] _guestItems = Array.Empty<BlazorUI.IApplicationMenuItem>();
 
 	protected override void OnInitialized() {
-		_signedInItems = new IBlazorApplicationMenuItem[] {
-			new BlazorApplicationMenuItemBuilder()
+		_signedInItems = new BlazorUI.IApplicationMenuItem[] {
+			new ApplicationMenuItemBuilder()
 				.WithId("profile")
 				.WithText("Profile")
 				.WithIcon("fas fa-user")
@@ -36,7 +37,7 @@
 				})
 				.Build(),
 			new BlazorMenuSeparator(),
-			new BlazorApplicationMenuItemBuilder()
+			new ApplicationMenuItemBuilder()
 				.WithId("sign-out")
 				.WithText("Sign out of demo")
 				.WithIcon("fas fa-sign-out-alt")
@@ -47,8 +48,8 @@
 				})
 				.Build()
 		};
-		_guestItems = new IBlazorApplicationMenuItem[] {
-			new BlazorApplicationMenuItemBuilder()
+		_guestItems = new BlazorUI.IApplicationMenuItem[] {
+			new ApplicationMenuItemBuilder()
 				.WithId("use-demo-account")
 				.WithText("Use demo account")
 				.WithIcon("fas fa-sign-in-alt")
@@ -61,7 +62,7 @@
 		};
 	}
 
-	private Task ExecuteAsync(IBlazorApplicationMenuItem item) => UserInterfaceServices.ExecuteMenuItemAsync(item);
+	private Task ExecuteAsync(BlazorUI.IApplicationMenuItem item) => UserInterfaceServices.ExecuteMenuItemAsync(item);
 
 	private static ClaimsPrincipal CreateDemoUser() => new(new ClaimsIdentity(new[] {
 		new Claim(ClaimTypes.Name, "Demo user"),

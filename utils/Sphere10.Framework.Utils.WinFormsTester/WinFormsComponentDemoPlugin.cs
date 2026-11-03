@@ -14,12 +14,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using Sphere10.Framework.Windows.Forms;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Registers the tester's controls, data, integration and utility demonstrations.</summary>
 public static class WinFormsComponentDemoPlugin {
-	public static void Configure(WinFormsApplicationPluginBuilder plugin) {
+	public static void Configure(FormsUI.ApplicationPluginBuilder plugin) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		// Native definitions own their images independently of the workspace plugin.
 		plugin

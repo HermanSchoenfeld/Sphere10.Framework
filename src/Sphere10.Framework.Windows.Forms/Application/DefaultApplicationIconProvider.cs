@@ -9,7 +9,7 @@
 using System.Drawing;
 using Sphere10.Framework.Application;
 
-namespace Sphere10.Framework.Windows.Forms.Application;
+namespace Sphere10.Framework.Windows.Forms;
 
 public class DefaultApplicationIconProvider : IApplicationIconProvider {
 	public Icon ApplicationIcon {

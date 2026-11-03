@@ -9,23 +9,24 @@
 using System;
 using System.Drawing;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IWinFormsApplicationMenu : IDisposable, IApplicationMenu<IWinFormsApplicationMenuItem> {
-	new IWinFormsApplicationBlock Parent { get; set; }
+public interface IApplicationMenu : IDisposable, SharedUI.IApplicationMenu<IApplicationMenuItem> {
+	new IApplicationBlock Parent { get; set; }
 	new string Text { get; }
 	Image Image32x32 { get; }
 	bool ShowInMenuStrip { get; }
 
 	#region Base Interface Bridges
 
-	IApplicationBlock IApplicationMenu.Parent {
+	SharedUI.IApplicationBlock SharedUI.IApplicationMenu.Parent {
 		get => Parent;
-		set => Parent = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationBlock>(value, nameof(value));
+		set => Parent = value == null ? null : Guard.ArgumentCast<IApplicationBlock>(value, nameof(value));
 	}
 
-	string IApplicationMenu.Text => Text;
+	string SharedUI.IApplicationMenu.Text => Text;
 
 	#endregion
 }

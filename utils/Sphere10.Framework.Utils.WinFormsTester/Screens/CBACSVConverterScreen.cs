@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Converts bank CSV dates using the Framework CSV reader without losing field boundaries.</summary>
-public partial class CBACSVConverterScreen : WinFormsApplicationScreen {
+public partial class CBACSVConverterScreen : ApplicationScreen {
 	/// <summary>Creates an in-memory conversion example with no file or network access.</summary>
 	public CBACSVConverterScreen() {
 		InitializeComponent();

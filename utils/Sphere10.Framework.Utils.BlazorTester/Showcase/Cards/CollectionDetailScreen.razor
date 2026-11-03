@@ -7,8 +7,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
+@using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor
 
-@inherits BlazorApplicationScreen
+@inherits ApplicationScreen
 @inject CollectionCatalogue Catalogue
 
 <section class="collection-detail" data-showcase="collection-detail" data-collection-id="@CollectionId">
@@ -51,7 +52,7 @@
 			</div>
 		</div>
 		<details class="detail-foundations"><summary>How this workspace uses the framework</summary>
-			<p><code>BlazorApplicationScreenActivation</code> passes <code>CollectionId</code> and a reuse key to this multi-instance registration.
+			<p><code>ApplicationScreenActivation</code> passes <code>CollectionId</code> and a reuse key to this multi-instance registration.
 				Different collections get different tabs; opening the same collection returns to its retained component.</p>
 			<p>The active screen contributes Save/Discard commands to File and the toolbar. Their enabled state follows the draft.
 				<code>CanDeactivateAsync</code> checks the draft before any leave or close operation. Saving updates the scoped catalogue under a framework write scope.</p>
@@ -61,13 +62,13 @@
 </section>
 
 @code {
-	private IBlazorApplicationMenu[] _menus;
+	private BlazorUI.IApplicationMenu[] _menus;
 	private CreativeCollection _saved;
 	private CreativeCollection _draft;
 	private string[] _errors = Array.Empty<string>();
 	private string _savedNotice;
-	private BlazorApplicationMenuItemBase _saveCommand;
-	private BlazorApplicationMenuItemBase _discardCommand;
+	private BlazorUI.ApplicationMenuItemBase _saveCommand;
+	private BlazorUI.ApplicationMenuItemBase _discardCommand;
 
 	[Parameter] public string CollectionId { get; set; } = "coastal-notes";
 
@@ -75,8 +76,8 @@
 
 	public override bool HasUnsavedChanges => _draft != null && !_draft.HasSameEdits(_saved);
 
-	public override IBlazorApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new IBlazorApplicationMenu[] {
-		new BlazorApplicationMenuBuilder()
+	public override BlazorUI.IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= new BlazorUI.IApplicationMenu[] {
+		new ApplicationMenuBuilder()
 			.WithId("file")
 			.WithText("File")
 			.AddItem(SaveCommand)
@@ -84,7 +85,7 @@
 			.Build()
 	});
 
-	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { SaveCommand, DiscardCommand };
+	public override BlazorUI.IApplicationMenuItem[] ToolBarItems => new BlazorUI.IApplicationMenuItem[] { SaveCommand, DiscardCommand };
 
 	private string NameId => $"{CollectionId}-name";
 
@@ -96,7 +97,7 @@
 
 	private string StatusId => $"{CollectionId}-status";
 
-	private BlazorApplicationMenuItemBase SaveCommand => _saveCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase SaveCommand => _saveCommand ??= new ApplicationMenuItemBuilder()
 		.WithId("save")
 		.WithText("Save collection")
 		.WithIcon("fas fa-save")
@@ -109,7 +110,7 @@
 		})
 		.Build();
 
-	private BlazorApplicationMenuItemBase DiscardCommand => _discardCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase DiscardCommand => _discardCommand ??= new ApplicationMenuItemBuilder()
 		.WithId("discard")
 		.WithText("Discard changes")
 		.WithIcon("fas fa-undo")

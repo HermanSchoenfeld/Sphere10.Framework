@@ -11,74 +11,75 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Configures one component registration independently of its navigation commands.</summary>
-public class BlazorApplicationScreenBuilder : ApplicationScreenBuilderBase<BlazorApplicationScreenBuilder> {
+public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<ApplicationScreenBuilder> {
 	private IReadOnlyDictionary<string, object> _parameters = new Dictionary<string, object>();
-	private Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> _activator;
+	private Func<ApplicationScreenActivationContext, ApplicationScreenActivation> _activator;
 	private Type _settingsEditor;
 
 	/// <summary>Starts configuration for a component registration.</summary>
-	public BlazorApplicationScreenBuilder() {
+	public ApplicationScreenBuilder() {
 	}
 
 	/// <summary>Starts configuration for a component registration.</summary>
-	internal BlazorApplicationScreenBuilder(Type screenType, ApplicationScreenRegistration registration)
+	internal ApplicationScreenBuilder(Type screenType, ApplicationScreenRegistration registration)
 		: base(screenType, registration) {
 	}
 
 	/// <summary>Declares typed preferences with a dedicated renderer-owned editor component.</summary>
-	public BlazorApplicationScreenBuilder UseSettings<TSettings, TEditor>()
+	public ApplicationScreenBuilder UseSettings<TSettings, TEditor>()
 		where TSettings : SettingsObject, new()
-		where TEditor : IComponent, IBlazorApplicationSettingsEditor {
+		where TEditor : IComponent, IApplicationSettingsEditor {
 		UseSettings<TSettings>();
 		return WithSettingsEditor<TEditor>();
 	}
 
 	/// <summary>Chooses the component used to edit this registration's ordinary settings object.</summary>
-	public BlazorApplicationScreenBuilder WithSettingsEditor<TEditor>()
-		where TEditor : IComponent, IBlazorApplicationSettingsEditor {
+	public ApplicationScreenBuilder WithSettingsEditor<TEditor>()
+		where TEditor : IComponent, IApplicationSettingsEditor {
 		_settingsEditor = typeof(TEditor);
 		return this;
 	}
 
 	/// <summary>Captures default component parameters; values should be immutable identifiers or values.</summary>
-	public BlazorApplicationScreenBuilder WithParameters(IReadOnlyDictionary<string, object> parameters) {
+	public ApplicationScreenBuilder WithParameters(IReadOnlyDictionary<string, object> parameters) {
 		Guard.ArgumentNotNull(parameters, nameof(parameters));
 		_parameters = new Dictionary<string, object>(parameters, StringComparer.OrdinalIgnoreCase);
 		return this;
 	}
 
 	/// <summary>Prepares parameters only when creating a new session; the renderer still constructs the component.</summary>
-	public BlazorApplicationScreenBuilder WithActivator(Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator) {
+	public ApplicationScreenBuilder WithActivator(Func<ApplicationScreenActivationContext, ApplicationScreenActivation> activator) {
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		_activator = activator;
 		return this;
 	}
 
 	/// <inheritdoc />
-	protected override ApplicationScreenDefinition CreateDefinition() {
-		return new BlazorApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _parameters, _activator, Settings, _settingsEditor);
+	protected override SharedUI.ApplicationScreenDefinition CreateDefinition() {
+		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _parameters, _activator, Settings, _settingsEditor);
 	}
 
 	/// <inheritdoc />
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
 	}
 }
 
 /// <summary>Configures a component registration with a compile-time screen type.</summary>
-public sealed class BlazorApplicationScreenBuilder<TScreen> : BlazorApplicationScreenBuilder
-	where TScreen : IBlazorApplicationScreen {
+public sealed class ApplicationScreenBuilder<TScreen> : ApplicationScreenBuilder
+	where TScreen : IApplicationScreen {
 	/// <summary>Starts configuration for a component registration.</summary>
-	public BlazorApplicationScreenBuilder()
+	public ApplicationScreenBuilder()
 		: this(new ApplicationScreenRegistration<TScreen>()) {
 	}
 
 	/// <summary>Starts configuration for a component registration.</summary>
-	internal BlazorApplicationScreenBuilder(ApplicationScreenRegistration<TScreen> registration)
+	internal ApplicationScreenBuilder(ApplicationScreenRegistration<TScreen> registration)
 		: base(typeof(TScreen), registration) {
 	}
 }

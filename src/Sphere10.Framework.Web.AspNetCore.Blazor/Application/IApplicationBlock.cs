@@ -9,11 +9,12 @@
 using System;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IBlazorApplicationBlock : IApplicationBlock, IApplicationCommandProvider<IBlazorApplicationMenu, IBlazorApplicationMenuItem> {
-	new IBlazorApplication Parent { get; set; }
+public interface IApplicationBlock : SharedUI.IApplicationBlock, IApplicationCommandProvider<IApplicationMenu, IApplicationMenuItem> {
+	new IApplication Parent { get; set; }
 
 	new IBlazorPlugin Source { get; set; }
 
@@ -21,7 +22,7 @@ public interface IBlazorApplicationBlock : IApplicationBlock, IApplicationComman
 
 	string Title { get; }
 
-	string IApplicationBlock.Name => Title;
+	string SharedUI.IApplicationBlock.Name => Title;
 
 	string IconUrl { get; }
 
@@ -37,12 +38,12 @@ public interface IBlazorApplicationBlock : IApplicationBlock, IApplicationComman
 
 	#region Base Interface Bridges
 
-	IApplication IApplicationBlock.Parent {
+	SharedUI.IApplication SharedUI.IApplicationBlock.Parent {
 		get => Parent;
-		set => Parent = value == null ? null : Guard.ArgumentCast<IBlazorApplication>(value, nameof(value));
+		set => Parent = value == null ? null : Guard.ArgumentCast<IApplication>(value, nameof(value));
 	}
 
-	IApplicationPlugin IApplicationBlock.Source {
+	IApplicationPlugin SharedUI.IApplicationBlock.Source {
 		get => Source;
 		set => Source = value == null ? null : Guard.ArgumentCast<IBlazorPlugin>(value, nameof(value));
 	}

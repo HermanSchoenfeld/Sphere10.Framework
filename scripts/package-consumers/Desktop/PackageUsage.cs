@@ -8,11 +8,13 @@
 
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
+using IApplicationPlugin = Sphere10.Framework.Windows.Forms.IApplicationPlugin;
+using ApplicationPluginBuilder = Sphere10.Framework.Windows.Forms.ApplicationPluginBuilder;
 
 namespace PackageConsumer.Desktop;
 
-public sealed class PackageUsage : WinFormsApplicationScreen {
-	public static IWinFormsApplicationPlugin CreatePlugin() => new WinFormsApplicationPluginBuilder()
+public sealed class PackageUsage : ApplicationScreen {
+	public static IApplicationPlugin CreatePlugin() => new ApplicationPluginBuilder()
 		.WithName("Desktop plugin")
 		.AddBlock(block => block
 			.WithName("Desktop block")

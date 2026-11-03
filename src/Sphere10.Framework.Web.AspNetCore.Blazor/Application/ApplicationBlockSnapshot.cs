@@ -15,11 +15,12 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Copies startup Blazor definitions into independent builder and circuit ownership graphs.</summary>
-internal static class BlazorApplicationBlockSnapshot {
+internal static class ApplicationBlockSnapshot {
 	// Reserved browser identifier for the selected block default.
 	internal const string DefaultScreenItemId = "__default";
 
@@ -27,14 +28,14 @@ internal static class BlazorApplicationBlockSnapshot {
 	internal const string DefinitionScreenItemPrefix = "__screen:";
 
 	/// <summary>Copies each screen definition once and reuses that copy for menus, toolbar commands and the default.</summary>
-	internal static BlazorApplicationBlock Create(IBlazorApplicationBlock block) {
+	internal static ApplicationBlock Create(IApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.ArgumentNotNullOrEmpty(block.Name, nameof(block), "Block name is required.");
 		Guard.ArgumentNotNullOrEmpty(block.Id, nameof(block));
 		Guard.ArgumentNotNull(block.ToolBarItems, nameof(block));
 		Tools.UI.ResolveScreenReferences(block, block);
 		var sourceDefinitions = Tools.UI.GetScreenDefinitions(new[] { block });
-		var definitions = new Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
+		var definitions = new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
 		foreach (var definition in sourceDefinitions) {
 			ValidateScreenType(definition.ScreenType);
 			SnapshotDefinition(definition, definitions);
@@ -59,12 +60,12 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Validates startup definitions without constructing a service provider or a runtime UI.</summary>
-	internal static IBlazorApplicationBlock[] CreateBlocks(IEnumerable<IBlazorApplicationBlock> blocks, bool orderByPosition = true) {
+	internal static IApplicationBlock[] CreateBlocks(IEnumerable<IApplicationBlock> blocks, bool orderByPosition = true) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		var snapshots = blocks.Select(Create).Cast<IBlazorApplicationBlock>().ToArray();
+		var snapshots = blocks.Select(Create).Cast<IApplicationBlock>().ToArray();
 		Guard.Argument(snapshots.Select(block => block.Id).Distinct(StringComparer.Ordinal).Count() == snapshots.Length, nameof(blocks), "Block IDs must be unique.");
 		var definitions = Tools.UI.GetScreenDefinitions(snapshots);
-		ApplicationScreenDefinition.ValidateDefinitions(definitions);
+		SharedUI.ApplicationScreenDefinition.ValidateDefinitions(definitions);
 		return orderByPosition ? snapshots.OrderBy(block => block.Position).ToArray() : snapshots;
 	}
 
@@ -86,7 +87,7 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Copies application menu metadata while preserving commands already owned by a block.</summary>
-	internal static BlazorApplicationMenu CreateApplicationMenu(IBlazorApplicationMenu menu) {
+	internal static ApplicationMenu CreateApplicationMenu(IApplicationMenu menu) {
 		Guard.ArgumentNotNull(menu, nameof(menu));
 		Guard.ArgumentNotNullOrEmpty(menu.Text, nameof(menu), "Menu text is required.");
 		var sourceItems = menu.Items;
@@ -101,25 +102,25 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Staged menu builders clone commands while retaining prototype definitions until their block graph is copied.</summary>
-	internal static BlazorApplicationMenu CreateBuilderMenu(IBlazorApplicationMenu menu) {
-		var definitions = new Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
+	internal static ApplicationMenu CreateBuilderMenu(IApplicationMenu menu) {
+		var definitions = new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
 		foreach (var definition in menu.Items.OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition).Where(definition => definition != null))
 			definitions.TryAdd(definition, definition);
 		return CreateMenu(menu, definitions);
 	}
 
 	/// <summary>Copies a standalone command with its own definition graph.</summary>
-	internal static IBlazorApplicationMenuItem CreateItem(IBlazorApplicationMenuItem item) {
-		return CreateItem(item, new Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance));
+	internal static IApplicationMenuItem CreateItem(IApplicationMenuItem item) {
+		return CreateItem(item, new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance));
 	}
 
 	/// <summary>Retains owned commands and freezes ordinary application action definitions.</summary>
-	internal static IBlazorApplicationMenuItem CreateApplicationItem(IBlazorApplicationMenuItem item) {
+	internal static IApplicationMenuItem CreateApplicationItem(IApplicationMenuItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		if (item.Parent?.Parent != null)
 			return item;
 		Guard.Argument(item is not IScreenMenuItem, nameof(item), "The screen command must belong to a block's menu.");
-		if (item is BlazorApplicationMenuGroup group) {
+		if (item is ApplicationMenuGroup group) {
 			Guard.ArgumentNotNullOrEmpty(item.Title, nameof(item), "Menu item title is required.");
 			ValidateItemId(item);
 			return CreateGroupSnapshot(group, group.Items.Select(CreateApplicationItem).ToArray());
@@ -128,10 +129,10 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Enumerates nested action groups in their displayed order.</summary>
-	internal static IEnumerable<IBlazorApplicationMenuItem> EnumerateItems(IEnumerable<IBlazorApplicationMenuItem> items) {
+	internal static IEnumerable<IApplicationMenuItem> EnumerateItems(IEnumerable<IApplicationMenuItem> items) {
 		foreach (var item in items) {
 			yield return item;
-			if (item is BlazorApplicationMenuGroup group)
+			if (item is ApplicationMenuGroup group)
 				foreach (var child in EnumerateItems(group.Items))
 					yield return child;
 		}
@@ -139,16 +140,16 @@ internal static class BlazorApplicationBlockSnapshot {
 
 	/// <summary>Rejects screen types that cannot be hosted as Blazor application screens.</summary>
 	internal static void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
 	}
 
 	/// <summary>Maps successful startup contribution order to the host's immutable browser snapshots using platform-local IDs.</summary>
-	internal static IBlazorApplicationBlock[] OrderBlocks(
-		IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> registrations, IEnumerable<IBlazorApplicationBlock> blocks
+	internal static IApplicationBlock[] OrderBlocks(
+		IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> registrations, IEnumerable<IApplicationBlock> blocks
 	) {
 		var registered = blocks.ToArray();
-		var ordered = new List<IBlazorApplicationBlock>();
-		foreach (var source in registrations.SelectMany(registration => registration.Blocks).Cast<IBlazorApplicationBlock>()) {
+		var ordered = new List<IApplicationBlock>();
+		foreach (var source in registrations.SelectMany(registration => registration.Blocks).Cast<IApplicationBlock>()) {
 			var block = registered.FirstOrDefault(candidate => candidate.Id == source.Id);
 			if (block != null && !ordered.Contains(block))
 				ordered.Add(block);
@@ -158,7 +159,7 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Finds a block command by its stable browser ID.</summary>
-	internal static IBlazorApplicationMenuItem ResolveMenuItem(IBlazorApplicationBlock block, string menuItemId) {
+	internal static IApplicationMenuItem ResolveMenuItem(IApplicationBlock block, string menuItemId) {
 		Guard.ArgumentNotNullOrEmpty(menuItemId, nameof(menuItemId));
 		var item = EnumerateItems(block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems)).FirstOrDefault(candidate => candidate.Id == menuItemId);
 		Guard.Argument(item != null, nameof(menuItemId), $"Unknown menu item '{menuItemId}' in block '{block.Id}'.");
@@ -166,7 +167,7 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Resolves a stable registration route or a legacy command bookmark without fabricating a command.</summary>
-	internal static ApplicationScreenDefinition ResolveScreenDefinition(IBlazorApplicationBlock block, string id) {
+	internal static SharedUI.ApplicationScreenDefinition ResolveScreenDefinition(IApplicationBlock block, string id) {
 		if (id == DefaultScreenItemId)
 			return block.DefaultScreenDefinition;
 		if (id != null && id.StartsWith(DefinitionScreenItemPrefix, StringComparison.Ordinal)) {
@@ -180,18 +181,18 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	/// <summary>Creates a caption-independent URL identity for menu-free registrations.</summary>
-	internal static string GetDefinitionScreenId(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
+	internal static string GetDefinitionScreenId(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
 		return DefinitionScreenItemPrefix + Uri.EscapeDataString(Tools.UI.GetScreenRegistrationKey(block, definition));
 	}
 
 	/// <summary>Checks whether a browser ID identifies an owned menu-free registration.</summary>
-	internal static bool IsDefinitionScreenId(IBlazorApplicationBlock block, string id) {
+	internal static bool IsDefinitionScreenId(IApplicationBlock block, string id) {
 		return id != null && (id == DefaultScreenItemId || id.StartsWith(DefinitionScreenItemPrefix, StringComparison.Ordinal))
 			&& ResolveScreenDefinition(block, id) != null;
 	}
 
 	// Menu ownership is assigned by the concrete Blazor menu after all children are copied.
-	private static BlazorApplicationMenu CreateMenu(IBlazorApplicationMenu menu, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
+	private static ApplicationMenu CreateMenu(IApplicationMenu menu, Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition> definitions) {
 		Guard.ArgumentNotNull(menu, nameof(menu));
 		Guard.ArgumentNotNullOrEmpty(menu.Text, nameof(menu), "Menu text is required.");
 		Guard.ArgumentNotNull(menu.Items, nameof(menu));
@@ -199,8 +200,8 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	// Copy supported command values while keeping screen references in the current graph's definition map.
-	private static IBlazorApplicationMenuItem CreateItem(
-		IBlazorApplicationMenuItem item, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions
+	private static IApplicationMenuItem CreateItem(
+		IApplicationMenuItem item, Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition> definitions
 	) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.Argument(item is IScreenMenuItem || !string.IsNullOrWhiteSpace(item.Title), nameof(item), "Menu item title is required.");
@@ -211,7 +212,7 @@ internal static class BlazorApplicationBlockSnapshot {
 		ValidateItemId(item);
 		if (item is BlazorMenuSeparator separator)
 			return new BlazorMenuSeparator { Id = item.Id, IsVisible = separator.IsVisible, CanExecute = separator.CanExecute };
-		if (item is BlazorApplicationMenuGroup group)
+		if (item is ApplicationMenuGroup group)
 			return CreateGroupSnapshot(group, group.Items.Select(child => CreateItem(child, definitions)).ToArray());
 		if (item is BlazorScreenMenuItem screen) {
 			var snapshot = new BlazorScreenMenuItem {
@@ -244,8 +245,8 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	// Clone each definition once, including menu-free registrations and aliased commands.
-	private static ApplicationScreenDefinition SnapshotDefinition(
-		ApplicationScreenDefinition definition, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions
+	private static SharedUI.ApplicationScreenDefinition SnapshotDefinition(
+		SharedUI.ApplicationScreenDefinition definition, Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition> definitions
 	) {
 		if (definition == null)
 			return null;
@@ -258,20 +259,20 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	// Application projections borrow their owned commands; block/menu products own their copied children.
-	private static BlazorApplicationMenu CreateMenuSnapshot(IBlazorApplicationMenu menu, IBlazorApplicationMenuItem[] items, bool ownsItems = true) {
+	private static ApplicationMenu CreateMenuSnapshot(IApplicationMenu menu, IApplicationMenuItem[] items, bool ownsItems = true) {
 		Guard.ArgumentNotNullOrEmpty(menu.Id, nameof(menu));
 		Guard.Argument(
 			items.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count() == items.Length, nameof(menu), "Menu item IDs must be unique within a menu."
 		);
-		return new BlazorApplicationMenu(ownsItems) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items };
+		return new ApplicationMenu(ownsItems) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items };
 	}
 
 	// Action groups retain their containing menu's ownership and prohibit nested screen registrations.
-	private static BlazorApplicationMenuGroup CreateGroupSnapshot(BlazorApplicationMenuGroup item, IBlazorApplicationMenuItem[] items) {
+	private static ApplicationMenuGroup CreateGroupSnapshot(ApplicationMenuGroup item, IApplicationMenuItem[] items) {
 		Guard.Argument(items.Length > 0 && items.All(child => child is not BlazorScreenMenuItem), nameof(item),
 			"Action groups require children; screen registrations must remain top-level block menu items.");
 		Guard.Argument(items.Select(child => child.Id).Distinct(StringComparer.Ordinal).Count() == items.Length, nameof(item), "Action group child IDs must be unique.");
-		var snapshot = new BlazorApplicationMenuGroup {
+		var snapshot = new ApplicationMenuGroup {
 			Id = item.Id, Title = item.Title, Icon = item.Icon, IsVisible = item.IsVisible, CanExecute = item.CanExecute, Items = items
 		};
 		snapshot.CopySubscriptionsFrom(item);
@@ -279,7 +280,7 @@ internal static class BlazorApplicationBlockSnapshot {
 	}
 
 	// Reserved route names cannot be reused as ordinary command IDs.
-	private static void ValidateItemId(IBlazorApplicationMenuItem item) {
+	private static void ValidateItemId(IApplicationMenuItem item) {
 		Guard.ArgumentNotNullOrEmpty(item.Id, nameof(item));
 		Guard.Argument(item.Id != DefaultScreenItemId, nameof(item), "The default screen ID is reserved for browser navigation.");
 		Guard.Argument(
@@ -290,16 +291,16 @@ internal static class BlazorApplicationBlockSnapshot {
 	#region Inner Types
 
 	// Preserve a contributed block's exit policy without retaining its mutable ownership links.
-	private sealed class BlockSnapshot : BlazorApplicationBlock {
-		private readonly Func<IApplication, CancellationToken, Task<bool>> _exitGuard;
+	private sealed class BlockSnapshot : ApplicationBlock {
+		private readonly Func<SharedUI.IApplication, CancellationToken, Task<bool>> _exitGuard;
 
 		/// <summary>Retains the source block's exit policy while the copy owns its graph.</summary>
-		public BlockSnapshot(IBlazorApplicationBlock source) {
+		public BlockSnapshot(IApplicationBlock source) {
 			_exitGuard = source.CanExitAsync;
 		}
 
 		/// <inheritdoc />
-		public override Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+		public override Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default) {
 			return _exitGuard(application, cancellationToken);
 		}
 	}

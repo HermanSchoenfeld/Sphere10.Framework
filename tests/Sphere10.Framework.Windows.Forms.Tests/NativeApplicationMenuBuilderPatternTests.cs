@@ -12,6 +12,7 @@ using System.Threading;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -23,8 +24,8 @@ public class NativeApplicationMenuBuilderPatternTests {
 	public void ScreenShortcutPreservesConfiguredMetadata() {
 		var directImage = new Bitmap(16, 16);
 		var configuredImage = new Bitmap(16, 16);
-		var definition = new ApplicationScreenDefinition(typeof(Screen), "Stock levels");
-		using var directBlock = new WinFormsApplicationBlockBuilder()
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(Screen), "Stock levels");
+		using var directBlock = new ApplicationBlockBuilder()
 			.WithName("Direct")
 			.AddScreen(definition)
 			.WithDefaultScreen(definition)
@@ -33,7 +34,7 @@ public class NativeApplicationMenuBuilderPatternTests {
 				.AddShowScreenItem(definition, "Stock", directImage, showOnExplorerBar: false, showOnToolBar: false, isStartScreen: true)
 			)
 			.Build();
-		using var configuredBlock = new WinFormsApplicationBlockBuilder()
+		using var configuredBlock = new ApplicationBlockBuilder()
 			.WithName("Configured")
 			.AddScreen(definition)
 			.WithDefaultScreen(definition)
@@ -69,7 +70,7 @@ public class NativeApplicationMenuBuilderPatternTests {
 		var image = new Bitmap(16, 16);
 		IUserInterfaceServices receivedUI = null;
 		var userInterface = new ConsoleApplicationUserInterfaceServices();
-		using var menu = new WinFormsApplicationMenuBuilder()
+		using var menu = new ApplicationMenuBuilder()
 			.WithText("Actions")
 			.AddActionItem("Run", ui => receivedUI = ui, image, showOnExplorerBar: false, showOnToolBar: false, executeOnLoad: true)
 			.Build();
@@ -86,7 +87,7 @@ public class NativeApplicationMenuBuilderPatternTests {
 
 	[Test]
 	public void AShowScreenShortcutRejectsAnInvalidRegistrationBeforeAppendingACommand() {
-		var builder = new WinFormsApplicationMenuBuilder()
+		var builder = new ApplicationMenuBuilder()
 			.WithText("Screens");
 
 		Assert.That(() => builder.AddShowScreenItem((ApplicationScreenRegistration)null), Throws.ArgumentNullException);
@@ -96,7 +97,7 @@ public class NativeApplicationMenuBuilderPatternTests {
 
 	[Test]
 	public void AnOmittedShortcutCaptionUsesTheRegistrationTitleAfterBlockBinding() {
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<Screen>(screen => screen.WithTitle("Stock levels"))
 			.AddMenu(menu => menu
@@ -107,6 +108,6 @@ public class NativeApplicationMenuBuilderPatternTests {
 		Assert.That(block.Menus[0].Items[0].Title, Is.EqualTo("Stock levels"));
 	}
 
-	private sealed class Screen : WinFormsApplicationScreen {
+	private sealed class Screen : ApplicationScreen {
 	}
 }

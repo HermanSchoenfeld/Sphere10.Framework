@@ -12,23 +12,24 @@ using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Owns a component registration's parameters and optional renderer activation preparation.</summary>
-public sealed class BlazorApplicationScreenDefinition : ApplicationScreenDefinition {
+public sealed class ApplicationScreenDefinition : SharedUI.ApplicationScreenDefinition {
 	/// <summary>Declares component parameters, activation metadata and the actual settings type.</summary>
-	public BlazorApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
+	public ApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, ApplicationScreenRegistration registration = null, string stableKey = null,
 		IReadOnlyDictionary<string, object> parameters = null,
-		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null,
+		Func<ApplicationScreenActivationContext, ApplicationScreenActivation> activator = null,
 		SettingsObject settings = null, Type settingsEditor = null)
 		: base(screenType, title, activationMode, screenKind, registration, stableKey, settings) {
-		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+		Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
 		Guard.Argument(settingsEditor == null || !settingsEditor.IsAbstract && !settingsEditor.ContainsGenericParameters
 			&& typeof(IComponent).IsAssignableFrom(settingsEditor)
-			&& typeof(IBlazorApplicationSettingsEditor).IsAssignableFrom(settingsEditor),
-			nameof(settingsEditor), "A settings editor must be a concrete component implementing IBlazorApplicationSettingsEditor.");
+			&& typeof(IApplicationSettingsEditor).IsAssignableFrom(settingsEditor),
+			nameof(settingsEditor), "A settings editor must be a concrete component implementing IApplicationSettingsEditor.");
 		Parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(parameters ?? new Dictionary<string, object>(), StringComparer.OrdinalIgnoreCase));
 		Activator = activator;
 		SettingsEditor = settingsEditor;
@@ -38,13 +39,13 @@ public sealed class BlazorApplicationScreenDefinition : ApplicationScreenDefinit
 	public IReadOnlyDictionary<string, object> Parameters { get; }
 
 	/// <inheritdoc />
-	public Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> Activator { get; }
+	public Func<ApplicationScreenActivationContext, ApplicationScreenActivation> Activator { get; }
 
 	/// <summary>The optional renderer-owned component that edits this registration's actual settings object.</summary>
 	public Type SettingsEditor { get; }
 
 	/// <summary>Copies configuration without sharing the snapshot's reverse command membership.</summary>
-	public override ApplicationScreenDefinition Clone() {
-		return new BlazorApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Parameters, Activator, Settings, SettingsEditor);
+	public override SharedUI.ApplicationScreenDefinition Clone() {
+		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Parameters, Activator, Settings, SettingsEditor);
 	}
 }

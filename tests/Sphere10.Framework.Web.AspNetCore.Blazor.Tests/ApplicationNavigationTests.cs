@@ -23,6 +23,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -34,7 +35,7 @@ public class ApplicationNavigationTests {
 		var navigation = new ProbeNavigation();
 		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			BrowserShell shell = null;
 			await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -68,7 +69,7 @@ public class ApplicationNavigationTests {
 		var navigation = new ProbeNavigation();
 		await using var provider = CreateRenderingServices(navigation, includeProjectMenu: !useQueryRoutes).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			BrowserShell shell = null;
 			var rendered = await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -129,7 +130,7 @@ public class ApplicationNavigationTests {
 		var navigation = new ProbeNavigation();
 		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.InitializeAsync();
 			var project = await host.ActivateScreenAsync("projects", "project", Activation(Guid.NewGuid()));
@@ -162,7 +163,7 @@ public class ApplicationNavigationTests {
 		var navigation = new ProbeNavigation();
 		await using var provider = CreateRenderingServices(navigation).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			BrowserShell shell = null;
 			await renderer.RenderComponentAsync<NavigationHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -245,7 +246,7 @@ public class ApplicationNavigationTests {
 	public async Task PublicCustomCommandPreservesLeaveGuardsAndSynchronizesDrawerAndRoute(bool allowNavigation) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var nextId = Guid.NewGuid();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
 			.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
@@ -262,7 +263,7 @@ public class ApplicationNavigationTests {
 				)
 			)
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var navigation = new ProbeNavigation();
 		var shell = CreateShell(host, navigation, ProjectPath);
 		var handler = typeof(ApplicationShell).GetMethod("OnBeforeInternalNavigationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -350,7 +351,7 @@ public class ApplicationNavigationTests {
 		return services;
 	}
 
-	private static ApplicationShell CreateShell(IBlazorApplicationScreenHost host, NavigationManager navigation, Func<BlazorApplicationScreenSession, string> factory) {
+	private static ApplicationShell CreateShell(BlazorUI.IApplicationScreenHost host, NavigationManager navigation, Func<ApplicationScreenSession, string> factory) {
 		var shell = new ApplicationShell { ScreenHost = host, Navigation = navigation };
 		ParameterView.FromDictionary(new Dictionary<string, object> { [nameof(ApplicationShell.NavigationUriFactory)] = factory }).SetParameterProperties(shell);
 		return shell;
@@ -359,14 +360,14 @@ public class ApplicationNavigationTests {
 	private static void Synchronize(ApplicationShell shell) => typeof(ApplicationShell)
 		.GetMethod("SynchronizeLocation", BindingFlags.Instance | BindingFlags.NonPublic).CreateDelegate<Action<bool>>(shell)(false);
 
-	private static string ProjectPath(BlazorApplicationScreenSession session) =>
+	private static string ProjectPath(ApplicationScreenSession session) =>
 		session?.Parameters.TryGetValue("ProjectId", out var value) == true && value is Guid projectId ? $"project/{projectId:D}" : "application";
 
-	private static BlazorApplicationScreenActivation Activation(Guid projectId) =>
+	private static ApplicationScreenActivation Activation(Guid projectId) =>
 		new(new Dictionary<string, object> { ["ProjectId"] = projectId }, projectId.ToString("N"));
 
-	private static BlazorApplicationScreenHost CreateHost(IServiceProvider provider) {
-		var block = new BlazorApplicationBlockBuilder()
+	private static BlazorUI.ApplicationScreenHost CreateHost(IServiceProvider provider) {
+		var block = new ApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
 			.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
@@ -378,7 +379,7 @@ public class ApplicationNavigationTests {
 				.AddShowScreenItem<ApplicationScreenHostTests.ProbeScreen>(text: "Project", id: "project")
 			)
 			.Build();
-		return new BlazorApplicationScreenHost(new[] { block }, provider);
+		return new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 	}
 
 	public class BrowserShell : ApplicationShell {
@@ -394,16 +395,16 @@ public class ApplicationNavigationTests {
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<BrowserShell>(0);
 			if (!UseQueryRoutes)
-				builder.AddAttribute(1, nameof(ApplicationShell.NavigationUriFactory), (Func<BlazorApplicationScreenSession, string>)ProjectPath);
+				builder.AddAttribute(1, nameof(ApplicationShell.NavigationUriFactory), (Func<ApplicationScreenSession, string>)ProjectPath);
 			builder.AddComponentReferenceCapture(2, component => Capture((BrowserShell)component));
 			builder.CloseComponent();
 		}
 	}
 
-	public class AnchorScreen : BlazorApplicationScreen {
+	public class AnchorScreen : ApplicationScreen {
 	}
 
-	public class ProjectScreen : BlazorApplicationScreen {
+	public class ProjectScreen : ApplicationScreen {
 		[Parameter] public Guid ProjectId { get; set; }
 
 		public Task<bool> GuardResult { get; set; }

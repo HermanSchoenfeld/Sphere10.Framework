@@ -17,7 +17,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 /// <summary>A concrete designable lifecycle surface shared by the instance, permanent and empty-screen examples.</summary>
-public partial class ScreenHostingTestScreen : WinFormsApplicationScreen {
+public partial class ScreenHostingTestScreen : ApplicationScreen {
 	private const int _logicalContentPadding = 16;
 	private const int _logicalInstructionsSpacing = 12;
 	private const int _logicalStatusSpacing = 10;

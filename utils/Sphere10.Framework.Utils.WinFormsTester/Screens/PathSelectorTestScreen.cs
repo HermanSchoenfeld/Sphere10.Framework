@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Compares all four native path-selection modes and their validation behavior.</summary>
-public partial class PathSelectorTestScreen : WinFormsApplicationScreen {
+public partial class PathSelectorTestScreen : ApplicationScreen {
 	/// <summary>Creates the Designer-owned selectors without opening a picker.</summary>
 	public PathSelectorTestScreen() {
 		InitializeComponent();

@@ -13,11 +13,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A renderer-owned screen using its registration's actual settings and existing activation lifecycle.</summary>
-public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicationScreen, IAsyncDisposable {
+public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAsyncDisposable {
 	private Guid? _attachedSessionId;
 	private bool _settingsDirty;
 	private string _settingsError;
@@ -25,21 +26,21 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 
 	/// <summary>The registration instance owning this renderer's screen and settings.</summary>
 	[CascadingParameter]
-	public BlazorApplicationScreenSession Session { get; set; }
+	public ApplicationScreenSession Session { get; set; }
 
 	/// <summary>The circuit's existing presentation host.</summary>
 	[Inject]
-	public IBlazorApplicationScreenHost ScreenHost { get; set; }
+	public IApplicationScreenHost ScreenHost { get; set; }
 
 	/// <summary>The circuit's application UI operations.</summary>
 	[Inject]
 	public IUserInterfaceServices UserInterfaceServices { get; set; }
 
 	/// <inheritdoc />
-	public IBlazorApplicationScreenHost Host { get; set; }
+	public IApplicationScreenHost Host { get; set; }
 
 	/// <inheritdoc />
-	public IBlazorApplicationBlock Block { get; set; }
+	public IApplicationBlock Block { get; set; }
 
 	/// <summary>Override for a dynamic tab title and call NotifyScreenChanged after changing it.</summary>
 	public virtual string Title {
@@ -56,16 +57,16 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 	}
 
 	/// <inheritdoc />
-	public virtual IBlazorApplicationMenu[] Menus {
+	public virtual IApplicationMenu[] Menus {
 		get {
-			return Array.Empty<IBlazorApplicationMenu>();
+			return Array.Empty<IApplicationMenu>();
 		}
 	}
 
 	/// <inheritdoc />
-	public virtual IBlazorApplicationMenuItem[] ToolBarItems {
+	public virtual IApplicationMenuItem[] ToolBarItems {
 		get {
-			return Array.Empty<IBlazorApplicationMenuItem>();
+			return Array.Empty<IApplicationMenuItem>();
 		}
 	}
 
@@ -262,17 +263,17 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 	}
 
 	/// <inheritdoc />
-	Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
+	Task<bool> SharedUI.IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
 		return CanDeactivateAsync(cancellationToken);
 	}
 
 	/// <inheritdoc />
-	Task IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) {
+	Task SharedUI.IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) {
 		return OnActivatedAsync(cancellationToken);
 	}
 
 	/// <inheritdoc />
-	Task IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) {
+	Task SharedUI.IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) {
 		return OnDeactivatedAsync(cancellationToken);
 	}
 }

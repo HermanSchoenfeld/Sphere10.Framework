@@ -9,14 +9,15 @@
 using System;
 using System.Drawing;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native application block with platform-specific images and menu placement.</summary>
-public interface IWinFormsApplicationBlock : IDisposable, IApplicationBlock,
-	IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
-	new IWinFormsApplication Parent { get; set; }
-	new IWinFormsApplicationPlugin Source { get; set; }
+public interface IApplicationBlock : IDisposable, SharedUI.IApplicationBlock,
+	IApplicationCommandProvider<IApplicationMenu, IApplicationMenuItem> {
+	new IApplication Parent { get; set; }
+	new IApplicationPlugin Source { get; set; }
 	new int Position { get; }
 	new string Name { get; }
 	Image Image32x32 { get; }
@@ -27,18 +28,18 @@ public interface IWinFormsApplicationBlock : IDisposable, IApplicationBlock,
 
 	#region Base Interface Bridges
 
-	IApplication IApplicationBlock.Parent {
+	SharedUI.IApplication SharedUI.IApplicationBlock.Parent {
 		get => Parent;
-		set => Parent = value == null ? null : Guard.ArgumentCast<IWinFormsApplication>(value, nameof(value));
+		set => Parent = value == null ? null : Guard.ArgumentCast<IApplication>(value, nameof(value));
 	}
 
-	IApplicationPlugin IApplicationBlock.Source {
+	SharedUI.IApplicationPlugin SharedUI.IApplicationBlock.Source {
 		get => Source;
-		set => Source = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationPlugin>(value, nameof(value));
+		set => Source = value == null ? null : Guard.ArgumentCast<IApplicationPlugin>(value, nameof(value));
 	}
 
-	string IApplicationBlock.Name => Name;
-	int IApplicationBlock.Position => Position;
+	string SharedUI.IApplicationBlock.Name => Name;
+	int SharedUI.IApplicationBlock.Position => Position;
 
 	#endregion
 }

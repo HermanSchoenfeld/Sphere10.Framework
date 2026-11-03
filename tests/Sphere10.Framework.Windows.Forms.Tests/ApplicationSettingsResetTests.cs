@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -77,7 +78,7 @@ public class ApplicationSettingsResetTests {
 	[TestCase(8)]
 	[TestCase(-1)]
 	public void UnknownPolicyBitsAreRejectedWithoutReplacingALegitimateUnnamedCombination(int value) {
-		using var dialog = new WinFormsApplicationSettingsDialog();
+		using var dialog = new ApplicationSettingsDialog();
 		var original = ApplicationSettingsScreenPolicy.ResetDescendants | ApplicationSettingsScreenPolicy.ApplyPendingResetScope;
 		dialog.Policy = original;
 		Assert.That(() => dialog.Policy = (ApplicationSettingsScreenPolicy)value, Throws.InstanceOf<ArgumentException>());
@@ -298,7 +299,7 @@ public class ApplicationSettingsResetTests {
 	}
 
 	// Native property descriptors retain the editor's ordinary dirty tracking.
-	private static void SetValue(WinFormsApplicationSettingsDialog dialog, int value) {
+	private static void SetValue(ApplicationSettingsDialog dialog, int value) {
 		var descriptor = Find<PropertyGrid>(dialog, "_propertyGrid").SelectedObject;
 		TypeDescriptor.GetProperties(descriptor)[nameof(ConfiguredScreen.Preferences.Value)].SetValue(descriptor, value);
 	}
@@ -364,32 +365,32 @@ public class ApplicationSettingsResetTests {
 	// Own a real application graph whose unopened registrations already carry their settings instances.
 	private sealed class SettingsGraph : IAsyncDisposable {
 		private readonly BlockMainForm _main;
-		private readonly WinFormsApplicationBlock _outsideBlock;
+		private readonly ApplicationBlock _outsideBlock;
 
 		public SettingsGraph(bool groupedSettings = true) {
 			Store = new RecordingStore();
-			Editable = new WinFormsApplicationScreenDefinition(typeof(ConfiguredScreen), "Editable", stableKey: "editable", settings: Settings("editable", 61, true));
-			Hidden = new WinFormsApplicationScreenDefinition(typeof(ConfiguredScreen), "Unmarked", stableKey: "hidden", settings: Settings("hidden", 71, false));
-			Outside = new WinFormsApplicationScreenDefinition(typeof(ConfiguredScreen), "Outside", stableKey: "outside", settings: Settings("outside", 81, true));
-			Group = new WinFormsApplicationBlock { Name = "Group", BlockSettings = groupedSettings ? Settings("block", 51, true) : null };
+			Editable = new FormsUI.ApplicationScreenDefinition(typeof(ConfiguredScreen), "Editable", stableKey: "editable", settings: Settings("editable", 61, true));
+			Hidden = new FormsUI.ApplicationScreenDefinition(typeof(ConfiguredScreen), "Unmarked", stableKey: "hidden", settings: Settings("hidden", 71, false));
+			Outside = new FormsUI.ApplicationScreenDefinition(typeof(ConfiguredScreen), "Outside", stableKey: "outside", settings: Settings("outside", 81, true));
+			Group = new ApplicationBlock { Name = "Group", BlockSettings = groupedSettings ? Settings("block", 51, true) : null };
 			Group.AddScreenDefinition(Editable);
 			Group.AddScreenDefinition(Hidden);
-			_outsideBlock = new WinFormsApplicationBlock { Name = "Outside group" };
+			_outsideBlock = new ApplicationBlock { Name = "Outside group" };
 			_outsideBlock.AddScreenDefinition(Outside);
-			Plugin = new WinFormsApplicationPlugin("Plugin", new[] { Group }) { PluginSettings = Settings("plugin", 41, true) };
+			Plugin = new FormsUI.ApplicationPlugin("Plugin", new[] { Group }) { PluginSettings = Settings("plugin", 41, true) };
 			_main = new BlockMainForm();
-			Application = new WinFormsApplication(_main, new[] { _outsideBlock }, new[] { Plugin });
+			Application = new FormsUI.Application(_main, new[] { _outsideBlock }, new[] { Plugin });
 			_main.RegisterBlock(Group);
 			_main.RegisterBlock(_outsideBlock);
 		}
 
 		public RecordingStore Store { get; }
-		public WinFormsApplication Application { get; }
-		public WinFormsApplicationPlugin Plugin { get; }
-		public WinFormsApplicationBlock Group { get; }
-		public WinFormsApplicationScreenDefinition Editable { get; }
-		public WinFormsApplicationScreenDefinition Hidden { get; }
-		public WinFormsApplicationScreenDefinition Outside { get; }
+		public FormsUI.Application Application { get; }
+		public FormsUI.ApplicationPlugin Plugin { get; }
+		public ApplicationBlock Group { get; }
+		public FormsUI.ApplicationScreenDefinition Editable { get; }
+		public FormsUI.ApplicationScreenDefinition Hidden { get; }
+		public FormsUI.ApplicationScreenDefinition Outside { get; }
 		public int Notifications { get; private set; }
 
 		public ConfiguredScreen.Preferences[] AllSettings {
@@ -400,8 +401,8 @@ public class ApplicationSettingsResetTests {
 		}
 
 		// The ordinary modal edits the graph's actual objects; no provider load or operational screen activation is needed.
-		public WinFormsApplicationSettingsDialog CreateDialog(Form owner, object selected) {
-			var dialog = new WinFormsApplicationSettingsDialog(Application, selectedOwner: selected);
+		public ApplicationSettingsDialog CreateDialog(Form owner, object selected) {
+			var dialog = new ApplicationSettingsDialog(Application, selectedOwner: selected);
 			dialog.Show(owner);
 			return dialog;
 		}
@@ -424,7 +425,7 @@ public class ApplicationSettingsResetTests {
 	}
 
 	/// <summary>Declares native registrations without constructing their operational screens.</summary>
-	public sealed class ConfiguredScreen : WinFormsApplicationScreen {
+	public sealed class ConfiguredScreen : ApplicationScreen {
 
 		#region Inner Types
 
@@ -512,9 +513,9 @@ public class ApplicationSettingsResetTests {
 		public int FactoryCalls { get; private set; }
 		public bool ConfiguredPolicyWasShown { get; private set; }
 
-		protected override WinFormsApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
+		protected override ApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
 			FactoryCalls++;
-			var dialog = new WinFormsApplicationSettingsDialog {
+			var dialog = new ApplicationSettingsDialog {
 				Policy = ApplicationSettingsScreenPolicy.None
 			};
 			dialog.Shown += (_, _) => {

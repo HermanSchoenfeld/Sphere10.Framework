@@ -16,6 +16,8 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -45,8 +47,8 @@ public class BuiltinApplicationCommandTests {
 	public void DesignerAddedCommandsAutomaticallySupplyApplicationMetadataAndOriginalCallbacks() {
 		RunWithMessageLoop(async owner => {
 			using var form = new DesignerMainForm();
-			using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
-			IApplication shared = application;
+			using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
+			SharedUI.IApplication shared = application;
 			IMainForm nativeForm = form;
 			IApplicationCommandProvider formProvider = nativeForm;
 			form.Show(owner);
@@ -87,7 +89,7 @@ public class BuiltinApplicationCommandTests {
 	public void RebuildingALiveApplicationPreservesEveryDesignerToolbarViewAndProviderDefinition() {
 		RunWithMessageLoop(async owner => {
 			using var form = new DesignerMainForm();
-			using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			var sourceViews = form.ToolbarItems;
 			var sourceCommands = application.ToolBarItems;
 			form.Show(owner);
@@ -110,7 +112,7 @@ public class BuiltinApplicationCommandTests {
 	public void BaseDesignerMenusAndToolbarRetainTheExistingProtectedCallbacks() {
 		RunWithMessageLoop(async owner => {
 			using var form = new DesignerMainForm();
-			using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			form.Show(owner);
 			await Task.Yield();
 			Assert.That(application.Menus.Select(menu => menu.Text), Does.Contain("File").And.Contain("Help").And.Contain("Screens"));
@@ -131,9 +133,9 @@ public class BuiltinApplicationCommandTests {
 	public void ConfiguredApplicationCommandsRemainSeparateFromTheFormsOwnFrozenDefinitions() {
 		RunWithMessageLoop(async owner => {
 			using var form = new DesignerMainForm();
-			using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			var baseExit = form.MenuCommand("E&xit");
-			using var customMenu = new WinFormsApplicationMenu("Designer Tools");
+			using var customMenu = new ApplicationMenu("Designer Tools");
 			var executions = 0;
 			var custom = new WinFormsActionMenuItem("Custom Action", () => executions++);
 			customMenu.AddItem(custom);
@@ -150,8 +152,8 @@ public class BuiltinApplicationCommandTests {
 			form.MenuCommand("Custom Action").PerformClick();
 			Assert.That(executions, Is.EqualTo(1));
 
-			Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.InvalidOperationException);
-			Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.InvalidOperationException);
+			Assert.That(() => application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>()), Throws.InvalidOperationException);
+			Assert.That(() => application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>()), Throws.InvalidOperationException);
 			form.RebuildCommands();
 			Assert.That(form.MenuCommand("E&xit"), Is.SameAs(baseExit));
 			Assert.That(form.DesignerAction.Owner, Is.SameAs(form.DesignerMenu.DropDown));
@@ -163,7 +165,7 @@ public class BuiltinApplicationCommandTests {
 	[Test]
 	public void ActivatedNativeMembershipIsFixedWhileStateAndBorrowedResourcesRemainLive() {
 		using var form = new DesignerMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		var menu = application.Menus.Single(item => item.Text == "Designer Tools");
 		var action = menu.Items.Single();
 		using var second = new ToolStripMenuItem("Second");
@@ -190,7 +192,7 @@ public class BuiltinApplicationCommandTests {
 	[Test]
 	public void OwnerTemplateHooksActivateOnceAndArrayCopiesProtectTheirMembership() {
 		using var form = new DesignerMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		var expectedMenus = form.Menus;
 		var expectedToolbar = form.ToolBarItems;
 		var returnedMenus = form.Menus;
@@ -210,10 +212,10 @@ public class BuiltinApplicationCommandTests {
 	[Test]
 	public void ApplicationConfigurationIsRejectedAfterEitherCommandCollectionActivates() {
 		using var form = new DesignerMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		var commands = application.ToolBarItems;
-		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.InvalidOperationException);
-		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.InvalidOperationException);
+		Assert.That(() => application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>()), Throws.InvalidOperationException);
+		Assert.That(() => application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>()), Throws.InvalidOperationException);
 		Assert.That(application.ToolBarItems, Is.EqualTo(commands));
 		Assert.That(form.DesignerButton.IsDisposed, Is.False);
 	}
@@ -222,7 +224,7 @@ public class BuiltinApplicationCommandTests {
 	public void DisposingActivatedSourcesReleasesNativeViewsAndRejectsMembershipReplacement([Values(false, true)] bool matchingHeader, [Values(false, true)] bool replace) {
 		RunWithMessageLoop(async owner => {
 			using var form = new DesignerMainForm { ScreenMode = ScreenMode.MultiView };
-			using var screen = new WinFormsApplicationScreen { Title = "Disposed command sources" };
+			using var screen = new ApplicationScreen { Title = "Disposed command sources" };
 			using var otherMenu = new MenuStrip();
 			using var otherToolbar = new ToolStrip();
 			using var removedAction = new ToolStripMenuItem("Removed screen action");
@@ -240,7 +242,7 @@ public class BuiltinApplicationCommandTests {
 			screen.ScreenMenuStrip = sourceMenu;
 			screen.ScreenToolBar = sourceToolbar;
 			screen.Controls.AddRange(new Control[] { sourceMenu, sourceToolbar });
-			await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+			await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(screen);
@@ -288,8 +290,8 @@ public class BuiltinApplicationCommandTests {
 	[Test]
 	public void CustomSeparatorDefinitionsRenderAsNativeSeparatorsWithoutCallbacks() {
 		using var form = new DesignerMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
-		using var menu = new WinFormsApplicationMenu("Custom");
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
+		using var menu = new ApplicationMenu("Custom");
 		menu.AddItem(new WinFormsActionMenuItem("First", () => { }));
 		menu.AddItem(new WinFormsMenuSeparator());
 		menu.AddItem(new WinFormsActionMenuItem("Second", () => { }));
@@ -347,12 +349,12 @@ public class BuiltinApplicationCommandTests {
 			RebuildApplicationCommands();
 		}
 
-		protected override IWinFormsApplicationMenu[] GetMenus() {
+		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
 			return base.GetMenus();
 		}
 
-		protected override IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		protected override FormsUI.IApplicationMenuItem[] GetToolBarItems() {
 			ToolBarActivations++;
 			return base.GetToolBarItems();
 		}

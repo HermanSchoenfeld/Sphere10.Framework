@@ -15,7 +15,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Demonstrates the reusable DatabaseConnectionPanel and its explicit connection test.</summary>
-public partial class ConnectionPanelTestScreen : WinFormsApplicationScreen {
+public partial class ConnectionPanelTestScreen : ApplicationScreen {
 	private DBReference? _accepted;
 	private bool _testing;
 

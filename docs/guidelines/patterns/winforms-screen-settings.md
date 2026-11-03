@@ -24,7 +24,7 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
 [Settings(typeof(MailScreen.MailScreenSettings))]
-public partial class MailScreen : WinFormsApplicationScreen {
+public partial class MailScreen : ApplicationScreen {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public override MailScreenSettings ScreenSettings {
 		get {
@@ -106,7 +106,7 @@ validation attributes and `IValidatableObject`.
 A registration-specific editor takes precedence over `[Editor]` on the settings
 class, followed by the `[UserEditable]` automatic editor. Declare a native class
 editor with `[Editor(typeof(MailSettingsEditor), typeof(ICrudEntityEditor<object>))]`;
-it can use a parameterless constructor or accept `WinFormsApplicationSettingsEditorContext`.
+it can use a parameterless constructor or accept `ApplicationSettingsEditorContext`.
 The same class editor also serves block/plugin settings.
 
 ## Use the existing lifecycle
@@ -168,7 +168,7 @@ Screen Options remains the configuration editor, with explicit Apply/OK.
 Declare `SettingsObject` defaults on the existing block and plugin builders:
 
 ```csharp
-var plugin = new WinFormsApplicationPluginBuilder()
+var plugin = new ApplicationPluginBuilder()
 	.WithName("Mail tools")
 	.UseSettings(new MailPluginSettings())
 	.AddBlock(block => block

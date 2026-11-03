@@ -13,28 +13,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A web block owning its menus alongside portable screen-registration metadata.</summary>
-public class BlazorApplicationBlock : IBlazorApplicationBlock {
+public class ApplicationBlock : IApplicationBlock {
 	public const string DefaultIconUrl = "";
 
 	private readonly BlockMetadata _definition;
-	private readonly List<IBlazorApplicationMenu> _menus = new();
-	private readonly BlazorApplicationMenu _toolbarOwner;
-	private IBlazorApplicationMenuItem[] _toolBarItems = Array.Empty<IBlazorApplicationMenuItem>();
+	private readonly List<IApplicationMenu> _menus = new();
+	private readonly ApplicationMenu _toolbarOwner;
+	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
 	private string _id;
 	private Type _defaultScreen;
 
 	/// <summary>Initializes independent block metadata and toolbar ownership.</summary>
-	public BlazorApplicationBlock() {
+	public ApplicationBlock() {
 		_definition = new BlockMetadata();
-		_toolbarOwner = new BlazorApplicationMenu { Parent = this, Text = "Toolbar" };
+		_toolbarOwner = new ApplicationMenu { Parent = this, Text = "Toolbar" };
 	}
 
 	/// <inheritdoc />
-	public IBlazorApplication Parent { get; set; }
+	public IApplication Parent { get; set; }
 
 	/// <inheritdoc />
 	public IBlazorPlugin Source { get; set; }
@@ -93,7 +94,7 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	public string Tooltip { get; init; }
 
 	/// <summary>The web menus owned by this block.</summary>
-	public IBlazorApplicationMenu[] Menus {
+	public IApplicationMenu[] Menus {
 		get {
 			return _menus.ToArray();
 		}
@@ -111,7 +112,7 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	}
 
 	/// <summary>The web toolbar commands owned by this block.</summary>
-	public IBlazorApplicationMenuItem[] ToolBarItems {
+	public IApplicationMenuItem[] ToolBarItems {
 		get {
 			return _toolBarItems.ToArray();
 		}
@@ -155,7 +156,7 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	}
 
 	/// <inheritdoc />
-	public ApplicationScreenDefinition[] ScreenDefinitions {
+	public SharedUI.ApplicationScreenDefinition[] ScreenDefinitions {
 		get {
 			return _definition.ScreenDefinitions;
 		}
@@ -167,7 +168,7 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	}
 
 	/// <inheritdoc />
-	public ApplicationScreenDefinition DefaultScreenDefinition {
+	public SharedUI.ApplicationScreenDefinition DefaultScreenDefinition {
 		get {
 			if (_definition.DefaultScreenDefinition == null && _defaultScreen != null)
 				_definition.DefaultScreenDefinition = Tools.UI.ResolveScreenRegistration(_definition.ScreenDefinitions, ApplicationScreenRegistration.ForType(_defaultScreen));
@@ -179,7 +180,7 @@ public class BlazorApplicationBlock : IBlazorApplicationBlock {
 	}
 
 	/// <summary>Allows a block to veto exit using the running application's circuit context.</summary>
-	public virtual Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+	public virtual Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(application, nameof(application));
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.FromResult(true);

@@ -120,7 +120,7 @@ public class TesterIntegrationShowcaseTests {
 			var input = Path.Combine(directory, "empty.bin");
 			File.WriteAllBytes(input, Array.Empty<byte>());
 			RunWithMessageLoop(async owner => {
-				using WinFormsApplicationScreen screen = encrypted ? new EncryptedCompressionTestScreen() : new CompressionTestScreen();
+				using ApplicationScreen screen = encrypted ? new EncryptedCompressionTestScreen() : new CompressionTestScreen();
 				screen.Dock = DockStyle.Fill;
 				owner.Controls.Add(screen);
 				await Task.Yield();

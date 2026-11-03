@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class TelemetryChartTestScreen : WinFormsApplicationScreen {
+public partial class TelemetryChartTestScreen : ApplicationScreen {
 	private const int _retainedSampleLimit = 180;
 	private readonly List<TelemetryChartPoint> _cpuSamples = new();
 	private readonly List<TelemetryChartPoint> _memorySamples = new();

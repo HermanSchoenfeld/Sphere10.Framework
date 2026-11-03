@@ -18,14 +18,14 @@ using Sphere10.Framework.Windows;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Detached screen window. The originating host retains ownership of the screen.</summary>
-public class WinFormsApplicationScreenForm : Form {
+public class ApplicationScreenForm : Form {
 	private readonly record struct StripLocation(ToolStrip Strip, Control Parent, int Index);
 
 	private static readonly Size LogicalDefaultClientSize = new(900, 650);
 	private static readonly Size LogicalMinimumSize = new(240, 160);
 	private const int LogicalTopBorderHeight = 1;
-	private readonly IWinFormsApplicationScreenHost _host;
-	private readonly IWinFormsApplicationScreenHost _screenOwner;
+	private readonly IApplicationScreenHost _host;
+	private readonly IApplicationScreenHost _screenOwner;
 	private MenuStrip _contextMenuStrip;
 	private ToolStrip _contextToolBar;
 	private MenuStrip? _screenMenuStrip;
@@ -57,7 +57,7 @@ public class WinFormsApplicationScreenForm : Form {
 	private FormWindowState _lastNativeWindowState;
 	private Size? _requestedClientSize;
 
-	public WinFormsApplicationScreenForm(IWinFormsApplicationScreenHost Host, WinFormsApplicationScreen Screen) {
+	public ApplicationScreenForm(IApplicationScreenHost Host, ApplicationScreen Screen) {
 		Guard.ArgumentNotNull(Host, nameof(Host));
 		Guard.ArgumentNotNull(Screen, nameof(Screen));
 		Guard.Argument(Screen.Host == null || ReferenceEquals(Screen.Host, Host), nameof(Screen), "The screen belongs to another host.");
@@ -66,7 +66,7 @@ public class WinFormsApplicationScreenForm : Form {
 		_host = Host;
 		_screenOwner = Screen.Host;
 		this.Screen = Screen;
-		ScreenHost = new DetachedWinFormsApplicationScreenHost(Host, this);
+		ScreenHost = new DetachedApplicationScreenHost(Host, this);
 		Text = Screen.Title;
 		StartPosition = FormStartPosition.CenterParent;
 		FormBorderStyle = FormBorderStyle.Sizable;
@@ -89,11 +89,11 @@ public class WinFormsApplicationScreenForm : Form {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public WinFormsApplicationScreen Screen { get; }
+	public ApplicationScreen Screen { get; }
 
 	/// <summary>The local active-screen view over the originating application's shared host.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationScreenHost ScreenHost { get; }
+	public IApplicationScreenHost ScreenHost { get; }
 
 	/// <summary>The actual title area in desktop coordinates, measured at the window's current DPI.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -151,7 +151,7 @@ public class WinFormsApplicationScreenForm : Form {
 		if (_released)
 			return;
 		_released = true;
-		(_host as WinFormsApplicationScreenHost)?.ClearDockPreview();
+		(_host as ApplicationScreenHost)?.ClearDockPreview();
 		Screen.TextChanged -= ScreenTextChanged;
 		Screen.NativeCommandsChanged -= ScreenNativeCommandsChanged;
 		if (ReferenceEquals(Screen.Host, ScreenHost))
@@ -202,7 +202,7 @@ public class WinFormsApplicationScreenForm : Form {
 
 	protected override void OnMove(EventArgs Args) {
 		base.OnMove(Args);
-		if (_inMoveSize && !_released && _host is WinFormsApplicationScreenHost Host) {
+		if (_inMoveSize && !_released && _host is ApplicationScreenHost Host) {
 			if (_moving && !_resizing && WindowState == FormWindowState.Normal && Location != _moveStartLocation)
 				Host.UpdateDockPreview(Screen, Cursor.Position, CaptionBounds);
 			else
@@ -215,7 +215,7 @@ public class WinFormsApplicationScreenForm : Form {
 		var Dock = _moving && !_resizing && WindowState == FormWindowState.Normal && Location != _moveStartLocation;
 		_inMoveSize = false;
 		_moving = false;
-		if (_released || _host is not WinFormsApplicationScreenHost Host)
+		if (_released || _host is not ApplicationScreenHost Host)
 			return;
 		if (Dock)
 			Host.CompleteScreenDock(Screen, Cursor.Position, CaptionBounds);
@@ -243,7 +243,7 @@ public class WinFormsApplicationScreenForm : Form {
 				_moving = true;
 			if (message.Msg == WinAPI.USER32.WM_SIZING) {
 				_resizing = true;
-				(_host as WinFormsApplicationScreenHost)?.ClearDockPreview();
+				(_host as ApplicationScreenHost)?.ClearDockPreview();
 			}
 		}
 		base.WndProc(ref message);
@@ -355,16 +355,16 @@ public class WinFormsApplicationScreenForm : Form {
 	private void MergeContextCommands() {
 		var userInterface = ScreenHost.UserInterfaceServices;
 		// Registered screens carry their application; legacy manually hosted screens use their actual root form.
-		var application = Screen.Block?.Parent as IWinFormsApplication
-			?? (_host.UserInterfaceServices?.PrimaryUIController as LiteMainForm)?.Application as IWinFormsApplication;
+		var application = Screen.Block?.Parent as IApplication
+			?? (_host.UserInterfaceServices?.PrimaryUIController as LiteMainForm)?.Application as IApplication;
 		var owners = new IApplicationCommandProvider[] { Screen.Block?.Source, Screen.Block }.Where(owner => owner != null).ToArray();
 
 		// Legacy registrations are already native commands; a detached window displays their original top-level items.
 		var menu = _screenMenuVisible ? _screenMenuStrip : null;
 		var registeredItems = Screen.ScreenMenuStrip == null ? Screen.MenuItems : Array.Empty<ToolStripItem>();
 		var hasMenuCommands = registeredItems.Length > 0 || application?.Menus.Any(item => item.ShowInMenuStrip) == true
-			|| owners.Any(owner => (owner is not IWinFormsApplicationBlock block || block.ShowInMenuStrip)
-				&& owner.Menus.Cast<IWinFormsApplicationMenu>().Any(item => item.ShowInMenuStrip));
+			|| owners.Any(owner => (owner is not IApplicationBlock block || block.ShowInMenuStrip)
+				&& owner.Menus.Cast<IApplicationMenu>().Any(item => item.ShowInMenuStrip));
 		if (menu == null && hasMenuCommands) {
 			_contextMenuStrip ??= new MenuStrip { Name = "_contextMenuStrip", Dock = DockStyle.Top };
 			if (_contextMenuStrip.Parent == null)
@@ -376,7 +376,7 @@ public class WinFormsApplicationScreenForm : Form {
 		// Create a contextual row only when an active owner actually contributes commands to it.
 		var toolBar = _toolBarVisible ? _screenToolBar : null;
 		var hasToolBarCommands = application?.ToolBarItems.Length > 0
-			|| owners.Any(owner => owner.ToolBarItems.Length > 0 || owner is IWinFormsApplicationBlock block && block.ShowInToolStrip
+			|| owners.Any(owner => owner.ToolBarItems.Length > 0 || owner is IApplicationBlock block && block.ShowInToolStrip
 				&& block.Menus.SelectMany(item => item.Items).OfType<IWinFormsLinkMenuItem>().Any(item => item.ShowOnToolStrip));
 		if (toolBar == null && hasToolBarCommands) {
 			_contextToolBar ??= new ToolStrip { Name = "_contextToolBar", Dock = DockStyle.Top, GripStyle = ToolStripGripStyle.Hidden };
@@ -506,11 +506,11 @@ public class WinFormsApplicationScreenForm : Form {
 		private const int LogicalButtonWidth = 32;
 		private const int LogicalPadding = 8;
 		private const int BorderThickness = 1;
-		private readonly WinFormsApplicationScreenForm _window;
+		private readonly ApplicationScreenForm _window;
 		private readonly ToolTip _toolTip;
 		private readonly CaptionActionButton _maximizeButton;
 
-		public ScreenCaption(WinFormsApplicationScreenForm Window) {
+		public ScreenCaption(ApplicationScreenForm Window) {
 			_window = Window;
 			_toolTip = new ToolTip();
 			Font = SystemFonts.SmallCaptionFont;
@@ -633,7 +633,7 @@ public class WinFormsApplicationScreenForm : Form {
 		}
 
 		protected override void WndProc(ref Message Message) {
-			if (Message.Msg == 0x0084 && FindForm() is WinFormsApplicationScreenForm Window) { // WM_NCHITTEST
+			if (Message.Msg == 0x0084 && FindForm() is ApplicationScreenForm Window) { // WM_NCHITTEST
 				var Coordinates = Message.LParam.ToInt64();
 				var Position = new Point(unchecked((short)Coordinates), unchecked((short)(Coordinates >> 16)));
 				if (Window.IsTopResizeArea(Position)) {

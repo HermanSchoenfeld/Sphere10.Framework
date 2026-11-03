@@ -22,7 +22,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Shows real Merkle structures, partition arithmetic and cancellable implementation comparisons.</summary>
-public partial class MerkleTreeTestScreen : WinFormsApplicationScreen {
+public partial class MerkleTreeTestScreen : ApplicationScreen {
 	private CancellationTokenSource _comparisonCancellation;
 
 	/// <summary>Creates a bounded workbench without allocating a tree or starting work.</summary>

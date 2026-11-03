@@ -12,53 +12,53 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<BlazorApplicationMenuItemBuilder>, IApplicationUIBuilder<BlazorApplicationMenuItemBase> {
+public class ApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<ApplicationMenuItemBuilder>, IApplicationUIBuilder<ApplicationMenuItemBase> {
 	private string _icon;
 	private bool _isVisible = true;
 	private Func<bool> _canExecute;
-	private IBlazorApplicationMenuItem[] _children;
+	private IApplicationMenuItem[] _children;
 	private string _id;
 	private string Id => _id ?? ScreenType?.Name ?? Text;
 
-	public BlazorApplicationMenuItemBuilder WithId(string id) {
+	public ApplicationMenuItemBuilder WithId(string id) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		_id = id;
 		return this;
 	}
 
-	public BlazorApplicationMenuItemBuilder WithTitle(string title) => WithText(title);
+	public ApplicationMenuItemBuilder WithTitle(string title) => WithText(title);
 
-	public BlazorApplicationMenuItemBuilder WithIcon(string icon) {
+	public ApplicationMenuItemBuilder WithIcon(string icon) {
 		_icon = icon;
 		return this;
 	}
 
 	/// <summary>Changes presentation without unregistering the command or its screen.</summary>
-	public BlazorApplicationMenuItemBuilder WithVisibility(bool isVisible) {
+	public ApplicationMenuItemBuilder WithVisibility(bool isVisible) {
 		_isVisible = isVisible;
 		return this;
 	}
 
-	public BlazorApplicationMenuItemBuilder EnabledWhen(Func<bool> canExecute) {
+	public ApplicationMenuItemBuilder EnabledWhen(Func<bool> canExecute) {
 		Guard.ArgumentNotNull(canExecute, nameof(canExecute));
 		_canExecute = canExecute;
 		return this;
 	}
 
 	/// <summary>Creates an action group; its commands do not register operational screens.</summary>
-	public BlazorApplicationMenuItemBuilder WithChildren(params IBlazorApplicationMenuItem[] children) {
+	public ApplicationMenuItemBuilder WithChildren(params IApplicationMenuItem[] children) {
 		Guard.ArgumentNotNull(children, nameof(children));
 		Guard.Argument(children.Length > 0 && children.All(child => child != null), nameof(children), "An action group requires children.");
 		_children = children.ToArray();
 		return this;
 	}
 
-	public BlazorApplicationMenuItemBase Build() {
+	public ApplicationMenuItemBase Build() {
 		if (_children != null) {
 			Guard.Ensure(!string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
 			Guard.Ensure(ScreenType == null && Action == null && AsyncAction == null,
 				"An action group cannot also declare an action or screen behavior.");
-			return (BlazorApplicationMenuGroup)BlazorApplicationBlockSnapshot.CreateItem(new BlazorApplicationMenuGroup {
+			return (ApplicationMenuGroup)ApplicationBlockSnapshot.CreateItem(new ApplicationMenuGroup {
 				Id = Id, Title = Text, Icon = _icon, IsVisible = _isVisible, CanExecute = _canExecute, Items = _children
 			});
 		}
@@ -72,5 +72,5 @@ public class BlazorApplicationMenuItemBuilder : ApplicationMenuItemBuilderBase<B
 
 	protected override void ValidateText(string text) => Guard.ArgumentNotNullOrEmpty(text, nameof(text));
 
-	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IApplicationScreen));
 }

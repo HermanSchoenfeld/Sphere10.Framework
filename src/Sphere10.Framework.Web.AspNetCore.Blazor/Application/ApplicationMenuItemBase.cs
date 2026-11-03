@@ -8,14 +8,15 @@
 
 using System;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public abstract class BlazorApplicationMenuItemBase : ApplicationMenuItemBase, IBlazorApplicationMenuItem {
+public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase, IApplicationMenuItem {
 	private string _id;
 
-	public new IBlazorApplicationMenu Parent {
-		get => (IBlazorApplicationMenu)base.Parent;
+	public new IApplicationMenu Parent {
+		get => (IApplicationMenu)base.Parent;
 		set => base.Parent = value;
 	}
 
@@ -43,7 +44,7 @@ public abstract class BlazorApplicationMenuItemBase : ApplicationMenuItemBase, I
 		init => base.Title = value;
 	}
 
-	internal void CopySubscriptionsFrom(BlazorApplicationMenuItemBase source) {
+	internal void CopySubscriptionsFrom(ApplicationMenuItemBase source) {
 		Guard.ArgumentNotNull(source, nameof(source));
 		base.CopySubscriptionsFrom(source);
 	}

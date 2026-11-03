@@ -19,7 +19,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates reusable scheduler policies with screen-owned jobs, subscriptions and log delivery.</summary>
-public partial class ScheduleTestScreen : WinFormsApplicationScreen {
+public partial class ScheduleTestScreen : ApplicationScreen {
 	private readonly ConcurrentQueue<string> _pending = new();
 	private readonly Timer _refreshTimer;
 	private readonly ILogger _logger;

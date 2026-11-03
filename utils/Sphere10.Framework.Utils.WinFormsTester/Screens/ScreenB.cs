@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Combines real expandable groups with instance-owned ListMerger membership.</summary>
-public partial class ScreenB : WinFormsApplicationScreen {
+public partial class ScreenB : ApplicationScreen {
 	/// <summary>Creates the static surface without priming runtime sample lists.</summary>
 	public ScreenB() {
 		InitializeComponent();

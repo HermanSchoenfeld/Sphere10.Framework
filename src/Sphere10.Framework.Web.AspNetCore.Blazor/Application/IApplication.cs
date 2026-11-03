@@ -7,14 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>The circuit-local application aggregate over the existing retained-screen host.</summary>
-public interface IBlazorApplication : IApplication<IBlazorPlugin, IBlazorApplicationScreenHost>, IApplicationCommandProvider<IBlazorApplicationMenu, IBlazorApplicationMenuItem> {
-	new IBlazorApplicationBlock[] Blocks { get; }
+public interface IApplication : SharedUI.IApplication<IBlazorPlugin, IApplicationScreenHost>, IApplicationCommandProvider<IApplicationMenu, IApplicationMenuItem> {
+	new IApplicationBlock[] Blocks { get; }
 
 	#region Base Interface Bridges
-	IApplicationBlock[] IApplication.Blocks => Blocks;
+	SharedUI.IApplicationBlock[] SharedUI.IApplication.Blocks => Blocks;
 	#endregion
 }

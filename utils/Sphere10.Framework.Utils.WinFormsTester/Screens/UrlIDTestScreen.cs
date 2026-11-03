@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Shows numeric values and their deterministic URL-safe representations.</summary>
-public partial class UrlIDTestScreen : WinFormsApplicationScreen {
+public partial class UrlIDTestScreen : ApplicationScreen {
 	/// <summary>Creates the range controls without generating work during construction.</summary>
 	public UrlIDTestScreen() {
 		InitializeComponent();

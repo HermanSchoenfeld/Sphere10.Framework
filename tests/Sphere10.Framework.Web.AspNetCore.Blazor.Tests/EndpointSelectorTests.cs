@@ -22,6 +22,7 @@ using Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -53,7 +54,7 @@ public class EndpointSelectorTests {
 		using var scope = provider.CreateScope();
 		var selector = scope.ServiceProvider.GetRequiredService<SidebarBrandViewModel>();
 		var manager = scope.ServiceProvider.GetRequiredService<IEndpointManager>();
-		var metadataHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var metadataHost = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 
 		Assert.That(selector.Endpoint, Is.EqualTo(manager.Endpoint));
 		Assert.That(metadataHost.AvailableBlocks.Single(block => block.Id == "workspace").IconUrl, Is.EqualTo("img/heading-solid.svg"));

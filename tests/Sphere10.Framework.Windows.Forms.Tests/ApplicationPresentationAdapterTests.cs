@@ -15,6 +15,8 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -42,7 +44,7 @@ public class ApplicationPresentationAdapterTests {
 	[Test]
 	public void ExistingCustomInterfacesProjectThroughSharedContracts() {
 		using var block = new LegacyBlock();
-		IApplicationBlock sharedBlock = block;
+		SharedUI.IApplicationBlock sharedBlock = block;
 		IApplicationCommandProvider sharedCommands = block;
 		var sharedMenu = sharedCommands.Menus.Single();
 		var sharedItem = (IScreenMenuItem)sharedMenu.Items.Single();
@@ -61,17 +63,17 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void NativeModelsKeepSharedMetadataAndPlatformCommandCollections() {
-		using var block = new WinFormsApplicationBlock { Name = "Tools", Position = 4 };
-		var menu = new WinFormsApplicationMenu("Editing");
+		using var block = new ApplicationBlock { Name = "Tools", Position = 4 };
+		var menu = new ApplicationMenu("Editing");
 		var item = new WinFormsScreenMenuItem("Document", typeof(ProbeScreen));
 		menu.AddItem(item);
 		block.AddMenu(menu);
 		ApplicationBlockBase commonBlock = block;
-		ApplicationMenuBase<IWinFormsApplicationMenuItem> commonMenu = menu;
-		IWinFormsApplicationBlock nativeContract = block;
-		IApplicationBlock contract = nativeContract;
-		IApplicationMenu<IWinFormsApplicationMenuItem> typedMenu = menu;
-		IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> typedCommands = nativeContract;
+		ApplicationMenuBase<FormsUI.IApplicationMenuItem> commonMenu = menu;
+		FormsUI.IApplicationBlock nativeContract = block;
+		SharedUI.IApplicationBlock contract = nativeContract;
+		SharedUI.IApplicationMenu<FormsUI.IApplicationMenuItem> typedMenu = menu;
+		IApplicationCommandProvider<FormsUI.IApplicationMenu, FormsUI.IApplicationMenuItem> typedCommands = nativeContract;
 		Assert.That(commonBlock.Name, Is.EqualTo("Tools"));
 		Assert.That(contract.Position, Is.EqualTo(4));
 		Assert.That(commonMenu.Items.Single(), Is.SameAs(item));
@@ -80,7 +82,7 @@ public class ApplicationPresentationAdapterTests {
 		Assert.That(menu.Parent, Is.SameAs(block));
 		Assert.That(item.Parent, Is.SameAs(menu));
 		item.Text = "Updated document";
-		Assert.That(((IApplicationMenuItem)item).Title, Is.EqualTo("Updated document"));
+		Assert.That(((SharedUI.IApplicationMenuItem)item).Title, Is.EqualTo("Updated document"));
 		commonMenu.RemoveItem(item);
 		Assert.That(menu.Items, Is.Empty);
 		commonMenu.AddItem(item);
@@ -89,22 +91,22 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void NativeMenuIntermediatesAreExplicitAbstractBases() {
-		Assert.That(typeof(WinFormsApplicationMenuItemBase).IsAbstract, Is.True);
+		Assert.That(typeof(FormsUI.ApplicationMenuItemBase).IsAbstract, Is.True);
 		Assert.That(typeof(WinFormsLinkMenuItemBase).IsAbstract, Is.True);
-		Assert.That(typeof(WinFormsApplicationMenuItemBase).BaseType, Is.EqualTo(typeof(ApplicationMenuItemBase)));
+		Assert.That(typeof(FormsUI.ApplicationMenuItemBase).BaseType, Is.EqualTo(typeof(SharedUI.ApplicationMenuItemBase)));
 		Assert.That(typeof(WinFormsScreenMenuItem).BaseType, Is.EqualTo(typeof(WinFormsLinkMenuItemBase)));
-		Assert.That(typeof(WinFormsActionMenuItem).BaseType, Is.EqualTo(typeof(WinFormsApplicationMenuItemBase)));
+		Assert.That(typeof(WinFormsActionMenuItem).BaseType, Is.EqualTo(typeof(FormsUI.ApplicationMenuItemBase)));
 	}
 
 	[Test]
 	public void SharedCollectionArraysPreserveNativeMetadataOwnership() {
-		using var block = new WinFormsApplicationBlock();
-		var menu = new WinFormsApplicationMenu("Editing");
+		using var block = new ApplicationBlock();
+		var menu = new ApplicationMenu("Editing");
 		var item = new WinFormsScreenMenuItem("Document", typeof(ProbeScreen));
 		menu.AddItem(item);
 		block.AddMenu(menu);
 		IApplicationCommandProvider sharedCommands = block;
-		IApplicationMenu sharedMenu = menu;
+		SharedUI.IApplicationMenu sharedMenu = menu;
 		var menus = sharedCommands.Menus;
 		var items = sharedMenu.Items;
 		menus[0] = null;
@@ -117,10 +119,10 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void NativeMenusRetainBlockOwnedDefinitionsWhenNavigationChanges() {
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		var menu = new WinFormsApplicationMenu("Editors");
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		var menu = new ApplicationMenu("Editors");
 		block.AddMenu(menu);
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Site editor", ScreenActivationMode.SingleInstance);
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Site editor", ScreenActivationMode.SingleInstance);
 		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
 		var item = new WinFormsScreenMenuItem { Text = "Open site", ScreenDefinition = definition };
@@ -143,20 +145,20 @@ public class ApplicationPresentationAdapterTests {
 		var menu = new DisposableMenu();
 		var block = new TrackingBlock();
 		using (block) {
-			WinFormsApplicationBlock nativeBlock = block;
-			nativeBlock.AddMenu((IApplicationMenu)menu);
+			ApplicationBlock nativeBlock = block;
+			nativeBlock.AddMenu((SharedUI.IApplicationMenu)menu);
 			Assert.That(block.AddMenuCount, Is.EqualTo(1), "Untyped additions must dispatch through existing native overrides");
 			Assert.That(menu.Parent, Is.SameAs(block));
-			Assert.That(nativeBlock.ContainsMenu((IApplicationMenu)menu), Is.True);
+			Assert.That(nativeBlock.ContainsMenu((SharedUI.IApplicationMenu)menu), Is.True);
 			Assert.That(block.ContainsMenuCount, Is.EqualTo(1));
-			nativeBlock.RemoveMenu((IApplicationMenu)menu);
+			nativeBlock.RemoveMenu((SharedUI.IApplicationMenu)menu);
 			Assert.That(block.RemoveMenuCount, Is.EqualTo(1));
-			Assert.That(nativeBlock.ContainsMenu((IApplicationMenu)menu), Is.False);
+			Assert.That(nativeBlock.ContainsMenu((SharedUI.IApplicationMenu)menu), Is.False);
 			Assert.That(menu.DisposeCount, Is.Zero, "Removing a menu must retain the existing caller-ownership behavior");
 			block.AddMenu(menu);
 			Assert.That(block.AddMenuCount, Is.EqualTo(2));
 			Assert.That(block.Menus, Is.EqualTo(new[] { menu }));
-			Assert.That(() => nativeBlock.RemoveMenu((IApplicationMenu)menu), Throws.InvalidOperationException);
+			Assert.That(() => nativeBlock.RemoveMenu((SharedUI.IApplicationMenu)menu), Throws.InvalidOperationException);
 		}
 		Assert.That(menu.DisposeCount, Is.EqualTo(1));
 		Assert.That(menu.Parent, Is.Null);
@@ -165,12 +167,12 @@ public class ApplicationPresentationAdapterTests {
 	[Test]
 	public void NativeBlockRejectsNonNativeMenusBeforeChangingState() {
 		using var block = new TrackingBlock();
-		var existing = new WinFormsApplicationMenu("Native menu");
+		var existing = new ApplicationMenu("Native menu");
 		block.AddMenu(existing);
-		WinFormsApplicationBlock nativeBlock = block;
+		ApplicationBlock nativeBlock = block;
 		var neutralMenu = new NeutralMenu();
 		Assert.That(() => nativeBlock.AddMenu(neutralMenu), Throws.ArgumentException);
-		Assert.That(() => nativeBlock.AddMenu((IApplicationMenu)null), Throws.ArgumentNullException);
+		Assert.That(() => nativeBlock.AddMenu((SharedUI.IApplicationMenu)null), Throws.ArgumentNullException);
 		Assert.That(block.AddMenuCount, Is.EqualTo(1), "Rejected inputs must not reach the native mutation hook");
 		Assert.That(block.Menus, Is.EqualTo(new[] { existing }));
 		Assert.That(existing.Parent, Is.SameAs(block));
@@ -186,7 +188,7 @@ public class ApplicationPresentationAdapterTests {
 		var itemImage = new Bitmap(1, 1);
 		var item = new DisposableItem { Image16x16 = itemImage };
 		var menu = new DisposableMenu { Image32x32 = menuImage };
-		var block = new WinFormsApplicationBlock { Image32x32 = blockImage };
+		var block = new ApplicationBlock { Image32x32 = blockImage };
 		menu.AddItem(item);
 		block.AddMenu(menu);
 		block.Dispose();
@@ -208,14 +210,14 @@ public class ApplicationPresentationAdapterTests {
 		item.OnSelect();
 		Assert.That(actions, Is.EqualTo(1));
 		Assert.That(notifications, Is.EqualTo(1));
-		Assert.That(((IApplicationMenuItem)item).Title, Is.EqualTo("Run"));
+		Assert.That(((SharedUI.IApplicationMenuItem)item).Title, Is.EqualTo("Run"));
 	}
 
 	[TestCase(null)]
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.MultiInstance)]
 	public void BuilderRetainsNullableNativeActivationPolicy(ScreenActivationMode? activationMode) {
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => {
 				screen.WithTitle("Editor");
@@ -238,7 +240,7 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void NativeBuildersRetainTheirProductAndApplyLaterFluentChanges() {
-		var builder = new WinFormsApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Tools")
 			.WithPosition(5)
 			.AddScreen<ProbeScreen>(screen => screen
@@ -253,7 +255,7 @@ public class ApplicationPresentationAdapterTests {
 		Assert.That(second.Position, Is.EqualTo(5));
 		Assert.That(second.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(ProbeScreen)));
 		Assert.That(second.DefaultScreenDefinition.Title, Is.EqualTo("Start"));
-		var menuBuilder = new WinFormsApplicationMenuBuilder()
+		var menuBuilder = new ApplicationMenuBuilder()
 			.WithText("Edit");
 		using var firstMenu = menuBuilder.Build();
 		menuBuilder.WithText("Updated edit");
@@ -263,7 +265,7 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void RebuildingNativeProductsValidatesTheirCurrentMutableNames() {
-		var blockBuilder = new WinFormsApplicationBlockBuilder()
+		var blockBuilder = new ApplicationBlockBuilder()
 			.WithName("Tools");
 		using var block = blockBuilder.Build();
 		block.Name = string.Empty;
@@ -274,7 +276,7 @@ public class ApplicationPresentationAdapterTests {
 		block.Name = "Restored tools";
 		Assert.That(blockBuilder.Build(), Is.SameAs(block), "A directly restored product name must take precedence over earlier builder state");
 
-		var menuBuilder = new WinFormsApplicationMenuBuilder()
+		var menuBuilder = new ApplicationMenuBuilder()
 			.WithText("Edit");
 		using var menu = menuBuilder.Build();
 		menu.Text = string.Empty;
@@ -297,7 +299,7 @@ public class ApplicationPresentationAdapterTests {
 		var image = new Bitmap(1, 1);
 		var firstItem = new DisposableItem { Image16x16 = image };
 		var secondItem = new DisposableItem();
-		var menuBuilder = new WinFormsApplicationMenuBuilder()
+		var menuBuilder = new ApplicationMenuBuilder()
 			.WithText("Screens")
 			.AddItem(firstItem);
 		var menu = menuBuilder.Build();
@@ -306,14 +308,14 @@ public class ApplicationPresentationAdapterTests {
 		Assert.That(menuBuilder.Build(), Is.SameAs(menu));
 		Assert.That(firstItem.Parent, Is.SameAs(menu));
 		Assert.That(secondItem.Parent, Is.SameAs(menu));
-		var blockBuilder = new WinFormsApplicationBlockBuilder()
+		var blockBuilder = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen.WithTitle("Document"))
 			.AddMenu(menu);
 		var block = blockBuilder.Build();
 		var otherMenu = new DisposableMenu();
 		blockBuilder.AddMenu(otherMenu);
-		Assert.That(block.Menus, Is.EqualTo(new IWinFormsApplicationMenu[] { menu, otherMenu }));
+		Assert.That(block.Menus, Is.EqualTo(new FormsUI.IApplicationMenu[] { menu, otherMenu }));
 		Assert.That(blockBuilder.Build(), Is.SameAs(block));
 		Assert.That(menu.Parent, Is.SameAs(block));
 		Assert.That(otherMenu.Parent, Is.SameAs(block));
@@ -327,16 +329,16 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void NativeBuildersRejectNonNativeAndOpenGenericScreens() {
-		Assert.That(() => new WinFormsApplicationBlockBuilder().WithDefaultScreen(typeof(NeutralScreen)), Throws.ArgumentException);
-		Assert.That(() => new WinFormsApplicationMenuBuilder().AddShowScreenItem(typeof(GenericScreen<>), "Generic"), Throws.ArgumentException);
-		Assert.That(() => new WinFormsApplicationMenuItemBuilder().AsScreenItem().WithScreen(typeof(GenericScreen<>)), Throws.ArgumentException);
+		Assert.That(() => new ApplicationBlockBuilder().WithDefaultScreen(typeof(NeutralScreen)), Throws.ArgumentException);
+		Assert.That(() => new ApplicationMenuBuilder().AddShowScreenItem(typeof(GenericScreen<>), "Generic"), Throws.ArgumentException);
+		Assert.That(() => new ApplicationMenuItemBuilder().AsScreenItem().WithScreen(typeof(GenericScreen<>)), Throws.ArgumentException);
 	}
 
 	[Test]
 	public void ExplicitNativeTitlesRemainDynamicThroughTheSharedScreen() {
-		IWinFormsApplicationScreen native = new ExplicitNativeScreen();
+		FormsUI.IApplicationScreen native = new ExplicitNativeScreen();
 		native.Title = "Initial native title";
-		IApplicationScreen shared = native;
+		SharedUI.IApplicationScreen shared = native;
 		Assert.That(shared.Title, Is.EqualTo("Initial native title"));
 		native.Title = "Edited native title";
 		Assert.That(shared.Title, Is.EqualTo("Edited native title"));
@@ -344,10 +346,10 @@ public class ApplicationPresentationAdapterTests {
 
 	[Test]
 	public void ExplicitNativeOwnersRoundTripThroughSharedDefaultBridges() {
-		using var host = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock();
-		IWinFormsApplicationScreen native = new ExplicitNativeScreen();
-		IApplicationScreen shared = native;
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock();
+		FormsUI.IApplicationScreen native = new ExplicitNativeScreen();
+		SharedUI.IApplicationScreen shared = native;
 		shared.Host = host;
 		shared.Block = block;
 		Assert.That(native.Host, Is.SameAs(host));
@@ -363,10 +365,10 @@ public class ApplicationPresentationAdapterTests {
 	[Test]
 	public void DirectNativeBlockOwnersRoundTripThroughSharedDefaultBridges() {
 		using var form = new BlockMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
-		IWinFormsApplicationBlock native = new LegacyBlock();
-		var plugin = new WinFormsApplicationPlugin("Source", new[] { native });
-		IApplicationBlock shared = native;
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
+		FormsUI.IApplicationBlock native = new LegacyBlock();
+		var plugin = new FormsUI.ApplicationPlugin("Source", new[] { native });
+		SharedUI.IApplicationBlock shared = native;
 		shared.Parent = application;
 		shared.Source = plugin;
 		Assert.That(native.Parent, Is.SameAs(application));
@@ -382,7 +384,7 @@ public class ApplicationPresentationAdapterTests {
 	[Test]
 	public void SharedLifecycleCallsNativeHooksExactlyOnceOnTheCallingThread() {
 		using var screen = new ProbeScreen();
-		IApplicationScreen shared = screen;
+		SharedUI.IApplicationScreen shared = screen;
 		var displayed = 0;
 		var hidden = 0;
 		screen.ScreenDisplayed += (_, _) => displayed++;
@@ -404,7 +406,7 @@ public class ApplicationPresentationAdapterTests {
 	[Test]
 	public void SharedLifecycleHonorsBothNativeVetoesAndCancellation() {
 		using var screen = new ProbeScreen { CancelHide = true };
-		IApplicationScreen shared = screen;
+		SharedUI.IApplicationScreen shared = screen;
 		var hidden = 0;
 		screen.ScreenHidden += (_, args) => {
 			hidden++;
@@ -424,69 +426,69 @@ public class ApplicationPresentationAdapterTests {
 		Assert.That(screen.ShowCount, Is.Zero);
 	}
 
-	private sealed class LegacyBlock : IWinFormsApplicationBlock {
+	private sealed class LegacyBlock : FormsUI.IApplicationBlock {
 		public SettingsObject BlockSettings { get; set; }
 
-		public IWinFormsApplication Parent { get; set; }
-		public IWinFormsApplicationPlugin Source { get; set; }
+		public FormsUI.IApplication Parent { get; set; }
+		public FormsUI.IApplicationPlugin Source { get; set; }
 		public int Position => 3;
 		public string Name => "Legacy block";
-		public IWinFormsApplicationMenu[] Menus { get; } = new IWinFormsApplicationMenu[] { new LegacyMenu() };
+		public FormsUI.IApplicationMenu[] Menus { get; } = new FormsUI.IApplicationMenu[] { new LegacyMenu() };
 		public Image Image32x32 => null;
 		public Image Image8x8 => null;
 		public string HelpFileCHM => null;
 		public bool ShowInMenuStrip => false;
 		public bool ShowInToolStrip => false;
-		public ApplicationScreenDefinition[] ScreenDefinitions => new[] { DefaultScreenDefinition };
-		public ApplicationScreenDefinition DefaultScreenDefinition => ((IScreenMenuItem)Menus[0].Items[0]).ScreenDefinition;
+		public SharedUI.ApplicationScreenDefinition[] ScreenDefinitions => new[] { DefaultScreenDefinition };
+		public SharedUI.ApplicationScreenDefinition DefaultScreenDefinition => ((IScreenMenuItem)Menus[0].Items[0]).ScreenDefinition;
 		public void Dispose() { }
 	}
 
-	private sealed class LegacyMenu : IWinFormsApplicationMenu {
-		public IWinFormsApplicationBlock Parent { get; set; }
+	private sealed class LegacyMenu : FormsUI.IApplicationMenu {
+		public FormsUI.IApplicationBlock Parent { get; set; }
 		public string Text => "Legacy menu";
-		public IWinFormsApplicationMenuItem[] Items { get; } = new IWinFormsApplicationMenuItem[] { new LegacyScreenItem() };
+		public FormsUI.IApplicationMenuItem[] Items { get; } = new FormsUI.IApplicationMenuItem[] { new LegacyScreenItem() };
 		public Image Image32x32 => null;
 		public bool ShowInMenuStrip => false;
 		public void Dispose() { }
 	}
 
 	private sealed class LegacyScreenItem : IWinFormsScreenMenuItem {
-		public IWinFormsApplicationMenu Parent { get; set; }
+		public FormsUI.IApplicationMenu Parent { get; set; }
 		public Image Image16x16 => null;
 		public bool ShowOnExplorerBar => true;
 		public bool ShowOnToolStrip => false;
 		public bool ExecuteOnLoad => false;
 		public string Text => "Legacy screen";
-		public ApplicationScreenDefinition ScreenDefinition { get; } = new(typeof(ProbeScreen), "Legacy screen");
+		public SharedUI.ApplicationScreenDefinition ScreenDefinition { get; } = new(typeof(ProbeScreen), "Legacy screen");
 		public void OnSelect() { }
 		public void Dispose() { }
 	}
 
-	private sealed class TrackingBlock : WinFormsApplicationBlock {
+	private sealed class TrackingBlock : ApplicationBlock {
 		public int AddMenuCount { get; private set; }
 
 		public int ContainsMenuCount { get; private set; }
 
 		public int RemoveMenuCount { get; private set; }
 
-		public override void AddMenu(IWinFormsApplicationMenu menu) {
+		public override void AddMenu(FormsUI.IApplicationMenu menu) {
 			AddMenuCount++;
 			base.AddMenu(menu);
 		}
 
-		public override bool ContainsMenu(IWinFormsApplicationMenu menu) {
+		public override bool ContainsMenu(FormsUI.IApplicationMenu menu) {
 			ContainsMenuCount++;
 			return base.ContainsMenu(menu);
 		}
 
-		public override void RemoveMenu(IWinFormsApplicationMenu menu) {
+		public override void RemoveMenu(FormsUI.IApplicationMenu menu) {
 			RemoveMenuCount++;
 			base.RemoveMenu(menu);
 		}
 	}
 
-	private sealed class DisposableMenu : WinFormsApplicationMenu {
+	private sealed class DisposableMenu : ApplicationMenu {
 		public int DisposeCount { get; private set; }
 		public override void Dispose() {
 			DisposeCount++;
@@ -504,21 +506,21 @@ public class ApplicationPresentationAdapterTests {
 		}
 	}
 
-	private sealed class NeutralMenu : ApplicationMenuBase<IApplicationMenuItem> { }
+	private sealed class NeutralMenu : ApplicationMenuBase<SharedUI.IApplicationMenuItem> { }
 
-	private sealed class NeutralScreen : IApplicationScreen {
-		public IApplicationScreenHost Host { get; set; }
-		public IApplicationBlock Block { get; set; }
+	private sealed class NeutralScreen : SharedUI.IApplicationScreen {
+		public SharedUI.IApplicationScreenHost Host { get; set; }
+		public SharedUI.IApplicationBlock Block { get; set; }
 	}
 
-	private sealed class ExplicitNativeScreen : IWinFormsApplicationScreen {
-		string IWinFormsApplicationScreen.Title { get; set; }
+	private sealed class ExplicitNativeScreen : FormsUI.IApplicationScreen {
+		string FormsUI.IApplicationScreen.Title { get; set; }
 
-		IWinFormsApplicationScreenHost IWinFormsApplicationScreen.Host { get; set; }
+		FormsUI.IApplicationScreenHost FormsUI.IApplicationScreen.Host { get; set; }
 
-		IWinFormsApplicationBlock IWinFormsApplicationScreen.Block { get; set; }
+		FormsUI.IApplicationBlock FormsUI.IApplicationScreen.Block { get; set; }
 
-		public IWinFormsApplicationBlock ApplicationBlock { get; set; }
+		public FormsUI.IApplicationBlock ApplicationBlock { get; set; }
 
 		public ScreenActivationMode ActivationMode => ScreenActivationMode.MultiInstance;
 
@@ -535,9 +537,9 @@ public class ApplicationPresentationAdapterTests {
 		public void OnDeactivated() { }
 	}
 
-	private sealed class GenericScreen<T> : WinFormsApplicationScreen { }
+	private sealed class GenericScreen<T> : ApplicationScreen { }
 
-	private sealed class ProbeScreen : WinFormsApplicationScreen {
+	private sealed class ProbeScreen : ApplicationScreen {
 		public int ShowCount { get; private set; }
 		public int FirstShowCount { get; private set; }
 		public int HideCount { get; private set; }

@@ -18,7 +18,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Explores a time-decaying gauge with manual events and explicitly enabled desktop input.</summary>
-public partial class DecayGaugeScreen : WinFormsApplicationScreen {
+public partial class DecayGaugeScreen : ApplicationScreen {
 	private IMouseHook _mouseHook;
 	private IKeyboardHook _keyboardHook;
 	private int _pendingMouseEvents;

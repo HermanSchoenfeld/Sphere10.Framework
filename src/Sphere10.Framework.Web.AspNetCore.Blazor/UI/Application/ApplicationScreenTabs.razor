@@ -68,9 +68,9 @@
 	private bool _closing;
 	private int _openScreenSelectionVersion;
 
-	[Parameter] public BlazorApplicationScreenSession[] Sessions { get; set; } = Array.Empty<BlazorApplicationScreenSession>();
+	[Parameter] public ApplicationScreenSession[] Sessions { get; set; } = Array.Empty<ApplicationScreenSession>();
 
-	[Parameter] public BlazorApplicationScreenSession ActiveSession { get; set; }
+	[Parameter] public ApplicationScreenSession ActiveSession { get; set; }
 
 	[Parameter] public EventCallback<Guid> OnSelect { get; set; }
 
@@ -80,9 +80,9 @@
 
 	[Parameter] public EventCallback<Guid> OnMakeStartup { get; set; }
 
-	[Parameter] public Func<BlazorApplicationScreenSession, bool> IsStartupScreen { get; set; }
+	[Parameter] public Func<ApplicationScreenSession, bool> IsStartupScreen { get; set; }
 
-	[Parameter] public Func<BlazorApplicationScreenSession, string> StartupUnavailableReason { get; set; }
+	[Parameter] public Func<ApplicationScreenSession, string> StartupUnavailableReason { get; set; }
 
 	[Parameter] public bool SavingStartupScreen { get; set; }
 
@@ -107,7 +107,7 @@
 		_focusSelection = true;
 	}
 
-	private (BlazorApplicationScreenSession Screen, string Title)[] GetOpenScreenOptions() {
+	private (ApplicationScreenSession Screen, string Title)[] GetOpenScreenOptions() {
 		var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
 		return Sessions.Where(screen => screen.ScreenKind == Sphere10.Framework.Application.UI.ScreenKind.Normal).Select(screen => {
 			var title = string.IsNullOrWhiteSpace(screen.Title) ? "Untitled Screen" : screen.Title;

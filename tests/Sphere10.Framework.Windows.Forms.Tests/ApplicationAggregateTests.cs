@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -44,16 +46,16 @@ public class ApplicationAggregateTests {
 	public async Task NativeStartupRegistrationUsesOneLiveSharedAggregateAndInitializesBlocksOnce() {
 		var services = new ServiceCollection();
 		services.AddMainForm<ProbeMainForm>();
-		using var later = new WinFormsApplicationBlock { Name = "Later", Position = 2 };
-		later.AddScreenDefinition(new ApplicationScreenDefinition(typeof(DirtyScreen)));
-		using var first = new WinFormsApplicationBlock { Name = "First", Position = 1 };
-		first.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CleanScreen)));
+		using var later = new ApplicationBlock { Name = "Later", Position = 2 };
+		later.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(DirtyScreen)));
+		using var first = new ApplicationBlock { Name = "First", Position = 1 };
+		first.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(CleanScreen)));
 		first.DefaultScreenDefinition = first.ScreenDefinitions.Single();
 		services.AddApplicationBlock(later);
 		services.AddApplicationBlock(first);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
-		var shared = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
+		var shared = provider.GetRequiredService<SharedUI.IApplication>();
 		Assert.That(shared, Is.SameAs(application));
 		Assert.That(application.BlockManager, Is.SameAs(provider.GetRequiredService<IBlockManager>()));
 		Assert.That(application.LoadedPlugins, Is.Empty);
@@ -82,10 +84,10 @@ public class ApplicationAggregateTests {
 	[Test]
 	public async Task HiddenRetainedScreensStillContributeUnsavedChanges() {
 		using var form = new ProbeMainForm();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(DirtyScreen)));
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(CleanScreen)));
-		await using var application = new WinFormsApplication(form, new[] { block });
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(DirtyScreen)));
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(CleanScreen)));
+		await using var application = new FormsUI.Application(form, new[] { block });
 		await application.InitializeAsync();
 		application.ScreenHost.ScreenMode = ScreenMode.SingleView;
 		var dirty = (DirtyScreen)application.ScreenHost.ActivateScreen(block, typeof(DirtyScreen));
@@ -101,10 +103,10 @@ public class ApplicationAggregateTests {
 	[Test]
 	public void StandaloneBlockParentsFollowExistingAndLaterHostMembership() {
 		using var form = new ProbeMainForm();
-		using var existing = new WinFormsApplicationBlock { Name = "Existing" };
-		using var later = new WinFormsApplicationBlock { Name = "Later" };
+		using var existing = new ApplicationBlock { Name = "Existing" };
+		using var later = new ApplicationBlock { Name = "Later" };
 		form.RegisterBlock(existing);
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		application.Changed += () => Assert.That(application.Blocks.All(block => ReferenceEquals(block.Parent, application)), Is.True,
 			"Application notifications expose updated block parents.");
 		Assert.That(existing.Parent, Is.SameAs(application));
@@ -127,10 +129,10 @@ public class ApplicationAggregateTests {
 	[Test]
 	public async Task ApplicationCommandsRenderAndExecuteThroughNativeChromeWithoutTakingDefinitionOwnership() {
 		using var form = new ProbeMainForm();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		await using var application = new WinFormsApplication(form, new[] { block });
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		await using var application = new FormsUI.Application(form, new[] { block });
 		var executions = 0;
-		using var menu = new WinFormsApplicationMenu("Application commands");
+		using var menu = new ApplicationMenu("Application commands");
 		var item = new TrackingAction("Run", () => executions++);
 		menu.AddItem(item);
 		application.SetMenus(new[] { menu });
@@ -143,8 +145,8 @@ public class ApplicationAggregateTests {
 		Assert.That(executions, Is.EqualTo(2));
 		Assert.That(item.Parent, Is.SameAs(menu), "Global commands retain their declaring menu.");
 		Assert.That(menu.Parent, Is.Null);
-		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.InvalidOperationException);
-		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.InvalidOperationException);
+		Assert.That(() => application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>()), Throws.InvalidOperationException);
+		Assert.That(() => application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>()), Throws.InvalidOperationException);
 		Assert.That(form.MenuEntries.Any(entry => entry.Text == "Application commands"), Is.True);
 		Assert.That(form.ToolEntries.Any(entry => entry.ToolTipText == "Run"), Is.True);
 		Assert.That(item.DisposeCount, Is.Zero);
@@ -154,14 +156,14 @@ public class ApplicationAggregateTests {
 	[Test]
 	public void NativeCommandMembershipIsCopiedAndInvalidUpdatesLeaveCommandsAndChromeIntact() {
 		using var form = new ProbeMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		var formMenus = ((IMainForm)form).Menus;
 		var formToolbar = ((IMainForm)form).ToolBarItems;
-		using var menu = new WinFormsApplicationMenu("Application commands");
+		using var menu = new ApplicationMenu("Application commands");
 		var item = new TrackingAction("Run", () => { });
 		menu.AddItem(item);
-		var menus = new IApplicationMenu[] { menu };
-		var items = new IApplicationMenuItem[] { item };
+		var menus = new SharedUI.IApplicationMenu[] { menu };
+		var items = new SharedUI.IApplicationMenuItem[] { item };
 		var notifications = 0;
 		application.Changed += () => notifications++;
 		application.SetMenus(menus);
@@ -192,10 +194,10 @@ public class ApplicationAggregateTests {
 	[TestCase(true)]
 	public async Task DisposedNativeApplicationsRejectCommandMembershipChangesWithoutDisposingBorrowedDefinitions(bool asynchronous) {
 		using var form = new ProbeMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		var formMenus = ((IMainForm)form).Menus;
 		var formToolbar = ((IMainForm)form).ToolBarItems;
-		using var menu = new WinFormsApplicationMenu("Application commands");
+		using var menu = new ApplicationMenu("Application commands");
 		var item = new TrackingAction("Run", () => { });
 		menu.AddItem(item);
 		application.SetMenus(new[] { menu });
@@ -204,8 +206,8 @@ public class ApplicationAggregateTests {
 			await application.DisposeAsync();
 		else
 			application.Dispose();
-		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
-		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
 		Assert.That(application.Menus, Is.EqualTo(formMenus.Append(menu)));
 		Assert.That(application.ToolBarItems, Is.EqualTo(formToolbar.Append(item)));
 		Assert.That(item.DisposeCount, Is.Zero);
@@ -216,7 +218,7 @@ public class ApplicationAggregateTests {
 	[Test]
 	public void InvalidNativeCommandsLeaveCurrentMetadataAndChromeUnchanged() {
 		using var form = new ProbeMainForm();
-		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		var formToolbar = ((IMainForm)form).ToolBarItems;
 		using var item = new WinFormsActionMenuItem("Run", () => { });
 		application.SetToolBarItems(new[] { item });
@@ -227,21 +229,21 @@ public class ApplicationAggregateTests {
 		Assert.That(form.ToolEntries.Count(entry => entry.ToolTipText == "Run"), Is.EqualTo(1));
 	}
 
-	private sealed class UnsupportedMenuItem : WinFormsApplicationMenuItemBase { }
+	private sealed class UnsupportedMenuItem : FormsUI.ApplicationMenuItemBase { }
 
 	public sealed class ProbeMainForm : BlockMainForm {
 		public ToolStripItem[] MenuEntries => MenuStrip.Items.Cast<ToolStripItem>().ToArray();
 		public ToolStripItem[] ToolEntries => ToolStrip.Items.Cast<ToolStripItem>().ToArray();
 	}
 
-	public sealed class DirtyScreen : WinFormsApplicationScreen, IApplicationScreen {
+	public sealed class DirtyScreen : ApplicationScreen, SharedUI.IApplicationScreen {
 		public DirtyScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public bool HasUnsavedChanges { get; set; }
 	}
 
-	public sealed class CleanScreen : WinFormsApplicationScreen { }
+	public sealed class CleanScreen : ApplicationScreen { }
 
 	private sealed class TrackingAction : WinFormsActionMenuItem {
 		public TrackingAction(string text, Action action) : base(text, action) { }

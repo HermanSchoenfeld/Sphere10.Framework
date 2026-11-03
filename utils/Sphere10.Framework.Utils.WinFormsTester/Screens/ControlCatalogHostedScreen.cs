@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>An isolated native screen for demonstrating the actual host and detached-window controls.</summary>
-public partial class ControlCatalogHostedScreen : WinFormsApplicationScreen {
+public partial class ControlCatalogHostedScreen : ApplicationScreen {
 	public ControlCatalogHostedScreen() {
 		InitializeComponent();
 		Title = "Native screen example";

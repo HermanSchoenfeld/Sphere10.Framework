@@ -12,24 +12,26 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Application;
 
 /// <summary>Application commands shared by every block and extended by the active screen.</summary>
 public static class WorkspaceCommands {
-	public static void Configure(BlazorApplication application) {
+	public static void Configure(BlazorUI.Application application) {
 		Guard.ArgumentNotNull(application, nameof(application));
 		var scratchpadDefinition = application.Blocks.SelectMany(block => block.ScreenDefinitions).SingleOrDefault(definition => definition.ScreenType == typeof(ScratchpadScreen));
 		var scratchpadCommand = scratchpadDefinition?.Activators.OfType<BlazorScreenMenuItem>().FirstOrDefault();
 		var workspace = scratchpadCommand?.Parent?.Parent ?? application.Blocks.SingleOrDefault(block => block.Name == "Workspace");
-		var newScratchpad = new BlazorApplicationMenuItemBuilder()
+		var newScratchpad = new ApplicationMenuItemBuilder()
 			.WithId("new-scratchpad")
 			.WithText("New scratchpad")
 			.WithIcon("fas fa-plus")
 			.EnabledWhen(() => scratchpadCommand?.IsEnabled ?? false)
 			.WithAction(async (_, token) => await application.ScreenHost.ExecuteMenuItemAsync(scratchpadCommand, token))
 			.Build();
-		var applicationAction = new BlazorApplicationMenuItemBuilder()
+		var applicationAction = new ApplicationMenuItemBuilder()
 			.WithId("save")
 			.WithText("Application command")
 			.WithIcon("fas fa-play")
@@ -40,7 +42,7 @@ public static class WorkspaceCommands {
 			})
 			.Build();
 		application.SetMenus(new[] {
-			new BlazorApplicationMenuBuilder()
+			new ApplicationMenuBuilder()
 				.WithId("file")
 				.WithText("File")
 				.AddItem(newScratchpad)
@@ -59,7 +61,7 @@ public static class WorkspaceCommands {
 					.WithText("Close all screens")
 					.WithIcon("fas fa-times-circle")
 					.WithAction(async (provider, token) => {
-						var host = provider.GetRequiredService<IMultiApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>();
+						var host = provider.GetRequiredService<IMultiApplicationScreenHost<BlazorUI.IApplicationBlock, ApplicationScreenSession>>();
 						await host.CloseScreensAsync(host.Screens.Where(screen => !screen.IsPermanent && screen.ScreenKind == ScreenKind.Normal), token);
 					})
 				)
@@ -69,10 +71,10 @@ public static class WorkspaceCommands {
 					.WithText("Exit application")
 					.WithIcon("fas fa-sign-out-alt")
 					.WithAction(async (provider, token) =>
-						await provider.GetRequiredService<IApplication>().ExitAsync(cancellationToken: token))
+						await provider.GetRequiredService<SharedUI.IApplication>().ExitAsync(cancellationToken: token))
 				)
 				.Build(),
-			new BlazorApplicationMenuBuilder()
+			new ApplicationMenuBuilder()
 				.WithId("view")
 				.WithText("View")
 				.AddItem(item => item
@@ -80,17 +82,17 @@ public static class WorkspaceCommands {
 					.WithText("Tabbed screens")
 					.WithIcon("fas fa-folder")
 					.WithAction(async (provider, token) =>
-						await provider.GetRequiredService<IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.MultiView, token))
+						await provider.GetRequiredService<SharedUI.IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.MultiView, token))
 				)
 				.AddItem(item => item
 					.WithId("layout-single")
 					.WithText("Single screen")
 					.WithIcon("fas fa-window-maximize")
 					.WithAction(async (provider, token) =>
-						await provider.GetRequiredService<IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.SingleView, token))
+						await provider.GetRequiredService<SharedUI.IApplicationScreenHost>().TrySetScreenModeAsync(ScreenMode.SingleView, token))
 				)
 				.Build(),
-			new BlazorApplicationMenuBuilder()
+			new ApplicationMenuBuilder()
 				.WithId("help")
 				.WithText("Help")
 				.AddItem(item => item
@@ -112,6 +114,6 @@ public static class WorkspaceCommands {
 				)
 				.Build()
 		});
-		application.SetToolBarItems(new IBlazorApplicationMenuItem[] { newScratchpad, new BlazorMenuSeparator(), applicationAction });
+		application.SetToolBarItems(new BlazorUI.IApplicationMenuItem[] { newScratchpad, new BlazorMenuSeparator(), applicationAction });
 	}
 }

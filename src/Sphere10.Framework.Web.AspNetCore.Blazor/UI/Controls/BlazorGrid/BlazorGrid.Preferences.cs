@@ -25,7 +25,7 @@ public partial class BlazorGrid<TItem> {
 	private BlazorGridSettings _pendingPreferences;
 	private bool _bindPending;
 	private BlazorGridSettings _settingsDraft;
-	private BlazorApplicationSettingsEditor _settingsEditor;
+	private ApplicationSettingsEditor _settingsEditor;
 	private string[] _settingsErrors = Array.Empty<string>();
 	private bool _savingPreferences;
 

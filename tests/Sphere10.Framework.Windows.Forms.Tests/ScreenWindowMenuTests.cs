@@ -16,6 +16,7 @@ using NUnit.Framework;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -74,7 +75,7 @@ public class ScreenWindowMenuTests {
 		var inspector = new ProbeScreen { Title = "Inspect Current Process" };
 		var displayed = 0;
 		inspector.ScreenDisplayed += (_, _) => displayed++;
-		IApplicationScreenHost host = form.ScreenHost;
+		SharedUI.IApplicationScreenHost host = form.ScreenHost;
 		Assert.That(await host.ShowScreenUndockedAsync(inspector), Is.True);
 		Assert.That(form.ScreenHost.ActiveScreen, Is.SameAs(current));
 		Assert.That(form.ScreenHost.SelectedBlock, Is.SameAs(activeBlock));
@@ -85,7 +86,7 @@ public class ScreenWindowMenuTests {
 		Assert.That(inspector.Host, Is.Not.SameAs(form.ScreenHost));
 		Assert.That(inspector.Host.ActiveScreen, Is.SameAs(inspector));
 		Assert.That(form.ScreenHost.IsScreenUndocked(inspector), Is.True);
-		Assert.That(form.ScreenHost.OpenScreens, Is.EqualTo(new WinFormsApplicationScreen[] { permanent, current, inspector }));
+		Assert.That(form.ScreenHost.OpenScreens, Is.EqualTo(new ApplicationScreen[] { permanent, current, inspector }));
 		Assert.That(inspector.FindForm().StartPosition, Is.EqualTo(FormStartPosition.CenterParent));
 		Assert.That(inspector.FindForm().Owner, Is.SameAs(form));
 		Assert.That(displayed, Is.EqualTo(1));
@@ -110,8 +111,8 @@ public class ScreenWindowMenuTests {
 		using var permanent = new PermanentScreen();
 		Assert.That(multiple.ScreenHost.ShowScreenUndocked(permanent), Is.False);
 		Assert.That(permanent.Host, Is.Null);
-		using var emptyBlock = new WinFormsApplicationBlock();
-		var emptyDefinition = new ApplicationScreenDefinition(typeof(EmptyScreen), "Empty Workspace", ScreenActivationMode.MultiInstance, ScreenKind.Empty);
+		using var emptyBlock = new ApplicationBlock();
+		var emptyDefinition = new SharedUI.ApplicationScreenDefinition(typeof(EmptyScreen), "Empty Workspace", ScreenActivationMode.MultiInstance, ScreenKind.Empty);
 		emptyBlock.AddScreenDefinition(emptyDefinition);
 		emptyBlock.DefaultScreenDefinition = emptyDefinition;
 		using var empty = new EmptyScreen { Block = emptyBlock };
@@ -119,7 +120,7 @@ public class ScreenWindowMenuTests {
 		Assert.That(empty.Host, Is.Null);
 		using var canceled = new CancellationTokenSource();
 		canceled.Cancel();
-		IApplicationScreenHost host = multiple.ScreenHost;
+		SharedUI.IApplicationScreenHost host = multiple.ScreenHost;
 		Assert.That(() => host.ShowScreenUndockedAsync(normal, canceled.Token), Throws.InstanceOf<OperationCanceledException>());
 		Assert.That(normal.Host, Is.Null);
 		Assert.That(await host.ShowScreenUndockedAsync(normal), Is.True);
@@ -141,7 +142,7 @@ public class ScreenWindowMenuTests {
 		var second = new ProbeScreen { Title = "Inspector" };
 		form.ShowScreen(first);
 		form.ShowScreen(second);
-		Assert.That(form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is WinFormsApplicationScreen).Select(item => item.Tag), Is.EqualTo(new[] { first, second }));
+		Assert.That(form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is ApplicationScreen).Select(item => item.Tag), Is.EqualTo(new[] { first, second }));
 		Assert.That(form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, second)).Text, Does.Contain("(2)"));
 		Assert.That(form.ScreenHost.UndockScreen(first), Is.True);
 		var detached = form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, first));
@@ -154,7 +155,7 @@ public class ScreenWindowMenuTests {
 		Assert.That(form.ScreenHost.DockScreen(first), Is.True);
 		Assert.That(form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, first)).Text, Does.Not.Contain("Undocked"));
 		Assert.That(form.ScreenHost.CloseScreen(second), Is.True);
-		Assert.That(form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is WinFormsApplicationScreen).Select(item => item.Tag), Is.EqualTo(new[] { first }));
+		Assert.That(form.ScreensMenu.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is ApplicationScreen).Select(item => item.Tag), Is.EqualTo(new[] { first }));
 	}
 
 	[Test]
@@ -199,7 +200,7 @@ public class ScreenWindowMenuTests {
 		public ToolStripMenuItem ScreensMenu => ScreensToolStripMenuItem;
 	}
 
-	private class ProbeScreen : WinFormsApplicationScreen {
+	private class ProbeScreen : ApplicationScreen {
 		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		public bool CancelHide { get; set; }
 

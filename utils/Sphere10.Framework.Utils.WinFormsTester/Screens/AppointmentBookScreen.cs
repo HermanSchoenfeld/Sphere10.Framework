@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms.AppointmentBook;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Explores resource scheduling, unallocated work and complete drag/resize events.</summary>
-public partial class AppointmentBookScreen : WinFormsApplicationScreen {
+public partial class AppointmentBookScreen : ApplicationScreen {
 	private static readonly string[] _subjects = new string[] { "Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5", "Subject 6", "Subject 7", "Subject 8", "Subject 9", "Subject 10" };
 	private static readonly string[] _streets = new string[] { "Alpha", "Beta", "Gamma", "Delta", "Omega", "Phi", "Psi", "Andromeda", "Milky Way", "Ursur Minor" };
 	private static readonly string[] _streetTypes = new string[] { "St", "Rd", "Way", "Pde", "Ct" };

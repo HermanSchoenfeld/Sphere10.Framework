@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Compares resizing and alignment while owning each generated image explicitly.</summary>
-public partial class ImageResizeScreen : WinFormsApplicationScreen {
+public partial class ImageResizeScreen : ApplicationScreen {
 	private readonly PictureBoxEx[,] _boxes;
 	private Image _original;
 

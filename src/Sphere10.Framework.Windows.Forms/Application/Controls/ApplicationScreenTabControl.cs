@@ -18,11 +18,11 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Screen tabs with close buttons, a context menu, reordering and drag-out requests.</summary>
-public partial class WinFormsApplicationScreenTabControl : TabControl {
-	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenCloseRequested;
-	public event EventHandlerEx<WinFormsApplicationScreen>? ScreenUndockRequested;
+public partial class ApplicationScreenTabControl : TabControl {
+	public event EventHandlerEx<ApplicationScreen>? ScreenCloseRequested;
+	public event EventHandlerEx<ApplicationScreen>? ScreenUndockRequested;
 	public event EventHandlerEx ScreenCloseAllRequested;
-	public event EventHandlerEx<WinFormsApplicationScreen> ScreenCloseOthersRequested;
+	public event EventHandlerEx<ApplicationScreen> ScreenCloseOthersRequested;
 	public event EventHandlerEx TabOrderChanged;
 
 	private const int LogicalDpi = 96;
@@ -60,7 +60,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private int _maximumTabWidth = 320;
 	private int _metricsDpi = LogicalDpi;
 
-	public WinFormsApplicationScreenTabControl() {
+	public ApplicationScreenTabControl() {
 		InitializeComponent();
 		_metricsDpi = DeviceDpi;
 		ApplyMetrics();
@@ -68,11 +68,11 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 
 	private void TabMenuOpening(object sender, CancelEventArgs args) {
 		_undockMenuItem.Enabled = _closeMenuItem.Enabled = CanCloseOrUndock(_contextTab);
-		var screen = _contextTab?.Tag as WinFormsApplicationScreen;
-		var openScreens = screen?.Host?.OpenScreens ?? Array.Empty<WinFormsApplicationScreen>();
+		var screen = _contextTab?.Tag as ApplicationScreen;
+		var openScreens = screen?.Host?.OpenScreens ?? Array.Empty<ApplicationScreen>();
 		_closeAllMenuItem.Enabled = openScreens.Any(candidate => candidate.ActivationMode != ScreenActivationMode.PermanentSingleton);
 		_closeOthersMenuItem.Enabled = openScreens.Any(candidate => !ReferenceEquals(candidate, screen) && candidate.ActivationMode != ScreenActivationMode.PermanentSingleton);
-		var startupHost = screen?.Host as WinFormsApplicationScreenHost;
+		var startupHost = screen?.Host as ApplicationScreenHost;
 		_makeStartupMenuItem.Enabled = startupHost?.CanMakeStartupScreen(screen) == true;
 		_makeStartupMenuItem.Checked = startupHost?.IsStartupScreen(screen) == true;
 		_makeStartupMenuItem.ToolTipText = _makeStartupMenuItem.Enabled
@@ -87,12 +87,12 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private void CloseAllMenuClicked(object sender, EventArgs args) => ScreenCloseAllRequested?.Invoke();
 
 	private void CloseOthersMenuClicked(object sender, EventArgs args) {
-		if (_contextTab?.Tag is WinFormsApplicationScreen screen)
+		if (_contextTab?.Tag is ApplicationScreen screen)
 			ScreenCloseOthersRequested?.Invoke(screen);
 	}
 
 	private async void MakeStartupMenuClicked(object sender, EventArgs args) {
-		if (_contextTab?.Tag is not WinFormsApplicationScreen screen || screen.Host is not WinFormsApplicationScreenHost host)
+		if (_contextTab?.Tag is not ApplicationScreen screen || screen.Host is not ApplicationScreenHost host)
 			return;
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			await host.MakeStartupScreenAsync(screen);
@@ -476,7 +476,7 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 	private bool IsOverTabBar(Point Location) => TabStripBounds.Contains(Location);
 
 	private TabPage GetUndockingTab(Point location) => _dragging && _pressedTab == SelectedTab
-		&& _pressedTab?.Tag is WinFormsApplicationScreen && CanCloseOrUndock(_pressedTab)
+		&& _pressedTab?.Tag is ApplicationScreen && CanCloseOrUndock(_pressedTab)
 		&& TabPages.Contains(_pressedTab) && !IsOverTabBar(location) ? _pressedTab : null;
 
 	private void UpdateUndockPreview(Point location) {
@@ -656,15 +656,15 @@ public partial class WinFormsApplicationScreenTabControl : TabControl {
 			Invalidate();
 	}
 
-	private static bool CanCloseOrUndock(TabPage Page) => Page?.Tag is not WinFormsApplicationScreen screen || screen.ActivationMode != ScreenActivationMode.PermanentSingleton;
+	private static bool CanCloseOrUndock(TabPage Page) => Page?.Tag is not ApplicationScreen screen || screen.ActivationMode != ScreenActivationMode.PermanentSingleton;
 
 	private void RequestClose(TabPage? Page) {
-		if (CanCloseOrUndock(Page) && Page?.Tag is WinFormsApplicationScreen Screen)
+		if (CanCloseOrUndock(Page) && Page?.Tag is ApplicationScreen Screen)
 			ScreenCloseRequested?.Invoke(Screen);
 	}
 
 	private void RequestUndock(TabPage? Page) {
-		if (CanCloseOrUndock(Page) && Page?.Tag is WinFormsApplicationScreen Screen)
+		if (CanCloseOrUndock(Page) && Page?.Tag is ApplicationScreen Screen)
 			ScreenUndockRequested?.Invoke(Screen);
 	}
 

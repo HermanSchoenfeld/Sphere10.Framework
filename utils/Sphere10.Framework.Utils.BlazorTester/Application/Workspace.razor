@@ -36,8 +36,8 @@
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Theming
 @implements IDisposable
 @inject NavigationManager Navigation
-@inject IApplicationScreenHost ScreenHost
-@inject BlazorApplicationOptions ApplicationOptions
+@inject Sphere10.Framework.Application.UI.IApplicationScreenHost ScreenHost
+@inject ApplicationOptions ApplicationOptions
 @inject WorkspaceStatus Status
 
 <PageTitle>@ApplicationOptions.Title</PageTitle>

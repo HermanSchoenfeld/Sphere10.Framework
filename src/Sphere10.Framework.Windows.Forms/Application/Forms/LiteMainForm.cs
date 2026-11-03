@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -50,7 +51,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	protected bool ScreenExitPermissionsChecked { get; private set; }
 
-	internal IApplication Application { get; set; }
+	internal SharedUI.IApplication Application { get; set; }
 
 	// The runner lends its actual service provider; forms never create or dispose another container.
 	internal IServiceProvider ApplicationServices { get; private set; }
@@ -81,8 +82,8 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	/// <summary>Lets an application configure the Options dialog's policies before the existing host shows it.</summary>
-	protected virtual WinFormsApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
-		return new WinFormsApplicationSettingsDialog(Application as IWinFormsApplication, ApplicationServices, selectedOwner);
+	protected virtual ApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
+		return new ApplicationSettingsDialog(Application as IApplication, ApplicationServices, selectedOwner);
 	}
 
 	#region Form Methods

@@ -20,6 +20,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.WinFormsTester;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -59,7 +60,7 @@ public class DemoLogOutputLifetimeTests {
 			})
 			.Start();
 		using var endFramework = Tools.Scope.ExecuteOnDispose(() => Sphere10Framework.Instance.EndFramework());
-		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		var form = (BlockMainForm)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IMainForm>();
 		form.ShowInTaskbar = false;
@@ -67,7 +68,7 @@ public class DemoLogOutputLifetimeTests {
 		form.Location = new Point(-20000, -20000);
 		form.Show(dispatcher);
 		using var screen = demonstration switch {
-			"Logging" => (WinFormsApplicationScreen)new LoggingTestScreen(),
+			"Logging" => (ApplicationScreen)new LoggingTestScreen(),
 			"Graph" => new ChartTestScreen(),
 			"Telemetry" => new TelemetryChartTestScreen(),
 			_ => new ChartGalleryScreen()
@@ -95,7 +96,7 @@ public class DemoLogOutputLifetimeTests {
 		Assert.That(output.IsLogging, Is.False);
 	});
 
-	private static LogOutputSelectorControl Selector(WinFormsApplicationScreen screen, string demonstration) => demonstration switch {
+	private static LogOutputSelectorControl Selector(ApplicationScreen screen, string demonstration) => demonstration switch {
 		"Logging" => ((LoggingTestScreen)screen).OutputSelector,
 		"Graph" => Descendants(screen).OfType<GraphChart>().First().LogOutput,
 		"Telemetry" => Descendants(screen).OfType<TelemetryChart>().First().LogOutput,

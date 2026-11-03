@@ -13,8 +13,8 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinFormsApplicationMenuItem> {
-	private IApplicationUIBuilder<IWinFormsApplicationMenuItem> _specificBuilder;
+public class ApplicationMenuItemBuilder : IApplicationUIBuilder<IApplicationMenuItem> {
+	private IApplicationUIBuilder<IApplicationMenuItem> _specificBuilder;
 
 	public WinFormsScreenMenuItemBuilder AsScreenItem() {
 		_specificBuilder = new WinFormsScreenMenuItemBuilder();
@@ -26,7 +26,7 @@ public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinForm
 		return (WinFormsActionMenuItemBuilder)_specificBuilder;
 	}
 
-	public IWinFormsApplicationMenuItem Build() {
+	public IApplicationMenuItem Build() {
 		Guard.Ensure(_specificBuilder != null, "Menu item type is not configured");
 		return _specificBuilder.Build();
 	}
@@ -63,7 +63,7 @@ public class WinFormsApplicationMenuItemBuilder : IApplicationUIBuilder<IWinForm
 			return new WinFormsScreenMenuItem(ScreenRegistration, Text, _image16x16, _showOnExplorerBar, _showOnToolBar, _isStartScreen);
 		}
 
-		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
 	}
 
 	public class WinFormsActionMenuItemBuilder : ApplicationMenuItemBuilderBase<WinFormsActionMenuItemBuilder>, IApplicationUIBuilder<WinFormsActionMenuItem> {

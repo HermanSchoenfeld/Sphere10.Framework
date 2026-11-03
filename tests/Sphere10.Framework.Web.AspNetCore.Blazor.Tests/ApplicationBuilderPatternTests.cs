@@ -15,16 +15,18 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationBuilderPatternTests {
+public class ApplicationBuilderPatternTests {
 	[Test]
 	public void ScreenArgumentsAreCopiedWhenAddedAndRetainTheirPolicy() {
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen
 				.WithTitle("Open document")
@@ -46,13 +48,13 @@ public class BlazorApplicationBuilderPatternTests {
 		Assert.That(item.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(item.ScreenKind, Is.EqualTo(ScreenKind.Normal));
 		Assert.That(block.DefaultScreenDefinition, Is.SameAs(item.ScreenDefinition));
-		Assert.That(((BlazorApplicationScreenDefinition)item.ScreenDefinition).Parameters["Message"], Is.EqualTo("Original"));
+		Assert.That(((BlazorUI.ApplicationScreenDefinition)item.ScreenDefinition).Parameters["Message"], Is.EqualTo("Original"));
 		Assert.That(((IScreenMenuItem)item).ScreenDefinition.Title, Is.EqualTo("Open document"));
 	}
 
 	[Test]
 	public void ScreenShortcutRetainsDefaultMetadata() {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen
 				.WithTitle("Probe")
@@ -70,7 +72,7 @@ public class BlazorApplicationBuilderPatternTests {
 		Assert.That(item.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(item.ScreenKind, Is.EqualTo(ScreenKind.Normal));
 		Assert.That(block.DefaultScreenDefinition, Is.Null);
-		Assert.That(((BlazorApplicationScreenDefinition)item.ScreenDefinition).Parameters, Is.Empty);
+		Assert.That(((BlazorUI.ApplicationScreenDefinition)item.ScreenDefinition).Parameters, Is.Empty);
 		Assert.That(item.IsVisible, Is.True);
 		Assert.That(item.IsEnabled, Is.True);
 	}
@@ -80,7 +82,7 @@ public class BlazorApplicationBuilderPatternTests {
 	[TestCase(ScreenActivationMode.MultiInstance, ScreenKind.Empty)]
 	[TestCase(ScreenActivationMode.PermanentSingleton, ScreenKind.Normal)]
 	public void ScreenTypeOverloadRetainsTheRequestedPolicy(ScreenActivationMode activationMode, ScreenKind screenKind) {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen(screen => screen
 				.WithScreen(typeof(ProbeScreen))
@@ -103,7 +105,7 @@ public class BlazorApplicationBuilderPatternTests {
 	[TestCase(ScreenActivationMode.MultiInstance, (ScreenKind)100)]
 	[TestCase(ScreenActivationMode.PermanentSingleton, ScreenKind.Empty)]
 	public void InvalidScreenPolicyDoesNotRegisterAnItem(ScreenActivationMode activationMode, ScreenKind screenKind) {
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace");
 
 		Assert.That(() => builder
@@ -118,7 +120,7 @@ public class BlazorApplicationBuilderPatternTests {
 	[TestCase(typeof(ComponentBase))]
 	[TestCase(typeof(NeutralScreen))]
 	public void InvalidScreenTypeDoesNotRegisterAnItem(Type screenType) {
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace");
 
 		Assert.That(() => builder
@@ -131,7 +133,7 @@ public class BlazorApplicationBuilderPatternTests {
 	[Test]
 	public async Task SynchronousActionRunsOnlyWhenTheRegisteredCommandExecutes() {
 		var calls = 0;
-		var menu = new BlazorApplicationMenuBuilder()
+		var menu = new ApplicationMenuBuilder()
 			.WithText("Actions")
 			.AddActionItem("run", "Run", () => calls++)
 			.Build();
@@ -150,7 +152,7 @@ public class BlazorApplicationBuilderPatternTests {
 		IServiceProvider receivedServices = null;
 		CancellationToken receivedToken = default;
 		var calls = 0;
-		var menu = new BlazorApplicationMenuBuilder()
+		var menu = new ApplicationMenuBuilder()
 			.WithText("Actions")
 			.AddActionItem("run", "Run", (services, cancellationToken) => {
 				calls++;
@@ -174,7 +176,7 @@ public class BlazorApplicationBuilderPatternTests {
 	[TestCase("run", null)]
 	[TestCase("run", "")]
 	public void InvalidActionMetadataDoesNotRegisterAnItem(string id, string text) {
-		var menuBuilder = new BlazorApplicationMenuBuilder()
+		var menuBuilder = new ApplicationMenuBuilder()
 			.WithText("Actions");
 
 		Assert.That(() => menuBuilder.AddActionItem(id, text, () => { }), Throws.ArgumentException);
@@ -184,7 +186,7 @@ public class BlazorApplicationBuilderPatternTests {
 
 	[Test]
 	public void MissingActionDoesNotRegisterAnItem() {
-		var menuBuilder = new BlazorApplicationMenuBuilder()
+		var menuBuilder = new ApplicationMenuBuilder()
 			.WithText("Actions");
 
 		Assert.That(() => menuBuilder.AddActionItem("run", "Run", (Action)null), Throws.ArgumentNullException);
@@ -196,7 +198,7 @@ public class BlazorApplicationBuilderPatternTests {
 	public void AddToolBarItemBuildsAndRegistersTheConfiguredCommand() {
 		var configurationCalls = 0;
 		var actionCalls = 0;
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddToolBarItem(item => {
 				configurationCalls++;
@@ -219,17 +221,17 @@ public class BlazorApplicationBuilderPatternTests {
 		Assert.That(block.ToolBarItems[1], Is.TypeOf<BlazorMenuSeparator>());
 	}
 
-	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public sealed class ProbeScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 
-	private sealed class NeutralScreen : IApplicationScreen {
-		public IApplicationScreenHost Host { get; set; }
+	private sealed class NeutralScreen : SharedUI.IApplicationScreen {
+		public SharedUI.IApplicationScreenHost Host { get; set; }
 
-		public IApplicationBlock Block { get; set; }
+		public SharedUI.IApplicationBlock Block { get; set; }
 
 	}
 }

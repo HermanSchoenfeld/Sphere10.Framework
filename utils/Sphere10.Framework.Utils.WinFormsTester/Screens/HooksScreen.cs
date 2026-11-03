@@ -17,7 +17,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Explicitly starts and stops owned keyboard/mouse observation with bounded native output.</summary>
-public partial class HooksScreen : WinFormsApplicationScreen {
+public partial class HooksScreen : ApplicationScreen {
 	private readonly WindowsKeyboardHook _keyHook;
 	private readonly WindowsMouseHook _mouseHook;
 	private readonly System.Windows.Forms.Timer _refreshTimer;

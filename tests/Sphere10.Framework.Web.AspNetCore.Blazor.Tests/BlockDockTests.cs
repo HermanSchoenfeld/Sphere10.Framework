@@ -25,6 +25,8 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -35,7 +37,7 @@ public class BlockDockTests {
 	public async Task ExistingBlockMenuDefaultsToSelectionButtons() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var blocks = provider.GetRequiredService<IBlazorApplicationScreenHost>().AvailableBlocks;
+		var blocks = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>().AvailableBlocks;
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationBlockMenu>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationBlockMenu.Blocks)] = blocks,
@@ -62,9 +64,9 @@ public class BlockDockTests {
 		var navigation = provider.GetRequiredService<NavigationManager>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationBlockMenu>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(ApplicationBlockMenu.Blocks)] = provider.GetRequiredService<IBlazorApplicationScreenHost>().Blocks,
+				[nameof(ApplicationBlockMenu.Blocks)] = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>().Blocks,
 				[nameof(ApplicationBlockMenu.Compact)] = true,
-				[nameof(ApplicationBlockMenu.Href)] = (Func<IBlazorApplicationBlock, string>)(block =>
+				[nameof(ApplicationBlockMenu.Href)] = (Func<BlazorUI.IApplicationBlock, string>)(block =>
 					navigation.ToAbsoluteUri($"application?block={Uri.EscapeDataString(block.Id)}").AbsoluteUri)
 			}));
 			var html = WebUtility.HtmlDecode(rendered.ToHtmlString());
@@ -117,7 +119,7 @@ public class BlockDockTests {
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { plugin }));
 		Assert.That(application.Blocks, Has.Length.EqualTo(2));
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -135,7 +137,7 @@ public class BlockDockTests {
 	public async Task FrameworkShellDockTracksCanonicalHostSelectionAndRegistration() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			Assert.That(CurrentButton(DockMarkup(rendered.ToHtmlString())), Does.Contain("First block"));
@@ -154,7 +156,7 @@ public class BlockDockTests {
 	public async Task FrameworkDockBrowsesWithoutLeavingTheScreenAndScreenSelectionStillChecksItsGuard() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var navigation = provider.GetRequiredService<NavigationManager>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
@@ -200,11 +202,11 @@ public class BlockDockTests {
 	[Test]
 	public async Task DisposingTheShellReleasesViewSubscriptionsWithoutDisposingScopedRuntime() {
 		var services = CreateServices();
-		services.AddScoped<IBlazorApplicationScreenHost>(provider => new TrackingHost(new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider)));
+		services.AddScoped<BlazorUI.IApplicationScreenHost>(provider => new TrackingHost(new BlazorUI.ApplicationScreenHost(provider.GetServices<BlazorUI.IApplicationBlock>(), provider)));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = (TrackingHost)provider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var host = (TrackingHost)provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		var changed = typeof(ApplicationBase).GetField(nameof(ApplicationBase.Changed), BindingFlags.Instance | BindingFlags.NonPublic);
 		await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<ApplicationShell>());
 		Assert.That(host.SubscriberCount, Is.EqualTo(2), "The scoped aggregate and screen view each observe the host.");
@@ -269,7 +271,7 @@ public class BlockDockTests {
 		}
 	}
 
-	public class GuardedScreen : BlazorApplicationScreen {
+	public class GuardedScreen : ApplicationScreen {
 		public bool IsDirty { get; set; }
 
 		public int GuardCalls { get; private set; }
@@ -298,8 +300,8 @@ public class BlockDockTests {
 		protected override void NavigateToCore(string uri, NavigationOptions options) => NavigateToCore(uri, options.ForceLoad);
 	}
 
-	private sealed class TrackingHost : BlazorApplicationScreenHostDecorator, IBlazorApplicationScreenHost {
-		event EventHandlerEx IApplicationScreenHost.Changed {
+	private sealed class TrackingHost : BlazorUI.ApplicationScreenHostDecorator, BlazorUI.IApplicationScreenHost {
+		event EventHandlerEx SharedUI.IApplicationScreenHost.Changed {
 			add {
 				SubscriberCount++;
 				InternalHost.Changed += value;
@@ -310,7 +312,7 @@ public class BlockDockTests {
 			}
 		}
 
-		public TrackingHost(IBlazorApplicationScreenHost host)
+		public TrackingHost(BlazorUI.IApplicationScreenHost host)
 			: base(host) {
 		}
 

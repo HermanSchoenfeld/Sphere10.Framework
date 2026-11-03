@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -23,13 +24,13 @@ public class ApplicationScreenNotificationTests {
 		using var host = CreateHost(provider);
 		var originalSession = await host.ActivateBlockAsync("workspace");
 		await using var original = new NotificationScreen();
-		await original.InitializeAsync(host, (BlazorApplicationScreenSession)originalSession);
+		await original.InitializeAsync(host, (ApplicationScreenSession)originalSession);
 		Assert.That(await host.CloseScreenAsync(originalSession.Id), Is.True);
 		Assert.That(original.Disposals, Is.Zero, "The renderer may not yet have disposed a closed component.");
 
 		var replacementSession = await host.ActivateBlockAsync("workspace");
 		await using var replacement = new NotificationScreen();
-		await replacement.InitializeAsync(host, (BlazorApplicationScreenSession)replacementSession);
+		await replacement.InitializeAsync(host, (ApplicationScreenSession)replacementSession);
 		var notifications = 0;
 		host.Changed += () => notifications++;
 
@@ -52,7 +53,7 @@ public class ApplicationScreenNotificationTests {
 		using var host = CreateHost(provider);
 		var session = await host.ActivateBlockAsync("workspace");
 		await using var screen = new NotificationScreen { AllowDeactivation = false };
-		await screen.InitializeAsync(host, (BlazorApplicationScreenSession)session);
+		await screen.InitializeAsync(host, (ApplicationScreenSession)session);
 		Assert.That(await host.CloseScreenAsync(session.Id), Is.False);
 		var notifications = 0;
 		host.Changed += () => notifications++;
@@ -64,8 +65,8 @@ public class ApplicationScreenNotificationTests {
 		Assert.That(screen.Disposals, Is.Zero);
 	}
 
-	private static BlazorApplicationScreenHost CreateHost(ServiceProvider provider) {
-		var block = new BlazorApplicationBlockBuilder()
+	private static BlazorUI.ApplicationScreenHost CreateHost(ServiceProvider provider) {
+		var block = new ApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
 			.AddScreen<NotificationScreen>(screen => screen
@@ -73,15 +74,15 @@ public class ApplicationScreenNotificationTests {
 			)
 			.WithDefaultScreen<NotificationScreen>()
 			.Build();
-		return new BlazorApplicationScreenHost(new[] { block }, provider);
+		return new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 	}
 
-	public sealed class NotificationScreen : BlazorApplicationScreen {
+	public sealed class NotificationScreen : ApplicationScreen {
 		public bool AllowDeactivation { get; set; } = true;
 
 		public int Disposals { get; private set; }
 
-		public Task InitializeAsync(IBlazorApplicationScreenHost host, BlazorApplicationScreenSession session) {
+		public Task InitializeAsync(BlazorUI.IApplicationScreenHost host, ApplicationScreenSession session) {
 			ScreenHost = host;
 			Session = session;
 			return OnInitializedAsync();

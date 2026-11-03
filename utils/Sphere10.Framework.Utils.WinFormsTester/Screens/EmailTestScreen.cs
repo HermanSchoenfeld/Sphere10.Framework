@@ -17,7 +17,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 /// <summary>Composes real SMTP messages while keeping credentials and drafts out of persisted preferences.</summary>
-public partial class EmailTestScreen : WinFormsApplicationScreen {
+public partial class EmailTestScreen : ApplicationScreen {
 	private bool _sending;
 
 	/// <summary>Creates the composer without reading settings or contacting a server.</summary>

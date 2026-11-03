@@ -27,7 +27,7 @@ using SourceGrid = Sphere10.Framework.Windows.Forms.SourceGrid;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates the raw cell, bound, virtual and planning SourceGrid families.</summary>
-public partial class SourceGridGalleryScreen : WinFormsApplicationScreen {
+public partial class SourceGridGalleryScreen : ApplicationScreen {
 	private const int _previewRows = 40;
 	private readonly Disposables _sampleEditors = new();
 	private bool _initialized;

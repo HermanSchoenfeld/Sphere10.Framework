@@ -10,20 +10,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native application screen whose synchronous hooks are exposed through the shared lifecycle contract.</summary>
 /// <remarks>Callbacks run on the calling UI thread. The native host never blocks an asynchronous continuation.</remarks>
-public interface IWinFormsApplicationScreen : IApplicationScreen,
-	IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
+public interface IApplicationScreen : SharedUI.IApplicationScreen,
+	IApplicationCommandProvider<IApplicationMenu, IApplicationMenuItem> {
 	new string Title { get; set; }
 
-	new IWinFormsApplicationScreenHost Host { get; set; }
+	new IApplicationScreenHost Host { get; set; }
 
-	new IWinFormsApplicationBlock Block { get; set; }
+	new IApplicationBlock Block { get; set; }
 
-	IWinFormsApplicationBlock ApplicationBlock { get; set; }
+	IApplicationBlock ApplicationBlock { get; set; }
 
 	ScreenActivationMode ActivationMode { get; }
 
@@ -43,30 +44,30 @@ public interface IWinFormsApplicationScreen : IApplicationScreen,
 
 	#region Base Interface Bridges
 
-	string IApplicationScreen.Title => Title;
+	string SharedUI.IApplicationScreen.Title => Title;
 
-	IApplicationScreenHost IApplicationScreen.Host {
+	SharedUI.IApplicationScreenHost SharedUI.IApplicationScreen.Host {
 		get => Host;
-		set => Host = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationScreenHost>(value, nameof(value));
+		set => Host = value == null ? null : Guard.ArgumentCast<IApplicationScreenHost>(value, nameof(value));
 	}
 
-	IApplicationBlock IApplicationScreen.Block {
+	SharedUI.IApplicationBlock SharedUI.IApplicationScreen.Block {
 		get => Block;
-		set => Block = value == null ? null : Guard.ArgumentCast<IWinFormsApplicationBlock>(value, nameof(value));
+		set => Block = value == null ? null : Guard.ArgumentCast<IApplicationBlock>(value, nameof(value));
 	}
 
-	Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
+	Task<bool> SharedUI.IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.FromResult(CanDeactivate());
 	}
 
-	Task IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) {
+	Task SharedUI.IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
 		OnActivated();
 		return Task.CompletedTask;
 	}
 
-	Task IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) {
+	Task SharedUI.IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
 		OnDeactivated();
 		return Task.CompletedTask;

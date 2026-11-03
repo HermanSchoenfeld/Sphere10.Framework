@@ -27,16 +27,18 @@ using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationExitTests {
+public class ApplicationExitTests {
 	[Test]
 	public async Task SynchronousRendererExitRejectsBeforeStartingAConfirmation() {
 		await using var provider = CreateRenderingServices(new ProbeNavigation()).BuildServiceProvider();
-		var application = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		await application.InitializeAsync();
 		var dialog = provider.GetRequiredService<ExitDialogProbe>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -55,7 +57,7 @@ public class BlazorApplicationExitTests {
 	[Test]
 	public async Task SynchronousRendererExitReturnsTrueAfterExitHasAlreadyCompleted() {
 		await using var provider = CreateRenderingServices(new ProbeNavigation()).BuildServiceProvider();
-		var application = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		await application.InitializeAsync();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<ExitHarness>());
@@ -70,7 +72,7 @@ public class BlazorApplicationExitTests {
 	[Test]
 	public async Task SynchronousWorkerExitWaitsForConfirmationOnTheAvailableRenderer() {
 		await using var provider = CreateRenderingServices(new ProbeNavigation()).BuildServiceProvider();
-		var application = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		await application.InitializeAsync();
 		var dialog = provider.GetRequiredService<ExitDialogProbe>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -87,7 +89,7 @@ public class BlazorApplicationExitTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task StartupAndCircuitSnapshotsPreserveBlockGuardsWithEachRunningApplication(bool allowExit) {
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen));
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen));
 		var source = new GuardedBlock {
 			Id = "workspace", Title = "Workspace", AllowExit = allowExit,
 			ScreenDefinitions = new[] { definition }, DefaultScreenDefinition = definition
@@ -95,13 +97,13 @@ public class BlazorApplicationExitTests {
 		var plugin = new BlazorPlugin("Exit", new[] { source });
 		var services = new ServiceCollection()
 			.AddSphere10BlazorPlugin(plugin);
-		services.AddScoped<IBlazorApplication>(provider => new ConfirmingApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+		services.AddScoped<BlazorUI.IApplication>(provider => new ConfirmingApplication(provider.GetRequiredService<BlazorUI.IApplicationScreenHost>(),
 			provider.GetServices<IBlazorPlugin>()));
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		await first.InitializeAsync();
 		await second.InitializeAsync();
 		await first.ScreenHost.ActivateBlockAsync(first.Blocks.Single());
@@ -119,18 +121,18 @@ public class BlazorApplicationExitTests {
 
 	[Test]
 	public async Task ScreenVetoPreservesOwnershipAndForceBypassesBothScreenAndBlockGuards() {
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen));
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen));
 		var source = new GuardedBlock {
 			Id = "workspace", Title = "Workspace", AllowExit = false,
 			ScreenDefinitions = new[] { definition }, DefaultScreenDefinition = definition
 		};
 		var services = new ServiceCollection()
 			.AddSphere10BlazorPlugin(new BlazorPlugin("Exit", new[] { source }));
-		services.AddScoped<IBlazorApplication>(provider => new ConfirmingApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+		services.AddScoped<BlazorUI.IApplication>(provider => new ConfirmingApplication(provider.GetRequiredService<BlazorUI.IApplicationScreenHost>(),
 			provider.GetServices<IBlazorPlugin>()));
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IApplication>();
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var session = await host.ActivateBlockAsync("workspace");
 		var screen = new ProbeScreen { AllowLeave = false };
 		await host.AttachScreenAsync(session.Id, screen);
@@ -156,7 +158,7 @@ public class BlazorApplicationExitTests {
 		var services = CreateRenderingServices(navigation);
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		var host = application.ScreenHost;
 		var plugin = application.LoadedPlugins.Single();
 		var unloaded = 0;
@@ -216,9 +218,9 @@ public class BlazorApplicationExitTests {
 		var logger = new ExitLogger();
 		services.AddSingleton<Sphere10.Framework.ILogger>(logger);
 		services.AddScoped<ExitFinalizationProbe>();
-		services.AddFinalizer<ExitProbeFinalizer>(typeof(IApplication));
+		services.AddFinalizer<ExitProbeFinalizer>(typeof(SharedUI.IApplication));
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		var host = application.ScreenHost;
 		var plugin = application.LoadedPlugins.Single();
 		var finalization = provider.GetRequiredService<ExitFinalizationProbe>();
@@ -266,9 +268,9 @@ public class BlazorApplicationExitTests {
 	public async Task CancelingTheExitOwnersWaitAfterFinalizationStartsPreservesTerminalCompletionForAJoiningCaller() {
 		var services = CreateRenderingServices(new ProbeNavigation());
 		services.AddScoped<ExitFinalizationProbe>();
-		services.AddFinalizer<ExitProbeFinalizer>(typeof(IApplication));
+		services.AddFinalizer<ExitProbeFinalizer>(typeof(SharedUI.IApplication));
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		var finalization = provider.GetRequiredService<ExitFinalizationProbe>();
 		using var cleanup = Tools.Scope.ExecuteOnDispose(() => finalization.Release.TrySetResult());
 		var resourceDisposals = 0;
@@ -306,7 +308,7 @@ public class BlazorApplicationExitTests {
 	[Test]
 	public async Task ForcedExitDismissesThePendingConfirmationWithoutWaitingForItsResult() {
 		await using var provider = CreateRenderingServices(new ProbeNavigation()).BuildServiceProvider();
-		var application = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		await application.InitializeAsync();
 		var dialog = provider.GetRequiredService<ExitDialogProbe>();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -349,7 +351,7 @@ public class BlazorApplicationExitTests {
 	[Test]
 	public async Task LegacyUiExitDelegatesToTheScopedApplicationAndNavigationAfterExitDoesNotRepeatGuards() {
 		await using var provider = CreateRenderingServices(new ProbeNavigation()).BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		var host = application.ScreenHost;
 		var session = await host.ActivateBlockAsync("workspace");
 		var screen = new ProbeScreen { AllowLeave = false };
@@ -371,7 +373,7 @@ public class BlazorApplicationExitTests {
 	}
 
 	private static ServiceCollection CreateRenderingServices(NavigationManager navigation) {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen
@@ -390,28 +392,28 @@ public class BlazorApplicationExitTests {
 		return services;
 	}
 
-	private sealed class ConfirmingApplication : BlazorApplication {
-		public ConfirmingApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> loadedPlugins)
+	private sealed class ConfirmingApplication : BlazorUI.Application {
+		public ConfirmingApplication(BlazorUI.IApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> loadedPlugins)
 			: base(screenHost, loadedPlugins) {
 		}
 
 		protected override Task<bool> ConfirmExitAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 	}
 
-	private sealed class GuardedBlock : BlazorApplicationBlock {
-		private readonly List<IApplication> _applications = new();
+	private sealed class GuardedBlock : ApplicationBlock {
+		private readonly List<SharedUI.IApplication> _applications = new();
 
 		public bool AllowExit { get; init; }
 
-		public IApplication[] Applications => _applications.ToArray();
+		public SharedUI.IApplication[] Applications => _applications.ToArray();
 
-		public override Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+		public override Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default) {
 			_applications.Add(application);
 			return Task.FromResult(AllowExit);
 		}
 	}
 
-	public sealed class ProbeScreen : BlazorApplicationScreen {
+	public sealed class ProbeScreen : ApplicationScreen {
 		public bool AllowLeave { get; set; } = true;
 
 		public int Guards { get; private set; }

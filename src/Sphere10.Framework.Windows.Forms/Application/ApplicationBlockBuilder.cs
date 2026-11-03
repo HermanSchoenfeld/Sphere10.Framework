@@ -12,11 +12,12 @@ using System.Drawing;
 using System.Linq;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFormsApplicationBlockBuilder, IWinFormsApplicationMenu, WinFormsApplicationMenuBuilder, WinFormsApplicationBlock> {
-	private WinFormsApplicationBlock _block;
+public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBlockBuilder, IApplicationMenu, ApplicationMenuBuilder, ApplicationBlock> {
+	private ApplicationBlock _block;
 	private Image _image32x32;
 	private Image _image8x8;
 	private string _helpFile;
@@ -24,54 +25,54 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	private bool _showInToolStrip;
 
 	/// <summary>Adds a native screen using optional inline registration metadata.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null,
+	public ApplicationBlockBuilder AddScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, SettingsObject settings = null,
-		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator = null,
-		Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
-		where TScreen : WinFormsApplicationScreen {
+		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
+		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
+		where TScreen : ApplicationScreen {
 		return AddScreen<TScreen>(title, out _, activationMode, screenKind, stableKey, settings, activator, settingsEditor);
 	}
 
 	/// <summary>Adds a native screen and captures the exact registration for later navigation.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen<TScreen>(string title, out ApplicationScreenRegistration<TScreen> registration,
+	public ApplicationBlockBuilder AddScreen<TScreen>(string title, out ApplicationScreenRegistration<TScreen> registration,
 		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
 		SettingsObject settings = null,
-		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator = null,
-		Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
-		where TScreen : WinFormsApplicationScreen {
+		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
+		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null)
+		where TScreen : ApplicationScreen {
 		registration = new ApplicationScreenRegistration<TScreen>();
 		AddScreenDefinitionInternal(CreateScreenDefinition(typeof(TScreen), registration, title, activationMode, screenKind, stableKey, settings, activator, settingsEditor));
 		return this;
 	}
 
 	/// <summary>Adds a runtime screen type using the same optional registration metadata.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
+	public ApplicationBlockBuilder AddScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, SettingsObject settings = null,
-		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator = null,
-		Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null) {
+		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
+		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null) {
 		return AddScreen(screenType, title, out _, activationMode, screenKind, stableKey, settings, activator, settingsEditor);
 	}
 
 	/// <summary>Adds a runtime screen type and captures its exact registration.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen(Type screenType, string title, out ApplicationScreenRegistration registration,
+	public ApplicationBlockBuilder AddScreen(Type screenType, string title, out ApplicationScreenRegistration registration,
 		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
 		SettingsObject settings = null,
-		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator = null,
-		Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null) {
+		Func<ApplicationScreenActivationContext, ApplicationScreen> activator = null,
+		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor = null) {
 		registration = new ApplicationScreenRegistration(screenType);
 		AddScreenDefinitionInternal(CreateScreenDefinition(screenType, registration, title, activationMode, screenKind, stableKey, settings, activator, settingsEditor));
 		return this;
 	}
 
 	/// <summary>Adds a menu with optional native presentation and child configuration.</summary>
-	public WinFormsApplicationBlockBuilder AddMenu(string text, Image image32x32 = null, bool showInMenuStrip = false,
-		Action<WinFormsApplicationMenuBuilder> configure = null) {
+	public ApplicationBlockBuilder AddMenu(string text, Image image32x32 = null, bool showInMenuStrip = false,
+		Action<ApplicationMenuBuilder> configure = null) {
 		return AddMenu(text, out _, image32x32, showInMenuStrip, configure);
 	}
 
 	/// <summary>Adds a configured menu and captures the owned menu definition.</summary>
-	public WinFormsApplicationBlockBuilder AddMenu(string text, out IWinFormsApplicationMenu registration, Image image32x32 = null,
-		bool showInMenuStrip = false, Action<WinFormsApplicationMenuBuilder> configure = null) {
+	public ApplicationBlockBuilder AddMenu(string text, out IApplicationMenu registration, Image image32x32 = null,
+		bool showInMenuStrip = false, Action<ApplicationMenuBuilder> configure = null) {
 		return AddMenu(menu => {
 			menu
 				.WithText(text)
@@ -83,19 +84,19 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Adds a top-level menu through the block's existing menu ownership path.</summary>
-	public WinFormsApplicationBlockBuilder AddMenuItem(string text, Image image32x32 = null, bool showInMenuStrip = false,
-		Action<WinFormsApplicationMenuBuilder> configure = null) {
+	public ApplicationBlockBuilder AddMenuItem(string text, Image image32x32 = null, bool showInMenuStrip = false,
+		Action<ApplicationMenuBuilder> configure = null) {
 		return AddMenu(text, image32x32, showInMenuStrip, configure);
 	}
 
 	/// <summary>Adds a top-level menu and captures its definition for later composition.</summary>
-	public WinFormsApplicationBlockBuilder AddMenuItem(string text, out IWinFormsApplicationMenu registration, Image image32x32 = null,
-		bool showInMenuStrip = false, Action<WinFormsApplicationMenuBuilder> configure = null) {
+	public ApplicationBlockBuilder AddMenuItem(string text, out IApplicationMenu registration, Image image32x32 = null,
+		bool showInMenuStrip = false, Action<ApplicationMenuBuilder> configure = null) {
 		return AddMenu(text, out registration, image32x32, showInMenuStrip, configure);
 	}
 
 	/// <summary>Sets the block image used by native navigation.</summary>
-	public WinFormsApplicationBlockBuilder WithImage32x32(Image image) {
+	public ApplicationBlockBuilder WithImage32x32(Image image) {
 		_image32x32 = image;
 		if (_block != null)
 			_block.Image32x32 = image;
@@ -103,7 +104,7 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Sets the compact block image used by native navigation.</summary>
-	public WinFormsApplicationBlockBuilder WithImage8x8(Image image) {
+	public ApplicationBlockBuilder WithImage8x8(Image image) {
 		_image8x8 = image;
 		if (_block != null)
 			_block.Image8x8 = image;
@@ -111,7 +112,7 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Sets the block's native help file.</summary>
-	public WinFormsApplicationBlockBuilder WithHelpFile(string helpFile) {
+	public ApplicationBlockBuilder WithHelpFile(string helpFile) {
 		_helpFile = helpFile;
 		if (_block != null)
 			_block.HelpFileCHM = helpFile;
@@ -119,7 +120,7 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Selects whether the block appears in the native menu strip.</summary>
-	public WinFormsApplicationBlockBuilder ShowInMenuStrip(bool show = true) {
+	public ApplicationBlockBuilder ShowInMenuStrip(bool show = true) {
 		_showInMenuStrip = show;
 		if (_block != null)
 			_block.ShowInMenuStrip = show;
@@ -127,7 +128,7 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Selects whether the block appears in the native toolbar.</summary>
-	public WinFormsApplicationBlockBuilder ShowInToolStrip(bool show = true) {
+	public ApplicationBlockBuilder ShowInToolStrip(bool show = true) {
 		_showInToolStrip = show;
 		if (_block != null)
 			_block.ShowInToolStrip = show;
@@ -135,17 +136,17 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Configures and adds one native screen while returning the owning block builder.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen<TScreen>(Action<WinFormsApplicationScreenBuilder<TScreen>> configure)
-		where TScreen : WinFormsApplicationScreen {
+	public ApplicationBlockBuilder AddScreen<TScreen>(Action<ApplicationScreenBuilder<TScreen>> configure)
+		where TScreen : ApplicationScreen {
 		return AddScreen(configure, out _);
 	}
 
 	/// <summary>Adds one native registration and returns its typed identity after configuration completes.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen<TScreen>(Action<WinFormsApplicationScreenBuilder<TScreen>> configure,
+	public ApplicationBlockBuilder AddScreen<TScreen>(Action<ApplicationScreenBuilder<TScreen>> configure,
 		out ApplicationScreenRegistration<TScreen> registration)
-		where TScreen : WinFormsApplicationScreen {
+		where TScreen : ApplicationScreen {
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new WinFormsApplicationScreenBuilder<TScreen>();
+		var builder = new ApplicationScreenBuilder<TScreen>();
 		configure(builder);
 		var definition = builder.Build();
 		registration = (ApplicationScreenRegistration<TScreen>)definition.Registration;
@@ -154,15 +155,15 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Accepts a callback that supplies its screen type explicitly.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen(Action<WinFormsApplicationScreenBuilder> configure) {
+	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure) {
 		return AddScreen(configure, out _);
 	}
 
 	/// <summary>Adds an explicitly typed native registration and returns its identity.</summary>
-	public WinFormsApplicationBlockBuilder AddScreen(Action<WinFormsApplicationScreenBuilder> configure,
+	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure,
 		out ApplicationScreenRegistration registration) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new WinFormsApplicationScreenBuilder();
+		var builder = new ApplicationScreenBuilder();
 		configure(builder);
 		var definition = builder.Build();
 		registration = definition.Registration;
@@ -188,13 +189,13 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	/// <summary>Registers the menu through the block's existing ownership rules.</summary>
-	protected override void OnMenuAdded(IWinFormsApplicationMenu menu) {
+	protected override void OnMenuAdded(IApplicationMenu menu) {
 		_block?.AddMenu(menu);
 	}
 
 	// Resolving navigation during composition must not activate the block's immutable runtime command collections.
-	protected override void ResolveScreenReferences(WinFormsApplicationBlock block) {
-		Tools.UI.ResolveScreenReferences(block, block.MenuCollection, Array.Empty<IApplicationMenuItem>());
+	protected override void ResolveScreenReferences(ApplicationBlock block) {
+		Tools.UI.ResolveScreenReferences(block, block.MenuCollection, Array.Empty<SharedUI.IApplicationMenuItem>());
 	}
 
 	/// <summary>Retained native products keep direct metadata edits as the authoritative configuration.</summary>
@@ -204,14 +205,14 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 
 	/// <summary>Rejects screen types that cannot be hosted by native application controls.</summary>
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+		Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
 	}
 
 	/// <summary>Builds the configured native block and attaches its owned menus.</summary>
-	protected override WinFormsApplicationBlock CreateBlock(IReadOnlyList<IWinFormsApplicationMenu> menus) {
+	protected override ApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {
 		if (_block != null)
 			return _block;
-		_block = new WinFormsApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null) {
+		_block = new ApplicationBlock(Name, _showInToolStrip, _showInMenuStrip, _image32x32, _image8x8, _helpFile, null) {
 			Position = Position
 		};
 		foreach (var definition in ScreenDefinitions)
@@ -224,14 +225,14 @@ public class WinFormsApplicationBlockBuilder : ApplicationBlockBuilderBase<WinFo
 	}
 
 	// Capture settings defaults during composition; operational screen activation remains deferred.
-	private static WinFormsApplicationScreenDefinition CreateScreenDefinition(Type screenType, ApplicationScreenRegistration registration,
+	private static ApplicationScreenDefinition CreateScreenDefinition(Type screenType, ApplicationScreenRegistration registration,
 		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, SettingsObject settings,
-		Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator,
-		Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor) {
-		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+		Func<ApplicationScreenActivationContext, ApplicationScreen> activator,
+		Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> settingsEditor) {
+		Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
 		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(title == null || title.Length > 0, nameof(title), "A screen title cannot be empty.");
 
-		return new WinFormsApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, activator, settings, settingsEditor);
+		return new ApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, activator, settings, settingsEditor);
 	}
 }

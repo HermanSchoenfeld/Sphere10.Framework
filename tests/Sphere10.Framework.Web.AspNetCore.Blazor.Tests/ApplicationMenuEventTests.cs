@@ -16,6 +16,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -31,7 +33,7 @@ public class ApplicationMenuEventTests {
 		item.Select += selected;
 		var blocks = CreateBlocks(item);
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(blocks, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(blocks, provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 		item.Select -= selected;
@@ -51,7 +53,7 @@ public class ApplicationMenuEventTests {
 		var selections = 0;
 		var item = new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) };
 		item.Select += () => selections++;
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
@@ -64,7 +66,7 @@ public class ApplicationMenuEventTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 
 		var session = await host.ActivateBlockAsync("block");
 		Assert.That(session.Title, Is.EqualTo("Dashboard"));
@@ -81,7 +83,7 @@ public class ApplicationMenuEventTests {
 		};
 		item.Select += () => selections++;
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(item), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 		var session = await host.ActivateScreenAsync("block", "screen");
@@ -108,7 +110,7 @@ public class ApplicationMenuEventTests {
 		item.Select += () => calls.Add("select");
 
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(item), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 		Assert.That(await hostUserInterface.ExecuteMenuItemAsync(registered), Is.True);
@@ -124,7 +126,7 @@ public class ApplicationMenuEventTests {
 		item.Select += () => selections++;
 
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(item), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 		Assert.That(async () => await hostUserInterface.ExecuteMenuItemAsync(registered), Throws.InstanceOf<InvalidOperationException>());
@@ -139,12 +141,12 @@ public class ApplicationMenuEventTests {
 		var item = new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenType = typeof(TestScreen) };
 		item.Hover += hovered;
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		using var metadataHost = new BlazorApplicationScreenHost(CreateBlocks(item), provider);
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		using var metadataHost = new BlazorUI.ApplicationScreenHost(CreateBlocks(item), provider);
 		var snapshot = metadataHost.AvailableBlocks.Single().Menus.Single().Items.Single();
 		item.Hover -= hovered;
 		item.Hover += () => lateHovers++;
-		((BlazorApplicationMenuItemBase)snapshot).NotifyHover();
+		((BlazorUI.ApplicationMenuItemBase)snapshot).NotifyHover();
 
 		Assert.That(hovers, Is.EqualTo(1));
 		Assert.That(lateHovers, Is.Zero);
@@ -153,10 +155,10 @@ public class ApplicationMenuEventTests {
 	[Test]
 	public void HostFreezesMenuTextAndIconFromMutableRegistrationImplementations() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
 		var menu = new MutableMenu { Id = "menu", Text = "Original title", Icon = "original-icon" };
-		using var metadataHost = new BlazorApplicationScreenHost(new[] {
-			new BlazorApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } }
+		using var metadataHost = new BlazorUI.ApplicationScreenHost(new[] {
+			new ApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } }
 		}, provider);
 		menu.Text = "Changed title";
 		menu.Icon = "changed-icon";
@@ -164,12 +166,12 @@ public class ApplicationMenuEventTests {
 
 		Assert.That(snapshot.Text, Is.EqualTo("Original title"));
 		Assert.That(snapshot.Icon, Is.EqualTo("original-icon"));
-		Assert.That(typeof(IApplicationMenu).GetProperty(nameof(IApplicationMenu.Text)).CanWrite, Is.False);
-		Assert.That(typeof(IBlazorApplicationMenu).GetProperty(nameof(IBlazorApplicationMenu.Icon)).CanWrite, Is.False);
+		Assert.That(typeof(SharedUI.IApplicationMenu).GetProperty(nameof(SharedUI.IApplicationMenu.Text)).CanWrite, Is.False);
+		Assert.That(typeof(BlazorUI.IApplicationMenu).GetProperty(nameof(BlazorUI.IApplicationMenu.Icon)).CanWrite, Is.False);
 	}
 
-	private static IBlazorApplicationBlock[] CreateBlocks(IBlazorApplicationMenuItem item) => new[] {
-		new BlazorApplicationBlockBuilder()
+	private static BlazorUI.IApplicationBlock[] CreateBlocks(BlazorUI.IApplicationMenuItem item) => new[] {
+		new ApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
@@ -182,18 +184,18 @@ public class ApplicationMenuEventTests {
 			.Build()
 	};
 
-	public class TestScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class TestScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 		public bool AllowDeactivation { get; set; } = true;
 
 		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) => Task.FromResult(AllowDeactivation);
 	}
 
-	private sealed class MutableMenu : IBlazorApplicationMenu {
-		public IBlazorApplicationBlock Parent { get; set; }
+	private sealed class MutableMenu : BlazorUI.IApplicationMenu {
+		public BlazorUI.IApplicationBlock Parent { get; set; }
 
 		public string Id { get; set; }
 
@@ -201,7 +203,7 @@ public class ApplicationMenuEventTests {
 
 		public string Icon { get; set; }
 
-		public IBlazorApplicationMenuItem[] Items => Array.Empty<IBlazorApplicationMenuItem>();
+		public BlazorUI.IApplicationMenuItem[] Items => Array.Empty<BlazorUI.IApplicationMenuItem>();
 	}
 }
 

@@ -10,46 +10,47 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A startup plugin definition using shared storage and lifecycle with immutable Blazor block snapshots.</summary>
-public class BlazorPlugin : ApplicationPluginBase<IBlazorApplicationBlock>, IBlazorPlugin {
+public class BlazorPlugin : ApplicationPluginBase<IApplicationBlock>, IBlazorPlugin {
 	private readonly IBlazorPlugin _source;
 
 	/// <summary>Composes startup plugin services and independent block definitions.</summary>
-	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks)
+	public BlazorPlugin(string name, IEnumerable<IApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
 
 	/// <summary>Composes startup plugin services and independent block definitions.</summary>
-	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks, Action<IServiceCollection> configureServices)
+	public BlazorPlugin(string name, IEnumerable<IApplicationBlock> blocks, Action<IServiceCollection> configureServices)
 		: base(name, SnapshotBlocks(blocks), configureServices) {
 	}
 
 	// A circuit owns its settings and live host blocks while startup retains plugin load/unload ownership.
-	internal BlazorPlugin(IBlazorPlugin source, IBlazorApplicationBlock[] blocks)
+	internal BlazorPlugin(IBlazorPlugin source, IApplicationBlock[] blocks)
 		: base(source.Name, blocks) {
 		_source = source;
-		PluginSettings = BlazorApplicationBlockSnapshot.CopySettings(source.PluginSettings);
+		PluginSettings = ApplicationBlockSnapshot.CopySettings(source.PluginSettings);
 	}
 
 	/// <summary>Projects the original plugin's immutable menu contributions into this circuit owner.</summary>
-	public IApplicationMenu[] Menus {
+	public SharedUI.IApplicationMenu[] Menus {
 		get {
-			return _source?.Menus ?? Array.Empty<IApplicationMenu>();
+			return _source?.Menus ?? Array.Empty<SharedUI.IApplicationMenu>();
 		}
 	}
 
 	/// <summary>Projects the original plugin's immutable toolbar contributions into this circuit owner.</summary>
-	public IApplicationMenuItem[] ToolBarItems {
+	public SharedUI.IApplicationMenuItem[] ToolBarItems {
 		get {
-			return _source?.ToolBarItems ?? Array.Empty<IApplicationMenuItem>();
+			return _source?.ToolBarItems ?? Array.Empty<SharedUI.IApplicationMenuItem>();
 		}
 	}
 
 	/// <summary>Returns an array copy over immutable block snapshots for compatibility with the original plugin contract.</summary>
-	public override IBlazorApplicationBlock[] Blocks {
+	public override IApplicationBlock[] Blocks {
 		get {
 			return base.Blocks;
 		}
@@ -66,8 +67,8 @@ public class BlazorPlugin : ApplicationPluginBase<IBlazorApplicationBlock>, IBla
 	}
 
 	/// <summary>Copies validated web block definitions for a newly composed startup plugin.</summary>
-	private static IBlazorApplicationBlock[] SnapshotBlocks(IEnumerable<IBlazorApplicationBlock> blocks) {
+	private static IApplicationBlock[] SnapshotBlocks(IEnumerable<IApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		return BlazorApplicationBlockSnapshot.CreateBlocks(blocks, false);
+		return ApplicationBlockSnapshot.CreateBlocks(blocks, false);
 	}
 }

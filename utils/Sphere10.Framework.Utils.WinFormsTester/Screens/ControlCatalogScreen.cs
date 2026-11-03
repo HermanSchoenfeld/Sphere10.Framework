@@ -18,7 +18,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Searchable, lazy examples for every public control and form in the referenced native UI libraries.</summary>
-public partial class ControlCatalogScreen : WinFormsApplicationScreen {
+public partial class ControlCatalogScreen : ApplicationScreen {
 	private ControlCatalogEntry[] _entries;
 	private Control _example;
 	private PopupDropDown _openPopup;
@@ -87,7 +87,7 @@ public partial class ControlCatalogScreen : WinFormsApplicationScreen {
 			_example = entry.CreateExample();
 			if (_example is ConnectionBarBase)
 				_example.Height = Math.Max(_example.Height, _example.Font.Height * 3 + 12);
-			_showProperties.Checked = _example is not WinFormsApplicationScreen;
+			_showProperties.Checked = _example is not ApplicationScreen;
 			_example.Name = "catalogExample";
 			_example.Dock = _example is TextBoxBase or ComboBox or ButtonBase or NumericUpDown or ProgressBar or ToolStrip or SeparatorLine or PathSelectorControl or ConnectionBarBase
 				? DockStyle.Top : DockStyle.Fill;

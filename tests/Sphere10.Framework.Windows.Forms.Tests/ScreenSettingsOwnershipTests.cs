@@ -18,6 +18,8 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.WinFormsTester;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -31,7 +33,7 @@ public class ScreenSettingsOwnershipTests {
 		Assert.That(settingsType.DeclaringType, Is.EqualTo(screenType));
 		Assert.That(Tools.UI.GetScreenSettingsType(screenType), Is.EqualTo(settingsType));
 
-		var properties = screenType.GetProperties().Where(candidate => candidate.Name == nameof(IApplicationScreen.ScreenSettings)).ToArray();
+		var properties = screenType.GetProperties().Where(candidate => candidate.Name == nameof(SharedUI.IApplicationScreen.ScreenSettings)).ToArray();
 		var property = properties.FirstOrDefault(candidate => candidate.PropertyType == settingsType)
 			?? properties.Single(candidate => candidate.PropertyType == typeof(SettingsObject));
 		if (property.PropertyType == typeof(SettingsObject))
@@ -110,7 +112,7 @@ public class ScreenSettingsOwnershipTests {
 		var originalRecord = Directory.GetFiles(directory).Single();
 		var payload = File.ReadAllText(originalRecord);
 		Assert.That(payload, Does.Not.Contain(typeof(ScreenHostingDesignTestScreen.ScreenHostingPreferences).FullName));
-		Assert.That(payload, Does.Not.Contain("WinFormsApplicationSettingsRecord").And.Not.Contain("SectionVersions"));
+		Assert.That(payload, Does.Not.Contain("ApplicationSettingsRecord").And.Not.Contain("SectionVersions"));
 
 		// Reload through a fresh provider so a cached object cannot conceal a missing write.
 		var restored = await LoadSettingsAsync(new DirectoryFileSettingsProvider(directory));
@@ -126,8 +128,8 @@ public class ScreenSettingsOwnershipTests {
 
 	// Use actual declared settings and the normal provider without constructing the operational screen.
 	private static async Task<ScreenHostingDesignTestScreen.ScreenHostingPreferences> LoadSettingsAsync(ISettingsProvider provider) {
-		using var block = new WinFormsApplicationBlock { Name = "Inspector" };
-		var definition = new WinFormsApplicationScreenDefinition(typeof(ScreenHostingDesignTestScreen), "Inspector", stableKey: "inspector");
+		using var block = new ApplicationBlock { Name = "Inspector" };
+		var definition = new FormsUI.ApplicationScreenDefinition(typeof(ScreenHostingDesignTestScreen), "Inspector", stableKey: "inspector");
 		block.AddScreenDefinition(definition);
 		var settings = (ScreenHostingDesignTestScreen.ScreenHostingPreferences)definition.Settings;
 		settings.ID = Tools.UI.GetScreenSettingsId("ScreenSettingsOwnership", block, definition);

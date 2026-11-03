@@ -23,6 +23,7 @@ using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -34,10 +35,10 @@ public class DemoPluginRegistrationTests {
 	public async Task StartupValidatesAndRegistersModernPluginsWithoutLegacyNavigationServices() {
 		await using var provider = CreateProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		var plugins = application.LoadedPlugins;
-		var metadataHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var registeredBlocks = provider.GetServices<IBlazorApplicationBlock>().ToArray();
+		var metadataHost = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
+		var registeredBlocks = provider.GetServices<BlazorUI.IApplicationBlock>().ToArray();
 
 		Assert.That(plugins.Select(plugin => plugin.Name), Is.EquivalentTo(new[] { "Sphere10.Framework", "Widget Gallery", "Application patterns", "Screen policies" }));
 		Assert.That(plugins.Single(plugin => plugin.Name == "Sphere10.Framework").Blocks.Select(block => block.Id), Is.EqualTo(new[] { "workspace" }));
@@ -59,7 +60,7 @@ public class DemoPluginRegistrationTests {
 	public async Task GalleryMenusCreateNewInstancesWhileSingletonDemonstrationsRemainExplicit(string blockId, string screenId) {
 		using var provider = CreateProvider();
 		using var scope = provider.CreateScope();
-		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var first = await host.ActivateScreenAsync(blockId, screenId);
 		var second = await host.ActivateScreenAsync(blockId, screenId);
 		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
@@ -89,8 +90,8 @@ public class DemoPluginRegistrationTests {
 		using var provider = CreateProvider();
 		using var first = provider.CreateScope();
 		using var second = provider.CreateScope();
-		var firstHost = first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var secondHost = second.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstHost = first.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
+		var secondHost = second.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var firstAction = firstHost.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
 		var secondAction = secondHost.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
 		var firstState = first.ServiceProvider.GetRequiredService<WorkspaceStatus>();
@@ -122,7 +123,7 @@ public class DemoPluginRegistrationTests {
 				);
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		var scratchpad = application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "new-scratchpad");
 		var guide = application.Menus.Single(menu => menu.Id == "help").Items.Single(item => item.Id == "workspace-help");
 
@@ -138,8 +139,8 @@ public class DemoPluginRegistrationTests {
 		using var provider = CreateProvider();
 		using var first = provider.CreateScope();
 		using var second = provider.CreateScope();
-		var firstHost = first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
-		var secondHost = second.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstHost = first.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
+		var secondHost = second.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var firstSession = await firstHost.ActivateBlockAsync("workspace");
 
 		Assert.That(secondHost.ActiveScreen, Is.Null);

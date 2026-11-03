@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Compares explicit sound playback while owning every audio device, stream and buffer.</summary>
-public partial class TestSoundsScreen : WinFormsApplicationScreen {
+public partial class TestSoundsScreen : ApplicationScreen {
 	private DirectSound _device;
 	private SecondarySoundBuffer _buffer;
 	private SoundPlayer _player;

@@ -10,6 +10,8 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -20,8 +22,8 @@ public class WinFormsCommandOwnerTests {
 	[Test]
 	public void BlockActivatesItsTemplatesOnceAndRejectsLaterMembershipChanges() {
 		using var block = new CountingBlock();
-		var menu = new WinFormsApplicationMenu("Commands");
-		using var otherMenu = new WinFormsApplicationMenu("Other");
+		var menu = new ApplicationMenu("Commands");
+		using var otherMenu = new ApplicationMenu("Other");
 		block.AddMenu(menu);
 		var menus = block.Menus;
 		var toolbar = block.ToolBarItems;
@@ -42,8 +44,8 @@ public class WinFormsCommandOwnerTests {
 	[Test]
 	public void PluginActivatesItsOwnCommandsThroughTheNativeAndPortableInterfaces() {
 		var plugin = new CountingPlugin();
-		IWinFormsApplicationPlugin native = plugin;
-		IApplicationPlugin portable = plugin;
+		FormsUI.IApplicationPlugin native = plugin;
+		SharedUI.IApplicationPlugin portable = plugin;
 		var menu = native.Menus[0];
 		var action = native.ToolBarItems[0];
 		Assert.That(portable.Menus[0], Is.SameAs(menu));
@@ -86,7 +88,7 @@ public class WinFormsCommandOwnerTests {
 		Assert.That(block.RefreshCommand, Is.Null);
 	}
 
-	private sealed class CountingBlock : WinFormsApplicationBlock {
+	private sealed class CountingBlock : ApplicationBlock {
 		internal int MenuActivations { get; private set; }
 
 		internal int ToolBarActivations { get; private set; }
@@ -97,7 +99,7 @@ public class WinFormsCommandOwnerTests {
 
 		internal CountingAction RefreshCommand { get; private set; }
 
-		protected override IWinFormsApplicationMenu[] GetMenus() {
+		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
 			FactoryMenu = new CountingMenu("Factory");
 			MenuCommand = new CountingAction("Menu child");
@@ -105,15 +107,15 @@ public class WinFormsCommandOwnerTests {
 			return base.GetMenus().Append(FactoryMenu).ToArray();
 		}
 
-		protected override IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		protected override FormsUI.IApplicationMenuItem[] GetToolBarItems() {
 			ToolBarActivations++;
 			_ = Menus;
 			RefreshCommand = new CountingAction("Refresh");
-			return new IWinFormsApplicationMenuItem[] { RefreshCommand, MenuCommand, RefreshCommand };
+			return new FormsUI.IApplicationMenuItem[] { RefreshCommand, MenuCommand, RefreshCommand };
 		}
 	}
 
-	private sealed class CountingMenu(string title) : WinFormsApplicationMenu(title) {
+	private sealed class CountingMenu(string title) : ApplicationMenu(title) {
 		internal int Disposals { get; private set; }
 
 		public override void Dispose() {
@@ -132,23 +134,23 @@ public class WinFormsCommandOwnerTests {
 		}
 	}
 
-	private sealed class CountingPlugin : WinFormsApplicationPlugin {
+	private sealed class CountingPlugin : FormsUI.ApplicationPlugin {
 		internal CountingPlugin()
-			: base("Commands", Array.Empty<IWinFormsApplicationBlock>()) {
+			: base("Commands", Array.Empty<FormsUI.IApplicationBlock>()) {
 		}
 
 		internal int MenuActivations { get; private set; }
 
 		internal int ToolBarActivations { get; private set; }
 
-		protected override IWinFormsApplicationMenu[] GetMenus() {
+		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
-			return new IWinFormsApplicationMenu[] { new WinFormsApplicationMenu("Plugin Commands") };
+			return new FormsUI.IApplicationMenu[] { new ApplicationMenu("Plugin Commands") };
 		}
 
-		protected override IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		protected override FormsUI.IApplicationMenuItem[] GetToolBarItems() {
 			ToolBarActivations++;
-			return new IWinFormsApplicationMenuItem[] {
+			return new FormsUI.IApplicationMenuItem[] {
 				new WinFormsActionMenuItem("Plugin Action", () => {
 				})
 			};

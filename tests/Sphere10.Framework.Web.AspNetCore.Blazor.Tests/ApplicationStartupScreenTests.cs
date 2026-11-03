@@ -21,6 +21,8 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -32,15 +34,15 @@ public class ApplicationStartupScreenTests {
 	[Test]
 	public async Task SavedIdentityReopensCanonicalRegistrationWithItsConfiguredParameters() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		BlazorApplicationStartupScreen identity;
-		using (var first = new BlazorApplicationScreenHost(CreateBlocks(), services)) {
+		ApplicationStartupScreen identity;
+		using (var first = new BlazorUI.ApplicationScreenHost(CreateBlocks(), services)) {
 			var session = await first.ActivateScreenAsync("block", "other");
 			await first.AttachScreenAsync(session.Id, new OtherScreen());
 			identity = first.GetStartupScreenIdentity(session);
 			Assert.That(first.SetStartupScreen(identity), Is.True);
 			Assert.That(first.IsStartupScreen(session), Is.True);
 		}
-		using var restored = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		using var restored = new BlazorUI.ApplicationScreenHost(CreateBlocks(), services);
 
 		Assert.That(restored.SetStartupScreen(identity), Is.True);
 		await restored.InitializeAsync();
@@ -57,7 +59,7 @@ public class ApplicationStartupScreenTests {
 	[TestCase("block", "other", "arbitrary")]
 	public async Task UnavailableOrForgedIdentityUsesTheExistingDefault(string block, string command, string type) {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(), services);
 		var identity = Identity() with { BlockId = block, MenuItemId = command, ScreenTypeName = type == "correct" ? typeof(OtherScreen).FullName : "Unregistered.Type" };
 
 		Assert.That(host.SetStartupScreen(identity), Is.False);
@@ -71,7 +73,7 @@ public class ApplicationStartupScreenTests {
 	[Test]
 	public async Task ExplicitActivationWinsOverSavedStartup() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(), services);
 		host.SetStartupScreen(Identity());
 		var explicitScreen = await host.ActivateScreenAsync("block", "default");
 
@@ -86,9 +88,9 @@ public class ApplicationStartupScreenTests {
 	[TestCase(true)]
 	public async Task RuntimeActivationParametersAndInstanceKeysAreNeverPersistable(bool keyed) {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
-		var activation = keyed ? new BlazorApplicationScreenActivation(instanceKey: "session-42")
-			: new BlazorApplicationScreenActivation(new Dictionary<string, object> { ["Caption"] = "Session value" });
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(), services);
+		var activation = keyed ? new ApplicationScreenActivation(instanceKey: "session-42")
+			: new ApplicationScreenActivation(new Dictionary<string, object> { ["Caption"] = "Session value" });
 		var session = await host.ActivateScreenAsync("block", "other", activation);
 		await host.AttachScreenAsync(session.Id, new OtherScreen());
 
@@ -101,7 +103,7 @@ public class ApplicationStartupScreenTests {
 	[Test]
 	public async Task ComponentOptOutAndPreconstructionHostPolicyRejectStartupChoices() {
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(CreateBlocks(), services);
+		using var host = new BlazorUI.ApplicationScreenHost(CreateBlocks(), services);
 		var optedOut = await host.ActivateScreenAsync("block", "session");
 		await host.AttachScreenAsync(optedOut.Id, new SessionScreen());
 		Assert.That(host.CanMakeStartupScreen(optedOut), Is.False);
@@ -172,7 +174,7 @@ public class ApplicationStartupScreenTests {
 			Assert.That(setup.Browser.WriteKeys, Has.Count.EqualTo(1));
 			Assert.That(setup.Browser.WriteKeys.Single(), Does.EndWith("/test.application"));
 			var previous = setup.Host.StartupScreen;
-			var attached = new TaskCompletionSource<BlazorApplicationScreenSession>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var attached = new TaskCompletionSource<ApplicationScreenSession>(TaskCreationOptions.RunContinuationsAsynchronously);
 			void ObserveAttachment() {
 				if (setup.Host.ActiveScreen is { Screen: DefaultScreen } active)
 					attached.TrySetResult(active);
@@ -270,14 +272,14 @@ public class ApplicationStartupScreenTests {
 	}
 
 	// Builds a persisted registration identity from the canonical block graph.
-	private static BlazorApplicationStartupScreen Identity() {
+	private static ApplicationStartupScreen Identity() {
 		return new(string.Empty, "block", "other", typeof(OtherScreen).FullName, typeof(OtherScreen).Assembly.GetName().Name);
 	}
 
 	// Creates independent registrations with distinct startup policies.
-	private static IBlazorApplicationBlock[] CreateBlocks() {
+	private static BlazorUI.IApplicationBlock[] CreateBlocks() {
 		return new[] {
-			new BlazorApplicationBlockBuilder()
+			new ApplicationBlockBuilder()
 				.WithId("block")
 				.WithName("Test block")
 				.AddScreen<PermanentScreen>(screen => screen
@@ -323,22 +325,22 @@ public class ApplicationStartupScreenTests {
 	#region Inner Types
 
 	/// <summary>The block's ordinary startup screen.</summary>
-	public class DefaultScreen : BlazorApplicationScreen {
+	public class DefaultScreen : ApplicationScreen {
 	}
 
 	/// <summary>An alternative screen with configured parameters.</summary>
-	public class OtherScreen : BlazorApplicationScreen {
+	public class OtherScreen : ApplicationScreen {
 
 		/// <summary>The configured screen caption.</summary>
 		[Parameter] public string Caption { get; set; }
 	}
 
 	/// <summary>A screen used to verify permanent singleton startup behavior.</summary>
-	public class PermanentScreen : BlazorApplicationScreen {
+	public class PermanentScreen : ApplicationScreen {
 	}
 
 	/// <summary>A session-only screen that declines startup restoration.</summary>
-	public class SessionScreen : BlazorApplicationScreen {
+	public class SessionScreen : ApplicationScreen {
 
 		/// <summary>Declines restoration for a session-only screen.</summary>
 		public override bool CanRestoreAtStartup {
@@ -349,15 +351,15 @@ public class ApplicationStartupScreenTests {
 	}
 
 	// Applies an application policy before constructing a startup screen.
-	private sealed class RestrictedHost : BlazorApplicationScreenHost {
+	private sealed class RestrictedHost : BlazorUI.ApplicationScreenHost {
 
 		/// <summary>Creates the restricted host with its fixture dependencies.</summary>
-		public RestrictedHost(IEnumerable<IBlazorApplicationBlock> blocks, IServiceProvider services)
+		public RestrictedHost(IEnumerable<BlazorUI.IApplicationBlock> blocks, IServiceProvider services)
 			: base(blocks, services) {
 		}
 
 		/// <summary>Rejects the registration configured as unavailable for startup.</summary>
-		protected override bool CanRestoreScreenAtStartup(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
+		protected override bool CanRestoreScreenAtStartup(BlazorUI.IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
 			return definition.ScreenType != typeof(OtherScreen) && base.CanRestoreScreenAtStartup(block, definition);
 		}
 	}
@@ -423,7 +425,7 @@ public class ApplicationStartupScreenTests {
 	public class TabsHarness : ComponentBase {
 
 		/// <summary>The fixture's retained screen host.</summary>
-		[Parameter] public IBlazorApplicationScreenHost Host { get; set; }
+		[Parameter] public BlazorUI.IApplicationScreenHost Host { get; set; }
 
 		/// <summary>Captures the rendered component instance.</summary>
 		[Parameter] public Action<TabsProbe> Capture { get; set; }
@@ -434,8 +436,8 @@ public class ApplicationStartupScreenTests {
 			builder.AddAttribute(1, nameof(ApplicationScreenTabs.Sessions), Host.OpenScreens);
 			builder.AddAttribute(2, nameof(ApplicationScreenTabs.ActiveSession), Host.ActiveScreen);
 			builder.AddAttribute(3, nameof(ApplicationScreenTabs.OnSelect), EventCallback.Factory.Create<Guid>(this, async id => { await Host.ShowScreenAsync(id); }));
-			builder.AddAttribute(4, nameof(ApplicationScreenTabs.IsStartupScreen), (Func<BlazorApplicationScreenSession, bool>)Host.IsStartupScreen);
-			builder.AddAttribute(5, nameof(ApplicationScreenTabs.StartupUnavailableReason), (Func<BlazorApplicationScreenSession, string>)Host.GetStartupScreenUnavailableReason);
+			builder.AddAttribute(4, nameof(ApplicationScreenTabs.IsStartupScreen), (Func<ApplicationScreenSession, bool>)Host.IsStartupScreen);
+			builder.AddAttribute(5, nameof(ApplicationScreenTabs.StartupUnavailableReason), (Func<ApplicationScreenSession, string>)Host.GetStartupScreenUnavailableReason);
 			builder.AddComponentReferenceCapture(6, component => Capture((TabsProbe)component));
 			builder.CloseComponent();
 		}
@@ -450,7 +452,7 @@ public class ApplicationStartupScreenTests {
 			_provider = provider;
 			Browser = browser;
 			Renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-			Host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+			Host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		}
 
 		/// <summary>The renderer owned by this fixture.</summary>
@@ -460,7 +462,7 @@ public class ApplicationStartupScreenTests {
 		public BrowserRuntime Browser { get; }
 
 		/// <summary>The fixture's retained screen host.</summary>
-		public IBlazorApplicationScreenHost Host { get; }
+		public BlazorUI.IApplicationScreenHost Host { get; }
 
 		/// <summary>The shell captured from the actual render tree.</summary>
 		public ShellProbe Shell { get; private set; }
@@ -514,7 +516,7 @@ public class ApplicationStartupScreenTests {
 	private sealed class BrowserRuntime : IJSRuntime, IJSObjectReference {
 
 		// Existing raw identities are a read-only legacy source; current records stay in the typed provider namespace.
-		public BlazorApplicationStartupScreen Identity { get; set; }
+		public ApplicationStartupScreen Identity { get; set; }
 
 		/// <summary>The provider's serialized typed browser records.</summary>
 		public Dictionary<string, string> TypedRecords { get; } = new();

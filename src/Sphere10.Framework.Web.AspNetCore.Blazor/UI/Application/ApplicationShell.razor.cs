@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -56,10 +57,10 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	private Task _startupSettingsLoad = Task.CompletedTask;
 
 	/// <summary>The circuit's application and command owner.</summary>
-	[Inject] public IBlazorApplication Application { get; set; }
+	[Inject] public IApplication Application { get; set; }
 
 	/// <summary>The host that owns retained screens and navigation.</summary>
-	[Inject] public IBlazorApplicationScreenHost ScreenHost { get; set; }
+	[Inject] public IApplicationScreenHost ScreenHost { get; set; }
 
 	/// <summary>The browser navigation service.</summary>
 	[Inject] public NavigationManager Navigation { get; set; }
@@ -89,7 +90,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 	/// <summary>Optionally maps the currently selected session (or null) to a path within the application base, without query or fragment.</summary>
 	/// <remarks>Evaluated when synchronizing selection; custom paths omit the default block, screen and instance query parameters.</remarks>
-	[Parameter] public Func<BlazorApplicationScreenSession, string> NavigationUriFactory { get; set; }
+	[Parameter] public Func<ApplicationScreenSession, string> NavigationUriFactory { get; set; }
 
 	/// <summary>The explicitly requested block route ID.</summary>
 	[Parameter] public string BlockId { get; set; }
@@ -127,23 +128,23 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// The navigation block currently being browsed.
-	private IBlazorApplicationBlock SelectedBlock {
+	private IApplicationBlock SelectedBlock {
 		get {
 			return ScreenHost.SelectedBlock;
 		}
 	}
 
 	// The blocks exposed by the current application.
-	private IBlazorApplicationBlock[] Blocks {
+	private IApplicationBlock[] Blocks {
 		get {
 			return Application.Blocks;
 		}
 	}
 
 	// The toolbar composition for the active command owners.
-	private IBlazorApplicationMenuItem[] MergedToolBarItems {
+	private IApplicationMenuItem[] MergedToolBarItems {
 		get {
-			return Tools.UI.MergeApplicationToolBarItems<IBlazorApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
+			return Tools.UI.MergeApplicationToolBarItems<IApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
 		}
 	}
 
@@ -221,8 +222,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 				await ScreenHost.ShowScreenAsync(existing.Id, token);
 			} else if (!string.IsNullOrEmpty(request.ScreenId)) {
 				if (!block.Menus.SelectMany(menu => menu.Items).Concat(block.ToolBarItems).OfType<BlazorScreenMenuItem>().Any(item => item.Id == request.ScreenId)
-					&& !BlazorApplicationBlockSnapshot.IsDefinitionScreenId(block, request.ScreenId)
-					&& !(request.ScreenId == BlazorApplicationBlockSnapshot.DefaultScreenItemId && block.DefaultScreen != null)) {
+					&& !ApplicationBlockSnapshot.IsDefinitionScreenId(block, request.ScreenId)
+					&& !(request.ScreenId == ApplicationBlockSnapshot.DefaultScreenItemId && block.DefaultScreen != null)) {
 					await ScreenHost.InitializeAsync(token);
 					if (!_disposed && !token.IsCancellationRequested && version == _navigationVersion)
 						_routeError = "The requested screen was not found.";
@@ -292,14 +293,14 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		var superseded = false;
 		try {
 			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
-				BlazorApplicationStartupScreen identity;
+				ApplicationStartupScreen identity;
 				if (await UserSettings.HasAsync<StartupSettings>(key))
 					identity = (await UserSettings.GetAsync<StartupSettings>(key)).StartupScreen;
 				else {
 
 					// Keep the original untyped browser key as a read-only migration source.
 					_legacyStartupModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/UI/Application/ApplicationShell.razor.js");
-					identity = await _legacyStartupModule.InvokeAsync<BlazorApplicationStartupScreen>("ReadStartupScreen", key);
+					identity = await _legacyStartupModule.InvokeAsync<ApplicationStartupScreen>("ReadStartupScreen", key);
 				}
 				if (_disposed || key != _startupSettingsKey) {
 					superseded = true;
@@ -330,7 +331,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Explains why a screen cannot be remembered as the startup choice.
-	private string StartupScreenUnavailableReason(BlazorApplicationScreenSession screen) {
+	private string StartupScreenUnavailableReason(ApplicationScreenSession screen) {
 		return _startupSettingsKey == null
 			? "Startup preferences are not enabled for this application."
 			: !_startupSettingsLoaded ? "Startup preferences are still loading."
@@ -382,7 +383,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Browses or activates a block through the shell's interaction path.
-	private async Task SelectBlockAsync(IBlazorApplicationBlock block) {
+	private async Task SelectBlockAsync(IApplicationBlock block) {
 		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 		if (ActivateBlockOnSelection) {
@@ -402,17 +403,17 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Executes a command through guarded navigation.
-	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) {
+	private Task ExecuteMenuItemAsync(IApplicationMenuItem item) {
 		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 	}
 
 	// Keep existing menu order and reuse a contextual Options heading before adding a heading of our own.
-	private IBlazorApplicationMenu[] MergedMenus {
+	private IApplicationMenu[] MergedMenus {
 		get {
-			var menus = Tools.UI.MergeApplicationMenus<IBlazorApplicationMenu, IBlazorApplicationMenuItem>(
-				(menu, items) => new BlazorApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
+			var menus = Tools.UI.MergeApplicationMenus<IApplicationMenu, IApplicationMenuItem>(
+				(menu, items) => new ApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
 				menu => menu.Id, item => item.Id, GetApplicationCommandLayers()).ToList();
-			var settings = menus.FirstOrDefault(menu => menu.Id == BlazorApplication.SettingsMenuId);
+			var settings = menus.FirstOrDefault(menu => menu.Id == global::Sphere10.Framework.Web.AspNetCore.Blazor.Application.SettingsMenuId);
 			if (settings == null)
 				return menus.ToArray();
 
@@ -420,7 +421,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			var existing = menus.FindIndex(menu => IsMenuHeading(menu, "Options"));
 			if (existing >= 0) {
 				var menu = menus[existing];
-				menus[existing] = new BlazorApplicationMenu(ownsItems: false) {
+				menus[existing] = new ApplicationMenu(ownsItems: false) {
 					Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = menu.Items.Concat(settings.Items).ToArray()
 				};
 			} else {
@@ -432,7 +433,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Menu accelerators and surrounding whitespace do not change a heading's purpose.
-	private static bool IsMenuHeading(IBlazorApplicationMenu menu, string heading) {
+	private static bool IsMenuHeading(IApplicationMenu menu, string heading) {
 		return string.Equals(menu.Text?.Replace("&", string.Empty).Trim(), heading, StringComparison.OrdinalIgnoreCase);
 	}
 
@@ -443,19 +444,19 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Selects a stable render key for a command.
-	private string GetCommandRenderKey(IBlazorApplicationMenuItem item) {
+	private string GetCommandRenderKey(IApplicationMenuItem item) {
 		var applicationItems = Application.Menus.SelectMany(menu => menu.Items).Concat(Application.ToolBarItems);
 		return (ContainsCommand(applicationItems, item) ? "application:" : "context:") + item.Id;
 	}
 
 	// Checks whether a command belongs to a visible menu branch.
-	private static bool ContainsCommand(IEnumerable<IBlazorApplicationMenuItem> items, IBlazorApplicationMenuItem command) {
-		return items.Any(item => ReferenceEquals(item, command) || item is BlazorApplicationMenuGroup group && ContainsCommand(group.Items, command));
+	private static bool ContainsCommand(IEnumerable<IApplicationMenuItem> items, IApplicationMenuItem command) {
+		return items.Any(item => ReferenceEquals(item, command) || item is ApplicationMenuGroup group && ContainsCommand(group.Items, command));
 	}
 
 	/// <summary>Executes a custom navigation command through the shell's guarded interaction and browser-history path.</summary>
 	/// <remarks>Await this from custom sidebar controls. Successful commands close the navigation drawer and synchronize the active screen URL.</remarks>
-	public Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) {
+	public Task ExecuteCommandAsync(IApplicationMenuItem item) {
 		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
 	}
 
@@ -564,7 +565,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 		// Capture only after leave permission succeeds; disposal and veto callbacks never become save boundaries.
 		try {
-			foreach (var participant in ScreenHost.Screens.Select(session => session.Screen).OfType<BlazorApplicationScreen>())
+			foreach (var participant in ScreenHost.Screens.Select(session => session.Screen).OfType<ApplicationScreen>())
 				await participant.SaveSettingsAsync(context.CancellationToken);
 		} catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) {
 			context.PreventNavigation();
@@ -596,7 +597,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	}
 
 	// Default registration URLs also follow direct host selection; browsing and dirty notifications do not navigate.
-	private void OnScreenSelected(IApplicationScreen screen) {
+	private void OnScreenSelected(SharedUI.IApplicationScreen screen) {
 		if (_disposed || NavigationUriFactory != null || _navigationOperations != 0 || _routeError != null)
 			return;
 		_ = InvokeAsync(() => {
@@ -635,7 +636,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 		/// <summary>The registered screen to restore; null keeps the application's default startup policy.</summary>
 		[DefaultValue(null)]
-		public BlazorApplicationStartupScreen StartupScreen { get; set; }
+		public ApplicationStartupScreen StartupScreen { get; set; }
 	}
 
 	#endregion

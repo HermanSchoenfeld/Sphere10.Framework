@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Utils.WinFormsTester;
 using Sphere10.Framework.Windows.Forms.DataVisualization;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -151,9 +152,9 @@ public class ChartGalleryScreenTests {
 	public void ChartScreenLifecycleInitializesOnPresentationAndSurvivesDocking(Type screenType) => RunWithMessageLoop(owner => {
 		static Control[] Descendants(Control control) => new[] { control }.Concat(control.Controls.Cast<Control>().SelectMany(Descendants)).ToArray();
 		static int PointCount(Control control) => Descendants(control).OfType<Chart>().SelectMany(chart => chart.Series).Sum(series => series.Points.Count);
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = Sphere10.Framework.Application.UI.ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = Sphere10.Framework.Application.UI.ScreenMode.MultiView };
 		owner.Controls.Add(host);
-		using var screen = (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
+		using var screen = (ApplicationScreen)Activator.CreateInstance(screenType);
 		Assert.That(PointCount(screen), Is.Zero, "Constructors create controls; sample initialization belongs to the screen lifecycle.");
 		Assert.That(host.ShowScreen(screen), Is.True);
 
@@ -180,9 +181,9 @@ public class ChartGalleryScreenTests {
 	[TestCase(typeof(LoadingCircleTestScreen))]
 	public void OptionalControlPreferencesDoNotRequireSettingsForAnAdHocHostedScreen(Type screenType) {
 		RunWithMessageLoop(owner => {
-			using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = Sphere10.Framework.Application.UI.ScreenMode.MultiView };
+			using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = Sphere10.Framework.Application.UI.ScreenMode.MultiView };
 			owner.Controls.Add(host);
-			using var screen = (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
+			using var screen = (ApplicationScreen)Activator.CreateInstance(screenType);
 			Assert.That(host.ShowScreen(screen), Is.True);
 
 			// These same visible edits save preferences only when a registration supplies a profile.

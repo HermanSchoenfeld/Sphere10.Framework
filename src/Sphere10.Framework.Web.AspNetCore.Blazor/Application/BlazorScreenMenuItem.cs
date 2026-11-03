@@ -8,18 +8,19 @@
 
 using System;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A navigation command referencing a screen owned by its block.</summary>
-public class BlazorScreenMenuItem : BlazorApplicationMenuItemBase, IScreenMenuItem {
-	private ApplicationScreenDefinition _screenDefinition;
+public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
+	private SharedUI.ApplicationScreenDefinition _screenDefinition;
 	private ApplicationScreenRegistration _registration;
 
 	public Type ScreenType {
 		get => _screenDefinition?.ScreenType ?? Registration?.ScreenType;
 		init {
-			Tools.UI.ValidateScreenType(value, typeof(IBlazorApplicationScreen));
+			Tools.UI.ValidateScreenType(value, typeof(IApplicationScreen));
 			_registration = ApplicationScreenRegistration.ForType(value);
 		}
 	}
@@ -35,11 +36,11 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItemBase, IScreenMenuIt
 		init => _registration = value;
 	}
 
-	public ApplicationScreenDefinition ScreenDefinition {
+	public SharedUI.ApplicationScreenDefinition ScreenDefinition {
 		get => _screenDefinition;
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
-			Tools.UI.ValidateScreenType(value.ScreenType, typeof(IBlazorApplicationScreen));
+			Tools.UI.ValidateScreenType(value.ScreenType, typeof(IApplicationScreen));
 			_screenDefinition = value;
 		}
 	}
@@ -51,9 +52,9 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItemBase, IScreenMenuIt
 	}
 
 	/// <summary>Binds the command to its own graph's canonical definition and updates reverse membership.</summary>
-	public void ResolveScreenDefinition(ApplicationScreenDefinition definition) {
+	public void ResolveScreenDefinition(SharedUI.ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
-		Tools.UI.ValidateScreenType(definition.ScreenType, typeof(IBlazorApplicationScreen));
+		Tools.UI.ValidateScreenType(definition.ScreenType, typeof(IApplicationScreen));
 		Guard.Argument(Registration == null || Registration.ScreenType == definition.ScreenType
 			&& (Registration.IsTypeReference || Registration.Token == definition.Registration.Token), nameof(definition), "The definition must match this command's registration reference.");
 		if (!ReferenceEquals(_screenDefinition, definition)) {
@@ -66,7 +67,7 @@ public class BlazorScreenMenuItem : BlazorApplicationMenuItemBase, IScreenMenuIt
 	}
 
 	public static BlazorScreenMenuItem For<TScreen>(string icon, string title)
-		where TScreen : IBlazorApplicationScreen {
+		where TScreen : IApplicationScreen {
 		return new BlazorScreenMenuItem { Id = typeof(TScreen).Name, Icon = icon, Title = title, ScreenType = typeof(TScreen) };
 	}
 }

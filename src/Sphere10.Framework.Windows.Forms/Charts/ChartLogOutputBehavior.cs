@@ -39,7 +39,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 	private bool _disposed;
 	private bool _captureEnabled = true;
 	private ContextMenuStrip _sharedMenu;
-	private WinFormsApplicationScreen _ownerScreen;
+	private ApplicationScreen _ownerScreen;
 	private string _logTitle = string.Empty;
 	private string _ownedScreenTitle;
 
@@ -293,9 +293,9 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		// Borrowed selectors retain their consumer's preflight, application binding and preference lifecycle.
 		if (_outputSelector != null && !ReferenceEquals(_outputSelector, _ownedSelector))
 			return;
-		WinFormsApplicationScreen owner = null;
+		ApplicationScreen owner = null;
 		for (var current = _surface; current != null; current = current.Parent)
-			if (current is WinFormsApplicationScreen screen) {
+			if (current is ApplicationScreen screen) {
 				owner = screen;
 				break;
 			}
@@ -320,7 +320,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		var path = new List<string>();
 		for (var current = _surface; current != null; current = current.Parent) {
 			path.Add(string.IsNullOrWhiteSpace(current.Name) ? current.GetType().Name : current.Name);
-			if (current is WinFormsApplicationScreen screen) {
+			if (current is ApplicationScreen screen) {
 				_ownedSelector.ApplicationLogger ??= screen.Block?.Parent?.Logger;
 				_ownedSelector.ScreenHost ??= screen.Host;
 				path.Add(screen.GetType().FullName);
@@ -429,7 +429,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		if (!string.IsNullOrWhiteSpace(nativeTitle))
 			return nativeTitle;
 		for (var current = surface; current != null; current = current.Parent)
-			if (current is WinFormsApplicationScreen screen && !string.IsNullOrWhiteSpace(screen.Title))
+			if (current is ApplicationScreen screen && !string.IsNullOrWhiteSpace(screen.Title))
 				return screen.Title;
 		for (var current = surface; current != null; current = current.Parent)
 			if (current is TelemetryChart telemetry && IsDescriptive(telemetry.ChartTitle))

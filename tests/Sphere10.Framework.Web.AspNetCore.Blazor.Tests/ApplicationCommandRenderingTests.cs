@@ -22,6 +22,8 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -32,13 +34,13 @@ public class ApplicationCommandRenderingTests {
 	public async Task ApplicationCommandsStayVisibleAlongsideScreenCommandsWithTheSameId() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var hostUserInterface = provider.GetRequiredService<IBlazorUserInterfaceServices>();
-		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
-		var shared = provider.GetRequiredService<IApplication>();
+		var application = (BlazorUI.Application)provider.GetRequiredService<BlazorUI.IApplication>();
+		var shared = provider.GetRequiredService<SharedUI.IApplication>();
 		var calls = 0;
 		var applicationSave = new BlazorActionMenuItem { Id = "save", Title = "Application save", Action = () => calls++ };
-		application.SetMenus(new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { applicationSave } } });
+		application.SetMenus(new[] { new ApplicationMenu { Id = "work", Text = "Work", Items = new[] { applicationSave } } });
 		application.SetToolBarItems(new[] { applicationSave });
 		Assert.That(shared.Menus.Single(), Is.SameAs(application.Menus.Single()));
 		Assert.That(shared.ToolBarItems.Single(), Is.SameAs(application.ToolBarItems.Single()));
@@ -49,10 +51,10 @@ public class ApplicationCommandRenderingTests {
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Screen save").Count, Is.EqualTo(2));
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Application save").Count, Is.EqualTo(2));
 			// The web menu and toolbar execute the descriptors exposed by the shared application provider.
-			await hostUserInterface.ExecuteMenuItemAsync((IBlazorApplicationMenuItem)shared.Menus.Single().Items.Single());
+			await hostUserInterface.ExecuteMenuItemAsync((BlazorUI.IApplicationMenuItem)shared.Menus.Single().Items.Single());
 			Assert.That(calls, Is.EqualTo(1));
 			Assert.That(screen.Saves, Is.Zero);
-			await hostUserInterface.ExecuteMenuItemAsync((IBlazorApplicationMenuItem)shared.ToolBarItems.Single());
+			await hostUserInterface.ExecuteMenuItemAsync((BlazorUI.IApplicationMenuItem)shared.ToolBarItems.Single());
 			Assert.That(calls, Is.EqualTo(2));
 			Assert.That(screen.Saves, Is.Zero);
 			await hostUserInterface.ExecuteMenuItemAsync(screen.ToolBarItems.Single());
@@ -75,8 +77,8 @@ public class ApplicationCommandRenderingTests {
 		services.AddSingleton<IJSRuntime, GalleryRenderingTests.TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var application = (BlazorUI.Application)provider.GetRequiredService<BlazorUI.IApplication>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var calls = 0;
 		application.SetToolBarItems(new[] { new BlazorActionMenuItem { Id = "run", Title = "Run application command", Action = () => calls++ } });
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -94,11 +96,11 @@ public class ApplicationCommandRenderingTests {
 	public async Task DuplicateApplicationAndScreenGroupsKeepIndependentRenderIdentityAndActions() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var application = (BlazorUI.Application)provider.GetRequiredService<BlazorUI.IApplication>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var calls = 0;
 		var action = new BlazorActionMenuItem { Id = "save", Title = "Application child", Action = () => calls++ };
-		application.SetToolBarItems(new[] { new BlazorApplicationMenuGroup { Id = "group", Title = "Application group", Items = new[] { action } } });
+		application.SetToolBarItems(new[] { new ApplicationMenuGroup { Id = "group", Title = "Application group", Items = new[] { action } } });
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var session = await host.ActivateScreenAsync("test", "one");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -106,8 +108,8 @@ public class ApplicationCommandRenderingTests {
 			screen.UseCommandGroup = true;
 			host.NotifyScreenChanged(session);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Application group").And.Contain("Screen group"));
-			var appGroup = (BlazorApplicationMenuGroup)application.ToolBarItems.Single();
-			var screenGroup = (BlazorApplicationMenuGroup)screen.ToolBarItems.Single();
+			var appGroup = (ApplicationMenuGroup)application.ToolBarItems.Single();
+			var screenGroup = (ApplicationMenuGroup)screen.ToolBarItems.Single();
 			await host.UserInterfaceServices.ExecuteMenuItemAsync(appGroup.Items.Single());
 			await host.UserInterfaceServices.ExecuteMenuItemAsync(screenGroup.Items.Single());
 			Assert.That(calls, Is.EqualTo(1));
@@ -134,7 +136,7 @@ public class ApplicationCommandRenderingTests {
 			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var session = await host.ActivateScreenAsync("test", "one");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -157,7 +159,7 @@ public class ApplicationCommandRenderingTests {
 	public async Task PluginCommandsFollowTheVisibleScreenOwnersAndDisappearWithTheScreen() {
 		var services = Services();
 		var blockCalls = 0;
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("plugin")
 			.WithName("Plugin block")
 			.AddScreen<CommandScreen>("Plugin screen")
@@ -181,11 +183,11 @@ public class ApplicationCommandRenderingTests {
 		var plugin = new CommandPlugin(block);
 		services.AddSphere10BlazorPlugin(plugin);
 		await using var provider = services.BuildServiceProvider();
-		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+		var application = (BlazorUI.Application)provider.GetRequiredService<BlazorUI.IApplication>();
 		var host = application.ScreenHost;
 		var applicationCalls = 0;
 		var applicationSave = new BlazorActionMenuItem { Id = "save", Title = "Application save", Action = () => applicationCalls++ };
-		application.SetMenus(new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { applicationSave } } });
+		application.SetMenus(new[] { new ApplicationMenu { Id = "work", Text = "Work", Items = new[] { applicationSave } } });
 		application.SetToolBarItems(new[] { applicationSave });
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -202,7 +204,7 @@ public class ApplicationCommandRenderingTests {
 			Assert.That(actual.Source, Is.SameAs(plugin));
 
 			// Composition retains the real descriptor and callback rather than creating a second command owner.
-			await host.UserInterfaceServices.ExecuteMenuItemAsync((IBlazorApplicationMenuItem)plugin.Menus.Single().Items.Last());
+			await host.UserInterfaceServices.ExecuteMenuItemAsync((BlazorUI.IApplicationMenuItem)plugin.Menus.Single().Items.Last());
 			Assert.That(plugin.Calls, Is.EqualTo(1));
 			Assert.That(blockCalls, Is.Zero);
 			Assert.That(applicationCalls, Is.Zero);
@@ -216,7 +218,7 @@ public class ApplicationCommandRenderingTests {
 	public async Task SingleViewKeepsHiddenSingletonMountedAndDisposesMultiInstanceOnDeparture() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.TrySetScreenModeAsync(ScreenMode.SingleView);
 			var first = await host.ActivateScreenAsync("test", "one");
@@ -241,7 +243,7 @@ public class ApplicationCommandRenderingTests {
 	public async Task TabsExposeSelectionPanelsFullTitlesAndDirtyState() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var first = await host.ActivateScreenAsync("test", "one");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -258,7 +260,7 @@ public class ApplicationCommandRenderingTests {
 	public async Task RepeatedCloseDuringAnAsyncGuardIsCoalesced() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var session = await host.ActivateScreenAsync("test", "one");
 			var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -324,21 +326,21 @@ public class ApplicationCommandRenderingTests {
 	#region Inner Types
 
 	/// <summary>Contributes real plugin commands through the same contract as application, block and screen owners.</summary>
-	private sealed class CommandPlugin : ApplicationPluginBase<IBlazorApplicationBlock>, IBlazorPlugin {
+	private sealed class CommandPlugin : ApplicationPluginBase<BlazorUI.IApplicationBlock>, IBlazorPlugin {
 		/// <summary>Captures fixed plugin membership and command descriptors before activation.</summary>
-		public CommandPlugin(IBlazorApplicationBlock block)
+		public CommandPlugin(BlazorUI.IApplicationBlock block)
 			: base("Command plugin", new[] { block }) {
 			var save = new BlazorActionMenuItem { Id = "save", Title = "Plugin save", Action = () => Calls++ };
 			var command = new BlazorActionMenuItem { Id = "plugin", Title = "Plugin command", Action = () => Calls++ };
-			Menus = new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { save, command } } };
+			Menus = new[] { new ApplicationMenu { Id = "work", Text = "Work", Items = new[] { save, command } } };
 			ToolBarItems = new[] { save, command };
 		}
 
 		/// <summary>The exact plugin menu descriptors used by the shell.</summary>
-		public IApplicationMenu[] Menus { get; }
+		public SharedUI.IApplicationMenu[] Menus { get; }
 
 		/// <summary>The exact plugin toolbar descriptors used by the shell.</summary>
-		public IApplicationMenuItem[] ToolBarItems { get; }
+		public SharedUI.IApplicationMenuItem[] ToolBarItems { get; }
 
 		/// <summary>The observed execution count for the existing plugin callbacks.</summary>
 		public int Calls { get; private set; }
@@ -351,15 +353,15 @@ public class ApplicationCommandRenderingTests {
 		}
 	}
 
-	public class CommandScreen : BlazorApplicationScreen {
+	public class CommandScreen : ApplicationScreen {
 		private readonly BlazorActionMenuItem _save;
-		private readonly BlazorApplicationMenuGroup _group;
-		private readonly BlazorApplicationMenu _menu;
+		private readonly ApplicationMenuGroup _group;
+		private readonly ApplicationMenu _menu;
 
 		public CommandScreen() {
 			_save = new BlazorActionMenuItem { Id = "save", Title = "Screen save", Action = () => Saves++ };
-			_group = new BlazorApplicationMenuGroup { Id = "group", Title = "Screen group", Items = new[] { _save } };
-			_menu = new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { _save } };
+			_group = new ApplicationMenuGroup { Id = "group", Title = "Screen group", Items = new[] { _save } };
+			_menu = new ApplicationMenu { Id = "work", Text = "Work", Items = new[] { _save } };
 		}
 
 		public int Saves { get; private set; }
@@ -368,9 +370,9 @@ public class ApplicationCommandRenderingTests {
 
 		public bool UseCommandGroup { get; set; }
 
-		public override IBlazorApplicationMenu[] Menus => new[] { _menu };
+		public override BlazorUI.IApplicationMenu[] Menus => new[] { _menu };
 
-		public override IBlazorApplicationMenuItem[] ToolBarItems => UseCommandGroup ? new IBlazorApplicationMenuItem[] { _group } : new[] { _save };
+		public override BlazorUI.IApplicationMenuItem[] ToolBarItems => UseCommandGroup ? new BlazorUI.IApplicationMenuItem[] { _group } : new[] { _save };
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "Command screen");
 
@@ -381,7 +383,7 @@ public class ApplicationCommandRenderingTests {
 	}
 
 	public class TabsHarness : ComponentBase {
-		[Parameter] public BlazorApplicationScreenSession Session { get; set; }
+		[Parameter] public ApplicationScreenSession Session { get; set; }
 
 		[Parameter] public Action<ApplicationScreenTabs> Capture { get; set; }
 
@@ -401,7 +403,7 @@ public class ApplicationCommandRenderingTests {
 		public TaskCompletionSource<TemporaryScreen> TemporaryAttached { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
-	public class TemporaryScreen : BlazorApplicationScreen {
+	public class TemporaryScreen : ApplicationScreen {
 		[Inject] public ScreenRenderState State { get; set; }
 
 		protected override async Task OnInitializedAsync() {

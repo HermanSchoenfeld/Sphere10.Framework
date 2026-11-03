@@ -15,22 +15,23 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>The logical Blazor screen retained by the host, with renderer-local identity and immutable component parameters.</summary>
 /// <remarks>The renderer creates and disposes Screen. This proxy delegates its portable screen lifecycle to that component.</remarks>
-public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
+public sealed class ApplicationScreenSession : IApplicationScreen {
 	private readonly string _registeredTitle;
-	private readonly ApplicationScreenDefinition _definition;
+	private readonly SharedUI.ApplicationScreenDefinition _definition;
 	private readonly string _navigationId;
-	private readonly List<IBlazorApplicationMenu> _ownedMenus = new();
-	private readonly List<IBlazorApplicationMenuItem> _componentToolBarItems = new();
-	private BlazorApplicationMenu _toolbarOwner;
+	private readonly List<IApplicationMenu> _ownedMenus = new();
+	private readonly List<IApplicationMenuItem> _componentToolBarItems = new();
+	private ApplicationMenu _toolbarOwner;
 	private readonly bool _hasActivationState;
 
-	internal BlazorApplicationScreenSession(IBlazorApplicationBlock block, BlazorScreenMenuItem menuItem, ApplicationScreenDefinition definition,
-		BlazorApplicationScreenActivation activation = null, BlazorApplicationScreenActivation preparedActivation = null) {
+	internal ApplicationScreenSession(IApplicationBlock block, BlazorScreenMenuItem menuItem, SharedUI.ApplicationScreenDefinition definition,
+		ApplicationScreenActivation activation = null, ApplicationScreenActivation preparedActivation = null) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		Id = Guid.NewGuid();
@@ -38,9 +39,9 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 		MenuItem = menuItem;
 		_definition = Tools.UI.ResolveScreenRegistration(block.ScreenDefinitions, definition.Registration);
 		_navigationId = menuItem?.HasExplicitId == true ? menuItem.Id : (_definition.StableKey != null || block.ScreenDefinitions.Count(candidate => candidate.ScreenType == definition.ScreenType) == 1
-			? BlazorApplicationBlockSnapshot.GetDefinitionScreenId(block, _definition) : null);
+			? ApplicationBlockSnapshot.GetDefinitionScreenId(block, _definition) : null);
 		_registeredTitle = definition.Title;
-		var parameters = new Dictionary<string, object>((definition as BlazorApplicationScreenDefinition)?.Parameters ?? new Dictionary<string, object>(), StringComparer.OrdinalIgnoreCase);
+		var parameters = new Dictionary<string, object>((definition as ApplicationScreenDefinition)?.Parameters ?? new Dictionary<string, object>(), StringComparer.OrdinalIgnoreCase);
 		if (preparedActivation != null)
 			foreach (var parameter in preparedActivation.Parameters)
 				parameters[parameter.Key] = parameter.Value;
@@ -54,9 +55,9 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 
 	public Guid Id { get; }
 
-	public IBlazorApplicationScreenHost Host { get; set; }
+	public IApplicationScreenHost Host { get; set; }
 
-	public IBlazorApplicationBlock Block { get; set; }
+	public IApplicationBlock Block { get; set; }
 
 	public BlazorScreenMenuItem MenuItem { get; }
 
@@ -68,7 +69,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 	}
 
 	/// <summary>The canonical registration in this session's own block graph.</summary>
-	public ApplicationScreenDefinition Definition => _definition;
+	public SharedUI.ApplicationScreenDefinition Definition => _definition;
 
 	public Type ScreenType => _definition.ScreenType;
 
@@ -82,7 +83,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 
 	public IDictionary<string, object> Parameters { get; }
 
-	public IBlazorApplicationScreen Screen { get; private set; }
+	public IApplicationScreen Screen { get; private set; }
 
 	public string Title => Screen?.Title ?? _registeredTitle;
 
@@ -99,9 +100,9 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 
 	public string Icon => MenuItem?.Icon;
 
-	public IBlazorApplicationMenu[] Menus {
+	public IApplicationMenu[] Menus {
 		get {
-			var menus = Screen?.Menus ?? Array.Empty<IBlazorApplicationMenu>();
+			var menus = Screen?.Menus ?? Array.Empty<IApplicationMenu>();
 			foreach (var previous in _ownedMenus.ToArray())
 				if (!menus.Any(menu => ReferenceEquals(menu, previous))) {
 					if (ReferenceEquals(previous.Parent, Block))
@@ -118,9 +119,9 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 		}
 	}
 
-	public IBlazorApplicationMenuItem[] ToolBarItems {
+	public IApplicationMenuItem[] ToolBarItems {
 		get {
-			var items = Screen?.ToolBarItems ?? Array.Empty<IBlazorApplicationMenuItem>();
+			var items = Screen?.ToolBarItems ?? Array.Empty<IApplicationMenuItem>();
 			foreach (var previous in _componentToolBarItems.ToArray())
 				if (!items.Any(item => ReferenceEquals(item, previous))) {
 					_toolbarOwner.RemoveItem(previous);
@@ -128,7 +129,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 				}
 			foreach (var item in items)
 				if (item.Parent == null) {
-					_toolbarOwner ??= new BlazorApplicationMenu { Text = "Screen toolbar" };
+					_toolbarOwner ??= new ApplicationMenu { Text = "Screen toolbar" };
 					_toolbarOwner.Parent = Block;
 					if (!_componentToolBarItems.Any(candidate => ReferenceEquals(candidate, item)))
 						_componentToolBarItems.Add(item);
@@ -166,7 +167,7 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 	}
 
 
-	internal void SetScreen(IBlazorApplicationScreen screen) {
+	internal void SetScreen(IApplicationScreen screen) {
 		Guard.Argument(screen == null || ScreenType.IsInstanceOfType(screen), nameof(screen), "The component must match the retained screen type.");
 		Guard.Argument(!ReferenceEquals(screen, this), nameof(screen), "A screen proxy cannot be attached to itself.");
 		if (ReferenceEquals(Screen, screen))

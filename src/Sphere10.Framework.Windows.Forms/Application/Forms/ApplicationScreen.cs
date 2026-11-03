@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms.Components.BlockFramework;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -28,7 +29,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// NOTE: The ApplicationServiceProvider property, which defines the underlying provider all
 /// such  calls are routed to, is guaranteed to be set post-construction.
 /// </summary>
-public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicationScreen {
+public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	public event EventHandler ScreenLoaded;
 
 	public event EventHandler ScreenDisplayed;
@@ -55,9 +56,9 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	private MenuStrip _screenMenuStrip;
 
-	private IWinFormsApplicationMenu[] _menus;
+	private IApplicationMenu[] _menus;
 
-	private IWinFormsApplicationMenuItem[] _toolBarItems;
+	private IApplicationMenuItem[] _toolBarItems;
 
 	private MenuStrip _registeredMenuStrip;
 
@@ -66,12 +67,12 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	private ToolStripVisualInheritanceFixer _toolBarMerger;
 
 	/// <summary>Creates a native screen with an optional owning application block.</summary>
-	public WinFormsApplicationScreen()
+	public ApplicationScreen()
 		: this(null) {
 	}
 
 	/// <summary>Creates a native screen with an optional owning application block.</summary>
-	public WinFormsApplicationScreen(IWinFormsApplicationBlock applicationBlock) {
+	public ApplicationScreen(IApplicationBlock applicationBlock) {
 		Block = applicationBlock;
 		Url = FileName = null;
 		Type = HelpType.None;
@@ -124,13 +125,13 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationScreenHost Host { get; set; }
+	public IApplicationScreenHost Host { get; set; }
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationBlock Block { get; set; }
+	public IApplicationBlock Block { get; set; }
 
 	[Browsable(false)]
-	public IWinFormsApplicationBlock ApplicationBlock {
+	public IApplicationBlock ApplicationBlock {
 		get {
 			return Block;
 		}
@@ -189,7 +190,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	/// <summary>Activates and caches this screen's fixed command membership.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationMenu[] Menus {
+	public virtual IApplicationMenu[] Menus {
 		get {
 			return Tools.Array.Clone(_menus ??= GetMenus());
 		}
@@ -197,7 +198,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	/// <summary>Activates and caches the screen's toolbar commands; native item state remains live.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+	public virtual IApplicationMenuItem[] ToolBarItems {
 		get {
 			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 		}
@@ -225,7 +226,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	/// <summary>The owning host, for operations on this screen instance.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected IApplicationScreenHost ApplicationScreenHost {
+	protected SharedUI.IApplicationScreenHost ApplicationScreenHost {
 		get {
 			return Host;
 		}
@@ -240,7 +241,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	}
 
 	/// <summary>Creates this screen's menu definitions once, after its designer configuration is complete.</summary>
-	protected virtual IWinFormsApplicationMenu[] GetMenus() {
+	protected virtual IApplicationMenu[] GetMenus() {
 		var source = ScreenMenuStrip;
 		if (source == null && _menuStripItems.Count > 0 && ShowInApplicationMenuStrip) {
 			_registeredMenuStrip = new MenuStrip();
@@ -249,14 +250,14 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 			_registeredMenuStrip.Items.Add(header);
 			source = _registeredMenuStrip;
 		}
-		return source == null ? Array.Empty<IWinFormsApplicationMenu>() : source.Items.OfType<ToolStripMenuItem>()
-			.Select(item => (IWinFormsApplicationMenu)new NativeToolStripMenu(item, _ => true)).ToArray();
+		return source == null ? Array.Empty<IApplicationMenu>() : source.Items.OfType<ToolStripMenuItem>()
+			.Select(item => (IApplicationMenu)new NativeToolStripMenu(item, _ => true)).ToArray();
 	}
 
 	/// <summary>Creates toolbar definitions from this screen's original native controls.</summary>
-	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
-		return ScreenToolBar == null ? Array.Empty<IWinFormsApplicationMenuItem>() : ScreenToolBar.Items.Cast<ToolStripItem>()
-			.Select(item => (IWinFormsApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
+	protected virtual IApplicationMenuItem[] GetToolBarItems() {
+		return ScreenToolBar == null ? Array.Empty<IApplicationMenuItem>() : ScreenToolBar.Items.Cast<ToolStripItem>()
+			.Select(item => (IApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
 	}
 
 	// Merge bookkeeping belongs to the reusable merge control, while this screen owns the native sources.
@@ -402,12 +403,12 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 			_toolBarMerger?.Dispose();
 
 			// Cached descriptor factories own their definitions; native projections retain their no-op disposal contract.
-			var menus = (_menus ?? Array.Empty<IWinFormsApplicationMenu>())
-				.Distinct<IWinFormsApplicationMenu>(ReferenceEqualityComparer.Instance).ToArray();
-			var menuItems = new HashSet<IWinFormsApplicationMenuItem>(menus.SelectMany(menu => menu.Items), ReferenceEqualityComparer.Instance);
+			var menus = (_menus ?? Array.Empty<IApplicationMenu>())
+				.Distinct<IApplicationMenu>(ReferenceEqualityComparer.Instance).ToArray();
+			var menuItems = new HashSet<IApplicationMenuItem>(menus.SelectMany(menu => menu.Items), ReferenceEqualityComparer.Instance);
 			foreach (var menu in menus)
 				menu.Dispose();
-			foreach (var item in _toolBarItems ?? Array.Empty<IWinFormsApplicationMenuItem>())
+			foreach (var item in _toolBarItems ?? Array.Empty<IApplicationMenuItem>())
 				if (menuItems.Add(item))
 					item.Dispose();
 
@@ -443,19 +444,19 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	}
 
 	// Runs the existing hide guard without changing screen ownership.
-	bool IWinFormsApplicationScreen.CanDeactivate() {
+	bool IApplicationScreen.CanDeactivate() {
 		var cancel = false;
 		NotifyHideScreen(ref cancel);
 		return !cancel;
 	}
 
 	// Runs this screen's existing display notification.
-	void IWinFormsApplicationScreen.OnActivated() {
+	void IApplicationScreen.OnActivated() {
 		NotifyShow();
 	}
 
 	// Runs this screen's existing hide notification.
-	void IWinFormsApplicationScreen.OnDeactivated() {
+	void IApplicationScreen.OnDeactivated() {
 		// The native hide notification already runs as part of its cancelable guard.
 	}
 

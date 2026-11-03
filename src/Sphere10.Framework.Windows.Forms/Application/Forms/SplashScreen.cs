@@ -14,12 +14,13 @@ using System.Threading;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public partial class SplashScreen : Form {
 	private SplashLogger _logger;
-	private IApplication _application;
+	private SharedUI.IApplication _application;
 	private int _applicationDisplayVersion;
 	private bool _progressOverImage;
 
@@ -136,7 +137,7 @@ public partial class SplashScreen : Form {
 		}
 	}
 
-	public void AttachToApplication(IApplication application) {
+	public void AttachToApplication(SharedUI.IApplication application) {
 		Guard.ArgumentNotNull(application, nameof(application));
 		DetachFromApplication();
 		_application = application;

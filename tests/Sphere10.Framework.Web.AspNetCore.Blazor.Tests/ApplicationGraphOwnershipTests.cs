@@ -17,6 +17,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -27,8 +29,8 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies builders and circuit snapshots own their canonical graph.</summary>
 	[Test]
 	public void BuildersAndCircuitSnapshotsOwnTheirCanonicalGraph() {
-		var prototype = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance);
-		var builder = new BlazorApplicationBlockBuilder()
+		var prototype = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance);
+		var builder = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(prototype)
@@ -47,8 +49,8 @@ public class ApplicationGraphOwnershipTests {
 		var first = builder.Build();
 		var second = builder.Build();
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var firstHost = new BlazorApplicationScreenHost(new[] { first }, services);
-		using var secondHost = new BlazorApplicationScreenHost(new[] { first }, services);
+		using var firstHost = new BlazorUI.ApplicationScreenHost(new[] { first }, services);
+		using var secondHost = new BlazorUI.ApplicationScreenHost(new[] { first }, services);
 		var graphs = new[] { first, second, firstHost.Blocks.Single(), secondHost.Blocks.Single() };
 		Assert.That(graphs.Select(block => block.ScreenDefinitions.Single()).Distinct().Count(), Is.EqualTo(4));
 		foreach (var block in graphs) {
@@ -74,7 +76,7 @@ public class ApplicationGraphOwnershipTests {
 	[Test]
 	public void RepeatedMenuBuildsCloneCommandsWithoutReparentingEarlierProducts() {
 		var command = new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } };
-		var builder = new BlazorApplicationMenuBuilder()
+		var builder = new ApplicationMenuBuilder()
 			.WithText("Actions")
 			.AddItem(command);
 		var first = builder.Build();
@@ -90,22 +92,22 @@ public class ApplicationGraphOwnershipTests {
 	public void CircuitCopiesRetainCapturedCallbacksAndRegistrationReferences() {
 		var capturedCalls = 0;
 		var laterCalls = 0;
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record");
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record");
 		var command = new BlazorScreenMenuItem { Id = "record", Title = "Original", ScreenDefinition = definition };
 		EventHandlerEx captured = () => capturedCalls++;
 		command.Select += captured;
-		var source = new BlazorApplicationBlock {
+		var source = new ApplicationBlock {
 			Id = "work", Title = "Work", ScreenDefinitions = new[] { definition }, DefaultScreenDefinition = definition,
-			Menus = new[] { new BlazorApplicationMenu { Text = "Views", Items = new[] { command } } }
+			Menus = new[] { new ApplicationMenu { Text = "Views", Items = new[] { command } } }
 		};
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var firstHost = new BlazorApplicationScreenHost(new[] { source }, services);
-		using var secondHost = new BlazorApplicationScreenHost(firstHost.Blocks, services);
+		using var firstHost = new BlazorUI.ApplicationScreenHost(new[] { source }, services);
+		using var secondHost = new BlazorUI.ApplicationScreenHost(firstHost.Blocks, services);
 
 		// Later source changes cannot retarget a retained circuit's command or its captured subscriptions.
 		command.Select -= captured;
 		command.Select += () => laterCalls++;
-		((ApplicationMenuItemBase)command).Title = "Changed after activation";
+		((SharedUI.ApplicationMenuItemBase)command).Title = "Changed after activation";
 		foreach (var block in new[] { firstHost.Blocks.Single(), secondHost.Blocks.Single() }) {
 			var copied = (BlazorScreenMenuItem)block.Menus.Single().Items.Single();
 			Assert.That(copied, Is.Not.SameAs(command));
@@ -123,14 +125,14 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies circuit copies own nested settings defaults and retain plugin provenance.</summary>
 	[Test]
 	public void CircuitCopiesOwnNestedSettingsDefaultsAndRetainPluginProvenance() {
-		var plugin = new BlazorPlugin("Plugin", Array.Empty<IBlazorApplicationBlock>());
-		var source = new BlazorApplicationBlock {
+		var plugin = new BlazorPlugin("Plugin", Array.Empty<BlazorUI.IApplicationBlock>());
+		var source = new ApplicationBlock {
 			Id = "work", Title = "Work", Source = plugin,
 			BlockSettings = new GraphSettings { Nested = new GraphSettings.NestedValues { Name = "Default" } }
 		};
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var firstHost = new BlazorApplicationScreenHost(new[] { source }, services);
-		using var secondHost = new BlazorApplicationScreenHost(new[] { source }, services);
+		using var firstHost = new BlazorUI.ApplicationScreenHost(new[] { source }, services);
+		using var secondHost = new BlazorUI.ApplicationScreenHost(new[] { source }, services);
 		var first = firstHost.Blocks.Single();
 		var second = secondHost.Blocks.Single();
 		((GraphSettings)first.BlockSettings).Nested.Name = "First circuit";
@@ -151,11 +153,11 @@ public class ApplicationGraphOwnershipTests {
 		object pluginId = guidIds ? Guid.Parse("811c9702-c31d-4b59-a627-776f6ca23960") : 71;
 		object blockId = guidIds ? Guid.Parse("10fbff08-9dfa-4b82-a59c-a736e5ad8d42") : 72;
 		object screenId = guidIds ? Guid.Parse("a978f496-3aaf-46f2-b153-87692d10ae3e") : 73;
-		var definition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), settings: new GraphSettings {
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(ProbeScreen), settings: new GraphSettings {
 			ID = screenId, ConditionalValue = "Screen configuration", TransientValue = "Screen runtime", RuntimeServices = services,
 			Nested = new GraphSettings.NestedValues { Name = "Screen" }
 		});
-		var source = new BlazorApplicationBlock {
+		var source = new ApplicationBlock {
 			Id = "work", Title = "Work", ScreenDefinitions = new[] { definition },
 			BlockSettings = new GraphSettings {
 				ID = blockId, ConditionalValue = "Block configuration", TransientValue = "Block runtime", RuntimeServices = services,
@@ -168,10 +170,10 @@ public class ApplicationGraphOwnershipTests {
 				Nested = new GraphSettings.NestedValues { Name = "Plugin" }
 			}
 		};
-		using var firstHost = new BlazorApplicationScreenHost(plugin.Blocks, services);
-		using var secondHost = new BlazorApplicationScreenHost(plugin.Blocks, services);
-		using var first = new BlazorApplication(firstHost, new[] { plugin });
-		using var second = new BlazorApplication(secondHost, new[] { plugin });
+		using var firstHost = new BlazorUI.ApplicationScreenHost(plugin.Blocks, services);
+		using var secondHost = new BlazorUI.ApplicationScreenHost(plugin.Blocks, services);
+		using var first = new BlazorUI.Application(firstHost, new[] { plugin });
+		using var second = new BlazorUI.Application(secondHost, new[] { plugin });
 		var originalValues = new[] { plugin.PluginSettings, source.BlockSettings, definition.Settings }.Cast<GraphSettings>().ToArray();
 		var firstValues = new[] {
 			first.LoadedPlugins.Single().PluginSettings, first.Blocks.Single().BlockSettings, first.Blocks.Single().ScreenDefinitions.Single().Settings
@@ -205,10 +207,10 @@ public class ApplicationGraphOwnershipTests {
 	public void GroupedActionsUseTheirContainingMenuAndPresentationCopiesPreserveOwnership() {
 		var calls = 0;
 		var child = new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => calls++ };
-		var group = new BlazorApplicationMenuGroup { Id = "group", Title = "Actions", Items = new[] { child } };
-		var menu = new BlazorApplicationMenu { Text = "Actions", Items = new[] { group } };
-		var block = new BlazorApplicationBlock { Title = "Work", Menus = new[] { menu } };
-		var presentation = new BlazorApplicationMenu(ownsItems: false) { Text = "Actions", Items = menu.Items };
+		var group = new ApplicationMenuGroup { Id = "group", Title = "Actions", Items = new[] { child } };
+		var menu = new ApplicationMenu { Text = "Actions", Items = new[] { group } };
+		var block = new ApplicationBlock { Title = "Work", Menus = new[] { menu } };
+		var presentation = new ApplicationMenu(ownsItems: false) { Text = "Actions", Items = menu.Items };
 		Assert.That(group.Parent, Is.SameAs(menu));
 		Assert.That(child.Parent, Is.SameAs(menu));
 		Assert.That(child.Parent.Parent, Is.SameAs(block));
@@ -223,9 +225,9 @@ public class ApplicationGraphOwnershipTests {
 	[Test]
 	public void ToolbarGroupsBorrowExistingMenuCommandsWithoutStealingTheirParent() {
 		var command = new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } };
-		var menu = new BlazorApplicationMenu { Text = "Actions", Items = new[] { command } };
-		var group = new BlazorApplicationMenuGroup { Id = "group", Title = "Actions", Items = new[] { command } };
-		var block = new BlazorApplicationBlock { Title = "Work", Menus = new[] { menu }, ToolBarItems = new[] { group } };
+		var menu = new ApplicationMenu { Text = "Actions", Items = new[] { command } };
+		var group = new ApplicationMenuGroup { Id = "group", Title = "Actions", Items = new[] { command } };
+		var block = new ApplicationBlock { Title = "Work", Menus = new[] { menu }, ToolBarItems = new[] { group } };
 		Assert.That(group.Parent.Parent, Is.SameAs(block));
 		Assert.That(command.Parent, Is.SameAs(menu));
 		group.Parent = null;
@@ -235,13 +237,13 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies application menus and toolbars borrow screen commands while freezing ordinary actions.</summary>
 	[Test]
 	public async Task ApplicationMenusAndToolbarsBorrowScreenCommandsWhileFreezingOrdinaryActions() {
-		var definition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), "Record",
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record",
 			parameters: new Dictionary<string, object> { ["Caption"] = "Canonical record" });
-		var source = new BlazorApplicationBlock {
+		var source = new ApplicationBlock {
 			Id = "work", Title = "Work",
 			ScreenDefinitions = new[] { definition },
 			Menus = new[] {
-				new BlazorApplicationMenu {
+				new ApplicationMenu {
 					Id = "views", Text = "Views", Items = new[] {
 						new BlazorScreenMenuItem {
 							Id = "record", Title = "Record", ScreenDefinition = definition
@@ -251,8 +253,8 @@ public class ApplicationGraphOwnershipTests {
 			}
 		};
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { source }, services);
-		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { source }, services);
+		using var application = new BlazorUI.Application(host, Array.Empty<IBlazorPlugin>());
 		var owner = host.Blocks.Single();
 		var canonicalMenu = owner.Menus.Single();
 		var command = (BlazorScreenMenuItem)canonicalMenu.Items.Single();
@@ -261,11 +263,11 @@ public class ApplicationGraphOwnershipTests {
 		var laterSelections = 0;
 		var ordinaryAction = new BlazorActionMenuItem { Id = "action", Title = "Action", Action = () => calls++ };
 		ordinaryAction.Select += () => capturedSelections++;
-		var menu = new BlazorApplicationMenu(ownsItems: false) {
-			Id = "application", Text = "Application", Parent = owner, Items = new IBlazorApplicationMenuItem[] { command, ordinaryAction }
+		var menu = new ApplicationMenu(ownsItems: false) {
+			Id = "application", Text = "Application", Parent = owner, Items = new BlazorUI.IApplicationMenuItem[] { command, ordinaryAction }
 		};
 		application.SetMenus(new[] { menu });
-		application.SetToolBarItems(new IBlazorApplicationMenuItem[] { command, ordinaryAction });
+		application.SetToolBarItems(new BlazorUI.IApplicationMenuItem[] { command, ordinaryAction });
 		var projectedMenu = application.Menus.Single();
 		var projectedCommand = (BlazorScreenMenuItem)projectedMenu.Items[0];
 		Assert.That(projectedMenu, Is.Not.SameAs(menu));
@@ -274,8 +276,8 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(application.ToolBarItems[0], Is.SameAs(command));
 		Assert.That(command.Parent, Is.SameAs(canonicalMenu));
 		Assert.That(projectedCommand.ScreenDefinition, Is.SameAs(owner.ScreenDefinitions.Single()));
-		Assert.That(((BlazorApplicationScreenDefinition)projectedCommand.ScreenDefinition).Parameters,
-			Is.SameAs(((BlazorApplicationScreenDefinition)command.ScreenDefinition).Parameters));
+		Assert.That(((BlazorUI.ApplicationScreenDefinition)projectedCommand.ScreenDefinition).Parameters,
+			Is.SameAs(((BlazorUI.ApplicationScreenDefinition)command.ScreenDefinition).Parameters));
 		Assert.That(projectedMenu.Items[1], Is.Not.SameAs(ordinaryAction));
 		Assert.That(projectedMenu.Items[1].Parent, Is.SameAs(projectedMenu));
 		Assert.That(application.ToolBarItems[1].Parent, Is.Null);
@@ -291,8 +293,8 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(calls, Is.EqualTo(1));
 		Assert.That(capturedSelections, Is.EqualTo(1));
 		Assert.That(laterSelections, Is.Zero);
-		application.SetMenus(Array.Empty<IApplicationMenu>());
-		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
+		application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>());
+		application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>());
 		Assert.That(command.Parent, Is.SameAs(canonicalMenu));
 		Assert.That(command.ScreenDefinition.Activators, Is.EqualTo(new[] { command }));
 	}
@@ -301,20 +303,20 @@ public class ApplicationGraphOwnershipTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task MenuFreeActivationDoesNotFabricateNavigationCommands(bool defaultScreen) {
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record");
-		var builder = new BlazorApplicationBlockBuilder()
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record");
+		var builder = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(definition);
 		if (defaultScreen)
 			builder.WithDefaultScreen(definition);
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { builder.Build() }, services);
-		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { builder.Build() }, services);
+		using var application = new BlazorUI.Application(host, Array.Empty<IBlazorPlugin>());
 		var owner = host.Blocks.Single();
 		var session = defaultScreen
 			? await host.ActivateBlockAsync("work")
-			: await host.OpenScreenAsync(owner, owner.ScreenDefinitions.Single(), new BlazorApplicationScreenActivation(instanceKey: "record"));
+			: await host.OpenScreenAsync(owner, owner.ScreenDefinitions.Single(), new ApplicationScreenActivation(instanceKey: "record"));
 		Assert.That(session.MenuItem, Is.Null);
 		Assert.That(session.Definition, Is.SameAs(owner.ScreenDefinitions.Single()));
 		Assert.That(owner.Menus, Is.Empty);
@@ -329,26 +331,26 @@ public class ApplicationGraphOwnershipTests {
 	[Test]
 	public async Task ApplicationGroupProjectionBorrowsNestedCommandsAndFreezesTheirUnownedSiblings() {
 		var calls = 0;
-		var block = new BlazorApplicationBlock {
+		var block = new ApplicationBlock {
 			Id = "work", Title = "Work", Menus = new[] {
-				new BlazorApplicationMenu { Text = "Actions", Items = new[] { new BlazorActionMenuItem { Id = "owned", Title = "Owned", Action = () => calls++ } } }
+				new ApplicationMenu { Text = "Actions", Items = new[] { new BlazorActionMenuItem { Id = "owned", Title = "Owned", Action = () => calls++ } } }
 			}
 		};
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, services);
-		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, services);
+		using var application = new BlazorUI.Application(host, Array.Empty<IBlazorPlugin>());
 		var command = host.Blocks.Single().Menus.Single().Items.Single();
 		var parent = command.Parent;
 		var sibling = new BlazorActionMenuItem { Id = "sibling", Title = "Sibling", Action = () => calls++ };
-		var nested = new BlazorApplicationMenuGroup { Id = "nested", Title = "Nested", Items = new[] { command, sibling } };
-		var group = new BlazorApplicationMenuGroup { Id = "group", Title = "Group", Items = new[] { nested } };
-		var menu = new BlazorApplicationMenu(ownsItems: false) { Text = "Application", Items = new[] { group } };
+		var nested = new ApplicationMenuGroup { Id = "nested", Title = "Nested", Items = new[] { command, sibling } };
+		var group = new ApplicationMenuGroup { Id = "group", Title = "Group", Items = new[] { nested } };
+		var menu = new ApplicationMenu(ownsItems: false) { Text = "Application", Items = new[] { group } };
 		application.SetMenus(new[] { menu });
 		application.SetToolBarItems(new[] { group });
 		var projectedMenu = application.Menus.Single();
-		var projectedGroup = (BlazorApplicationMenuGroup)projectedMenu.Items.Single();
-		var projectedNested = (BlazorApplicationMenuGroup)projectedGroup.Items.Single();
-		var toolbarNested = (BlazorApplicationMenuGroup)((BlazorApplicationMenuGroup)application.ToolBarItems.Single()).Items.Single();
+		var projectedGroup = (ApplicationMenuGroup)projectedMenu.Items.Single();
+		var projectedNested = (ApplicationMenuGroup)projectedGroup.Items.Single();
+		var toolbarNested = (ApplicationMenuGroup)((ApplicationMenuGroup)application.ToolBarItems.Single()).Items.Single();
 		Assert.That(projectedGroup, Is.Not.SameAs(group));
 		Assert.That(projectedNested, Is.Not.SameAs(nested));
 		Assert.That(projectedNested.Items[0], Is.SameAs(command));
@@ -368,8 +370,8 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(calls, Is.EqualTo(2));
 		Assert.That(ownedSelections, Is.EqualTo(1));
 		Assert.That(siblingSelections, Is.Zero);
-		application.SetMenus(Array.Empty<IApplicationMenu>());
-		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
+		application.SetMenus(Array.Empty<SharedUI.IApplicationMenu>());
+		application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>());
 		Assert.That(command.Parent, Is.SameAs(parent));
 	}
 
@@ -379,9 +381,9 @@ public class ApplicationGraphOwnershipTests {
 	public void DetachedScreenCommandsAreRejectedBeforeApplicationMembershipChanges(bool toolbar) {
 		using var services = new ServiceCollection().BuildServiceProvider();
 		using var host = CreateHost(services);
-		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
+		using var application = new BlazorUI.Application(host, Array.Empty<IBlazorPlugin>());
 		var action = new BlazorActionMenuItem { Id = "original", Title = "Original", Action = () => { } };
-		application.SetMenus(new[] { new BlazorApplicationMenu { Text = "Original", Items = new[] { action } } });
+		application.SetMenus(new[] { new ApplicationMenu { Text = "Original", Items = new[] { action } } });
 		application.SetToolBarItems(new[] { action });
 		var previousMenu = application.Menus.Single();
 		var previousToolbar = application.ToolBarItems.Single();
@@ -392,8 +394,8 @@ public class ApplicationGraphOwnershipTests {
 				Throws.ArgumentException.With.Message.Contains("The screen command must belong to a block's menu."));
 		else
 			Assert.That(() => application.SetMenus(new[] {
-				new BlazorApplicationMenu(ownsItems: false) { Text = "Replacement", Items = new[] { canonical, action } },
-				new BlazorApplicationMenu(ownsItems: false) { Text = "Detached", Items = new[] { detached } }
+				new ApplicationMenu(ownsItems: false) { Text = "Replacement", Items = new[] { canonical, action } },
+				new ApplicationMenu(ownsItems: false) { Text = "Detached", Items = new[] { detached } }
 			}), Throws.ArgumentException.With.Message.Contains("The screen command must belong to a block's menu."));
 		Assert.That(application.Menus.Single(), Is.SameAs(previousMenu));
 		Assert.That(application.ToolBarItems.Single(), Is.SameAs(previousToolbar));
@@ -404,17 +406,17 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies menu free keyed sessions retain their canonical registration without commands.</summary>
 	[Test]
 	public async Task MenuFreeKeyedSessionsRetainTheirCanonicalRegistrationWithoutCommands() {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
-			.AddScreen(new ApplicationScreenDefinition(typeof(ProbeScreen), "Record"))
+			.AddScreen(new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record"))
 			.Build();
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, services);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, services);
 		var owner = host.Blocks.Single();
 		var definition = owner.ScreenDefinitions.Single();
-		var first = await host.OpenScreenAsync(owner, definition, new BlazorApplicationScreenActivation(instanceKey: "record"));
-		var repeated = await host.OpenScreenAsync(owner, definition, new BlazorApplicationScreenActivation(instanceKey: "record"));
+		var first = await host.OpenScreenAsync(owner, definition, new ApplicationScreenActivation(instanceKey: "record"));
+		var repeated = await host.OpenScreenAsync(owner, definition, new ApplicationScreenActivation(instanceKey: "record"));
 		Assert.That(repeated, Is.SameAs(first));
 		Assert.That(first.MenuItem, Is.Null);
 		Assert.That(first.Block, Is.SameAs(owner));
@@ -428,7 +430,7 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies menu free default keeps the canonical definition across instances.</summary>
 	[Test]
 	public async Task MenuFreeDefaultKeepsTheCanonicalDefinitionAcrossInstances() {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen<ProbeScreen>(screen => screen
@@ -437,7 +439,7 @@ public class ApplicationGraphOwnershipTests {
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, services);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, services);
 		var first = await host.ActivateBlockAsync("work");
 		var second = await host.ActivateBlockAsync("work");
 		var owner = host.Blocks.Single();
@@ -460,7 +462,7 @@ public class ApplicationGraphOwnershipTests {
 		await host.AttachScreenAsync(session.Id, component);
 		Assert.That(component.HostAtActivation, Is.SameAs(host));
 		Assert.That(component.BlockAtActivation, Is.SameAs(session.Block));
-		Assert.That(((IApplicationScreen)component).Host, Is.SameAs(host));
+		Assert.That(((SharedUI.IApplicationScreen)component).Host, Is.SameAs(host));
 		Assert.That(component.Menus.Single().Parent, Is.SameAs(session.Block));
 		Assert.That(component.ToolBarItems.Single().Parent.Parent, Is.SameAs(session.Block));
 		component.AllowDeactivate = false;
@@ -579,19 +581,19 @@ public class ApplicationGraphOwnershipTests {
 		var menu = new TypedMenu();
 		var item = new TypedItem();
 		var screen = new ProbeScreen();
-		((IApplicationMenu)menu).Parent = block;
-		((IApplicationMenuItem)item).Parent = menu;
-		((IApplicationScreen)screen).Host = host;
-		((IApplicationScreen)screen).Block = block;
+		((SharedUI.IApplicationMenu)menu).Parent = block;
+		((SharedUI.IApplicationMenuItem)item).Parent = menu;
+		((SharedUI.IApplicationScreen)screen).Host = host;
+		((SharedUI.IApplicationScreen)screen).Block = block;
 		Assert.That(menu.Parent, Is.SameAs(block));
 		Assert.That(item.Parent, Is.SameAs(menu));
 		Assert.That(screen.Host, Is.SameAs(host));
 		Assert.That(screen.Block, Is.SameAs(block));
-		Assert.That(() => ((IApplicationMenuItem)item).Parent = new NeutralMenu(), Throws.ArgumentException);
-		((IApplicationMenu)menu).Parent = null;
-		((IApplicationMenuItem)item).Parent = null;
-		((IApplicationScreen)screen).Host = null;
-		((IApplicationScreen)screen).Block = null;
+		Assert.That(() => ((SharedUI.IApplicationMenuItem)item).Parent = new NeutralMenu(), Throws.ArgumentException);
+		((SharedUI.IApplicationMenu)menu).Parent = null;
+		((SharedUI.IApplicationMenuItem)item).Parent = null;
+		((SharedUI.IApplicationScreen)screen).Host = null;
+		((SharedUI.IApplicationScreen)screen).Block = null;
 		Assert.That(menu.Parent, Is.Null);
 		Assert.That(item.Parent, Is.Null);
 		Assert.That(screen.Host, Is.Null);
@@ -601,15 +603,15 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies public application constructor binds sources when the host was cloned first.</summary>
 	[Test]
 	public void PublicApplicationConstructorBindsSourcesWhenTheHostWasClonedFirst() {
-		var source = new BlazorApplicationBlockBuilder()
+		var source = new ApplicationBlockBuilder()
 			.WithId("loaded")
 			.WithName("Loaded")
 			.Build();
 		var plugin = new BlazorPlugin("Plugin", new[] { source });
 		using var services = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(plugin.Blocks, services);
+		using var host = new BlazorUI.ApplicationScreenHost(plugin.Blocks, services);
 		Assert.That(host.Blocks.Single().Source, Is.Null);
-		using var application = new BlazorApplication(host, new[] { plugin });
+		using var application = new BlazorUI.Application(host, new[] { plugin });
 		Assert.That(application.Blocks.Single().Source, Is.SameAs(plugin));
 		Assert.That(application.Blocks.Single().Parent, Is.SameAs(application));
 		Assert.That(plugin.Blocks.Single().Parent, Is.Null);
@@ -618,7 +620,7 @@ public class ApplicationGraphOwnershipTests {
 	/// <summary>Verifies live blocks reference their circuit application and original loaded plugin.</summary>
 	[Test]
 	public async Task LiveBlocksReferenceTheirCircuitApplicationAndOriginalLoadedPlugin() {
-		var source = new BlazorApplicationBlockBuilder()
+		var source = new ApplicationBlockBuilder()
 			.WithId("loaded")
 			.WithName("Loaded")
 			.Build();
@@ -632,17 +634,17 @@ public class ApplicationGraphOwnershipTests {
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		var firstBlock = first.Blocks.Single(block => block.Id == "loaded");
 		var secondBlock = second.Blocks.Single(block => block.Id == "loaded");
 		Assert.That(firstBlock, Is.Not.SameAs(secondBlock));
 		Assert.That(firstBlock.Parent, Is.SameAs(first));
 		Assert.That(secondBlock.Parent, Is.SameAs(second));
-		Assert.That(((IApplicationBlock)firstBlock).Parent, Is.SameAs(first));
+		Assert.That(((SharedUI.IApplicationBlock)firstBlock).Parent, Is.SameAs(first));
 		Assert.That(firstBlock.Source, Is.SameAs(plugin));
 		Assert.That(secondBlock.Source, Is.SameAs(plugin));
-		Assert.That(((IApplicationBlock)firstBlock).Source, Is.SameAs(plugin));
+		Assert.That(((SharedUI.IApplicationBlock)firstBlock).Source, Is.SameAs(plugin));
 		Assert.That(first.Blocks.Single(block => block.Id == "standalone").Source, Is.Null);
 		Assert.That(await first.ScreenHost.UnregisterBlockAsync("loaded"), Is.True);
 		Assert.That(firstBlock.Parent, Is.Null);
@@ -650,16 +652,16 @@ public class ApplicationGraphOwnershipTests {
 		await first.ScreenHost.RegisterBlockAsync("loaded");
 		Assert.That(first.Blocks.Single(block => block.Id == "loaded"), Is.SameAs(firstBlock));
 		Assert.That(firstBlock.Parent, Is.SameAs(first));
-		((BlazorApplication)first).Dispose();
+		((BlazorUI.Application)first).Dispose();
 		Assert.That(firstBlock.Parent, Is.Null);
 		Assert.That(secondBlock.Parent, Is.SameAs(second));
 		Assert.That(firstBlock.Source, Is.SameAs(plugin));
 	}
 
 	// Configure a real web host for renderer ownership and failure checks.
-	private static BlazorApplicationScreenHost CreateHost(IServiceProvider services) {
-		return new BlazorApplicationScreenHost(new[] {
-			new BlazorApplicationBlockBuilder()
+	private static BlazorUI.ApplicationScreenHost CreateHost(IServiceProvider services) {
+		return new BlazorUI.ApplicationScreenHost(new[] {
+			new ApplicationBlockBuilder()
 				.WithId("work")
 				.WithName("Work")
 				.AddScreen<ProbeScreen>(screen => screen
@@ -715,21 +717,21 @@ public class ApplicationGraphOwnershipTests {
 	}
 
 	/// <summary>Captures web screen ownership, lifecycle calls and optional failure behavior.</summary>
-	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen, IDisposable {
-		private readonly IBlazorApplicationMenu[] _menus = { new BlazorApplicationMenu { Text = "Screen actions" } };
-		private readonly IBlazorApplicationMenuItem[] _toolBarItems = { new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } } };
+	public sealed class ProbeScreen : ComponentBase, BlazorUI.IApplicationScreen, IDisposable {
+		private readonly BlazorUI.IApplicationMenu[] _menus = { new ApplicationMenu { Text = "Screen actions" } };
+		private readonly BlazorUI.IApplicationMenuItem[] _toolBarItems = { new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } } };
 
 		/// <inheritdoc />
-		public IBlazorApplicationScreenHost Host { get; set; }
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
 		/// <inheritdoc />
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 		/// <summary>Gets the host observed during activation.</summary>
-		public IBlazorApplicationScreenHost HostAtActivation { get; private set; }
+		public BlazorUI.IApplicationScreenHost HostAtActivation { get; private set; }
 
 		/// <summary>Gets the block observed during activation.</summary>
-		public IBlazorApplicationBlock BlockAtActivation { get; private set; }
+		public BlazorUI.IApplicationBlock BlockAtActivation { get; private set; }
 
 		/// <summary>Gets or sets whether the test screen permits deactivation.</summary>
 		public bool AllowDeactivate { get; set; } = true;
@@ -753,10 +755,10 @@ public class ApplicationGraphOwnershipTests {
 		public int ToolBarReads { get; private set; }
 
 		/// <summary>Gets or sets alternate menus returned to the presentation host.</summary>
-		public IBlazorApplicationMenu[] BorrowedMenus { get; set; }
+		public BlazorUI.IApplicationMenu[] BorrowedMenus { get; set; }
 
 		/// <inheritdoc />
-		public IBlazorApplicationMenu[] Menus {
+		public BlazorUI.IApplicationMenu[] Menus {
 			get {
 				MenuReads++;
 				if (ThrowFromMenus)
@@ -766,7 +768,7 @@ public class ApplicationGraphOwnershipTests {
 		}
 
 		/// <inheritdoc />
-		public IBlazorApplicationMenuItem[] ToolBarItems {
+		public BlazorUI.IApplicationMenuItem[] ToolBarItems {
 			get {
 				ToolBarReads++;
 				if (ThrowFromToolBar)
@@ -794,9 +796,9 @@ public class ApplicationGraphOwnershipTests {
 	}
 
 	// Supplies a typed menu implementation for bridge validation.
-	private sealed class TypedMenu : IBlazorApplicationMenu {
+	private sealed class TypedMenu : BlazorUI.IApplicationMenu {
 		/// <inheritdoc />
-		public IBlazorApplicationBlock Parent { get; set; }
+		public BlazorUI.IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
 		public string Text {
@@ -813,15 +815,15 @@ public class ApplicationGraphOwnershipTests {
 		}
 
 		/// <inheritdoc />
-		public IBlazorApplicationMenuItem[] Items {
+		public BlazorUI.IApplicationMenuItem[] Items {
 			get {
-				return Array.Empty<IBlazorApplicationMenuItem>();
+				return Array.Empty<BlazorUI.IApplicationMenuItem>();
 			}
 		}
 	}
 
 	// Supplies a typed command implementation for bridge validation.
-	private sealed class TypedItem : IBlazorApplicationMenuItem {
+	private sealed class TypedItem : BlazorUI.IApplicationMenuItem {
 		/// <inheritdoc />
 		public event EventHandlerEx Hover {
 			add {
@@ -839,7 +841,7 @@ public class ApplicationGraphOwnershipTests {
 		}
 
 		/// <inheritdoc />
-		public IBlazorApplicationMenu Parent { get; set; }
+		public BlazorUI.IApplicationMenu Parent { get; set; }
 
 		/// <inheritdoc />
 		public string Title {
@@ -857,9 +859,9 @@ public class ApplicationGraphOwnershipTests {
 	}
 
 	// Supplies a shared menu that a typed web bridge must reject.
-	private sealed class NeutralMenu : IApplicationMenu {
+	private sealed class NeutralMenu : SharedUI.IApplicationMenu {
 		/// <inheritdoc />
-		public IApplicationBlock Parent { get; set; }
+		public SharedUI.IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
 		public string Text {
@@ -869,9 +871,9 @@ public class ApplicationGraphOwnershipTests {
 		}
 
 		/// <inheritdoc />
-		public IApplicationMenuItem[] Items {
+		public SharedUI.IApplicationMenuItem[] Items {
 			get {
-				return Array.Empty<IApplicationMenuItem>();
+				return Array.Empty<SharedUI.IApplicationMenuItem>();
 			}
 		}
 	}

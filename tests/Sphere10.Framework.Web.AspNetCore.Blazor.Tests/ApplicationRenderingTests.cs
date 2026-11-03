@@ -24,6 +24,7 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -34,7 +35,7 @@ public class ApplicationRenderingTests {
 	public async Task SwitchingScreensRetainsInstancesAndClosingDisposesExactlyOnce() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var state = provider.GetRequiredService<ProbeState>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var first = await host.ActivateScreenAsync("test", "single");
@@ -62,17 +63,17 @@ public class ApplicationRenderingTests {
 	public async Task KeyedProjectScreensRetainIndependentParametersDraftsAndRendererOwnedLifetimes() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var firstId = Guid.NewGuid();
 			var secondId = Guid.NewGuid();
 			var first = await host.ActivateScreenAsync("test", "multiple",
-				new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = firstId }, "first"));
+				new ApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = firstId }, "first"));
 			var rendered = await renderer.RenderComponentAsync<ApplicationScreenHostView>();
 			var firstComponent = (OtherScreen)first.Screen;
 			await firstComponent.IncrementAsync();
 			var second = await host.ActivateScreenAsync("test", "multiple",
-				new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = secondId }, "second"));
+				new ApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = secondId }, "second"));
 			await rendered.QuiescenceTask;
 			var secondComponent = provider.GetRequiredService<ProbeState>().Created.OfType<OtherScreen>().Single(screen => screen.ProjectId == secondId);
 			await secondComponent.Initialized.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -81,7 +82,7 @@ public class ApplicationRenderingTests {
 			Assert.That(secondComponent.ProjectId, Is.EqualTo(secondId));
 			Assert.That(secondComponent.Count, Is.Zero);
 			var reused = await host.ActivateScreenAsync("test", "multiple",
-				new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = Guid.NewGuid() }, "first"));
+				new ApplicationScreenActivation(new Dictionary<string, object> { [nameof(OtherScreen.ProjectId)] = Guid.NewGuid() }, "first"));
 			Assert.That(reused, Is.SameAs(first));
 			Assert.That(reused.Screen, Is.SameAs(firstComponent));
 			Assert.That(firstComponent.Count, Is.EqualTo(1));
@@ -97,7 +98,7 @@ public class ApplicationRenderingTests {
 	public async Task ScreenChangesNotifyWorkspaceAndGuardRejectsNavigation() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var original = await host.ActivateScreenAsync("test", "single");
 			await renderer.RenderComponentAsync<ApplicationScreenHostView>();
@@ -117,7 +118,7 @@ public class ApplicationRenderingTests {
 	public async Task ShellResolvesBookmarksAndHistoryWithoutDuplicatingExistingSessions() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
 			var rendered = await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -153,7 +154,7 @@ public class ApplicationRenderingTests {
 			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var session = await host.ActivateBlockAsync("default");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -170,7 +171,7 @@ public class ApplicationRenderingTests {
 	public async Task NewRouteCancelsAnOlderRequestWaitingForAnAsyncGuard() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
 			await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -194,7 +195,7 @@ public class ApplicationRenderingTests {
 	public async Task SingleViewHistorySelectsTheRetainedInstanceWithoutReexecutingItsMenu() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.TrySetScreenModeAsync(ScreenMode.SingleView);
 			var selections = 0;
@@ -221,7 +222,7 @@ public class ApplicationRenderingTests {
 	public async Task ShellPlacesSharedCommandsAndOptionalChromeOutsideTheScreenBody() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+		var application = (BlazorUI.Application)provider.GetRequiredService<BlazorUI.IApplication>();
 		application.SetToolBarItems(new[] { new BlazorActionMenuItem { Id = "refresh", Title = "Refresh application", Action = () => { } } });
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -253,7 +254,7 @@ public class ApplicationRenderingTests {
 	public async Task CollapsingNavigationKeepsTheScreenMountedAndEscapeDismissesTheDrawer() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
 			var rendered = await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -279,7 +280,7 @@ public class ApplicationRenderingTests {
 	public async Task SidebarSubviewSelectionOverridesPresentationWithoutChangingTheSession() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationShell shell = null;
 			var rendered = await renderer.RenderComponentAsync<ShellHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -336,7 +337,7 @@ public class ApplicationRenderingTests {
 		public List<ProbeScreen> Created { get; } = new();
 	}
 
-	public class ProbeScreen : BlazorApplicationScreen {
+	public class ProbeScreen : ApplicationScreen {
 		private bool _dirty;
 
 		[Inject] public ProbeState State { get; set; }

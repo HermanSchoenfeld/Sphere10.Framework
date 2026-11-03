@@ -24,6 +24,7 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -34,7 +35,7 @@ public class ApplicationCommandScopeTests {
 	public async Task ActivatingAnotherBlockReplacesItsCommandsAndRestoresCommonFileCommands() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var pipe = await host.ActivateScreenAsync("pipes", "pipe-screen");
@@ -69,29 +70,29 @@ public class ApplicationCommandScopeTests {
 	public async Task NestedScreenGroupOverridesInPlaceAndHiddenItemsStayHiddenAcrossScopeChanges() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var application = OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.ActivateScreenAsync("pipes", "pipe-screen");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			var bar = provider.GetRequiredService<CommandCapture>().Bar;
 			var file = bar.Menus.Single(menu => menu.Id == "file");
-			var export = (BlazorApplicationMenuGroup)file.Items.Single(item => item.Id == "export" && item.Title == "Pipe export");
+			var export = (ApplicationMenuGroup)file.Items.Single(item => item.Id == "export" && item.Title == "Pipe export");
 			Assert.That(file.Items.Where(item => item.Id == "export").Select(item => item.Title), Is.EqualTo(new[] { "Common export", "Pipe export" }));
 			Assert.That(export.Title, Is.EqualTo("Pipe export"));
 			Assert.That(export.Items.Single().Id, Is.EqualTo("formats"));
-			Assert.That(((BlazorApplicationMenuGroup)application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "export")).Items.Single().Id,
+			Assert.That(((ApplicationMenuGroup)application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "export")).Items.Single().Id,
 				Is.EqualTo("common-report"), "Merging a narrower group must not mutate the application definition.");
 
 			await DispatchAsync(bar, "ToggleMenu", "menu:file");
 			await DispatchAsync(bar, "ToggleSubmenu", "menu:file/context%3Aexport");
 			await DispatchAsync(bar, "ToggleSubmenu", "menu:file/context%3Aexport/context%3Aformats");
 			Assert.That(Header(rendered.ToHtmlString()), Does.Contain("Route CSV").And.Not.Contain("Internal export").And.Not.Contain("Hidden pipe registration"));
-			Assert.That(export.Items.OfType<BlazorApplicationMenuGroup>().Single().Items, Has.Length.EqualTo(2), "Visibility must not remove registered children.");
+			Assert.That(export.Items.OfType<ApplicationMenuGroup>().Single().Items, Has.Length.EqualTo(2), "Visibility must not remove registered children.");
 
 			await host.ActivateScreenAsync("administration", "admin-screen");
 			Assert.That(Header(rendered.ToHtmlString()), Does.Contain("Common export").And.Not.Contain("Pipe export").And.Not.Contain("Route CSV"));
-			var restored = (BlazorApplicationMenuGroup)bar.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "export");
+			var restored = (ApplicationMenuGroup)bar.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "export");
 			Assert.That(restored.Items.Single().Id, Is.EqualTo("common-report"));
 		});
 	}
@@ -103,7 +104,7 @@ public class ApplicationCommandScopeTests {
 	public async Task ActivatingDockSelectionUsesGuardsAndUpdatesCommandScopeDrawerAndLocation(string blockId, bool allowNavigation) {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var navigation = (ShellNavigation)provider.GetRequiredService<NavigationManager>();
 		OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -152,7 +153,7 @@ public class ApplicationCommandScopeTests {
 	public async Task DockSelectionDefaultsToBrowsingWithoutGuardsOrChangingScreenCommandsAndLocation() {
 		await using var provider = Services().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var navigation = (ShellNavigation)provider.GetRequiredService<NavigationManager>();
 		OnApplicationCreated(provider);
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -252,8 +253,8 @@ public class ApplicationCommandScopeTests {
 		return services;
 	}
 
-	private static BlazorApplication OnApplicationCreated(IServiceProvider provider) {
-		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+	private static BlazorUI.Application OnApplicationCreated(IServiceProvider provider) {
+		var application = (BlazorUI.Application)provider.GetRequiredService<BlazorUI.IApplication>();
 		var save = Command("save", "Common save");
 		application.SetMenus(new[] {
 			Menu("file", "File", Command("common-open", "Common open"), save, Group("export", "Common export", Command("common-report", "Common report"))),
@@ -263,23 +264,23 @@ public class ApplicationCommandScopeTests {
 		return application;
 	}
 
-	private static IBlazorApplicationMenuItem Command(string id, string title, bool visible = true) =>
-		new BlazorApplicationMenuItemBuilder()
+	private static BlazorUI.IApplicationMenuItem Command(string id, string title, bool visible = true) =>
+		new ApplicationMenuItemBuilder()
 			.WithId(id)
 			.WithText(title)
 			.WithVisibility(visible)
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
 
-	private static IBlazorApplicationMenuItem Group(string id, string title, params IBlazorApplicationMenuItem[] children) =>
-		new BlazorApplicationMenuItemBuilder()
+	private static BlazorUI.IApplicationMenuItem Group(string id, string title, params BlazorUI.IApplicationMenuItem[] children) =>
+		new ApplicationMenuItemBuilder()
 			.WithId(id)
 			.WithText(title)
 			.WithChildren(children)
 			.Build();
 
-	private static IBlazorApplicationMenu Menu(string id, string title, params IBlazorApplicationMenuItem[] items) =>
-		new BlazorApplicationMenu { Id = id, Text = title, Items = items };
+	private static BlazorUI.IApplicationMenu Menu(string id, string title, params BlazorUI.IApplicationMenuItem[] items) =>
+		new ApplicationMenu { Id = id, Text = title, Items = items };
 
 	private static string Header(string html) => Regex.Match(html, "<header\\b.*?</header>", RegexOptions.Singleline).Value;
 
@@ -287,7 +288,7 @@ public class ApplicationCommandScopeTests {
 		((IHandleEvent)bar).HandleEventAsync(new EventCallbackWorkItem((Action)(() =>
 			typeof(ApplicationCommandBar).GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bar, new object[] { key }))), null);
 
-	private static Task SelectBlockAsync(ApplicationShell shell, IBlazorApplicationBlock block) =>
+	private static Task SelectBlockAsync(ApplicationShell shell, BlazorUI.IApplicationBlock block) =>
 		((IHandleEvent)shell).HandleEventAsync(new EventCallbackWorkItem((Func<Task>)(() =>
 			(Task)typeof(ApplicationShell).GetMethod("SelectBlockAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(shell, new object[] { block }))), null);
 
@@ -323,18 +324,18 @@ public class ApplicationCommandScopeTests {
 		}
 	}
 
-	public class PipeScreen : BlazorApplicationScreen {
+	public class PipeScreen : ApplicationScreen {
 		public bool AllowNavigation { get; set; } = true;
 
 		public int GuardCalls { get; private set; }
 
-		public override IBlazorApplicationMenu[] Menus => new[] {
+		public override BlazorUI.IApplicationMenu[] Menus => new[] {
 			Menu("file", "File", Command("save", "Pipe save"),
 				Group("export", "Pipe export", Group("formats", "Formats", Command("route", "Route CSV"), Command("internal-export", "Internal export", false)))),
 			Menu("inspect", "Inspect", Command("inspect-pipe", "Inspect pipe"))
 		};
 
-		public override IBlazorApplicationMenuItem[] ToolBarItems => new[] { Command("save", "Pipe save") };
+		public override BlazorUI.IApplicationMenuItem[] ToolBarItems => new[] { Command("save", "Pipe save") };
 
 		protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
 			GuardCalls++;
@@ -344,7 +345,7 @@ public class ApplicationCommandScopeTests {
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "Pipe screen");
 	}
 
-	public class AdministrationScreen : BlazorApplicationScreen {
+	public class AdministrationScreen : ApplicationScreen {
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "Administration screen");
 	}
 }

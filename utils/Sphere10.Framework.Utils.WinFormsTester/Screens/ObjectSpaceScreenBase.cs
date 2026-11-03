@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 // The inherited declaration preserves ObjectSpaceScreen.ScreenSettings, the nested type identifying its legacy provider record.
-public class ObjectSpaceScreenBase : WinFormsApplicationScreen {
+public class ObjectSpaceScreenBase : ApplicationScreen {
 	/// <summary>The typed preferences inherited by the concrete designer screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public override ObjectSpaceScreen.ObjectSpaceScreenSettings ScreenSettings {

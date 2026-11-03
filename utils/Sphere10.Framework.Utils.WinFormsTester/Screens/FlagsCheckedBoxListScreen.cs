@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates individual, combined and zero-valued flags with a live bit-mask readout.</summary>
-public partial class FlagsCheckedBoxListScreen : WinFormsApplicationScreen {
+public partial class FlagsCheckedBoxListScreen : ApplicationScreen {
 	/// <summary>Creates the list without selecting operational data or writing preferences.</summary>
 	public FlagsCheckedBoxListScreen() {
 		InitializeComponent();

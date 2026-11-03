@@ -15,7 +15,7 @@ using System.Text;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A reusable host-owned log view. Worker writes are bounded and posted without waiting for its UI thread.</summary>
-public partial class LogScreen : WinFormsApplicationScreen {
+public partial class LogScreen : ApplicationScreen {
 	private readonly ScreenWriter _writer;
 	private bool _ownedWorkEnded;
 

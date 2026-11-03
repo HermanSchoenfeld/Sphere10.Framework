@@ -10,7 +10,7 @@ using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IWinFormsLinkMenuItem : IWinFormsApplicationMenuItem {
+public interface IWinFormsLinkMenuItem : IApplicationMenuItem {
 	string Text { get; }
 
 	void OnSelect();

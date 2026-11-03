@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -88,11 +89,11 @@ public class IdentityControlTests {
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var profile = Command("profile", "Profile");
 			var signIn = Command("sign-in", "Use account");
-			IBlazorApplicationMenuItem selected = null;
+			BlazorUI.IApplicationMenuItem selected = null;
 			var rendered = await renderer.RenderComponentAsync<ProbeIdentity>(Parameters(new() {
 				[nameof(IdentityControl.User)] = Principal(true, "Ada"),
 				[nameof(IdentityControl.Items)] = new[] { profile },
-				[nameof(IdentityControl.OnSelect)] = EventCallback.Factory.Create<IBlazorApplicationMenuItem>(new object(), item => selected = item)
+				[nameof(IdentityControl.OnSelect)] = EventCallback.Factory.Create<BlazorUI.IApplicationMenuItem>(new object(), item => selected = item)
 			}));
 			var control = provider.GetRequiredService<ProbeState>().Control;
 			await control.OpenAsync();
@@ -149,7 +150,7 @@ public class IdentityControlTests {
 			var profile = Command("profile", "Profile");
 			profile.Hover += () => hovered++;
 			var rendered = await renderer.RenderComponentAsync<ProbeIdentity>(Parameters(new() {
-				[nameof(IdentityControl.Items)] = new IBlazorApplicationMenuItem[] { profile, new BlazorMenuSeparator(), Command("sign-out", "Sign out") }
+				[nameof(IdentityControl.Items)] = new BlazorUI.IApplicationMenuItem[] { profile, new BlazorMenuSeparator(), Command("sign-out", "Sign out") }
 			}));
 			var control = provider.GetRequiredService<ProbeState>().Control;
 			await control.OpenAsync();
@@ -270,7 +271,7 @@ public class IdentityControlTests {
 	public class ProbeIdentity : IdentityControl {
 		[Inject] public ProbeState State { get; set; }
 
-		public Func<IBlazorApplicationMenuItem, Task> Handler { get; set; }
+		public Func<BlazorUI.IApplicationMenuItem, Task> Handler { get; set; }
 
 		public int Calls { get; private set; }
 
@@ -284,14 +285,14 @@ public class IdentityControlTests {
 
 		public Task SynchronizeBrowserAsync() => base.OnAfterRenderAsync(false);
 
-		public void Hover(IBlazorApplicationMenuItem item) => OnItemHover(item);
+		public void Hover(BlazorUI.IApplicationMenuItem item) => OnItemHover(item);
 
-		public async Task SelectAsync(IBlazorApplicationMenuItem item) {
+		public async Task SelectAsync(BlazorUI.IApplicationMenuItem item) {
 			using var render = Tools.Scope.ExecuteOnDispose(StateHasChanged);
 			await SelectItemAsync(item);
 		}
 
-		protected override async Task OnItemSelectedAsync(IBlazorApplicationMenuItem item) {
+		protected override async Task OnItemSelectedAsync(BlazorUI.IApplicationMenuItem item) {
 			Calls++;
 			if (Handler != null)
 				await Handler(item);

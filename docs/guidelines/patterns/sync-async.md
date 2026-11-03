@@ -272,7 +272,7 @@ tracking or async completion boilerplate; it requires a live dispatcher.
 Native monitor/read/write acquisitions cannot move between threads. Their
 scopes require synchronous disposal and reject async disposal before cleanup;
 use a thread-neutral admission primitive for work that must span an await.
-[`WinFormsApplication`](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplication.cs)
+[`Application`](../../../src/Sphere10.Framework.Windows.Forms/Application/Application.cs)
 starts lifecycle work on its owning UI thread, dispatches worker requests there,
 and pumps UI messages at supported synchronous boundaries while waiting for the
 same asynchronous operation. Tests for those boundaries must use a real
@@ -284,7 +284,7 @@ overrides wait for the same async operation through its own UI message pump.
 This is the platform boundary required by its async implementation direction,
 rather than a sync-first primitive. The shared
 [direction tests](../../../tests/Sphere10.Framework.Application.Tests/UI/ApplicationLifecycleDirectionTests.cs)
-and native [lifecycle tests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/WinFormsApplicationLifecycleTests.cs)
+and native [lifecycle tests](../../../tests/Sphere10.Framework.Windows.Forms.Tests/ApplicationLifecycleTests.cs)
 exercise those distinct contracts.
 
 ## Default interface projections

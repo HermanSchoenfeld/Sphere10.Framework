@@ -19,6 +19,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms.DataVisualization;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -68,10 +69,10 @@ public class ChartLogOutputTests {
 		// The native host supplies this existing control and invokes its actual display lifecycle.
 		using var applicationForm = new BlockMainForm();
 		var host = applicationForm.ScreenHost;
-		await using var application = new WinFormsApplication(applicationForm, Array.Empty<IWinFormsApplicationBlock>());
+		await using var application = new FormsUI.Application(applicationForm, Array.Empty<FormsUI.IApplicationBlock>());
 		var logger = new RecordingLogger();
 		application.Logger = logger;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Charts")
 			.AddScreen<PreloadedChartScreen>(screen => screen
 				.WithTitle("Chart")
@@ -170,7 +171,7 @@ public class ChartLogOutputTests {
 		var previousCulture = CultureInfo.CurrentCulture;
 		using var culture = Tools.Scope.ExecuteOnDispose(() => CultureInfo.CurrentCulture = previousCulture);
 		CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
-		using var screen = new WinFormsApplicationScreen { Title = "Memory Activity" };
+		using var screen = new ApplicationScreen { Title = "Memory Activity" };
 		using var group = new GroupBox { Text = "Memory Usage", Dock = DockStyle.Fill };
 		using var chart = new TelemetryChart { ShowHeader = false, Unit = TelemetryChartUnit.Percent, Dock = DockStyle.Fill };
 		group.Controls.Add(chart);
@@ -335,9 +336,9 @@ public class ChartLogOutputTests {
 	[TestCase("Graph", true, false)]
 	[TestCase("Graph", false, true)]
 	public void ChartScreenOutputNamesTheChartAndPreservesSuppliedSourceNames(string kind, bool borrowed, bool customSource) => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
-		var source = new WinFormsApplicationScreen { Title = "Diagnostics" };
+		var source = new ApplicationScreen { Title = "Diagnostics" };
 		using Control chart = kind switch {
 			"Telemetry" => new TelemetryChart { ShowHeader = false },
 			"Native" => new Chart(),
@@ -426,7 +427,7 @@ public class ChartLogOutputTests {
 		}
 	}
 
-	public sealed class PreloadedChartScreen : WinFormsApplicationScreen {
+	public sealed class PreloadedChartScreen : ApplicationScreen {
 		public PreloadedChartScreen() {
 			Chart = new GraphChart { Name = "latePlot", Dock = DockStyle.Fill };
 			Controls.Add(Chart);

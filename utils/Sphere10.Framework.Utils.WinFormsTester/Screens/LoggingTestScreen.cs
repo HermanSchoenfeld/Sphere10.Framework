@@ -16,7 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class LoggingTestScreen : WinFormsApplicationScreen {
+public partial class LoggingTestScreen : ApplicationScreen {
 	private ILogger _previewLogger;
 	private Task _outputCompletion = Task.CompletedTask;
 	private bool _screenClosed;

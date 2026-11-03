@@ -19,7 +19,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 // Native bindings edit the actual screen settings; the existing provider owns their persistence.
-internal sealed class WinFormsApplicationScreenSettings : IDisposable {
+internal sealed class ApplicationScreenSettings : IDisposable {
 	private readonly SettingsObject _settings;
 	private readonly List<GridBinding> _grids = new();
 	private readonly List<LogBinding> _logs = new();
@@ -28,7 +28,7 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 	private bool _disposed;
 
 	// Borrow the screen's actual provider-bound instance without creating a working copy.
-	public WinFormsApplicationScreenSettings(SettingsObject settings) {
+	public ApplicationScreenSettings(SettingsObject settings) {
 		Guard.ArgumentNotNull(settings, nameof(settings));
 		_settings = settings;
 	}
@@ -242,7 +242,7 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 	private static string GetLegacyGridSettingsKey(VisualGrid grid) {
 		var path = new List<string>();
 		for (Control control = grid; control != null; control = control.Parent) {
-			if (control is WinFormsApplicationScreen || control != grid && control is UserControl && control.GetType() != typeof(UserControl))
+			if (control is ApplicationScreen || control != grid && control is UserControl && control.GetType() != typeof(UserControl))
 				return $"{control.GetType().FullName}.{string.Join(".", path)}";
 			if (control is Form form) {
 				if (form.GetType() == typeof(Form) && string.IsNullOrWhiteSpace(form.Name))

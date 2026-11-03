@@ -20,7 +20,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Groups native list operations and explicit Framework utility experiments.</summary>
-public partial class MiscTestScreen : WinFormsApplicationScreen {
+public partial class MiscTestScreen : ApplicationScreen {
 	private CancellationTokenSource _compressionCancellation;
 
 	public MiscTestScreen() {

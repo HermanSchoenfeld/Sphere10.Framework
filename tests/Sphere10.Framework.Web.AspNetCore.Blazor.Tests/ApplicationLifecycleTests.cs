@@ -22,12 +22,14 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationLifecycleTests {
+public class ApplicationLifecycleTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task CircuitLifecycleUsesFreshKeyedTasksWithoutRunningProcessTasks(bool configureApplication) {
@@ -41,13 +43,13 @@ public class BlazorApplicationLifecycleTests {
 		var logger = new NoOpLogger();
 		services.AddSingleton<Sphere10.Framework.ILogger>(logger);
 		if (configureApplication)
-			services.AddSphere10BlazorApplication(application => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()));
+			services.AddSphere10BlazorApplication(application => application.SetToolBarItems(Array.Empty<SharedUI.IApplicationMenuItem>()));
 		services.AddSphere10Blazor();
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var firstState = firstScope.ServiceProvider.GetRequiredService<LifecycleState>();
 		var secondState = secondScope.ServiceProvider.GetRequiredService<LifecycleState>();
 		var firstHandler = firstScope.ServiceProvider.GetServices<CircuitHandler>().Single();
@@ -56,8 +58,8 @@ public class BlazorApplicationLifecycleTests {
 		Assert.That(first.IsInitialized, Is.False);
 		Assert.That(second.IsInitialized, Is.False);
 		Assert.That(firstState.Initializations, Is.Zero);
-		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(IApplication)), Is.Empty);
-		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(IApplication)), Is.Empty);
+		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(SharedUI.IApplication)), Is.Empty);
+		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(SharedUI.IApplication)), Is.Empty);
 		var resourceDisposals = 0;
 		first.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => resourceDisposals++));
 
@@ -114,12 +116,12 @@ public class BlazorApplicationLifecycleTests {
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		Assert.That(first.LoadedPlugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "First", "Second" }));
 		Assert.That(second.LoadedPlugins, Is.EqualTo(first.LoadedPlugins));
-		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(IApplication)), Is.Empty);
-		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(IApplication)), Is.Empty);
+		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(SharedUI.IApplication)), Is.Empty);
+		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(SharedUI.IApplication)), Is.Empty);
 		Assert.That(firstScope.ServiceProvider.GetServices<IApplicationInitializer>(), Is.Empty);
 		Assert.That(firstScope.ServiceProvider.GetServices<IApplicationFinalizer>(), Is.Empty);
 		var firstState = firstScope.ServiceProvider.GetRequiredService<LifecycleState>();
@@ -162,7 +164,7 @@ public class BlazorApplicationLifecycleTests {
 		LifecycleState state;
 		await using (var scope = provider.CreateAsyncScope()) {
 			state = scope.ServiceProvider.GetRequiredService<LifecycleState>();
-			var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+			var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 			await using var renderer = new HtmlRenderer(scope.ServiceProvider, scope.ServiceProvider.GetRequiredService<ILoggerFactory>());
 			await renderer.Dispatcher.InvokeAsync(async () => {
 				var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
@@ -178,7 +180,7 @@ public class BlazorApplicationLifecycleTests {
 
 	[Test]
 	public async Task CircuitFinalizationLeavesTheBorrowedHostAndSharedPluginAvailable() {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("workspace")
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen
@@ -193,9 +195,9 @@ public class BlazorApplicationLifecycleTests {
 			.AddSphere10BlazorPlugin(plugin)
 			.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var handler = scope.ServiceProvider.GetServices<CircuitHandler>().Single();
-		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await handler.OnCircuitOpenedAsync(null, CancellationToken.None);
 		var screen = await host.ActivateBlockAsync("workspace");
 		await handler.OnCircuitClosedAsync(null, CancellationToken.None);
@@ -220,7 +222,7 @@ public class BlazorApplicationLifecycleTests {
 	public async Task CircuitCallbacksAwaitApplicationInitializationAndFinalization() {
 		await using var provider = CreateAsyncLifecycleServices().BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var state = scope.ServiceProvider.GetRequiredService<AsyncLifecycleState>();
 		using var completeLifecycle = Tools.Scope.ExecuteOnDispose(() => {
 			state.CompleteInitialization.TrySetResult();
@@ -246,7 +248,7 @@ public class BlazorApplicationLifecycleTests {
 	public async Task AsyncScopeDisposalAwaitsApplicationFinalizationBeforeReleasingOwnedResources() {
 		await using var provider = CreateAsyncLifecycleServices().BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var state = scope.ServiceProvider.GetRequiredService<AsyncLifecycleState>();
 		using var completeLifecycle = Tools.Scope.ExecuteOnDispose(() => {
 			state.CompleteInitialization.TrySetResult();
@@ -269,13 +271,13 @@ public class BlazorApplicationLifecycleTests {
 	private static ServiceCollection CreateAsyncLifecycleServices() {
 		var services = new ServiceCollection();
 		services.AddScoped<AsyncLifecycleState>();
-		services.AddScoped<IBlazorApplication>(provider => new AsyncLifecycleApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+		services.AddScoped<BlazorUI.IApplication>(provider => new AsyncLifecycleApplication(provider.GetRequiredService<BlazorUI.IApplicationScreenHost>(),
 			provider.GetRequiredService<AsyncLifecycleState>()));
 		services.AddSphere10Blazor();
 		return services;
 	}
 
-	private static BlazorPlugin CreatePlugin(params IBlazorApplicationBlock[] blocks) {
+	private static BlazorPlugin CreatePlugin(params BlazorUI.IApplicationBlock[] blocks) {
 		var builder = new BlazorPluginBuilder()
 			.WithName("Lifecycle")
 			.AddInitializer<CircuitInitializer>()
@@ -360,7 +362,7 @@ public class BlazorApplicationLifecycleTests {
 #pragma warning restore CS0465
 	}
 
-	public sealed class ProbeScreen : BlazorApplicationScreen {
+	public sealed class ProbeScreen : ApplicationScreen {
 	}
 
 	public sealed class AsyncLifecycleState {
@@ -373,10 +375,10 @@ public class BlazorApplicationLifecycleTests {
 		public TaskCompletionSource CompleteFinalization { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
 
-	private sealed class AsyncLifecycleApplication : BlazorApplication {
+	private sealed class AsyncLifecycleApplication : BlazorUI.Application {
 		private readonly AsyncLifecycleState _state;
 
-		public AsyncLifecycleApplication(IBlazorApplicationScreenHost screenHost, AsyncLifecycleState state)
+		public AsyncLifecycleApplication(BlazorUI.IApplicationScreenHost screenHost, AsyncLifecycleState state)
 			: base(screenHost, Array.Empty<IBlazorPlugin>()) {
 			_state = state;
 		}

@@ -15,6 +15,7 @@ using Sphere10.Framework.Utils.BlazorTester.Showcase.Commands;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Themes;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Wizards;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Showcase;
 
@@ -25,8 +26,8 @@ public static class ShowcasePlugin {
 		const string pluginName = "Application patterns";
 		plugin
 			.WithName(pluginName)
-			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.AddServices(services => services.AddScoped<CollectionCatalogue>())
 			.AddBlock(block => block
 				.WithId("patterns")

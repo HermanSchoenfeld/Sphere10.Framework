@@ -16,6 +16,7 @@ using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -24,9 +25,9 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	#region Fields
 
 	private readonly ToolStripStableHeightBehavior _toolStripHeight;
-	private IWinFormsApplicationMenu[] _menus;
-	private IWinFormsApplicationMenuItem[] _toolBarItems;
-	private WinFormsApplicationScreen _menuSelectedScreen;
+	private IApplicationMenu[] _menus;
+	private IApplicationMenuItem[] _toolBarItems;
+	private ApplicationScreen _menuSelectedScreen;
 	private bool _rebuildingCommands;
 	private IUserInterfaceServices _commandUserInterfaceServices;
 
@@ -38,7 +39,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		InitializeComponent();
 		_toolStripHeight = new ToolStripStableHeightBehavior(ToolStrip, ToolStripStableHeightBehavior.StandardLogicalHeight);
 		Disposed += (_, _) => _toolStripHeight.Dispose();
-		ScreenHost = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill };
+		ScreenHost = new ApplicationScreenHost { Dock = DockStyle.Fill };
 		Controls.Add(ScreenHost);
 		ScreenHost.BringToFront();
 		ScreenHost.ActiveScreenChanging += OnActiveScreenChanging;
@@ -53,7 +54,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	/// <summary>Activates and caches this form's own menu definitions; contextual owners retain their own commands.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationMenu[] Menus {
+	public virtual IApplicationMenu[] Menus {
 		get {
 			return Tools.Array.Clone(_menus ??= GetMenus());
 		}
@@ -61,7 +62,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	/// <summary>Activates and caches this form's own toolbar definitions without copying their native state or callbacks.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+	public virtual IApplicationMenuItem[] ToolBarItems {
 		get {
 			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 		}
@@ -78,7 +79,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public WinFormsApplicationScreenHost ScreenHost { get; }
+	public ApplicationScreenHost ScreenHost { get; }
 
 	/// <summary>The UI invoking the current native command; asynchronous handlers capture it before their first await.</summary>
 	/// <remarks>A detached command supplies its local screen host without changing this form's active screen.</remarks>
@@ -90,7 +91,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public WinFormsApplicationScreen ActiveScreen {
+	public ApplicationScreen ActiveScreen {
 		get {
 			return ScreenHost.ActiveScreen;
 		}
@@ -203,7 +204,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		UnmergeApplicationCommands();
 		WinFormsCommandControls.MergeSources(this, MenuStrip, ToolStrip,
 			Menus.Where(menu => menu is not NativeToolStripMenu), ToolBarItems.Where(item => item is not NativeToolStripCommand), this, this);
-		if (Application is WinFormsApplication application)
+		if (Application is Application application)
 			WinFormsCommandControls.MergeSources(this, MenuStrip, ToolStrip,
 				application.AdditionalMenus, application.AdditionalToolBarItems, application, this);
 
@@ -229,16 +230,16 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	/// <summary>Creates this form's own menu definitions after its derived designer has initialized.</summary>
-	protected virtual IWinFormsApplicationMenu[] GetMenus() {
+	protected virtual IApplicationMenu[] GetMenus() {
 		MergeInheritedDesignerStrips();
 		return MenuStrip.Items.OfType<ToolStripMenuItem>()
-			.Select(item => (IWinFormsApplicationMenu)new NativeToolStripMenu(item, child => child.Tag is not WinFormsApplicationScreen)).ToArray();
+			.Select(item => (IApplicationMenu)new NativeToolStripMenu(item, child => child.Tag is not ApplicationScreen)).ToArray();
 	}
 
 	/// <summary>Creates this form's own toolbar definitions after its derived designer has initialized.</summary>
-	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
+	protected virtual IApplicationMenuItem[] GetToolBarItems() {
 		MergeInheritedDesignerStrips();
-		return ToolStrip.Items.Cast<ToolStripItem>().Select(item => (IWinFormsApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
+		return ToolStrip.Items.Cast<ToolStripItem>().Select(item => (IApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
 	}
 
 	// Existing application construction activates both owner caches before any contextual merge.
@@ -298,12 +299,12 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	#region Screen presentation
 
 	/// <summary>Shows the supplied screen through this form's existing host and activation policy.</summary>
-	public bool ShowScreen(WinFormsApplicationScreen screen) {
+	public bool ShowScreen(ApplicationScreen screen) {
 		return ScreenHost.ShowScreen(screen);
 	}
 
 	// The outgoing owner restores its source controls before the root host changes active selection.
-	protected virtual void OnActiveScreenChanging(WinFormsApplicationScreen screen) {
+	protected virtual void OnActiveScreenChanging(ApplicationScreen screen) {
 		if (screen != null) {
 			screen.NativeCommandsChanged -= ActiveScreenCommandsChanged;
 			screen.ScreenDestroyed -= ActiveCommandScreenDestroyed;
@@ -313,7 +314,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	// A window composes only its own active screen's context, independently of other detached windows.
-	protected virtual void OnActiveScreenChanged(WinFormsApplicationScreen screen) {
+	protected virtual void OnActiveScreenChanged(ApplicationScreen screen) {
 		if (screen != null) {
 			screen.NativeCommandsChanged += ActiveScreenCommandsChanged;
 			screen.ScreenDestroyed += ActiveCommandScreenDestroyed;
@@ -333,8 +334,8 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	// Read presented instances from their host instead of retaining a second list of generated menu items.
-	private void RebuildScreensMenu(WinFormsApplicationScreen selectedScreen = null) {
-		foreach (var item in _screensMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is WinFormsApplicationScreen).ToArray())
+	private void RebuildScreensMenu(ApplicationScreen selectedScreen = null) {
+		foreach (var item in _screensMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is ApplicationScreen).ToArray())
 			item.Dispose();
 		var screens = ScreenHost.OpenScreens;
 		var selected = selectedScreen ?? GetScreensMenuSelection();
@@ -360,7 +361,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	// An inspected detached instance remains the menu's explicit target without changing the docked selection.
-	private WinFormsApplicationScreen GetScreensMenuSelection() {
+	private ApplicationScreen GetScreensMenuSelection() {
 		return _menuSelectedScreen != null && ScreenHost.OpenScreens.Contains(_menuSelectedScreen, ReferenceEqualityComparer.Instance)
 			&& ScreenHost.IsScreenUndocked(_menuSelectedScreen) ? _menuSelectedScreen : ActiveScreen;
 	}
@@ -378,13 +379,13 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		}
 	}
 
-	IApplicationScreenHost IUserInterfaceServices.ScreenHost {
+	SharedUI.IApplicationScreenHost IUserInterfaceServices.ScreenHost {
 		get {
 			return ScreenHost;
 		}
 	}
 
-	public virtual Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default) {
+	public virtual Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default) {
 		return WinFormsCommandControls.ExecuteMenuItemAsync(this, item, cancellationToken);
 	}
 
@@ -394,7 +395,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	private void ScreensMenuOpening(object sender, EventArgs args) {
 		var userInterface = CommandUserInterfaceServices;
-		RebuildScreensMenu(ReferenceEquals(userInterface, this) ? null : userInterface.ScreenHost?.ActiveScreen as WinFormsApplicationScreen);
+		RebuildScreensMenu(ReferenceEquals(userInterface, this) ? null : userInterface.ScreenHost?.ActiveScreen as ApplicationScreen);
 	}
 
 	private void ScreensChanged() {
@@ -414,7 +415,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	private async void OpenScreenMenuClicked(object sender, EventArgs args) {
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (sender is ToolStripMenuItem { Tag: WinFormsApplicationScreen screen } && ScreenHost.OpenScreens.Contains(screen, ReferenceEqualityComparer.Instance)
+			if (sender is ToolStripMenuItem { Tag: ApplicationScreen screen } && ScreenHost.OpenScreens.Contains(screen, ReferenceEqualityComparer.Instance)
 				&& await ScreenHost.ShowScreenAsync(screen)) {
 				_menuSelectedScreen = screen;
 				RebuildScreensMenu();
@@ -435,7 +436,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	private async void CloseOtherScreensClicked(object sender, EventArgs args) {
 		var userInterface = CommandUserInterfaceServices;
 		var screen = ReferenceEquals(userInterface, this) ? GetScreensMenuSelection()
-			: userInterface.ScreenHost?.ActiveScreen as WinFormsApplicationScreen;
+			: userInterface.ScreenHost?.ActiveScreen as ApplicationScreen;
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
 			if (screen != null)
 				await ScreenHost.CloseAllOtherScreensAsync(screen);

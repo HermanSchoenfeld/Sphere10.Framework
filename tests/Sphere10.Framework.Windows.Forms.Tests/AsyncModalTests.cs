@@ -21,6 +21,7 @@ using Tools;
 using FormsApplication = System.Windows.Forms.Application;
 
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -181,10 +182,10 @@ public class AsyncModalTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void RepeatedPresentationCleanupPreservesSubsequentNotificationDeferral(bool asynchronous) => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost();
+		using var host = new FormsUI.ApplicationScreenHost();
 		owner.Controls.Add(host);
 		// Exercise the existing internal presentation owner without widening the native host's public API.
-		var enterPresentation = typeof(WinFormsApplicationScreenHost).GetMethod("EnterPresentationScope", BindingFlags.Instance | BindingFlags.NonPublic);
+		var enterPresentation = typeof(FormsUI.ApplicationScreenHost).GetMethod("EnterPresentationScope", BindingFlags.Instance | BindingFlags.NonPublic);
 		IScope EnterPresentation() => (IScope)enterPresentation.Invoke(host, null);
 		var notifications = 0;
 		host.Changed += () => notifications++;

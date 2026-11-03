@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -48,7 +49,7 @@ public class ActionMenuOwnerTests {
 			receivedUI = ui;
 			calls.Add("action");
 		};
-		var builder = new WinFormsApplicationMenuBuilder()
+		var builder = new ApplicationMenuBuilder()
 			.WithText("Actions");
 		if (shortcut)
 			builder.AddActionItem("Run", action);
@@ -77,7 +78,7 @@ public class ActionMenuOwnerTests {
 		IUserInterfaceServices receivedUI = null;
 		var actions = 0;
 		var notifications = 0;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Operations")
 			.AddMenu(menu => menu
 				.WithText("Actions")
@@ -113,7 +114,7 @@ public class ActionMenuOwnerTests {
 			ownerAwareCalls++;
 		};
 		Action parameterlessAction = () => parameterlessCalls++;
-		var builder = new WinFormsApplicationMenuItemBuilder()
+		var builder = new ApplicationMenuItemBuilder()
 			.AsActionItem()
 			.WithText("Run");
 		if (ownerAwareLast)
@@ -195,7 +196,7 @@ public class ActionMenuOwnerTests {
 		Assert.That(notifications, Is.EqualTo(1));
 	}
 
-	private sealed class LegacyLinkMenuItem : WinFormsApplicationMenuItemBase, IWinFormsLinkMenuItem {
+	private sealed class LegacyLinkMenuItem : FormsUI.ApplicationMenuItemBase, IWinFormsLinkMenuItem {
 		public string Text => "Legacy link";
 
 		public int SelectionCount { get; private set; }

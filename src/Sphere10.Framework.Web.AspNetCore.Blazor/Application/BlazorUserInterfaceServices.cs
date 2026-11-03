@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
@@ -23,7 +24,7 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 	private object _controllerBinding;
 	private readonly ILogger<BlazorUserInterfaceServices> _logger;
 
-	public BlazorUserInterfaceServices(IBlazorApplicationScreenHost screenHost, IServiceProvider services)
+	public BlazorUserInterfaceServices(IApplicationScreenHost screenHost, IServiceProvider services)
 		: base(screenHost, services) {
 		_logger = services.GetService<ILogger<BlazorUserInterfaceServices>>();
 	}
@@ -32,14 +33,14 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 
 	public override bool ApplicationExiting {
 		get {
-			var application = Services.GetService<IApplication>();
+			var application = Services.GetService<SharedUI.IApplication>();
 			return base.ApplicationExiting || application?.IsExiting == true || application?.HasExited == true;
 		}
 		set => base.ApplicationExiting = value;
 	}
 
 	/// <summary>Legacy exit commands are observed asynchronously; callers requiring the result await IApplication.ExitAsync.</summary>
-	public override void Exit(bool force = false) => ObserveInteraction(Services.GetRequiredService<IApplication>().ExitAsync(force));
+	public override void Exit(bool force = false) => ObserveInteraction(Services.GetRequiredService<SharedUI.IApplication>().ExitAsync(force));
 
 	public ActionScope AttachController(object controller, Func<Func<Task>, Task> dispatcher) {
 		Guard.ArgumentNotNull(controller, nameof(controller));
@@ -100,9 +101,9 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 	public override void ReportFatalError(string title, string message) => ReportError(title, message);
 	public override void ReportInfo(string title, string message) => ObserveInteraction(ReportInfoAsync(title, message));
 
-	protected override bool IsMenuItemEnabled(IApplicationMenuItem item) => Guard.ArgumentCast<IBlazorApplicationMenuItem>(item, nameof(item)).IsEnabled;
+	protected override bool IsMenuItemEnabled(SharedUI.IApplicationMenuItem item) => Guard.ArgumentCast<IApplicationMenuItem>(item, nameof(item)).IsEnabled;
 
-	protected override Task ExecuteActionAsync(IApplicationMenuItem item, CancellationToken cancellationToken) =>
+	protected override Task ExecuteActionAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken) =>
 		Guard.ArgumentCast<BlazorActionMenuItem>(item, nameof(item)).ExecuteAsync(Services, cancellationToken);
 
 	private void ObserveInteraction(Task interaction) => _ = ObserveInteractionAsync(interaction);

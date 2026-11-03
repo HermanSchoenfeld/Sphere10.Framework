@@ -9,4 +9,4 @@
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A version-independent identity resolved only against the current circuit's registered screen definitions.</summary>
-public sealed record BlazorApplicationStartupScreen(string PluginName, string BlockId, string MenuItemId, string ScreenTypeName, string ScreenAssemblyName, string RegistrationKey = null);
+public sealed record ApplicationStartupScreen(string PluginName, string BlockId, string MenuItemId, string ScreenTypeName, string ScreenAssemblyName, string RegistrationKey = null);

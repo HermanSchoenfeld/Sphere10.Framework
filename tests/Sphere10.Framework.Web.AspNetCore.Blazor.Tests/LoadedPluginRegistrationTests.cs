@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -24,7 +26,7 @@ public class LoadedPluginRegistrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task RegisteredButUnloadedPluginsAreExcludedFromBothApplicationFactories(bool configureApplication) {
-		var plugin = new BlazorPlugin("Unloaded", Array.Empty<IBlazorApplicationBlock>());
+		var plugin = new BlazorPlugin("Unloaded", Array.Empty<BlazorUI.IApplicationBlock>());
 		var loaded = 0;
 		plugin.Loaded += () => loaded++;
 		var services = new ServiceCollection().AddSphere10Blazor();
@@ -33,11 +35,11 @@ public class LoadedPluginRegistrationTests {
 			services.AddSphere10BlazorApplication(_ => { });
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
 		Assert.That(application.LoadedPlugins, Is.Empty);
-		Assert.That(((IApplication)application).LoadedPlugins, Is.Empty);
+		Assert.That(((SharedUI.IApplication)application).LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks, Is.Empty);
 		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Is.Empty);
 		Assert.That(loaded, Is.Zero, "Circuit resolution must not turn ordinary DI metadata into a startup load.");
@@ -45,7 +47,7 @@ public class LoadedPluginRegistrationTests {
 
 	[Test]
 	public async Task FailedLoadDoesNotPublishAReceiptOrDisplaceSuccessfulPlugins() {
-		var successful = new BlazorPlugin("Successful", Array.Empty<IBlazorApplicationBlock>());
+		var successful = new BlazorPlugin("Successful", Array.Empty<BlazorUI.IApplicationBlock>());
 		var failing = new BlazorPluginBuilder()
 			.WithName("Failing")
 			.AddServices(services => {
@@ -58,11 +60,11 @@ public class LoadedPluginRegistrationTests {
 		Assert.That(() => services
 			.AddSphere10BlazorPlugin(failing), Throws.InvalidOperationException);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 
 		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { successful }));
 		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single().Plugin, Is.SameAs(successful));
-		Assert.That(provider.GetServices<IApplicationPlugin>(), Is.EqualTo(new[] { successful }));
+		Assert.That(provider.GetServices<SharedUI.IApplicationPlugin>(), Is.EqualTo(new[] { successful }));
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null, "The receipt does not imply rollback of service callback side effects.");
 	}
 
@@ -74,7 +76,7 @@ public class LoadedPluginRegistrationTests {
 		var services = new ServiceCollection();
 		services.AddKeyedSingleton<IApplicationInitializer>("Reused", new CallbackInitializer(() => calls.Add("Existing initialized")));
 		services.AddKeyedSingleton<IApplicationFinalizer>("Reused", new CallbackFinalizer(() => calls.Add("Existing finalized")));
-		var owned = new BlazorApplicationBlockBuilder()
+		var owned = new ApplicationBlockBuilder()
 			.WithId("owned")
 			.WithName("Owned")
 			.Build();
@@ -189,7 +191,7 @@ public class LoadedPluginRegistrationTests {
 
 	[Test]
 	public void DuplicateRegistrationDoesNotLoadAgainOrPublishAnotherReceipt() {
-		var plugin = new BlazorPlugin("Once", Array.Empty<IBlazorApplicationBlock>());
+		var plugin = new BlazorPlugin("Once", Array.Empty<BlazorUI.IApplicationBlock>());
 		var loaded = 0;
 		plugin.Loaded += () => loaded++;
 		var services = new ServiceCollection()
@@ -203,7 +205,7 @@ public class LoadedPluginRegistrationTests {
 
 	[Test]
 	public async Task CapturedContributionsKeepStartupOrderWhenSourceMembershipChanges() {
-		var first = new BlazorApplicationBlockBuilder()
+		var first = new ApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
 			.WithPosition(50)
@@ -212,7 +214,7 @@ public class LoadedPluginRegistrationTests {
 			)
 			.WithDefaultScreen<FirstScreen>()
 			.Build();
-		var second = new BlazorApplicationBlockBuilder()
+		var second = new ApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
 			.WithPosition(-10)
@@ -224,16 +226,16 @@ public class LoadedPluginRegistrationTests {
 		var plugin = new MutablePlugin(new[] { first, second });
 		var services = new ServiceCollection()
 			.AddSphere10BlazorPlugin(plugin);
-		plugin.CurrentBlocks = Array.Empty<IBlazorApplicationBlock>();
+		plugin.CurrentBlocks = Array.Empty<BlazorUI.IApplicationBlock>();
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
 		var receipt = provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single();
 		receipt.Blocks[0] = null;
-		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		await application.ScreenHost.InitializeAsync();
 
 		Assert.That(receipt.Plugin, Is.SameAs(plugin));
-		Assert.That(receipt.Blocks.Cast<IBlazorApplicationBlock>().Select(block => block.Id), Is.EqualTo(new[] { "first", "second" }));
+		Assert.That(receipt.Blocks.Cast<BlazorUI.IApplicationBlock>().Select(block => block.Id), Is.EqualTo(new[] { "first", "second" }));
 		Assert.That(receipt.Blocks.First(), Is.Not.SameAs(first), "The receipt captures the validated post-load contribution snapshots.");
 		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
 		Assert.That(application.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "second", "first" }));
@@ -245,25 +247,25 @@ public class LoadedPluginRegistrationTests {
 	}
 
 	private sealed class MutablePlugin : BlazorPlugin {
-		public MutablePlugin(IBlazorApplicationBlock[] blocks)
+		public MutablePlugin(BlazorUI.IApplicationBlock[] blocks)
 			: this("Mutable", blocks) {
 		}
 
-		public MutablePlugin(string name, IBlazorApplicationBlock[] blocks, Action<IServiceCollection> configureServices = null)
+		public MutablePlugin(string name, BlazorUI.IApplicationBlock[] blocks, Action<IServiceCollection> configureServices = null)
 			: base(name, blocks, configureServices) {
 			CurrentBlocks = blocks;
 		}
 
-		public IBlazorApplicationBlock[] CurrentBlocks { get; set; }
+		public BlazorUI.IApplicationBlock[] CurrentBlocks { get; set; }
 
-		public override IBlazorApplicationBlock[] Blocks {
+		public override BlazorUI.IApplicationBlock[] Blocks {
 			get => Tools.Array.Clone(CurrentBlocks);
 			init => base.Blocks = value;
 		}
 	}
 
 	private sealed class MutablePluginBuilder : BlazorPluginBuilder {
-		protected override BlazorPlugin CreatePlugin(IBlazorApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
+		protected override BlazorPlugin CreatePlugin(BlazorUI.IApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
 			=> new MutablePlugin(Name, blocks, configureServices);
 	}
 
@@ -277,17 +279,17 @@ public class LoadedPluginRegistrationTests {
 #pragma warning restore CS0465
 	}
 
-	public sealed class FirstScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public sealed class FirstScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 
-	public sealed class SecondScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public sealed class SecondScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 }

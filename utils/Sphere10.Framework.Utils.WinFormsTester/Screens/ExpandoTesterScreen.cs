@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Shows animated ExplorerBar groups containing commands, filters and tree navigation.</summary>
-public partial class ExpandoTesterScreen : WinFormsApplicationScreen {
+public partial class ExpandoTesterScreen : ApplicationScreen {
 	/// <summary>Creates the complete ExplorerBar example on its native design surface.</summary>
 	public ExpandoTesterScreen() {
 		InitializeComponent();

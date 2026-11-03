@@ -22,7 +22,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Exercises real collection backends, bounded writes and explicit transaction boundaries.</summary>
-public partial class TransactionalCollectionScreen : WinFormsApplicationScreen {
+public partial class TransactionalCollectionScreen : ApplicationScreen {
 	private CancellationTokenSource _operationCancellation;
 
 	/// <summary>Creates a workbench with no files, collection sessions or background work.</summary>

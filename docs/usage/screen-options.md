@@ -29,7 +29,7 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms;
 
 [Settings(typeof(UsersScreen.UsersPreferences))]
-public partial class UsersScreen : WinFormsApplicationScreen {
+public partial class UsersScreen : ApplicationScreen {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public override UsersPreferences ScreenSettings {
@@ -158,13 +158,13 @@ Editor selection is an explicit registration editor, then `[Editor]` on the
 settings class (including inherited attributes), then `[UserEditable]`.
 For native class editors use
 `[Editor(typeof(MySettingsEditor), typeof(ICrudEntityEditor<object>))]`; the editor
-can accept `WinFormsApplicationSettingsEditorContext` or have a parameterless
+can accept `ApplicationSettingsEditorContext` or have a parameterless
 constructor. `WithSettingsEditor` supplies a registration-specific override.
 The editor context's `Settings` is the actual object; the dialog owns validation
 and persistence.
 
 Web class editors use
-`[Editor(typeof(MySettingsEditor), typeof(IBlazorApplicationSettingsEditor))]`.
+`[Editor(typeof(MySettingsEditor), typeof(IApplicationSettingsEditor))]`.
 `UseSettings<TSettings, TEditor>()` or `WithSettingsEditor<TEditor>()` selects a
 component explicitly. It receives `Value` and an awaited `Changed` callback.
 `ValidateAsync` checks pending editor input before object validation and save.
@@ -180,7 +180,7 @@ application node is a container; its descendants supply the actual settings
 objects. Reset stays provisional until Apply or OK, and Cancel restores all
 unapplied resets.
 
-`WinFormsApplicationSettingsDialog.Policy` uses the flags enum
+`ApplicationSettingsDialog.Policy` uses the flags enum
 `ApplicationSettingsScreenPolicy`. The independent flags can be combined:
 
 | Flag | Effect |
@@ -206,7 +206,7 @@ presentation and disposal ownership:
 
 ```csharp
 public partial class MainForm : BlockMainForm {
-	protected override WinFormsApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
+	protected override ApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
 		var dialog = base.CreateScreenOptionsDialog(selectedOwner);
 		dialog.Policy = ApplicationSettingsScreenPolicy.None;
 		return dialog;

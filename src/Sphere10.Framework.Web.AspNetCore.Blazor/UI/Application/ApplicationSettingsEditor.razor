@@ -6,9 +6,9 @@
 
 @using System.Threading
 @using Sphere10.Framework.Application.UI
-@implements IBlazorApplicationSettingsEditor
+@implements IApplicationSettingsEditor
 
-<BlazorApplicationSettingsValueEditor @key="Value" Value="Value" Errors="_errors" Changed="Changed" />
+<ApplicationSettingsValueEditor @key="Value" Value="Value" Errors="_errors" Changed="Changed" />
 
 @code {
 	private readonly Dictionary<string, string> _errors = new();

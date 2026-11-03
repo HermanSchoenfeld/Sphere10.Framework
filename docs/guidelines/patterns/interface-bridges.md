@@ -19,8 +19,8 @@ projection demonstrates the same forwarding behavior without that region.
 Compatible method results and mutable properties can also bridge in place.
 [ISynchronizedObject](../../../src/Sphere10.Framework/Threading/ISynchronizedObject.cs)
 forwards typed scopes through the untyped methods, while
-[IWinFormsApplicationMenu](../../../src/Sphere10.Framework.Windows.Forms/Application/IWinFormsApplicationMenu.cs)
-and [IBlazorApplicationMenu](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/IBlazorApplicationMenu.cs)
+[IApplicationMenu](../../../src/Sphere10.Framework.Windows.Forms/Application/IApplicationMenu.cs)
+and [IApplicationMenu](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/IApplicationMenu.cs)
 bridge their typed `Parent` property. Preserve the specialized setter's null
 and type-validation semantics instead of adding separate ownership storage.
 

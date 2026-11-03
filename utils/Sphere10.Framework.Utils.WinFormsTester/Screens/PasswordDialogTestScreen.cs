@@ -15,7 +15,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates password policies and local asynchronous sign-in without exposing credentials.</summary>
-public partial class PasswordDialogTestScreen : WinFormsApplicationScreen {
+public partial class PasswordDialogTestScreen : ApplicationScreen {
 	/// <summary>Creates the three dialog examples without starting authentication.</summary>
 	public PasswordDialogTestScreen() {
 		InitializeComponent();

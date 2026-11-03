@@ -17,6 +17,8 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester.Layouts;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -62,7 +64,7 @@ public class DemoNavigationTests {
 	[TestCase("studio", "application?block=patterns&screen=theme-studio")]
 	public async Task SearchFindsRegisteredScreensWithCanonicalApplicationUrls(string term, string expectedRoute) {
 		using var provider = CreateProvider();
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var results = (await DemoNavigation.SearchAsync(host, term)).ToArray();
 		Assert.That(results, Has.Length.EqualTo(1));
 		Assert.That(results[0].Route.OriginalString, Is.EqualTo(expectedRoute));
@@ -71,7 +73,7 @@ public class DemoNavigationTests {
 	[Test]
 	public async Task SearchTracksUiServicesRegisteredBlocksInsteadOfASeparateNavigationList() {
 		using var provider = CreateProvider();
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		Assert.That(await DemoNavigation.SearchAsync(host, "grid"), Is.Not.Empty);
 		await host.UnregisterBlockAsync("components");
 		Assert.That(await DemoNavigation.SearchAsync(host, "grid"), Is.Empty);
@@ -82,7 +84,7 @@ public class DemoNavigationTests {
 	[Test]
 	public async Task SearchOmitsHiddenParameterizedEditorRegistrations() {
 		using var provider = CreateProvider();
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		Assert.That(await DemoNavigation.SearchAsync(host, "Collection details"), Is.Empty,
 			"An editor without its record parameter is not a useful search destination.");
 		Assert.That((await DemoNavigation.SearchAsync(host, "collections")).Select(result => result.Route.OriginalString),
@@ -95,7 +97,7 @@ public class DemoNavigationTests {
 	[TestCase("no-such-demo")]
 	public async Task SearchOmitsEmptyAndUnmatchedQueries(string term) {
 		using var provider = CreateProvider();
-		Assert.That(await DemoNavigation.SearchAsync(provider.GetRequiredService<IApplicationScreenHost>(), term), Is.Empty);
+		Assert.That(await DemoNavigation.SearchAsync(provider.GetRequiredService<SharedUI.IApplicationScreenHost>(), term), Is.Empty);
 	}
 
 	private static ServiceProvider CreateProvider() {

@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Demonstrates the current application-owned services rather than an obsolete remote stub.</summary>
-public partial class ApplicationServicesTestScreen : WinFormsApplicationScreen {
+public partial class ApplicationServicesTestScreen : ApplicationScreen {
 	/// <summary>Creates a resource-free service inspection surface.</summary>
 	public ApplicationServicesTestScreen() {
 		InitializeComponent();

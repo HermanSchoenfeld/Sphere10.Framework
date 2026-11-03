@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates manual states and completed asynchronous validation without worker-thread UI access.</summary>
-public partial class ValidationIndicatorTestScreen : WinFormsApplicationScreen {
+public partial class ValidationIndicatorTestScreen : ApplicationScreen {
 	private string _validationInput = string.Empty;
 
 	/// <summary>Creates both validation paths without starting a validation request.</summary>

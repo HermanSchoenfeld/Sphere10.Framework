@@ -14,40 +14,40 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Uses shared plugin storage and lifecycle while preserving native block identities and ownership.</summary>
-public class WinFormsApplicationPlugin : ApplicationPluginBase<IWinFormsApplicationBlock>, IWinFormsApplicationPlugin {
-	private IWinFormsApplicationMenu[] _menus;
-	private IWinFormsApplicationMenuItem[] _toolBarItems;
+public class ApplicationPlugin : ApplicationPluginBase<IApplicationBlock>, IApplicationPlugin {
+	private IApplicationMenu[] _menus;
+	private IApplicationMenuItem[] _toolBarItems;
 
-	public WinFormsApplicationPlugin(string name, IEnumerable<IWinFormsApplicationBlock> blocks)
+	public ApplicationPlugin(string name, IEnumerable<IApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
 
-	public WinFormsApplicationPlugin(string name, IEnumerable<IWinFormsApplicationBlock> blocks, Action<IServiceCollection> configureServices)
+	public ApplicationPlugin(string name, IEnumerable<IApplicationBlock> blocks, Action<IServiceCollection> configureServices)
 		: base(name, blocks, configureServices) {
 	}
 
 	/// <summary>Activates this plugin's menu definitions once, independently of the windows displaying them.</summary>
-	public virtual IWinFormsApplicationMenu[] Menus {
+	public virtual IApplicationMenu[] Menus {
 		get {
 			return Tools.Array.Clone(_menus ??= GetMenus());
 		}
 	}
 
 	/// <summary>Activates this plugin's toolbar definitions once, preserving command identity across windows.</summary>
-	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+	public virtual IApplicationMenuItem[] ToolBarItems {
 		get {
 			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 		}
 	}
 
 	/// <summary>Supplies this plugin's own menu definitions on first access.</summary>
-	protected virtual IWinFormsApplicationMenu[] GetMenus() {
-		return Array.Empty<IWinFormsApplicationMenu>();
+	protected virtual IApplicationMenu[] GetMenus() {
+		return Array.Empty<IApplicationMenu>();
 	}
 
 	/// <summary>Supplies this plugin's own toolbar definitions on first access.</summary>
-	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
-		return Array.Empty<IWinFormsApplicationMenuItem>();
+	protected virtual IApplicationMenuItem[] GetToolBarItems() {
+		return Array.Empty<IApplicationMenuItem>();
 	}
 
 }

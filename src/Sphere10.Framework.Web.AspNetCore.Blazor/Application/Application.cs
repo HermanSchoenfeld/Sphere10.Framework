@@ -19,24 +19,25 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Projects a circuit's live host and startup plugin definitions without loading or owning those plugins again.</summary>
-public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
+public class Application : AsyncApplicationBase, IApplication {
 	internal const string SettingsMenuId = "sphere10-screen-options-menu";
 
 	private readonly IBlazorPlugin[] _loadedPlugins;
-	private IBlazorApplicationMenu[] _menus = Array.Empty<IBlazorApplicationMenu>();
-	private IBlazorApplicationMenuItem[] _toolBarItems = Array.Empty<IBlazorApplicationMenuItem>();
+	private IApplicationMenu[] _menus = Array.Empty<IApplicationMenu>();
+	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
 
 	/// <summary>Projects plugins already loaded successfully during startup; construction does not load or unload plugins.</summary>
-	public BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> loadedPlugins)
+	public Application(IApplicationScreenHost screenHost, IEnumerable<IBlazorPlugin> loadedPlugins)
 		: this(screenHost, CaptureLoadedPlugins(loadedPlugins)) {
 	}
 
 	/// <summary>Projects the circuit host and successfully loaded startup plugin definitions.</summary>
-	internal BlazorApplication(IBlazorApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations, IServiceProvider services = null,
+	internal Application(IApplicationScreenHost screenHost, IEnumerable<ApplicationPluginRegistration<IBlazorPlugin>> pluginRegistrations, IServiceProvider services = null,
 		string settingsKey = null)
 		: base(services, settingsKey) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
@@ -45,8 +46,8 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 		// Startup definitions remain application-lifetime owners; settings-bearing plugin values belong to this circuit.
 		_loadedPlugins = registrations.Select(registration => registration.Plugin.PluginSettings == null ? registration.Plugin
 			: new BlazorPlugin(registration.Plugin, ScreenHost.AvailableBlocks
-				.Where(block => registration.Blocks.Cast<IBlazorApplicationBlock>().Any(source => source.Id == block.Id)).ToArray())).ToArray();
-		var sources = registrations.SelectMany(registration => registration.Blocks.Cast<IBlazorApplicationBlock>()
+				.Where(block => registration.Blocks.Cast<IApplicationBlock>().Any(source => source.Id == block.Id)).ToArray())).ToArray();
+		var sources = registrations.SelectMany(registration => registration.Blocks.Cast<IApplicationBlock>()
 			.Select(block => new KeyValuePair<string, IBlazorPlugin>(block.Id, registration.Plugin))).ToDictionary(contribution => contribution.Key, contribution => contribution.Value);
 		foreach (var block in ScreenHost.AvailableBlocks)
 			if (sources.TryGetValue(block.Id, out var plugin))
@@ -58,7 +59,7 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	}
 
 	/// <inheritdoc />
-	public override IBlazorApplicationScreenHost ScreenHost { get; }
+	public override IApplicationScreenHost ScreenHost { get; }
 
 	/// <inheritdoc />
 	public override IBlazorPlugin[] LoadedPlugins {
@@ -68,7 +69,7 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	}
 
 	/// <inheritdoc />
-	public override IBlazorApplicationBlock[] Blocks {
+	public override IApplicationBlock[] Blocks {
 		get {
 			return ScreenHost.Blocks;
 		}
@@ -82,14 +83,14 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	}
 
 	/// <summary>The web menu definitions also exposed through the shared application's command-provider contract.</summary>
-	public virtual IBlazorApplicationMenu[] Menus {
+	public virtual IApplicationMenu[] Menus {
 		get {
 			return Tools.Array.Clone(_menus);
 		}
 	}
 
 	/// <summary>The web application's toolbar definitions.</summary>
-	public virtual IBlazorApplicationMenuItem[] ToolBarItems {
+	public virtual IApplicationMenuItem[] ToolBarItems {
 		get {
 			return Tools.Array.Clone(_toolBarItems);
 		}
@@ -117,22 +118,22 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	}
 
 	/// <summary>Replaces web menu definitions and refreshes the circuit's presentation.</summary>
-	public virtual void SetMenus(IEnumerable<IApplicationMenu> menus) {
+	public virtual void SetMenus(IEnumerable<SharedUI.IApplicationMenu> menus) {
 		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		var definitions = menus.ToArray();
-		Guard.Argument(definitions.All(menu => menu is IBlazorApplicationMenu), nameof(menus), "Blazor menu definitions are required.");
-		_menus = definitions.Cast<IBlazorApplicationMenu>().Select(BlazorApplicationBlockSnapshot.CreateApplicationMenu).ToArray();
+		Guard.Argument(definitions.All(menu => menu is IApplicationMenu), nameof(menus), "Blazor menu definitions are required.");
+		_menus = definitions.Cast<IApplicationMenu>().Select(ApplicationBlockSnapshot.CreateApplicationMenu).ToArray();
 		OnChanged();
 	}
 
 	/// <summary>Replaces web toolbar definitions and refreshes the circuit's presentation.</summary>
-	public virtual void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
+	public virtual void SetToolBarItems(IEnumerable<SharedUI.IApplicationMenuItem> items) {
 		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(items, nameof(items));
 		var definitions = items.ToArray();
-		Guard.Argument(definitions.All(item => item is IBlazorApplicationMenuItem), nameof(items), "Blazor menu item definitions are required.");
-		_toolBarItems = definitions.Cast<IBlazorApplicationMenuItem>().Select(BlazorApplicationBlockSnapshot.CreateApplicationItem).ToArray();
+		Guard.Argument(definitions.All(item => item is IApplicationMenuItem), nameof(items), "Blazor menu item definitions are required.");
+		_toolBarItems = definitions.Cast<IApplicationMenuItem>().Select(ApplicationBlockSnapshot.CreateApplicationItem).ToArray();
 		OnChanged();
 	}
 
@@ -229,7 +230,7 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 	// Accepted shutdown saves screen-owned changes while this circuit's existing provider remains available.
 	protected override async Task OnFinalizeAsync(CancellationToken cancellationToken) {
 		// The base lifecycle only calls this hook after startup begins and has already cleared IsInitialized.
-		foreach (var screen in ScreenHost.Screens.Select(session => session.Screen).OfType<BlazorApplicationScreen>())
+		foreach (var screen in ScreenHost.Screens.Select(session => session.Screen).OfType<ApplicationScreen>())
 			await screen.SaveSettingsAsync(cancellationToken);
 		await base.OnFinalizeAsync(cancellationToken);
 	}
@@ -246,20 +247,20 @@ public class BlazorApplication : AsyncApplicationBase, IBlazorApplication {
 				// Product identity comes from the configured provider, independently of the host caption.
 				var productName = services.GetService<IProductInformationProvider>()?.ProductInformation?.ProductName;
 				var parameters = ParameterView.FromDictionary(new Dictionary<string, object> {
-					[nameof(BlazorApplicationSettingsDialog.Application)] = this,
-					[nameof(BlazorApplicationSettingsDialog.ApplicationTitle)] = string.IsNullOrWhiteSpace(productName)
-						? services.GetRequiredService<BlazorApplicationOptions>().Title : productName
+					[nameof(ApplicationSettingsDialog.Application)] = this,
+					[nameof(ApplicationSettingsDialog.ApplicationTitle)] = string.IsNullOrWhiteSpace(productName)
+						? services.GetRequiredService<ApplicationOptions>().Title : productName
 				});
-				await services.GetRequiredService<Modal.ModalService>().ShowAsync<BlazorApplicationSettingsDialog>(parameters, new ModalOptions { Size = ModalSize.Large }, token);
+				await services.GetRequiredService<Modal.ModalService>().ShowAsync<ApplicationSettingsDialog>(parameters, new ModalOptions { Size = ModalSize.Large }, token);
 			}
 		};
 		var menus = Menus.ToList();
 		var existing = menus.FindIndex(menu => string.Equals(menu.Text.Replace("&", string.Empty).Trim(), "Options", StringComparison.OrdinalIgnoreCase));
 		if (existing < 0)
-			menus.Add(new BlazorApplicationMenu { Id = SettingsMenuId, Text = "Options", Items = new[] { command } });
+			menus.Add(new ApplicationMenu { Id = SettingsMenuId, Text = "Options", Items = new[] { command } });
 		else {
 			var menu = menus[existing];
-			menus[existing] = new BlazorApplicationMenu(ownsItems: false) {
+			menus[existing] = new ApplicationMenu(ownsItems: false) {
 				Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = menu.Items.Concat(new[] { command }).ToArray()
 			};
 		}

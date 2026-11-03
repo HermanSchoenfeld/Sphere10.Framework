@@ -22,19 +22,21 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationBuilderTests {
+public class ApplicationBuilderTests {
 	/// <summary>Both builder sources register the same product services for metadata consumers without constructing a circuit.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ProductInformationComesFromTheSelectedBuilderSource(bool useAssemblyInfo) {
 		var services = new ServiceCollection();
 		var information = new ProductInformation { ProductName = "Builder product", CompanyName = "Builder company" };
-		var assembly = typeof(BlazorApplicationBuilderTests).Assembly;
+		var assembly = typeof(ApplicationBuilderTests).Assembly;
 		var builder = services
 			.BuildBlazorApplication()
 			.WithTitle("Window caption");
@@ -53,7 +55,7 @@ public class BlazorApplicationBuilderTests {
 			Assert.That(selected.ProductInformation.ProductName, Is.EqualTo(new AssemblyAttributesProductInformationProvider(assembly).ProductInformation.ProductName));
 		} else
 			Assert.That(selected.ProductInformation, Is.SameAs(information));
-		Assert.That(provider.GetRequiredService<BlazorApplicationOptions>().Title, Is.EqualTo("Window caption"));
+		Assert.That(provider.GetRequiredService<ApplicationOptions>().Title, Is.EqualTo("Window caption"));
 		Assert.That(() => builder.UseAssemblyInfo(assembly), Throws.InvalidOperationException);
 		Assert.That(() => builder.WithProductInformation(information), Throws.InvalidOperationException);
 	}
@@ -94,24 +96,24 @@ public class BlazorApplicationBuilderTests {
 		Assert.That(builder.Build(), Is.SameAs(services));
 		Assert.That(loaded, Is.EqualTo(1));
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		var options = provider.GetRequiredService<BlazorApplicationOptions>();
+		var options = provider.GetRequiredService<ApplicationOptions>();
 		Assert.That(options.Title, Is.EqualTo("Configured application"));
 		Assert.That(options.FaviconUrl, Is.EqualTo("img/application.svg"));
 		Assert.That(options.FaviconContentType, Is.EqualTo("image/svg+xml"));
 		Assert.That(configured, Is.Empty, "Resolving singleton head metadata must not create the scoped application or screen host.");
 		await using var first = provider.CreateAsyncScope();
 		await using var second = provider.CreateAsyncScope();
-		var application = first.ServiceProvider.GetRequiredService<IBlazorApplication>();
-		Assert.That(first.ServiceProvider.GetRequiredService<IApplication>(), Is.SameAs(application));
-		Assert.That(application.ScreenHost, Is.SameAs(first.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>()));
+		var application = first.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
+		Assert.That(first.ServiceProvider.GetRequiredService<SharedUI.IApplication>(), Is.SameAs(application));
+		Assert.That(application.ScreenHost, Is.SameAs(first.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>()));
 		Assert.That(application.ScreenHost.Blocks.Select(block => block.Id), Is.EquivalentTo(new[] { "workspace", "tools" }));
 		Assert.That(application.LoadedPlugins.Select(item => item.Name), Is.EqualTo(new[] { "Workspace", "Tools" }));
 		Assert.That(application.LoadedPlugins.First(), Is.SameAs(plugin));
-		Assert.That(provider.GetServices<IApplicationPlugin>().ToArray(), Is.EqualTo(application.LoadedPlugins));
-		Assert.That(((IApplication)application).Blocks, Is.EqualTo(application.ScreenHost.Blocks));
-		Assert.That(second.ServiceProvider.GetRequiredService<IBlazorApplication>(), Is.Not.SameAs(application));
+		Assert.That(provider.GetServices<SharedUI.IApplicationPlugin>().ToArray(), Is.EqualTo(application.LoadedPlugins));
+		Assert.That(((SharedUI.IApplication)application).Blocks, Is.EqualTo(application.ScreenHost.Blocks));
+		Assert.That(second.ServiceProvider.GetRequiredService<BlazorUI.IApplication>(), Is.Not.SameAs(application));
 		Assert.That(configured, Is.EqualTo(new[] { "first", "second", "first", "second" }));
-		Assert.That(second.ServiceProvider.GetRequiredService<BlazorApplicationOptions>(), Is.SameAs(options));
+		Assert.That(second.ServiceProvider.GetRequiredService<ApplicationOptions>(), Is.SameAs(options));
 		Assert.That(loaded, Is.EqualTo(1), "Starting another circuit must not rerun plugin startup.");
 	}
 
@@ -119,8 +121,8 @@ public class BlazorApplicationBuilderTests {
 	public void DefaultServicesProvideHeadMetadataWithoutScopedResolution() {
 		var services = new ServiceCollection().AddSphere10Blazor();
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		var options = provider.GetRequiredService<BlazorApplicationOptions>();
-		Assert.That(options.Title, Is.EqualTo(BlazorApplicationOptions.DefaultTitle));
+		var options = provider.GetRequiredService<ApplicationOptions>();
+		Assert.That(options.Title, Is.EqualTo(ApplicationOptions.DefaultTitle));
 		Assert.That(options.FaviconUrl, Is.Null);
 		Assert.That(options.FaviconContentType, Is.Null);
 	}
@@ -141,7 +143,7 @@ public class BlazorApplicationBuilderTests {
 		builder.Build();
 		services.AddSphere10Blazor();
 		using var provider = services.BuildServiceProvider();
-		var options = provider.GetRequiredService<BlazorApplicationOptions>();
+		var options = provider.GetRequiredService<ApplicationOptions>();
 		Assert.That(() => builder.WithTitle("Changed"), Throws.InvalidOperationException);
 		Assert.That(() => builder.WithFavicon("other.svg"), Throws.InvalidOperationException);
 		Assert.That(() => builder.OnApplicationCreated(_ => { }), Throws.InvalidOperationException);
@@ -151,7 +153,7 @@ public class BlazorApplicationBuilderTests {
 		Assert.That(options.FaviconUrl, Is.EqualTo("favicon.ico"));
 		Assert.That(options.FaviconContentType, Is.Null, "The favicon's content type is optional.");
 		Assert.That(loaded, Is.EqualTo(1));
-		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(BlazorApplicationOptions)), Is.EqualTo(1));
+		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(ApplicationOptions)), Is.EqualTo(1));
 	}
 
 	[TestCase(null)]
@@ -177,7 +179,7 @@ public class BlazorApplicationBuilderTests {
 		var services = new ServiceCollection();
 		Program.ConfigureServices(services);
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		var options = provider.GetRequiredService<BlazorApplicationOptions>();
+		var options = provider.GetRequiredService<ApplicationOptions>();
 		Assert.That(options.Title, Is.EqualTo("Sphere10 Blazor demos"));
 		Assert.That(options.FaviconUrl, Is.EqualTo("img/logo.svg"));
 		Assert.That(options.FaviconContentType, Is.EqualTo("image/svg+xml"));
@@ -201,10 +203,10 @@ public class BlazorApplicationBuilderTests {
 		Assert.That(html, Does.Match("<strong[^>]*class=\"sphere10-application-title\"[^>]*>Custom &amp; branded application</strong>"));
 	}
 
-	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public sealed class ProbeScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 

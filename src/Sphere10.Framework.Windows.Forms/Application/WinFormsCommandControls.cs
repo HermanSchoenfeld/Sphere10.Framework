@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -24,11 +25,11 @@ internal static class WinFormsCommandControls {
 	internal const string CommandToolBarSourceName = "_commandToolBarSource";
 
 	/// <summary>Executes a definition through the displaying window's host while preserving its owner's native action.</summary>
-	internal static async Task<bool> ExecuteMenuItemAsync(IUserInterfaceServices userInterface, IApplicationMenuItem item,
+	internal static async Task<bool> ExecuteMenuItemAsync(IUserInterfaceServices userInterface, SharedUI.IApplicationMenuItem item,
 		CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(userInterface, nameof(userInterface));
 		cancellationToken.ThrowIfCancellationRequested();
-		var nativeItem = Guard.ArgumentCast<IWinFormsApplicationMenuItem>(item, nameof(item));
+		var nativeItem = Guard.ArgumentCast<IApplicationMenuItem>(item, nameof(item));
 		if (nativeItem is IWinFormsScreenMenuItem screenItem) {
 			var block = screenItem.Parent?.Parent;
 			Guard.Argument(block != null, nameof(item), "The screen command must belong to a block's menu.");
@@ -44,23 +45,23 @@ internal static class WinFormsCommandControls {
 	internal static void MergeSources(Form window, MenuStrip targetMenu, ToolStrip targetToolBar,
 		IEnumerable<IApplicationCommandProvider> providers, IUserInterfaceServices userInterface) {
 		foreach (var provider in providers) {
-			var menus = provider.Menus.Cast<IWinFormsApplicationMenu>().Where(menu => menu.ShowInMenuStrip).ToArray();
-			var toolBarItems = provider.ToolBarItems.Cast<IWinFormsApplicationMenuItem>();
-			if (provider is IWinFormsApplicationBlock block) {
+			var menus = provider.Menus.Cast<IApplicationMenu>().Where(menu => menu.ShowInMenuStrip).ToArray();
+			var toolBarItems = provider.ToolBarItems.Cast<IApplicationMenuItem>();
+			if (provider is IApplicationBlock block) {
 				if (!block.ShowInMenuStrip)
-					menus = Array.Empty<IWinFormsApplicationMenu>();
+					menus = Array.Empty<IApplicationMenu>();
 				if (block.ShowInToolStrip)
 					toolBarItems = toolBarItems.Concat(block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsLinkMenuItem>()
 						.Where(item => item.ShowOnToolStrip));
 			}
 			MergeSources(window, targetMenu, targetToolBar, menus,
-				toolBarItems.Distinct<IWinFormsApplicationMenuItem>(ReferenceEqualityComparer.Instance), provider, userInterface);
+				toolBarItems.Distinct<IApplicationMenuItem>(ReferenceEqualityComparer.Instance), provider, userInterface);
 		}
 	}
 
 	/// <summary>Creates sources owned by this window while the supplied owner retains command definitions and images.</summary>
 	internal static void MergeSources(Form window, MenuStrip targetMenu, ToolStrip targetToolBar,
-		IEnumerable<IWinFormsApplicationMenu> menus, IEnumerable<IWinFormsApplicationMenuItem> toolBarItems,
+		IEnumerable<IApplicationMenu> menus, IEnumerable<IApplicationMenuItem> toolBarItems,
 		IApplicationCommandProvider owner, IUserInterfaceServices userInterface) {
 		var menuDefinitions = menus.ToArray();
 		if (menuDefinitions.Length > 0) {
@@ -98,7 +99,7 @@ internal static class WinFormsCommandControls {
 	}
 
 	/// <summary>Creates the menu source with direct native callbacks to each original command.</summary>
-	internal static MergeableMenuStrip CreateMenuStrip(IEnumerable<IWinFormsApplicationMenu> menus, IUserInterfaceServices userInterface = null) {
+	internal static MergeableMenuStrip CreateMenuStrip(IEnumerable<IApplicationMenu> menus, IUserInterfaceServices userInterface = null) {
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		var source = new MergeableMenuStrip { Name = CommandMenuSourceName };
 		foreach (var menu in menus) {
@@ -107,8 +108,8 @@ internal static class WinFormsCommandControls {
 				var nativeHeader = CreateNativeView(nativeMenu.Header, () => source.InheritedToolStrip, userInterface, () => {
 					if (userInterface?.PrimaryUIController is MainForm owner && owner.IsScreenNavigationMenu(nativeMenu.Item)) {
 						// Navigation precedes the complete owner snapshot, independent of another screen's native merge edits.
-						return nativeMenu.Item.DropDownItems.Cast<ToolStripItem>().Where(item => item.Tag is WinFormsApplicationScreen)
-							.Select(item => (IWinFormsApplicationMenuItem)NativeToolStripCommand.Create(item))
+						return nativeMenu.Item.DropDownItems.Cast<ToolStripItem>().Where(item => item.Tag is ApplicationScreen)
+							.Select(item => (IApplicationMenuItem)NativeToolStripCommand.Create(item))
 							.Concat(nativeMenu.Items).ToArray();
 					}
 					return nativeMenu.Items;
@@ -125,7 +126,7 @@ internal static class WinFormsCommandControls {
 	}
 
 	/// <summary>Creates toolbar views without retaining a separate host-to-command binding table.</summary>
-	internal static MergeableToolStrip CreateToolBar(IEnumerable<IWinFormsApplicationMenuItem> commands, IUserInterfaceServices userInterface = null) {
+	internal static MergeableToolStrip CreateToolBar(IEnumerable<IApplicationMenuItem> commands, IUserInterfaceServices userInterface = null) {
 		Guard.ArgumentNotNull(commands, nameof(commands));
 		var source = new MergeableToolStrip { Name = CommandToolBarSourceName };
 		foreach (var command in commands) {
@@ -151,7 +152,7 @@ internal static class WinFormsCommandControls {
 	}
 
 	// Separators and actions retain their original command definitions; only their native view is created here.
-	private static ToolStripItem CreateMenuItem(IWinFormsApplicationMenuItem command, Func<ToolStrip> target, IUserInterfaceServices userInterface) {
+	private static ToolStripItem CreateMenuItem(IApplicationMenuItem command, Func<ToolStrip> target, IUserInterfaceServices userInterface) {
 		if (command is NativeToolStripCommand native)
 			return CreateNativeView(native, target, userInterface);
 		if (command is IApplicationMenuSeparator)
@@ -165,7 +166,7 @@ internal static class WinFormsCommandControls {
 
 	// Borrow state and callbacks while keeping every native view and subscription owned by its displaying window.
 	private static ToolStripItem CreateNativeView(NativeToolStripCommand command, Func<ToolStrip> target, IUserInterfaceServices userInterface,
-		Func<IWinFormsApplicationMenuItem[]> getChildren = null) {
+		Func<IApplicationMenuItem[]> getChildren = null) {
 		var original = command.Item;
 		ToolStripItem view = original switch {
 			ToolStripSeparator => new ToolStripSeparator(),
@@ -221,7 +222,7 @@ internal static class WinFormsCommandControls {
 		};
 
 		if (view is ToolStripDropDownItem dropDown) {
-			getChildren ??= () => command.Children.Cast<IWinFormsApplicationMenuItem>().ToArray();
+			getChildren ??= () => command.Children.Cast<IApplicationMenuItem>().ToArray();
 			void RefreshChildren() {
 				foreach (ToolStripItem child in dropDown.DropDownItems.Cast<ToolStripItem>().ToArray())
 					child.Dispose();
@@ -249,7 +250,7 @@ internal static class WinFormsCommandControls {
 	}
 
 	// Resolve the currently displaying form at the click boundary, without caching a UI/application on the command owner.
-	private static async Task ExecuteCommandAsync(IWinFormsApplicationMenuItem command, ToolStrip target, IUserInterfaceServices userInterface) {
+	private static async Task ExecuteCommandAsync(IApplicationMenuItem command, ToolStrip target, IUserInterfaceServices userInterface) {
 		userInterface ??= target?.FindForm() as IUserInterfaceServices;
 		if (userInterface == null)
 			return;

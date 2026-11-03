@@ -10,23 +10,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Projects one detached window's active screen while borrowing the root application's host and lifetime.</summary>
-internal sealed class DetachedWinFormsApplicationScreenHost : WinFormsApplicationScreenHostDecorator {
-	private readonly WinFormsApplicationScreenForm _window;
+internal sealed class DetachedApplicationScreenHost : ApplicationScreenHostDecorator {
+	private readonly ApplicationScreenForm _window;
 	private IUserInterfaceServices _userInterface;
 
 	// Borrows the root host while supplying the detached window's local presentation context.
-	internal DetachedWinFormsApplicationScreenHost(IWinFormsApplicationScreenHost rootHost, WinFormsApplicationScreenForm window)
+	internal DetachedApplicationScreenHost(IApplicationScreenHost rootHost, ApplicationScreenForm window)
 		: base(rootHost) {
 		Guard.ArgumentNotNull(window, nameof(window));
 		_window = window;
 	}
 
 	/// <summary>Main-frame selection changes do not change this window's active screen.</summary>
-	public override event EventHandlerEx<WinFormsApplicationScreen> ActiveScreenChanging {
+	public override event EventHandlerEx<ApplicationScreen> ActiveScreenChanging {
 		add {
 		}
 		remove {
@@ -34,7 +35,7 @@ internal sealed class DetachedWinFormsApplicationScreenHost : WinFormsApplicatio
 	}
 
 	/// <summary>Main-frame selection changes do not change this window's active screen.</summary>
-	public override event EventHandlerEx<WinFormsApplicationScreen> ActiveScreenChanged {
+	public override event EventHandlerEx<ApplicationScreen> ActiveScreenChanged {
 		add {
 		}
 		remove {
@@ -42,14 +43,14 @@ internal sealed class DetachedWinFormsApplicationScreenHost : WinFormsApplicatio
 	}
 
 	/// <summary>The screen presented by this detached window.</summary>
-	public override WinFormsApplicationScreen ActiveScreen {
+	public override ApplicationScreen ActiveScreen {
 		get {
 			return _window.Screen;
 		}
 	}
 
 	/// <summary>The command context is the detached screen's owning block.</summary>
-	public override IWinFormsApplicationBlock ActiveBlock {
+	public override IApplicationBlock ActiveBlock {
 		get {
 			return ActiveScreen.Block;
 		}
@@ -65,7 +66,7 @@ internal sealed class DetachedWinFormsApplicationScreenHost : WinFormsApplicatio
 	}
 
 	/// <summary>The borrowed owner used to validate canonical screen membership and restore docking.</summary>
-	internal IWinFormsApplicationScreenHost RootHost {
+	internal IApplicationScreenHost RootHost {
 		get {
 			return InternalHost;
 		}
@@ -92,22 +93,22 @@ internal sealed class DetachedWinFormsApplicationScreenHost : WinFormsApplicatio
 
 	/// <summary>Supplies the local host to commands while application controllers and interactions retain their existing owner.</summary>
 	private sealed class DetachedUserInterfaceServices : UserInterfaceServicesDecorator {
-		private readonly DetachedWinFormsApplicationScreenHost _host;
+		private readonly DetachedApplicationScreenHost _host;
 
 		// Routes interactions through the root services with this detached window's active-screen context.
-		internal DetachedUserInterfaceServices(IUserInterfaceServices services, DetachedWinFormsApplicationScreenHost host)
+		internal DetachedUserInterfaceServices(IUserInterfaceServices services, DetachedApplicationScreenHost host)
 			: base(services) {
 			_host = host;
 		}
 
-		public override IApplicationScreenHost ScreenHost {
+		public override SharedUI.IApplicationScreenHost ScreenHost {
 			get {
 				return _host;
 			}
 		}
 
 		/// <summary>Executes with this window's active-screen context while navigation delegates through its root-backed host.</summary>
-		public override Task<bool> ExecuteMenuItemAsync(IApplicationMenuItem item, CancellationToken cancellationToken = default) {
+		public override Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default) {
 			return WinFormsCommandControls.ExecuteMenuItemAsync(this, item, cancellationToken);
 		}
 	}

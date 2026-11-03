@@ -13,6 +13,7 @@ using System.Threading;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -24,7 +25,7 @@ public class BuilderConvenienceTests {
 	public void InlineRegistrationsAndMenusKeepExactMonikersAndTheRetainedNativeGraph() {
 		var activations = 0;
 		var defaults = new Preferences { Value = 7 };
-		var builder = new WinFormsApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Input")
 			.AddScreen<ProbeScreen>("First", out var first)
 			.AddScreen<ProbeScreen>("Second", out var second, activationMode: ScreenActivationMode.SingleInstance,
@@ -58,9 +59,9 @@ public class BuilderConvenienceTests {
 	[Test]
 	public void RuntimeTypesAndInlineActionsUseExistingCommandExecutionAndReferences() {
 		var calls = 0;
-		IWinFormsApplicationMenuItem action = null;
-		IWinFormsApplicationMenuItem screen = null;
-		var builder = new WinFormsApplicationBlockBuilder()
+		FormsUI.IApplicationMenuItem action = null;
+		FormsUI.IApplicationMenuItem screen = null;
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Commands")
 			.AddScreen(typeof(ProbeScreen), "Runtime", out var registration)
 			.AddMenu("Actions", configure: menu => menu
@@ -83,7 +84,7 @@ public class BuilderConvenienceTests {
 
 	[Test]
 	public void InvalidInlineChildrenDoNotPublishPartialDefinitions() {
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Valid");
+		var builder = new ApplicationBlockBuilder().WithName("Valid");
 
 		Assert.That(() => builder.AddScreen<ProbeScreen>(""), Throws.ArgumentException);
 		Assert.That(() => builder.AddScreen<ProbeScreen>("Bad", activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
@@ -93,7 +94,7 @@ public class BuilderConvenienceTests {
 		Assert.That(block.Menus, Is.Empty);
 	}
 
-	private sealed class ProbeScreen : WinFormsApplicationScreen {
+	private sealed class ProbeScreen : ApplicationScreen {
 	}
 
 	private sealed class Preferences : SettingsObject {

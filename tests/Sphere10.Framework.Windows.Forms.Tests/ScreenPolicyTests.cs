@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -41,7 +43,7 @@ public class ScreenPolicyTests {
 
 	[Test]
 	public void BuildersExposeSharedPoliciesAndUpdateCachedDefaultMetadata() {
-		var builder = new WinFormsApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Screens")
 			.AddScreen<EmptyScreen>(screen => screen
 				.WithTitle("Placeholder")
@@ -62,7 +64,7 @@ public class ScreenPolicyTests {
 				)
 			);
 		using var block = builder.Build();
-		IApplicationBlock shared = block;
+		SharedUI.IApplicationBlock shared = block;
 		Assert.That(shared.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(shared.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		var screen = (IScreenMenuItem)((IApplicationCommandProvider)block).Menus[0].Items[0];
@@ -80,12 +82,12 @@ public class ScreenPolicyTests {
 		Assert.That(shared.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(RegularScreen)));
 		Assert.That(shared.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
 		Assert.That(shared.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(() => new WinFormsApplicationBlockBuilder()
+		Assert.That(() => new ApplicationBlockBuilder()
 			.AddScreen<EmptyScreen>(screen => screen
 				.AsPermanentSingleton()
 				.WithScreenKind(ScreenKind.Empty)
 			), Throws.ArgumentException);
-		var invalid = new WinFormsApplicationScreenBuilder<EmptyScreen>()
+		var invalid = new FormsUI.ApplicationScreenBuilder<EmptyScreen>()
 			.AsPermanentSingleton()
 			.WithScreenKind(ScreenKind.Empty);
 		Assert.That(() => invalid.Build(), Throws.ArgumentException);
@@ -94,7 +96,7 @@ public class ScreenPolicyTests {
 	[Test]
 	public async Task StartupUsesPluginBlockAndMenuOrderAndOpensEachPermanentOnce() {
 		using var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
-		using var first = new WinFormsApplicationBlockBuilder()
+		using var first = new ApplicationBlockBuilder()
 			.WithName("First")
 			.WithPosition(100)
 			.AddScreen<RegularScreen>(screen => screen.WithTitle("First default"))
@@ -114,7 +116,7 @@ public class ScreenPolicyTests {
 				)
 			)
 			.Build();
-		using var second = new WinFormsApplicationBlockBuilder()
+		using var second = new ApplicationBlockBuilder()
 			.WithName("Second")
 			.WithPosition(-100)
 			.AddScreen<OtherScreen>(screen => screen.WithTitle("Other"))
@@ -132,13 +134,13 @@ public class ScreenPolicyTests {
 				)
 			)
 			.Build();
-		var plugin = new WinFormsApplicationPluginBuilder()
+		var plugin = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Ordered")
 			.AddBlock(first)
 			.AddBlock(second)
 			.Build();
 		plugin.Load(new ServiceCollection());
-		await using var application = new WinFormsApplication(form, new[] { second, first }, new[] { plugin });
+		await using var application = new FormsUI.Application(form, new[] { second, first }, new[] { plugin });
 		await application.InitializeAsync();
 		var active = form.ActiveScreen;
 		var permanent = form.ScreenHost.Screens.OfType<PermanentScreen>().Single();
@@ -155,7 +157,7 @@ public class ScreenPolicyTests {
 	public void ExplicitDefaultOverridesLegacyStartFlagsButStartupActionsStillExecute() {
 		var calls = 0;
 		using var form = new BlockMainForm();
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Screens")
 			.AddScreen<OtherScreen>(screen => screen.WithTitle("Legacy"))
 			.AddScreen<RegularScreen>(screen => screen.WithTitle("Default"))
@@ -180,7 +182,7 @@ public class ScreenPolicyTests {
 	[Test]
 	public void LegacyStartScreenStillRunsWhenNoExplicitDefaultExists() {
 		using var form = new BlockMainForm();
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Legacy")
 			.AddScreen<RegularScreen>(screen => screen.WithTitle("Start"))
 			.AddMenu(menu => menu
@@ -195,7 +197,7 @@ public class ScreenPolicyTests {
 	[TestCase(ScreenMode.SingleView)]
 	[TestCase(ScreenMode.MultiView)]
 	public void PermanentScreensRejectTabCloseAndUndockButAllowSwitchingAndGuardedShutdown(ScreenMode mode) {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = mode };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = mode };
 		using var block = PermanentBlock();
 		host.InitializeScreens(new[] { block });
 		var permanent = (PermanentScreen)host.ActiveScreen;
@@ -217,7 +219,7 @@ public class ScreenPolicyTests {
 
 	[Test]
 	public void PermanentStateSurvivesModeChangesAndGuardedModeChangeIsAtomic() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = PermanentBlock();
 		host.InitializeScreens(new[] { block });
 		var permanent = (PermanentScreen)host.ActiveScreen;
@@ -242,7 +244,7 @@ public class ScreenPolicyTests {
 	[TestCase(ScreenMode.SingleView, ScreenActivationMode.MultiInstance)]
 	[TestCase(ScreenMode.MultiView, ScreenActivationMode.MultiInstance)]
 	public void EmptyScreenIsTablessAndRespectsItsInstanceLifetime(ScreenMode mode, ScreenActivationMode activationMode) {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = mode };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = mode };
 		using var block = EmptyBlock(activationMode);
 		host.InitializeScreens(new[] { block });
 		var empty = (EmptyScreen)host.ActiveScreen;
@@ -266,7 +268,7 @@ public class ScreenPolicyTests {
 
 	[Test]
 	public void EmptyNavigationAndLastCloseHonorScreenGuards() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = EmptyBlock();
 		host.InitializeScreens(new[] { block });
 		var empty = (EmptyScreen)host.ActiveScreen;
@@ -287,7 +289,7 @@ public class ScreenPolicyTests {
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.MultiInstance)]
 	public void AddingPermanentScreensWhileEmptyIsActiveHonorsGuardAndCanRetry(ScreenActivationMode mode) {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var emptyBlock = EmptyBlock(mode);
 		using var permanentBlock = PermanentBlock();
 		host.InitializeScreens(new[] { emptyBlock });
@@ -327,8 +329,8 @@ public class ScreenPolicyTests {
 
 	[Test]
 	public void AddingPermanentScreensPreservesAnActiveOrdinaryScreenAndItsGuard() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		using var regularBlock = new WinFormsApplicationBlockBuilder()
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var regularBlock = new ApplicationBlockBuilder()
 			.WithName("Regular")
 			.AddScreen<RegularScreen>(screen => screen.WithTitle("Regular"))
 			.WithDefaultScreen<RegularScreen>()
@@ -348,7 +350,7 @@ public class ScreenPolicyTests {
 		using var form = new BlockMainForm { ScreenMode = ScreenMode.MultiView };
 		using var permanentBlock = PermanentBlock();
 		using var emptyBlock = EmptyBlock();
-		await using var application = new WinFormsApplication(form, new[] { emptyBlock, permanentBlock });
+		await using var application = new FormsUI.Application(form, new[] { emptyBlock, permanentBlock });
 		await application.InitializeAsync();
 		var permanent = (PermanentScreen)form.ActiveScreen;
 		Assert.That(form.ScreenHost.Screens.OfType<EmptyScreen>(), Is.Empty);
@@ -374,7 +376,7 @@ public class ScreenPolicyTests {
 		using var second = PermanentBlock(inheritPolicy);
 		second.Name = "Other permanent owner";
 		using var empty = EmptyBlock();
-		await using var application = new WinFormsApplication(form, new[] { first, second, empty });
+		await using var application = new FormsUI.Application(form, new[] { first, second, empty });
 		await application.InitializeAsync();
 		var original = (PermanentScreen)form.ActiveScreen;
 		Assert.That(original.ApplicationBlock, Is.SameAs(first));
@@ -397,7 +399,7 @@ public class ScreenPolicyTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void HiddenEmptySingletonIsDisposedExactlyOnceOnBlockRemovalOrHostDisposal(bool disposeHost) {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = EmptyBlock();
 		host.InitializeScreens(new[] { block });
 		var empty = (EmptyScreen)host.ActiveScreen;
@@ -412,8 +414,8 @@ public class ScreenPolicyTests {
 		Assert.That(host.Screens, Is.Empty);
 	}
 
-	private static WinFormsApplicationBlock PermanentBlock(bool inheritPolicy = false) {
-		return new WinFormsApplicationBlockBuilder()
+	private static ApplicationBlock PermanentBlock(bool inheritPolicy = false) {
+		return new ApplicationBlockBuilder()
 			.WithName("Permanent")
 			.AddScreen<PermanentScreen>(screen => {
 				screen.WithTitle("Permanent");
@@ -428,8 +430,8 @@ public class ScreenPolicyTests {
 			.Build();
 	}
 
-	private static WinFormsApplicationBlock EmptyBlock(ScreenActivationMode mode = ScreenActivationMode.SingleInstance) {
-		return new WinFormsApplicationBlockBuilder()
+	private static ApplicationBlock EmptyBlock(ScreenActivationMode mode = ScreenActivationMode.SingleInstance) {
+		return new ApplicationBlockBuilder()
 			.WithName("Empty")
 			.AddScreen<EmptyScreen>(screen => screen
 				.WithTitle("Empty workspace")
@@ -444,13 +446,13 @@ public class ScreenPolicyTests {
 	public class CountingMainForm : BlockMainForm {
 		public int RegisterCalls { get; private set; }
 
-		public override void RegisterBlock(IWinFormsApplicationBlock block) {
+		public override void RegisterBlock(FormsUI.IApplicationBlock block) {
 			RegisterCalls++;
 			base.RegisterBlock(block);
 		}
 	}
 
-	public class ProbeScreen : WinFormsApplicationScreen {
+	public class ProbeScreen : ApplicationScreen {
 		[DefaultValue(false)] public bool CancelHide { get; set; }
 		[DefaultValue(0)] public int Value { get; set; }
 		public int DestroyCount { get; private set; }

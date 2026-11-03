@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -43,15 +45,15 @@ public class SharedScreenHostIntegrationTests {
 		services.AddMainForm<BlockMainForm>();
 		using var provider = services.BuildServiceProvider();
 		var form = (BlockMainForm)provider.GetRequiredService<IMainForm>();
-		var host = provider.GetRequiredService<IApplicationScreenHost>();
-		var application = provider.GetRequiredService<IApplication>();
+		var host = provider.GetRequiredService<SharedUI.IApplicationScreenHost>();
+		var application = provider.GetRequiredService<SharedUI.IApplication>();
 		Assert.That(host, Is.SameAs(form.ScreenHost));
-		Assert.That(provider.GetRequiredService<IWinFormsApplicationScreenHost>(), Is.SameAs(host));
-		Assert.That(provider.GetRequiredService<IApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>>(), Is.SameAs(host));
+		Assert.That(provider.GetRequiredService<FormsUI.IApplicationScreenHost>(), Is.SameAs(host));
+		Assert.That(provider.GetRequiredService<SharedUI.IApplicationScreenHost<FormsUI.IApplicationBlock, ApplicationScreen>>(), Is.SameAs(host));
 		Assert.That(provider.GetRequiredService<ISingleApplicationScreenHost>(), Is.SameAs(host));
 		Assert.That(provider.GetRequiredService<IMultiApplicationScreenHost>(), Is.SameAs(host));
-		Assert.That(provider.GetRequiredService<ISingleApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>>(), Is.SameAs(host));
-		Assert.That(provider.GetRequiredService<IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>>(), Is.SameAs(host));
+		Assert.That(provider.GetRequiredService<ISingleApplicationScreenHost<FormsUI.IApplicationBlock, ApplicationScreen>>(), Is.SameAs(host));
+		Assert.That(provider.GetRequiredService<IMultiApplicationScreenHost<FormsUI.IApplicationBlock, ApplicationScreen>>(), Is.SameAs(host));
 		Assert.That(application.ScreenHost, Is.SameAs(host));
 		var ui = provider.GetRequiredService<IUserInterfaceServices>();
 		Assert.That(ui, Is.SameAs(form));
@@ -65,13 +67,13 @@ public class SharedScreenHostIntegrationTests {
 		var services = new ServiceCollection();
 		services.AddMainForm<MainForm>();
 		using var provider = services.BuildServiceProvider();
-		Assert.That(provider.GetRequiredService<IApplicationScreenHost>(), Is.SameAs(((MainForm)provider.GetRequiredService<IMainForm>()).ScreenHost));
-		Assert.That(provider.GetService<IApplication>(), Is.Null);
+		Assert.That(provider.GetRequiredService<SharedUI.IApplicationScreenHost>(), Is.SameAs(((MainForm)provider.GetRequiredService<IMainForm>()).ScreenHost));
+		Assert.That(provider.GetService<SharedUI.IApplication>(), Is.Null);
 	}
 
 	[Test]
 	public void SharedHostExposesTheActualNativeControlAndPreservesIdentity() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var control = native.ActivateScreen(block, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
@@ -93,7 +95,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void BrowsingBlocksUsesTheSharedHostWithoutRunningTheScreenGuard() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var first = CreateBlock("first");
 		using var second = CreateBlock("second");
 		native.RegisterScreenTypes(second);
@@ -114,15 +116,15 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void SharedScreenOpeningRequiresTheRegisteredOwnersCanonicalDefinition() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
 		var definition = Tools.UI.GetScreenDefinitions(new[] { block }).Single();
-		IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen> host = native;
+		IMultiApplicationScreenHost<FormsUI.IApplicationBlock, ApplicationScreen> host = native;
 		Assert.That(() => host.OpenScreenAsync(block, definition), Throws.ArgumentException);
 		Assert.That(host.Blocks, Is.Empty);
 		Assert.That(host.AvailableBlocks, Is.Empty);
 		host.RegisterBlockAsync(block).Wait();
-		Assert.That(() => host.OpenScreenAsync(block, new ApplicationScreenDefinition(typeof(ProbeScreen))), Throws.ArgumentException);
+		Assert.That(() => host.OpenScreenAsync(block, new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen))), Throws.ArgumentException);
 		Assert.That(host.Screens, Is.Empty);
 		var screen = host.OpenScreenAsync(block, definition).Result;
 		Assert.That(screen, Is.TypeOf<ProbeScreen>());
@@ -135,14 +137,14 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void NativeHostOpensBlockDefinitionsWithoutMenusAndRejectsOtherOwners() {
-		using var native = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var other = new WinFormsApplicationBlock { Name = "Other workspace" };
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Site editor", ScreenActivationMode.SingleInstance);
+		using var native = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		using var other = new ApplicationBlock { Name = "Other workspace" };
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Site editor", ScreenActivationMode.SingleInstance);
 		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
 		native.InitializeScreens(new[] { block, other });
-		IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen> host = native;
+		IMultiApplicationScreenHost<FormsUI.IApplicationBlock, ApplicationScreen> host = native;
 		Assert.That(host.ActiveScreen.Title, Is.EqualTo("Site editor"));
 		Assert.That(host.ActiveScreen.Block, Is.SameAs(block));
 		Assert.That(host.OpenScreenAsync(block, definition).Result, Is.SameAs(host.ActiveScreen));
@@ -154,7 +156,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void SharedRegistrationAndRemovalUpdateTheApplicationHostRegistry() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
 		IMultiApplicationScreenHost host = native;
 		Assert.That(host.RegisterBlockAsync(block).IsCompletedSuccessfully, Is.True);
@@ -172,7 +174,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void NativeTransactionsPublishOnlyCompletedRegistrationAndRemoval() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
 		IMultiApplicationScreenHost host = native;
 		var changes = 0;
@@ -193,11 +195,11 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void NativeControlsAndBlocksKeepReferenceIdentityWhenEqualsCollides() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var firstBlock = new EqualBlock { Name = "First" };
-		firstBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(EqualScreen)));
+		firstBlock.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(EqualScreen)));
 		using var secondBlock = new EqualBlock { Name = "Second" };
-		secondBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(EqualScreen)));
+		secondBlock.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(EqualScreen)));
 		var first = native.ActivateScreen(firstBlock, typeof(EqualScreen));
 		var second = native.ActivateScreen(secondBlock, typeof(EqualScreen));
 		IMultiApplicationScreenHost host = native;
@@ -217,7 +219,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void ShowingTheActiveScreenRestoresItsOwningBlockAfterBrowsing() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var first = CreateBlock("first");
 		using var second = CreateBlock("second");
 		native.RegisterScreenTypes(second);
@@ -232,7 +234,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void SharedBlockOperationsUseReferenceIdentityForDuplicateNames() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var first = CreateBlock("same");
 		using var second = CreateBlock("same");
 		native.RegisterScreenTypes(first);
@@ -250,7 +252,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void BlockActivationUsesTheFirstScreenWhenNoDefaultWasMarked() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
 		native.RegisterScreenTypes(block);
 		var activated = native.ActivateBlockAsync(block).Result;
@@ -262,8 +264,8 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void StartupKeepsTheExactDefaultTitleWhenTheScreenTypeIsRepeated() {
-		using var native = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var native = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen
 				.WithTitle("Default editor")
@@ -289,7 +291,7 @@ public class SharedScreenHostIntegrationTests {
 	public void UiServicesDispatchCommandsWhileTheHostOwnsScreenNavigation() {
 		using var form = new MainForm();
 		form.ScreenHost.ScreenMode = ScreenMode.MultiView;
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen.WithTitle("First draft"), out var first)
 			.AddScreen<ProbeScreen>(screen => screen.WithTitle("Second draft"), out var second)
@@ -311,7 +313,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void ASharedDecoratorKeepsActualControlIdentityAndVirtualDispatch() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var first = native.ActivateScreen(block, typeof(ProbeScreen));
 		native.ActivateScreen(block, typeof(ProbeScreen));
@@ -326,7 +328,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void SharedMultiInstanceEditorsHonorGuardedBatchClose() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		native.RegisterScreenTypes(block);
 		IMultiApplicationScreenHost host = native;
@@ -348,7 +350,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void DetachedScreensRemainOpenWhileMainSelectionStaysDocked() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var first = native.ActivateScreen(block, typeof(ProbeScreen));
 		var second = native.ActivateScreen(block, typeof(ProbeScreen));
@@ -363,7 +365,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void SharedOpenOrderTracksNativeTabDragging() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var first = native.ActivateScreen(block, typeof(ProbeScreen));
 		var second = native.ActivateScreen(block, typeof(ProbeScreen));
@@ -379,9 +381,9 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void SharedUnsavedStateIncludesCachedNativeSingletons() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(SingletonScreen)));
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(SingletonScreen)));
 		var dirty = (SingletonScreen)native.ActivateScreen(block, typeof(SingletonScreen));
 		dirty.IsDirty = true;
 		native.ActivateScreen(block, typeof(ProbeScreen));
@@ -396,9 +398,9 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void MovingACachedSingletonRejectsTheOperationWithoutChangingTabs() {
-		using var native = new WinFormsApplicationScreenHost();
+		using var native = new FormsUI.ApplicationScreenHost();
 		using var block = CreateBlock("work");
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(SingletonScreen)));
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(SingletonScreen)));
 		var cached = native.ActivateScreen(block, typeof(SingletonScreen));
 		var active = native.ActivateScreen(block, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
@@ -410,8 +412,8 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public async Task SharedShowingAcceptsANewConfiguredNativeControlAndPreservesOwnershipAndPolicyValidation() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		using var otherHost = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var otherHost = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var screen = new ProbeScreen { Block = block, Title = "Configured Editor", Value = 42 };
 		IMultiApplicationScreenHost host = native;
@@ -438,7 +440,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void DisposingThroughTheSharedHostReleasesNativeControls() {
-		var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var control = native.ActivateScreen(block, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
@@ -451,7 +453,7 @@ public class SharedScreenHostIntegrationTests {
 
 	[Test]
 	public void CancelledSharedOperationsDoNotMutateTheNativeWorkspace() {
-		using var native = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var native = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var block = CreateBlock("work");
 		var control = native.ActivateScreen(block, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
@@ -462,7 +464,7 @@ public class SharedScreenHostIntegrationTests {
 		Assert.That(control.IsDisposed, Is.False);
 	}
 
-	private static WinFormsApplicationBlock CreateBlock(string id) => new WinFormsApplicationBlockBuilder()
+	private static ApplicationBlock CreateBlock(string id) => new ApplicationBlockBuilder()
 		.WithName(id)
 		.AddScreen<ProbeScreen>(screen => screen
 			.WithTitle("Editor")
@@ -473,7 +475,7 @@ public class SharedScreenHostIntegrationTests {
 		)
 		.Build();
 
-	public class ProbeScreen : WinFormsApplicationScreen {
+	public class ProbeScreen : ApplicationScreen {
 		[DefaultValue(false)]
 		public bool CancelHide { get; set; }
 		public int HideRequests { get; private set; }
@@ -486,13 +488,13 @@ public class SharedScreenHostIntegrationTests {
 		}
 	}
 
-	public sealed class SingletonScreen : ProbeScreen, IApplicationScreen {
+	public sealed class SingletonScreen : ProbeScreen, SharedUI.IApplicationScreen {
 		public SingletonScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 
 		[DefaultValue(false)]
 		public bool IsDirty { get; set; }
 
-		bool IApplicationScreen.HasUnsavedChanges => IsDirty;
+		bool SharedUI.IApplicationScreen.HasUnsavedChanges => IsDirty;
 	}
 
 	public sealed class EqualScreen : ProbeScreen {
@@ -501,20 +503,20 @@ public class SharedScreenHostIntegrationTests {
 		public override int GetHashCode() => 1;
 	}
 
-	private sealed class EqualBlock : WinFormsApplicationBlock {
+	private sealed class EqualBlock : ApplicationBlock {
 		public override bool Equals(object obj) => obj is EqualBlock;
 
 		public override int GetHashCode() => 1;
 	}
 
-	private sealed class ProbeHostDecorator : WinFormsApplicationScreenHostDecorator {
-		public ProbeHostDecorator(IWinFormsApplicationScreenHost host)
+	private sealed class ProbeHostDecorator : FormsUI.ApplicationScreenHostDecorator {
+		public ProbeHostDecorator(FormsUI.IApplicationScreenHost host)
 			: base(host) {
 		}
 
 		public int ShowRequests { get; private set; }
 
-		public override Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default) {
+		public override Task<bool> ShowScreenAsync(ApplicationScreen screen, CancellationToken cancellationToken = default) {
 			ShowRequests++;
 			return base.ShowScreenAsync(screen, cancellationToken);
 		}

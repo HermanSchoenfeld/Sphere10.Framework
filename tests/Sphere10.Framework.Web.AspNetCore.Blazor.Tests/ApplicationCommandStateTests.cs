@@ -24,6 +24,7 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.MainFrame;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -32,18 +33,18 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 public class ApplicationCommandStateTests {
 	[Test]
 	public async Task HiddenRegistrationStaysOutOfNavigationAndCommandsWhileKeyedActivationWorks() {
-		var hidden = new BlazorApplicationMenuItemBuilder()
+		var hidden = new ApplicationMenuItemBuilder()
 			.WithId("project")
 			.WithText("Hidden project launcher")
 			.WithScreen<ProjectScreen>()
 			.WithVisibility(false)
 			.Build();
-		var visible = new BlazorApplicationMenuItemBuilder()
+		var visible = new ApplicationMenuItemBuilder()
 			.WithId("browse")
 			.WithText("Browse projects")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
 			.AddScreen<ProjectScreen>(screen => screen
@@ -58,7 +59,7 @@ public class ApplicationCommandStateTests {
 			)
 			.Build();
 		await using var provider = Services().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var registered = host.Blocks.Single();
 		Assert.That(registered.Menus.Single().Items.Select(item => item.Id), Is.EqualTo(new[] { "project", "browse" }));
@@ -83,7 +84,7 @@ public class ApplicationCommandStateTests {
 		Assert.That(repeated, Is.SameAs(first));
 		Assert.That(second, Is.Not.SameAs(first));
 		Assert.That(first.Parameters[nameof(ProjectScreen.ProjectId)], Is.EqualTo(projectId));
-		Assert.That(((BlazorApplicationScreenSession)first).MenuItem.IsVisible, Is.False);
+		Assert.That(((ApplicationScreenSession)first).MenuItem.IsVisible, Is.False);
 		Assert.That(host.Screens, Has.Length.EqualTo(2));
 	}
 
@@ -91,17 +92,17 @@ public class ApplicationCommandStateTests {
 	public async Task HiddenSeparatorRetainsPresentationMetadataThroughRegistration() {
 		var enabled = false;
 		var separator = new BlazorMenuSeparator { Id = "boundary", IsVisible = false, CanExecute = () => enabled };
-		var before = new BlazorApplicationMenuItemBuilder()
+		var before = new ApplicationMenuItemBuilder()
 			.WithId("before")
 			.WithText("Before")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var after = new BlazorApplicationMenuItemBuilder()
+		var after = new ApplicationMenuItemBuilder()
 			.WithId("after")
 			.WithText("After")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
 			.AddMenu(menu => menu
@@ -113,7 +114,7 @@ public class ApplicationCommandStateTests {
 			)
 			.Build();
 		await using var provider = Services().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var registered = host.Blocks.Single();
 		var boundary = registered.Menus.Single().Items.Single(item => item.Id == "boundary");
 		Assert.That(boundary, Is.Not.SameAs(separator));
@@ -156,7 +157,7 @@ public class ApplicationCommandStateTests {
 			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationShell.BlockId)] = "projects", [nameof(ApplicationShell.ScreenId)] = "project"
@@ -174,14 +175,14 @@ public class ApplicationCommandStateTests {
 	public async Task DisabledLeafCannotExecuteThroughHost() {
 		var enabled = false;
 		var calls = new List<string>();
-		var command = new BlazorApplicationMenuItemBuilder()
+		var command = new ApplicationMenuItemBuilder()
 			.WithId("save")
 			.WithText("Save draft")
 			.EnabledWhen(() => enabled)
 			.WithAction((_, _) => { calls.Add("action"); return Task.CompletedTask; })
 			.Build();
 		command.Select += () => calls.Add("select");
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("projects")
 			.WithName("Projects")
 			.AddMenu(menu => menu
@@ -191,7 +192,7 @@ public class ApplicationCommandStateTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 
@@ -210,13 +211,13 @@ public class ApplicationCommandStateTests {
 	[Test]
 	public async Task EnabledPredicateUpdatesRenderedMenuAndToolbarWithoutReplacingTheCommand() {
 		var enabled = false;
-		var command = new BlazorApplicationMenuItemBuilder()
+		var command = new ApplicationMenuItemBuilder()
 			.WithId("save")
 			.WithText("Save draft")
 			.EnabledWhen(() => enabled)
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var menu = new BlazorApplicationMenuBuilder()
+		var menu = new ApplicationMenuBuilder()
 			.WithId("work")
 			.WithText("Work")
 			.AddItem(command)
@@ -242,36 +243,36 @@ public class ApplicationCommandStateTests {
 	[Test]
 	public async Task ToolbarGroupDispatchesSelectedChildOnceAndClosesTheMenu() {
 		var calls = new List<string>();
-		var child = new BlazorApplicationMenuItemBuilder()
+		var child = new ApplicationMenuItemBuilder()
 			.WithId("route")
 			.WithText("Export route")
 			.WithAction((_, _) => { calls.Add("action"); return Task.CompletedTask; })
 			.Build();
 		child.Select += () => calls.Add("select");
-		var hidden = new BlazorApplicationMenuItemBuilder()
+		var hidden = new ApplicationMenuItemBuilder()
 			.WithId("hidden")
 			.WithText("Hidden export")
 			.WithVisibility(false)
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var group = (BlazorApplicationMenuGroup)new BlazorApplicationMenuItemBuilder()
+		var group = (ApplicationMenuGroup)new ApplicationMenuItemBuilder()
 			.WithId("export")
 			.WithText("Export")
 			.WithChildren(child, hidden)
 			.Build();
 		group.Select += () => calls.Add("group");
 		await using var provider = Services().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(Array.Empty<IBlazorApplicationBlock>(), provider);
+		using var host = new BlazorUI.ApplicationScreenHost(Array.Empty<BlazorUI.IApplicationBlock>(), provider);
 		var hostUserInterface = (IBlazorUserInterfaceServices)host.UserInterfaceServices;
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationCommandBar bar = null;
 			var selected = 0;
-			var callback = EventCallback.Factory.Create<IBlazorApplicationMenuItem>(new object(), async item => {
+			var callback = EventCallback.Factory.Create<BlazorUI.IApplicationMenuItem>(new object(), async item => {
 				selected++;
 				await hostUserInterface.ExecuteMenuItemAsync(item);
 			});
-			var rendered = await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<IBlazorApplicationMenu>(), new[] { group },
+			var rendered = await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<BlazorUI.IApplicationMenu>(), new[] { group },
 				component => bar = component, callback));
 			Assert.That(rendered.ToHtmlString(), Does.Contain("aria-haspopup=\"true\"").And.Contain("aria-expanded=\"false\"").And.Not.Contain("Export route"));
 			Toggle(bar, "toolbar:export");
@@ -290,12 +291,12 @@ public class ApplicationCommandStateTests {
 	[TestCase("Toggle")]
 	public async Task ToolbarDropdownDismissesWithoutExecutingItsChildren(string dismissal) {
 		var selections = 0;
-		var child = new BlazorApplicationMenuItemBuilder()
+		var child = new ApplicationMenuItemBuilder()
 			.WithId("route")
 			.WithText("Export route")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var group = new BlazorApplicationMenuItemBuilder()
+		var group = new ApplicationMenuItemBuilder()
 			.WithId("export")
 			.WithText("Export")
 			.WithChildren(child)
@@ -304,8 +305,8 @@ public class ApplicationCommandStateTests {
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationCommandBar bar = null;
-			var rendered = await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<IBlazorApplicationMenu>(), new[] { group },
-				component => bar = component, EventCallback.Factory.Create<IBlazorApplicationMenuItem>(new object(), _ => selections++)));
+			var rendered = await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<BlazorUI.IApplicationMenu>(), new[] { group },
+				component => bar = component, EventCallback.Factory.Create<BlazorUI.IApplicationMenuItem>(new object(), _ => selections++)));
 			Toggle(bar, "toolbar:export");
 			await bar.SetParametersAsync(ParameterView.Empty);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Dismiss application menu").And.Contain("Export route"));
@@ -323,12 +324,12 @@ public class ApplicationCommandStateTests {
 
 	[Test]
 	public async Task RepeatedToolbarSelectionWhileChildIsRunningIsCoalesced() {
-		var child = new BlazorApplicationMenuItemBuilder()
+		var child = new ApplicationMenuItemBuilder()
 			.WithId("route")
 			.WithText("Export route")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var group = (BlazorApplicationMenuGroup)new BlazorApplicationMenuItemBuilder()
+		var group = (ApplicationMenuGroup)new ApplicationMenuItemBuilder()
 			.WithId("export")
 			.WithText("Export")
 			.WithChildren(child)
@@ -341,12 +342,12 @@ public class ApplicationCommandStateTests {
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ApplicationCommandBar bar = null;
-			var callback = EventCallback.Factory.Create<IBlazorApplicationMenuItem>(new object(), async _ => {
+			var callback = EventCallback.Factory.Create<BlazorUI.IApplicationMenuItem>(new object(), async _ => {
 				selections++;
 				entered.TrySetResult();
 				await release.Task;
 			});
-			await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<IBlazorApplicationMenu>(), new[] { group }, component => bar = component, callback));
+			await renderer.RenderComponentAsync<CommandBarHarness>(BarParameters(Array.Empty<BlazorUI.IApplicationMenu>(), new[] { group }, component => bar = component, callback));
 			var first = Execute(bar, group.Items[0]);
 			await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
 			var repeated = Execute(bar, group.Items[0]);
@@ -359,27 +360,27 @@ public class ApplicationCommandStateTests {
 
 	[Test]
 	public void GroupBuilderSnapshotsChildrenAndRejectsDuplicateSiblingIds() {
-		var child = new BlazorApplicationMenuItemBuilder()
+		var child = new ApplicationMenuItemBuilder()
 			.WithId("route")
 			.WithText("Export route")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var replacement = new BlazorApplicationMenuItemBuilder()
+		var replacement = new ApplicationMenuItemBuilder()
 			.WithId("summary")
 			.WithText("Print summary")
 			.WithAction((_, _) => Task.CompletedTask)
 			.Build();
-		var children = new IBlazorApplicationMenuItem[] { child };
-		var builder = new BlazorApplicationMenuItemBuilder()
+		var children = new BlazorUI.IApplicationMenuItem[] { child };
+		var builder = new ApplicationMenuItemBuilder()
 			.WithId("export")
 			.WithText("Export")
 			.WithChildren(children);
 		children[0] = replacement;
-		var group = (BlazorApplicationMenuGroup)builder.Build();
+		var group = (ApplicationMenuGroup)builder.Build();
 		var exposed = group.Items;
 		exposed[0] = replacement;
 		Assert.That(group.Items.Single().Id, Is.EqualTo("route"));
-		Assert.That(() => new BlazorApplicationMenuItemBuilder()
+		Assert.That(() => new ApplicationMenuItemBuilder()
 			.WithId("duplicate")
 			.WithText("Duplicate")
 			.WithChildren(child, child)
@@ -393,11 +394,11 @@ public class ApplicationCommandStateTests {
 		return services;
 	}
 
-	private static BlazorApplicationScreenActivation Activation(Guid projectId, string key) =>
+	private static ApplicationScreenActivation Activation(Guid projectId, string key) =>
 		new(new Dictionary<string, object> { [nameof(ProjectScreen.ProjectId)] = projectId }, key);
 
-	private static ParameterView BarParameters(IBlazorApplicationMenu[] menus, IBlazorApplicationMenuItem[] items, Action<ApplicationCommandBar> capture,
-		EventCallback<IBlazorApplicationMenuItem> onSelect = default
+	private static ParameterView BarParameters(BlazorUI.IApplicationMenu[] menus, BlazorUI.IApplicationMenuItem[] items, Action<ApplicationCommandBar> capture,
+		EventCallback<BlazorUI.IApplicationMenuItem> onSelect = default
 	) => ParameterView.FromDictionary(new Dictionary<string, object> {
 		[nameof(CommandBarHarness.Menus)] = menus, [nameof(CommandBarHarness.Items)] = items,
 		[nameof(CommandBarHarness.Capture)] = capture, [nameof(CommandBarHarness.Select)] = onSelect
@@ -406,23 +407,23 @@ public class ApplicationCommandStateTests {
 	private static void Toggle(ApplicationCommandBar bar, string key) =>
 		typeof(ApplicationCommandBar).GetMethod("ToggleMenu", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bar, new object[] { key });
 
-	private static Task Execute(ApplicationCommandBar bar, IBlazorApplicationMenuItem item) =>
+	private static Task Execute(ApplicationCommandBar bar, BlazorUI.IApplicationMenuItem item) =>
 		(Task)typeof(ApplicationCommandBar).GetMethod("ExecuteAsync", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bar, new object[] { item });
 
-	public class ProjectScreen : BlazorApplicationScreen {
+	public class ProjectScreen : ApplicationScreen {
 		[Parameter] public Guid ProjectId { get; set; }
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, "Project content");
 	}
 
 	public class CommandBarHarness : ComponentBase {
-		[Parameter] public IBlazorApplicationMenu[] Menus { get; set; }
+		[Parameter] public BlazorUI.IApplicationMenu[] Menus { get; set; }
 
-		[Parameter] public IBlazorApplicationMenuItem[] Items { get; set; }
+		[Parameter] public BlazorUI.IApplicationMenuItem[] Items { get; set; }
 
 		[Parameter] public Action<ApplicationCommandBar> Capture { get; set; }
 
-		[Parameter] public EventCallback<IBlazorApplicationMenuItem> Select { get; set; }
+		[Parameter] public EventCallback<BlazorUI.IApplicationMenuItem> Select { get; set; }
 
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<ApplicationCommandBar>(0);

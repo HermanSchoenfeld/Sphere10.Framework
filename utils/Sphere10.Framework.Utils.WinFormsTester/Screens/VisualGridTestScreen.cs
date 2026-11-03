@@ -22,7 +22,7 @@ using Sphere10.Framework.Windows.Forms.Crud;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates employee CRUD, reference editors and worker-produced live snapshots with composed grid preferences.</summary>
-public partial class VisualGridTestScreen : WinFormsApplicationScreen {
+public partial class VisualGridTestScreen : ApplicationScreen {
 	private static readonly string[] _subjects = new string[] { "Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5", "Subject 6", "Subject 7", "Subject 8", "Subject 9", "Subject 10" };
 	private static readonly string[] _streets = new string[] { "Alpha", "Beta", "Gamma", "Delta", "Omega", "Phi", "Psi", "Andromeda", "Milky Way", "Ursur Minor" };
 	private static readonly string[] _streetTypes = new string[] { "St", "Rd", "Way", "Pde", "Ct" };

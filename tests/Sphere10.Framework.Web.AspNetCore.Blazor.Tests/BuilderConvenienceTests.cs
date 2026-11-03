@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -28,13 +29,13 @@ public class BuilderConvenienceTests {
 		var activations = 0;
 		var settings = new Preferences { Value = 7 };
 		var parameters = new Dictionary<string, object> { [nameof(ProbeScreen.Name)] = "second" };
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Input")
 			.AddScreen<ProbeScreen>("First", out var first)
 			.AddScreen<ProbeScreen>("Second", out var second, activationMode: ScreenActivationMode.SingleInstance,
 				stableKey: "second", parameters: parameters, settings: settings, activator: _ => {
 					activations++;
-					return new BlazorApplicationScreenActivation();
+					return new ApplicationScreenActivation();
 				}
 			)
 			.WithDefaultScreen(second)
@@ -57,7 +58,7 @@ public class BuilderConvenienceTests {
 		Assert.That(((BlazorScreenMenuItem)firstGraph.Menus.Single().Items[1]).ScreenDefinition, Is.SameAs(firstGraph.DefaultScreenDefinition));
 		Assert.That(firstGraph.DefaultScreenDefinition.Registration, Is.SameAs(second));
 		Assert.That(firstGraph.DefaultScreenDefinition, Is.Not.SameAs(secondGraph.DefaultScreenDefinition));
-		Assert.That(((BlazorApplicationScreenDefinition)firstGraph.DefaultScreenDefinition).Parameters[nameof(ProbeScreen.Name)], Is.EqualTo("second"));
+		Assert.That(((BlazorUI.ApplicationScreenDefinition)firstGraph.DefaultScreenDefinition).Parameters[nameof(ProbeScreen.Name)], Is.EqualTo("second"));
 		Assert.That(((Preferences)firstGraph.DefaultScreenDefinition.Settings).Value, Is.EqualTo(7));
 		Assert.That(firstGraph.DefaultScreenDefinition.Settings, Is.Not.SameAs(secondGraph.DefaultScreenDefinition.Settings));
 	}
@@ -66,9 +67,9 @@ public class BuilderConvenienceTests {
 	[Test]
 	public async Task InlineToolbarCommandsAndGroupsRetainExecutionTimingAndGraphLocalReferences() {
 		var calls = 0;
-		IBlazorApplicationMenuItem action = null;
-		var child = new BlazorApplicationMenuItemBuilder().WithText("Child").WithAction(() => calls++).Build();
-		var builder = new BlazorApplicationBlockBuilder()
+		BlazorUI.IApplicationMenuItem action = null;
+		var child = new ApplicationMenuItemBuilder().WithText("Child").WithAction(() => calls++).Build();
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Commands")
 			.AddScreen(typeof(ProbeScreen), "Runtime", out var registration)
 			.AddToolBarItem("Run", (_, _) => {
@@ -92,7 +93,7 @@ public class BuilderConvenienceTests {
 		Assert.That(block.ToolBarItems[0].IsVisible, Is.False);
 		Assert.That(block.ToolBarItems[0].IsEnabled, Is.False);
 		Assert.That(((BlazorScreenMenuItem)block.ToolBarItems[1]).ScreenDefinition, Is.SameAs(((BlazorScreenMenuItem)block.ToolBarItems[2]).ScreenDefinition));
-		Assert.That(((BlazorApplicationMenuGroup)block.ToolBarItems[3]).Items.Single(), Is.Not.SameAs(child));
+		Assert.That(((ApplicationMenuGroup)block.ToolBarItems[3]).Items.Single(), Is.Not.SameAs(child));
 		Assert.That(block.Menus[0].Items[0].IsVisible, Is.False);
 		Assert.That(block.Menus[0].Items[0].IsEnabled, Is.False);
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -103,7 +104,7 @@ public class BuilderConvenienceTests {
 	/// <summary>Verifies invalid inline children leave the builder graph unchanged.</summary>
 	[Test]
 	public void InvalidInlineChildrenLeaveTheBuilderGraphUnchanged() {
-		var builder = new BlazorApplicationBlockBuilder().WithName("Valid");
+		var builder = new ApplicationBlockBuilder().WithName("Valid");
 
 		Assert.That(() => builder.AddScreen<ProbeScreen>(""), Throws.ArgumentException);
 		Assert.That(() => builder.AddScreen<ProbeScreen>("Bad", activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
@@ -117,7 +118,7 @@ public class BuilderConvenienceTests {
 
 	#region Inner Types
 
-	private sealed class ProbeScreen : BlazorApplicationScreen {
+	private sealed class ProbeScreen : ApplicationScreen {
 		/// <summary>The persisted name used by the fixture.</summary>
 		[Parameter]
 		public string Name { get; set; }

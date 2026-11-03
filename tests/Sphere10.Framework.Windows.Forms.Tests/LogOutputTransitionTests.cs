@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -160,14 +161,14 @@ public class LogOutputTransitionTests {
 
 	[Test]
 	public void SingleViewOriginSurvivesItsIndependentUndockedLogOutput() => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.SingleView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.SingleView };
 		owner.Controls.Add(host);
-		using var origin = new WinFormsApplicationScreen { Title = "Single-view origin" };
+		using var origin = new ApplicationScreen { Title = "Single-view origin" };
 		var control = new LogOutputSelectorControl { ScreenHost = host, ScreenTitle = "Independent log" };
 		origin.Controls.Add(control);
 		Assert.That(host.ShowScreen(origin), Is.True);
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false, Options = LogOptions.InfoEnabled });
-		var window = owner.OwnedForms.OfType<WinFormsApplicationScreenForm>().Single();
+		var window = owner.OwnedForms.OfType<ApplicationScreenForm>().Single();
 		var output = window.Screen as LogScreen;
 		Assert.That(output, Is.Not.Null);
 		Assert.That(output.Host, Is.Not.SameAs(host));

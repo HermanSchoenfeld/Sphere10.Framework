@@ -16,12 +16,14 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationBuilderSharingTests {
+public class ApplicationBuilderSharingTests {
 	[Test]
 	public async Task SharedScreenConfigurationReachesTheRegisteredBlazorSession() {
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
@@ -53,12 +55,12 @@ public class BlazorApplicationBuilderSharingTests {
 		parameters["Message"] = "Changed";
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var first = await host.ActivateScreenAsync("work", "document");
 		var second = await host.ActivateScreenAsync("work", "document");
 
-		Assert.That(((BlazorApplicationScreenSession)first).MenuItem.Title, Is.EqualTo("Open document"));
-		Assert.That(((IScreenMenuItem)((BlazorApplicationScreenSession)first).MenuItem).ScreenDefinition.Title, Is.EqualTo("Document editor"));
+		Assert.That(((ApplicationScreenSession)first).MenuItem.Title, Is.EqualTo("Open document"));
+		Assert.That(((IScreenMenuItem)((ApplicationScreenSession)first).MenuItem).ScreenDefinition.Title, Is.EqualTo("Document editor"));
 		Assert.That(first.Title, Is.EqualTo("Document editor"));
 		Assert.That(first.Parameters["Message"], Is.EqualTo("Original"));
 		Assert.That(second.Id, Is.Not.EqualTo(first.Id));
@@ -68,7 +70,7 @@ public class BlazorApplicationBuilderSharingTests {
 	[TestCase(true)]
 	public async Task SynchronousActionUsesTheSharedExecutorForBothConfigurationPaths(bool shortcut) {
 		var calls = 0;
-		var menu = new BlazorApplicationMenuBuilder()
+		var menu = new ApplicationMenuBuilder()
 			.WithText("Actions");
 		if (shortcut)
 			menu.AddActionItem("run", "Run", () => calls++);
@@ -89,7 +91,7 @@ public class BlazorApplicationBuilderSharingTests {
 			);
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var hostUserInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var registered = host.Blocks.Single().Menus.Single().Items.Single();
 
@@ -101,7 +103,7 @@ public class BlazorApplicationBuilderSharingTests {
 
 	[Test]
 	public void ScreenShortcutsRejectInvalidPoliciesDuringChildConfiguration() {
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace");
 		Assert.That(() => builder
 			.AddScreen<ProbeScreen>(screen => screen
@@ -118,11 +120,11 @@ public class BlazorApplicationBuilderSharingTests {
 
 	[Test]
 	public void SharedGenericScreenMethodsRetainBlazorTypeValidation() {
-		Assert.That(() => new BlazorApplicationBlockBuilder()
+		Assert.That(() => new ApplicationBlockBuilder()
 			.AddScreen(screen => screen
 				.WithScreen<NeutralScreen>()
 			), Throws.ArgumentException);
-		Assert.That(() => new BlazorApplicationMenuItemBuilder()
+		Assert.That(() => new ApplicationMenuItemBuilder()
 			.WithScreen<NeutralScreen>(), Throws.ArgumentException);
 	}
 
@@ -234,17 +236,17 @@ public class BlazorApplicationBuilderSharingTests {
 		Assert.That(completedModel, Is.SameAs(model));
 	}
 
-	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public sealed class ProbeScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 
-	private sealed class NeutralScreen : IApplicationScreen {
-		public IApplicationScreenHost Host { get; set; }
+	private sealed class NeutralScreen : SharedUI.IApplicationScreen {
+		public SharedUI.IApplicationScreenHost Host { get; set; }
 
-		public IApplicationBlock Block { get; set; }
+		public SharedUI.IApplicationBlock Block { get; set; }
 
 	}
 

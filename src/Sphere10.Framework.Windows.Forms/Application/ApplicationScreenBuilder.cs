@@ -8,32 +8,33 @@
 
 using System;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Configures one native screen independently of its navigation commands.</summary>
-public class WinFormsApplicationScreenBuilder : ApplicationScreenBuilderBase<WinFormsApplicationScreenBuilder> {
-	private Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> _activator;
-	private Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> _settingsEditor;
+public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<ApplicationScreenBuilder> {
+	private Func<ApplicationScreenActivationContext, ApplicationScreen> _activator;
+	private Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> _settingsEditor;
 
 	/// <summary>Starts a registration whose type is supplied through WithScreen.</summary>
-	public WinFormsApplicationScreenBuilder() {
+	public ApplicationScreenBuilder() {
 	}
 
 	// Preserves the typed registration identity supplied by a specialized builder.
-	protected WinFormsApplicationScreenBuilder(Type screenType, ApplicationScreenRegistration registration)
+	protected ApplicationScreenBuilder(Type screenType, ApplicationScreenRegistration registration)
 		: base(screenType, registration) {
 	}
 
 	/// <summary>Overrides creation only; the host still owns policy, guards, retention and disposal.</summary>
-	public WinFormsApplicationScreenBuilder WithActivator(Func<WinFormsApplicationScreenActivationContext, WinFormsApplicationScreen> activator) {
+	public ApplicationScreenBuilder WithActivator(Func<ApplicationScreenActivationContext, ApplicationScreen> activator) {
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		_activator = activator;
 		return this;
 	}
 
 	/// <summary>Supplies an editor for the actual settings object while Options owns validation and persistence.</summary>
-	public WinFormsApplicationScreenBuilder WithSettingsEditor(Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> editorFactory) {
+	public ApplicationScreenBuilder WithSettingsEditor(Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> editorFactory) {
 		Guard.ArgumentNotNull(editorFactory, nameof(editorFactory));
 		_settingsEditor = editorFactory;
 		return this;
@@ -41,20 +42,20 @@ public class WinFormsApplicationScreenBuilder : ApplicationScreenBuilderBase<Win
 
 	// Keeps incompatible screen types out of the native registration graph.
 	protected override void ValidateScreenType(Type screenType) {
-		Tools.UI.ValidateScreenType(screenType, typeof(WinFormsApplicationScreen));
+		Tools.UI.ValidateScreenType(screenType, typeof(ApplicationScreen));
 	}
 
 	// Builds metadata only; activation remains deferred until the host opens this registration.
-	protected override ApplicationScreenDefinition CreateDefinition() {
-		return new WinFormsApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _activator, Settings, _settingsEditor);
+	protected override SharedUI.ApplicationScreenDefinition CreateDefinition() {
+		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _activator, Settings, _settingsEditor);
 	}
 }
 
 /// <summary>Supplies the compile-time screen type and typed registration identity for a native screen.</summary>
-public class WinFormsApplicationScreenBuilder<TScreen> : WinFormsApplicationScreenBuilder
-	where TScreen : WinFormsApplicationScreen {
+public class ApplicationScreenBuilder<TScreen> : ApplicationScreenBuilder
+	where TScreen : ApplicationScreen {
 	/// <summary>Starts a registration for the compile-time screen type.</summary>
-	public WinFormsApplicationScreenBuilder()
+	public ApplicationScreenBuilder()
 		: base(typeof(TScreen), new ApplicationScreenRegistration<TScreen>()) {
 	}
 }

@@ -63,15 +63,15 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.PostgreSQL;
-using WinFormsApplication = System.Windows.Forms.Application;
+using Application = System.Windows.Forms.Application;
 
 namespace ReadmeExamples.PostgreSQLDirect;
 
 internal static class Program {
 	[STAThread]
 	private static void Main() {
-		WinFormsApplication.EnableVisualStyles();
-		WinFormsApplication.SetCompatibleTextRenderingDefault(false);
+		Application.EnableVisualStyles();
+		Application.SetCompatibleTextRenderingDefault(false);
 		using var window = new Form { Text = "PostgreSQL connection", ClientSize = new Size(640, 260) };
 		var editor = new PostgreSQLConnectionPanel {
 			Dock = DockStyle.Fill,
@@ -101,7 +101,7 @@ internal static class Program {
 		window.Controls.Add(editor);
 		window.Controls.Add(status);
 		window.Controls.Add(testButton);
-		WinFormsApplication.Run(window);
+		Application.Run(window);
 	}
 }
 ```
@@ -125,15 +125,15 @@ using Sphere10.Framework.Data;
 using Sphere10.Framework.Windows.Forms;
 using ProviderModule = Sphere10.Framework.Windows.Forms.PostgreSQL.ModuleConfiguration;
 using WinFormsModule = Sphere10.Framework.Windows.Forms.ModuleConfiguration;
-using WinFormsApplication = System.Windows.Forms.Application;
+using Application = System.Windows.Forms.Application;
 
 namespace ReadmeExamples.PostgreSQLSelector;
 
 internal static class Program {
 	[STAThread]
 	private static void Main() {
-		WinFormsApplication.EnableVisualStyles();
-		WinFormsApplication.SetCompatibleTextRenderingDefault(false);
+		Application.EnableVisualStyles();
+		Application.SetCompatibleTextRenderingDefault(false);
 		var framework = Sphere10Framework.Instance;
 		framework.Build()
 			.AddModule<WinFormsModule>()
@@ -146,7 +146,7 @@ internal static class Program {
 			SelectedDBMSType = DBMSType.PostgreSQL
 		};
 		window.Controls.Add(selector);
-		WinFormsApplication.Run(window);
+		Application.Run(window);
 	}
 }
 ```

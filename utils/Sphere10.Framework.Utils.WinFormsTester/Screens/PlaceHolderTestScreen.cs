@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Compares the native placeholder extender and reusable Framework editor properties.</summary>
-public partial class PlaceHolderTestScreen : WinFormsApplicationScreen {
+public partial class PlaceHolderTestScreen : ApplicationScreen {
 	/// <summary>Creates both groups with ordinary native editing behavior.</summary>
 	public PlaceHolderTestScreen() {
 		InitializeComponent();

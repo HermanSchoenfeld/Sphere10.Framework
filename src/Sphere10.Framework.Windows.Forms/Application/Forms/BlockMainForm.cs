@@ -110,7 +110,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	/// <summary>The block owning this window's visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationBlock ActiveBlock {
+	public IApplicationBlock ActiveBlock {
 		get {
 			return ScreenHost.ActiveBlock;
 		}
@@ -118,7 +118,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	/// <summary>The block being browsed in the sidebar, independently of the visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationBlock SelectedBlock {
+	public IApplicationBlock SelectedBlock {
 		get {
 			return ScreenHost.SelectedBlock;
 		}
@@ -129,7 +129,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationBlock[] Blocks {
+	public IApplicationBlock[] Blocks {
 		get {
 			return RegisteredBlocks;
 		}
@@ -137,7 +137,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	/// <summary>The registered blocks owned by the screen host.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationBlock[] RegisteredBlocks {
+	public virtual IApplicationBlock[] RegisteredBlocks {
 		get {
 			return ScreenHost.Blocks;
 		}
@@ -154,7 +154,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#region Block management
 
-	public virtual void RegisterBlock(IWinFormsApplicationBlock block) {
+	public virtual void RegisterBlock(IApplicationBlock block) {
 		if (_registeringBlocks)
 			RegisterBlockCore(block);
 		else
@@ -162,7 +162,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	// Register only the block's navigation button; its menu is built when selected.
-	private void RegisterBlockCore(IWinFormsApplicationBlock block) {
+	private void RegisterBlockCore(IApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		ScreenHost.RegisterScreenTypes(block);
 		if (SelectedBlock == null || ReferenceEquals(SelectedBlock, block))
@@ -176,8 +176,8 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
-	internal bool RegisterBlocks(IEnumerable<IWinFormsApplicationBlock> blocks, bool invokeOverrides = true) {
-		var ordered = blocks.Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+	internal bool RegisterBlocks(IEnumerable<IApplicationBlock> blocks, bool invokeOverrides = true) {
+		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
 		var definitions = ordered.Where(block => !IsBlockRegistered(block)).ToArray();
 		var accepted = ScreenHost.InitializeScreens(ordered, () => {
 			using (Tools.Scope.ExecuteOnDispose(() => _registeringBlocks = false)) {
@@ -199,7 +199,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	/// <summary>Removes an accepted block and its navigation view after the host's existing screen guards succeed.</summary>
-	public virtual void UnregisterBlock(IWinFormsApplicationBlock block) {
+	public virtual void UnregisterBlock(IApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.Argument(IsBlockRegistered(block), nameof(block), "Block is not registered");
 		using var update = ScreenHost.EnterPresentationScope();
@@ -218,12 +218,12 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	/// <summary>Queries the host's registered block inventory.</summary>
-	public virtual bool IsBlockRegistered(IWinFormsApplicationBlock block) {
+	public virtual bool IsBlockRegistered(IApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		return ScreenHost.Blocks.Contains(block, ReferenceEqualityComparer.Instance);
 	}
 
-	public virtual void ExecuteMenuItem(IWinFormsApplicationMenuItem menuItem) {
+	public virtual void ExecuteMenuItem(IApplicationMenuItem menuItem) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (menuItem is IWinFormsControlMenuItem) {
 				ExecuteControlMenuItem(menuItem as IWinFormsControlMenuItem);
@@ -252,7 +252,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	/// <summary>Creates the selected block's current sidebar from its owner-supplied menus.</summary>
-	protected virtual TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
+	protected virtual TaskPane CreateApplicationBlockPane(IApplicationBlock block) {
 		var taskPane = new TaskPane {
 			AutoScroll = true,
 			AutoScrollMargin = new Size(12, 12),
@@ -267,7 +267,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	// Each generated menu group owns its font and child controls; command images remain borrowed.
-	private Expando CreateMenu(IWinFormsApplicationMenu menu) {
+	private Expando CreateMenu(IApplicationMenu menu) {
 		var font = new Font("Tahoma", 8.25F);
 		var expando = new Expando {
 			Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
@@ -286,7 +286,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	// Generated views dispatch directly to their owner command; supplied controls retain their owner's lifetime.
-	private Control CreateMenuItem(IWinFormsApplicationMenuItem item) {
+	private Control CreateMenuItem(IApplicationMenuItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		if (item is IWinFormsControlMenuItem control)
 			return control.ControlToShow;
@@ -315,7 +315,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	#region Screen management
 
 	// Screen activation synchronizes the browsed block while preserving the screen's native display policy.
-	protected override void OnActiveScreenChanged(WinFormsApplicationScreen screen) {
+	protected override void OnActiveScreenChanged(ApplicationScreen screen) {
 		if (screen != null) {
 			if (screen.Block != null)
 				SelectedBlock = screen.Block;
@@ -382,7 +382,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		ApplyNavigationPaneWidth(_navigationPaneWidth);
 	}
 
-	private void UpdateNavigationPane(WinFormsApplicationScreen? Screen) {
+	private void UpdateNavigationPane(ApplicationScreen? Screen) {
 		var ScreenFillsWindow = Screen?.DisplayMode is ScreenDisplayMode.Filled or ScreenDisplayMode.FilledAndMaximized;
 		var Collapsed = NavigationPaneCollapsed || ScreenFillsWindow;
 		_splitContainer.SuspendLayout();
@@ -485,7 +485,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	#region ApplicationBar Handlers
 
 	private void NavigationSelectionChanged(ApplicationBar source, ApplicationBar.Item button) {
-		var block = button.Button.Tag as IWinFormsApplicationBlock;
+		var block = button.Button.Tag as IApplicationBlock;
 		using var restoreSelection = Tools.Scope.ExecuteOnDispose(SynchronizeNavigationSelection);
 		if (block != null && IsBlockRegistered(block))
 			ScreenHost.SelectBlock(block);
@@ -504,7 +504,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		if (IsDisposed || Disposing)
 			return;
 		var selected = _applicationBar.Items.FirstOrDefault(item => ReferenceEquals(item.Button.Tag, SelectedBlock));
-		foreach (var item in _applicationBar.Items.Where(item => item.Button.Tag is IWinFormsApplicationBlock && !ReferenceEquals(item, selected))) {
+		foreach (var item in _applicationBar.Items.Where(item => item.Button.Tag is IApplicationBlock && !ReferenceEquals(item, selected))) {
 			var pane = item.MenuControl;
 			item.MenuControl = null;
 			DisposeNavigationPane(pane);
@@ -521,7 +521,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	private static void DisposeNavigationPane(Control pane) {
 		if (pane == null)
 			return;
-		if (pane.Tag is IWinFormsApplicationBlock block) {
+		if (pane.Tag is IApplicationBlock block) {
 			foreach (var item in block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsControlMenuItem>()) {
 				var control = item.ControlToShow;
 				if (pane.Contains(control))

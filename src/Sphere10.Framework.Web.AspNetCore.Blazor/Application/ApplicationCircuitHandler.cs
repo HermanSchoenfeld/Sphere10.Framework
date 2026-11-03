@@ -13,16 +13,17 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Runs application-local lifecycle tasks when an interactive circuit opens and closes.</summary>
-internal sealed class BlazorApplicationCircuitHandler : CircuitHandler {
+internal sealed class ApplicationCircuitHandler : CircuitHandler {
 	private readonly IServiceProvider _services;
-	private IApplication _application;
+	private SharedUI.IApplication _application;
 
 	/// <summary>Borrows the services belonging to this circuit.</summary>
-	public BlazorApplicationCircuitHandler(IServiceProvider services) {
+	public ApplicationCircuitHandler(IServiceProvider services) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		_services = services;
 	}
@@ -33,7 +34,7 @@ internal sealed class BlazorApplicationCircuitHandler : CircuitHandler {
 
 		// Circuit initialization selects its browser provider through the same facade used by native applications.
 		using var settings = UserSettings.UseProvider(_services.GetRequiredService<ISettingsProvider>());
-		_application ??= _services.GetRequiredService<IApplication>();
+		_application ??= _services.GetRequiredService<SharedUI.IApplication>();
 		await _application.InitializeAsync(cancellationToken);
 	}
 

@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Verifies owned temporary compression round trips without blocking the native dispatcher.</summary>
-public partial class CompressionTestScreen : WinFormsApplicationScreen {
+public partial class CompressionTestScreen : ApplicationScreen {
 	private CancellationTokenSource _operationCancellation;
 
 	/// <summary>Creates file choices without opening files or starting compression.</summary>

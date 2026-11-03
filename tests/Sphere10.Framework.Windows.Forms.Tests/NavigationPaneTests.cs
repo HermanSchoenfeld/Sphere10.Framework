@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -295,7 +296,7 @@ public class NavigationPaneTests {
 	public void DefaultSidebarFitsLongScreenNames() {
 		using var Form = new NavigationLayoutProbeMainForm { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
 		using var Icon = new Bitmap(16, 16);
-		using var Block = new WinFormsApplicationBlockBuilder()
+		using var Block = new ApplicationBlockBuilder()
 			.WithName("Navigation width")
 			.AddScreen<NavigationScreen>(screen => screen
 				.WithTitle("FlagsCheckedListBox")
@@ -323,7 +324,7 @@ public class NavigationPaneTests {
 			ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000), ClientSize = new Size(1280, clientHeight)
 		};
 		using var icon = new Bitmap(16, 16);
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Navigation reflow")
 			.AddScreen<NavigationScreen>(screen => screen
 				.WithTitle("Installed Applications Management")
@@ -573,8 +574,8 @@ public class NavigationPaneTests {
 			NavigationPaneCollapsed = collapsed,
 			NavigationColor = block => block.Name == "First" ? firstColor : Color.MidnightBlue
 		};
-		using var firstBlock = new WinFormsApplicationBlock { Name = "First" };
-		using var secondBlock = new WinFormsApplicationBlock { Name = "Second" };
+		using var firstBlock = new ApplicationBlock { Name = "First" };
+		using var secondBlock = new ApplicationBlock { Name = "Second" };
 		form.RegisterBlock(firstBlock);
 		form.RegisterBlock(secondBlock);
 		var firstPane = CurrentPane(form);
@@ -609,7 +610,7 @@ public class NavigationPaneTests {
 	[Test]
 	public void DockPreviewTracksLivePaneSettingsAndSystemThemeChanges() {
 		using var Form = new BlockMainForm();
-		using var Block = new WinFormsApplicationBlock { Name = "Themed" };
+		using var Block = new ApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
 		var Pane = CurrentPane(Form);
 		Pane.CustomSettings.GradientStartColor = Color.MidnightBlue;
@@ -627,7 +628,7 @@ public class NavigationPaneTests {
 		using var Form = new BlockMainForm();
 		var DefaultBackColor = Form.ScreenHost.TabControl.DockPreviewBackColor;
 		var DefaultForeColor = Form.ScreenHost.TabControl.DockPreviewForeColor;
-		var Block = new WinFormsApplicationBlock { Name = "Themed" };
+		var Block = new ApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
 		CurrentPane(Form).CustomSettings.GradientStartColor = Color.MidnightBlue;
 		Form.UnregisterBlock(Block);
@@ -684,9 +685,9 @@ public class NavigationPaneTests {
 
 	private class ProbeMainForm : BlockMainForm {
 		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-		public Func<IWinFormsApplicationBlock, Color> NavigationColor { get; set; }
+		public Func<FormsUI.IApplicationBlock, Color> NavigationColor { get; set; }
 
-		protected override TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
+		protected override TaskPane CreateApplicationBlockPane(FormsUI.IApplicationBlock block) {
 			var pane = base.CreateApplicationBlockPane(block);
 			if (NavigationColor != null)
 				pane.CustomSettings.GradientStartColor = NavigationColor(block);
@@ -719,7 +720,7 @@ public class NavigationPaneTests {
 		public override void ReportError(Exception Error) => LayoutErrors.Add(Error);
 	}
 
-	private class NavigationScreen : WinFormsApplicationScreen {
+	private class NavigationScreen : ApplicationScreen {
 		public NavigationScreen() {
 			ActivationMode = ScreenActivationMode.MultiInstance;
 			ScreenToolBar = new ToolStrip();

@@ -23,7 +23,7 @@ partial class ControlCatalogHostedScreen {
 		_className.Dock = DockStyle.Top;
 		_className.Height = 58;
 		_className.Padding = new Padding(12);
-		_className.Text = "Sphere10.Framework.Windows.Forms.WinFormsApplicationScreen";
+		_className.Text = "Sphere10.Framework.Windows.Forms.ApplicationScreen";
 		_draft.Name = "hostedDraft";
 		_draft.Dock = DockStyle.Fill;
 		_draft.Multiline = true;

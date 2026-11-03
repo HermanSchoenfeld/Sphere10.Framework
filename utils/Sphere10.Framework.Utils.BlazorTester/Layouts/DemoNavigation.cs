@@ -14,6 +14,8 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Models;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Layouts;
 
@@ -47,12 +49,12 @@ public static class DemoNavigation {
 		return _aliases.FirstOrDefault(alias => string.Equals(alias.Route, normalized, StringComparison.OrdinalIgnoreCase));
 	}
 
-	public static Task<IEnumerable<SearchResult>> SearchAsync(IApplicationScreenHost screenHost, string term) {
+	public static Task<IEnumerable<SearchResult>> SearchAsync(SharedUI.IApplicationScreenHost screenHost, string term) {
 		Guard.ArgumentNotNull(screenHost, nameof(screenHost));
 		var query = term?.Trim();
 		IEnumerable<SearchResult> results = string.IsNullOrEmpty(query)
 			? Array.Empty<SearchResult>()
-			: screenHost.Blocks.Cast<IBlazorApplicationBlock>().SelectMany(block => block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
+			: screenHost.Blocks.Cast<BlazorUI.IApplicationBlock>().SelectMany(block => block.Menus.SelectMany(menu => menu.Items).OfType<BlazorScreenMenuItem>()
 				.Where(item => item.IsVisible && (item.Title.Contains(query, StringComparison.OrdinalIgnoreCase) || block.Name.Contains(query, StringComparison.OrdinalIgnoreCase)))
 				.Select(item => new SearchResult(item.Title, new Uri($"application?block={Uri.EscapeDataString(block.Id)}&screen={Uri.EscapeDataString(item.Id)}", UriKind.Relative))))
 				.ToArray();

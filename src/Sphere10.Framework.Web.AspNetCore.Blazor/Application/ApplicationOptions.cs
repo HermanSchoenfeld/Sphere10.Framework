@@ -9,10 +9,10 @@
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Immutable host branding that can be resolved without constructing a circuit or its screen host.</summary>
-public sealed record BlazorApplicationOptions {
+public sealed record ApplicationOptions {
 	public const string DefaultTitle = "Sphere10 application";
 
-	public BlazorApplicationOptions(string title = DefaultTitle, string faviconUrl = null, string faviconContentType = null) {
+	public ApplicationOptions(string title = DefaultTitle, string faviconUrl = null, string faviconContentType = null) {
 		Guard.Argument(!string.IsNullOrWhiteSpace(title), nameof(title), "An application title is required.");
 		Guard.Argument(faviconUrl == null || !string.IsNullOrWhiteSpace(faviconUrl), nameof(faviconUrl), "A favicon URL cannot be empty.");
 		Guard.Argument(faviconContentType == null || !string.IsNullOrWhiteSpace(faviconContentType), nameof(faviconContentType), "A favicon content type cannot be empty.");

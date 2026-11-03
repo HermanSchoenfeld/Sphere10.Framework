@@ -22,6 +22,7 @@ using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -35,8 +36,8 @@ public class DemoPluginLifecycleTests {
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var pluginNames = first.LoadedPlugins.Select(plugin => plugin.Name).ToArray();
 		var firstStatus = firstScope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var secondStatus = secondScope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
@@ -59,8 +60,8 @@ public class DemoPluginLifecycleTests {
 			Assert.That(firstFinalizer, Is.TypeOf<DemoPluginFinalizer>());
 			Assert.That(secondFinalizer, Is.TypeOf<DemoPluginFinalizer>().And.Not.SameAs(firstFinalizer));
 		}
-		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(IApplication)), Is.Empty);
-		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(IApplication)), Is.Empty);
+		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationInitializer>(typeof(SharedUI.IApplication)), Is.Empty);
+		Assert.That(firstScope.ServiceProvider.GetKeyedServices<IApplicationFinalizer>(typeof(SharedUI.IApplication)), Is.Empty);
 		Assert.That(firstStatus.InitializedPlugins, Is.Empty);
 		Assert.That(firstStatus.FinalizedPlugins, Is.Empty);
 		Assert.That(secondStatus.InitializedPlugins, Is.Empty);
@@ -77,7 +78,7 @@ public class DemoPluginLifecycleTests {
 	public async Task PrerenderingTheActualWorkspaceDoesNotExecutePluginLifecycleTasks() {
 		await using var provider = CreateProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var status = scope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		await using (var renderer = new HtmlRenderer(scope.ServiceProvider, scope.ServiceProvider.GetRequiredService<ILoggerFactory>())) {
 			var html = await renderer.Dispatcher.InvokeAsync(async () => {
@@ -99,7 +100,7 @@ public class DemoPluginLifecycleTests {
 	public async Task InitializedWorkspaceDisplaysTheCompletedPluginTaskCount() {
 		await using var provider = CreateProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var status = scope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var handler = scope.ServiceProvider.GetServices<CircuitHandler>().Single();
 		await handler.OnCircuitOpenedAsync(null, CancellationToken.None);
@@ -118,8 +119,8 @@ public class DemoPluginLifecycleTests {
 		await using var provider = CreateProvider();
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var firstStatus = firstScope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var secondStatus = secondScope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var firstHandler = firstScope.ServiceProvider.GetServices<CircuitHandler>().Single();
@@ -166,7 +167,7 @@ public class DemoPluginLifecycleTests {
 	public async Task ApplicationExitAwaitsEveryPluginsFinalizerBeforeCircuitTeardownAndDoesNotRepeatThem() {
 		await using var provider = CreateProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		var status = scope.ServiceProvider.GetRequiredService<WorkspaceStatus>();
 		var handler = scope.ServiceProvider.GetServices<CircuitHandler>().Single();
 		var pluginNames = application.LoadedPlugins.Select(plugin => plugin.Name).ToArray();

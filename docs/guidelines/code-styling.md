@@ -180,9 +180,9 @@ public class PascalCasedClassName {
 
 ### Platform-specific application UI types
 
-Shared contracts and models in `Sphere10.Framework.Application.UI` retain unprefixed names such as `IApplicationBlock` and `ApplicationBlockBase`. A platform extension must identify its platform in its name, for example `IBlazorApplicationBlock : IApplicationBlock` or `IWinFormsApplicationBlock : IApplicationBlock`. Their implementations are `BlazorApplicationBlock` and `WinFormsApplicationBlock`. Apply this convention consistently to menus, screens, hosts, builders and decorators.
+Application UI implementations use ordinary names such as `ApplicationScreen`, `ApplicationBlock` and `ApplicationMenu` in their owning platform namespace. Do not repeat `WinForms` or `Blazor` in these type names: `Sphere10.Framework.Windows.Forms` and `Sphere10.Framework.Web.AspNetCore.Blazor` already identify the platform. Apply this convention to the corresponding interfaces, models, builders, hosts and decorators.
 
-Use the shared type directly when no platform-specific extension is needed. Avoid redeclaring the shared name in a platform namespace and then relying on aliases to distinguish the two.
+Shared contracts and foundations remain in `Sphere10.Framework.Application.UI`. Use the shared type directly when no platform extension is needed. Where both layers supply the same simple name, qualify the shared type or use a namespace alias at that boundary. Preserve the actual base/interface identity when renaming; an unqualified reference must not accidentally resolve to the new platform type. Continue to qualify `System.Windows.Forms.Application` for the native message-loop API.
 
 ### Collection-valued data properties
 

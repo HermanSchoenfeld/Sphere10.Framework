@@ -63,11 +63,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Update="Application\Controls\WinFormsApplicationScreenTabControl.cs">
+		<Compile Update="Application\Controls\ApplicationScreenTabControl.cs">
 			<SubType>Component</SubType>
 		</Compile>
-		<Compile Update="Application\Controls\WinFormsApplicationScreenTabControl.Designer.cs">
-			<DependentUpon>WinFormsApplicationScreenTabControl.cs</DependentUpon>
+		<Compile Update="Application\Controls\ApplicationScreenTabControl.Designer.cs">
+			<DependentUpon>ApplicationScreenTabControl.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Forms\ReviewTextDialog.cs">
 			<SubType>Form</SubType>

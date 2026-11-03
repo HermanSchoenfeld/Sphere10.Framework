@@ -25,7 +25,7 @@ cleanup calls safe without duplicating workers or subscriptions.
 ### WinForms screen hooks
 
 Use the methods of
-[WinFormsApplicationScreen](../../../src/Sphere10.Framework.Windows.Forms/Application/Forms/WinFormsApplicationScreen.cs):
+[ApplicationScreen](../../../src/Sphere10.Framework.Windows.Forms/Application/Forms/ApplicationScreen.cs):
 
 - `OnLoad(EventArgs)` prepares native controls; call the base implementation.
 - `OnShowFirstTime()` starts first-display initialization once per retained
@@ -55,7 +55,7 @@ post-hide notification that the host does not issue.
 
 ### Blazor screen hooks
 
-[BlazorApplicationScreen](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/BlazorApplicationScreen.cs)
+[ApplicationScreen](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/ApplicationScreen.cs)
 attaches through `OnInitializedAsync`; retain its base call when overriding it.
 Use `OnActivatedAsync` for active-view work, `CanDeactivateAsync` only for the
 leave decision, and `OnDeactivatedAsync` for accepted deactivation. Await the
@@ -187,7 +187,7 @@ Validate complete definition collections before changing host state. The screen
 host captures each retained instance's lifetime and owns its type-to-definition
 index directly.
 
-The [Blazor block-copy implementation](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/BlazorApplicationBlockSnapshot.cs)
+The [Blazor block-copy implementation](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/ApplicationBlockSnapshot.cs)
 maintains one reference-keyed definition map per copied graph and uses that map
 for menus, toolbar commands and the selected default. Its
 [graph tests](../../../tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/ApplicationGraphOwnershipTests.cs)
@@ -248,7 +248,7 @@ view and screen disposal.
 
 [ApplicationScreenHost](../../../src/Sphere10.Framework.Application/UI/ApplicationScreenHost.cs)
 wires and detaches the retained instance's ownership. Blazor additionally
-[attaches renderer components](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/BlazorApplicationScreenHostBase.cs)
+[attaches renderer components](../../../src/Sphere10.Framework.Web.AspNetCore.Blazor/Application/ApplicationScreenHostBase.cs)
 to their session ownership and leaves component disposal to the renderer.
 
 A synchronous configuration property must not start an unobserved transition

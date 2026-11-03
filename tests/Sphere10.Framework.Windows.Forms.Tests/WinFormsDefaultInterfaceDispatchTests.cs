@@ -12,6 +12,8 @@ using System.Threading;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -36,11 +38,11 @@ public class WinFormsDefaultInterfaceDispatchTests {
 
 	[Test]
 	public void NativePluginOverrideProjectsThroughTheSharedInterfaceAndExistingPluginClass() {
-		using var first = new WinFormsApplicationBlock { Name = "First" };
-		using var second = new WinFormsApplicationBlock { Name = "Second" };
+		using var first = new ApplicationBlock { Name = "First" };
+		using var second = new ApplicationBlock { Name = "Second" };
 		var plugin = new ProjectedPlugin { CurrentBlock = first };
-		IApplicationPlugin neutral = plugin;
-		ApplicationPlugin compatibility = plugin;
+		SharedUI.IApplicationPlugin neutral = plugin;
+		SharedUI.ApplicationPlugin compatibility = plugin;
 
 		Assert.That(neutral.Blocks.Single(), Is.SameAs(first));
 		plugin.CurrentBlock = second;
@@ -50,11 +52,11 @@ public class WinFormsDefaultInterfaceDispatchTests {
 
 	[Test]
 	public void NativeDecoratorScreenModeOverrideProjectsThroughInheritedClassAndInterfaceGetters() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.SingleView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.SingleView };
 		using var decorator = new ProjectedModeDecorator(host);
-		IWinFormsApplicationScreenHost native = decorator;
-		IApplicationScreenHost neutral = decorator;
-		ApplicationScreenHostDecorator<IWinFormsApplicationBlock, WinFormsApplicationScreen, IWinFormsApplicationScreenHost> compatibility = decorator;
+		FormsUI.IApplicationScreenHost native = decorator;
+		SharedUI.IApplicationScreenHost neutral = decorator;
+		SharedUI.ApplicationScreenHostDecorator<FormsUI.IApplicationBlock, ApplicationScreen, FormsUI.IApplicationScreenHost> compatibility = decorator;
 		native.ScreenMode = ScreenMode.MultiView;
 
 		Assert.That(host.ScreenMode, Is.EqualTo(ScreenMode.SingleView));
@@ -68,21 +70,21 @@ public class WinFormsDefaultInterfaceDispatchTests {
 		Assert.That(host.ScreenMode, Is.EqualTo(ScreenMode.SingleView));
 	}
 
-	private sealed class ProjectedPlugin : WinFormsApplicationPlugin {
+	private sealed class ProjectedPlugin : FormsUI.ApplicationPlugin {
 		public ProjectedPlugin()
-			: base("Projected", Array.Empty<IWinFormsApplicationBlock>()) {
+			: base("Projected", Array.Empty<FormsUI.IApplicationBlock>()) {
 		}
 
-		public IWinFormsApplicationBlock CurrentBlock { get; set; }
+		public FormsUI.IApplicationBlock CurrentBlock { get; set; }
 
-		public override IWinFormsApplicationBlock[] Blocks {
+		public override FormsUI.IApplicationBlock[] Blocks {
 			get => new[] { CurrentBlock };
 			init => base.Blocks = value;
 		}
 	}
 
-	private sealed class ProjectedModeDecorator : WinFormsApplicationScreenHostDecorator {
-		public ProjectedModeDecorator(IWinFormsApplicationScreenHost host)
+	private sealed class ProjectedModeDecorator : FormsUI.ApplicationScreenHostDecorator {
+		public ProjectedModeDecorator(FormsUI.IApplicationScreenHost host)
 			: base(host) {
 		}
 

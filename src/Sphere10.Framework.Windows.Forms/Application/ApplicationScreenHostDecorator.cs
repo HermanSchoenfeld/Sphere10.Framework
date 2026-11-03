@@ -12,22 +12,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : MultiApplicationScreenHostDecorator<IWinFormsApplicationBlock, WinFormsApplicationScreen, TConcrete>, IWinFormsApplicationScreenHost
-	where TConcrete : IWinFormsApplicationScreenHost {
-	public virtual event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging {
+public abstract class ApplicationScreenHostDecorator<TConcrete> : MultiApplicationScreenHostDecorator<IApplicationBlock, ApplicationScreen, TConcrete>, IApplicationScreenHost
+	where TConcrete : IApplicationScreenHost {
+	public virtual event EventHandlerEx<ApplicationScreen?> ActiveScreenChanging {
 		add => InternalHost.ActiveScreenChanging += value;
 		remove => InternalHost.ActiveScreenChanging -= value;
 	}
 
-	public virtual event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanged {
+	public virtual event EventHandlerEx<ApplicationScreen?> ActiveScreenChanged {
 		add => InternalHost.ActiveScreenChanged += value;
 		remove => InternalHost.ActiveScreenChanged -= value;
 	}
 
-	protected WinFormsApplicationScreenHostDecorator(TConcrete host)
+	protected ApplicationScreenHostDecorator(TConcrete host)
 		: base(host) {
 	}
 
@@ -42,54 +43,54 @@ public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : MultiA
 
 	public virtual Task<bool> CanCloseActiveScreenAsync(CancellationToken cancellationToken = default) => InternalHost.CanCloseActiveScreenAsync(cancellationToken);
 
-	public virtual void SelectBlock(IWinFormsApplicationBlock block) => InternalHost.SelectBlock(block);
+	public virtual void SelectBlock(IApplicationBlock block) => InternalHost.SelectBlock(block);
 
-	public virtual void RegisterScreenTypes(IWinFormsApplicationBlock Block) => InternalHost.RegisterScreenTypes(Block);
+	public virtual void RegisterScreenTypes(IApplicationBlock Block) => InternalHost.RegisterScreenTypes(Block);
 
-	public virtual bool InitializeScreens(IEnumerable<IWinFormsApplicationBlock> blocks) => InternalHost.InitializeScreens(blocks);
+	public virtual bool InitializeScreens(IEnumerable<IApplicationBlock> blocks) => InternalHost.InitializeScreens(blocks);
 
-	public virtual bool UnregisterScreenTypes(IWinFormsApplicationBlock block) => InternalHost.UnregisterScreenTypes(block);
+	public virtual bool UnregisterScreenTypes(IApplicationBlock block) => InternalHost.UnregisterScreenTypes(block);
 
-	public virtual WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock Block, Type ScreenType, string? Title = null)
+	public virtual ApplicationScreen? ActivateScreen(IApplicationBlock Block, Type ScreenType, string? Title = null)
 		=> InternalHost.ActivateScreen(Block, ScreenType, Title);
 
-	public virtual WinFormsApplicationScreen? ActivateScreen(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition)
+	public virtual ApplicationScreen? ActivateScreen(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition)
 		=> InternalHost.ActivateScreen(block, definition);
 
-	public virtual bool ShowScreen(WinFormsApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
+	public virtual bool ShowScreen(ApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
 
-	public virtual Task<bool> ShowScreenAsync(WinFormsApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
+	public virtual Task<bool> ShowScreenAsync(ApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
 		return InternalHost.ShowScreenAsync(screen, registration, cancellationToken);
 	}
 
-	public virtual bool ShowScreenUndocked(WinFormsApplicationScreen screen) => InternalHost.ShowScreenUndocked(screen);
+	public virtual bool ShowScreenUndocked(ApplicationScreen screen) => InternalHost.ShowScreenUndocked(screen);
 
-	public override Task<bool> ShowScreenUndockedAsync(WinFormsApplicationScreen screen, CancellationToken cancellationToken = default)
+	public override Task<bool> ShowScreenUndockedAsync(ApplicationScreen screen, CancellationToken cancellationToken = default)
 		=> InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
 
-	public virtual bool CloseScreen(WinFormsApplicationScreen Screen) => InternalHost.CloseScreen(Screen);
+	public virtual bool CloseScreen(ApplicationScreen Screen) => InternalHost.CloseScreen(Screen);
 
-	public virtual bool CloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) => InternalHost.CloseScreens(Screens);
+	public virtual bool CloseScreens(IEnumerable<ApplicationScreen> Screens) => InternalHost.CloseScreens(Screens);
 
 	public virtual Task<bool> CloseAllScreensAsync(CancellationToken cancellationToken = default) => InternalHost.CloseAllScreensAsync(cancellationToken);
 
-	public virtual Task<bool> CloseAllOtherScreensAsync(WinFormsApplicationScreen keepScreen, CancellationToken cancellationToken = default)
+	public virtual Task<bool> CloseAllOtherScreensAsync(ApplicationScreen keepScreen, CancellationToken cancellationToken = default)
 		=> InternalHost.CloseAllOtherScreensAsync(keepScreen, cancellationToken);
 
-	public virtual bool CanCloseScreens(IEnumerable<WinFormsApplicationScreen> Screens) => InternalHost.CanCloseScreens(Screens);
+	public virtual bool CanCloseScreens(IEnumerable<ApplicationScreen> Screens) => InternalHost.CanCloseScreens(Screens);
 
-	public virtual bool UndockScreen(WinFormsApplicationScreen Screen) => InternalHost.UndockScreen(Screen);
+	public virtual bool UndockScreen(ApplicationScreen Screen) => InternalHost.UndockScreen(Screen);
 
-	public virtual bool DockScreen(WinFormsApplicationScreen Screen) => InternalHost.DockScreen(Screen);
+	public virtual bool DockScreen(ApplicationScreen Screen) => InternalHost.DockScreen(Screen);
 
-	public virtual bool IsScreenUndocked(WinFormsApplicationScreen Screen) => InternalHost.IsScreenUndocked(Screen);
+	public virtual bool IsScreenUndocked(ApplicationScreen Screen) => InternalHost.IsScreenUndocked(Screen);
 
 	public virtual bool TrySetScreenMode(ScreenMode Mode) => InternalHost.TrySetScreenMode(Mode);
 
 }
 
-public abstract class WinFormsApplicationScreenHostDecorator : WinFormsApplicationScreenHostDecorator<IWinFormsApplicationScreenHost> {
-	protected WinFormsApplicationScreenHostDecorator(IWinFormsApplicationScreenHost Host)
+public abstract class ApplicationScreenHostDecorator : ApplicationScreenHostDecorator<IApplicationScreenHost> {
+	protected ApplicationScreenHostDecorator(IApplicationScreenHost Host)
 		: base(Host) {
 	}
 }

@@ -11,24 +11,24 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public class WinFormsApplicationMenu : ApplicationMenuBase<IWinFormsApplicationMenuItem>, IWinFormsApplicationMenu {
-	public WinFormsApplicationMenu()
+public class ApplicationMenu : ApplicationMenuBase<IApplicationMenuItem>, IApplicationMenu {
+	public ApplicationMenu()
 		: this(string.Empty) {
 	}
 
-	public WinFormsApplicationMenu(string title)
+	public ApplicationMenu(string title)
 		: this(title, null) {
 	}
 
-	public WinFormsApplicationMenu(string title, IWinFormsApplicationMenuItem[] items)
+	public ApplicationMenu(string title, IApplicationMenuItem[] items)
 		: this(title, null, items) {
 	}
 
-	public WinFormsApplicationMenu(string title, Image image32x32, IWinFormsApplicationMenuItem[] items)
+	public ApplicationMenu(string title, Image image32x32, IApplicationMenuItem[] items)
 		: this(title, false, image32x32, items) {
 	}
 
-	public WinFormsApplicationMenu(string title, bool showInMenuStrip, Image image32x32, IWinFormsApplicationMenuItem[] items) {
+	public ApplicationMenu(string title, bool showInMenuStrip, Image image32x32, IApplicationMenuItem[] items) {
 		Text = title;
 		Image32x32 = image32x32;
 		ShowInMenuStrip = showInMenuStrip;
@@ -39,12 +39,12 @@ public class WinFormsApplicationMenu : ApplicationMenuBase<IWinFormsApplicationM
 
 	public bool ShowInMenuStrip { get; set; }
 
-	public new virtual IWinFormsApplicationBlock Parent {
-		get => (IWinFormsApplicationBlock)base.Parent;
+	public new virtual IApplicationBlock Parent {
+		get => (IApplicationBlock)base.Parent;
 		set => base.Parent = value;
 	}
 
-	public override IWinFormsApplicationMenuItem[] Items => base.Items;
+	public override IApplicationMenuItem[] Items => base.Items;
 
 	public Image Image32x32 { get; set; }
 

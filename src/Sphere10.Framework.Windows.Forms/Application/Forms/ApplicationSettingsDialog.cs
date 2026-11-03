@@ -19,15 +19,16 @@ using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Edits the actual plugin, block and screen settings owned by the running application.</summary>
-public partial class WinFormsApplicationSettingsDialog : Form {
+public partial class ApplicationSettingsDialog : Form {
 	private readonly Dictionary<SettingsObject, string> _backups = new(ReferenceEqualityComparer.Instance);
 	private readonly HashSet<SettingsObject> _dirty = new(ReferenceEqualityComparer.Instance);
 	private readonly HashSet<SettingsObject> _resetPending = new(ReferenceEqualityComparer.Instance);
-	private readonly IWinFormsApplication _application;
+	private readonly IApplication _application;
 	private readonly IServiceProvider _services;
 	private object _selectedOwner;
 	private ICrudEntityEditor<object> _editor;
@@ -36,20 +37,20 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 	private ApplicationSettingsScreenPolicy _policy = ApplicationSettingsScreenPolicy.Default;
 
 	/// <summary>Creates the native designer surface without resolving application services or settings.</summary>
-	public WinFormsApplicationSettingsDialog() {
+	public ApplicationSettingsDialog() {
 		InitializeComponent();
 		UpdateButtons();
 	}
 
 	/// <summary>Enumerates existing owners and prefers the active screen's settings unless an owner is supplied.</summary>
-	public WinFormsApplicationSettingsDialog(IWinFormsApplication application, IServiceProvider services = null, object selectedOwner = null)
+	public ApplicationSettingsDialog(IApplication application, IServiceProvider services = null, object selectedOwner = null)
 		: this() {
 		_application = application;
 		_services = services;
 		PopulateNavigation();
 
 		// Follow the visible screen rather than the block currently browsed in navigation.
-		if (selectedOwner is ApplicationScreenDefinition { Settings: null })
+		if (selectedOwner is SharedUI.ApplicationScreenDefinition { Settings: null })
 			selectedOwner = null;
 		var activeScreen = _application?.ScreenHost?.ActiveScreen;
 		selectedOwner ??= activeScreen?.ScreenSettings ?? activeScreen?.Block?.BlockSettings;
@@ -236,16 +237,16 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 			return;
 		}
 		var settings = GetSettings(_selectedOwner);
-		var factory = (_selectedOwner as WinFormsApplicationScreenDefinition)?.SettingsEditor;
+		var factory = (_selectedOwner as ApplicationScreenDefinition)?.SettingsEditor;
 		var editorType = factory == null ? GetDeclaredEditorType(settings.GetType()) : null;
-		var context = new WinFormsApplicationSettingsEditorContext(settings, _application, _services, this);
+		var context = new ApplicationSettingsEditorContext(settings, _application, _services, this);
 		ICrudEntityEditor<object> editor;
 		if (factory != null)
 			editor = factory(context);
 		else if (editorType != null) {
 			Guard.Argument(!editorType.IsAbstract && !editorType.ContainsGenericParameters && typeof(ICrudEntityEditor<object>).IsAssignableFrom(editorType),
 				nameof(editorType), "A settings editor must implement ICrudEntityEditor<object>.");
-			var constructor = editorType.GetConstructor(new[] { typeof(WinFormsApplicationSettingsEditorContext) });
+			var constructor = editorType.GetConstructor(new[] { typeof(ApplicationSettingsEditorContext) });
 			editor = (ICrudEntityEditor<object>)(constructor == null ? Tools.Object.Create(editorType) : constructor.Invoke(new object[] { context }));
 		} else
 			editor = new DefaultCrudEntityEditor {
@@ -313,8 +314,8 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		root.Tag = _application;
 		if (_application == null)
 			return;
-		foreach (var plugin in _application.LoadedPlugins.Cast<IApplicationPlugin>().Concat(_application.Blocks.Select(block => block.Source).Where(plugin => plugin != null))
-			.Distinct<IApplicationPlugin>(ReferenceEqualityComparer.Instance)) {
+		foreach (var plugin in _application.LoadedPlugins.Cast<SharedUI.IApplicationPlugin>().Concat(_application.Blocks.Select(block => block.Source).Where(plugin => plugin != null))
+			.Distinct<SharedUI.IApplicationPlugin>(ReferenceEqualityComparer.Instance)) {
 			var node = new TreeNode(plugin.Name) { Tag = plugin };
 			root.Nodes.Add(node);
 			foreach (var block in _application.Blocks.Where(block => ReferenceEquals(block.Source, plugin)))
@@ -326,7 +327,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 	}
 
 	// Only settings-bearing screen definitions belong in Options, including registrations not yet opened.
-	private static void AddBlock(TreeNodeCollection nodes, IApplicationBlock block) {
+	private static void AddBlock(TreeNodeCollection nodes, SharedUI.IApplicationBlock block) {
 		var node = new TreeNode(block.Name) { Tag = block };
 		nodes.Add(node);
 		foreach (var definition in block.ScreenDefinitions.Where(definition => definition.Settings != null)) {
@@ -339,9 +340,9 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 	// Resolve values through their existing owners rather than a parallel settings registry.
 	private static SettingsObject GetSettings(object owner) {
 		return owner switch {
-			IApplicationPlugin plugin => plugin.PluginSettings,
-			IApplicationBlock block => block.BlockSettings,
-			ApplicationScreenDefinition definition => definition.Settings,
+			SharedUI.IApplicationPlugin plugin => plugin.PluginSettings,
+			SharedUI.IApplicationBlock block => block.BlockSettings,
+			SharedUI.ApplicationScreenDefinition definition => definition.Settings,
 			_ => null
 		};
 	}
@@ -393,7 +394,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 	// Automatic editing is opt-in on the settings class; explicit editors take precedence.
 	private static bool CanEdit(object owner) {
 		var settings = GetSettings(owner);
-		return settings != null && ((owner as WinFormsApplicationScreenDefinition)?.SettingsEditor != null
+		return settings != null && ((owner as ApplicationScreenDefinition)?.SettingsEditor != null
 			|| GetDeclaredEditorType(settings.GetType()) != null || Attribute.IsDefined(settings.GetType(), typeof(UserEditableAttribute), true));
 	}
 
@@ -473,9 +474,9 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 	// Describe the selected level, descendant policy and actual settings count before any defaults change.
 	private string GetResetQuestion(TreeNode node, int count) {
 		var level = node.Tag switch {
-			IApplicationPlugin => "plugin",
-			IApplicationBlock => "block",
-			ApplicationScreenDefinition => "screen",
+			SharedUI.IApplicationPlugin => "plugin",
+			SharedUI.IApplicationBlock => "block",
+			SharedUI.ApplicationScreenDefinition => "screen",
 			_ => "application"
 		};
 		var name = string.IsNullOrEmpty(node.Name) ? node.Text : node.Name;

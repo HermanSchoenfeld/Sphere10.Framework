@@ -11,7 +11,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates independently populated native grids in expandable task-pane groups.</summary>
-public partial class ScreenC : WinFormsApplicationScreen {
+public partial class ScreenC : ApplicationScreen {
 	/// <summary>Creates the real Designer layout; sample data waits for first native load.</summary>
 	public ScreenC() {
 		InitializeComponent();

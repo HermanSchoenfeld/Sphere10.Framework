@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Windows.Forms.Application;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -31,67 +31,67 @@ public static class IoCExtensions {
 		serviceCollection.TryAddSingleton<IApplicationIconProvider, DefaultApplicationIconProvider>();
 		serviceCollection.AddSingleton<IUserInterfaceServices>(provider => provider.GetService<IMainForm>());
 		if (typeof(MainForm).IsAssignableFrom(typeof(TMainForm))) {
-			serviceCollection.AddSingleton<IWinFormsApplicationScreenHost>(provider => ((MainForm)provider.GetRequiredService<IMainForm>()).ScreenHost);
-			serviceCollection.AddSingleton<IApplicationScreenHost>(provider => provider.GetRequiredService<IWinFormsApplicationScreenHost>());
-			serviceCollection.AddSingleton<IApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>>(
-				provider => provider.GetRequiredService<IWinFormsApplicationScreenHost>());
-			serviceCollection.AddSingleton<ISingleApplicationScreenHost>(provider => provider.GetRequiredService<IWinFormsApplicationScreenHost>());
-			serviceCollection.AddSingleton<IMultiApplicationScreenHost>(provider => provider.GetRequiredService<IWinFormsApplicationScreenHost>());
-			serviceCollection.AddSingleton<ISingleApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>>(
-				provider => provider.GetRequiredService<IWinFormsApplicationScreenHost>());
-			serviceCollection.AddSingleton<IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen>>(
-				provider => provider.GetRequiredService<IWinFormsApplicationScreenHost>());
+			serviceCollection.AddSingleton<IApplicationScreenHost>(provider => ((MainForm)provider.GetRequiredService<IMainForm>()).ScreenHost);
+			serviceCollection.AddSingleton<SharedUI.IApplicationScreenHost>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+			serviceCollection.AddSingleton<SharedUI.IApplicationScreenHost<IApplicationBlock, ApplicationScreen>>(
+				provider => provider.GetRequiredService<IApplicationScreenHost>());
+			serviceCollection.AddSingleton<ISingleApplicationScreenHost>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+			serviceCollection.AddSingleton<IMultiApplicationScreenHost>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+			serviceCollection.AddSingleton<ISingleApplicationScreenHost<IApplicationBlock, ApplicationScreen>>(
+				provider => provider.GetRequiredService<IApplicationScreenHost>());
+			serviceCollection.AddSingleton<IMultiApplicationScreenHost<IApplicationBlock, ApplicationScreen>>(
+				provider => provider.GetRequiredService<IApplicationScreenHost>());
 		}
 		if (typeof(IBlockManager).IsAssignableFrom(typeof(TMainForm)))
 			serviceCollection.AddSingleton(provider => (IBlockManager)provider.GetService<IMainForm>());
 		if (typeof(BlockMainForm).IsAssignableFrom(typeof(TMainForm))) {
-			serviceCollection.AddSingleton<IWinFormsApplication>(provider => new WinFormsApplication(
-				(BlockMainForm)provider.GetRequiredService<IMainForm>(), provider.GetServices<IWinFormsApplicationBlock>(),
-				provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>(), provider));
-			serviceCollection.AddSingleton<IApplication>(provider => provider.GetRequiredService<IWinFormsApplication>());
+			serviceCollection.AddSingleton<IApplication>(provider => new Application(
+				(BlockMainForm)provider.GetRequiredService<IMainForm>(), provider.GetServices<IApplicationBlock>(),
+				provider.GetServices<ApplicationPluginRegistration<IApplicationPlugin>>(), provider));
+			serviceCollection.AddSingleton<SharedUI.IApplication>(provider => provider.GetRequiredService<IApplication>());
 		}
 	}
 
 	public static void AddApplicationBlock<T>(this IServiceCollection serviceCollection)
-		where T : class, IWinFormsApplicationBlock
-		=> serviceCollection.AddTransient<IWinFormsApplicationBlock, T>();
+		where T : class, IApplicationBlock
+		=> serviceCollection.AddTransient<IApplicationBlock, T>();
 
-	public static void AddApplicationBlock(this IServiceCollection serviceCollection, IWinFormsApplicationBlock block) {
+	public static void AddApplicationBlock(this IServiceCollection serviceCollection, IApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
-		serviceCollection.AddSingleton<IWinFormsApplicationBlock>(block);
+		serviceCollection.AddSingleton<IApplicationBlock>(block);
 	}
 
 	/// <summary>Builds a native plugin and registers its blocks through the existing application-block startup path.</summary>
-	public static IServiceCollection AddWinFormsApplicationPlugin(this IServiceCollection services, Action<WinFormsApplicationPluginBuilder> configure) {
+	public static IServiceCollection AddWinFormsApplicationPlugin(this IServiceCollection services, Action<ApplicationPluginBuilder> configure) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new WinFormsApplicationPluginBuilder();
+		var builder = new ApplicationPluginBuilder();
 		configure(builder);
 		return services.AddWinFormsApplicationPlugin(builder.Build());
 	}
 
 	/// <summary>Loads startup services once and exposes the same plugin through native and shared contracts.</summary>
-	public static IServiceCollection AddWinFormsApplicationPlugin(this IServiceCollection services, IWinFormsApplicationPlugin plugin) {
+	public static IServiceCollection AddWinFormsApplicationPlugin(this IServiceCollection services, IApplicationPlugin plugin) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		using var registrationScope = new ApplicationPluginRegistrationScope(services, plugin);
-		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>))
-			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>();
-		var registration = new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks);
+		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IApplicationPlugin>))
+			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IApplicationPlugin>>();
+		var registration = new ApplicationPluginRegistration<IApplicationPlugin>(plugin, plugin.Blocks);
 		Tools.UI.ValidatePluginRegistrations(registrations.Append(registration));
 		plugin.Load(services);
 		// Load hooks can finish block definitions or register another plugin; revalidate before exposing this one.
-		registration = new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks);
-		registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>))
-			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>();
+		registration = new ApplicationPluginRegistration<IApplicationPlugin>(plugin, plugin.Blocks);
+		registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IApplicationPlugin>))
+			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IApplicationPlugin>>();
 		Tools.UI.ValidatePluginRegistrations(registrations.Append(registration));
-		foreach (var block in registration.Blocks.Cast<IWinFormsApplicationBlock>())
-			if (!services.Any(descriptor => descriptor.ServiceType == typeof(IWinFormsApplicationBlock) && ReferenceEquals(descriptor.ImplementationInstance, block)))
+		foreach (var block in registration.Blocks.Cast<IApplicationBlock>())
+			if (!services.Any(descriptor => descriptor.ServiceType == typeof(IApplicationBlock) && ReferenceEquals(descriptor.ImplementationInstance, block)))
 				services.AddApplicationBlock(block);
 		foreach (var block in registration.Blocks)
 			block.Source = plugin;
-		services.AddSingleton<IWinFormsApplicationPlugin>(plugin);
 		services.AddSingleton<IApplicationPlugin>(plugin);
+		services.AddSingleton<SharedUI.IApplicationPlugin>(plugin);
 		services.AddSingleton(registration);
 		registrationScope.Commit();
 		return services;

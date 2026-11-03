@@ -7,11 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IBlazorApplicationMenu : IApplicationMenu<IBlazorApplicationMenuItem> {
-	new IBlazorApplicationBlock Parent { get; set; }
+public interface IApplicationMenu : SharedUI.IApplicationMenu<IApplicationMenuItem> {
+	new IApplicationBlock Parent { get; set; }
 
 	string Id => Text;
 
@@ -19,9 +20,9 @@ public interface IBlazorApplicationMenu : IApplicationMenu<IBlazorApplicationMen
 
 	#region Base Interface Bridges
 
-	IApplicationBlock IApplicationMenu.Parent {
+	SharedUI.IApplicationBlock SharedUI.IApplicationMenu.Parent {
 		get => Parent;
-		set => Parent = value == null ? null : Guard.ArgumentCast<IBlazorApplicationBlock>(value, nameof(value));
+		set => Parent = value == null ? null : Guard.ArgumentCast<IApplicationBlock>(value, nameof(value));
 	}
 
 	#endregion

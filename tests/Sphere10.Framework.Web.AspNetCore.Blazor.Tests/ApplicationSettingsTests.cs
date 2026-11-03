@@ -34,13 +34,14 @@ using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 /// <summary>Exercises actual settings ownership, browser persistence, editor validation and renderer notifications.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class BlazorApplicationSettingsTests {
+public class ApplicationSettingsTests {
 
 	/// <summary>Verifies settings class editor is inherited and registration can override it.</summary>
 	[TestCase(false)]
@@ -48,23 +49,23 @@ public class BlazorApplicationSettingsTests {
 	public async Task SettingsClassEditorIsInheritedAndRegistrationCanOverrideIt(bool overrideEditor) {
 		await using var owner = new ProviderOwner(new BrowserState("declared editor"), null);
 		var defaults = new DeclaredEditorScreen.Preferences();
-		var definition = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Declared", stableKey: "declared",
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Declared", stableKey: "declared",
 			settings: defaults, settingsEditor: overrideEditor ? typeof(CustomEditor) : null);
-		await using var services = CreateServices(owner.Provider, new BlazorApplicationBlock { Id = "declared", Title = "Declared", ScreenDefinitions = new[] { definition } });
-		var application = services.GetRequiredService<IBlazorApplication>();
+		await using var services = CreateServices(owner.Provider, new ApplicationBlock { Id = "declared", Title = "Declared", ScreenDefinitions = new[] { definition } });
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var actualDefinition = application.Blocks.Single().ScreenDefinitions.Single();
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = actualDefinition,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
 			var editor = GetField<DynamicComponent>(dialog, "_editor").Instance;
 			Assert.That(editor, Is.TypeOf(overrideEditor ? typeof(CustomEditor) : typeof(DeclaredSettingsEditor)));
-			Assert.That(((IBlazorApplicationSettingsEditor)editor).Value, Is.SameAs(actualDefinition.Settings));
+			Assert.That(((IApplicationSettingsEditor)editor).Value, Is.SameAs(actualDefinition.Settings));
 			Assert.That(actualDefinition.Settings, Is.Not.SameAs(defaults), "The runtime circuit owns this settings instance.");
 		});
 	}
@@ -75,25 +76,25 @@ public class BlazorApplicationSettingsTests {
 	public async Task OptionsHideScreensWithoutSettingsAndKeepUnopenedAndUnmarkedSettings(bool selectScreenWithoutSettings) {
 		var browser = new BrowserState("filtered Options");
 		await using var owner = new ProviderOwner(browser, null);
-		var plain = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "No settings", stableKey: "plain");
-		var unopened = new BlazorApplicationScreenDefinition(typeof(UnopenedAttributeSettingsScreen), "Unopened settings");
-		var unmarked = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Stored settings", stableKey: "stored", settings: new TransientPreferences());
+		var plain = new BlazorUI.ApplicationScreenDefinition(typeof(DeclaredEditorScreen), "No settings", stableKey: "plain");
+		var unopened = new BlazorUI.ApplicationScreenDefinition(typeof(UnopenedAttributeSettingsScreen), "Unopened settings");
+		var unmarked = new BlazorUI.ApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Stored settings", stableKey: "stored", settings: new TransientPreferences());
 		await using var services = CreateServices(owner.Provider,
-			new BlazorApplicationBlock { Id = "filtered", Title = "Filtered Options", ScreenDefinitions = new[] { plain, unopened, unmarked } });
-		var application = services.GetRequiredService<IBlazorApplication>();
+			new ApplicationBlock { Id = "filtered", Title = "Filtered Options", ScreenDefinitions = new[] { plain, unopened, unmarked } });
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var definitions = application.Blocks.Single().ScreenDefinitions;
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = selectScreenWithoutSettings ? definitions[0] : null,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
 			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("No settings").And.Contain("Unopened settings").And.Contain("Stored settings"));
 			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(definitions[1]));
-			Assert.That(((IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(definitions[1].Settings));
+			Assert.That(((IApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(definitions[1].Settings));
 			Assert.That(definitions[1].Settings, Is.TypeOf<UnopenedAttributeSettingsScreen.Preferences>());
 			Assert.That(browser.Values, Is.Empty, "Opening Options must not save or activate an unopened settings screen.");
 		});
@@ -127,13 +128,13 @@ public class BlazorApplicationSettingsTests {
 				.AddScreen<UnopenedAttributeSettingsScreen>("Standalone screen")
 			);
 		await using var services = registrations.BuildServiceProvider();
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(_ => { })
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(_ => { })
 			}));
 
 			// Remove valueless CSS isolation markers, then normalize the navigation's HTML boolean attribute for XML assertions.
@@ -161,7 +162,7 @@ public class BlazorApplicationSettingsTests {
 	public async Task OptionsPreferActiveScreenSettingsAndRetainExplicitSelection(bool selectExplicitOwner) {
 		await using var owner = new ProviderOwner(new BrowserState("active Options"), null);
 		await using var services = CreateServices(owner.Provider, SettingsBlock("first", Defaults()), SettingsBlock("active", Defaults()));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var first = application.Blocks[0];
 		var active = application.Blocks[1];
@@ -169,15 +170,15 @@ public class BlazorApplicationSettingsTests {
 		await application.ScreenHost.SelectBlockAsync(first);
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = selectExplicitOwner ? first.ScreenDefinitions.Single() : null,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
 			var expected = (selectExplicitOwner ? first : active).ScreenDefinitions.Single();
 			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(expected));
-			Assert.That(((IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(expected.Settings));
+			Assert.That(((IApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(expected.Settings));
 		});
 	}
 
@@ -187,7 +188,7 @@ public class BlazorApplicationSettingsTests {
 		var browser = new BrowserState("dialog");
 		await using var owner = new ProviderOwner(browser, null);
 		await using var services = CreateServices(owner.Provider, SettingsBlock("preferences", Defaults()));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var definition = application.Blocks.Single().ScreenDefinitions.Single();
 		var settings = (Options)definition.Settings;
@@ -195,13 +196,13 @@ public class BlazorApplicationSettingsTests {
 		settings.OnChanged += () => changes++;
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = definition,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
-			var editor = (IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
+			var editor = (IApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
 			Assert.That(editor.Value, Is.SameAs(settings));
 			settings.Number = -1;
 			await editor.Changed.InvokeAsync();
@@ -317,19 +318,19 @@ public class BlazorApplicationSettingsTests {
 	public async Task ResetAndCancelUseTheActualRootAndPreservePreviouslyAppliedGridValues() {
 		await using var owner = new ProviderOwner(new BrowserState("reset"), null);
 		await using var services = CreateServices(owner.Provider, SettingsBlock("preferences", Defaults()));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var definition = application.Blocks.Single().ScreenDefinitions.Single();
 		var settings = (Options)definition.Settings;
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = definition,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
-			var editor = (IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
+			var editor = (IApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
 			settings.Number = 33;
 			settings.Grid.Columns.Single().Width = 281;
 			await editor.Changed.InvokeAsync();
@@ -350,16 +351,16 @@ public class BlazorApplicationSettingsTests {
 	public async Task PendingCustomValidationKeepsItsOwnerAndPreventsResetCancelOrAnotherSelection(bool valid) {
 		await using var owner = new ProviderOwner(new BrowserState("validation"), null);
 		await using var services = CreateServices(owner.Provider, SettingsBlock("first", Defaults(), typeof(BlockingValidationEditor)), SettingsBlock("second", Defaults()));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var definitions = application.Blocks.Select(block => block.ScreenDefinitions.Single()).ToArray();
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = definitions[0],
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
 			var editor = (BlockingValidationEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
 			var settings = (Options)definitions[0].Settings;
@@ -384,7 +385,7 @@ public class BlazorApplicationSettingsTests {
 	public async Task RestorationPopulatesTheActualOwnerWhenTheProviderReturnsAnotherRecord() {
 		var provider = new DistinctRecordProvider();
 		await using var services = CreateServices(provider, SettingsBlock("preferences", Defaults()));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		var definition = application.Blocks.Single().ScreenDefinitions.Single();
 		var actual = definition.Settings;
 		await application.InitializeAsync();
@@ -409,7 +410,7 @@ public class BlazorApplicationSettingsTests {
 		browser.Values[key] = payload;
 		var provider = new SettingsProviderDecorator(owner.Provider);
 		await using var services = CreateServices(provider, SettingsBlock("preferences", defaults));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		var block = application.Blocks.Single();
 		var definition = block.ScreenDefinitions.Single();
 		var actual = (Options)definition.Settings;
@@ -445,10 +446,10 @@ public class BlazorApplicationSettingsTests {
 		await owner.Provider.SaveSettingAsync(defaults);
 		var key = browser.Values.Keys.Single();
 		browser.Values[key] = "{\"Number\":0,\"Caption\":\"Changed\"}";
-		var definition = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Annotations", stableKey: "annotations", settings: defaults);
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Annotations", stableKey: "annotations", settings: defaults);
 		await using var services = CreateServices(owner.Provider,
-			new BlazorApplicationBlock { Id = "annotations", Title = "Annotations", ScreenDefinitions = new[] { definition } });
-		var application = services.GetRequiredService<IBlazorApplication>();
+			new ApplicationBlock { Id = "annotations", Title = "Annotations", ScreenDefinitions = new[] { definition } });
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		var actual = (AnnotatedOptions)application.Blocks.Single().ScreenDefinitions.Single().Settings;
 
 		await application.InitializeAsync();
@@ -466,7 +467,7 @@ public class BlazorApplicationSettingsTests {
 		using var cancellation = new CancellationTokenSource();
 		var provider = new CancelledOverlayProvider(owner.Provider, cancellation);
 		await using var services = CreateServices(provider, SettingsBlock("preferences", Defaults()));
-		var application = services.GetRequiredService<IBlazorApplication>();
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		var definition = application.Blocks.Single().ScreenDefinitions.Single();
 		var actual = (Options)definition.Settings;
 
@@ -507,20 +508,20 @@ public class BlazorApplicationSettingsTests {
 	[TestCase(true)]
 	public async Task UnmarkedSettingsRequireAnExplicitEditorWithoutLosingTheirPersistence(bool customEditor) {
 		await using var owner = new ProviderOwner(new BrowserState("unmarked"), null);
-		var definition = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Preferences", stableKey: "preferences",
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Preferences", stableKey: "preferences",
 			settings: new TransientPreferences(), settingsEditor: customEditor ? typeof(CustomEditor) : null);
 		await using var services = CreateServices(owner.Provider,
-			new BlazorApplicationBlock { Id = "preferences", Title = "Preferences", ScreenDefinitions = new[] { definition } });
-		var application = services.GetRequiredService<IBlazorApplication>();
+			new ApplicationBlock { Id = "preferences", Title = "Preferences", ScreenDefinitions = new[] { definition } });
+		var application = services.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var actualDefinition = application.Blocks.Single().ScreenDefinitions.Single();
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
+			ApplicationSettingsDialog dialog = null;
 			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(DialogHarness.Application)] = application,
 				[nameof(DialogHarness.Owner)] = customEditor ? actualDefinition : null,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+				[nameof(DialogHarness.Capture)] = (Action<ApplicationSettingsDialog>)(component => dialog = component)
 			}));
 			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(actualDefinition));
 			if (customEditor)
@@ -534,7 +535,7 @@ public class BlazorApplicationSettingsTests {
 	}
 
 	// Compose the actual application/provider lifecycle without activating operational screens.
-	private static ServiceProvider CreateServices(ISettingsProvider provider, params IBlazorApplicationBlock[] blocks) {
+	private static ServiceProvider CreateServices(ISettingsProvider provider, params BlazorUI.IApplicationBlock[] blocks) {
 		var services = new ServiceCollection().AddLogging().AddSingleton<ISettingsProvider>(provider).AddSphere10Blazor();
 		foreach (var block in blocks)
 			services.AddApplicationBlock(block);
@@ -729,8 +730,8 @@ public class BlazorApplicationSettingsTests {
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		var values = new Options { ID = "private-storage-id" };
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync<BlazorApplicationSettingsValueEditor>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(BlazorApplicationSettingsValueEditor.Value)] = values
+			var rendered = await renderer.RenderComponentAsync<ApplicationSettingsValueEditor>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ApplicationSettingsValueEditor.Value)] = values
 			}));
 			var html = rendered.ToHtmlString();
 			Assert.That(html, Does.Contain("Refresh count"));
@@ -752,8 +753,8 @@ public class BlazorApplicationSettingsTests {
 		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync<BlazorApplicationSettingsValueEditor>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(BlazorApplicationSettingsValueEditor.Value)] = new DictionaryOptions()
+			var rendered = await renderer.RenderComponentAsync<ApplicationSettingsValueEditor>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(ApplicationSettingsValueEditor.Value)] = new DictionaryOptions()
 			}));
 			var html = rendered.ToHtmlString();
 			Assert.That(html, Does.Contain("processes"));
@@ -768,13 +769,13 @@ public class BlazorApplicationSettingsTests {
 		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsValueEditor editor = null;
+			ApplicationSettingsValueEditor editor = null;
 			var errors = new Dictionary<string, string>();
 			var values = new Options();
 			await renderer.RenderComponentAsync<ValueHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ValueHarness.Value)] = values,
 				[nameof(ValueHarness.Errors)] = errors,
-				[nameof(ValueHarness.Capture)] = (Action<BlazorApplicationSettingsValueEditor>)(component => editor = component)
+				[nameof(ValueHarness.Capture)] = (Action<ApplicationSettingsValueEditor>)(component => editor = component)
 			}));
 			var property = TypeDescriptor.GetProperties(values)[nameof(Options.Numbers)];
 			await InvokeAsync(editor, "ChangeItemAsync", property, 0, "not-a-number");
@@ -792,17 +793,17 @@ public class BlazorApplicationSettingsTests {
 		var runtime = new BrowserRuntime(browser);
 		var calls = 0;
 		var services = new ServiceCollection().AddLogging().AddSingleton<IJSRuntime>(runtime);
-		new BlazorApplicationBuilder(services)
+		new ApplicationBuilder(services)
 			.WithSettingsKey("stable-app")
 			.AddPlugin(plugin => plugin.WithName("Preferences").UseSettings<Options>())
 			.OnApplicationCreated(application => application.SetMenus(new[] {
-				new BlazorApplicationMenu { Id = "existing-options", Text = "&Options", Items = new[] {
+				new ApplicationMenu { Id = "existing-options", Text = "&Options", Items = new[] {
 					new BlazorActionMenuItem { Id = "operation", Title = "Existing operation", Action = () => calls++ }
 				} }
 			}))
 			.Build();
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 
 		await application.InitializeAsync();
 		await application.InitializeAsync();
@@ -821,7 +822,7 @@ public class BlazorApplicationSettingsTests {
 	[TestCase("", "Host caption")]
 	[TestCase("  ", "Host caption")]
 	public async Task OptionsCommandUsesTheConfiguredProductName(string productName, string expectedCaption) {
-		var displayed = new TaskCompletionSource<BlazorApplicationSettingsDialog>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var displayed = new TaskCompletionSource<ApplicationSettingsDialog>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var services = new ServiceCollection()
 			.AddLogging()
 			.AddSingleton<IJSRuntime>(new BrowserRuntime(new BrowserState("product caption")))
@@ -833,7 +834,7 @@ public class BlazorApplicationSettingsTests {
 			.Build();
 		services.AddSingleton<IProductInformationProvider>(new CaptionProductInformationProvider(productName));
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -858,10 +859,10 @@ public class BlazorApplicationSettingsTests {
 	}
 
 	// Each Options page belongs to a statically declared screen rather than a separate root descriptor.
-	private static IBlazorApplicationBlock SettingsBlock(string key, SettingsObject settings, Type editor = null) {
+	private static BlazorUI.IApplicationBlock SettingsBlock(string key, SettingsObject settings, Type editor = null) {
 		var screenType = settings is RegistrationExampleScreen.RegistrationInspectorSettings ? typeof(RegistrationExampleScreen) : typeof(UnopenedScreen);
-		var definition = new BlazorApplicationScreenDefinition(screenType, key, stableKey: key, settings: settings, settingsEditor: editor);
-		return new BlazorApplicationBlock { Id = key, Title = key, ScreenDefinitions = new[] { definition } };
+		var definition = new BlazorUI.ApplicationScreenDefinition(screenType, key, stableKey: key, settings: settings, settingsEditor: editor);
+		return new ApplicationBlock { Id = key, Title = key, ScreenDefinitions = new[] { definition } };
 	}
 
 	// HtmlRenderer owns components; reflection invokes the same private event handlers used by their rendered controls.
@@ -956,7 +957,7 @@ public class BlazorApplicationSettingsTests {
 		[Inject] public ModalService ModalService { get; set; }
 
 		/// <summary>The completion receiving the real rendered Options component.</summary>
-		[Inject] public TaskCompletionSource<BlazorApplicationSettingsDialog> Displayed { get; set; }
+		[Inject] public TaskCompletionSource<ApplicationSettingsDialog> Displayed { get; set; }
 
 		/// <inheritdoc />
 		protected override void OnInitialized() {
@@ -970,7 +971,7 @@ public class BlazorApplicationSettingsTests {
 
 		/// <inheritdoc />
 		protected override Task<ModalResult> GetResultAsync(ModalComponent component) {
-			Displayed.TrySetResult((BlazorApplicationSettingsDialog)component);
+			Displayed.TrySetResult((ApplicationSettingsDialog)component);
 			return Task.FromResult(ModalResult.Cancel);
 		}
 	}
@@ -984,14 +985,14 @@ public class BlazorApplicationSettingsTests {
 		[Parameter] public IDictionary<string, string> Errors { get; set; } = new Dictionary<string, string>();
 
 		/// <summary>Captures the renderer-created component for interaction checks.</summary>
-		[Parameter] public Action<BlazorApplicationSettingsValueEditor> Capture { get; set; }
+		[Parameter] public Action<ApplicationSettingsValueEditor> Capture { get; set; }
 
 		/// <inheritdoc />
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
-			builder.OpenComponent<BlazorApplicationSettingsValueEditor>(0);
-			builder.AddAttribute(1, nameof(BlazorApplicationSettingsValueEditor.Value), Value);
-			builder.AddAttribute(2, nameof(BlazorApplicationSettingsValueEditor.Errors), Errors);
-			builder.AddComponentReferenceCapture(3, value => Capture((BlazorApplicationSettingsValueEditor)value));
+			builder.OpenComponent<ApplicationSettingsValueEditor>(0);
+			builder.AddAttribute(1, nameof(ApplicationSettingsValueEditor.Value), Value);
+			builder.AddAttribute(2, nameof(ApplicationSettingsValueEditor.Errors), Errors);
+			builder.AddComponentReferenceCapture(3, value => Capture((ApplicationSettingsValueEditor)value));
 			builder.CloseComponent();
 		}
 	}
@@ -999,21 +1000,21 @@ public class BlazorApplicationSettingsTests {
 	/// <summary>Hosts the real Options dialog with an actual application owner and selection.</summary>
 	public sealed class DialogHarness : ComponentBase {
 		/// <summary>The actual application supplied to the dialog.</summary>
-		[Parameter] public IBlazorApplication Application { get; set; }
+		[Parameter] public BlazorUI.IApplication Application { get; set; }
 
 		/// <summary>The actual plugin, block or screen definition selected in the dialog.</summary>
 		[Parameter] public object Owner { get; set; }
 
 		/// <summary>Captures the renderer-created component for interaction checks.</summary>
-		[Parameter] public Action<BlazorApplicationSettingsDialog> Capture { get; set; }
+		[Parameter] public Action<ApplicationSettingsDialog> Capture { get; set; }
 
 		/// <inheritdoc />
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
-			builder.OpenComponent<BlazorApplicationSettingsDialog>(0);
-			builder.AddAttribute(1, nameof(BlazorApplicationSettingsDialog.Application), Application);
-			builder.AddAttribute(2, nameof(BlazorApplicationSettingsDialog.Options), new ModalOptions());
-			builder.AddAttribute(3, nameof(BlazorApplicationSettingsDialog.SelectedOwner), Owner);
-			builder.AddComponentReferenceCapture(4, value => Capture((BlazorApplicationSettingsDialog)value));
+			builder.OpenComponent<ApplicationSettingsDialog>(0);
+			builder.AddAttribute(1, nameof(ApplicationSettingsDialog.Application), Application);
+			builder.AddAttribute(2, nameof(ApplicationSettingsDialog.Options), new ModalOptions());
+			builder.AddAttribute(3, nameof(ApplicationSettingsDialog.SelectedOwner), Owner);
+			builder.AddComponentReferenceCapture(4, value => Capture((ApplicationSettingsDialog)value));
 			builder.CloseComponent();
 		}
 	}
@@ -1139,7 +1140,7 @@ public class BlazorApplicationSettingsTests {
 	public class UnrelatedSettings : SettingsObject;
 
 	/// <summary>Rejects operational construction so Options discovery must use registration metadata.</summary>
-	public class UnopenedScreen : BlazorApplicationScreen {
+	public class UnopenedScreen : ApplicationScreen {
 		/// <inheritdoc />
 		public override Options ScreenSettings {
 			get {
@@ -1155,7 +1156,7 @@ public class BlazorApplicationSettingsTests {
 
 	/// <summary>Declares Options values by attribute without constructing an operational component.</summary>
 	[Settings(typeof(UnopenedAttributeSettingsScreen.Preferences))]
-	public class UnopenedAttributeSettingsScreen : BlazorApplicationScreen {
+	public class UnopenedAttributeSettingsScreen : ApplicationScreen {
 		/// <summary>Metadata-only Options discovery must not construct this component.</summary>
 		public UnopenedAttributeSettingsScreen() {
 			throw new InvalidOperationException("Options must not activate an unopened screen.");
@@ -1175,7 +1176,7 @@ public class BlazorApplicationSettingsTests {
 	}
 
 	/// <summary>Provides a pending validation boundary for modal ownership checks.</summary>
-	public class BlockingValidationEditor : ComponentBase, IBlazorApplicationSettingsEditor {
+	public class BlockingValidationEditor : ComponentBase, IApplicationSettingsEditor {
 		/// <summary>The actual settings value supplied to this fixture editor.</summary>
 		[Parameter] public object Value { get; set; }
 
@@ -1196,11 +1197,11 @@ public class BlazorApplicationSettingsTests {
 	}
 
 	/// <summary>Owns settings classes that declare their editor through ordinary component metadata.</summary>
-	public class DeclaredEditorScreen : BlazorApplicationScreen {
+	public class DeclaredEditorScreen : ApplicationScreen {
 		#region Inner Types
 
 		/// <summary>Declares an editor inherited by the concrete settings class.</summary>
-		[Editor(typeof(DeclaredSettingsEditor), typeof(IBlazorApplicationSettingsEditor))]
+		[Editor(typeof(DeclaredSettingsEditor), typeof(IApplicationSettingsEditor))]
 		public class PreferenceDefaults : SettingsObject {
 			/// <summary>The settings heading used by default hydration and editor checks.</summary>
 			public string Caption { get; set; } = "Declared default";
@@ -1218,7 +1219,7 @@ public class BlazorApplicationSettingsTests {
 	}
 
 	/// <summary>Implements the explicit editor contract over the actual supplied settings object.</summary>
-	public class CustomEditor : ComponentBase, IBlazorApplicationSettingsEditor {
+	public class CustomEditor : ComponentBase, IApplicationSettingsEditor {
 		/// <summary>The actual settings value supplied to this fixture editor.</summary>
 		[Parameter] public object Value { get; set; }
 
@@ -1232,7 +1233,7 @@ public class BlazorApplicationSettingsTests {
 	}
 
 	/// <summary>Captures actual settings, business drafts and screen deactivation behavior.</summary>
-	public class LifecycleScreen : BlazorApplicationScreen {
+	public class LifecycleScreen : ApplicationScreen {
 		/// <inheritdoc />
 		public override Options ScreenSettings {
 			get {
@@ -1296,20 +1297,20 @@ public class BlazorApplicationSettingsTests {
 		private LifecycleOwner(ServiceProvider services, HtmlRenderer renderer) {
 			_services = services;
 			Renderer = renderer;
-			Host = services.GetRequiredService<IBlazorApplicationScreenHost>();
+			Host = services.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		}
 
 		/// <summary>The renderer owned by this fixture lifetime.</summary>
 		public HtmlRenderer Renderer { get; }
 
 		/// <summary>The existing circuit presentation host.</summary>
-		public IBlazorApplicationScreenHost Host { get; }
+		public BlazorUI.IApplicationScreenHost Host { get; }
 
 		/// <summary>The first retained logical screen.</summary>
-		public BlazorApplicationScreenSession First { get; private set; }
+		public ApplicationScreenSession First { get; private set; }
 
 		/// <summary>The second retained logical screen.</summary>
-		public BlazorApplicationScreenSession Second { get; private set; }
+		public ApplicationScreenSession Second { get; private set; }
 
 		/// <summary>The actual registration-owned settings shared by both screen instances.</summary>
 		public SettingsObject Settings { get; private set; }
@@ -1345,7 +1346,7 @@ public class BlazorApplicationSettingsTests {
 			var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 			var owner = new LifecycleOwner(provider, renderer);
 			try {
-				var application = provider.GetRequiredService<IBlazorApplication>();
+				var application = provider.GetRequiredService<BlazorUI.IApplication>();
 				await application.InitializeAsync();
 				var block = owner.Host.Blocks.Single();
 				var definition = block.ScreenDefinitions.Single();

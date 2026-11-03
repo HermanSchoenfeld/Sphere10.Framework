@@ -18,7 +18,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Compares the actual Bloom-filter sizing API using explicit bit and byte units.</summary>
-public partial class BloomFilterAnalysisScreen : WinFormsApplicationScreen {
+public partial class BloomFilterAnalysisScreen : ApplicationScreen {
 	/// <summary>Creates the sizing workbench without allocating a filter or reading settings.</summary>
 	public BloomFilterAnalysisScreen() {
 		InitializeComponent();

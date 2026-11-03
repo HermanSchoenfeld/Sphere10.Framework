@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -211,7 +212,7 @@ public class ApplicationBarSelectionTests {
 		form.SelectedBlock = second;
 		Assert.That(originalPane.IsDisposed, Is.True);
 		var secondPane = bar.ApplicationBarControl;
-		using var added = new WinFormsApplicationMenu("Added later");
+		using var added = new ApplicationMenu("Added later");
 		Assert.That(() => first.AddMenu(added), Throws.InvalidOperationException, "Activated command membership is fixed.");
 		form.SelectedBlock = first;
 		Assert.That(secondPane.IsDisposed, Is.True);
@@ -223,9 +224,9 @@ public class ApplicationBarSelectionTests {
 	public void NavigationRebuildAndFormDisposalRetainAnOwnerSuppliedMenuControl() {
 		using var control = new ApplicationControl();
 		using var form = new ClickableMainForm();
-		using var first = new WinFormsApplicationBlock { Name = "Control owner", ShowInMenuStrip = false, ShowInToolStrip = false };
-		using var second = new WinFormsApplicationBlock { Name = "Second" };
-		using var menu = new WinFormsApplicationMenu("Editor");
+		using var first = new ApplicationBlock { Name = "Control owner", ShowInMenuStrip = false, ShowInToolStrip = false };
+		using var second = new ApplicationBlock { Name = "Second" };
+		using var menu = new ApplicationMenu("Editor");
 		menu.AddItem(new BorrowedControlMenuItem(control));
 		first.AddMenu(menu);
 		form.RegisterBlock(first);
@@ -266,17 +267,17 @@ public class ApplicationBarSelectionTests {
 	private static ApplicationBar Navigation(BlockMainForm form)
 		=> form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
 
-	private static void AssertNavigation(BlockMainForm form, ApplicationBar bar, IWinFormsApplicationBlock block) {
+	private static void AssertNavigation(BlockMainForm form, ApplicationBar bar, FormsUI.IApplicationBlock block) {
 		var selected = bar.Items.Single(item => ReferenceEquals(item.Button.Tag, block));
 		Assert.That(form.SelectedBlock, Is.SameAs(block));
 		Assert.That(bar.SelectedItem, Is.SameAs(selected));
 		Assert.That(bar.Items.Count(item => item.Button.Pressed), Is.EqualTo(1));
 		Assert.That(bar.ApplicationBarControl, Is.SameAs(selected.MenuControl));
-		Assert.That(bar.Items.Where(item => item.Button.Tag is IWinFormsApplicationBlock && !ReferenceEquals(item, selected)).Select(item => item.MenuControl), Is.All.Null);
+		Assert.That(bar.Items.Where(item => item.Button.Tag is FormsUI.IApplicationBlock && !ReferenceEquals(item, selected)).Select(item => item.MenuControl), Is.All.Null);
 		Assert.That(bar.ApplicationBarControl.Parent.Controls.Cast<Control>(), Is.EqualTo(new[] { bar.ApplicationBarControl }));
 	}
 
-	private static WinFormsApplicationBlock CreateBlock(string name) => new WinFormsApplicationBlockBuilder()
+	private static ApplicationBlock CreateBlock(string name) => new ApplicationBlockBuilder()
 		.WithName(name)
 		.AddScreen<DefaultNavigationScreen>(screen => screen
 			.WithTitle("Default")
@@ -303,9 +304,9 @@ public class ApplicationBarSelectionTests {
 
 	private sealed class ClickableMainForm : BlockMainForm {
 		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
-		public Func<IWinFormsApplicationBlock, Color> NavigationColor { get; set; }
+		public Func<FormsUI.IApplicationBlock, Color> NavigationColor { get; set; }
 
-		protected override TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
+		protected override TaskPane CreateApplicationBlockPane(FormsUI.IApplicationBlock block) {
 			var pane = base.CreateApplicationBlockPane(block);
 			if (NavigationColor != null)
 				pane.CustomSettings.GradientStartColor = NavigationColor(block);
@@ -315,7 +316,7 @@ public class ApplicationBarSelectionTests {
 		public void ClickButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
 	}
 
-	private sealed class BorrowedControlMenuItem : WinFormsApplicationMenuItemBase, IWinFormsControlMenuItem {
+	private sealed class BorrowedControlMenuItem : FormsUI.ApplicationMenuItemBase, IWinFormsControlMenuItem {
 		public BorrowedControlMenuItem(ApplicationControl control)
 			: base(null, true, false, false) {
 			ControlToShow = control;
@@ -324,6 +325,6 @@ public class ApplicationBarSelectionTests {
 		public ApplicationControl ControlToShow { get; }
 	}
 
-	public sealed class DefaultNavigationScreen : WinFormsApplicationScreen { }
-	public sealed class RequestedNavigationScreen : WinFormsApplicationScreen { }
+	public sealed class DefaultNavigationScreen : ApplicationScreen { }
+	public sealed class RequestedNavigationScreen : ApplicationScreen { }
 }

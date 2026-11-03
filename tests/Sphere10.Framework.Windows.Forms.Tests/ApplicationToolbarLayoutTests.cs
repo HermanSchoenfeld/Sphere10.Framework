@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -69,14 +70,14 @@ public class ApplicationToolbarLayoutTests {
 	[TestCase(16F)]
 	public void DetachedScreenToolbarKeepsContentPositionWhenCommandsAreHidden(float fontSize) {
 		using var font = new Font(SystemFonts.MenuFont.FontFamily, fontSize);
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var screen = new ToolbarScreen();
 		screen.ScreenToolBar.Font = font;
 		Assert.That(host.ShowScreen(screen), Is.True);
 		Assert.That(host.UndockScreen(screen), Is.True);
 		System.Windows.Forms.Application.DoEvents();
 		var detached = screen.FindForm();
-		Assert.That(detached, Is.TypeOf<WinFormsApplicationScreenForm>());
+		Assert.That(detached, Is.TypeOf<ApplicationScreenForm>());
 		var height = screen.ScreenToolBar.Height;
 		var contentTop = screen.Content.PointToScreen(Point.Empty).Y;
 		for (var change = 0; change < 6; change++) {
@@ -100,7 +101,7 @@ public class ApplicationToolbarLayoutTests {
 		using var form = new ToolbarMainForm { ScreenMode = ScreenMode.MultiView, Size = new Size(1400, 800) };
 		form.ApplicationToolbar.Font = font;
 		using var ordinary = new ToolbarScreen();
-		using var empty = new WinFormsApplicationScreen { Title = "Empty toolbar" };
+		using var empty = new ApplicationScreen { Title = "Empty toolbar" };
 		using var logged = new ToolbarScreen();
 		using var selector = new LogOutputSelectorControl { Font = font, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
 		using var output = new ToolStripControlHost(selector) { AutoSize = true, Margin = Padding.Empty };
@@ -112,7 +113,7 @@ public class ApplicationToolbarLayoutTests {
 		var rowHeight = form.ApplicationToolbar.Height;
 		var tabTop = form.ScreenHost.TabControl.PointToScreen(Point.Empty).Y;
 		TestContext.WriteLine($"Toolbar font scale {scale:0.##}; actual native DPI {form.ApplicationToolbar.DeviceDpi}; common row {rowHeight}px; tab top {tabTop}px.");
-		foreach (var screen in new WinFormsApplicationScreen[] { ordinary, logged, empty, logged, ordinary, empty }) {
+		foreach (var screen in new ApplicationScreen[] { ordinary, logged, empty, logged, ordinary, empty }) {
 			Assert.That(form.ShowScreen(screen), Is.True);
 			System.Windows.Forms.Application.DoEvents();
 			Assert.That(form.ApplicationToolbar.AutoSize, Is.False, "Active commands must not control the frame row's height.");
@@ -252,7 +253,7 @@ public class ApplicationToolbarLayoutTests {
 		public ToolStrip ApplicationToolbar => ToolStrip;
 	}
 
-	private sealed class ToolbarScreen : WinFormsApplicationScreen {
+	private sealed class ToolbarScreen : ApplicationScreen {
 		public ToolbarScreen() {
 			Title = "Toolbar Fixture";
 			ScreenToolBar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };

@@ -42,7 +42,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	private bool _lastNotifiedLoggingState;
 	private readonly List<LogScreen> _logScreens = new();
 	private LogScreen _activeLogScreen;
-	private WinFormsApplicationScreenHost _standaloneScreenHost;
+	private ApplicationScreenHost _standaloneScreenHost;
 	private Task _pendingDrain = Task.CompletedTask;
 	private volatile bool _stopping;
 
@@ -60,7 +60,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 
 	/// <summary>An optional borrowed host, useful when the selector is contributed through a ToolStripControlHost.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationScreenHost ScreenHost { get; set; }
+	public IApplicationScreenHost ScreenHost { get; set; }
 
 	/// <summary>The source name displayed as Log Output - NAME. Empty or generic values use the owning screen or window.</summary>
 	[Category("Appearance"), DefaultValue("Log Output")]
@@ -482,7 +482,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		var host = ResolveScreenHost();
 		var title = ResolveLogScreenTitle(host);
 		if (host == null || host.ScreenMode != ScreenMode.MultiView) {
-			_standaloneScreenHost ??= new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+			_standaloneScreenHost ??= new ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 			host = _standaloneScreenHost;
 		}
 		var screen = new LogScreen { Title = title };
@@ -504,13 +504,13 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		return session;
 	}
 
-	private string ResolveLogScreenTitle(IWinFormsApplicationScreenHost host) {
+	private string ResolveLogScreenTitle(IApplicationScreenHost host) {
 		var source = NormalizeScreenSourceName(ScreenTitle);
 		for (Control control = this; source == null && control != null; control = control.Parent)
-			if (control is WinFormsApplicationScreen screen)
+			if (control is ApplicationScreen screen)
 				source = NormalizeScreenSourceName(screen.Title);
 		var form = FindForm();
-		if (source == null && form is WinFormsApplicationScreenForm detached)
+		if (source == null && form is ApplicationScreenForm detached)
 			source = NormalizeScreenSourceName(detached.Screen.Title);
 		if (source == null && host?.ActiveScreen is { } active && active is not LogScreen)
 			source = NormalizeScreenSourceName(active.Title);
@@ -527,37 +527,37 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			|| source.Equals("Log Output -", StringComparison.OrdinalIgnoreCase) ? null : source;
 	}
 
-	private IWinFormsApplicationBlock ResolveScreenBlock(IWinFormsApplicationScreenHost host) {
+	private IApplicationBlock ResolveScreenBlock(IApplicationScreenHost host) {
 		for (Control control = this; control != null; control = control.Parent) {
-			if (control is WinFormsApplicationScreen screen && ReferenceEquals(screen.Host, host) && screen.Block != null)
+			if (control is ApplicationScreen screen && ReferenceEquals(screen.Host, host) && screen.Block != null)
 				return screen.Block;
 		}
 		return host.ActiveScreen?.Block ?? host.ActiveBlock;
 	}
 
-	private IWinFormsApplicationScreenHost ResolveScreenHost() {
+	private IApplicationScreenHost ResolveScreenHost() {
 		if (ScreenHost != null)
 			return ScreenHost;
 		for (Control control = this; control != null; control = control.Parent) {
-			if (control is WinFormsApplicationScreen { Host: { } host })
+			if (control is ApplicationScreen { Host: { } host })
 				return host;
-			if (control is IWinFormsApplicationScreenHost owningHost)
+			if (control is IApplicationScreenHost owningHost)
 				return owningHost;
 		}
 		// ToolStripControlHost controls belong to the strip, which can live on the main frame
 		// or a detached screen window instead of beneath the contributing screen.
 		var form = FindForm();
-		if (form is WinFormsApplicationScreenForm detached)
+		if (form is ApplicationScreenForm detached)
 			return detached.Screen.Host;
 		if (form is MainForm main)
 			return main.ScreenHost;
 		return FindScreenHost(form);
 	}
 
-	private static IWinFormsApplicationScreenHost FindScreenHost(Control parent) {
+	private static IApplicationScreenHost FindScreenHost(Control parent) {
 		if (parent == null)
 			return null;
-		if (parent is IWinFormsApplicationScreenHost host)
+		if (parent is IApplicationScreenHost host)
 			return host;
 		foreach (Control child in parent.Controls) {
 			if (FindScreenHost(child) is { } found)
@@ -701,7 +701,7 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			return _settingsKey;
 		var path = new List<string>();
 		for (var control = (Control)this; control != null; control = control.Parent) {
-			if (control is WinFormsApplicationScreen || control != this && control is UserControl && control.GetType() != typeof(UserControl))
+			if (control is ApplicationScreen || control != this && control is UserControl && control.GetType() != typeof(UserControl))
 				return $"{control.GetType().FullName}.{string.Join(".", path)}";
 			if (control is Form form) {
 				if (form.GetType() == typeof(Form) && string.IsNullOrWhiteSpace(form.Name))

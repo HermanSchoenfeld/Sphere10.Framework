@@ -16,11 +16,12 @@ using Microsoft.AspNetCore.Components;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 /// <summary>Edits actual application owner settings, retaining local serialized backups only for Cancel.</summary>
-public partial class BlazorApplicationSettingsDialog : ModalComponent {
+public partial class ApplicationSettingsDialog : ModalComponent {
 	private readonly Dictionary<SettingsObject, string> _backups = new(ReferenceEqualityComparer.Instance);
 	private readonly HashSet<SettingsObject> _dirty = new(ReferenceEqualityComparer.Instance);
 	private object _selected;
@@ -30,7 +31,7 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 	private bool _saving;
 
 	/// <summary>The application supplying its actual plugin, block and screen settings owners.</summary>
-	[Parameter] public IBlazorApplication Application { get; set; }
+	[Parameter] public IApplication Application { get; set; }
 
 	/// <summary>The readable application heading, separate from persistent settings identity.</summary>
 	[Parameter] public string ApplicationTitle { get; set; } = "Application";
@@ -48,11 +49,11 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 	// Custom editors belong to the settings class or the existing screen registration.
 	private Type EditorType {
 		get {
-			var editor = (_selected as BlazorApplicationScreenDefinition)?.SettingsEditor
-				?? GetDeclaredEditorType(GetSettings(_selected).GetType()) ?? typeof(BlazorApplicationSettingsEditor);
+			var editor = (_selected as ApplicationScreenDefinition)?.SettingsEditor
+				?? GetDeclaredEditorType(GetSettings(_selected).GetType()) ?? typeof(ApplicationSettingsEditor);
 			Guard.Argument(!editor.IsAbstract && !editor.ContainsGenericParameters && typeof(Microsoft.AspNetCore.Components.IComponent).IsAssignableFrom(editor)
-				&& typeof(IBlazorApplicationSettingsEditor).IsAssignableFrom(editor), nameof(EditorType),
-				"A settings editor must be a concrete component implementing IBlazorApplicationSettingsEditor.");
+				&& typeof(IApplicationSettingsEditor).IsAssignableFrom(editor), nameof(EditorType),
+				"A settings editor must be a concrete component implementing IApplicationSettingsEditor.");
 			return editor;
 		}
 	}
@@ -62,8 +63,8 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 		get {
 			var settings = GetSettings(_selected);
 			return new Dictionary<string, object> {
-				[nameof(IBlazorApplicationSettingsEditor.Value)] = settings,
-				[nameof(IBlazorApplicationSettingsEditor.Changed)] = EventCallback.Factory.Create(this, () => _dirty.Add(settings))
+				[nameof(IApplicationSettingsEditor.Value)] = settings,
+				[nameof(IApplicationSettingsEditor.Changed)] = EventCallback.Factory.Create(this, () => _dirty.Add(settings))
 			};
 		}
 	}
@@ -183,7 +184,7 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 
 	// The current component owns any invalid pending text that has not reached the settings object.
 	private async Task<bool> ValidateEditorAsync() {
-		if (_editor?.Instance is not IBlazorApplicationSettingsEditor editor)
+		if (_editor?.Instance is not IApplicationSettingsEditor editor)
 			return true;
 		var validation = await editor.ValidateAsync();
 		if (validation.IsSuccess)
@@ -206,8 +207,8 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 	// The same actual owner references drive navigation, editing and persistence.
 	private static SettingsObject GetSettings(object owner) {
 		return owner switch {
-			ApplicationScreenDefinition screen => screen.Settings,
-			IApplicationBlock block => block.BlockSettings,
+			SharedUI.ApplicationScreenDefinition screen => screen.Settings,
+			SharedUI.IApplicationBlock block => block.BlockSettings,
 			IApplicationPlugin plugin => plugin.PluginSettings,
 			_ => null
 		};
@@ -216,8 +217,8 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 	// Display text remains independent of provider IDs and registration identity.
 	private static string GetTitle(object owner) {
 		return owner switch {
-			ApplicationScreenDefinition screen => screen.Title,
-			IApplicationBlock block => block.Name,
+			SharedUI.ApplicationScreenDefinition screen => screen.Title,
+			SharedUI.IApplicationBlock block => block.Name,
 			IApplicationPlugin plugin => plugin.Name,
 			_ => string.Empty
 		};
@@ -225,14 +226,14 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 
 	// Automatic editing is opt-in; explicit editors may edit an otherwise unmarked settings class.
 	private static bool CanEdit(object owner) {
-		return GetSettings(owner) is { } settings && ((owner as BlazorApplicationScreenDefinition)?.SettingsEditor != null
+		return GetSettings(owner) is { } settings && ((owner as ApplicationScreenDefinition)?.SettingsEditor != null
 			|| GetDeclaredEditorType(settings.GetType()) != null || Attribute.IsDefined(settings.GetType(), typeof(UserEditableAttribute), true));
 	}
 
 	// Ordinary component-model editor metadata belongs to the settings class.
 	private static Type GetDeclaredEditorType(Type settingsType) {
 		var editor = TypeDescriptor.GetAttributes(settingsType).OfType<EditorAttribute>()
-			.FirstOrDefault(attribute => Type.GetType(attribute.EditorBaseTypeName, false) == typeof(IBlazorApplicationSettingsEditor));
+			.FirstOrDefault(attribute => Type.GetType(attribute.EditorBaseTypeName, false) == typeof(IApplicationSettingsEditor));
 		return editor == null ? null : Type.GetType(editor.EditorTypeName, true);
 	}
 

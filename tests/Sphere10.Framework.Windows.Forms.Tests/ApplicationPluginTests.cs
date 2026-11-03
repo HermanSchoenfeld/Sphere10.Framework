@@ -16,13 +16,15 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class WinFormsApplicationPluginTests {
+public class ApplicationPluginTests {
 	private bool _startedFramework;
 
 	[OneTimeSetUp]
@@ -46,12 +48,12 @@ public class WinFormsApplicationPluginTests {
 		var configured = 0;
 		var loaded = 0;
 		var unloaded = 0;
-		var plugin = new WinFormsApplicationPluginBuilder()
+		var plugin = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Features")
 			.AddBlock(block)
 			.AddServices(_ => configured++)
 			.Build();
-		IApplicationPlugin shared = plugin;
+		SharedUI.IApplicationPlugin shared = plugin;
 		shared.Loaded += () => loaded++;
 		shared.Unloaded += () => unloaded++;
 		plugin.Blocks[0] = null;
@@ -73,7 +75,7 @@ public class WinFormsApplicationPluginTests {
 		var unloaded = 0;
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<ProbeScreen>(screen => screen.WithTitle("Workspace"))
 			.AddMenu(menu => menu
@@ -81,7 +83,7 @@ public class WinFormsApplicationPluginTests {
 				.AddActionItem("Startup", () => startupActions++, executeOnLoad: true)
 			)
 			.Build();
-		var plugin = new WinFormsApplicationPluginBuilder()
+		var plugin = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Workspace plugin")
 			.AddBlock(block)
 			.AddServices(registry => registry.AddSingleton<StartupMarker>())
@@ -91,12 +93,12 @@ public class WinFormsApplicationPluginTests {
 		services.AddWinFormsApplicationPlugin(plugin);
 		Assert.That(loaded, Is.EqualTo(1));
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
-		var shared = provider.GetRequiredService<IApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
+		var shared = provider.GetRequiredService<SharedUI.IApplication>();
 		Assert.That(shared, Is.SameAs(application));
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null);
-		Assert.That(provider.GetRequiredService<IWinFormsApplicationPlugin>(), Is.SameAs(plugin));
-		Assert.That(provider.GetRequiredService<IApplicationPlugin>(), Is.SameAs(plugin));
+		Assert.That(provider.GetRequiredService<FormsUI.IApplicationPlugin>(), Is.SameAs(plugin));
+		Assert.That(provider.GetRequiredService<SharedUI.IApplicationPlugin>(), Is.SameAs(plugin));
 		Assert.That(shared.LoadedPlugins.Single(), Is.SameAs(application.LoadedPlugins.Single()));
 		application.Initialize();
 		await application.InitializeAsync();
@@ -119,10 +121,10 @@ public class WinFormsApplicationPluginTests {
 	public async Task CallbackRegistrationAndDirectBlocksShareTheLiveApplicationMembership() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var explicitBlock = new WinFormsApplicationBlock { Name = "Plugin block", Position = 2 };
-		explicitBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(OtherScreen)));
-		using var legacyBlock = new WinFormsApplicationBlock { Name = "Legacy", Position = 1 };
-		legacyBlock.AddScreenDefinition(new ApplicationScreenDefinition(typeof(ProbeScreen)));
+		using var explicitBlock = new ApplicationBlock { Name = "Plugin block", Position = 2 };
+		explicitBlock.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(OtherScreen)));
+		using var legacyBlock = new ApplicationBlock { Name = "Legacy", Position = 1 };
+		legacyBlock.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen)));
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
 				.WithName("Application")
@@ -131,7 +133,7 @@ public class WinFormsApplicationPluginTests {
 		services.AddApplicationBlock(legacyBlock);
 		services.AddApplicationBlock(explicitBlock);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(application.LoadedPlugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Application" }));
 		Assert.That(application.LoadedPlugins[0].Blocks, Is.EqualTo(new[] { explicitBlock }));
@@ -147,7 +149,7 @@ public class WinFormsApplicationPluginTests {
 	public async Task DirectBlockConstructorPreservesStartupAndOwnershipWithoutCreatingAPlugin() {
 		using var form = new TrackingMainForm();
 		using var block = new TrackingBlock { Name = "Existing block" };
-		await using var application = new WinFormsApplication(form, new[] { block });
+		await using var application = new FormsUI.Application(form, new[] { block });
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks, Is.Empty);
 		await application.InitializeAsync();
@@ -166,23 +168,23 @@ public class WinFormsApplicationPluginTests {
 		services.AddMainForm<TrackingMainForm>();
 		services.AddApplicationBlock<LegacyTransientBlock>();
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks.Single(), Is.SameAs(application.ScreenHost.Blocks.Single()));
-		Assert.That(provider.GetRequiredService<IApplication>().Blocks.Single(), Is.SameAs(application.Blocks.Single()));
+		Assert.That(provider.GetRequiredService<SharedUI.IApplication>().Blocks.Single(), Is.SameAs(application.Blocks.Single()));
 		Assert.That(((TrackingMainForm)application.BlockManager).RegisterCount, Is.EqualTo(1));
 	}
 
 	[Test]
 	public async Task AlreadyLoadedPluginConstructorBindsCapturedProvenanceWithoutLoadingAgain() {
 		using var form = new TrackingMainForm();
-		using var block = new WinFormsApplicationBlock { Name = "Loaded contribution" };
+		using var block = new ApplicationBlock { Name = "Loaded contribution" };
 		var loads = 0;
-		var plugin = new WinFormsApplicationPlugin("Loaded", new[] { block }, _ => loads++);
+		var plugin = new FormsUI.ApplicationPlugin("Loaded", new[] { block }, _ => loads++);
 		plugin.Load(new ServiceCollection());
 		Assert.That(block.Source, Is.Null);
-		await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>(), new[] { plugin });
+		await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>(), new[] { plugin });
 		Assert.That(block.Source, Is.SameAs(plugin));
 		Assert.That(block.Parent, Is.Null);
 		Assert.That(loads, Is.EqualTo(1));
@@ -194,11 +196,11 @@ public class WinFormsApplicationPluginTests {
 	[Test]
 	public async Task LiveMembershipTracksAlreadyRegisteredAndLaterBlocksWithoutCreatingAPlugin() {
 		using var form = new TrackingMainForm();
-		var initial = new WinFormsApplicationBlock { Name = "Before adapter" };
+		var initial = new ApplicationBlock { Name = "Before adapter" };
 		var later = new TrackingBlock { Name = "After adapter" };
 		form.RegisterBlock(initial);
-		await using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
-		IApplication shared = application;
+		await using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
+		SharedUI.IApplication shared = application;
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks.Single(), Is.SameAs(initial));
 		await application.InitializeAsync();
@@ -216,7 +218,7 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks, Is.EqualTo(new[] { initial }));
 		Assert.That(later.DisposeCount, Is.EqualTo(1), "The existing block manager remains the only owner during removal.");
-		using var last = new WinFormsApplicationBlock { Name = "Last block" };
+		using var last = new ApplicationBlock { Name = "Last block" };
 		form.UnregisterBlock(initial);
 		Assert.That(application.Blocks, Is.Empty);
 		form.RegisterBlock(last);
@@ -233,20 +235,20 @@ public class WinFormsApplicationPluginTests {
 				.AddInitializer<IncrementUsageByOneInitializer>()
 			);
 		var loads = 0;
-		var duplicate = new WinFormsApplicationPluginBuilder()
+		var duplicate = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Duplicate")
 			.AddInitializer<IncrementUsageByOneInitializer>()
 			.AddServices(_ => loads++)
 			.Build();
 		Assert.That(() => services.AddWinFormsApplicationPlugin(duplicate), Throws.ArgumentException);
 		Assert.That(loads, Is.Zero);
-		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IWinFormsApplicationPlugin)), Is.EqualTo(1));
+		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(FormsUI.IApplicationPlugin)), Is.EqualTo(1));
 		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(IApplicationInitializer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Duplicate")), Is.EqualTo(1));
 	}
 
 	[Test]
 	public void BlocksCannotBeOwnedByTwoPlugins() {
-		using var block = new WinFormsApplicationBlock { Name = "Block" };
+		using var block = new ApplicationBlock { Name = "Block" };
 		var services = new ServiceCollection();
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
@@ -268,8 +270,8 @@ public class WinFormsApplicationPluginTests {
 		var services = new ServiceCollection();
 		services.AddKeyedSingleton<IApplicationInitializer>("Reused", new CallbackInitializer(() => calls.Add("Existing initialized")));
 		services.AddKeyedSingleton<IApplicationFinalizer>("Reused", new CallbackFinalizer(() => calls.Add("Existing finalized")));
-		using var owned = new WinFormsApplicationBlock { Name = "Owned" };
-		services.AddWinFormsApplicationPlugin(new WinFormsApplicationPlugin("Owner", new[] { owned }));
+		using var owned = new ApplicationBlock { Name = "Owned" };
+		services.AddWinFormsApplicationPlugin(new FormsUI.ApplicationPlugin("Owner", new[] { owned }));
 		var failed = (MutablePlugin)new MutablePluginBuilder()
 			.WithName("Reused")
 			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
@@ -299,7 +301,7 @@ public class WinFormsApplicationPluginTests {
 		using var provider = services.BuildServiceProvider();
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null, "Ordinary service side effects retain the existing registration policy.");
 		Assert.That(provider.GetRequiredKeyedService<StartupMarker>("Reused"), Is.Not.Null, "Cleanup only removes named lifecycle descriptors.");
-		Assert.That(provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>().Select(registration => registration.Plugin.Name), Is.EqualTo(new[] { "Owner", "Reused" }));
+		Assert.That(provider.GetServices<ApplicationPluginRegistration<FormsUI.IApplicationPlugin>>().Select(registration => registration.Plugin.Name), Is.EqualTo(new[] { "Owner", "Reused" }));
 		foreach (var initializer in provider.GetKeyedServices<IApplicationInitializer>("Reused"))
 			initializer.Initialize();
 		foreach (var finalizer in provider.GetKeyedServices<IApplicationFinalizer>("Reused"))
@@ -312,7 +314,7 @@ public class WinFormsApplicationPluginTests {
 		var services = new ServiceCollection();
 		var nestedLoads = 0;
 		var calls = new List<string>();
-		var outer = new WinFormsApplicationPluginBuilder()
+		var outer = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Reused")
 			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
 			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
@@ -323,7 +325,7 @@ public class WinFormsApplicationPluginTests {
 			.Build();
 		Assert.That(() => services.AddWinFormsApplicationPlugin(outer), Throws.ArgumentException);
 		Assert.That(nestedLoads, Is.Zero);
-		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<FormsUI.IApplicationPlugin>)), Is.False);
 		Assert.That(services.Any(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "Reused")), Is.False);
 		services.AddWinFormsApplicationPlugin(plugin => plugin
 			.WithName("Reused")
@@ -340,7 +342,7 @@ public class WinFormsApplicationPluginTests {
 	public void SuccessfulNestedDifferentNameRegistrationSurvivesItsOuterPluginFailure() {
 		var services = new ServiceCollection();
 		var calls = new List<string>();
-		var outer = new WinFormsApplicationPluginBuilder()
+		var outer = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Outer")
 			.AddInitializer<CallbackInitializer>(_ => new CallbackInitializer(() => calls.Add("Abandoned initialized")))
 			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Abandoned finalized")))
@@ -361,7 +363,7 @@ public class WinFormsApplicationPluginTests {
 			.AddFinalizer<CallbackFinalizer>(_ => new CallbackFinalizer(() => calls.Add("Replacement finalized")))
 		);
 		using var provider = services.BuildServiceProvider();
-		var registrations = provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>().ToArray();
+		var registrations = provider.GetServices<ApplicationPluginRegistration<FormsUI.IApplicationPlugin>>().ToArray();
 		Assert.That(registrations.Select(registration => registration.Plugin.Name), Is.EqualTo(new[] { "Nested", "Outer" }));
 		foreach (var registration in registrations)
 			provider.GetKeyedServices<IApplicationInitializer>(registration.Plugin.Name).Single().Initialize();
@@ -374,19 +376,19 @@ public class WinFormsApplicationPluginTests {
 	public async Task PluginsContributeIndividualNavigationBlocksInPositionOrder() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var first = new WinFormsApplicationBlockBuilder()
+		using var first = new ApplicationBlockBuilder()
 			.WithName("First")
 			.WithPosition(30)
 			.AddScreen<ProbeScreen>(screen => screen.WithTitle(nameof(ProbeScreen)))
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
-		using var second = new WinFormsApplicationBlockBuilder()
+		using var second = new ApplicationBlockBuilder()
 			.WithName("Second")
 			.WithPosition(20)
 			.AddScreen<OtherScreen>(screen => screen.WithTitle(nameof(OtherScreen)))
 			.WithDefaultScreen<OtherScreen>()
 			.Build();
-		using var third = new WinFormsApplicationBlock { Name = "Third", Position = 10 };
+		using var third = new ApplicationBlock { Name = "Third", Position = 10 };
 		services
 			.AddWinFormsApplicationPlugin(plugin => plugin
 				.WithName("First contribution")
@@ -398,7 +400,7 @@ public class WinFormsApplicationPluginTests {
 				.AddBlock(third)
 			);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		var form = (TrackingMainForm)application.BlockManager;
 		var navigation = form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
@@ -428,7 +430,7 @@ public class WinFormsApplicationPluginTests {
 			})
 		);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(loads, Is.EqualTo(1));
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null);
@@ -441,15 +443,15 @@ public class WinFormsApplicationPluginTests {
 	public async Task ManuallyRegisteredUnloadedPluginIsExcludedFromTheApplicationInventory() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var block = new WinFormsApplicationBlock { Name = "Unloaded block" };
+		using var block = new ApplicationBlock { Name = "Unloaded block" };
 		var loads = 0;
-		var plugin = new WinFormsApplicationPlugin("Unloaded", new[] { block }, _ => loads++);
-		services.AddSingleton<IWinFormsApplicationPlugin>(plugin);
-		services.AddSingleton<IApplicationPlugin>(plugin);
+		var plugin = new FormsUI.ApplicationPlugin("Unloaded", new[] { block }, _ => loads++);
+		services.AddSingleton<FormsUI.IApplicationPlugin>(plugin);
+		services.AddSingleton<SharedUI.IApplicationPlugin>(plugin);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
-		Assert.That(provider.GetRequiredService<IWinFormsApplicationPlugin>(), Is.SameAs(plugin));
+		Assert.That(provider.GetRequiredService<FormsUI.IApplicationPlugin>(), Is.SameAs(plugin));
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks, Is.Empty);
 		Assert.That(loads, Is.Zero);
@@ -461,13 +463,13 @@ public class WinFormsApplicationPluginTests {
 	public async Task FailedLoadDoesNotPublishARegistrationReceipt() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var block = new WinFormsApplicationBlock { Name = "Failed contribution" };
-		var plugin = new WinFormsApplicationPlugin("Fails", new[] { block }, _ => Guard.Ensure(false, "Load failed."));
+		using var block = new ApplicationBlock { Name = "Failed contribution" };
+		var plugin = new FormsUI.ApplicationPlugin("Fails", new[] { block }, _ => Guard.Ensure(false, "Load failed."));
 		Assert.That(() => services.AddWinFormsApplicationPlugin(plugin), Throws.InvalidOperationException);
-		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>)), Is.False);
-		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IWinFormsApplicationPlugin)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<FormsUI.IApplicationPlugin>)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(FormsUI.IApplicationPlugin)), Is.False);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks, Is.Empty);
@@ -479,39 +481,39 @@ public class WinFormsApplicationPluginTests {
 	public async Task PostLoadValidationFailureDoesNotPublishTheFailedPluginOrItsBlocks() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var owned = new WinFormsApplicationBlock { Name = "Owned" };
-		using var initial = new WinFormsApplicationBlock { Name = "Initial" };
-		var first = new WinFormsApplicationPlugin("First", new[] { owned });
+		using var owned = new ApplicationBlock { Name = "Owned" };
+		using var initial = new ApplicationBlock { Name = "Initial" };
+		var first = new FormsUI.ApplicationPlugin("First", new[] { owned });
 		services.AddWinFormsApplicationPlugin(first);
 		var failed = new MutablePlugin("Failed", new[] { initial });
 		failed.Loaded += () => failed.CurrentBlocks = new[] { owned };
 		Assert.That(() => services.AddWinFormsApplicationPlugin(failed), Throws.ArgumentException);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { first }));
 		Assert.That(application.Blocks, Is.EqualTo(new[] { owned }));
 		Assert.That(owned.Source, Is.SameAs(first));
 		Assert.That(initial.Source, Is.Null);
-		Assert.That(provider.GetServices<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>().Count(), Is.EqualTo(1));
+		Assert.That(provider.GetServices<ApplicationPluginRegistration<FormsUI.IApplicationPlugin>>().Count(), Is.EqualTo(1));
 	}
 
 	[Test]
 	public async Task RegistrationCapturesPostLoadMembershipAndPreservesItsArrayOwnership() {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
-		using var initial = new WinFormsApplicationBlock { Name = "Initial" };
-		using var contributed = new WinFormsApplicationBlockBuilder()
+		using var initial = new ApplicationBlock { Name = "Initial" };
+		using var contributed = new ApplicationBlockBuilder()
 			.WithName("Contributed")
 			.AddScreen<ProbeScreen>(screen => screen.WithTitle(nameof(ProbeScreen)))
 			.WithDefaultScreen<ProbeScreen>()
 			.Build();
-		using var later = new WinFormsApplicationBlock { Name = "Later" };
+		using var later = new ApplicationBlock { Name = "Later" };
 		var plugin = new MutablePlugin("Mutable", new[] { initial });
 		plugin.Loaded += () => plugin.CurrentBlocks = new[] { contributed };
 		services.AddWinFormsApplicationPlugin(plugin);
 		await using var provider = services.BuildServiceProvider();
-		var registration = provider.GetRequiredService<ApplicationPluginRegistration<IWinFormsApplicationPlugin>>();
+		var registration = provider.GetRequiredService<ApplicationPluginRegistration<FormsUI.IApplicationPlugin>>();
 		Assert.That(registration.Plugin, Is.SameAs(plugin));
 		Assert.That(registration.Blocks, Is.EqualTo(new[] { contributed }));
 		Assert.That(contributed.Source, Is.SameAs(plugin));
@@ -519,13 +521,13 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(initial.Source, Is.Null);
 		registration.Blocks[0] = later;
 		plugin.CurrentBlocks[0] = later;
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
 		Assert.That(application.Blocks, Is.EqualTo(new[] { contributed }));
 		Assert.That(contributed.Parent, Is.SameAs(application));
-		Assert.That(((IApplicationBlock)contributed).Parent, Is.SameAs(application));
-		Assert.That(((IApplicationBlock)contributed).Source, Is.SameAs(plugin));
+		Assert.That(((SharedUI.IApplicationBlock)contributed).Parent, Is.SameAs(application));
+		Assert.That(((SharedUI.IApplicationBlock)contributed).Source, Is.SameAs(plugin));
 		Assert.That(later.Source, Is.Null);
 		Assert.That(application.ScreenHost.ActiveScreen.ApplicationBlock, Is.SameAs(contributed));
 		Assert.That(registration.Blocks, Is.EqualTo(new[] { contributed }));
@@ -533,17 +535,17 @@ public class WinFormsApplicationPluginTests {
 
 	[Test]
 	public void DuplicateValidationUsesCapturedContributionsAfterAPluginGetterChanges() {
-		using var contributed = new WinFormsApplicationBlock { Name = "Contributed" };
-		using var later = new WinFormsApplicationBlock { Name = "Later" };
+		using var contributed = new ApplicationBlock { Name = "Contributed" };
+		using var later = new ApplicationBlock { Name = "Later" };
 		var first = new MutablePlugin("First", new[] { contributed });
 		var services = new ServiceCollection();
 		services.AddWinFormsApplicationPlugin(first);
 		first.CurrentBlocks = new[] { later };
 		var loads = 0;
-		var duplicate = new WinFormsApplicationPlugin("Second", new[] { contributed }, _ => loads++);
+		var duplicate = new FormsUI.ApplicationPlugin("Second", new[] { contributed }, _ => loads++);
 		Assert.That(() => services.AddWinFormsApplicationPlugin(duplicate), Throws.ArgumentException);
 		Assert.That(loads, Is.Zero);
-		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IWinFormsApplicationPlugin>)), Is.EqualTo(1));
+		Assert.That(services.Count(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<FormsUI.IApplicationPlugin>)), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -551,18 +553,18 @@ public class WinFormsApplicationPluginTests {
 		var services = new ServiceCollection();
 		services.AddMainForm<TrackingMainForm>();
 		var block = new TrackingBlock { Name = "Contributed" };
-		var plugin = new WinFormsApplicationPlugin("Loaded", new[] { block });
+		var plugin = new FormsUI.ApplicationPlugin("Loaded", new[] { block });
 		var unloads = 0;
 		plugin.Unloaded += () => unloads++;
 		services.AddWinFormsApplicationPlugin(plugin);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		await application.InitializeAsync();
 		Assert.That(block.Parent, Is.SameAs(application));
 		Assert.That(block.Source, Is.SameAs(plugin));
 		application.BlockManager.UnregisterBlock(block);
 		Assert.That(application.Blocks, Is.Empty);
-		Assert.That(((IApplication)application).Blocks, Is.Empty);
+		Assert.That(((SharedUI.IApplication)application).Blocks, Is.Empty);
 		Assert.That(application.LoadedPlugins.Single(), Is.SameAs(plugin));
 		Assert.That(unloads, Is.Zero);
 		Assert.That(block.DisposeCount, Is.EqualTo(1));
@@ -584,26 +586,26 @@ public class WinFormsApplicationPluginTests {
 
 		public void ClickNavigationButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
 
-		public override void RegisterBlock(IWinFormsApplicationBlock block) {
+		public override void RegisterBlock(FormsUI.IApplicationBlock block) {
 			_registerCount++;
 			base.RegisterBlock(block);
 		}
 	}
 
-	public sealed class LegacyTransientBlock : WinFormsApplicationBlock {
+	public sealed class LegacyTransientBlock : ApplicationBlock {
 		public LegacyTransientBlock() => Name = "Legacy transient";
 	}
 
-	public sealed class ProbeScreen : WinFormsApplicationScreen {
+	public sealed class ProbeScreen : ApplicationScreen {
 	}
 
-	public sealed class OtherScreen : WinFormsApplicationScreen {
+	public sealed class OtherScreen : ApplicationScreen {
 	}
 
 	public sealed class StartupMarker {
 	}
 
-	private sealed class TrackingBlock : WinFormsApplicationBlock {
+	private sealed class TrackingBlock : ApplicationBlock {
 		public int DisposeCount { get; private set; }
 
 		public override void Dispose() {
@@ -612,22 +614,22 @@ public class WinFormsApplicationPluginTests {
 		}
 	}
 
-	private sealed class MutablePlugin : WinFormsApplicationPlugin {
-		public MutablePlugin(string name, IWinFormsApplicationBlock[] blocks, Action<IServiceCollection> configureServices = null)
+	private sealed class MutablePlugin : FormsUI.ApplicationPlugin {
+		public MutablePlugin(string name, FormsUI.IApplicationBlock[] blocks, Action<IServiceCollection> configureServices = null)
 			: base(name, blocks, configureServices) {
 			CurrentBlocks = blocks;
 		}
 
-		public IWinFormsApplicationBlock[] CurrentBlocks { get; set; }
+		public FormsUI.IApplicationBlock[] CurrentBlocks { get; set; }
 
-		public override IWinFormsApplicationBlock[] Blocks {
+		public override FormsUI.IApplicationBlock[] Blocks {
 			get => CurrentBlocks;
 			init => base.Blocks = value;
 		}
 	}
 
-	private sealed class MutablePluginBuilder : WinFormsApplicationPluginBuilder {
-		protected override WinFormsApplicationPlugin CreatePlugin(IWinFormsApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
+	private sealed class MutablePluginBuilder : FormsUI.ApplicationPluginBuilder {
+		protected override FormsUI.ApplicationPlugin CreatePlugin(FormsUI.IApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
 			=> new MutablePlugin(Name, blocks, configureServices);
 	}
 

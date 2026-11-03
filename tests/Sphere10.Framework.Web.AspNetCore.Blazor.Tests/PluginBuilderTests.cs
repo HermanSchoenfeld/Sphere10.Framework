@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -48,8 +50,8 @@ public class PluginBuilderTests {
 		Assert.That(block.DefaultScreen, Is.EqualTo(typeof(TestScreen)));
 		Assert.That(block.Menus.Single().Items.Single().Id, Is.EqualTo("overview"));
 		Assert.That(plugin.IoCContainer, Is.Null);
-		Assert.That(plugin, Is.InstanceOf<ApplicationPlugin>());
-		Assert.That(((IApplicationPlugin)plugin).Blocks.Single(), Is.SameAs(block));
+		Assert.That(plugin, Is.InstanceOf<SharedUI.ApplicationPlugin>());
+		Assert.That(((SharedUI.IApplicationPlugin)plugin).Blocks.Single(), Is.SameAs(block));
 	}
 
 	[Test]
@@ -84,11 +86,11 @@ public class PluginBuilderTests {
 	[Test]
 	public void PluginSnapshotsInputMetadataAndReturnsDefensiveBlockArrays() {
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
-		var definition = new BlazorApplicationScreenDefinition(typeof(TestScreen), "Screen", parameters: parameters);
-		var items = new IBlazorApplicationMenuItem[] {
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(TestScreen), "Screen", parameters: parameters);
+		var items = new BlazorUI.IApplicationMenuItem[] {
 			new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenDefinition = definition }
 		};
-		var blocks = new[] { new BlazorApplicationBlock { Id = "work", Title = "Work", ScreenDefinitions = new[] { definition }, Menus = new[] { new BlazorApplicationMenu { Text = "Menu", Items = items } } } };
+		var blocks = new[] { new ApplicationBlock { Id = "work", Title = "Work", ScreenDefinitions = new[] { definition }, Menus = new[] { new ApplicationMenu { Text = "Menu", Items = items } } } };
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
 			.AddBlock(blocks[0])
@@ -97,10 +99,10 @@ public class PluginBuilderTests {
 		parameters["Message"] = "Changed";
 		blocks[0] = null;
 		plugin.Blocks[0] = null;
-		((IApplicationPlugin)plugin).Blocks[0] = null;
+		((SharedUI.IApplicationPlugin)plugin).Blocks[0] = null;
 
 		var screen = (BlazorScreenMenuItem)plugin.Blocks.Single().Menus.Single().Items.Single();
-		var screenParameters = ((BlazorApplicationScreenDefinition)screen.ScreenDefinition).Parameters;
+		var screenParameters = ((BlazorUI.ApplicationScreenDefinition)screen.ScreenDefinition).Parameters;
 		Assert.That(screenParameters["Message"], Is.EqualTo("Original"));
 		Assert.That(() => ((IDictionary<string, object>)screenParameters)["Message"] = "Changed", Throws.TypeOf<NotSupportedException>());
 	}
@@ -111,7 +113,7 @@ public class PluginBuilderTests {
 	public void InvalidNamesAreRejectedImmediately(string name) {
 		Assert.That(() => new BlazorPluginBuilder()
 			.WithName(name), Throws.InstanceOf<ArgumentException>());
-		Assert.That(() => new BlazorPlugin(name, Array.Empty<IBlazorApplicationBlock>()), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => new BlazorPlugin(name, Array.Empty<BlazorUI.IApplicationBlock>()), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
@@ -123,8 +125,8 @@ public class PluginBuilderTests {
 	[Test]
 	public void NullConfigurationArgumentsAreRejected() {
 		var builder = new BlazorPluginBuilder();
-		Assert.That(() => builder.AddBlock((IBlazorApplicationBlock)null), Throws.TypeOf<ArgumentNullException>());
-		Assert.That(() => builder.AddBlock((Action<BlazorApplicationBlockBuilder>)null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => builder.AddBlock((BlazorUI.IApplicationBlock)null), Throws.TypeOf<ArgumentNullException>());
+		Assert.That(() => builder.AddBlock((Action<ApplicationBlockBuilder>)null), Throws.TypeOf<ArgumentNullException>());
 		Assert.That(() => builder.AddServices(null), Throws.TypeOf<ArgumentNullException>());
 		Assert.That(() => new ServiceCollection()
 			.AddSphere10BlazorPlugin((Action<BlazorPluginBuilder>)null), Throws.TypeOf<ArgumentNullException>());
@@ -195,10 +197,10 @@ public class PluginBuilderTests {
 		Assert.That(result, Is.SameAs(services));
 		Assert.That(loaded, Is.EqualTo(1));
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
-		Assert.That(provider.GetServices<IApplicationPlugin>().Single(), Is.SameAs(plugin));
-		Assert.That(provider.GetRequiredService<IBlazorApplicationScreenHost>().AvailableBlocks, Is.Empty);
-		Assert.That(provider.GetRequiredService<IBlazorApplication>().LoadedPlugins.Single(), Is.SameAs(plugin));
-		Assert.That(provider.GetRequiredService<IBlazorApplication>().Blocks, Is.Empty);
+		Assert.That(provider.GetServices<SharedUI.IApplicationPlugin>().Single(), Is.SameAs(plugin));
+		Assert.That(provider.GetRequiredService<BlazorUI.IApplicationScreenHost>().AvailableBlocks, Is.Empty);
+		Assert.That(provider.GetRequiredService<BlazorUI.IApplication>().LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(provider.GetRequiredService<BlazorUI.IApplication>().Blocks, Is.Empty);
 		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single().Blocks, Is.Empty);
 	}
 
@@ -223,7 +225,7 @@ public class PluginBuilderTests {
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
 		var userInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
-		var command = ((IBlazorApplicationScreenHost)userInterface.ScreenHost).Blocks.Single().Menus.Single().Items.Single();
+		var command = ((BlazorUI.IApplicationScreenHost)userInterface.ScreenHost).Blocks.Single().Menus.Single().Items.Single();
 
 		await userInterface.ExecuteMenuItemAsync(command);
 
@@ -254,11 +256,11 @@ public class PluginBuilderTests {
 			.AddSphere10BlazorPlugin(plugin), Throws.InstanceOf<ArgumentException>());
 		Assert.That(loaded, Is.EqualTo(1), "The Loaded callback precedes final validation; only the receipt publishes a successful registration.");
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin)), Is.False);
-		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IApplicationPlugin)), Is.False);
+		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(SharedUI.IApplicationPlugin)), Is.False);
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>)), Is.False);
 		await using var provider = services.BuildServiceProvider();
-		Assert.That(provider.GetRequiredService<IBlazorApplication>().LoadedPlugins, Is.Empty);
-		Assert.That(provider.GetRequiredService<IBlazorApplication>().Blocks.Single().Name, Is.EqualTo("Callback block"),
+		Assert.That(provider.GetRequiredService<BlazorUI.IApplication>().LoadedPlugins, Is.Empty);
+		Assert.That(provider.GetRequiredService<BlazorUI.IApplication>().Blocks.Single().Name, Is.EqualTo("Callback block"),
 			"Existing callback registrations remain usable without inventing a loaded plugin owner.");
 	}
 
@@ -270,15 +272,15 @@ public class PluginBuilderTests {
 			.AddSphere10BlazorPlugin(plugin);
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
-		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var session = await host.ActivateBlockAsync("late");
 
 		Assert.That(host.AvailableBlocks.Single().Id, Is.EqualTo("late"));
 		Assert.That(session.ScreenType, Is.EqualTo(typeof(TestScreen)));
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
-		Assert.That(provider.GetServices<IApplicationPlugin>().Single(), Is.SameAs(plugin));
-		Assert.That(scope.ServiceProvider.GetRequiredService<IBlazorApplication>().LoadedPlugins.Single(), Is.SameAs(plugin));
-		Assert.That(((IBlazorApplicationBlock)provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single().Blocks.Single()).Id, Is.EqualTo("late"));
+		Assert.That(provider.GetServices<SharedUI.IApplicationPlugin>().Single(), Is.SameAs(plugin));
+		Assert.That(scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>().LoadedPlugins.Single(), Is.SameAs(plugin));
+		Assert.That(((BlazorUI.IApplicationBlock)provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single().Blocks.Single()).Id, Is.EqualTo("late"));
 	}
 
 	[Test]
@@ -350,7 +352,7 @@ public class PluginBuilderTests {
 				)
 			);
 		using var provider = services.BuildServiceProvider();
-		var definitions = provider.GetRequiredService<IBlazorApplicationScreenHost>().Blocks.SelectMany(block => block.ScreenDefinitions).ToArray();
+		var definitions = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>().Blocks.SelectMany(block => block.ScreenDefinitions).ToArray();
 		Assert.That(definitions.Select(definition => definition.ActivationMode),
 			Is.EqualTo(new ScreenActivationMode?[] { ScreenActivationMode.SingleInstance, ScreenActivationMode.MultiInstance }));
 	}
@@ -382,9 +384,9 @@ public class PluginBuilderTests {
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var firstScope = provider.CreateScope();
 		using var secondScope = provider.CreateScope();
-		var firstHost = firstScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var firstHost = firstScope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var firstHostUserInterface = firstScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
-		var secondHost = secondScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var secondHost = secondScope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var secondHostUserInterface = secondScope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var firstScreen = await firstHost.ActivateBlockAsync("work");
 		var secondScreen = await secondHost.ActivateBlockAsync("work");
@@ -400,15 +402,15 @@ public class PluginBuilderTests {
 		Assert.That(firstHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(secondHost.AvailableBlocks.Select(block => block.Id)));
 		Assert.That(firstScreen.Id, Is.Not.EqualTo(secondScreen.Id));
 		Assert.That(firstScope.ServiceProvider.GetRequiredService<IUserInterfaceServices>(), Is.SameAs(firstHostUserInterface));
-		Assert.That(provider.GetServices<IApplicationBlock>().Single().Name, Is.EqualTo("Work"));
+		Assert.That(provider.GetServices<SharedUI.IApplicationBlock>().Single().Name, Is.EqualTo("Work"));
 		Assert.That(firstScope.ServiceProvider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(secondScope.ServiceProvider.GetServices<IBlazorPlugin>().Single()));
 	}
 
 	[Test]
 	public void OriginalPluginConstructorInitializersAndLifecycleRemainAvailable() {
-		var plugin = new BlazorPlugin("Original", Array.Empty<IBlazorApplicationBlock>()) {
+		var plugin = new BlazorPlugin("Original", Array.Empty<BlazorUI.IApplicationBlock>()) {
 			Name = "Renamed", Blocks = new[] {
-				new BlazorApplicationBlockBuilder()
+				new ApplicationBlockBuilder()
 					.WithName("Work")
 					.Build()
 			}
@@ -429,7 +431,7 @@ public class PluginBuilderTests {
 	[Test]
 	public void ExplicitPluginMembersDispatchThroughTheGenericSharedContract() {
 		IBlazorPlugin platform = new ExplicitPlugin();
-		IApplicationPlugin shared = platform;
+		SharedUI.IApplicationPlugin shared = platform;
 		var loaded = 0;
 		var unloaded = 0;
 		shared.Loaded += () => loaded++;
@@ -447,34 +449,34 @@ public class PluginBuilderTests {
 	private sealed class ExplicitPlugin : IBlazorPlugin {
 		private event EventHandlerEx _loaded;
 		private event EventHandlerEx _unloaded;
-		private readonly IBlazorApplicationBlock _block = new BlazorApplicationBlockBuilder()
+		private readonly BlazorUI.IApplicationBlock _block = new ApplicationBlockBuilder()
 			.WithName("Explicit")
 			.Build();
 
 		public SettingsObject PluginSettings { get; set; }
 
-		event EventHandlerEx IApplicationPlugin.Loaded {
+		event EventHandlerEx SharedUI.IApplicationPlugin.Loaded {
 			add => _loaded += value;
 			remove => _loaded -= value;
 		}
 
-		event EventHandlerEx IApplicationPlugin.Unloaded {
+		event EventHandlerEx SharedUI.IApplicationPlugin.Unloaded {
 			add => _unloaded += value;
 			remove => _unloaded -= value;
 		}
 
-		string IApplicationPlugin.Name => "Explicit";
+		string SharedUI.IApplicationPlugin.Name => "Explicit";
 
-		IBlazorApplicationBlock[] IApplicationPlugin<IBlazorApplicationBlock>.Blocks => new[] { _block };
+		BlazorUI.IApplicationBlock[] SharedUI.IApplicationPlugin<BlazorUI.IApplicationBlock>.Blocks => new[] { _block };
 
 		IServiceProvider IBlazorPlugin.IoCContainer => null;
 
-		void IApplicationPlugin.Load(IServiceCollection services) {
+		void SharedUI.IApplicationPlugin.Load(IServiceCollection services) {
 			services.AddScoped<ScopedCounter>();
 			_loaded?.Invoke();
 		}
 
-		void IApplicationPlugin.Unload() => _unloaded?.Invoke();
+		void SharedUI.IApplicationPlugin.Unload() => _unloaded?.Invoke();
 	}
 
 	private sealed class LateBlockPlugin : IBlazorPlugin {
@@ -485,13 +487,13 @@ public class PluginBuilderTests {
 
 		public string Name => "Late blocks";
 
-		public IBlazorApplicationBlock[] Blocks { get; private set; } = Array.Empty<IBlazorApplicationBlock>();
+		public BlazorUI.IApplicationBlock[] Blocks { get; private set; } = Array.Empty<BlazorUI.IApplicationBlock>();
 
 		public IServiceProvider IoCContainer => null;
 
 		public void Load(IServiceCollection services) {
 			Blocks = new[] {
-				new BlazorApplicationBlockBuilder()
+				new ApplicationBlockBuilder()
 					.WithId("late")
 					.WithName("Late block")
 					.AddScreen<TestScreen>(screen => screen
@@ -506,10 +508,10 @@ public class PluginBuilderTests {
 		public void Unload() => Unloaded?.Invoke();
 	}
 
-	public class TestScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class TestScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 

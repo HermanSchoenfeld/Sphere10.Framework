@@ -12,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -22,7 +24,7 @@ public class SharedFluentBuilderIntegrationTests {
 	[Test]
 	public void NativePluginUsesSharedNestedConfigurationWithPlatformExtensions() {
 		var calls = 0;
-		var plugin = new WinFormsApplicationPluginBuilder()
+		var plugin = new FormsUI.ApplicationPluginBuilder()
 			.WithName("Operations")
 			.AddBlock(block => block
 				.WithName("Inventory")
@@ -57,7 +59,7 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void SharedMetadataChangesPreserveUnrelatedLiveNativeEdits() {
-		var builder = new WinFormsApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Original")
 			.AddMenu(menu => menu
 				.WithText("First")
@@ -84,9 +86,9 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void NativeCachedBlockBuildRetainsNewCanonicalDefinitions() {
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace");
+		var builder = new ApplicationBlockBuilder().WithName("Workspace");
 		using var block = builder.Build();
-		var definition = new ApplicationScreenDefinition(typeof(Screen), "Direct editor");
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(Screen), "Direct editor");
 		builder
 			.AddScreen(definition);
 		Assert.That(builder.Build(), Is.SameAs(block));
@@ -97,7 +99,7 @@ public class SharedFluentBuilderIntegrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void NativeCachedTypeDefaultsResolveAnIndependentRegistrationBeforeOrAfterFirstBuild(bool defineDefaultBeforeFirstBuild) {
-		var builder = new WinFormsApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<Screen>(screen => screen
 				.WithTitle("Site editor")
@@ -128,7 +130,7 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void NativeTypeDefaultRequiresAnExplicitRegistrationAndNeverCreatesAProvisionalDefinition() {
-		var builder = new WinFormsApplicationBlockBuilder().WithName("Workspace").WithDefaultScreen<Screen>();
+		var builder = new ApplicationBlockBuilder().WithName("Workspace").WithDefaultScreen<Screen>();
 		Assert.That(() => builder.Build(), Throws.ArgumentException);
 		builder
 			.AddScreen<Screen>(screen => screen
@@ -160,8 +162,8 @@ public class SharedFluentBuilderIntegrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void NativeCachedEmptyDefaultRemainsBlockOwnedAfterRemovingItsNavigation(bool removeEntireMenu) {
-		IWinFormsApplicationMenuItem registeredItem = null;
-		var builder = new WinFormsApplicationBlockBuilder()
+		FormsUI.IApplicationMenuItem registeredItem = null;
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<Screen>(screen => screen
 				.WithTitle("Empty workspace")
@@ -182,7 +184,7 @@ public class SharedFluentBuilderIntegrationTests {
 		using var block = builder.Build();
 
 		// Change configuration through the captured definitions before command access activates the readonly collections.
-		var menu = (WinFormsApplicationMenu)registeredMenu;
+		var menu = (ApplicationMenu)registeredMenu;
 		var item = (WinFormsScreenMenuItem)registeredItem;
 		var definition = item.ScreenDefinition;
 		block.Name = "Edited workspace";
@@ -204,13 +206,13 @@ public class SharedFluentBuilderIntegrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void NativeCachedDefaultSelectionKeepsBothExplicitRegistrations(bool selectByDefinition) {
-		var explicitDefinition = new ApplicationScreenDefinition(typeof(Screen), "Explicit editor");
-		var builder = new WinFormsApplicationBlockBuilder()
+		var explicitDefinition = new SharedUI.ApplicationScreenDefinition(typeof(Screen), "Explicit editor");
+		var builder = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen(explicitDefinition)
 			.WithDefaultScreen(explicitDefinition);
 		using var block = builder.Build();
-		var second = new ApplicationScreenDefinition(typeof(Screen), "New editor");
+		var second = new SharedUI.ApplicationScreenDefinition(typeof(Screen), "New editor");
 		builder
 			.AddScreen(second, out var secondRegistration);
 		if (selectByDefinition)
@@ -225,7 +227,7 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void NativeScreenBuilderRejectsActionOnlyConfiguration() {
-		var builder = new WinFormsApplicationMenuItemBuilder()
+		var builder = new ApplicationMenuItemBuilder()
 			.AsScreenItem()
 			.WithText("Invalid")
 			.WithAction(() => { });
@@ -234,7 +236,7 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void NativeActionBuilderRejectsScreenOnlyConfiguration() {
-		var builder = new WinFormsApplicationMenuItemBuilder()
+		var builder = new ApplicationMenuItemBuilder()
 			.AsActionItem()
 			.WithText("Invalid")
 			.WithScreen<Screen>();
@@ -243,7 +245,7 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void NativeActionBuilderRejectsAsyncConfigurationItCannotExecute() {
-		var builder = new WinFormsApplicationMenuItemBuilder()
+		var builder = new ApplicationMenuItemBuilder()
 			.AsActionItem()
 			.WithText("Invalid")
 			.WithAction((_, _) => Task.CompletedTask);
@@ -287,7 +289,7 @@ public class SharedFluentBuilderIntegrationTests {
 
 	[Test]
 	public void NativeShowScreenCommandsReferenceIndependentlyConfiguredRegistrations() {
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<Screen>(screen => screen
 				.WithTitle("First"), out var firstRegistration
@@ -313,6 +315,6 @@ public class SharedFluentBuilderIntegrationTests {
 		Assert.That(block.ScreenDefinitions[1], Is.SameAs(second));
 	}
 
-	private sealed class Screen : WinFormsApplicationScreen {
+	private sealed class Screen : ApplicationScreen {
 	}
 }

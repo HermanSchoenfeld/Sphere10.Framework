@@ -16,6 +16,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -29,23 +30,23 @@ public class ApplicationSettingsEditorSelectionTests {
 	public void AutomaticOptionsEditingRequiresTheClassMarkerAndExplicitEditorsCanEditUnmarkedSettings() {
 		RunWithMessageLoop(async owner => {
 			var customCalls = 0;
-			var unmarked = new WinFormsApplicationScreenDefinition(typeof(OrdinarySettingsScreen), "Unmarked", stableKey: "unmarked");
-			var marked = new WinFormsApplicationScreenDefinition(typeof(EditableSettingsScreen), "Marked", stableKey: "marked");
-			var custom = new WinFormsApplicationScreenDefinition(typeof(OrdinarySettingsScreen), "Custom", stableKey: "custom", settingsEditor: context => {
+			var unmarked = new FormsUI.ApplicationScreenDefinition(typeof(OrdinarySettingsScreen), "Unmarked", stableKey: "unmarked");
+			var marked = new FormsUI.ApplicationScreenDefinition(typeof(EditableSettingsScreen), "Marked", stableKey: "marked");
+			var custom = new FormsUI.ApplicationScreenDefinition(typeof(OrdinarySettingsScreen), "Custom", stableKey: "custom", settingsEditor: context => {
 					Assert.That(context.Settings, Is.TypeOf<OrdinarySettings>());
 					customCalls++;
 					return new DefaultCrudEntityEditor();
 				});
-			var block = new WinFormsApplicationBlock { Name = "Options" };
+			var block = new ApplicationBlock { Name = "Options" };
 			foreach (var definition in new[] { unmarked, marked, custom })
 				block.AddScreenDefinition(definition);
 			var store = new MemoryStore();
 			using var main = new BlockMainForm();
-			await using var application = new WinFormsApplication(main, new[] { block });
+			await using var application = new FormsUI.Application(main, new[] { block });
 			foreach (var definition in block.ScreenDefinitions)
 				definition.Settings.Provider = store;
 			main.RegisterBlock(block);
-			using var dialog = new WinFormsApplicationSettingsDialog(application);
+			using var dialog = new ApplicationSettingsDialog(application);
 			dialog.Show(owner);
 			dialog.SelectOwner(unmarked);
 			Assert.That(unmarked.Settings, Is.Not.Null);
@@ -91,7 +92,7 @@ public class ApplicationSettingsEditorSelectionTests {
 		using var watchdog = new System.Windows.Forms.Timer { Interval = 20000 };
 		watchdog.Tick += (_, _) => {
 			failure = new AssertionException("The screen Options editor test did not complete.");
-			foreach (var dialog in System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().ToArray())
+			foreach (var dialog in System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().ToArray())
 				dialog.Close();
 			owner.Close();
 		};
@@ -113,7 +114,7 @@ public class ApplicationSettingsEditorSelectionTests {
 	}
 
 	/// <summary>Declares settings without opting into the automatic editor.</summary>
-	public sealed class OrdinarySettingsScreen : WinFormsApplicationScreen {
+	public sealed class OrdinarySettingsScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public override OrdinarySettings ScreenSettings {
 			get {
@@ -123,7 +124,7 @@ public class ApplicationSettingsEditorSelectionTests {
 	}
 
 	/// <summary>Declares settings that opt into the automatic editor.</summary>
-	public sealed class EditableSettingsScreen : WinFormsApplicationScreen {
+	public sealed class EditableSettingsScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public override EditableSettings ScreenSettings {
 			get {

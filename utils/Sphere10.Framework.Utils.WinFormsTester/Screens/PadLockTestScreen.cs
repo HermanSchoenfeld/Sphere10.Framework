@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Connects a retained lock choice to an editor and shows the resulting state events.</summary>
-public partial class PadLockTestScreen : WinFormsApplicationScreen {
+public partial class PadLockTestScreen : ApplicationScreen {
 	/// <summary>Creates the active and disabled lock examples.</summary>
 	public PadLockTestScreen() {
 		InitializeComponent();

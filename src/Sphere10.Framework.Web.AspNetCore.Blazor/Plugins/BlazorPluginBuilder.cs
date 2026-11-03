@@ -13,7 +13,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Specializes shared plugin builder state with Blazor block and menu configuration.</summary>
-public class BlazorPluginBuilder : ApplicationPluginBuilderBase<BlazorPluginBuilder, IBlazorApplicationBlock, BlazorApplicationBlockBuilder, BlazorPlugin> {
-	protected override BlazorPlugin CreatePlugin(IBlazorApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
+public class BlazorPluginBuilder : ApplicationPluginBuilderBase<BlazorPluginBuilder, IApplicationBlock, ApplicationBlockBuilder, BlazorPlugin> {
+	protected override BlazorPlugin CreatePlugin(IApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
 		=> new(Name, blocks, configureServices);
 }

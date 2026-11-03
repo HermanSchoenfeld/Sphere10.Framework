@@ -12,8 +12,8 @@ using System.Collections.ObjectModel;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Immutable activation metadata for a registered screen; component parameter values must themselves be immutable.</summary>
-public sealed class BlazorApplicationScreenActivation {
-	public BlazorApplicationScreenActivation(IDictionary<string, object> parameters = null, string instanceKey = null) {
+public sealed class ApplicationScreenActivation {
+	public ApplicationScreenActivation(IDictionary<string, object> parameters = null, string instanceKey = null) {
 		Guard.Argument(instanceKey == null || !string.IsNullOrWhiteSpace(instanceKey), nameof(instanceKey), "A screen instance key cannot be blank.");
 		Parameters = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(parameters ?? new Dictionary<string, object>(), System.StringComparer.OrdinalIgnoreCase));
 		InstanceKey = instanceKey;

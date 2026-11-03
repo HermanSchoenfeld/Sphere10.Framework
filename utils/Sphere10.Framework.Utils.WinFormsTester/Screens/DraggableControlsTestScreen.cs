@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates the existing drag extension on native picture controls.</summary>
-public partial class DraggableControlsTestScreen : WinFormsApplicationScreen {
+public partial class DraggableControlsTestScreen : ApplicationScreen {
 	/// <summary>Creates three independent draggable images inside one playground.</summary>
 	public DraggableControlsTestScreen() {
 		InitializeComponent();

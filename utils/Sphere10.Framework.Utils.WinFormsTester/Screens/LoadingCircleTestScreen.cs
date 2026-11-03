@@ -18,7 +18,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Shows loading styles, live appearance controls and scoped animation lifetimes.</summary>
-public partial class LoadingCircleTestScreen : WinFormsApplicationScreen {
+public partial class LoadingCircleTestScreen : ApplicationScreen {
 	private const int _demoDurationMilliseconds = 1200;
 	private CancellationTokenSource _operationCancellation;
 

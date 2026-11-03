@@ -15,7 +15,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Exercises sentence formatting and paragraph boundaries through the existing builder.</summary>
-public partial class ParagraphBuilderScreen : WinFormsApplicationScreen {
+public partial class ParagraphBuilderScreen : ApplicationScreen {
 	/// <summary>Creates the editable sentence and output surfaces.</summary>
 	public ParagraphBuilderScreen() {
 		InitializeComponent();

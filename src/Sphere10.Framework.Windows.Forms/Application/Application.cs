@@ -15,48 +15,49 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Adapts the running native form without duplicating block or screen ownership.</summary>
-public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
+public class Application : AsyncApplicationBase, IApplication {
 	private readonly BlockMainForm _mainForm;
 
-	private readonly IWinFormsApplicationBlock[] _configuredBlocks;
+	private readonly IApplicationBlock[] _configuredBlocks;
 
-	private readonly ApplicationPluginRegistration<IWinFormsApplicationPlugin>[] _loadedPluginRegistrations;
+	private readonly ApplicationPluginRegistration<IApplicationPlugin>[] _loadedPluginRegistrations;
 
-	private readonly IWinFormsApplicationPlugin[] _loadedPlugins;
+	private readonly IApplicationPlugin[] _loadedPlugins;
 
 	private readonly int _uiThread;
 
-	private IWinFormsApplicationMenu[] _menus = Array.Empty<IWinFormsApplicationMenu>();
+	private IApplicationMenu[] _menus = Array.Empty<IApplicationMenu>();
 
-	private IWinFormsApplicationMenuItem[] _toolBarItems = Array.Empty<IWinFormsApplicationMenuItem>();
+	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
 
-	private IWinFormsApplicationMenu[] _cachedMenus;
+	private IApplicationMenu[] _cachedMenus;
 
-	private IWinFormsApplicationMenuItem[] _cachedToolBarItems;
+	private IApplicationMenuItem[] _cachedToolBarItems;
 
 	private bool _blocksInitialized;
 
 	/// <summary>Adapts the existing native main form and its configured owners.</summary>
-	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks)
-		: this(mainForm, blocks, Array.Empty<IWinFormsApplicationPlugin>()) {
+	public Application(BlockMainForm mainForm, IEnumerable<IApplicationBlock> blocks)
+		: this(mainForm, blocks, Array.Empty<IApplicationPlugin>()) {
 	}
 
 	/// <summary>Adapts blocks and plugins that the caller has already loaded; this constructor does not invoke plugin lifecycle methods.</summary>
-	public WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks, IEnumerable<IWinFormsApplicationPlugin> loadedPlugins,
+	public Application(BlockMainForm mainForm, IEnumerable<IApplicationBlock> blocks, IEnumerable<IApplicationPlugin> loadedPlugins,
 		string settingsKey = null)
-		: this(mainForm, blocks, Tools.UI.ValidatePlugins(loadedPlugins).Cast<IWinFormsApplicationPlugin>()
-			.Select(plugin => new ApplicationPluginRegistration<IWinFormsApplicationPlugin>(plugin, plugin.Blocks)), null, settingsKey) {
+		: this(mainForm, blocks, Tools.UI.ValidatePlugins(loadedPlugins).Cast<IApplicationPlugin>()
+			.Select(plugin => new ApplicationPluginRegistration<IApplicationPlugin>(plugin, plugin.Blocks)), null, settingsKey) {
 	}
 
 	// Adapts the existing native main form and its configured owners.
-	internal WinFormsApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks,
-		IEnumerable<ApplicationPluginRegistration<IWinFormsApplicationPlugin>> loadedPluginRegistrations, IServiceProvider services = null,
+	internal Application(BlockMainForm mainForm, IEnumerable<IApplicationBlock> blocks,
+		IEnumerable<ApplicationPluginRegistration<IApplicationPlugin>> loadedPluginRegistrations, IServiceProvider services = null,
 		string settingsKey = null)
-		: base(services, settingsKey ?? services?.GetKeyedService<string>(nameof(WinFormsApplicationSettingsExtensions.AddApplicationSettings))) {
+		: base(services, settingsKey ?? services?.GetKeyedService<string>(nameof(ApplicationSettingsExtensions.AddApplicationSettings))) {
 		Guard.ArgumentNotNull(mainForm, nameof(mainForm));
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		Guard.ArgumentNotNull(loadedPluginRegistrations, nameof(loadedPluginRegistrations));
@@ -64,8 +65,8 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 		_uiThread = Environment.CurrentManagedThreadId;
 		_loadedPluginRegistrations = Tools.UI.ValidatePluginRegistrations(loadedPluginRegistrations);
 		_loadedPlugins = _loadedPluginRegistrations.Select(registration => registration.Plugin).ToArray();
-		var contributedBlocks = _loadedPluginRegistrations.SelectMany(registration => registration.Blocks).Cast<IWinFormsApplicationBlock>();
-		_configuredBlocks = blocks.Concat(contributedBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		var contributedBlocks = _loadedPluginRegistrations.SelectMany(registration => registration.Blocks).Cast<IApplicationBlock>();
+		_configuredBlocks = blocks.Concat(contributedBlocks).Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
 		Guard.Argument(_configuredBlocks.All(block => block != null), nameof(blocks), "Block definitions cannot be null.");
 		foreach (var registration in _loadedPluginRegistrations)
 			foreach (var block in registration.Blocks)
@@ -85,19 +86,19 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 		}
 	}
 
-	public override IWinFormsApplicationScreenHost ScreenHost {
+	public override IApplicationScreenHost ScreenHost {
 		get {
 			return _mainForm.ScreenHost;
 		}
 	}
 
-	public override IWinFormsApplicationPlugin[] LoadedPlugins {
+	public override IApplicationPlugin[] LoadedPlugins {
 		get {
 			return Tools.Array.Clone(_loadedPlugins);
 		}
 	}
 
-	public override IWinFormsApplicationBlock[] Blocks {
+	public override IApplicationBlock[] Blocks {
 		get {
 			return ScreenHost.Blocks;
 		}
@@ -110,14 +111,14 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	/// <summary>Activates this application's fixed commands, including its actual main form's native commands.</summary>
-	public virtual IWinFormsApplicationMenu[] Menus {
+	public virtual IApplicationMenu[] Menus {
 		get {
 			return Tools.Array.Clone(_cachedMenus ??= GetMenus());
 		}
 	}
 
 	/// <summary>Activates the application's fixed toolbar command collection.</summary>
-	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+	public virtual IApplicationMenuItem[] ToolBarItems {
 		get {
 			return Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
 		}
@@ -131,14 +132,14 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	// The main form already displays its designer controls; only these additional definitions need generated views.
-	internal IWinFormsApplicationMenu[] AdditionalMenus {
+	internal IApplicationMenu[] AdditionalMenus {
 		get {
 			_ = Menus;
 			return Tools.Array.Clone(_menus);
 		}
 	}
 
-	internal IWinFormsApplicationMenuItem[] AdditionalToolBarItems {
+	internal IApplicationMenuItem[] AdditionalToolBarItems {
 		get {
 			_ = ToolBarItems;
 			return Tools.Array.Clone(_toolBarItems);
@@ -148,12 +149,12 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	internal Func<Task> ShutdownAsync { get; set; }
 
 	/// <summary>Creates the application command definitions once after configuration.</summary>
-	protected virtual IWinFormsApplicationMenu[] GetMenus() {
+	protected virtual IApplicationMenu[] GetMenus() {
 		return _mainForm.Menus.Concat(_menus).ToArray();
 	}
 
 	/// <summary>Creates toolbar definitions while retaining the main form's original native items.</summary>
-	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
+	protected virtual IApplicationMenuItem[] GetToolBarItems() {
 		return _mainForm.ToolBarItems.Concat(_toolBarItems).ToArray();
 	}
 
@@ -206,28 +207,28 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	/// <summary>Configures additional application menus before command activation; definitions retain their existing owner.</summary>
-	public virtual void SetMenus(IEnumerable<IApplicationMenu> menus) {
+	public virtual void SetMenus(IEnumerable<SharedUI.IApplicationMenu> menus) {
 		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(menus, nameof(menus));
 		EnsureCommandsNotActivated();
 		var definitions = menus.ToArray();
-		Guard.Argument(definitions.All(menu => menu is IWinFormsApplicationMenu), nameof(menus), "WinForms menu definitions are required.");
+		Guard.Argument(definitions.All(menu => menu is IApplicationMenu), nameof(menus), "WinForms menu definitions are required.");
 		var formMenus = _mainForm.Menus;
-		var nativeMenus = definitions.Cast<IWinFormsApplicationMenu>().Where(menu => !formMenus.Contains(menu, ReferenceEqualityComparer.Instance)).ToArray();
+		var nativeMenus = definitions.Cast<IApplicationMenu>().Where(menu => !formMenus.Contains(menu, ReferenceEqualityComparer.Instance)).ToArray();
 		ValidateCommands(nativeMenus.SelectMany(menu => menu.Items).ToArray(), nameof(menus));
 		_menus = nativeMenus;
 		OnChanged();
 	}
 
 	/// <summary>Configures additional application toolbar commands before activation.</summary>
-	public virtual void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
+	public virtual void SetToolBarItems(IEnumerable<SharedUI.IApplicationMenuItem> items) {
 		ObjectDisposedException.ThrowIf(IsDisposed, this);
 		Guard.ArgumentNotNull(items, nameof(items));
 		EnsureCommandsNotActivated();
 		var definitions = items.ToArray();
-		Guard.Argument(definitions.All(item => item is IWinFormsApplicationMenuItem), nameof(items), "WinForms menu item definitions are required.");
+		Guard.Argument(definitions.All(item => item is IApplicationMenuItem), nameof(items), "WinForms menu item definitions are required.");
 		var formItems = _mainForm.ToolBarItems;
-		var nativeItems = definitions.Cast<IWinFormsApplicationMenuItem>().Where(item => !formItems.Contains(item, ReferenceEqualityComparer.Instance)).ToArray();
+		var nativeItems = definitions.Cast<IApplicationMenuItem>().Where(item => !formItems.Contains(item, ReferenceEqualityComparer.Instance)).ToArray();
 		ValidateCommands(nativeItems, nameof(items));
 		_toolBarItems = nativeItems;
 		OnChanged();
@@ -252,8 +253,8 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 			await InitializeSettingsAsync(cancellationToken);
 			await _mainForm.ScreenHost.LoadStartupScreenSettingsAsync(cancellationToken);
 			var ordered = Tools.UI.OrderApplicationBlocks(_loadedPluginRegistrations,
-				_configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance));
-			_blocksInitialized = _mainForm.RegisterBlocks(ordered.Cast<IWinFormsApplicationBlock>());
+				_configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance));
+			_blocksInitialized = _mainForm.RegisterBlocks(ordered.Cast<IApplicationBlock>());
 		}
 		return _blocksInitialized;
 	}
@@ -356,9 +357,9 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 
 	// Restore the existing application's actual plugin, block and screen settings without a parallel catalog.
 	private async Task InitializeSettingsAsync(CancellationToken cancellationToken) {
-		var blocks = _configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IWinFormsApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
-		foreach (var plugin in _loadedPlugins.Concat(blocks.Select(block => block.Source).OfType<IWinFormsApplicationPlugin>())
-			.Distinct<IWinFormsApplicationPlugin>(ReferenceEqualityComparer.Instance))
+		var blocks = _configuredBlocks.Concat(_mainForm.RegisteredBlocks).Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		foreach (var plugin in _loadedPlugins.Concat(blocks.Select(block => block.Source).OfType<IApplicationPlugin>())
+			.Distinct<IApplicationPlugin>(ReferenceEqualityComparer.Instance))
 			plugin.PluginSettings = await LoadSettingsAsync(plugin.PluginSettings, plugin.PluginSettings?.ID, cancellationToken);
 		foreach (var block in blocks) {
 			block.BlockSettings = await LoadSettingsAsync(block.BlockSettings, block.BlockSettings?.ID, cancellationToken);
@@ -408,7 +409,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 
 	/// <summary>Uses the application's existing user provider, including manually hosted native applications.</summary>
 	protected override ISettingsProvider GetSettingsProvider() {
-		return WinFormsApplicationSettingsExtensions.ResolveSettingsProvider(Services);
+		return ApplicationSettingsExtensions.ResolveSettingsProvider(Services);
 	}
 
 	// Commands are configuration; an activated owner has a stable collection for all window presentations.
@@ -417,7 +418,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 	}
 
 	// Native views can execute actions and separators; navigation commands retain their canonical block registration.
-	private static void ValidateCommands(IWinFormsApplicationMenuItem[] items, string argumentName) {
+	private static void ValidateCommands(IApplicationMenuItem[] items, string argumentName) {
 		Guard.Argument(items.All(item => item is IWinFormsLinkMenuItem or IApplicationMenuSeparator), argumentName,
 			"Application menus and toolbars require native commands or separators.");
 		Guard.Argument(items.OfType<IWinFormsScreenMenuItem>().All(item => item.Parent?.Parent != null), argumentName,

@@ -17,7 +17,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates individual and range notifications alongside the resulting collection values.</summary>
-public partial class ObservableCollectionsTestScreen : WinFormsApplicationScreen {
+public partial class ObservableCollectionsTestScreen : ApplicationScreen {
 	/// <summary>Creates the collection laboratory without mutating data or reading storage.</summary>
 	public ObservableCollectionsTestScreen() {
 		InitializeComponent();

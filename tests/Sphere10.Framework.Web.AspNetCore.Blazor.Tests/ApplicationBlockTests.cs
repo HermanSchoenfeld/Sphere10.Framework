@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -25,8 +26,8 @@ public class ApplicationBlockTests {
 	[Test]
 	public void MenuCopiesInputAndReturnedItemArrays() {
 		var item = new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } };
-		var items = new IBlazorApplicationMenuItem[] { item };
-		var menu = new BlazorApplicationMenu { Text = "Actions", Items = items };
+		var items = new BlazorUI.IApplicationMenuItem[] { item };
+		var menu = new ApplicationMenu { Text = "Actions", Items = items };
 		items[0] = null;
 		var exposed = menu.Items;
 		exposed[0] = null;
@@ -38,15 +39,15 @@ public class ApplicationBlockTests {
 	[Test]
 	public void HostCopiesMutableRegistrationCollectionsAndParameters() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
 		var parameters = new Dictionary<string, object> { ["Message"] = "Original" };
-		var definition = new BlazorApplicationScreenDefinition(typeof(TestScreen), "Screen", parameters: parameters);
-		var items = new IBlazorApplicationMenuItem[] {
+		var definition = new BlazorUI.ApplicationScreenDefinition(typeof(TestScreen), "Screen", parameters: parameters);
+		var items = new BlazorUI.IApplicationMenuItem[] {
 			new BlazorScreenMenuItem { Id = "screen", Title = "Screen", ScreenDefinition = definition }
 		};
-		var menus = new IBlazorApplicationMenu[] { new BlazorApplicationMenu { Id = "menu", Text = "Menu", Items = items } };
-		var blocks = new List<IBlazorApplicationBlock> { new BlazorApplicationBlock { Id = "block", Title = "Block", ScreenDefinitions = new[] { definition }, Menus = menus } };
-		using var metadataHost = new BlazorApplicationScreenHost(blocks, provider);
+		var menus = new BlazorUI.IApplicationMenu[] { new ApplicationMenu { Id = "menu", Text = "Menu", Items = items } };
+		var blocks = new List<BlazorUI.IApplicationBlock> { new ApplicationBlock { Id = "block", Title = "Block", ScreenDefinitions = new[] { definition }, Menus = menus } };
+		using var metadataHost = new BlazorUI.ApplicationScreenHost(blocks, provider);
 		parameters["Message"] = "Changed";
 		items[0] = null;
 		menus[0] = null;
@@ -57,17 +58,17 @@ public class ApplicationBlockTests {
 		var block = metadataHost.AvailableBlocks.Single();
 		var screen = (BlazorScreenMenuItem)block.Menus.Single().Items.Single();
 		Assert.That(metadataHost.AvailableBlocks, Has.Length.EqualTo(1));
-		var screenParameters = ((BlazorApplicationScreenDefinition)screen.ScreenDefinition).Parameters;
+		var screenParameters = ((BlazorUI.ApplicationScreenDefinition)screen.ScreenDefinition).Parameters;
 		Assert.That(screenParameters["Message"], Is.EqualTo("Original"));
 		Assert.That(() => ((IDictionary<string, object>)screenParameters).Add("New", "value"), Throws.TypeOf<NotSupportedException>());
 	}
 
 	[Test]
 	public void BlockReturnsIndependentTypedMenuArraysWithoutChangingMetadata() {
-		var firstMenu = new BlazorApplicationMenu { Id = "first", Text = "First" };
-		var secondMenu = new BlazorApplicationMenu { Id = "second", Text = "Second" };
-		var sourceMenus = new IBlazorApplicationMenu[] { firstMenu, secondMenu };
-		var block = new BlazorApplicationBlock { Title = "Block", Menus = sourceMenus };
+		var firstMenu = new ApplicationMenu { Id = "first", Text = "First" };
+		var secondMenu = new ApplicationMenu { Id = "second", Text = "Second" };
+		var sourceMenus = new BlazorUI.IApplicationMenu[] { firstMenu, secondMenu };
+		var block = new ApplicationBlock { Title = "Block", Menus = sourceMenus };
 		var menus = block.Menus;
 		IApplicationCommandProvider commands = block;
 		sourceMenus[0] = null;
@@ -84,7 +85,7 @@ public class ApplicationBlockTests {
 
 	[Test]
 	public void BuilderBuildsIndependentSnapshots() {
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
 			.AddScreen<TestScreen>(screen => screen
@@ -116,8 +117,8 @@ public class ApplicationBlockTests {
 	[TestCase("item")]
 	public void DuplicateStableIdsAreRejected(string duplicateKind) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		var first = new BlazorApplicationBlockBuilder()
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		var first = new ApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
@@ -129,7 +130,7 @@ public class ApplicationBlockTests {
 				.AddShowScreenItem<TestScreen>(text: "First", id: "item")
 			);
 		Action build = duplicateKind switch {
-			"block" => () => new BlazorApplicationScreenHost(new[] { first.Build(), first.Build() }, provider),
+			"block" => () => new BlazorUI.ApplicationScreenHost(new[] { first.Build(), first.Build() }, provider),
 			"menu" => () => first
 				.AddMenu(menu => menu
 					.WithId("menu")
@@ -150,7 +151,7 @@ public class ApplicationBlockTests {
 
 	[Test]
 	public void ReservedDefaultIdIsRejected() {
-		Assert.That(() => new BlazorApplicationBlockBuilder()
+		Assert.That(() => new ApplicationBlockBuilder()
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
 				.WithTitle("Screen")
@@ -165,35 +166,35 @@ public class ApplicationBlockTests {
 	[Test]
 	public void EmptyMenuIdIsRejected() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		var menu = new BlazorApplicationMenu { Id = "", Text = "Menu" };
-		Assert.That(() => new BlazorApplicationScreenHost(new[] { new BlazorApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } } }, provider),
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		var menu = new ApplicationMenu { Id = "", Text = "Menu" };
+		Assert.That(() => new BlazorUI.ApplicationScreenHost(new[] { new ApplicationBlock { Id = "block", Title = "Block", Menus = new[] { menu } } }, provider),
 			Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public void HostOrdersAvailableBlocksByPosition() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		var second = new BlazorApplicationBlockBuilder()
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		var second = new ApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
 			.WithPosition(20)
 			.Build();
-		var first = new BlazorApplicationBlockBuilder()
+		var first = new ApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
 			.WithPosition(10)
 			.Build();
-		using var metadataHost = new BlazorApplicationScreenHost(new[] { second, first }, provider);
+		using var metadataHost = new BlazorUI.ApplicationScreenHost(new[] { second, first }, provider);
 		Assert.That(metadataHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(new[] { "first", "second" }));
 	}
 
 	[Test]
 	public async Task DifferentActivationPoliciesAcrossBlocksRemainIndependent() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		var single = new BlazorApplicationBlockBuilder()
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		var single = new ApplicationBlockBuilder()
 			.WithId("single")
 			.WithName("Single")
 			.AddScreen<TestScreen>(screen => screen
@@ -201,7 +202,7 @@ public class ApplicationBlockTests {
 			)
 			.WithDefaultScreen<TestScreen>()
 			.Build();
-		var multiple = new BlazorApplicationBlockBuilder()
+		var multiple = new ApplicationBlockBuilder()
 			.WithId("multiple")
 			.WithName("Multiple")
 			.AddScreen<TestScreen>(screen => screen
@@ -213,7 +214,7 @@ public class ApplicationBlockTests {
 				.AddShowScreenItem<TestScreen>(text: "Screen", id: "screen")
 			)
 			.Build();
-		using var registrationHost = new BlazorApplicationScreenHost(new[] { single, multiple }, provider);
+		using var registrationHost = new BlazorUI.ApplicationScreenHost(new[] { single, multiple }, provider);
 		var singleton = await registrationHost.ActivateBlockAsync("single");
 		var first = await registrationHost.ActivateScreenAsync("multiple", "screen");
 		var second = await registrationHost.ActivateScreenAsync("multiple", "screen");
@@ -228,16 +229,16 @@ public class ApplicationBlockTests {
 	[TestCase(typeof(AbstractScreen))]
 	[TestCase(typeof(GenericScreen<>))]
 	public void InvalidScreenTypesAreRejected(Type screenType) {
-		Assert.That(() => new BlazorApplicationBlockBuilder()
+		Assert.That(() => new ApplicationBlockBuilder()
 			.WithName("Block")
-			.AddScreen(new BlazorApplicationScreenDefinition(screenType, null, null, ScreenKind.Normal))
+			.AddScreen(new BlazorUI.ApplicationScreenDefinition(screenType, null, null, ScreenKind.Normal))
 			.WithDefaultScreen(screenType), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]
 	public async Task DefaultScreenTitleAndStableIdAreRetained() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
@@ -250,7 +251,7 @@ public class ApplicationBlockTests {
 				.AddShowScreenItem<TestScreen>(text: "Open dashboard", id: "screen")
 			)
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var session = await host.ActivateBlockAsync("block");
 
 		Assert.That(session.Title, Is.EqualTo("Dashboard"));
@@ -265,7 +266,7 @@ public class ApplicationBlockTests {
 	[TestCase("item-builder")]
 	[TestCase("default-only")]
 	public async Task OmittedLifetimeCreatesIndependentSessionsThroughEveryRegistrationPath(string registration) {
-		var builder = new BlazorApplicationBlockBuilder()
+		var builder = new ApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
@@ -301,7 +302,7 @@ public class ApplicationBlockTests {
 					}
 				});
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { builder.Build() }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { builder.Build() }, provider);
 		var first = await host.ActivateBlockAsync("block");
 		var second = await host.ActivateBlockAsync("block");
 
@@ -313,7 +314,7 @@ public class ApplicationBlockTests {
 	[Test]
 	public async Task DefaultOnlyScreenRoundTripsThroughItsSyntheticId() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("block")
 			.WithName("Block")
 			.AddScreen<TestScreen>(screen => screen
@@ -322,8 +323,8 @@ public class ApplicationBlockTests {
 			.WithDefaultScreen<TestScreen>()
 			.Build();
 		var blocks = new[] { block };
-		using var firstHost = new BlazorApplicationScreenHost(blocks, provider);
-		using var secondHost = new BlazorApplicationScreenHost(blocks, provider);
+		using var firstHost = new BlazorUI.ApplicationScreenHost(blocks, provider);
+		using var secondHost = new BlazorUI.ApplicationScreenHost(blocks, provider);
 		var session = await firstHost.ActivateBlockAsync("block");
 		var reopened = await secondHost.ActivateScreenAsync("block", session.MenuItemId);
 
@@ -332,24 +333,24 @@ public class ApplicationBlockTests {
 		Assert.That(reopened.Id, Is.Not.EqualTo(session.Id));
 	}
 
-	public class TestScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class TestScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
-
-	}
-
-	public abstract class AbstractScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
-
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 
-	public class GenericScreen<T> : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public abstract class AbstractScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
+
+	}
+
+	public class GenericScreen<T> : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
+
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 	}
 }

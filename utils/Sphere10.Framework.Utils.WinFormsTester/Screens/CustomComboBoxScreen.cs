@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Demonstrates tabular, composite and rich-text content hosted by the same dropdown control.</summary>
-public partial class CustomComboBoxScreen : WinFormsApplicationScreen {
+public partial class CustomComboBoxScreen : ApplicationScreen {
 	/// <summary>Creates real Designer-owned popup controls; no popup is opened during construction.</summary>
 	public CustomComboBoxScreen() {
 		InitializeComponent();

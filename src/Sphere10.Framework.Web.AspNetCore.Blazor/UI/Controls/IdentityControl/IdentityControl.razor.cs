@@ -24,7 +24,7 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 	private readonly ClaimsPrincipal _anonymousUser = new(new ClaimsIdentity());
 	private readonly string _menuId = "sphere10-identity-" + Guid.NewGuid().ToString("N");
 	private readonly Dictionary<string, ElementReference> _itemButtons = new();
-	private IBlazorApplicationMenuItem[] _items = Array.Empty<IBlazorApplicationMenuItem>();
+	private IApplicationMenuItem[] _items = Array.Empty<IApplicationMenuItem>();
 	private ClaimsPrincipal _lastUser;
 	private ElementReference _trigger;
 	private ElementReference _root;
@@ -48,9 +48,9 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 
 	[Parameter] public string AvatarUrl { get; set; }
 
-	[Parameter] public IBlazorApplicationMenuItem[] Items { get; set; } = Array.Empty<IBlazorApplicationMenuItem>();
+	[Parameter] public IApplicationMenuItem[] Items { get; set; } = Array.Empty<IApplicationMenuItem>();
 
-	[Parameter] public EventCallback<IBlazorApplicationMenuItem> OnSelect { get; set; }
+	[Parameter] public EventCallback<IApplicationMenuItem> OnSelect { get; set; }
 
 	[Parameter] public RenderFragment<ClaimsPrincipal> AvatarTemplate { get; set; }
 
@@ -78,7 +78,7 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 
 	protected override void OnParametersSet() {
 		Guard.ArgumentNotNull(Items, nameof(Items));
-		_items = Tools.UI.MergeMenuItems<IBlazorApplicationMenuItem>(item => item.Id, Items);
+		_items = Tools.UI.MergeMenuItems<IApplicationMenuItem>(item => item.Id, Items);
 		if (!ReferenceEquals(_lastUser, EffectiveUser)) {
 			_lastUser = EffectiveUser;
 			CloseMenu(false);
@@ -139,7 +139,7 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 	}
 
 	/// <summary>Serializes command selection. Overrides belong in OnItemSelectedAsync so double-click protection remains active.</summary>
-	protected async Task SelectItemAsync(IBlazorApplicationMenuItem item) {
+	protected async Task SelectItemAsync(IApplicationMenuItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		if (_executing || _disposed || !_items.Contains(item))
 			return;
@@ -155,10 +155,10 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 	}
 
 	/// <summary>Override to customize command handling, or pass OnSelect to route commands through the application's existing screen host.</summary>
-	protected virtual Task OnItemSelectedAsync(IBlazorApplicationMenuItem item) => OnSelect.InvokeAsync(item);
+	protected virtual Task OnItemSelectedAsync(IApplicationMenuItem item) => OnSelect.InvokeAsync(item);
 
-	protected virtual void OnItemHover(IBlazorApplicationMenuItem item) {
-		if (item is BlazorApplicationMenuItemBase command)
+	protected virtual void OnItemHover(IApplicationMenuItem item) {
+		if (item is ApplicationMenuItemBase command)
 			command.NotifyHover();
 	}
 
@@ -219,7 +219,7 @@ public partial class IdentityControl : ComponentBase, IAsyncDisposable {
 		}, error => error is OperationCanceledException or JSDisconnectedException);
 	}
 
-	private void FocusedItem(IBlazorApplicationMenuItem item) {
+	private void FocusedItem(IApplicationMenuItem item) {
 		_focusedItem = item.Id;
 		OnItemHover(item);
 	}

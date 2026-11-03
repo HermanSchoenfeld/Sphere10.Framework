@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
 using Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Application;
 
@@ -20,8 +21,8 @@ public static class ScreenPoliciesPlugin {
 		const string pluginName = "Screen policies";
 		plugin
 			.WithName(pluginName)
-			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.AddBlock(block => block
 				.WithId("empty-workspace")
 				.WithName("Empty workspace")

@@ -15,13 +15,15 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class WinFormsApplicationGraphTests {
+public class ApplicationGraphTests {
 	private bool _startedFramework;
 
 	[OneTimeSetUp]
@@ -39,11 +41,11 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void TypedParentBridgesReadAndWriteTheSameReferences() {
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		using var block = new ApplicationBlock { Name = "Workspace" };
 		var menu = new DirectMenu();
 		var item = new DirectItem();
-		IApplicationMenu sharedMenu = menu;
-		IApplicationMenuItem sharedItem = item;
+		SharedUI.IApplicationMenu sharedMenu = menu;
+		SharedUI.IApplicationMenuItem sharedItem = item;
 		sharedMenu.Parent = block;
 		sharedItem.Parent = menu;
 		Assert.That(menu.Parent, Is.SameAs(block));
@@ -59,17 +61,17 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void NativeMenuAttachmentRemovalAndDisposalMaintainReverseMembership() {
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var otherBlock = new WinFormsApplicationBlock { Name = "Other" };
-		using var menu = new WinFormsApplicationMenu("Screens");
-		using var otherMenu = new WinFormsApplicationMenu("Other");
-		var item = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		using var otherBlock = new ApplicationBlock { Name = "Other" };
+		using var menu = new ApplicationMenu("Screens");
+		using var otherMenu = new ApplicationMenu("Other");
+		var item = new WinFormsScreenMenuItem(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
 		var definition = item.ScreenDefinition;
 		block.AddScreenDefinition(definition);
 		menu.AddItem(item);
 		block.AddMenu(menu);
-		Assert.That(((IApplicationMenuItem)item).Parent, Is.SameAs(menu));
-		Assert.That(((IApplicationMenu)menu).Parent, Is.SameAs(block));
+		Assert.That(((SharedUI.IApplicationMenuItem)item).Parent, Is.SameAs(menu));
+		Assert.That(((SharedUI.IApplicationMenu)menu).Parent, Is.SameAs(block));
 		Assert.That(definition.Activators, Is.EqualTo(new[] { item }));
 		Assert.That(() => otherMenu.AddItem(item), Throws.ArgumentException);
 		Assert.That(() => otherBlock.AddMenu(menu), Throws.ArgumentException);
@@ -89,9 +91,9 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void NativeMenuReferencesPreventRemovingTheirScreenDefinition() {
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		using var menu = new WinFormsApplicationMenu("Screens");
-		var definition = new ApplicationScreenDefinition(typeof(TrackedScreen));
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		using var menu = new ApplicationMenu("Screens");
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen));
 		var item = new WinFormsScreenMenuItem(definition, "Editor");
 		block.AddScreenDefinition(definition);
 		menu.AddItem(item);
@@ -107,13 +109,13 @@ public class WinFormsApplicationGraphTests {
 	[Test]
 	public void NativeToolbarReferencesPreventRemovingTheirScreenDefinition() {
 		using var block = new ToolbarBlock { Name = "Workspace" };
-		var definition = new ApplicationScreenDefinition(typeof(TrackedScreen));
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen));
 		using var item = new WinFormsScreenMenuItem(definition, "Editor");
 		block.AddScreenDefinition(definition);
 		block.ToolBarItems = new[] { item };
 		Assert.That(() => block.RemoveScreenDefinition(definition), Throws.ArgumentException);
 		Assert.That(block.ScreenDefinitions, Is.EqualTo(new[] { definition }));
-		block.ToolBarItems = Array.Empty<IWinFormsApplicationMenuItem>();
+		block.ToolBarItems = Array.Empty<FormsUI.IApplicationMenuItem>();
 		block.RemoveScreenDefinition(definition);
 		Assert.That(block.ScreenDefinitions, Is.Empty);
 		Assert.That(item.Parent, Is.Null, "Toolbar membership does not create a synthetic menu owner.");
@@ -121,8 +123,8 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void DefinitionReplacementUpdatesEveryActivatorWithoutExposingItsArray() {
-		using var menu = new WinFormsApplicationMenu("Screens");
-		var first = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "First"), "First");
+		using var menu = new ApplicationMenu("Screens");
+		var first = new WinFormsScreenMenuItem(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen), "First"), "First");
 		var original = first.ScreenDefinition;
 		var second = new WinFormsScreenMenuItem(original, "Second");
 		menu.AddItem(first);
@@ -143,11 +145,11 @@ public class WinFormsApplicationGraphTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void OwnersAreAvailableDuringNativeLifecycleAndClearedAfterRemoval(bool throwDuringDestruction) {
-		using var host = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = (TrackedScreen)host.ActivateScreen(block, typeof(TrackedScreen));
-		IApplicationScreen common = screen;
+		SharedUI.IApplicationScreen common = screen;
 		Assert.That(screen.ActivationHost, Is.SameAs(host));
 		Assert.That(screen.ActivationBlock, Is.SameAs(block));
 		Assert.That(common.Host, Is.SameAs(host));
@@ -171,12 +173,12 @@ public class WinFormsApplicationGraphTests {
 	[TestCase(2)]
 	public async Task HostDisposalClearsEveryOwnerAndCompletesNativeCleanupAfterDestructionFailures(int failureCount) {
 		using var form = new BlockMainForm();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		await using var application = new WinFormsApplication(form, new[] { block });
-		using var borrowedMenu = new WinFormsApplicationMenu("Block commands");
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		await using var application = new FormsUI.Application(form, new[] { block });
+		using var borrowedMenu = new ApplicationMenu("Block commands");
 		block.AddMenu(borrowedMenu);
 		await application.InitializeAsync();
-		var host = (WinFormsApplicationScreenHost)application.ScreenHost;
+		var host = (FormsUI.ApplicationScreenHost)application.ScreenHost;
 		host.ScreenMode = ScreenMode.MultiView;
 		var firstFailure = new InvalidOperationException("First destruction failure");
 		var secondFailure = failureCount == 2 ? new InvalidOperationException("Second destruction failure") : null;
@@ -225,11 +227,11 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void HiddenRetainedScreensKeepOwnersAndRejectAnotherHost() {
-		using var host = new WinFormsApplicationScreenHost();
-		using var otherHost = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(OtherScreen)));
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var otherHost = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen)));
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(OtherScreen)));
 		var retained = host.ActivateScreen(block, typeof(TrackedScreen));
 		host.ActivateScreen(block, typeof(OtherScreen));
 		Assert.That(host.OpenScreens, Does.Not.Contain(retained));
@@ -242,9 +244,9 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void CancelledCloseLeavesScreenAssociationsIntact() {
-		using var host = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = (TrackedScreen)host.ActivateScreen(block, typeof(TrackedScreen));
 		screen.CancelHide = true;
 		Assert.That(host.CloseScreen(screen), Is.False);
@@ -255,9 +257,9 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void ExternalDisposalClearsOwnersAfterTheDestructionHook() {
-		using var host = new WinFormsApplicationScreenHost();
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
+		using var host = new FormsUI.ApplicationScreenHost();
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = (TrackedScreen)host.ActivateScreen(block, typeof(TrackedScreen));
 		screen.Dispose();
 		Assert.That(screen.DestructionHost, Is.SameAs(host));
@@ -269,9 +271,9 @@ public class WinFormsApplicationGraphTests {
 
 	[Test]
 	public void DetachedScreensKeepTheirHostAndBlockThroughDocking() {
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
-		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
-		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var block = new ApplicationBlock { Name = "Workspace" };
+		block.AddScreenDefinition(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = host.ActivateScreen(block, typeof(TrackedScreen));
 		Assert.That(host.UndockScreen(screen), Is.True);
 		var detachedHost = screen.Host;
@@ -289,7 +291,7 @@ public class WinFormsApplicationGraphTests {
 	[Test]
 	public void StandaloneToolbarScreenCommandsRequireAnOwnedMenu() {
 		using var form = new MainForm();
-		using var item = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
+		using var item = new WinFormsScreenMenuItem(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
 		using var block = new ToolbarBlock { Name = "Workspace", ToolBarItems = new[] { item } };
 		block.AddScreenDefinition(item.ScreenDefinition);
 		form.ScreenHost.RegisterScreenTypes(block);
@@ -298,7 +300,7 @@ public class WinFormsApplicationGraphTests {
 		Assert.That(() => form.ExecuteMenuItemAsync(item).GetAwaiter().GetResult(), Throws.ArgumentException
 			.With.Property(nameof(ArgumentException.ParamName)).EqualTo("item"));
 		Assert.That(form.ScreenHost.Screens, Is.Empty);
-		using var menu = new WinFormsApplicationMenu("Screens", new[] { item });
+		using var menu = new ApplicationMenu("Screens", new[] { item });
 		Assert.That(() => form.ExecuteMenuItemAsync(item).GetAwaiter().GetResult(), Throws.ArgumentException
 			.With.Property(nameof(ArgumentException.ParamName)).EqualTo("item"));
 		Assert.That(form.ScreenHost.Screens, Is.Empty);
@@ -311,10 +313,10 @@ public class WinFormsApplicationGraphTests {
 	[Test]
 	public void ScreenCommandsUseTheirParentBlockWhenSeveralBlocksShareTheDefinition() {
 		using var form = new MainForm();
-		using var firstBlock = new WinFormsApplicationBlock { Name = "First" };
-		using var owner = new WinFormsApplicationBlock { Name = "Owner" };
-		using var item = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
-		using var menu = new WinFormsApplicationMenu("Screens", new[] { item });
+		using var firstBlock = new ApplicationBlock { Name = "First" };
+		using var owner = new ApplicationBlock { Name = "Owner" };
+		using var item = new WinFormsScreenMenuItem(new SharedUI.ApplicationScreenDefinition(typeof(TrackedScreen), "Editor"), "Editor");
+		using var menu = new ApplicationMenu("Screens", new[] { item });
 		owner.AddScreenDefinition(item.ScreenDefinition);
 		owner.AddMenu(menu);
 		firstBlock.AddScreenDefinition(item.ScreenDefinition);
@@ -325,16 +327,16 @@ public class WinFormsApplicationGraphTests {
 		Assert.That(form.ActiveScreen.Block, Is.SameAs(owner));
 	}
 
-	public sealed class TrackedScreen : WinFormsApplicationScreen {
+	public sealed class TrackedScreen : ApplicationScreen {
 		public TrackedScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public bool CancelHide { get; set; }
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public bool ThrowDuringDestruction { get; set; }
-		public IWinFormsApplicationScreenHost ActivationHost { get; private set; }
-		public IWinFormsApplicationBlock ActivationBlock { get; private set; }
-		public IWinFormsApplicationScreenHost DestructionHost { get; private set; }
-		public IWinFormsApplicationBlock DestructionBlock { get; private set; }
+		public FormsUI.IApplicationScreenHost ActivationHost { get; private set; }
+		public FormsUI.IApplicationBlock ActivationBlock { get; private set; }
+		public FormsUI.IApplicationScreenHost DestructionHost { get; private set; }
+		public FormsUI.IApplicationBlock DestructionBlock { get; private set; }
 
 		protected override void OnShow() {
 			ActivationHost = Host;
@@ -352,9 +354,9 @@ public class WinFormsApplicationGraphTests {
 		}
 	}
 
-	public sealed class OtherScreen : WinFormsApplicationScreen { }
+	public sealed class OtherScreen : ApplicationScreen { }
 
-	public sealed class DisposalScreen : WinFormsApplicationScreen {
+	public sealed class DisposalScreen : ApplicationScreen {
 		private readonly Exception _destructionFailure;
 
 		public DisposalScreen(Exception destructionFailure = null) {
@@ -368,8 +370,8 @@ public class WinFormsApplicationGraphTests {
 		public ToolStripMenuItem Command { get; }
 		public int CommandDisposedCount { get; private set; }
 		public int DestructionCount { get; private set; }
-		public IWinFormsApplicationScreenHost DestructionHost { get; private set; }
-		public IWinFormsApplicationBlock DestructionBlock { get; private set; }
+		public FormsUI.IApplicationScreenHost DestructionHost { get; private set; }
+		public FormsUI.IApplicationBlock DestructionBlock { get; private set; }
 
 		protected override void OnDestroyScreen() {
 			DestructionCount++;
@@ -382,21 +384,21 @@ public class WinFormsApplicationGraphTests {
 
 	private sealed class NeutralBlock : ApplicationBlockBase { }
 
-	private sealed class ToolbarBlock : WinFormsApplicationBlock, IWinFormsApplicationBlock {
-		public new IWinFormsApplicationMenuItem[] ToolBarItems { get; set; }
+	private sealed class ToolbarBlock : ApplicationBlock, FormsUI.IApplicationBlock {
+		public new FormsUI.IApplicationMenuItem[] ToolBarItems { get; set; }
 	}
 
-	private sealed class DirectMenu : IWinFormsApplicationMenu {
-		public IWinFormsApplicationBlock Parent { get; set; }
+	private sealed class DirectMenu : FormsUI.IApplicationMenu {
+		public FormsUI.IApplicationBlock Parent { get; set; }
 		public string Text => "Screens";
 		public Image Image32x32 => null;
 		public bool ShowInMenuStrip => false;
-		public IWinFormsApplicationMenuItem[] Items => Array.Empty<IWinFormsApplicationMenuItem>();
+		public FormsUI.IApplicationMenuItem[] Items => Array.Empty<FormsUI.IApplicationMenuItem>();
 		public void Dispose() { }
 	}
 
-	private sealed class DirectItem : IWinFormsApplicationMenuItem {
-		public IWinFormsApplicationMenu Parent { get; set; }
+	private sealed class DirectItem : FormsUI.IApplicationMenuItem {
+		public FormsUI.IApplicationMenu Parent { get; set; }
 		public Image Image16x16 => null;
 		public bool ShowOnExplorerBar => true;
 		public bool ShowOnToolStrip => true;

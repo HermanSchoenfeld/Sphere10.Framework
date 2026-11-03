@@ -21,6 +21,7 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -50,8 +51,8 @@ public class ApplicationOwnerSettingsTests {
 		await using var provider = services.BuildServiceProvider();
 		await using var firstScope = provider.CreateAsyncScope();
 		await using var secondScope = provider.CreateAsyncScope();
-		var first = firstScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
-		var second = secondScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var first = firstScope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
+		var second = secondScope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		await first.InitializeAsync();
 		await second.InitializeAsync();
 		await using var renderer = new HtmlRenderer(firstScope.ServiceProvider, firstScope.ServiceProvider.GetRequiredService<ILoggerFactory>());
@@ -80,7 +81,7 @@ public class ApplicationOwnerSettingsTests {
 	#region Inner Types
 
 	/// <summary>Reads actual block and plugin settings without declaring screen settings of its own.</summary>
-	public class OwnerScreen : BlazorApplicationScreen {
+	public class OwnerScreen : ApplicationScreen {
 		/// <inheritdoc />
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.AddContent(0, $"block={GetBlockSettings<BlockPreferences>().Number};plugin={GetPluginSettings<PluginPreferences>().Number}");

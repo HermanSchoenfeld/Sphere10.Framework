@@ -21,6 +21,8 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -29,16 +31,16 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 public class ApplicationScreenHostHarmonizationTests {
 	[Test]
 	public void ApplicationAndHostContractsExposeTheirOwnResponsibilities() {
-		Assert.That(typeof(IApplication).GetProperty(nameof(IApplication.Blocks)).PropertyType, Is.EqualTo(typeof(IApplicationBlock[])));
-		Assert.That(typeof(IApplication).GetProperty(nameof(IApplication.LoadedPlugins)).PropertyType, Is.EqualTo(typeof(IApplicationPlugin[])));
-		Assert.That(typeof(IApplication).GetProperty("Plugins"), Is.Null);
-		Assert.That(typeof(IApplication).GetProperty("ActivePlugin"), Is.Null);
-		Assert.That(typeof(IApplication).GetProperty("ActiveBlock"), Is.Null);
-		Assert.That(typeof(IApplication).GetProperty("ActiveScreen"), Is.Null);
-		Assert.That(typeof(IApplication).GetProperty("UserInterfaceServices"), Is.Null);
-		Assert.That(typeof(IApplicationScreenHost).GetProperty(nameof(IMultiApplicationScreenHost.Screens)), Is.Null);
-		Assert.That(typeof(IApplicationScreenHost).GetProperty(nameof(IMultiApplicationScreenHost.OpenScreens)), Is.Null);
-		Assert.That(typeof(IApplicationScreenHost).GetProperty(nameof(IApplicationScreenHost.ScreenMode)).CanWrite, Is.True);
+		Assert.That(typeof(SharedUI.IApplication).GetProperty(nameof(SharedUI.IApplication.Blocks)).PropertyType, Is.EqualTo(typeof(SharedUI.IApplicationBlock[])));
+		Assert.That(typeof(SharedUI.IApplication).GetProperty(nameof(SharedUI.IApplication.LoadedPlugins)).PropertyType, Is.EqualTo(typeof(SharedUI.IApplicationPlugin[])));
+		Assert.That(typeof(SharedUI.IApplication).GetProperty("Plugins"), Is.Null);
+		Assert.That(typeof(SharedUI.IApplication).GetProperty("ActivePlugin"), Is.Null);
+		Assert.That(typeof(SharedUI.IApplication).GetProperty("ActiveBlock"), Is.Null);
+		Assert.That(typeof(SharedUI.IApplication).GetProperty("ActiveScreen"), Is.Null);
+		Assert.That(typeof(SharedUI.IApplication).GetProperty("UserInterfaceServices"), Is.Null);
+		Assert.That(typeof(SharedUI.IApplicationScreenHost).GetProperty(nameof(IMultiApplicationScreenHost.Screens)), Is.Null);
+		Assert.That(typeof(SharedUI.IApplicationScreenHost).GetProperty(nameof(IMultiApplicationScreenHost.OpenScreens)), Is.Null);
+		Assert.That(typeof(SharedUI.IApplicationScreenHost).GetProperty(nameof(SharedUI.IApplicationScreenHost.ScreenMode)).CanWrite, Is.True);
 		Assert.That(typeof(ISingleApplicationScreenHost).GetMethod(nameof(ISingleApplicationScreenHost.CloseActiveScreenAsync)), Is.Not.Null);
 		Assert.That(typeof(IMultiApplicationScreenHost).GetMethod(nameof(IMultiApplicationScreenHost.CloseScreensAsync)), Is.Not.Null);
 	}
@@ -47,10 +49,10 @@ public class ApplicationScreenHostHarmonizationTests {
 	public async Task DynamicLayoutChangesShareTheHostAndPreserveStateWhenTheSynchronousSetterRequiresAsyncGuards() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var host = scope.ServiceProvider.GetRequiredService<IApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<SharedUI.IApplicationScreenHost>();
 		var singleHost = scope.ServiceProvider.GetRequiredService<ISingleApplicationScreenHost>();
 		var multiHost = scope.ServiceProvider.GetRequiredService<IMultiApplicationScreenHost>();
-		var typed = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var typed = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var first = await typed.ActivateScreenAsync("work", "editor");
 		var firstComponent = new ProbeScreen { AllowDeactivate = false };
 		await typed.AttachScreenAsync(first.Id, firstComponent);
@@ -75,7 +77,7 @@ public class ApplicationScreenHostHarmonizationTests {
 
 	[Test]
 	public async Task TypeBasedDefaultKeepsItsRegisteredMenuCaptionWhenOpenedFromABrowserRoute() {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen<ProbeScreen>(screen => screen
@@ -89,21 +91,21 @@ public class ApplicationScreenHostHarmonizationTests {
 			.Build();
 		Assert.That(block.DefaultScreenDefinition.Title, Is.EqualTo("Readable editor"));
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		Assert.That((await host.ActivateScreenAsync("work", "editor")).Title, Is.EqualTo("Readable editor"));
 	}
 
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.PermanentSingleton)]
 	public async Task UnspecifiedRegistrationKeepsItsDefaultBesideAnExplicitSibling(ScreenActivationMode mode) {
-		var unspecified = new ApplicationScreenDefinition(typeof(ProbeScreen), "Unspecified");
-		var first = new BlazorApplicationBlockBuilder()
+		var unspecified = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Unspecified");
+		var first = new ApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
 			.AddScreen(unspecified)
 			.WithDefaultScreen(unspecified)
 			.Build();
-		var second = new BlazorApplicationBlockBuilder()
+		var second = new ApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
 			.AddScreen<ProbeScreen>(screen => screen
@@ -116,7 +118,7 @@ public class ApplicationScreenHostHarmonizationTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { first, second }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { first, second }, provider);
 		var session = await host.ActivateBlockAsync("first");
 		Assert.That(session.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		var sibling = await host.ActivateScreenAsync("second", "editor");
@@ -128,13 +130,13 @@ public class ApplicationScreenHostHarmonizationTests {
 
 	[Test]
 	public async Task BlockOwnsExplicitDefaultAndMenuDefinitionsByReferenceWithinEachSnapshot() {
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance);
-		var item = new BlazorApplicationMenuItemBuilder()
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance);
+		var item = new ApplicationMenuItemBuilder()
 			.WithText("Edit")
 			.WithScreen(definition)
 			.WithId("editor")
 			.Build();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(definition)
@@ -149,21 +151,21 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(block.DefaultScreenDefinition, Is.SameAs(blockDefinition));
 		Assert.That(((BlazorScreenMenuItem)block.Menus.Single().Items.Single()).ScreenDefinition, Is.SameAs(blockDefinition));
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var owner = host.Blocks.Single();
 		var hostDefinition = owner.ScreenDefinitions.Single();
 		Assert.That(hostDefinition, Is.Not.SameAs(blockDefinition));
 		Assert.That(owner.DefaultScreenDefinition, Is.SameAs(hostDefinition));
 		Assert.That(((BlazorScreenMenuItem)owner.Menus.Single().Items.Single()).ScreenDefinition, Is.SameAs(hostDefinition));
-		Assert.That(await ((IApplicationScreenHost)host).OpenScreenAsync(owner, hostDefinition), Is.Not.Null);
-		Assert.That(async () => await host.OpenScreenAsync(owner, new ApplicationScreenDefinition(typeof(ProbeScreen))), Throws.ArgumentException);
+		Assert.That(await ((SharedUI.IApplicationScreenHost)host).OpenScreenAsync(owner, hostDefinition), Is.Not.Null);
+		Assert.That(async () => await host.OpenScreenAsync(owner, new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen))), Throws.ArgumentException);
 	}
 
 	[Test]
 	public async Task ToolbarOnlyScreenDefinitionIsOwnedAndExecutedWithoutAMenuRegistration() {
-		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Toolbar editor");
+		var definition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Toolbar editor");
 		var command = new BlazorScreenMenuItem { Id = "editor", Title = "Edit", ScreenDefinition = definition };
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(definition)
@@ -172,7 +174,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(block.ScreenDefinitions.Single(), Is.Not.SameAs(definition));
 		Assert.That(((BlazorScreenMenuItem)block.ToolBarItems.Single()).ScreenDefinition, Is.SameAs(block.ScreenDefinitions.Single()));
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		using var userInterface = new BlazorUserInterfaceServices(host, provider);
 		Assert.That(await userInterface.ExecuteMenuItemAsync(host.Blocks.Single().ToolBarItems.Single()), Is.True);
 		Assert.That(host.ActiveScreen.Title, Is.EqualTo("Toolbar editor"));
@@ -180,9 +182,9 @@ public class ApplicationScreenHostHarmonizationTests {
 
 	[Test]
 	public async Task DistinctSameTypeDefinitionsRemainDistinctOwnedAliases() {
-		var first = new ApplicationScreenDefinition(typeof(ProbeScreen), "First", ScreenActivationMode.MultiInstance, stableKey: "first");
-		var second = new ApplicationScreenDefinition(typeof(ProbeScreen), "Second", ScreenActivationMode.MultiInstance, stableKey: "second");
-		var block = new BlazorApplicationBlockBuilder()
+		var first = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "First", ScreenActivationMode.MultiInstance, stableKey: "first");
+		var second = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Second", ScreenActivationMode.MultiInstance, stableKey: "second");
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(first)
@@ -196,7 +198,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(block.ScreenDefinitions.Select(definition => definition.Title), Is.EqualTo(new[] { "First", "Second" }));
 		Assert.That(block.ScreenDefinitions[0], Is.Not.SameAs(block.ScreenDefinitions[1]));
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var one = await host.ActivateScreenAsync("work", "first");
 		var two = await host.ActivateScreenAsync("work", "second");
 		Assert.That(one.Title, Is.EqualTo("First"));
@@ -207,19 +209,19 @@ public class ApplicationScreenHostHarmonizationTests {
 
 	[Test]
 	public async Task MenuFreeDefinitionsHaveBrowserRouteIdsThatRoundTripToTheirExactRegistration() {
-		var first = new ApplicationScreenDefinition(typeof(ProbeScreen), "First", ScreenActivationMode.MultiInstance, stableKey: "first");
-		var second = new ApplicationScreenDefinition(typeof(ProbeScreen), "Second", ScreenActivationMode.MultiInstance, stableKey: "second");
-		var block = new BlazorApplicationBlockBuilder()
+		var first = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "First", ScreenActivationMode.MultiInstance, stableKey: "first");
+		var second = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Second", ScreenActivationMode.MultiInstance, stableKey: "second");
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(first)
 			.AddScreen(second)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var registration = host.Blocks.Single().ScreenDefinitions[1];
-		var opened = await ((IApplicationScreenHost)host).OpenScreenAsync(host.Blocks.Single(), registration);
-		var session = (BlazorApplicationScreenSession)opened;
+		var opened = await ((SharedUI.IApplicationScreenHost)host).OpenScreenAsync(host.Blocks.Single(), registration);
+		var session = (ApplicationScreenSession)opened;
 		Assert.That(session.MenuItem, Is.Null);
 		Assert.That(session.MenuItemId, Is.EqualTo("__screen:second"));
 		var route = session.MenuItemId;
@@ -233,7 +235,7 @@ public class ApplicationScreenHostHarmonizationTests {
 
 	[Test]
 	public void ExplicitCommandsCannotUseReservedDefinitionRouteIds() {
-		Assert.That(() => new BlazorApplicationBlockBuilder()
+		Assert.That(() => new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen<ProbeScreen>(screen => screen
@@ -248,16 +250,16 @@ public class ApplicationScreenHostHarmonizationTests {
 
 	[Test]
 	public async Task SameTypeRegistrationsKeepBrowserParametersCallbacksAndReuseKeysSeparate() {
-		var firstDefinition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance, stableKey: "first",
+		var firstDefinition = new BlazorUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance, stableKey: "first",
 			parameters: new Dictionary<string, object> { [nameof(ProbeScreen.RecordId)] = "one" });
-		var secondDefinition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance, stableKey: "second",
+		var secondDefinition = new BlazorUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance, stableKey: "second",
 			parameters: new Dictionary<string, object> { [nameof(ProbeScreen.RecordId)] = "two" });
 		var first = new BlazorScreenMenuItem { Id = "first", Title = "First", ScreenDefinition = firstDefinition };
 		var second = new BlazorScreenMenuItem { Id = "second", Title = "Second", ScreenDefinition = secondDefinition };
 		var selections = new List<string>();
 		first.Select += () => selections.Add("first");
 		second.Select += () => selections.Add("second");
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(firstDefinition)
@@ -269,25 +271,25 @@ public class ApplicationScreenHostHarmonizationTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
-		var one = await host.ActivateScreenAsync("work", "first", new BlazorApplicationScreenActivation(instanceKey: "record"));
-		var two = await host.ActivateScreenAsync("work", "second", new BlazorApplicationScreenActivation(instanceKey: "record"));
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
+		var one = await host.ActivateScreenAsync("work", "first", new ApplicationScreenActivation(instanceKey: "record"));
+		var two = await host.ActivateScreenAsync("work", "second", new ApplicationScreenActivation(instanceKey: "record"));
 		Assert.That(two, Is.Not.SameAs(one));
 		Assert.That(one.Parameters[nameof(ProbeScreen.RecordId)], Is.EqualTo("one"));
 		Assert.That(two.Parameters[nameof(ProbeScreen.RecordId)], Is.EqualTo("two"));
-		Assert.That(await host.ActivateScreenAsync("work", "first", new BlazorApplicationScreenActivation(instanceKey: "record")), Is.SameAs(one));
+		Assert.That(await host.ActivateScreenAsync("work", "first", new ApplicationScreenActivation(instanceKey: "record")), Is.SameAs(one));
 		Assert.That(selections, Is.EqualTo(new[] { "first", "second", "first" }));
 	}
 
 	[Test]
 	public async Task SingletonAliasesNotifyTheIncomingCommandOnSharedAndBrowserActivation() {
-		var firstDefinition = new ApplicationScreenDefinition(typeof(ProbeScreen), "First", ScreenActivationMode.SingleInstance);
+		var firstDefinition = new SharedUI.ApplicationScreenDefinition(typeof(ProbeScreen), "First", ScreenActivationMode.SingleInstance);
 		var first = new BlazorScreenMenuItem { Id = "first", Title = "First", ScreenDefinition = firstDefinition };
 		var second = new BlazorScreenMenuItem { Id = "second", Title = "Second", ScreenDefinition = firstDefinition };
 		var selections = new List<string>();
 		first.Select += () => selections.Add("first");
 		second.Select += () => selections.Add("second");
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen(firstDefinition)
@@ -298,10 +300,10 @@ public class ApplicationScreenHostHarmonizationTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var one = await host.ActivateScreenAsync("work", "first");
 		Assert.That(await host.ActivateScreenAsync("work", "second"), Is.SameAs(one));
-		Assert.That(await ((IApplicationScreenHost)host).OpenScreenAsync(host.Blocks.Single(), host.Blocks.Single().ScreenDefinitions.Single()), Is.SameAs(one));
+		Assert.That(await ((SharedUI.IApplicationScreenHost)host).OpenScreenAsync(host.Blocks.Single(), host.Blocks.Single().ScreenDefinitions.Single()), Is.SameAs(one));
 		Assert.That(selections, Is.EqualTo(new[] { "first", "second" }));
 	}
 
@@ -310,29 +312,29 @@ public class ApplicationScreenHostHarmonizationTests {
 		await using var provider = CreateServices().BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		await using var scope = provider.CreateAsyncScope();
 		await using var otherScope = provider.CreateAsyncScope();
-		var host = scope.ServiceProvider.GetRequiredService<IApplicationScreenHost>();
-		var typedHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<SharedUI.IApplicationScreenHost>();
+		var typedHost = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var userInterface = scope.ServiceProvider.GetRequiredService<IUserInterfaceServices>();
 		var typedUi = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
-		var application = scope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 
 		Assert.That(host, Is.SameAs(typedHost));
-		Assert.That(scope.ServiceProvider.GetRequiredService<IApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(), Is.SameAs(host));
+		Assert.That(scope.ServiceProvider.GetRequiredService<SharedUI.IApplicationScreenHost<BlazorUI.IApplicationBlock, ApplicationScreenSession>>(), Is.SameAs(host));
 		Assert.That(scope.ServiceProvider.GetRequiredService<ISingleApplicationScreenHost>(), Is.SameAs(host));
-		Assert.That(scope.ServiceProvider.GetRequiredService<ISingleApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(), Is.SameAs(host));
+		Assert.That(scope.ServiceProvider.GetRequiredService<ISingleApplicationScreenHost<BlazorUI.IApplicationBlock, ApplicationScreenSession>>(), Is.SameAs(host));
 		Assert.That(scope.ServiceProvider.GetRequiredService<IMultiApplicationScreenHost>(), Is.SameAs(host));
-		Assert.That(scope.ServiceProvider.GetRequiredService<IMultiApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(), Is.SameAs(host));
+		Assert.That(scope.ServiceProvider.GetRequiredService<IMultiApplicationScreenHost<BlazorUI.IApplicationBlock, ApplicationScreenSession>>(), Is.SameAs(host));
 		Assert.That(userInterface, Is.SameAs(typedUi));
 		Assert.That(host.UserInterfaceServices, Is.SameAs(userInterface));
 		Assert.That(application.ScreenHost, Is.SameAs(host));
 		Assert.That(userInterface.ScreenHost, Is.SameAs(host));
 		Assert.That(otherScope.ServiceProvider.GetRequiredService<IUserInterfaceServices>(), Is.Not.SameAs(userInterface));
-		Assert.That(otherScope.ServiceProvider.GetRequiredService<IApplicationScreenHost>(), Is.Not.SameAs(host));
+		Assert.That(otherScope.ServiceProvider.GetRequiredService<SharedUI.IApplicationScreenHost>(), Is.Not.SameAs(host));
 
 		var parameters = new Dictionary<string, object> { [nameof(ProbeScreen.RecordId)] = "first" };
-		var session = await typedHost.ActivateScreenAsync("work", "editor", new BlazorApplicationScreenActivation(parameters, "record"));
+		var session = await typedHost.ActivateScreenAsync("work", "editor", new ApplicationScreenActivation(parameters, "record"));
 		parameters[nameof(ProbeScreen.RecordId)] = "mutated";
-		var reopened = await typedHost.ActivateScreenAsync("work", "editor", new BlazorApplicationScreenActivation(
+		var reopened = await typedHost.ActivateScreenAsync("work", "editor", new ApplicationScreenActivation(
 			new Dictionary<string, object> { [nameof(ProbeScreen.RecordId)] = "replacement" }, "record"));
 		Assert.That(reopened, Is.SameAs(session));
 		Assert.That(session.Parameters[nameof(ProbeScreen.RecordId)], Is.EqualTo("first"));
@@ -347,8 +349,8 @@ public class ApplicationScreenHostHarmonizationTests {
 	public async Task BrowsingBlocksDoesNotChangeHostedScreensAndScreenStateDoesNotOverrideNavigation() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var host = scope.ServiceProvider.GetRequiredService<IApplicationScreenHost>();
-		var typedHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = scope.ServiceProvider.GetRequiredService<SharedUI.IApplicationScreenHost>();
+		var typedHost = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var session = await host.ActivateBlockAsync(host.Blocks.Single(block => block.Name == "Work"));
 		var hostingChanges = 0;
 		host.Changed += () => hostingChanges++;
@@ -357,7 +359,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(host.ActiveScreen, Is.SameAs(session));
 		Assert.That(host.ActiveBlock, Is.SameAs(session.Block), "The visible screen retains its active command owner.");
 		Assert.That(hostingChanges, Is.EqualTo(1));
-		await typedHost.AttachScreenAsync(((BlazorApplicationScreenSession)session).Id, new ProbeScreen());
+		await typedHost.AttachScreenAsync(((ApplicationScreenSession)session).Id, new ProbeScreen());
 		host.NotifyScreenChanged(session);
 		Assert.That(host.SelectedBlock.Name, Is.EqualTo("Browse"));
 		await ((IMultiApplicationScreenHost)host).ShowScreenAsync(session);
@@ -369,10 +371,10 @@ public class ApplicationScreenHostHarmonizationTests {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var scope = provider.CreateAsyncScope();
 		var host = scope.ServiceProvider.GetRequiredService<IMultiApplicationScreenHost>();
-		var typedHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var typedHost = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var session = await host.ActivateBlockAsync(host.Blocks.Single(block => block.Name == "Work"));
 		var screen = new ProbeScreen { Caption = "Working draft", HasUnsavedChanges = true, AllowDeactivate = false };
-		await typedHost.AttachScreenAsync(((BlazorApplicationScreenSession)session).Id, screen);
+		await typedHost.AttachScreenAsync(((ApplicationScreenSession)session).Id, screen);
 		Assert.That(session.Title, Is.EqualTo("Working draft"));
 		Assert.That(host.HasUnsavedChanges, Is.True);
 		Assert.That(await host.CloseScreenAsync(session), Is.False);
@@ -382,20 +384,20 @@ public class ApplicationScreenHostHarmonizationTests {
 		screen.AllowDeactivate = true;
 		Assert.That(await host.CloseScreenAsync(session), Is.True);
 		Assert.That(screen.Disposals, Is.Zero, "The host removes the descriptor; the renderer owns the component.");
-		typedHost.DetachScreen(((BlazorApplicationScreenSession)session).Id, screen);
+		typedHost.DetachScreen(((ApplicationScreenSession)session).Id, screen);
 	}
 
 	[Test]
 	public async Task GenericDecoratorDispatchesNeutralOpeningThroughTypedOverride() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var concrete = new BlazorApplicationScreenHost(new[] { CreateBlock() }, provider);
+		using var concrete = new BlazorUI.ApplicationScreenHost(new[] { CreateBlock() }, provider);
 		using var decorator = new TrackingDecorator(concrete);
 		var block = concrete.Blocks.Single();
 		var definition = ((BlazorScreenMenuItem)block.Menus.Single().Items.Single()).ScreenDefinition;
-		var first = await ((IApplicationScreenHost)decorator).OpenScreenAsync(block, definition);
+		var first = await ((SharedUI.IApplicationScreenHost)decorator).OpenScreenAsync(block, definition);
 		var second = await decorator.OpenScreenAsync(block, definition);
 		Assert.That(decorator.Openings, Is.EqualTo(2));
-		Assert.That(((IApplicationScreenHost)decorator).ActiveScreen, Is.SameAs(second));
+		Assert.That(((SharedUI.IApplicationScreenHost)decorator).ActiveScreen, Is.SameAs(second));
 		Assert.That(concrete.OpenScreens, Is.EqualTo(new[] { first, second }));
 	}
 
@@ -403,8 +405,8 @@ public class ApplicationScreenHostHarmonizationTests {
 	[TestCase(true)]
 	public async Task DetachedPresentationIsUnsupportedThroughTheSharedBlazorContractAndItsDecorator(bool decorate) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var concrete = new BlazorApplicationScreenHost(new[] { CreateBlock() }, provider);
-		using IApplicationScreenHost host = decorate ? new TrackingDecorator(concrete) : concrete;
+		using var concrete = new BlazorUI.ApplicationScreenHost(new[] { CreateBlock() }, provider);
+		using SharedUI.IApplicationScreenHost host = decorate ? new TrackingDecorator(concrete) : concrete;
 		var block = concrete.Blocks.Single();
 		var definition = ((BlazorScreenMenuItem)block.Menus.Single().Items.Single()).ScreenDefinition;
 		var session = await host.OpenScreenAsync(block, definition);
@@ -419,17 +421,17 @@ public class ApplicationScreenHostHarmonizationTests {
 	[Test]
 	public async Task ActionsResolveTheUiCoordinatorAndConfiguredHostFromTheExecutingScope() {
 		var services = CreateServices();
-		services.AddScoped<IBlazorApplicationScreenHost>(provider => new TrackingDecorator(new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider)));
+		services.AddScoped<BlazorUI.IApplicationScreenHost>(provider => new TrackingDecorator(new BlazorUI.ApplicationScreenHost(provider.GetServices<BlazorUI.IApplicationBlock>(), provider)));
 		services.AddScoped<CommandProbe>();
 		await using var provider = services.BuildServiceProvider();
 		await using var scope = provider.CreateAsyncScope();
 		var userInterface = scope.ServiceProvider.GetRequiredService<IUserInterfaceServices>();
-		var host = (TrackingDecorator)scope.ServiceProvider.GetRequiredService<IApplicationScreenHost>();
+		var host = (TrackingDecorator)scope.ServiceProvider.GetRequiredService<SharedUI.IApplicationScreenHost>();
 		var command = new BlazorActionMenuItem {
 			Id = "navigate", Title = "Navigate",
 			AsyncAction = async (services, token) => {
 				services.GetRequiredService<CommandProbe>().Executions++;
-				var host = services.GetRequiredService<IApplicationScreenHost>();
+				var host = services.GetRequiredService<SharedUI.IApplicationScreenHost>();
 				await host.ActivateBlockAsync(host.Blocks.Single(block => block.Name == "Work"), token);
 			}
 		};
@@ -446,7 +448,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		var session = await host.ActivateBlockAsync("work");
 		var screen = new ProbeScreen();
 		if (throughInterface)
-			await ((IBlazorApplicationScreenHost)host).AttachScreenAsync(session.Id, screen);
+			await ((BlazorUI.IApplicationScreenHost)host).AttachScreenAsync(session.Id, screen);
 		else
 			await host.AttachScreenAsync(session.Id, screen);
 		Assert.That(host.Attachments, Is.EqualTo(1));
@@ -456,7 +458,7 @@ public class ApplicationScreenHostHarmonizationTests {
 	[Test]
 	public async Task DisposingUiServicesUnsubscribesWithoutDisposingItsBorrowedHost() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { CreateBlock() }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { CreateBlock() }, provider);
 		var userInterface = new BlazorUserInterfaceServices(host, provider);
 		var session = await host.ActivateBlockAsync("work");
 		userInterface.Dispose();
@@ -468,7 +470,7 @@ public class ApplicationScreenHostHarmonizationTests {
 	[TestCase(true)]
 	public void DisposedHostCannotCreateOrReturnItsOwnedUiServices(bool resolveBeforeDisposal) {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var host = new BlazorApplicationScreenHost(provider);
+		var host = new BlazorUI.ApplicationScreenHost(provider);
 		if (resolveBeforeDisposal)
 			Assert.That(host.UserInterfaceServices, Is.Not.Null);
 		host.Dispose();
@@ -481,7 +483,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		Sphere10.Framework.Utils.BlazorTester.Program.ConfigureServices(services, permanentScreen: true);
 		await using var provider = services.BuildServiceProvider();
 		await using var scope = provider.CreateAsyncScope();
-		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		var application = scope.ServiceProvider.GetRequiredService<BlazorUI.IApplication>();
 		var host = application.ScreenHost;
 		await host.InitializeAsync();
 		await host.ActivateScreenAsync("workspace", "overview");
@@ -494,13 +496,13 @@ public class ApplicationScreenHostHarmonizationTests {
 	[Test]
 	public async Task PortableScreenIdentityIsTheProxyAndOnlyTheRegisteredComponentCanBeRendered() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { CreateBlock() }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { CreateBlock() }, provider);
 		var session = await host.ActivateBlockAsync("work");
 		var component = new ProbeScreen { Caption = "Record editor" };
 		await host.AttachScreenAsync(session.Id, component);
-		Assert.That(((IApplicationScreenHost)host).ActiveScreen, Is.SameAs(session));
+		Assert.That(((SharedUI.IApplicationScreenHost)host).ActiveScreen, Is.SameAs(session));
 		Assert.That(session.Screen, Is.SameAs(component));
-		Assert.That(((IApplicationScreen)session).Title, Is.EqualTo("Record editor"));
+		Assert.That(((SharedUI.IApplicationScreen)session).Title, Is.EqualTo("Record editor"));
 		Assert.That(() => ((IComponent)session).Attach(default), Throws.TypeOf<NotSupportedException>());
 		Assert.That(() => ((IComponent)session).SetParametersAsync(ParameterView.Empty), Throws.TypeOf<NotSupportedException>());
 		Assert.That(await ((IMultiApplicationScreenHost)host).CloseScreenAsync(session), Is.True);
@@ -510,7 +512,7 @@ public class ApplicationScreenHostHarmonizationTests {
 	[Test]
 	public async Task CancellationAfterComponentActivationRollsBackRendererAttachment() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { CreateBlock() }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { CreateBlock() }, provider);
 		var session = await host.ActivateBlockAsync("work");
 		var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -589,14 +591,14 @@ public class ApplicationScreenHostHarmonizationTests {
 		services
 			.AddApplicationBlock(CreateBlock());
 		services
-			.AddApplicationBlock(new BlazorApplicationBlockBuilder()
+			.AddApplicationBlock(new ApplicationBlockBuilder()
 			.WithId("browse")
 			.WithName("Browse")
 			.Build());
 		return services;
 	}
 
-	private static BlazorApplicationBlock CreateBlock() => new BlazorApplicationBlockBuilder()
+	private static ApplicationBlock CreateBlock() => new ApplicationBlockBuilder()
 		.WithId("work")
 		.WithName("Work")
 		.AddScreen<ProbeScreen>(screen => screen
@@ -610,10 +612,10 @@ public class ApplicationScreenHostHarmonizationTests {
 		)
 		.Build();
 
-	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen, IDisposable {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public sealed class ProbeScreen : ComponentBase, BlazorUI.IApplicationScreen, IDisposable {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 		[Parameter] public string RecordId { get; set; }
 		public string Caption { get; set; }
@@ -631,24 +633,24 @@ public class ApplicationScreenHostHarmonizationTests {
 		public int Executions { get; set; }
 	}
 
-	private sealed class TrackingDecorator : BlazorApplicationScreenHostDecorator {
-		public TrackingDecorator(IBlazorApplicationScreenHost host) : base(host) { }
+	private sealed class TrackingDecorator : BlazorUI.ApplicationScreenHostDecorator {
+		public TrackingDecorator(BlazorUI.IApplicationScreenHost host) : base(host) { }
 		public int Openings { get; private set; }
 		public int BlockActivations { get; private set; }
-		public override Task<BlazorApplicationScreenSession> OpenScreenAsync(IBlazorApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
+		public override Task<ApplicationScreenSession> OpenScreenAsync(BlazorUI.IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
 			Openings++;
 			return base.OpenScreenAsync(block, definition, cancellationToken);
 		}
-		public override Task<BlazorApplicationScreenSession> ActivateBlockAsync(IBlazorApplicationBlock block, CancellationToken cancellationToken = default) {
+		public override Task<ApplicationScreenSession> ActivateBlockAsync(BlazorUI.IApplicationBlock block, CancellationToken cancellationToken = default) {
 			BlockActivations++;
 			return base.ActivateBlockAsync(block, cancellationToken);
 		}
 	}
 
-	private sealed class TrackingHost : BlazorApplicationScreenHost {
-		public TrackingHost(IEnumerable<IBlazorApplicationBlock> blocks, IServiceProvider services) : base(blocks, services) { }
+	private sealed class TrackingHost : BlazorUI.ApplicationScreenHost {
+		public TrackingHost(IEnumerable<BlazorUI.IApplicationBlock> blocks, IServiceProvider services) : base(blocks, services) { }
 		public int Attachments { get; private set; }
-		public override Task AttachScreenAsync(Guid sessionId, IBlazorApplicationScreen screen, CancellationToken cancellationToken = default) {
+		public override Task AttachScreenAsync(Guid sessionId, BlazorUI.IApplicationScreen screen, CancellationToken cancellationToken = default) {
 			Attachments++;
 			return base.AttachScreenAsync(sessionId, screen, cancellationToken);
 		}

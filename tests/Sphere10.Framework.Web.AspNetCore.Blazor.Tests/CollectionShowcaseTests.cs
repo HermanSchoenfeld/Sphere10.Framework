@@ -20,6 +20,7 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Showcase.Cards;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -52,7 +53,7 @@ public class CollectionShowcaseTests {
 			);
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var owner = host.Blocks.Single();
 		var catalogue = provider.GetRequiredService<CollectionCatalogue>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
@@ -274,7 +275,7 @@ public class CollectionShowcaseTests {
 		Assert.That(() => source.ReadRange(null, pageLength, 0, null, SortDirection.Ascending), Throws.InstanceOf<ArgumentException>());
 	}
 
-	private static async Task WaitForAttachmentAsync(BlazorApplicationScreenSession session) {
+	private static async Task WaitForAttachmentAsync(ApplicationScreenSession session) {
 		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		void Attached() {
 			if (session.Screen != null)

@@ -13,6 +13,6 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A plugin whose shared application blocks carry Blazor screen and presentation metadata.</summary>
-public interface IBlazorPlugin : IApplicationPlugin<IBlazorApplicationBlock> {
+public interface IBlazorPlugin : IApplicationPlugin<IApplicationBlock> {
 	IServiceProvider IoCContainer { get; }
 }

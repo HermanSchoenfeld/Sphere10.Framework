@@ -16,6 +16,7 @@ using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.Loader.Services;
 using Sphere10.Framework.Utils.BlazorTester.Loader.ViewModels;
 using Sphere10.Framework.Utils.BlazorTester.Lifecycle;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 
@@ -27,8 +28,8 @@ public static class Sphere10Plugin {
 		const string pluginName = "Sphere10.Framework";
 		plugin
 			.WithName(pluginName)
-			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
-			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddInitializer(provider => new DemoPluginInitializer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
+			.AddFinalizer(provider => new DemoPluginFinalizer(provider.GetRequiredService<SharedUI.IApplication>(), provider.GetRequiredService<WorkspaceStatus>(), pluginName))
 			.AddServices(services => {
 				services.AddScoped<WorkspaceStatus>();
 				services.AddScoped<IEndpointManager, DefaultEndpointManager>();
@@ -50,7 +51,7 @@ public static class Sphere10Plugin {
 					.WithStableKey("cpu-inspector")
 					.AsSingleInstance()
 					.UseSettings(new RegistrationExampleScreen.RegistrationInspectorSettings { Caption = "CPU summary" })
-					.WithActivator(context => new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "CPU" })),
+					.WithActivator(context => new ApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "CPU" })),
 					out var cpuInspector
 				)
 				.AddScreen<RegistrationExampleScreen>(screen => screen
@@ -59,7 +60,7 @@ public static class Sphere10Plugin {
 					.AsSingleInstance()
 					.UseSettings(new RegistrationExampleScreen.RegistrationInspectorSettings { Caption = "GPU summary" })
 					.WithSettingsEditor<RegistrationInspectorSettingsEditor>()
-					.WithActivator(context => new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "GPU" })),
+					.WithActivator(context => new ApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "GPU" })),
 					out var gpuInspector
 				)
 				.AddScreen<RegistrationDetailsScreen>("Menu-free details", activationMode: ScreenActivationMode.SingleInstance)

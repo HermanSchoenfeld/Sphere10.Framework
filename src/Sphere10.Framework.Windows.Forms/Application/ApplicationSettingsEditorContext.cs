@@ -13,9 +13,9 @@ using Sphere10.Framework.Application;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>The actual settings object and borrowed native services available to a custom editor.</summary>
-public sealed class WinFormsApplicationSettingsEditorContext {
+public sealed class ApplicationSettingsEditorContext {
 	// Editors borrow this context; the Options dialog owns the native editor control.
-	internal WinFormsApplicationSettingsEditorContext(SettingsObject settings, IWinFormsApplication application,
+	internal ApplicationSettingsEditorContext(SettingsObject settings, IApplication application,
 		IServiceProvider services, IWin32Window owner) {
 		Settings = settings;
 		Application = application;
@@ -27,7 +27,7 @@ public sealed class WinFormsApplicationSettingsEditorContext {
 	public SettingsObject Settings { get; }
 
 	/// <summary>The owning block application, or null for a plain main-form application.</summary>
-	public IWinFormsApplication Application { get; }
+	public IApplication Application { get; }
 
 	/// <summary>The actual application provider, when the host was configured through DI.</summary>
 	public IServiceProvider Services { get; }

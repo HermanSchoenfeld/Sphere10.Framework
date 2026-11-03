@@ -13,7 +13,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Marks a borrowed native separator for the existing command composition rules.</summary>
 internal sealed class NativeToolStripSeparator : NativeToolStripCommand, IApplicationMenuSeparator {
-	public NativeToolStripSeparator(ToolStripItem item, IWinFormsApplicationMenu parent = null)
+	public NativeToolStripSeparator(ToolStripItem item, IApplicationMenu parent = null)
 		: base(item, parent) {
 	}
 }

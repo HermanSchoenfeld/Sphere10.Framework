@@ -21,7 +21,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 /// <summary>Edits plain detached settings values using their component-model names, descriptions and read-only metadata.</summary>
-public partial class BlazorApplicationSettingsValueEditor : ComponentBase {
+public partial class ApplicationSettingsValueEditor : ComponentBase {
 	private readonly string _inputPrefix = "option-" + Guid.NewGuid().ToString("N");
 	private readonly Dictionary<string, string> _dictionaryKeys = new();
 

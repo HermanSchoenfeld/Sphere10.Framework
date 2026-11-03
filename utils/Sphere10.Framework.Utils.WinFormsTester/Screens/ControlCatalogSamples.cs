@@ -28,6 +28,7 @@ using Sphere10.Framework.Windows.Forms.Sqlite;
 using Sphere10.Framework.Windows.Forms.TextBoxes;
 using Book = Sphere10.Framework.Windows.Forms.AppointmentBook;
 using SourceGrid = Sphere10.Framework.Windows.Forms.SourceGrid;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
@@ -162,12 +163,12 @@ public static class ControlCatalogSamples {
 			Sample<VisualGrid>("Data", () => new VisualGridTestScreen()),
 			Sample<VisualGridConfigurationContextMenu>("Data", CreateGridConfigurationMenu, "The registered Visual Grid Laboratory demonstrates this header menu on both grids. Commands require a hosted settings role; use that main-shell screen to exercise Save configuration and Restore defaults."),
 			Sample<WhoAreYouControl>("Application", () => new WhoAreYouControl()),
-			Sample<WinFormsApplicationScreen>("Application", () => Composed(new WinFormsApplicationScreen { Title = "Standalone screen example" })),
-			new ControlCatalogEntry(typeof(WinFormsApplicationScreenForm), "Application", "Opens an isolated screen through its native host, then detaches it using the native hosting API.", null, true, ShowDetachedScreenAsync),
-			Sample<WinFormsApplicationScreenHost>("Application", CreateScreenHost, "A private host containing a native sample screen; its state is independent of the tester's host."),
-			new ControlCatalogEntry(typeof(WinFormsApplicationScreenHostBase), "Application / abstract", "Abstract host base, demonstrated by the concrete WinFormsApplicationScreenHost.", CreateScreenHost),
-			Sample<WinFormsApplicationScreenTabControl>("Application", CreateScreenTabs),
-			new ControlCatalogEntry(typeof(WinFormsApplicationSettingsDialog), "Application", "Edits the running application's actual owner settings.", null, true, ShowOptionsAsync),
+			Sample<ApplicationScreen>("Application", () => Composed(new ApplicationScreen { Title = "Standalone screen example" })),
+			new ControlCatalogEntry(typeof(ApplicationScreenForm), "Application", "Opens an isolated screen through its native host, then detaches it using the native hosting API.", null, true, ShowDetachedScreenAsync),
+			Sample<FormsUI.ApplicationScreenHost>("Application", CreateScreenHost, "A private host containing a native sample screen; its state is independent of the tester's host."),
+			new ControlCatalogEntry(typeof(ApplicationScreenHostBase), "Application / abstract", "Abstract host base, demonstrated by the concrete ApplicationScreenHost.", CreateScreenHost),
+			Sample<ApplicationScreenTabControl>("Application", CreateScreenTabs),
+			new ControlCatalogEntry(typeof(ApplicationSettingsDialog), "Application", "Edits the running application's actual owner settings.", null, true, ShowOptionsAsync),
 			new ControlCatalogEntry(typeof(WinFormsWizardDialog<>), "Wizards / generic", "Runs the closed WinFormsWizardDialog<LogOutputConfiguration>. Finish validates sample settings without creating an output or writing a file.", null, true, owner => ShowLogWizardAsync(owner, new LogOutputDestinationWizardScreen(), new LogOutputFormattingWizardScreen(), new LogOutputReviewWizardScreen())),
 			new ControlCatalogEntry(typeof(WinFormsWizardScreen<>), "Wizards / generic", "Closed WinFormsWizardScreen<LogOutputConfiguration> with a locally owned model.", null, true, owner => ShowLogWizardAsync(owner, Composed(new WinFormsWizardScreen<LogOutputConfiguration>()))),
 			Sample<Book.AppointmentBook>("Appointments", () => new AppointmentBookScreen()),
@@ -359,11 +360,11 @@ public static class ControlCatalogSamples {
 	}
 
 	private static Control CreateScreenHost() {
-		var block = new WinFormsApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithName("Catalog example")
 			.AddScreen<ControlCatalogHostedScreen>("Example screen")
 			.Build();
-		var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		host.Disposed += (_, _) => block.Dispose();
 		host.InitializeScreens(new[] { block });
 		host.ActivateScreen(block, typeof(ControlCatalogHostedScreen));
@@ -371,7 +372,7 @@ public static class ControlCatalogSamples {
 	}
 
 	private static Control CreateMainForm(MainForm form) {
-		var block = new WinFormsApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithName("Catalog shell example")
 			.AddScreen<ControlCatalogHostedScreen>("Editable native screen")
 			.Build();
@@ -382,7 +383,7 @@ public static class ControlCatalogSamples {
 	}
 
 	private static Control CreateScreenTabs() {
-		var tabs = new WinFormsApplicationScreenTabControl();
+		var tabs = new ApplicationScreenTabControl();
 		tabs.TabPages.Add(new TabPage("First native tab"));
 		tabs.TabPages.Add(new TabPage("Second native tab"));
 		tabs.TabPages[0].Controls.Add(new TextBox { Dock = DockStyle.Top, Text = "Edit the first tab" });
@@ -391,11 +392,11 @@ public static class ControlCatalogSamples {
 	}
 
 	private static async Task ShowDetachedScreenAsync(Control owner) {
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("Detached catalog example")
 			.AddScreen<ControlCatalogHostedScreen>("Native detached screen")
 			.Build();
-		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		host.InitializeScreens(new[] { block });
 		var screen = await host.OpenScreenAsync(block, block.ScreenDefinitions.Single());
 		await host.ShowScreenUndockedAsync(screen);
@@ -425,8 +426,8 @@ public static class ControlCatalogSamples {
 	}
 
 	private static async Task ShowOptionsAsync(Control owner) {
-		var application = ((WinFormsApplicationScreen)owner).Block.Parent;
-		using var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider) { Text = "WinFormsApplicationSettingsDialog — Options" };
+		var application = ((ApplicationScreen)owner).Block.Parent;
+		using var dialog = new ApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider) { Text = "ApplicationSettingsDialog — Options" };
 		await dialog.ShowDialogAsync(owner);
 	}
 

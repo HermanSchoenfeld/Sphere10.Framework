@@ -24,6 +24,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -62,7 +63,7 @@ public class ApplicationSettingsNativeTests {
 			var earlier = new ProbeScreen.Preferences { ID = id, Provider = provider, Name = "Restored before activation" };
 			await earlier.SaveAsync();
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -87,7 +88,7 @@ public class ApplicationSettingsNativeTests {
 			firstBlock.BlockSettings = new ProbeScreen.Preferences { Name = "Block before" };
 			otherBlock.BlockSettings = new ProbeScreen.Preferences { ID = "other", Name = "Other before" };
 			await using var services = CreateApplication(new MemoryStore(), firstBlock, otherBlock);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.ScreenMode = ScreenMode.MultiView;
@@ -121,7 +122,7 @@ public class ApplicationSettingsNativeTests {
 		RunWithMessageLoop(async owner => {
 			using var block = CreateBlock("Handle recreation");
 			await using var services = CreateApplication(new MemoryStore(), block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -149,12 +150,12 @@ public class ApplicationSettingsNativeTests {
 		RunWithMessageLoop(async owner => {
 			using var block = CreateBlock("Diagnostics");
 			await using var services = CreateApplication(new MemoryStore(), block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			var productServices = new ServiceCollection();
 			if (productName != null)
 				productServices.AddSingleton<IProductInformationProvider>(new CaptionProductInformationProvider(productName));
 			await using var provider = productServices.BuildServiceProvider();
-			using var dialog = new WinFormsApplicationSettingsDialog(application, provider);
+			using var dialog = new ApplicationSettingsDialog(application, provider);
 			dialog.Show(owner);
 
 			Assert.That(Find<TreeView>(dialog).Nodes[0].Text, Is.EqualTo(expectedCaption));
@@ -170,7 +171,7 @@ public class ApplicationSettingsNativeTests {
 			using var firstBlock = CreateBlock("First");
 			using var activeBlock = CreateBlock("Active");
 			await using var services = CreateApplication(new MemoryStore(), firstBlock, activeBlock);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -187,8 +188,8 @@ public class ApplicationSettingsNativeTests {
 					.Single(item => item.Name == "_screenOptionsMenuItem").PerformClick();
 			else
 				opening = main.ShowScreenOptionsAsync();
-			await WaitUntilAsync(() => System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Any());
-			var dialog = System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Single();
+			await WaitUntilAsync(() => System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Any());
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Single();
 			try {
 				Assert.That(dialog.SelectedOwner, Is.SameAs(definition));
 				Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(screen.ScreenSettings));
@@ -207,21 +208,21 @@ public class ApplicationSettingsNativeTests {
 		RunWithMessageLoop(async owner => {
 			using var firstBlock = CreateBlock("First");
 			using var activeBlock = CreateBlock("Active");
-			var plain = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Plain");
+			var plain = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "Plain");
 			activeBlock.AddScreenDefinition(plain);
 			await using var services = CreateApplication(new MemoryStore(), firstBlock, activeBlock);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
 			await main.ScreenHost.OpenScreenAsync(activeBlock, activeBlock.ScreenDefinitions.First());
-			using (var explicitSelection = new WinFormsApplicationSettingsDialog(application, selectedOwner: firstBlock.ScreenDefinitions.Single())) {
+			using (var explicitSelection = new ApplicationSettingsDialog(application, selectedOwner: firstBlock.ScreenDefinitions.Single())) {
 				explicitSelection.Show(owner);
 				Assert.That(explicitSelection.SelectedOwner, Is.SameAs(firstBlock.ScreenDefinitions.Single()));
 			}
 
 			await main.ScreenHost.OpenScreenAsync(activeBlock, plain);
-			using var fallback = new WinFormsApplicationSettingsDialog(application);
+			using var fallback = new ApplicationSettingsDialog(application);
 			fallback.Show(owner);
 			Assert.That(fallback.SelectedOwner, Is.SameAs(firstBlock.ScreenDefinitions.Single()));
 		});
@@ -232,19 +233,19 @@ public class ApplicationSettingsNativeTests {
 	[TestCase(true)]
 	public void OptionsHideScreensWithoutSettingsAndKeepUnopenedAndUnmarkedSettings(bool selectScreenWithoutSettings) {
 		RunWithMessageLoop(async owner => {
-			using var block = new WinFormsApplicationBlock { Name = "Filtered Options" };
-			var plain = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "No settings", stableKey: "plain");
-			var unopened = new WinFormsApplicationScreenDefinition(typeof(UnopenedSettingsScreen), "Unopened settings");
-			var unmarked = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Stored settings", stableKey: "stored", settings: new UnmarkedPreferences());
+			using var block = new ApplicationBlock { Name = "Filtered Options" };
+			var plain = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "No settings", stableKey: "plain");
+			var unopened = new FormsUI.ApplicationScreenDefinition(typeof(UnopenedSettingsScreen), "Unopened settings");
+			var unmarked = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "Stored settings", stableKey: "stored", settings: new UnmarkedPreferences());
 			block.AddScreenDefinition(plain);
 			block.AddScreenDefinition(unopened);
 			block.AddScreenDefinition(unmarked);
 			block.DefaultScreenDefinition = plain;
 			var store = new MemoryStore();
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
-			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: selectScreenWithoutSettings ? plain : null);
+			using var dialog = new ApplicationSettingsDialog(application, selectedOwner: selectScreenWithoutSettings ? plain : null);
 			dialog.Show(owner);
 
 			var screenNodes = Find<TreeView>(dialog).Nodes[0].Nodes[0].Nodes.Cast<TreeNode>().ToArray();
@@ -263,13 +264,13 @@ public class ApplicationSettingsNativeTests {
 			var store = new MemoryStore();
 			using var block = CreateBlock("Options");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var definition = block.ScreenDefinitions.Single();
 			var actual = (ProbeScreen.Preferences)definition.Settings;
 			var notifications = 0;
 			actual.OnChanged += () => notifications++;
-			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+			using var dialog = new ApplicationSettingsDialog(application, selectedOwner: definition);
 			dialog.Show(owner);
 			Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(actual));
 
@@ -299,12 +300,12 @@ public class ApplicationSettingsNativeTests {
 			object id = guidIdentity ? Guid.NewGuid() : 7;
 			block.ScreenDefinitions.Single().Settings.ID = id;
 			await using var services = CreateApplication(new MemoryStore(), block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var definition = block.ScreenDefinitions.Single();
 			var actual = (ProbeScreen.Preferences)definition.Settings;
 			for (var attempt = 0; attempt < 2; attempt++) {
-				using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+				using var dialog = new ApplicationSettingsDialog(application, selectedOwner: definition);
 				dialog.Show(owner);
 				SetName(dialog, "Temporary");
 				actual.Items.Add("Temporary");
@@ -317,7 +318,7 @@ public class ApplicationSettingsNativeTests {
 			}
 
 			// Reset uses declared attributes and the settings object's existing nested-default override.
-			using var reset = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+			using var reset = new ApplicationSettingsDialog(application, selectedOwner: definition);
 			reset.Show(owner);
 			SetName(reset, "Temporary");
 			actual.Grid.PageSize = 37;
@@ -338,12 +339,12 @@ public class ApplicationSettingsNativeTests {
 			var store = new MemoryStore();
 			using var block = CreateBlock("Validation");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var actual = block.ScreenDefinitions.Single().Settings;
 			var notifications = 0;
 			actual.OnChanged += () => notifications++;
-			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: actual);
+			using var dialog = new ApplicationSettingsDialog(application, selectedOwner: actual);
 			dialog.Show(owner);
 			SetName(dialog, string.Empty);
 			Assert.That(await dialog.ApplySelectedAsync(), Is.False);
@@ -366,7 +367,7 @@ public class ApplicationSettingsNativeTests {
 		RunWithMessageLoop(async owner => {
 			using var block = CreateBlock("Grid");
 			await using var services = CreateApplication(new MemoryStore(), block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -388,7 +389,7 @@ public class ApplicationSettingsNativeTests {
 			var store = new MemoryStore();
 			using var block = CreateBlock("Temporary grid");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -425,7 +426,7 @@ public class ApplicationSettingsNativeTests {
 			var store = new PendingStore();
 			using var block = CreateBlock("Pending grid save");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -456,7 +457,7 @@ public class ApplicationSettingsNativeTests {
 			var store = new MemoryStore();
 			using var block = CreateBlock("Rejected grid save");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -494,7 +495,7 @@ public class ApplicationSettingsNativeTests {
 			var store = new MemoryStore();
 			using var block = CreateBlock("Close");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -517,7 +518,7 @@ public class ApplicationSettingsNativeTests {
 			var store = new PendingStore();
 			using var block = CreateBlock("Pending save");
 			await using var services = CreateApplication(store, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -549,13 +550,13 @@ public class ApplicationSettingsNativeTests {
 			var provider = new CachedSettingsProvider(storage);
 			var settings = new AnnotatedPreferences { Name = "Configured default" };
 			settings.Nested.Values = new List<string> { "Configured nested" };
-			using var block = new WinFormsApplicationBlock { Name = "Rejected load" };
-			var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe", settings: settings);
+			using var block = new ApplicationBlock { Name = "Rejected load" };
+			var definition = new FormsUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe", settings: settings);
 			block.AddScreenDefinition(definition);
 			block.DefaultScreenDefinition = definition;
 			var id = Tools.UI.GetScreenSettingsId("NativeActualSettings", block, definition);
 			await using var services = CreateApplication(provider, block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 
 			if (failure == "cancelled")
 				await Assert.ThatAsync(() => application.InitializeAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
@@ -577,19 +578,19 @@ public class ApplicationSettingsNativeTests {
 	[Test]
 	public void SettingsClassEditorReceivesTheActualOwnerAndRegistrationEditorsTakePrecedence() {
 		RunWithMessageLoop(async owner => {
-			using var block = new WinFormsApplicationBlock { Name = "Editors" };
+			using var block = new ApplicationBlock { Name = "Editors" };
 			var actual = new AttributedPreferences();
-			var attributed = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Attributed", stableKey: "attributed", settings: actual);
-			var explicitEditor = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Explicit", stableKey: "explicit",
+			var attributed = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "Attributed", stableKey: "attributed", settings: actual);
+			var explicitEditor = new FormsUI.ApplicationScreenDefinition(typeof(PlainScreen), "Explicit", stableKey: "explicit",
 				settings: new AttributedPreferences(), settingsEditor: _ => new DefaultCrudEntityEditor());
 			block.AddScreenDefinition(attributed);
 			block.AddScreenDefinition(explicitEditor);
 			await using var services = CreateApplication(new MemoryStore(), block);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			var count = main.ScreenHost.Screens.Length;
-			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: attributed);
+			using var dialog = new ApplicationSettingsDialog(application, selectedOwner: attributed);
 			dialog.Show(owner);
 			Assert.That(Find<DeclaredEditor>(dialog).Context.Settings, Is.SameAs(actual));
 			dialog.SelectOwner(explicitEditor);
@@ -601,12 +602,12 @@ public class ApplicationSettingsNativeTests {
 
 	// Await the production save operation without presenting an error dialog in the failure test.
 	private static Task SaveGridConfigurationAsync(ProbeScreen screen) {
-		return (Task)typeof(WinFormsApplicationScreen).GetMethod("SaveGridConfigurationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
+		return (Task)typeof(ApplicationScreen).GetMethod("SaveGridConfigurationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
 			.Invoke(screen, new object[] { screen.Grid, CancellationToken.None });
 	}
 
 	// Keep application startup composition inside the existing DI path.
-	private static ServiceProvider CreateApplication(ISettingsProvider store, params IWinFormsApplicationBlock[] blocks) {
+	private static ServiceProvider CreateApplication(ISettingsProvider store, params FormsUI.IApplicationBlock[] blocks) {
 		var services = new ServiceCollection();
 		services.AddSingleton(new Local<ISettingsProvider>(store));
 		services.AddMainForm<QuietMainForm>();
@@ -617,16 +618,16 @@ public class ApplicationSettingsNativeTests {
 	}
 
 	// Declare a real typed default registration without creating its screen.
-	private static WinFormsApplicationBlock CreateBlock(string name) {
-		var block = new WinFormsApplicationBlock { Name = name };
-		var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe");
+	private static ApplicationBlock CreateBlock(string name) {
+		var block = new ApplicationBlock { Name = name };
+		var definition = new FormsUI.ApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe");
 		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
 		return block;
 	}
 
 	// Use the real property descriptor path to retain normal editor change detection.
-	private static void SetName(WinFormsApplicationSettingsDialog dialog, string value) {
+	private static void SetName(ApplicationSettingsDialog dialog, string value) {
 		var descriptor = Find<PropertyGrid>(dialog).SelectedObject;
 		TypeDescriptor.GetProperties(descriptor)[nameof(ProbeScreen.Preferences.Name)].SetValue(descriptor, value);
 	}
@@ -703,7 +704,7 @@ public class ApplicationSettingsNativeTests {
 	}
 
 	// Capture the real settings and model-to-UI lifecycle observed by hosted screens.
-	public class ProbeScreen : WinFormsApplicationScreen {
+	public class ProbeScreen : ApplicationScreen {
 		public string FirstName { get; private set; }
 
 		public string BlockName { get; private set; }
@@ -802,12 +803,12 @@ public class ApplicationSettingsNativeTests {
 	}
 
 	// No operational settings initialization is needed to enumerate this registration in Options.
-	public class PlainScreen : WinFormsApplicationScreen {
+	public class PlainScreen : ApplicationScreen {
 	}
 
 	/// <summary>Declares settings by attribute and rejects any attempt to activate the operational screen.</summary>
 	[Settings(typeof(UnopenedSettingsScreen.Preferences))]
-	public class UnopenedSettingsScreen : WinFormsApplicationScreen {
+	public class UnopenedSettingsScreen : ApplicationScreen {
 		/// <summary>Options discovery must only read the class declaration.</summary>
 		public UnopenedSettingsScreen() {
 			throw new InvalidOperationException("Options must not activate an unopened screen.");
@@ -838,11 +839,11 @@ public class ApplicationSettingsNativeTests {
 
 	// Observe the actual object and services supplied to a settings-class editor.
 	public sealed class DeclaredEditor : DefaultCrudEntityEditor {
-		public DeclaredEditor(WinFormsApplicationSettingsEditorContext context) {
+		public DeclaredEditor(ApplicationSettingsEditorContext context) {
 			Context = context;
 		}
 
-		public WinFormsApplicationSettingsEditorContext Context { get; }
+		public ApplicationSettingsEditorContext Context { get; }
 	}
 
 	// Isolated storage exercises the actual directional base and normal SettingsObject save lifecycle.

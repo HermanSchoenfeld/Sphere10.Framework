@@ -38,7 +38,7 @@
 		<section class="sphere10-grid-settings" role="region" aria-label="Grid settings">
 			<h3>Grid settings</h3>
 			<fieldset disabled="@_savingPreferences">
-				<BlazorApplicationSettingsEditor @ref="_settingsEditor" Value="_settingsDraft" />
+				<ApplicationSettingsEditor @ref="_settingsEditor" Value="_settingsDraft" />
 				@foreach (var error in _settingsErrors) {
 					<p role="alert" class="sphere10-grid-error">@error</p>
 				}

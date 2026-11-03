@@ -9,17 +9,17 @@
 @using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application
-@implements IBlazorApplicationSettingsEditor
+@implements IApplicationSettingsEditor
 
 <aside class="alert alert-info" data-custom-settings-editor>
 	<strong>Custom GPU preferences editor</strong>
 	<p>This renderer-owned component previews the actual owner settings edited below.</p>
 	<output aria-label="Inspector preference preview">@(((RegistrationExampleScreen.RegistrationInspectorSettings)Value).Caption)</output>
 </aside>
-<BlazorApplicationSettingsEditor @ref="_editor" Value="Value" Changed="Changed" />
+<ApplicationSettingsEditor @ref="_editor" Value="Value" Changed="Changed" />
 
 @code {
-	private BlazorApplicationSettingsEditor _editor;
+	private ApplicationSettingsEditor _editor;
 
 	/// <summary>The actual settings object used by the containing Options dialog.</summary>
 	[Parameter] public object Value { get; set; }

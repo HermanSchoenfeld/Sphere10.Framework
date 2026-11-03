@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -24,20 +26,20 @@ public class BlazorDefaultInterfaceDispatchTests {
 	[Test]
 	public async Task ApplicationBlocksProjectLiveMembershipThroughSharedTypedAndClassViews() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		var first = new BlazorApplicationBlockBuilder()
+		var first = new ApplicationBlockBuilder()
 			.WithId("first")
 			.WithName("First")
 			.Build();
-		var second = new BlazorApplicationBlockBuilder()
+		var second = new ApplicationBlockBuilder()
 			.WithId("second")
 			.WithName("Second")
 			.Build();
-		using var host = new BlazorApplicationScreenHost(new[] { first, second }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { first, second }, provider);
 		Assert.That(await host.UnregisterBlockAsync(host.Blocks.Single(block => block.Id == "second")), Is.True);
-		using var application = new BlazorApplication(host, Array.Empty<IBlazorPlugin>());
-		IApplication neutral = application;
-		IApplication<IBlazorPlugin, IBlazorApplicationScreenHost> typed = application;
-		IBlazorApplication platform = application;
+		using var application = new BlazorUI.Application(host, Array.Empty<IBlazorPlugin>());
+		SharedUI.IApplication neutral = application;
+		SharedUI.IApplication<IBlazorPlugin, BlazorUI.IApplicationScreenHost> typed = application;
+		BlazorUI.IApplication platform = application;
 		ApplicationBase compatibility = application;
 
 		Assert.That(neutral.Blocks.Single(), Is.SameAs(host.Blocks.Single()));
@@ -48,7 +50,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 		Assert.That(compatibility.Blocks.Length, Is.EqualTo(2));
 		var registeredFirst = host.Blocks.Single(block => block.Id == "first");
 		Assert.That(await host.UnregisterBlockAsync(registeredFirst), Is.True);
-		Assert.That(((IBlazorApplicationBlock)neutral.Blocks.Single()).Id, Is.EqualTo("second"));
+		Assert.That(((BlazorUI.IApplicationBlock)neutral.Blocks.Single()).Id, Is.EqualTo("second"));
 		Assert.That(compatibility.Blocks.Single(), Is.SameAs(host.Blocks.Single()));
 		Assert.That(await host.UnregisterBlockAsync(host.Blocks.Single()), Is.True);
 		Assert.That(neutral.Blocks, Is.Empty);
@@ -68,9 +70,9 @@ public class BlazorDefaultInterfaceDispatchTests {
 		using var provider = new ServiceCollection()
 			.AddSphere10BlazorPlugin(plugin)
 			.BuildServiceProvider();
-		var application = new DirectApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(), plugin);
-		IApplication neutral = application;
-		IApplication<IBlazorPlugin, IBlazorApplicationScreenHost> typed = application;
+		var application = new DirectApplication(provider.GetRequiredService<BlazorUI.IApplicationScreenHost>(), plugin);
+		SharedUI.IApplication neutral = application;
+		SharedUI.IApplication<IBlazorPlugin, BlazorUI.IApplicationScreenHost> typed = application;
 
 		Assert.That(neutral.LoadedPlugins.Single(), Is.SameAs(application.LoadedPlugins.Single()));
 		Assert.That(typed.LoadedPlugins.Single(), Is.SameAs(plugin));
@@ -81,15 +83,15 @@ public class BlazorDefaultInterfaceDispatchTests {
 	/// <summary>Verifies blazor plugin override projects through the shared interface and existing plugin class.</summary>
 	[Test]
 	public void BlazorPluginOverrideProjectsThroughTheSharedInterfaceAndExistingPluginClass() {
-		var first = new BlazorApplicationBlockBuilder()
+		var first = new ApplicationBlockBuilder()
 			.WithName("First")
 			.Build();
-		var second = new BlazorApplicationBlockBuilder()
+		var second = new ApplicationBlockBuilder()
 			.WithName("Second")
 			.Build();
 		var plugin = new ProjectedPlugin { CurrentBlock = first };
-		IApplicationPlugin neutral = plugin;
-		ApplicationPlugin compatibility = plugin;
+		SharedUI.IApplicationPlugin neutral = plugin;
+		SharedUI.ApplicationPlugin compatibility = plugin;
 
 		Assert.That(neutral.Blocks.Single(), Is.SameAs(first));
 		plugin.CurrentBlock = second;
@@ -99,7 +101,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 
 	#region Inner Types
 
-	private sealed class DirectApplication : IBlazorApplication {
+	private sealed class DirectApplication : BlazorUI.IApplication {
 		/// <summary>The editor callback marking a completed input change.</summary>
 		public event EventHandlerEx Changed {
 			add { }
@@ -128,7 +130,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 
 		private readonly IBlazorPlugin _plugin;
 
-		public DirectApplication(IBlazorApplicationScreenHost screenHost, IBlazorPlugin plugin) {
+		public DirectApplication(BlazorUI.IApplicationScreenHost screenHost, IBlazorPlugin plugin) {
 			ScreenHost = screenHost;
 			_plugin = plugin;
 			Settings = null;
@@ -162,13 +164,13 @@ public class BlazorDefaultInterfaceDispatchTests {
 			}
 		}
 
-		public IBlazorApplicationBlock[] Blocks {
+		public BlazorUI.IApplicationBlock[] Blocks {
 			get {
 				return ScreenHost.Blocks;
 			}
 		}
 
-		public IBlazorApplicationScreenHost ScreenHost { get; }
+		public BlazorUI.IApplicationScreenHost ScreenHost { get; }
 
 		/// <summary>The actual registration-owned settings shared by both screen instances.</summary>
 		public ISettingsProvider Settings { get; }
@@ -179,15 +181,15 @@ public class BlazorDefaultInterfaceDispatchTests {
 			}
 		}
 
-		public IBlazorApplicationMenu[] Menus {
+		public BlazorUI.IApplicationMenu[] Menus {
 			get {
-				return Array.Empty<IBlazorApplicationMenu>();
+				return Array.Empty<BlazorUI.IApplicationMenu>();
 			}
 		}
 
-		public IBlazorApplicationMenuItem[] ToolBarItems {
+		public BlazorUI.IApplicationMenuItem[] ToolBarItems {
 			get {
-				return Array.Empty<IBlazorApplicationMenuItem>();
+				return Array.Empty<BlazorUI.IApplicationMenuItem>();
 			}
 		}
 
@@ -206,7 +208,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 			return Task.FromResult(true);
 		}
 
-		void IApplication.Finalize() {
+		void SharedUI.IApplication.Finalize() {
 		}
 
 		public Task FinalizeAsync(CancellationToken cancellationToken = default) {
@@ -224,13 +226,13 @@ public class BlazorDefaultInterfaceDispatchTests {
 
 	private sealed class ProjectedPlugin : BlazorPlugin {
 		public ProjectedPlugin()
-			: base("Projected", Array.Empty<IBlazorApplicationBlock>()) {
+			: base("Projected", Array.Empty<BlazorUI.IApplicationBlock>()) {
 		}
 
-		public IBlazorApplicationBlock CurrentBlock { get; set; }
+		public BlazorUI.IApplicationBlock CurrentBlock { get; set; }
 
 		/// <inheritdoc />
-		public override IBlazorApplicationBlock[] Blocks {
+		public override BlazorUI.IApplicationBlock[] Blocks {
 			get {
 				return new[] { CurrentBlock };
 			}

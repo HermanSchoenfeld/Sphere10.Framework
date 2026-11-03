@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -48,7 +49,7 @@ public class ApplicationScreenActivationTests {
 		using var host = CreateHost(provider);
 		var projectId = Guid.NewGuid();
 		var parameters = new Dictionary<string, object> { ["ProjectId"] = projectId, ["caption"] = "Runtime" };
-		var activation = new BlazorApplicationScreenActivation(parameters, "project");
+		var activation = new ApplicationScreenActivation(parameters, "project");
 		parameters["ProjectId"] = Guid.NewGuid();
 		parameters.Clear();
 		var session = await host.ActivateScreenAsync("projects", "project", activation);
@@ -56,7 +57,7 @@ public class ApplicationScreenActivationTests {
 		Assert.That(session.Parameters["ProjectId"], Is.EqualTo(projectId));
 		Assert.That(session.Parameters["Caption"], Is.EqualTo("Runtime"));
 		Assert.That(session.Parameters["Units"], Is.EqualTo("Metric"));
-		var registeredParameters = ((BlazorApplicationScreenDefinition)session.Definition).Parameters;
+		var registeredParameters = ((BlazorUI.ApplicationScreenDefinition)session.Definition).Parameters;
 		Assert.That(registeredParameters["Caption"], Is.EqualTo("Registered"));
 		Assert.That(registeredParameters.ContainsKey("ProjectId"), Is.False);
 		Assert.That(() => session.Parameters["ProjectId"] = Guid.NewGuid(), Throws.TypeOf<NotSupportedException>());
@@ -82,7 +83,7 @@ public class ApplicationScreenActivationTests {
 	[TestCase(ScreenActivationMode.SingleInstance)]
 	[TestCase(ScreenActivationMode.PermanentSingleton)]
 	public async Task RuntimeKeysCannotOverrideRegisteredSingletonPolicy(ScreenActivationMode policy) {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("singleton")
 			.WithName("Singleton")
 			.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
@@ -95,7 +96,7 @@ public class ApplicationScreenActivationTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var firstId = Guid.NewGuid();
 		var first = await host.ActivateScreenAsync("singleton", "screen", Activation(firstId, "first"));
 		var second = await host.ActivateScreenAsync("singleton", "screen", Activation(Guid.NewGuid(), "second"));
@@ -114,7 +115,7 @@ public class ApplicationScreenActivationTests {
 		using var host = CreateHost(provider);
 		var keyed = await host.ActivateScreenAsync("projects", "project", Activation(Guid.NewGuid(), "key"));
 		var first = await host.ActivateScreenAsync("projects", "project");
-		var second = await host.ActivateScreenAsync("projects", "project", new BlazorApplicationScreenActivation());
+		var second = await host.ActivateScreenAsync("projects", "project", new ApplicationScreenActivation());
 
 		Assert.That(new[] { keyed.Id, first.Id, second.Id }.Distinct().Count(), Is.EqualTo(3));
 		Assert.That(first.InstanceKey, Is.Null);
@@ -215,22 +216,22 @@ public class ApplicationScreenActivationTests {
 
 		Assert.That(session.ScreenType, Is.EqualTo(typeof(ApplicationScreenHostTests.ProbeScreen)));
 		Assert.That(session.InstanceKey, Is.EqualTo("key"));
-		Assert.That(async () => await decorator.ActivateScreenAsync("missing", "project", new BlazorApplicationScreenActivation()), Throws.ArgumentException);
-		Assert.That(async () => await decorator.ActivateScreenAsync("projects", "missing", new BlazorApplicationScreenActivation()), Throws.ArgumentException);
+		Assert.That(async () => await decorator.ActivateScreenAsync("missing", "project", new ApplicationScreenActivation()), Throws.ArgumentException);
+		Assert.That(async () => await decorator.ActivateScreenAsync("projects", "missing", new ApplicationScreenActivation()), Throws.ArgumentException);
 		Assert.That(host.Screens.Single(), Is.SameAs(session));
 	}
 
 	[TestCase("")]
 	[TestCase(" ")]
 	public void BlankInstanceKeysAreRejected(string key) =>
-		Assert.That(() => new BlazorApplicationScreenActivation(instanceKey: key), Throws.ArgumentException);
+		Assert.That(() => new ApplicationScreenActivation(instanceKey: key), Throws.ArgumentException);
 
-	private static BlazorApplicationScreenActivation Activation(Guid projectId, string key) =>
+	private static ApplicationScreenActivation Activation(Guid projectId, string key) =>
 		new(new Dictionary<string, object> { ["ProjectId"] = projectId }, key);
 
-	private static BlazorApplicationScreenHost CreateHost(IServiceProvider provider) {
+	private static BlazorUI.ApplicationScreenHost CreateHost(IServiceProvider provider) {
 		var blocks = new[] {
-			new BlazorApplicationBlockBuilder()
+			new ApplicationBlockBuilder()
 				.WithId("projects")
 				.WithName("Projects")
 				.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
@@ -252,7 +253,7 @@ public class ApplicationScreenActivationTests {
 					.AddShowScreenItem(other, id: "other")
 				)
 				.Build(),
-			new BlazorApplicationBlockBuilder()
+			new ApplicationBlockBuilder()
 				.WithId("other-projects")
 				.WithName("Other projects")
 				.AddScreen<ApplicationScreenHostTests.ProbeScreen>(screen => screen
@@ -265,11 +266,11 @@ public class ApplicationScreenActivationTests {
 				)
 				.Build()
 		};
-		return new BlazorApplicationScreenHost(blocks, provider);
+		return new BlazorUI.ApplicationScreenHost(blocks, provider);
 	}
 
-	private sealed class ProbeDecorator : BlazorApplicationScreenHostDecorator {
-		public ProbeDecorator(IBlazorApplicationScreenHost host)
+	private sealed class ProbeDecorator : BlazorUI.ApplicationScreenHostDecorator {
+		public ProbeDecorator(BlazorUI.IApplicationScreenHost host)
 			: base(host) {
 		}
 	}

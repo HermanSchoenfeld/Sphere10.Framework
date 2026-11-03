@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
-partial class WinFormsApplicationScreenTabControl {
+partial class ApplicationScreenTabControl {
 	private System.ComponentModel.IContainer components;
 	private System.Windows.Forms.ToolTip _dockPreviewTip;
 	private System.Windows.Forms.ContextMenuStrip _tabMenu;

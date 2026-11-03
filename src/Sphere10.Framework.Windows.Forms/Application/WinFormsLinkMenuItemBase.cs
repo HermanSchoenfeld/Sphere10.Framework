@@ -10,7 +10,7 @@ using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public abstract class WinFormsLinkMenuItemBase : WinFormsApplicationMenuItemBase, IWinFormsLinkMenuItem {
+public abstract class WinFormsLinkMenuItemBase : ApplicationMenuItemBase, IWinFormsLinkMenuItem {
 
 	protected WinFormsLinkMenuItemBase()
 		: this(string.Empty) {

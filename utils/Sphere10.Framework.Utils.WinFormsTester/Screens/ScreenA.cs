@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Shows retained calendar input and a contextual toolbar owned by this screen instance.</summary>
-public partial class ScreenA : WinFormsApplicationScreen {
+public partial class ScreenA : ApplicationScreen {
 	/// <summary>Creates the designer-owned calendar example without operational work.</summary>
 	public ScreenA() {
 		InitializeComponent();

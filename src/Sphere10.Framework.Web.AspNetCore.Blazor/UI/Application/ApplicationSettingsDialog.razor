@@ -6,6 +6,7 @@
 
 @using Sphere10.Framework.Application.UI
 @using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs
+@using IApplicationBlock = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationBlock
 @inherits ModalComponent
 
 <div class="sphere10-options-host">
@@ -62,7 +63,7 @@
 
 @code {
 	// Render the same actual block and settings-bearing registrations at their existing owner depth.
-	private RenderFragment<IBlazorApplicationBlock> BlockNode {
+	private RenderFragment<IApplicationBlock> BlockNode {
 		get {
 			return block => @<details open>
 				<summary><button type="button" class="@PageClass(block)" @onclick="() => SelectOwnerAsync(block)">@block.Name@(_dirty.Contains(GetSettings(block)) ? " *" : "")</button></summary>

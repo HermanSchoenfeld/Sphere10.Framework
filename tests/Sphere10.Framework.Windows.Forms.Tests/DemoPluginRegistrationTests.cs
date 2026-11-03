@@ -24,6 +24,8 @@ using Sphere10.Framework.Utils.WinFormsTester;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using TypeDescriptor = System.ComponentModel.TypeDescriptor;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -66,7 +68,7 @@ public class DemoPluginRegistrationTests {
 				dialog.Dispose();
 			var form = (BlockMainForm)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IMainForm>();
 			var blocks = form.RegisteredBlocks;
-			await Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>().FinalizeAsync();
+			await Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>().FinalizeAsync();
 			Sphere10Framework.Instance.EndFramework();
 			_startedFramework = false;
 			foreach (var block in blocks)
@@ -82,14 +84,14 @@ public class DemoPluginRegistrationTests {
 		using var log = new StringWriter();
 		await StartDemoAsync(logger: new TextWriterLogger(log));
 		var provider = Sphere10Framework.Instance.ServiceProvider;
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		Assert.That(application.IsInitialized, Is.True);
 		var initializerTypes = new[] { typeof(DemoPluginInitializer), typeof(DemoWorkspaceInitializer), typeof(DemoComponentInitializer), typeof(DemoIntegrationInitializer) };
 		var finalizerTypes = new[] { typeof(DemoPluginFinalizer), typeof(DemoWorkspaceFinalizer), typeof(DemoComponentFinalizer), typeof(DemoIntegrationFinalizer) };
 		Assert.That(application.LoadedPlugins.SelectMany(plugin => provider.GetKeyedServices<IApplicationInitializer>(plugin.Name)).Select(task => task.GetType()), Is.EqualTo(initializerTypes));
 		Assert.That(application.LoadedPlugins.SelectMany(plugin => provider.GetKeyedServices<IApplicationFinalizer>(plugin.Name)).Select(task => task.GetType()), Is.EqualTo(finalizerTypes));
-		Assert.That(provider.GetKeyedServices<IApplicationInitializer>(typeof(IApplication)), Is.Empty);
-		Assert.That(provider.GetKeyedServices<IApplicationFinalizer>(typeof(IApplication)), Is.Empty);
+		Assert.That(provider.GetKeyedServices<IApplicationInitializer>(typeof(SharedUI.IApplication)), Is.Empty);
+		Assert.That(provider.GetKeyedServices<IApplicationFinalizer>(typeof(SharedUI.IApplication)), Is.Empty);
 		Assert.That(provider.GetServices<IApplicationInitializer>().Select(task => task.GetType()).Intersect(initializerTypes), Is.Empty);
 		Assert.That(provider.GetServices<IApplicationFinalizer>().Select(task => task.GetType()).Intersect(finalizerTypes), Is.Empty);
 		await application.InitializeAsync();
@@ -130,7 +132,7 @@ public class DemoPluginRegistrationTests {
 	[Test]
 	public async Task ApplicationModeToggleIsAvailableAcrossBlocksAndSwitchesTheLiveHost() {
 		var form = await StartDemoAsync();
-		var application = (WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+		var application = (FormsUI.Application)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 		var toggle = application.ToolBarItems.OfType<IWinFormsLinkMenuItem>().Single(item => item.Text == "Toggle Screen Mode");
 		Assert.That(toggle.Text, Is.EqualTo("Toggle Screen Mode"));
 		toggle.OnSelect(form);
@@ -144,7 +146,7 @@ public class DemoPluginRegistrationTests {
 	[Test]
 	public async Task DemoGroupsEveryExistingScreenWithoutDuplicatingRegistrations() {
 		var form = await StartDemoAsync();
-		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 		var plugins = application.LoadedPlugins;
 		Assert.That(plugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Workspace demonstrations", "Component demonstrations" }));
 		Assert.That(plugins[0].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Workspace", "Notes" }));
@@ -152,7 +154,7 @@ public class DemoPluginRegistrationTests {
 		var contributedBlocks = plugins.SelectMany(plugin => plugin.Blocks).ToArray();
 		Assert.That(form.RegisteredBlocks, Is.EqualTo(contributedBlocks));
 		Assert.That(application.Blocks, Is.EqualTo(form.RegisteredBlocks));
-		Assert.That(((IApplication)application).LoadedPlugins, Is.EqualTo(plugins));
+		Assert.That(((SharedUI.IApplication)application).LoadedPlugins, Is.EqualTo(plugins));
 		foreach (var plugin in plugins)
 			foreach (var block in plugin.Blocks) {
 				Assert.That(block.Source, Is.SameAs(plugin));
@@ -162,9 +164,9 @@ public class DemoPluginRegistrationTests {
 		Assert.That(navigation.Items, Has.Length.EqualTo(6), "The two plugins contribute six independent block navigation buttons.");
 
 		// Preserve the original screen inventory across both launch profiles while removing duplicate menu registrations.
-		var workspaceBuilder = new WinFormsApplicationPluginBuilder();
+		var workspaceBuilder = new FormsUI.ApplicationPluginBuilder();
 		WinFormsDemoPlugin.Configure(workspaceBuilder, freshEmptyWorkspace: true);
-		var componentBuilder = new WinFormsApplicationPluginBuilder();
+		var componentBuilder = new FormsUI.ApplicationPluginBuilder();
 		WinFormsComponentDemoPlugin.Configure(componentBuilder);
 		var freshPlugins = new[] { workspaceBuilder.Build(), componentBuilder.Build() };
 		var freshBlocks = freshPlugins.SelectMany(plugin => plugin.Blocks).ToArray();
@@ -257,7 +259,7 @@ public class DemoPluginRegistrationTests {
 		static Control[] Descendants(Control control) => new[] { control }.Concat(control.Controls.Cast<Control>().SelectMany(Descendants)).ToArray();
 		static int PointCount(Control control) => Descendants(control).OfType<DataVisualization.Chart>()
 			.SelectMany(chart => chart.Series).Sum(series => series.Points.Count);
-		using (var unhosted = (WinFormsApplicationScreen)Activator.CreateInstance(screenType))
+		using (var unhosted = (ApplicationScreen)Activator.CreateInstance(screenType))
 			Assert.That(PointCount(unhosted), Is.Zero, "Construction must not seed or start chart capture before the screen lifecycle begins.");
 		var form = await StartDemoAsync();
 		var block = form.RegisteredBlocks.Single(candidate => candidate.Name == "Controls");
@@ -273,7 +275,7 @@ public class DemoPluginRegistrationTests {
 	[TestCase(true)]
 	public async Task LaunchProfileChoosesItsDefaultAndKeepsEmptyWorkspaceOutOfNavigation(bool freshEmptyWorkspace) {
 		var form = await StartDemoAsync(freshEmptyWorkspace);
-		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 		Assert.That(application.LoadedPlugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Workspace demonstrations", "Component demonstrations" }));
 		Assert.That(application.LoadedPlugins[0].Blocks.Length, Is.EqualTo(freshEmptyWorkspace ? 1 : 2));
 		Assert.That(application.LoadedPlugins[1].Blocks.Length, Is.EqualTo(4));
@@ -434,7 +436,7 @@ public class DemoPluginRegistrationTests {
 			ShowDemo(form);
 			var block = form.RegisteredBlocks.Single(candidate => candidate.Name == "Utilities");
 			var definition = block.ScreenDefinitions.Single(candidate => candidate.ScreenType == typeof(SettingsTest));
-			Assert.That(typeof(SettingsTest).GetProperty(nameof(IApplicationScreen.ScreenSettings)).PropertyType, Is.EqualTo(typeof(SettingsObject)));
+			Assert.That(typeof(SettingsTest).GetProperty(nameof(SharedUI.IApplicationScreen.ScreenSettings)).PropertyType, Is.EqualTo(typeof(SettingsObject)));
 			Assert.That(definition.Settings, Is.TypeOf<SettingsTest.SettingsDemoScreenSettings>());
 			var screen = await form.ScreenHost.OpenScreenAsync(block, definition);
 			await Task.Yield();
@@ -443,7 +445,7 @@ public class DemoPluginRegistrationTests {
 
 			var opening = form.ShowScreenOptionsAsync();
 			await Task.Yield();
-			var dialog = System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Single();
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Single();
 			try {
 				Assert.That(dialog.SelectedOwner, Is.SameAs(definition));
 				var values = dialog.Controls.Find("_propertyGrid", true).OfType<PropertyGrid>().Single().SelectedObject;
@@ -470,7 +472,7 @@ public class DemoPluginRegistrationTests {
 	public void InspectorOptionsDeclareIndependentDefaultsAndCustomEditorWithoutActivatingScreens() {
 		RunWithNativeMessageLoop(async () => {
 			var form = await StartDemoAsync();
-			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
 			var cpuDefinition = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "cpu-inspector");
 			var gpuDefinition = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "gpu-inspector");
@@ -481,7 +483,7 @@ public class DemoPluginRegistrationTests {
 			Assert.That(cpu.Grid.Columns.Select(column => column.Key), Is.EqualTo(new[] { "Id", "Name", "Summary" }));
 			Assert.That(cpu.Validate().IsSuccess, Is.True);
 			Assert.That(form.ScreenHost.OpenScreens.OfType<ScreenHostingDesignTestScreen>(), Is.Empty);
-			using var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, cpuDefinition);
+			using var dialog = new ApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, cpuDefinition);
 			dialog.Show(_dispatcher);
 			SetInspectorHeading(dialog, "CPU accepted heading");
 			Assert.That(cpu.Heading, Is.EqualTo("CPU accepted heading"));
@@ -503,7 +505,7 @@ public class DemoPluginRegistrationTests {
 		RunWithNativeMessageLoop(async () => {
 			var form = await StartDemoAsync();
 			ShowDemo(form);
-			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
 			form.ExecuteMenuItem(GetItem(form, "Workspace", "CPU Inspector"));
 			var cpu = form.ActiveScreen;
@@ -515,7 +517,7 @@ public class DemoPluginRegistrationTests {
 			GetNotesEditor(gpu).Text = "Retained GPU operational draft";
 			var definition = workspace.ScreenDefinitions.Single(item => item.StableKey == "cpu-inspector");
 			var settingsOwner = definition;
-			using var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner);
+			using var dialog = new ApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner);
 			dialog.Show(_dispatcher);
 			SetInspectorHeading(dialog, "CPU live preferences");
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
@@ -672,13 +674,13 @@ public class DemoPluginRegistrationTests {
 		RunWithNativeMessageLoop(async () => {
 			var form = await StartDemoAsync();
 			ShowDemo(form);
-			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 			var controls = form.RegisteredBlocks.Single(block => block.Name == "Controls");
 			var definition = controls.ScreenDefinitions.Single(value => value.ScreenType == typeof(LoadingCircleTestScreen));
 			var settingsOwner = definition;
 			Assert.That(form.ScreenHost.OpenScreens.OfType<LoadingCircleTestScreen>(), Is.Empty);
 
-			using (var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner)) {
+			using (var dialog = new ApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner)) {
 				dialog.Show(_dispatcher);
 				var draft = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single().SelectedObject;
 				TypeDescriptor.GetProperties(draft)[nameof(LoadingCircleTestScreen.LoadingCircleScreenSettings.AnimationStyle)].SetValue(draft, LoadingCircleAnimationStyle.Dots);
@@ -696,7 +698,7 @@ public class DemoPluginRegistrationTests {
 			Assert.That(preview.AnimationStyle, Is.EqualTo(LoadingCircleAnimationStyle.Dots));
 			Assert.That(preview.Color, Is.EqualTo(Color.FromArgb(124, 82, 189)));
 
-			using (var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner)) {
+			using (var dialog = new ApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner)) {
 				dialog.Show(_dispatcher);
 				var draft = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single().SelectedObject;
 				TypeDescriptor.GetProperties(draft)[nameof(LoadingCircleTestScreen.LoadingCircleScreenSettings.Colour)].SetValue(draft, "Graphite");
@@ -794,7 +796,7 @@ public class DemoPluginRegistrationTests {
 					Assert.That(preview.Controls.Count, Is.EqualTo(1), entry.ClassName);
 					previous = preview.Controls[0];
 					Assert.That(ControlCatalogTests.ContainsRepresentedType(previous, entry.ControlType), Is.True, entry.ClassName);
-					if (previous is WinFormsApplicationScreen screen)
+					if (previous is ApplicationScreen screen)
 						await AwaitShowcaseReadinessAsync(screen);
 					Assert.That(previous.IsHandleCreated, Is.True, entry.ClassName);
 					Assert.That(previous.Visible, Is.True, entry.ClassName);
@@ -944,7 +946,7 @@ public class DemoPluginRegistrationTests {
 	}
 
 	// Join real operational readiness without saving merely because a test observes the screen.
-	private static async Task AwaitShowcaseReadinessAsync(WinFormsApplicationScreen screen) {
+	private static async Task AwaitShowcaseReadinessAsync(ApplicationScreen screen) {
 		await Task.Yield();
 		if (screen.GetType().GetProperty("Initialization", BindingFlags.Instance | BindingFlags.Public)?.GetValue(screen) is Task initialization)
 			await initialization.WaitAsync(TimeSpan.FromSeconds(20));
@@ -977,7 +979,7 @@ public class DemoPluginRegistrationTests {
 			.Start();
 		_startedFramework = true;
 		var provider = Sphere10Framework.Instance.ServiceProvider;
-		var application = provider.GetRequiredService<IWinFormsApplication>();
+		var application = provider.GetRequiredService<FormsUI.IApplication>();
 		if (logger != null)
 			Assert.That(application.Logger, Is.SameAs(logger));
 		await application.InitializeAsync();
@@ -1014,14 +1016,14 @@ public class DemoPluginRegistrationTests {
 	}
 
 	// Editing the actual native detached property descriptor exercises the same values as the Options property grid.
-	private static void SetInspectorHeading(WinFormsApplicationSettingsDialog dialog, string heading) {
+	private static void SetInspectorHeading(ApplicationSettingsDialog dialog, string heading) {
 		var editor = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single();
 		var values = editor.SelectedObject;
 		TypeDescriptor.GetProperties(values)[nameof(ScreenHostingDesignTestScreen.ScreenHostingPreferences.Heading)].SetValue(values, heading);
 	}
 
 	// Waits for the real load/binding path, surfacing a failed preference load rather than silently skipping readiness.
-	private static async Task WaitForInspectorGridAsync(WinFormsApplicationScreen screen) {
+	private static async Task WaitForInspectorGridAsync(ApplicationScreen screen) {
 		var grid = screen.Controls.Find("PreferencesGrid", true).Cast<VisualGrid>().Single();
 		var deadline = DateTime.UtcNow.AddSeconds(10);
 		while (!grid.VisibleEntities.Any() || screen.Controls.Find("PreferenceSummary", true).Single().Text == "Loading inspector preferences...") {
@@ -1049,10 +1051,10 @@ public class DemoPluginRegistrationTests {
 		AssertNoDemoError();
 	}
 
-	private static IWinFormsApplicationMenuItem GetItem(BlockMainForm form, string blockName, string title) =>
+	private static FormsUI.IApplicationMenuItem GetItem(BlockMainForm form, string blockName, string title) =>
 		form.RegisteredBlocks.Single(block => block.Name == blockName).Menus.SelectMany(menu => menu.Items).Single(item => item.Title == title);
 
-	private static TextBox GetNotesEditor(WinFormsApplicationScreen screen) =>
+	private static TextBox GetNotesEditor(ApplicationScreen screen) =>
 		screen.Controls.Find("_notes", true).Cast<TextBox>().Single();
 
 	// Retain ordinary demo startup while capturing UI-thread failures for the originating fixture.

@@ -12,6 +12,6 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 public interface IMainForm : IApplicationIconProvider, IUserInterfaceServices,
-	IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
+	IApplicationCommandProvider<IApplicationMenu, IApplicationMenuItem> {
 }
 

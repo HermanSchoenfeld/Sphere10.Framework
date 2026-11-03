@@ -13,7 +13,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Shows typed enum choices, description attributes and an explicit empty option.</summary>
-public partial class EnumComboScreen : WinFormsApplicationScreen {
+public partial class EnumComboScreen : ApplicationScreen {
 	/// <summary>Creates the Designer-owned enum example.</summary>
 	public EnumComboScreen() {
 		InitializeComponent();

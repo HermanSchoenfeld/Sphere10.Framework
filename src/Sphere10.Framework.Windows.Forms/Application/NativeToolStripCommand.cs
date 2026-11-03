@@ -19,7 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Projects a borrowed native item without copying its callback, state, image or ownership.</summary>
 internal class NativeToolStripCommand : IWinFormsLinkMenuItem {
 	// Activate this owner's complete native hierarchy before any contextual merge changes physical ownership.
-	public NativeToolStripCommand(ToolStripItem item, IWinFormsApplicationMenu parent = null, Func<ToolStripItem, bool> isSourceItem = null) {
+	public NativeToolStripCommand(ToolStripItem item, IApplicationMenu parent = null, Func<ToolStripItem, bool> isSourceItem = null) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Item = item;
 		Parent = parent;
@@ -33,7 +33,7 @@ internal class NativeToolStripCommand : IWinFormsLinkMenuItem {
 
 	public ToolStripItem Item { get; }
 
-	public IWinFormsApplicationMenu Parent { get; set; }
+	public IApplicationMenu Parent { get; set; }
 
 	internal IReadOnlyList<NativeToolStripCommand> Children { get; }
 
@@ -104,7 +104,7 @@ internal class NativeToolStripCommand : IWinFormsLinkMenuItem {
 	}
 
 	// Preserve native separator semantics in the shared command projection.
-	internal static NativeToolStripCommand Create(ToolStripItem item, IWinFormsApplicationMenu parent = null, Func<ToolStripItem, bool> isSourceItem = null) {
+	internal static NativeToolStripCommand Create(ToolStripItem item, IApplicationMenu parent = null, Func<ToolStripItem, bool> isSourceItem = null) {
 		return item is ToolStripSeparator ? new NativeToolStripSeparator(item, parent) : new NativeToolStripCommand(item, parent, isSourceItem);
 	}
 }

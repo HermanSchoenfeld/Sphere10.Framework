@@ -84,9 +84,9 @@ public partial class VisualGridConfigurationContextMenu : ContextMenuStrip {
 	}
 
 	// The native SourceControl retains its actual parent chain, including a detached screen's host.
-	private static WinFormsApplicationScreen FindScreen(Control control) {
+	private static ApplicationScreen FindScreen(Control control) {
 		for (var current = control; current != null; current = current.Parent)
-			if (current is WinFormsApplicationScreen screen)
+			if (current is ApplicationScreen screen)
 				return screen;
 		return null;
 	}

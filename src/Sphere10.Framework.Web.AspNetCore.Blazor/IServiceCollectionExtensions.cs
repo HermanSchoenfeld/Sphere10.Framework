@@ -19,12 +19,13 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 public static class IServiceCollectionExtensions {
 	/// <summary>Starts fluent host branding, application and plugin configuration on this service collection.</summary>
-	public static BlazorApplicationBuilder BuildBlazorApplication(this IServiceCollection services) => new(services);
+	public static ApplicationBuilder BuildBlazorApplication(this IServiceCollection services) => new(services);
 
 	/// <summary>
 	/// Registers component view models and session-scoped services for both restored component generations.
@@ -32,7 +33,7 @@ public static class IServiceCollectionExtensions {
 	public static IServiceCollection AddSphere10Blazor(this IServiceCollection services) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		services.AddViewModelsFromAssembly(typeof(IServiceCollectionExtensions).Assembly);
-		services.TryAddSingleton(new BlazorApplicationOptions());
+		services.TryAddSingleton(new ApplicationOptions());
 		services.TryAddScoped<IGenericEventAggregator, BasicGenericEventAggregator>();
 		services.TryAddScoped<IModalService, ModalService>();
 		services.TryAddTransient(typeof(IBlazorWizardBuilder<>), typeof(BlazorWizardBuilder<>));
@@ -41,44 +42,44 @@ public static class IServiceCollectionExtensions {
 		services.TryAddScoped<Modal.ViewService>();
 		services.TryAddScoped<BlazorSettingsProvider>();
 		services.TryAddScoped<ISettingsProvider>(provider => provider.GetRequiredService<BlazorSettingsProvider>());
-		services.TryAddScoped<IBlazorApplicationScreenHost>(provider => new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider));
-		services.TryAddScoped<IApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
-		services.TryAddScoped<IApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
-		services.TryAddScoped<ISingleApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
-		services.TryAddScoped<ISingleApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
-		services.TryAddScoped<IMultiApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
-		services.TryAddScoped<IMultiApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
-		services.TryAddScoped<IBlazorUserInterfaceServices>(provider => new BlazorUserInterfaceServices(provider.GetRequiredService<IBlazorApplicationScreenHost>(), provider));
+		services.TryAddScoped<IApplicationScreenHost>(provider => new ApplicationScreenHost(provider.GetServices<IApplicationBlock>(), provider));
+		services.TryAddScoped<SharedUI.IApplicationScreenHost>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+		services.TryAddScoped<SharedUI.IApplicationScreenHost<IApplicationBlock, ApplicationScreenSession>>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+		services.TryAddScoped<ISingleApplicationScreenHost>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+		services.TryAddScoped<ISingleApplicationScreenHost<IApplicationBlock, ApplicationScreenSession>>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+		services.TryAddScoped<IMultiApplicationScreenHost>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+		services.TryAddScoped<IMultiApplicationScreenHost<IApplicationBlock, ApplicationScreenSession>>(provider => provider.GetRequiredService<IApplicationScreenHost>());
+		services.TryAddScoped<IBlazorUserInterfaceServices>(provider => new BlazorUserInterfaceServices(provider.GetRequiredService<IApplicationScreenHost>(), provider));
 		services.TryAddScoped<IUserInterfaceServices>(provider => provider.GetRequiredService<IBlazorUserInterfaceServices>());
-		services.TryAddScoped<IBlazorApplication>(provider => {
-			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+		services.TryAddScoped<IApplication>(provider => {
+			var application = new Application(provider.GetRequiredService<IApplicationScreenHost>(),
 				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider);
 
 			// Capture the backend before DI owns the application, including circuits that never initialize.
 			using var settings = UserSettings.UseProvider(application.Settings);
 			return application;
 		});
-		services.TryAddScoped<IApplication>(provider => provider.GetRequiredService<IBlazorApplication>());
-		services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, BlazorApplicationCircuitHandler>());
+		services.TryAddScoped<SharedUI.IApplication>(provider => provider.GetRequiredService<IApplication>());
+		services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, ApplicationCircuitHandler>());
 		services.TryAddScoped<IThemeService, ThemeService>();
 		return services;
 	}
 
 	/// <summary>Configures application-level commands once per circuit, using the same aggregate exposed through IApplication.</summary>
-	public static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure) {
+	public static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<Application> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		return AddSphere10BlazorApplication(services, configure, null);
 	}
 
 	// Builder metadata travels into each circuit's application; no application or preference values are resolved at registration time.
-	internal static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure,
+	internal static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<Application> configure,
 		string settingsKey) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		services.AddSphere10Blazor();
 		if (settingsKey != null)
 			services.Replace(ServiceDescriptor.Scoped<BlazorSettingsProvider>(provider => new BlazorSettingsProvider(provider, settingsKey)));
-		services.Replace(ServiceDescriptor.Scoped<IBlazorApplication>(provider => {
-			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+		services.Replace(ServiceDescriptor.Scoped<IApplication>(provider => {
+			var application = new Application(provider.GetRequiredService<IApplicationScreenHost>(),
 				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider, settingsKey);
 
 			// Configuration and later disposal share the provider captured while this circuit scope is alive.
@@ -133,26 +134,26 @@ public static class IServiceCollectionExtensions {
 		// Publish successful startup membership only after loading, validation and every contributed block registration.
 		foreach (var block in blocks)
 			block.Source = plugin;
-		services.AddSingleton(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<IApplicationBlock>().ToArray()));
+		services.AddSingleton(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<SharedUI.IApplicationBlock>().ToArray()));
 		registrationScope.Commit();
 		return services;
 	}
 
 	/// <summary>Registers a block definition. Actions resolve user services from the executing circuit's provider.</summary>
-	public static IServiceCollection AddApplicationBlock(this IServiceCollection services, Action<BlazorApplicationBlockBuilder> configure) {
+	public static IServiceCollection AddApplicationBlock(this IServiceCollection services, Action<ApplicationBlockBuilder> configure) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		var builder = new BlazorApplicationBlockBuilder();
+		var builder = new ApplicationBlockBuilder();
 		configure(builder);
 		return services.AddApplicationBlock(builder.Build());
 	}
 
-	public static IServiceCollection AddApplicationBlock(this IServiceCollection services, IBlazorApplicationBlock block) {
+	public static IServiceCollection AddApplicationBlock(this IServiceCollection services, IApplicationBlock block) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(block, nameof(block));
 		services.AddSphere10Blazor();
 		services.AddSingleton(block);
-		services.AddSingleton<IApplicationBlock>(block);
+		services.AddSingleton<SharedUI.IApplicationBlock>(block);
 		return services;
 	}
 
@@ -166,14 +167,14 @@ public static class IServiceCollectionExtensions {
 		return services;
 	}
 
-	private static IReadOnlyList<IBlazorApplicationBlock> GetValidatedPluginBlocks(IServiceCollection services, IBlazorPlugin plugin) {
+	private static IReadOnlyList<IApplicationBlock> GetValidatedPluginBlocks(IServiceCollection services, IBlazorPlugin plugin) {
 		var registrations = services.Where(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>))
 			.Select(descriptor => descriptor.ImplementationInstance).OfType<ApplicationPluginRegistration<IBlazorPlugin>>();
-		var blocks = BlazorApplicationBlockSnapshot.CreateBlocks(plugin.Blocks, orderByPosition: false);
-		Tools.UI.ValidatePluginRegistrations(registrations.Append(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<IApplicationBlock>().ToArray())));
-		var existingBlocks = services.Where(descriptor => descriptor.ServiceType == typeof(IBlazorApplicationBlock))
-			.Select(descriptor => descriptor.ImplementationInstance).OfType<IBlazorApplicationBlock>();
-		_ = BlazorApplicationBlockSnapshot.CreateBlocks(existingBlocks.Concat(blocks));
+		var blocks = ApplicationBlockSnapshot.CreateBlocks(plugin.Blocks, orderByPosition: false);
+		Tools.UI.ValidatePluginRegistrations(registrations.Append(new ApplicationPluginRegistration<IBlazorPlugin>(plugin, blocks.Cast<SharedUI.IApplicationBlock>().ToArray())));
+		var existingBlocks = services.Where(descriptor => descriptor.ServiceType == typeof(IApplicationBlock))
+			.Select(descriptor => descriptor.ImplementationInstance).OfType<IApplicationBlock>();
+		_ = ApplicationBlockSnapshot.CreateBlocks(existingBlocks.Concat(blocks));
 		return blocks;
 	}
 }

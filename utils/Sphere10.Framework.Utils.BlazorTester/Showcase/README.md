@@ -17,7 +17,7 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 | --- | --- | --- |
 | Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | AddPlugin, AddBlock, AddMenu, canonical screen definitions, scoped services and named initializer/finalizer registration |
 | Card/table catalogue | [CardsScreen.razor](Cards/CardsScreen.razor), [CollectionDataSource.cs](Cards/CollectionDataSource.cs) | BulkFetchDataSource, BlazorGridController, BlazorGrid, PageSizeSelector, ExpandsToFit |
-| Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | BlazorApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
+| Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | ApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
 | Native commands | [CommandsScreen.razor](Commands/CommandsScreen.razor) | Menus/ToolBarItems, merge by ID, WithChildren, EnabledWhen, WithVisibility and ViewService |
 | Guided wizard | [GuidedWorkspaceDemo.razor](Wizards/GuidedWorkspaceDemo.razor), [WorkspaceSetupFlow.cs](Wizards/WorkspaceSetupFlow.cs) | BlazorWizardBuilder, conditional UpdateSteps, BlazorWizardStep, embedded BlazorWizardHost and ViewService.WizardDialogAsync |
 | Theme studio | [ThemeStudioScreen.razor](Themes/ThemeStudioScreen.razor) | ThemeCatalog, scoped IThemeService, ThemeProvider, semantic CSS tokens and themed dialogs |

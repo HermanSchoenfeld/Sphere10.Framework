@@ -17,6 +17,7 @@ using Microsoft.JSInterop;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -100,7 +101,7 @@ public class UserSettingsCircuitTests {
 		await using var circuitScope = services.CreateAsyncScope();
 		var scoped = circuitScope.ServiceProvider;
 		var provider = scoped.GetRequiredService<ISettingsProvider>();
-		var application = scoped.GetRequiredService<IApplication>();
+		var application = scoped.GetRequiredService<SharedUI.IApplication>();
 		var handler = scoped.GetServices<CircuitHandler>().Single();
 		var observed = scoped.GetRequiredService<ProviderObservation>();
 
@@ -126,7 +127,7 @@ public class UserSettingsCircuitTests {
 		await using var services = CreateServices(new ConcurrentDictionary<string, string>());
 		var circuitScope = services.CreateAsyncScope();
 		var scoped = circuitScope.ServiceProvider;
-		var application = scoped.GetRequiredService<IApplication>();
+		var application = scoped.GetRequiredService<SharedUI.IApplication>();
 		var provider = scoped.GetRequiredService<ISettingsProvider>();
 		var observed = scoped.GetRequiredService<ProviderObservation>();
 		try {
@@ -149,7 +150,7 @@ public class UserSettingsCircuitTests {
 		var records = new ConcurrentDictionary<string, string>();
 		await using var services = CreateServices(records, configureApplication);
 		var circuitScope = services.CreateAsyncScope();
-		var application = circuitScope.ServiceProvider.GetRequiredService<IApplication>();
+		var application = circuitScope.ServiceProvider.GetRequiredService<SharedUI.IApplication>();
 		Assert.That(application.IsInitialized, Is.False);
 
 		// Do not read Settings here: the registration itself must capture it before the scope becomes unusable.

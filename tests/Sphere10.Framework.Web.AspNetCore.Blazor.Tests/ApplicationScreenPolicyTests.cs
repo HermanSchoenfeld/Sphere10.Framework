@@ -21,6 +21,7 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -35,7 +36,7 @@ public class ApplicationScreenPolicyTests {
 		services
 			.AddSphere10BlazorPlugin(new BlazorPlugin("Ordered", new[] { first, second }));
 		using var provider = services.BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { second, first }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { second, first }, provider);
 		await host.InitializeAsync();
 		var startup = host.ActiveScreen;
 		Assert.That(host.Blocks.Select(block => block.Id), Is.EqualTo(new[] { "second", "first" }));
@@ -48,7 +49,7 @@ public class ApplicationScreenPolicyTests {
 
 	[Test]
 	public async Task MarkedMenuDefaultWinsOverEarlierUnmarkedScreen() {
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen<FirstScreen>(screen => screen
@@ -70,7 +71,7 @@ public class ApplicationScreenPolicyTests {
 			)
 			.Build();
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		await host.InitializeAsync();
 		Assert.That(host.ActiveScreen.MenuItemId, Is.EqualTo("second"));
 		Assert.That(host.ActiveScreen.Definition, Is.SameAs(host.ActiveScreen.Block.DefaultScreenDefinition));
@@ -173,7 +174,7 @@ public class ApplicationScreenPolicyTests {
 			Block("second", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton),
 			Block("empty", typeof(EmptyScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty)
 		};
-		using var host = new BlazorApplicationScreenHost(blocks, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(blocks, provider);
 		await host.InitializeAsync();
 		var original = host.ActiveScreen;
 		Assert.That(original.Block.Id, Is.EqualTo("first"));
@@ -191,12 +192,12 @@ public class ApplicationScreenPolicyTests {
 		var blocks = new[] {
 			Block("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton),
 			Block("empty", typeof(EmptyScreen), ScreenActivationMode.SingleInstance, ScreenKind.Empty),
-			new BlazorApplicationBlockBuilder()
+			new ApplicationBlockBuilder()
 				.WithId("unrelated")
 				.WithName("Unrelated")
 				.Build()
 		};
-		using var host = new BlazorApplicationScreenHost(blocks, provider);
+		using var host = new BlazorUI.ApplicationScreenHost(blocks, provider);
 		var empty = await host.ActivateBlockAsync("empty");
 		var probe = new EmptyScreen { AllowLeave = false };
 		await host.AttachScreenAsync(empty.Id, probe);
@@ -228,22 +229,22 @@ public class ApplicationScreenPolicyTests {
 	[Test]
 	public void UnspecifiedSyntheticDefaultCannotConflictWithPermanentSingleton() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		var defaultBlock = new BlazorApplicationBlock { Id = "default", Title = "Default", DefaultScreen = typeof(PermanentScreen) };
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		var defaultBlock = new ApplicationBlock { Id = "default", Title = "Default", DefaultScreen = typeof(PermanentScreen) };
 		var declared = Block("declared", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton);
-		Assert.That(() => new BlazorApplicationScreenHost(new[] { defaultBlock, declared }, provider), Throws.ArgumentException);
+		Assert.That(() => new BlazorUI.ApplicationScreenHost(new[] { defaultBlock, declared }, provider), Throws.ArgumentException);
 	}
 
 	[Test]
 	public void BuildersPreserveFlagsAndRejectPermanentEmptyCombinations() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = new BlazorApplicationScreenHost(provider);
-		var item = (BlazorScreenMenuItem)new BlazorApplicationMenuItemBuilder()
+		using var host = new BlazorUI.ApplicationScreenHost(provider);
+		var item = (BlazorScreenMenuItem)new ApplicationMenuItemBuilder()
 			.WithId("empty")
 			.WithText("Empty")
 			.WithScreen<EmptyScreen>()
 			.Build();
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("work")
 			.WithName("Work")
 			.AddScreen<EmptyScreen>(screen => screen
@@ -258,12 +259,12 @@ public class ApplicationScreenPolicyTests {
 				.AddItem(item)
 			)
 			.Build();
-		using var metadataHost = new BlazorApplicationScreenHost(new[] { block }, provider);
+		using var metadataHost = new BlazorUI.ApplicationScreenHost(new[] { block }, provider);
 		var copy = metadataHost.AvailableBlocks.Single().Menus.Single().Items.OfType<BlazorScreenMenuItem>().Single();
 		Assert.That(copy.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		Assert.That(copy.ScreenDefinition, Is.SameAs(metadataHost.AvailableBlocks.Single().DefaultScreenDefinition));
 		Assert.That(copy.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
-		Assert.That(() => new BlazorApplicationBlockBuilder()
+		Assert.That(() => new ApplicationBlockBuilder()
 			.WithName("Invalid")
 			.AddScreen<EmptyScreen>(screen => screen
 				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
@@ -283,7 +284,7 @@ public class ApplicationScreenPolicyTests {
 			.AddApplicationBlock(Block("empty", typeof(RenderedEmptyScreen), mode, ScreenKind.Empty));
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.InitializeAsync();
 			await host.CloseScreenAsync(host.ActiveScreen.Id);
@@ -347,31 +348,31 @@ public class ApplicationScreenPolicyTests {
 			return view.ToHtmlString();
 		});
 		Assert.That(html, Does.Contain(error));
-		Assert.That(provider.GetRequiredService<IBlazorApplicationScreenHost>().OpenScreens.Any(session => session.IsPermanent), Is.True);
+		Assert.That(provider.GetRequiredService<BlazorUI.IApplicationScreenHost>().OpenScreens.Any(session => session.IsPermanent), Is.True);
 	}
 
-	private static BlazorApplicationScreenHost CreateHost(IServiceProvider provider, bool permanent = false, ScreenActivationMode emptyMode = ScreenActivationMode.SingleInstance) {
+	private static BlazorUI.ApplicationScreenHost CreateHost(IServiceProvider provider, bool permanent = false, ScreenActivationMode emptyMode = ScreenActivationMode.SingleInstance) {
 		var blocks = new[] {
 			Block("normal", typeof(FirstScreen), ScreenActivationMode.SingleInstance),
 			Block("empty", typeof(EmptyScreen), emptyMode, ScreenKind.Empty),
 			Block("permanent", typeof(PermanentScreen), ScreenActivationMode.PermanentSingleton)
 		};
-		return new BlazorApplicationScreenHost(permanent ? blocks : blocks.Take(2), provider);
+		return new BlazorUI.ApplicationScreenHost(permanent ? blocks : blocks.Take(2), provider);
 	}
 
-	private static BlazorApplicationBlock Block(string id, Type type, ScreenActivationMode? mode = null, ScreenKind kind = ScreenKind.Normal, int position = 0) =>
-		new BlazorApplicationBlockBuilder()
+	private static ApplicationBlock Block(string id, Type type, ScreenActivationMode? mode = null, ScreenKind kind = ScreenKind.Normal, int position = 0) =>
+		new ApplicationBlockBuilder()
 			.WithId(id)
 			.WithName(id)
 			.WithPosition(position)
-			.AddScreen(new BlazorApplicationScreenDefinition(type, id, mode, kind))
+			.AddScreen(new BlazorUI.ApplicationScreenDefinition(type, id, mode, kind))
 			.WithDefaultScreen(type)
 			.Build();
 
 	public class RenderedScreenState {
 		public TaskCompletionSource<RenderedEmptyScreen> Attached { get; set; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	}
-	public class RenderedEmptyScreen : BlazorApplicationScreen {
+	public class RenderedEmptyScreen : ApplicationScreen {
 		[Inject] public RenderedScreenState State { get; set; }
 		public TaskCompletionSource<bool> Disposed { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 		public int Disposals { get; private set; }
@@ -385,25 +386,25 @@ public class ApplicationScreenPolicyTests {
 			return ValueTask.CompletedTask;
 		}
 	}
-	public class FirstScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class FirstScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 	}
-	public class SecondScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class SecondScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 	}
-	public class PermanentScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class PermanentScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 	}
-	public class EmptyScreen : ComponentBase, IBlazorApplicationScreen {
-		public IBlazorApplicationScreenHost Host { get; set; }
+	public class EmptyScreen : ComponentBase, BlazorUI.IApplicationScreen {
+		public BlazorUI.IApplicationScreenHost Host { get; set; }
 
-		public IBlazorApplicationBlock Block { get; set; }
+		public BlazorUI.IApplicationBlock Block { get; set; }
 
 		public bool AllowLeave { get; set; } = true;
 		public int Activations { get; private set; }

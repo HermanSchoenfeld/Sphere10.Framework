@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Demonstrates artificial database key descriptions and their XML persistence.</summary>
-public partial class TestArtificialKeysScreen : WinFormsApplicationScreen {
+public partial class TestArtificialKeysScreen : ApplicationScreen {
 	/// <summary>Creates the local schema example without opening a database.</summary>
 	public TestArtificialKeysScreen() {
 		InitializeComponent();

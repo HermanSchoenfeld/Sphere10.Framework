@@ -8,7 +8,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 *@
 
-@inherits BlazorApplicationScreen
+@inherits ApplicationScreen
 @inject CollectionCatalogue Catalogue
 
 <section class="collection-gallery" data-showcase="cards">
@@ -234,6 +234,6 @@
 		_selectedId = item.Id;
 		var definition = Block.ScreenDefinitions.Single(definition => definition.ScreenType == typeof(CollectionDetailScreen));
 		await Host.OpenScreenAsync(Block, definition,
-			new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(CollectionDetailScreen.CollectionId)] = item.Id }, item.Id));
+			new ApplicationScreenActivation(new Dictionary<string, object> { [nameof(CollectionDetailScreen.CollectionId)] = item.Id }, item.Id));
 	}
 }

@@ -32,20 +32,20 @@ remain ordinary concrete classes when inheritance is not their purpose.
 For a current example, [IApplicationMenu](../../../src/Sphere10.Framework.Application/UI/IApplicationMenu.cs)
 defines the contract, [ApplicationMenuBase](../../../src/Sphere10.Framework.Application/UI/ApplicationMenuBase.cs)
 implements item storage and ownership, and
-[WinFormsApplicationMenu](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplicationMenu.cs)
+[ApplicationMenu](../../../src/Sphere10.Framework.Windows.Forms/Application/ApplicationMenu.cs)
 adds native presentation metadata and a directly constructible product:
 
 ```csharp
-using Sphere10.Framework.Application.UI;
+using SharedUI = Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
-using var menu = new WinFormsApplicationMenu("Operations");
-IApplicationMenu contract = menu;
+using var menu = new ApplicationMenu("Operations");
+SharedUI.IApplicationMenu contract = menu;
 ```
 
 The base is abstract even though it implements every required menu member.
 The concrete menu is also consumed by
-[WinFormsApplicationMenuBuilder](../../../src/Sphere10.Framework.Windows.Forms/Application/WinFormsApplicationMenuBuilder.cs).
+[ApplicationMenuBuilder](../../../src/Sphere10.Framework.Windows.Forms/Application/ApplicationMenuBuilder.cs).
 It does not need an additional empty concrete wrapper or a custom hierarchy to
 make that contract usable.
 

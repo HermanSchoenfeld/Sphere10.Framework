@@ -61,7 +61,7 @@ public class ApplicationSettingsStoreTests {
 		await actual.SaveAsync();
 		var file = Directory.GetFiles(_directory).Single();
 		var payload = File.ReadAllText(file);
-		Assert.That(Path.GetFileName(file), Does.Not.Contain("WinFormsApplicationSettingsRecord"));
+		Assert.That(Path.GetFileName(file), Does.Not.Contain("ApplicationSettingsRecord"));
 		Assert.That(payload, Does.Not.Contain("SectionVersions"));
 		if (!string.IsNullOrEmpty(secret))
 			Assert.That(payload, Does.Not.Contain(secret));
@@ -140,7 +140,7 @@ public class ApplicationSettingsStoreTests {
 	#region Inner Types
 
 	// The operational screen is never constructed by these record-level checks.
-	public class PreferenceScreen : WinFormsApplicationScreen {
+	public class PreferenceScreen : ApplicationScreen {
 		public override Preferences ScreenSettings {
 			get {
 				return (Preferences)base.ScreenSettings;

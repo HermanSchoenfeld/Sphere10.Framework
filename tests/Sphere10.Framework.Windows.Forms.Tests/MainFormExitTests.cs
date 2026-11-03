@@ -333,7 +333,7 @@ public class MainFormExitTests {
 		Assert.That(Completed, Is.True, "The message loop must run the asynchronous exit test to completion.");
 	}
 
-	private sealed class ExitProbeScreen : WinFormsApplicationScreen {
+	private sealed class ExitProbeScreen : ApplicationScreen {
 		public ExitProbeScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
 
 		[DefaultValue(false)] public bool CancelHide { get; set; }

@@ -11,5 +11,5 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Separates native menu or toolbar command groups without an executable callback.</summary>
-public sealed class WinFormsMenuSeparator : WinFormsApplicationMenuItemBase, IApplicationMenuSeparator {
+public sealed class WinFormsMenuSeparator : ApplicationMenuItemBase, IApplicationMenuSeparator {
 }

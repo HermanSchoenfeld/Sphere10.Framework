@@ -21,7 +21,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Exercises the existing WAMS algorithms with bounded, owned background workloads.</summary>
-public partial class WAMSTestScreen : WinFormsApplicationScreen {
+public partial class WAMSTestScreen : ApplicationScreen {
 	private CancellationTokenSource _operationCancellation;
 
 	/// <summary>Creates parameter choices without generating keys or replacing process hash providers.</summary>

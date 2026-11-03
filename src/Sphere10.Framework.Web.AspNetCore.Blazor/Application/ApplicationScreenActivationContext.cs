@@ -8,12 +8,13 @@
 
 using System;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Provides the owning circuit and registration when preparing a new renderer-owned screen.</summary>
-public sealed class BlazorApplicationScreenActivationContext {
-	public BlazorApplicationScreenActivationContext(IServiceProvider services, IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
+public sealed class ApplicationScreenActivationContext {
+	public ApplicationScreenActivationContext(IServiceProvider services, IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.ArgumentNotNull(definition, nameof(definition));
@@ -24,7 +25,7 @@ public sealed class BlazorApplicationScreenActivationContext {
 
 	public IServiceProvider Services { get; }
 
-	public IBlazorApplicationBlock Block { get; }
+	public IApplicationBlock Block { get; }
 
-	public ApplicationScreenDefinition Definition { get; }
+	public SharedUI.ApplicationScreenDefinition Definition { get; }
 }

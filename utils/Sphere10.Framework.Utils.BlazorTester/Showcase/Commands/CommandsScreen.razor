@@ -11,8 +11,9 @@
 @using System.Threading
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @using Sphere10.Framework.Web.AspNetCore.Blazor.Modal
+@using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor
 @namespace Sphere10.Framework.Utils.BlazorTester.Showcase.Commands
-@inherits BlazorApplicationScreen
+@inherits ApplicationScreen
 @inject ViewService ViewService
 
 <section class="commands-showcase" data-showcase="commands">
@@ -91,7 +92,7 @@
 
 	<details class="commands-api">
 		<summary>Framework APIs behind this example</summary>
-		<p><code>BlazorApplicationScreen.Menus</code> contributes File and Tools; <code>ToolBarItems</code> shares the Preview and Export definitions.</p>
+		<p><code>ApplicationScreen.Menus</code> contributes File and Tools; <code>ToolBarItems</code> shares the Preview and Export definitions.</p>
 		<p><code>WithChildren</code> creates the two-level Export menu, <code>EnabledWhen</code> reads this screen's state, and <code>WithVisibility</code> controls the optional action.</p>
 		<p><code>NotifyScreenChanged()</code> refreshes the host after context changes; <code>ViewService.DialogAsync</code> displays the preview using the active theme.</p>
 	</details>
@@ -105,9 +106,9 @@
 	};
 	private readonly HashSet<string> _reviewedDocuments = new();
 	private readonly List<string> _activity = new() { "Ready. Select a document and explore the host menus." };
-	private BlazorApplicationMenuItemBase _previewCommand;
-	private BlazorApplicationMenuItemBase _exportCommand;
-	private IBlazorApplicationMenu[] _menus;
+	private BlazorUI.ApplicationMenuItemBase _previewCommand;
+	private BlazorUI.ApplicationMenuItemBase _exportCommand;
+	private BlazorUI.IApplicationMenu[] _menus;
 	private bool _menuDiagnosticsVisibility;
 	private int _selectedSample = -1;
 	private bool _allowReview = true;
@@ -117,7 +118,7 @@
 
 	public override string Title => "Menus & commands";
 
-	public override IBlazorApplicationMenu[] Menus {
+	public override BlazorUI.IApplicationMenu[] Menus {
 		get {
 			if (_menus == null || _menuDiagnosticsVisibility != _showDiagnostics) {
 				if (_menus != null)
@@ -131,14 +132,14 @@
 		}
 	}
 
-	private IBlazorApplicationMenu[] CreateMenus() => new IBlazorApplicationMenu[] {
-		new BlazorApplicationMenuBuilder()
+	private BlazorUI.IApplicationMenu[] CreateMenus() => new BlazorUI.IApplicationMenu[] {
+		new ApplicationMenuBuilder()
 			.WithId("file")
 			.WithText("File")
 			.AddItem(PreviewCommand)
 			.AddItem(ExportCommand)
 			.Build(),
-		new BlazorApplicationMenuBuilder()
+		new ApplicationMenuBuilder()
 			.WithId("tools")
 			.WithText("Tools")
 			.AddItem(item => item
@@ -166,7 +167,7 @@
 			.Build()
 	};
 
-	public override IBlazorApplicationMenuItem[] ToolBarItems => new IBlazorApplicationMenuItem[] { PreviewCommand, ExportCommand };
+	public override BlazorUI.IApplicationMenuItem[] ToolBarItems => new BlazorUI.IApplicationMenuItem[] { PreviewCommand, ExportCommand };
 
 	private bool HasSample => _selectedSample >= 0 && _selectedSample < _samples.Length;
 
@@ -176,7 +177,7 @@
 
 	private bool CanReview => HasSample && _allowReview && !IsReviewed;
 
-	private BlazorApplicationMenuItemBase PreviewCommand => _previewCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase PreviewCommand => _previewCommand ??= new ApplicationMenuItemBuilder()
 		.WithId("showcase-preview")
 		.WithText("Preview document")
 		.WithIcon("fas fa-eye")
@@ -184,19 +185,19 @@
 		.WithAction(PreviewAsync)
 		.Build();
 
-	private BlazorApplicationMenuItemBase ExportCommand => _exportCommand ??= new BlazorApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase ExportCommand => _exportCommand ??= new ApplicationMenuItemBuilder()
 		.WithId("showcase-export")
 		.WithText("Export")
 		.WithIcon("fas fa-file-export")
 		.EnabledWhen(() => HasSample)
 		.WithChildren(
-			new BlazorApplicationMenuItemBuilder()
+			new ApplicationMenuItemBuilder()
 				.WithId("showcase-export-documents")
 				.WithText("Documents")
 				.WithIcon("fas fa-file-alt")
 				.WithChildren(CreateExportCommand("markdown", "Markdown"), CreateExportCommand("text", "Plain text"))
 				.Build(),
-			new BlazorApplicationMenuItemBuilder()
+			new ApplicationMenuItemBuilder()
 				.WithId("showcase-export-data")
 				.WithText("Structured data")
 				.WithIcon("fas fa-table")
@@ -205,7 +206,7 @@
 		)
 		.Build();
 
-	private BlazorApplicationMenuItemBase CreateExportCommand(string format, string title) => new BlazorApplicationMenuItemBuilder()
+	private BlazorUI.ApplicationMenuItemBase CreateExportCommand(string format, string title) => new ApplicationMenuItemBuilder()
 		.WithId($"showcase-export-{format}")
 		.WithText(title)
 		.EnabledWhen(() => HasSample)

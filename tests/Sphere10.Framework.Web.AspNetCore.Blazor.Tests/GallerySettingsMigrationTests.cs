@@ -25,6 +25,7 @@ using Sphere10.Framework.Utils.BlazorTester.Layouts;
 using Sphere10.Framework.Utils.BlazorTester.Modern.UI.Controls;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -48,7 +49,7 @@ public class GallerySettingsMigrationTests {
 		services.AddSingleton<ISettingsProvider>(store);
 		services.AddSingleton<IComponentActivator, QueryCaptureActivator>();
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -88,7 +89,7 @@ public class GallerySettingsMigrationTests {
 		services.AddSingleton<IJSRuntime>(runtime);
 		services.AddSingleton<ISettingsProvider>(store);
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -99,7 +100,7 @@ public class GallerySettingsMigrationTests {
 			}));
 		});
 
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var block = host.AvailableBlocks.Single(item => item.Id == "components");
 		var definition = block.ScreenDefinitions.Single(item => item.ScreenType == typeof(ComponentScreen));
 		var values = (ComponentScreen.GallerySettings)definition.Settings;

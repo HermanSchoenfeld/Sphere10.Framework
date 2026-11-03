@@ -31,6 +31,7 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 using ModernWizard = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -65,11 +66,11 @@ public class GalleryRenderingTests {
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {
 			var parameters = ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(RouteView.RouteData)] = new RouteData(typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace), new Dictionary<string, object>()),
@@ -109,7 +110,7 @@ public class GalleryRenderingTests {
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<RouteView>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(RouteView.RouteData)] = new RouteData(typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace), new Dictionary<string, object>()),
@@ -132,7 +133,7 @@ public class GalleryRenderingTests {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
 		using var provider = services.BuildServiceProvider();
-		var metadataHost = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var metadataHost = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		Assert.That(DemoNavigation.Aliases.Select(alias => alias.Route), Is.Unique);
 		foreach (var alias in DemoNavigation.Aliases) {
 			Assert.That(routes[alias.Route].ToArray(), Is.EqualTo(new[] { typeof(Sphere10.Framework.Utils.BlazorTester.Application.Workspace) }), alias.Route);
@@ -171,7 +172,7 @@ public class GalleryRenderingTests {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services, permanentScreen, emptyScreenLifetime);
 		using var provider = services.BuildServiceProvider();
-		var metadataHost = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var metadataHost = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var plugins = provider.GetServices<IBlazorPlugin>().ToArray();
 		Assert.That(plugins.SelectMany(plugin => plugin.Blocks).Select(block => block.Id), Is.EquivalentTo(metadataHost.AvailableBlocks.Select(block => block.Id)),
 			"The registered demo plugins must supply the workspace blocks through the existing catalog.");
@@ -275,11 +276,11 @@ public class GalleryRenderingTests {
 		Program.ConfigureServices(services);
 		services.AddSingleton<ISettingsProvider, EmptySettingsProvider>();
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
+		var host = provider.GetRequiredService<BlazorUI.IApplicationScreenHost>();
 		var action = host.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await host.ActivateBlockAsync("workspace");

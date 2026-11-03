@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Explores installed culture and region information without changing the machine locale.</summary>
-public partial class RegionToolTestScreen : WinFormsApplicationScreen {
+public partial class RegionToolTestScreen : ApplicationScreen {
 	/// <summary>Creates the table and filter without querying an external service.</summary>
 	public RegionToolTestScreen() {
 		InitializeComponent();

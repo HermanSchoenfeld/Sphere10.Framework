@@ -19,7 +19,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 /// <summary>Compares native text rendering and preserves the original character/EPASA generation examples.</summary>
-public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
+public partial class TextAreaTestsScreen : ApplicationScreen {
 	public const string Pascal64CharSet = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+{}[]_:`|<>,.?/~";
 	public const string Pascal64StartCharSet = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+{}[]_:`|<>,.?/~";
 	public const string HexStringCharSet = "0123456789abcdef";

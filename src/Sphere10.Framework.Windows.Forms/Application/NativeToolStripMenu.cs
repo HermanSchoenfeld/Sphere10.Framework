@@ -14,7 +14,7 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Exposes an owner's activated menu membership while retaining the original native controls and their live state.</summary>
-internal sealed class NativeToolStripMenu : IWinFormsApplicationMenu {
+internal sealed class NativeToolStripMenu : IApplicationMenu {
 	private readonly NativeToolStripCommand _header;
 
 	public NativeToolStripMenu(ToolStripMenuItem item, Func<ToolStripItem, bool> isSourceItem) {
@@ -33,7 +33,7 @@ internal sealed class NativeToolStripMenu : IWinFormsApplicationMenu {
 		}
 	}
 
-	public IWinFormsApplicationBlock Parent { get; set; }
+	public IApplicationBlock Parent { get; set; }
 
 	public string Text {
 		get {
@@ -53,9 +53,9 @@ internal sealed class NativeToolStripMenu : IWinFormsApplicationMenu {
 		}
 	}
 
-	public IWinFormsApplicationMenuItem[] Items {
+	public IApplicationMenuItem[] Items {
 		get {
-			return _header.Children.Cast<IWinFormsApplicationMenuItem>().ToArray();
+			return _header.Children.Cast<IApplicationMenuItem>().ToArray();
 		}
 	}
 

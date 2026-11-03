@@ -14,7 +14,7 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Edits one actual settings object; the containing dialog retains validation, persistence and acceptance ownership.</summary>
-public interface IBlazorApplicationSettingsEditor {
+public interface IApplicationSettingsEditor {
 	/// <summary>Expose this as a component parameter and edit only this actual settings value.</summary>
 	object Value { get; set; }
 

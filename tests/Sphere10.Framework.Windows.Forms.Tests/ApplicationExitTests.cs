@@ -21,13 +21,15 @@ using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.WinFormsTester;
 using FormsApplication = System.Windows.Forms.Application;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
-public class WinFormsApplicationExitTests {
+public class ApplicationExitTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ActiveCompressionComparisonDoesNotPreventNativeOrApplicationExit(bool nativeClose) {
@@ -422,7 +424,7 @@ public class WinFormsApplicationExitTests {
 		using var mainForm = new ExitProbeMainForm { Opacity = 1 };
 		if (!showConfirmation)
 			mainForm.Confirmation = () => Task.FromResult(true);
-		using var application = new ExitProbeApplication(mainForm, Array.Empty<IWinFormsApplicationBlock>());
+		using var application = new ExitProbeApplication(mainForm, Array.Empty<FormsUI.IApplicationBlock>());
 		var uiThread = Environment.CurrentManagedThreadId;
 		var completedThread = 0;
 		application.Changed += () => {
@@ -559,10 +561,10 @@ public class WinFormsApplicationExitTests {
 		throw new AssertionException("The expected application exit state was not reached.");
 	}
 
-	private static void RunWithMessageLoop(Func<ExitProbeApplication, ExitProbeMainForm, Task> test, params IWinFormsApplicationBlock[] blocks)
+	private static void RunWithMessageLoop(Func<ExitProbeApplication, ExitProbeMainForm, Task> test, params FormsUI.IApplicationBlock[] blocks)
 		=> RunWithMessageLoop(null, test, blocks);
 
-	private static void RunWithMessageLoop(Action<ExitProbeApplication> configure, Func<ExitProbeApplication, ExitProbeMainForm, Task> test, params IWinFormsApplicationBlock[] blocks) {
+	private static void RunWithMessageLoop(Action<ExitProbeApplication> configure, Func<ExitProbeApplication, ExitProbeMainForm, Task> test, params FormsUI.IApplicationBlock[] blocks) {
 		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
 		Sphere10Framework.Instance
 			.Build()
@@ -606,20 +608,20 @@ public class WinFormsApplicationExitTests {
 		Assert.That(completed, Is.True, "The native message loop must complete the exit scenario.");
 	}
 
-	private sealed class ExitProbeApplication : WinFormsApplication {
-		public ExitProbeApplication(BlockMainForm mainForm, IEnumerable<IWinFormsApplicationBlock> blocks)
+	private sealed class ExitProbeApplication : FormsUI.Application {
+		public ExitProbeApplication(BlockMainForm mainForm, IEnumerable<FormsUI.IApplicationBlock> blocks)
 			: base(mainForm, blocks) { }
 
 		public void ConfigureFinalizers(IEnumerable<IApplicationFinalizer> finalizers) => SetFinalizers(finalizers);
 	}
 
-	private sealed class ExitProbeBlock : WinFormsApplicationBlock {
+	private sealed class ExitProbeBlock : ApplicationBlock {
 		public bool AllowExit { get; set; } = true;
 		public int ExitCheckCount { get; private set; }
 		public int ExitCheckThread { get; private set; }
-		public IApplication CheckedApplication { get; private set; }
+		public SharedUI.IApplication CheckedApplication { get; private set; }
 
-		public override Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
+		public override Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default) {
 			ExitCheckCount++;
 			ExitCheckThread = Environment.CurrentManagedThreadId;
 			CheckedApplication = application;
@@ -627,7 +629,7 @@ public class WinFormsApplicationExitTests {
 		}
 	}
 
-	private sealed class ExitProbeScreen : WinFormsApplicationScreen {
+	private sealed class ExitProbeScreen : ApplicationScreen {
 		public ExitProbeScreen() => ActivationMode = ScreenActivationMode.MultiInstance;
 
 		[DefaultValue(false)] public bool CancelHide { get; set; }

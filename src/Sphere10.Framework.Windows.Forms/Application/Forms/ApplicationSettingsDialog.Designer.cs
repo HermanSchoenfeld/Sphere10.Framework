@@ -8,7 +8,7 @@
 
 namespace Sphere10.Framework.Windows.Forms;
 
-partial class WinFormsApplicationSettingsDialog {
+partial class ApplicationSettingsDialog {
 	private System.ComponentModel.IContainer components = new System.ComponentModel.Container();
 	private System.Windows.Forms.TableLayoutPanel _layout;
 	private System.Windows.Forms.SplitContainer _split;
@@ -158,7 +158,7 @@ partial class WinFormsApplicationSettingsDialog {
 		ClientSize = new System.Drawing.Size(980, 660);
 		MinimumSize = new System.Drawing.Size(820, 480);
 		Controls.Add(_layout);
-		Name = "WinFormsApplicationSettingsDialog";
+		Name = "ApplicationSettingsDialog";
 		Text = "Screen Options";
 		StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 		ShowInTaskbar = false;

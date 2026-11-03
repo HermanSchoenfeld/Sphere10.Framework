@@ -25,6 +25,7 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.ObjectSpaces;
 using Sphere10.Framework.Utils.WinFormsTester;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -54,7 +55,7 @@ public class TesterDataShowcaseTests {
 		Assert.That(typeof(ObjectSpaceScreen.ScreenSettings).FullName, Is.EqualTo("Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+ScreenSettings"));
 		Assert.That(typeof(ObjectSpaceScreenBase).IsAbstract, Is.False);
 		Assert.That(typeof(ObjectSpaceScreenBase).IsGenericType, Is.False);
-		using var block = new WinFormsApplicationBlockBuilder()
+		using var block = new ApplicationBlockBuilder()
 			.WithName("ObjectSpace")
 			.AddScreen<ObjectSpaceScreen>("ObjectSpace")
 			.Build();
@@ -65,7 +66,7 @@ public class TesterDataShowcaseTests {
 	[TestCaseSource(nameof(TypedSettingsScreenTypes))]
 	public void TypedScreenSettingsRemainHiddenFromDesignerSerialization(Type screenType) {
 		var settingsType = Tools.UI.GetScreenSettingsType(screenType);
-		var descriptor = TypeDescriptor.GetProperties(screenType)[nameof(WinFormsApplicationScreen.ScreenSettings)];
+		var descriptor = TypeDescriptor.GetProperties(screenType)[nameof(ApplicationScreen.ScreenSettings)];
 		Assert.That(descriptor, Is.Not.Null);
 		Assert.That(typeof(SettingsObject).IsAssignableFrom(descriptor.PropertyType), Is.True);
 		Assert.That(descriptor.PropertyType.IsAssignableFrom(settingsType ?? typeof(SettingsObject)), Is.True);
@@ -87,7 +88,7 @@ public class TesterDataShowcaseTests {
 			var files = new LegacyPathProvider(directory);
 			UserSettings.Provider = files;
 			await using (var services = CreatePreferenceApplication(files, screenType)) {
-				var application = services.GetRequiredService<IWinFormsApplication>();
+				var application = services.GetRequiredService<FormsUI.IApplication>();
 				await application.InitializeAsync();
 				var main = (PreferenceMainForm)services.GetRequiredService<IMainForm>();
 				main.Show(owner);
@@ -104,7 +105,7 @@ public class TesterDataShowcaseTests {
 			var fresh = new LegacyPathProvider(directory);
 			UserSettings.Provider = fresh;
 			await using var restarted = CreatePreferenceApplication(fresh, screenType);
-			var restartedApplication = restarted.GetRequiredService<IWinFormsApplication>();
+			var restartedApplication = restarted.GetRequiredService<FormsUI.IApplication>();
 			await restartedApplication.InitializeAsync();
 			var restartedMain = (PreferenceMainForm)restarted.GetRequiredService<IMainForm>();
 			restartedMain.Show(owner);
@@ -175,7 +176,7 @@ public class TesterDataShowcaseTests {
 			UserSettings.Provider = legacy;
 
 			await using (var services = CreatePreferenceApplication(legacy)) {
-				var application = services.GetRequiredService<IWinFormsApplication>();
+				var application = services.GetRequiredService<FormsUI.IApplication>();
 				await application.InitializeAsync();
 				var main = (PreferenceMainForm)services.GetRequiredService<IMainForm>();
 				main.Show(owner);
@@ -187,7 +188,7 @@ public class TesterDataShowcaseTests {
 				Assert.That(legacy.LegacyReads, Is.EqualTo(1));
 				Assert.That(legacy.LegacyReadThread, Is.Not.EqualTo(Environment.CurrentManagedThreadId));
 				Assert.That(legacy.Writes, Is.Zero, "Restoration must not write either the old setting or the new root record.");
-				using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+				using var dialog = new ApplicationSettingsDialog(application, selectedOwner: definition);
 				dialog.Show(owner);
 				if (reset)
 					dialog.ResetSelectedDefaults();
@@ -206,7 +207,7 @@ public class TesterDataShowcaseTests {
 			var fresh = new LegacyPathProvider(directory);
 			UserSettings.Provider = fresh;
 			await using var restarted = CreatePreferenceApplication(fresh);
-			var restartedApplication = restarted.GetRequiredService<IWinFormsApplication>();
+			var restartedApplication = restarted.GetRequiredService<FormsUI.IApplication>();
 			await restartedApplication.InitializeAsync();
 			var restartedMain = (PreferenceMainForm)restarted.GetRequiredService<IMainForm>();
 			restartedMain.Show(owner);
@@ -242,11 +243,11 @@ public class TesterDataShowcaseTests {
 			using var restore = Tools.Scope.ExecuteOnDispose(() => UserSettings.Provider = previous);
 			var provider = new LegacyPathProvider(directory);
 			UserSettings.Provider = provider;
-			using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill };
+			using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill };
 			owner.Controls.Add(host);
 			using var screen = screenType == typeof(ScreenHostingDesignTestScreen)
 				? new ScreenHostingDesignTestScreen("Ad hoc inspector", includePreferences: true)
-				: (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
+				: (ApplicationScreen)Activator.CreateInstance(screenType);
 			Assert.That(host.ShowScreen(screen), Is.True);
 			await Task.Yield();
 			if (screen is VisualGridTestScreen grid)
@@ -423,7 +424,7 @@ public class TesterDataShowcaseTests {
 				typeof(VisualGridTestScreen),
 				new VisualGridTestScreen.VisualGridShowcaseSettings()
 			);
-			var application = services.GetRequiredService<IWinFormsApplication>();
+			var application = services.GetRequiredService<FormsUI.IApplication>();
 			await application.InitializeAsync();
 			var main = (PreferenceMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
@@ -501,8 +502,8 @@ public class TesterDataShowcaseTests {
 
 	// Compose a real native application/catalog around one declared demonstration registration.
 	private static ServiceProvider CreatePreferenceApplication(ISettingsProvider provider, Type screenType = null, SettingsObject settings = null) {
-		var block = new WinFormsApplicationBlock { Name = "ObjectSpace legacy path" };
-		var definition = new WinFormsApplicationScreenDefinition(screenType ?? typeof(ObjectSpaceScreen), "Demonstration", settings: settings);
+		var block = new ApplicationBlock { Name = "ObjectSpace legacy path" };
+		var definition = new FormsUI.ApplicationScreenDefinition(screenType ?? typeof(ObjectSpaceScreen), "Demonstration", settings: settings);
 		block.AddScreenDefinition(definition);
 		block.DefaultScreenDefinition = definition;
 		var services = new ServiceCollection();
@@ -516,8 +517,8 @@ public class TesterDataShowcaseTests {
 	// Metadata discovery never constructs the operational controls or invokes their settings getters.
 	private static IEnumerable<Type> TypedSettingsScreenTypes() {
 		return typeof(EmailTestScreen).Assembly.GetExportedTypes()
-			.Where(type => typeof(WinFormsApplicationScreen).IsAssignableFrom(type)
-				&& type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Any(property => property.Name == nameof(WinFormsApplicationScreen.ScreenSettings) && property.PropertyType != typeof(object)))
+			.Where(type => typeof(ApplicationScreen).IsAssignableFrom(type)
+				&& type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Any(property => property.Name == nameof(ApplicationScreen.ScreenSettings) && property.PropertyType != typeof(object)))
 			.OrderBy(type => type.FullName);
 	}
 

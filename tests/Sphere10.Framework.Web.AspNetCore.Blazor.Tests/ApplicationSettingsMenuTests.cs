@@ -16,6 +16,7 @@ using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
@@ -25,7 +26,7 @@ public class ApplicationSettingsMenuTests {
 	[TestCase(true)]
 	public async Task OptionsReusesContextualHeadingAndPreservesProductMenuOrder(bool existingOptions) {
 		var calls = 0;
-		var block = new BlazorApplicationBlockBuilder()
+		var block = new ApplicationBlockBuilder()
 			.WithId("product")
 			.WithName("Product")
 			.AddScreen<MenuScreen>("Menu screen")
@@ -61,12 +62,12 @@ public class ApplicationSettingsMenuTests {
 			)
 			.Build();
 		await using var provider = services.BuildServiceProvider();
-		var application = provider.GetRequiredService<IBlazorApplication>();
+		var application = provider.GetRequiredService<BlazorUI.IApplication>();
 		await application.InitializeAsync();
 		var activeBlock = application.Blocks.Single();
 		await application.ScreenHost.OpenScreenAsync(activeBlock, activeBlock.ScreenDefinitions.Single());
 		using var shell = new ApplicationShell { Application = application, ScreenHost = application.ScreenHost };
-		var menus = (IBlazorApplicationMenu[])typeof(ApplicationShell).GetProperty("MergedMenus", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(shell);
+		var menus = (BlazorUI.IApplicationMenu[])typeof(ApplicationShell).GetProperty("MergedMenus", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(shell);
 
 		Assert.That(menus.Select(menu => menu.Text.Replace("&", string.Empty)), Is.EqualTo(new[] { "File", "Views", "Options", "Help" }));
 		var options = menus[2];
@@ -118,7 +119,7 @@ public class ApplicationSettingsMenuTests {
 	}
 
 	/// <summary>Supplies the visible block owner for contextual menu composition without browser rendering.</summary>
-	public sealed class MenuScreen : BlazorApplicationScreen {
+	public sealed class MenuScreen : ApplicationScreen {
 	}
 
 	#endregion

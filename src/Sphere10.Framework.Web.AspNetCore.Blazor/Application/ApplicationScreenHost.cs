@@ -9,27 +9,28 @@
 using System;
 using System.Collections.Generic;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Blazor session factory over the shared host. The renderer creates and disposes components.</summary>
-public class BlazorApplicationScreenHost : BlazorApplicationScreenHostBase {
-	public BlazorApplicationScreenHost(IServiceProvider services)
+public class ApplicationScreenHost : ApplicationScreenHostBase {
+	public ApplicationScreenHost(IServiceProvider services)
 		: base(services) {
 	}
 
 	/// <summary>Constructs a host from startup block definitions; normal applications resolve the scoped host through AddSphere10Blazor.</summary>
-	public BlazorApplicationScreenHost(IEnumerable<IBlazorApplicationBlock> blocks, IServiceProvider services)
+	public ApplicationScreenHost(IEnumerable<IApplicationBlock> blocks, IServiceProvider services)
 		: base(blocks, services) {
 	}
 
-	protected override BlazorApplicationScreenSession CreateScreen(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
+	protected override ApplicationScreenSession CreateScreen(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
 		var source = GetScreenMenuItem(block, definition);
-		var prepared = (definition as BlazorApplicationScreenDefinition)?.Activator?.Invoke(new BlazorApplicationScreenActivationContext(Services, block, definition));
-		Guard.Ensure(definition is not BlazorApplicationScreenDefinition { Activator: not null } || prepared != null,
+		var prepared = (definition as ApplicationScreenDefinition)?.Activator?.Invoke(new ApplicationScreenActivationContext(Services, block, definition));
+		Guard.Ensure(definition is not ApplicationScreenDefinition { Activator: not null } || prepared != null,
 			"The screen activator must return component activation parameters.");
 		Guard.Ensure(prepared?.InstanceKey == null, "Supply instance reuse keys when opening a registration; its activator prepares component parameters.");
-		var screen = new BlazorApplicationScreenSession(block, source, definition, CurrentActivation, prepared);
+		var screen = new ApplicationScreenSession(block, source, definition, CurrentActivation, prepared);
 		return screen;
 	}
 }

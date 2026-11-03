@@ -19,6 +19,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using FormsUI = global::Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
@@ -50,7 +51,7 @@ public class LogOutputNavigationTests {
 		using var second = CreateBlock("Other Tools");
 		form.RegisterBlock(first);
 		form.RegisterBlock(second);
-		var source = new WinFormsApplicationScreen { Block = first, Title = "Capture Source" };
+		var source = new ApplicationScreen { Block = first, Title = "Capture Source" };
 		var selector = new LogOutputSelectorControl { Name = "captureOutput" };
 		if (toolbarSelector) {
 			var strip = new ToolStrip { Name = "captureCommands" };
@@ -103,7 +104,7 @@ public class LogOutputNavigationTests {
 		Assert.That(form.ScreenHost.ShowScreenUndocked(log), Is.True);
 		Assert.That(log.FindForm().Text, Is.EqualTo("Log Output - Capture"));
 		Assert.That(form.ScreenHost.DockScreen(log), Is.True);
-		Assert.That(((WinFormsApplicationScreenHost)form.ScreenHost).TabControl.TabPages.Cast<TabPage>().Single(page => ReferenceEquals(page.Tag, log)).Text,
+		Assert.That(((FormsUI.ApplicationScreenHost)form.ScreenHost).TabControl.TabPages.Cast<TabPage>().Single(page => ReferenceEquals(page.Tag, log)).Text,
 			Is.EqualTo("Log Output - Capture"));
 		Assert.That(log.Block, Is.Null);
 		AssertNavigation(form, block);
@@ -113,7 +114,7 @@ public class LogOutputNavigationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ClosingALogReleasesItsBoundedTextAndAllOwnerReferences(bool disposeDirectly) => RunWithMessageLoop(async owner => {
-		using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
+		using var host = new FormsUI.ApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = ScreenMode.MultiView };
 		owner.Controls.Add(host);
 		using var selector = new LogOutputSelectorControl { ScreenHost = host };
 		selector.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
@@ -146,7 +147,7 @@ public class LogOutputNavigationTests {
 		});
 	});
 
-	private static WinFormsApplicationBlock CreateBlock(string name) => new WinFormsApplicationBlockBuilder()
+	private static ApplicationBlock CreateBlock(string name) => new ApplicationBlockBuilder()
 		.WithName(name)
 		.AddScreen<InventoryScreen>(screen => screen
 			.WithTitle("Inventory")
@@ -166,7 +167,7 @@ public class LogOutputNavigationTests {
 		return form;
 	}
 
-	private static void AssertNavigation(BlockMainForm form, IWinFormsApplicationBlock block) {
+	private static void AssertNavigation(BlockMainForm form, FormsUI.IApplicationBlock block) {
 		var split = form.Controls.OfType<SplitContainer>().Single();
 		var bar = split.Panel1.Controls.OfType<ApplicationBar>().Single();
 		Assert.Multiple(() => {
@@ -218,5 +219,5 @@ public class LogOutputNavigationTests {
 		Assert.That(completed, Is.True);
 	}
 
-	public sealed class InventoryScreen : WinFormsApplicationScreen { }
+	public sealed class InventoryScreen : ApplicationScreen { }
 }

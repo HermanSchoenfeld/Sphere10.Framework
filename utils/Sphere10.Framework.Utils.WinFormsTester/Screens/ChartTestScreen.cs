@@ -18,7 +18,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-public partial class ChartTestScreen : WinFormsApplicationScreen {
+public partial class ChartTestScreen : ApplicationScreen {
 	public const int SampleCapacity = 120;
 	public const int InitialSamples = 48;
 	private static readonly Color[] _seriesColors = { Color.FromArgb(34, 112, 177), Color.FromArgb(221, 117, 42), Color.FromArgb(36, 151, 126) };

@@ -8,33 +8,34 @@
 
 using System.Drawing;
 using Sphere10.Framework.Application.UI;
+using SharedUI = global::Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public abstract class WinFormsApplicationMenuItemBase : ApplicationMenuItemBase, IWinFormsApplicationMenuItem {
+public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase, IApplicationMenuItem {
 	private Image _image16x16;
 	private bool _showOnExplorerBar;
 	private bool _showOnToolBar;
 	private bool _executeOnLoad;
 
 
-	protected WinFormsApplicationMenuItemBase()
+	protected ApplicationMenuItemBase()
 		: this(null) {
 	}
 
-	protected WinFormsApplicationMenuItemBase(Image image16x16)
+	protected ApplicationMenuItemBase(Image image16x16)
 		: this(image16x16, true, true, false) {
 	}
 
-	protected WinFormsApplicationMenuItemBase(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
+	protected ApplicationMenuItemBase(Image image16x16, bool showOnExplorerBar, bool showOnToolBar, bool executeOnLoad) {
 		_image16x16 = image16x16;
 		_showOnExplorerBar = showOnExplorerBar;
 		_showOnToolBar = showOnToolBar;
 		_executeOnLoad = executeOnLoad;
 	}
 
-	public new IWinFormsApplicationMenu Parent {
-		get => (IWinFormsApplicationMenu)base.Parent;
+	public new IApplicationMenu Parent {
+		get => (IApplicationMenu)base.Parent;
 		set => base.Parent = value;
 	}
 

@@ -22,7 +22,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 
 
 /// <summary>Demonstrates channel messaging and WebSocket data sources with UI-owned reporting.</summary>
-public partial class CommunicationsTestScreen : WinFormsApplicationScreen {
+public partial class CommunicationsTestScreen : ApplicationScreen {
 	private readonly System.Windows.Forms.Timer _reportTimer;
 	private readonly ConcurrentQueue<string> _received = new();
 	private ProtocolChannel _channel;

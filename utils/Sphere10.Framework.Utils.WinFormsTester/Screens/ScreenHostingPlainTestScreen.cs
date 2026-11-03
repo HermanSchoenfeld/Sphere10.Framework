@@ -12,7 +12,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 /// <summary>A content-only screen for checking docking without reserved empty command rows.</summary>
-public partial class ScreenHostingPlainTestScreen : WinFormsApplicationScreen {
+public partial class ScreenHostingPlainTestScreen : ApplicationScreen {
 	/// <summary>Creates a genuinely bar-free editable screen with ordinary instance-owned notes.</summary>
 	public ScreenHostingPlainTestScreen() {
 		InitializeComponent();
