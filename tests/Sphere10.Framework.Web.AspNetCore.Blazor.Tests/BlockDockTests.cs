@@ -39,7 +39,7 @@ public class BlockDockTests {
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationBlockMenu>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(ApplicationBlockMenu.Blocks)] = blocks,
-				[nameof(ApplicationBlockMenu.ActiveBlock)] = blocks[0]
+				[nameof(ApplicationBlockMenu.SelectedBlock)] = blocks[0]
 			}));
 			var html = rendered.ToHtmlString();
 			Assert.That(html, Does.Contain("<button").And.Not.Contain("<a "));
@@ -185,11 +185,11 @@ public class BlockDockTests {
 				"Identical item IDs in different blocks must not mark an unrelated screen selected.");
 
 			var execute = typeof(ApplicationShell).GetMethod("ExecuteMenuItemAsync", BindingFlags.Instance | BindingFlags.NonPublic);
-			var item = host.ActiveBlock.Menus.Single().Items.Single();
+			var item = host.SelectedBlock.Menus.Single().Items.Single();
 			await (Task)execute.Invoke(shell, new object[] { item });
 			Assert.That(screen.GuardCalls, Is.EqualTo(1));
 			Assert.That(host.ActiveScreen, Is.SameAs(original));
-			Assert.That(host.ActiveBlock.Id, Is.EqualTo("second"));
+			Assert.That(host.SelectedBlock.Id, Is.EqualTo("second"));
 			screen.IsDirty = false;
 			await (Task)execute.Invoke(shell, new object[] { item });
 			Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("second"));
@@ -213,7 +213,7 @@ public class BlockDockTests {
 		Assert.That(host.SubscriberCount, Is.EqualTo(1), "The surviving circuit aggregate remains subscribed.");
 		Assert.That(changed.GetValue(application), Is.Null, "The disposed shell releases its aggregate subscription.");
 		await host.ActivateBlockAsync("second");
-		Assert.That(application.ScreenHost.ActiveBlock.Id, Is.EqualTo("second"));
+		Assert.That(application.ScreenHost.SelectedBlock.Id, Is.EqualTo("second"));
 	}
 
 	private static string CurrentButton(string html) => Regex.Match(html, "<button[^>]*aria-current=\"page\"[^>]*>.*?</button>", RegexOptions.Singleline).Value;

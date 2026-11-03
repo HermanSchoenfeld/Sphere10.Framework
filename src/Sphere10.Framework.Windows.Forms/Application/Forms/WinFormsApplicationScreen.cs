@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,31 +23,54 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
 /// Application UIs can be presented as a screen. It is a proxy ApplicationServiceProvider
-/// routing to parent provider. 
-/// 
+/// routing to parent provider.
+///
 /// NOTE: The ApplicationServiceProvider property, which defines the underlying provider all
 /// such  calls are routed to, is guaranteed to be set post-construction.
 /// </summary>
-public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicationScreen, IApplicationSettingsParticipant {
+public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicationScreen {
 	public event EventHandler ScreenLoaded;
+
 	public event EventHandler ScreenDisplayed;
+
 	public event EventHandler ScreenDisplayedFirstTime;
+
 	public event EventHandler<HideScreenEventArgs> ScreenHidden;
+
 	public event EventHandler ScreenDestroyed;
 
-	private int _showCount;
-	private bool _destroyed;
-	private ScreenActivationMode _activationMode = ScreenActivationMode.MultiInstance;
-	private readonly List<ToolStripItem> _menuStripItems;
-	private ToolStrip _toolBar;
-	private ToolStripStableHeightBehavior _toolBarHeight;
-	private WinFormsApplicationScreenSettings _settings;
-	private ApplicationSettingsProfile _settingsProfile;
+	internal event EventHandlerEx NativeCommandsChanged;
 
+	private int _showCount;
+
+	private bool _destroyed;
+
+	private ScreenActivationMode _activationMode = ScreenActivationMode.MultiInstance;
+
+	private readonly List<ToolStripItem> _menuStripItems;
+
+	private ToolStrip _screenToolBar;
+
+	private ToolStripStableHeightBehavior _screenToolBarHeight;
+
+	private MenuStrip _screenMenuStrip;
+
+	private IWinFormsApplicationMenu[] _menus;
+
+	private IWinFormsApplicationMenuItem[] _toolBarItems;
+
+	private MenuStrip _registeredMenuStrip;
+
+	private ToolStripVisualInheritanceFixer _menuMerger;
+
+	private ToolStripVisualInheritanceFixer _toolBarMerger;
+
+	/// <summary>Creates a native screen with an optional owning application block.</summary>
 	public WinFormsApplicationScreen()
 		: this(null) {
 	}
 
+	/// <summary>Creates a native screen with an optional owning application block.</summary>
 	public WinFormsApplicationScreen(IWinFormsApplicationBlock applicationBlock) {
 		Block = applicationBlock;
 		Url = FileName = null;
@@ -54,7 +78,6 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 		_menuStripItems = new List<ToolStripItem>();
 		_showCount = 0;
 	}
-
 
 	[Browsable(true), Category("Appearance")]
 	public string ApplicationMenuStripText { get; set; }
@@ -68,7 +91,9 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	/// <summary>Defaults to MultiInstance unless the constructor or this registration declares another policy.</summary>
 	[Browsable(true), Category("Behavior"), DefaultValue(ScreenActivationMode.MultiInstance), Description("The instance policy declared by this screen type")]
 	public ScreenActivationMode ActivationMode {
-		get => _activationMode;
+		get {
+			return _activationMode;
+		}
 		protected set {
 			Tools.UI.ValidateActivationMode(value);
 			Guard.Ensure(Host == null, "A screen's activation mode cannot change while it belongs to a host");
@@ -78,8 +103,12 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	[Browsable(true), Category("Appearance"), Description("The title displayed in the screen tab and detached window")]
 	public string Title {
-		get => Text;
-		set => Text = value;
+		get {
+			return Text;
+		}
+		set {
+			Text = value;
+		}
 	}
 
 	/// <summary>A borrowed image supplied before hosting, with registered menu activator images used as the fallback.</summary>
@@ -88,7 +117,11 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	/// <summary>Whether the registered screen can be reopened without session-specific launch state.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual bool CanRestoreAtStartup => true;
+	public virtual bool CanRestoreAtStartup {
+		get {
+			return true;
+		}
+	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IWinFormsApplicationScreenHost Host { get; set; }
@@ -98,46 +131,77 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	[Browsable(false)]
 	public IWinFormsApplicationBlock ApplicationBlock {
-		get => Block;
-		set => Block = value;
+		get {
+			return Block;
+		}
+		set {
+			Block = value;
+		}
 	}
 
 	/// <summary>The registered presentation role. Empty screens occupy the workspace without a tab.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ScreenKind ScreenKind { get; internal set; }
 
-	/// <summary>The owning host, for operations on this screen instance.</summary>
-	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected IApplicationScreenHost ApplicationScreenHost => Host;
-
-	/// <summary>
-	/// The menu items associated with this screen.
-	/// </summary>
+	/// <summary>The actual menu items supplied by this screen.</summary>
 	[Browsable(false)]
-	public ToolStripItem[] MenuItems => _menuStripItems.ToArray();
-
-	/// <summary>
-	/// The toolbar associated with this screen.
-	/// </summary>
-	[Browsable(true), Category("Behavior"), Description("The toolbar associated with this screen.")]
-	public ToolStrip ToolBar {
-		get => _toolBar;
-		set {
-			if (ReferenceEquals(_toolBar, value))
-				return;
-			_toolBarHeight?.Dispose();
-			_toolBar = value;
-			_toolBarHeight = value == null ? null : new ToolStripStableHeightBehavior(value);
+	public ToolStripItem[] MenuItems {
+		get {
+			return ScreenMenuStrip == null ? _menuStripItems.ToArray() : Menus.OfType<NativeToolStripMenu>().Select(menu => (ToolStripItem)menu.Item).ToArray();
 		}
 	}
 
-	/// <summary>Screen commands contributed to the shared application menu layers.</summary>
-	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationMenu[] Menus => Array.Empty<IWinFormsApplicationMenu>();
+	/// <summary>The screen-owned designer menu strip merged while this screen is active.</summary>
+	/// <remarks>Assign during configuration. Its original callbacks, state and images remain on the native items.</remarks>
+	[Browsable(true), Category("Behavior"), Description("The screen-owned MenuStrip whose actual items are merged while this screen is active.")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+	public MenuStrip ScreenMenuStrip {
+		get {
+			return _screenMenuStrip;
+		}
+		set {
+			if (ReferenceEquals(_screenMenuStrip, value))
+				return;
+			EnsureCommandsNotActivated();
+			_screenMenuStrip = value;
+			NativeCommandsChanged?.Invoke();
+		}
+	}
 
-	/// <summary>Screen commands contributed to the shared application toolbar layers.</summary>
+	/// <summary>The screen-owned designer toolbar merged while this screen is active.</summary>
+	/// <remarks>Assign during configuration. The merge control restores the same native items on deactivation.</remarks>
+	[Browsable(true), Category("Behavior"), Description("The screen-owned ToolStrip whose actual items are merged while this screen is active.")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+	public ToolStrip ScreenToolBar {
+		get {
+			return _screenToolBar;
+		}
+		set {
+			if (ReferenceEquals(_screenToolBar, value))
+				return;
+			EnsureCommandsNotActivated();
+			_screenToolBarHeight?.Dispose();
+			_screenToolBar = value;
+			_screenToolBarHeight = value == null ? null : new ToolStripStableHeightBehavior(value);
+			NativeCommandsChanged?.Invoke();
+		}
+	}
+
+	/// <summary>Activates and caches this screen's fixed command membership.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IWinFormsApplicationMenuItem[] ToolBarItems => Array.Empty<IWinFormsApplicationMenuItem>();
+	public virtual IWinFormsApplicationMenu[] Menus {
+		get {
+			return Tools.Array.Clone(_menus ??= GetMenus());
+		}
+	}
+
+	/// <summary>Activates and caches the screen's toolbar commands; native item state remains live.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+		get {
+			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
+		}
+	}
 
 	public HelpType Type { get; }
 
@@ -151,84 +215,275 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 
 	public int? HelpTopicAlias { get; }
 
-	/// <summary>The optional profile or legacy-section restore error, with declared defaults retained for normal screen use.</summary>
+	/// <summary>Override with the ordinary settings type to declare this screen's preferences without constructing its control.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Exception LastSettingsLoadError => _settings?.LastLoadError ?? _settingsProfile?.LastLoadError;
+	public virtual SettingsObject ScreenSettings {
+		get {
+			return DeclaredSettings;
+		}
+	}
 
-	/// <summary>The profile's outstanding persistence failure, cleared after a successful accepted retry.</summary>
+	/// <summary>The owning host, for operations on this screen instance.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Exception LastSettingsSaveError => _settingsProfile?.LastSaveError;
+	protected IApplicationScreenHost ApplicationScreenHost {
+		get {
+			return Host;
+		}
+	}
 
-	/// <summary>Returns this registration's restored preferences before the screen begins its first data work.</summary>
-	protected TSettings GetSettings<TSettings>() {
-		Guard.Ensure(_settings != null, "Declare typed settings on this screen registration before reading preferences.");
-		return _settings.GetValues<TSettings>();
+	// The legacy registration API owns its source strip just as a designer-authored screen does.
+	internal MenuStrip CommandMenuStrip {
+		get {
+			_ = Menus;
+			return ScreenMenuStrip ?? _registeredMenuStrip;
+		}
+	}
+
+	/// <summary>Creates this screen's menu definitions once, after its designer configuration is complete.</summary>
+	protected virtual IWinFormsApplicationMenu[] GetMenus() {
+		var source = ScreenMenuStrip;
+		if (source == null && _menuStripItems.Count > 0 && ShowInApplicationMenuStrip) {
+			_registeredMenuStrip = new MenuStrip();
+			var header = new ToolStripMenuItem(ApplicationMenuStripText);
+			header.DropDownItems.AddRange(_menuStripItems.ToArray());
+			_registeredMenuStrip.Items.Add(header);
+			source = _registeredMenuStrip;
+		}
+		return source == null ? Array.Empty<IWinFormsApplicationMenu>() : source.Items.OfType<ToolStripMenuItem>()
+			.Select(item => (IWinFormsApplicationMenu)new NativeToolStripMenu(item, _ => true)).ToArray();
+	}
+
+	/// <summary>Creates toolbar definitions from this screen's original native controls.</summary>
+	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		return ScreenToolBar == null ? Array.Empty<IWinFormsApplicationMenuItem>() : ScreenToolBar.Items.Cast<ToolStripItem>()
+			.Select(item => (IWinFormsApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
+	}
+
+	// Merge bookkeeping belongs to the reusable merge control, while this screen owns the native sources.
+	internal void MergeCommandsInto(MenuStrip menuStrip, ToolStrip toolBar) {
+		_ = Menus;
+		_ = ToolBarItems;
+		var sourceMenu = CommandMenuStrip;
+		if (sourceMenu != null && menuStrip != null && !ReferenceEquals(sourceMenu, menuStrip)) {
+			_menuMerger ??= new ToolStripVisualInheritanceFixer { ToolStrip = sourceMenu };
+			_menuMerger.MergeInto(menuStrip, matchMenuText: true);
+		}
+		if (ScreenToolBar != null && toolBar != null && !ReferenceEquals(ScreenToolBar, toolBar)) {
+			_toolBarMerger ??= new ToolStripVisualInheritanceFixer { ToolStrip = ScreenToolBar };
+			_toolBarMerger.MergeInto(toolBar);
+		}
+	}
+
+	// Return the source items before another window or the screen's disposal uses them.
+	internal void UnmergeCommands() {
+		_toolBarMerger?.Unmerge();
+		_menuMerger?.Unmerge();
+	}
+
+	// Activate definitions before a detached window borrows originals; later provider reads cannot reparent its visible commands.
+	internal bool ActivateDetachedCommands() {
+		var header = _registeredMenuStrip?.Items.OfType<ToolStripMenuItem>().FirstOrDefault();
+		var restoreSource = header != null && _menuStripItems.Any(item => ReferenceEquals(item.Owner, header.DropDown));
+		_ = Menus;
+		_ = ToolBarItems;
+		return restoreSource;
+	}
+
+	// Return still-borrowed registrations to their previous grouped source, leaving standalone items unparented as before.
+	internal void RestoreRegisteredMenuItems(MenuStrip detachedMenu, bool restoreSource) {
+		var header = restoreSource ? _registeredMenuStrip?.Items.OfType<ToolStripMenuItem>().FirstOrDefault() : null;
+		foreach (var item in _menuStripItems.Where(item => ReferenceEquals(item.Owner, detachedMenu))) {
+			detachedMenu.Items.Remove(item);
+			header?.DropDownItems.Add(item);
+		}
+	}
+
+	/// <summary>Reads the actual settings instance owned by this screen's block.</summary>
+	protected TSettings GetBlockSettings<TSettings>()
+		where TSettings : SettingsObject {
+		Guard.Ensure(Block?.BlockSettings != null, "Declare block settings before reading them.");
+		return Guard.ArgumentCast<TSettings>(Block.BlockSettings, nameof(TSettings));
+	}
+
+	/// <summary>Reads the actual settings instance owned by this screen's contributing plugin.</summary>
+	protected TSettings GetPluginSettings<TSettings>()
+		where TSettings : SettingsObject {
+		Guard.Ensure(Block?.Source?.PluginSettings != null, "Declare plugin settings before reading them.");
+		return Guard.ArgumentCast<TSettings>(Block.Source.PluginSettings, nameof(TSettings));
 	}
 
 	/// <summary>Binds a grid to one public property on the ordinary settings object.</summary>
 	protected Task BindGridPreferencesAsync(VisualGrid grid, string propertyName, CancellationToken cancellationToken = default) {
-		Guard.Ensure(_settings != null, "Declare settings before binding a screen-owned grid.");
-		return _settings.BindGridAsync(grid, propertyName, null, cancellationToken);
+		Guard.Ensure(SettingsBinding != null, "Declare settings before binding a screen-owned grid.");
+		return SettingsBinding.BindGridAsync(grid, propertyName, null, cancellationToken);
 	}
 
 	/// <summary>Binds one named grid in a settings dictionary without repeated accessor delegates.</summary>
 	protected Task BindGridPreferencesAsync(VisualGrid grid, string propertyName, string role, CancellationToken cancellationToken = default) {
-		Guard.Ensure(_settings != null, "Declare settings before binding a screen-owned grid.");
-		return _settings.BindGridAsync(grid, propertyName, role, cancellationToken);
+		Guard.Ensure(SettingsBinding != null, "Declare settings before binding a screen-owned grid.");
+		return SettingsBinding.BindGridAsync(grid, propertyName, role, cancellationToken);
 	}
 
 	/// <summary>Binds remembered output to one public property on the ordinary settings object.</summary>
 	protected Task BindLogOutputPreferencesAsync(LogOutputSelectorControl selector, string propertyName, CancellationToken cancellationToken = default) {
-		Guard.Ensure(_settings != null, "Declare settings before binding screen-owned logging.");
-		return _settings.BindLogOutputAsync(selector, propertyName, cancellationToken);
+		Guard.Ensure(SettingsBinding != null, "Declare settings before binding screen-owned logging.");
+		return SettingsBinding.BindLogOutputAsync(selector, propertyName, cancellationToken);
 	}
 
 	/// <summary>Binds one declared grid section and imports its legacy record once without writing during display.</summary>
 	protected Task BindGridPreferencesAsync<TSettings>(VisualGrid grid, string sectionPath, Func<TSettings, VisualGridSettings> get,
-		Action<TSettings, VisualGridSettings> set, CancellationToken cancellationToken = default) {
-		Guard.Ensure(_settings != null, "Declare typed settings before binding a screen-owned grid.");
-		return _settings.BindGridAsync(grid, sectionPath, get, set, cancellationToken);
+		Action<TSettings, VisualGridSettings> set, CancellationToken cancellationToken = default)
+		where TSettings : SettingsObject {
+		Guard.Ensure(SettingsBinding != null, "Declare typed settings before binding a screen-owned grid.");
+		return SettingsBinding.BindGridAsync(grid, sectionPath, get, set, cancellationToken);
 	}
 
-	/// <summary>Binds remembered logger values to the screen profile without starting output during restoration.</summary>
+	/// <summary>Binds remembered logger values to the actual screen settings without starting output during restoration.</summary>
 	protected Task BindLogOutputPreferencesAsync<TSettings>(LogOutputSelectorControl selector, string sectionPath,
-		Func<TSettings, LogOutputSelectorPreferences> get, Action<TSettings, LogOutputSelectorPreferences> set, CancellationToken cancellationToken = default) {
-		Guard.Ensure(_settings != null, "Declare typed settings before binding screen-owned logging preferences.");
-		return _settings.BindLogOutputAsync(selector, sectionPath, get, set, cancellationToken);
+		Func<TSettings, LogOutputSelectorPreferences> get, Action<TSettings, LogOutputSelectorPreferences> set, CancellationToken cancellationToken = default)
+		where TSettings : SettingsObject {
+		Guard.Ensure(SettingsBinding != null, "Declare typed settings before binding screen-owned logging preferences.");
+		return SettingsBinding.BindLogOutputAsync(selector, sectionPath, get, set, cancellationToken);
 	}
 
-	/// <summary>Marks deliberate edits to the detached typed values for accepted close or an explicit awaited save.</summary>
+	/// <summary>Marks deliberate edits to the actual typed settings for accepted close or an explicit awaited save.</summary>
 	protected void MarkSettingsChanged() {
-		Guard.Ensure(_settings != null, "Declare typed settings before changing preferences.");
-		_settings.MarkChanged();
+		Guard.Ensure(SettingsBinding != null, "Declare typed settings before changing preferences.");
+		SettingsBinding.MarkChanged();
 	}
 
 	/// <summary>Captures accepted native preferences before close or application shutdown; disposal never saves.</summary>
 	public virtual async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-		if (_settings != null)
-			await _settings.SaveAsync(cancellationToken);
+		CopyUIToModel();
+		if (SettingsBinding != null)
+			await SettingsBinding.SaveAsync(cancellationToken);
 		foreach (var grid in GetChildGrids(this))
 			await grid.FlushPreferencesAsync();
 	}
 
-	// Scalar options can update their existing live owner after successful Options Apply.
-	protected virtual void OnSettingsChanged() {
+	/// <summary>Applies the selected culture to this screen and its child application controls.</summary>
+	public override void SetLocalizedText(CultureInfo culture = null) {
+		base.SetLocalizedText(culture);
+		SetLocalizedTextInApplicationControls(this.Controls);
 	}
 
-	// The canonical native host attaches profiles before the control can raise Load.
-	internal void AttachSettings(ApplicationSettingsProfile profile, ISettingsProvider provider) {
-		_settingsProfile = profile;
-		if (!profile.HasOptions)
+	/// <summary>Allows a screen to initialize presentation when first displayed.</summary>
+	protected virtual void OnShowFirstTime() {
+	}
+
+	/// <summary>Runs the existing control initialization before notifying screen listeners.</summary>
+	protected override void OnLoad(EventArgs Args) {
+		base.OnLoad(Args);
+		ScreenLoaded?.Invoke(this, EventArgs.Empty);
+	}
+
+	/// <summary>Releases settings subscriptions and screen-owned native command resources.</summary>
+	protected override void Dispose(bool Disposing) {
+		if (Disposing && !_destroyed) {
+			ReleaseSettings();
+			UnmergeCommands();
+			NotifyScreenDestroyed();
+			_menuMerger?.Dispose();
+			_toolBarMerger?.Dispose();
+
+			// Cached descriptor factories own their definitions; native projections retain their no-op disposal contract.
+			var menus = (_menus ?? Array.Empty<IWinFormsApplicationMenu>())
+				.Distinct<IWinFormsApplicationMenu>(ReferenceEqualityComparer.Instance).ToArray();
+			var menuItems = new HashSet<IWinFormsApplicationMenuItem>(menus.SelectMany(menu => menu.Items), ReferenceEqualityComparer.Instance);
+			foreach (var menu in menus)
+				menu.Dispose();
+			foreach (var item in _toolBarItems ?? Array.Empty<IWinFormsApplicationMenuItem>())
+				if (menuItems.Add(item))
+					item.Dispose();
+
+			_registeredMenuStrip?.Dispose();
+			foreach (var Item in _menuStripItems)
+				if (!Item.IsDisposed)
+					Item.Dispose();
+			ScreenMenuStrip?.Dispose();
+			ScreenToolBar?.Dispose();
+			_screenToolBarHeight?.Dispose();
+		}
+		base.Dispose(Disposing);
+	}
+
+	/// <summary>Allows a screen to update its presentation when displayed.</summary>
+	protected virtual void OnShow() {
+		if (_showCount++ == 0)
+			NotifyShowScreenFirstTime();
+	}
+
+	/// <summary>Allows a screen to veto deactivation through its existing native hook.</summary>
+	protected virtual void OnHide(ref bool cancelHide) {
+	}
+
+	/// <summary>Allows a screen to release resources before its native destruction notification.</summary>
+	protected virtual void OnDestroyScreen() {
+	}
+
+	/// <summary>Adds a legacy native menu item before command membership activates.</summary>
+	protected void RegisterMenuItem(ToolStripItem item) {
+		EnsureCommandsNotActivated();
+		_menuStripItems.Add(item);
+	}
+
+	// Runs the existing hide guard without changing screen ownership.
+	bool IWinFormsApplicationScreen.CanDeactivate() {
+		var cancel = false;
+		NotifyHideScreen(ref cancel);
+		return !cancel;
+	}
+
+	// Runs this screen's existing display notification.
+	void IWinFormsApplicationScreen.OnActivated() {
+		NotifyShow();
+	}
+
+	// Runs this screen's existing hide notification.
+	void IWinFormsApplicationScreen.OnDeactivated() {
+		// The native hide notification already runs as part of its cancelable guard.
+	}
+
+	// Sets registration policy before the screen becomes hosted.
+	internal void ConfigureActivationMode(ScreenActivationMode Mode) {
+		ActivationMode = Mode;
+	}
+
+	// Notifies display listeners and the existing screen presentation hook.
+	internal void NotifyShow() {
+		OnShow();
+		ScreenDisplayed?.Invoke(this, EventArgs.Empty);
+	}
+
+	// Notifies first-display listeners and the corresponding presentation hook.
+	internal void NotifyShowScreenFirstTime() {
+		OnShowFirstTime();
+		ScreenDisplayedFirstTime?.Invoke(this, EventArgs.Empty);
+	}
+
+	// Runs the hide guard and notifies listeners when the screen may be hidden.
+	internal void NotifyHideScreen(ref bool cancel) {
+		OnHide(ref cancel);
+		if (!cancel) {
+			var cancelArgs = new HideScreenEventArgs();
+			ScreenHidden?.Invoke(this, cancelArgs);
+			cancel = cancelArgs.Cancel;
+		}
+	}
+
+	// Runs destruction once and releases settings subscriptions before callbacks.
+	internal void NotifyScreenDestroyed() {
+		if (_destroyed)
 			return;
-		Guard.Ensure(_settings == null, "A hosted screen cannot change its settings profile.");
-		_settings = new WinFormsApplicationScreenSettings(this, _settingsProfile, provider, (_, _) => NotifySettingsChanged());
+		_destroyed = true;
+		OnDestroyScreen();
+		ScreenDestroyed?.Invoke(this, EventArgs.Empty);
 	}
 
-	// The frame can select this exact page without inferring a registration from its type or caption.
-	internal ApplicationSettingsProfile SettingsProfile => _settingsProfile;
-
-	// Deliver scalar preference updates through the screen's existing UI owner.
-	internal void NotifySettingsChanged() => OnSettingsChanged();
+	// Command membership is configured before activation; native appearance and checked/enabled state remain mutable.
+	private void EnsureCommandsNotActivated() {
+		Guard.Ensure(_menus == null && _toolBarItems == null, "Command membership is read-only after activation.");
+	}
 
 	// Standalone child grids retain their existing persistence owner and ordered flush contract.
 	private static IEnumerable<VisualGrid> GetChildGrids(Control owner) {
@@ -240,46 +495,7 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 		}
 	}
 
-	public override void SetLocalizedText(CultureInfo culture = null) {
-		base.SetLocalizedText(culture);
-		SetLocalizedTextInApplicationControls(this.Controls);
-	}
-
-	protected virtual void OnShowFirstTime() {
-	}
-
-	protected override void OnLoad(EventArgs Args) {
-		base.OnLoad(Args);
-		ScreenLoaded?.Invoke(this, EventArgs.Empty);
-	}
-
-	protected override void Dispose(bool Disposing) {
-		if (Disposing && !_destroyed) {
-			_settings?.Dispose();
-			NotifyScreenDestroyed();
-			foreach (var Item in _menuStripItems)
-				Item.Dispose();
-			ToolBar?.Dispose();
-			_toolBarHeight?.Dispose();
-		}
-		base.Dispose(Disposing);
-	}
-
-	protected virtual void OnShow() {
-		if (_showCount++ == 0)
-			NotifyShowScreenFirstTime();
-	}
-
-	protected virtual void OnHide(ref bool cancelHide) {
-	}
-
-	protected virtual void OnDestroyScreen() {
-	}
-
-	protected void RegisterMenuItem(ToolStripItem item) {
-		_menuStripItems.Add(item);
-	}
-
+	// Recurses through child application controls to apply the selected culture.
 	private void SetLocalizedTextInApplicationControls(ControlCollection controls) {
 		if (controls != null) {
 			foreach (Control control in controls) {
@@ -292,46 +508,4 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 			}
 		}
 	}
-
-	bool IWinFormsApplicationScreen.CanDeactivate() {
-		var cancel = false;
-		NotifyHideScreen(ref cancel);
-		return !cancel;
-	}
-
-	void IWinFormsApplicationScreen.OnActivated() => NotifyShow();
-
-	void IWinFormsApplicationScreen.OnDeactivated() {
-		// The native hide notification already runs as part of its cancelable guard.
-	}
-
-	internal void ConfigureActivationMode(ScreenActivationMode Mode) => ActivationMode = Mode;
-
-	internal void NotifyShow() {
-		OnShow();
-		ScreenDisplayed?.Invoke(this, EventArgs.Empty);
-	}
-
-	internal void NotifyShowScreenFirstTime() {
-		OnShowFirstTime();
-		ScreenDisplayedFirstTime?.Invoke(this, EventArgs.Empty);
-	}
-
-	internal void NotifyHideScreen(ref bool cancel) {
-		OnHide(ref cancel);
-		if (!cancel) {
-			var cancelArgs = new HideScreenEventArgs();
-			ScreenHidden?.Invoke(this, cancelArgs);
-			cancel = cancelArgs.Cancel;
-		}
-	}
-
-	internal void NotifyScreenDestroyed() {
-		if (_destroyed)
-			return;
-		_destroyed = true;
-		OnDestroyScreen();
-		ScreenDestroyed?.Invoke(this, EventArgs.Empty);
-	}
 }
-

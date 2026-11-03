@@ -12,21 +12,16 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>
-/// This component allows you to modify a base forms ToolStrip. 
+/// This component allows you to modify a base forms ToolStrip.
 /// Microsoft has intentionally added this limitation due to the complexities it could not overcome. This component simply works around
 /// those limitations by allowing you to merge a (hidden) tool strip on the sub form with the readonly inherited base form.
 /// </summary>
 public class MergeableMenuStrip : MenuStrip {
-	private ToolStripVisualInheritanceFixer _fixer;
+	private readonly ToolStripVisualInheritanceFixer _fixer;
 
 	public MergeableMenuStrip() {
 		_fixer = new ToolStripVisualInheritanceFixer();
 		_fixer.ToolStrip = this;
-	}
-
-	protected override void InitLayout() {
-		base.InitLayout();
-		Visible = false;
 	}
 
 	/// <summary>
@@ -36,8 +31,48 @@ public class MergeableMenuStrip : MenuStrip {
 	[Description("Set this to the base forms MenuStrip. If you can't find it, make sure it's modifer is set to to 'protected' or greater.")]
 	[Category("Behavior")]
 	public MenuStrip InheritedToolStrip {
-		get { return _fixer.InheritedToolStrip as MenuStrip; }
-		set { _fixer.InheritedToolStrip = (value as MenuStrip); }
+		get {
+			return _fixer.InheritedToolStrip as MenuStrip;
+		}
+		set {
+			_fixer.InheritedToolStrip = value;
+		}
+	}
+
+	// Incoming mergers use the fixer's disposal notification before the target disposes borrowed items.
+	internal ToolStripVisualInheritanceFixer MergeFixer {
+		get {
+			return _fixer;
+		}
+	}
+
+	/// <summary>Merges the original menu items into the target while retaining their handlers and resources.</summary>
+	/// <remarks>Unmerge before disposing a plain MenuStrip target; mergeable targets return borrowed items automatically.</remarks>
+	public bool MergeInto(MenuStrip target, bool matchMenuText = false) {
+		return _fixer.MergeInto(target, matchMenuText);
+	}
+
+	/// <summary>Merges newly added items into the configured inherited menu.</summary>
+	public bool Merge() {
+		return _fixer.Merge();
+	}
+
+	/// <summary>Returns this menu's merged items before it is hidden, detached or disposed.</summary>
+	public bool Unmerge() {
+		return _fixer.Unmerge();
+	}
+
+	// Visual inheritance source strips stay hidden on the derived form's designer surface.
+	protected override void InitLayout() {
+		base.InitLayout();
+		Visible = false;
+	}
+
+	/// <summary>Returns merged items before the source menu disposes its own items.</summary>
+	protected override void Dispose(bool disposing) {
+		if (disposing)
+			_fixer?.Dispose();
+		base.Dispose(disposing);
 	}
 
 }

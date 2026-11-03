@@ -18,28 +18,16 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationAggregateTests {
 	[Test]
-	public void CommandMembershipIsCopiedAndInvalidUpdatesLeaveExistingCommandsIntact() {
+	public void SharedApplicationBlocksScreensAndPluginsExposeCommands() {
+		Assert.That(typeof(IApplicationCommandProvider).IsAssignableFrom(typeof(IApplication)), Is.True);
+		Assert.That(typeof(IApplicationCommandProvider).IsAssignableFrom(typeof(IApplicationBlock)), Is.True);
+		Assert.That(typeof(IApplicationCommandProvider).IsAssignableFrom(typeof(IApplicationScreen)), Is.True);
+		Assert.That(typeof(IApplicationCommandProvider).IsAssignableFrom(typeof(IApplicationPlugin)), Is.True);
 		using var application = new ProbeApplication();
+		Assert.That(application, Is.InstanceOf<IApplicationCommandProvider>());
+		Assert.That(((IApplication)application).Menus, Is.Empty);
+		Assert.That(((IApplication)application).ToolBarItems, Is.Empty);
 		Assert.That(application.Blocks, Is.Empty);
-		var menu = new TestApplicationMenu<IApplicationMenuItem> { Text = "File" };
-		var item = new TestApplicationMenuItem { Title = "Save" };
-		var menus = new IApplicationMenu[] { menu };
-		var items = new IApplicationMenuItem[] { item };
-		var notifications = 0;
-		application.Changed += () => notifications++;
-		application.SetMenus(menus);
-		application.SetToolBarItems(items);
-		menus[0] = null;
-		items[0] = null;
-		application.Menus[0] = null;
-		application.ToolBarItems[0] = null;
-		Assert.That(application.Menus, Is.EqualTo(new[] { menu }));
-		Assert.That(application.ToolBarItems, Is.EqualTo(new[] { item }));
-		Assert.That(() => application.SetMenus(menus), Throws.ArgumentException);
-		Assert.That(() => application.SetToolBarItems(items), Throws.ArgumentException);
-		Assert.That(application.Menus, Is.EqualTo(new[] { menu }));
-		Assert.That(application.ToolBarItems, Is.EqualTo(new[] { item }));
-		Assert.That(notifications, Is.EqualTo(2));
 	}
 
 	[TestCase(false)]
@@ -53,28 +41,26 @@ public class ApplicationAggregateTests {
 		var notifications = 0;
 		EventHandlerEx handler = () => notifications++;
 		decorator.Changed += handler;
-		var menu = new TestApplicationMenu<IApplicationMenuItem> { Text = "File" };
-		var item = new TestApplicationMenuItem { Title = "Save" };
-		application.SetMenus(new[] { menu });
-		application.SetToolBarItems(new[] { item });
 		Assert.That(decorator.LoadedPlugins, Is.EqualTo(application.LoadedPlugins));
 		Assert.That(decorator.Blocks, Is.EqualTo(application.Blocks));
 		Assert.That(decorator.ScreenHost, Is.SameAs(application.ScreenHost));
-		Assert.That(decorator.ScreenHost.ActiveBlock, Is.SameAs(block));
+		Assert.That(decorator.ScreenHost.SelectedBlock, Is.SameAs(block));
 		Assert.That(decorator.ScreenHost.ActiveScreen, Is.SameAs(host.ActiveScreen));
 		Assert.That(decorator.HasUnsavedChanges, Is.True);
-		Assert.That(decorator.Menus, Is.EqualTo(new[] { menu }));
-		Assert.That(decorator.ToolBarItems, Is.EqualTo(new[] { item }));
-		Assert.That(notifications, Is.EqualTo(2));
+		Assert.That(await host.UnregisterBlockAsync(block), Is.True);
+		Assert.That(decorator.Blocks, Is.Empty);
+		application.NotifyMetadataChanged();
+		Assert.That(notifications, Is.GreaterThan(0));
+		var delivered = notifications;
 		decorator.Changed -= handler;
-		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
-		Assert.That(notifications, Is.EqualTo(2));
+		await host.RegisterBlockAsync(block);
+		application.NotifyMetadataChanged();
+		Assert.That(notifications, Is.EqualTo(delivered));
 		if (asynchronous)
 			await decorator.DisposeAsync();
 		else
 			decorator.Dispose();
 		Assert.That(application.WasDisposed, Is.True);
-		Assert.That(() => application.SetMenus(new[] { menu }), Throws.TypeOf<ObjectDisposedException>());
 	}
 
 	private sealed class ProbeApplication : SyncApplicationBase {
@@ -90,6 +76,10 @@ public class ApplicationAggregateTests {
 		public override IApplicationPlugin[] LoadedPlugins => new[] { _plugin };
 		public override IApplicationScreenHost ScreenHost { get; }
 		public bool WasDisposed => IsDisposed;
+
+		public void NotifyMetadataChanged() {
+			OnChanged();
+		}
 	}
 
 	private sealed class ProbeHost : ApplicationScreenHost {
@@ -108,6 +98,8 @@ public class ApplicationAggregateTests {
 	}
 
 	private sealed class ProbeDecorator : ApplicationDecorator<ProbeApplication> {
-		public ProbeDecorator(ProbeApplication application) : base(application) { }
+		public ProbeDecorator(ProbeApplication application)
+			: base(application) {
+		}
 	}
 }

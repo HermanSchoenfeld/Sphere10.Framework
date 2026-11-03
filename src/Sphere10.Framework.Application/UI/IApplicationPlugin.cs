@@ -11,11 +11,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Sphere10.Framework.Application.UI;
 
 /// <summary>A named application extension whose blocks and startup services share the application's host.</summary>
-public interface IApplicationPlugin {
+public interface IApplicationPlugin : IApplicationCommandProvider {
 	event EventHandlerEx Loaded;
 	event EventHandlerEx Unloaded;
 
 	string Name { get; }
+
+	/// <summary>The actual settings instance owned by this plugin, or null when it has none.</summary>
+	SettingsObject PluginSettings { get; set; }
 
 	/// <summary>Returns the plugin's block membership without transferring ownership of its definitions.</summary>
 	IApplicationBlock[] Blocks { get; }

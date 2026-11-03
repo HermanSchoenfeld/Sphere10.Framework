@@ -36,7 +36,7 @@ public class ApplicationUserInterfaceServicesTests {
 		Assert.That(await userInterface.ExecuteMenuItemAsync(action).WaitAsync(TimeSpan.FromSeconds(5)), Is.True);
 		Assert.That(calls, Is.EqualTo(1));
 		Assert.That(host.ActiveScreen, Is.InstanceOf<ProbeScreen>());
-		Assert.That(host.ActiveBlock, Is.SameAs(block));
+		Assert.That(host.SelectedBlock, Is.SameAs(block));
 	}
 
 	[Test]
@@ -56,7 +56,7 @@ public class ApplicationUserInterfaceServicesTests {
 		Assert.That(received, Is.SameAs(userInterface));
 		Assert.That(received.ScreenHost, Is.SameAs(host));
 		await received.ScreenHost.SelectBlockAsync(block);
-		Assert.That(host.ActiveBlock, Is.SameAs(block));
+		Assert.That(host.SelectedBlock, Is.SameAs(block));
 		Assert.That(host.Screens, Is.Empty, "Browsing a block does not create a screen.");
 	}
 
@@ -78,11 +78,11 @@ public class ApplicationUserInterfaceServicesTests {
 		Assert.That(application.ScreenHost, Is.SameAs(host));
 		Assert.That(application.ScreenHost.Blocks, Is.EqualTo(host.Blocks));
 		Assert.That(application.Blocks, Is.EqualTo(host.Blocks));
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(host.ActiveBlock));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(host.SelectedBlock));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.SameAs(screen));
 		Assert.That(application.HasUnsavedChanges, Is.True);
 		await host.SelectBlockAsync(second);
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(second));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(second));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.SameAs(screen));
 		Assert.That(await host.UnregisterBlockAsync(second), Is.True);
 		Assert.That(application.ScreenHost.Blocks, Is.EqualTo(new[] { first }));
@@ -138,7 +138,7 @@ public class ApplicationUserInterfaceServicesTests {
 
 		Assert.That(userInterface.ScreenHost, Is.SameAs(host));
 		Assert.That(typeof(IUserInterfaceServices).GetProperties().Select(property => property.Name),
-			Has.None.EqualTo(nameof(IApplicationScreenHost.ActiveBlock)).And.None.EqualTo(nameof(IApplicationScreenHost.Blocks)));
+			Has.None.EqualTo(nameof(IApplicationScreenHost.SelectedBlock)).And.None.EqualTo(nameof(IApplicationScreenHost.Blocks)));
 	}
 
 	[TestCase(false)]

@@ -45,7 +45,7 @@ public class ApplicationToolbarLayoutTests {
 		using var font = new Font(SystemFonts.MenuFont.FontFamily, fontSize);
 		using var form = new ToolbarMainForm { ScreenMode = ScreenMode.MultiView, Size = new Size(1300, 700) };
 		using var screen = new ToolbarScreen();
-		form.ApplicationToolbar.Font = screen.ToolBar.Font = font;
+		form.ApplicationToolbar.Font = screen.ScreenToolBar.Font = font;
 		form.ShowScreen(screen);
 		form.Show();
 		System.Windows.Forms.Application.DoEvents();
@@ -71,19 +71,19 @@ public class ApplicationToolbarLayoutTests {
 		using var font = new Font(SystemFonts.MenuFont.FontFamily, fontSize);
 		using var host = new WinFormsApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 		using var screen = new ToolbarScreen();
-		screen.ToolBar.Font = font;
+		screen.ScreenToolBar.Font = font;
 		Assert.That(host.ShowScreen(screen), Is.True);
 		Assert.That(host.UndockScreen(screen), Is.True);
 		System.Windows.Forms.Application.DoEvents();
 		var detached = screen.FindForm();
 		Assert.That(detached, Is.TypeOf<WinFormsApplicationScreenForm>());
-		var height = screen.ToolBar.Height;
+		var height = screen.ScreenToolBar.Height;
 		var contentTop = screen.Content.PointToScreen(Point.Empty).Y;
 		for (var change = 0; change < 6; change++) {
 			screen.Interval.Visible = screen.Every.Visible = change % 2 == 0;
 			screen.RefreshCommand.Visible = !screen.Interval.Visible;
 			System.Windows.Forms.Application.DoEvents();
-			Assert.That(screen.ToolBar.Height, Is.EqualTo(height));
+			Assert.That(screen.ScreenToolBar.Height, Is.EqualTo(height));
 			Assert.That(screen.Content.PointToScreen(Point.Empty).Y, Is.EqualTo(contentTop));
 			ClickNative(screen.Command);
 			Assert.That(screen.ClickCount, Is.EqualTo(change + 1));
@@ -104,8 +104,8 @@ public class ApplicationToolbarLayoutTests {
 		using var logged = new ToolbarScreen();
 		using var selector = new LogOutputSelectorControl { Font = font, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
 		using var output = new ToolStripControlHost(selector) { AutoSize = true, Margin = Padding.Empty };
-		logged.ToolBar.Font = ordinary.ToolBar.Font = font;
-		logged.ToolBar.Items.Add(output);
+		logged.ScreenToolBar.Font = ordinary.ScreenToolBar.Font = font;
+		logged.ScreenToolBar.Items.Add(output);
 		form.ShowScreen(empty);
 		form.Show();
 		System.Windows.Forms.Application.DoEvents();
@@ -255,15 +255,15 @@ public class ApplicationToolbarLayoutTests {
 	private sealed class ToolbarScreen : WinFormsApplicationScreen {
 		public ToolbarScreen() {
 			Title = "Toolbar Fixture";
-			ToolBar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
+			ScreenToolBar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden };
 			Command = new ToolStripButton("Action", null, (_, _) => ClickCount++);
 			Every = new ToolStripLabel("Every");
 			Interval = new ToolStripDropDownButton("1 sec") { AutoSize = false, Width = 70 };
 			RefreshCommand = new ToolStripButton("Refresh") { Visible = false };
-			ToolBar.Items.AddRange(new ToolStripItem[] { Command, Every, Interval, RefreshCommand });
+			ScreenToolBar.Items.AddRange(new ToolStripItem[] { Command, Every, Interval, RefreshCommand });
 			Content = new Panel { Dock = DockStyle.Fill };
 			Controls.Add(Content);
-			Controls.Add(ToolBar);
+			Controls.Add(ScreenToolBar);
 		}
 
 		public ToolStripButton Command { get; }

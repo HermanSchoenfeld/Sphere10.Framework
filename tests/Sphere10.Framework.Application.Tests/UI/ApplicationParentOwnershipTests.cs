@@ -77,7 +77,7 @@ public class ApplicationParentOwnershipTests {
 		Assert.That(block.Parent, Is.Null);
 		Assert.That(block.Source, Is.SameAs(plugin));
 		await host.SelectBlockAsync(block);
-		Assert.That(host.ActiveBlock, Is.SameAs(block));
+		Assert.That(host.SelectedBlock, Is.SameAs(block));
 		Assert.That(block.Parent, Is.Null, "A disposed application must unsubscribe from host membership changes.");
 	}
 
@@ -259,43 +259,29 @@ public class ApplicationParentOwnershipTests {
 		Assert.That(screen.Disposals, Is.Zero, "The shared host detaches ownership without disposing platform screen instances.");
 	}
 
-	[Test]
-	public async Task InitialScreenMenuLookupSeesAttachedHostAndBlockAndBindsItsOwnedMenu() {
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new TestApplicationBlock("Work", new(typeof(OwnershipMenusScreen)));
-		using var host = new ApplicationScreenHost<TestApplicationBlock, OwnershipMenusScreen>(new[] { block }, provider);
-		var screen = await host.ActivateBlockAsync(block);
-		Assert.That(screen.FirstMenuReadHost, Is.SameAs(host));
-		Assert.That(screen.FirstMenuReadBlock, Is.SameAs(block));
-		Assert.That(screen.Menu.Parent, Is.SameAs(block));
-		Assert.That(screen.Menu.Items.Single().Parent, Is.SameAs(screen.Menu));
-		Assert.That(await host.CloseScreenAsync(screen), Is.True);
-		Assert.That(screen.Menu.Parent, Is.Null);
-		Assert.That(screen.Host, Is.Null);
-		Assert.That(screen.Block, Is.Null);
-	}
-
-	[Test]
-	public async Task FailedScreenMenuLookupRollsBackOwnershipAndLeavesTheHostReadyToRetry() {
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task SharedHostNeverReadsOrReparentsScreenPresentationCommands(bool disposeHost) {
 		var screen = new OwnershipMenusScreen { RejectMenuReads = true };
 		using var provider = new ServiceCollection().AddSingleton(screen).BuildServiceProvider();
 		var block = new TestApplicationBlock("Work", new(typeof(OwnershipMenusScreen)));
 		using var host = new ApplicationScreenHost<TestApplicationBlock, OwnershipMenusScreen>(new[] { block }, provider);
-		Assert.That(async () => await host.ActivateBlockAsync(block), Throws.InvalidOperationException);
-		Assert.That(screen.FirstMenuReadHost, Is.SameAs(host));
-		Assert.That(screen.FirstMenuReadBlock, Is.SameAs(block));
-		Assert.That(screen.Host, Is.Null);
-		Assert.That(screen.Block, Is.Null);
-		Assert.That(screen.Menu.Parent, Is.Null);
-		Assert.That(host.Screens, Is.Empty);
-		Assert.That(host.OpenScreens, Is.Empty);
-		Assert.That(host.ActiveScreen, Is.Null);
-		screen.RejectMenuReads = false;
+
 		Assert.That(await host.ActivateBlockAsync(block), Is.SameAs(screen));
-		Assert.That(host.Screens.Single(), Is.SameAs(screen));
 		Assert.That(screen.Host, Is.SameAs(host));
 		Assert.That(screen.Block, Is.SameAs(block));
-		Assert.That(screen.Menu.Parent, Is.SameAs(block));
+		Assert.That(screen.FirstMenuReadHost, Is.Null);
+		Assert.That(screen.FirstMenuReadBlock, Is.Null);
+		Assert.That(screen.Menu.Parent, Is.Null);
+		Assert.That(screen.Menu.Items.Single().Parent, Is.SameAs(screen.Menu));
+		if (disposeHost)
+			host.Dispose();
+		else
+			Assert.That(await host.CloseScreenAsync(screen), Is.True);
+		Assert.That(screen.Menu.Parent, Is.Null);
+		Assert.That(screen.Host, Is.Null);
+		Assert.That(screen.Block, Is.Null);
+		Assert.That(screen.FirstMenuReadHost, Is.Null);
 	}
 
 	[Test]
@@ -377,7 +363,7 @@ public class ApplicationParentOwnershipTests {
 		var menu = block.Menus.Single();
 		using var host = new ApplicationScreenHost(new[] { block }, provider);
 		var first = await host.ActivateBlockAsync(block);
-		Assert.That(first.Menus.Single(), Is.SameAs(menu));
+		Assert.That(((IApplicationCommandProvider)first).Menus.Single(), Is.SameAs(menu));
 		Assert.That(await host.CloseScreenAsync(first), Is.True);
 		Assert.That(first.Host, Is.Null);
 		Assert.That(first.Block, Is.Null);
@@ -448,13 +434,13 @@ public class ApplicationParentOwnershipTests {
 			? throw new InvalidOperationException("The screen definition is incomplete.") : definition;
 	}
 
-	public sealed class BorrowingScreen : IApplicationScreen {
+	public sealed class BorrowingScreen : IApplicationScreen, IApplicationCommandProvider {
 		public IApplicationScreenHost Host { get; set; }
 		public IApplicationBlock Block { get; set; }
-		public IApplicationMenu[] Menus => Block?.Menus ?? Array.Empty<IApplicationMenu>();
+		public IApplicationMenu[] Menus => (Block as IApplicationCommandProvider)?.Menus ?? Array.Empty<IApplicationMenu>();
 	}
 
-	public sealed class OwnershipMenusScreen : IApplicationScreen {
+	public sealed class OwnershipMenusScreen : IApplicationScreen, IApplicationCommandProvider {
 		private int _menuReads;
 
 		public OwnershipMenusScreen() {

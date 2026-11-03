@@ -13,7 +13,8 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native application block with platform-specific images and menu placement.</summary>
-public interface IWinFormsApplicationBlock : IDisposable, IApplicationBlock<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
+public interface IWinFormsApplicationBlock : IDisposable, IApplicationBlock,
+	IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
 	new IWinFormsApplication Parent { get; set; }
 	new IWinFormsApplicationPlugin Source { get; set; }
 	new int Position { get; }

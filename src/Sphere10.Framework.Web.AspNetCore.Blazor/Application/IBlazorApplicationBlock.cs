@@ -12,7 +12,7 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-public interface IBlazorApplicationBlock : IApplicationBlock<IBlazorApplicationMenu, IBlazorApplicationMenuItem> {
+public interface IBlazorApplicationBlock : IApplicationBlock, IApplicationCommandProvider<IBlazorApplicationMenu, IBlazorApplicationMenuItem> {
 	new IBlazorApplication Parent { get; set; }
 
 	new IBlazorPlugin Source { get; set; }

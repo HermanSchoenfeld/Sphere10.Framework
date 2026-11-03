@@ -11,28 +11,41 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Detached screen window. The originating host retains ownership of the screen.</summary>
 public class WinFormsApplicationScreenForm : Form {
+	private readonly record struct StripLocation(ToolStrip Strip, Control Parent, int Index);
+
 	private static readonly Size LogicalDefaultClientSize = new(900, 650);
 	private static readonly Size LogicalMinimumSize = new(240, 160);
 	private const int LogicalTopBorderHeight = 1;
 	private readonly IWinFormsApplicationScreenHost _host;
-	private readonly MenuStrip? _menuStrip;
-	private readonly MenuStrip? _screenMenuStrip;
-	private readonly bool _screenMenuVisible;
+	private readonly IWinFormsApplicationScreenHost _screenOwner;
+	private MenuStrip _contextMenuStrip;
+	private ToolStrip _contextToolBar;
+	private MenuStrip? _screenMenuStrip;
+	private bool _screenMenuVisible;
+	private bool _restoreRegisteredMenuSource;
+	private Control? _menuParent;
+	private int _menuIndex;
+	private DockStyle _menuDock;
+	private AnchorStyles _menuAnchor;
+	private Rectangle _menuBounds;
+	private bool _movedMenuStrip;
 	private readonly ScreenCaption _caption;
-	private readonly ToolStrip? _screenToolBar;
-	private readonly Control? _toolBarParent;
-	private readonly int _toolBarIndex;
-	private readonly DockStyle _toolBarDock;
-	private readonly AnchorStyles _toolBarAnchor;
-	private readonly Rectangle _toolBarBounds;
-	private readonly bool _toolBarVisible;
-	private readonly bool _movedToolBar;
+	private ToolStrip? _screenToolBar;
+	private Control? _toolBarParent;
+	private int _toolBarIndex;
+	private DockStyle _toolBarDock;
+	private AnchorStyles _toolBarAnchor;
+	private Rectangle _toolBarBounds;
+	private bool _toolBarVisible;
+	private bool _movedToolBar;
 	private bool _released;
 	private bool _closing;
 	private bool _inMoveSize;
@@ -47,10 +60,13 @@ public class WinFormsApplicationScreenForm : Form {
 	public WinFormsApplicationScreenForm(IWinFormsApplicationScreenHost Host, WinFormsApplicationScreen Screen) {
 		Guard.ArgumentNotNull(Host, nameof(Host));
 		Guard.ArgumentNotNull(Screen, nameof(Screen));
+		Guard.Argument(Screen.Host == null || ReferenceEquals(Screen.Host, Host), nameof(Screen), "The screen belongs to another host.");
 		SuspendLayout();
 		using var Layout = Tools.Scope.ExecuteOnDispose(() => ResumeLayout(true));
 		_host = Host;
+		_screenOwner = Screen.Host;
 		this.Screen = Screen;
+		ScreenHost = new DetachedWinFormsApplicationScreenHost(Host, this);
 		Text = Screen.Title;
 		StartPosition = FormStartPosition.CenterParent;
 		FormBorderStyle = FormBorderStyle.Sizable;
@@ -61,53 +77,31 @@ public class WinFormsApplicationScreenForm : Form {
 		ClientSize = LogicalToDeviceUnits(LogicalDefaultClientSize);
 		MinimumSize = LogicalToDeviceUnits(LogicalMinimumSize);
 		_caption = new ScreenCaption(this) { Name = "_screenCaption", Dock = DockStyle.Top };
-		var MenuItems = Screen.MenuItems;
-		if (MenuItems.Length > 0) {
-			_menuStrip = new MenuStrip();
-			_menuStrip.Items.AddRange(MenuItems);
-			_menuStrip.ItemAdded += UpdateStripVisibility;
-			_menuStrip.ItemRemoved += UpdateStripVisibility;
-		}
-		_screenMenuStrip = _menuStrip == null ? FindScreenMenuStrip(Screen) : null;
-		_screenMenuVisible = _screenMenuStrip?.Visible ?? false;
-		if (_screenMenuStrip != null) {
-			_screenMenuStrip.ItemAdded += UpdateStripVisibility;
-			_screenMenuStrip.ItemRemoved += UpdateStripVisibility;
-			_screenMenuStrip.Visible = _screenMenuStrip.Items.Count > 0;
-		}
-		MainMenuStrip = _menuStrip ?? _screenMenuStrip;
-		_screenToolBar = Screen.ToolBar;
-		_toolBarVisible = _screenToolBar?.Visible ?? false;
 		Screen.Dock = DockStyle.Fill;
 		Controls.Add(Screen);
-		if (_screenToolBar != null) {
-			// Designer screens already reserve space for their toolbar; preserve that original layout and control.
-			_movedToolBar = !Screen.Contains(_screenToolBar);
-			if (_movedToolBar) {
-				_toolBarParent = _screenToolBar.Parent;
-				_toolBarIndex = _toolBarParent?.Controls.GetChildIndex(_screenToolBar) ?? -1;
-				_toolBarDock = _screenToolBar.Dock;
-				_toolBarAnchor = _screenToolBar.Anchor;
-				_toolBarBounds = _screenToolBar.Bounds;
-				_screenToolBar.Dock = DockStyle.Top;
-				Controls.Add(_screenToolBar);
-			}
-			_screenToolBar.ItemAdded += UpdateStripVisibility;
-			_screenToolBar.ItemRemoved += UpdateStripVisibility;
-			_screenToolBar.Visible = _screenToolBar.Items.Count > 0;
-		}
-		if (_menuStrip != null)
-			Controls.Add(_menuStrip);
 		Controls.Add(_caption);
 		Screen.TextChanged += ScreenTextChanged;
+		Screen.NativeCommandsChanged += ScreenNativeCommandsChanged;
+		AttachNativeStrips();
+
+		// The application retains ownership; this window supplies only its own active-screen context.
+		Screen.Host = ScreenHost;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public WinFormsApplicationScreen Screen { get; }
 
+	/// <summary>The local active-screen view over the originating application's shared host.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IWinFormsApplicationScreenHost ScreenHost { get; }
+
 	/// <summary>The actual title area in desktop coordinates, measured at the window's current DPI.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Rectangle CaptionBounds => _caption.RectangleToScreen(_caption.ClientRectangle);
+	public Rectangle CaptionBounds {
+		get {
+			return _caption.RectangleToScreen(_caption.ClientRectangle);
+		}
+	}
 
 	protected override CreateParams CreateParams {
 		get {
@@ -159,35 +153,12 @@ public class WinFormsApplicationScreenForm : Form {
 		_released = true;
 		(_host as WinFormsApplicationScreenHost)?.ClearDockPreview();
 		Screen.TextChanged -= ScreenTextChanged;
-		MainMenuStrip = null;
+		Screen.NativeCommandsChanged -= ScreenNativeCommandsChanged;
+		if (ReferenceEquals(Screen.Host, ScreenHost))
+			Screen.Host = _screenOwner;
+		RestoreNativeStrips();
+		ScreenHost.Dispose();
 		Controls.Remove(Screen);
-		// Registered menus and their children belong to the screen, including when this window is disposed directly.
-		if (_menuStrip != null) {
-			_menuStrip.ItemAdded -= UpdateStripVisibility;
-			_menuStrip.ItemRemoved -= UpdateStripVisibility;
-			_menuStrip.Items.Clear();
-		}
-		if (_screenMenuStrip is { IsDisposed: false }) {
-			_screenMenuStrip.ItemAdded -= UpdateStripVisibility;
-			_screenMenuStrip.ItemRemoved -= UpdateStripVisibility;
-			_screenMenuStrip.Visible = _screenMenuVisible;
-		}
-		if (_screenToolBar is { IsDisposed: false }) {
-			_screenToolBar.ItemAdded -= UpdateStripVisibility;
-			_screenToolBar.ItemRemoved -= UpdateStripVisibility;
-			if (_movedToolBar) {
-				Controls.Remove(_screenToolBar);
-				_screenToolBar.Dock = DockStyle.None;
-				_screenToolBar.Anchor = _toolBarAnchor;
-				_screenToolBar.Bounds = _toolBarBounds;
-				if (_toolBarParent is { IsDisposed: false }) {
-					_toolBarParent.Controls.Add(_screenToolBar);
-					_toolBarParent.Controls.SetChildIndex(_screenToolBar, Math.Min(_toolBarIndex, _toolBarParent.Controls.Count - 1));
-				}
-				_screenToolBar.Dock = _toolBarDock;
-			}
-			_screenToolBar.Visible = _toolBarVisible;
-		}
 	}
 
 	protected override bool ProcessCmdKey(ref Message Message, Keys KeyData) {
@@ -308,18 +279,212 @@ public class WinFormsApplicationScreenForm : Form {
 		base.Dispose(Disposing);
 	}
 
+	// Property replacement while detached returns the old views before borrowing the newly assigned controls.
+	private void ScreenNativeCommandsChanged() {
+		if (_released)
+			return;
+		SuspendLayout();
+		using var Layout = Tools.Scope.ExecuteOnDispose(() => ResumeLayout(true));
+		RestoreNativeStrips();
+		AttachNativeStrips();
+	}
+
+	// Designer-owned strips keep their screen layout; externally parented strips are borrowed by this window.
+	private void AttachNativeStrips() {
+		_restoreRegisteredMenuSource = Screen.ActivateDetachedCommands();
+		_screenMenuStrip = Screen.ScreenMenuStrip ?? FindScreenMenuStrip(Screen);
+		_screenToolBar = Screen.ScreenToolBar;
+		// Capture both original positions before moving either control out of a shared parent.
+		if (_screenMenuStrip != null) {
+			_screenMenuVisible = !TypeDescriptor.GetProperties(typeof(Control))[nameof(Control.Visible)].ShouldSerializeValue(_screenMenuStrip);
+			_movedMenuStrip = !Screen.Contains(_screenMenuStrip);
+			if (_movedMenuStrip) {
+				_menuParent = _screenMenuStrip.Parent;
+				_menuIndex = _menuParent?.Controls.GetChildIndex(_screenMenuStrip) ?? -1;
+				_menuDock = _screenMenuStrip.Dock;
+				_menuAnchor = _screenMenuStrip.Anchor;
+				_menuBounds = _screenMenuStrip.Bounds;
+			}
+		}
+		if (_screenToolBar != null) {
+			_toolBarVisible = !TypeDescriptor.GetProperties(typeof(Control))[nameof(Control.Visible)].ShouldSerializeValue(_screenToolBar);
+			_movedToolBar = !Screen.Contains(_screenToolBar);
+			if (_movedToolBar) {
+				_toolBarParent = _screenToolBar.Parent;
+				_toolBarIndex = _toolBarParent?.Controls.GetChildIndex(_screenToolBar) ?? -1;
+				_toolBarDock = _screenToolBar.Dock;
+				_toolBarAnchor = _screenToolBar.Anchor;
+				_toolBarBounds = _screenToolBar.Bounds;
+			}
+		}
+
+		if (_screenMenuStrip != null) {
+			if (_movedMenuStrip) {
+				_screenMenuStrip.Dock = DockStyle.Top;
+				Controls.Add(_screenMenuStrip);
+			}
+			_screenMenuStrip.ItemAdded += UpdateStripVisibility;
+			_screenMenuStrip.ItemRemoved += UpdateStripVisibility;
+			_screenMenuStrip.Visible = _screenMenuVisible && _screenMenuStrip.Items.Count > 0;
+		}
+		if (_screenToolBar != null) {
+			if (_movedToolBar) {
+				_screenToolBar.Dock = DockStyle.Top;
+				Controls.Add(_screenToolBar);
+			}
+			_screenToolBar.ItemAdded += UpdateStripVisibility;
+			_screenToolBar.ItemRemoved += UpdateStripVisibility;
+			_screenToolBar.Visible = _toolBarVisible && _screenToolBar.Items.Count > 0;
+		}
+
+		MergeContextCommands();
+		MainMenuStrip = _screenMenuVisible && _screenMenuStrip != null ? _screenMenuStrip
+			: _contextMenuStrip?.Items.Count > 0 ? _contextMenuStrip : null;
+		// Docking walks reverse child order: allocate caption, menu and toolbar before the fill screen.
+		Screen.BringToFront();
+		if (_movedToolBar)
+			_screenToolBar?.SendToBack();
+		_contextToolBar?.SendToBack();
+		if (_movedMenuStrip)
+			_screenMenuStrip?.SendToBack();
+		_contextMenuStrip?.SendToBack();
+		_caption.SendToBack();
+	}
+
+	// Shared owners retain command definitions; this window owns the generated views merged into its local strips.
+	private void MergeContextCommands() {
+		var userInterface = ScreenHost.UserInterfaceServices;
+		// Registered screens carry their application; legacy manually hosted screens use their actual root form.
+		var application = Screen.Block?.Parent as IWinFormsApplication
+			?? (_host.UserInterfaceServices?.PrimaryUIController as LiteMainForm)?.Application as IWinFormsApplication;
+		var owners = new IApplicationCommandProvider[] { Screen.Block?.Source, Screen.Block }.Where(owner => owner != null).ToArray();
+
+		// Legacy registrations are already native commands; a detached window displays their original top-level items.
+		var menu = _screenMenuVisible ? _screenMenuStrip : null;
+		var registeredItems = Screen.ScreenMenuStrip == null ? Screen.MenuItems : Array.Empty<ToolStripItem>();
+		var hasMenuCommands = registeredItems.Length > 0 || application?.Menus.Any(item => item.ShowInMenuStrip) == true
+			|| owners.Any(owner => (owner is not IWinFormsApplicationBlock block || block.ShowInMenuStrip)
+				&& owner.Menus.Cast<IWinFormsApplicationMenu>().Any(item => item.ShowInMenuStrip));
+		if (menu == null && hasMenuCommands) {
+			_contextMenuStrip ??= new MenuStrip { Name = "_contextMenuStrip", Dock = DockStyle.Top };
+			if (_contextMenuStrip.Parent == null)
+				Controls.Add(_contextMenuStrip);
+			menu = _contextMenuStrip;
+			menu.Items.AddRange(registeredItems);
+		}
+
+		// Create a contextual row only when an active owner actually contributes commands to it.
+		var toolBar = _toolBarVisible ? _screenToolBar : null;
+		var hasToolBarCommands = application?.ToolBarItems.Length > 0
+			|| owners.Any(owner => owner.ToolBarItems.Length > 0 || owner is IWinFormsApplicationBlock block && block.ShowInToolStrip
+				&& block.Menus.SelectMany(item => item.Items).OfType<IWinFormsLinkMenuItem>().Any(item => item.ShowOnToolStrip));
+		if (toolBar == null && hasToolBarCommands) {
+			_contextToolBar ??= new ToolStrip { Name = "_contextToolBar", Dock = DockStyle.Top, GripStyle = ToolStripGripStyle.Hidden };
+			if (_contextToolBar.Parent == null)
+				Controls.Add(_contextToolBar);
+			toolBar = _contextToolBar;
+		}
+
+		if (application != null)
+			WinFormsCommandControls.MergeSources(this, menu, toolBar, application.Menus.Where(item => item.ShowInMenuStrip), application.ToolBarItems, application, userInterface);
+		WinFormsCommandControls.MergeSources(this, menu, toolBar, owners, userInterface);
+		if (_contextMenuStrip != null)
+			_contextMenuStrip.Visible = _contextMenuStrip.Items.Count > 0;
+		if (_contextToolBar != null)
+			_contextToolBar.Visible = _contextToolBar.Items.Count > 0;
+	}
+
+	// Return the currently attached controls before replacing them or releasing the borrowed screen.
+	private void RestoreNativeStrips() {
+		Screen.UnmergeCommands();
+		WinFormsCommandControls.ClearSources(this);
+		if (_contextMenuStrip != null)
+			Screen.RestoreRegisteredMenuItems(_contextMenuStrip, _restoreRegisteredMenuSource);
+		_contextMenuStrip?.Dispose();
+		_contextToolBar?.Dispose();
+		_contextMenuStrip = null;
+		_contextToolBar = null;
+		MainMenuStrip = null;
+		if (_screenMenuStrip is { IsDisposed: false }) {
+			_screenMenuStrip.ItemAdded -= UpdateStripVisibility;
+			_screenMenuStrip.ItemRemoved -= UpdateStripVisibility;
+			if (_movedMenuStrip) {
+				Controls.Remove(_screenMenuStrip);
+				_screenMenuStrip.Dock = DockStyle.None;
+				_screenMenuStrip.Anchor = _menuAnchor;
+				_screenMenuStrip.Bounds = _menuBounds;
+				if (_menuParent is { IsDisposed: false })
+					_menuParent.Controls.Add(_screenMenuStrip);
+				_screenMenuStrip.Dock = _menuDock;
+			}
+			_screenMenuStrip.Visible = _screenMenuVisible;
+		}
+		if (_screenToolBar is { IsDisposed: false }) {
+			_screenToolBar.ItemAdded -= UpdateStripVisibility;
+			_screenToolBar.ItemRemoved -= UpdateStripVisibility;
+			if (_movedToolBar) {
+				Controls.Remove(_screenToolBar);
+				_screenToolBar.Dock = DockStyle.None;
+				_screenToolBar.Anchor = _toolBarAnchor;
+				_screenToolBar.Bounds = _toolBarBounds;
+				if (_toolBarParent is { IsDisposed: false })
+					_toolBarParent.Controls.Add(_screenToolBar);
+				_screenToolBar.Dock = _toolBarDock;
+			}
+			_screenToolBar.Visible = _toolBarVisible;
+		}
+
+		RestoreStripOrder(_menuParent);
+		if (!ReferenceEquals(_menuParent, _toolBarParent))
+			RestoreStripOrder(_toolBarParent);
+
+		_screenMenuStrip = null;
+		_screenToolBar = null;
+		_menuParent = null;
+		_toolBarParent = null;
+		_movedMenuStrip = false;
+		_movedToolBar = false;
+		_restoreRegisteredMenuSource = false;
+	}
+
+	// Native z-order ignores siblings without HWNDs; replay the desired order at the front without creating hidden controls.
+	private void RestoreStripOrder(Control parent) {
+		if (parent is not { IsDisposed: false })
+			return;
+		var returnedStrips = new[] {
+			new StripLocation(_screenMenuStrip, _menuParent, _menuIndex),
+			new StripLocation(_screenToolBar, _toolBarParent, _toolBarIndex)
+		}.Where(strip => strip.Strip is { IsDisposed: false } && ReferenceEquals(strip.Parent, parent)
+			&& ReferenceEquals(strip.Strip.Parent, parent) && strip.Index >= 0).OrderBy(strip => strip.Index).ToArray();
+		if (returnedStrips.Length == 0)
+			return;
+
+		var orderedControls = parent.Controls.Cast<Control>()
+			.Where(control => returnedStrips.All(strip => !ReferenceEquals(strip.Strip, control))).ToList();
+		foreach (var strip in returnedStrips)
+			orderedControls.Insert(Math.Min(strip.Index, orderedControls.Count), strip.Strip);
+
+		for (var index = orderedControls.Count - 1; index >= 0; index--)
+			parent.Controls.SetChildIndex(orderedControls[index], 0);
+	}
+
 	private void ScreenTextChanged(object? Sender, EventArgs Args) {
 		Text = Screen.Title;
 		_caption.AccessibleName = Text;
 		_caption.Invalidate();
 	}
 
-	private bool IsTopResizeArea(Point Position) => WindowState == FormWindowState.Normal && Position.X >= Left && Position.X < Right
-		&& Position.Y >= Top && Position.Y < Top + _nativeTopResizeHeight;
+	private bool IsTopResizeArea(Point position) {
+		return WindowState == FormWindowState.Normal && position.X >= Left && position.X < Right
+			&& position.Y >= Top && position.Y < Top + _nativeTopResizeHeight;
+	}
 
 	private void UpdateStripVisibility(object? Sender, ToolStripItemEventArgs Args) {
-		if (!_released && Sender is ToolStrip Strip)
-			Strip.Visible = Strip.Items.Count > 0;
+		if (!_released && Sender is ToolStrip Strip) {
+			var RequestedVisible = ReferenceEquals(Strip, _screenMenuStrip) ? _screenMenuVisible
+				: !ReferenceEquals(Strip, _screenToolBar) || _toolBarVisible;
+			Strip.Visible = RequestedVisible && Strip.Items.Count > 0;
+		}
 	}
 
 	private static MenuStrip? FindScreenMenuStrip(Control Parent) {
@@ -331,6 +496,8 @@ public class WinFormsApplicationScreenForm : Form {
 		}
 		return null;
 	}
+
+	#region Inner Types
 
 	private enum CaptionAction { Dock, Minimize, Maximize, Restore, Close }
 
@@ -359,8 +526,10 @@ public class WinFormsApplicationScreenForm : Form {
 			AddAction(CaptionAction.Close, "_closeButton", "Close", "Close", Window.Close);
 		}
 
-		public bool IsDragArea(Point Position) => RectangleToScreen(ClientRectangle).Contains(Position)
-			&& !Controls.Cast<Control>().Any(Button => Button.RectangleToScreen(Button.ClientRectangle).Contains(Position));
+		public bool IsDragArea(Point position) {
+			return RectangleToScreen(ClientRectangle).Contains(position)
+				&& !Controls.Cast<Control>().Any(button => button.RectangleToScreen(button.ClientRectangle).Contains(position));
+		}
 
 		public void UpdateWindowState() {
 			var Maximized = _window.WindowState == FormWindowState.Maximized;
@@ -475,4 +644,6 @@ public class WinFormsApplicationScreenForm : Form {
 			base.WndProc(ref Message);
 		}
 	}
+
+	#endregion
 }

@@ -129,6 +129,8 @@ public class ApplicationExitTests {
 		using var projection = new NavigationHost(host, navigationBlock);
 		using var application = new ExitApplication(projection);
 
+		Assert.That(projection.ActiveBlock, Is.SameAs(screenBlock));
+		Assert.That(projection.SelectedBlock, Is.SameAs(navigationBlock));
 		Assert.That(await application.ExitAsync(), Is.False);
 
 		Assert.That(screen.Block, Is.SameAs(screenBlock));
@@ -825,8 +827,12 @@ public class ApplicationExitTests {
 		}
 	}
 
-	private sealed class NavigationHost(IApplicationScreenHost host, IApplicationBlock activeBlock) : ApplicationScreenHostDecorator(host) {
-		public override IApplicationBlock ActiveBlock => activeBlock;
+	private sealed class NavigationHost(IApplicationScreenHost host, IApplicationBlock selectedBlock) : ApplicationScreenHostDecorator(host) {
+		public override IApplicationBlock SelectedBlock {
+			get {
+				return selectedBlock;
+			}
+		}
 	}
 
 	private sealed class ExitDecorator(IApplication application) : ApplicationDecorator(application);

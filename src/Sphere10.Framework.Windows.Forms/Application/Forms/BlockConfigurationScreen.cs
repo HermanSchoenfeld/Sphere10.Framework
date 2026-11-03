@@ -10,9 +10,8 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class BlockConfigurationScreen : UserControl {
+public partial class BlockConfigurationScreen : UserControlEx {
 	public BlockConfigurationScreen() {
 		InitializeComponent();
 	}
 }
-

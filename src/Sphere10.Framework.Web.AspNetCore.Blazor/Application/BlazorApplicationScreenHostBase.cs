@@ -270,6 +270,12 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 		return screen;
 	}
 
+	// The shared host invokes this only after every close guard accepts and before ownership changes.
+	protected override async Task OnClosingScreensAsync(BlazorApplicationScreenSession[] screens, CancellationToken cancellationToken) {
+		foreach (var screen in screens.Select(session => session.Screen).OfType<BlazorApplicationScreen>())
+			await screen.SaveSettingsAsync(cancellationToken);
+	}
+
 	protected override void DisposeInternal() {
 		_ownedUserInterface?.Dispose();
 		foreach (var screen in Screens)

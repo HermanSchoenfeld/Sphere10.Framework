@@ -7,133 +7,167 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-/// <summary>A renderer-owned application screen with asynchronous activation and navigation guards.</summary>
-public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicationScreen, IApplicationSettingsParticipant, IAsyncDisposable {
-	private readonly object _settingsSource = new();
+/// <summary>A renderer-owned screen using its registration's actual settings and existing activation lifecycle.</summary>
+public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicationScreen, IAsyncDisposable {
 	private Guid? _attachedSessionId;
-	private ApplicationSettingsProfile _settingsProfile;
-	private Task _settingsUpdates = Task.CompletedTask;
-	private long _settingsRevision;
-	private long _settingsVersion;
-	private long _savedSettingsVersion;
+	private bool _settingsDirty;
 	private string _settingsError;
 	private bool _disposed;
 
+	/// <summary>The registration instance owning this renderer's screen and settings.</summary>
 	[CascadingParameter]
 	public BlazorApplicationScreenSession Session { get; set; }
 
+	/// <summary>The circuit's existing presentation host.</summary>
 	[Inject]
 	public IBlazorApplicationScreenHost ScreenHost { get; set; }
 
+	/// <summary>The circuit's application UI operations.</summary>
 	[Inject]
 	public IUserInterfaceServices UserInterfaceServices { get; set; }
 
-	[Inject]
-	private IServiceProvider Services { get; set; }
-
+	/// <inheritdoc />
 	public IBlazorApplicationScreenHost Host { get; set; }
 
+	/// <inheritdoc />
 	public IBlazorApplicationBlock Block { get; set; }
 
 	/// <summary>Override for a dynamic tab title and call NotifyScreenChanged after changing it.</summary>
-	public virtual string Title => null;
-
-	public virtual IBlazorApplicationMenu[] Menus => Array.Empty<IBlazorApplicationMenu>();
-
-	public virtual IBlazorApplicationMenuItem[] ToolBarItems => Array.Empty<IBlazorApplicationMenuItem>();
-
-	public virtual bool HasUnsavedChanges => false;
-
-	public virtual bool CanRestoreAtStartup => true;
-
-	public virtual HelpType Type => HelpType.None;
-
-	public virtual string FileName => null;
-
-	public virtual string Url => null;
-
-	public virtual int? PageNumber => null;
-
-	public virtual int? HelpTopicID => null;
-
-	public virtual int? HelpTopicAlias => null;
-
-	/// <summary>A retryable preference save or application error; the screen's ordinary data remains usable.</summary>
-	public string SettingsError => _settingsError ?? _settingsProfile?.LastSaveError?.Message;
-
-	/// <summary>The owning registration's profile; null means this screen declares no preferences.</summary>
-	protected ApplicationSettingsProfile SettingsProfile {
+	public virtual string Title {
 		get {
-			if (Session?.Definition.Settings == null)
-				return null;
-			return _settingsProfile ??= Services.GetRequiredService<IBlazorApplication>().Settings.GetProfile(Session.Block, Session.Definition.Registration);
+			return null;
 		}
 	}
 
-	/// <summary>Captures changed values on the renderer owner, then awaits ordered persistence at accepted close or shutdown.</summary>
+	/// <summary>Returns the actual registration settings; a typed override declares this screen's settings class.</summary>
+	public virtual SettingsObject ScreenSettings {
+		get {
+			return Session?.Definition.Settings;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual IBlazorApplicationMenu[] Menus {
+		get {
+			return Array.Empty<IBlazorApplicationMenu>();
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual IBlazorApplicationMenuItem[] ToolBarItems {
+		get {
+			return Array.Empty<IBlazorApplicationMenuItem>();
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual bool HasUnsavedChanges {
+		get {
+			return false;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual bool CanRestoreAtStartup {
+		get {
+			return true;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual HelpType Type {
+		get {
+			return HelpType.None;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual string FileName {
+		get {
+			return null;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual string Url {
+		get {
+			return null;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual int? PageNumber {
+		get {
+			return null;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual int? HelpTopicID {
+		get {
+			return null;
+		}
+	}
+
+	/// <inheritdoc />
+	public virtual int? HelpTopicAlias {
+		get {
+			return null;
+		}
+	}
+
+	/// <summary>The most recent settings failure, cleared after a successful save or settings application.</summary>
+	public string SettingsError {
+		get {
+			return _settingsError;
+		}
+	}
+
+	/// <summary>Saves a completed local settings edit through the actual object's configured provider.</summary>
 	public async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-		if (_settingsProfile == null)
+		if (!_settingsDirty || ScreenSettings == null)
 			return;
-
-		while (!_disposed) {
-			// A pending preference hook must finish before its accepted revision can qualify a new local capture.
-			cancellationToken.ThrowIfCancellationRequested();
-			await CompletePendingSettingsUpdatesAsync(cancellationToken);
-			if (_disposed || _settingsVersion <= _savedSettingsVersion)
-				return;
-			var revision = _settingsRevision;
-			var version = _settingsVersion;
-			var values = CaptureSettings();
-			if (values == null)
-				return;
-			var capture = _settingsProfile.Capture(values, _settingsSource, revision, version);
-			try {
-				if (await _settingsProfile.SaveCaptureAsync(capture, cancellationToken)) {
-					_savedSettingsVersion = Math.Max(_savedSettingsVersion, version);
-					_settingsError = null;
-					return;
-				}
-			} catch (Exception error) {
-				_settingsError = error.Message;
-				NotifyScreenChanged();
-				throw;
-			}
-
-			// A worker may initialize a section during capture; process that rebase before retrying an obsolete snapshot.
-			await CompletePendingSettingsUpdatesAsync(cancellationToken);
-			if (_settingsVersion > _savedSettingsVersion)
-				await Task.Yield();
+		try {
+			// A later edit must remain pending while the current snapshot is being saved.
+			_settingsDirty = false;
+			await ScreenSettings.SaveAsync(cancellationToken);
+			_settingsError = null;
+		} catch (Exception error) {
+			_settingsDirty = true;
+			_settingsError = error.Message;
+			NotifyScreenChanged();
+			throw;
 		}
 	}
 
+	/// <summary>Detaches the screen and its settings subscriptions without saving rejected edits.</summary>
 	public async ValueTask DisposeAsync() {
 		if (_disposed)
 			return;
 		_disposed = true;
-		if (_settingsProfile != null)
-			_settingsProfile.Changed -= OnSettingsChanged;
+		foreach (var settings in GetObservedSettings())
+			settings.OnChanged -= SettingsChanged;
 		if (_attachedSessionId.HasValue)
 			ScreenHost.DetachScreen(_attachedSessionId.Value, this);
 		await DisposeAsyncCore();
 		GC.SuppressFinalize(this);
 	}
 
+	/// <summary>Applies restored settings before attaching or constructing operational child controls.</summary>
 	protected override async Task OnInitializedAsync() {
 		await base.OnInitializedAsync();
-		if (SettingsProfile != null) {
-			_settingsProfile.Changed += OnSettingsChanged;
-			await QueueSettingsUpdateAsync(null);
-			await CompletePendingSettingsUpdatesAsync();
-		}
+		foreach (var settings in GetObservedSettings())
+			settings.OnChanged += SettingsChanged;
+		await OnSettingsChangedAsync(ScreenSettings);
 		if (Session != null) {
 			await ScreenHost.AttachScreenAsync(Session.Id, this);
 			if (_disposed) {
@@ -144,119 +178,101 @@ public abstract class BlazorApplicationScreen : ComponentBase, IBlazorApplicatio
 		}
 	}
 
-	/// <summary>Loads detached typed values and their matching accepted baseline before the screen's first query.</summary>
-	protected TSettings GetSettings<TSettings>() {
-		Guard.Ensure(SettingsProfile != null, "Declare UseSettings on this screen registration before requesting its preferences.");
-		return SettingsProfile.GetValues<TSettings>(out _settingsRevision);
+	/// <summary>Returns the active block's actual settings object.</summary>
+	protected TSettings GetBlockSettings<TSettings>()
+		where TSettings : SettingsObject {
+		return Guard.ArgumentCast<TSettings>((Block ?? Session?.Block)?.BlockSettings, nameof(TSettings));
 	}
 
-	/// <summary>Applies initial or newly accepted preferences on the renderer owner without replacing business drafts.</summary>
-	protected virtual Task OnSettingsChangedAsync(object values) {
+	/// <summary>Returns the active plugin owner's actual settings object for this circuit.</summary>
+	protected TSettings GetPluginSettings<TSettings>()
+		where TSettings : SettingsObject {
+		return Guard.ArgumentCast<TSettings>((Block ?? Session?.Block)?.Source?.PluginSettings, nameof(TSettings));
+	}
+
+	/// <summary>Refreshes screen presentation after its own, block or plugin settings are saved.</summary>
+	protected virtual Task OnSettingsChangedAsync(SettingsObject values) {
 		return Task.CompletedTask;
 	}
 
-	/// <summary>Returns the screen's current plain preference values; the profile immediately makes its own detached copy.</summary>
-	protected virtual object CaptureSettings() {
-		return null;
-	}
-
-	/// <summary>Marks a deliberate local preference edit without writing during layout or pointer movement.</summary>
+	/// <summary>Marks a completed local preference edit for the accepted close/save lifecycle.</summary>
 	protected void MarkSettingsChanged() {
-		_settingsVersion++;
+		_settingsDirty = true;
 	}
 
-	/// <summary>Awaits a completed control edit's save and keeps failures visible and dirty for retry on close or Options Apply.</summary>
+	/// <summary>Saves a completed control edit while keeping a recoverable failure visible on the screen.</summary>
 	protected async Task SaveSettingsChangesAsync() {
 		await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(() => SaveSettingsAsync());
 		if (!_disposed)
 			StateHasChanged();
 	}
 
-	protected virtual Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) => Task.FromResult(true);
+	/// <summary>Allows derived screens to veto navigation without saving rejected state.</summary>
+	protected virtual Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
+		return Task.FromResult(true);
+	}
 
-	protected virtual Task OnActivatedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+	/// <summary>Runs when the existing host activates this screen.</summary>
+	protected virtual Task OnActivatedAsync(CancellationToken cancellationToken) {
+		return Task.CompletedTask;
+	}
 
-	protected virtual Task OnDeactivatedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+	/// <summary>Runs when the existing host deactivates this screen.</summary>
+	protected virtual Task OnDeactivatedAsync(CancellationToken cancellationToken) {
+		return Task.CompletedTask;
+	}
 
-	protected virtual ValueTask DisposeAsyncCore() => ValueTask.CompletedTask;
+	/// <summary>Releases resources owned by a derived screen.</summary>
+	protected virtual ValueTask DisposeAsyncCore() {
+		return ValueTask.CompletedTask;
+	}
 
+	/// <summary>Refreshes the current host's screen presentation when the screen remains attached.</summary>
 	protected void NotifyScreenChanged() {
 		// Closing removes the session before the renderer disposes this component.
 		if (!_disposed && _attachedSessionId.HasValue && Host != null && Session?.Host == Host && ReferenceEquals(Session.Screen, this))
 			Host.NotifyScreenChanged(_attachedSessionId.Value);
 	}
 
-	// Provider notifications may arrive from a worker; each settings application is serialized on this renderer owner.
-	private void OnSettingsChanged(ApplicationSettingsChangedEventArgs change) {
+	// Settings notifications carry the actual changed value; presentation work remains on the renderer.
+	private void SettingsChanged() {
 		if (!_disposed)
-			_ = InvokeAsync(() => QueueSettingsUpdateAsync(change));
+			_ = InvokeAsync(async () => {
+				try {
+					await OnSettingsChangedAsync(ScreenSettings);
+					_settingsError = null;
+				} catch (Exception error) {
+					_settingsError = error.Message;
+					SystemLog.Exception(error);
+				}
+				if (!_disposed)
+					StateHasChanged();
+			});
 	}
 
-	// One task tail prevents a slower earlier apply from replacing a newer accepted page after an asynchronous grid refresh.
-	private Task QueueSettingsUpdateAsync(ApplicationSettingsChangedEventArgs change) {
-		var previous = _settingsUpdates;
-		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		_settingsUpdates = completion.Task;
-		return CompleteSettingsUpdateAsync(previous, completion, change);
+	// Each screen listens directly to the settings owners that can affect its presentation.
+	private IEnumerable<SettingsObject> GetObservedSettings() {
+		var block = Block ?? Session?.Block;
+		if (ScreenSettings != null)
+			yield return ScreenSettings;
+		if (block?.BlockSettings != null)
+			yield return block.BlockSettings;
+		if (block?.Source?.PluginSettings != null)
+			yield return block.Source.PluginSettings;
 	}
 
-	// Publish the tail before invoking user hooks, while allowing initial values to apply before the first render.
-	private async Task CompleteSettingsUpdateAsync(Task previous, TaskCompletionSource completion, ApplicationSettingsChangedEventArgs change) {
-		try {
-			await ApplySettingsUpdateAsync(previous, change);
-		} finally {
-			completion.TrySetResult();
-		}
+	/// <inheritdoc />
+	Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
+		return CanDeactivateAsync(cancellationToken);
 	}
 
-	// Join the current tail and any initialization work queued by its asynchronous preference hook.
-	private async Task CompletePendingSettingsUpdatesAsync(CancellationToken cancellationToken = default) {
-		Task pending;
-		do {
-			pending = _settingsUpdates;
-			await pending.WaitAsync(cancellationToken);
-		} while (!ReferenceEquals(pending, _settingsUpdates));
+	/// <inheritdoc />
+	Task IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) {
+		return OnActivatedAsync(cancellationToken);
 	}
 
-	// Own saves acknowledge local versions; foreign Options revisions replace stale local preferences, never operational drafts.
-	private async Task ApplySettingsUpdateAsync(Task previous, ApplicationSettingsChangedEventArgs change) {
-		await previous;
-		if (_disposed)
-			return;
-		var initializing = change?.IsSectionInitialization == true;
-		if (initializing && change.Revision <= _settingsRevision)
-			return;
-		if (ReferenceEquals(change?.Source, _settingsSource)) {
-			_settingsRevision = Math.Max(_settingsRevision, change.Revision);
-			_savedSettingsVersion = Math.Max(_savedSettingsVersion, change.SourceVersion);
-			return;
-		}
-
-		// A newly imported role advances this instance's baseline without accepting or replacing its other working edits.
-		object values;
-		if (initializing && CaptureSettings() is { } working) {
-			change.ApplyInitialization(working);
-			values = working;
-			_settingsRevision = change.Revision;
-		} else
-			values = _settingsProfile.GetValues(out _settingsRevision);
-		if (!initializing)
-			_savedSettingsVersion = _settingsVersion;
-		try {
-			await OnSettingsChangedAsync(values);
-			if (!initializing)
-				_settingsError = null;
-		} catch (Exception error) when (change != null) {
-			_settingsError = error.Message;
-			Tools.Exceptions.ExecuteIgnoringException(() => SystemLog.Exception(error));
-		}
-		if (!_disposed)
-			StateHasChanged();
+	/// <inheritdoc />
+	Task IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) {
+		return OnDeactivatedAsync(cancellationToken);
 	}
-
-	Task<bool> IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) => CanDeactivateAsync(cancellationToken);
-
-	Task IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) => OnActivatedAsync(cancellationToken);
-
-	Task IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) => OnDeactivatedAsync(cancellationToken);
 }

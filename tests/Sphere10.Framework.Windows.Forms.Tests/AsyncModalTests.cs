@@ -562,6 +562,48 @@ public class AsyncModalTests {
 		Assert.That(Dialog.IsDisposed, Is.True);
 	});
 
+	/// <summary>Stale forms never override a supplied modal owner or become the fallback dispatcher.</summary>
+	[TestCase("Control")]
+	[TestCase("Native")]
+	[TestCase("None")]
+	public void ExceptionDialogsUseTheLiveOwnerWhenOpenFormsContainsADisposedForm(string ownerKind) {
+		using var stale = new ProbeDialog();
+		stale.InitializeWithoutHandle();
+		Assert.That(stale.IsHandleCreated, Is.False);
+		stale.Dispose();
+		Assert.That(FormsApplication.OpenForms.Cast<Form>(), Does.Contain(stale));
+		try {
+			RunWithMessageLoop(async owner => {
+				IWin32Window suppliedOwner = null;
+				NativeWindow nativeOwner = null;
+				using var releaseNativeOwner = Tools.Scope.ExecuteOnDispose(() => nativeOwner?.ReleaseHandle());
+				if (ownerKind == "Control") {
+					var panel = new Panel();
+					owner.Controls.Add(panel);
+					suppliedOwner = panel;
+				} else if (ownerKind == "Native") {
+					nativeOwner = new NativeWindow();
+					nativeOwner.AssignHandle(owner.Handle);
+					suppliedOwner = nativeOwner;
+				}
+
+				var error = new InvalidOperationException("Owned exception display");
+				var pending = ExceptionDialog.ShowAsync(suppliedOwner, error);
+				using var dialog = await WaitForDialog<ExceptionDialog>();
+				Assert.That(dialog.Exception, Is.SameAs(error));
+				Assert.That(pending.IsCompleted, Is.False);
+				if (suppliedOwner != null)
+					Assert.That(WinAPI.USER32.GetWindow(dialog.Handle, WinAPI.USER32.GetWindow_Cmd.GW_OWNER), Is.EqualTo(owner.Handle));
+				((Button)dialog.Controls.Find("button1", true).Single()).PerformClick();
+				await pending;
+				Assert.That(dialog.IsDisposed, Is.True);
+			});
+		} finally {
+			stale.CompleteClosing();
+		}
+		Assert.That(FormsApplication.OpenForms.Cast<Form>(), Does.Not.Contain(stale));
+	}
+
 	[Test]
 	public void CrudCloseConfirmationCancelsBeforeAwaitAndClosesOnlyOnYes() => RunWithMessageLoop(async Owner => {
 		Assert.That(SynchronizationContext.Current, Is.TypeOf<WindowsFormsSynchronizationContext>());
@@ -667,7 +709,17 @@ public class AsyncModalTests {
 		public override Task<Result> Validate() => Validation();
 	}
 
-	public class ProbeDialog : Form, IApplicationDialog { }
+	public class ProbeDialog : Form, IApplicationDialog {
+		// Reproduce a manually loaded, handle-free form's normal OpenForms registration.
+		public void InitializeWithoutHandle() {
+			OnLoad(EventArgs.Empty);
+		}
+
+		// Finish the native registration lifecycle even after handle-free disposal.
+		public void CompleteClosing() {
+			OnFormClosed(new FormClosedEventArgs(CloseReason.None));
+		}
+	}
 
 	private sealed class TextFitDialog : DialogEx {
 		public TextFitDialog(string Text) : base(SystemIconType.Question, "Bounded Text", Text, false, "Close") { }

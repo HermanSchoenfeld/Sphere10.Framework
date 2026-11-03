@@ -15,23 +15,57 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>A startup plugin definition using shared storage and lifecycle with immutable Blazor block snapshots.</summary>
 public class BlazorPlugin : ApplicationPluginBase<IBlazorApplicationBlock>, IBlazorPlugin {
+	private readonly IBlazorPlugin _source;
+
+	/// <summary>Composes startup plugin services and independent block definitions.</summary>
 	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
 
+	/// <summary>Composes startup plugin services and independent block definitions.</summary>
 	public BlazorPlugin(string name, IEnumerable<IBlazorApplicationBlock> blocks, Action<IServiceCollection> configureServices)
 		: base(name, SnapshotBlocks(blocks), configureServices) {
 	}
 
+	// A circuit owns its settings and live host blocks while startup retains plugin load/unload ownership.
+	internal BlazorPlugin(IBlazorPlugin source, IBlazorApplicationBlock[] blocks)
+		: base(source.Name, blocks) {
+		_source = source;
+		PluginSettings = BlazorApplicationBlockSnapshot.CopySettings(source.PluginSettings);
+	}
+
+	/// <summary>Projects the original plugin's immutable menu contributions into this circuit owner.</summary>
+	public IApplicationMenu[] Menus {
+		get {
+			return _source?.Menus ?? Array.Empty<IApplicationMenu>();
+		}
+	}
+
+	/// <summary>Projects the original plugin's immutable toolbar contributions into this circuit owner.</summary>
+	public IApplicationMenuItem[] ToolBarItems {
+		get {
+			return _source?.ToolBarItems ?? Array.Empty<IApplicationMenuItem>();
+		}
+	}
+
 	/// <summary>Returns an array copy over immutable block snapshots for compatibility with the original plugin contract.</summary>
 	public override IBlazorApplicationBlock[] Blocks {
-		get => base.Blocks;
-		init => base.Blocks = SnapshotBlocks(value);
+		get {
+			return base.Blocks;
+		}
+		init {
+			base.Blocks = SnapshotBlocks(value);
+		}
 	}
 
 	/// <summary>Retained for compatibility. Plugins register into the host and never create a separate service provider.</summary>
-	public IServiceProvider IoCContainer => null;
+	public IServiceProvider IoCContainer {
+		get {
+			return null;
+		}
+	}
 
+	/// <summary>Copies validated web block definitions for a newly composed startup plugin.</summary>
 	private static IBlazorApplicationBlock[] SnapshotBlocks(IEnumerable<IBlazorApplicationBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		return BlazorApplicationBlockSnapshot.CreateBlocks(blocks, false);

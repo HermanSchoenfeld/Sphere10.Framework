@@ -7,9 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public interface IMainForm : IApplicationIconProvider, IUserInterfaceServices {
+public interface IMainForm : IApplicationIconProvider, IUserInterfaceServices,
+	IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
 }
 

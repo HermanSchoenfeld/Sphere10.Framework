@@ -18,7 +18,3 @@ export function ReadStartupScreen(key) {
 		return null;
 	}
 }
-
-export function WriteStartupScreen(key, identity) {
-	localStorage.setItem(Prefix + key, JSON.stringify(identity));
-}

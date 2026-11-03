@@ -12,37 +12,38 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class BasicContactDetailsControl : UserControl {
+public partial class BasicContactDetailsControl : UserControlEx {
 	public BasicContactDetailsControl() {
 		InitializeComponent();
 	}
 
-	private void EnableDisableControls() {
-		_emailTextBox.Enabled = _emailButton.Checked;
-	}
-
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool ContactIsAnonymous {
-		get { return _anonymousButton.Checked; }
-		set { _anonymousButton.Checked = value; }
+		get {
+			return _anonymousButton.Checked;
+		}
+		set {
+			_anonymousButton.Checked = value;
+		}
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public string ContactEmail {
 		get {
-			if (ContactIsAnonymous) {
+			if (ContactIsAnonymous)
 				return "Anonymous";
-			} else {
-				return _emailTextBox.Text;
-			}
+			return _emailTextBox.Text;
 		}
-		set { _emailTextBox.Text = value; }
+		set {
+			_emailTextBox.Text = value;
+		}
 	}
 
-	private void _emailButton_CheckedChanged(object sender, EventArgs e) {
+	private void EmailButton_CheckedChanged(object sender, EventArgs args) {
 		EnableDisableControls();
 	}
 
-
+	private void EnableDisableControls() {
+		_emailTextBox.Enabled = _emailButton.Checked;
+	}
 }
-

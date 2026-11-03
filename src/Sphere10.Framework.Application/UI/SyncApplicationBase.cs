@@ -18,8 +18,8 @@ public abstract class SyncApplicationBase : ApplicationBase {
 	protected SyncApplicationBase() {
 	}
 
-	protected SyncApplicationBase(IServiceProvider services, string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null)
-		: base(services, settingsKey, settingsDefinitions) {
+	protected SyncApplicationBase(IServiceProvider services, string settingsKey = null)
+		: base(services, settingsKey) {
 	}
 
 	public override void Initialize() {
@@ -88,10 +88,10 @@ public abstract class SyncApplicationBase : ApplicationBase {
 		// Sync-over-async pattern
 		if (screenBlock != null && !Task.Run(() => screenBlock.CanExitAsync(this, cancellationToken), cancellationToken).WaitAsync(cancellationToken).GetAwaiter().GetResult())
 			return false;
-		var activeBlock = host.ActiveBlock;
+		var selectedBlock = host.SelectedBlock;
 		// Sync-over-async pattern
-		return activeBlock == null || ReferenceEquals(activeBlock, screenBlock)
-			|| Task.Run(() => activeBlock.CanExitAsync(this, cancellationToken), cancellationToken).WaitAsync(cancellationToken).GetAwaiter().GetResult();
+		return selectedBlock == null || ReferenceEquals(selectedBlock, screenBlock)
+			|| Task.Run(() => selectedBlock.CanExitAsync(this, cancellationToken), cancellationToken).WaitAsync(cancellationToken).GetAwaiter().GetResult();
 	}
 
 	protected override Task<bool> CanExitAsync(CancellationToken cancellationToken)
@@ -127,5 +127,7 @@ public abstract class SyncApplicationBase : ApplicationBase {
 		}).GetAwaiter().GetResult();
 	}
 
-	protected override ValueTask DisposeInternalAsync() => new(Task.Run(DisposeInternal));
+	protected override ValueTask DisposeInternalAsync() {
+		return new(Task.Run(DisposeInternal));
+	}
 }

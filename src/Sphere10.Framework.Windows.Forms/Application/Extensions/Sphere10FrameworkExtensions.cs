@@ -87,7 +87,6 @@ public static class Sphere10FrameworkExtensions {
 		IWinFormsApplication application = null;
 		WinFormsApplication nativeApplication = null;
 		MainFormSettingsFinalizer settingsFinalizer = null;
-		ApplicationSettingsCatalog settingsCatalog = null;
 		Form mainForm = null;
 		ActionScope? windowSettings = null;
 		Func<Task> previousShutdown = null;
@@ -129,8 +128,6 @@ public static class Sphere10FrameworkExtensions {
 				}, errors);
 			if (application != null)
 				await CaptureAsync(() => application.FinalizeAsync());
-			else if (settingsCatalog != null)
-				await CaptureAsync(() => settingsCatalog.FlushAsync());
 			if (builder.Framework.IsStarted)
 				Tools.Exceptions.ExecuteCapturingException(builder.Framework.FinalizeFramework, errors);
 		}
@@ -169,10 +166,6 @@ public static class Sphere10FrameworkExtensions {
 						splash?.AttachToApplication(application);
 					return application?.Logger ?? provider.GetService<ILogger>() ?? SystemLog.Logger;
 				});
-				// Plain-form applications share the same DI-owned preference catalog without an artificial screen/application graph.
-				settingsCatalog = application?.Settings ?? builder.Framework.ServiceProvider.GetService<ApplicationSettingsCatalog>();
-				if (settingsCatalog != null)
-					await settingsCatalog.InitializeAsync();
 				if (application != null) {
 					await application.InitializeAsync();
 				} else if (mainForm is IBlockManager blockManager) {

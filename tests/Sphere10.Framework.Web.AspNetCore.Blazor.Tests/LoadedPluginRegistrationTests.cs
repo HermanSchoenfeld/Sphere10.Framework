@@ -23,7 +23,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 public class LoadedPluginRegistrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
-	public void RegisteredButUnloadedPluginsAreExcludedFromBothApplicationFactories(bool configureApplication) {
+	public async Task RegisteredButUnloadedPluginsAreExcludedFromBothApplicationFactories(bool configureApplication) {
 		var plugin = new BlazorPlugin("Unloaded", Array.Empty<IBlazorApplicationBlock>());
 		var loaded = 0;
 		plugin.Loaded += () => loaded++;
@@ -31,8 +31,8 @@ public class LoadedPluginRegistrationTests {
 		services.AddSingleton<IBlazorPlugin>(plugin);
 		if (configureApplication)
 			services.AddSphere10BlazorApplication(_ => { });
-		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		using var scope = provider.CreateScope();
+		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var scope = provider.CreateAsyncScope();
 		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
 
 		Assert.That(provider.GetServices<IBlazorPlugin>().Single(), Is.SameAs(plugin));
@@ -44,7 +44,7 @@ public class LoadedPluginRegistrationTests {
 	}
 
 	[Test]
-	public void FailedLoadDoesNotPublishAReceiptOrDisplaceSuccessfulPlugins() {
+	public async Task FailedLoadDoesNotPublishAReceiptOrDisplaceSuccessfulPlugins() {
 		var successful = new BlazorPlugin("Successful", Array.Empty<IBlazorApplicationBlock>());
 		var failing = new BlazorPluginBuilder()
 			.WithName("Failing")
@@ -57,7 +57,7 @@ public class LoadedPluginRegistrationTests {
 			.AddSphere10BlazorPlugin(successful);
 		Assert.That(() => services
 			.AddSphere10BlazorPlugin(failing), Throws.InvalidOperationException);
-		using var provider = services.BuildServiceProvider();
+		await using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IBlazorApplication>();
 
 		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { successful }));
@@ -225,8 +225,8 @@ public class LoadedPluginRegistrationTests {
 		var services = new ServiceCollection()
 			.AddSphere10BlazorPlugin(plugin);
 		plugin.CurrentBlocks = Array.Empty<IBlazorApplicationBlock>();
-		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		using var scope = provider.CreateScope();
+		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var scope = provider.CreateAsyncScope();
 		var receipt = provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Single();
 		receipt.Blocks[0] = null;
 		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();

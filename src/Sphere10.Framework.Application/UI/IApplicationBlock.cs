@@ -24,9 +24,8 @@ public interface IApplicationBlock : IApplicationCommandProvider {
 
 	int Position { get; }
 
-	new IApplicationMenu[] Menus { get; }
-
-	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
+	/// <summary>The actual settings instance owned by this block, or null when it has none.</summary>
+	SettingsObject BlockSettings { get; set; }
 
 	ApplicationScreenDefinition[] ScreenDefinitions { get; }
 
@@ -39,12 +38,4 @@ public interface IApplicationBlock : IApplicationCommandProvider {
 		cancellationToken.ThrowIfCancellationRequested();
 		return Task.FromResult(true);
 	}
-}
-
-public interface IApplicationBlock<out TMenu, out TItem> : IApplicationBlock, IApplicationCommandProvider<TMenu, TItem>
-	where TMenu : class, IApplicationMenu
-	where TItem : class, IApplicationMenuItem {
-	new TMenu[] Menus { get; }
-	IApplicationMenu[] IApplicationBlock.Menus => Menus;
-	IApplicationMenu[] IApplicationCommandProvider.Menus => Menus;
 }

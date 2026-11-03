@@ -23,6 +23,13 @@ public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvid
 	/// <summary>Optional dynamic display caption.</summary>
 	string Title => null;
 
+	/// <summary>Optional screen preferences; platform screens can override this with their concrete value type.</summary>
+	SettingsObject ScreenSettings {
+		get {
+			return null;
+		}
+	}
+
 	bool HasUnsavedChanges => false;
 
 	/// <summary>Allows or vetoes hiding, closing, or navigating away; may be called for a hidden screen.</summary>
@@ -54,9 +61,4 @@ public interface IApplicationScreen : IHelpableObject, IApplicationCommandProvid
 	int? IHelpableObject.HelpTopicID => null;
 
 	int? IHelpableObject.HelpTopicAlias => null;
-}
-
-public interface IApplicationScreen<out TMenu, out TItem> : IApplicationScreen, IApplicationCommandProvider<TMenu, TItem>
-	where TMenu : class, IApplicationMenu
-	where TItem : class, IApplicationMenuItem {
 }

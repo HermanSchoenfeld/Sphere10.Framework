@@ -177,7 +177,7 @@ public class PluginBuilderTests {
 	}
 
 	[Test]
-	public void RegistrationAllowsServiceOnlyPluginsAndNotifiesAfterConfiguringServices() {
+	public async Task RegistrationAllowsServiceOnlyPluginsAndNotifiesAfterConfiguringServices() {
 		var services = new ServiceCollection();
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Services")
@@ -190,7 +190,7 @@ public class PluginBuilderTests {
 		};
 		var result = services
 			.AddSphere10BlazorPlugin(plugin);
-		using var provider = services.BuildServiceProvider();
+		await using var provider = services.BuildServiceProvider();
 
 		Assert.That(result, Is.SameAs(services));
 		Assert.That(loaded, Is.EqualTo(1));
@@ -223,7 +223,7 @@ public class PluginBuilderTests {
 		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 		using var scope = provider.CreateScope();
 		var userInterface = scope.ServiceProvider.GetRequiredService<IBlazorUserInterfaceServices>();
-		var command = userInterface.ScreenHost.Blocks.Single().Menus.Single().Items.Single();
+		var command = ((IBlazorApplicationScreenHost)userInterface.ScreenHost).Blocks.Single().Menus.Single().Items.Single();
 
 		await userInterface.ExecuteMenuItemAsync(command);
 
@@ -232,7 +232,7 @@ public class PluginBuilderTests {
 	}
 
 	[Test]
-	public void RegistrationRejectsDuplicateBlocksAddedByStartupCallbacks() {
+	public async Task RegistrationRejectsDuplicateBlocksAddedByStartupCallbacks() {
 		var services = new ServiceCollection();
 		var plugin = new BlazorPluginBuilder()
 			.WithName("Workspace")
@@ -256,7 +256,7 @@ public class PluginBuilderTests {
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IBlazorPlugin)), Is.False);
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(IApplicationPlugin)), Is.False);
 		Assert.That(services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationPluginRegistration<IBlazorPlugin>)), Is.False);
-		using var provider = services.BuildServiceProvider();
+		await using var provider = services.BuildServiceProvider();
 		Assert.That(provider.GetRequiredService<IBlazorApplication>().LoadedPlugins, Is.Empty);
 		Assert.That(provider.GetRequiredService<IBlazorApplication>().Blocks.Single().Name, Is.EqualTo("Callback block"),
 			"Existing callback registrations remain usable without inventing a loaded plugin owner.");
@@ -268,8 +268,8 @@ public class PluginBuilderTests {
 		Assert.That(plugin.Blocks, Is.Empty);
 		var services = new ServiceCollection()
 			.AddSphere10BlazorPlugin(plugin);
-		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		using var scope = provider.CreateScope();
+		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var scope = provider.CreateAsyncScope();
 		var host = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var session = await host.ActivateBlockAsync("late");
 
@@ -451,6 +451,8 @@ public class PluginBuilderTests {
 			.WithName("Explicit")
 			.Build();
 
+		public SettingsObject PluginSettings { get; set; }
+
 		event EventHandlerEx IApplicationPlugin.Loaded {
 			add => _loaded += value;
 			remove => _loaded -= value;
@@ -478,6 +480,8 @@ public class PluginBuilderTests {
 	private sealed class LateBlockPlugin : IBlazorPlugin {
 		public event EventHandlerEx Loaded;
 		public event EventHandlerEx Unloaded;
+
+		public SettingsObject PluginSettings { get; set; }
 
 		public string Name => "Late blocks";
 

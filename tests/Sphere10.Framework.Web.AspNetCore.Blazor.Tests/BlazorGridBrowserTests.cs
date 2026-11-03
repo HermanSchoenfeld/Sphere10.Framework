@@ -22,6 +22,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Category("Browser")]
 [NonParallelizable]
 public class BlazorGridBrowserTests {
+	/// <summary>Verifies complete-row paging and selection during silent refresh.</summary>
 	[TestCase(1280, 1000, 1.25f, 1.25)]
 	[TestCase(390, 900, 1.5f, 1.0)]
 	public async Task AutoPagesFitCompleteRowsAndSilentRefreshKeepsSelectionInteractive(int width, int height, float deviceScale, double zoom) {
@@ -83,6 +84,7 @@ public class BlazorGridBrowserTests {
 		Assert.That(errors, Is.Empty);
 	}
 
+	/// <summary>Verifies remembered widths coexist with automatic stretching and paging.</summary>
 	[TestCase(1500, 1000, 1.0f, 1.0)]
 	[TestCase(760, 1000, 1.25f, 1.25)]
 	public async Task NaturalAndManualWidthsSurvivePagingWhileOtherPreferredColumnsStillStretch(int width, int height, float deviceScale, double zoom) {
@@ -120,7 +122,7 @@ public class BlazorGridBrowserTests {
 		await page.Mouse.DownAsync();
 		await page.Mouse.MoveAsync(handle.X + handle.Width / 2 + 65, handle.Y + handle.Height / 2, new MouseMoveOptions { Steps = 5 });
 		await page.Mouse.UpAsync();
-		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key)).values?.Grid?.Columns?.some(column => column.Key === 'Name' && column.Width > 0))");
+		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key))?.Grid?.Columns?.some(column => column.Key === 'Name' && column.Width > 0))");
 		var manual = await table.Locator("col[data-grid-key=Name]").EvaluateAsync<double>("column => parseFloat(column.style.width)");
 		await grid.GetByRole(AriaRole.Button, new() { Name = "Reload", Exact = true }).ClickAsync();
 		await Assertions.Expect(grid).ToHaveAttributeAsync("aria-busy", "false");
@@ -239,6 +241,7 @@ public class BlazorGridBrowserTests {
 		Assert.That(errors, Is.Empty, "Browser script errors must not mask a stopped resize loop.");
 	}
 
+	/// <summary>Verifies page commands and page-size editing guards in the browser.</summary>
 	[TestCase(1500, 1000)]
 	[TestCase(390, 844)]
 	public async Task IconPagerNavigatesAndPageSizeDropdownPreservesEditingGuards(int width, int height) {
@@ -269,7 +272,7 @@ public class BlazorGridBrowserTests {
 		var modeButton = grid.GetByRole(AriaRole.Button, new() { Name = "Paging mode", Exact = true });
 		await modeButton.ClickAsync();
 		var modes = grid.GetByRole(AriaRole.Menu, new() { Name = "Paging mode", Exact = true });
-		Assert.That(await modes.GetByRole(AriaRole.Menuitemradio).CountAsync(), Is.EqualTo(3));
+		await Assertions.Expect(modes.GetByRole(AriaRole.Menuitemradio)).ToHaveCountAsync(3);
 		await Assertions.Expect(modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Manual", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
 		await modes.GetByRole(AriaRole.Menuitemradio, new() { Name = "Single", Exact = true }).ClickAsync();
 		await Assertions.Expect(pager).ToBeHiddenAsync();
@@ -322,6 +325,7 @@ public class BlazorGridBrowserTests {
 		Assert.That(errors, Is.Empty);
 	}
 
+	/// <summary>Verifies typed settings, legacy width import, Options and retained row drafts.</summary>
 	[Test]
 	public async Task OwnedWidthsMigrateOnceRoundTripAndOptionsPreserveTheLiveRowDraft() {
 		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
@@ -357,7 +361,7 @@ public class BlazorGridBrowserTests {
 		await page.Mouse.DownAsync();
 		await page.Mouse.MoveAsync(handle.X + handle.Width / 2 + 46, handle.Y + handle.Height / 2, new() { Steps = 5 });
 		await page.Mouse.UpAsync();
-		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key)).values?.Grid?.Columns?.some(column => column.Key === 'Name' && column.Width > 220))");
+		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key))?.Grid?.Columns?.some(column => column.Key === 'Name' && column.Width > 220))");
 		var manual = await name.EvaluateAsync<double>("column => parseFloat(column.style.width)");
 		Assert.That(await page.EvaluateAsync<double>("() => JSON.parse(localStorage.getItem('sphere10-grid:tester.editable-grid')).columnWidths.Name"), Is.EqualTo(197));
 		await page.ReloadAsync();
@@ -414,14 +418,14 @@ public class BlazorGridBrowserTests {
 		await Assertions.Expect(rows).ToHaveCountAsync(1);
 		Assert.That(await rows.First.InnerTextAsync(), Does.Not.Contain("Unsaved grid row"));
 
-		// Reset releases manual geometry and retains migration markers, so old values cannot return on reload.
+		// Reset saves the actual typed root, so its defaults suppress retired legacy imports on reload.
 		dialog = await OpenGridOptionsAsync(page);
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Reset Defaults", Exact = true }).ClickAsync();
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Apply", Exact = true }).ClickAsync();
 		await Assertions.Expect(rows).ToHaveCountAsync(10);
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
 		await dialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
-		Assert.That(await page.EvaluateAsync<bool>("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => { const record=JSON.parse(localStorage.getItem(key)); return record.values?.Grid?.PageSize===10 && record.values.Grid.Columns.every(column=>column.Width===null) && record.sectionVersions?.Grid===1 && record.sectionVersions?.LiveGrid===1; })"), Is.True);
+		Assert.That(await page.EvaluateAsync<bool>("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => { const record=JSON.parse(localStorage.getItem(key)); return record.Grid?.PageSize===10 && record.Grid.Columns.every(column=>column.Width===null) && record.LiveGrid?.PageSize===12 && record.LiveGrid.Columns.every(column=>column.Width===null); })"), Is.True);
 		await page.ReloadAsync();
 		await Assertions.Expect(rows).ToHaveCountAsync(10);
 		await page.WaitForFunctionAsync("() => !!document.querySelector('.sphere10-screen:not([hidden]) [data-demo=grid] table')?.style.width");
@@ -435,11 +439,12 @@ public class BlazorGridBrowserTests {
 		await commands.GetByRole(AriaRole.Button, new() { Name = "Options", Exact = true }).ClickAsync();
 		await commands.GetByRole(AriaRole.Button, new() { Name = "Screen Options...", Exact = true }).ClickAsync();
 		var dialog = page.Locator(".sphere10-options-host");
-		await dialog.GetByRole(AriaRole.Navigation, new() { Name = "Screen options pages", Exact = true })
+		await dialog.GetByRole(AriaRole.Navigation, new() { Name = "Options pages", Exact = true })
 			.GetByRole(AriaRole.Button, new() { Name = "Visual grid", Exact = true }).ClickAsync();
 		return dialog;
 	}
 
+	// Samples settled DOM geometry and resize activity over consecutive browser frames.
 	private static async Task<LayoutObservation> SampleLayoutAsync(ILocator grid, bool sampleRows = true) {
 		var frames = await grid.EvaluateAsync<double[][]>("""
 			async (root, sampleRows) => {
@@ -495,24 +500,40 @@ public class BlazorGridBrowserTests {
 		};
 	}
 
+	#region Inner Types
+
+	// Stores the final geometry and activity observed by one browser probe.
 	private sealed class LayoutObservation {
+		/// <summary>The number of grids sampled by the probe.</summary>
 		public int GridCount { get; init; }
 
+		/// <summary>The observed number of inline style changes.</summary>
 		public int StyleWrites { get; init; }
 
+		/// <summary>The observed number of resize notifications.</summary>
 		public int ResizeEvents { get; init; }
 
+		/// <summary>The largest late-frame geometry variation in CSS pixels.</summary>
 		public double MaximumGeometryRange { get; init; }
 
+		/// <summary>The width declared by the sampled grid.</summary>
 		public double ConfiguredWidth { get; init; }
 
+		/// <summary>The width available inside the sampled viewport.</summary>
 		public double AvailableWidth { get; init; }
 
+		/// <summary>The sampled table width in CSS pixels.</summary>
 		public double TableWidth { get; init; }
 
+		/// <summary>The sampled viewport width in CSS pixels.</summary>
 		public double ViewportWidth { get; init; }
 
-		public string Description(string phase) => $"{phase}: over the final 60 of 150 frames, maximum geometry range was {MaximumGeometryRange:F4}px, " +
-			$"with {StyleWrites} style writes and {ResizeEvents} resize notifications across {GridCount} grids; table {TableWidth:F4}px, viewport {ViewportWidth:F4}px.";
+		/// <summary>Describes the settled geometry when an assertion fails.</summary>
+		public string Description(string phase) {
+			return $"{phase}: over the final 60 of 150 frames, maximum geometry range was {MaximumGeometryRange:F4}px, " +
+				$"with {StyleWrites} style writes and {ResizeEvents} resize notifications across {GridCount} grids; table {TableWidth:F4}px, viewport {ViewportWidth:F4}px.";
+		}
 	}
+
+	#endregion
 }

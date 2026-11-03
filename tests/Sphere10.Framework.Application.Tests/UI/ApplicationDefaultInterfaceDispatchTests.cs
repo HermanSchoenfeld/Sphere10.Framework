@@ -16,9 +16,11 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Application.Tests;
 
+/// <summary>Exercises shared application default interface dispatch tests.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationDefaultInterfaceDispatchTests {
+	/// <summary>Verifies typed plugin overrides remain live through both interfaces and the existing base class.</summary>
 	[Test]
 	public void TypedPluginOverridesRemainLiveThroughBothInterfacesAndTheExistingBaseClass() {
 		var first = new TestApplicationBlock { Name = "First" };
@@ -39,6 +41,7 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(compatibility.Blocks.Single(), Is.SameAs(second));
 	}
 
+	/// <summary>Verifies neutral host uses the typed decorator overrides for properties and async return values.</summary>
 	[Test]
 	public async Task NeutralHostUsesTheTypedDecoratorOverridesForPropertiesAndAsyncReturnValues() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -57,9 +60,9 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(neutral.ActiveBlock, Is.SameAs(projectedBlock));
 		Assert.That(neutral.Blocks.Single(), Is.SameAs(projectedBlock));
 		Assert.That(neutral.ActiveScreen, Is.SameAs(screen));
-		Assert.That(neutral.GetScreenBlock(screen), Is.SameAs(block));
 	}
 
+	/// <summary>Verifies detached presentation keeps the typed override and the original pending task through neutral decoration.</summary>
 	[Test]
 	public async Task DetachedPresentationKeepsTheTypedOverrideAndTheOriginalPendingTaskThroughNeutralDecoration() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -82,6 +85,7 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(await pending, Is.False);
 	}
 
+	/// <summary>Verifies neutral reusable hosts keep class dispatch when subclasses remap typed interfaces.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task NeutralReusableHostsKeepClassDispatchWhenSubclassesRemapTypedInterfaces(bool decorate) {
@@ -106,14 +110,12 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(neutral.Blocks.Single(), Is.SameAs(block));
 		Assert.That(neutral.ActiveBlock, Is.SameAs(block));
 		Assert.That(neutral.ActiveScreen, Is.SameAs(screen));
-		Assert.That(neutral.GetScreenBlock(screen), Is.SameAs(block));
 		Assert.That(neutralMulti.Screens.Single(), Is.SameAs(screen));
 		Assert.That(neutralMulti.OpenScreens.Single(), Is.SameAs(screen));
 		Assert.That(await neutralMulti.ShowScreenAsync(screen), Is.True);
 		Assert.That(await neutral.ShowScreenUndockedAsync(screen), Is.True);
 		Assert.That(typed.Blocks.Single(), Is.SameAs(remappedBlock));
 		Assert.That(typed.ActiveScreen, Is.SameAs(remappedScreen));
-		Assert.That(typed.GetScreenBlock((ProbeScreen)screen), Is.SameAs(remappedBlock));
 		Assert.That(await typed.OpenScreenAsync(block, block.DefaultScreenDefinition), Is.SameAs(remappedScreen));
 		Assert.That(typedMulti.Screens.Single(), Is.SameAs(remappedScreen));
 		Assert.That(await typedMulti.ShowScreenAsync((ProbeScreen)screen), Is.False);
@@ -122,6 +124,7 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		Assert.That(host.OpenCalls, Is.EqualTo(1), "An explicit typed remapping must not replace the neutral class mapping.");
 	}
 
+	/// <summary>Verifies neutral host rejects mismatched block and screen types before calling typed overrides.</summary>
 	[Test]
 	public void NeutralHostRejectsMismatchedBlockAndScreenTypesBeforeCallingTypedOverrides() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -131,42 +134,57 @@ public class ApplicationDefaultInterfaceDispatchTests {
 		IApplicationScreenHost neutral = decorator;
 
 		Assert.That(() => neutral.SelectBlockAsync(new OtherBlock()), Throws.ArgumentException);
-		Assert.That(() => neutral.GetScreenBlock(new OtherScreen()), Throws.ArgumentException);
 		Assert.That(() => neutral.ShowScreenUndockedAsync(new OtherScreen()), Throws.ArgumentException);
 		Assert.That(decorator.SelectionCalls, Is.Zero);
-		Assert.That(decorator.ScreenBlockCalls, Is.Zero);
 		Assert.That(decorator.UndockedCalls, Is.Zero);
-		Assert.That(neutral.GetScreenBlock(null), Is.Null);
 	}
 
+	#region Inner Types
+
+	/// <summary>Supplies dynamic plugin for the fixture's existing contract checks.</summary>
 	private sealed class DynamicPlugin : ApplicationPluginBase<TestApplicationBlock> {
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public DynamicPlugin()
 			: base("Dynamic", Array.Empty<TestApplicationBlock>()) {
 		}
 
+		/// <inheritdoc />
 		public TestApplicationBlock CurrentBlock { get; set; }
 
+		/// <inheritdoc />
 		public override TestApplicationBlock[] Blocks {
-			get => new[] { CurrentBlock };
-			init => base.Blocks = value;
+			get {
+				return new[] { CurrentBlock };
+			}
+			init {
+				base.Blocks = value;
+			}
 		}
 	}
 
+	/// <summary>Supplies probe host for the fixture's existing contract checks.</summary>
 	private class ProbeHost : ApplicationScreenHost<TestApplicationBlock, ProbeScreen> {
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public ProbeHost(TestApplicationBlock block, IServiceProvider services)
 			: base(new[] { block }, services) {
 		}
 
+		/// <inheritdoc />
 		public int OpenCalls { get; private set; }
 
+		/// <inheritdoc />
 		public int UndockedCalls { get; private set; }
 
+		/// <inheritdoc />
 		public Task<bool> UndockedPresentation { get; set; } = Task.FromResult(true);
 
+		/// <inheritdoc />
 		public ProbeScreen LastUndockedScreen { get; private set; }
 
+		/// <inheritdoc />
 		public CancellationToken LastUndockedToken { get; private set; }
 
+		/// <inheritdoc />
 		public override Task<bool> ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken = default) {
 			UndockedCalls++;
 			LastUndockedScreen = screen;
@@ -174,138 +192,277 @@ public class ApplicationDefaultInterfaceDispatchTests {
 			return UndockedPresentation;
 		}
 
+		/// <inheritdoc />
 		public override Task<ProbeScreen> OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
 			OpenCalls++;
 			return base.OpenScreenAsync(block, definition, cancellationToken);
 		}
 
-		protected override ProbeScreen CreateScreen(TestApplicationBlock block, ApplicationScreenDefinition definition) => new();
+		/// <inheritdoc />
+		protected override ProbeScreen CreateScreen(TestApplicationBlock block, ApplicationScreenDefinition definition) {
+			return new();
+		}
 	}
 
+	/// <summary>Supplies remapped host for the fixture's existing contract checks.</summary>
 	private sealed class RemappedHost : ProbeHost, IApplicationScreenHost<TestApplicationBlock, ProbeScreen>, IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen> {
 		private readonly TestApplicationBlock _block;
 		private readonly ProbeScreen _screen;
 
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public RemappedHost(TestApplicationBlock block, IServiceProvider services, TestApplicationBlock remappedBlock, ProbeScreen remappedScreen)
 			: base(block, services) {
 			_block = remappedBlock;
 			_screen = remappedScreen;
 		}
 
-		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.AvailableBlocks => new[] { _block };
+		/// <inheritdoc />
+		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.AvailableBlocks {
+			get {
+				return new[] { _block };
+			}
+		}
 
-		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Blocks => new[] { _block };
+		/// <inheritdoc />
+		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Blocks {
+			get {
+				return new[] { _block };
+			}
+		}
 
-		TestApplicationBlock IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveBlock => _block;
+		/// <inheritdoc />
+		TestApplicationBlock IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveBlock {
+			get {
+				return _block;
+			}
+		}
 
-		ProbeScreen IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveScreen => _screen;
+		/// <inheritdoc />
+		ProbeScreen IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveScreen {
+			get {
+				return _screen;
+			}
+		}
 
-		TestApplicationBlock IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.GetScreenBlock(ProbeScreen screen) => _block;
+		/// <inheritdoc />
+		Task<ProbeScreen> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) {
+			return Task.FromResult(_screen);
+		}
 
-		Task<ProbeScreen> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => Task.FromResult(_screen);
+		/// <inheritdoc />
+		Task<bool> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken) {
+			return Task.FromResult(false);
+		}
 
-		Task<bool> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken) => Task.FromResult(false);
+		/// <inheritdoc />
+		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Screens {
+			get {
+				return new[] { _screen };
+			}
+		}
 
-		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Screens => new[] { _screen };
+		/// <inheritdoc />
+		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreens {
+			get {
+				return new[] { _screen };
+			}
+		}
 
-		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreens => new[] { _screen };
-
-		Task<bool> IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenAsync(ProbeScreen screen, CancellationToken cancellationToken) => Task.FromResult(false);
+		/// <inheritdoc />
+		Task<bool> IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenAsync(ProbeScreen screen, CancellationToken cancellationToken) {
+			return Task.FromResult(false);
+		}
 	}
 
+	/// <summary>Supplies remapped host decorator for the fixture's existing contract checks.</summary>
 	private sealed class RemappedHostDecorator : MultiApplicationScreenHostDecorator<TestApplicationBlock, ProbeScreen>, IApplicationScreenHost<TestApplicationBlock, ProbeScreen>, IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen> {
 		private readonly TestApplicationBlock _block;
 		private readonly ProbeScreen _screen;
 
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public RemappedHostDecorator(IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen> host, TestApplicationBlock remappedBlock, ProbeScreen remappedScreen)
 			: base(host) {
 			_block = remappedBlock;
 			_screen = remappedScreen;
 		}
 
-		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.AvailableBlocks => new[] { _block };
+		/// <inheritdoc />
+		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.AvailableBlocks {
+			get {
+				return new[] { _block };
+			}
+		}
 
-		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Blocks => new[] { _block };
+		/// <inheritdoc />
+		TestApplicationBlock[] IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Blocks {
+			get {
+				return new[] { _block };
+			}
+		}
 
-		TestApplicationBlock IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveBlock => _block;
+		/// <inheritdoc />
+		TestApplicationBlock IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveBlock {
+			get {
+				return _block;
+			}
+		}
 
-		ProbeScreen IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveScreen => _screen;
+		/// <inheritdoc />
+		ProbeScreen IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ActiveScreen {
+			get {
+				return _screen;
+			}
+		}
 
-		TestApplicationBlock IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.GetScreenBlock(ProbeScreen screen) => _block;
+		/// <inheritdoc />
+		Task<ProbeScreen> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) {
+			return Task.FromResult(_screen);
+		}
 
-		Task<ProbeScreen> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) => Task.FromResult(_screen);
+		/// <inheritdoc />
+		Task<bool> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken) {
+			return Task.FromResult(false);
+		}
 
-		Task<bool> IApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken) => Task.FromResult(false);
+		/// <inheritdoc />
+		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Screens {
+			get {
+				return new[] { _screen };
+			}
+		}
 
-		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.Screens => new[] { _screen };
+		/// <inheritdoc />
+		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreens {
+			get {
+				return new[] { _screen };
+			}
+		}
 
-		ProbeScreen[] IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.OpenScreens => new[] { _screen };
-
-		Task<bool> IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenAsync(ProbeScreen screen, CancellationToken cancellationToken) => Task.FromResult(false);
+		/// <inheritdoc />
+		Task<bool> IMultiApplicationScreenHost<TestApplicationBlock, ProbeScreen>.ShowScreenAsync(ProbeScreen screen, CancellationToken cancellationToken) {
+			return Task.FromResult(false);
+		}
 	}
 
+	/// <summary>Supplies projected host decorator for the fixture's existing contract checks.</summary>
 	private sealed class ProjectedHostDecorator : ApplicationScreenHostDecorator<TestApplicationBlock, ProbeScreen> {
 		private readonly TestApplicationBlock _projectedBlock;
 
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public ProjectedHostDecorator(IApplicationScreenHost<TestApplicationBlock, ProbeScreen> host, TestApplicationBlock projectedBlock)
 			: base(host) {
 			_projectedBlock = projectedBlock;
 		}
 
-		public override TestApplicationBlock[] Blocks => new[] { _projectedBlock };
+		/// <inheritdoc />
+		public override TestApplicationBlock[] Blocks {
+			get {
+				return new[] { _projectedBlock };
+			}
+		}
 
-		public override TestApplicationBlock ActiveBlock => _projectedBlock;
+		/// <inheritdoc />
+		public override TestApplicationBlock ActiveBlock {
+			get {
+				return _projectedBlock;
+			}
+		}
 
+		/// <inheritdoc />
 		public int OpenCalls { get; private set; }
 
+		/// <inheritdoc />
 		public int SelectionCalls { get; private set; }
 
-		public int ScreenBlockCalls { get; private set; }
-
+		/// <inheritdoc />
 		public int UndockedCalls { get; private set; }
 
+		/// <inheritdoc />
 		public override Task<bool> ShowScreenUndockedAsync(ProbeScreen screen, CancellationToken cancellationToken = default) {
 			UndockedCalls++;
 			return base.ShowScreenUndockedAsync(screen, cancellationToken);
 		}
 
+		/// <inheritdoc />
 		public override Task SelectBlockAsync(TestApplicationBlock block, CancellationToken cancellationToken = default) {
 			SelectionCalls++;
 			return base.SelectBlockAsync(block, cancellationToken);
 		}
 
-		public override TestApplicationBlock GetScreenBlock(ProbeScreen screen) {
-			ScreenBlockCalls++;
-			return base.GetScreenBlock(screen);
-		}
-
+		/// <inheritdoc />
 		public override Task<ProbeScreen> OpenScreenAsync(TestApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
 			OpenCalls++;
 			return base.OpenScreenAsync(block, definition, cancellationToken);
 		}
 	}
 
+	/// <summary>Supplies probe screen for the fixture's existing contract checks.</summary>
 	private sealed class ProbeScreen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
 
+	/// <summary>Supplies neutral host decorator for the fixture's existing contract checks.</summary>
 	private sealed class NeutralHostDecorator(IApplicationScreenHost host) : ApplicationScreenHostDecorator(host);
 
+	/// <summary>Supplies other screen for the fixture's existing contract checks.</summary>
 	private sealed class OtherScreen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
 
+	/// <summary>Supplies other block for the fixture's existing contract checks.</summary>
 	private sealed class OtherBlock : IApplicationBlock {
+		// Retain the actual optional settings value owned by this fixture.
+		public SettingsObject BlockSettings { get; set; }
+
+		/// <inheritdoc />
 		public IApplication Parent { get; set; }
+
+		/// <inheritdoc />
 		public IApplicationPlugin Source { get; set; }
-		public string Name => "Other";
-		public int Position => 0;
-		public IApplicationMenu[] Menus => Array.Empty<IApplicationMenu>();
-		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
-		public ApplicationScreenDefinition DefaultScreenDefinition => null;
+
+		/// <inheritdoc />
+		public string Name {
+			get {
+				return "Other";
+			}
+		}
+
+		/// <inheritdoc />
+		public int Position {
+			get {
+				return 0;
+			}
+		}
+
+		/// <inheritdoc />
+		public IApplicationMenu[] Menus {
+			get {
+				return Array.Empty<IApplicationMenu>();
+			}
+		}
+
+		/// <inheritdoc />
+		public ApplicationScreenDefinition[] ScreenDefinitions {
+			get {
+				return Array.Empty<ApplicationScreenDefinition>();
+			}
+		}
+
+		/// <inheritdoc />
+		public ApplicationScreenDefinition DefaultScreenDefinition {
+			get {
+				return null;
+			}
+		}
 	}
+
+	#endregion
 }

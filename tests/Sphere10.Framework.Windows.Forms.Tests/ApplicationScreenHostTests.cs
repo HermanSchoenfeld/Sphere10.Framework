@@ -394,9 +394,11 @@ public class ApplicationScreenHostTests {
 			var Hidden = Index % 2 == 0 ? Second : First;
 			Form.ScreenHost.TabControl.SelectedIndex = Index % 2;
 			Assert.That(Selected.Button.Owner, Is.SameAs(Form.ApplicationToolBar));
-			Assert.That(Hidden.Button.Owner, Is.SameAs(Hidden.ToolBar));
+			Assert.That(Hidden.Button.Owner, Is.SameAs(Hidden.ScreenToolBar));
 			Assert.That(Selected.MenuItem.OwnerItem!.Owner, Is.SameAs(Form.ApplicationMenu));
-			Assert.That(Hidden.MenuItem.Owner, Is.Null);
+			Assert.That(Hidden.MenuItem.Owner, Is.InstanceOf<ToolStripDropDown>());
+			Assert.That(Hidden.MenuItem.OwnerItem.Owner, Is.Not.SameAs(Form.ApplicationMenu));
+			Assert.That(Hidden.Menus.Single().Text, Is.EqualTo(Hidden.MenuItem.OwnerItem.Text));
 			Selected.Button.PerformClick();
 			Selected.MenuItem.PerformClick();
 		}
@@ -416,8 +418,8 @@ public class ApplicationScreenHostTests {
 			var Detached = (WinFormsApplicationScreenForm)Second.FindForm()!;
 			Assert.That(Form.ActiveScreen, Is.SameAs(First));
 			Assert.That(First.Button.Owner, Is.SameAs(Form.ApplicationToolBar));
-			Assert.That(Second.Button.Owner, Is.SameAs(Second.ToolBar));
-			Assert.That(Second.ToolBar.FindForm(), Is.SameAs(Detached));
+			Assert.That(Second.Button.Owner, Is.SameAs(Second.ScreenToolBar));
+			Assert.That(Second.ScreenToolBar.FindForm(), Is.SameAs(Detached));
 			Assert.That(Second.MenuItem.Owner, Is.SameAs(Detached.MainMenuStrip));
 			Second.Title = $"Renamed {Index}";
 			Assert.That(Detached.Text, Is.EqualTo(Second.Title));
@@ -658,10 +660,10 @@ public class ApplicationScreenHostTests {
 	public class ProbeScreen : WinFormsApplicationScreen {
 		public ProbeScreen() {
 			ActivationMode = ScreenActivationMode.SingleInstance;
-			ToolBar = new ToolStrip();
+			ScreenToolBar = new ToolStrip();
 			Button = new ToolStripButton("Count", null, (_, _) => Value++);
-			ToolBar.Items.Add(Button);
-			Controls.Add(ToolBar);
+			ScreenToolBar.Items.Add(Button);
+			Controls.Add(ScreenToolBar);
 			MenuItem = new ToolStripMenuItem("Count", null, (_, _) => Value++);
 			RegisterMenuItem(MenuItem);
 			ShowInApplicationMenuStrip = true;

@@ -15,8 +15,7 @@ using Sphere10.Framework.Application;
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Hosts the registered application banner while retaining a stock banner on the designer surface.</summary>
-public partial class ApplicationBannerHost : UserControl {
-
+public partial class ApplicationBannerHost : UserControlEx {
 	private ApplicationBanner _banner;
 
 	public ApplicationBannerHost() {

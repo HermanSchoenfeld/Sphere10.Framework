@@ -7,14 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Application.UI;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
@@ -146,19 +147,19 @@ public class ApplicationScreenFormTests {
 	[Test]
 	public void EmptyToolbarCollapsesAndFollowsCommandsAddedOrRemovedWhileDetached() {
 		using var Host = new HiddenHost();
-		var Screen = new PartialChromeScreen(false, false) { ToolBar = new ToolStrip { Dock = DockStyle.Top } };
-		Screen.Controls.Add(Screen.ToolBar);
+		var Screen = new PartialChromeScreen(false, false) { ScreenToolBar = new ToolStrip { Dock = DockStyle.Top } };
+		Screen.Controls.Add(Screen.ScreenToolBar);
 		Host.ShowScreen(Screen);
 		Host.UndockScreen(Screen);
 		var Window = (WinFormsApplicationScreenForm)Screen.FindForm()!;
-		Assert.That(Screen.ToolBar.Visible, Is.False);
+		Assert.That(Screen.ScreenToolBar.Visible, Is.False);
 		Assert.That(Screen.Content.Top, Is.Zero);
 		using var Command = new ToolStripButton("Save");
-		Screen.ToolBar.Items.Add(Command);
-		Assert.That(Screen.ToolBar.Visible, Is.True);
-		Assert.That(Screen.Content.Top, Is.EqualTo(Screen.ToolBar.Bottom));
-		Screen.ToolBar.Items.Remove(Command);
-		Assert.That(Screen.ToolBar.Visible, Is.False);
+		Screen.ScreenToolBar.Items.Add(Command);
+		Assert.That(Screen.ScreenToolBar.Visible, Is.True);
+		Assert.That(Screen.Content.Top, Is.EqualTo(Screen.ScreenToolBar.Bottom));
+		Screen.ScreenToolBar.Items.Remove(Command);
+		Assert.That(Screen.ScreenToolBar.Visible, Is.False);
 		Assert.That(Screen.Content.Top, Is.Zero);
 		Assert.That(Window.MainMenuStrip, Is.Null);
 	}
@@ -228,10 +229,45 @@ public class ApplicationScreenFormTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
+	public void ReadingLegacyCommandProvidersWhileDetachedPreservesOriginalNativeViews(bool showInApplicationMenuStrip) {
+		using var host = new HiddenHost();
+		var screen = new MenuScreen { ShowInApplicationMenuStrip = showInApplicationMenuStrip };
+		var originalMenuItems = screen.MenuItems;
+		var originalToolBar = screen.ScreenToolBar;
+		host.ShowScreen(screen);
+		Assert.That(host.UndockScreen(screen), Is.True);
+		var window = (WinFormsApplicationScreenForm)screen.FindForm()!;
+		var menuStrip = window.MainMenuStrip;
+
+		// Cached definitions must remain readable without taking their actual views away from the detached window.
+		IApplicationCommandProvider commands = screen;
+		var menus = commands.Menus;
+		var toolBarItems = commands.ToolBarItems;
+		Assert.That(commands.Menus, Is.EqualTo(menus));
+		Assert.That(commands.ToolBarItems, Is.EqualTo(toolBarItems));
+		Assert.That(window.MainMenuStrip, Is.SameAs(menuStrip));
+		Assert.That(menuStrip!.Items.Cast<ToolStripItem>(), Is.EqualTo(originalMenuItems));
+		Assert.That(originalMenuItems.All(item => ReferenceEquals(item.Owner, menuStrip)), Is.True);
+		Assert.That(menuStrip.Visible, Is.True);
+		Assert.That(screen.ScreenToolBar, Is.SameAs(originalToolBar));
+		Assert.That(screen.ToolButton.Owner, Is.SameAs(originalToolBar));
+		screen.FileCommand.PerformClick();
+		screen.ToolButton.PerformClick();
+		Assert.That(screen.CommandCount, Is.EqualTo(2));
+
+		Assert.That(host.DockScreen(screen), Is.True);
+		Assert.That(window.IsDisposed, Is.True);
+		Assert.That(screen.MenuItems, Is.EqualTo(originalMenuItems));
+		Assert.That(originalMenuItems.All(item => item.Owner == null && !item.IsDisposed), Is.True);
+		Assert.That(screen.ToolButton.Owner, Is.SameAs(originalToolBar));
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
 	public void RepeatedDetachmentKeepsOriginalToolbarAndTopLevelFileMenu(bool MergeIntoMainMenu) {
 		using var Host = new HiddenHost();
 		var Screen = new MenuScreen { ShowInApplicationMenuStrip = MergeIntoMainMenu };
-		var Toolbar = Screen.ToolBar;
+		var Toolbar = Screen.ScreenToolBar;
 		var Renderer = Toolbar.Renderer;
 		var Parent = Toolbar.Parent;
 		var Index = Parent!.Controls.GetChildIndex(Toolbar);
@@ -276,14 +312,14 @@ public class ApplicationScreenFormTests {
 		using var Host = new HiddenHost();
 		using var Screen = new WinFormsApplicationScreen();
 		using var OriginalParent = new Panel { Size = new Size(500, 400) };
-		Screen.ToolBar = new ToolStrip { Dock = DockStyle.None, Anchor = AnchorStyles.Bottom | AnchorStyles.Right, AutoSize = false, Bounds = new Rectangle(20, 40, 220, 35) };
-		Screen.ToolBar.Items.Add(new ToolStripButton("Save"));
+		Screen.ScreenToolBar = new ToolStrip { Dock = DockStyle.None, Anchor = AnchorStyles.Bottom | AnchorStyles.Right, AutoSize = false, Bounds = new Rectangle(20, 40, 220, 35) };
+		Screen.ScreenToolBar.Items.Add(new ToolStripButton("Save"));
 		if (HasOriginalParent) {
 			OriginalParent.Controls.Add(new Label());
-			OriginalParent.Controls.Add(Screen.ToolBar);
+			OriginalParent.Controls.Add(Screen.ScreenToolBar);
 			OriginalParent.Controls.Add(new TextBox());
 		}
-		var Toolbar = Screen.ToolBar;
+		var Toolbar = Screen.ScreenToolBar;
 		var OriginalBounds = Toolbar.Bounds;
 		var OriginalIndex = HasOriginalParent ? OriginalParent.Controls.GetChildIndex(Toolbar) : -1;
 		using (var Window = new WinFormsApplicationScreenForm(Host, Screen) { Opacity = 0 }) {
@@ -385,6 +421,85 @@ public class ApplicationScreenFormTests {
 		Assert.That(Window.Controls.Find("_screenCaption", true).Single().AccessibleName, Is.EqualTo(Screen.Title));
 	}
 
+	[Test]
+	public void DetachedHostKeepsItsOwnActiveContextAndBorrowsTheRootLifetime() {
+		using var host = new HiddenHost();
+		using var otherHost = new HiddenHost();
+		using var firstBlock = new WinFormsApplicationBlock { Name = "First" };
+		using var secondBlock = new WinFormsApplicationBlock { Name = "Second" };
+		host.RegisterScreenTypes(firstBlock);
+		host.RegisterScreenTypes(secondBlock);
+		var detachedScreen = new MenuScreen { Block = firstBlock };
+		var mainScreen = new MenuScreen { Block = secondBlock };
+		host.ShowScreen(detachedScreen);
+		host.ShowScreen(mainScreen);
+		Assert.That(host.UndockScreen(detachedScreen), Is.True);
+
+		var window = (WinFormsApplicationScreenForm)detachedScreen.FindForm();
+		var localHost = window.ScreenHost;
+		Assert.That(detachedScreen.Host, Is.SameAs(localHost));
+		Assert.That(localHost.ActiveScreen, Is.SameAs(detachedScreen));
+		Assert.That(localHost.ActiveBlock, Is.SameAs(firstBlock));
+		Assert.That(host.ActiveScreen, Is.SameAs(mainScreen));
+		Assert.That(localHost.Blocks, Is.EqualTo(host.Blocks));
+		Assert.That(localHost.Screens, Is.EqualTo(host.Screens));
+		Assert.That(() => otherHost.ShowScreen(detachedScreen), Throws.ArgumentException, "A local projection does not transfer canonical ownership.");
+		Assert.That(host.ShowScreen(detachedScreen), Is.True, "The canonical owner can still focus its detached window.");
+		Assert.That(host.ActiveScreen, Is.SameAs(mainScreen));
+
+		localHost.Dispose();
+		Assert.That(host.IsDisposed, Is.False);
+		Assert.That(host.DockScreen(detachedScreen), Is.True);
+		Assert.That(detachedScreen.Host, Is.SameAs(host));
+		Assert.That(host.ActiveScreen, Is.SameAs(detachedScreen));
+	}
+
+	[Test]
+	public async Task DetachedCloseTargetsItsOwnScreenAndHonorsItsGuard() {
+		using var host = new HiddenHost();
+		var detachedScreen = new MenuScreen();
+		var mainScreen = new MenuScreen();
+		host.ShowScreen(detachedScreen);
+		host.ShowScreen(mainScreen);
+		host.UndockScreen(detachedScreen);
+		var window = (WinFormsApplicationScreenForm)detachedScreen.FindForm();
+		var localHost = window.ScreenHost;
+
+		detachedScreen.CancelHide = true;
+		Assert.That(await localHost.CanCloseActiveScreenAsync(), Is.False);
+		Assert.That(await localHost.CloseActiveScreenAsync(), Is.False);
+		Assert.That(window.IsDisposed, Is.False);
+		Assert.That(host.ActiveScreen, Is.SameAs(mainScreen));
+
+		detachedScreen.CancelHide = false;
+		Assert.That(await localHost.CanCloseActiveScreenAsync(), Is.True);
+		Assert.That(await localHost.CloseActiveScreenAsync(), Is.True);
+		Assert.That(detachedScreen.IsDisposed, Is.True);
+		Assert.That(mainScreen.IsDisposed, Is.False);
+		Assert.That(host.ActiveScreen, Is.SameAs(mainScreen));
+	}
+
+	[Test]
+	public async Task DetachedInteractionServicesHaveLocalIdentityAndForwardApplicationOperations() {
+		using var main = new MainForm { ScreenMode = ScreenMode.MultiView, Opacity = 0 };
+		var screen = new MenuScreen();
+		main.ShowScreen(screen);
+		main.ScreenHost.UndockScreen(screen);
+		var window = (WinFormsApplicationScreenForm)screen.FindForm();
+		var services = window.ScreenHost.UserInterfaceServices;
+
+		Assert.That(services.ScreenHost, Is.SameAs(window.ScreenHost));
+		Assert.That(services.PrimaryUIController, Is.SameAs(main), "Application UI operations retain their existing root controller.");
+		IApplicationScreen commandScreen = null;
+		using var command = new WinFormsActionMenuItem("Inspect context", userInterface => commandScreen = userInterface.ScreenHost.ActiveScreen);
+		Assert.That(await services.ExecuteMenuItemAsync(command), Is.True);
+		Assert.That(commandScreen, Is.SameAs(screen), "Action callbacks receive this window's active-screen host.");
+		services.Status = "Detached operation";
+		Assert.That(main.Status, Is.EqualTo("Detached operation"));
+		Assert.That(main.ScreenHost.DockScreen(screen), Is.True);
+		Assert.That(screen.Host, Is.SameAs(main.ScreenHost));
+	}
+
 	private static Button FindAction(WinFormsApplicationScreenForm Window, string Name) => (Button)Window.Controls.Find(Name, true).Single();
 
 	private static long HitTest(Control Window, Point Position) => WinAPI.USER32.SendMessage(Window.Handle, 0x0084, IntPtr.Zero, PackPoint(Position)).ToInt64();
@@ -415,9 +530,9 @@ public class ApplicationScreenFormTests {
 			if (HasMenu)
 				RegisterMenuItem(new ToolStripMenuItem("&File"));
 			if (HasToolbar) {
-				ToolBar = new ToolStrip { Dock = DockStyle.Top };
-				ToolBar.Items.Add(new ToolStripButton("Save"));
-				Controls.Add(ToolBar);
+				ScreenToolBar = new ToolStrip { Dock = DockStyle.Top };
+				ScreenToolBar.Items.Add(new ToolStripButton("Save"));
+				Controls.Add(ScreenToolBar);
 			}
 		}
 
@@ -428,10 +543,10 @@ public class ApplicationScreenFormTests {
 		public MenuScreen() {
 			Title = "Design document";
 			ActivationMode = ScreenActivationMode.MultiInstance;
-			ToolBar = new ToolStrip { Dock = DockStyle.Top, Renderer = new ToolStripSystemRenderer(), ImageScalingSize = new Size(24, 24) };
+			ScreenToolBar = new ToolStrip { Dock = DockStyle.Top, Renderer = new ToolStripSystemRenderer(), ImageScalingSize = new Size(24, 24) };
 			ToolButton = new ToolStripButton("Save design", null, (_, _) => CommandCount++);
-			ToolBar.Items.Add(ToolButton);
-			Controls.Add(ToolBar);
+			ScreenToolBar.Items.Add(ToolButton);
+			Controls.Add(ScreenToolBar);
 			FileCommand = new ToolStripMenuItem("Save", null, (_, _) => CommandCount++);
 			FileMenu = new ToolStripMenuItem("&File");
 			FileMenu.DropDownItems.Add(FileCommand);

@@ -76,7 +76,7 @@ public class ApplicationScreenHostNavigationTests {
 
 		Assert.That(host.ActiveScreen, Is.Null);
 		Assert.That(host.Screens, Is.Empty);
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("second"));
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("second"));
 		Assert.That(host.Blocks.Select(block => block.Name), Is.EqualTo(new[] { "first", "second" }));
 		Assert.That(host.AvailableBlocks, Has.Length.EqualTo(2));
 	}
@@ -96,17 +96,19 @@ public class ApplicationScreenHostNavigationTests {
 		await host.SelectBlockAsync(Block(host, "second"));
 		await host.SelectBlockAsync(Block(host, "second"));
 
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("second"));
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("second"));
 		Assert.That(host.ActiveScreen, Is.SameAs(session));
-		Assert.That(host.GetScreenBlock(session).Name, Is.EqualTo("first"));
+		Assert.That(host.ActiveBlock, Is.SameAs(session.Block), "Browsing changes selection without changing the active command owner.");
+		Assert.That(session.Block.Name, Is.EqualTo("first"));
 		Assert.That(screen.GuardCalls, Is.Zero);
 		Assert.That(screen.Activations, Is.EqualTo(1));
 		Assert.That(screen.Deactivations, Is.Zero);
 		Assert.That(notifications, Is.EqualTo(1));
 		host.NotifyScreenChanged(session);
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("second"), "Reporting dirty state must not change the browsed block.");
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("second"), "Reporting dirty state must not change the browsed block.");
+		Assert.That(((IApplicationScreenHost)host).ActiveBlock, Is.SameAs(session.Block));
 		Assert.That(await host.ShowScreenAsync(session), Is.True);
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("first"), "Selecting the same tab restores navigation to its owner.");
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("first"), "Selecting the same tab restores navigation to its owner.");
 		Assert.That(screen.GuardCalls, Is.Zero);
 	}
 
@@ -177,7 +179,7 @@ public class ApplicationScreenHostNavigationTests {
 		host.Changed += () => {
 			notifications++;
 			Assert.That(host.Blocks.Any(candidate => ReferenceEquals(candidate, block)),
-				Is.EqualTo(host.Screens.Any(session => ReferenceEquals(host.GetScreenBlock(session), block))),
+				Is.EqualTo(host.Screens.Any(session => ReferenceEquals(session.Block, block))),
 				"Navigation membership and hosted permanent screens must change atomically for UI observers.");
 		};
 

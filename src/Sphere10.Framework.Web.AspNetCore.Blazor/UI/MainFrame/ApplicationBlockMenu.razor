@@ -12,11 +12,11 @@
 <nav aria-label="Application blocks" class="@(Compact ? "application-blocks application-blocks-compact" : "application-blocks")">
 	@foreach (var block in Blocks.OrderBy(block => block.Position)) {
 		@if (Href != null) {
-			<a @key="block.Id" href="@Href(block)" title="@GetTooltip(block)" aria-current="@(ActiveBlock?.Id == block.Id ? "page" : null)">
+			<a @key="block.Id" href="@Href(block)" title="@GetTooltip(block)" aria-current="@(SelectedBlock?.Id == block.Id ? "page" : null)">
 				@BlockContent(block)
 			</a>
 		} else {
-			<button @key="block.Id" type="button" title="@GetTooltip(block)" aria-current="@(ActiveBlock?.Id == block.Id ? "page" : null)" @onclick="() => OnSelect.InvokeAsync(block)">
+			<button @key="block.Id" type="button" title="@GetTooltip(block)" aria-current="@(SelectedBlock?.Id == block.Id ? "page" : null)" @onclick="() => OnSelect.InvokeAsync(block)">
 				@BlockContent(block)
 			</button>
 		}
@@ -26,7 +26,7 @@
 @code {
 	[Parameter] public IBlazorApplicationBlock[] Blocks { get; set; } = Array.Empty<IBlazorApplicationBlock>();
 
-	[Parameter] public IBlazorApplicationBlock ActiveBlock { get; set; }
+	[Parameter] public IBlazorApplicationBlock SelectedBlock { get; set; }
 
 	[Parameter] public EventCallback<IBlazorApplicationBlock> OnSelect { get; set; }
 

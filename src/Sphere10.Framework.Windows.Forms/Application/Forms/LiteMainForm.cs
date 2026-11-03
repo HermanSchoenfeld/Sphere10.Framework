@@ -34,7 +34,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	private bool _finalClose;
 	private bool _nativeCloseApproved;
 	private Func<Task> _approvedShutdownAsync;
-	private TaskCompletionSource<(bool Closed, Exception ShutdownError)> _approvedCloseCompletion;
+	private TaskCompletionSource<ApplicationCloseResult> _approvedCloseCompletion;
 	private SynchronizationContext _approvedCloseContext;
 	private FormCloseAction? _closeActionBeforeExit;
 	private CancellationToken _exitConfirmationCancellationToken;
@@ -60,13 +60,24 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		ApplicationServices = services;
 	}
 
-	/// <summary>Opens the application-owned Options catalog, optionally at one exact screen or application profile.</summary>
-	public async Task<DialogResult> ShowScreenOptionsAsync(ApplicationSettingsProfile selectedProfile = null, CancellationToken cancellationToken = default) {
-		var catalog = Application?.Settings ?? ApplicationServices?.GetService<ApplicationSettingsCatalog>();
-		Guard.Ensure(catalog != null, "Register application settings before displaying Options.");
-		await catalog.InitializeAsync(cancellationToken);
-		using var dialog = new WinFormsApplicationSettingsDialog(catalog, Application as IWinFormsApplication, ApplicationServices, selectedProfile);
-		return await dialog.ShowDialogAsync(this);
+	/// <summary>Opens the running application's settings, preferring the active screen unless an owner is supplied.</summary>
+	public Task<DialogResult> ShowScreenOptionsAsync(object selectedOwner = null, CancellationToken cancellationToken = default) {
+		return ShowScreenOptionsAsync(selectedOwner, this, cancellationToken);
+	}
+
+	// The invoking window selects its own active settings and owns the modal presentation.
+	internal Task<DialogResult> ShowScreenOptionsFromAsync(IUserInterfaceServices userInterface, CancellationToken cancellationToken = default) {
+		var screen = userInterface.ScreenHost?.ActiveScreen;
+		var selectedOwner = screen?.ScreenSettings ?? screen?.Block?.BlockSettings ?? screen?.Block?.Source?.PluginSettings;
+		var owner = (screen as Control)?.FindForm() ?? this;
+		return ShowScreenOptionsAsync(selectedOwner, owner, cancellationToken);
+	}
+
+	// Keep the existing dialog's actual owner graph and provider while choosing the calling native window.
+	private async Task<DialogResult> ShowScreenOptionsAsync(object selectedOwner, IWin32Window owner, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		using var dialog = new WinFormsApplicationSettingsDialog(Application as IWinFormsApplication, ApplicationServices, selectedOwner);
+		return await dialog.ShowDialogAsync(owner);
 	}
 
 	#region Form Methods
@@ -136,7 +147,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		if (Args.Cancel) {
 			ApplicationExiting = false;
 			RestoreCloseAction();
-			_approvedCloseCompletion?.TrySetResult((false, null));
+			_approvedCloseCompletion?.TrySetResult(new ApplicationCloseResult(false, null));
 			return;
 		}
 		if (_exitConfirmed) {
@@ -166,7 +177,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				var completedContext = SynchronizationContext.Current;
 				using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(completedContext));
 				SynchronizationContext.SetSynchronizationContext(closeContext);
-				completion.TrySetResult((IsDisposed, shutdownError));
+				completion.TrySetResult(new ApplicationCloseResult(IsDisposed, shutdownError));
 			} catch (Exception error) {
 				var completedContext = SynchronizationContext.Current;
 				using var restoreContext = Tools.Scope.ExecuteOnDispose(() => SynchronizationContext.SetSynchronizationContext(completedContext));
@@ -239,12 +250,12 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		return !cancellation.Cancel;
 	}
 
-	internal async Task<(bool Closed, Exception ShutdownError)> CloseFromApplicationAsync(bool force, Func<Task> shutdown) {
+	internal async Task<ApplicationCloseResult> CloseFromApplicationAsync(bool force, Func<Task> shutdown) {
 		if (IsDisposed)
-			return (true, null);
+			return new ApplicationCloseResult(true, null);
 		Guard.ArgumentNotNull(shutdown, nameof(shutdown));
 		// Continuations must complete before the final native close can end its message loop.
-		var completion = new TaskCompletionSource<(bool Closed, Exception ShutdownError)>();
+		var completion = new TaskCompletionSource<ApplicationCloseResult>();
 		_approvedCloseCompletion = completion;
 		_approvedCloseContext = SynchronizationContext.Current;
 		_approvedShutdownAsync = shutdown;

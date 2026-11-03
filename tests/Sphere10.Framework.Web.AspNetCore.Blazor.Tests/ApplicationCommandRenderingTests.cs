@@ -35,22 +35,29 @@ public class ApplicationCommandRenderingTests {
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var hostUserInterface = provider.GetRequiredService<IBlazorUserInterfaceServices>();
 		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+		var shared = provider.GetRequiredService<IApplication>();
 		var calls = 0;
 		var applicationSave = new BlazorActionMenuItem { Id = "save", Title = "Application save", Action = () => calls++ };
 		application.SetMenus(new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { applicationSave } } });
 		application.SetToolBarItems(new[] { applicationSave });
+		Assert.That(shared.Menus.Single(), Is.SameAs(application.Menus.Single()));
+		Assert.That(shared.ToolBarItems.Single(), Is.SameAs(application.ToolBarItems.Single()));
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var first = await host.ActivateScreenAsync("test", "one");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			var screen = (CommandScreen)first.Screen;
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Screen save").Count, Is.EqualTo(2));
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Application save").Count, Is.EqualTo(2));
-			await hostUserInterface.ExecuteMenuItemAsync(application.ToolBarItems.Single());
+			// The web menu and toolbar execute the descriptors exposed by the shared application provider.
+			await hostUserInterface.ExecuteMenuItemAsync((IBlazorApplicationMenuItem)shared.Menus.Single().Items.Single());
 			Assert.That(calls, Is.EqualTo(1));
+			Assert.That(screen.Saves, Is.Zero);
+			await hostUserInterface.ExecuteMenuItemAsync((IBlazorApplicationMenuItem)shared.ToolBarItems.Single());
+			Assert.That(calls, Is.EqualTo(2));
 			Assert.That(screen.Saves, Is.Zero);
 			await hostUserInterface.ExecuteMenuItemAsync(screen.ToolBarItems.Single());
 			Assert.That(screen.Saves, Is.EqualTo(1));
-			Assert.That(calls, Is.EqualTo(1));
+			Assert.That(calls, Is.EqualTo(2));
 			await host.ActivateScreenAsync("test", "two");
 			Assert.That(Regex.Matches(rendered.ToHtmlString(), "Application save").Count, Is.EqualTo(2));
 			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("Screen save"));
@@ -75,7 +82,7 @@ public class ApplicationCommandRenderingTests {
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Run application command"));
-			Assert.That(host.ActiveBlock, Is.Null);
+			Assert.That(host.SelectedBlock, Is.Null);
 			Assert.That(host.ActiveScreen, Is.Null);
 			using var shell = new ApplicationShell { Application = application, ScreenHost = host, Navigation = provider.GetRequiredService<NavigationManager>() };
 			await shell.ExecuteCommandAsync(application.ToolBarItems.Single());
@@ -141,7 +148,67 @@ public class ApplicationCommandRenderingTests {
 			Assert.That(session.Screen, Is.SameAs(original));
 			await host.CloseScreenAsync(session.Id);
 			chrome = Regex.Match(rendered.ToHtmlString(), "<header\\b.*?</header>", RegexOptions.Singleline).Value;
-			Assert.That(chrome, Does.Contain("Browse menu").And.Contain("Browse tool").And.Not.Contain("Screen save"));
+			Assert.That(chrome, Does.Not.Contain("Browse menu").And.Not.Contain("Browse tool").And.Not.Contain("Screen save"));
+		});
+	}
+
+	/// <summary>The shell composes the visible plugin path and removes all contextual commands when the last screen closes.</summary>
+	[Test]
+	public async Task PluginCommandsFollowTheVisibleScreenOwnersAndDisappearWithTheScreen() {
+		var services = Services();
+		var blockCalls = 0;
+		var block = new BlazorApplicationBlockBuilder()
+			.WithId("plugin")
+			.WithName("Plugin block")
+			.AddScreen<CommandScreen>("Plugin screen")
+			.AddMenu(menu => menu
+				.WithId("work")
+				.WithText("Work")
+				.AddActionItem("save", "Block save", () => blockCalls++)
+				.AddActionItem("block", "Block command", () => blockCalls++)
+			)
+			.AddToolBarItem(item => item
+				.WithId("save")
+				.WithText("Block save")
+				.WithAction((_, _) => Task.CompletedTask)
+			)
+			.AddToolBarItem(item => item
+				.WithId("block")
+				.WithText("Block command")
+				.WithAction((_, _) => Task.CompletedTask)
+			)
+			.Build();
+		var plugin = new CommandPlugin(block);
+		services.AddSphere10BlazorPlugin(plugin);
+		await using var provider = services.BuildServiceProvider();
+		var application = (BlazorApplication)provider.GetRequiredService<IBlazorApplication>();
+		var host = application.ScreenHost;
+		var applicationCalls = 0;
+		var applicationSave = new BlazorActionMenuItem { Id = "save", Title = "Application save", Action = () => applicationCalls++ };
+		application.SetMenus(new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { applicationSave } } });
+		application.SetToolBarItems(new[] { applicationSave });
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var actual = host.Blocks.Single(candidate => candidate.Id == "plugin");
+			var session = await host.OpenScreenAsync(actual, actual.ScreenDefinitions.Single());
+			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
+			await host.SelectBlockAsync("empty");
+			var header = Regex.Match(rendered.ToHtmlString(), "<header\\b.*?</header>", RegexOptions.Singleline).Value;
+			Assert.That(Regex.Matches(header, "Application save").Count, Is.EqualTo(2));
+			Assert.That(Regex.Matches(header, "Plugin command").Count, Is.EqualTo(2));
+			Assert.That(Regex.Matches(header, "Block command").Count, Is.EqualTo(2));
+			Assert.That(Regex.Matches(header, "Screen save").Count, Is.EqualTo(2));
+			Assert.That(header, Does.Not.Contain("Plugin save").And.Not.Contain("Block save"));
+			Assert.That(actual.Source, Is.SameAs(plugin));
+
+			// Composition retains the real descriptor and callback rather than creating a second command owner.
+			await host.UserInterfaceServices.ExecuteMenuItemAsync((IBlazorApplicationMenuItem)plugin.Menus.Single().Items.Last());
+			Assert.That(plugin.Calls, Is.EqualTo(1));
+			Assert.That(blockCalls, Is.Zero);
+			Assert.That(applicationCalls, Is.Zero);
+			await host.CloseScreenAsync(session.Id);
+			header = Regex.Match(rendered.ToHtmlString(), "<header\\b.*?</header>", RegexOptions.Singleline).Value;
+			Assert.That(header, Does.Contain("Application save").And.Not.Contain("Plugin command").And.Not.Contain("Block command").And.Not.Contain("Screen save"));
 		});
 	}
 
@@ -254,6 +321,36 @@ public class ApplicationCommandRenderingTests {
 		return services;
 	}
 
+	#region Inner Types
+
+	/// <summary>Contributes real plugin commands through the same contract as application, block and screen owners.</summary>
+	private sealed class CommandPlugin : ApplicationPluginBase<IBlazorApplicationBlock>, IBlazorPlugin {
+		/// <summary>Captures fixed plugin membership and command descriptors before activation.</summary>
+		public CommandPlugin(IBlazorApplicationBlock block)
+			: base("Command plugin", new[] { block }) {
+			var save = new BlazorActionMenuItem { Id = "save", Title = "Plugin save", Action = () => Calls++ };
+			var command = new BlazorActionMenuItem { Id = "plugin", Title = "Plugin command", Action = () => Calls++ };
+			Menus = new[] { new BlazorApplicationMenu { Id = "work", Text = "Work", Items = new[] { save, command } } };
+			ToolBarItems = new[] { save, command };
+		}
+
+		/// <summary>The exact plugin menu descriptors used by the shell.</summary>
+		public IApplicationMenu[] Menus { get; }
+
+		/// <summary>The exact plugin toolbar descriptors used by the shell.</summary>
+		public IApplicationMenuItem[] ToolBarItems { get; }
+
+		/// <summary>The observed execution count for the existing plugin callbacks.</summary>
+		public int Calls { get; private set; }
+
+		/// <summary>Plugins borrow the executing host's services instead of constructing another container.</summary>
+		public IServiceProvider IoCContainer {
+			get {
+				return null;
+			}
+		}
+	}
+
 	public class CommandScreen : BlazorApplicationScreen {
 		private readonly BlazorActionMenuItem _save;
 		private readonly BlazorApplicationMenuGroup _group;
@@ -320,4 +417,6 @@ public class ApplicationCommandRenderingTests {
 			return ValueTask.CompletedTask;
 		}
 	}
+
+	#endregion
 }

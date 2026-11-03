@@ -20,6 +20,20 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationAggregateTests {
 	[Test]
+	public async Task WebMenuSettersRejectChangesAfterDisposal() {
+		await using var provider = new ServiceCollection().AddSphere10Blazor().BuildServiceProvider();
+		await using var scope = provider.CreateAsyncScope();
+		var application = (BlazorApplication)scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
+		application.SetMenus(new[] { new BlazorApplicationMenu { Id = "file", Text = "File" } });
+		application.SetToolBarItems(new[] { new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } } });
+
+		await application.DisposeAsync();
+
+		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
+	}
+
+	[Test]
 	public async Task SharedAndPlatformRegistrationsProjectOneLiveApplicationPerCircuit() {
 		var loaded = 0;
 		var unloaded = 0;
@@ -41,6 +55,7 @@ public class ApplicationAggregateTests {
 			.AddSphere10BlazorPlugin(plugin)
 			.AddSphere10BlazorApplication(application => {
 				configured++;
+				application.SetMenus(new[] { new BlazorApplicationMenu { Id = "file", Text = "File" } });
 				application.SetToolBarItems(new[] { new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } } });
 			});
 		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
@@ -49,6 +64,12 @@ public class ApplicationAggregateTests {
 		var application = firstScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
 		var shared = firstScope.ServiceProvider.GetRequiredService<IApplication>();
 		Assert.That(shared, Is.SameAs(application));
+		Assert.That(shared.Menus.Single(), Is.SameAs(application.Menus.Single()));
+		Assert.That(shared.ToolBarItems.Single(), Is.SameAs(application.ToolBarItems.Single()));
+		shared.Menus[0] = null;
+		shared.ToolBarItems[0] = null;
+		Assert.That(shared.Menus.Single().Text, Is.EqualTo("File"));
+		Assert.That(shared.ToolBarItems.Single().Title, Is.EqualTo("Run"));
 		Assert.That(secondScope.ServiceProvider.GetRequiredService<IApplication>(), Is.Not.SameAs(shared));
 		Assert.That(configured, Is.EqualTo(2), "Application configuration must run once per circuit, including when resolved through the shared alias");
 		Assert.That(application.ScreenHost, Is.SameAs(firstScope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>()));
@@ -58,7 +79,7 @@ public class ApplicationAggregateTests {
 		var session = await application.ScreenHost.ActivateBlockAsync("work");
 		var screen = new ProbeScreen { HasUnsavedChanges = true };
 		await application.ScreenHost.AttachScreenAsync(session.Id, screen);
-		Assert.That(shared.ScreenHost.ActiveBlock, Is.SameAs(application.ScreenHost.ActiveBlock));
+		Assert.That(shared.ScreenHost.SelectedBlock, Is.SameAs(application.ScreenHost.SelectedBlock));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.SameAs(session));
 		Assert.That(((BlazorApplicationScreenSession)application.ScreenHost.ActiveScreen).Screen, Is.SameAs(screen));
 		Assert.That(shared.HasUnsavedChanges, Is.True);
@@ -121,7 +142,7 @@ public class ApplicationAggregateTests {
 
 		var session = await application.ScreenHost.ActivateBlockAsync("registered");
 		await application.ScreenHost.SelectBlockAsync("standalone");
-		Assert.That(shared.ScreenHost.ActiveBlock, Is.SameAs(application.Blocks.Single(block => block.Id == "standalone")));
+		Assert.That(shared.ScreenHost.SelectedBlock, Is.SameAs(application.Blocks.Single(block => block.Id == "standalone")));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.SameAs(session), "Browsing blocks preserves the retained screen.");
 		Assert.That(await application.ScreenHost.UnregisterBlockAsync("standalone"), Is.True);
 		Assert.That(shared.Blocks.Single(), Is.SameAs(application.ScreenHost.Blocks.Single()));
@@ -148,7 +169,7 @@ public class ApplicationAggregateTests {
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks.Single(), Is.SameAs(application.ScreenHost.Blocks.Single()));
 		await ((IBlazorApplication)application).ScreenHost.SelectBlockAsync("direct");
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(application.Blocks.Single()));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(application.Blocks.Single()));
 	}
 
 	[Test]

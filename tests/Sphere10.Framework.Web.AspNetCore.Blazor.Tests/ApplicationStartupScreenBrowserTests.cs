@@ -13,14 +13,17 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Playwright;
 using NUnit.Framework;
+using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+/// <summary>Verifies startup preferences and route precedence in the real browser.</summary>
 [TestFixture]
 [Explicit("Requires BlazorTesterUrl and an installed Chromium or BrowserExecutablePath.")]
 [Category("Browser")]
 [NonParallelizable]
 public class ApplicationStartupScreenBrowserTests {
+	/// <summary>Uses current typed preferences while preserving explicit routes, corrupt-record fallback and read-only legacy imports.</summary>
 	[Test]
 	public async Task SavedChoiceReopensFromRootWhileExplicitBookmarksAndCorruptPreferencesKeepTheirOwnFallbacks() {
 		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
@@ -55,7 +58,26 @@ public class ApplicationStartupScreenBrowserTests {
 		var startup = page.GetByRole(AriaRole.Menuitemcheckbox, new() { NameRegex = new Regex("Make Startup Screen$") });
 		await Assertions.Expect(startup).ToBeEnabledAsync();
 		await startup.ClickAsync();
-		await page.WaitForFunctionAsync("() => !!localStorage.getItem('sphere10.startup-screen.Sphere10.BlazorTester.Workspace')");
+		var settingsSuffix = "/" + Uri.EscapeDataString(typeof(ApplicationShell.StartupSettings).FullName) + "/Sphere10.BlazorTester.Workspace";
+		await page.WaitForFunctionAsync("""
+			suffix => Object.keys(localStorage).some(key => key.startsWith('sphere10.settings:') && key.endsWith(suffix)
+				&& JSON.parse(localStorage.getItem(key))?.StartupScreen)
+			""", settingsSuffix);
+		var savedRecordKey = await page.EvaluateAsync<string>("suffix => Object.keys(localStorage).find(key => key.startsWith('sphere10.settings:') && key.endsWith(suffix))", settingsSuffix);
+		// The original writer received camel-case properties through Blazor's JavaScript interop.
+		var legacyIdentity = await page.EvaluateAsync<string>("""
+			key => {
+				const identity = JSON.parse(localStorage.getItem(key)).StartupScreen;
+				return JSON.stringify({
+					pluginName: identity.PluginName,
+					blockId: identity.BlockId,
+					menuItemId: identity.MenuItemId,
+					screenTypeName: identity.ScreenTypeName,
+					screenAssemblyName: identity.ScreenAssemblyName,
+					registrationKey: identity.RegistrationKey
+				});
+			}
+			""", savedRecordKey);
 		await gridTab.ClickAsync(new() { Button = Microsoft.Playwright.MouseButton.Right });
 		await Assertions.Expect(startup).ToHaveAttributeAsync("aria-checked", "true");
 		await page.GetByRole(AriaRole.Button, new() { Name = "Dismiss tab commands", Exact = true }).ClickAsync();
@@ -70,10 +92,22 @@ public class ApplicationStartupScreenBrowserTests {
 		await Assertions.Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Tables", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
 		Assert.That(await page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true }).CountAsync(), Is.Zero);
 
-		await page.EvaluateAsync("() => localStorage.setItem('sphere10.startup-screen.Sphere10.BlazorTester.Workspace', '{invalid JSON')");
+		await page.EvaluateAsync("key => localStorage.setItem(key, '{invalid JSON')", savedRecordKey);
 		await page.GotoAsync(new Uri(origin, "/").AbsoluteUri);
 		await page.GetByRole(AriaRole.Heading, new() { Name = "ApplicationBlock workspace", Exact = true }).WaitForAsync();
 		await Assertions.Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+
+		// A browser with only the original raw record still restores it without manufacturing a typed write.
+		await page.EvaluateAsync("""
+			({ typedKey, identity }) => {
+				localStorage.removeItem(typedKey);
+				localStorage.setItem('sphere10.startup-screen.Sphere10.BlazorTester.Workspace', identity);
+			}
+			""", new { typedKey = savedRecordKey, identity = legacyIdentity });
+		await page.GotoAsync(new Uri(origin, "/").AbsoluteUri);
+		await Assertions.Expect(page.GetByRole(AriaRole.Tab, new() { Name = "Visual grid", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+		Assert.That(await page.EvaluateAsync<string>("key => localStorage.getItem(key)", savedRecordKey), Is.Null);
+		Assert.That(await page.EvaluateAsync<string>("() => localStorage.getItem('sphere10.startup-screen.Sphere10.BlazorTester.Workspace')"), Is.EqualTo(legacyIdentity));
 		var screenshot = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"startup-screen-{TestContext.CurrentContext.Test.ID}.png");
 		await page.ScreenshotAsync(new() { Path = screenshot, FullPage = true });
 		TestContext.AddTestAttachment(screenshot);

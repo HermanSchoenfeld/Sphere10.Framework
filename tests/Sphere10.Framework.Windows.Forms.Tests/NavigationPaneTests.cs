@@ -308,7 +308,7 @@ public class NavigationPaneTests {
 			.Build();
 		Form.RegisterBlock(Block);
 		Form.Show();
-		var Pane = Form.BlockBindings[Block];
+		var Pane = CurrentPane(Form);
 		var Menu = Pane.Expandos.Cast<Expando>().Single();
 		Pane.DoLayout(true);
 		Menu.DoLayout(true);
@@ -341,7 +341,7 @@ public class NavigationPaneTests {
 			.Build();
 		form.RegisterBlock(block);
 		form.Show();
-		var pane = form.BlockBindings[block];
+		var pane = CurrentPane(form);
 		var menus = pane.Expandos.Cast<Expando>().ToArray();
 		var items = menus.SelectMany(menu => menu.Items.Cast<TaskItem>()).ToArray();
 		form.NavigationPaneWidth = 420;
@@ -566,38 +566,44 @@ public class NavigationPaneTests {
 
 	[TestCase(false)]
 	[TestCase(true)]
-	public void DockPreviewFollowsSelectedNavigationPaneWithoutSwitchingScreens(bool Collapsed) {
-		using var Form = new ProbeMainForm { ScreenMode = ScreenMode.MultiView, NavigationPaneCollapsed = Collapsed };
-		using var FirstBlock = new WinFormsApplicationBlock { Name = "First" };
-		using var SecondBlock = new WinFormsApplicationBlock { Name = "Second" };
-		Form.RegisterBlock(FirstBlock);
-		Form.RegisterBlock(SecondBlock);
-		var FirstPane = Form.BlockBindings[FirstBlock];
-		var SecondPane = Form.BlockBindings[SecondBlock];
-		FirstPane.CustomSettings.GradientStartColor = Color.LightSkyBlue;
-		SecondPane.CustomSettings.GradientStartColor = Color.MidnightBlue;
-		var Screen = new NavigationScreen { ApplicationBlock = FirstBlock };
-		Form.ShowScreen(Screen);
-		var Toolbar = Screen.ActionButton.Owner;
-		var LifecycleChanges = 0;
-		Screen.ScreenDisplayed += (_, _) => LifecycleChanges++;
-		Screen.ScreenHidden += (_, _) => LifecycleChanges++;
-		var Navigation = Form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
-		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(FirstPane.GradientStartColor));
-		Form.ClickNavigationButton(Navigation.Items.Single(Item => ReferenceEquals(Item.MenuControl, SecondPane)).Button);
-		Assert.That(Navigation.ApplicationBarControl, Is.SameAs(SecondPane));
-		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(SecondPane.GradientStartColor));
-		Assert.That(Form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(Color.White));
-		FirstPane.CustomSettings.GradientStartColor = Color.LightBlue;
-		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(SecondPane.GradientStartColor), "An inactive pane must not recolor the docking preview");
-		Form.ClickNavigationButton(Navigation.Items.Single(Item => ReferenceEquals(Item.MenuControl, FirstPane)).Button);
-		Assert.That(Navigation.ApplicationBarControl, Is.SameAs(FirstPane));
-		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(FirstPane.GradientStartColor));
-		Assert.That(Form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(Color.Black));
-		Assert.That(Form.ActiveScreen, Is.SameAs(Screen));
-		Assert.That(Screen.ActionButton.Owner, Is.SameAs(Toolbar));
-		Assert.That(LifecycleChanges, Is.Zero);
-		Assert.That(Form.NavigationPaneCollapsed, Is.EqualTo(Collapsed));
+	public void DockPreviewFollowsSelectedNavigationPaneWithoutSwitchingScreens(bool collapsed) {
+		var firstColor = Color.LightSkyBlue;
+		using var form = new ProbeMainForm {
+			ScreenMode = ScreenMode.MultiView,
+			NavigationPaneCollapsed = collapsed,
+			NavigationColor = block => block.Name == "First" ? firstColor : Color.MidnightBlue
+		};
+		using var firstBlock = new WinFormsApplicationBlock { Name = "First" };
+		using var secondBlock = new WinFormsApplicationBlock { Name = "Second" };
+		form.RegisterBlock(firstBlock);
+		form.RegisterBlock(secondBlock);
+		var firstPane = CurrentPane(form);
+		var screen = new NavigationScreen { ApplicationBlock = firstBlock };
+		form.ShowScreen(screen);
+		var toolbar = screen.ActionButton.Owner;
+		var lifecycleChanges = 0;
+		screen.ScreenDisplayed += (_, _) => lifecycleChanges++;
+		screen.ScreenHidden += (_, _) => lifecycleChanges++;
+		var navigation = form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
+		Assert.That(form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(firstPane.GradientStartColor));
+
+		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.Button.Tag, secondBlock)).Button);
+		var secondPane = CurrentPane(form);
+		Assert.That(firstPane.IsDisposed, Is.True, "Inactive navigation panes are released.");
+		Assert.That(form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(secondPane.GradientStartColor));
+		Assert.That(form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(Color.White));
+		firstColor = Color.LightBlue;
+		Assert.That(form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(secondPane.GradientStartColor), "Inactive block configuration must not recolor the current preview.");
+
+		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.Button.Tag, firstBlock)).Button);
+		Assert.That(secondPane.IsDisposed, Is.True);
+		Assert.That(CurrentPane(form), Is.Not.SameAs(firstPane));
+		Assert.That(form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(firstColor));
+		Assert.That(form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(Color.Black));
+		Assert.That(form.ActiveScreen, Is.SameAs(screen));
+		Assert.That(screen.ActionButton.Owner, Is.SameAs(toolbar));
+		Assert.That(lifecycleChanges, Is.Zero);
+		Assert.That(form.NavigationPaneCollapsed, Is.EqualTo(collapsed));
 	}
 
 	[Test]
@@ -605,7 +611,7 @@ public class NavigationPaneTests {
 		using var Form = new BlockMainForm();
 		using var Block = new WinFormsApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
-		var Pane = Form.BlockBindings[Block];
+		var Pane = CurrentPane(Form);
 		Pane.CustomSettings.GradientStartColor = Color.MidnightBlue;
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(Color.MidnightBlue));
 		Pane.ResetCustomSettings();
@@ -623,10 +629,15 @@ public class NavigationPaneTests {
 		var DefaultForeColor = Form.ScreenHost.TabControl.DockPreviewForeColor;
 		var Block = new WinFormsApplicationBlock { Name = "Themed" };
 		Form.RegisterBlock(Block);
-		Form.BlockBindings[Block].CustomSettings.GradientStartColor = Color.MidnightBlue;
+		CurrentPane(Form).CustomSettings.GradientStartColor = Color.MidnightBlue;
 		Form.UnregisterBlock(Block);
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewBackColor, Is.EqualTo(DefaultBackColor));
 		Assert.That(Form.ScreenHost.TabControl.DockPreviewForeColor, Is.EqualTo(DefaultForeColor));
+	}
+
+	// Read the actual current view instead of retaining inactive panes in a test registry.
+	private static TaskPane CurrentPane(BlockMainForm form) {
+		return (TaskPane)form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single().ApplicationBarControl;
 	}
 
 	private static void AssertSidebarCaptionLayout(TaskPane pane, Expando[] menus, TaskItem[] items) {
@@ -672,6 +683,16 @@ public class NavigationPaneTests {
 	}
 
 	private class ProbeMainForm : BlockMainForm {
+		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+		public Func<IWinFormsApplicationBlock, Color> NavigationColor { get; set; }
+
+		protected override TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
+			var pane = base.CreateApplicationBlockPane(block);
+			if (NavigationColor != null)
+				pane.CustomSettings.GradientStartColor = NavigationColor(block);
+			return pane;
+		}
+
 		public void RescaleDpi(int OldDpi, int NewDpi) => RescaleConstantsForDpi(OldDpi, NewDpi);
 
 		public void ClickNavigationButton(SquareButton Button) => InvokeOnClick(Button, EventArgs.Empty);
@@ -701,10 +722,10 @@ public class NavigationPaneTests {
 	private class NavigationScreen : WinFormsApplicationScreen {
 		public NavigationScreen() {
 			ActivationMode = ScreenActivationMode.MultiInstance;
-			ToolBar = new ToolStrip();
+			ScreenToolBar = new ToolStrip();
 			ActionButton = new ToolStripButton("Screen action");
-			ToolBar.Items.Add(ActionButton);
-			Controls.Add(ToolBar);
+			ScreenToolBar.Items.Add(ActionButton);
+			Controls.Add(ScreenToolBar);
 		}
 
 		public ToolStripButton ActionButton { get; }

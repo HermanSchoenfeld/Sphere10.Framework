@@ -70,9 +70,9 @@ public class ApplicationHostRenderingTests {
 		tabs.TabPages[3].ImageIndex = 1;
 		screen.Controls.Add(tabs);
 		screen.Controls.Add(new Label { Dock = DockStyle.Bottom, Text = "Captured Details", Height = 22 });
-		screen.ToolBar = new ToolStrip { Dock = DockStyle.Top };
-		screen.ToolBar.Items.AddRange(new ToolStripItem[] { new ToolStripButton("Refresh Details"), new ToolStripButton("Copy Executable Path"), new ToolStripButton("Copy Command Line") });
-		screen.Controls.Add(screen.ToolBar);
+		screen.ScreenToolBar = new ToolStrip { Dock = DockStyle.Top };
+		screen.ScreenToolBar.Items.AddRange(new ToolStripItem[] { new ToolStripButton("Refresh Details"), new ToolStripButton("Copy Executable Path"), new ToolStripButton("Copy Command Line") });
+		screen.Controls.Add(screen.ScreenToolBar);
 		if (!mainFrame)
 			form.Controls.Add(host);
 		form.Show();
@@ -80,7 +80,7 @@ public class ApplicationHostRenderingTests {
 		tabs.SelectedIndex = selectedIndex;
 		System.Windows.Forms.Application.DoEvents();
 		if (mainFrame)
-			Assert.That(screen.ToolBar.Items.Count, Is.Zero, "The real MainForm must lift the screen toolbar commands before detachment.");
+			Assert.That(screen.ScreenToolBar.Items.Count, Is.Zero, "The real MainForm must lift the screen toolbar commands before detachment.");
 		var selectedPage = tabs.SelectedTab;
 		var selectedHandle = selectedPage.Handle;
 		var tabHandle = tabs.Handle;
@@ -114,8 +114,8 @@ public class ApplicationHostRenderingTests {
 			Assert.That(headers.All(header => !header.IntersectsWith(selectedPage.Bounds)), Is.True, "The retained page must not cover the native header rows before the user clicks a tab.");
 			Assert.That(selectedPage.Bounds, Is.EqualTo(tabs.DisplayRectangle), "The selected page must use the final multiline native display rectangle.");
 			Assert.That(paintedCaptions.All(count => count >= 8), Is.True, "Every real native header must contain caption ink after undocking, before any tab click or explicit repaint.");
-			Assert.That(screen.ToolBar.Items.Count, Is.EqualTo(3), "Undocking must restore the exact command strip before final native layout.");
-			Assert.That(tabs.Top, Is.GreaterThanOrEqualTo(screen.ToolBar.Bottom), "The restored toolbar must not cover the first row of tab headers.");
+			Assert.That(screen.ScreenToolBar.Items.Count, Is.EqualTo(3), "Undocking must restore the exact command strip before final native layout.");
+			Assert.That(tabs.Top, Is.GreaterThanOrEqualTo(screen.ScreenToolBar.Bottom), "The restored toolbar must not cover the first row of tab headers.");
 		});
 	}
 
@@ -540,43 +540,52 @@ public class ApplicationHostRenderingTests {
 		Assert.That(file, Is.SameAs(legacyFile));
 		Assert.That(help, Is.SameAs(legacyHelp));
 		Assert.That(form.MenuEntries.Last(), Is.SameAs(legacyHelp));
-		Assert.That(file.DropDownItems.OfType<ToolStripMenuItem>().Select(item => item.Text), Is.EqualTo(new[] { "Save", "Save", "E&xit" }));
-		file.DropDownItems[0].PerformClick();
+		Assert.That(file.DropDownItems.OfType<ToolStripMenuItem>().Select(item => item.Text), Is.EqualTo(new[] { "E&xit", "Save", "Save", "Save" }));
 		file.DropDownItems[1].PerformClick();
-		help.DropDownItems[0].PerformClick();
-		help.DropDownItems[1].PerformClick();
+		file.DropDownItems[2].PerformClick();
+		screen.Command.PerformClick();
+		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[0].PerformClick();
+		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[1].PerformClick();
 		legacyExit.PerformClick();
 		legacyContextHelp.PerformClick();
 		Assert.That(globalRuns, Is.EqualTo(1));
-		Assert.That(blockRuns, Is.Zero, "The screen replaces the block's contextual Save command.");
+		Assert.That(blockRuns, Is.EqualTo(1), "The native screen's own command does not take over a block command.");
 		Assert.That(screen.ExecuteCount, Is.EqualTo(1));
 		Assert.That(globalHelpRuns, Is.EqualTo(1));
-		Assert.That(blockHelpRuns, Is.Zero);
-		Assert.That(screen.HelpExecuteCount, Is.EqualTo(1));
+		Assert.That(blockHelpRuns, Is.EqualTo(1));
 		Assert.That(form.ExitCount, Is.EqualTo(1));
 		Assert.That(form.HelpCount, Is.EqualTo(1));
 		Assert.That(form.ToolEntries.Count(item => item.ToolTipText == "Save"), Is.EqualTo(2));
+		Assert.That(form.ToolEntries, Does.Contain(screen.ToolCommand));
+		screen.ToolCommand.PerformClick();
+		Assert.That(screen.ExecuteCount, Is.EqualTo(2), "The frame executes the screen's actual native toolbar handler.");
 		Assert.That(global.Parent, Is.SameAs(globalMenu));
-		Assert.That(screen.Command.Parent, Is.SameAs(screen.Menus[0]), "Menu composition preserves the command's declaring menu.");
-		var previousGenerated = file.DropDownItems[1];
+		Assert.That(file.DropDownItems.Contains(screen.Command), Is.True, "The host uses the screen's actual native menu item.");
+		Assert.That(screen.ScreenToolBar.Items, Is.Empty, "The main frame transfers the actual native toolbar item while the screen is active.");
+		var previousGenerated = file.DropDownItems[2];
 		form.ScreenHost.ActivateScreen(block, typeof(CountingScreen));
 		file = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "File");
 		help = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Text == "Help");
-		file.DropDownItems[0].PerformClick();
 		file.DropDownItems[1].PerformClick();
-		help.DropDownItems[0].PerformClick();
-		help.DropDownItems[1].PerformClick();
+		file.DropDownItems[2].PerformClick();
+		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[0].PerformClick();
+		help.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Text == "Inspect").ToArray()[1].PerformClick();
 		legacyExit.PerformClick();
 		legacyContextHelp.PerformClick();
 		Assert.That(globalRuns, Is.EqualTo(2));
-		Assert.That(blockRuns, Is.EqualTo(1));
+		Assert.That(blockRuns, Is.EqualTo(2));
 		Assert.That(globalHelpRuns, Is.EqualTo(2));
-		Assert.That(blockHelpRuns, Is.EqualTo(1));
+		Assert.That(blockHelpRuns, Is.EqualTo(2));
 		Assert.That(form.ExitCount, Is.EqualTo(2));
 		Assert.That(form.HelpCount, Is.EqualTo(2));
 		Assert.That(legacyExit.IsDisposed, Is.False);
 		Assert.That(legacyContextHelp.IsDisposed, Is.False);
 		Assert.That(previousGenerated.IsDisposed, Is.True);
+		Assert.That(screen.Command.IsDisposed, Is.False, "Generated command cleanup must preserve screen-owned native items.");
+		Assert.That(screen.Command.Owner, Is.InstanceOf<ToolStripDropDown>(), "Hidden commands retain their native dropdown ownership.");
+		Assert.That(form.MenuEntries, Does.Not.Contain(screen.Command.OwnerItem));
+		Assert.That(screen.Menus.Single().Text, Is.EqualTo(screen.Command.OwnerItem.Text));
+		Assert.That(screen.ScreenToolBar.Items.Cast<ToolStripItem>(), Is.EqualTo(new[] { screen.ToolCommand }), "Hiding restores the screen's native toolbar ownership.");
 		Assert.That(form.MenuEntries.Last(), Is.SameAs(legacyHelp));
 	}
 
@@ -807,9 +816,9 @@ public class ApplicationHostRenderingTests {
 
 		protected override void ContextHelp_Click(object sender, EventArgs args) => HelpCount++;
 
-		protected override void UpdateApplicationCommands() {
+		protected override void RebuildApplicationCommands() {
 			CommandUpdateCount++;
-			base.UpdateApplicationCommands();
+			base.RebuildApplicationCommands();
 		}
 
 		protected override void OnActiveScreenChanging(WinFormsApplicationScreen screen) {
@@ -892,29 +901,19 @@ public class ApplicationHostRenderingTests {
 	}
 
 	public sealed class CommandScreen : WinFormsApplicationScreen {
-		private readonly WinFormsApplicationMenu _menu;
-		private readonly WinFormsApplicationMenu _helpMenu;
-
 		public CommandScreen() {
-			Command = new WinFormsActionMenuItem("Save", () => ExecuteCount++);
-			_menu = new WinFormsApplicationMenu("File");
-			_menu.AddItem(Command);
-			_helpMenu = new WinFormsApplicationMenu("H&elp");
-			_helpMenu.AddItem(new WinFormsActionMenuItem("Inspect", () => HelpExecuteCount++));
+			ActivationMode = ScreenActivationMode.SingleInstance;
+			ApplicationMenuStripText = "&File";
+			ShowInApplicationMenuStrip = true;
+			Command = new ToolStripMenuItem("Save", null, (_, _) => ExecuteCount++);
+			RegisterMenuItem(Command);
+			ToolCommand = new ToolStripButton("Save", null, (_, _) => ExecuteCount++) { ToolTipText = "Save" };
+			ScreenToolBar = new ToolStrip();
+			ScreenToolBar.Items.Add(ToolCommand);
 		}
 
 		public int ExecuteCount { get; private set; }
-		public int HelpExecuteCount { get; private set; }
-		public WinFormsActionMenuItem Command { get; }
-		public override IWinFormsApplicationMenu[] Menus => new[] { _menu, _helpMenu };
-		public override IWinFormsApplicationMenuItem[] ToolBarItems => new[] { Command };
-
-		protected override void Dispose(bool disposing) {
-			if (disposing) {
-				_menu.Dispose();
-				_helpMenu.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+		public ToolStripMenuItem Command { get; }
+		public ToolStripButton ToolCommand { get; }
 	}
 }

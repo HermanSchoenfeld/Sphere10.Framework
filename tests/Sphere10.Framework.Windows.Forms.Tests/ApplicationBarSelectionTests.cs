@@ -36,6 +36,17 @@ public class ApplicationBarSelectionTests {
 	}
 
 	[Test]
+	public void RemovingAnUnactivatedNavigationItemDoesNotRequireAMenuControl() {
+		using var bar = new ClickableApplicationBar();
+		var item = new ApplicationBar.Item(null, null, "Unactivated");
+		bar.AddItem(item);
+		bar.RemoveItem(item);
+		Assert.That(bar.Items, Is.Empty);
+		Assert.That(bar.ApplicationBarControl, Is.Null);
+		Assert.That(item.Button.IsDisposed, Is.True);
+	}
+
+	[Test]
 	public void ProgrammaticSelectionIsExclusiveAndDisplaysItsMenuWithoutNavigating() {
 		using var bar = new ClickableApplicationBar();
 		using var firstMenu = new Panel();
@@ -133,24 +144,25 @@ public class ApplicationBarSelectionTests {
 		using var second = CreateBlock("File Server Migrator");
 		form.RegisterBlock(first);
 		var activeScreen = form.ActiveScreen;
-		Assert.That(form.ActiveBlock, Is.SameAs(first));
+		Assert.That(form.SelectedBlock, Is.SameAs(first));
 		Assert.That(form.Text, Is.EqualTo(first.Name), "Single-block startup keeps its established block caption.");
 		form.RegisterBlock(second);
 		Assert.That(form.Blocks, Does.Contain(second));
-		Assert.That(form.ActiveBlock, Is.SameAs(first));
+		Assert.That(form.SelectedBlock, Is.SameAs(first));
 		Assert.That(form.ActiveScreen, Is.SameAs(activeScreen));
 		Assert.That(form.Text, Is.EqualTo(first.Name), "Registering an inactive extension must not replace the current block's window caption.");
 	}
 
 	[Test]
 	public async Task HostScreenActivationSynchronizesTheOwningMenuWithoutRequestingAnotherNavigation() {
-		using var form = new ClickableMainForm { ScreenMode = ScreenMode.MultiView };
+		using var form = new ClickableMainForm {
+			ScreenMode = ScreenMode.MultiView,
+			NavigationColor = block => block.Name == "First" ? Color.LightSkyBlue : Color.MidnightBlue
+		};
 		using var first = CreateBlock("First");
 		using var second = CreateBlock("Second");
 		form.RegisterBlock(first);
 		form.RegisterBlock(second);
-		form.BlockBindings[first].CustomSettings.GradientStartColor = Color.LightSkyBlue;
-		form.BlockBindings[second].CustomSettings.GradientStartColor = Color.MidnightBlue;
 		var bar = Navigation(form);
 		var navigationRequests = 0;
 		bar.ButtonPressed += (_, _) => navigationRequests++;
@@ -178,10 +190,56 @@ public class ApplicationBarSelectionTests {
 		var bar = Navigation(form);
 		form.ScreenHost.SelectBlock(first);
 		form.ScreenHost.Changed += () => {
-			if (ReferenceEquals(form.ActiveBlock, second)) form.ScreenHost.SelectBlock(first);
+			if (ReferenceEquals(form.SelectedBlock, second)) form.ScreenHost.SelectBlock(first);
 		};
-		form.ClickButton(bar.Items.Single(item => ReferenceEquals(item.MenuControl, form.BlockBindings[second])).Button);
+		form.ClickButton(bar.Items.Single(item => ReferenceEquals(item.Button.Tag, second)).Button);
 		AssertNavigation(form, bar, first);
+	}
+
+	[Test]
+	public void SelectingAnotherBlockRecreatesItsPaneFromFixedOwnerCommands() {
+		using var form = new ClickableMainForm();
+		using var first = CreateBlock("First");
+		using var second = CreateBlock("Second");
+		form.RegisterBlock(first);
+		var bar = Navigation(form);
+		var originalPane = bar.ApplicationBarControl;
+		form.RegisterBlock(second);
+		Assert.That(bar.ApplicationBarControl, Is.SameAs(originalPane), "Registration must not rebuild the selected pane.");
+		Assert.That(bar.Items.Single(item => ReferenceEquals(item.Button.Tag, second)).MenuControl, Is.Null);
+
+		form.SelectedBlock = second;
+		Assert.That(originalPane.IsDisposed, Is.True);
+		var secondPane = bar.ApplicationBarControl;
+		using var added = new WinFormsApplicationMenu("Added later");
+		Assert.That(() => first.AddMenu(added), Throws.InvalidOperationException, "Activated command membership is fixed.");
+		form.SelectedBlock = first;
+		Assert.That(secondPane.IsDisposed, Is.True);
+		Assert.That(bar.ApplicationBarControl, Is.Not.SameAs(originalPane));
+		Assert.That(((TaskPane)bar.ApplicationBarControl).Expandos.Cast<Expando>().Select(menu => menu.Text), Is.EqualTo(first.Menus.Select(menu => menu.Text)));
+	}
+
+	[Test]
+	public void NavigationRebuildAndFormDisposalRetainAnOwnerSuppliedMenuControl() {
+		using var control = new ApplicationControl();
+		using var form = new ClickableMainForm();
+		using var first = new WinFormsApplicationBlock { Name = "Control owner", ShowInMenuStrip = false, ShowInToolStrip = false };
+		using var second = new WinFormsApplicationBlock { Name = "Second" };
+		using var menu = new WinFormsApplicationMenu("Editor");
+		menu.AddItem(new BorrowedControlMenuItem(control));
+		first.AddMenu(menu);
+		form.RegisterBlock(first);
+		form.RegisterBlock(second);
+		Assert.That(Navigation(form).ApplicationBarControl.Contains(control), Is.True);
+
+		form.SelectedBlock = second;
+		Assert.That(control.IsDisposed, Is.False);
+		Assert.That(control.Parent, Is.Null);
+		form.SelectedBlock = first;
+		Assert.That(Navigation(form).ApplicationBarControl.Contains(control), Is.True);
+		form.Dispose();
+		Assert.That(control.IsDisposed, Is.False);
+		Assert.That(control.Parent, Is.Null);
 	}
 
 	[Test]
@@ -209,11 +267,12 @@ public class ApplicationBarSelectionTests {
 		=> form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
 
 	private static void AssertNavigation(BlockMainForm form, ApplicationBar bar, IWinFormsApplicationBlock block) {
-		var selected = bar.Items.Single(item => ReferenceEquals(item.MenuControl, form.BlockBindings[block]));
-		Assert.That(form.ActiveBlock, Is.SameAs(block));
+		var selected = bar.Items.Single(item => ReferenceEquals(item.Button.Tag, block));
+		Assert.That(form.SelectedBlock, Is.SameAs(block));
 		Assert.That(bar.SelectedItem, Is.SameAs(selected));
 		Assert.That(bar.Items.Count(item => item.Button.Pressed), Is.EqualTo(1));
-		Assert.That(bar.ApplicationBarControl, Is.SameAs(form.BlockBindings[block]));
+		Assert.That(bar.ApplicationBarControl, Is.SameAs(selected.MenuControl));
+		Assert.That(bar.Items.Where(item => item.Button.Tag is IWinFormsApplicationBlock && !ReferenceEquals(item, selected)).Select(item => item.MenuControl), Is.All.Null);
 		Assert.That(bar.ApplicationBarControl.Parent.Controls.Cast<Control>(), Is.EqualTo(new[] { bar.ApplicationBarControl }));
 	}
 
@@ -243,7 +302,26 @@ public class ApplicationBarSelectionTests {
 	}
 
 	private sealed class ClickableMainForm : BlockMainForm {
+		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+		public Func<IWinFormsApplicationBlock, Color> NavigationColor { get; set; }
+
+		protected override TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
+			var pane = base.CreateApplicationBlockPane(block);
+			if (NavigationColor != null)
+				pane.CustomSettings.GradientStartColor = NavigationColor(block);
+			return pane;
+		}
+
 		public void ClickButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
+	}
+
+	private sealed class BorrowedControlMenuItem : WinFormsApplicationMenuItemBase, IWinFormsControlMenuItem {
+		public BorrowedControlMenuItem(ApplicationControl control)
+			: base(null, true, false, false) {
+			ControlToShow = control;
+		}
+
+		public ApplicationControl ControlToShow { get; }
 	}
 
 	public sealed class DefaultNavigationScreen : WinFormsApplicationScreen { }

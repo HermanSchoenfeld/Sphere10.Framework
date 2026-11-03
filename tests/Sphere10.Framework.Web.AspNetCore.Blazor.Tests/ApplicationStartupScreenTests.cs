@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
@@ -26,6 +27,8 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationStartupScreenTests {
+
+	/// <summary>Verifies saved identity reopens canonical registration with its configured parameters.</summary>
 	[Test]
 	public async Task SavedIdentityReopensCanonicalRegistrationWithItsConfiguredParameters() {
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -48,6 +51,7 @@ public class ApplicationStartupScreenTests {
 		Assert.That(restored.OpenScreens.Select(screen => screen.ScreenType), Does.Contain(typeof(PermanentScreen)));
 	}
 
+	/// <summary>Verifies unavailable or forged identity uses the existing default.</summary>
 	[TestCase("block", "missing", "correct")]
 	[TestCase("missing", "other", "correct")]
 	[TestCase("block", "other", "arbitrary")]
@@ -63,6 +67,7 @@ public class ApplicationStartupScreenTests {
 		Assert.That(host.StartupScreen, Is.Null);
 	}
 
+	/// <summary>Verifies explicit activation wins over saved startup.</summary>
 	[Test]
 	public async Task ExplicitActivationWinsOverSavedStartup() {
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -76,6 +81,7 @@ public class ApplicationStartupScreenTests {
 		Assert.That(host.OpenScreens.Count(screen => screen.ScreenType == typeof(OtherScreen)), Is.Zero);
 	}
 
+	/// <summary>Verifies runtime activation parameters and instance keys are never persistable.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task RuntimeActivationParametersAndInstanceKeysAreNeverPersistable(bool keyed) {
@@ -91,6 +97,7 @@ public class ApplicationStartupScreenTests {
 		Assert.That(() => host.GetStartupScreenIdentity(session), Throws.InvalidOperationException);
 	}
 
+	/// <summary>Verifies component opt out and preconstruction host policy reject startup choices.</summary>
 	[Test]
 	public async Task ComponentOptOutAndPreconstructionHostPolicyRejectStartupChoices() {
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -105,10 +112,11 @@ public class ApplicationStartupScreenTests {
 		Assert.That(restricted.ActiveScreen.ScreenType, Is.EqualTo(typeof(DefaultScreen)));
 	}
 
+	/// <summary>Verifies browser preference loads before blank route default but explicit route still wins.</summary>
 	[Test]
 	public async Task BrowserPreferenceLoadsBeforeBlankRouteDefaultButExplicitRouteStillWins() {
 		await using var setup = CreateRenderer(new BrowserRuntime { Identity = Identity() });
-		await setup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await setup.InvokeAsync(async () => {
 			var rendered = await setup.RenderAsync();
 			Assert.That(setup.Host.ActiveScreen, Is.Null);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Loading workspace"));
@@ -119,7 +127,7 @@ public class ApplicationStartupScreenTests {
 			Assert.That(setup.Browser.ReadKeys, Is.EqualTo(new[] { "test.application" }));
 		});
 		await using var explicitSetup = CreateRenderer(new BrowserRuntime { Identity = Identity() });
-		await explicitSetup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await explicitSetup.InvokeAsync(async () => {
 			await explicitSetup.RenderAsync("default");
 			var explicitScreen = explicitSetup.Host.ActiveScreen;
 			await explicitSetup.Shell.CompleteRenderAsync();
@@ -128,10 +136,30 @@ public class ApplicationStartupScreenTests {
 		});
 	}
 
+	/// <summary>Verifies typed startup settings override the existing legacy browser identity without rewriting it.</summary>
+	[Test]
+	public async Task TypedStartupSettingsOverrideTheExistingLegacyBrowserIdentityWithoutRewritingIt() {
+		var legacy = Identity();
+		await using var setup = CreateRenderer(new BrowserRuntime { Identity = legacy });
+		await setup.InvokeAsync(async () => {
+			var settings = await UserSettings.GetAsync<ApplicationShell.StartupSettings>("test.application");
+			settings.StartupScreen = legacy with { MenuItemId = "default", ScreenTypeName = typeof(DefaultScreen).FullName };
+			await settings.SaveAsync();
+			setup.Browser.WriteKeys.Clear();
+			await setup.RenderAsync();
+			await setup.Shell.CompleteRenderAsync();
+			Assert.That(setup.Host.ActiveScreen.ScreenType, Is.EqualTo(typeof(DefaultScreen)));
+			Assert.That(setup.Browser.ReadKeys, Is.Empty, "A current typed root suppresses legacy reads.");
+			Assert.That(setup.Browser.WriteKeys, Is.Empty, "Restoration does not write preferences.");
+			Assert.That(setup.Browser.Identity, Is.SameAs(legacy), "The original legacy record remains untouched.");
+		});
+	}
+
+	/// <summary>Verifies saving browser preference updates checked state only after successful storage.</summary>
 	[Test]
 	public async Task SavingBrowserPreferenceUpdatesCheckedStateOnlyAfterSuccessfulStorage() {
 		await using var setup = CreateRenderer(new BrowserRuntime());
-		await setup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await setup.InvokeAsync(async () => {
 			await setup.RenderAsync("other");
 			await setup.Shell.CompleteRenderAsync();
 			var session = setup.Host.ActiveScreen;
@@ -139,8 +167,10 @@ public class ApplicationStartupScreenTests {
 			await setup.Shell.MakeStartupAsync(session.Id);
 
 			Assert.That(setup.Host.IsStartupScreen(session), Is.True);
-			Assert.That(setup.Browser.Identity, Is.EqualTo(setup.Host.GetStartupScreenIdentity(session)));
-			Assert.That(setup.Browser.WriteKeys, Is.EqualTo(new[] { "test.application" }));
+			Assert.That((await UserSettings.GetAsync<ApplicationShell.StartupSettings>("test.application")).StartupScreen,
+				Is.EqualTo(setup.Host.GetStartupScreenIdentity(session)));
+			Assert.That(setup.Browser.WriteKeys, Has.Count.EqualTo(1));
+			Assert.That(setup.Browser.WriteKeys.Single(), Does.EndWith("/test.application"));
 			var previous = setup.Host.StartupScreen;
 			var attached = new TaskCompletionSource<BlazorApplicationScreenSession>(TaskCreationOptions.RunContinuationsAsynchronously);
 			void ObserveAttachment() {
@@ -155,15 +185,16 @@ public class ApplicationStartupScreenTests {
 			setup.Browser.FailWrite = true;
 			await setup.Shell.MakeStartupAsync(next.Id);
 			Assert.That(setup.Host.StartupScreen, Is.EqualTo(previous));
-			Assert.That(setup.Browser.Identity, Is.EqualTo(previous));
+			Assert.That((await UserSettings.GetAsync<ApplicationShell.StartupSettings>("test.application")).StartupScreen, Is.EqualTo(previous));
 			Assert.That(setup.Markup.ToHtmlString(), Does.Contain("could not be saved"));
 		});
 	}
 
+	/// <summary>Verifies unavailable browser storage falls back without losing the circuit.</summary>
 	[Test]
 	public async Task UnavailableBrowserStorageFallsBackWithoutLosingTheCircuit() {
 		await using var setup = CreateRenderer(new BrowserRuntime { FailRead = true });
-		await setup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await setup.InvokeAsync(async () => {
 			var rendered = await setup.RenderAsync();
 			await setup.Shell.CompleteRenderAsync();
 
@@ -172,10 +203,11 @@ public class ApplicationStartupScreenTests {
 		});
 	}
 
+	/// <summary>Verifies shell without settings key keeps immediate startup and does not access browser storage.</summary>
 	[Test]
 	public async Task ShellWithoutSettingsKeyKeepsImmediateStartupAndDoesNotAccessBrowserStorage() {
 		await using var setup = CreateRenderer(new BrowserRuntime { FailRead = true });
-		await setup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await setup.InvokeAsync(async () => {
 			await setup.RenderAsync(settingsKey: null);
 			await setup.Shell.CompleteRenderAsync();
 
@@ -184,10 +216,11 @@ public class ApplicationStartupScreenTests {
 		});
 	}
 
+	/// <summary>Verifies open screens selector disambiguates titles and selects the exact retained instance.</summary>
 	[Test]
 	public async Task OpenScreensSelectorDisambiguatesTitlesAndSelectsTheExactRetainedInstance() {
 		await using var setup = CreateRenderer(new BrowserRuntime());
-		await setup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await setup.InvokeAsync(async () => {
 			var first = await setup.Host.ActivateScreenAsync("block", "other");
 			var second = await setup.Host.ActivateScreenAsync("block", "other");
 			await setup.Host.ActivateScreenAsync("block", "permanent");
@@ -213,10 +246,11 @@ public class ApplicationStartupScreenTests {
 		});
 	}
 
+	/// <summary>Verifies startup tab command shows checked choice and explains session only exclusion.</summary>
 	[Test]
 	public async Task StartupTabCommandShowsCheckedChoiceAndExplainsSessionOnlyExclusion() {
 		await using var setup = CreateRenderer(new BrowserRuntime());
-		await setup.Renderer.Dispatcher.InvokeAsync(async () => {
+		await setup.InvokeAsync(async () => {
 			var first = await setup.Host.ActivateScreenAsync("block", "other");
 			await setup.Host.AttachScreenAsync(first.Id, new OtherScreen());
 			setup.Host.SetStartupScreen(setup.Host.GetStartupScreenIdentity(first));
@@ -235,40 +269,47 @@ public class ApplicationStartupScreenTests {
 		});
 	}
 
-	private static BlazorApplicationStartupScreen Identity() => new(string.Empty, "block", "other", typeof(OtherScreen).FullName, typeof(OtherScreen).Assembly.GetName().Name);
+	// Builds a persisted registration identity from the canonical block graph.
+	private static BlazorApplicationStartupScreen Identity() {
+		return new(string.Empty, "block", "other", typeof(OtherScreen).FullName, typeof(OtherScreen).Assembly.GetName().Name);
+	}
 
-	private static IBlazorApplicationBlock[] CreateBlocks() => new[] {
-		new BlazorApplicationBlockBuilder()
-			.WithId("block")
-			.WithName("Test block")
-			.AddScreen<PermanentScreen>(screen => screen
-				.WithTitle("Permanent")
-				.WithActivationMode(ScreenActivationMode.PermanentSingleton)
-			)
-			.AddScreen<SessionScreen>(screen => screen
-				.WithTitle("Session")
-				.WithActivationMode(ScreenActivationMode.MultiInstance)
-			)
-			.AddScreen<OtherScreen>(screen => screen
-				.WithTitle("Other")
-				.WithActivationMode(ScreenActivationMode.MultiInstance)
-				.WithParameters(new Dictionary<string, object> { ["Caption"] = "Configured value" })
-			)
-			.AddScreen<DefaultScreen>(screen => screen
-				.WithTitle("Default")
-				.WithActivationMode(ScreenActivationMode.SingleInstance)
-			)
-			.WithDefaultScreen<DefaultScreen>()
-			.AddMenu(menu => menu
-				.WithText("Screens")
-				.AddShowScreenItem<DefaultScreen>(text: "Default", id: "default")
-				.AddShowScreenItem<OtherScreen>(text: "Other", id: "other")
-				.AddShowScreenItem<SessionScreen>(text: "Session", id: "session")
-				.AddShowScreenItem<PermanentScreen>(text: "Permanent", id: "permanent")
-			)
-			.Build()
-	};
+	// Creates independent registrations with distinct startup policies.
+	private static IBlazorApplicationBlock[] CreateBlocks() {
+		return new[] {
+			new BlazorApplicationBlockBuilder()
+				.WithId("block")
+				.WithName("Test block")
+				.AddScreen<PermanentScreen>(screen => screen
+					.WithTitle("Permanent")
+					.WithActivationMode(ScreenActivationMode.PermanentSingleton)
+				)
+				.AddScreen<SessionScreen>(screen => screen
+					.WithTitle("Session")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+				)
+				.AddScreen<OtherScreen>(screen => screen
+					.WithTitle("Other")
+					.WithActivationMode(ScreenActivationMode.MultiInstance)
+					.WithParameters(new Dictionary<string, object> { ["Caption"] = "Configured value" })
+				)
+				.AddScreen<DefaultScreen>(screen => screen
+					.WithTitle("Default")
+					.WithActivationMode(ScreenActivationMode.SingleInstance)
+				)
+				.WithDefaultScreen<DefaultScreen>()
+				.AddMenu(menu => menu
+					.WithText("Screens")
+					.AddShowScreenItem<DefaultScreen>(text: "Default", id: "default")
+					.AddShowScreenItem<OtherScreen>(text: "Other", id: "other")
+					.AddShowScreenItem<SessionScreen>(text: "Session", id: "session")
+					.AddShowScreenItem<PermanentScreen>(text: "Permanent", id: "permanent")
+				)
+				.Build()
+		};
+	}
 
+	// Creates the real shell with an isolated browser-settings fixture.
 	private static RendererSetup CreateRenderer(BrowserRuntime browser) {
 		var services = new ServiceCollection().AddLogging();
 		services.AddSphere10Blazor();
@@ -279,37 +320,75 @@ public class ApplicationStartupScreenTests {
 		return new RendererSetup(services.BuildServiceProvider(), browser);
 	}
 
-	public class DefaultScreen : BlazorApplicationScreen { }
+	#region Inner Types
 
+	/// <summary>The block's ordinary startup screen.</summary>
+	public class DefaultScreen : BlazorApplicationScreen {
+	}
+
+	/// <summary>An alternative screen with configured parameters.</summary>
 	public class OtherScreen : BlazorApplicationScreen {
+
+		/// <summary>The configured screen caption.</summary>
 		[Parameter] public string Caption { get; set; }
 	}
 
-	public class PermanentScreen : BlazorApplicationScreen { }
+	/// <summary>A screen used to verify permanent singleton startup behavior.</summary>
+	public class PermanentScreen : BlazorApplicationScreen {
+	}
 
+	/// <summary>A session-only screen that declines startup restoration.</summary>
 	public class SessionScreen : BlazorApplicationScreen {
-		public override bool CanRestoreAtStartup => false;
+
+		/// <summary>Declines restoration for a session-only screen.</summary>
+		public override bool CanRestoreAtStartup {
+			get {
+				return false;
+			}
+		}
 	}
 
+	// Applies an application policy before constructing a startup screen.
 	private sealed class RestrictedHost : BlazorApplicationScreenHost {
+
+		/// <summary>Creates the restricted host with its fixture dependencies.</summary>
 		public RestrictedHost(IEnumerable<IBlazorApplicationBlock> blocks, IServiceProvider services)
-			: base(blocks, services) { }
+			: base(blocks, services) {
+		}
 
-		protected override bool CanRestoreScreenAtStartup(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) =>
-			definition.ScreenType != typeof(OtherScreen) && base.CanRestoreScreenAtStartup(block, definition);
+		/// <summary>Rejects the registration configured as unavailable for startup.</summary>
+		protected override bool CanRestoreScreenAtStartup(IBlazorApplicationBlock block, ApplicationScreenDefinition definition) {
+			return definition.ScreenType != typeof(OtherScreen) && base.CanRestoreScreenAtStartup(block, definition);
+		}
 	}
 
+	/// <summary>Exposes actual shell lifecycle methods to the renderer fixture.</summary>
 	public class ShellProbe : ApplicationShell {
-		public Task CompleteRenderAsync() => OnAfterRenderAsync(false);
 
-		public Task MakeStartupAsync(Guid id) => MakeStartupScreenAsync(id);
+		/// <summary>Completes the shell's actual interactive startup phase.</summary>
+		public Task CompleteRenderAsync() {
+			return OnAfterRenderAsync(false);
+		}
+
+		/// <summary>Invokes the shell's actual startup selection command.</summary>
+		public Task MakeStartupAsync(Guid id) {
+			return MakeStartupScreenAsync(id);
+		}
 	}
 
+	/// <summary>Renders and captures the shell under test.</summary>
 	public class Harness : ComponentBase {
+
+		/// <summary>Captures the rendered component instance.</summary>
 		[Parameter] public Action<ShellProbe> Capture { get; set; }
+
+		/// <summary>The requested registered screen.</summary>
 		[Parameter] public string ScreenId { get; set; }
+
+		/// <summary>The shell's explicit startup preference identity.</summary>
 		[Parameter] public string SettingsKey { get; set; }
 
+		/// <summary>Renders the real component and captures its reference.</summary>
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<ShellProbe>(0);
 			builder.AddAttribute(1, nameof(ApplicationShell.StartupScreenSettingsKey), SettingsKey);
@@ -322,11 +401,17 @@ public class ApplicationStartupScreenTests {
 		}
 	}
 
+	/// <summary>Exposes actual tab commands to the renderer fixture.</summary>
 	public class TabsProbe : ApplicationScreenTabs {
-		public Task SelectOpenScreenAsync(Guid id) => (Task)typeof(ApplicationScreenTabs)
-			.GetMethod("SelectOpenScreenAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-			.Invoke(this, new object[] { new ChangeEventArgs { Value = id.ToString() } });
 
+		/// <summary>Selects an existing screen through the tab control.</summary>
+		public Task SelectOpenScreenAsync(Guid id) {
+			return (Task)typeof(ApplicationScreenTabs)
+				.GetMethod("SelectOpenScreenAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+				.Invoke(this, new object[] { new ChangeEventArgs { Value = id.ToString() } });
+		}
+
+		/// <summary>Opens the tab's actual context menu.</summary>
 		public async Task OpenContextAsync(Guid id) {
 			await (Task)typeof(ApplicationScreenTabs).GetMethod("KeyDownAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
 				.Invoke(this, new object[] { id, new KeyboardEventArgs { Key = "F10", ShiftKey = true } });
@@ -334,10 +419,16 @@ public class ApplicationStartupScreenTests {
 		}
 	}
 
+	/// <summary>Renders and captures the tab presentation under test.</summary>
 	public class TabsHarness : ComponentBase {
+
+		/// <summary>The fixture's retained screen host.</summary>
 		[Parameter] public IBlazorApplicationScreenHost Host { get; set; }
+
+		/// <summary>Captures the rendered component instance.</summary>
 		[Parameter] public Action<TabsProbe> Capture { get; set; }
 
+		/// <summary>Renders the real component and captures its reference.</summary>
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<TabsProbe>(0);
 			builder.AddAttribute(1, nameof(ApplicationScreenTabs.Sessions), Host.OpenScreens);
@@ -350,9 +441,11 @@ public class ApplicationStartupScreenTests {
 		}
 	}
 
+	// Owns the renderer, application scope and fake browser for one scenario.
 	private sealed class RendererSetup : IAsyncDisposable {
 		private readonly ServiceProvider _provider;
 
+		/// <summary>Creates the renderer setup with its fixture dependencies.</summary>
 		public RendererSetup(ServiceProvider provider, BrowserRuntime browser) {
 			_provider = provider;
 			Browser = browser;
@@ -360,12 +453,28 @@ public class ApplicationStartupScreenTests {
 			Host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		}
 
+		/// <summary>The renderer owned by this fixture.</summary>
 		public HtmlRenderer Renderer { get; }
+
+		/// <summary>The fake browser owned by this fixture.</summary>
 		public BrowserRuntime Browser { get; }
+
+		/// <summary>The fixture's retained screen host.</summary>
 		public IBlazorApplicationScreenHost Host { get; }
+
+		/// <summary>The shell captured from the actual render tree.</summary>
 		public ShellProbe Shell { get; private set; }
+
+		/// <summary>The latest rendered shell markup.</summary>
 		public Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent Markup { get; private set; }
 
+		// The fixture simulates the existing circuit's provider binding for the complete renderer activity.
+		public async Task InvokeAsync(Func<Task> operation) {
+			using var settingsScope = UserSettings.UseProvider(_provider.GetRequiredService<BlazorSettingsProvider>());
+			await Renderer.Dispatcher.InvokeAsync(operation);
+		}
+
+		/// <summary>Renders the component inside an isolated user-settings scope.</summary>
 		public async Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent> RenderAsync(string screenId = null, string settingsKey = "test.application") {
 			Markup = await Renderer.RenderComponentAsync<Harness>(ParameterView.FromDictionary(new Dictionary<string, object> {
 				[nameof(Harness.Capture)] = (Action<ShellProbe>)(shell => Shell = shell),
@@ -375,27 +484,54 @@ public class ApplicationStartupScreenTests {
 			return Markup;
 		}
 
+		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
 		public async ValueTask DisposeAsync() {
 			await Renderer.DisposeAsync();
 			await _provider.DisposeAsync();
 		}
 	}
 
+	// Records navigation inside the fixture's local application URL.
 	private sealed class TestNavigationManager : NavigationManager {
-		public TestNavigationManager() => Initialize("http://localhost/", "http://localhost/application");
 
-		protected override void NavigateToCore(string uri, bool forceLoad) => Uri = ToAbsoluteUri(uri).AbsoluteUri;
+		/// <summary>Creates the test navigation manager with its fixture dependencies.</summary>
+		public TestNavigationManager() {
+			Initialize("http://localhost/", "http://localhost/application");
+		}
 
-		protected override void NavigateToCore(string uri, NavigationOptions options) => Uri = ToAbsoluteUri(uri).AbsoluteUri;
+		/// <summary>Updates the fixture's current application URI.</summary>
+		protected override void NavigateToCore(string uri, bool forceLoad) {
+			Uri = ToAbsoluteUri(uri).AbsoluteUri;
+		}
+
+		/// <summary>Updates the fixture's current application URI.</summary>
+		protected override void NavigateToCore(string uri, NavigationOptions options) {
+			Uri = ToAbsoluteUri(uri).AbsoluteUri;
+		}
 	}
 
+	// Emulates typed settings records and existing legacy browser keys.
 	private sealed class BrowserRuntime : IJSRuntime, IJSObjectReference {
+
+		// Existing raw identities are a read-only legacy source; current records stay in the typed provider namespace.
 		public BlazorApplicationStartupScreen Identity { get; set; }
+
+		/// <summary>The provider's serialized typed browser records.</summary>
+		public Dictionary<string, string> TypedRecords { get; } = new();
+
+		/// <summary>Simulates a browser read failure.</summary>
 		public bool FailRead { get; set; }
+
+		/// <summary>Simulates a browser write failure.</summary>
 		public bool FailWrite { get; set; }
+
+		/// <summary>The legacy browser keys read by the shell.</summary>
 		public List<string> ReadKeys { get; } = new();
+
+		/// <summary>The typed record keys written by the provider.</summary>
 		public List<string> WriteKeys { get; } = new();
 
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			if (identifier == "import")
 				return ValueTask.FromResult((TValue)(object)this);
@@ -405,17 +541,35 @@ public class ApplicationStartupScreenTests {
 					throw new JSException("Storage unavailable.");
 				return ValueTask.FromResult((TValue)(object)Identity);
 			}
-			if (identifier == "WriteStartupScreen") {
-				WriteKeys.Add((string)args[0]);
+			if (identifier == "GetAnonymousProfile")
+				return ValueTask.FromResult((TValue)(object)"startup-browser");
+			if (identifier == "Read") {
+				if (FailRead)
+					throw new JSException("Storage unavailable.");
+				return ValueTask.FromResult(TypedRecords.TryGetValue((string)args[0], out var value) ? (TValue)(object)value : default);
+			}
+			if (identifier == "Write") {
 				if (FailWrite)
 					throw new JSException("Storage unavailable.");
-				Identity = (BlazorApplicationStartupScreen)args[1];
+				var key = (string)args[0];
+				TypedRecords[key] = (string)args[1];
+				WriteKeys.Add(key);
 			}
+			if (identifier == "WriteStartupScreen")
+				throw new InvalidOperationException("Current startup preferences must use UserSettings.");
 			return ValueTask.FromResult(default(TValue));
 		}
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
+			return InvokeAsync<TValue>(identifier, args);
+		}
 
-		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
+		public ValueTask DisposeAsync() {
+			return ValueTask.CompletedTask;
+		}
 	}
+
+	#endregion
 }

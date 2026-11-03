@@ -14,9 +14,8 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>Reusable block metadata, canonical screen definitions and menu membership.</summary>
+/// <summary>Reusable block metadata and canonical screen definitions.</summary>
 public abstract class ApplicationBlockBase : IApplicationBlock {
-	private readonly List<IApplicationMenu> _menus = new();
 	private readonly List<ApplicationScreenDefinition> _screenDefinitions = new();
 	private ApplicationScreenDefinition _defaultScreenDefinition;
 
@@ -28,6 +27,9 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 
 	public virtual int Position { get; set; }
 
+	/// <summary>The actual settings instance shared by this owner and its screens.</summary>
+	public virtual SettingsObject BlockSettings { get; set; }
+
 	public virtual ApplicationScreenDefinition[] ScreenDefinitions => _screenDefinitions.ToArray();
 
 	public virtual ApplicationScreenDefinition DefaultScreenDefinition {
@@ -37,13 +39,6 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 			_defaultScreenDefinition = value;
 		}
 	}
-
-	public virtual IApplicationMenu[] Menus => _menus.ToArray();
-
-	protected IApplicationMenu[] MenuCollection => _menus.ToArray();
-
-	/// <summary>Facades override this to bind menus to the public block.</summary>
-	protected virtual IApplicationBlock MenuOwner => this;
 
 	public virtual Task<bool> CanExitAsync(IApplication application, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(application, nameof(application));
@@ -60,34 +55,10 @@ public abstract class ApplicationBlockBase : IApplicationBlock {
 	public virtual bool ContainsScreenDefinition(ApplicationScreenDefinition definition) =>
 		_screenDefinitions.Any(candidate => ReferenceEquals(candidate, definition));
 
-	/// <summary>Removes an unreferenced definition using reference identity; active navigation registrations must be changed first.</summary>
+	/// <summary>Removes a definition using reference identity; platform adapters validate their navigation references.</summary>
 	public virtual void RemoveScreenDefinition(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		Guard.Argument(!ReferenceEquals(DefaultScreenDefinition, definition), nameof(definition), "The default screen definition cannot be removed.");
-		Guard.Argument(!definition.Activators.Any(item => ReferenceEquals(item.Parent?.Parent, MenuOwner))
-			&& !((IApplicationCommandProvider)this).ToolBarItems.OfType<IScreenMenuItem>().Any(item => ReferenceEquals(item.ScreenDefinition, definition)),
-			nameof(definition), "A referenced screen definition cannot be removed.");
 		_screenDefinitions.RemoveAll(candidate => ReferenceEquals(candidate, definition));
-	}
-
-	public virtual void AddMenu(IApplicationMenu menu) {
-		Guard.ArgumentNotNull(menu, nameof(menu));
-		Guard.ArgumentNotNull(menu.Items, nameof(menu));
-		Guard.Argument(!_menus.Exists(candidate => ReferenceEquals(candidate, menu)), nameof(menu), "The menu is already in this block.");
-		Guard.Argument(menu.Parent == null || ReferenceEquals(menu.Parent, MenuOwner), nameof(menu), "The menu already belongs to another block.");
-		menu.Parent = MenuOwner;
-		_menus.Add(menu);
-	}
-
-	public virtual bool ContainsMenu(IApplicationMenu menu) => _menus.Exists(candidate => ReferenceEquals(candidate, menu));
-
-	/// <summary>Removing navigation leaves block-owned definitions available for direct activation.</summary>
-	public virtual void RemoveMenu(IApplicationMenu menu) {
-		var index = _menus.FindIndex(candidate => ReferenceEquals(candidate, menu));
-		if (index < 0)
-			return;
-		_menus.RemoveAt(index);
-		if (ReferenceEquals(menu.Parent, MenuOwner))
-			menu.Parent = null;
 	}
 }

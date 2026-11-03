@@ -186,7 +186,7 @@ public class ApplicationPluginTests {
 		Assert.That(application.LoadedPlugins[0], Is.SameAs(plugin));
 		Assert.That(application.Blocks[0], Is.SameAs(first));
 		await host.SelectBlockAsync(standalone);
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(standalone));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(standalone));
 		Assert.That(application.LoadedPlugins, Is.EqualTo(new[] { plugin, services }));
 		await host.UnregisterBlockAsync(second);
 		Assert.That(application.Blocks, Is.EqualTo(new[] { first, standalone }));

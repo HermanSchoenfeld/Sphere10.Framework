@@ -105,7 +105,7 @@ public class ApplicationCommandMergeTests {
 		foreach (var item in composed)
 			Assert.That(await interactions.ExecuteMenuItemAsync(item), Is.True);
 		Assert.That(calls, Is.EqualTo(new[] { "application", "screen" }));
-		Assert.That(host.ActiveBlock, Is.Null, "Global actions do not require a selected block.");
+		Assert.That(host.SelectedBlock, Is.Null, "Global actions do not require a selected block.");
 		Assert.That(application.ToolBarItems.Single(), Is.SameAs(applicationSave));
 		Assert.That(block.Menus.Single().Items.Single(), Is.SameAs(blockSave));
 	}
@@ -152,34 +152,65 @@ public class ApplicationCommandMergeTests {
 	}
 
 	[Test]
-	public async Task ContextualLayersFollowTheHostedScreensOwnerAndFallBackToTheBrowsedBlock() {
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		var owner = new TestApplicationBlock("Owner", new(typeof(CommandScreen)));
-		var browsed = new TestApplicationBlock { Name = "Browsed" };
-		using var host = new ApplicationScreenHost(new[] { owner, browsed }, provider);
-		using var application = new CommandApplication(host);
-		await host.SelectBlockAsync(browsed);
-		var beforeActivation = Tools.UI.GetCommandLayers(application);
-		Assert.That(beforeActivation.Select(layer => layer.Level), Is.EqualTo(new[] { ApplicationCommandLevel.Application, ApplicationCommandLevel.Block }));
-		Assert.That(beforeActivation[1].Provider, Is.SameAs(browsed));
-		var screen = await host.ActivateBlockAsync(owner);
-		await host.SelectBlockAsync(browsed);
-		var active = Tools.UI.GetCommandLayers(application);
-		Assert.That(active.Select(layer => layer.Level), Is.EqualTo(new[] { ApplicationCommandLevel.Application, ApplicationCommandLevel.Block, ApplicationCommandLevel.Screen }));
-		Assert.That(active[0].Provider, Is.SameAs(application));
-		Assert.That(active[1].Provider, Is.SameAs(owner));
-		Assert.That(active[2].Provider, Is.SameAs(screen));
-		Assert.That(await host.ClearSelectionAsync(), Is.True);
-		var cleared = Tools.UI.GetCommandLayers(application);
-		Assert.That(cleared, Has.Length.EqualTo(2));
-		Assert.That(cleared[1].Provider, Is.SameAs(browsed));
+	public void CommandLayersUseOnlyTheExplicitPresentationProviders() {
+		var application = new Commands();
+		var block = new Commands();
+		var screen = new Commands();
+		var layers = Tools.UI.GetCommandLayers(application, block, screen);
+
+		Assert.That(layers.Select(layer => layer.Level), Is.EqualTo(new[] { ApplicationCommandLevel.Application, ApplicationCommandLevel.Block, ApplicationCommandLevel.Screen }));
+		Assert.That(layers.Select(layer => layer.Provider), Is.EqualTo(new[] { application, block, screen }));
+		Assert.That(Tools.UI.GetCommandLayers(application, screen: screen).Select(layer => layer.Provider), Is.EqualTo(new[] { application, screen }));
+		Assert.That(Tools.UI.GetCommandLayers(application).Single().Provider, Is.SameAs(application));
+	}
+
+	/// <summary>A real block contributes its source plugin before its own commands.</summary>
+	[Test]
+	public void CommandLayersIncludeTheBlocksSourcePlugin() {
+		var application = new Commands();
+		var block = new TestApplicationBlock { Name = "Owner block" };
+		var plugin = new ApplicationPlugin("Owner", new[] { block });
+		block.Source = plugin;
+		var screen = new Commands();
+
+		var layers = Tools.UI.GetCommandLayers(application, block, screen);
+
+		Assert.That(layers.Select(layer => layer.Level), Is.EqualTo(new[] {
+			ApplicationCommandLevel.Application, ApplicationCommandLevel.Plugin, ApplicationCommandLevel.Block, ApplicationCommandLevel.Screen
+		}));
+		Assert.That(layers.Select(layer => layer.Provider), Is.EqualTo(new IApplicationCommandProvider[] { application, plugin, block, screen }));
+	}
+
+	/// <summary>Plugin, block and screen precedence is independent of the stable numeric enum values and input ordering.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public void PluginCommandsPrecedeBlockAndScreenOverridesWithoutReplacingApplicationCommands(bool toolbar) {
+		var applicationSave = new KeyedAction { Key = "save", Title = "Application save" };
+		var pluginSave = new KeyedAction { Key = "save", Title = "Plugin save" };
+		var pluginOnly = new KeyedAction { Key = "plugin", Title = "Plugin command" };
+		var blockSave = new KeyedAction { Key = "save", Title = "Block save" };
+		var blockOnly = new KeyedAction { Key = "block", Title = "Block command" };
+		var screenSave = new KeyedAction { Key = "save", Title = "Screen save" };
+		var screenOnly = new KeyedAction { Key = "screen", Title = "Screen command" };
+		var layers = new[] {
+			new ApplicationCommandLayer(ApplicationCommandLevel.Screen, Provider(screenSave, screenOnly)),
+			new ApplicationCommandLayer(ApplicationCommandLevel.Block, Provider(blockSave, blockOnly)),
+			new ApplicationCommandLayer(ApplicationCommandLevel.Application, Provider(applicationSave)),
+			new ApplicationCommandLayer(ApplicationCommandLevel.Plugin, Provider(pluginSave, pluginOnly))
+		};
+
+		var composed = toolbar
+			? Tools.UI.MergeApplicationToolBarItems<KeyedAction>(item => item.Key, layers)
+			: Tools.UI.MergeApplicationMenus<TestApplicationMenu<KeyedAction>, KeyedAction>(
+				(menu, items) => ActionMenu(menu.Text, items), menu => menu.Text, item => item.Key, layers).Single().Items;
+
+		Assert.That(composed, Is.EqualTo(new[] { applicationSave, screenSave, pluginOnly, blockOnly, screenOnly }));
 	}
 
 	[Test]
-	public void AnApplicationWithoutAHostStillContributesItsGlobalCommands() {
-		using var application = new CommandApplication(null);
+	public void AnIndependentApplicationCommandProviderContributesItsGlobalCommands() {
 		var save = new TestApplicationMenuItem { Title = "Save" };
-		application.SetMenus(new[] { Menu("File", save) });
+		var application = new Commands { Menus = new[] { Menu("File", save) } };
 		var layers = Tools.UI.GetCommandLayers(application);
 		Assert.That(layers.Single().Level, Is.EqualTo(ApplicationCommandLevel.Application));
 		Assert.That(layers.Single().Provider, Is.SameAs(application));
@@ -214,7 +245,10 @@ public class ApplicationCommandMergeTests {
 		return menu;
 	}
 
-	private static Commands Provider(KeyedAction item) => new() { Menus = new[] { ActionMenu("File", item) }, ToolBarItems = new[] { item } };
+	// Expose the same immutable descriptors through menus and toolbar for composition checks.
+	private static Commands Provider(params KeyedAction[] items) {
+		return new Commands { Menus = new[] { ActionMenu("File", items) }, ToolBarItems = items };
+	}
 
 	private sealed class Commands : IApplicationCommandProvider {
 		public IApplicationMenu[] Menus { get; init; } = Array.Empty<IApplicationMenu>();
@@ -231,23 +265,6 @@ public class ApplicationCommandMergeTests {
 
 		public string Key { get; init; }
 		public string Title { get; init; }
-	}
-
-	private sealed class CommandApplication : SyncApplicationBase {
-		public CommandApplication(IApplicationScreenHost host) {
-			ScreenHost = host;
-			if (host != null)
-				ObserveScreenHost();
-		}
-
-		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
-		public override IApplicationScreenHost ScreenHost { get; }
-	}
-
-	private sealed class CommandScreen : IApplicationScreen {
-		public IApplicationScreenHost Host { get; set; }
-
-		public IApplicationBlock Block { get; set; }
 	}
 
 	private sealed class Separator : IApplicationMenuSeparator {

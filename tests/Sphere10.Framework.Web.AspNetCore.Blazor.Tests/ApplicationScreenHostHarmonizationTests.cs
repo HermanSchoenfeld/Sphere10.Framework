@@ -338,7 +338,7 @@ public class ApplicationScreenHostHarmonizationTests {
 		Assert.That(session.Parameters[nameof(ProbeScreen.RecordId)], Is.EqualTo("first"));
 		Assert.That(host.ActiveScreen, Is.SameAs(typedHost.ActiveScreen));
 		Assert.That(((IMultiApplicationScreenHost)host).OpenScreens, Is.EqualTo(typedHost.OpenScreens));
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(host.ActiveBlock));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(host.SelectedBlock));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.SameAs(session));
 		Assert.That(otherScope.ServiceProvider.GetRequiredService<IMultiApplicationScreenHost>().Screens, Is.Empty);
 	}
@@ -353,14 +353,15 @@ public class ApplicationScreenHostHarmonizationTests {
 		var hostingChanges = 0;
 		host.Changed += () => hostingChanges++;
 		await host.SelectBlockAsync(host.Blocks.Single(block => block.Name == "Browse"));
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("Browse"));
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("Browse"));
 		Assert.That(host.ActiveScreen, Is.SameAs(session));
+		Assert.That(host.ActiveBlock, Is.SameAs(session.Block), "The visible screen retains its active command owner.");
 		Assert.That(hostingChanges, Is.EqualTo(1));
 		await typedHost.AttachScreenAsync(((BlazorApplicationScreenSession)session).Id, new ProbeScreen());
 		host.NotifyScreenChanged(session);
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("Browse"));
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("Browse"));
 		await ((IMultiApplicationScreenHost)host).ShowScreenAsync(session);
-		Assert.That(host.ActiveBlock.Name, Is.EqualTo("Work"), "Explicitly selecting even the current tab selects its owning navigation block.");
+		Assert.That(host.SelectedBlock.Name, Is.EqualTo("Work"), "Explicitly selecting even the current tab selects its owning navigation block.");
 	}
 
 	[Test]

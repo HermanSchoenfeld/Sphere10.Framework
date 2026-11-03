@@ -8,19 +8,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+/// <summary>Exercises ownership isolation across web builders, circuits and renderer lifecycles.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationGraphOwnershipTests {
+	/// <summary>Verifies builders and circuit snapshots own their canonical graph.</summary>
 	[Test]
 	public void BuildersAndCircuitSnapshotsOwnTheirCanonicalGraph() {
 		var prototype = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record", ScreenActivationMode.MultiInstance);
@@ -66,6 +70,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(prototype.Activators.All(item => !graphs.Any(block => ReferenceEquals(block, item.Parent?.Parent))), Is.True);
 	}
 
+	/// <summary>Verifies repeated menu builds clone commands without reparenting earlier products.</summary>
 	[Test]
 	public void RepeatedMenuBuildsCloneCommandsWithoutReparentingEarlierProducts() {
 		var command = new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } };
@@ -80,6 +85,122 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(second.Items.Single().Parent, Is.SameAs(second));
 	}
 
+	/// <summary>Verifies circuit copies retain captured callbacks and registration references.</summary>
+	[Test]
+	public void CircuitCopiesRetainCapturedCallbacksAndRegistrationReferences() {
+		var capturedCalls = 0;
+		var laterCalls = 0;
+		var definition = new ApplicationScreenDefinition(typeof(ProbeScreen), "Record");
+		var command = new BlazorScreenMenuItem { Id = "record", Title = "Original", ScreenDefinition = definition };
+		EventHandlerEx captured = () => capturedCalls++;
+		command.Select += captured;
+		var source = new BlazorApplicationBlock {
+			Id = "work", Title = "Work", ScreenDefinitions = new[] { definition }, DefaultScreenDefinition = definition,
+			Menus = new[] { new BlazorApplicationMenu { Text = "Views", Items = new[] { command } } }
+		};
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var firstHost = new BlazorApplicationScreenHost(new[] { source }, services);
+		using var secondHost = new BlazorApplicationScreenHost(firstHost.Blocks, services);
+
+		// Later source changes cannot retarget a retained circuit's command or its captured subscriptions.
+		command.Select -= captured;
+		command.Select += () => laterCalls++;
+		((ApplicationMenuItemBase)command).Title = "Changed after activation";
+		foreach (var block in new[] { firstHost.Blocks.Single(), secondHost.Blocks.Single() }) {
+			var copied = (BlazorScreenMenuItem)block.Menus.Single().Items.Single();
+			Assert.That(copied, Is.Not.SameAs(command));
+			Assert.That(copied.Title, Is.EqualTo("Original"));
+			Assert.That(copied.Registration.Token, Is.EqualTo(definition.Registration.Token));
+			Assert.That(copied.ScreenDefinition, Is.SameAs(block.DefaultScreenDefinition));
+			Assert.That(copied.ScreenDefinition.Activators, Is.EqualTo(new[] { copied }));
+			copied.NotifySelect();
+		}
+		Assert.That(capturedCalls, Is.EqualTo(2));
+		Assert.That(laterCalls, Is.Zero);
+		Assert.That(definition.Activators, Is.EqualTo(new[] { command }));
+	}
+
+	/// <summary>Verifies circuit copies own nested settings defaults and retain plugin provenance.</summary>
+	[Test]
+	public void CircuitCopiesOwnNestedSettingsDefaultsAndRetainPluginProvenance() {
+		var plugin = new BlazorPlugin("Plugin", Array.Empty<IBlazorApplicationBlock>());
+		var source = new BlazorApplicationBlock {
+			Id = "work", Title = "Work", Source = plugin,
+			BlockSettings = new GraphSettings { Nested = new GraphSettings.NestedValues { Name = "Default" } }
+		};
+		using var services = new ServiceCollection().BuildServiceProvider();
+		using var firstHost = new BlazorApplicationScreenHost(new[] { source }, services);
+		using var secondHost = new BlazorApplicationScreenHost(new[] { source }, services);
+		var first = firstHost.Blocks.Single();
+		var second = secondHost.Blocks.Single();
+		((GraphSettings)first.BlockSettings).Nested.Name = "First circuit";
+
+		Assert.That(((GraphSettings)source.BlockSettings).Nested.Name, Is.EqualTo("Default"));
+		Assert.That(((GraphSettings)second.BlockSettings).Nested.Name, Is.EqualTo("Default"));
+		Assert.That(first.BlockSettings, Is.Not.SameAs(second.BlockSettings));
+		Assert.That(first.Source, Is.SameAs(plugin));
+		Assert.That(second.Source, Is.SameAs(plugin));
+		Assert.That(source.Parent, Is.Null);
+	}
+
+	/// <summary>Circuit-owned values preserve explicit record identities and conditional configuration without borrowing runtime owners.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public void CircuitSettingsCopiesPreserveExplicitIdsAndConditionalValues(bool guidIds) {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		object pluginId = guidIds ? Guid.Parse("811c9702-c31d-4b59-a627-776f6ca23960") : 71;
+		object blockId = guidIds ? Guid.Parse("10fbff08-9dfa-4b82-a59c-a736e5ad8d42") : 72;
+		object screenId = guidIds ? Guid.Parse("a978f496-3aaf-46f2-b153-87692d10ae3e") : 73;
+		var definition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), settings: new GraphSettings {
+			ID = screenId, ConditionalValue = "Screen configuration", TransientValue = "Screen runtime", RuntimeServices = services,
+			Nested = new GraphSettings.NestedValues { Name = "Screen" }
+		});
+		var source = new BlazorApplicationBlock {
+			Id = "work", Title = "Work", ScreenDefinitions = new[] { definition },
+			BlockSettings = new GraphSettings {
+				ID = blockId, ConditionalValue = "Block configuration", TransientValue = "Block runtime", RuntimeServices = services,
+				Nested = new GraphSettings.NestedValues { Name = "Block" }
+			}
+		};
+		var plugin = new BlazorPlugin("Plugin", new[] { source }) {
+			PluginSettings = new GraphSettings {
+				ID = pluginId, ConditionalValue = "Plugin configuration", TransientValue = "Plugin runtime", RuntimeServices = services,
+				Nested = new GraphSettings.NestedValues { Name = "Plugin" }
+			}
+		};
+		using var firstHost = new BlazorApplicationScreenHost(plugin.Blocks, services);
+		using var secondHost = new BlazorApplicationScreenHost(plugin.Blocks, services);
+		using var first = new BlazorApplication(firstHost, new[] { plugin });
+		using var second = new BlazorApplication(secondHost, new[] { plugin });
+		var originalValues = new[] { plugin.PluginSettings, source.BlockSettings, definition.Settings }.Cast<GraphSettings>().ToArray();
+		var firstValues = new[] {
+			first.LoadedPlugins.Single().PluginSettings, first.Blocks.Single().BlockSettings, first.Blocks.Single().ScreenDefinitions.Single().Settings
+		}.Cast<GraphSettings>().ToArray();
+		var secondValues = new[] {
+			second.LoadedPlugins.Single().PluginSettings, second.Blocks.Single().BlockSettings, second.Blocks.Single().ScreenDefinitions.Single().Settings
+		}.Cast<GraphSettings>().ToArray();
+
+		// Exercise the real plugin, block and screen copy paths, then mutate only the first circuit's nested values.
+		for (var index = 0; index < originalValues.Length; index++) {
+			var original = originalValues[index];
+			var owned = firstValues[index];
+			Assert.That(owned.ID, Is.SameAs(original.ID));
+			Assert.That(secondValues[index].ID, Is.SameAs(original.ID));
+			Assert.That(owned.ConditionalValue, Is.EqualTo(original.ConditionalValue));
+			Assert.That(owned.TransientValue, Is.Null);
+			Assert.That(owned.RuntimeServices, Is.Null);
+			Assert.That(owned, Is.Not.SameAs(original).And.Not.SameAs(secondValues[index]));
+			owned.Nested.Name = "First circuit";
+			Assert.That(secondValues[index].Nested.Name, Is.EqualTo(original.Nested.Name));
+
+			// Suppressing persistence is still authoritative when the same copied value is actually serialized for storage.
+			using var writer = new StringWriter();
+			new SettingsObjectJsonSerializer().Serialize(writer, owned);
+			Assert.That(writer.ToString(), Does.Not.Contain(nameof(GraphSettings.ConditionalValue)));
+		}
+	}
+
+	/// <summary>Verifies grouped actions use their containing menu and presentation copies preserve ownership.</summary>
 	[Test]
 	public void GroupedActionsUseTheirContainingMenuAndPresentationCopiesPreserveOwnership() {
 		var calls = 0;
@@ -98,6 +219,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(child.Parent, Is.Null);
 	}
 
+	/// <summary>Verifies toolbar groups borrow existing menu commands without stealing their parent.</summary>
 	[Test]
 	public void ToolbarGroupsBorrowExistingMenuCommandsWithoutStealingTheirParent() {
 		var command = new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } };
@@ -110,6 +232,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(command.Parent, Is.SameAs(menu));
 	}
 
+	/// <summary>Verifies application menus and toolbars borrow screen commands while freezing ordinary actions.</summary>
 	[Test]
 	public async Task ApplicationMenusAndToolbarsBorrowScreenCommandsWhileFreezingOrdinaryActions() {
 		var definition = new BlazorApplicationScreenDefinition(typeof(ProbeScreen), "Record",
@@ -174,6 +297,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(command.ScreenDefinition.Activators, Is.EqualTo(new[] { command }));
 	}
 
+	/// <summary>Verifies menu free activation does not fabricate navigation commands.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task MenuFreeActivationDoesNotFabricateNavigationCommands(bool defaultScreen) {
@@ -201,6 +325,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(session.Definition.Activators, Is.Empty, "Programmatic opening does not create a synthetic menu command.");
 	}
 
+	/// <summary>Verifies application group projection borrows nested commands and freezes their unowned siblings.</summary>
 	[Test]
 	public async Task ApplicationGroupProjectionBorrowsNestedCommandsAndFreezesTheirUnownedSiblings() {
 		var calls = 0;
@@ -248,6 +373,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(command.Parent, Is.SameAs(parent));
 	}
 
+	/// <summary>Verifies detached screen commands are rejected before application membership changes.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void DetachedScreenCommandsAreRejectedBeforeApplicationMembershipChanges(bool toolbar) {
@@ -275,6 +401,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(canonical.Parent.Parent, Is.SameAs(host.Blocks.Single()));
 	}
 
+	/// <summary>Verifies menu free keyed sessions retain their canonical registration without commands.</summary>
 	[Test]
 	public async Task MenuFreeKeyedSessionsRetainTheirCanonicalRegistrationWithoutCommands() {
 		var block = new BlazorApplicationBlockBuilder()
@@ -298,6 +425,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(definition.Activators, Is.Empty);
 	}
 
+	/// <summary>Verifies menu free default keeps the canonical definition across instances.</summary>
 	[Test]
 	public async Task MenuFreeDefaultKeepsTheCanonicalDefinitionAcrossInstances() {
 		var block = new BlazorApplicationBlockBuilder()
@@ -322,6 +450,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(owner.DefaultScreenDefinition.Activators, Is.Empty);
 	}
 
+	/// <summary>Verifies renderer attachment wires ownership before lifecycle and clears it after close.</summary>
 	[Test]
 	public async Task RendererAttachmentWiresOwnershipBeforeLifecycleAndClearsItAfterClose() {
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -346,6 +475,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(component.Disposals, Is.Zero);
 	}
 
+	/// <summary>Verifies failed or cancelled renderer attachment rolls back component links.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task FailedOrCancelledRendererAttachmentRollsBackComponentLinks(bool cancel) {
@@ -370,6 +500,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(session.Block, Is.SameAs(host.Blocks.Single()));
 	}
 
+	/// <summary>Verifies throwing command getter rolls back ownership without reading it again.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task ThrowingCommandGetterRollsBackOwnershipWithoutReadingItAgain(bool toolbar) {
@@ -388,6 +519,7 @@ public class ApplicationGraphOwnershipTests {
 		AssertDetached(component);
 	}
 
+	/// <summary>Verifies explicit detach and host disposal clear components without disposing them.</summary>
 	[Test]
 	public async Task ExplicitDetachAndHostDisposalClearComponentsWithoutDisposingThem() {
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -406,6 +538,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(detached.Disposals + retained.Disposals, Is.Zero);
 	}
 
+	/// <summary>Verifies borrowed block menus keep their parent when the component is removed.</summary>
 	[TestCase("detach")]
 	[TestCase("close")]
 	[TestCase("dispose")]
@@ -437,6 +570,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(component.Disposals, Is.Zero);
 	}
 
+	/// <summary>Verifies typed interface bridges forward mutable ownership and validate neutral parents.</summary>
 	[Test]
 	public void TypedInterfaceBridgesForwardMutableOwnershipAndValidateNeutralParents() {
 		using var services = new ServiceCollection().BuildServiceProvider();
@@ -464,6 +598,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(screen.Block, Is.Null);
 	}
 
+	/// <summary>Verifies public application constructor binds sources when the host was cloned first.</summary>
 	[Test]
 	public void PublicApplicationConstructorBindsSourcesWhenTheHostWasClonedFirst() {
 		var source = new BlazorApplicationBlockBuilder()
@@ -480,6 +615,7 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(plugin.Blocks.Single().Parent, Is.Null);
 	}
 
+	/// <summary>Verifies live blocks reference their circuit application and original loaded plugin.</summary>
 	[Test]
 	public async Task LiveBlocksReferenceTheirCircuitApplicationAndOriginalLoadedPlugin() {
 		var source = new BlazorApplicationBlockBuilder()
@@ -493,9 +629,9 @@ public class ApplicationGraphOwnershipTests {
 				.WithId("standalone")
 				.WithName("Standalone")
 			);
-		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		using var firstScope = provider.CreateScope();
-		using var secondScope = provider.CreateScope();
+		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var firstScope = provider.CreateAsyncScope();
+		await using var secondScope = provider.CreateAsyncScope();
 		var first = firstScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
 		var second = secondScope.ServiceProvider.GetRequiredService<IBlazorApplication>();
 		var firstBlock = first.Blocks.Single(block => block.Id == "loaded");
@@ -520,20 +656,24 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(firstBlock.Source, Is.SameAs(plugin));
 	}
 
-	private static BlazorApplicationScreenHost CreateHost(IServiceProvider services) => new(new[] {
-		new BlazorApplicationBlockBuilder()
-			.WithId("work")
-			.WithName("Work")
-			.AddScreen<ProbeScreen>(screen => screen
-				.WithTitle("Record")
-			)
-			.AddMenu(menu => menu
-				.WithText("Views")
-				.AddShowScreenItem<ProbeScreen>(text: "Record", id: "record")
-			)
-			.Build()
-	}, services);
+	// Configure a real web host for renderer ownership and failure checks.
+	private static BlazorApplicationScreenHost CreateHost(IServiceProvider services) {
+		return new BlazorApplicationScreenHost(new[] {
+			new BlazorApplicationBlockBuilder()
+				.WithId("work")
+				.WithName("Work")
+				.AddScreen<ProbeScreen>(screen => screen
+					.WithTitle("Record")
+				)
+				.AddMenu(menu => menu
+					.WithText("Views")
+					.AddShowScreenItem<ProbeScreen>(text: "Record", id: "record")
+				)
+				.Build()
+		}, services);
+	}
 
+	// Verify every graph link is released when a renderer detaches its screen.
 	private static void AssertDetached(ProbeScreen component) {
 		Assert.That(component.Host, Is.Null);
 		Assert.That(component.Block, Is.Null);
@@ -541,34 +681,81 @@ public class ApplicationGraphOwnershipTests {
 		Assert.That(component.ToolBarItems.Single().Parent, Is.Null);
 	}
 
+	#region Inner Types
+
+	// Mutable nested values verify that startup settings declarations are copied recursively per circuit.
+	public sealed class GraphSettings : SettingsObject {
+		/// <summary>Gets or sets this declaration's nested settings values.</summary>
+		public NestedValues Nested { get; set; } = new();
+
+		/// <summary>A configured value whose ordinary persistence is disabled.</summary>
+		public string ConditionalValue { get; set; }
+
+		/// <summary>Transient values remain excluded from runtime copies.</summary>
+		[Transient]
+		public string TransientValue { get; set; }
+
+		/// <summary>Service ownership remains excluded from runtime copies.</summary>
+		public IServiceProvider RuntimeServices { get; set; }
+
+		/// <summary>Storage intentionally omits this value even though a runtime owner must receive its configured value.</summary>
+		public bool ShouldSerializeConditionalValue() {
+			return false;
+		}
+
+		#region Inner Types
+
+		/// <summary>Supplies mutable nested defaults for recursive settings-copy checks.</summary>
+		public sealed class NestedValues {
+			/// <summary>Gets or sets the nested settings value.</summary>
+			public string Name { get; set; }
+		}
+
+		#endregion
+	}
+
+	/// <summary>Captures web screen ownership, lifecycle calls and optional failure behavior.</summary>
 	public sealed class ProbeScreen : ComponentBase, IBlazorApplicationScreen, IDisposable {
 		private readonly IBlazorApplicationMenu[] _menus = { new BlazorApplicationMenu { Text = "Screen actions" } };
 		private readonly IBlazorApplicationMenuItem[] _toolBarItems = { new BlazorActionMenuItem { Id = "run", Title = "Run", Action = () => { } } };
 
+		/// <inheritdoc />
 		public IBlazorApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IBlazorApplicationBlock Block { get; set; }
 
+		/// <summary>Gets the host observed during activation.</summary>
 		public IBlazorApplicationScreenHost HostAtActivation { get; private set; }
 
+		/// <summary>Gets the block observed during activation.</summary>
 		public IBlazorApplicationBlock BlockAtActivation { get; private set; }
 
+		/// <summary>Gets or sets whether the test screen permits deactivation.</summary>
 		public bool AllowDeactivate { get; set; } = true;
 
+		/// <summary>Gets or sets the optional activation callback.</summary>
 		public Func<Task> ActivationHook { get; set; }
 
+		/// <summary>Gets the number of disposal calls received by this screen.</summary>
 		public int Disposals { get; private set; }
 
+		/// <summary>Gets or sets whether reading screen menus throws.</summary>
 		public bool ThrowFromMenus { get; set; }
 
+		/// <summary>Gets or sets whether reading screen toolbar commands throws.</summary>
 		public bool ThrowFromToolBar { get; set; }
 
+		/// <summary>Gets the number of menu reads.</summary>
 		public int MenuReads { get; private set; }
 
+		/// <summary>Gets the number of toolbar reads.</summary>
 		public int ToolBarReads { get; private set; }
 
+		/// <summary>Gets or sets alternate menus returned to the presentation host.</summary>
 		public IBlazorApplicationMenu[] BorrowedMenus { get; set; }
 
+		/// <inheritdoc />
 		public IBlazorApplicationMenu[] Menus {
 			get {
 				MenuReads++;
@@ -578,6 +765,7 @@ public class ApplicationGraphOwnershipTests {
 			}
 		}
 
+		/// <inheritdoc />
 		public IBlazorApplicationMenuItem[] ToolBarItems {
 			get {
 				ToolBarReads++;
@@ -587,44 +775,106 @@ public class ApplicationGraphOwnershipTests {
 			}
 		}
 
-		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) => Task.FromResult(AllowDeactivate);
+		/// <summary>Returns the test screen's configured deactivation decision.</summary>
+		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) {
+			return Task.FromResult(AllowDeactivate);
+		}
 
+		/// <summary>Captures activation ownership before invoking the optional test callback.</summary>
 		public Task OnActivatedAsync(CancellationToken cancellationToken = default) {
 			HostAtActivation = Host;
 			BlockAtActivation = Block;
 			return ActivationHook?.Invoke() ?? Task.CompletedTask;
 		}
 
-		public void Dispose() => Disposals++;
+		/// <summary>Records disposal of the test component.</summary>
+		public void Dispose() {
+			Disposals++;
+		}
 	}
 
+	// Supplies a typed menu implementation for bridge validation.
 	private sealed class TypedMenu : IBlazorApplicationMenu {
+		/// <inheritdoc />
 		public IBlazorApplicationBlock Parent { get; set; }
 
-		public string Text => "Typed";
+		/// <inheritdoc />
+		public string Text {
+			get {
+				return "Typed";
+			}
+		}
 
-		public string Icon => null;
+		/// <inheritdoc />
+		public string Icon {
+			get {
+				return null;
+			}
+		}
 
-		public IBlazorApplicationMenuItem[] Items => Array.Empty<IBlazorApplicationMenuItem>();
+		/// <inheritdoc />
+		public IBlazorApplicationMenuItem[] Items {
+			get {
+				return Array.Empty<IBlazorApplicationMenuItem>();
+			}
+		}
 	}
 
+	// Supplies a typed command implementation for bridge validation.
 	private sealed class TypedItem : IBlazorApplicationMenuItem {
-		public event EventHandlerEx Hover { add { } remove { } }
+		/// <inheritdoc />
+		public event EventHandlerEx Hover {
+			add {
+			}
+			remove {
+			}
+		}
 
-		public event EventHandlerEx Select { add { } remove { } }
+		/// <inheritdoc />
+		public event EventHandlerEx Select {
+			add {
+			}
+			remove {
+			}
+		}
 
+		/// <inheritdoc />
 		public IBlazorApplicationMenu Parent { get; set; }
 
-		public string Title => "Typed";
+		/// <inheritdoc />
+		public string Title {
+			get {
+				return "Typed";
+			}
+		}
 
-		public string Icon => null;
+		/// <inheritdoc />
+		public string Icon {
+			get {
+				return null;
+			}
+		}
 	}
 
+	// Supplies a shared menu that a typed web bridge must reject.
 	private sealed class NeutralMenu : IApplicationMenu {
+		/// <inheritdoc />
 		public IApplicationBlock Parent { get; set; }
 
-		public string Text => "Neutral";
+		/// <inheritdoc />
+		public string Text {
+			get {
+				return "Neutral";
+			}
+		}
 
-		public IApplicationMenuItem[] Items => Array.Empty<IApplicationMenuItem>();
+		/// <inheritdoc />
+		public IApplicationMenuItem[] Items {
+			get {
+				return Array.Empty<IApplicationMenuItem>();
+			}
+		}
 	}
+
+	#endregion
 }

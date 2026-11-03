@@ -18,8 +18,10 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing) {
-			if (disposing)
+			if (disposing) {
+				UnmergeApplicationCommands();
 				ScreenHost?.Dispose();
+			}
 			if (disposing && (components != null)) {
 				components.Dispose();
 			}
@@ -34,6 +36,11 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// </summary>
 		private void InitializeComponent() {
 			_menuStrip = new System.Windows.Forms.MenuStrip();
+			_helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_optionsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_screenOptionsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			_applicationHelpSeparator = new System.Windows.Forms.ToolStripSeparator();
+			_contextHelpToolStripButton = new System.Windows.Forms.ToolStripButton();
 			_screensMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			_noOpenScreensMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			_screensSeparator = new System.Windows.Forms.ToolStripSeparator();
@@ -58,12 +65,28 @@ namespace Sphere10.Framework.Windows.Forms {
 			// 
 			// _menuStrip
 			// 
-			_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, _screensMenuItem });
+			_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, _screensMenuItem, _optionsMenuItem, _helpToolStripMenuItem });
 			_menuStrip.Location = new System.Drawing.Point(0, 0);
 			_menuStrip.Name = "_menuStrip";
 			_menuStrip.Size = new System.Drawing.Size(664, 24);
 			_menuStrip.TabIndex = 3;
 			_menuStrip.Text = "menuStrip1";
+			//
+			// Help and Options remain editable on the actual base menu surface.
+			//
+			_helpToolStripMenuItem.Name = "_helpToolStripMenuItem";
+			_helpToolStripMenuItem.Text = "Help";
+			_helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+				_userguideToolStripMenuItem, _contextHelpToolStripMenuItem, toolStripSeparator1,
+				_requestAFeatureToolStripMenuItem, sendACommentToolStripMenuItem, reportABugToolStripMenuItem,
+				toolStripSeparator4, _aboutToolStripMenuItem
+			});
+			_optionsMenuItem.Name = "_optionsMenuItem";
+			_optionsMenuItem.Text = "&Options";
+			_optionsMenuItem.DropDownItems.Add(_screenOptionsMenuItem);
+			_screenOptionsMenuItem.Name = "_screenOptionsMenuItem";
+			_screenOptionsMenuItem.Text = "Screen &Options...";
+			_screenOptionsMenuItem.Click += ScreenOptionsClick;
 			//
 			// Screens
 			//
@@ -173,6 +196,12 @@ namespace Sphere10.Framework.Windows.Forms {
 			_toolStrip.Size = new System.Drawing.Size(664, 25);
 			_toolStrip.TabIndex = 5;
 			_toolStrip.Text = "toolStrip1";
+			_toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { _applicationHelpSeparator, _contextHelpToolStripButton });
+			_applicationHelpSeparator.Name = "_applicationHelpSeparator";
+			_contextHelpToolStripButton.Name = "_contextHelpToolStripButton";
+			_contextHelpToolStripButton.Image = Resources.Help_16x16x32;
+			_contextHelpToolStripButton.ToolTipText = "Get help for currently opened screen";
+			_contextHelpToolStripButton.Click += ContextHelp_Click;
 			// 
 			// MainForm
 			// 
@@ -193,6 +222,11 @@ namespace Sphere10.Framework.Windows.Forms {
 		#endregion
 
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _helpToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _optionsMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem _screenOptionsMenuItem;
+		private System.Windows.Forms.ToolStripSeparator _applicationHelpSeparator;
+		private System.Windows.Forms.ToolStripButton _contextHelpToolStripButton;
 		private System.Windows.Forms.ToolStripMenuItem _screensMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem _noOpenScreensMenuItem;
 		private System.Windows.Forms.ToolStripSeparator _screensSeparator;

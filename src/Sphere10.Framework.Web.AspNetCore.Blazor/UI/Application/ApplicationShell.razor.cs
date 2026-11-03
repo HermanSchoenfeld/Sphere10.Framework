@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,11 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 /// to support bookmarks and browser history. Component instances stay mounted until their screens close.
 /// </summary>
 public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDisposable {
-	private (string BlockId, string ScreenId, Guid? InstanceId)? _lastRequest;
+
+	// Identifies one route request without storing presentation state.
+	private readonly record struct NavigationRequest(string BlockId, string ScreenId, Guid? InstanceId);
+
+	private NavigationRequest? _lastRequest;
 	private readonly CancellationTokenSource _lifetimeCancellation = new();
 	private CancellationTokenSource _routeCancellation;
 	private int _navigationVersion;
@@ -41,7 +46,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	private bool _navigationOpen;
 	private bool _focusNavigationToggle;
 	private ActionScope? _controllerScope;
-	private IJSObjectReference _startupSettingsModule;
+	private IJSObjectReference _legacyStartupModule;
 	private string _startupSettingsKey;
 	private bool _startupSettingsLoaded;
 	private bool _readingStartupSettings;
@@ -50,27 +55,29 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	private string _startupSettingsError;
 	private Task _startupSettingsLoad = Task.CompletedTask;
 
+	/// <summary>The circuit's application and command owner.</summary>
 	[Inject] public IBlazorApplication Application { get; set; }
 
+	/// <summary>The host that owns retained screens and navigation.</summary>
 	[Inject] public IBlazorApplicationScreenHost ScreenHost { get; set; }
 
-	private IUserInterfaceServices UserInterfaceServices => ScreenHost.UserInterfaceServices;
-
-	private IBlazorApplicationBlock ActiveBlock => ScreenHost.ActiveBlock;
-	private IBlazorApplicationBlock[] Blocks => Application.Blocks;
-
+	/// <summary>The browser navigation service.</summary>
 	[Inject] public NavigationManager Navigation { get; set; }
 
+	/// <summary>Provides browser interop for the legacy preference reader.</summary>
 	[Inject] public IJSRuntime JSRuntime { get; set; }
 
+	/// <summary>Shows the switch between tabbed and MDI presentation.</summary>
 	[Parameter] public bool ShowScreenModeSelector { get; set; }
 
 	/// <summary>Activates a block's default screen when its dock button is selected; false only browses that block's navigation.</summary>
 	/// <remarks>Activation uses screen leave guards and synchronizes browser history. A rejected transition preserves the current selection.</remarks>
 	[Parameter] public bool ActivateBlockOnSelection { get; set; }
 
+	/// <summary>The title displayed in the application shell.</summary>
 	[Parameter] public string Title { get; set; } = "Application";
 
+	/// <summary>The base route used for synchronized screen navigation.</summary>
 	[Parameter] public string NavigationPath { get; set; } = "application";
 
 	/// <summary>Optional stable application-qualified key for this browser's startup screen preference. No key leaves startup unchanged.</summary>
@@ -84,10 +91,13 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	/// <remarks>Evaluated when synchronizing selection; custom paths omit the default block, screen and instance query parameters.</remarks>
 	[Parameter] public Func<BlazorApplicationScreenSession, string> NavigationUriFactory { get; set; }
 
+	/// <summary>The explicitly requested block route ID.</summary>
 	[Parameter] public string BlockId { get; set; }
 
+	/// <summary>The explicitly requested screen route ID.</summary>
 	[Parameter] public string ScreenId { get; set; }
 
+	/// <summary>The explicitly requested retained screen instance.</summary>
 	[Parameter] public Guid? InstanceId { get; set; }
 
 	/// <summary>Additional branding or content beside the application title.</summary>
@@ -99,24 +109,59 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 	/// <summary>Brand and endpoint controls above the active block's navigation groups.</summary>
 	[Parameter] public RenderFragment SidebarHeader { get; set; }
 
+	/// <summary>Optional custom sidebar content.</summary>
 	[Parameter] public RenderFragment Sidebar { get; set; }
 
+	/// <summary>Optional application footer content.</summary>
 	[Parameter] public RenderFragment Footer { get; set; }
 
+	/// <summary>Content displayed when no screen is active.</summary>
 	[Parameter] public RenderFragment EmptyContent { get; set; }
 
+
+	// The host's user interaction services.
+	private IUserInterfaceServices UserInterfaceServices {
+		get {
+			return ScreenHost.UserInterfaceServices;
+		}
+	}
+
+	// The navigation block currently being browsed.
+	private IBlazorApplicationBlock SelectedBlock {
+		get {
+			return ScreenHost.SelectedBlock;
+		}
+	}
+
+	// The blocks exposed by the current application.
+	private IBlazorApplicationBlock[] Blocks {
+		get {
+			return Application.Blocks;
+		}
+	}
+
+	// The toolbar composition for the active command owners.
+	private IBlazorApplicationMenuItem[] MergedToolBarItems {
+		get {
+			return Tools.UI.MergeApplicationToolBarItems<IBlazorApplicationMenuItem>(item => item.Id, GetApplicationCommandLayers());
+		}
+	}
+
+	/// <summary>Subscribes to retained screen and navigation changes.</summary>
 	protected override void OnInitialized() {
 		Application.Changed += OnHostChanged;
 		ScreenHost.ScreenSelected += OnScreenSelected;
 		_controllerScope = ((IBlazorUserInterfaceServices)UserInterfaceServices).AttachController(this, action => InvokeAsync(action));
 	}
 
+	/// <summary>Applies route changes through the host's guarded activation path.</summary>
 	protected override async Task OnParametersSetAsync() {
 		if (Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 
 		// Prerender has no browser-owned preference provider. Live circuit startup restores it before any screen factory or query runs.
-		if (!Application.Settings.IsInitialized && Application.Settings.Profiles.Any(profile => profile.HasOptions))
+		if (!Application.IsInitialized && (Application.LoadedPlugins.Any(plugin => plugin.PluginSettings != null)
+			|| ScreenHost.AvailableBlocks.Any(block => block.BlockSettings != null || block.ScreenDefinitions.Any(definition => definition.Settings != null))))
 			return;
 		ResolveNavigationPath(NavigationPath, nameof(NavigationPath));
 		var settingsKey = string.IsNullOrWhiteSpace(StartupScreenSettingsKey) ? null : StartupScreenSettingsKey;
@@ -126,11 +171,12 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			_startupSettingsError = null;
 			ScreenHost.SetStartupScreen(null);
 		}
-		var request = (BlockId, ScreenId, InstanceId);
+		var request = new NavigationRequest(BlockId, ScreenId, InstanceId);
 		if (_lastRequest == request)
 			return;
 		if (ScreenHost.ActiveScreen == null && string.IsNullOrEmpty(request.ScreenId) && !request.InstanceId.HasValue
-			&& request.BlockId == ActiveBlock?.Id && string.Equals(Navigation.Uri, _synchronizedLocation, StringComparison.Ordinal)) {
+			&& request.BlockId == SelectedBlock?.Id && string.Equals(Navigation.Uri, _synchronizedLocation, StringComparison.Ordinal)) {
+
 			// Closing the last tab already committed an empty selection; its own block-only URL must not reopen the block default.
 			_lastRequest = request;
 			_synchronizedLocation = null;
@@ -160,7 +206,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}
 
 		var block = string.IsNullOrEmpty(request.BlockId)
-			? ActiveBlock ?? Blocks.FirstOrDefault()
+			? SelectedBlock ?? Blocks.FirstOrDefault()
 			: Blocks.FirstOrDefault(candidate => candidate.Id == request.BlockId);
 		await Tools.Exceptions.ExecuteCapturingExceptionAsync<OperationCanceledException>(async () => {
 			if (block == null) {
@@ -191,6 +237,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 				_synchronizeLocation = true;
 		}, capturedException => token.IsCancellationRequested);
 	}
+
+	/// <summary>Restores interactive startup preferences before default activation.</summary>
 	protected override async Task OnAfterRenderAsync(bool firstRender) {
 		if (Application?.IsExiting == true || Application?.HasExited == true)
 			return;
@@ -214,6 +262,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}
 	}
 
+	/// <summary>Cancels pending navigation and removes subscriptions.</summary>
 	public void Dispose() {
 		if (_disposed)
 			return;
@@ -226,30 +275,39 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		_controllerScope?.Dispose();
 	}
 
+	/// <summary>Releases the legacy browser reader after outstanding restoration.</summary>
 	public async ValueTask DisposeAsync() {
 		Dispose();
 		await _startupSettingsLoad;
-		if (_startupSettingsModule != null)
+		if (_legacyStartupModule != null)
 			await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => {
-				await _startupSettingsModule.DisposeAsync();
+				await _legacyStartupModule.DisposeAsync();
 			});
 	}
 
+	// Restores the typed startup choice, with an existing legacy key as fallback.
 	private async Task LoadStartupScreenAsync() {
 		_readingStartupSettings = true;
 		var key = _startupSettingsKey;
 		var superseded = false;
 		try {
 			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
-				_startupSettingsModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/UI/Application/ApplicationShell.razor.js");
+				BlazorApplicationStartupScreen identity;
+				if (await UserSettings.HasAsync<StartupSettings>(key))
+					identity = (await UserSettings.GetAsync<StartupSettings>(key)).StartupScreen;
+				else {
+
+					// Keep the original untyped browser key as a read-only migration source.
+					_legacyStartupModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Sphere10.Framework.Web.AspNetCore.Blazor/UI/Application/ApplicationShell.razor.js");
+					identity = await _legacyStartupModule.InvokeAsync<BlazorApplicationStartupScreen>("ReadStartupScreen", key);
+				}
 				if (_disposed || key != _startupSettingsKey) {
 					superseded = true;
 					return;
 				}
-				var identity = await _startupSettingsModule.InvokeAsync<BlazorApplicationStartupScreen>("ReadStartupScreen", key);
 				if (!_disposed && key == _startupSettingsKey)
 					ScreenHost.SetStartupScreen(identity);
-			}, exception => exception is JSException or InvalidOperationException);
+			}, exception => exception is JSException or InvalidOperationException or Newtonsoft.Json.JsonException);
 			if (error != null && !_disposed)
 				_startupSettingsError = "The startup screen preference could not be read. The application's default screen will be used.";
 		} finally {
@@ -271,10 +329,13 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		StateHasChanged();
 	}
 
-	private string StartupScreenUnavailableReason(BlazorApplicationScreenSession screen) => _startupSettingsKey == null
-		? "Startup preferences are not enabled for this application."
-		: !_startupSettingsLoaded ? "Startup preferences are still loading."
-		: _startupSettingsModule == null ? "This browser cannot store startup screen preferences." : ScreenHost.GetStartupScreenUnavailableReason(screen);
+	// Explains why a screen cannot be remembered as the startup choice.
+	private string StartupScreenUnavailableReason(BlazorApplicationScreenSession screen) {
+		return _startupSettingsKey == null
+			? "Startup preferences are not enabled for this application."
+			: !_startupSettingsLoaded ? "Startup preferences are still loading."
+			: ScreenHost.GetStartupScreenUnavailableReason(screen);
+	}
 
 	/// <summary>Saves a restorable retained screen as this browser's startup choice, retaining the previous choice if storage fails.</summary>
 	public async Task MakeStartupScreenAsync(Guid id) {
@@ -286,12 +347,14 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		var identity = ScreenHost.GetStartupScreenIdentity(screen);
 		try {
 			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
-				await _startupSettingsModule.InvokeVoidAsync("WriteStartupScreen", key, identity);
+				var settings = await UserSettings.GetAsync<StartupSettings>(key);
+				settings.StartupScreen = identity;
+				await settings.SaveAsync();
 				if (!_disposed && key == _startupSettingsKey) {
 					ScreenHost.SetStartupScreen(identity);
 					_startupSettingsError = null;
 				}
-			}, exception => exception is JSException or InvalidOperationException);
+			}, exception => exception is JSException or InvalidOperationException or Newtonsoft.Json.JsonException);
 			if (error != null && !_disposed)
 				_startupSettingsError = "The startup screen preference could not be saved. The previous choice is unchanged.";
 		} finally {
@@ -301,25 +364,31 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}
 	}
 
-	private void ToggleNavigation() => _navigationOpen = !_navigationOpen;
+	// Toggles the narrow-layout navigation drawer.
+	private void ToggleNavigation() {
+		_navigationOpen = !_navigationOpen;
+	}
 
+	// Closes the navigation drawer.
 	private void CloseNavigation() {
 		_navigationOpen = false;
 		_focusNavigationToggle = true;
 	}
 
+	// Closes navigation when Escape is pressed.
 	private void OnShellKeyDown(KeyboardEventArgs args) {
 		if (_navigationOpen && args.Key == "Escape")
 			CloseNavigation();
 	}
 
+	// Browses or activates a block through the shell's interaction path.
 	private async Task SelectBlockAsync(IBlazorApplicationBlock block) {
 		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
 		if (ActivateBlockOnSelection) {
 			await RunInteractionAsync(async token => {
 				var session = await ScreenHost.ActivateBlockAsync(block.Id, token);
-				return session != null || ScreenHost.ActiveScreen == null && ActiveBlock?.Id == block.Id;
+				return session != null || ScreenHost.ActiveScreen == null && SelectedBlock?.Id == block.Id;
 			}, false);
 			return;
 		}
@@ -332,14 +401,17 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}, capturedException => token.IsCancellationRequested);
 	}
 
-	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) => RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
+	// Executes a command through guarded navigation.
+	private Task ExecuteMenuItemAsync(IBlazorApplicationMenuItem item) {
+		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
+	}
 
 	// Keep existing menu order and reuse a contextual Options heading before adding a heading of our own.
 	private IBlazorApplicationMenu[] MergedMenus {
 		get {
 			var menus = Tools.UI.MergeApplicationMenus<IBlazorApplicationMenu, IBlazorApplicationMenuItem>(
 				(menu, items) => new BlazorApplicationMenu(ownsItems: false) { Id = menu.Id, Text = menu.Text, Icon = menu.Icon, Items = items },
-				menu => menu.Id, item => item.Id, Tools.UI.GetCommandLayers(Application)).ToList();
+				menu => menu.Id, item => item.Id, GetApplicationCommandLayers()).ToList();
 			var settings = menus.FirstOrDefault(menu => menu.Id == BlazorApplication.SettingsMenuId);
 			if (settings == null)
 				return menus.ToArray();
@@ -364,39 +436,51 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		return string.Equals(menu.Text?.Replace("&", string.Empty).Trim(), heading, StringComparison.OrdinalIgnoreCase);
 	}
 
-	private IBlazorApplicationMenuItem[] MergedToolBarItems => Tools.UI.MergeApplicationToolBarItems<IBlazorApplicationMenuItem>(
-		item => item.Id, Tools.UI.GetCommandLayers(Application));
+	// Commands follow the visible screen's owners; sidebar browsing contributes no presentation commands.
+	private ApplicationCommandLayer[] GetApplicationCommandLayers() {
+		var screen = ScreenHost.ActiveScreen;
+		return Tools.UI.GetCommandLayers(Application, screen?.Block, screen);
+	}
 
+	// Selects a stable render key for a command.
 	private string GetCommandRenderKey(IBlazorApplicationMenuItem item) {
 		var applicationItems = Application.Menus.SelectMany(menu => menu.Items).Concat(Application.ToolBarItems);
 		return (ContainsCommand(applicationItems, item) ? "application:" : "context:") + item.Id;
 	}
 
-	private static bool ContainsCommand(IEnumerable<IBlazorApplicationMenuItem> items, IBlazorApplicationMenuItem command) =>
-		items.Any(item => ReferenceEquals(item, command) || item is BlazorApplicationMenuGroup group && ContainsCommand(group.Items, command));
+	// Checks whether a command belongs to a visible menu branch.
+	private static bool ContainsCommand(IEnumerable<IBlazorApplicationMenuItem> items, IBlazorApplicationMenuItem command) {
+		return items.Any(item => ReferenceEquals(item, command) || item is BlazorApplicationMenuGroup group && ContainsCommand(group.Items, command));
+	}
 
 	/// <summary>Executes a custom navigation command through the shell's guarded interaction and browser-history path.</summary>
 	/// <remarks>Await this from custom sidebar controls. Successful commands close the navigation drawer and synchronize the active screen URL.</remarks>
-	public Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) =>
-		RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
+	public Task ExecuteCommandAsync(IBlazorApplicationMenuItem item) {
+		return RunInteractionAsync(token => UserInterfaceServices.ExecuteMenuItemAsync(item, token), false);
+	}
 
 	// Accepted batch closure captures preferences after every screen guard has approved removal.
 	private Task CloseScreensAsync(Guid[] ids) {
 		return RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.CloseScreensAsync(ids, token)), true);
 	}
 
+	// Updates the host's visual screen order.
 	private async Task ReorderScreenAsync((Guid SessionId, int Index) request) {
 		if (!_disposed && Application?.IsExiting != true && Application?.HasExited != true)
 			await ScreenHost.MoveScreenAsync(request.SessionId, request.Index, _lifetimeCancellation.Token);
 	}
 
+	// Changes the host's screen presentation mode.
 	private async Task ChangeScreenModeAsync(ChangeEventArgs args) {
 		var mode = string.Equals(args.Value?.ToString(), nameof(ScreenMode.SingleView), StringComparison.Ordinal) ? ScreenMode.SingleView : ScreenMode.MultiView;
 		await RunInteractionAsync(token => CloseWithPreferencesAsync(() => ScreenHost.TrySetScreenModeAsync(mode, token)), true);
 		_screenModeSelectionVersion++;
 	}
 
-	private Task ShowScreenAsync(Guid id) => RunInteractionAsync(token => ScreenHost.ShowScreenAsync(id, token), false);
+	// Selects a retained screen through guarded navigation.
+	private Task ShowScreenAsync(Guid id) {
+		return RunInteractionAsync(token => ScreenHost.ShowScreenAsync(id, token), false);
+	}
 
 	// A preference-save failure keeps the retained screen available for correction and retry.
 	private Task CloseScreenAsync(Guid id) {
@@ -416,6 +500,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}
 	}
 
+	// Runs a shell action while managing cancellation and navigation state.
 	private async Task RunInteractionAsync(Func<CancellationToken, Task<bool>> action, bool replace) {
 		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
@@ -432,6 +517,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 			}
 		}, capturedException => token.IsCancellationRequested);
 	}
+
+	// Updates browser history to describe the active retained screen.
 	private void SynchronizeLocation(bool replace) {
 		if (_disposed || Application?.IsExiting == true || Application?.HasExited == true)
 			return;
@@ -442,16 +529,18 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		if (NavigationUriFactory == null) {
 			if (session != null)
 				target += $"?block={Uri.EscapeDataString(session.Block.Id)}&screen={Uri.EscapeDataString(session.MenuItemId)}&instance={session.Id:D}";
-			else if (ActiveBlock != null)
-				target += $"?block={Uri.EscapeDataString(ActiveBlock.Id)}";
+			else if (SelectedBlock != null)
+				target += $"?block={Uri.EscapeDataString(SelectedBlock.Id)}";
 		}
 		if (!string.Equals(Navigation.Uri, target, StringComparison.Ordinal)) {
+
 			// This location reflects a transition already accepted by the host; do not run its leave guards twice.
 			_synchronizedLocation = target;
 			Navigation.NavigateTo(target, new NavigationOptions { ReplaceHistoryEntry = replace });
 		}
 	}
 
+	// Runs leave guards before accepting browser navigation.
 	private async Task OnBeforeInternalNavigationAsync(LocationChangingContext context) {
 		if (Application?.HasExited == true)
 			return;
@@ -475,9 +564,8 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 
 		// Capture only after leave permission succeeds; disposal and veto callbacks never become save boundaries.
 		try {
-			foreach (var participant in ScreenHost.Screens.OfType<IApplicationSettingsParticipant>())
+			foreach (var participant in ScreenHost.Screens.Select(session => session.Screen).OfType<BlazorApplicationScreen>())
 				await participant.SaveSettingsAsync(context.CancellationToken);
-			await Application.Settings.FlushAsync(context.CancellationToken);
 		} catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) {
 			context.PreventNavigation();
 		} catch (Exception error) {
@@ -488,6 +576,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		}
 	}
 
+	// Resolves the application's navigation base path.
 	private Uri ResolveNavigationPath(string path, string parameterName) {
 		Guard.ArgumentNotNullOrEmpty(path, parameterName);
 		var target = Navigation.ToAbsoluteUri(path);
@@ -496,6 +585,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		return target;
 	}
 
+	// Cancels and releases the pending route request.
 	private void CancelRouteRequest() {
 		_navigationVersion++;
 		_synchronizeLocation = false;
@@ -504,6 +594,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		_routeCancellation?.Dispose();
 		_routeCancellation = null;
 	}
+
 	// Default registration URLs also follow direct host selection; browsing and dirty notifications do not navigate.
 	private void OnScreenSelected(IApplicationScreen screen) {
 		if (_disposed || NavigationUriFactory != null || _navigationOperations != 0 || _routeError != null)
@@ -517,6 +608,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 		});
 	}
 
+	// Schedules command and navigation refresh after host changes.
 	private void OnHostChanged() {
 		if (!_disposed)
 			_ = InvokeAsync(() => {
@@ -527,6 +619,7 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 					StateHasChanged();
 					return;
 				}
+
 				// Programmatic activation also needs an entity URL. Route requests and shell interactions own their own synchronization.
 				if (NavigationUriFactory != null && _navigationOperations == 0 && _routeError == null) {
 					_synchronizeLocation = true;
@@ -535,4 +628,16 @@ public partial class ApplicationShell : ComponentBase, IDisposable, IAsyncDispos
 				StateHasChanged();
 			});
 	}
+	#region Inner Types
+
+	/// <summary>The shell's startup choice, persisted by the existing user settings provider.</summary>
+	public sealed class StartupSettings : SettingsObject {
+
+		/// <summary>The registered screen to restore; null keeps the application's default startup policy.</summary>
+		[DefaultValue(null)]
+		public BlazorApplicationStartupScreen StartupScreen { get; set; }
+	}
+
+	#endregion
+
 }

@@ -8,10 +8,10 @@
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>A provider's command contribution at an explicit application, block or screen level.</summary>
+/// <summary>A provider's command contribution at an explicit application, plugin, block or screen level.</summary>
 public class ApplicationCommandLayer {
 	public ApplicationCommandLayer(ApplicationCommandLevel level, IApplicationCommandProvider provider) {
-		Guard.Argument(level is ApplicationCommandLevel.Application or ApplicationCommandLevel.Block or ApplicationCommandLevel.Screen,
+		Guard.Argument(level is ApplicationCommandLevel.Application or ApplicationCommandLevel.Plugin or ApplicationCommandLevel.Block or ApplicationCommandLevel.Screen,
 			nameof(level), "Unknown application command level.");
 		Guard.ArgumentNotNull(provider, nameof(provider));
 		Level = level;

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>A running application's blocks, loaded startup plugins, screen host and application-level commands.</summary>
+/// <summary>A running application's commands, blocks, loaded startup plugins and screen host.</summary>
 /// <remarks>The host owns block membership, active UI state and platform interaction services.</remarks>
 public interface IApplication : IApplicationCommandProvider, IDisposable, IAsyncDisposable {
 	event EventHandlerEx Changed;
@@ -39,8 +39,8 @@ public interface IApplication : IApplicationCommandProvider, IDisposable, IAsync
 
 	IApplicationScreenHost ScreenHost { get; }
 
-	/// <summary>The application-owned catalog of declared screen and root preferences.</summary>
-	ApplicationSettingsCatalog Settings { get; }
+	/// <summary>The existing provider used by the application's actual screen, block and plugin settings.</summary>
+	ISettingsProvider Settings { get; }
 
 	bool HasUnsavedChanges { get; }
 

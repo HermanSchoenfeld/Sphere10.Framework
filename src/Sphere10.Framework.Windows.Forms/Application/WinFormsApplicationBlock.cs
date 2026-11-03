@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Sphere10.Framework.Application.UI;
@@ -13,6 +15,10 @@ using Sphere10.Framework.Application.UI;
 namespace Sphere10.Framework.Windows.Forms;
 
 public class WinFormsApplicationBlock : ApplicationBlockBase, IWinFormsApplicationBlock {
+	private readonly List<IWinFormsApplicationMenu> _menus = new();
+	private IWinFormsApplicationMenu[] _cachedMenus;
+	private IWinFormsApplicationMenuItem[] _cachedToolBarItems;
+
 	public WinFormsApplicationBlock()
 		: this(string.Empty, null, null, null) {
 	}
@@ -38,13 +44,21 @@ public class WinFormsApplicationBlock : ApplicationBlockBase, IWinFormsApplicati
 	}
 
 	public new virtual IWinFormsApplication Parent {
-		get => (IWinFormsApplication)base.Parent;
-		set => base.Parent = value;
+		get {
+			return (IWinFormsApplication)base.Parent;
+		}
+		set {
+			base.Parent = value;
+		}
 	}
 
 	public new virtual IWinFormsApplicationPlugin Source {
-		get => (IWinFormsApplicationPlugin)base.Source;
-		set => base.Source = value;
+		get {
+			return (IWinFormsApplicationPlugin)base.Source;
+		}
+		set {
+			base.Source = value;
+		}
 	}
 
 	public bool ShowInToolStrip { get; set; }
@@ -55,34 +69,103 @@ public class WinFormsApplicationBlock : ApplicationBlockBase, IWinFormsApplicati
 
 	public Image Image8x8 { get; set; }
 
-	public override IWinFormsApplicationMenu[] Menus => MenuCollection.Cast<IWinFormsApplicationMenu>().ToArray();
+	/// <summary>Activates this block's fixed menu definitions once and preserves their identity for its lifetime.</summary>
+	public virtual IWinFormsApplicationMenu[] Menus {
+		get {
+			return Tools.Array.Clone(_cachedMenus ??= GetMenus());
+		}
+	}
+
+	/// <summary>Activates this block's own toolbar definitions independently of its current presentation.</summary>
+	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+		get {
+			return Tools.Array.Clone(_cachedToolBarItems ??= GetToolBarItems());
+		}
+	}
 
 	public string HelpFileCHM { get; set; }
 
-	public override void AddMenu(IApplicationMenu menu) {
+	protected internal IWinFormsApplicationMenu[] MenuCollection {
+		get {
+			return _menus.ToArray();
+		}
+	}
+
+	/// <summary>Facades override this to bind menus to the public native block.</summary>
+	protected virtual IWinFormsApplicationBlock MenuOwner {
+		get {
+			return this;
+		}
+	}
+
+	/// <summary>Navigation references must be removed before their canonical screen definition.</summary>
+	public override void RemoveScreenDefinition(ApplicationScreenDefinition definition) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		Guard.Argument(!definition.Activators.Any(item => ReferenceEquals(item.Parent?.Parent, MenuOwner))
+			&& !((IApplicationCommandProvider)this).ToolBarItems.OfType<IScreenMenuItem>().Any(item => ReferenceEquals(item.ScreenDefinition, definition)),
+			nameof(definition), "A referenced screen definition cannot be removed.");
+		base.RemoveScreenDefinition(definition);
+	}
+
+	public virtual void AddMenu(IApplicationMenu menu) {
 		Guard.ArgumentNotNull(menu, nameof(menu));
 		AddMenu(Guard.ArgumentCast<IWinFormsApplicationMenu>(menu, nameof(menu)));
 	}
 
 	public virtual void AddMenu(IWinFormsApplicationMenu menu) {
+		Guard.Ensure(_cachedMenus == null && _cachedToolBarItems == null, "Command collections cannot change after activation.");
 		Guard.ArgumentNotNull(menu, nameof(menu));
-		base.AddMenu(menu);
+		Guard.ArgumentNotNull(menu.Items, nameof(menu));
+		Guard.Argument(!_menus.Exists(candidate => ReferenceEquals(candidate, menu)), nameof(menu), "The menu is already in this block.");
+		Guard.Argument(menu.Parent == null || ReferenceEquals(menu.Parent, MenuOwner), nameof(menu), "The menu already belongs to another block.");
+		menu.Parent = MenuOwner;
+		_menus.Add(menu);
 	}
 
-	public override bool ContainsMenu(IApplicationMenu menu) => menu is IWinFormsApplicationMenu nativeMenu && ContainsMenu(nativeMenu);
+	public virtual bool ContainsMenu(IApplicationMenu menu) {
+		return menu is IWinFormsApplicationMenu nativeMenu && ContainsMenu(nativeMenu);
+	}
 
-	public virtual bool ContainsMenu(IWinFormsApplicationMenu menu) => base.ContainsMenu(menu);
+	public virtual bool ContainsMenu(IWinFormsApplicationMenu menu) {
+		return _menus.Exists(candidate => ReferenceEquals(candidate, menu));
+	}
 
-	public override void RemoveMenu(IApplicationMenu menu) {
+	public virtual void RemoveMenu(IApplicationMenu menu) {
 		if (menu is IWinFormsApplicationMenu nativeMenu)
 			RemoveMenu(nativeMenu);
 	}
 
-	public virtual void RemoveMenu(IWinFormsApplicationMenu menu) => base.RemoveMenu(menu);
+	/// <summary>Removing navigation leaves block-owned definitions available for direct activation.</summary>
+	public virtual void RemoveMenu(IWinFormsApplicationMenu menu) {
+		Guard.Ensure(_cachedMenus == null && _cachedToolBarItems == null, "Command collections cannot change after activation.");
+		var index = _menus.FindIndex(candidate => ReferenceEquals(candidate, menu));
+		if (index < 0)
+			return;
+		_menus.RemoveAt(index);
+		if (ReferenceEquals(menu.Parent, MenuOwner))
+			menu.Parent = null;
+	}
+
+	/// <summary>Supplies the block's own menu definitions when its command cache is first accessed.</summary>
+	protected virtual IWinFormsApplicationMenu[] GetMenus() {
+		return MenuCollection;
+	}
+
+	/// <summary>Supplies toolbar definitions declared directly by this block.</summary>
+	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		return Array.Empty<IWinFormsApplicationMenuItem>();
+	}
 
 	public virtual void Dispose() {
-		foreach (IWinFormsApplicationMenu menu in MenuCollection)
+		// Activated factory definitions belong to this owner too; unused factories remain unactivated.
+		var menus = MenuCollection.Concat(_cachedMenus ?? Array.Empty<IWinFormsApplicationMenu>())
+			.Distinct<IWinFormsApplicationMenu>(ReferenceEqualityComparer.Instance).ToArray();
+		var menuItems = new HashSet<IWinFormsApplicationMenuItem>(menus.SelectMany(menu => menu.Items), ReferenceEqualityComparer.Instance);
+		foreach (var menu in menus)
 			menu.Dispose();
+		foreach (var item in _cachedToolBarItems ?? Array.Empty<IWinFormsApplicationMenuItem>())
+			if (menuItems.Add(item))
+				item.Dispose();
 		Image8x8?.Dispose();
 		Image32x32?.Dispose();
 	}

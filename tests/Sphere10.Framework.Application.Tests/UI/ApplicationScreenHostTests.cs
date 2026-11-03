@@ -51,7 +51,7 @@ public class ApplicationScreenHostTests {
 
 		Assert.That(screen, Is.InstanceOf<ProbeScreen>());
 		Assert.That(screen.Title, Is.EqualTo("Standalone view"));
-		Assert.That(host.GetScreenBlock(screen), Is.SameAs(block));
+		Assert.That(screen.Block, Is.SameAs(block));
 		Assert.That(host.ActiveScreen, Is.SameAs(screen));
 		Assert.That(((IMultiApplicationScreenHost)host).OpenScreens.Single(), Is.SameAs(screen));
 		Assert.That(block.Menus, Is.Empty);
@@ -71,7 +71,7 @@ public class ApplicationScreenHostTests {
 
 		Assert.That(await host.UnregisterBlockAsync(explicitOwner), Is.True);
 
-		Assert.That(host.GetScreenBlock(host.ActiveScreen), Is.SameAs(placeholderOwner));
+		Assert.That(host.ActiveScreen.Block, Is.SameAs(placeholderOwner));
 		Assert.That(host.ModeOf(host.ActiveScreen), Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(host.ActiveScreen, Is.Not.SameAs(original));
 		Assert.That(host.OpenScreens, Is.Empty);
@@ -126,7 +126,7 @@ public class ApplicationScreenHostTests {
 		var reused = await host.OpenScreenAsync(Block(host, "second"), Definition(host, "second", "shared"));
 
 		Assert.That(reused, Is.Not.SameAs(first));
-		Assert.That(host.GetScreenBlock(reused).Name, Is.EqualTo("second"));
+		Assert.That(reused.Block.Name, Is.EqualTo("second"));
 		Assert.That(host.DefinitionOf(reused), Is.SameAs(Definition(host, "second", "shared")));
 		Assert.That(first.Title, Is.EqualTo("Record one"));
 		Assert.That(reused.Activations, Is.EqualTo(1));
@@ -199,54 +199,52 @@ public class ApplicationScreenHostTests {
 	}
 
 	[Test]
-	public async Task RejectedBatchCloseDoesNotCaptureOrSaveAnyScreenPreferences() {
+	public async Task RejectedBatchCloseDoesNotRunPlatformClosePreparation() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = await CreateHostAsync(provider);
 		var block = Block(host, "first");
 		var first = await host.OpenScreenAsync(block, Definition(host, "first", "multiple"));
 		var second = await host.OpenScreenAsync(block, Definition(host, "first", "multiple"));
 		second.Guard = _ => Task.FromResult(false);
+		var preparations = 0;
+		host.ClosingScreens = (_, _) => {
+			preparations++;
+			return Task.CompletedTask;
+		};
 
 		Assert.That(await host.CloseScreensAsync(new[] { first, second }), Is.False);
-		Assert.That(first.SettingsSaves, Is.Zero);
-		Assert.That(second.SettingsSaves, Is.Zero);
+		Assert.That(preparations, Is.Zero);
 		Assert.That(host.ActiveScreen, Is.SameAs(second));
 	}
 
 	[Test]
-	public async Task FailedPreferenceSaveLeavesTheClosingScreenAttachedAndActiveForRetry() {
+	public async Task FailedPlatformClosePreparationKeepsTheScreenAttachedForRetry() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = await CreateHostAsync(provider);
 		var block = Block(host, "first");
 		var screen = await host.OpenScreenAsync(block, Definition(host, "first", "single"));
-		screen.SavingSettings = _ => throw new InvalidOperationException("The accepted preferences could not be saved.");
+		var preparations = 0;
+		host.ClosingScreens = (screens, _) => {
+			preparations++;
+			Assert.That(screens, Is.EqualTo(new[] { screen }));
+			Assert.That(host.ActiveScreen, Is.SameAs(screen));
+			Assert.That(screen.Deactivations, Is.Zero);
+			throw new InvalidOperationException("Close preparation failed.");
+		};
 
-		Assert.That(async () => await host.CloseScreenAsync(screen), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await host.CloseScreenAsync(screen), Throws.InvalidOperationException);
 
-		Assert.That(host.ActiveScreen, Is.SameAs(screen));
 		Assert.That(host.Screens, Does.Contain(screen));
 		Assert.That(screen.Host, Is.SameAs(host));
 		Assert.That(screen.Block, Is.SameAs(block));
-		Assert.That(screen.Deactivations, Is.Zero);
 		Assert.That(screen.Disposals, Is.Zero);
-		screen.SavingSettings = _ => Task.CompletedTask;
+		host.ClosingScreens = (_, _) => {
+			preparations++;
+			return Task.CompletedTask;
+		};
 		Assert.That(await host.CloseScreenAsync(screen), Is.True);
-		Assert.That(screen.SettingsSaves, Is.EqualTo(2));
+		Assert.That(preparations, Is.EqualTo(2));
 		Assert.That(screen.Deactivations, Is.EqualTo(1));
-		Assert.That(screen.Host, Is.Null);
-	}
-
-	[Test]
-	public async Task HideAndNavigationGuardsDoNotSavePreferences() {
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		using var host = await CreateHostAsync(provider);
-		await host.TrySetScreenModeAsync(ScreenMode.SingleView);
-		var block = Block(host, "first");
-		var first = await host.OpenScreenAsync(block, Definition(host, "first", "single"));
-		await host.OpenScreenAsync(block, Definition(host, "first", "multiple"));
-		Assert.That(await host.CanNavigateAsync(), Is.True);
-		Assert.That(first.Deactivations, Is.EqualTo(1));
-		Assert.That(first.SettingsSaves, Is.Zero);
 	}
 
 	[Test]
@@ -694,9 +692,17 @@ public class ApplicationScreenHostTests {
 
 		public Func<TestApplicationBlock, ApplicationScreenDefinition, ProbeScreen> Creation { get; set; }
 
+		// Supply platform close preparation without a settings-specific participant contract.
+		public Func<ProbeScreen[], CancellationToken, Task> ClosingScreens { get; set; }
+
 		public ApplicationScreenDefinition DefinitionOf(ProbeScreen screen) => GetScreenDefinition(screen);
 		public ScreenActivationMode ModeOf(ProbeScreen screen) => GetScreenActivationMode(screen);
 		public ScreenKind KindOf(ProbeScreen screen) => GetScreenKind(screen);
+
+		// Run the platform's preparation only for a close accepted by every screen guard.
+		protected override Task OnClosingScreensAsync(ProbeScreen[] screens, CancellationToken cancellationToken) {
+			return ClosingScreens?.Invoke(screens, cancellationToken) ?? Task.CompletedTask;
+		}
 
 		protected override ProbeScreen CreateScreen(TestApplicationBlock block, ApplicationScreenDefinition definition) {
 			if (Creation != null)
@@ -707,7 +713,7 @@ public class ApplicationScreenHostTests {
 		}
 	}
 
-	private class ProbeScreen : IApplicationScreen, IApplicationSettingsParticipant, IDisposable {
+	private class ProbeScreen : IApplicationScreen, IDisposable {
 		public IApplicationScreenHost Host { get; set; }
 
 		public IApplicationBlock Block { get; set; }
@@ -715,12 +721,10 @@ public class ApplicationScreenHostTests {
 		public bool HasUnsavedChanges { get; set; }
 		public Func<CancellationToken, Task<bool>> Guard { get; set; } = _ => Task.FromResult(true);
 		public Func<CancellationToken, Task> Activation { get; set; } = _ => Task.CompletedTask;
-		public Func<CancellationToken, Task> SavingSettings { get; set; } = _ => Task.CompletedTask;
 		public int GuardCalls { get; private set; }
 		public int Activations { get; private set; }
 		public int Deactivations { get; private set; }
 		public int Disposals { get; private set; }
-		public int SettingsSaves { get; private set; }
 
 		public async Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) {
 			GuardCalls++;
@@ -735,11 +739,6 @@ public class ApplicationScreenHostTests {
 		public Task OnDeactivatedAsync(CancellationToken cancellationToken = default) {
 			Deactivations++;
 			return Task.CompletedTask;
-		}
-
-		public Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-			SettingsSaves++;
-			return SavingSettings(cancellationToken);
 		}
 
 		public void Dispose() => Disposals++;

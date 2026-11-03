@@ -6,46 +6,39 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Windows.Forms
-{
-    partial class BlockConfigurationScreen
-    {
-        /// <summary> 
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+namespace Sphere10.Framework.Windows.Forms;
 
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+partial class BlockConfigurationScreen {
+	/// <summary>
+	/// Required designer variable.
+	/// </summary>
+	private System.ComponentModel.IContainer _components = null;
 
-        #region Component Designer generated code
+	/// <summary>
+	/// Clean up any resources being used.
+	/// </summary>
+	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+	protected override void Dispose(bool disposing) {
+		if (disposing && (_components != null))
+			_components.Dispose();
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-            this.SuspendLayout();
-            // 
-            // BlockConfigurationScreen
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Name = "BlockConfigurationScreen";
-            this.Size = new System.Drawing.Size(266, 262);
-            this.ResumeLayout(false);
+		base.Dispose(disposing);
+	}
 
-        }
-
-        #endregion
-    }
+	// Component Designer generated code
+	/// <summary>
+	/// Required method for Designer support - do not modify
+	/// the contents of this method with the code editor.
+	/// </summary>
+	private void InitializeComponent() {
+		this.SuspendLayout();
+		//
+		// BlockConfigurationScreen
+		//
+		this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+		this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+		this.Name = "BlockConfigurationScreen";
+		this.Size = new System.Drawing.Size(266, 262);
+		this.ResumeLayout(false);
+	}
 }
-

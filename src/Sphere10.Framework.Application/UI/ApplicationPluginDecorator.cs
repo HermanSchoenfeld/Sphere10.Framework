@@ -32,7 +32,31 @@ public abstract class ApplicationPluginDecorator<TConcrete> : IApplicationPlugin
 
 	public virtual string Name => InternalPlugin.Name;
 
+	/// <summary>Forwards the actual settings instance owned by the wrapped plugin.</summary>
+	public virtual SettingsObject PluginSettings {
+		get {
+			return InternalPlugin.PluginSettings;
+		}
+		set {
+			InternalPlugin.PluginSettings = value;
+		}
+	}
+
 	public virtual IApplicationBlock[] Blocks => InternalPlugin.Blocks;
+
+	/// <summary>Forwards the wrapped plugin's own command definitions.</summary>
+	public virtual IApplicationMenu[] Menus {
+		get {
+			return InternalPlugin.Menus;
+		}
+	}
+
+	/// <summary>Forwards the wrapped plugin's own toolbar definitions.</summary>
+	public virtual IApplicationMenuItem[] ToolBarItems {
+		get {
+			return InternalPlugin.ToolBarItems;
+		}
+	}
 
 	public virtual void Load(IServiceCollection serviceCollection) => InternalPlugin.Load(serviceCollection);
 

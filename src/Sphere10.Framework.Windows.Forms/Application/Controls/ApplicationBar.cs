@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Diagnostics;
-
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -35,7 +33,9 @@ public partial class ApplicationBar : ApplicationControl {
 	public Control ApplicationBarControl { get; set; }
 
 	public int ButtonHeight {
-		get { return _buttonHeight; }
+		get {
+			return _buttonHeight;
+		}
 		set {
 			_buttonHeight = value;
 			_splitContainer.SplitterIncrement = _buttonHeight;
@@ -49,7 +49,9 @@ public partial class ApplicationBar : ApplicationControl {
 		}
 		item.Button.Text = item.Text;
 		item.Button.Image = item.Image;
-		item.Button.Font = new Font(item.Button.Font, FontStyle.Bold);
+		var font = new Font(item.Button.Font, FontStyle.Bold);
+		item.Button.Font = font;
+		item.Button.Disposed += (_, _) => font.Dispose();
 		item.Button.ButtonStateChanged += new EventHandler(Button_ButtonStateChanged);
 		item.Button.BottomBorderColor = Color.Transparent;
 
@@ -72,13 +74,13 @@ public partial class ApplicationBar : ApplicationControl {
 	public void RemoveItem(Item item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.Argument(_items.Contains(item), nameof(item), "Item is not registered");
-		var WasSelected = SelectedItem == item;
+		var wasSelected = SelectedItem == item;
 		_items.Remove(item);
 		_buttonsToShow--;
 		item.Button.ButtonStateChanged -= Button_ButtonStateChanged;
 		item.Button.Dispose();
-		if (WasSelected) {
-			item.MenuControl.Parent?.Controls.Remove(item.MenuControl);
+		if (wasSelected) {
+			item.MenuControl?.Parent?.Controls.Remove(item.MenuControl);
 			ApplicationBarControl = null;
 			if (_items.Count > 0)
 				SelectedItem = _items[0];
@@ -92,7 +94,9 @@ public partial class ApplicationBar : ApplicationControl {
 	}
 
 	public Item[] Items {
-		get { return _items.ToArray(); }
+		get {
+			return _items.ToArray();
+		}
 	}
 
 	public Item SelectedItem {
@@ -255,23 +259,39 @@ public partial class ApplicationBar : ApplicationControl {
 		}
 
 		public SquareButton Button {
-			get { return _button; }
-			set { _button = value; }
+			get {
+				return _button;
+			}
+			set {
+				_button = value;
+			}
 		}
 
 		public Control MenuControl {
-			get { return _menuControl; }
-			set { _menuControl = value; }
+			get {
+				return _menuControl;
+			}
+			set {
+				_menuControl = value;
+			}
 		}
 
 		public Image Image {
-			get { return _image; }
-			set { _image = value; }
+			get {
+				return _image;
+			}
+			set {
+				_image = value;
+			}
 		}
 
 		public string Text {
-			get { return _text; }
-			set { _text = value; }
+			get {
+				return _text;
+			}
+			set {
+				_text = value;
+			}
 		}
 
 

@@ -15,6 +15,9 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Uses shared plugin storage and lifecycle while preserving native block identities and ownership.</summary>
 public class WinFormsApplicationPlugin : ApplicationPluginBase<IWinFormsApplicationBlock>, IWinFormsApplicationPlugin {
+	private IWinFormsApplicationMenu[] _menus;
+	private IWinFormsApplicationMenuItem[] _toolBarItems;
+
 	public WinFormsApplicationPlugin(string name, IEnumerable<IWinFormsApplicationBlock> blocks)
 		: this(name, blocks, null) {
 	}
@@ -22,4 +25,29 @@ public class WinFormsApplicationPlugin : ApplicationPluginBase<IWinFormsApplicat
 	public WinFormsApplicationPlugin(string name, IEnumerable<IWinFormsApplicationBlock> blocks, Action<IServiceCollection> configureServices)
 		: base(name, blocks, configureServices) {
 	}
+
+	/// <summary>Activates this plugin's menu definitions once, independently of the windows displaying them.</summary>
+	public virtual IWinFormsApplicationMenu[] Menus {
+		get {
+			return Tools.Array.Clone(_menus ??= GetMenus());
+		}
+	}
+
+	/// <summary>Activates this plugin's toolbar definitions once, preserving command identity across windows.</summary>
+	public virtual IWinFormsApplicationMenuItem[] ToolBarItems {
+		get {
+			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
+		}
+	}
+
+	/// <summary>Supplies this plugin's own menu definitions on first access.</summary>
+	protected virtual IWinFormsApplicationMenu[] GetMenus() {
+		return Array.Empty<IWinFormsApplicationMenu>();
+	}
+
+	/// <summary>Supplies this plugin's own toolbar definitions on first access.</summary>
+	protected virtual IWinFormsApplicationMenuItem[] GetToolBarItems() {
+		return Array.Empty<IWinFormsApplicationMenuItem>();
+	}
+
 }

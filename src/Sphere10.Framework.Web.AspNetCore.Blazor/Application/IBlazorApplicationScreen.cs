@@ -17,7 +17,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 /// Derive from BlazorApplicationScreen for automatic attachment. Guard and lifecycle callbacks must not await another
 /// transition on their host. Resolve per-user dependencies through the current circuit's service provider.
 /// </remarks>
-public interface IBlazorApplicationScreen : IApplicationScreen<IBlazorApplicationMenu, IBlazorApplicationMenuItem>, IComponent {
+public interface IBlazorApplicationScreen : IApplicationScreen, IApplicationCommandProvider<IBlazorApplicationMenu, IBlazorApplicationMenuItem>, IComponent {
 	new IBlazorApplicationScreenHost Host { get; set; }
 
 	new IBlazorApplicationBlock Block { get; set; }

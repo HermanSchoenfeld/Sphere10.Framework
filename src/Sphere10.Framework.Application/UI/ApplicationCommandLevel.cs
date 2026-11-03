@@ -10,7 +10,15 @@ namespace Sphere10.Framework.Application.UI;
 
 /// <summary>The lifetime and composition scope of a menu or toolbar contribution.</summary>
 public enum ApplicationCommandLevel {
+	/// <summary>Commands owned by the running application.</summary>
 	Application,
+
+	/// <summary>Commands owned by the visible screen's block.</summary>
 	Block,
-	Screen
+
+	/// <summary>Commands owned by the visible screen.</summary>
+	Screen,
+
+	/// <summary>Commands owned by the visible screen's source plugin.</summary>
+	Plugin
 }

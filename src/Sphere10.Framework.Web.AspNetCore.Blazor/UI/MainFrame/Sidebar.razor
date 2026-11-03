@@ -12,8 +12,8 @@
 <nav class="sidebar" aria-label="Application navigation">
 	<div class="sidebar-content">
 		<SidebarBrand Title="@Title" HomeUrl="@HomeUrl" />
-		<ApplicationBlockMenu Blocks="Blocks" ActiveBlock="ActiveBlock" OnSelect="OnSelectBlock" />
-		<ApplicationMenus Block="ActiveBlock" OnSelect="OnSelectItem" />
+		<ApplicationBlockMenu Blocks="Blocks" SelectedBlock="SelectedBlock" OnSelect="OnSelectBlock" />
+		<ApplicationMenus Block="SelectedBlock" OnSelect="OnSelectItem" />
 		@ChildContent
 	</div>
 </nav>
@@ -25,7 +25,7 @@
 
 	[Parameter] public IBlazorApplicationBlock[] Blocks { get; set; } = Array.Empty<IBlazorApplicationBlock>();
 
-	[Parameter] public IBlazorApplicationBlock ActiveBlock { get; set; }
+	[Parameter] public IBlazorApplicationBlock SelectedBlock { get; set; }
 
 	[Parameter] public EventCallback<IBlazorApplicationBlock> OnSelectBlock { get; set; }
 

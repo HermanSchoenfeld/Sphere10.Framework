@@ -48,7 +48,7 @@ public class ApplicationCommandScopeTests {
 			Assert.That(Header(rendered.ToHtmlString()), Does.Not.Contain("Internal commands").And.Not.Contain("Hidden pipe registration"));
 
 			var admin = await host.ActivateScreenAsync("administration", "admin-screen");
-			Assert.That(host.ActiveBlock.Id, Is.EqualTo("administration"));
+			Assert.That(host.SelectedBlock.Id, Is.EqualTo("administration"));
 			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "reports", "help" }));
 			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item.Id),
 				Is.EqualTo(new[] { "common-open", "save", "export", "admin-file" }));
@@ -122,7 +122,7 @@ public class ApplicationCommandScopeTests {
 			await SelectBlockAsync(capture.Shell, host.Blocks.Single(block => block.Id == blockId));
 
 			Assert.That(screen.GuardCalls, Is.EqualTo(1), "Dock activation must use the existing leave guard exactly once.");
-			Assert.That(host.ActiveBlock.Id, Is.EqualTo(allowNavigation ? blockId : "pipes"));
+			Assert.That(host.SelectedBlock.Id, Is.EqualTo(allowNavigation ? blockId : "pipes"));
 			Assert.That((bool)typeof(ApplicationShell).GetField("_navigationOpen", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(capture.Shell),
 				Is.EqualTo(!allowNavigation), "Only a successful activation closes the navigation drawer.");
 			Assert.That(navigation.NavigationCount, Is.EqualTo(originalNavigationCount + (allowNavigation ? 1 : 0)));
@@ -139,7 +139,7 @@ public class ApplicationCommandScopeTests {
 			if (blockId == "actions") {
 				Assert.That(host.ActiveScreen, Is.Null);
 				Assert.That(navigation.Uri, Is.EqualTo("http://localhost/application?block=actions"));
-				Assert.That(Header(rendered.ToHtmlString()), Does.Contain("Action tool"));
+				Assert.That(Header(rendered.ToHtmlString()), Does.Not.Contain("Action tool"));
 			} else {
 				Assert.That(host.ActiveScreen.ScreenType, Is.EqualTo(typeof(AdministrationScreen)));
 				Assert.That(navigation.Uri, Is.EqualTo($"http://localhost/application?block=administration&screen=admin-screen&instance={host.ActiveScreen.Id:D}"));
@@ -167,7 +167,7 @@ public class ApplicationCommandScopeTests {
 
 			Assert.That(shell.ActivateBlockOnSelection, Is.False);
 			Assert.That(screen.GuardCalls, Is.Zero);
-			Assert.That(host.ActiveBlock.Id, Is.EqualTo("administration"));
+			Assert.That(host.SelectedBlock.Id, Is.EqualTo("administration"));
 			Assert.That(host.ActiveScreen, Is.SameAs(pipe));
 			Assert.That(navigation.NavigationCount, Is.Zero);
 			Assert.That(navigation.Uri, Is.EqualTo("http://localhost/application"));

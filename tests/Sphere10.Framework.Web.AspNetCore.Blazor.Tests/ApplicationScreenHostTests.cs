@@ -36,7 +36,7 @@ public class ApplicationScreenHostTests {
 
 		await host.SelectBlockAsync("second");
 		await host.SelectBlockAsync("second");
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("second"));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("second"));
 		Assert.That(host.ActiveScreen, Is.SameAs(session));
 		Assert.That(host.ActiveScreen.Block.Id, Is.EqualTo("first"));
 		Assert.That(session.Screen, Is.SameAs(component));
@@ -49,7 +49,7 @@ public class ApplicationScreenHostTests {
 		Assert.That(notifications, Is.EqualTo(1), "Selecting the same navigation block is idempotent.");
 
 		Assert.That(await host.ShowScreenAsync(session.Id), Is.True);
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"), "Selecting an already active tab restores its navigation block.");
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("first"), "Selecting an already active tab restores its navigation block.");
 		Assert.That(guards, Is.Zero);
 		Assert.That(component.Activations, Is.EqualTo(1));
 	}
@@ -59,14 +59,14 @@ public class ApplicationScreenHostTests {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new BlazorApplicationScreenHost(CreateBlocks(), provider);
 		await host.SelectBlockAsync("first");
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("first"));
 		Assert.That(host.ActiveScreen, Is.Null);
 		Assert.That(host.Screens, Is.Empty);
 		Assert.That(async () => await host.SelectBlockAsync("missing"), Throws.ArgumentException);
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
 		Assert.That(async () => await host.SelectBlockAsync("second", cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("first"));
 		Assert.That(await host.ActivateBlockAsync("first"), Is.Not.Null, "Explicit block activation retains default-screen behavior.");
 	}
 
@@ -78,9 +78,9 @@ public class ApplicationScreenHostTests {
 		await host.SelectBlockAsync("second");
 		Assert.That(await host.CloseScreenAsync(session.Id), Is.True);
 		Assert.That(host.ActiveScreen, Is.Null);
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("second"));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("second"));
 		Assert.That(await host.UnregisterBlockAsync("second"), Is.True);
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("first"));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("first"));
 		Assert.That(host.Screens, Is.Empty);
 	}
 
@@ -366,7 +366,7 @@ public class ApplicationScreenHostTests {
 		using var host = new BlazorApplicationScreenHost(CreateBlocks().Append(actionBlock), provider);
 		var session = await host.ActivateScreenAsync("first", "single");
 		await host.ActivateBlockAsync("actions");
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo("actions"));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo("actions"));
 		Assert.That(host.ActiveScreen, Is.Null);
 		Assert.That(host.OpenScreens.Single(), Is.SameAs(session));
 	}

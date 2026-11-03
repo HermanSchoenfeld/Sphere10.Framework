@@ -19,17 +19,18 @@ namespace Sphere10.Framework.Application.UI;
 public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<TBlock, TScreen>
 	where TBlock : class, IApplicationBlock
 	where TScreen : class, IApplicationScreen {
+
 	private readonly Dictionary<TBlock, TBlock> _availableBlocks = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<TBlock, TBlock> _blocks = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<ApplicationScreenDefinition, Dictionary<TBlock, TBlock>> _definitionBlocks = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<TBlock, ApplicationScreenDefinition[]> _blockDefinitions = new(ReferenceEqualityComparer.Instance);
-	private readonly Dictionary<TScreen, (ApplicationScreenDefinition Definition, Type ScreenType, ScreenActivationMode ActivationMode, ScreenKind ScreenKind, IApplicationMenu[] OwnedMenus)> _screens = new(ReferenceEqualityComparer.Instance);
+	private readonly Dictionary<TScreen, ScreenState> _screens = new(ReferenceEqualityComparer.Instance);
 	private readonly Dictionary<object, Dictionary<object, TScreen>> _singleInstances = new(ReferenceEqualityComparer.Instance);
 	private readonly List<TScreen> _openOrder = new();
 	private readonly SemaphoreSlim _transitions = new(1, 1);
 	private readonly CancellationTokenSource _lifetime = new();
 	private readonly CancellationToken _lifetimeToken;
-	private TBlock _activeBlock;
+	private TBlock _selectedBlock;
 	private TScreen _activeScreen;
 	private ScreenMode _screenMode = ScreenMode.MultiView;
 	private bool _initialized;
@@ -40,10 +41,12 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 	private IApplicationScreen _pendingSelection;
 	private ApplicationUserInterfaceServices _ownedUserInterface;
 
+	/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 	public ApplicationScreenHost(IServiceProvider services)
 		: this(Array.Empty<TBlock>(), services) {
 	}
 
+	/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 	public ApplicationScreenHost(IEnumerable<TBlock> blocks, IServiceProvider services, Func<TBlock, TBlock> snapshot = null) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		Guard.ArgumentNotNull(services, nameof(services));
@@ -59,18 +62,56 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		}
 	}
 
-	public override TBlock[] AvailableBlocks => _availableBlocks.Values.OrderBy(block => block.Position).ToArray();
+	/// <inheritdoc />
+	public override TBlock[] AvailableBlocks {
+		get {
+			return _availableBlocks.Values.OrderBy(block => block.Position).ToArray();
+		}
+	}
 
-	public override TBlock[] Blocks => _blocks.Values.OrderBy(block => block.Position).ToArray();
+	/// <inheritdoc />
+	public override TBlock[] Blocks {
+		get {
+			return _blocks.Values.OrderBy(block => block.Position).ToArray();
+		}
+	}
 
-	public override TBlock ActiveBlock => _activeBlock;
+	/// <summary>The canonical owner of the currently active screen.</summary>
+	public override TBlock ActiveBlock {
+		get {
+			return _activeScreen?.Block as TBlock;
+		}
+	}
 
-	public override TScreen ActiveScreen => _activeScreen;
+	/// <summary>The independently browsed navigation block.</summary>
+	public override TBlock SelectedBlock {
+		get {
+			return _selectedBlock;
+		}
+	}
 
-	public override TScreen[] Screens => _screens.Keys.ToArray();
+	/// <inheritdoc />
+	public override TScreen ActiveScreen {
+		get {
+			return _activeScreen;
+		}
+	}
 
-	public override TScreen[] OpenScreens => _openOrder.ToArray();
+	/// <inheritdoc />
+	public override TScreen[] Screens {
+		get {
+			return _screens.Keys.ToArray();
+		}
+	}
 
+	/// <inheritdoc />
+	public override TScreen[] OpenScreens {
+		get {
+			return _openOrder.ToArray();
+		}
+	}
+
+	/// <inheritdoc />
 	public override IUserInterfaceServices UserInterfaceServices {
 		get {
 			EnsureUsable();
@@ -80,7 +121,9 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 
 	/// <summary>Changes mode synchronously when no screens must close. Use TrySetScreenModeAsync for guarded transitions.</summary>
 	public override ScreenMode ScreenMode {
-		get => _screenMode;
+		get {
+			return _screenMode;
+		}
 		set {
 			EnsureUsable();
 			Guard.Argument(value is ScreenMode.SingleView or ScreenMode.MultiView, nameof(value), "Unknown screen mode.");
@@ -95,14 +138,31 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		}
 	}
 
-	public override bool HasUnsavedChanges => _screens.Keys.Any(screen => screen.HasUnsavedChanges);
+	/// <inheritdoc />
+	public override bool HasUnsavedChanges {
+		get {
+			return _screens.Keys.Any(screen => screen.HasUnsavedChanges);
+		}
+	}
 
+	/// <summary>Gets the borrowed service provider used for screen activation.</summary>
 	protected IServiceProvider Services { get; }
 
-	protected bool IsInitialized => _initialized;
+	/// <summary>Indicates whether this host's initialization has completed.</summary>
+	protected bool IsInitialized {
+		get {
+			return _initialized;
+		}
+	}
 
-	protected TBlock[] TrackedBlocks => _blocks.Values.ToArray();
+	/// <summary>Gets the registered block membership retained by this host.</summary>
+	protected TBlock[] TrackedBlocks {
+		get {
+			return _blocks.Values.ToArray();
+		}
+	}
 
+	/// <inheritdoc />
 	public override Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		EnsureUsable();
@@ -110,8 +170,16 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		throw new NotSupportedException("This screen host does not support detached presentation.");
 	}
 
-	public override Task InitializeAsync(CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(async token => {
+	/// <summary>Composite platform hosts override this to expose their public host rather than their internal engine.</summary>
+	protected virtual IApplicationScreenHost ScreenOwner {
+		get {
+			return this;
+		}
+	}
+
+	/// <inheritdoc />
+	public override Task InitializeAsync(CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(async token => {
 			if (_initialized)
 				return true;
 			var definitions = GetDefinitions();
@@ -139,23 +207,27 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 				if (_activeScreen == null)
 					await ShowFallbackAsync(token);
 			}
-			if (_activeBlock == null)
-				SetTrackedBlockSelection(GetScreenBlock(_activeScreen) ?? Blocks.FirstOrDefault());
+			if (_selectedBlock == null)
+				SetTrackedBlockSelection(_activeScreen?.Block as TBlock ?? Blocks.FirstOrDefault());
 			_initialized = true;
 			OnChanged();
 			return true;
 		}, cancellationToken);
+	}
 
-	public override Task SelectBlockAsync(TBlock block, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task SelectBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRegisteredBlock(block);
 			token.ThrowIfCancellationRequested();
 			SetTrackedBlockSelection(block);
 			return Task.FromResult(true);
 		}, cancellationToken);
+	}
 
-	public override Task<TScreen> ActivateBlockAsync(TBlock block, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(async token => {
+	/// <inheritdoc />
+	public override Task<TScreen> ActivateBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(async token => {
 			RequireRegisteredBlock(block);
 			RegisterTrackedDefinitions(GetDefinitions());
 			var definition = GetDefaultScreen(block);
@@ -165,9 +237,11 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 				SetTrackedBlockSelection(block);
 			return null;
 		}, cancellationToken);
+	}
 
-	public override Task<TScreen> ActivateScreenAsync(TBlock block, Type screenType, string title = null, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task<TScreen> ActivateScreenAsync(TBlock block, Type screenType, string title = null, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRegisteredBlock(block);
 			RegisterTrackedDefinitions(GetDefinitions());
 			var definition = Tools.UI.ResolveScreenRegistration(GetDefinitions(new[] { block }), ApplicationScreenRegistration.ForType(screenType));
@@ -177,9 +251,11 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 				definition = WithTitle(definition, title);
 			return ActivateCoreAsync(block, definition, token, registration);
 		}, cancellationToken);
+	}
 
-	public override Task<TScreen> ActivateScreenAsync(TBlock block, IScreenMenuItem item, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task<TScreen> ActivateScreenAsync(TBlock block, IScreenMenuItem item, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRegisteredBlock(block);
 			Guard.ArgumentNotNull(item, nameof(item));
 			RegisterTrackedDefinitions(GetDefinitions());
@@ -187,17 +263,21 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			Guard.Argument(definition != null, nameof(item), "The menu item is not a registered screen in this block.");
 			return ActivateCoreAsync(block, definition, token);
 		}, cancellationToken);
+	}
 
-	public override Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRegisteredBlock(block);
 			Guard.Argument(definition != null && block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, definition)),
 				nameof(definition), "The screen definition is not owned by this block.");
 			return ActivateCoreAsync(block, definition, token);
 		}, cancellationToken);
+	}
 
-	public override Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(async token => {
+	/// <inheritdoc />
+	public override Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(async token => {
 			Guard.Argument(block != null && _availableBlocks.ContainsKey(block), nameof(block), "The block is not available.");
 			Guard.Argument(!_blocks.ContainsKey(block), nameof(block), "The block is already registered.");
 			Guard.Argument(block.Parent == null || ReferenceEquals(block.Parent.ScreenHost, ScreenOwner), nameof(block), "The block belongs to another application's host.");
@@ -226,23 +306,26 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			OnChanged();
 			return true;
 		}, cancellationToken);
+	}
 
-	public override Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRegisteredBlock(block);
-			return CloseCoreAsync(Screens.Where(screen => ReferenceEquals(GetScreenBlock(screen), block)).ToArray(), () => {
+			return CloseCoreAsync(Screens.Where(screen => ReferenceEquals(screen.Block, block)).ToArray(), () => {
 				UnregisterTrackedBlock(block);
 			}, token, true);
 		}, cancellationToken);
+	}
 
-	public override TBlock GetScreenBlock(TScreen screen) =>
-		screen != null && _screens.ContainsKey(screen) ? screen.Block as TBlock : null;
+	/// <inheritdoc />
+	public override Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(ClearSelectionCoreAsync, cancellationToken);
+	}
 
-	public override Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(ClearSelectionCoreAsync, cancellationToken);
-
-	public override Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(async token => {
+	/// <inheritdoc />
+	public override Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(async token => {
 			Guard.Argument(mode is ScreenMode.SingleView or ScreenMode.MultiView, nameof(mode), "Unknown screen mode.");
 			if (_screenMode == mode)
 				return true;
@@ -252,15 +335,19 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			OnChanged();
 			return true;
 		}, cancellationToken);
+	}
 
-	public override Task MoveScreenAsync(TScreen screen, int index, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task MoveScreenAsync(TScreen screen, int index, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			token.ThrowIfCancellationRequested();
 			MoveTrackedScreen(screen, index);
 			OnChanged();
 			return Task.FromResult(true);
 		}, cancellationToken);
+	}
 
+	/// <inheritdoc />
 	public override Task<bool> CloseScreensAsync(IEnumerable<TScreen> screens, CancellationToken cancellationToken = default) {
 		Guard.ArgumentNotNull(screens, nameof(screens));
 		var closing = screens.Distinct<TScreen>(ReferenceEqualityComparer.Instance).ToArray();
@@ -271,38 +358,55 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		}, cancellationToken);
 	}
 
-	public override Task<bool> ShowScreenAsync(TScreen screen, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task<bool> ShowScreenAsync(TScreen screen, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRetainedScreen(screen);
 			return ShowCoreAsync(screen, token);
 		}, cancellationToken);
+	}
 
-	public override Task<bool> CloseActiveScreenAsync(CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => _activeScreen == null ? Task.FromResult(true) : CloseCoreAsync(new[] { _activeScreen }, null, token), cancellationToken);
+	/// <inheritdoc />
+	public override Task<bool> CloseActiveScreenAsync(CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => _activeScreen == null ? Task.FromResult(true) : CloseCoreAsync(new[] { _activeScreen }, null, token), cancellationToken);
+	}
 
-	public override Task<bool> CanCloseActiveScreenAsync(CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => _activeScreen == null ? Task.FromResult(true) : IsPermanent(_activeScreen) ? Task.FromResult(false) : CanDeactivateAsync(_activeScreen, token), cancellationToken);
+	/// <inheritdoc />
+	public override Task<bool> CanCloseActiveScreenAsync(CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => _activeScreen == null ? Task.FromResult(true) : IsPermanent(_activeScreen) ? Task.FromResult(false) : CanDeactivateAsync(_activeScreen, token), cancellationToken);
+	}
 
-	public override Task<bool> CloseScreenAsync(TScreen screen, CancellationToken cancellationToken = default) =>
-		CloseScreensAsync(new[] { screen }, cancellationToken);
+	/// <inheritdoc />
+	public override Task<bool> CloseScreenAsync(TScreen screen, CancellationToken cancellationToken = default) {
+		return CloseScreensAsync(new[] { screen }, cancellationToken);
+	}
 
-	public override Task<bool> CanCloseScreenAsync(TScreen screen, CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => {
+	/// <inheritdoc />
+	public override Task<bool> CanCloseScreenAsync(TScreen screen, CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => {
 			RequireRetainedScreen(screen);
 			return IsPermanent(screen) ? Task.FromResult(false) : CanDeactivateAsync(screen, token);
 		}, cancellationToken);
+	}
 
-	public override Task<bool> CanNavigateAsync(CancellationToken cancellationToken = default) =>
-		RunTransitionAsync(token => CanDeactivateAllAsync(Screens, token), cancellationToken);
+	/// <inheritdoc />
+	public override Task<bool> CanNavigateAsync(CancellationToken cancellationToken = default) {
+		return RunTransitionAsync(token => CanDeactivateAllAsync(Screens, token), cancellationToken);
+	}
 
+	/// <inheritdoc />
 	public override void NotifyScreenChanged(TScreen screen) {
 		EnsureUsable();
 		RequireRetainedScreen(screen);
 		OnChanged();
 	}
 
-	protected virtual ApplicationScreenDefinition[] GetDefinitions() => GetDefinitions(TrackedBlocks);
+	/// <summary>Returns canonical definitions in their existing host or supplied-block declaration order.</summary>
+	protected virtual ApplicationScreenDefinition[] GetDefinitions() {
+		return GetDefinitions(TrackedBlocks);
+	}
 
+	/// <summary>Returns canonical definitions in their existing host or supplied-block declaration order.</summary>
 	protected virtual ApplicationScreenDefinition[] GetDefinitions(TBlock[] blocks) {
 		var definitions = Tools.UI.GetScreenDefinitions(blocks);
 		foreach (var block in blocks)
@@ -310,46 +414,67 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return definitions;
 	}
 
-	protected virtual ApplicationScreenDefinition GetStartupScreen() => Tools.UI.GetDefaultScreen(Blocks)
+	/// <summary>Returns the screen selected for startup when a platform overrides the default policy.</summary>
+	protected virtual ApplicationScreenDefinition GetStartupScreen() {
+		return Tools.UI.GetDefaultScreen(Blocks)
 		?? (Blocks.FirstOrDefault() is { } first ? GetDefaultScreen(first) : null);
+	}
 
-	protected virtual ApplicationScreenDefinition GetDefaultScreen(TBlock block) => block.DefaultScreenDefinition
+	/// <summary>Returns the block's canonical selected default definition.</summary>
+	protected virtual ApplicationScreenDefinition GetDefaultScreen(TBlock block) {
+		return block.DefaultScreenDefinition
 		?? GetDefinitions(new[] { block }).FirstOrDefault(definition => definition.ScreenKind == ScreenKind.Normal)
 		?? GetDefinitions(new[] { block }).FirstOrDefault();
+	}
 
 	/// <summary>Resolves canonical registration ownership by reference. Activation always carries its explicit block.</summary>
-	protected TBlock GetDefinitionBlock(ApplicationScreenDefinition definition) =>
-		definition != null && _definitionBlocks.TryGetValue(definition, out var owners)
+	protected TBlock GetDefinitionBlock(ApplicationScreenDefinition definition) {
+		return definition != null && _definitionBlocks.TryGetValue(definition, out var owners)
 			? owners.Values.OrderBy(block => block.Position).FirstOrDefault(block => _blocks.ContainsKey(block))
 				?? owners.Values.OrderBy(block => block.Position).FirstOrDefault() : null;
+	}
 
-	protected virtual TScreen CreateScreen(TBlock block, ApplicationScreenDefinition definition) =>
-		Guard.ArgumentCast<TScreen>(ActivatorUtilities.GetServiceOrCreateInstance(Services, definition.ScreenType), nameof(definition));
+	/// <summary>Constructs a screen using the existing service activation owner.</summary>
+	protected virtual TScreen CreateScreen(TBlock block, ApplicationScreenDefinition definition) {
+		return Guard.ArgumentCast<TScreen>(ActivatorUtilities.GetServiceOrCreateInstance(Services, definition.ScreenType), nameof(definition));
+	}
 
-	/// <summary>Composite platform hosts override this to expose their public host rather than their internal engine.</summary>
-	protected virtual IApplicationScreenHost ScreenOwner => this;
-
+	/// <summary>Finds a retained instance matching this block, registration and lifetime policy.</summary>
 	protected virtual TScreen FindReusableScreen(TBlock block, ApplicationScreenDefinition definition) {
 		return Tools.UI.IsSingleton(definition.ActivationMode ?? ScreenActivationMode.MultiInstance)
 			&& _singleInstances.TryGetValue((object)block ?? this, out var registrations)
 			&& registrations.TryGetValue(definition.Registration.Token, out var screen) ? screen : null;
 	}
 
-	protected virtual TScreen FindReusableScreen(TBlock block, ApplicationScreenDefinition definition, ApplicationScreenDefinition registration) =>
-		FindReusableScreen(block, definition);
+	/// <summary>Finds a retained instance matching this block, registration and lifetime policy.</summary>
+	protected virtual TScreen FindReusableScreen(TBlock block, ApplicationScreenDefinition definition, ApplicationScreenDefinition registration) {
+		return FindReusableScreen(block, definition);
+	}
 
+	/// <summary>Publishes accepted activation of a retained screen.</summary>
 	protected virtual void NotifyScreenActivated(TScreen screen) {
 	}
 
+	/// <summary>Prepares an approved close before any screen is deactivated or removed.</summary>
+	protected virtual Task OnClosingScreensAsync(TScreen[] screens, CancellationToken cancellationToken) {
+		return Task.CompletedTask;
+	}
+
+	/// <summary>Provides the platform removal hook after a screen leaves the retained graph.</summary>
 	protected virtual void OnScreenRemoved(TScreen screen) {
 	}
 
-	protected virtual void ValidateScreenType(Type screenType) =>
+	/// <summary>Validates that a declared type can be hosted by this typed screen host.</summary>
+	protected virtual void ValidateScreenType(Type screenType) {
 		Guard.Argument(screenType != null && typeof(TScreen).IsAssignableFrom(screenType), nameof(screenType), "The screen type is incompatible with this host.");
+	}
 
-	protected virtual ApplicationScreenDefinition WithTitle(ApplicationScreenDefinition definition, string title) =>
-		definition.WithTitle(title);
+	/// <summary>Creates a registration metadata variant with the requested presentation title.</summary>
+	protected virtual ApplicationScreenDefinition WithTitle(ApplicationScreenDefinition definition, string title) {
+		return definition.WithTitle(title);
+	}
 
+	/// <summary>Resolves the effective registered metadata used for retention and validation.</summary>
 	protected ApplicationScreenDefinition ResolveDefinition(ApplicationScreenDefinition definition) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		if (definition.ActivationMode.HasValue)
@@ -358,12 +483,13 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return definition.WithActivationMode(mode);
 	}
 
-
+	/// <summary>Checks activation policy compatibility for the supplied screen type.</summary>
 	protected void ValidateScreenActivation(Type screenType, ScreenActivationMode activationMode) {
 		Tools.UI.ValidateScreenType(screenType);
 		Tools.UI.ValidateActivationMode(activationMode);
 	}
 
+	/// <summary>Resolves lifetime reuse and commits activation only after the current screen accepts navigation.</summary>
 	protected async Task<TScreen> ActivateCoreAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken token, ApplicationScreenDefinition registration = null) {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		var registeredDefinitions = GetDefinitions();
@@ -401,6 +527,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return screen;
 	}
 
+	/// <summary>Checks a retained screen's navigation guard before a transition may commit.</summary>
 	protected virtual async Task<bool> CanDeactivateAsync(TScreen screen, CancellationToken token) {
 		token.ThrowIfCancellationRequested();
 		var allowed = screen == null || await screen.CanDeactivateAsync(token);
@@ -408,6 +535,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return allowed;
 	}
 
+	/// <summary>Checks every affected screen before a batch transition changes ownership.</summary>
 	protected virtual async Task<bool> CanDeactivateAllAsync(IEnumerable<TScreen> screens, CancellationToken token) {
 		foreach (var screen in screens)
 			if (!await CanDeactivateAsync(screen, token))
@@ -415,8 +543,12 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return true;
 	}
 
-	protected virtual Task NotifyDeactivatedAsync(TScreen screen, CancellationToken token) => screen?.OnDeactivatedAsync(token) ?? Task.CompletedTask;
+	/// <summary>Awaits the retained screen's accepted deactivation callback.</summary>
+	protected virtual Task NotifyDeactivatedAsync(TScreen screen, CancellationToken token) {
+		return screen?.OnDeactivatedAsync(token) ?? Task.CompletedTask;
+	}
 
+	/// <summary>Captures canonical registration policy and attaches the screen to this host and block.</summary>
 	protected void TrackScreen(TScreen screen, TBlock block = null, ApplicationScreenDefinition definition = null, ScreenActivationMode? activationMode = null, ScreenKind? screenKind = null) {
 		ValidateScreenAttachment(screen, block);
 		var type = definition?.ScreenType ?? screen.GetType();
@@ -431,14 +563,10 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		ValidateScreenActivation(type, mode);
 		var previousHost = screen.Host;
 		var previousBlock = screen.Block;
-		var ownedMenus = Array.Empty<IApplicationMenu>();
 		var retained = false;
 		using var attachment = Tools.Scope.ExecuteOnDispose(() => {
 			if (retained)
 				return;
-			foreach (var menu in ownedMenus)
-				if (ReferenceEquals(menu.Parent, block))
-					menu.Parent = null;
 			try {
 				screen.Block = previousBlock;
 			} finally {
@@ -447,10 +575,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		});
 		screen.Host = ScreenOwner;
 		screen.Block = block;
-		ownedMenus = screen.Menus.Where(menu => menu.Parent == null).Distinct<IApplicationMenu>(ReferenceEqualityComparer.Instance).ToArray();
-		foreach (var menu in ownedMenus)
-			menu.Parent = block;
-		_screens.Add(screen, (definition, type, mode, kind, ownedMenus));
+		_screens.Add(screen, new ScreenState(definition, type, mode, kind));
 		if (kind == ScreenKind.Normal)
 			_openOrder.Add(screen);
 		if (Tools.UI.IsSingleton(mode)) {
@@ -463,11 +588,11 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		retained = true;
 	}
 
+	/// <summary>Removes a retained screen and releases its ownership links.</summary>
 	protected void RemoveTrackedScreen(TScreen screen) {
 		RequireRetainedScreen(screen);
 		var registrationKey = (object)GetScreenDefinition(screen)?.Registration.Token ?? GetScreenType(screen);
-		var ownerKey = (object)GetScreenBlock(screen) ?? this;
-		var ownedMenus = _screens[screen].OwnedMenus;
+		var ownerKey = (object)screen.Block ?? this;
 		_screens.Remove(screen);
 		RemoveOpenScreen(screen);
 		if (_singleInstances.TryGetValue(ownerKey, out var registrations) && registrations.TryGetValue(registrationKey, out var existing) && ReferenceEquals(existing, screen)) {
@@ -475,20 +600,22 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			if (registrations.Count == 0)
 				_singleInstances.Remove(ownerKey);
 		}
-		using var ownership = Tools.Scope.ExecuteOnDispose(() => DetachScreenOwnership(screen, ownedMenus));
+		using var ownership = Tools.Scope.ExecuteOnDispose(() => DetachScreenOwnership(screen));
 		OnScreenRemoved(screen);
 	}
 
+	/// <summary>Updates the retained active screen and its active block projection.</summary>
 	protected void SetTrackedSelection(TScreen screen) {
 		if (screen != null)
 			RequireRetainedScreen(screen);
 		_activeScreen = screen;
-		var owner = GetScreenBlock(screen);
+		var owner = screen?.Block as TBlock;
 		if (owner != null && _blocks.ContainsKey(owner))
 			SetTrackedBlockSelection(owner);
 		OnScreenSelected(screen);
 	}
 
+	/// <summary>Updates whether a retained screen participates in the visible presentation order.</summary>
 	protected void SetTrackedOpen(TScreen screen, bool open) {
 		RequireRetainedScreen(screen);
 		if (open && GetScreenKind(screen) == ScreenKind.Normal && IndexOfOpenScreen(screen) < 0)
@@ -497,6 +624,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			RemoveOpenScreen(screen);
 	}
 
+	/// <summary>Moves a retained open screen without changing registration identity.</summary>
 	protected void MoveTrackedScreen(TScreen screen, int index) {
 		Guard.Argument(screen != null && IndexOfOpenScreen(screen) >= 0, nameof(screen), "The screen has no open presentation.");
 		Guard.ArgumentInRange(index, 0, _openOrder.Count - 1, nameof(index));
@@ -504,39 +632,49 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		_openOrder.Insert(index, screen);
 	}
 
+	/// <summary>Updates the accepted presentation mode.</summary>
 	protected void SetTrackedScreenMode(ScreenMode mode) {
 		Guard.Argument(mode is ScreenMode.SingleView or ScreenMode.MultiView, nameof(mode), "Unknown screen mode.");
 		_screenMode = mode;
 	}
 
-	protected void MarkInitialized() => _initialized = true;
+	/// <summary>Marks initialization complete for the existing host lifecycle.</summary>
+	protected void MarkInitialized() {
+		_initialized = true;
+	}
 
+	/// <summary>Returns the canonical definition captured for this retained screen.</summary>
 	protected ApplicationScreenDefinition GetScreenDefinition(TScreen screen) {
 		RequireRetainedScreen(screen);
 		return _screens[screen].Definition;
 	}
 
+	/// <summary>Returns the type captured when this screen was retained.</summary>
 	protected Type GetScreenType(TScreen screen) {
 		RequireRetainedScreen(screen);
 		return _screens[screen].ScreenType;
 	}
 
+	/// <summary>Returns the activation policy captured for the retained screen.</summary>
 	protected ScreenActivationMode GetScreenActivationMode(TScreen screen) {
 		RequireRetainedScreen(screen);
 		return _screens[screen].ActivationMode;
 	}
 
+	/// <summary>Returns the presentation kind captured for the retained screen.</summary>
 	protected ScreenKind GetScreenKind(TScreen screen) {
 		RequireRetainedScreen(screen);
 		return _screens[screen].ScreenKind;
 	}
 
+	/// <summary>Validates the current definition set and records its block ownership.</summary>
 	protected void RegisterTrackedDefinitions(IEnumerable<ApplicationScreenDefinition> definitions) {
 		Guard.ArgumentNotNull(definitions, nameof(definitions));
 		var pending = definitions.ToArray();
 		ValidateDefinitions(pending);
 	}
 
+	/// <summary>Captures a block in the available registration set.</summary>
 	protected void AddAvailableBlock(TBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.Argument(block.Parent == null || ReferenceEquals(block.Parent.ScreenHost, ScreenOwner), nameof(block), "The block belongs to another application's host.");
@@ -544,6 +682,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		IndexBlockDefinitions(block);
 	}
 
+	/// <summary>Indexes a block's canonical definitions and registers its live membership.</summary>
 	protected void RegisterTrackedBlock(TBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		Guard.Argument(block.Parent == null || ReferenceEquals(block.Parent.ScreenHost, ScreenOwner), nameof(block), "The block belongs to another application's host.");
@@ -553,14 +692,16 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			OrderDefinitionOwners(_definitionBlocks[definition]);
 	}
 
+	/// <summary>Removes a block's live membership after its screens have been released.</summary>
 	protected void UnregisterTrackedBlock(TBlock block) {
 		_blocks.Remove(block);
 		foreach (var definition in _blockDefinitions[block])
 			OrderDefinitionOwners(_definitionBlocks[definition]);
-		if (ReferenceEquals(_activeBlock, block))
-			SetTrackedBlockSelection(GetScreenBlock(_activeScreen) is { } owner && _blocks.ContainsKey(owner) ? owner : Blocks.FirstOrDefault());
+		if (ReferenceEquals(_selectedBlock, block))
+			SetTrackedBlockSelection(_activeScreen?.Block is TBlock owner && _blocks.ContainsKey(owner) ? owner : Blocks.FirstOrDefault());
 	}
 
+	/// <summary>Applies a validated block ordering without changing retained membership.</summary>
 	protected void ReorderTrackedBlocks(IEnumerable<TBlock> blocks) {
 		Guard.ArgumentNotNull(blocks, nameof(blocks));
 		var ordered = blocks.ToArray();
@@ -573,13 +714,15 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			OrderDefinitionOwners(owners);
 	}
 
+	/// <summary>Updates the independently browsed block without changing the active screen.</summary>
 	protected void SetTrackedBlockSelection(TBlock block) {
-		if (ReferenceEquals(_activeBlock, block))
+		if (ReferenceEquals(_selectedBlock, block))
 			return;
-		_activeBlock = block;
+		_selectedBlock = block;
 		OnChanged();
 	}
 
+	/// <summary>Serializes guarded transitions and publishes their completed state changes.</summary>
 	protected async Task<TResult> RunTransitionAsync<TResult>(Func<CancellationToken, Task<TResult>> action, CancellationToken cancellationToken) {
 		EnsureUsable();
 		using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _lifetimeToken);
@@ -611,8 +754,12 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		});
 	}
 
-	protected void EnsureUsable() => ObjectDisposedException.ThrowIf(_disposed, this);
+	/// <summary>Rejects operations after this host has been disposed.</summary>
+	protected void EnsureUsable() {
+		ObjectDisposedException.ThrowIf(_disposed, this);
+	}
 
+	/// <inheritdoc />
 	protected override void OnScreenSelected(IApplicationScreen screen) {
 		if (_disposed)
 			return;
@@ -624,6 +771,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		base.OnScreenSelected(screen);
 	}
 
+	/// <inheritdoc />
 	protected override void OnChanged() {
 		if (_disposed)
 			return;
@@ -634,15 +782,16 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		base.OnChanged();
 	}
 
+	/// <inheritdoc />
 	protected override void DisposeInternal() {
 		if (_disposed)
 			return;
 		_disposed = true;
 		_lifetime.Cancel();
 		_activeScreen = null;
-		_activeBlock = null;
-		foreach (var (screen, metadata) in _screens)
-			DetachScreenOwnership(screen, metadata.OwnedMenus);
+		_selectedBlock = null;
+		foreach (var screen in _screens.Keys)
+			DetachScreenOwnership(screen);
 		foreach (var block in AvailableBlocks)
 			if (ReferenceEquals(block.Parent?.ScreenHost, ScreenOwner))
 				block.Parent = null;
@@ -658,14 +807,13 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		base.DisposeInternal();
 	}
 
-	private void DetachScreenOwnership(TScreen screen, IApplicationMenu[] ownedMenus) {
-		foreach (var menu in ownedMenus)
-			if (ReferenceEquals(menu.Parent, screen.Block))
-				menu.Parent = null;
+	/// <summary>Clears the removed screen's host and block references.</summary>
+	private void DetachScreenOwnership(TScreen screen) {
 		screen.Block = null;
 		screen.Host = null;
 	}
 
+	/// <summary>Adds the block's canonical definitions to the existing owner index.</summary>
 	private void IndexBlockDefinitions(TBlock block) {
 		var definitions = block.ScreenDefinitions;
 		if (_blockDefinitions.TryGetValue(block, out var previous)) {
@@ -687,6 +835,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		}
 	}
 
+	/// <summary>Orders canonical definition owners using the existing block position policy.</summary>
 	private void OrderDefinitionOwners(Dictionary<TBlock, TBlock> owners) {
 		var ordered = _blocks.Values.Concat(_availableBlocks.Values).Distinct<TBlock>(ReferenceEqualityComparer.Instance).Where(owners.ContainsKey).ToArray();
 		owners.Clear();
@@ -694,11 +843,13 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			owners.Add(block, block);
 	}
 
+	/// <inheritdoc />
 	protected override ValueTask DisposeInternalAsync() {
 		DisposeInternal();
 		return ValueTask.CompletedTask;
 	}
 
+	/// <summary>Releases the current selection through its guard and existing fallback policy.</summary>
 	private async Task<bool> ClearSelectionCoreAsync(CancellationToken token) {
 		if (!await CanDeactivateAsync(_activeScreen, token))
 			return false;
@@ -712,6 +863,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return true;
 	}
 
+	/// <summary>Selects a retained screen after the current screen accepts navigation.</summary>
 	private async Task<bool> ShowCoreAsync(TScreen screen, CancellationToken token) {
 		if (IsEmpty(screen) && _openOrder.Count > 0)
 			return false;
@@ -732,6 +884,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return true;
 	}
 
+	/// <summary>Commits an accepted batch close before choosing the next retained presentation.</summary>
 	private async Task<bool> CloseCoreAsync(TScreen[] closing, Action afterClose, CancellationToken token, bool unregistering = false) {
 		if (!unregistering && closing.Any(IsPermanent))
 			return false;
@@ -739,11 +892,10 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			return false;
 		token.ThrowIfCancellationRequested();
 
-		// Save only after every leave guard accepts, while the live view still owns the state it must capture.
-		foreach (var participant in closing.OfType<IApplicationSettingsParticipant>()) {
-			await participant.SaveSettingsAsync(token);
-			token.ThrowIfCancellationRequested();
-		}
+		// Platform close preparation can fail while the complete screen graph is still retained.
+		await OnClosingScreensAsync(closing, token);
+		token.ThrowIfCancellationRequested();
+
 		var activeClosing = closing.Any(screen => ReferenceEquals(screen, _activeScreen));
 		var activeIndex = _activeScreen == null ? -1 : IndexOfOpenScreen(_activeScreen);
 		var nextSelection = _activeScreen;
@@ -775,6 +927,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return true;
 	}
 
+	/// <summary>Hides or releases the previous presentation according to its existing lifetime policy.</summary>
 	private void HideInSingleView(TScreen screen) {
 		if (screen == null || IsPermanent(screen) || GetScreenKind(screen) == ScreenKind.Normal && _screenMode != ScreenMode.SingleView)
 			return;
@@ -792,6 +945,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		return screen;
 	}
 
+	/// <summary>Retains the permanent registrations owned by the supplied canonical definition set.</summary>
 	private void OpenPermanentScreens(IEnumerable<ApplicationScreenDefinition> definitions, CancellationToken token = default) {
 		// A shared prototype still represents a separate registration inside each owning block.
 		var candidates = new HashSet<ApplicationScreenDefinition>(definitions, ReferenceEqualityComparer.Instance);
@@ -802,6 +956,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 					RetainScreen(block, definition, token);
 	}
 
+	/// <summary>Selects an existing open screen or the registered empty fallback.</summary>
 	private async Task ShowFallbackAsync(CancellationToken token = default) {
 		token.ThrowIfCancellationRequested();
 		if (_openOrder.Count > 0) {
@@ -822,6 +977,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		Guard.Argument(screen.Block == null || ReferenceEquals(screen.Block, block), nameof(screen), "The screen belongs to another block.");
 	}
 
+	/// <summary>Validates canonical definitions and their captured screen policies before host state changes.</summary>
 	private void ValidateDefinitions(ApplicationScreenDefinition[] definitions) {
 		Guard.ArgumentNotNull(definitions, nameof(definitions));
 		Guard.Argument(definitions.All(definition => definition != null), nameof(definitions), "Definitions cannot be null.");
@@ -838,29 +994,75 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 				nameof(definitions), "A retained screen's hosting role cannot change.");
 	}
 
-	private int IndexOfOpenScreen(TScreen screen) => _openOrder.FindIndex(candidate => ReferenceEquals(candidate, screen));
+	/// <summary>Finds an open screen using reference identity.</summary>
+	private int IndexOfOpenScreen(TScreen screen) {
+		return _openOrder.FindIndex(candidate => ReferenceEquals(candidate, screen));
+	}
 
+	/// <summary>Removes the retained screen from the current presentation order.</summary>
 	private void RemoveOpenScreen(TScreen screen) {
 		var index = IndexOfOpenScreen(screen);
 		if (index >= 0)
 			_openOrder.RemoveAt(index);
 	}
 
-	private bool IsPermanent(TScreen screen) => screen != null && GetScreenActivationMode(screen) == ScreenActivationMode.PermanentSingleton;
+	/// <summary>Checks the activation policy captured for the retained screen.</summary>
+	private bool IsPermanent(TScreen screen) {
+		return screen != null && GetScreenActivationMode(screen) == ScreenActivationMode.PermanentSingleton;
+	}
 
-	private bool IsEmpty(TScreen screen) => screen != null && GetScreenKind(screen) == ScreenKind.Empty;
+	/// <summary>Checks whether the retained screen is an empty presentation.</summary>
+	private bool IsEmpty(TScreen screen) {
+		return screen != null && GetScreenKind(screen) == ScreenKind.Empty;
+	}
 
-	private void RequireRetainedScreen(TScreen screen) => Guard.Argument(screen != null && _screens.ContainsKey(screen), nameof(screen), "The screen is not retained by this host.");
+	/// <summary>Requires the supplied instance to belong to this host by reference identity.</summary>
+	private void RequireRetainedScreen(TScreen screen) {
+		Guard.Argument(screen != null && _screens.ContainsKey(screen), nameof(screen), "The screen is not retained by this host.");
+	}
 
-	private void RequireRegisteredBlock(TBlock block) => Guard.Argument(block != null && _blocks.ContainsKey(block), nameof(block), "The block is not registered.");
+	/// <summary>Requires the supplied block to be registered by reference identity.</summary>
+	private void RequireRegisteredBlock(TBlock block) {
+		Guard.Argument(block != null && _blocks.ContainsKey(block), nameof(block), "The block is not registered.");
+	}
 
+	#region Inner Types
+
+	// Retain one screen's resolved registration and activation policy for its host lifetime.
+	private sealed class ScreenState {
+
+		// Capture the registration's policy when the screen is retained.
+		public ScreenState(ApplicationScreenDefinition definition, Type screenType, ScreenActivationMode activationMode, ScreenKind screenKind) {
+			Definition = definition;
+			ScreenType = screenType;
+			ActivationMode = activationMode;
+			ScreenKind = screenKind;
+		}
+
+		/// <summary>The registration that created this screen.</summary>
+		public ApplicationScreenDefinition Definition { get; }
+
+		/// <summary>The resolved concrete screen type.</summary>
+		public Type ScreenType { get; }
+
+		/// <summary>The retained screen's activation policy.</summary>
+		public ScreenActivationMode ActivationMode { get; }
+
+		/// <summary>The retained screen's workspace role.</summary>
+		public ScreenKind ScreenKind { get; }
+	}
+
+	#endregion
 }
 
+/// <summary>Hosts neutral application blocks and screens through the shared retention lifecycle.</summary>
 public class ApplicationScreenHost : ApplicationScreenHost<IApplicationBlock, IApplicationScreen> {
+	/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 	public ApplicationScreenHost(IServiceProvider services)
 		: base(services) {
 	}
 
+	/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 	public ApplicationScreenHost(IEnumerable<IApplicationBlock> blocks, IServiceProvider services, Func<IApplicationBlock, IApplicationBlock> snapshot = null)
 		: base(blocks, services, snapshot) {
 	}

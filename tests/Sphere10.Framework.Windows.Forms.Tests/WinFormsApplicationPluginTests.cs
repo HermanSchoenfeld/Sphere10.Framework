@@ -153,7 +153,8 @@ public class WinFormsApplicationPluginTests {
 		await application.InitializeAsync();
 		Assert.That(form.RegisterCount, Is.EqualTo(1));
 		Assert.That(application.Blocks.Single(), Is.SameAs(block));
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(block));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(block));
+		Assert.That(application.ScreenHost.ActiveBlock, Is.Null);
 		await application.DisposeAsync();
 		Assert.That(block.DisposeCount, Is.Zero);
 		Assert.That(form.IsDisposed, Is.False);
@@ -209,8 +210,8 @@ public class WinFormsApplicationPluginTests {
 		application.Blocks[0] = null;
 		form.Blocks[0] = null;
 		Assert.That(application.Blocks[0], Is.SameAs(initial));
-		form.ActiveBlock = later;
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(later));
+		form.SelectedBlock = later;
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(later));
 		form.UnregisterBlock(later);
 		Assert.That(application.LoadedPlugins, Is.Empty);
 		Assert.That(application.Blocks, Is.EqualTo(new[] { initial }));
@@ -406,11 +407,12 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(navigation.Items.Select(item => item.Text), Is.EqualTo(new[] { "Third", "Second", "First" }));
 		Assert.That(form.RegisterCount, Is.EqualTo(3));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.TypeOf<ProbeScreen>(), "Startup follows contribution order independently of icon Position.");
-		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.MenuControl, form.BlockBindings[second])).Button);
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(second));
-		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.MenuControl, form.BlockBindings[third])).Button);
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(third));
-		Assert.That(navigation.ApplicationBarControl, Is.SameAs(form.BlockBindings[third]));
+		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.Button.Tag, second)).Button);
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(second));
+		form.ClickNavigationButton(navigation.Items.Single(item => ReferenceEquals(item.Button.Tag, third)).Button);
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(third));
+		Assert.That(navigation.SelectedItem.Button.Tag, Is.SameAs(third));
+		Assert.That(navigation.ApplicationBarControl, Is.SameAs(navigation.SelectedItem.MenuControl));
 	}
 
 	[Test]
@@ -432,7 +434,7 @@ public class WinFormsApplicationPluginTests {
 		Assert.That(provider.GetRequiredService<StartupMarker>(), Is.Not.Null);
 		Assert.That(application.LoadedPlugins.Single().Name, Is.EqualTo("Services"));
 		Assert.That(application.Blocks, Is.Empty);
-		Assert.That(((TrackingMainForm)application.BlockManager).BlockBindings, Is.Empty);
+		Assert.That(((TrackingMainForm)application.BlockManager).RegisteredBlocks, Is.Empty);
 	}
 
 	[Test]

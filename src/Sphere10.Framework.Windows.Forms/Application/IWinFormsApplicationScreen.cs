@@ -8,13 +8,15 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>A native application screen whose synchronous hooks are exposed through the shared lifecycle contract.</summary>
 /// <remarks>Callbacks run on the calling UI thread. The native host never blocks an asynchronous continuation.</remarks>
-public interface IWinFormsApplicationScreen : IApplicationScreen<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
+public interface IWinFormsApplicationScreen : IApplicationScreen,
+	IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
 	new string Title { get; set; }
 
 	new IWinFormsApplicationScreenHost Host { get; set; }
@@ -24,6 +26,14 @@ public interface IWinFormsApplicationScreen : IApplicationScreen<IWinFormsApplic
 	IWinFormsApplicationBlock ApplicationBlock { get; set; }
 
 	ScreenActivationMode ActivationMode { get; }
+
+	ToolStripItem[] MenuItems { get; }
+
+	/// <summary>The actual screen-owned Designer menu strip, borrowed by the native host while this screen is active.</summary>
+	MenuStrip ScreenMenuStrip { get; set; }
+
+	/// <summary>The actual screen-owned Designer toolbar, with native items restored when this screen is deactivated.</summary>
+	ToolStrip ScreenToolBar { get; set; }
 
 	bool CanDeactivate();
 

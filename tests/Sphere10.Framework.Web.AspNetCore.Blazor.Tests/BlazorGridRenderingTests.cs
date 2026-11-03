@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 using ComponentHost = Sphere10.Framework.Web.AspNetCore.Blazor.Tests.ComponentParameterLifecycleTests.ComponentHost;
@@ -29,6 +30,11 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorGridRenderingTests {
+
+	// Records the source arguments used for a grid query.
+	private readonly record struct SourceRequest(int Length, int Page, string Sort, SortDirection Direction);
+
+	/// <summary>Verifies settings button requires values and its trait controls editing.</summary>
 	[TestCase(false, false)]
 	[TestCase(true, false)]
 	[TestCase(true, true)]
@@ -47,6 +53,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies paging modes expose only the applicable footer controls.</summary>
 	[TestCase(BlazorGridPageMode.Paged, true, true)]
 	[TestCase(BlazorGridPageMode.Auto, true, false)]
 	[TestCase(BlazorGridPageMode.Single, false, false)]
@@ -64,6 +71,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies caption is visible with explicit alignment and sortable headers reserve their indicator.</summary>
 	[TestCase(BlazorGridHorizontalAlignment.Left, "left")]
 	[TestCase(BlazorGridHorizontalAlignment.Center, "center")]
 	[TestCase(BlazorGridHorizontalAlignment.Right, "right")]
@@ -79,6 +87,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies image cells reuse framework resize modes and alignment.</summary>
 	[TestCase(null, ResizeAlignment.CenterCenter, "none", "center center")]
 	[TestCase(ResizeMethod.Stretch, ResizeAlignment.TopLeft, "fill", "left top")]
 	[TestCase(ResizeMethod.AspectFill, ResizeAlignment.BottomRight, "cover", "right bottom")]
@@ -98,6 +107,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies loading surface covers the viewport initially and suppressed refresh leaves rows usable.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task LoadingSurfaceCoversTheViewportInitiallyAndSuppressedRefreshLeavesRowsUsable(bool suppressIndicator) {
@@ -108,6 +118,8 @@ public class BlazorGridRenderingTests {
 		var parameters = GridParameters(source);
 		parameters[nameof(BlazorGrid<Row>.SuppressLoadingIndicator)] = suppressIndicator;
 		await using var provider = new ServiceCollection().AddLogging().AddSingleton<IJSRuntime>(new GalleryRenderingTests.TestJsRuntime()).BuildServiceProvider();
+		await using var settings = new BlazorSettingsProvider(provider, "grid-rendering-fixture");
+		using var settingsScope = UserSettings.UseProvider(settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ComponentHost host = null;
@@ -138,6 +150,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies explicit browser key restores once and only manual actions write preferences.</summary>
 	[Test]
 	public async Task ExplicitBrowserKeyRestoresOnceAndOnlyManualActionsWritePreferences() {
 		var runtime = new GridJsRuntime();
@@ -156,14 +169,62 @@ public class BlazorGridRenderingTests {
 			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(7));
 			Assert.That(grid.CurrentPage, Is.EqualTo(1));
 			await grid.SetViewportPageSizeAsync(4);
-			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty, "Viewport measurements must never write user preferences.");
+			Assert.That(runtime.Module.TypedWriteKeys, Is.Empty, "Viewport measurements must never write user preferences.");
 			await grid.SetPageModeAsync(BlazorGridPageMode.Paged);
-			Assert.That(runtime.Module.Behavior.SettingsWrites.Count, Is.EqualTo(1));
-			Assert.That(runtime.Module.Behavior.SettingsWrites[0].Key, Is.EqualTo("orders"));
-			Assert.That(runtime.Module.Behavior.SettingsWrites[0].Settings.PageSize, Is.EqualTo(7), "The saved size is the manual preference, not the automatic capacity.");
+			Assert.That(runtime.Module.TypedWriteKeys.Count, Is.EqualTo(1));
+			Assert.That(runtime.Module.TypedWriteKeys[0], Does.EndWith("/orders"));
+			Assert.That((await UserSettings.GetAsync<BlazorGridSettings>("orders")).PageSize, Is.EqualTo(7), "The saved size is the manual preference, not the automatic capacity.");
 		}, runtime);
 	}
 
+	/// <summary>Verifies typed user settings take precedence over the legacy browser record.</summary>
+	[Test]
+	public async Task TypedUserSettingsTakePrecedenceOverTheLegacyBrowserRecord() {
+		var runtime = new GridJsRuntime();
+		runtime.Module.Behavior.StoredSettings["orders"] = new BlazorGridSettings { PageSize = 9 };
+		var parameters = GridParameters(new ProbeSource<Row>(Enumerable.Range(1, 40).Select(index => new Row { Name = "Row " + index }).ToArray()));
+		parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "orders";
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			var settings = await UserSettings.GetAsync<BlazorGridSettings>("orders");
+			settings.PageSize = 3;
+			settings.Columns = new[] { new ApplicationGridColumnPreferences { Key = "Name", Title = "Name", Width = 215 } };
+			await settings.SaveAsync();
+			runtime.Module.TypedWriteKeys.Clear();
+			await grid.LoadJavascript();
+			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(3));
+			Assert.That(grid.CaptureGridPreferences().Columns.Single(column => column.Key == "Name").Width, Is.EqualTo(215));
+			Assert.That(runtime.Module.Behavior.SettingsReads, Is.Empty, "A typed root owns this preference once it exists.");
+			Assert.That(runtime.Module.TypedWriteKeys, Is.Empty, "Restoring preferences must not save them.");
+		}, runtime);
+	}
+
+	/// <summary>A damaged typed record does not prevent a completed paging action or get overwritten by it.</summary>
+	[Test]
+	public async Task CorruptTypedPreferencesPreserveDefaultsAndDoNotAbortManualPaging() {
+		var runtime = new GridJsRuntime();
+		var parameters = GridParameters(new ProbeSource<Row>(Enumerable.Range(1, 40).Select(index => new Row { Name = "Row " + index }).ToArray()));
+		parameters[nameof(BlazorGrid<Row>.SettingsKey)] = "orders";
+		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
+			var settings = await UserSettings.GetAsync<BlazorGridSettings>("orders");
+			await settings.SaveAsync();
+			var key = runtime.Module.TypedRecords.Keys.Single();
+			runtime.Module.TypedRecords[key] = "{invalid JSON";
+			runtime.Module.TypedWriteKeys.Clear();
+
+			await grid.LoadJavascript();
+			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(10));
+			Assert.That(runtime.Module.Behavior.SettingsReads, Is.Empty, "A damaged typed root must not import a retired legacy record.");
+
+			await grid.SetPageSizeAsync(4);
+
+			Assert.That(grid.Controller.ManualPageSize, Is.EqualTo(4), "Optional preference failures must not abort the user’s paging action.");
+			Assert.That(grid.Controller.Items, Has.Length.EqualTo(4));
+			Assert.That(runtime.Module.TypedWriteKeys, Is.Empty);
+			Assert.That(runtime.Module.TypedRecords[key], Is.EqualTo("{invalid JSON"));
+		}, runtime);
+	}
+
+	/// <summary>Verifies owned preferences seed the first query and never use the separate browser record.</summary>
 	[Test]
 	public async Task OwnedPreferencesSeedTheFirstQueryAndNeverUseTheSeparateBrowserRecord() {
 		var runtime = new GridJsRuntime();
@@ -186,7 +247,7 @@ public class BlazorGridRenderingTests {
 		parameters[nameof(BlazorGrid<Row>.Preferences)] = values;
 		parameters[nameof(BlazorGrid<Row>.PreferencesChanged)] = EventCallback.Factory.Create<BlazorGridSettings>(this, changes.Add);
 		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, rendered) => {
-			Assert.That(source.Requests.First(), Is.EqualTo((3, 2, "Name", SortDirection.Descending)));
+			Assert.That(source.Requests.First(), Is.EqualTo(new SourceRequest(3, 2, "Name", SortDirection.Descending)));
 			Assert.That(rendered.ToHtmlString(), Does.Contain("data-grid-key=\"Name\" style=\"width: 185px\""), "Restored geometry belongs in the first HTML, before any JS autosizing.");
 			await grid.LoadJavascript();
 			await grid.SetColumnWidthAsync("Name", 211);
@@ -200,10 +261,11 @@ public class BlazorGridRenderingTests {
 			Assert.That(grid.CaptureGridPreferences().Columns[0].Width, Is.EqualTo(211), "The published record must be detached.");
 			Assert.That(values.Columns[0].Width, Is.EqualTo(185));
 			Assert.That(runtime.Module.Behavior.SettingsReads, Is.Empty);
-			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty);
+			Assert.That(runtime.Module.TypedWriteKeys, Is.Empty);
 		}, runtime);
 	}
 
+	/// <summary>Verifies standalone restore precedes its first data query.</summary>
 	[Test]
 	public async Task StandaloneRestorePrecedesItsFirstDataQuery() {
 		var runtime = new GridJsRuntime();
@@ -217,11 +279,12 @@ public class BlazorGridRenderingTests {
 		await RenderAsync<BlazorGrid<Row>>(parameters, async (grid, _, _) => {
 			Assert.That(source.Requests, Is.Empty, "The browser value is needed before a standalone keyed grid can issue a query.");
 			await grid.LoadJavascript();
-			Assert.That(source.Requests, Is.EqualTo(new[] { (4, 1, "Name", SortDirection.Ascending) }));
-			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty);
+			Assert.That(source.Requests, Is.EqualTo(new[] { new SourceRequest(4, 1, "Name", SortDirection.Ascending) }));
+			Assert.That(runtime.Module.TypedWriteKeys, Is.Empty);
 		}, runtime);
 	}
 
+	/// <summary>Verifies changing astandalone key preserves the draft and removing it stops writes.</summary>
 	[Test]
 	public async Task ChangingAStandaloneKeyPreservesTheDraftAndRemovingItStopsWrites() {
 		var runtime = new GridJsRuntime();
@@ -248,11 +311,12 @@ public class BlazorGridRenderingTests {
 			parameters[nameof(BlazorGrid<Row>.SettingsKey)] = null;
 			await grid.SetParametersAsync(ParameterView.FromDictionary(parameters));
 			await grid.SetPageSizeAsync(4);
-			Assert.That(runtime.Module.Behavior.SettingsWrites, Is.Empty);
+			Assert.That(runtime.Module.TypedWriteKeys, Is.Empty);
 			Assert.That(runtime.Module.Behavior.SettingsReads, Is.EqualTo(new[] { "old-key", "new-key" }));
 		}, runtime);
 	}
 
+	/// <summary>Verifies accepted preferences preserve the row draft and defer the query until save.</summary>
 	[Test]
 	public async Task AcceptedPreferencesPreserveTheRowDraftAndDeferTheQueryUntilSave() {
 		var row = new Row { Name = "Original" };
@@ -279,6 +343,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies completed paging publishes before the delayed read finishes.</summary>
 	[Test]
 	public async Task CompletedPagingPublishesBeforeTheDelayedReadFinishes() {
 		var source = new ProbeSource<Row>(Enumerable.Range(0, 30).Select(index => new Row { Name = "Row " + index }).ToArray());
@@ -299,6 +364,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies edit action text can describe draft application without changing default behavior.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task EditActionTextCanDescribeDraftApplicationWithoutChangingDefaultBehavior(bool customizeText) {
@@ -325,7 +391,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
-
+	/// <summary>Verifies commands respect both source capabilities and allowed mask.</summary>
 	[TestCase(true)]
 	[TestCase(false)]
 	public async Task CommandsRespectBothSourceCapabilitiesAndAllowedMask(bool restrictSource) {
@@ -349,6 +415,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies pager uses accessible icons and preserves the current size alongside configured choices.</summary>
 	[Test]
 	public async Task PagerUsesAccessibleIconsAndPreservesTheCurrentSizeAlongsideConfiguredChoices() {
 		var parameters = GridParameters(new ProbeSource<Row>(Enumerable.Range(1, 20).Select(index => new Row { Name = $"Row {index}" }).ToArray()));
@@ -376,6 +443,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies page size dropdown honors editing and automatic sizing.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task PageSizeDropdownHonorsEditingAndAutomaticSizing(bool automaticSize) {
@@ -397,6 +465,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies delete command requires avisible selection.</summary>
 	[Test]
 	public async Task DeleteCommandRequiresAVisibleSelection() {
 		var row = new Row { Name = "Selected" };
@@ -410,6 +479,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies typed display and checkbox remain read only until explicit editing.</summary>
 	[Test]
 	public async Task TypedDisplayAndCheckboxRemainReadOnlyUntilExplicitEditing() {
 		var row = new Row { Name = "Ada", Enabled = true };
@@ -439,6 +509,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies custom editor buffers values until save and cancel preserves the entity.</summary>
 	[Test]
 	public async Task CustomEditorBuffersValuesUntilSaveAndCancelPreservesTheEntity() {
 		var row = new Row { Name = "Original" };
@@ -464,6 +535,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies custom reference editor keeps selected object identity and supports clear.</summary>
 	[Test]
 	public async Task CustomReferenceEditorKeepsSelectedObjectIdentityAndSupportsClear() {
 		var original = new Row { Name = "Original reference" };
@@ -487,6 +559,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies validation errors render while the draft remains editable and uncommitted.</summary>
 	[Test]
 	public async Task ValidationErrorsRenderWhileTheDraftRemainsEditableAndUncommitted() {
 		var row = new Row { Name = "Original" };
@@ -512,6 +585,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies creating adraft does not persist until save and cancel discards it.</summary>
 	[Test]
 	public async Task CreatingADraftDoesNotPersistUntilSaveAndCancelDiscardsIt() {
 		var source = new ProbeSource<Row> { NewItem = () => new Row { Name = "New draft" } };
@@ -536,6 +610,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies rows without properties can render legacy actions.</summary>
 	[Test]
 	public async Task RowsWithoutPropertiesCanRenderLegacyActions() {
 		var source = new ProbeSource<EmptyRow>(new EmptyRow());
@@ -552,6 +627,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies unrelated parameter renders preserve buffered values and editing row.</summary>
 	[Test]
 	public async Task UnrelatedParameterRendersPreserveBufferedValuesAndEditingRow() {
 		var row = new Row { Name = "Original" };
@@ -574,6 +650,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies source replacement or permission revocation clears selection and draft.</summary>
 	[TestCase(true)]
 	[TestCase(false)]
 	public async Task SourceReplacementOrPermissionRevocationClearsSelectionAndDraft(bool replaceSource) {
@@ -601,6 +678,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies reference picker masks writes and cancel preserves the original reference.</summary>
 	[Test]
 	public async Task ReferencePickerMasksWritesAndCancelPreservesTheOriginalReference() {
 		var original = new Row { Name = "Existing reference", Enabled = true };
@@ -640,6 +718,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies concurrent javascript loads share one initialization and callback.</summary>
 	[Test]
 	public async Task ConcurrentJavascriptLoadsShareOneInitializationAndCallback() {
 		var runtime = new GridJsRuntime();
@@ -664,6 +743,7 @@ public class BlazorGridRenderingTests {
 		}, runtime);
 	}
 
+	/// <summary>Verifies disconnected initialization releases its callback and can retry.</summary>
 	[Test]
 	public async Task DisconnectedInitializationReleasesItsCallbackAndCanRetry() {
 		var runtime = new GridJsRuntime();
@@ -686,6 +766,7 @@ public class BlazorGridRenderingTests {
 		}, runtime);
 	}
 
+	/// <summary>Verifies disposal waits for initialization then releases interop without updating the removed grid.</summary>
 	[Test]
 	public async Task DisposalWaitsForInitializationThenReleasesInteropWithoutUpdatingTheRemovedGrid() {
 		var runtime = new GridJsRuntime();
@@ -709,6 +790,8 @@ public class BlazorGridRenderingTests {
 			Assert.That(runtime.Module.Behavior.Updates, Is.Zero);
 		}, runtime);
 	}
+
+	/// <summary>Verifies stretch columns reserve configured widths before sharing space and keep editors aligned.</summary>
 	[TestCase(false, 340)]
 	[TestCase(true, 460)]
 	public async Task StretchColumnsReserveConfiguredWidthsBeforeSharingSpaceAndKeepEditorsAligned(bool showActions, int minimumWidth) {
@@ -738,6 +821,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies changing column widths recomputes the scrollable minimum.</summary>
 	[Test]
 	public async Task ChangingColumnWidthsRecomputesTheScrollableMinimum() {
 		var name = BlazorGridColumn<Row>.For(item => item.Name);
@@ -754,6 +838,8 @@ public class BlazorGridRenderingTests {
 			Assert.That(WebUtility.HtmlDecode(rendered.ToHtmlString()), Does.Contain("data-grid-width=\"240\" data-grid-expands=\"true\""));
 		});
 	}
+
+	/// <summary>Verifies browser shutdown cancellation still releases every owned interop object.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task BrowserShutdownCancellationStillReleasesEveryOwnedInteropObject(bool cancelBehavior) {
@@ -769,6 +855,8 @@ public class BlazorGridRenderingTests {
 			Assert.That(() => callback.Value, Throws.TypeOf<ObjectDisposedException>());
 		}, runtime);
 	}
+
+	/// <summary>Verifies caller column array changes do not invalidate the rendered draft.</summary>
 	[Test]
 	public async Task CallerColumnArrayChangesDoNotInvalidateTheRenderedDraft() {
 		var row = new Row { Name = "Original" };
@@ -787,6 +875,7 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	// Creates the ordinary column and source parameters for a rendered grid.
 	private static Dictionary<string, object> GridParameters(ProbeSource<Row> source, params BlazorGridColumn<Row>[] columns) {
 		var parameters = new Dictionary<string, object> { ["DataSource"] = source };
 		if (columns.Length > 0)
@@ -794,13 +883,17 @@ public class BlazorGridRenderingTests {
 		return parameters;
 	}
 
-	private static RenderFragment<BlazorGridCellEditContext<Row>> CaptureEditor(Action<BlazorGridCellEditContext<Row>> capture) => context => builder => {
-		capture(context);
-		builder.OpenElement(0, "output");
-		builder.AddContent(1, context.Value?.ToString());
-		builder.CloseElement();
-	};
+	// Captures the actual editor context without replacing its behavior.
+	private static RenderFragment<BlazorGridCellEditContext<Row>> CaptureEditor(Action<BlazorGridCellEditContext<Row>> capture) {
+		return context => builder => {
+			capture(context);
+			builder.OpenElement(0, "output");
+			builder.AddContent(1, context.Value?.ToString());
+			builder.CloseElement();
+		};
+	}
 
+	// Renders the component inside an isolated user-settings scope.
 	private static async Task RenderAsync<TComponent>(
 		Dictionary<string, object> parameters,
 		Func<TComponent, ComponentHost, HtmlRootComponent, Task> assertions,
@@ -808,6 +901,8 @@ public class BlazorGridRenderingTests {
 	)
 		where TComponent : IComponent {
 		await using var provider = new ServiceCollection().AddLogging().AddSingleton(runtime ?? new GalleryRenderingTests.TestJsRuntime()).BuildServiceProvider();
+		await using var settings = new BlazorSettingsProvider(provider, "grid-rendering-fixture");
+		using var settingsScope = UserSettings.UseProvider(settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			ComponentHost host = null;
@@ -820,51 +915,102 @@ public class BlazorGridRenderingTests {
 		});
 	}
 
+	#region Inner Types
+
+	/// <summary>An editable row used by the rendering scenarios.</summary>
 	public sealed class Row {
+
+		/// <summary>The editable row name.</summary>
 		public string Name { get; set; }
 
+		/// <summary>The editable checkbox value.</summary>
 		public bool Enabled { get; set; }
 
+		/// <summary>The row's selected reference.</summary>
 		public Row Reference { get; set; }
 
-		public string ReadOnly => "Fixed display";
+		/// <summary>The row's immutable display value.</summary>
+		public string ReadOnly {
+			get {
+				return "Fixed display";
+			}
+		}
 	}
 
-	public sealed class EmptyRow { }
+	/// <summary>A row with no declared properties for legacy-column coverage.</summary>
+	public sealed class EmptyRow {
+	}
 
+	// Emulates browser module imports for the real grid and settings provider.
 	private sealed class GridJsRuntime : IJSRuntime {
+
+		/// <summary>The fixture's shared browser module.</summary>
 		public GridJsModule Module { get; } = new();
 
+		/// <summary>The number of grid module imports.</summary>
 		public int Imports { get; private set; }
 
+		/// <summary>The last grid module path.</summary>
 		public string ImportPath { get; private set; }
 
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			Assert.That(identifier, Is.EqualTo("import"));
+			var path = (string)args.Single();
+			if (path.EndsWith("/js/ApplicationSettings.js", StringComparison.Ordinal))
+				return ValueTask.FromResult((TValue)(object)Module);
 			Imports++;
-			ImportPath = (string)args.Single();
+			ImportPath = path;
 			return ValueTask.FromResult((TValue)(object)Module);
 		}
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
+			return InvokeAsync<TValue>(identifier, args);
+		}
 	}
 
+	// Emulates browser storage and grid behavior creation.
 	private sealed class GridJsModule : IJSObjectReference {
+
+		/// <summary>Creates the grid js module with its fixture dependencies.</summary>
 		public GridJsModule() {
 			Initialize = () => Task.FromResult<IJSObjectReference>(Behavior);
 		}
 
+		// Browser records remain ordinary strings; the real settings provider owns their typed serialization.
+		public Dictionary<string, string> TypedRecords { get; } = new();
+
+		/// <summary>The typed record keys written by the real settings provider.</summary>
+		public List<string> TypedWriteKeys { get; } = new();
+
+		/// <summary>The callback objects passed to grid initialization.</summary>
 		public List<DotNetObjectReference<BlazorGrid<Row>>> Callbacks { get; } = new();
 
+		/// <summary>The current simulated grid behavior.</summary>
 		public GridJsBehavior Behavior { get; } = new();
 
+		/// <summary>Optional control over delayed behavior creation.</summary>
 		public Func<Task<IJSObjectReference>> Initialize { get; set; }
 
+		/// <summary>Simulates browser cancellation during cleanup.</summary>
 		public bool CancelDisposal { get; set; }
 
+		/// <summary>Records whether the fixture resource was released.</summary>
 		public bool Disposed { get; private set; }
 
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
+			if (identifier == "GetAnonymousProfile")
+				return (TValue)(object)"grid-browser";
+			if (identifier == "Read")
+				return TypedRecords.TryGetValue((string)args[0], out var value) ? (TValue)(object)value : default;
+			if (identifier == "Write") {
+				var key = (string)args[0];
+				TypedRecords[key] = (string)args[1];
+				TypedWriteKeys.Add(key);
+				return default;
+			}
 			if (identifier == "ReadLegacySettings")
 				return await Behavior.InvokeAsync<TValue>("ReadSettings", args);
 			Assert.That(identifier, Is.EqualTo("Initialize"));
@@ -873,27 +1019,37 @@ public class BlazorGridRenderingTests {
 			return (TValue)await Initialize();
 		}
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
+			return InvokeAsync<TValue>(identifier, args);
+		}
 
+		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
 		public ValueTask DisposeAsync() {
 			Disposed = true;
 			return CancelDisposal ? ValueTask.FromCanceled(new CancellationToken(true)) : ValueTask.CompletedTask;
 		}
 	}
 
+	// Records grid behavior calls without writing standalone browser records.
 	private sealed class GridJsBehavior : IJSObjectReference {
+
+		/// <summary>Existing untyped browser values available for legacy reads.</summary>
 		public Dictionary<string, BlazorGridSettings> StoredSettings { get; } = new();
 
+		/// <summary>The legacy keys read by the grid.</summary>
 		public List<string> SettingsReads { get; } = new();
 
-		public List<(string Key, BlazorGridSettings Settings)> SettingsWrites { get; } = new();
-
+		/// <summary>The view-state updates sent to the browser.</summary>
 		public int Updates { get; private set; }
 
+		/// <summary>Simulates browser cancellation during cleanup.</summary>
 		public bool CancelDisposal { get; set; }
 
+		/// <summary>Records whether the fixture resource was released.</summary>
 		public bool Disposed { get; private set; }
 
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			if (identifier == "ApplyWidths")
 				return ValueTask.FromResult(default(TValue));
@@ -903,10 +1059,7 @@ public class BlazorGridRenderingTests {
 				SettingsReads.Add((string)args[0]);
 				return ValueTask.FromResult(StoredSettings.TryGetValue((string)args[0], out var settings) ? (TValue)(object)settings : default);
 			}
-			if (identifier == "WriteSettings") {
-				SettingsWrites.Add(((string)args[0], (BlazorGridSettings)args[1]));
-				return ValueTask.FromResult(default(TValue));
-			}
+
 			Assert.That(identifier, Is.EqualTo("Update"));
 			Assert.That(args.Single(), Is.TypeOf<bool>());
 			Assert.That(Disposed, Is.False, "A disposed grid behavior must not receive updates.");
@@ -914,59 +1067,94 @@ public class BlazorGridRenderingTests {
 			return ValueTask.FromResult(default(TValue));
 		}
 
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
+			return InvokeAsync<TValue>(identifier, args);
+		}
 
+		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
 		public ValueTask DisposeAsync() {
 			Disposed = true;
 			return CancelDisposal ? ValueTask.FromCanceled(new CancellationToken(true)) : ValueTask.CompletedTask;
 		}
 	}
+
+	// Records data-source operations and preserves the declared capabilities.
 	private sealed class ProbeSource<T> : ListDataSource<T> {
+
+		/// <summary>Creates the probe source with its fixture dependencies.</summary>
 		public ProbeSource(params T[] items)
 			: base(new ExtendedList<T>()) {
 			Future.Value.AddRange(items);
 		}
 
+		/// <summary>The entities accepted by create operations.</summary>
 		public int Created { get; private set; }
 
+		/// <summary>The entities accepted by update operations.</summary>
 		public int Updated { get; private set; }
 
+		/// <summary>The next draft returned by the source.</summary>
 		public Func<T> NewItem { get; set; }
 
+		/// <summary>The validation result supplied by the source.</summary>
 		public Func<T, CrudAction, Result> Validation { get; set; }
 
+		/// <summary>Optional delay before the source completes a query.</summary>
 		public Task ReadGate { get; set; }
 
-		public List<(int Length, int Page, string Sort, SortDirection Direction)> Requests { get; } = new();
+		/// <summary>The actual arguments passed to the source.</summary>
+		public List<SourceRequest> Requests { get; } = new();
 
+		/// <summary>The source operations enabled for this scenario.</summary>
 		public DataSourceCapabilities AvailableCapabilities { get; set; } = DataSourceCapabilities.Default;
 
-		public override DataSourceCapabilities Capabilities => AvailableCapabilities;
+		/// <summary>The source's current synchronous capability mask.</summary>
+		public override DataSourceCapabilities Capabilities {
+			get {
+				return AvailableCapabilities;
+			}
+		}
 
-		public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.FromResult(AvailableCapabilities);
+		/// <summary>The source's current asynchronous capability mask.</summary>
+		public override Task<DataSourceCapabilities> CapabilitiesAsync {
+			get {
+				return Task.FromResult(AvailableCapabilities);
+			}
+		}
 
+		/// <summary>Records a query before reading the requested rows.</summary>
 		public override async Task<DataSourceItems<T>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-			Requests.Add((pageLength, page, sortProperty, sortDirection));
+			Requests.Add(new SourceRequest(pageLength, page, sortProperty, sortDirection));
 			if (ReadGate != null)
 				await ReadGate;
 			return ReadRange(searchTerm, pageLength, page, sortProperty, sortDirection);
 		}
 
+		/// <summary>Records entities accepted by the source.</summary>
 		public override void CreateRange(IEnumerable<T> entities) {
 			var items = entities.ToArray();
 			Created += items.Length;
 			base.CreateRange(items);
 		}
 
+		/// <summary>Records entities accepted by the source.</summary>
 		public override void UpdateRange(IEnumerable<T> entities) {
 			var items = entities.ToArray();
 			Updated += items.Length;
 			base.UpdateRange(items);
 		}
 
-		public override Result ValidateRange(IEnumerable<(T entity, CrudAction action)> actions) =>
-			Result.Combine(actions.Select(action => Validation?.Invoke(action.entity, action.action) ?? Result.Success));
+		/// <summary>Returns the scenario's declared validation result.</summary>
+		public override Result ValidateRange(IEnumerable<(T entity, CrudAction action)> actions) {
+			return Result.Combine(actions.Select(action => Validation?.Invoke(action.entity, action.action) ?? Result.Success));
+		}
 
-		protected override T NewMethod() => NewItem == null ? base.NewMethod() : NewItem();
+		/// <summary>Returns the scenario's next new-row draft.</summary>
+		protected override T NewMethod() {
+			return NewItem == null ? base.NewMethod() : NewItem();
+		}
 	}
+
+	#endregion
 }

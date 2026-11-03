@@ -69,7 +69,7 @@ public class ApplicationAggregateTests {
 		var notifications = 0;
 		shared.Changed += () => notifications++;
 		var screen = application.ScreenHost.ActivateScreen(later, typeof(DirtyScreen));
-		Assert.That(shared.ScreenHost.ActiveBlock, Is.SameAs(later));
+		Assert.That(shared.ScreenHost.SelectedBlock, Is.SameAs(later));
 		Assert.That(shared.ScreenHost.ActiveScreen, Is.SameAs(screen));
 		Assert.That(notifications, Is.GreaterThan(0));
 		await application.DisposeAsync();
@@ -129,36 +129,101 @@ public class ApplicationAggregateTests {
 		using var form = new ProbeMainForm();
 		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
 		await using var application = new WinFormsApplication(form, new[] { block });
-		await application.InitializeAsync();
 		var executions = 0;
 		using var menu = new WinFormsApplicationMenu("Application commands");
 		var item = new TrackingAction("Run", () => executions++);
 		menu.AddItem(item);
 		application.SetMenus(new[] { menu });
 		application.SetToolBarItems(new[] { item });
+		await application.InitializeAsync();
+		form.Show();
 		var header = form.MenuEntries.OfType<ToolStripMenuItem>().Single(entry => entry.Text == "Application commands");
 		header.DropDownItems[0].PerformClick();
 		form.ToolEntries.OfType<ToolStripButton>().Single(entry => entry.ToolTipText == "Run").PerformClick();
 		Assert.That(executions, Is.EqualTo(2));
 		Assert.That(item.Parent, Is.SameAs(menu), "Global commands retain their declaring menu.");
 		Assert.That(menu.Parent, Is.Null);
-		application.SetMenus(Array.Empty<IApplicationMenu>());
-		application.SetToolBarItems(Array.Empty<IApplicationMenuItem>());
-		Assert.That(form.MenuEntries.Any(entry => entry.Text == "Application commands"), Is.False);
-		Assert.That(form.ToolEntries.Any(entry => entry.ToolTipText == "Run"), Is.False);
+		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.InvalidOperationException);
+		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.InvalidOperationException);
+		Assert.That(form.MenuEntries.Any(entry => entry.Text == "Application commands"), Is.True);
+		Assert.That(form.ToolEntries.Any(entry => entry.ToolTipText == "Run"), Is.True);
 		Assert.That(item.DisposeCount, Is.Zero);
 		Assert.That(form.RegisteredBlocks, Is.EqualTo(new[] { block }));
+	}
+
+	[Test]
+	public void NativeCommandMembershipIsCopiedAndInvalidUpdatesLeaveCommandsAndChromeIntact() {
+		using var form = new ProbeMainForm();
+		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		var formMenus = ((IMainForm)form).Menus;
+		var formToolbar = ((IMainForm)form).ToolBarItems;
+		using var menu = new WinFormsApplicationMenu("Application commands");
+		var item = new TrackingAction("Run", () => { });
+		menu.AddItem(item);
+		var menus = new IApplicationMenu[] { menu };
+		var items = new IApplicationMenuItem[] { item };
+		var notifications = 0;
+		application.Changed += () => notifications++;
+		application.SetMenus(menus);
+		application.SetToolBarItems(items);
+		menus[0] = null;
+		items[0] = null;
+		Assert.That(() => application.SetMenus(menus), Throws.ArgumentException);
+		Assert.That(() => application.SetToolBarItems(items), Throws.ArgumentException);
+		Assert.That(() => application.SetMenus(null), Throws.ArgumentNullException);
+		Assert.That(() => application.SetToolBarItems(null), Throws.ArgumentNullException);
+		Assert.That(notifications, Is.EqualTo(2));
+		application.Menus[0] = null;
+		application.ToolBarItems[0] = null;
+		Assert.That(application.Menus, Is.EqualTo(formMenus.Append(menu)));
+		Assert.That(application.ToolBarItems, Is.EqualTo(formToolbar.Append(item)));
+		Assert.That(() => application.SetMenus(new[] { menu }), Throws.InvalidOperationException);
+		Assert.That(() => application.SetToolBarItems(new[] { item }), Throws.InvalidOperationException);
+		Assert.That(application.Menus, Is.EqualTo(formMenus.Append(menu)));
+		Assert.That(application.ToolBarItems, Is.EqualTo(formToolbar.Append(item)));
+		form.Show();
+		Assert.That(form.MenuEntries.OfType<ToolStripMenuItem>().Single(entry => entry.Text == "Application commands").DropDownItems[0].Text, Is.EqualTo("Run"));
+		Assert.That(form.ToolEntries.Count(entry => entry.ToolTipText == "Run"), Is.EqualTo(1));
+		Assert.That(item.Parent, Is.SameAs(menu));
+		Assert.That(item.DisposeCount, Is.Zero);
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task DisposedNativeApplicationsRejectCommandMembershipChangesWithoutDisposingBorrowedDefinitions(bool asynchronous) {
+		using var form = new ProbeMainForm();
+		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		var formMenus = ((IMainForm)form).Menus;
+		var formToolbar = ((IMainForm)form).ToolBarItems;
+		using var menu = new WinFormsApplicationMenu("Application commands");
+		var item = new TrackingAction("Run", () => { });
+		menu.AddItem(item);
+		application.SetMenus(new[] { menu });
+		application.SetToolBarItems(new[] { item });
+		if (asynchronous)
+			await application.DisposeAsync();
+		else
+			application.Dispose();
+		Assert.That(() => application.SetMenus(Array.Empty<IApplicationMenu>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(() => application.SetToolBarItems(Array.Empty<IApplicationMenuItem>()), Throws.TypeOf<ObjectDisposedException>());
+		Assert.That(application.Menus, Is.EqualTo(formMenus.Append(menu)));
+		Assert.That(application.ToolBarItems, Is.EqualTo(formToolbar.Append(item)));
+		Assert.That(item.DisposeCount, Is.Zero);
+		Assert.That(item.Parent, Is.SameAs(menu));
+		Assert.That(form.IsDisposed, Is.False);
 	}
 
 	[Test]
 	public void InvalidNativeCommandsLeaveCurrentMetadataAndChromeUnchanged() {
 		using var form = new ProbeMainForm();
 		using var application = new WinFormsApplication(form, Array.Empty<IWinFormsApplicationBlock>());
+		var formToolbar = ((IMainForm)form).ToolBarItems;
 		using var item = new WinFormsActionMenuItem("Run", () => { });
 		application.SetToolBarItems(new[] { item });
 		using var unsupported = new UnsupportedMenuItem();
 		Assert.That(() => application.SetToolBarItems(new[] { unsupported }), Throws.ArgumentException);
-		Assert.That(application.ToolBarItems, Is.EqualTo(new[] { item }));
+		Assert.That(application.ToolBarItems, Is.EqualTo(formToolbar.Append(item)));
+		form.Show();
 		Assert.That(form.ToolEntries.Count(entry => entry.ToolTipText == "Run"), Is.EqualTo(1));
 	}
 

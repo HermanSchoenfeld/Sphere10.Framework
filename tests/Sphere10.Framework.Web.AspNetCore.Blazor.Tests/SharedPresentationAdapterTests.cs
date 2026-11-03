@@ -43,7 +43,7 @@ public class SharedPresentationAdapterTests {
 		var sharedUi = provider.GetRequiredService<IUserInterfaceServices>();
 		var registeredBlock = provider.GetServices<IApplicationBlock>().Single();
 		IApplicationBlock block = sharedUi.ScreenHost.AvailableBlocks.Single(candidate => candidate.Name == "Workspace");
-		IApplicationMenu menu = block.Menus.Single();
+		IApplicationMenu menu = ((IBlazorApplicationBlock)block).Menus.Single();
 		IScreenMenuItem screen = (IScreenMenuItem)menu.Items.Single();
 
 		Assert.That(sharedUi, Is.SameAs(platformUi));

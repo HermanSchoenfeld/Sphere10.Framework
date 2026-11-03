@@ -66,7 +66,7 @@ public class ScreenWindowMenuTests {
 		form.ShowScreen(current);
 		current.CancelHide = true;
 		var selectedTab = form.ScreenHost.TabControl.SelectedTab;
-		var activeBlock = form.ScreenHost.ActiveBlock;
+		var activeBlock = form.ScreenHost.SelectedBlock;
 		var tabs = form.ScreenHost.TabControl.TabPages.Cast<TabPage>().ToArray();
 		var selections = 0;
 		form.ScreenHost.TabControl.SelectedIndexChanged += (_, _) => selections++;
@@ -77,12 +77,13 @@ public class ScreenWindowMenuTests {
 		IApplicationScreenHost host = form.ScreenHost;
 		Assert.That(await host.ShowScreenUndockedAsync(inspector), Is.True);
 		Assert.That(form.ScreenHost.ActiveScreen, Is.SameAs(current));
-		Assert.That(form.ScreenHost.ActiveBlock, Is.SameAs(activeBlock));
+		Assert.That(form.ScreenHost.SelectedBlock, Is.SameAs(activeBlock));
 		Assert.That(form.ScreenHost.TabControl.TabPages.Cast<TabPage>(), Is.EqualTo(tabs));
 		Assert.That(form.ScreenHost.TabControl.SelectedTab, Is.SameAs(selectedTab));
 		Assert.That(selections, Is.Zero, "Launching a detached inspector must never insert or select its main-frame tab.");
 		Assert.That(current.HideRequests, Is.EqualTo(hides), "The main screen remains active even when its navigation guard would veto a change.");
-		Assert.That(inspector.Host, Is.SameAs(form.ScreenHost));
+		Assert.That(inspector.Host, Is.Not.SameAs(form.ScreenHost));
+		Assert.That(inspector.Host.ActiveScreen, Is.SameAs(inspector));
 		Assert.That(form.ScreenHost.IsScreenUndocked(inspector), Is.True);
 		Assert.That(form.ScreenHost.OpenScreens, Is.EqualTo(new WinFormsApplicationScreen[] { permanent, current, inspector }));
 		Assert.That(inspector.FindForm().StartPosition, Is.EqualTo(FormStartPosition.CenterParent));

@@ -69,16 +69,16 @@ public class ApplicationBlockTests {
 		var sourceMenus = new IBlazorApplicationMenu[] { firstMenu, secondMenu };
 		var block = new BlazorApplicationBlock { Title = "Block", Menus = sourceMenus };
 		var menus = block.Menus;
-		IApplicationBlock sharedBlock = block;
+		IApplicationCommandProvider commands = block;
 		sourceMenus[0] = null;
 
 		Assert.That(block.Menus, Is.Not.SameAs(menus));
 		Assert.That(menus, Has.Length.EqualTo(2));
 		Assert.That(menus[0], Is.SameAs(firstMenu));
 		Assert.That(menus[1], Is.SameAs(secondMenu));
-		Assert.That(sharedBlock.Menus, Is.EqualTo(new[] { firstMenu, secondMenu }));
+		Assert.That(commands.Menus, Is.EqualTo(new[] { firstMenu, secondMenu }));
 		menus[0] = null;
-		sharedBlock.Menus[1] = null;
+		commands.Menus[1] = null;
 		Assert.That(block.Menus, Is.EqualTo(new[] { firstMenu, secondMenu }));
 	}
 

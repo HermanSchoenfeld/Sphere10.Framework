@@ -5,11 +5,12 @@
 // LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
 using System;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>Commands contributed by an application, block or active screen.</summary>
+/// <summary>Portable menu and toolbar command descriptors; platform adapters own their native presentation.</summary>
 public interface IApplicationCommandProvider {
 	IApplicationMenu[] Menus => Array.Empty<IApplicationMenu>();
 

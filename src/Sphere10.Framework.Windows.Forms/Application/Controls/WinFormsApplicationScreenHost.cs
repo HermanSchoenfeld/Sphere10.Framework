@@ -79,6 +79,14 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	public override IWinFormsApplicationBlock ActiveBlock => _engine.ActiveBlock;
 
+	/// <summary>The independently selected sidebar block.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override IWinFormsApplicationBlock SelectedBlock {
+		get {
+			return _engine.SelectedBlock;
+		}
+	}
+
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public override IUserInterfaceServices UserInterfaceServices => FindForm() as IUserInterfaceServices;
 
@@ -125,7 +133,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 	/// <summary>Session-only targets and screens without a registered normal definition cannot be reopened automatically.</summary>
 	public bool CanMakeStartupScreen(WinFormsApplicationScreen screen) {
 		return !_disposing && !_startupSettingsFinalizing && screen != null && !screen.IsDisposed && screen.CanRestoreAtStartup
-			&& ReferenceEquals(screen.Host, this) && screen.Block != null && _engine.RegistrationBlocks.Contains(screen.Block, ReferenceEqualityComparer.Instance)
+			&& OwnsScreenAttachment(screen) && screen.Block != null && _engine.RegistrationBlocks.Contains(screen.Block, ReferenceEqualityComparer.Instance)
 			&& TryGetBinding(screen, out var binding) && binding.Definition?.ScreenKind == ScreenKind.Normal
 			&& (binding.Definition.StableKey != null || screen.Block.ScreenDefinitions.Count(definition => definition.ScreenType == binding.Definition.ScreenType) == 1);
 	}
@@ -337,7 +345,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 		bool registerBlock = true, bool selectTab = true, bool undocked = false) {
 		Guard.ArgumentNotNull(Screen, nameof(Screen));
 		Guard.Argument(!Screen.IsDisposed, nameof(Screen), "Cannot show a disposed screen");
-		Guard.Argument(Screen.Host == null || ReferenceEquals(Screen.Host, this), nameof(Screen), "Screen already belongs to another host");
+		Guard.Argument(Screen.Host == null || OwnsScreenAttachment(Screen), nameof(Screen), "Screen already belongs to another host");
 		ObjectDisposedException.ThrowIf(_disposing, this);
 		if (registerBlock && Screen.Host == null && Screen.Block != null)
 			RegisterScreenTypes(Screen.Block);
@@ -725,7 +733,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	private void RecordStartupScreenSettingsError(Exception error) {
 		LastStartupScreenSettingsError = error;
-		Tools.Exceptions.ExecuteIgnoringException(() => (ActiveBlock?.Parent?.Logger ?? SystemLog.Logger).Exception(error, "Unable to load or save the startup screen preference."));
+		Tools.Exceptions.ExecuteIgnoringException(() => ((ActiveBlock ?? SelectedBlock)?.Parent?.Logger ?? SystemLog.Logger).Exception(error, "Unable to load or save the startup screen preference."));
 	}
 
 	private bool TryActivateStartupScreen(IWinFormsApplicationBlock block, ApplicationScreenDefinition definition) {
@@ -793,6 +801,15 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	private bool ContainsScreen(WinFormsApplicationScreen screen) => screen != null && _screens.ContainsKey(screen);
 
+	// Accept only this root's canonical detached projection; an adapter alone cannot transfer screen ownership.
+	private bool OwnsScreenAttachment(WinFormsApplicationScreen screen) {
+		if (ReferenceEquals(screen.Host, this))
+			return true;
+		return screen.Host is DetachedWinFormsApplicationScreenHost detached && ReferenceEquals(detached.RootHost, this)
+			&& ReferenceEquals(detached.ActiveScreen, screen) && TryGetBinding(screen, out var binding)
+			&& ReferenceEquals(binding.Window?.ScreenHost, detached);
+	}
+
 	private bool TryGetBinding(WinFormsApplicationScreen screen, out ScreenBinding binding) {
 		binding = null;
 		return screen != null && _screens.TryGetValue(screen, out binding);
@@ -807,16 +824,8 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 
 	private ScreenBinding RetainScreen(WinFormsApplicationScreen screen, ApplicationScreenDefinition requestedDefinition = null) {
 		var definition = requestedDefinition ?? ResolveSuppliedScreenDefinition(screen);
-		var application = (FindForm() as LiteMainForm)?.Application as WinFormsApplication;
-		Guard.Ensure(definition?.Settings == null || application?.Settings.IsInitialized == true, "Initialize typed screen preferences before activating their registration.");
-		if (application?.Settings.IsInitialized == true && definition != null) {
-			var profile = application.Settings.Profiles.FirstOrDefault(item => ReferenceEquals(item.Block, screen.Block)
-				&& item.ScreenDefinition?.Registration.Token == definition.Registration.Token);
-			Guard.Ensure(definition.Settings == null || profile != null, "Declare typed screen preferences before application initialization.");
-			// Existing runtime block registration remains usable when it has no declared preferences.
-			if (profile != null)
-				screen.AttachSettings(profile, profile.HasOptions ? application.SettingsProvider : null);
-		}
+		// Registration, block and plugin already own the actual provider-loaded settings instances.
+		screen.AttachSettings(definition?.Settings, screen.Block?.BlockSettings, screen.Block?.Source?.PluginSettings);
 		var binding = new ScreenBinding { Definition = definition, ImageKey = Guid.NewGuid().ToString("N") };
 		var image = screen.ScreenImage
 			?? definition?.Activators.OfType<IWinFormsApplicationMenuItem>().Select(item => item.Image16x16).FirstOrDefault(candidate => candidate != null);
@@ -1082,9 +1091,6 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			if (changed)
 				OnChanged();
 		}
-
-		public override IWinFormsApplicationBlock GetScreenBlock(WinFormsApplicationScreen screen) =>
-			base.GetScreenBlock(screen) ?? (_owner.ContainsScreen(screen) ? screen.Block : null);
 
 		public void SetOpen(WinFormsApplicationScreen screen, bool isOpen) {
 			SetTrackedOpen(screen, isOpen);

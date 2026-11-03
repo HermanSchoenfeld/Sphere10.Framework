@@ -20,6 +20,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorDefaultInterfaceDispatchTests {
+	/// <summary>Verifies application blocks project live membership through shared typed and class views.</summary>
 	[Test]
 	public async Task ApplicationBlocksProjectLiveMembershipThroughSharedTypedAndClassViews() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -54,6 +55,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 		Assert.That(application.LoadedPlugins, Is.Empty);
 	}
 
+	/// <summary>Verifies direct platform application uses inline shared projections.</summary>
 	[Test]
 	public void DirectPlatformApplicationUsesInlineSharedProjections() {
 		var plugin = new BlazorPluginBuilder()
@@ -76,6 +78,7 @@ public class BlazorDefaultInterfaceDispatchTests {
 		Assert.That(neutral.ScreenHost, Is.SameAs(typed.ScreenHost));
 	}
 
+	/// <summary>Verifies blazor plugin override projects through the shared interface and existing plugin class.</summary>
 	[Test]
 	public void BlazorPluginOverrideProjectsThroughTheSharedInterfaceAndExistingPluginClass() {
 		var first = new BlazorApplicationBlockBuilder()
@@ -94,7 +97,10 @@ public class BlazorDefaultInterfaceDispatchTests {
 		Assert.That(compatibility.Blocks.Single(), Is.SameAs(second));
 	}
 
+	#region Inner Types
+
 	private sealed class DirectApplication : IBlazorApplication {
+		/// <summary>The editor callback marking a completed input change.</summary>
 		public event EventHandlerEx Changed {
 			add { }
 			remove { }
@@ -125,51 +131,95 @@ public class BlazorDefaultInterfaceDispatchTests {
 		public DirectApplication(IBlazorApplicationScreenHost screenHost, IBlazorPlugin plugin) {
 			ScreenHost = screenHost;
 			_plugin = plugin;
-			Settings = new ApplicationSettingsCatalog("DirectApplication", null, screenHost.AvailableBlocks);
+			Settings = null;
 		}
 
 		public ILogger Logger { get; } = new NoOpLogger();
 
 		public Disposables Disposables { get; } = new();
 
-		public bool IsInitialized => false;
+		public bool IsInitialized {
+			get {
+				return false;
+			}
+		}
 
-		public bool IsExiting => false;
+		public bool IsExiting {
+			get {
+				return false;
+			}
+		}
 
-		public bool HasExited => false;
+		public bool HasExited {
+			get {
+				return false;
+			}
+		}
 
-		public IBlazorPlugin[] LoadedPlugins => new[] { _plugin };
+		public IBlazorPlugin[] LoadedPlugins {
+			get {
+				return new[] { _plugin };
+			}
+		}
 
-		public IBlazorApplicationBlock[] Blocks => ScreenHost.Blocks;
+		public IBlazorApplicationBlock[] Blocks {
+			get {
+				return ScreenHost.Blocks;
+			}
+		}
 
 		public IBlazorApplicationScreenHost ScreenHost { get; }
 
-		public ApplicationSettingsCatalog Settings { get; }
+		/// <summary>The actual registration-owned settings shared by both screen instances.</summary>
+		public ISettingsProvider Settings { get; }
 
-		public bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
+		public bool HasUnsavedChanges {
+			get {
+				return ScreenHost.HasUnsavedChanges;
+			}
+		}
 
-		public IBlazorApplicationMenu[] Menus => Array.Empty<IBlazorApplicationMenu>();
+		public IBlazorApplicationMenu[] Menus {
+			get {
+				return Array.Empty<IBlazorApplicationMenu>();
+			}
+		}
 
-		public IBlazorApplicationMenuItem[] ToolBarItems => Array.Empty<IBlazorApplicationMenuItem>();
+		public IBlazorApplicationMenuItem[] ToolBarItems {
+			get {
+				return Array.Empty<IBlazorApplicationMenuItem>();
+			}
+		}
 
 		public void Initialize() {
 		}
 
-		public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+		public Task InitializeAsync(CancellationToken cancellationToken = default) {
+			return Task.CompletedTask;
+		}
 
-		public bool Exit(bool force = false, CancellationToken cancellationToken = default) => true;
+		public bool Exit(bool force = false, CancellationToken cancellationToken = default) {
+			return true;
+		}
 
-		public Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) => Task.FromResult(true);
+		public Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) {
+			return Task.FromResult(true);
+		}
 
 		void IApplication.Finalize() {
 		}
 
-		public Task FinalizeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+		public Task FinalizeAsync(CancellationToken cancellationToken = default) {
+			return Task.CompletedTask;
+		}
 
 		public void Dispose() {
 		}
 
-		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
+		public ValueTask DisposeAsync() {
+			return ValueTask.CompletedTask;
+		}
 	}
 
 	private sealed class ProjectedPlugin : BlazorPlugin {
@@ -179,9 +229,16 @@ public class BlazorDefaultInterfaceDispatchTests {
 
 		public IBlazorApplicationBlock CurrentBlock { get; set; }
 
+		/// <inheritdoc />
 		public override IBlazorApplicationBlock[] Blocks {
-			get => new[] { CurrentBlock };
-			init => base.Blocks = value;
+			get {
+				return new[] { CurrentBlock };
+			}
+			init {
+				base.Blocks = value;
+			}
 		}
 	}
+
+	#endregion
 }

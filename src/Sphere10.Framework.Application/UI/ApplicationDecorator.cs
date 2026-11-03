@@ -64,16 +64,30 @@ public abstract class ApplicationDecorator<TConcrete> : IApplication
 
 	public virtual IApplicationBlock[] Blocks => InternalApplication.Blocks;
 
+	/// <summary>Forwards the wrapped application's current menu descriptors without substituting empty defaults.</summary>
+	public virtual IApplicationMenu[] Menus {
+		get {
+			return InternalApplication.Menus;
+		}
+	}
+
+	/// <summary>Forwards the wrapped application's current toolbar commands with their original identities.</summary>
+	public virtual IApplicationMenuItem[] ToolBarItems {
+		get {
+			return InternalApplication.ToolBarItems;
+		}
+	}
+
 	public virtual IApplicationScreenHost ScreenHost => InternalApplication.ScreenHost;
 
-	/// <summary>Forwards the existing application-owned settings catalog without creating another owner.</summary>
-	public virtual ApplicationSettingsCatalog Settings => InternalApplication.Settings;
+	/// <summary>Forwards the wrapped application's existing settings provider.</summary>
+	public virtual ISettingsProvider Settings {
+		get {
+			return InternalApplication.Settings;
+		}
+	}
 
 	public virtual bool HasUnsavedChanges => InternalApplication.HasUnsavedChanges;
-
-	public virtual IApplicationMenu[] Menus => InternalApplication.Menus;
-
-	public virtual IApplicationMenuItem[] ToolBarItems => InternalApplication.ToolBarItems;
 
 	public virtual void Initialize() => InternalApplication.Initialize();
 

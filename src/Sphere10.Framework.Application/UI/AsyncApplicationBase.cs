@@ -18,8 +18,8 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 	protected AsyncApplicationBase() {
 	}
 
-	protected AsyncApplicationBase(IServiceProvider services, string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null)
-		: base(services, settingsKey, settingsDefinitions) {
+	protected AsyncApplicationBase(IServiceProvider services, string settingsKey = null)
+		: base(services, settingsKey) {
 	}
 
 	public override void Initialize() {
@@ -81,8 +81,8 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 		var screenBlock = host.ActiveScreen?.Block;
 		if (screenBlock != null && !await screenBlock.CanExitAsync(this, cancellationToken))
 			return false;
-		var activeBlock = host.ActiveBlock;
-		return activeBlock == null || ReferenceEquals(activeBlock, screenBlock) || await activeBlock.CanExitAsync(this, cancellationToken);
+		var selectedBlock = host.SelectedBlock;
+		return selectedBlock == null || ReferenceEquals(selectedBlock, screenBlock) || await selectedBlock.CanExitAsync(this, cancellationToken);
 	}
 
 	// Sync-over-async pattern
@@ -115,6 +115,7 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 		Task.Run(() => DisposeInternalAsync().AsTask()).GetAwaiter().GetResult();
 	}
 
-	protected override ValueTask DisposeInternalAsync()
-		=> new(DisposeCore(() => FinalizeAsync()));
+	protected override ValueTask DisposeInternalAsync() {
+		return new(DisposeCore(() => FinalizeAsync()));
+	}
 }

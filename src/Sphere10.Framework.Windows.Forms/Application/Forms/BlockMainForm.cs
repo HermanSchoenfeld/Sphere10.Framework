@@ -9,28 +9,19 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
-using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Windows.Forms;
-
-// TODO: Add icons
-// TODO: Add menus
-// TODO: Add block stuff to menus
 
 public partial class BlockMainForm : MainForm, IBlockManager {
 	/// <summary>Signals block registration or active application selection changes on the UI thread.</summary>
 	public event EventHandlerEx ApplicationChanged;
 
-	private IWinFormsApplicationMenu[] _applicationMenus = Array.Empty<IWinFormsApplicationMenu>();
-	private IWinFormsApplicationMenuItem[] _applicationToolBarItems = Array.Empty<IWinFormsApplicationMenuItem>();
-	private readonly List<ToolStripMenuItem> _applicationMenuHeaders = new();
-	private readonly List<ToolStripItem> _applicationMenuItems = new();
 	private readonly SidebarToggleButton _navigationPaneToggleButton;
 	private readonly (Color BackColor, Color ForeColor) _defaultDockPreviewColors;
 	private TaskPane? _navigationThemePane;
@@ -47,11 +38,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	public BlockMainForm() {
 		InitializeComponent();
 
-		// initialize local members
-		BlockBindings = new Dictionary<IWinFormsApplicationBlock, TaskPane>(ReferenceEqualityComparer.Instance);
-		MenuBindings = new Dictionary<IWinFormsApplicationMenu, Expando>(ReferenceEqualityComparer.Instance);
-		MenuItemBindings = new Dictionary<Control, IWinFormsApplicationMenuItem>();
-		ToolStripBindings = new Dictionary<ToolStripItem, IWinFormsApplicationMenuItem>();
+		// Initialize the current navigation layout; registered blocks do not allocate panes until selected.
 		_navigationPaneWidth = _splitContainer.SplitterDistance;
 		_navigationPaneDpi = DeviceDpi;
 		_navigationPaneMinimumContentWidth = _splitContainer.Panel2MinSize;
@@ -79,20 +66,15 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	}
 
-	protected override void OnLoad(EventArgs e) {
-		base.OnLoad(e);
-		if (!Tools.Runtime.IsDesignMode) {
-			RebuildToolBar();
-		}
-	}
-
 	#endregion
 
 	#region Properties
 
 	[DefaultValue(false), Category("Appearance"), Description("Collapse the navigation menu while preserving its width and current selection")]
 	public bool NavigationPaneCollapsed {
-		get => _navigationPaneCollapsed;
+		get {
+			return _navigationPaneCollapsed;
+		}
 		set {
 			if (_navigationPaneCollapsed == value)
 				return;
@@ -104,7 +86,9 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	/// <summary>The preferred navigation width in device pixels, retained while hidden or temporarily constrained by a narrow window.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int NavigationPaneWidth {
-		get => (int)Math.Round(_navigationPaneWidth);
+		get {
+			return (int)Math.Round(_navigationPaneWidth);
+		}
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			ApplyNavigationPaneWidth(value);
@@ -114,7 +98,9 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	/// <summary>The maximum navigation width in logical pixels at 96 DPI. Available content space can impose a smaller limit.</summary>
 	[DefaultValue(480), Category("Layout"), Description("Maximum navigation width in logical pixels at 96 DPI")]
 	public int MaximumNavigationPaneWidth {
-		get => _maximumNavigationPaneWidth;
+		get {
+			return _maximumNavigationPaneWidth;
+		}
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			_maximumNavigationPaneWidth = value;
@@ -122,29 +108,47 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
-	public IDictionary<IWinFormsApplicationBlock, TaskPane> BlockBindings { get; set; }
-
+	/// <summary>The block owning this window's visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IWinFormsApplicationBlock ActiveBlock {
-		get => ScreenHost.ActiveBlock;
+		get {
+			return ScreenHost.ActiveBlock;
+		}
+	}
+
+	/// <summary>The block being browsed in the sidebar, independently of the visible active screen.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IWinFormsApplicationBlock SelectedBlock {
+		get {
+			return ScreenHost.SelectedBlock;
+		}
 		set {
-			if (ReferenceEquals(ScreenHost.ActiveBlock, value))
-				return;
-			ScreenHost.SelectBlock(value);
+			if (!ReferenceEquals(ScreenHost.SelectedBlock, value))
+				ScreenHost.SelectBlock(value);
 		}
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IWinFormsApplicationBlock[] Blocks => RegisteredBlocks;
+	public IWinFormsApplicationBlock[] Blocks {
+		get {
+			return RegisteredBlocks;
+		}
+	}
 
-	private IDictionary<IWinFormsApplicationMenu, Expando> MenuBindings { get; set; }
+	/// <summary>The registered blocks owned by the screen host.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual IWinFormsApplicationBlock[] RegisteredBlocks {
+		get {
+			return ScreenHost.Blocks;
+		}
+	}
 
-	private IDictionary<Control, IWinFormsApplicationMenuItem> MenuItemBindings { get; set; }
-
-	private IDictionary<ToolStripItem, IWinFormsApplicationMenuItem> ToolStripBindings { get; set; }
-
-	private bool HasUsableNavigationPaneBounds => WindowState != FormWindowState.Minimized &&
-		Math.Min(ClientSize.Width, _splitContainer.Width) - _splitContainer.SplitterWidth - Math.Round(_navigationPaneMinimumContentWidth) >= _splitContainer.Panel1MinSize;
+	private bool HasUsableNavigationPaneBounds {
+		get {
+			return WindowState != FormWindowState.Minimized &&
+				Math.Min(ClientSize.Width, _splitContainer.Width) - _splitContainer.SplitterWidth - Math.Round(_navigationPaneMinimumContentWidth) >= _splitContainer.Panel1MinSize;
+		}
+	}
 
 	#endregion
 
@@ -157,39 +161,18 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			RegisterBlocks(ScreenHost.StartupBlocks.Append(block), false);
 	}
 
+	// Register only the block's navigation button; its menu is built when selected.
 	private void RegisterBlockCore(IWinFormsApplicationBlock block) {
-		#region Pre-conditions
-
-		Debug.Assert(block != null);
-		Debug.Assert(!BlockBindings.ContainsKey(block));
-
-		#endregion
-
+		Guard.ArgumentNotNull(block, nameof(block));
 		ScreenHost.RegisterScreenTypes(block);
-		if (ActiveBlock == null || ReferenceEquals(ActiveBlock, block))
+		if (SelectedBlock == null || ReferenceEquals(SelectedBlock, block))
 			Text = block.Name;
 
-		TaskPane taskPane = CreateApplicationBlockPane(block);
-		taskPane.AutoScroll = true;
-		taskPane.Dock = DockStyle.Fill;
-		taskPane.Size = new Size(
-			_applicationBar.Width,
-			_applicationBar.Height
-		);
-		_applicationBar.AddItem(
-			new ApplicationBar.Item(
-				taskPane,
-				block.Image32x32,
-				block.Name
-			)
-		);
-
-		BlockBindings.Add(block, taskPane);
-		UpdateNavigationTheme();
-
-		if (ActiveBlock == null) {
-			ActiveBlock = block;
-		}
+		var button = new SquareButton { Tag = block };
+		_applicationBar.AddItem(new ApplicationBar.Item(button, null, block.Image32x32, block.Name));
+		if (SelectedBlock == null)
+			SelectedBlock = block;
+		SynchronizeNavigationSelection();
 	}
 
 	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
@@ -215,45 +198,30 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		return accepted;
 	}
 
-	public virtual void UnregisterBlock(IWinFormsApplicationBlock Block) {
-		Guard.ArgumentNotNull(Block, nameof(Block));
-		Guard.Argument(BlockBindings.ContainsKey(Block), nameof(Block), "Block is not registered");
+	/// <summary>Removes an accepted block and its navigation view after the host's existing screen guards succeed.</summary>
+	public virtual void UnregisterBlock(IWinFormsApplicationBlock block) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		Guard.Argument(IsBlockRegistered(block), nameof(block), "Block is not registered");
 		using var update = ScreenHost.EnterPresentationScope();
-		if (!ScreenHost.UnregisterScreenTypes(Block))
+		if (!ScreenHost.UnregisterScreenTypes(block))
 			return;
-		foreach (var Binding in MenuItemBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent?.Parent, Block)).ToArray()) {
-			MenuItemBindings.Remove(Binding.Key);
-			Binding.Key.Dispose();
+
+		// Release the removed block's generated presentation before disposing its command owners.
+		foreach (var item in _applicationBar.Items.Where(item => ReferenceEquals(item.Button.Tag, block))) {
+			var pane = item.MenuControl;
+			_applicationBar.RemoveItem(item);
+			DisposeNavigationPane(pane);
 		}
-		foreach (var Binding in ToolStripBindings.Where(Pair => ReferenceEquals(Pair.Value.Parent?.Parent, Block)).ToArray()) {
-			ToolStripBindings.Remove(Binding.Key);
-			Binding.Key.Dispose();
-		}
-		foreach (var Item in MenuStrip.Items.Cast<ToolStripItem>().Where(Item => ReferenceEquals(Item.Tag, Block)).ToArray())
-			Item.Dispose();
-		foreach (var Item in _applicationBar.Items.Where(Item => ReferenceEquals(Item.MenuControl, BlockBindings[Block])))
-			_applicationBar.RemoveItem(Item);
-		foreach (var Menu in Block.Menus)
-			MenuBindings.Remove(Menu);
-		BlockBindings[Block].Dispose();
-		BlockBindings.Remove(Block);
-		UpdateNavigationTheme();
-		if (ReferenceEquals(ActiveBlock, Block))
-			ActiveBlock = ActiveScreen?.Block ?? ScreenHost.Blocks.FirstOrDefault();
-		Block.Dispose();
+		SynchronizeNavigationSelection();
+		RebuildApplicationCommands();
+		block.Dispose();
 	}
+
+	/// <summary>Queries the host's registered block inventory.</summary>
 	public virtual bool IsBlockRegistered(IWinFormsApplicationBlock block) {
-
-		#region Pre-conditions
-
-		Debug.Assert(block != null);
-
-		#endregion
-
-		return BlockBindings.ContainsKey(block);
+		Guard.ArgumentNotNull(block, nameof(block));
+		return ScreenHost.Blocks.Contains(block, ReferenceEqualityComparer.Instance);
 	}
-
-	public virtual IWinFormsApplicationBlock[] RegisteredBlocks => ScreenHost.Blocks;
 
 	public virtual void ExecuteMenuItem(IWinFormsApplicationMenuItem menuItem) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
@@ -283,304 +251,78 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		throw new NotImplementedException();
 	}
 
-	private Control CreateControlMenuItem(IWinFormsControlMenuItem item) {
-		return item.ControlToShow;
-	}
-
-	private Control CreateViewMenuItem(IWinFormsScreenMenuItem viewItem) {
-		TaskItem taskItem = new TaskItem();
-		taskItem.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-		taskItem.BackColor = System.Drawing.Color.Transparent;
-		taskItem.Image = viewItem.Image16x16;
-		taskItem.Name = "N/A";
-		taskItem.Text = viewItem.Text;
-		taskItem.TextAlign = System.Drawing.ContentAlignment.TopLeft;
-		taskItem.UseVisualStyleBackColor = false;
-		taskItem.Click += new EventHandler(TaskItem_Clicked);
-		return taskItem;
-	}
-
-	private Control CreateLinkMenuItem(IWinFormsLinkMenuItem item) {
-		TaskItem taskItem = new TaskItem();
-		taskItem.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-		taskItem.BackColor = System.Drawing.Color.Transparent;
-		taskItem.Image = item.Image16x16;
-		taskItem.Name = "N/A";
-		taskItem.Text = item.Text;
-		taskItem.TextAlign = System.Drawing.ContentAlignment.TopLeft;
-		taskItem.Font = new Font(taskItem.Font, FontStyle.Underline);
-		taskItem.UseVisualStyleBackColor = false;
-		taskItem.Click += new EventHandler(TaskItem_Clicked);
-		return taskItem;
-	}
-
-	private Control CreateMenuItem(IWinFormsApplicationMenuItem item) {
-
-		#region Pre-conditions
-
-		Debug.Assert(item != null);
-
-		#endregion
-
-		Control menuItem = null;
-		if (item is IWinFormsControlMenuItem) {
-			menuItem = CreateControlMenuItem(item as IWinFormsControlMenuItem);
-		} else if (item is IWinFormsScreenMenuItem) {
-			menuItem = CreateViewMenuItem(item as IWinFormsScreenMenuItem);
-		} else if (item is IWinFormsLinkMenuItem) {
-			menuItem = CreateLinkMenuItem(item as IWinFormsLinkMenuItem);
-		}
-		MenuItemBindings.Add(
-			menuItem,
-			item
-		);
-
-		#region Post-conditions
-
-		Debug.Assert(menuItem != null);
-
-		#endregion
-
-		return menuItem;
-	}
-
-	private Expando CreateMenu(IWinFormsApplicationMenu menu) {
-		Expando expando = new Expando();
-		expando.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-		expando.Animate = true;
-		expando.AutoLayout = true;
-		expando.Font = new System.Drawing.Font("Tahoma", 8.25F);
-		expando.Location = new System.Drawing.Point(12, 12);
-		expando.Name = "N/A";
-		expando.Size = new System.Drawing.Size(179, 60);
-		expando.TabIndex = 0;
-		expando.Text = menu.Text;
-		expando.TitleImage = menu.Image32x32;
-		expando.SizeChanged += expando_SizeChanged;
-		foreach (IWinFormsApplicationMenuItem item in menu.Items) {
-			if (item.ShowOnExplorerBar) {
-				expando.Items.Add(
-					CreateMenuItem(item)
-				);
-			}
-		}
-
-		MenuBindings.Add(menu, expando);
-		return expando;
-	}
-
-	void expando_SizeChanged(object sender, EventArgs e) {
-	}
-
-	private TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
-		TaskPane taskPane = new TaskPane();
-		taskPane.AutoScroll = true;
-		taskPane.AutoScrollMargin = new System.Drawing.Size(12, 12);
-		taskPane.Dock = System.Windows.Forms.DockStyle.Fill;
-		taskPane.Location = new System.Drawing.Point(0, 0);
-		taskPane.Name = block.Name + " TaskPane";
-		taskPane.TabIndex = 0;
-		taskPane.Text = "N/A";
-		foreach (IWinFormsApplicationMenu menu in block.Menus) {
-			taskPane.Expandos.Add(
-				CreateMenu(menu)
-			);
-		}
+	/// <summary>Creates the selected block's current sidebar from its owner-supplied menus.</summary>
+	protected virtual TaskPane CreateApplicationBlockPane(IWinFormsApplicationBlock block) {
+		var taskPane = new TaskPane {
+			AutoScroll = true,
+			AutoScrollMargin = new Size(12, 12),
+			Dock = DockStyle.Fill,
+			Name = block.Name + " TaskPane",
+			Size = _applicationBar.Size,
+			Tag = block
+		};
+		foreach (var menu in block.Menus)
+			taskPane.Expandos.Add(CreateMenu(menu));
 		return taskPane;
 	}
 
-	private void TaskItem_Clicked(object sender, EventArgs e) {
-		if (sender is TaskItem) {
-			TaskItem taskItem = sender as TaskItem;
-			if (MenuItemBindings.ContainsKey(taskItem)) {
-				IWinFormsApplicationMenuItem menuItem = MenuItemBindings[taskItem];
-				ExecuteMenuItem(menuItem);
-			} else {
-// TODO: TaskItem did not bind to a IMenuItem
-			}
-		}
-	}
-
-	private void LinkItem_Clicked(object sender, EventArgs e) {
-		if (sender is TaskItem) {
-			TaskItem taskItem = sender as TaskItem;
-			if (MenuItemBindings.ContainsKey(taskItem)) {
-				IWinFormsLinkMenuItem menuItem = MenuItemBindings[taskItem] as IWinFormsLinkMenuItem;
-				ExecuteMenuItem(menuItem);
-			} else {
-// TODO: TaskItem did not bind to a IMenuItem
-			}
-		}
-	}
-
-	#endregion
-
-	#region Menu & Toolbar management
-
-	internal void SetApplicationCommands(IWinFormsApplicationMenu[] menus, IWinFormsApplicationMenuItem[] toolBarItems) {
-		var items = menus.SelectMany(menu => menu.Items).Concat(toolBarItems).ToArray();
-		Guard.Argument(items.All(item => item is IWinFormsLinkMenuItem), nameof(menus), "Application menus and toolbars require native link, action, or screen commands.");
-		Guard.Argument(items.OfType<IWinFormsScreenMenuItem>().All(item => item.Parent?.Parent != null), nameof(menus), "Application screen commands must belong to a block menu.");
-		_applicationMenus = Tools.Array.Clone(menus);
-		_applicationToolBarItems = Tools.Array.Clone(toolBarItems);
-		using var rendering = this.EnterRenderingScope();
-		UpdateApplicationCommands();
-	}
-
-	/// <summary>Rebuilds the visible application and contextual commands once after a completed host transition.</summary>
-	protected virtual void UpdateApplicationCommands() {
-		var layers = GetApplicationCommandLayers();
-		RebuildApplicationMenus(layers);
-		RebuildToolBar(layers);
-	}
-
-	private ApplicationCommandLayer[] GetApplicationCommandLayers() {
-		var layers = new List<ApplicationCommandLayer> {
-			new(ApplicationCommandLevel.Application, new NativeCommandProvider(_applicationMenus, _applicationToolBarItems))
+	// Each generated menu group owns its font and child controls; command images remain borrowed.
+	private Expando CreateMenu(IWinFormsApplicationMenu menu) {
+		var font = new Font("Tahoma", 8.25F);
+		var expando = new Expando {
+			Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+			Animate = true,
+			AutoLayout = true,
+			Font = font,
+			Location = new Point(12, 12),
+			Size = new Size(179, 60),
+			Text = menu.Text,
+			TitleImage = menu.Image32x32
 		};
-		var block = ActiveScreen?.Block ?? ActiveBlock;
-		if (block != null) {
-			var menus = block.ShowInMenuStrip ? block.Menus.Where(menu => menu.ShowInMenuStrip).ToArray() : Array.Empty<IWinFormsApplicationMenu>();
-			var toolbar = block.ShowInToolStrip ? block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsLinkMenuItem>()
-				.Where(item => item.ShowOnToolStrip).Cast<IWinFormsApplicationMenuItem>() : Enumerable.Empty<IWinFormsApplicationMenuItem>();
-			layers.Add(new ApplicationCommandLayer(ApplicationCommandLevel.Block, new NativeCommandProvider(menus, block.ToolBarItems.Concat(toolbar).ToArray())));
-		}
-		if (ActiveScreen is IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> screen)
-			layers.Add(new ApplicationCommandLayer(ApplicationCommandLevel.Screen, screen));
-		return layers.ToArray();
+		expando.Disposed += (_, _) => font.Dispose();
+		foreach (var item in menu.Items.Where(item => item.ShowOnExplorerBar))
+			expando.Items.Add(CreateMenuItem(item));
+		return expando;
 	}
 
-	private void RebuildApplicationMenus(ApplicationCommandLayer[] layers) {
-		foreach (var item in _applicationMenuItems) {
-			ToolStripBindings.Remove(item);
-			item.Dispose();
-		}
-		_applicationMenuItems.Clear();
-		foreach (var header in _applicationMenuHeaders.Where(header => header.IsDisposed || header.DropDownItems.Count == 0).ToArray()) {
-			header.Dispose();
-			_applicationMenuHeaders.Remove(header);
-		}
-		var menus = Tools.UI.MergeApplicationMenus<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem>(
-			(source, items) => new NativeMenuProjection(source, items), menu => GetMenuCaptionKey(menu.Text),
-			item => GetMenuCaptionKey(item.Title), layers);
-		foreach (var menu in menus) {
-			var header = FindApplicationMenuHeader(menu.Text);
-			if (header == null) {
-				header = new ToolStripMenuItem(menu.Text);
-				_applicationMenuHeaders.Add(header);
-				InsertMenuItemBeforeHelpMenu(header);
-			}
-			var hasExistingItems = header.DropDownItems.Count > 0;
-			var insertionIndex = 0;
-			foreach (var item in menu.Items.Cast<IWinFormsLinkMenuItem>()) {
-				var button = new ToolStripMenuItem(item.Text, item.Image16x16, ToolStripItemActivate) {
-					Enabled = IsApplicationCommandAvailable(item)
-				};
-				header.DropDownItems.Insert(insertionIndex++, button);
-				_applicationMenuItems.Add(button);
-				ToolStripBindings.Add(button, item);
-			}
-			if (hasExistingItems && insertionIndex > 0) {
-				var separator = new ToolStripSeparator();
-				header.DropDownItems.Insert(insertionIndex, separator);
-				_applicationMenuItems.Add(separator);
-			}
-		}
-		KeepHelpMenuLast();
-	}
+	// Generated views dispatch directly to their owner command; supplied controls retain their owner's lifetime.
+	private Control CreateMenuItem(IWinFormsApplicationMenuItem item) {
+		Guard.ArgumentNotNull(item, nameof(item));
+		if (item is IWinFormsControlMenuItem control)
+			return control.ControlToShow;
 
-	private bool IsApplicationCommandAvailable(IWinFormsLinkMenuItem item) =>
-		item is not IWinFormsScreenMenuItem screen || screen.Parent?.Parent != null && IsBlockRegistered(screen.Parent.Parent);
-
-	private void AddToolBarItem(IWinFormsLinkMenuItem item, bool enabled = true) {
-		var button = new ToolStripButton(string.Empty, item.Image16x16 ?? Resources.DefaultToolStripImage, ToolStripItemActivate) {
-			ToolTipText = item.Text,
-			Enabled = enabled
+		var link = Guard.ArgumentCast<IWinFormsLinkMenuItem>(item, nameof(item));
+		var taskItem = new TaskItem {
+			Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+			BackColor = Color.Transparent,
+			Image = link.Image16x16,
+			Text = link.Text,
+			TextAlign = ContentAlignment.TopLeft,
+			UseVisualStyleBackColor = false
 		};
-		ToolStrip.Items.Add(button);
-		ToolStripBindings.Add(button, item);
-	}
-
-	private void ToolStripItemActivate(object sender, EventArgs e) {
-		if (sender is ToolStripItem) {
-			ToolStripItem stripItem = sender as ToolStripItem;
-			if (ToolStripBindings.ContainsKey(stripItem)) {
-				IWinFormsApplicationMenuItem menuItem = ToolStripBindings[stripItem];
-				ExecuteMenuItem(menuItem);
-			} else {
-// TODO: TaskItem did not bind to a IMenuItem
-			}
+		if (item is not IWinFormsScreenMenuItem) {
+			// The generated link owns only its underline font; the command retains its image.
+			var font = new Font(taskItem.Font, FontStyle.Underline);
+			taskItem.Font = font;
+			taskItem.Disposed += (_, _) => font.Dispose();
 		}
-	}
-
-	private void RebuildToolBar() => RebuildToolBar(GetApplicationCommandLayers());
-
-	private void RebuildToolBar(ApplicationCommandLayer[] layers) {
-		RestoreScreenToolBar();
-		ToolStrip.SuspendLayout();
-		using var Layout = Tools.Scope.ExecuteOnDispose(() => ToolStrip.ResumeLayout());
-		ToolStrip.Items.Remove(_navigationPaneToggleButton);
-		foreach (var Item in ToolStripBindings.Keys.Where(Item => Item.Owner == ToolStrip).ToArray()) {
-			ToolStripBindings.Remove(Item);
-			Item.Dispose();
-		}
-		foreach (ToolStripItem Item in ToolStrip.Items.Cast<ToolStripItem>().ToArray())
-			Item.Dispose();
-		ToolStrip.Items.Clear();
-
-		#region Add standard buttons
-
-		ToolStrip.Items.Add(_navigationPaneToggleButton);
-		foreach (var item in Tools.UI.MergeApplicationToolBarItems<IWinFormsApplicationMenuItem>(item => GetMenuCaptionKey(item.Title), layers).Cast<IWinFormsLinkMenuItem>())
-			AddToolBarItem(item, IsApplicationCommandAvailable(item));
-
-		#endregion
-
-		MergeScreenToolBar();
-
-		#region Add help buttons
-
-		ToolStrip.Items.Add(new ToolStripSeparator());
-
-		ToolStripItem contextHelpButton = ToolStrip.Items.Add(
-			string.Empty,
-			Sphere10.Framework.Windows.Forms.Resources.Help_16x16x32,
-			ContextHelp_Click
-		);
-		contextHelpButton.ToolTipText = "Get help for currently opened screen";
-
-		#endregion
-
-	}
-
-	private void InsertMenuItemBeforeHelpMenu(ToolStripMenuItem menuItem) {
-		bool foundLocation = false;
-		int location = 0;
-		for (int i = 0; i < MenuStrip.Items.Count; i++) {
-			if (MenuStrip.Items[i] == ScreensToolStripMenuItem || MenuStrip.Items[i] == HelpToolStripMenuItem) {
-				location = i;
-				foundLocation = true;
-				break;
-			}
-		}
-		if (!foundLocation) {
-			location = 0;
-		}
-		MenuStrip.Items.Insert(location, menuItem);
+		taskItem.Click += (_, _) => ExecuteMenuItem(item);
+		return taskItem;
 	}
 
 	#endregion
 
 	#region Screen management
 
-	protected override void OnActiveScreenChanged(WinFormsApplicationScreen? Screen) {
-		if (Screen != null) {
-			if (Screen.Block != null)
-				ActiveBlock = Screen.Block;
-			if (Screen.DisplayMode == ScreenDisplayMode.Maximized || Screen.DisplayMode == ScreenDisplayMode.FilledAndMaximized)
+	// Screen activation synchronizes the browsed block while preserving the screen's native display policy.
+	protected override void OnActiveScreenChanged(WinFormsApplicationScreen screen) {
+		if (screen != null) {
+			if (screen.Block != null)
+				SelectedBlock = screen.Block;
+			if (screen.DisplayMode == ScreenDisplayMode.Maximized || screen.DisplayMode == ScreenDisplayMode.FilledAndMaximized)
 				WindowState = FormWindowState.Maximized;
 		}
-		MergeScreenMenu(Screen);
+		base.OnActiveScreenChanged(screen);
 	}
 
 	protected override bool ProcessCmdKey(ref Message Message, Keys KeyData) {
@@ -700,15 +442,21 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			ApplyNavigationPaneWidth(_splitContainer.Panel1Collapsed ? _navigationPaneWidth : _splitContainer.SplitterDistance);
 	}
 
-	private void NavigationPaneSizeChanged(object? Sender, EventArgs Args) => ApplyNavigationPaneWidth(_navigationPaneWidth);
+	private void NavigationPaneSizeChanged(object sender, EventArgs args) {
+		ApplyNavigationPaneWidth(_navigationPaneWidth);
+	}
 
-	private void NavigationPaneToggle_Click(object? Sender, EventArgs Args) => NavigationPaneCollapsed = !NavigationPaneCollapsed;
+	private void NavigationPaneToggle_Click(object sender, EventArgs args) {
+		NavigationPaneCollapsed = !NavigationPaneCollapsed;
+	}
 
 	#endregion
 
-	protected virtual void OnApplicationChanged() => ApplicationChanged?.Invoke();
-
 	#region Misc
+
+	protected virtual void OnApplicationChanged() {
+		ApplicationChanged?.Invoke();
+	}
 
 	public virtual void ShowActiveScreenContextHelp() {
 		var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
@@ -734,16 +482,12 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	#endregion
 
-	#region Toolbar Handlers
-
-	#endregion
-
 	#region ApplicationBar Handlers
 
 	private void NavigationSelectionChanged(ApplicationBar source, ApplicationBar.Item button) {
-		var block = BlockBindings.FirstOrDefault(binding => ReferenceEquals(binding.Value, button.MenuControl)).Key;
+		var block = button.Button.Tag as IWinFormsApplicationBlock;
 		using var restoreSelection = Tools.Scope.ExecuteOnDispose(SynchronizeNavigationSelection);
-		if (block != null)
+		if (block != null && IsBlockRegistered(block))
 			ScreenHost.SelectBlock(block);
 	}
 
@@ -752,83 +496,69 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			return;
 		SynchronizeNavigationSelection();
 		UpdateNavigationPane(ActiveScreen);
-		UpdateApplicationCommands();
 		OnApplicationChanged();
 	}
 
+	// Keep only the selected block's generated menu; unrelated host notifications reuse that current view.
 	private void SynchronizeNavigationSelection() {
 		if (IsDisposed || Disposing)
 			return;
-		ApplicationBar.Item selected = null;
-		if (ActiveBlock != null && BlockBindings.TryGetValue(ActiveBlock, out var pane)) {
-			selected = _applicationBar.Items.FirstOrDefault(item => ReferenceEquals(item.MenuControl, pane));
+		var selected = _applicationBar.Items.FirstOrDefault(item => ReferenceEquals(item.Button.Tag, SelectedBlock));
+		foreach (var item in _applicationBar.Items.Where(item => item.Button.Tag is IWinFormsApplicationBlock && !ReferenceEquals(item, selected))) {
+			var pane = item.MenuControl;
+			item.MenuControl = null;
+			DisposeNavigationPane(pane);
+		}
+		if (selected != null && (selected.MenuControl == null || selected.MenuControl.IsDisposed)) {
+			selected.MenuControl = CreateApplicationBlockPane(SelectedBlock);
+			selected.MenuControl.Tag = SelectedBlock;
 		}
 		_applicationBar.SelectedItem = selected;
 		UpdateNavigationTheme();
 	}
 
-	private void NavigationThemeChanged(object? Sender, EventArgs Args) => UpdateNavigationTheme();
+	// Release generated views while retaining controls supplied by the block's command owners.
+	private static void DisposeNavigationPane(Control pane) {
+		if (pane == null)
+			return;
+		if (pane.Tag is IWinFormsApplicationBlock block) {
+			foreach (var item in block.Menus.SelectMany(menu => menu.Items).OfType<IWinFormsControlMenuItem>()) {
+				var control = item.ControlToShow;
+				if (pane.Contains(control))
+					control.Parent.Controls.Remove(control);
+			}
+		}
+		pane.Dispose();
+	}
 
+	// Forward live pane color/theme changes to the docking preview.
+	private void NavigationThemeChanged(object sender, EventArgs args) {
+		UpdateNavigationTheme();
+	}
+
+	// Observe only the currently displayed pane and use drawing utilities for its contrast color.
 	private void UpdateNavigationTheme() {
-		var Pane = !IsDisposed && !Disposing ? _applicationBar.ApplicationBarControl as TaskPane : null;
-		if (Pane?.IsDisposed == true)
-			Pane = null;
-		if (!ReferenceEquals(_navigationThemePane, Pane)) {
+		var pane = !IsDisposed && !Disposing ? _applicationBar.ApplicationBarControl as TaskPane : null;
+		if (pane?.IsDisposed == true)
+			pane = null;
+		if (!ReferenceEquals(_navigationThemePane, pane)) {
 			if (_navigationThemePane != null) {
 				_navigationThemePane.CustomSettingsChanged -= NavigationThemeChanged;
 				_navigationThemePane.BackColorChanged -= NavigationThemeChanged;
 			}
-			_navigationThemePane = Pane;
-			if (Pane != null) {
-				Pane.CustomSettingsChanged += NavigationThemeChanged;
-				Pane.BackColorChanged += NavigationThemeChanged;
+			_navigationThemePane = pane;
+			if (pane != null) {
+				pane.CustomSettingsChanged += NavigationThemeChanged;
+				pane.BackColorChanged += NavigationThemeChanged;
 			}
 		}
 		if (IsDisposed || Disposing || ScreenHost.IsDisposed)
 			return;
-		var BackColor = Pane?.GradientStartColor ?? _defaultDockPreviewColors.BackColor;
-		ScreenHost.TabControl.DockPreviewBackColor = BackColor;
-		ScreenHost.TabControl.DockPreviewForeColor = Pane == null ? _defaultDockPreviewColors.ForeColor : GetNavigationThemeForeColor(BackColor);
-	}
-
-	private static Color GetNavigationThemeForeColor(Color BackColor) {
-		// Choose whichever text color has greater contrast against the pane's actual background.
-		static double Linearize(byte Channel) {
-			var Value = Channel / 255.0;
-			return Value <= 0.04045 ? Value / 12.92 : Math.Pow((Value + 0.055) / 1.055, 2.4);
-		}
-		var Luminance = 0.2126 * Linearize(BackColor.R) + 0.7152 * Linearize(BackColor.G) + 0.0722 * Linearize(BackColor.B);
-		return (Luminance + 0.05) / 0.05 >= 1.05 / (Luminance + 0.05) ? Color.Black : Color.White;
+		var backColor = pane?.GradientStartColor ?? _defaultDockPreviewColors.BackColor;
+		ScreenHost.TabControl.DockPreviewBackColor = backColor;
+		ScreenHost.TabControl.DockPreviewForeColor = pane == null ? _defaultDockPreviewColors.ForeColor : Tools.Drawing.GetContrastingTextColor(backColor);
 	}
 
 	#endregion
-
-	private sealed class NativeCommandProvider : IApplicationCommandProvider<IWinFormsApplicationMenu, IWinFormsApplicationMenuItem> {
-		public NativeCommandProvider(IWinFormsApplicationMenu[] menus, IWinFormsApplicationMenuItem[] toolBarItems) {
-			Menus = menus;
-			ToolBarItems = toolBarItems;
-		}
-
-		public IWinFormsApplicationMenu[] Menus { get; }
-		public IWinFormsApplicationMenuItem[] ToolBarItems { get; }
-	}
-
-	private sealed class NativeMenuProjection : IWinFormsApplicationMenu {
-		private readonly IWinFormsApplicationMenu _source;
-		private readonly IWinFormsApplicationMenuItem[] _items;
-
-		public NativeMenuProjection(IWinFormsApplicationMenu source, IWinFormsApplicationMenuItem[] items) {
-			_source = source;
-			_items = Tools.Array.Clone(items);
-			Parent = source.Parent;
-		}
-
-		public string Text => _source.Text;
-		public Image Image32x32 => _source.Image32x32;
-		public bool ShowInMenuStrip => _source.ShowInMenuStrip;
-		public IWinFormsApplicationBlock Parent { get; set; }
-		public IWinFormsApplicationMenuItem[] Items => Tools.Array.Clone(_items);
-		public void Dispose() { }
-	}
 
 }

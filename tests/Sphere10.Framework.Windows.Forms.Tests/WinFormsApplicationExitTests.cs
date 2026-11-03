@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
+using Sphere10.Framework.Utils.WinFormsTester;
 using FormsApplication = System.Windows.Forms.Application;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
@@ -26,6 +28,57 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class WinFormsApplicationExitTests {
+	[TestCase(false)]
+	[TestCase(true)]
+	public void ActiveCompressionComparisonDoesNotPreventNativeOrApplicationExit(bool nativeClose) {
+		RunWithMessageLoop(async (application, form) => {
+			form.Confirmation = () => Task.FromResult(true);
+			using var screen = new MiscTestScreen();
+			form.ShowScreen(screen);
+			((TabControl)screen.Controls.Find("_tools", true).Single()).SelectedIndex = 1;
+			await Task.Yield();
+			((Button)screen.Controls.Find("_compressTestButton", true).Single()).PerformClick();
+			var operationField = typeof(MiscTestScreen).GetField("_compressionCancellation", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.That(operationField.GetValue(screen), Is.Not.Null, "The comparison must be active before closing the application.");
+			var output = (TextBox)screen.Controls.Find("_outputTextBox", true).Single();
+			var destroyed = false;
+			var operationPendingAtDestruction = false;
+			var cancellationRequestedAtDestruction = false;
+			string outputAtDestruction = null;
+			screen.ScreenDestroyed += (_, _) => {
+				destroyed = true;
+				var pending = (CancellationTokenSource)operationField.GetValue(screen);
+				operationPendingAtDestruction = pending != null;
+				cancellationRequestedAtDestruction = pending?.IsCancellationRequested ?? false;
+				outputAtDestruction = output.Text;
+			};
+
+			// Exercise both the window-close command and the application's normal guarded exit.
+			if (nativeClose) {
+				form.Close();
+				await WaitUntil(() => form.IsDisposed);
+			} else {
+				Assert.That(await application.ExitAsync(), Is.True);
+			}
+			Assert.That(form.IsDisposed && application.HasExited, Is.True);
+			Assert.That(screen.IsDisposed, Is.True);
+			Assert.That(destroyed, Is.True);
+			if (operationPendingAtDestruction) {
+				Assert.That(cancellationRequestedAtDestruction, Is.True, "Destruction must cancel work that is still owned by the screen.");
+			} else {
+				// Confirmation may legitimately outlast the short comparison; completed work needs no cancellation.
+				var results = outputAtDestruction.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+					.Where(line => line.StartsWith("Original: ", StringComparison.Ordinal))
+					.ToArray();
+				Assert.That(results, Has.Length.EqualTo(4));
+				Assert.That(results.All(line => line.Contains("Round trip: True", StringComparison.Ordinal)), Is.True, outputAtDestruction);
+			}
+
+			// The outer owner keeps dispatching until any remaining worker has released its operation.
+			await WaitUntil(() => operationField.GetValue(screen) == null);
+		});
+	}
+
 	[TestCase(false, false)]
 	[TestCase(true, false)]
 	[TestCase(false, true)]
@@ -233,7 +286,7 @@ public class WinFormsApplicationExitTests {
 			form.Confirmation = () => Task.FromResult(true);
 			using var screen = new ExitProbeScreen { Block = editorBlock };
 			form.ShowScreen(screen);
-			form.ActiveBlock = selectedBlock;
+			form.SelectedBlock = selectedBlock;
 			Assert.That(form.ScreenHost.ActiveScreen.Block, Is.SameAs(editorBlock));
 			Assert.That(await application.ExitAsync(), Is.False);
 			Assert.That(editorBlock.ExitCheckCount, Is.EqualTo(1));

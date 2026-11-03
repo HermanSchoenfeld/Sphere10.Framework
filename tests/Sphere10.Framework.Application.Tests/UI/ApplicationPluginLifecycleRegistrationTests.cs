@@ -286,6 +286,9 @@ public class ApplicationPluginLifecycleRegistrationTests {
 	}
 
 	private sealed class CustomPlugin(string name, IApplicationBlock[] blocks, Action<IServiceCollection> configureServices) : IApplicationPlugin {
+		// Retain the actual optional settings value owned by this fixture.
+		public SettingsObject PluginSettings { get; set; }
+
 		public event EventHandlerEx Loaded;
 		public event EventHandlerEx Unloaded;
 

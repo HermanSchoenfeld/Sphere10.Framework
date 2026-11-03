@@ -936,7 +936,9 @@ public class LogOutputSelectorControlTests {
 		Assert.That(host.ShowScreen(source), Is.True);
 		control.StartLogging(new LogOutputConfiguration { Destination = LogOutputDestination.Screen, TimestampEnabled = false });
 		var output = host.OpenScreens.OfType<LogScreen>().Single();
-		Assert.That(output.Host, Is.SameAs(host));
+		Assert.That(output.Host, Is.SameAs(((WinFormsApplicationScreenForm)output.FindForm()).ScreenHost));
+		Assert.That(output.Host.ActiveScreen, Is.SameAs(output));
+		Assert.That(host.ActiveScreen, Is.SameAs(source), "The root host retains its own active screen.");
 		Assert.That(host.IsScreenUndocked(output), Is.True);
 		Assert.That(output.FindForm().Text, Is.EqualTo("Log Output - Active Hardware Capture"));
 		await control.StopLoggingAsync();

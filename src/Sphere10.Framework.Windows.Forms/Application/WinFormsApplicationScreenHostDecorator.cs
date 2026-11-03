@@ -17,12 +17,12 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public abstract class WinFormsApplicationScreenHostDecorator<TConcrete> : MultiApplicationScreenHostDecorator<IWinFormsApplicationBlock, WinFormsApplicationScreen, TConcrete>, IWinFormsApplicationScreenHost
 	where TConcrete : IWinFormsApplicationScreenHost {
-	public event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging {
+	public virtual event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanging {
 		add => InternalHost.ActiveScreenChanging += value;
 		remove => InternalHost.ActiveScreenChanging -= value;
 	}
 
-	public event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanged {
+	public virtual event EventHandlerEx<WinFormsApplicationScreen?> ActiveScreenChanged {
 		add => InternalHost.ActiveScreenChanged += value;
 		remove => InternalHost.ActiveScreenChanged -= value;
 	}

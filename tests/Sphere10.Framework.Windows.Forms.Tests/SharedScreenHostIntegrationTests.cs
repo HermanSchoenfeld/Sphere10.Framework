@@ -76,7 +76,7 @@ public class SharedScreenHostIntegrationTests {
 		var control = native.ActivateScreen(block, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
 		Assert.That(host.ActiveScreen, Is.SameAs(control));
-		Assert.That(host.GetScreenBlock(control), Is.SameAs(block));
+		Assert.That(control.Block, Is.SameAs(block));
 		Assert.That(host.Screens.Single(), Is.SameAs(control));
 		Assert.That(host.OpenScreens.Single(), Is.SameAs(control));
 		var snapshot = host.Screens;
@@ -105,8 +105,8 @@ public class SharedScreenHostIntegrationTests {
 		host.Changed += () => changes++;
 		var select = host.SelectBlockAsync(second);
 		Assert.That(select.IsCompletedSuccessfully, Is.True);
-		Assert.That(host.ActiveBlock, Is.SameAs(second));
-		Assert.That(native.ActiveBlock, Is.SameAs(second));
+		Assert.That(host.SelectedBlock, Is.SameAs(second));
+		Assert.That(native.SelectedBlock, Is.SameAs(second));
 		Assert.That(host.ActiveScreen, Is.SameAs(control));
 		Assert.That(control.HideRequests, Is.EqualTo(guards));
 		Assert.That(changes, Is.EqualTo(1));
@@ -127,10 +127,10 @@ public class SharedScreenHostIntegrationTests {
 		var screen = host.OpenScreenAsync(block, definition).Result;
 		Assert.That(screen, Is.TypeOf<ProbeScreen>());
 		Assert.That(screen, Is.SameAs(native.ActiveScreen));
-		Assert.That(host.GetScreenBlock(screen), Is.SameAs(block));
+		Assert.That(screen.Block, Is.SameAs(block));
 		Assert.That(host.Blocks, Is.EqualTo(new[] { block }));
 		Assert.That(host.AvailableBlocks, Is.EqualTo(new[] { block }));
-		Assert.That(host.ActiveBlock, Is.SameAs(block));
+		Assert.That(host.SelectedBlock, Is.SameAs(block));
 	}
 
 	[Test]
@@ -144,7 +144,7 @@ public class SharedScreenHostIntegrationTests {
 		native.InitializeScreens(new[] { block, other });
 		IMultiApplicationScreenHost<IWinFormsApplicationBlock, WinFormsApplicationScreen> host = native;
 		Assert.That(host.ActiveScreen.Title, Is.EqualTo("Site editor"));
-		Assert.That(host.GetScreenBlock(host.ActiveScreen), Is.SameAs(block));
+		Assert.That(host.ActiveScreen.Block, Is.SameAs(block));
 		Assert.That(host.OpenScreenAsync(block, definition).Result, Is.SameAs(host.ActiveScreen));
 		var before = host.ActiveScreen;
 		Assert.That(() => host.OpenScreenAsync(other, definition), Throws.ArgumentException);
@@ -204,8 +204,8 @@ public class SharedScreenHostIntegrationTests {
 		Assert.That(host.Blocks.Length, Is.EqualTo(2));
 		Assert.That(host.Screens.Length, Is.EqualTo(2));
 		Assert.That(host.OpenScreens.Length, Is.EqualTo(2));
-		Assert.That(host.GetScreenBlock(first), Is.SameAs(firstBlock));
-		Assert.That(host.GetScreenBlock(second), Is.SameAs(secondBlock));
+		Assert.That(first.Block, Is.SameAs(firstBlock));
+		Assert.That(second.Block, Is.SameAs(secondBlock));
 		Assert.That(host.CloseScreenAsync(first).Result, Is.True);
 		Assert.That(first.IsDisposed, Is.True);
 		Assert.That(second.IsDisposed, Is.False);
@@ -224,9 +224,9 @@ public class SharedScreenHostIntegrationTests {
 		var screen = native.ActivateScreen(first, typeof(ProbeScreen));
 		IMultiApplicationScreenHost host = native;
 		host.SelectBlockAsync(second).GetAwaiter().GetResult();
-		Assert.That(host.ActiveBlock, Is.SameAs(second));
+		Assert.That(host.SelectedBlock, Is.SameAs(second));
 		Assert.That(host.ShowScreenAsync(screen).Result, Is.True);
-		Assert.That(host.ActiveBlock, Is.SameAs(first));
+		Assert.That(host.SelectedBlock, Is.SameAs(first));
 		Assert.That(host.ActiveScreen, Is.SameAs(screen));
 	}
 
@@ -240,9 +240,9 @@ public class SharedScreenHostIntegrationTests {
 		IMultiApplicationScreenHost host = native;
 		host.SelectBlockAsync(second).GetAwaiter().GetResult();
 		Assert.That(host.Blocks, Is.EqualTo(new[] { first, second }));
-		Assert.That(host.ActiveBlock, Is.SameAs(second));
+		Assert.That(host.SelectedBlock, Is.SameAs(second));
 		var screen = host.ActivateBlockAsync(second).Result;
-		Assert.That(host.GetScreenBlock(screen), Is.SameAs(second));
+		Assert.That(screen.Block, Is.SameAs(second));
 		Assert.That(host.UnregisterBlockAsync(first).Result, Is.True);
 		Assert.That(host.Blocks, Is.EqualTo(new[] { second }));
 		Assert.That(host.ActiveScreen, Is.SameAs(screen));
@@ -256,7 +256,7 @@ public class SharedScreenHostIntegrationTests {
 		var activated = native.ActivateBlockAsync(block).Result;
 		Assert.That(activated, Is.Not.Null);
 		Assert.That(activated, Is.SameAs(native.ActiveScreen));
-		Assert.That(native.GetScreenBlock(activated), Is.SameAs(block));
+		Assert.That(activated.Block, Is.SameAs(block));
 		Assert.That(activated.Title, Is.EqualTo("Editor"));
 	}
 
@@ -306,7 +306,7 @@ public class SharedScreenHostIntegrationTests {
 		Assert.That(ui.ExecuteMenuItemAsync(items[0]).Result, Is.True);
 		Assert.That(ui.ExecuteMenuItemAsync(items[1]).Result, Is.True);
 		Assert.That(host.OpenScreens.Select(screen => screen.Title), Is.EqualTo(new[] { "First draft", "Second draft" }));
-		Assert.That(host.OpenScreens.All(screen => ReferenceEquals(host.GetScreenBlock(screen), block)), Is.True);
+		Assert.That(host.OpenScreens.All(screen => ReferenceEquals(screen.Block, block)), Is.True);
 	}
 
 	[Test]

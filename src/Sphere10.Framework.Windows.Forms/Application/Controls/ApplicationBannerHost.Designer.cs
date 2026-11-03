@@ -9,6 +9,7 @@
 namespace Sphere10.Framework.Windows.Forms;
 
 partial class ApplicationBannerHost {
+	private ApplicationBanner _previewBanner;
 
 	private void InitializeComponent() {
 		_previewBanner = new ApplicationBanner();
@@ -30,6 +31,4 @@ partial class ApplicationBannerHost {
 		Size = new System.Drawing.Size(700, 111);
 		ResumeLayout(false);
 	}
-
-	private ApplicationBanner _previewBanner;
 }

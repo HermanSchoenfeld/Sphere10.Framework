@@ -117,6 +117,9 @@ public class ApplicationPluginRegistrationTests {
 	}
 
 	private sealed class MutablePlugin : IApplicationPlugin {
+		// Retain the actual optional settings value owned by this fixture.
+		public SettingsObject PluginSettings { get; set; }
+
 		public event EventHandlerEx Loaded { add { } remove { } }
 		public event EventHandlerEx Unloaded { add { } remove { } }
 		public string Name { get; set; }

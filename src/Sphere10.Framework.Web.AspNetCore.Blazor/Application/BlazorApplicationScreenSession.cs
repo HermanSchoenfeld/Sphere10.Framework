@@ -20,7 +20,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>The logical Blazor screen retained by the host, with renderer-local identity and immutable component parameters.</summary>
 /// <remarks>The renderer creates and disposes Screen. This proxy delegates its portable screen lifecycle to that component.</remarks>
-public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen, IApplicationSettingsParticipant {
+public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen {
 	private readonly string _registeredTitle;
 	private readonly ApplicationScreenDefinition _definition;
 	private readonly string _navigationId;
@@ -85,6 +85,13 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen, I
 	public IBlazorApplicationScreen Screen { get; private set; }
 
 	public string Title => Screen?.Title ?? _registeredTitle;
+
+	/// <summary>The renderer component's current typed settings, exposed through the portable state contract.</summary>
+	public SettingsObject ScreenSettings {
+		get {
+			return Screen?.ScreenSettings;
+		}
+	}
 
 	public bool HasUnsavedChanges => Screen?.HasUnsavedChanges ?? false;
 
@@ -158,11 +165,6 @@ public sealed class BlazorApplicationScreenSession : IBlazorApplicationScreen, I
 		return Screen?.OnDeactivatedAsync(cancellationToken) ?? Task.CompletedTask;
 	}
 
-	/// <summary>Awaits the renderer component's accepted-close capture without saving from hide or veto callbacks.</summary>
-	public Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-		cancellationToken.ThrowIfCancellationRequested();
-		return Screen is IApplicationSettingsParticipant participant ? participant.SaveSettingsAsync(cancellationToken) : Task.CompletedTask;
-	}
 
 	internal void SetScreen(IBlazorApplicationScreen screen) {
 		Guard.Argument(screen == null || ScreenType.IsInstanceOfType(screen), nameof(screen), "The component must match the retained screen type.");

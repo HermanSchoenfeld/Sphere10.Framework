@@ -20,6 +20,9 @@ public abstract class ApplicationPluginBase : IApplicationPlugin {
 
 	public abstract string Name { get; init; }
 
+	/// <summary>The actual settings instance shared by this owner and its screens.</summary>
+	public virtual SettingsObject PluginSettings { get; set; }
+
 	public abstract IApplicationBlock[] Blocks { get; init; }
 
 	/// <summary>Raises load notifications without registering services, for existing notification-only consumers.</summary>

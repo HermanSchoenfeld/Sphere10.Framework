@@ -35,12 +35,11 @@ public class ApplicationGenericContractTests {
 		Assert.That(application.Blocks, Is.EqualTo(new[] { block }));
 		Assert.That(application.ScreenHost, Is.SameAs(host));
 		Assert.That(application.ScreenHost.Blocks, Is.EqualTo(new[] { block }));
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(block));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(block));
 		Assert.That(application.ScreenHost.ActiveScreen, Is.SameAs(screen));
 		Assert.That(screen.Host, Is.SameAs(host));
 		Assert.That(screen.Block, Is.SameAs(block));
 		Assert.That(((IApplicationPlugin)plugin).Blocks, Is.EqualTo(new[] { block }));
-		Assert.That(((IApplicationBlock)block).Menus, Is.EqualTo(new[] { menu }));
 		Assert.That(((IApplicationCommandProvider)block).Menus, Is.EqualTo(new[] { menu }));
 		Assert.That(((IApplicationCommandProvider)block).ToolBarItems, Is.EqualTo(new[] { item }));
 		Assert.That(((IApplicationMenu)menu).Items, Is.EqualTo(new[] { item }));
@@ -80,7 +79,7 @@ public class ApplicationGenericContractTests {
 		Assert.That(notifications, Is.GreaterThan(0));
 		Assert.That(neutral.Blocks, Is.EqualTo(typed.Blocks));
 		Assert.That(neutral.AvailableBlocks, Is.EqualTo(typed.AvailableBlocks));
-		Assert.That(neutral.ActiveBlock, Is.SameAs(typed.ActiveBlock));
+		Assert.That(neutral.SelectedBlock, Is.SameAs(typed.SelectedBlock));
 		Assert.That(neutral.Screens.Single(), Is.SameAs(typed.Screens.Single()));
 		await neutral.SelectBlockAsync(second);
 		var beforeRemoval = notifications;
@@ -91,7 +90,7 @@ public class ApplicationGenericContractTests {
 		Assert.That(decorator.Activations, Is.EqualTo(2));
 		Assert.That(implementation.Activations, Is.EqualTo(2));
 		Assert.That(notifications, Is.EqualTo(beforeRemoval));
-		Assert.That(neutral.ActiveBlock, Is.SameAs(first));
+		Assert.That(neutral.SelectedBlock, Is.SameAs(first));
 	}
 
 	private sealed class ExplicitMenu : IApplicationMenu<TestApplicationMenuItem> {
@@ -108,7 +107,10 @@ public class ApplicationGenericContractTests {
 		TestApplicationMenuItem[] IApplicationMenu<TestApplicationMenuItem>.Items => new[] { _item };
 	}
 
-	private sealed class ExplicitBlock : IApplicationBlock<ExplicitMenu, TestApplicationMenuItem> {
+	private sealed class ExplicitBlock : IApplicationBlock, IApplicationCommandProvider<ExplicitMenu, TestApplicationMenuItem> {
+		// Retain the actual optional settings value owned by this fixture.
+		public SettingsObject BlockSettings { get; set; }
+
 		private readonly ExplicitMenu _menu;
 		private readonly TestApplicationMenuItem _item;
 		private readonly ApplicationScreenDefinition _definition;
@@ -129,12 +131,14 @@ public class ApplicationGenericContractTests {
 		public ApplicationScreenDefinition[] ScreenDefinitions => _definition == null ? Array.Empty<ApplicationScreenDefinition>() : new[] { _definition };
 
 		public ApplicationScreenDefinition DefaultScreenDefinition => _definition;
-		ExplicitMenu[] IApplicationBlock<ExplicitMenu, TestApplicationMenuItem>.Menus => new[] { _menu };
 		ExplicitMenu[] IApplicationCommandProvider<ExplicitMenu, TestApplicationMenuItem>.Menus => new[] { _menu };
 		TestApplicationMenuItem[] IApplicationCommandProvider<ExplicitMenu, TestApplicationMenuItem>.ToolBarItems => new[] { _item };
 	}
 
 	private sealed class ExplicitPlugin(ExplicitBlock block) : IApplicationPlugin<ExplicitBlock> {
+		// Retain the actual optional settings value owned by this fixture.
+		public SettingsObject PluginSettings { get; set; }
+
 		public event EventHandlerEx Loaded { add { } remove { } }
 		public event EventHandlerEx Unloaded { add { } remove { } }
 		public string Name => "Plugin";
@@ -159,7 +163,7 @@ public class ApplicationGenericContractTests {
 		ExplicitPlugin[] IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>>.LoadedPlugins => new[] { plugin };
 		ApplicationScreenHost<ExplicitBlock, ProbeScreen> IApplication<ExplicitPlugin, ApplicationScreenHost<ExplicitBlock, ProbeScreen>>.ScreenHost => host;
 		public IApplicationBlock[] Blocks => host.Blocks;
-		public ApplicationSettingsCatalog Settings { get; } = new("ExplicitApplication", null, host.Blocks);
+		public ISettingsProvider Settings { get; }
 		public bool HasUnsavedChanges => host.HasUnsavedChanges;
 		public void Initialize() { }
 		public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;

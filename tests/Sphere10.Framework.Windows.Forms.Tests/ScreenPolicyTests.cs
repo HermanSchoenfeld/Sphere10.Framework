@@ -65,7 +65,7 @@ public class ScreenPolicyTests {
 		IApplicationBlock shared = block;
 		Assert.That(shared.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));
 		Assert.That(shared.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		var screen = (IScreenMenuItem)shared.Menus[0].Items[0];
+		var screen = (IScreenMenuItem)((IApplicationCommandProvider)block).Menus[0].Items[0];
 		Assert.That(screen.ScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.PermanentSingleton));
 		Assert.That(shared.DefaultScreenDefinition, Is.Not.SameAs(screen.ScreenDefinition));
 		Assert.That(shared.ScreenDefinitions.Any(definition => ReferenceEquals(definition, screen.ScreenDefinition)), Is.True);
@@ -316,7 +316,7 @@ public class ScreenPolicyTests {
 		empty.CancelHide = true;
 		form.RegisterBlock(permanentBlock);
 		Assert.That(form.RegisteredBlocks, Is.EqualTo(new[] { emptyBlock }));
-		Assert.That(form.BlockBindings.ContainsKey(permanentBlock), Is.False);
+		Assert.That(form.IsBlockRegistered(permanentBlock), Is.False);
 		Assert.That(form.ScreenHost.Screens, Is.EqualTo(new[] { empty }));
 		empty.CancelHide = false;
 		form.RegisterBlock(permanentBlock);

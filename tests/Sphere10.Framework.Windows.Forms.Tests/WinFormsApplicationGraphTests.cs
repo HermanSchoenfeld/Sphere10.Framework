@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
@@ -87,6 +88,38 @@ public class WinFormsApplicationGraphTests {
 	}
 
 	[Test]
+	public void NativeMenuReferencesPreventRemovingTheirScreenDefinition() {
+		using var block = new WinFormsApplicationBlock { Name = "Workspace" };
+		using var menu = new WinFormsApplicationMenu("Screens");
+		var definition = new ApplicationScreenDefinition(typeof(TrackedScreen));
+		var item = new WinFormsScreenMenuItem(definition, "Editor");
+		block.AddScreenDefinition(definition);
+		menu.AddItem(item);
+		block.AddMenu(menu);
+		Assert.That(() => block.RemoveScreenDefinition(definition), Throws.ArgumentException);
+		Assert.That(block.ScreenDefinitions, Is.EqualTo(new[] { definition }));
+		block.RemoveMenu(menu);
+		block.RemoveScreenDefinition(definition);
+		Assert.That(block.ScreenDefinitions, Is.Empty);
+		Assert.That(item.Parent, Is.SameAs(menu), "Removing native navigation membership retains caller ownership of its menu and item.");
+	}
+
+	[Test]
+	public void NativeToolbarReferencesPreventRemovingTheirScreenDefinition() {
+		using var block = new ToolbarBlock { Name = "Workspace" };
+		var definition = new ApplicationScreenDefinition(typeof(TrackedScreen));
+		using var item = new WinFormsScreenMenuItem(definition, "Editor");
+		block.AddScreenDefinition(definition);
+		block.ToolBarItems = new[] { item };
+		Assert.That(() => block.RemoveScreenDefinition(definition), Throws.ArgumentException);
+		Assert.That(block.ScreenDefinitions, Is.EqualTo(new[] { definition }));
+		block.ToolBarItems = Array.Empty<IWinFormsApplicationMenuItem>();
+		block.RemoveScreenDefinition(definition);
+		Assert.That(block.ScreenDefinitions, Is.Empty);
+		Assert.That(item.Parent, Is.Null, "Toolbar membership does not create a synthetic menu owner.");
+	}
+
+	[Test]
 	public void DefinitionReplacementUpdatesEveryActivatorWithoutExposingItsArray() {
 		using var menu = new WinFormsApplicationMenu("Screens");
 		var first = new WinFormsScreenMenuItem(new ApplicationScreenDefinition(typeof(TrackedScreen), "First"), "First");
@@ -147,12 +180,9 @@ public class WinFormsApplicationGraphTests {
 		host.ScreenMode = ScreenMode.MultiView;
 		var firstFailure = new InvalidOperationException("First destruction failure");
 		var secondFailure = failureCount == 2 ? new InvalidOperationException("Second destruction failure") : null;
-		using var firstMenu = new WinFormsApplicationMenu("First screen");
-		using var secondMenu = new WinFormsApplicationMenu("Second screen");
-		using var healthyMenu = new WinFormsApplicationMenu("Healthy screen");
-		using var first = new DisposalScreen(new[] { firstMenu, borrowedMenu }, firstFailure) { Block = block };
-		using var second = new DisposalScreen(new[] { secondMenu, borrowedMenu }, secondFailure) { Block = block };
-		using var healthy = new DisposalScreen(new[] { healthyMenu, borrowedMenu }) { Block = block };
+		using var first = new DisposalScreen(firstFailure) { Block = block };
+		using var second = new DisposalScreen(secondFailure) { Block = block };
+		using var healthy = new DisposalScreen() { Block = block };
 		var screens = new[] { first, second, healthy };
 		foreach (var screen in screens)
 			Assert.That(host.ShowScreen(screen), Is.True);
@@ -177,10 +207,20 @@ public class WinFormsApplicationGraphTests {
 		Assert.That(host.Screens, Is.Empty);
 		Assert.That(host.Blocks, Is.Empty);
 		Assert.That(block.Parent, Is.Null);
-		Assert.That(firstMenu.Parent, Is.Null);
-		Assert.That(secondMenu.Parent, Is.Null);
-		Assert.That(healthyMenu.Parent, Is.Null);
-		Assert.That(borrowedMenu.Parent, Is.SameAs(block), "Screen cleanup must preserve the block's ownership of borrowed menus.");
+		Assert.That(healthy.CommandDisposedCount, Is.EqualTo(1), "The native screen retains disposal ownership of its own detached command.");
+		Assert.That(healthy.Command.Owner, Is.Null);
+		Assert.That(borrowedMenu.Parent, Is.SameAs(block), "Screen cleanup must preserve the block's menu ownership.");
+	}
+
+	[Test]
+	public void NativeScreenDisposalOwnsRegisteredMenuItems() {
+		using var screen = new DisposalScreen();
+		var disposed = 0;
+		screen.Command.Disposed += (_, _) => disposed++;
+		screen.Dispose();
+		screen.Dispose();
+		Assert.That(disposed, Is.EqualTo(1));
+		Assert.That(screen.Command.Owner, Is.Null);
 	}
 
 	[Test]
@@ -234,7 +274,12 @@ public class WinFormsApplicationGraphTests {
 		block.AddScreenDefinition(new ApplicationScreenDefinition(typeof(TrackedScreen)));
 		var screen = host.ActivateScreen(block, typeof(TrackedScreen));
 		Assert.That(host.UndockScreen(screen), Is.True);
-		Assert.That(screen.Host, Is.SameAs(host));
+		var detachedHost = screen.Host;
+		Assert.That(detachedHost, Is.Not.SameAs(host));
+		Assert.That(detachedHost.ActiveScreen, Is.SameAs(screen));
+		Assert.That(detachedHost.ActiveBlock, Is.SameAs(block));
+		Assert.That(detachedHost.IsScreenUndocked(screen), Is.True);
+		Assert.That(host.Screens, Does.Contain(screen), "The root retains lifetime ownership while the window supplies local presentation.");
 		Assert.That(screen.Block, Is.SameAs(block));
 		Assert.That(host.DockScreen(screen), Is.True);
 		Assert.That(screen.Host, Is.SameAs(host));
@@ -310,16 +355,18 @@ public class WinFormsApplicationGraphTests {
 	public sealed class OtherScreen : WinFormsApplicationScreen { }
 
 	public sealed class DisposalScreen : WinFormsApplicationScreen {
-		private readonly IWinFormsApplicationMenu[] _menus;
 		private readonly Exception _destructionFailure;
 
-		public DisposalScreen(IWinFormsApplicationMenu[] menus, Exception destructionFailure = null) {
-			_menus = Tools.Array.Clone(menus);
+		public DisposalScreen(Exception destructionFailure = null) {
 			_destructionFailure = destructionFailure;
 			ActivationMode = ScreenActivationMode.MultiInstance;
+			Command = new ToolStripMenuItem("Screen command");
+			Command.Disposed += (_, _) => CommandDisposedCount++;
+			RegisterMenuItem(Command);
 		}
 
-		public override IWinFormsApplicationMenu[] Menus => Tools.Array.Clone(_menus);
+		public ToolStripMenuItem Command { get; }
+		public int CommandDisposedCount { get; private set; }
 		public int DestructionCount { get; private set; }
 		public IWinFormsApplicationScreenHost DestructionHost { get; private set; }
 		public IWinFormsApplicationBlock DestructionBlock { get; private set; }
@@ -336,7 +383,7 @@ public class WinFormsApplicationGraphTests {
 	private sealed class NeutralBlock : ApplicationBlockBase { }
 
 	private sealed class ToolbarBlock : WinFormsApplicationBlock, IWinFormsApplicationBlock {
-		public IWinFormsApplicationMenuItem[] ToolBarItems { get; set; }
+		public new IWinFormsApplicationMenuItem[] ToolBarItems { get; set; }
 	}
 
 	private sealed class DirectMenu : IWinFormsApplicationMenu {

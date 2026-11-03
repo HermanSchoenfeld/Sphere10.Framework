@@ -52,6 +52,14 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public abstract IWinFormsApplicationBlock ActiveBlock { get; }
 
+	/// <summary>The block currently browsed in navigation, independently of the active screen.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public virtual IWinFormsApplicationBlock SelectedBlock {
+		get {
+			return ApplicationHost.SelectedBlock;
+		}
+	}
+
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public abstract IUserInterfaceServices UserInterfaceServices { get; }
 
@@ -86,8 +94,6 @@ public abstract class WinFormsApplicationScreenHostBase : UserControlEx, IWinFor
 	public virtual Task RegisterBlockAsync(IWinFormsApplicationBlock block, CancellationToken cancellationToken = default) => ApplicationHost.RegisterBlockAsync(block, cancellationToken);
 
 	public virtual Task<bool> UnregisterBlockAsync(IWinFormsApplicationBlock block, CancellationToken cancellationToken = default) => ApplicationHost.UnregisterBlockAsync(block, cancellationToken);
-
-	public virtual IWinFormsApplicationBlock GetScreenBlock(WinFormsApplicationScreen screen) => ApplicationHost.GetScreenBlock(screen);
 
 	public virtual Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) => ApplicationHost.ClearSelectionAsync(cancellationToken);
 

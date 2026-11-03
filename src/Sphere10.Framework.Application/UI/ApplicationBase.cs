@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>Shares application lifecycle, owned resource cleanup and commands while platform adapters project their existing screen hosts.</summary>
+/// <summary>Shares application lifecycle and owned resource cleanup while platform adapters project their existing screen hosts.</summary>
 public abstract class ApplicationBase : Disposable, IApplication {
 	public event EventHandlerEx Changed;
 	public event EventHandlerEx Initializing;
@@ -44,23 +44,19 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	private bool _initializing;
 	private bool _finalized;
 	private bool _disposing;
-	private IApplicationMenu[] _menus = Array.Empty<IApplicationMenu>();
-	private IApplicationMenuItem[] _toolBarItems = Array.Empty<IApplicationMenuItem>();
 	private IApplicationScreenHost _observedHost;
 	private IApplicationBlock[] _parentedBlocks = Array.Empty<IApplicationBlock>();
-	private readonly Lazy<ApplicationSettingsCatalog> _settings;
-	private readonly ApplicationSettingsDefinition[] _settingsDefinitions;
+	private readonly Lazy<ISettingsProvider> _settings;
 
 	protected ApplicationBase()
 		: this(null) {
 	}
 
 	/// <summary>Resolves application-owned tasks and tasks keyed by successfully loaded plugin names, leaving process registrations untouched.</summary>
-	protected ApplicationBase(IServiceProvider services, string settingsKey = null, IEnumerable<ApplicationSettingsDefinition> settingsDefinitions = null) {
+	protected ApplicationBase(IServiceProvider services, string settingsKey = null) {
 		Services = services;
 		SettingsKey = settingsKey ?? Tools.Runtime.GetEntryAssembly().GetName().Name;
-		_settingsDefinitions = settingsDefinitions?.ToArray() ?? Array.Empty<ApplicationSettingsDefinition>();
-		_settings = new Lazy<ApplicationSettingsCatalog>(CreateSettingsCatalog);
+		_settings = new Lazy<ISettingsProvider>(GetSettingsProvider);
 		_initializers = Tools.Values.Future.LazyLoad(() => ResolveLifecycleTasks<IApplicationInitializer>(services));
 		_finalizers = Tools.Values.Future.LazyLoad(() => ResolveLifecycleTasks<IApplicationFinalizer>(services));
 		_logger = services?.GetService<ILogger>() ?? SystemLog.Logger;
@@ -100,14 +96,14 @@ public abstract class ApplicationBase : Disposable, IApplication {
 
 	public abstract IApplicationScreenHost ScreenHost { get; }
 
-	/// <summary>The application-owned preference catalog, including unopened and no-options registrations.</summary>
-	public virtual ApplicationSettingsCatalog Settings => _settings.Value;
+	/// <summary>The existing user settings provider, resolved once for this application.</summary>
+	public virtual ISettingsProvider Settings {
+		get {
+			return _settings.Value;
+		}
+	}
 
 	public virtual bool HasUnsavedChanges => ScreenHost?.HasUnsavedChanges ?? false;
-
-	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus);
-
-	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems);
 
 	protected bool IsDisposed { get; private set; }
 
@@ -115,16 +111,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	protected IServiceProvider Services { get; }
 
 	/// <summary>The stable preference namespace, independent of the application's displayed caption.</summary>
-	protected string SettingsKey { get; }
-
-	/// <summary>A snapshot of application-root preference contributions supplied at construction.</summary>
-	protected ApplicationSettingsDefinition[] SettingsDefinitions => Tools.Array.Clone(_settingsDefinitions);
-
-	/// <summary>Uses an existing application-DI catalog when supplied, otherwise projects this application's own graph lazily.</summary>
-	protected virtual ApplicationSettingsCatalog CreateSettingsCatalog() {
-		return Services?.GetService<ApplicationSettingsCatalog>()
-			?? new ApplicationSettingsCatalog(SettingsKey, Services?.GetService<IApplicationSettingsStore>(), Blocks, SettingsDefinitions, Logger);
-	}
+	protected string SettingsKey { get; set; }
 
 	protected bool IsFinalizationCompleted {
 		get {
@@ -238,6 +225,11 @@ public abstract class ApplicationBase : Disposable, IApplication {
 		return request.Completion.Task.WaitAsync(cancellationToken);
 	}
 
+	// Resolve the application's configured user provider without creating another settings owner.
+	protected virtual ISettingsProvider GetSettingsProvider() {
+		return Services?.GetService<ISettingsServices>()?.UserSettings;
+	}
+
 	/// <summary>Replaces local startup tasks before initialization. Task instances retain their existing ownership.</summary>
 	protected void SetInitializers(IEnumerable<IApplicationInitializer> initializers) {
 		Guard.ArgumentNotNull(initializers, nameof(initializers));
@@ -258,26 +250,6 @@ public abstract class ApplicationBase : Disposable, IApplication {
 		ObjectDisposedException.ThrowIf(IsDisposed || _disposing, this);
 		Guard.Ensure(!_initializationStarted && !_finalized, "Application lifecycle tasks cannot change after initialization or finalization.");
 		_finalizers = Tools.Values.Future.Explicit(tasks);
-	}
-
-	/// <summary>Replaces application-level menu membership without taking ownership of the definitions.</summary>
-	public virtual void SetMenus(IEnumerable<IApplicationMenu> menus) {
-		ObjectDisposedException.ThrowIf(IsDisposed, this);
-		Guard.ArgumentNotNull(menus, nameof(menus));
-		var definitions = menus.ToArray();
-		Guard.Argument(definitions.All(menu => menu != null), nameof(menus), "Menu definitions cannot be null.");
-		_menus = definitions;
-		OnChanged();
-	}
-
-	/// <summary>Replaces application-level toolbar membership without taking ownership of the definitions.</summary>
-	public virtual void SetToolBarItems(IEnumerable<IApplicationMenuItem> items) {
-		ObjectDisposedException.ThrowIf(IsDisposed, this);
-		Guard.ArgumentNotNull(items, nameof(items));
-		var definitions = items.ToArray();
-		Guard.Argument(definitions.All(item => item != null), nameof(items), "Toolbar definitions cannot be null.");
-		_toolBarItems = definitions;
-		OnChanged();
 	}
 
 	protected virtual void OnChanged() {
