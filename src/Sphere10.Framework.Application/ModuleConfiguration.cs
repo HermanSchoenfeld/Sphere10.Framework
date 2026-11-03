@@ -29,8 +29,17 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		if (!serviceCollection.HasImplementationFor<IHelpServices>())
 			serviceCollection.AddTransient<IHelpServices, StandardHelpServices>();
 
-		if (!serviceCollection.HasImplementationFor<IProductInformationProvider>())
-			serviceCollection.AddSingleton<IProductInformationProvider, AssemblyAttributesProductInformationProvider>();
+		if (!serviceCollection.HasImplementationFor<IProductInformationProvider>()) {
+			// Existing information consumers use the application's selected product services when supplied.
+			if (serviceCollection.HasImplementationFor<IProductServicesProvider>())
+				serviceCollection.AddSingleton<IProductInformationProvider>(provider => provider.GetRequiredService<IProductServicesProvider>());
+			else
+				serviceCollection.AddSingleton<IProductInformationProvider, AssemblyAttributesProductInformationProvider>();
+		}
+
+		// Aggregate the selected information provider without activating usage or instance services.
+		if (!serviceCollection.HasImplementationFor<IProductServicesProvider>())
+			serviceCollection.AddSingleton<IProductServicesProvider>(provider => new ProductServicesProvider(provider.GetRequiredService<IProductInformationProvider>(), provider));
 
 		if (!serviceCollection.HasImplementationFor<IProductInstancesCounter>())
 			serviceCollection.AddTransient<IProductInstancesCounter, StandardProductInstancesCounter>();

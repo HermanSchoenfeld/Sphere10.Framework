@@ -8,87 +8,103 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.IO;
-using Tools;
 
 namespace Sphere10.Framework.Application;
 
+/// <summary>Reads product attributes from a supplied assembly or the application entry assembly.</summary>
 internal static class Sphere10AssemblyAttributesHelper {
 
-	public static string GetAssemblyTitle() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyTitleAttribute>(false);
+	/// <summary>Reads the assembly title, falling back to its file name.</summary>
+	public static string GetAssemblyTitle(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyTitleAttribute>(false);
 		if (attributes.Any()) {
 			var firstTitleAttr = attributes.First();
 			if (!string.IsNullOrWhiteSpace(firstTitleAttr.Title)) {
 				return firstTitleAttr.Title;
 			}
 		}
-		return Path.GetFileNameWithoutExtension(Tools.Runtime.GetEntryAssembly().Location);
+		return Path.GetFileNameWithoutExtension(assembly.Location);
 	}
 
-	public static string GetAssemblyVersion() {
-		return Tools.Runtime.GetEntryAssembly().GetName().Version?.ToString();
+	/// <summary>Reads the assembly identity version.</summary>
+	public static string GetAssemblyVersion(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		return assembly.GetName().Version?.ToString();
 	}
 
-	public static string GetAssemblyDescription() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyDescriptionAttribute>(false);
+	/// <summary>Reads and formats the product description.</summary>
+	public static string GetAssemblyDescription(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyDescriptionAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Description);
 	}
 
-	public static string GetAssemblyCompanyLink() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyCompanyLinkAttribute>(false);
+	/// <summary>Reads and formats the company website.</summary>
+	public static string GetAssemblyCompanyLink(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyCompanyLinkAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().CompanyLink);
 	}
 
-	public static string GetAssemblyProductLink() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductLinkAttribute>(false);
+	/// <summary>Reads and formats the product website.</summary>
+	public static string GetAssemblyProductLink(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductLinkAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().ProductLink);
 	}
 
-	public static string GetAssemblyProductPurchaseLink() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductPurchaseLinkAttribute>(false);
+	/// <summary>Reads and formats the product purchase link.</summary>
+	public static string GetAssemblyProductPurchaseLink(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductPurchaseLinkAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().ProductPurchaseLink);
 	}
 
-	public static string GetAssemblyProduct() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductAttribute>(false);
+	/// <summary>Reads and formats the product name.</summary>
+	public static string GetAssemblyProduct(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Product);
 	}
 
-	public static Guid? GetAssemblyProductCode() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductCodeAttribute>(false);
+	/// <summary>Reads the product identifier when declared.</summary>
+	public static Guid? GetAssemblyProductCode(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductCodeAttribute>(false);
 		return !attributes.Any() ? null : attributes.First().ProductCode;
 	}
 
-	public static ProductDistribution? GetAssemblyProductDistribution() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductDistributionAttribute>(false);
+	/// <summary>Reads the product distribution when declared.</summary>
+	public static ProductDistribution? GetAssemblyProductDistribution(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyProductDistributionAttribute>(false);
 		return !attributes.Any() ? null : attributes.First().Distribution;
 	}
 
-	public static string GetAssemblyCopyright() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyCopyrightAttribute>(false);
+	/// <summary>Reads and formats the copyright notice.</summary>
+	public static string GetAssemblyCopyright(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyCopyrightAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Copyright);
-		;
 	}
 
-	public static string GetAssemblyCompany() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyCompanyAttribute>(false);
+	/// <summary>Reads and formats the company name.</summary>
+	public static string GetAssemblyCompany(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyCompanyAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Company);
 	}
 
-	public static string GetAssemblyCompanyNumber() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyCompanyNumberAttribute>(false);
+	/// <summary>Reads and formats the company registration number.</summary>
+	public static string GetAssemblyCompanyNumber(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyCompanyNumberAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().CompanyNumber);
 	}
-
-
-
-
-
-
-
 
 	//public static int GetHelpTopic(ApplicationScreen screen) {
 	//    int retval = 0;
@@ -100,22 +116,28 @@ internal static class Sphere10AssemblyAttributesHelper {
 	//    return retval;
 	//}
 
-	public static IList<Tuple<HelpType, string>> GetAssemblyProductHelpResources() {
+	/// <summary>Reads the declared product help resources.</summary>
+	public static IList<Tuple<HelpType, string>> GetAssemblyProductHelpResources(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
 		return (
-				from helpAttribute in Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyProductHelpResourceAttribute>(false)
+				from helpAttribute in assembly.GetCustomAttributesOfType<AssemblyProductHelpResourceAttribute>(false)
 				select Tuple.Create(helpAttribute.HelpType, helpAttribute.Path)
 			)
 			.ToList()
 			.AsReadOnly();
 	}
 
-	public static string GetAssemblyAuthorName() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
+	/// <summary>Reads and formats the author name.</summary>
+	public static string GetAssemblyAuthorName(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Name);
 	}
 
-	public static string GetAssemblyAuthorEmail() {
-		var attributes = Tools.Runtime.GetEntryAssembly().GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
+	/// <summary>Reads and formats the author email address.</summary>
+	public static string GetAssemblyAuthorEmail(Assembly assembly = null) {
+		assembly ??= Tools.Runtime.GetEntryAssembly();
+		var attributes = assembly.GetCustomAttributesOfType<AssemblyAuthorAttribute>(false);
 		return !attributes.Any() ? null : StringFormatter.FormatEx(attributes.First().Email ?? string.Empty);
 	}
 

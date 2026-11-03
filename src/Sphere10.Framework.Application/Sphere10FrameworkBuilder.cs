@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Application;
@@ -25,6 +26,25 @@ public class Sphere10FrameworkBuilder {
 	}
 	
 	public Sphere10Framework Framework => _framework;	
+
+	/// <summary>Selects product information from the supplied assembly, or the application's entry assembly.</summary>
+	public Sphere10FrameworkBuilder UseAssemblyInfo(Assembly assembly = null) {
+		return AddServices(services => services.AddAssemblyInfoProductServices(assembly));
+	}
+
+	/// <summary>Uses the supplied product-information instance for product services.</summary>
+	public Sphere10FrameworkBuilder WithProductInformation(ProductInformation productInformation) {
+		Guard.ArgumentNotNull(productInformation, nameof(productInformation));
+		return AddServices(services => services.AddProductServices(productInformation));
+	}
+
+	/// <summary>Configures product information immediately and retains that instance for product services.</summary>
+	public Sphere10FrameworkBuilder WithProductInformation(Action<ProductInformation> configure) {
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var productInformation = new ProductInformation();
+		configure(productInformation);
+		return WithProductInformation(productInformation);
+	}
 
 	/// <summary>Constructs and adds one module immediately; service registration remains deferred.</summary>
 	public Sphere10FrameworkBuilder AddModule<TModule>()

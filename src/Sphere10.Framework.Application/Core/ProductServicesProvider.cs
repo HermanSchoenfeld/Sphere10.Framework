@@ -6,36 +6,76 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-//namespace Sphere10.Framework.Application;
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
 
+namespace Sphere10.Framework.Application;
 
-//public class ProductServicesProvider : IProductInformationProvider, IProductUsageServices, IProductInstancesCounter {
+/// <summary>Shares selected product information and delegates usage and instance operations to their registered services.</summary>
+public class ProductServicesProvider : IProductServicesProvider {
+	private readonly IFuture<ProductInformation> _productInformation;
 
-//	public ProductServicesProvider(IProductInformationProvider productInformationProvider, IProductUsageServices productUsageServices, IProductInstancesCounter productInstancesCounter) {
-//		InformationProvider = productInformationProvider;
-//		UsageServices = productUsageServices;
-//		InstancesCounter = productInstancesCounter;
-//	}
+	private readonly IServiceProvider _services;
 
-//	private IProductInformationProvider InformationProvider { get; }
+	/// <summary>Retains the supplied information object without activating operational product services.</summary>
+	public ProductServicesProvider(ProductInformation productInformation, IServiceProvider services) {
+		Guard.ArgumentNotNull(productInformation, nameof(productInformation));
+		Guard.ArgumentNotNull(services, nameof(services));
+		_productInformation = Tools.Values.Future.Explicit(productInformation);
+		_services = services;
+	}
 
-//	private IProductUsageServices UsageServices { get; }
+	/// <summary>Retains an existing information provider and reads it only when product information is requested.</summary>
+	public ProductServicesProvider(IProductInformationProvider productInformationProvider, IServiceProvider services) {
+		Guard.ArgumentNotNull(productInformationProvider, nameof(productInformationProvider));
+		Guard.ArgumentNotNull(services, nameof(services));
+		_productInformation = Tools.Values.Future.LazyLoad(() => productInformationProvider.ProductInformation);
+		_services = services;
+	}
 
-//	private IProductInstancesCounter InstancesCounter { get; }
+	/// <inheritdoc />
+	public ProductInformation ProductInformation {
+		get {
+			return _productInformation.Value;
+		}
+	}
 
-//	public ProductInformation ProductInformation => InformationProvider.ProductInformation;
+	/// <inheritdoc />
+	public ProductUsageInformation ProductUsageInformation {
+		get {
+			return UsageServices.ProductUsageInformation;
+		}
+	}
 
-//	public ProductUsageInformation ProductUsageInformation => UsageServices.ProductUsageInformation;
+	/// <inheritdoc />
+	public IDictionary<string, object> UserEncryptedProperties {
+		get {
+			return UsageServices.UserEncryptedProperties;
+		}
+	}
 
-//	public int CountNumberOfRunningInstances() {
-//		return InstancesCounter.CountNumberOfRunningInstances();
-//	}
+	/// <inheritdoc />
+	public IDictionary<string, object> SystemEncryptedProperties {
+		get {
+			return UsageServices.SystemEncryptedProperties;
+		}
+	}
 
-//	public void IncrementUsageByOne() {
-//		UsageServices.IncrementUsageByOne();
-//	}
+	// Resolve the existing usage service only when the caller requests its state or operations.
+	private IProductUsageServices UsageServices {
+		get {
+			return _services.GetRequiredService<IProductUsageServices>();
+		}
+	}
 
-//}
+	/// <inheritdoc />
+	public void IncrementUsageByOne() {
+		UsageServices.IncrementUsageByOne();
+	}
 
-
-
+	/// <inheritdoc />
+	public int CountNumberOfRunningInstances() {
+		return _services.GetRequiredService<IProductInstancesCounter>().CountNumberOfRunningInstances();
+	}
+}

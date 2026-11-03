@@ -38,11 +38,12 @@ public class BlazorApplicationBuilder : ApplicationBuilderBase<BlazorApplication
 	/// <summary>Registers branding and delegates plugin and circuit setup to the existing Sphere10 registration APIs.</summary>
 	protected override IServiceCollection CreateApplication(IBlazorPlugin[] plugins, Action<BlazorApplication> configureApplication) {
 		var options = new BlazorApplicationOptions(Title, _faviconUrl, _faviconContentType);
+		ConfigureProductServices?.Invoke(_services);
 		_services.AddSphere10Blazor();
 		foreach (var plugin in plugins)
 			_services.AddSphere10BlazorPlugin(plugin);
-		if (configureApplication != null || SettingsKey != null || SettingsDefinitions.Length != 0)
-			_services.AddSphere10BlazorApplication(configureApplication, SettingsKey, SettingsDefinitions);
+		if (configureApplication != null || SettingsKey != null)
+			_services.AddSphere10BlazorApplication(configureApplication, SettingsKey);
 		_services.Replace(ServiceDescriptor.Singleton(options));
 		return _services;
 	}

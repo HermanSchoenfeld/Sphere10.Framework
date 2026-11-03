@@ -18,9 +18,11 @@ using Menu = Sphere10.Framework.Application.Tests.TestApplicationMenu<Sphere10.F
 
 namespace Sphere10.Framework.Application.Tests;
 
+/// <summary>Exercises shared definition, command and host ownership contracts.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationMetadataTests {
+	/// <summary>Verifies block stores different menu implementations through the shared contract.</summary>
 	[Test]
 	public void BlockStoresDifferentMenuImplementationsThroughTheSharedContract() {
 		var block = new Block { Name = "Block" };
@@ -35,10 +37,11 @@ public class ApplicationMetadataTests {
 		Assert.That(block.Menus.Single(), Is.SameAs(standardMenu));
 	}
 
+	/// <summary>Verifies block returns independent menu arrays.</summary>
 	[Test]
 	public void BlockReturnsIndependentMenuArrays() {
 		var block = new Block { Name = "Block" };
-		IApplicationBlock contract = block;
+		IApplicationCommandProvider contract = block;
 		var beforeAddition = contract.Menus;
 		var menu = new CustomMenu("Menu");
 		block.AddMenu(menu);
@@ -52,6 +55,7 @@ public class ApplicationMetadataTests {
 		Assert.That(menus.Single(), Is.SameAs(replacement));
 	}
 
+	/// <summary>Verifies menu returns independent item arrays through both contracts.</summary>
 	[Test]
 	public void MenuReturnsIndependentItemArraysThroughBothContracts() {
 		var menu = new Menu { Text = "Menu" };
@@ -70,6 +74,7 @@ public class ApplicationMetadataTests {
 		Assert.That(sharedItems.Single().Title, Is.EqualTo("Shared replacement"));
 	}
 
+	/// <summary>Verifies returned host arrays cannot change stored order or nested membership.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public async Task ReturnedHostArraysCannotChangeStoredOrderOrNestedMembership(bool decorated) {
@@ -78,13 +83,13 @@ public class ApplicationMetadataTests {
 		first.Name = "First";
 		first.Position = 1;
 		var second = new Block { Name = "Second", Position = 2 };
-		using var owner = new ApplicationScreenHost<Block, IApplicationScreen>(new[] { second, first }.Select(new NeutralSnapshot().Create).ToArray(), provider);
+		using var owner = new ApplicationScreenHost<Block, IApplicationScreen>(new[] { second, first }, provider);
 		IApplicationScreenHost host = decorated ? new HostDecorator(owner) : owner;
 		var stored = host.AvailableBlocks[0];
 		await host.SelectBlockAsync(stored);
-		var storedMenu = stored.Menus.Single();
+		var storedMenu = ((IApplicationCommandProvider)stored).Menus.Single();
 		var blocks = host.Blocks;
-		var menus = blocks[0].Menus;
+		var menus = ((IApplicationCommandProvider)blocks[0]).Menus;
 		var items = menus[0].Items;
 		blocks[0] = new Block { Name = "Replacement" };
 		blocks[1] = null;
@@ -92,36 +97,13 @@ public class ApplicationMetadataTests {
 		items[0] = new TestApplicationMenuItem { Title = "Replacement item" };
 		Assert.That(host.Blocks.Select(block => block.Name), Is.EqualTo(new[] { "First", "Second" }));
 		await host.SelectBlockAsync(stored);
-		Assert.That(host.ActiveBlock, Is.SameAs(stored));
-		Assert.That(host.ActiveBlock.Menus.Single(), Is.SameAs(storedMenu));
+		Assert.That(host.SelectedBlock, Is.SameAs(stored));
+		Assert.That(((IApplicationCommandProvider)host.SelectedBlock).Menus.Single(), Is.SameAs(storedMenu));
 		Assert.That(storedMenu.Items.Single().Title, Is.EqualTo("Stored item"));
 		Assert.That(async () => await host.SelectBlockAsync(new Block { Name = "First" }), Throws.InstanceOf<ArgumentException>());
 	}
 
-	[Test]
-	public async Task HostRetainsRegistrationSnapshotsBeforeOrdering() {
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		var item = new TestApplicationMenuItem { Title = "Original item" };
-		var menu = new Menu { Text = "Original menu" };
-		menu.AddItem(item);
-		var later = new Block { Name = "Later", Position = 20 };
-		later.AddMenu(menu);
-		var earlier = new Block { Name = "Earlier", Position = 10 };
-		var registrations = new List<Block> { later, earlier };
-		using var host = new ApplicationScreenHost<Block, IApplicationScreen>(registrations.Select(new NeutralSnapshot().Create).ToArray(), provider);
-		registrations.Clear();
-		later.Name = "Renamed";
-		later.RemoveMenu(menu);
-		menu.Text = "Renamed menu";
-		menu.RemoveItem(item);
-		item.Title = "Renamed item";
-		Assert.That(host.Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Earlier", "Later" }));
-		await host.SelectBlockAsync(host.AvailableBlocks[1]);
-		Assert.That(host.ActiveBlock.Menus.Single().Text, Is.EqualTo("Original menu"));
-		Assert.That(host.ActiveBlock.Menus.Single().Items.Single().Title, Is.EqualTo("Original item"));
-		Assert.That(async () => await host.SelectBlockAsync(later), Throws.InstanceOf<ArgumentException>());
-	}
-
+	/// <summary>Verifies equal display labels retain distinct menu and item references.</summary>
 	[TestCase("menu")]
 	[TestCase("item")]
 	public void EqualDisplayLabelsRetainDistinctMenuAndItemReferences(string duplicateKind) {
@@ -133,12 +115,12 @@ public class ApplicationMetadataTests {
 		var block = new Block { Name = "Block" };
 		block.AddMenu(firstMenu);
 		block.AddMenu(secondMenu);
-		var snapshot = new NeutralSnapshot().Create(block);
-		Assert.That(snapshot.Menus, Has.Length.EqualTo(2));
-		Assert.That(snapshot.Menus[0], Is.Not.SameAs(snapshot.Menus[1]));
-		Assert.That(snapshot.Menus[0].Items[0], Is.Not.SameAs(snapshot.Menus[1].Items[0]));
+		Assert.That(block.Menus, Has.Length.EqualTo(2));
+		Assert.That(block.Menus[0], Is.Not.SameAs(block.Menus[1]));
+		Assert.That(block.Menus[0].Items[0], Is.Not.SameAs(block.Menus[1].Items[0]));
 	}
 
+	/// <summary>Verifies host distinguishes different blocks by reference when their names match.</summary>
 	[Test]
 	public async Task HostDistinguishesDifferentBlocksByReferenceWhenTheirNamesMatch() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -146,14 +128,15 @@ public class ApplicationMetadataTests {
 		var second = new Block { Name = "Same" };
 		using var host = new ApplicationScreenHost(new[] { first, second }, provider);
 		await host.SelectBlockAsync(first);
-		Assert.That(host.ActiveBlock, Is.SameAs(first));
+		Assert.That(host.SelectedBlock, Is.SameAs(first));
 		await host.SelectBlockAsync(second);
-		Assert.That(host.ActiveBlock, Is.SameAs(second));
+		Assert.That(host.SelectedBlock, Is.SameAs(second));
 		Assert.That(host.Blocks, Has.Length.EqualTo(2));
 		Assert.That(await host.UnregisterBlockAsync(first), Is.True);
 		Assert.That(host.Blocks.Single(), Is.SameAs(second));
 	}
 
+	/// <summary>Verifies screen ownership survives removing its navigation menu.</summary>
 	[Test]
 	public void ScreenOwnershipSurvivesRemovingItsNavigationMenu() {
 		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Screen");
@@ -163,6 +146,7 @@ public class ApplicationMetadataTests {
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(definition));
 	}
 
+	/// <summary>Verifies definition arrays are defensive and registering the same reference is idempotent.</summary>
 	[Test]
 	public void DefinitionArraysAreDefensiveAndRegisteringTheSameReferenceIsIdempotent() {
 		var first = new ApplicationScreenDefinition(typeof(PlainScreen), "Same");
@@ -182,6 +166,7 @@ public class ApplicationMetadataTests {
 		Assert.That(block.DefaultScreenDefinition, Is.SameAs(alias));
 	}
 
+	/// <summary>Verifies host allows independent policies across different blocks.</summary>
 	[Test]
 	public void HostAllowsIndependentPoliciesAcrossDifferentBlocks() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -191,6 +176,7 @@ public class ApplicationMetadataTests {
 		Assert.That(host.Blocks, Has.Length.EqualTo(2));
 	}
 
+	/// <summary>Verifies unspecified activation policy does not conflict with an explicit declaration.</summary>
 	[Test]
 	public void UnspecifiedActivationPolicyDoesNotConflictWithAnExplicitDeclaration() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -201,6 +187,7 @@ public class ApplicationMetadataTests {
 		Assert.That(first.ScreenDefinitions.Single().ActivationMode, Is.Null);
 	}
 
+	/// <summary>Verifies default selection uses the exact registered definition instead of its type or caption.</summary>
 	[Test]
 	public void DefaultSelectionUsesTheExactRegisteredDefinitionInsteadOfItsTypeOrCaption() {
 		var first = new ApplicationScreenDefinition(typeof(PlainScreen), "Same", ScreenActivationMode.SingleInstance);
@@ -216,6 +203,7 @@ public class ApplicationMetadataTests {
 		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.SameAs(second));
 	}
 
+	/// <summary>Verifies subscription copies retain their own invocation lists.</summary>
 	[TestCase(true)]
 	[TestCase(false)]
 	public void SubscriptionCopiesRetainTheirOwnInvocationLists(bool hover) {
@@ -244,6 +232,7 @@ public class ApplicationMetadataTests {
 		Assert.That(lateCalls, Is.Zero);
 	}
 
+	/// <summary>Verifies host rejects malformed definition ownership before initialization.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void HostRejectsMalformedDefinitionOwnershipBeforeInitialization(bool malformedDefault) {
@@ -254,6 +243,7 @@ public class ApplicationMetadataTests {
 		Assert.That(() => new ApplicationScreenHost<Block, IApplicationScreen>(new[] { block }, provider), Throws.InstanceOf<ArgumentException>());
 	}
 
+	/// <summary>Verifies typed host validates owned screens whether or not they are defaults.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void TypedHostValidatesOwnedScreensWhetherOrNotTheyAreDefaults(bool defaultScreen) {
@@ -266,69 +256,45 @@ public class ApplicationMetadataTests {
 		Assert.That(() => new ApplicationScreenHost<Block, OtherScreen>(new[] { block }, provider), Throws.InstanceOf<ArgumentException>());
 	}
 
+	/// <summary>Verifies invalid screen type is rejected when the definition is constructed.</summary>
 	[Test]
-	public void InvalidScreenTypeIsRejectedWhenTheDefinitionIsConstructed() =>
+	public void InvalidScreenTypeIsRejectedWhenTheDefinitionIsConstructed() {
 		Assert.That(() => new ApplicationScreenDefinition(typeof(string)), Throws.InstanceOf<ArgumentException>());
+	}
 
+	/// <summary>Verifies direct default resolution rejects missing menus.</summary>
 	[Test]
-	public void DirectDefaultResolutionRejectsMissingMenus() =>
-		Assert.That(() => new NeutralSnapshot().Create(new NullMenuBlock()), Throws.InstanceOf<ArgumentException>());
+	public void DirectDefaultResolutionRejectsMissingMenus() {
+		var block = new NullMenuBlock();
+		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.InstanceOf<ArgumentException>());
+	}
 
+	/// <summary>Verifies direct default resolution rejects an unowned default.</summary>
 	[Test]
-	public void DirectDefaultResolutionRejectsAnUnownedDefault() =>
-		Assert.That(() => new NeutralSnapshot().Create(new MalformedBlock(Array.Empty<ApplicationScreenDefinition>(), new(typeof(PlainScreen)))), Throws.InstanceOf<ArgumentException>());
+	public void DirectDefaultResolutionRejectsAnUnownedDefault() {
+		var block = new MalformedBlock(Array.Empty<ApplicationScreenDefinition>(), new(typeof(PlainScreen)));
+		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+	}
 
+	/// <summary>Verifies direct default resolution rejects malformed owned definitions.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public void DirectDefaultResolutionRejectsMalformedOwnedDefinitions(bool nullArray) =>
-		Assert.That(() => new NeutralSnapshot().Create(new MalformedBlock(nullArray ? null : new ApplicationScreenDefinition[] { null }, null)), Throws.InstanceOf<ArgumentException>());
+	public void DirectDefaultResolutionRejectsMalformedOwnedDefinitions(bool nullArray) {
+		var block = new MalformedBlock(nullArray ? null : new ApplicationScreenDefinition[] { null }, null);
+		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+	}
 
+	/// <summary>Verifies presentation resolution rejects null toolbar commands without making them a host requirement.</summary>
 	[Test]
-	public void SnapshotRetainsAMenuIndependentDefaultDefinitionWithoutCreatingACommand() {
-		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Standalone");
-		var block = new Block("Block", definition);
-		var snapshot = new NeutralSnapshot().Create(block);
-		Assert.That(snapshot.DefaultScreenDefinition, Is.Not.SameAs(definition));
-		Assert.That(snapshot.DefaultScreenDefinition, Is.SameAs(snapshot.ScreenDefinitions.Single()));
-		Assert.That(snapshot.DefaultScreenDefinition.ScreenType, Is.EqualTo(definition.ScreenType));
-		Assert.That(snapshot.Menus, Is.Empty);
-	}
-
-	[Test]
-	public void SnapshotCannotIntroduceAnotherOwnedScreenDefinition() {
-		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Original");
-		var additional = new ApplicationScreenDefinition(typeof(PlainScreen), "Unrequested alias");
-		var block = new Block("Block", definition);
-		Assert.That(() => new AdditionalDefinitionSnapshot(additional).Create(block), Throws.ArgumentException);
-		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(definition));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void SnapshotCannotDropOrRetargetTheSelectedDefault(bool dropDefault) {
-		var original = new ApplicationScreenDefinition(typeof(PlainScreen), "Original");
-		var alternative = new ApplicationScreenDefinition(typeof(PlainScreen), "Alternative");
-		var block = new Block("Block", original);
-		block.AddScreenDefinition(alternative);
-		Assert.That(() => new DefaultDefinitionSnapshot(dropDefault ? null : alternative).Create(block), Throws.ArgumentException);
-		Assert.That(block.DefaultScreenDefinition, Is.SameAs(original));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void SnapshotItemCannotLoseOrReplaceItsCanonicalScreenDefinition(bool loseScreenBinding) {
-		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Screen");
-		var item = new ScreenItem { Title = "Screen", ScreenDefinition = definition };
-		Assert.That(() => new AlteredScreenItemSnapshot(loseScreenBinding).CreateItem(item), Throws.ArgumentException);
-		Assert.That(item.ScreenDefinition, Is.SameAs(definition));
-	}
-
-	[Test]
-	public void HostRejectsNullToolbarCommandsBeforeInitialization() {
+	public void PresentationResolutionRejectsNullToolbarCommandsWithoutMakingThemAHostRequirement() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
-		Assert.That(() => new ApplicationScreenHost(new[] { new NullToolbarItemBlock() }, provider), Throws.ArgumentException);
+		var block = new NullToolbarItemBlock();
+		using var host = new ApplicationScreenHost(new[] { block }, provider);
+		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.ArgumentException);
+		Assert.That(host.Blocks.Single(), Is.SameAs(block));
 	}
 
+	/// <summary>Verifies definition removal requires its navigation references to be released.</summary>
 	[TestCase("default")]
 	[TestCase("menu")]
 	[TestCase("toolbar")]
@@ -357,6 +323,7 @@ public class ApplicationMetadataTests {
 		Assert.That(block.ScreenDefinitions, Is.Empty);
 	}
 
+	/// <summary>Verifies definition removal uses reference identity and ignores absent equal values.</summary>
 	[Test]
 	public void DefinitionRemovalUsesReferenceIdentityAndIgnoresAbsentEqualValues() {
 		var first = new EqualScreenDefinition();
@@ -371,6 +338,7 @@ public class ApplicationMetadataTests {
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(first));
 	}
 
+	/// <summary>Verifies definition removal rejects null without changing membership.</summary>
 	[Test]
 	public void DefinitionRemovalRejectsNullWithoutChangingMembership() {
 		var definition = new ApplicationScreenDefinition(typeof(PlainScreen));
@@ -380,79 +348,14 @@ public class ApplicationMetadataTests {
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(definition));
 	}
 
-	[Test]
-	public void DirectDefaultResolutionAppliesPlatformValidation() {
-		var block = CreateBlockWithItem(new ScreenItem { Title = "Screen", ScreenDefinition = new(typeof(PlainScreen)) });
-		Assert.That(() => new OtherScreenSnapshot().Create(block), Throws.InstanceOf<ArgumentException>());
-	}
-
+	/// <summary>Verifies action only block has no default screen.</summary>
 	[Test]
 	public void ActionOnlyBlockHasNoDefaultScreen() {
 		var block = CreateBlockWithItem(new TestApplicationMenuItem { Title = "Action" });
-		Assert.That(Tools.UI.GetDefaultScreen(new[] { new NeutralSnapshot().Create(block) }), Is.Null);
+		Assert.That(Tools.UI.GetDefaultScreen(new[] { block }), Is.Null);
 	}
 
-	[Test]
-	public void SnapshotClonesDefinitionGraphsAndPreservesCanonicalReferencesAndCopiedCallbacks() {
-		var calls = 0;
-		EventHandlerEx handler = () => calls++;
-		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Screen");
-		var item = new ScreenItem { Title = "Screen", ScreenDefinition = definition };
-		item.Select += handler;
-		var snapshot = new NeutralSnapshot();
-		var source = CreateBlockWithItem(item);
-		source.DefaultScreenDefinition = definition;
-		var plugin = new ApplicationPlugin("Startup", new[] { source });
-		_ = new ApplicationPluginRegistration<ApplicationPlugin>(plugin, plugin.Blocks);
-		source.Source = plugin;
-		var block = snapshot.Create(source);
-		item.Select -= handler;
-		var selected = (IScreenMenuItem)block.Menus.Single().Items.Single();
-		((TestApplicationMenuItem)selected).NotifySelect();
-		Assert.That(selected, Is.SameAs(block.Menus.Single().Items.Single()));
-		Assert.That(selected.ScreenDefinition, Is.Not.SameAs(definition));
-		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(selected.ScreenDefinition));
-		Assert.That(block.DefaultScreenDefinition, Is.SameAs(selected.ScreenDefinition));
-		Assert.That(selected.Parent, Is.SameAs(block.Menus.Single()));
-		Assert.That(selected.Parent.Parent, Is.SameAs(block));
-		Assert.That(selected.ScreenDefinition.Activators.Single(), Is.SameAs(selected));
-		Assert.That(block.Source, Is.SameAs(plugin));
-		Assert.That(block.Parent, Is.Null, "A snapshot keeps startup provenance without copying a running application parent.");
-		Assert.That(calls, Is.EqualTo(1));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void SnapshotGraphsKeepIndependentParentsAndCanonicalReverseMembership(bool copySnapshot) {
-		var definition = new ApplicationScreenDefinition(typeof(PlainScreen), "Shared target");
-		var firstItem = new ScreenItem { Title = "First", ScreenDefinition = definition };
-		var secondItem = new ScreenItem { Title = "Second", ScreenDefinition = definition };
-		var source = CreateBlockWithItem(firstItem);
-		var secondMenu = new Menu { Text = "Second" };
-		secondMenu.AddItem(secondItem);
-		source.AddMenu(secondMenu);
-		source.DefaultScreenDefinition = definition;
-		var snapshots = new NeutralSnapshot();
-		var first = snapshots.Create(source);
-		var second = snapshots.Create(copySnapshot ? first : source);
-		var firstCommands = first.Menus.SelectMany(menu => menu.Items).Cast<IScreenMenuItem>().ToArray();
-		var secondCommands = second.Menus.SelectMany(menu => menu.Items).Cast<IScreenMenuItem>().ToArray();
-		Assert.That(first.DefaultScreenDefinition, Is.Not.SameAs(definition));
-		Assert.That(second.DefaultScreenDefinition, Is.Not.SameAs(definition).And.Not.SameAs(first.DefaultScreenDefinition));
-		Assert.That(firstCommands.All(item => ReferenceEquals(item.ScreenDefinition, first.DefaultScreenDefinition)), Is.True);
-		Assert.That(secondCommands.All(item => ReferenceEquals(item.ScreenDefinition, second.DefaultScreenDefinition)), Is.True);
-		Assert.That(firstCommands.All(item => ReferenceEquals(item.Parent.Parent, first)), Is.True);
-		Assert.That(secondCommands.All(item => ReferenceEquals(item.Parent.Parent, second)), Is.True);
-		Assert.That(definition.Activators, Is.EqualTo(new IApplicationMenuItem[] { firstItem, secondItem }));
-		Assert.That(first.DefaultScreenDefinition.Activators, Is.EqualTo(firstCommands));
-		Assert.That(second.DefaultScreenDefinition.Activators, Is.EqualTo(secondCommands));
-		((Menu)first.Menus[0]).RemoveItem((TestApplicationMenuItem)firstCommands[0]);
-		Assert.That(first.DefaultScreenDefinition.Activators.Single(), Is.SameAs(firstCommands[1]));
-		Assert.That(firstCommands[0].Parent, Is.Null);
-		Assert.That(second.DefaultScreenDefinition.Activators, Has.Length.EqualTo(2));
-		Assert.That(definition.Activators, Has.Length.EqualTo(2));
-	}
-
+	// Creates a block owning one command and any referenced screen definition.
 	private static Block CreateBlockWithItem(TestApplicationMenuItem item) {
 		var menu = new Menu { Text = "Menu" };
 		menu.AddItem(item);
@@ -463,112 +366,136 @@ public class ApplicationMetadataTests {
 		return block;
 	}
 
+	// Creates a named block with one configured activation policy.
 	private static Block CreateScreenBlock(string name, ScreenActivationMode? mode) {
 		var block = CreateBlockWithItem(new ScreenItem { Title = "Screen", ScreenDefinition = new(typeof(PlainScreen), "Screen", mode) });
 		block.Name = name;
 		return block;
 	}
 
+	// Supplies a screen-reference command for shared ownership checks.
 	private sealed class ScreenItem : TestApplicationMenuItem, IScreenMenuItem {
+		/// <inheritdoc />
 		public ApplicationScreenDefinition ScreenDefinition { get; set; }
 	}
 
+	// Exercises the same host contract through its existing decorator.
 	private sealed class HostDecorator(IApplicationScreenHost screenHost) : ApplicationScreenHostDecorator(screenHost) {
 	}
 
+	// Supplies an alternate menu implementation without command items.
 	private sealed record CustomMenu(string Text) : IApplicationMenu {
+		/// <inheritdoc />
 		public IApplicationBlock Parent { get; set; }
 
-		public IApplicationMenuItem[] Items => Array.Empty<IApplicationMenuItem>();
+		public IApplicationMenuItem[] Items {
+			get {
+				return Array.Empty<IApplicationMenuItem>();
+			}
+		}
 	}
 
+	// Supplies a platform-neutral screen for metadata validation.
 	private class PlainScreen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
 
+	// Supplies an incompatible typed-host screen for validation checks.
 	private sealed class OtherScreen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
 
+	// Supplies malformed menu data at the presentation boundary.
 	private sealed class NullMenuBlock : Block {
-		public override string Name => "Invalid";
-		public override IApplicationMenu[] Menus => null;
+		/// <inheritdoc />
+		public override string Name {
+			get {
+				return "Invalid";
+			}
+		}
+
+		/// <inheritdoc />
+		public override IApplicationMenu[] Menus {
+			get {
+				return null;
+			}
+		}
 	}
 
+	// Supplies invalid owned/default definitions at the validation boundary.
 	private sealed class MalformedBlock(ApplicationScreenDefinition[] definitions, ApplicationScreenDefinition defaultScreen) : Block {
-		public override string Name => "Invalid";
-		public override ApplicationScreenDefinition[] ScreenDefinitions => definitions;
-		public override ApplicationScreenDefinition DefaultScreenDefinition { get => defaultScreen; set { } }
+		/// <inheritdoc />
+		public override string Name {
+			get {
+				return "Invalid";
+			}
+		}
+
+		/// <inheritdoc />
+		public override ApplicationScreenDefinition[] ScreenDefinitions {
+			get {
+				return definitions;
+			}
+		}
+
+		/// <inheritdoc />
+		public override ApplicationScreenDefinition DefaultScreenDefinition {
+			get {
+				return defaultScreen;
+			}
+			set {
+			}
+		}
 	}
 
+	// Supplies a null toolbar command without changing host ownership requirements.
 	private sealed class NullToolbarItemBlock : Block, IApplicationCommandProvider {
-		public override string Name => "Invalid toolbar";
-		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => new IApplicationMenuItem[] { null };
+		/// <inheritdoc />
+		public override string Name {
+			get {
+				return "Invalid toolbar";
+			}
+		}
+
+		/// <inheritdoc />
+		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems {
+			get {
+				return new IApplicationMenuItem[] { null };
+			}
+		}
 	}
 
+	// Exposes mutable toolbar membership for definition-removal checks.
 	private sealed class ToolbarBlock(IApplicationMenuItem[] commands) : Block, IApplicationCommandProvider {
+		/// <summary>Gets or sets the toolbar membership used by the removal check.</summary>
 		public IApplicationMenuItem[] Commands { get; set; } = commands;
-		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems => Commands;
+
+		/// <inheritdoc />
+		IApplicationMenuItem[] IApplicationCommandProvider.ToolBarItems {
+			get {
+				return Commands;
+			}
+		}
 	}
 
+	// Uses value equality to ensure ownership operations use reference identity.
 	private sealed class EqualScreenDefinition() : ApplicationScreenDefinition(typeof(PlainScreen), "Equal") {
-		public override bool Equals(object obj) => obj is EqualScreenDefinition;
-		public override int GetHashCode() => 0;
-	}
-
-	private sealed class AdditionalDefinitionSnapshot(ApplicationScreenDefinition additional) : NeutralSnapshot {
-		protected override Block CreateBlockSnapshot(Block block, Menu[] menus, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
-			var result = base.CreateBlockSnapshot(block, menus, definitions);
-			result.AddScreenDefinition(additional);
-			return result;
-		}
-	}
-
-	private sealed class DefaultDefinitionSnapshot(ApplicationScreenDefinition replacement) : NeutralSnapshot {
-		protected override Block CreateBlockSnapshot(Block block, Menu[] menus, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
-			var result = base.CreateBlockSnapshot(block, menus, definitions);
-			result.DefaultScreenDefinition = replacement;
-			return result;
-		}
-	}
-
-	private sealed class AlteredScreenItemSnapshot(bool loseScreenBinding) : NeutralSnapshot {
-		protected override TestApplicationMenuItem CreateItemSnapshot(TestApplicationMenuItem item, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) => loseScreenBinding
-			? new TestApplicationMenuItem { Title = item.Title }
-			: new ScreenItem { Title = item.Title, ScreenDefinition = new(((IScreenMenuItem)item).ScreenDefinition.ScreenType, item.Title) };
-	}
-
-	private sealed class OtherScreenSnapshot : NeutralSnapshot {
-		protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(OtherScreen));
-	}
-
-	private class NeutralSnapshot : ApplicationBlockSnapshotBase<Block, Menu, TestApplicationMenuItem> {
-		protected override Block CreateBlockSnapshot(Block block, Menu[] menus, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
-			var snapshot = new Block { Name = block.Name, Position = block.Position };
-			foreach (var definition in block.ScreenDefinitions)
-				snapshot.AddScreenDefinition(SnapshotDefinition(definition, definitions));
-			snapshot.DefaultScreenDefinition = block.DefaultScreenDefinition == null ? null : SnapshotDefinition(block.DefaultScreenDefinition, definitions);
-			foreach (var menu in menus)
-				snapshot.AddMenu(menu);
-			return snapshot;
+		/// <inheritdoc />
+		public override bool Equals(object obj) {
+			return obj is EqualScreenDefinition;
 		}
 
-		protected override Menu CreateMenuSnapshot(Menu menu, TestApplicationMenuItem[] items) {
-			var snapshot = new Menu { Text = menu.Text };
-			foreach (var item in items)
-				snapshot.AddItem(item);
-			return snapshot;
-		}
-
-		protected override TestApplicationMenuItem CreateItemSnapshot(TestApplicationMenuItem item, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
-			TestApplicationMenuItem snapshot = item is ScreenItem screen ? new ScreenItem { ScreenDefinition = SnapshotDefinition(screen.ScreenDefinition, definitions) } : new TestApplicationMenuItem();
-			snapshot.Title = item.Title;
-			snapshot.CopySubscriptionsFrom(item);
-			return snapshot;
+		/// <inheritdoc />
+		public override int GetHashCode() {
+			return 0;
 		}
 	}
 }

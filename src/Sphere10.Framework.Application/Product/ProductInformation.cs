@@ -19,13 +19,13 @@ public class ProductInformation : SettingsObject {
 	public string ProductName { get; set; }
 	public string ProductDescription { get; set; }
 	public Guid ProductCode { get; set; }
-	public ApplicationVersion ProductVersion { get; set; }
+	public ApplicationVersion ProductVersion { get; set; } = new();
 	public string CopyrightNotice { get; set; }
 	public string CompanyUrl { get; set; }
 	public string ProductUrl { get; set; }
 	public string AuthorName { get; set; }
 	public string AuthorEmail { get; set; }
 	public string ProductPurchaseUrl { get; set; }
-	public ICollection<Tuple<HelpType, string>> HelpResources;
+	public ICollection<Tuple<HelpType, string>> HelpResources = Array.Empty<Tuple<HelpType, string>>();
 }
 

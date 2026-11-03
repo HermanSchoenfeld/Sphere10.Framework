@@ -8,6 +8,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Application.UI;
 
@@ -19,7 +21,6 @@ public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPlug
 	where TPlugin : IApplicationPlugin
 	where TPluginBuilder : IApplicationUIBuilder<TPlugin>, new() {
 	private readonly List<TPlugin> _plugins = new();
-	private readonly List<ApplicationSettingsDefinition> _settings = new();
 	private Action<TApplication> _configureApplication;
 	private bool _built;
 
@@ -29,11 +30,11 @@ public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPlug
 
 	protected string Title { get; private set; }
 
+	/// <summary>Registers the explicitly selected product information source without resolving application services.</summary>
+	protected Action<IServiceCollection> ConfigureProductServices { get; private set; }
+
 	/// <summary>The optional stable application preference namespace supplied to the platform factory.</summary>
 	protected string SettingsKey { get; private set; }
-
-	/// <summary>Application-root preference contributions captured for the platform creation factory.</summary>
-	protected ApplicationSettingsDefinition[] SettingsDefinitions => _settings.ToArray();
 
 	/// <summary>Sets a caption-independent settings namespace for this application.</summary>
 	public TSelf WithSettingsKey(string applicationKey) {
@@ -43,37 +44,34 @@ public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPlug
 		return (TSelf)(object)this;
 	}
 
-	/// <summary>Adds application-root preferences to the same catalog as registered screen preferences.</summary>
-	public TSelf AddSettings(ApplicationSettingsDefinition settings) {
-		EnsureCanConfigure();
-		Guard.ArgumentNotNull(settings, nameof(settings));
-		Guard.Argument(!_settings.Exists(existing => existing.StableKey == settings.StableKey), nameof(settings), "The application settings key is already registered.");
-		_settings.Add(settings);
-		return (TSelf)(object)this;
-	}
-
-	/// <summary>Declares ordinary application preferences; the factory creates values, never operational screens.</summary>
-	public TSelf AddSettings<TSettings>(string stableKey, string title = null)
-		where TSettings : new() {
-		return AddSettings(stableKey, title, () => new TSettings());
-	}
-
-	/// <summary>Declares application defaults whose ordinary constructors may require arguments.</summary>
-	public TSelf AddSettings<TSettings>(string stableKey, Func<TSettings> defaults) {
-		return AddSettings(stableKey, null, defaults);
-	}
-
-	/// <summary>Names ordinary application preferences and retains their fresh default factory for Reset.</summary>
-	public TSelf AddSettings<TSettings>(string stableKey, string title, Func<TSettings> defaults) {
-		Guard.ArgumentNotNull(defaults, nameof(defaults));
-		Func<object> factory = () => defaults();
-		return AddSettings(new ApplicationSettingsDefinition(stableKey, title, factory(), factory));
-	}
-
 	public TSelf WithTitle(string title) {
 		EnsureCanConfigure();
 		SetTitle(title);
 		return (TSelf)(object)this;
+	}
+
+	/// <summary>Uses product attributes from the selected assembly, or the entry assembly when omitted.</summary>
+	public TSelf UseAssemblyInfo(Assembly assembly = null) {
+		EnsureCanConfigure();
+		ConfigureProductServices = services => services.AddAssemblyInfoProductServices(assembly);
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Uses the supplied product information instead of reading assembly attributes.</summary>
+	public TSelf WithProductInformation(ProductInformation productInformation) {
+		EnsureCanConfigure();
+		Guard.ArgumentNotNull(productInformation, nameof(productInformation));
+		ConfigureProductServices = services => services.AddProductServices(productInformation);
+		return (TSelf)(object)this;
+	}
+
+	/// <summary>Configures product information directly while building the application.</summary>
+	public TSelf WithProductInformation(Action<ProductInformation> configure) {
+		EnsureCanConfigure();
+		Guard.ArgumentNotNull(configure, nameof(configure));
+		var productInformation = new ProductInformation();
+		configure(productInformation);
+		return WithProductInformation(productInformation);
 	}
 
 	public TSelf OnApplicationCreated(Action<TApplication> configure) {
