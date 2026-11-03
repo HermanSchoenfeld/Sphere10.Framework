@@ -1,340 +1,258 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class HooksScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing) {
-				DisposeHooks();
-				components?.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class HooksScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private Button _startButton;
+	private Button _stopButton;
+	private Button _clearButton;
+	private TableLayoutPanel _content;
+	private TableLayoutPanel _counters;
+	private TextBox textBox1;
+	private Label _counterCaption0;
+	private Label _keyActivityEventsLabel;
+	private Label _counterCaption1;
+	private Label _keyDownEventsLabel;
+	private Label _counterCaption2;
+	private Label _keyUpEventsLabel;
+	private Label _counterCaption3;
+	private Label _mouseActivityEventsLabel;
+	private Label _counterCaption4;
+	private Label _mouseMoveEventsLabel;
+	private Label _counterCaption5;
+	private Label _mouseStartEventsLabel;
+	private Label _counterCaption6;
+	private Label _mouseStopEventsLabel;
+	private Label _counterCaption7;
+	private Label _clickDownEventsLabel;
+	private Label _counterCaption8;
+	private Label _clickUpEventLabel;
+	private Label _counterCaption9;
+	private Label _wheelEvents;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this.textBox1 = new System.Windows.Forms.TextBox();
-			this.label9 = new System.Windows.Forms.Label();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this._wheelEvents = new System.Windows.Forms.Label();
-			this.label13 = new System.Windows.Forms.Label();
-			this._keyUpEventsLabel = new System.Windows.Forms.Label();
-			this.label8 = new System.Windows.Forms.Label();
-			this._keyDownEventsLabel = new System.Windows.Forms.Label();
-			this.label12 = new System.Windows.Forms.Label();
-			this._keyActivityEventsLabel = new System.Windows.Forms.Label();
-			this.label14 = new System.Windows.Forms.Label();
-			this._mouseStartEventsLabel = new System.Windows.Forms.Label();
-			this.label4 = new System.Windows.Forms.Label();
-			this._mouseStopEventsLabel = new System.Windows.Forms.Label();
-			this.label10 = new System.Windows.Forms.Label();
-			this._clickUpEventLabel = new System.Windows.Forms.Label();
-			this._clickDownEventsLabel = new System.Windows.Forms.Label();
-			this.label6 = new System.Windows.Forms.Label();
-			this.label5 = new System.Windows.Forms.Label();
-			this._mouseMoveEventsLabel = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
-			this._mouseActivityEventsLabel = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
-			this.groupBox1.SuspendLayout();
-			this.SuspendLayout();
-			// 
-			// textBox1
-			// 
-			this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.textBox1.Enabled = false;
-			this.textBox1.Location = new System.Drawing.Point(12, 25);
-			this.textBox1.Multiline = true;
-			this.textBox1.Name = "textBox1";
-			this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.textBox1.Size = new System.Drawing.Size(414, 365);
-			this.textBox1.TabIndex = 0;
-			// 
-			// label9
-			// 
-			this.label9.AutoSize = true;
-			this.label9.Location = new System.Drawing.Point(12, 9);
-			this.label9.Name = "label9";
-			this.label9.Size = new System.Drawing.Size(40, 13);
-			this.label9.TabIndex = 9;
-			this.label9.Text = "Events";
-			// 
-			// groupBox1
-			// 
-			this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.groupBox1.Controls.Add(this._wheelEvents);
-			this.groupBox1.Controls.Add(this.label13);
-			this.groupBox1.Controls.Add(this._keyUpEventsLabel);
-			this.groupBox1.Controls.Add(this.label8);
-			this.groupBox1.Controls.Add(this._keyDownEventsLabel);
-			this.groupBox1.Controls.Add(this.label12);
-			this.groupBox1.Controls.Add(this._keyActivityEventsLabel);
-			this.groupBox1.Controls.Add(this.label14);
-			this.groupBox1.Controls.Add(this._mouseStartEventsLabel);
-			this.groupBox1.Controls.Add(this.label4);
-			this.groupBox1.Controls.Add(this._mouseStopEventsLabel);
-			this.groupBox1.Controls.Add(this.label10);
-			this.groupBox1.Controls.Add(this._clickUpEventLabel);
-			this.groupBox1.Controls.Add(this._clickDownEventsLabel);
-			this.groupBox1.Controls.Add(this.label6);
-			this.groupBox1.Controls.Add(this.label5);
-			this.groupBox1.Controls.Add(this._mouseMoveEventsLabel);
-			this.groupBox1.Controls.Add(this.label3);
-			this.groupBox1.Controls.Add(this._mouseActivityEventsLabel);
-			this.groupBox1.Controls.Add(this.label1);
-			this.groupBox1.Location = new System.Drawing.Point(432, 25);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(324, 365);
-			this.groupBox1.TabIndex = 23;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Event Counts";
-			// 
-			// _wheelEvents
-			// 
-			this._wheelEvents.AutoSize = true;
-			this._wheelEvents.Location = new System.Drawing.Point(233, 313);
-			this._wheelEvents.Name = "_wheelEvents";
-			this._wheelEvents.Size = new System.Drawing.Size(35, 13);
-			this._wheelEvents.TabIndex = 42;
-			this._wheelEvents.Text = "label7";
-			// 
-			// label13
-			// 
-			this.label13.AutoSize = true;
-			this.label13.Location = new System.Drawing.Point(130, 313);
-			this.label13.Name = "label13";
-			this.label13.Size = new System.Drawing.Size(74, 13);
-			this.label13.TabIndex = 41;
-			this.label13.Text = "Wheel Events";
-			// 
-			// _keyUpEventsLabel
-			// 
-			this._keyUpEventsLabel.AutoSize = true;
-			this._keyUpEventsLabel.Location = new System.Drawing.Point(232, 85);
-			this._keyUpEventsLabel.Name = "_keyUpEventsLabel";
-			this._keyUpEventsLabel.Size = new System.Drawing.Size(41, 13);
-			this._keyUpEventsLabel.TabIndex = 40;
-			this._keyUpEventsLabel.Text = "label11";
-			// 
-			// label8
-			// 
-			this.label8.AutoSize = true;
-			this.label8.Location = new System.Drawing.Point(126, 85);
-			this.label8.Name = "label8";
-			this.label8.Size = new System.Drawing.Size(78, 13);
-			this.label8.TabIndex = 39;
-			this.label8.Text = "Key Up Events";
-			// 
-			// _keyDownEventsLabel
-			// 
-			this._keyDownEventsLabel.AutoSize = true;
-			this._keyDownEventsLabel.Location = new System.Drawing.Point(232, 51);
-			this._keyDownEventsLabel.Name = "_keyDownEventsLabel";
-			this._keyDownEventsLabel.Size = new System.Drawing.Size(35, 13);
-			this._keyDownEventsLabel.TabIndex = 38;
-			this._keyDownEventsLabel.Text = "label4";
-			// 
-			// label12
-			// 
-			this.label12.AutoSize = true;
-			this.label12.Location = new System.Drawing.Point(112, 51);
-			this.label12.Name = "label12";
-			this.label12.Size = new System.Drawing.Size(92, 13);
-			this.label12.TabIndex = 37;
-			this.label12.Text = "Key Down Events";
-			// 
-			// _keyActivityEventsLabel
-			// 
-			this._keyActivityEventsLabel.AutoSize = true;
-			this._keyActivityEventsLabel.Location = new System.Drawing.Point(232, 16);
-			this._keyActivityEventsLabel.Name = "_keyActivityEventsLabel";
-			this._keyActivityEventsLabel.Size = new System.Drawing.Size(35, 13);
-			this._keyActivityEventsLabel.TabIndex = 36;
-			this._keyActivityEventsLabel.Text = "label2";
-			// 
-			// label14
-			// 
-			this.label14.AutoSize = true;
-			this.label14.Location = new System.Drawing.Point(106, 16);
-			this.label14.Name = "label14";
-			this.label14.Size = new System.Drawing.Size(98, 13);
-			this.label14.TabIndex = 35;
-			this.label14.Text = "Key Activity Events";
-			// 
-			// _mouseStartEventsLabel
-			// 
-			this._mouseStartEventsLabel.AutoSize = true;
-			this._mouseStartEventsLabel.Location = new System.Drawing.Point(233, 188);
-			this._mouseStartEventsLabel.Name = "_mouseStartEventsLabel";
-			this._mouseStartEventsLabel.Size = new System.Drawing.Size(41, 13);
-			this._mouseStartEventsLabel.TabIndex = 34;
-			this._mouseStartEventsLabel.Text = "label11";
-			// 
-			// label4
-			// 
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(104, 188);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(100, 13);
-			this.label4.TabIndex = 33;
-			this.label4.Text = "Mouse Start Events";
-			// 
-			// _mouseStopEventsLabel
-			// 
-			this._mouseStopEventsLabel.AutoSize = true;
-			this._mouseStopEventsLabel.Location = new System.Drawing.Point(233, 217);
-			this._mouseStopEventsLabel.Name = "_mouseStopEventsLabel";
-			this._mouseStopEventsLabel.Size = new System.Drawing.Size(41, 13);
-			this._mouseStopEventsLabel.TabIndex = 32;
-			this._mouseStopEventsLabel.Text = "label11";
-			// 
-			// label10
-			// 
-			this.label10.AutoSize = true;
-			this.label10.Location = new System.Drawing.Point(104, 217);
-			this.label10.Name = "label10";
-			this.label10.Size = new System.Drawing.Size(100, 13);
-			this.label10.TabIndex = 31;
-			this.label10.Text = "Mouse Stop Events";
-			// 
-			// _clickUpEventLabel
-			// 
-			this._clickUpEventLabel.AutoSize = true;
-			this._clickUpEventLabel.Location = new System.Drawing.Point(233, 282);
-			this._clickUpEventLabel.Name = "_clickUpEventLabel";
-			this._clickUpEventLabel.Size = new System.Drawing.Size(35, 13);
-			this._clickUpEventLabel.TabIndex = 30;
-			this._clickUpEventLabel.Text = "label8";
-			// 
-			// _clickDownEventsLabel
-			// 
-			this._clickDownEventsLabel.AutoSize = true;
-			this._clickDownEventsLabel.Location = new System.Drawing.Point(233, 251);
-			this._clickDownEventsLabel.Name = "_clickDownEventsLabel";
-			this._clickDownEventsLabel.Size = new System.Drawing.Size(35, 13);
-			this._clickDownEventsLabel.TabIndex = 29;
-			this._clickDownEventsLabel.Text = "label7";
-			// 
-			// label6
-			// 
-			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(121, 282);
-			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(83, 13);
-			this.label6.TabIndex = 28;
-			this.label6.Text = "Click Up Events";
-			// 
-			// label5
-			// 
-			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(107, 251);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(97, 13);
-			this.label5.TabIndex = 27;
-			this.label5.Text = "Click Down Events";
-			// 
-			// _mouseMoveEventsLabel
-			// 
-			this._mouseMoveEventsLabel.AutoSize = true;
-			this._mouseMoveEventsLabel.Location = new System.Drawing.Point(232, 154);
-			this._mouseMoveEventsLabel.Name = "_mouseMoveEventsLabel";
-			this._mouseMoveEventsLabel.Size = new System.Drawing.Size(35, 13);
-			this._mouseMoveEventsLabel.TabIndex = 26;
-			this._mouseMoveEventsLabel.Text = "label4";
-			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(99, 154);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(105, 13);
-			this.label3.TabIndex = 25;
-			this.label3.Text = "Mouse Move Events";
-			// 
-			// _mouseActivityEventsLabel
-			// 
-			this._mouseActivityEventsLabel.AutoSize = true;
-			this._mouseActivityEventsLabel.Location = new System.Drawing.Point(232, 119);
-			this._mouseActivityEventsLabel.Name = "_mouseActivityEventsLabel";
-			this._mouseActivityEventsLabel.Size = new System.Drawing.Size(35, 13);
-			this._mouseActivityEventsLabel.TabIndex = 24;
-			this._mouseActivityEventsLabel.Text = "label2";
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(92, 119);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(112, 13);
-			this.label1.TabIndex = 23;
-			this.label1.Text = "Mouse Activity Events";
-			// 
-			// HooksForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(768, 402);
-			this.Controls.Add(this.groupBox1);
-			this.Controls.Add(this.label9);
-			this.Controls.Add(this.textBox1);
-			this.Name = "HooksScreen";
-			this.Text = "HooksForm";
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox1.PerformLayout();
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_startButton = new Button();
+		_stopButton = new Button();
+		_clearButton = new Button();
+		_content = new TableLayoutPanel();
+		_counters = new TableLayoutPanel();
+		textBox1 = new TextBox();
+		_counterCaption0 = new Label();
+		_keyActivityEventsLabel = new Label();
+		_counterCaption1 = new Label();
+		_keyDownEventsLabel = new Label();
+		_counterCaption2 = new Label();
+		_keyUpEventsLabel = new Label();
+		_counterCaption3 = new Label();
+		_mouseActivityEventsLabel = new Label();
+		_counterCaption4 = new Label();
+		_mouseMoveEventsLabel = new Label();
+		_counterCaption5 = new Label();
+		_mouseStartEventsLabel = new Label();
+		_counterCaption6 = new Label();
+		_mouseStopEventsLabel = new Label();
+		_counterCaption7 = new Label();
+		_clickDownEventsLabel = new Label();
+		_counterCaption8 = new Label();
+		_clickUpEventLabel = new Label();
+		_counterCaption9 = new Label();
+		_wheelEvents = new Label();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-		}
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_content.Name = "_content";
+		_counters.Name = "_counters";
+		_counterCaption0.Name = "_counterCaption0";
+		_keyActivityEventsLabel.Name = "_keyActivityEventsLabel";
+		_counterCaption1.Name = "_counterCaption1";
+		_keyDownEventsLabel.Name = "_keyDownEventsLabel";
+		_counterCaption2.Name = "_counterCaption2";
+		_keyUpEventsLabel.Name = "_keyUpEventsLabel";
+		_counterCaption3.Name = "_counterCaption3";
+		_mouseActivityEventsLabel.Name = "_mouseActivityEventsLabel";
+		_counterCaption4.Name = "_counterCaption4";
+		_mouseMoveEventsLabel.Name = "_mouseMoveEventsLabel";
+		_counterCaption5.Name = "_counterCaption5";
+		_mouseStartEventsLabel.Name = "_mouseStartEventsLabel";
+		_counterCaption6.Name = "_counterCaption6";
+		_mouseStopEventsLabel.Name = "_mouseStopEventsLabel";
+		_counterCaption7.Name = "_counterCaption7";
+		_clickDownEventsLabel.Name = "_clickDownEventsLabel";
+		_counterCaption8.Name = "_counterCaption8";
+		_clickUpEventLabel.Name = "_clickUpEventLabel";
+		_counterCaption9.Name = "_counterCaption9";
+		_wheelEvents.Name = "_wheelEvents";
 
-		#endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "Input event monitor";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Start monitoring explicitly, compare keyboard and mouse counters, then stop or clear the bounded event history.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_startButton.Text = "Start monitoring";
+		_startButton.Name = "_startButton";
+		_startButton.AutoSize = true;
+		_startButton.MinimumSize = new Size(96, 30);
+		_startButton.Click += StartClicked;
+		_commands.Controls.Add(_startButton);
+		_stopButton.Text = "Stop monitoring";
+		_stopButton.Name = "_stopButton";
+		_stopButton.AutoSize = true;
+		_stopButton.MinimumSize = new Size(96, 30);
+		_stopButton.Click += StopClicked;
+		_commands.Controls.Add(_stopButton);
+		_clearButton.Text = "Clear counters";
+		_clearButton.Name = "_clearButton";
+		_clearButton.AutoSize = true;
+		_clearButton.MinimumSize = new Size(96, 30);
+		_clearButton.Click += ClearClicked;
+		_commands.Controls.Add(_clearButton);
+		_content.Dock = DockStyle.Fill;
+		_content.RowCount = 2;
+		_content.ColumnCount = 1;
+		_content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_content.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_counters.AutoSize = true;
+		_counters.Dock = DockStyle.Fill;
+		_counters.ColumnCount = 4;
+		_counters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
+		_counters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+		_counters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
+		_counters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
+		_counterCaption0.Text = "Keyboard activity";
+		_counterCaption0.AutoSize = true;
+		_keyActivityEventsLabel.Text = "0";
+		_keyActivityEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption0, 0, 0);
+		_counters.Controls.Add(_keyActivityEventsLabel, 1, 0);
+		_counterCaption1.Text = "Key down";
+		_counterCaption1.AutoSize = true;
+		_keyDownEventsLabel.Text = "0";
+		_keyDownEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption1, 2, 0);
+		_counters.Controls.Add(_keyDownEventsLabel, 3, 0);
+		_counterCaption2.Text = "Key up";
+		_counterCaption2.AutoSize = true;
+		_keyUpEventsLabel.Text = "0";
+		_keyUpEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption2, 0, 1);
+		_counters.Controls.Add(_keyUpEventsLabel, 1, 1);
+		_counterCaption3.Text = "Mouse activity";
+		_counterCaption3.AutoSize = true;
+		_mouseActivityEventsLabel.Text = "0";
+		_mouseActivityEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption3, 2, 1);
+		_counters.Controls.Add(_mouseActivityEventsLabel, 3, 1);
+		_counterCaption4.Text = "Mouse moves";
+		_counterCaption4.AutoSize = true;
+		_mouseMoveEventsLabel.Text = "0";
+		_mouseMoveEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption4, 0, 2);
+		_counters.Controls.Add(_mouseMoveEventsLabel, 1, 2);
+		_counterCaption5.Text = "Motion starts";
+		_counterCaption5.AutoSize = true;
+		_mouseStartEventsLabel.Text = "0";
+		_mouseStartEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption5, 2, 2);
+		_counters.Controls.Add(_mouseStartEventsLabel, 3, 2);
+		_counterCaption6.Text = "Motion stops";
+		_counterCaption6.AutoSize = true;
+		_mouseStopEventsLabel.Text = "0";
+		_mouseStopEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption6, 0, 3);
+		_counters.Controls.Add(_mouseStopEventsLabel, 1, 3);
+		_counterCaption7.Text = "Button down";
+		_counterCaption7.AutoSize = true;
+		_clickDownEventsLabel.Text = "0";
+		_clickDownEventsLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption7, 2, 3);
+		_counters.Controls.Add(_clickDownEventsLabel, 3, 3);
+		_counterCaption8.Text = "Button up";
+		_counterCaption8.AutoSize = true;
+		_clickUpEventLabel.Text = "0";
+		_clickUpEventLabel.AutoSize = true;
+		_counters.Controls.Add(_counterCaption8, 0, 4);
+		_counters.Controls.Add(_clickUpEventLabel, 1, 4);
+		_counterCaption9.Text = "Mouse wheel";
+		_counterCaption9.AutoSize = true;
+		_wheelEvents.Text = "0";
+		_wheelEvents.AutoSize = true;
+		_counters.Controls.Add(_counterCaption9, 2, 4);
+		_counters.Controls.Add(_wheelEvents, 3, 4);
+		textBox1.Dock = DockStyle.Fill;
+		textBox1.Multiline = true;
+		textBox1.ReadOnly = true;
+		textBox1.ScrollBars = ScrollBars.Both;
+		textBox1.WordWrap = false;
+		textBox1.Name = "textBox1";
+		_content.Controls.Add(_counters, 0, 0);
+		_content.Controls.Add(textBox1, 0, 1);
 
-		private System.Windows.Forms.TextBox textBox1;
-		private System.Windows.Forms.Label label9;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.Label _wheelEvents;
-		private System.Windows.Forms.Label label13;
-		private System.Windows.Forms.Label _keyUpEventsLabel;
-		private System.Windows.Forms.Label label8;
-		private System.Windows.Forms.Label _keyDownEventsLabel;
-		private System.Windows.Forms.Label label12;
-		private System.Windows.Forms.Label _keyActivityEventsLabel;
-		private System.Windows.Forms.Label label14;
-		private System.Windows.Forms.Label _mouseStartEventsLabel;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Label _mouseStopEventsLabel;
-		private System.Windows.Forms.Label label10;
-		private System.Windows.Forms.Label _clickUpEventLabel;
-		private System.Windows.Forms.Label _clickDownEventsLabel;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.Label _mouseMoveEventsLabel;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label _mouseActivityEventsLabel;
-		private System.Windows.Forms.Label label1;
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(_content, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "HooksScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

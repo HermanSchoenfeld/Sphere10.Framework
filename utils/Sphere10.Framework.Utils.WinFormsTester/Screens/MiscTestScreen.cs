@@ -10,6 +10,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 using System.Xml.Serialization;
 using Sphere10.Framework.Data;
@@ -17,36 +19,45 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Groups native list operations and explicit Framework utility experiments.</summary>
 public partial class MiscTestScreen : WinFormsApplicationScreen {
+	private CancellationTokenSource _compressionCancellation;
+
 	public MiscTestScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 	}
 
-	private void button1_Click(object sender, EventArgs e) {
+	/// <summary>Loads a small merger example without starting any optional utility or database operation.</summary>
+	protected override void OnLoad(EventArgs e) {
+		base.OnLoad(e);
+		if (!Tools.Runtime.IsDesignMode)
+			Button1_Click(this, EventArgs.Empty);
+	}
+
+	/// <summary>Stops the screen-owned comparison on actual destruction, including direct disposal.</summary>
+	protected override void OnDestroyScreen() {
+		_compressionCancellation?.Cancel();
+		base.OnDestroyScreen();
+	}
+
+	private void Button1_Click(object sender, EventArgs args) {
 		var objs = new[] { new TestObject { ID = 1, Name = "One" }, new TestObject { ID = 2, Name = "Two" }, new TestObject { ID = 3, Name = "Three" } };
-		listMerger1.DisplayMember = "Name";
-		listMerger1.ValueMember = "ID";
-		listMerger1.LeftItems = objs;
+		_listMerger1.DisplayMember = "Name";
+		_listMerger1.ValueMember = "ID";
+		_listMerger1.LeftItems = objs;
 	}
 
-
-	public class TestObject {
-		public int ID { get; set; }
-		public string Name { get; set; }
-	}
-
-
-	private void _clipTestButton_Click(object sender, EventArgs e) {
+	private void ClipTestButton_Click(object sender, EventArgs args) {
 		var teststring = "01234567890123456789012345678901234567890123456789";
 		var writer = new TextBoxWriter(_outputTextBox);
 
 		writer.WriteLine(teststring);
-		for (int i = 0; i < teststring.Length + 10; i++) {
-			writer.WriteLine(teststring.Clip(i));
-		}
+		for (var index = 0; index < teststring.Length + 10; index++)
+			writer.WriteLine(teststring.Clip(index));
 	}
 
-	private void _scopedContextTestButton_Click(object sender, EventArgs e) {
+	private void ScopedContextTestButton_Click(object sender, EventArgs args) {
 		var writer = new TextBoxWriter(_outputTextBox);
 
 		TestScopePolicy(writer, ContextScopePolicy.None, ContextScopePolicy.None);
@@ -60,7 +71,6 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		TestScopePolicy(writer, ContextScopePolicy.MustBeRoot, ContextScopePolicy.None);
 		TestScopePolicy(writer, ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested);
 		TestScopePolicy(writer, ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot);
-
 	}
 
 	private static void TestScopePolicy(TextBoxWriter writer, ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy) {
@@ -81,53 +91,39 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		}
 	}
 
-
-	public class ScopeContextTest : SyncContextScope {
-		public static TextWriter TextWriter;
-
-		public ScopeContextTest(ContextScopePolicy policy) : base(policy, "myTlsSlotName") {
-			if (IsRootScope) {
-				TextWriter.WriteLine("[Begin Root Scope]");
-
-			} else {
-				TextWriter.WriteLine("[Begin Child Scope]");
-			}
+	// The original compression comparison runs on detached values, then publishes one UI-owned result.
+	private async void CompressTestButton_Click(object sender, EventArgs args) {
+		if (_compressionCancellation != null) {
+			_compressionCancellation.Cancel();
+			return;
 		}
 
-		protected override void OnScopeEndInternal() {
-			TextWriter.WriteLine(RootScope != this ? "[End Child Scope]" : "[End Root Scope]");
-		}
+		using var cancellation = new CancellationTokenSource();
+		_compressionCancellation = cancellation;
+		var cancellationToken = cancellation.Token;
 
-		protected override void OnContextEnd() {
-			TextWriter.WriteLine("Context end");
-		}
-
-	}
-
-
-	private void _compressTestButton_Click(object sender, EventArgs e) {
-		var writer = new TextBoxWriter(_outputTextBox);
-		var seedString =
-			"Hello world! This is a compressed string which contains some text that is used to compress and encrypt data. It is important that compression then encryption results in a smaller file than encryption alone. Hopefully this will show that indeed this is the case. Good luck!";
-		for (int i = 0; i < 1000; i++) {
-			var stringBuilder = new StringBuilder();
-			stringBuilder.Append(seedString);
-			for (int j = 0; j < i; j++)
-				stringBuilder.Append(Tools.Maths.RNG.Next(0, 10000));
-			var testString = stringBuilder.ToString();
-			var compressedEncrypted = Tools.Text.CompressText(testString, "password");
-			var compressed = Tools.Text.CompressText(testString);
-			var encryptedOnly = Tools.Crypto.EncryptStringAES(testString, "password", "asdfasasdfasdfasdfasdfasdfasdf");
-			writer.WriteLine("Orignal Size:{0}  Compressed:{1}  CompressedEncypted:{2} Encrypted:{3} Uncompressing worked: {4}",
-				testString.Length,
-				compressed.Length,
-				compressedEncrypted.Length,
-				encryptedOnly.Length,
-				testString == Tools.Text.DecompressText(compressed) && testString == Tools.Text.DecompressText(compressedEncrypted, "password"));
+		try {
+			// Keep Cancel and the rest of the workspace usable while the detached worker runs.
+			_compressTestButton.Text = "Cancel comparison";
+			_outputTextBox.AppendText("Comparing four sample sizes. Click Cancel comparison to stop." + Environment.NewLine);
+			var text = await Task.Run(() => CompareCompression(cancellationToken), cancellationToken);
+			cancellationToken.ThrowIfCancellationRequested();
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText(text);
+		} catch (OperationCanceledException) when (cancellation.IsCancellationRequested) {
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText("Compression comparison cancelled." + Environment.NewLine);
+		} catch (Exception error) {
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText("Compression comparison failed: " + error.Message + Environment.NewLine);
+		} finally {
+			_compressionCancellation = null;
+			if (!IsDisposed && !Disposing)
+				_compressTestButton.Text = "Compression comparison";
 		}
 	}
 
-	private void _pathTemplatesButton_Click(object sender, EventArgs e) {
+	private void PathTemplatesButton_Click(object sender, EventArgs args) {
 		var writer = new TextBoxWriter(_outputTextBox);
 		try {
 			var templates = new[] { "{Personal}{/}Alpha{/}Beta{/}Gamma" };
@@ -142,177 +138,110 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		}
 	}
 
-	private void _sqliteTestButton_Click(object sender, EventArgs e) {
+	private void SqliteTestButton_Click(object sender, EventArgs args) {
 		var writer = new TextBoxWriter(_outputTextBox);
 		try {
 
-			for (var i = 100; i <= 10000; i = i * 10) {
+			for (var index = 100; index <= 10000; index = index * 10) {
 
 				var db = CreateTempSqliteDB();
 				var start = DateTime.Now;
-				SqliteDACInsertTest(db, i);
-				writer.WriteLine("{0} unbatched inserts no transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+				SqliteDACInsertTest(db, index);
+				writer.WriteLine("{0} unbatched inserts no transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				start = DateTime.Now;
-				SqliteDACExecuteBatch(db, i);
-				writer.WriteLine("{0} batched inserts no transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+				SqliteDACExecuteBatch(db, index);
+				writer.WriteLine("{0} batched inserts no transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				start = DateTime.Now;
-				SqliteDACExecuteBatch2(db, i);
-				writer.WriteLine("{0} batched inserts 2 no transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+				SqliteDACExecuteBatch2(db, index);
+				writer.WriteLine("{0} batched inserts 2 no transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				using (var t = new TransactionScope()) {
 
 					start = DateTime.Now;
-					SqliteDACInsertTest(db, i);
+					SqliteDACInsertTest(db, index);
 					t.Complete();
-					writer.WriteLine("{0} unbatched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+					writer.WriteLine("{0} unbatched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				}
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				using (var t = new TransactionScope()) {
 					start = DateTime.Now;
-					SqliteDACExecuteBatch(db, i);
+					SqliteDACExecuteBatch(db, index);
 					t.Complete();
-					writer.WriteLine("{0} optimized batched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+					writer.WriteLine("{0} optimized batched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				}
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				using (var t = new TransactionScope()) {
 					start = DateTime.Now;
-					SqliteDACExecuteBatch2(db, i);
+					SqliteDACExecuteBatch2(db, index);
 					t.Complete();
-					writer.WriteLine("{0} standard batched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+					writer.WriteLine("{0} standard batched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				}
 				File.Delete(db);
 			}
-
-
 		} catch (Exception error) {
 			writer.WriteLine(error.ToDiagnosticString());
 		}
 	}
 
-	private void button2_Click(object sender, EventArgs e) {
+	private void Button2_Click(object sender, EventArgs args) {
 		var writer = new TextBoxWriter(_outputTextBox);
 		try {
 
-			for (var i = 100; i <= 10000; i = i * 10) {
+			for (var index = 100; index <= 10000; index = index * 10) {
 
 				DateTime start;
 				var db = CreateTempSqliteDB();
 				using (var t = new TransactionScope()) {
 
 					start = DateTime.Now;
-					SqliteDACInsertTest(db, i);
+					SqliteDACInsertTest(db, index);
 					t.Complete();
-					writer.WriteLine("{0} unbatched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+					writer.WriteLine("{0} unbatched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				}
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				using (var t = new TransactionScope()) {
 					start = DateTime.Now;
-					SqliteDACExecuteBatch(db, i);
+					SqliteDACExecuteBatch(db, index);
 					t.Complete();
-					writer.WriteLine("{0} optimized batched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+					writer.WriteLine("{0} optimized batched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				}
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				start = DateTime.Now;
-				SqliteDACExecuteBatchManualTransaction(db, i);
-				writer.WriteLine("{0} optimized batched inserts with manual transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+				SqliteDACExecuteBatchManualTransaction(db, index);
+				writer.WriteLine("{0} optimized batched inserts with manual transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				File.Delete(db);
 
 				db = CreateTempSqliteDB();
 				using (var t = new TransactionScope()) {
 					start = DateTime.Now;
-					SqliteDACExecuteBatch2(db, i);
+					SqliteDACExecuteBatch2(db, index);
 					t.Complete();
-					writer.WriteLine("{0} standard batched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
+					writer.WriteLine("{0} standard batched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
 				}
 				File.Delete(db);
 			}
-
-
 		} catch (Exception error) {
 			writer.WriteLine(error.ToDiagnosticString());
 		}
 	}
 
-
-	private void _sqlServerTest_Click(object sender, EventArgs e) {
-		var writer = new TextBoxWriter(_outputTextBox);
-		try {
-
-			for (var i = 100; i <= 10000; i = i * 10) {
-
-				DateTime start;
-				var db = CreateTempMSSQLDB();
-				using (var t = new TransactionScope()) {
-
-					start = DateTime.Now;
-					SqlServerDACInsertTest(db, i);
-					t.Complete();
-					writer.WriteLine("{0} unbatched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
-				}
-				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
-
-
-				db = CreateTempMSSQLDB();
-				using (var t = new TransactionScope()) {
-					start = DateTime.Now;
-					SqlServerDACExecuteBatch(db, i);
-					t.Complete();
-					writer.WriteLine("{0} optimized batched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
-				}
-				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
-
-				db = CreateTempMSSQLDB();
-				start = DateTime.Now;
-				SqlServerDACExecuteBatchManualTransaction(db, i);
-				writer.WriteLine("{0} optimized batched inserts with manual transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
-				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
-
-				db = CreateTempMSSQLDB();
-				using (var t = new TransactionScope()) {
-					start = DateTime.Now;
-					SqlServerDACExecuteBatch2(db, i);
-					t.Complete();
-					writer.WriteLine("{0} standard batched inserts with transaction = {1}", i, DateTime.Now.Subtract(start).TotalMilliseconds);
-				}
-				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
-			}
-
-
-		} catch (Exception error) {
-			writer.WriteLine(error.ToDiagnosticString());
-		}
-	}
-
-
-	private async void _systemPathsButton_Click(object sender, EventArgs e) {
-		var writer = new TextBoxWriter(_outputTextBox);
-		try {
-			foreach (var specialFolder in Tools.Enums.GetValues<Environment.SpecialFolder>())
-				await writer.WriteLineAsync($"{specialFolder} -> {Environment.GetFolderPath(specialFolder)}");
-		} catch (Exception error) {
-			writer.WriteLine(error.ToDiagnosticString());
-		}
-	}
-
-
-	#region Sqlite
-
+	// Sqlite
 	public string CreateTempSqliteDB() {
 		var table = "CREATE TABLE IF NOT EXISTS TTC (id INTEGER PRIMARY KEY, Route_ID TEXT, Branch_Code TEXT, Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time TEXT)";
 		var tempFile = string.Format("{0}{1}{2}", Path.GetTempPath(), Path.DirectorySeparatorChar, Guid.NewGuid());
@@ -326,7 +255,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 	public void SqliteDACInsertTest(string path, int numInserts) {
 		var dac = Tools.Sqlite.Open(path);
 		using (dac.EnterScope(true)) {
-			for (var i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 		}
 	}
@@ -335,7 +264,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var dac = Tools.Sqlite.Open(path);
 		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
-			for (var i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 			dac.ExecuteBatch(builder);
 		}
@@ -345,31 +274,72 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var dac = Tools.Sqlite.Open(path);
 		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
-			for (int i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 
 			dac.ExecuteNonQuery(builder.ToString());
 		}
 	}
 
-
 	public void SqliteDACExecuteBatchManualTransaction(string path, int numInserts) {
 		var dac = Tools.Sqlite.Open(path);
 		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			builder.BeginTransaction();
-			for (int i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 			builder.CommitTransaction();
 			dac.ExecuteBatch(builder);
 		}
 	}
 
-	#endregion
+	private void SqlServerTest_Click(object sender, EventArgs args) {
+		var writer = new TextBoxWriter(_outputTextBox);
+		try {
 
+			for (var index = 100; index <= 10000; index = index * 10) {
 
-	#region SQL Server
+				DateTime start;
+				var db = CreateTempMSSQLDB();
+				using (var t = new TransactionScope()) {
 
+					start = DateTime.Now;
+					SqlServerDACInsertTest(db, index);
+					t.Complete();
+					writer.WriteLine("{0} unbatched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
+				}
+				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
+
+				db = CreateTempMSSQLDB();
+				using (var t = new TransactionScope()) {
+					start = DateTime.Now;
+					SqlServerDACExecuteBatch(db, index);
+					t.Complete();
+					writer.WriteLine("{0} optimized batched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
+				}
+				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
+
+				db = CreateTempMSSQLDB();
+				start = DateTime.Now;
+				SqlServerDACExecuteBatchManualTransaction(db, index);
+				writer.WriteLine("{0} optimized batched inserts with manual transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
+				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
+
+				db = CreateTempMSSQLDB();
+				using (var t = new TransactionScope()) {
+					start = DateTime.Now;
+					SqlServerDACExecuteBatch2(db, index);
+					t.Complete();
+					writer.WriteLine("{0} standard batched inserts with transaction = {1}", index, DateTime.Now.Subtract(start).TotalMilliseconds);
+				}
+				Tools.MSSQL.DropDatabase("localhost", db, "sa", null, false);
+			}
+		} catch (Exception error) {
+			writer.WriteLine(error.ToDiagnosticString());
+		}
+	}
+
+	// SQL Server
 	public string CreateTempMSSQLDB() {
 		var table = "CREATE TABLE TTC (id INTEGER PRIMARY KEY IDENTITY, Route_ID VARCHAR(255), Branch_Code VARCHAR(255), Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time VARCHAR(255))";
 		var dbName = Guid.NewGuid().ToStrictAlphaString();
@@ -385,7 +355,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
 		;
 		using (dac.EnterScope(true)) {
-			for (var i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 		}
 	}
@@ -394,7 +364,7 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
 		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
-			for (var i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 			dac.ExecuteBatch(builder);
 		}
@@ -404,33 +374,38 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
 		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
-			for (int i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 
 			dac.ExecuteNonQuery(builder.ToString());
 		}
 	}
 
-
 	public void SqlServerDACExecuteBatchManualTransaction(string dbName, int numInserts) {
 		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
 		using (dac.EnterScope()) {
 			var builder = dac.CreateSQLBuilder();
 			builder.BeginTransaction();
-			for (int i = 0; i < numInserts; i++)
+			for (var index = 0; index < numInserts; index++)
 				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
 			builder.CommitTransaction();
 			dac.ExecuteBatch(builder);
 		}
 	}
 
-	#endregion
+	private async void SystemPathsButton_Click(object sender, EventArgs args) {
+		var writer = new TextBoxWriter(_outputTextBox);
+		try {
+			foreach (var specialFolder in Tools.Enums.GetValues<Environment.SpecialFolder>())
+				await writer.WriteLineAsync($"{specialFolder} -> {Environment.GetFolderPath(specialFolder)}");
+		} catch (Exception error) {
+			writer.WriteLine(error.ToDiagnosticString());
+		}
+	}
 
-	private async void button3_Click(object sender, EventArgs e) {
+	private async void Button3_Click(object sender, EventArgs args) {
 		try {
 			//var writer = new TextBoxWriter(_clipTestTextBox);
-			//var shortnedUrl = await Sphere10.Framework.UrlShortner.GoogleAsync("https://sphere10.com", "AIzaSyCt4dKG_UgO8qeusgM0BtrxB1Pb_-7KKDw");
-			//writer.WriteLine("TinyURL: " + shortnedUrl);
 			var xxx =
 				@"<?xml version=""1.0"" encoding=""utf-8""?>
 <object name="""" type=""TK0"" assembly="""">
@@ -457,13 +432,13 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 </object>";
 			var x = new XmlDeepDeserializer();
 			x.Deserialize(new StringReader(xxx));
+			_outputTextBox.AppendText("XML sample deserialized successfully." + Environment.NewLine);
 		} catch (Exception error) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
 	}
 
-
-	private async void _macAddressesButton_Click(object sender, EventArgs e) {
+	private async void MacAddressesButton_Click(object sender, EventArgs args) {
 		try {
 			var writer = new TextBoxWriter(_outputTextBox);
 			foreach (var macAddr in Tools.Network.GetMacAddresses())
@@ -473,39 +448,131 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 		}
 	}
 
+	private async void MappingTests_Click(object sender, EventArgs args) {
+		try {
+
+			var writer = new TextBoxWriter(_outputTextBox);
+
+			var member = Tools.Mapping.GetMember<TestClass>(x => x.Name);
+
+			writer.WriteLine(member);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	// Four representative sizes demonstrate the same codecs without a thousand repeated pipeline runs.
+	private static string CompareCompression(CancellationToken cancellationToken) {
+		var output = new StringBuilder();
+		const string seed = "A repeated demonstration record makes compression and encryption costs comparable. ";
+		const string password = "password";
+		const string salt = "asdfasasdfasdfasdfasdfasdfasdf";
+
+		foreach (var sampleSize in new[] { 1, 10, 100, 1000 }) {
+			cancellationToken.ThrowIfCancellationRequested();
+			var value = new StringBuilder(seed);
+			for (var item = 0; item < sampleSize; item++)
+				value.Append(Tools.Maths.RNG.Next(0, 10000));
+			var plain = value.ToString();
+
+			// Cancellation is observed between synchronous codecs; they borrow no native controls.
+			var compressedEncrypted = Tools.Text.CompressText(plain, password);
+			cancellationToken.ThrowIfCancellationRequested();
+			var compressed = Tools.Text.CompressText(plain);
+			cancellationToken.ThrowIfCancellationRequested();
+			var encrypted = Tools.Crypto.EncryptStringAES(plain, password, salt);
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var decompressed = Tools.Text.DecompressText(compressed);
+			cancellationToken.ThrowIfCancellationRequested();
+			var decryptedDecompressed = Tools.Text.DecompressText(compressedEncrypted, password);
+			cancellationToken.ThrowIfCancellationRequested();
+			var decrypted = Tools.Crypto.DecryptStringAES(encrypted, password, salt);
+			cancellationToken.ThrowIfCancellationRequested();
+			var roundTrip = plain == decompressed && plain == decryptedDecompressed && plain == decrypted;
+			output.AppendLine(
+				$"Original: {plain.Length:N0} · Compressed: {compressed.Length:N0} · Compressed/encrypted: {compressedEncrypted.Length:N0} · Encrypted: {encrypted.Length:N0} · Round trip: {roundTrip}"
+			);
+		}
+		return output.ToString();
+	}
+
+	public class TestObject {
+		public int ID {
+			get; set;
+		}
+
+		public string Name {
+			get; set;
+		}
+	}
+
+	public class ScopeContextTest : SyncContextScope {
+		public static TextWriter TextWriter;
+
+		public ScopeContextTest(ContextScopePolicy policy)
+			: base(policy, "myTlsSlotName") {
+			if (IsRootScope)
+				TextWriter.WriteLine("[Begin Root Scope]");
+			else
+				TextWriter.WriteLine("[Begin Child Scope]");
+		}
+
+		protected override void OnScopeEndInternal() {
+			TextWriter.WriteLine(RootScope != this ? "[End Child Scope]" : "[End Root Scope]");
+		}
+
+		protected override void OnContextEnd() {
+			TextWriter.WriteLine("Context end");
+		}
+	}
 
 	[XmlRoot("Menu")]
 	public class Menu {
-
 		public Menu() {
 			SubMenus = new Menu[0];
 			Url = "#";
 		}
 
-		public Menu(string text, string url, string glyph = null) : this() {
+		public Menu(string text, string url, string glyph = null)
+			: this() {
 			Text = text;
 			Url = url;
 			Glyph = glyph;
 		}
 
+		[XmlAttribute("text")]
+		public string Text {
+			get; set;
+		}
 
-		[XmlAttribute("text")] public string Text { get; set; }
+		[XmlAttribute("url")]
+		public string Url {
+			get; set;
+		}
 
-		[XmlAttribute("url")] public string Url { get; set; }
+		[XmlAttribute("open")]
+		public bool Open {
+			get; set;
+		}
 
-		[XmlAttribute("open")] public bool Open { get; set; }
+		[XmlAttribute("icon")]
+		public string FontAwesomeIcon {
+			get; set;
+		}
 
-		[XmlAttribute("icon")] public string FontAwesomeIcon { get; set; }
+		[XmlAttribute("glyph")]
+		public string Glyph {
+			get; set;
+		}
 
-		[XmlAttribute("glyph")] public string Glyph { get; set; }
-
-		[XmlElement("Menu")] public Menu[] SubMenus { get; set; }
-
+		[XmlElement("Menu")]
+		public Menu[] SubMenus {
+			get; set;
+		}
 	}
 
-
 	public class SideBarModelBuilder {
-
 		public Menu CraeteDefaultSideBarModel() {
 			return new Menu {
 				SubMenus =
@@ -566,7 +633,6 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 			};
 		}
 
-
 		protected Menu CreateTransactionsMenu() {
 			return new Menu {
 				Text = "Transactions",
@@ -577,7 +643,6 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 				}
 			};
 		}
-
 
 		protected Menu CreateCardMenu() {
 			return new Menu {
@@ -634,20 +699,4 @@ public partial class MiscTestScreen : WinFormsApplicationScreen {
 			};
 		}
 	}
-
-	private async void _mappingTests_Click(object sender, EventArgs e) {
-		try {
-
-			var _writer = new TextBoxWriter(_outputTextBox);
-
-
-			var member = Tools.Mapping.GetMember<TestClass>(x => x.Name);
-
-			_writer.WriteLine(member);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
 }
-
-

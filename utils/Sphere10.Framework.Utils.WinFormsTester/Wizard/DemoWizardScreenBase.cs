@@ -11,11 +11,10 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-// This base class is needed to stop WinForms designer from throwing. This class cannot be designed by it's descendents can. This is due to the generic base.
+/// <summary>Provides a concrete nongeneric bridge so native Designer can edit all demonstration wizard pages.</summary>
 public class DemoWizardScreenBase : WinFormsWizardScreen<DemoWizardModel> {
+	/// <summary>Keeps model publication explicit through each validated page's navigation callback.</summary>
 	public DemoWizardScreenBase() {
 		UpdateModelOnStateChanged = false;
 	}
 }
-
-

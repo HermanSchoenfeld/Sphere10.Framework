@@ -2,238 +2,236 @@
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Demonstrates reusable scheduler policies with screen-owned jobs, subscriptions and log delivery.</summary>
 public partial class ScheduleTestScreen : WinFormsApplicationScreen {
-	private readonly TextBoxWriter _textWriter;
+	private readonly ConcurrentQueue<string> _pending = new();
+	private readonly Timer _refreshTimer;
 	private readonly ILogger _logger;
+	private Scheduler _asynchronousScheduler;
+	private Scheduler _synchronousScheduler;
+	private volatile bool _acceptLogs = true;
 
-	private Scheduler _asynchronousScheduler = null;
-	private Scheduler _synchronousScheduler = null;
-
+	/// <summary>Creates an inactive example without touching the process-global schedulers.</summary>
 	public ScheduleTestScreen() {
 		InitializeComponent();
-
-		_textWriter = new TextBoxWriter(textBox1);
-		_logger = new ThreadIdLogger(new TimestampLogger(new MulticastLogger(
-			new TextWriterLogger(_textWriter),
-			new ConsoleLogger())));
+		Disposables.Add(_heading.Font);
+		_logger = new ActionLogger(QueueLog);
+		_refreshTimer = new Timer { Interval = 80 };
+		_refreshTimer.Tick += RefreshLog;
 	}
 
-	private void Log(string text) {
-		textBox1.BeginInvoke((MethodInvoker)delegate() {
-			_logger.Info($"{DateTime.Now:HH:mm:ss.fff} {text}");
-			//System.Diagnostics.Debug.WriteLine(text);
-		});
+	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override SchedulingScreenSettings ScreenSettings {
+		get {
+			return (SchedulingScreenSettings)base.ScreenSettings;
+		}
+	}
+
+	protected override void InitializeUIPrimingData() {
+		base.InitializeUIPrimingData();
+		if (!Tools.Runtime.IsDesignMode)
+			_refreshTimer.Start();
+	}
+
+	// Jobs only use the detached queue logger, so disposal never leaves a worker invoking a destroyed HWND.
+	protected override void OnDestroyScreen() {
+		_acceptLogs = false;
+		_refreshTimer.Stop();
+		_refreshTimer.Tick -= RefreshLog;
+		_refreshTimer.Dispose();
+		ReleaseScheduler(ref _asynchronousScheduler);
+		ReleaseScheduler(ref _synchronousScheduler);
+		_pending.Clear();
+		base.OnDestroyScreen();
 	}
 
 	private void _job1Button_Click(object sender, EventArgs e) {
-		var job1 =
-			JobBuilder.For(() => _logger.Info("Executed Job 1"))
-				.Called("Job1")
-				.RunOnce(DateTime.Now)
-				.RunAsyncronously()
-				.Repeat
-				.OnInterval(TimeSpan.FromSeconds(1))
-				.Build();
-
-		var job2 =
-			JobBuilder.For(() => _logger.Info("Executed Job 2"))
-				.Called("Job2")
-				.RunOnce(DateTime.Now)
-				.RunAsyncronously()
-				.Repeat
-				.OnInterval(TimeSpan.FromSeconds(2))
-				.Build();
-
-		Sphere10.Framework.Scheduler.Asynchronous.JobStatusChanged +=
-			(job, fromStatus, toStatus) => _textWriter.WriteLine("{0}: {1} -> {2}", job.Name, fromStatus, toStatus);
-		Sphere10.Framework.Scheduler.Asynchronous.AddJob(job1);
-		Sphere10.Framework.Scheduler.Asynchronous.AddJob(job2);
+		CreateScheduler(false, actionBased: true);
+		_asynchronousScheduler.Start();
+		_status.Text = "Two screen-owned asynchronous sample jobs are running.";
 	}
 
 	private void TestButton_Click(object sender, EventArgs e) {
-		var job2 = JobBuilder
-			.For(typeof(TestJob))
-			.Called("SyncJob2")
-			.RunOnce(DateTime.Now)
-			.RunSyncronously()
-			.Repeat
-			.OnInterval(TimeSpan.FromSeconds(1))
-			.Build();
-
-		var job3 = JobBuilder
-			.For(typeof(TestJob))
-			.Called("SyncJob3")
-			.RunOnce(DateTime.Now)
-			.RunSyncronously()
-			.Repeat
-			.OnInterval(TimeSpan.FromSeconds(1))
-			.Build();
-
-		if (_synchronousScheduler == null) {
-			_synchronousScheduler = new Scheduler(SchedulerPolicy.ForceSyncronous, _logger);
-
-			_synchronousScheduler.OnBeforeJobBegin = (job) => Log($"{job.Name} [OnBeforeJobBegin]");
-			_synchronousScheduler.OnAfterJobEnd = (job) => Log($"{job.Name} [OnAfterJobEnd]");
-			_synchronousScheduler.OnJobError = (job, ex) => Log($"{job.Name} [OnJobError] {ex.Message}");
-
-			_synchronousScheduler.AddJob(job2);
-			_synchronousScheduler.AddJob(job3);
-
-			_synchronousScheduler.Start();
-		}
-	}
-
-	private void SyncStartButton_Click(object sender, EventArgs e) {
-		if (_synchronousScheduler != null) {
-			Log("Starting (synchronous)");
-			_synchronousScheduler.Start();
-		} else {
-			Log("Scheduler not created yet");
-		}
-	}
-
-	private void SyncStopButton_Click(object sender, EventArgs e) {
-		if (_synchronousScheduler != null) {
-			Log("Stopping (synchronous)");
-			_synchronousScheduler.Stop();
-		} else {
-			Log("Scheduler not created yet");
-		}
-	}
-
-	private void SyncSerializeButton_Click(object sender, EventArgs e) {
-		var scheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError | SchedulerPolicy.ForceSyncronous, _logger);
-
-		var job1 = JobBuilder
-			.For(typeof(TestJob))
-			.Called("SyncJob1")
-			.RunOnce(DateTime.Now.AddMinutes(1))
-			.RunSyncronously()
-			.Build();
-		scheduler.AddJob(job1);
-
-		var job2 = JobBuilder
-			.For(typeof(TestJob))
-			.Called("SyncJob2")
-			.RunOnce(DateTime.Now.AddMinutes(1))
-			.RunSyncronously()
-			.Repeat
-			.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
-			.Build();
-		scheduler.AddJob(job2);
-
-		var surrogate = scheduler.ToSerializableSurrogate();
-
-		var newScheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError | SchedulerPolicy.ForceSyncronous, _logger);
-		newScheduler.FromSerializableSurrogate(surrogate);
-	}
-
-	private void XmlSerializeButton_Click(object sender, EventArgs e) {
-		var scheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError | SchedulerPolicy.ForceSyncronous, _logger);
-
-		var job1 = JobBuilder
-			.For(typeof(TestJob))
-			.Called("SyncJob1")
-			.RunOnce(DateTime.Now.AddMinutes(1))
-			.RunSyncronously()
-			.Build();
-		scheduler.AddJob(job1);
-
-		var job2 = JobBuilder
-			.For(typeof(TestJob))
-			.Called("SyncJob2")
-			.RunOnce(DateTime.Now.AddMinutes(1))
-			.RunSyncronously()
-			.Repeat
-			.OnInterval(TimeSpan.FromSeconds(1), endDate: DateTime.Now.AddMinutes(2))
-			.Build();
-		scheduler.AddJob(job2);
-
-		var path = Path.GetTempFileName();
-		try {
-			var serializer = new XmlSchedulerSerializer(path);
-			serializer.Serialize(scheduler.ToSerializableSurrogate());
-
-			var s = File.ReadAllText(path);
-			Log(s);
-		} finally {
-			if (!string.IsNullOrEmpty(path) && File.Exists(path)) {
-				File.Delete(path);
-			}
-		}
+		CreateScheduler(true);
 	}
 
 	private void AsyncTestButton_Click(object sender, EventArgs e) {
-		var job1 = JobBuilder
-			.For(() => Log("Executed Async Job 1"))
-			.Called("AsyncJob1")
-			.RunOnce(DateTime.Now)
-			.RunAsyncronously()
-			.Repeat
-			.OnInterval(TimeSpan.FromSeconds(1))
-			.Build();
+		CreateScheduler(false);
+	}
 
-		var job2 = JobBuilder
-			.For(() => Log("Executed Async Job 2"))
-			.Called("AsyncJob2")
-			.RunOnce(DateTime.Now)
-			.RunAsyncronously()
-			.Repeat
-			.OnInterval(TimeSpan.FromSeconds(2))
-			.Build();
-
-		if (_asynchronousScheduler == null) {
-			_asynchronousScheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError, _logger);
-
-			_asynchronousScheduler.OnBeforeJobBegin = (job) => Log($"{job.Name} [OnBeforeJobBegin]");
-			_asynchronousScheduler.OnAfterJobEnd = (job) => Log($"{job.Name} [OnAfterJobEnd]");
-			_asynchronousScheduler.OnJobError = (job, ex) => Log($"{job.Name} [OnJobError] {ex.Message}");
-			_asynchronousScheduler.JobStatusChanged += (job, fromStatus, toStatus) => Log($"{job.Name}: {fromStatus} -> {toStatus}");
-
-			_asynchronousScheduler.AddJob(job1);
-			_asynchronousScheduler.AddJob(job2);
-
-			_asynchronousScheduler.Start();
+	// The same policy-aware composition serves the two independent scheduler owners.
+	private void CreateScheduler(bool synchronous, bool actionBased = false) {
+		var current = synchronous ? _synchronousScheduler : _asynchronousScheduler;
+		if (current != null) {
+			_status.Text = "That scheduler already exists. Use Start or Stop.";
+			return;
 		}
+		var values = !HasSettings ? new SchedulingScreenSettings() : ScreenSettings;
+		var scheduler = new Scheduler(SchedulerPolicy.DontThrow | SchedulerPolicy.RemoveJobOnError
+			| (synchronous ? SchedulerPolicy.ForceSyncronous : 0), _logger);
+		scheduler.JobStatusChanged += JobStatusChanged;
+		scheduler.OnBeforeJobBegin = job => QueueLog(job.Name + " [OnBeforeJobBegin]");
+		scheduler.OnAfterJobEnd = job => QueueLog(job.Name + " [OnAfterJobEnd]");
+		scheduler.OnJobError = (job, error) => QueueLog(job.Name + ": " + error.Message);
+		for (var index = 1; index <= 2; index++) {
+			var name = (synchronous ? "Sync " : "Async ") + index;
+			var builder = actionBased
+				? JobBuilder.For(() => QueueLog("Executed action " + name))
+				: JobBuilder.For(typeof(TestJob));
+			builder.Called(name);
+			if (synchronous)
+				builder.RunSyncronously();
+			else
+				builder.RunAsyncronously();
+			var job = builder.Repeat.OnInterval(TimeSpan.FromMilliseconds(values.IntervalMilliseconds * index), totalIterations: (uint)values.Iterations).Build();
+			scheduler.AddJob(job);
+		}
+		if (synchronous)
+			_synchronousScheduler = scheduler;
+		else
+			_asynchronousScheduler = scheduler;
+		_status.Text = $"Created {(synchronous ? "synchronous" : "asynchronous")} scheduler: two jobs, {values.Iterations} interval execution(s) each.";
+	}
+
+	private void SyncStartButton_Click(object sender, EventArgs e) {
+		_synchronousScheduler?.Start();
+		_status.Text = _synchronousScheduler == null ? "Create the synchronous scheduler first." : "Synchronous scheduler started.";
+	}
+
+	private void SyncStopButton_Click(object sender, EventArgs e) {
+		_synchronousScheduler?.Stop();
+		_status.Text = "Synchronous scheduling stopped. A running bounded job finishes normally.";
 	}
 
 	private void AsyncStartButton_Click(object sender, EventArgs e) {
-		if (_asynchronousScheduler != null) {
-			Log("Starting (asynchronous)");
-			_asynchronousScheduler.Start();
-		} else {
-			Log("Scheduler not created yet");
-		}
+		_asynchronousScheduler?.Start();
+		_status.Text = _asynchronousScheduler == null ? "Create the asynchronous scheduler first." : "Asynchronous scheduler started.";
 	}
 
 	private void AsyncStopButton_Click(object sender, EventArgs e) {
-		if (_asynchronousScheduler != null) {
-			Log("Stopping (asynchronous)");
-			_asynchronousScheduler.Stop();
-		} else {
-			Log("Scheduler not created yet");
+		_asynchronousScheduler?.Stop();
+		_status.Text = "Asynchronous scheduling stopped. Running bounded jobs finish normally.";
+	}
+
+	private void SyncSerializeButton_Click(object sender, EventArgs e) {
+		try {
+			using var original = CreateSerializableExample();
+			using var restored = new Scheduler(SchedulerPolicy.ForceSyncronous | SchedulerPolicy.DontThrow, _logger);
+			var surrogate = original.ToSerializableSurrogate();
+			restored.FromSerializableSurrogate(surrogate);
+			QueueLog($"Surrogate restored {restored.ToSerializableSurrogate().Jobs.Length} job(s). Neither scheduler was started.");
+			_status.Text = "Surrogate round trip completed.";
+		} catch (Exception error) {
+			_status.Text = "Surrogate round trip failed: " + error.Message;
 		}
 	}
-}
 
-
-public class TestJob : ISchedulerJob {
-	public void Execute(IJob job) {
-		job.Log.Debug("TestJob BEGIN");
-		System.Threading.Thread.Sleep(500);
-		job.Log.Debug("TestJob END");
+	private void XmlSerializeButton_Click(object sender, EventArgs e) {
+		string path = null;
+		try {
+			path = Path.GetTempFileName();
+			using var scheduler = CreateSerializableExample();
+			using var restored = new Scheduler(SchedulerPolicy.ForceSyncronous | SchedulerPolicy.DontThrow, _logger);
+			var serializer = new XmlSchedulerSerializer(path);
+			serializer.Serialize(scheduler.ToSerializableSurrogate());
+			restored.FromSerializableSurrogate(serializer.Deserialize());
+			QueueLog(File.ReadAllText(path));
+			_status.Text = $"XML restored {restored.ToSerializableSurrogate().Jobs.Length} job(s). The temporary file was removed.";
+		} catch (Exception error) {
+			_status.Text = "XML round trip failed: " + error.Message;
+		} finally {
+			if (path != null)
+				File.Delete(path);
+		}
 	}
+
+	private Scheduler CreateSerializableExample() {
+		var scheduler = new Scheduler(SchedulerPolicy.ForceSyncronous | SchedulerPolicy.DontThrow, _logger);
+		scheduler.AddJob(JobBuilder.For(typeof(TestJob))
+			.Called("Serialized one-shot")
+			.RunOnce(DateTime.Now.AddMinutes(1))
+			.RunSyncronously()
+			.Build());
+		scheduler.AddJob(JobBuilder.For(typeof(TestJob))
+			.Called("Serialized sample")
+			.RunSyncronously()
+			.Repeat
+				.OnInterval(TimeSpan.FromSeconds(1), totalIterations: 3)
+			.Build());
+		return scheduler;
+	}
+
+	private void JobStatusChanged(IJob job, JobStatus from, JobStatus to) {
+		QueueLog($"{job.Name}: {from} → {to}");
+	}
+
+	// Callbacks may arrive on worker threads and never access native controls.
+	private void QueueLog(string text) {
+		if (_acceptLogs && _pending.Count < 2000)
+			_pending.Enqueue($"{DateTime.Now:HH:mm:ss.fff} {text}");
+	}
+
+	private void RefreshLog(object sender, EventArgs e) {
+		var output = new StringBuilder();
+		while (_pending.TryDequeue(out var line))
+			output.AppendLine(line);
+		if (output.Length == 0)
+			return;
+		textBox1.AppendText(output.ToString());
+		if (textBox1.TextLength > 40000)
+			textBox1.Text = textBox1.Text[^30000..];
+	}
+
+	private void ClearClicked(object sender, EventArgs e) {
+		_pending.Clear();
+		textBox1.Clear();
+	}
+
+	// Stop future schedules and remove callbacks before releasing the screen-owned scheduler.
+	private void ReleaseScheduler(ref Scheduler scheduler) {
+		var owned = scheduler;
+		scheduler = null;
+		if (owned == null)
+			return;
+		owned.Stop();
+		owned.JobStatusChanged -= JobStatusChanged;
+		owned.OnBeforeJobBegin = null;
+		owned.OnAfterJobEnd = null;
+		owned.OnJobError = null;
+		owned.Dispose();
+	}
+
+	#region Inner Types
+
+	/// <summary>Defaults for new screen-owned scheduler examples.</summary>
+	[UserEditable]
+	public class SchedulingScreenSettings : SettingsObject {
+		/// <summary>The first job interval; the second job uses twice this interval.</summary>
+		[DefaultValue(1000)]
+		[Range(100, 60000)]
+		public int IntervalMilliseconds { get; set; } = 1000;
+
+		/// <summary>The finite number of interval executions per job.</summary>
+		[DefaultValue(5)]
+		[Range(1, 100)]
+		public int Iterations { get; set; } = 5;
+	}
+	#endregion
 }
-
-

@@ -2,7 +2,7 @@
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,94 +12,55 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+
+/// <summary>Demonstrates artificial database key descriptions and their XML persistence.</summary>
 public partial class TestArtificialKeysScreen : WinFormsApplicationScreen {
+	/// <summary>Creates the local schema example without opening a database.</summary>
 	public TestArtificialKeysScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
+		textBox1.Text = "Customers: primary key Id; unique key Email." + Environment.NewLine
+			+ "Orders: primary key Id; CustomerId references Customers.Id." + Environment.NewLine
+			+ "Serialize and verify displays the exact XML and confirms that reserialization is identical.";
 	}
 
+	// The sample describes valid relationships; the demonstration itself performs no database mutation.
 	private void _testButton_Click(object sender, EventArgs e) {
 		try {
-			var artificialKeys =
-
-				#region Create test object
-
-				new ArtificialKeys {
-					Tables = new[] {
-						new ArtificialKeys.Table() {
-							Name = "Table1",
-							PrimaryKey = new ArtificialKeys.PrimaryKey {
-								Name = "PK1",
-								AutoIncrement = true,
-								Columns = new[] {
-									new ArtificialKeys.Column {
-										Name = "ID"
-									}
-								}
-							},
-							ForeignKeys = new[] {
-								new ArtificialKeys.ForeignKey {
-									Name = "PK1",
-									ReferenceTable = "Table2",
-									Columns = new[] {
-										new ArtificialKeys.Column {
-											Name = "ID"
-										}
-									}
-								}
-							},
-							UniqueConstraints = new[] {
-								new ArtificialKeys.UniqueConstraint {
-									Name = "UC1",
-									Columns = new[] {
-										new ArtificialKeys.Column {
-											Name = "X"
-										},
-										new ArtificialKeys.Column {
-											Name = "Y"
-										},
-
-									}
-								}
-							},
+			var keys = new ArtificialKeys {
+				Tables = new[] {
+					new ArtificialKeys.Table {
+						Name = "Customers",
+						PrimaryKey = new ArtificialKeys.PrimaryKey {
+							Name = "PK_Customers", AutoIncrement = true,
+							Columns = new[] { new ArtificialKeys.Column { Name = "Id" } }
 						},
-						new ArtificialKeys.Table() {
-							Name = "Table2",
-							PrimaryKey = new ArtificialKeys.PrimaryKey {
-								Name = "PK1",
-								Sequence = "Sequence1",
-								Columns = new[] {
-									new ArtificialKeys.Column {
-										Name = "A"
-									},
-									new ArtificialKeys.Column {
-										Name = "B"
-									},
-									new ArtificialKeys.Column {
-										Name = "C"
-									}
-								}
+						UniqueConstraints = new[] {
+							new ArtificialKeys.UniqueConstraint { Name = "UQ_Customers_Email", Columns = new[] { new ArtificialKeys.Column { Name = "Email" } } }
+						}
+					},
+					new ArtificialKeys.Table {
+						Name = "Orders",
+						PrimaryKey = new ArtificialKeys.PrimaryKey {
+							Name = "PK_Orders", Sequence = "OrdersSequence",
+							Columns = new[] { new ArtificialKeys.Column { Name = "Id" } }
+						},
+						ForeignKeys = new[] {
+							new ArtificialKeys.ForeignKey {
+								Name = "FK_Orders_Customers", ReferenceTable = "Customers",
+								Columns = new[] { new ArtificialKeys.Column { Name = "CustomerId", References = "Id" } }
 							}
 						}
 					}
-				};
-
-			#endregion
-
-			var serialized = Tools.Xml.WriteToString(artificialKeys);
-
-			var deserialized = Tools.Xml.ReadFromString<ArtificialKeys>(serialized);
-
-			textBox1.Clear();
-			textBox1.AppendText(serialized);
-
-			var reserialized = Tools.Xml.WriteToString(deserialized);
-			if (reserialized != serialized) {
-				textBox1.AppendText("Deserialization did not match - " + Environment.NewLine);
-				textBox1.AppendText(reserialized);
-			}
+				}
+			};
+			var xml = Tools.Xml.WriteToString(keys);
+			var restored = Tools.Xml.ReadFromString<ArtificialKeys>(xml);
+			var identical = string.Equals(xml, Tools.Xml.WriteToString(restored), StringComparison.Ordinal);
+			textBox1.Text = xml;
+			_status.Text = identical ? "Passed: two tables and all key descriptions round-tripped unchanged." : "Failed: the reserialized XML differs.";
 		} catch (Exception error) {
-			textBox1.Clear();
-			textBox1.AppendText(error.ToDiagnosticString());
+			_status.Text = "Schema round trip failed: " + error.Message;
 		}
 	}
 }
@@ -108,7 +69,7 @@ public partial class TestArtificialKeysScreen : WinFormsApplicationScreen {
 //        <PrimaryKey name="PK1" autoIncrement="true">
 //            <Column name="ID"/>
 //        </PrimaryKey>
-//	
+//
 //        <ForeignKey name="FK1" foreignKeyTable="Table2">
 //            <Column name="A" linksTo="U">
 //            <Column name="B" linksTo="V">
@@ -128,5 +89,3 @@ public partial class TestArtificialKeysScreen : WinFormsApplicationScreen {
 //    </Table>
 //
 //</AritificialKeys>
-
-

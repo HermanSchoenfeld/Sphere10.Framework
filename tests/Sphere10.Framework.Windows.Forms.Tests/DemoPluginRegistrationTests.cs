@@ -131,15 +131,14 @@ public class DemoPluginRegistrationTests {
 	public async Task ApplicationModeToggleIsAvailableAcrossBlocksAndSwitchesTheLiveHost() {
 		var form = await StartDemoAsync();
 		var application = (WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
-		WinFormsDemoPlugin.ConfigureApplicationCommands(application);
-		var toggle = application.ToolBarItems.OfType<IWinFormsLinkMenuItem>().Single();
+		var toggle = application.ToolBarItems.OfType<IWinFormsLinkMenuItem>().Single(item => item.Text == "Toggle Screen Mode");
 		Assert.That(toggle.Text, Is.EqualTo("Toggle Screen Mode"));
 		toggle.OnSelect(form);
 		Assert.That(form.ScreenMode, Is.EqualTo(ScreenMode.SingleView));
-		form.ActiveBlock = form.RegisteredBlocks.Single(block => block.Name == "Controls");
+		form.SelectedBlock = form.RegisteredBlocks.Single(block => block.Name == "Controls");
 		toggle.OnSelect(form);
 		Assert.That(form.ScreenMode, Is.EqualTo(ScreenMode.MultiView));
-		Assert.That(application.ToolBarItems.Single(), Is.SameAs(toggle));
+		Assert.That(application.ToolBarItems, Does.Contain(toggle));
 	}
 
 	[Test]
@@ -188,7 +187,9 @@ public class DemoPluginRegistrationTests {
 			"CompressionTestScreen",
 			"ConnectionBarTestScreen",
 			"ConnectionPanelTestScreen",
+			"ControlCatalogScreen",
 			"VisualGridTestScreen",
+			"SourceGridGalleryScreen",
 			"CustomComboBoxScreen",
 			"DecayGaugeScreen",
 			"DraggableControlsTestScreen",
@@ -237,7 +238,9 @@ public class DemoPluginRegistrationTests {
 	[TestCase("Workspace", typeof(ScreenA))]
 	[TestCase("Notes", typeof(ScreenHostingPermanentTestScreen))]
 	[TestCase("Controls", typeof(EnumComboScreen))]
+	[TestCase("Controls", typeof(ControlCatalogScreen))]
 	[TestCase("Data And Collections", typeof(VisualGridTestScreen))]
+	[TestCase("Data And Collections", typeof(SourceGridGalleryScreen))]
 	[TestCase("Integration", typeof(CommunicationsTestScreen))]
 	[TestCase("Utilities", typeof(CompressionTestScreen))]
 	[TestCase("Utilities", typeof(LoggingTestScreen))]
@@ -296,6 +299,7 @@ public class DemoPluginRegistrationTests {
 	[TestCase(typeof(ScreenHostingDesignTestScreen))]
 	[TestCase(typeof(ScreenHostingPlainTestScreen))]
 	[TestCase(typeof(VisualGridTestScreen))]
+	[TestCase(typeof(SourceGridGalleryScreen))]
 	[TestCase(typeof(EnumComboScreen))]
 	public async Task OrdinaryDemoScreensOpenIndependentInstancesThroughTheirRegisteredMenus(Type screenType) {
 		var form = await StartDemoAsync();
@@ -332,6 +336,53 @@ public class DemoPluginRegistrationTests {
 			}
 			Assert.That(form.ScreenHost.OpenScreens.Count(screen => screen.GetType() == screenType), Is.EqualTo(6));
 		}
+	}
+
+	// Actual plugin/block composition must release the outgoing screen's native items after layout settles.
+	[TestCase(false)]
+	[TestCase(true)]
+	public void HiddenOrClosedDemoScreensRemoveTheirOwnMenuAndToolbarItems(bool closeScreen) {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
+			var design = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "design");
+			var plainDefinition = workspace.ScreenDefinitions.Single(definition => definition.ScreenType == typeof(ScreenHostingPlainTestScreen));
+			var plain = await form.ScreenHost.OpenScreenAsync(workspace, plainDefinition);
+			using var screen = new ScreenHostingDesignTestScreen { Block = workspace };
+
+			// Capture originals before merging; fallback screens intentionally have similar command captions.
+			var headers = screen.ScreenMenuStrip.Items.Cast<ToolStripItem>().ToArray();
+			var menuItems = headers.OfType<ToolStripMenuItem>().SelectMany(header => header.DropDownItems.Cast<ToolStripItem>()).ToArray();
+			var toolItems = screen.ScreenToolBar.Items.Cast<ToolStripItem>().ToArray();
+			Assert.That(await form.ScreenHost.ShowScreenAsync(screen, design.Registration), Is.True);
+			await Task.Yield();
+			var targetMenu = form.Controls.OfType<MenuStrip>().Single(menu => menu.Name == "_menuStrip");
+			var targetTools = form.Controls.OfType<ToolStrip>().Single(tools => tools.Name == "_toolStrip");
+			Assert.That(targetTools.Items.Cast<ToolStripItem>().Intersect(toolItems), Is.EqualTo(toolItems));
+			Assert.That(targetMenu.Items.OfType<ToolStripMenuItem>().SelectMany(header => header.DropDownItems.Cast<ToolStripItem>()).Intersect(menuItems),
+				Is.EquivalentTo(menuItems));
+
+			if (closeScreen)
+				Assert.That(await form.ScreenHost.CloseScreenAsync(screen), Is.True);
+			else
+				Assert.That(await form.ScreenHost.ShowScreenAsync(plain), Is.True);
+			await Task.Yield();
+			form.PerformLayout();
+			await Task.Yield();
+
+			Assert.That(form.ActiveScreen, Is.SameAs(plain));
+			Assert.That(targetMenu.Items.Cast<ToolStripItem>().Intersect(headers), Is.Empty);
+			Assert.That(targetMenu.Items.OfType<ToolStripMenuItem>().SelectMany(header => header.DropDownItems.Cast<ToolStripItem>()).Intersect(menuItems), Is.Empty);
+			Assert.That(targetTools.Items.Cast<ToolStripItem>().Intersect(toolItems), Is.Empty);
+			Assert.That(screen.IsDisposed, Is.EqualTo(closeScreen));
+			if (!closeScreen) {
+				Assert.That(screen.Visible, Is.False);
+				Assert.That(screen.ScreenMenuStrip.Items.Cast<ToolStripItem>(), Is.EqualTo(headers));
+				Assert.That(screen.ScreenToolBar.Items.Cast<ToolStripItem>(), Is.EqualTo(toolItems));
+			}
+			AssertNoDemoError();
+		});
 	}
 
 	[Test]
@@ -375,6 +426,46 @@ public class DemoPluginRegistrationTests {
 		});
 	}
 
+	// The attribute alone declares this real screen's settings and Options refreshes its existing controls.
+	[Test]
+	public void AttributeOnlySettingsDemoAppliesOptionsToItsLiveScreen() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var block = form.RegisteredBlocks.Single(candidate => candidate.Name == "Utilities");
+			var definition = block.ScreenDefinitions.Single(candidate => candidate.ScreenType == typeof(SettingsTest));
+			Assert.That(typeof(SettingsTest).GetProperty(nameof(IApplicationScreen.ScreenSettings)).PropertyType, Is.EqualTo(typeof(SettingsObject)));
+			Assert.That(definition.Settings, Is.TypeOf<SettingsTest.SettingsDemoScreenSettings>());
+			var screen = await form.ScreenHost.OpenScreenAsync(block, definition);
+			await Task.Yield();
+			var scope = screen.Controls.Find("_globalScope", true).OfType<CheckBox>().Single();
+			Assert.That(scope.Checked, Is.False);
+
+			var opening = form.ShowScreenOptionsAsync();
+			await Task.Yield();
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Single();
+			try {
+				Assert.That(dialog.SelectedOwner, Is.SameAs(definition));
+				var values = dialog.Controls.Find("_propertyGrid", true).OfType<PropertyGrid>().Single().SelectedObject;
+				TypeDescriptor.GetProperties(values)[nameof(SettingsTest.SettingsDemoScreenSettings.PreferGlobalScope)].SetValue(values, true);
+				Assert.That(await dialog.ApplySelectedAsync(), Is.True);
+				Assert.That(scope.Checked, Is.True);
+				dialog.ResetSelectedDefaults();
+				dialog.CancelEdits();
+				Assert.That(((SettingsTest.SettingsDemoScreenSettings)definition.Settings).PreferGlobalScope, Is.True);
+			} finally {
+				dialog.DialogResult = DialogResult.Cancel;
+				dialog.Close();
+			}
+			Assert.That(await opening, Is.EqualTo(DialogResult.Cancel));
+			Assert.That(await form.ScreenHost.CloseScreenAsync(screen), Is.True);
+			var reopened = await form.ScreenHost.OpenScreenAsync(block, definition);
+			await Task.Yield();
+			Assert.That(reopened.Controls.Find("_globalScope", true).OfType<CheckBox>().Single().Checked, Is.True);
+			AssertNoDemoError();
+		});
+	}
+
 	[Test]
 	public void InspectorOptionsDeclareIndependentDefaultsAndCustomEditorWithoutActivatingScreens() {
 		RunWithNativeMessageLoop(async () => {
@@ -383,26 +474,26 @@ public class DemoPluginRegistrationTests {
 			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
 			var cpuDefinition = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "cpu-inspector");
 			var gpuDefinition = workspace.ScreenDefinitions.Single(definition => definition.StableKey == "gpu-inspector");
-			var cpu = application.Settings.GetProfile(workspace, cpuDefinition.Registration);
-			var gpu = application.Settings.GetProfile(workspace, gpuDefinition.Registration);
-			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("CPU summary"));
-			Assert.That(gpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("GPU summary"));
-			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Grid.Columns.Select(column => column.Key), Is.EqualTo(new[] { "Id", "Name", "Summary" }));
-			Assert.That(cpu.Validate(cpu.GetValues<ScreenHostingPreferences>()).IsSuccess, Is.True);
+			var cpu = (ScreenHostingDesignTestScreen.ScreenHostingPreferences)cpuDefinition.Settings;
+			var gpu = (ScreenHostingDesignTestScreen.ScreenHostingPreferences)gpuDefinition.Settings;
+			Assert.That(cpu.Heading, Is.EqualTo("CPU summary"));
+			Assert.That(gpu.Heading, Is.EqualTo("GPU summary"));
+			Assert.That(cpu.Grid.Columns.Select(column => column.Key), Is.EqualTo(new[] { "Id", "Name", "Summary" }));
+			Assert.That(cpu.Validate().IsSuccess, Is.True);
 			Assert.That(form.ScreenHost.OpenScreens.OfType<ScreenHostingDesignTestScreen>(), Is.Empty);
-			using var dialog = new WinFormsApplicationSettingsDialog(application.Settings, application, Sphere10Framework.Instance.ServiceProvider, cpu);
+			using var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, cpuDefinition);
 			dialog.Show(_dispatcher);
 			SetInspectorHeading(dialog, "CPU accepted heading");
-			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("CPU summary"));
+			Assert.That(cpu.Heading, Is.EqualTo("CPU accepted heading"));
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
-			dialog.SelectProfile(gpu);
+			dialog.SelectOwner(gpuDefinition);
 			Assert.That(dialog.Controls.Find("PreferencePreview", true).Single().Text, Does.Contain("GPU summary"));
-			Assert.That(gpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("GPU summary"));
+			Assert.That(gpu.Heading, Is.EqualTo("GPU summary"));
 			dialog.ResetSelectedDefaults();
 			dialog.CancelEdits();
 			dialog.Close();
-			Assert.That(cpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("CPU accepted heading"));
-			Assert.That(gpu.GetValues<ScreenHostingPreferences>().Heading, Is.EqualTo("GPU summary"));
+			Assert.That(cpu.Heading, Is.EqualTo("CPU accepted heading"));
+			Assert.That(gpu.Heading, Is.EqualTo("GPU summary"));
 			Assert.That(form.ScreenHost.OpenScreens.OfType<ScreenHostingDesignTestScreen>(), Is.Empty, "Options creates value editors, never the operational inspectors.");
 		});
 	}
@@ -423,8 +514,8 @@ public class DemoPluginRegistrationTests {
 			await WaitForInspectorGridAsync(gpu);
 			GetNotesEditor(gpu).Text = "Retained GPU operational draft";
 			var definition = workspace.ScreenDefinitions.Single(item => item.StableKey == "cpu-inspector");
-			var profile = application.Settings.GetProfile(workspace, definition.Registration);
-			using var dialog = new WinFormsApplicationSettingsDialog(application.Settings, application, Sphere10Framework.Instance.ServiceProvider, profile);
+			var settingsOwner = definition;
+			using var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner);
 			dialog.Show(_dispatcher);
 			SetInspectorHeading(dialog, "CPU live preferences");
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
@@ -576,10 +667,297 @@ public class DemoPluginRegistrationTests {
 		Assert.That(form.ScreenHost.TabControl.TabCount, Is.Zero);
 	}
 
+	[Test]
+	public void ShowcaseOptionsApplyBeforeActivationAndCancelKeepsAcceptedValues() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>();
+			var controls = form.RegisteredBlocks.Single(block => block.Name == "Controls");
+			var definition = controls.ScreenDefinitions.Single(value => value.ScreenType == typeof(LoadingCircleTestScreen));
+			var settingsOwner = definition;
+			Assert.That(form.ScreenHost.OpenScreens.OfType<LoadingCircleTestScreen>(), Is.Empty);
+
+			using (var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner)) {
+				dialog.Show(_dispatcher);
+				var draft = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single().SelectedObject;
+				TypeDescriptor.GetProperties(draft)[nameof(LoadingCircleTestScreen.LoadingCircleScreenSettings.AnimationStyle)].SetValue(draft, LoadingCircleAnimationStyle.Dots);
+				TypeDescriptor.GetProperties(draft)[nameof(LoadingCircleTestScreen.LoadingCircleScreenSettings.Colour)].SetValue(draft, "Violet");
+				Assert.That(((LoadingCircleTestScreen.LoadingCircleScreenSettings)settingsOwner.Settings).AnimationStyle, Is.EqualTo(LoadingCircleAnimationStyle.Dots));
+				Assert.That(await dialog.ApplySelectedAsync(), Is.True);
+				dialog.CancelEdits();
+				dialog.Close();
+			}
+			Assert.That(form.ScreenHost.OpenScreens.OfType<LoadingCircleTestScreen>(), Is.Empty, "Options must create only ordinary value editors.");
+
+			var screen = await form.ScreenHost.OpenScreenAsync(controls, definition);
+			await AwaitShowcaseReadinessAsync(screen);
+			var preview = screen.Controls.Find("loadingPreview", true).Cast<LoadingCircle>().Single();
+			Assert.That(preview.AnimationStyle, Is.EqualTo(LoadingCircleAnimationStyle.Dots));
+			Assert.That(preview.Color, Is.EqualTo(Color.FromArgb(124, 82, 189)));
+
+			using (var dialog = new WinFormsApplicationSettingsDialog(application, Sphere10Framework.Instance.ServiceProvider, settingsOwner)) {
+				dialog.Show(_dispatcher);
+				var draft = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single().SelectedObject;
+				TypeDescriptor.GetProperties(draft)[nameof(LoadingCircleTestScreen.LoadingCircleScreenSettings.Colour)].SetValue(draft, "Graphite");
+				dialog.CancelEdits();
+				dialog.Close();
+			}
+			Assert.That(((LoadingCircleTestScreen.LoadingCircleScreenSettings)settingsOwner.Settings).Colour, Is.EqualTo("Violet"));
+			Assert.That(preview.Color, Is.EqualTo(Color.FromArgb(124, 82, 189)));
+			AssertNoDemoError();
+		});
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void EveryRegisteredShowcaseCanActivateAndCloseThroughItsActualHost(bool alternateWorkspace) {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync(freshEmptyWorkspace: alternateWorkspace);
+			ShowDemo(form);
+			var opened = new HashSet<Type>();
+
+			// Registration metadata supplies the real activator, settings and identity before Load.
+			foreach (var block in form.RegisteredBlocks) {
+				foreach (var definition in block.ScreenDefinitions.Where(value => value.ScreenKind != ScreenKind.Empty)) {
+					TestContext.Progress.WriteLine($"Opening {block.Name} / {definition.Title} ({definition.ScreenType.Name})");
+					var screen = await form.ScreenHost.OpenScreenAsync(block, definition);
+					Assert.That(screen, Is.Not.Null, definition.ScreenType.FullName);
+					await AwaitShowcaseReadinessAsync(screen);
+					AssertNoDemoError();
+					Assert.That(screen.Visible, Is.True, definition.ScreenType.FullName);
+					Assert.That(screen.ClientSize.Width, Is.GreaterThan(0));
+					Assert.That(screen.ClientSize.Height, Is.GreaterThan(0));
+					Assert.That(screen.Controls.Count, Is.GreaterThan(0));
+					opened.Add(screen.GetType());
+
+					// Actual accepted close joins pending screen work and preserves the permanent role.
+					if (screen.ScreenKind == ScreenKind.Normal && screen.ActivationMode != ScreenActivationMode.PermanentSingleton) {
+						Assert.That(await form.ScreenHost.CloseScreenAsync(screen), Is.True, definition.ScreenType.FullName);
+						Assert.That(screen.IsDisposed, Is.True, definition.ScreenType.FullName);
+					}
+				}
+			}
+			Assert.That(opened.Count, Is.EqualTo(alternateWorkspace ? 52 : 53));
+
+			// Empty screens are genuine fallbacks, reached through the same public host operation as the menu.
+			var notes = form.RegisteredBlocks.SingleOrDefault(block => block.Name == "Notes");
+			if (notes != null)
+				form.UnregisterBlock(notes);
+			Assert.That(await form.ScreenHost.CloseAllScreensAsync(), Is.True);
+			var workspace = form.RegisteredBlocks.Single(block => block.Name == "Workspace");
+			var empty = workspace.ScreenDefinitions.Single(definition => definition.ScreenKind == ScreenKind.Empty);
+			form.ScreenHost.ActivateScreen(workspace, empty);
+			Assert.That(form.ActiveScreen, Is.Not.Null);
+			Assert.That(form.ActiveScreen.GetType(), Is.EqualTo(empty.ScreenType));
+			Assert.That(form.ScreenHost.OpenScreens, Is.Empty);
+			AssertNoDemoError();
+		});
+	}
+
+	[Test]
+	public void CompleteControlCatalogShowsRealSamplesWithExactClassLabelsAndDisposesReplacedExamples() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var block = form.RegisteredBlocks.Single(value => value.Name == "Controls");
+			var definition = block.ScreenDefinitions.Single(value => value.ScreenType == typeof(ControlCatalogScreen));
+			var catalog = (ControlCatalogScreen)await form.ScreenHost.OpenScreenAsync(block, definition);
+			var classes = catalog.Controls.Find("catalogClasses", true).Cast<ListBox>().Single();
+			var label = catalog.Controls.Find("catalogClassName", true).Single();
+			var preview = catalog.Controls.Find("catalogPreview", true).Single();
+			var open = catalog.Controls.Find("openCatalogWindow", true).Single();
+			Assert.That(classes.Items.Count, Is.EqualTo(ControlCatalogSamples.CreateEntries().Length));
+			Exception sampleError = null;
+			using var errors = new System.Windows.Forms.Timer { Interval = 20 };
+			errors.Tick += (_, _) => {
+				foreach (var dialog in System.Windows.Forms.Application.OpenForms.OfType<ExceptionDialog>().ToArray()) {
+					sampleError ??= dialog.Exception;
+					dialog.Close();
+				}
+			};
+			errors.Start();
+			Control previous = null;
+			foreach (var entry in classes.Items.Cast<ControlCatalogEntry>().ToArray()) {
+				TestContext.Progress.WriteLine("Catalog: " + entry.ClassName);
+				classes.SelectedItem = entry;
+				await Task.Yield();
+				if (previous != null)
+					Assert.That(previous.IsDisposed, Is.True, entry.ClassName);
+				Assert.That(label.Text, Is.EqualTo(entry.ClassName));
+				Assert.That(catalog.Controls.Find("catalogStatus", true).Single().Text, Does.Not.StartWith("The example could not be opened:"), entry.ClassName);
+				Assert.That(open.Visible, Is.EqualTo(entry.OpensWindow), entry.ClassName);
+				if (entry.OpensWindow) {
+					Assert.That(preview.Controls, Is.Empty, entry.ClassName);
+					previous = null;
+				} else {
+					Assert.That(preview.Controls.Count, Is.EqualTo(1), entry.ClassName);
+					previous = preview.Controls[0];
+					Assert.That(ControlCatalogTests.ContainsRepresentedType(previous, entry.ControlType), Is.True, entry.ClassName);
+					if (previous is WinFormsApplicationScreen screen)
+						await AwaitShowcaseReadinessAsync(screen);
+					Assert.That(previous.IsHandleCreated, Is.True, entry.ClassName);
+					Assert.That(previous.Visible, Is.True, entry.ClassName);
+					if (ControlCatalogTests.FindRepresentedObject(previous, entry.ControlType) is Control subject)
+						Assert.That(subject.Visible, Is.True, "The selected class must be visible, including its containing tabs: " + entry.ClassName);
+				}
+				AssertNoDemoError();
+				Assert.That(sampleError, Is.Null, entry.ClassName + ": " + sampleError);
+				Assert.That(System.Windows.Forms.Application.OpenForms.OfType<ExceptionDialog>(), Is.Empty, entry.ClassName);
+			}
+			Assert.That(await form.ScreenHost.CloseScreenAsync(catalog), Is.True);
+			Assert.That(catalog.IsDisposed, Is.True);
+		});
+	}
+
+	[Test]
+	public void CatalogPopupLauncherOwnsAndDisposesItsActualNativePopup() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var block = form.RegisteredBlocks.Single(value => value.Name == "Controls");
+			var definition = block.ScreenDefinitions.Single(value => value.ScreenType == typeof(ControlCatalogScreen));
+			var catalog = (ControlCatalogScreen)await form.ScreenHost.OpenScreenAsync(block, definition);
+			var classes = catalog.Controls.Find("catalogClasses", true).Cast<ListBox>().Single();
+			classes.SelectedItem = classes.Items.Cast<ControlCatalogEntry>().Single(entry => entry.ControlType == typeof(PopupDropDown));
+			var open = catalog.Controls.Find("openCatalogWindow", true).Cast<Button>().Single();
+			open.PerformClick();
+			var field = typeof(ControlCatalogScreen).GetField("_openPopup", BindingFlags.Instance | BindingFlags.NonPublic);
+			var popup = (PopupDropDown)field.GetValue(catalog);
+			Assert.That(popup, Is.Not.Null);
+			Assert.That(popup.Visible, Is.True);
+			Assert.That(popup.IsHandleCreated, Is.True);
+			popup.Close();
+			var started = System.Diagnostics.Stopwatch.StartNew();
+			while (!open.Enabled && started.Elapsed < TimeSpan.FromSeconds(5))
+				await Task.Delay(10);
+			Assert.That(open.Enabled, Is.True);
+			Assert.That(popup.IsDisposed, Is.True);
+			Assert.That(field.GetValue(catalog), Is.Null);
+			Assert.That(await form.ScreenHost.CloseScreenAsync(catalog), Is.True);
+		});
+	}
+
+	[Test]
+	public void CatalogClassLabelsAndExamplesRenderAtNormalWindowSize() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			form.ClientSize = new Size(1440, 900);
+			ShowDemo(form);
+			var block = form.RegisteredBlocks.Single(value => value.Name == "Controls");
+			var definition = block.ScreenDefinitions.Single(value => value.ScreenType == typeof(ControlCatalogScreen));
+			var catalog = (ControlCatalogScreen)await form.ScreenHost.OpenScreenAsync(block, definition);
+			var classes = catalog.Controls.Find("catalogClasses", true).Cast<ListBox>().Single();
+			var label = catalog.Controls.Find("catalogClassName", true).Cast<Label>().Single();
+			foreach (var type in new[] { typeof(ApplicationBanner), typeof(Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.PingGrid), typeof(ToolStripChoiceSelector), typeof(Sphere10.Framework.Windows.Forms.MSSQL.MSSQLConnectionBar), typeof(Sphere10.Framework.Windows.Forms.Firebird.FirebirdEmbeddedConnectionPanel) }) {
+				classes.SelectedItem = classes.Items.Cast<ControlCatalogEntry>().Single(entry => entry.ControlType == type);
+				await Task.Yield();
+				var textArea = new Size(label.ClientSize.Width - label.Padding.Horizontal, int.MaxValue);
+				var textSize = TextRenderer.MeasureText(label.Text, label.Font, textArea, TextFormatFlags.WordBreak | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
+				Assert.That(textSize.Height, Is.LessThanOrEqualTo(label.ClientSize.Height - label.Padding.Vertical), type.FullName);
+				SaveCatalogCapture(form, "catalog-" + type.Name);
+			}
+			Assert.That(await form.ScreenHost.CloseScreenAsync(catalog), Is.True);
+		});
+	}
+
+	[Test]
+	public void CatalogFormLaunchersOpenTheirAdvertisedClassesAndCloseWithoutReplacingTheCatalog() {
+		RunWithNativeMessageLoop(async () => {
+			var form = await StartDemoAsync();
+			ShowDemo(form);
+			var block = form.RegisteredBlocks.Single(value => value.Name == "Controls");
+			var definition = block.ScreenDefinitions.Single(value => value.ScreenType == typeof(ControlCatalogScreen));
+			var catalog = (ControlCatalogScreen)await form.ScreenHost.OpenScreenAsync(block, definition);
+			var classes = catalog.Controls.Find("catalogClasses", true).Cast<ListBox>().Single();
+			var open = catalog.Controls.Find("openCatalogWindow", true).Cast<Button>().Single();
+			foreach (var entry in classes.Items.Cast<ControlCatalogEntry>().Where(value => value.OpensWindow && value.ControlType != typeof(PopupDropDown)).ToArray()) {
+				TestContext.Progress.WriteLine("Catalog window: " + entry.ClassName);
+				classes.SelectedItem = entry;
+				var previousForms = System.Windows.Forms.Application.OpenForms.Cast<Form>().ToArray();
+				Form presented = null;
+				var represented = false;
+				Exception failure = null;
+				using var closer = new System.Windows.Forms.Timer { Interval = 20 };
+				closer.Tick += (_, _) => {
+					try {
+						var windows = System.Windows.Forms.Application.OpenForms.Cast<Form>().Where(value => !previousForms.Contains(value)).ToArray();
+						foreach (var window in windows) {
+							if (window is ExceptionDialog errorDialog && entry.ControlType != typeof(ExceptionDialog))
+								failure ??= errorDialog.Exception;
+							if (window is DialogEx && window.Text == "Confirm") {
+								var yes = window.Controls.Find("button2", true).Cast<Button>().Single();
+								yes.PerformClick();
+								continue;
+							}
+							presented ??= window;
+							represented |= ControlCatalogTests.ContainsRepresentedType(window, entry.ControlType);
+							if (entry.ControlType == typeof(ReviewTextDialog))
+								SaveCatalogCapture(window, "catalog-owned-ReviewTextDialog");
+							if (window is DropDownForm dropdown)
+								dropdown.CloseDropDown();
+							else
+								window.Close();
+						}
+					} catch (Exception error) {
+						failure ??= error;
+					}
+				};
+				// Surface native event failures instead of mistaking the framework's error window for this sample.
+				ThreadExceptionEventHandler captureThreadException = (_, args) => failure ??= args.Exception;
+				System.Windows.Forms.Application.ThreadException += captureThreadException;
+				try {
+					closer.Start();
+					open.PerformClick();
+					var started = System.Diagnostics.Stopwatch.StartNew();
+					while ((presented == null || !open.Enabled) && started.Elapsed < TimeSpan.FromSeconds(10))
+						await Task.Delay(10);
+				} finally {
+					closer.Stop();
+					System.Windows.Forms.Application.ThreadException -= captureThreadException;
+				}
+				Assert.That(failure, Is.Null, entry.ClassName + ": " + failure);
+				Assert.That(presented, Is.Not.Null, entry.ClassName);
+				Assert.That(open.Enabled, Is.True, entry.ClassName);
+				Assert.That(presented.IsDisposed, Is.True, entry.ClassName);
+				if (entry.ControlType.IsGenericTypeDefinition && typeof(Form).IsAssignableFrom(entry.ControlType))
+					Assert.That(presented.GetType().GetGenericTypeDefinition(), Is.EqualTo(entry.ControlType));
+				else if (typeof(Form).IsAssignableFrom(entry.ControlType))
+					Assert.That(presented, Is.InstanceOf(entry.ControlType));
+				else if (typeof(Control).IsAssignableFrom(entry.ControlType))
+					Assert.That(represented, Is.True, entry.ClassName);
+				Assert.That(catalog.IsDisposed, Is.False, entry.ClassName);
+				AssertNoDemoError();
+			}
+			Assert.That(await form.ScreenHost.CloseScreenAsync(catalog), Is.True);
+		});
+	}
+
+	private static void SaveCatalogCapture(Control control, string name) {
+		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "control-catalog-captures");
+		Directory.CreateDirectory(directory);
+		using var image = new Bitmap(control.Width, control.Height);
+		control.DrawToBitmap(image, new Rectangle(Point.Empty, control.Size));
+		var path = Path.Combine(directory, name + ".png");
+		image.Save(path, System.Drawing.Imaging.ImageFormat.Png);
+		TestContext.Progress.WriteLine("Native catalog capture: " + path);
+	}
+
+	// Join real operational readiness without saving merely because a test observes the screen.
+	private static async Task AwaitShowcaseReadinessAsync(WinFormsApplicationScreen screen) {
+		await Task.Yield();
+		if (screen.GetType().GetProperty("Initialization", BindingFlags.Instance | BindingFlags.Public)?.GetValue(screen) is Task initialization)
+			await initialization.WaitAsync(TimeSpan.FromSeconds(20));
+		if (screen.GetType().GetField("_preferencesLoading", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(screen) is Task preferences)
+			await preferences.WaitAsync(TimeSpan.FromSeconds(20));
+		await Task.Yield();
+	}
+
 	private async Task<BlockMainForm> StartDemoAsync(bool freshEmptyWorkspace = false, ILogger logger = null, ISettingsProvider settingsProvider = null) {
 		var settingsDirectory = Path.Combine(TestContext.CurrentContext.TestDirectory, "native-demo-settings-" + Guid.NewGuid().ToString("N"));
 		Sphere10Framework.Instance
 			.Build()
+			.AddModule<Sphere10.Framework.Utils.WinFormsTester.ModuleConfiguration>()
 			.AddServices(services => {
 				services.AddSingleton<IProductUsageServices, ProbeUsageServices>();
 				services.AddSingleton(new Local<ISettingsProvider>(settingsProvider ?? new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(settingsDirectory, "User")))));
@@ -639,7 +1017,7 @@ public class DemoPluginRegistrationTests {
 	private static void SetInspectorHeading(WinFormsApplicationSettingsDialog dialog, string heading) {
 		var editor = dialog.Controls.Find("_propertyGrid", true).Cast<PropertyGrid>().Single();
 		var values = editor.SelectedObject;
-		TypeDescriptor.GetProperties(values)[nameof(ScreenHostingPreferences.Heading)].SetValue(values, heading);
+		TypeDescriptor.GetProperties(values)[nameof(ScreenHostingDesignTestScreen.ScreenHostingPreferences.Heading)].SetValue(values, heading);
 	}
 
 	// Waits for the real load/binding path, surfacing a failed preference load rather than silently skipping readiness.
@@ -675,7 +1053,7 @@ public class DemoPluginRegistrationTests {
 		form.RegisteredBlocks.Single(block => block.Name == blockName).Menus.SelectMany(menu => menu.Items).Single(item => item.Title == title);
 
 	private static TextBox GetNotesEditor(WinFormsApplicationScreen screen) =>
-		screen.Controls.Find("LifecycleNotes", true).Cast<TextBox>().Single();
+		screen.Controls.Find("_notes", true).Cast<TextBox>().Single();
 
 	// Retain ordinary demo startup while capturing UI-thread failures for the originating fixture.
 	public sealed class DemoMainForm : BlockMainForm {

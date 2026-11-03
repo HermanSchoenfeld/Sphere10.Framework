@@ -42,6 +42,7 @@ public static class Program {
 		services
 			.BuildBlazorApplication()
 			.WithTitle("Sphere10 Blazor demos")
+			.WithProductInformation(product => product.ProductName = "Sphere10 Blazor demos")
 			.WithFavicon("img/logo.svg", "image/svg+xml")
 			.OnApplicationCreated(WorkspaceCommands.Configure)
 			.AddPlugin(Sphere10Plugin.Configure)

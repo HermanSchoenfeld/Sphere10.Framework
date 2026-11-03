@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,109 +6,119 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class PadLockTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class PadLockTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _lockRow;
+	private Label _editableLabel;
+	private TextBox _textBox2;
+	private PadLockButton _padLockButton1;
+	private PadLockButton _padLockButton2;
+	private Label _disabledLabel;
+	private Label _lockSummary;
+	private TextBox _outputTextBox;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PadLockTestScreen));
-			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this.textBox2 = new System.Windows.Forms.TextBox();
-			this.padLockButton2 = new Sphere10.Framework.Windows.Forms.PadLockButton();
-			this.padLockButton1 = new Sphere10.Framework.Windows.Forms.PadLockButton();
-			this.SuspendLayout();
-			// 
-			// _outputTextBox
-			// 
-			this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputTextBox.Location = new System.Drawing.Point(12, 128);
-			this._outputTextBox.Multiline = true;
-			this._outputTextBox.Name = "_outputTextBox";
-			this._outputTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this._outputTextBox.Size = new System.Drawing.Size(564, 137);
-			this._outputTextBox.TabIndex = 4;
-			// 
-			// textBox2
-			// 
-			this.textBox2.Location = new System.Drawing.Point(98, 12);
-			this.textBox2.Name = "textBox2";
-			this.textBox2.Size = new System.Drawing.Size(100, 20);
-			this.textBox2.TabIndex = 5;
-			// 
-			// padLockButton2
-			// 
-			this.padLockButton2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("padLockButton2.BackgroundImage")));
-			this.padLockButton2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-			this.padLockButton2.Enabled = false;
-			this.padLockButton2.Location = new System.Drawing.Point(309, 38);
-			this.padLockButton2.MaximumSize = new System.Drawing.Size(20, 20);
-			this.padLockButton2.MinimumSize = new System.Drawing.Size(20, 20);
-			this.padLockButton2.Name = "padLockButton2";
-			this.padLockButton2.Size = new System.Drawing.Size(20, 20);
-			this.padLockButton2.TabIndex = 7;
-			this.padLockButton2.UseVisualStyleBackColor = true;
-			// 
-			// padLockButton1
-			// 
-			this.padLockButton1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("padLockButton1.BackgroundImage")));
-			this.padLockButton1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-			this.padLockButton1.Location = new System.Drawing.Point(204, 12);
-			this.padLockButton1.MaximumSize = new System.Drawing.Size(20, 20);
-			this.padLockButton1.MinimumSize = new System.Drawing.Size(20, 20);
-			this.padLockButton1.Name = "padLockButton1";
-			this.padLockButton1.Size = new System.Drawing.Size(20, 20);
-			this.padLockButton1.TabIndex = 6;
-			this.padLockButton1.UseVisualStyleBackColor = true;
-			this.padLockButton1.PadLockStateChanged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.PadLockButton, Sphere10.Framework.Windows.Forms.PadLockButton.PadLockState>(this.padLockButton1_PadLockStateChanged);
-			// 
-			// PadLockTestForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-			this.ClientSize = new System.Drawing.Size(588, 277);
-			this.Controls.Add(this.padLockButton2);
-			this.Controls.Add(this.padLockButton1);
-			this.Controls.Add(this.textBox2);
-			this.Controls.Add(this._outputTextBox);
-			this.Name = "PadLockTestScreen";
-			this.Text = "PadLockTestForm";
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_lockRow = new FlowLayoutPanel();
+		_lockRow.Name = "_lockRow";
+		_editableLabel = new Label();
+		_editableLabel.Name = "_editableLabel";
+		_textBox2 = new TextBox();
+		_padLockButton1 = new PadLockButton();
+		_padLockButton2 = new PadLockButton();
+		_disabledLabel = new Label();
+		_disabledLabel.Name = "_disabledLabel";
+		_lockSummary = new Label();
+		_lockSummary.Name = "_lockSummary";
+		_outputTextBox = new TextBox();
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Padlock State";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Click the active lock to toggle a protected editor. The disabled lock demonstrates unavailable interaction; the event log records completed state changes.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_editableLabel.AutoSize = true;
+		_editableLabel.Dock = DockStyle.Fill;
+		_editableLabel.Margin = new Padding(0, 8, 0, 8);
+		_editableLabel.Text = "Protected value:";
+		_textBox2.Name = "protectedValue";
+		_textBox2.Width = 280;
+		_textBox2.Text = "Unlock to edit this value";
+		_textBox2.ReadOnly = true;
+		_padLockButton1.Name = "editablePadlock";
+		_padLockButton1.LockState = PadLockButton.PadLockState.Locked;
+		_padLockButton1.PadLockStateChanged += PadLockButton1_PadLockStateChanged;
+		_padLockButton2.Name = "disabledPadlock";
+		_padLockButton2.Enabled = false;
+		_disabledLabel.AutoSize = true;
+		_disabledLabel.Dock = DockStyle.Fill;
+		_disabledLabel.Margin = new Padding(0, 8, 0, 8);
+		_disabledLabel.Text = "Disabled reference";
+		_lockRow.AutoSize = true;
+		_lockRow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_lockRow.Dock = DockStyle.Fill;
+		_lockRow.Margin = Padding.Empty;
+		_lockRow.Controls.AddRange(new Control[] { _editableLabel, _textBox2, _padLockButton1, _disabledLabel, _padLockButton2 });
+		_lockSummary.AutoSize = true;
+		_lockSummary.Dock = DockStyle.Fill;
+		_lockSummary.Margin = new Padding(0, 8, 0, 8);
+		_lockSummary.Text = "Locked: the protected value is read-only.";
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
 
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private System.Windows.Forms.TextBox textBox2;
-		private Sphere10.Framework.Windows.Forms.PadLockButton padLockButton1;
-		private Sphere10.Framework.Windows.Forms.PadLockButton padLockButton2;
-
-
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_lockRow, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_lockSummary, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_outputTextBox, 0, 4);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "PadLockTestScreen";
+		Text = "Padlock State";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

@@ -16,6 +16,7 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Explicitly starts and stops owned keyboard/mouse observation with bounded native output.</summary>
 public partial class HooksScreen : WinFormsApplicationScreen {
 	private readonly WindowsKeyboardHook _keyHook;
 	private readonly WindowsMouseHook _mouseHook;
@@ -23,6 +24,7 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 	private readonly ConcurrentQueue<string> _pendingText = new();
 	private volatile bool _acceptHookEvents;
 	private bool _loaded;
+	private bool _monitorRequested;
 	private bool _hooksDisposed;
 	private long _keyActivity;
 	private long _keyDown;
@@ -35,9 +37,11 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 	private long _mouseClickUp;
 	private long _mouseWheel;
 
+	/// <summary>Creates the demonstration without installing global input hooks.</summary>
 	public HooksScreen() {
 		InitializeComponent();
-		_refreshTimer = new System.Windows.Forms.Timer(components ??= new Container()) { Interval = 50 };
+		Disposables.Add(_heading.Font);
+		_refreshTimer = new System.Windows.Forms.Timer { Interval = 50 };
 		_refreshTimer.Tick += RefreshTimer_Tick;
 		_keyHook = new WindowsKeyboardHook();
 		_keyHook.KeyActivity += _keyHook_KeyActivity;
@@ -53,10 +57,11 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 		RefreshUI();
 	}
 
+	/// <summary>Creates the native counters without installing a global hook.</summary>
 	protected override void OnLoad(EventArgs Event) {
 		base.OnLoad(Event);
 		_loaded = true;
-		StartHooks();
+		_status.Text = "Monitoring is off. Start explicitly to observe keyboard and mouse activity.";
 	}
 
 	protected override void OnHandleCreated(EventArgs Event) {
@@ -75,34 +80,34 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 	}
 
 	private void StartHooks() {
-		if (!_loaded || _hooksDisposed || Disposing || IsDisposed || !IsHandleCreated || DesignMode)
+		if (_acceptHookEvents || !_monitorRequested || !_loaded || _hooksDisposed || Disposing || IsDisposed || !IsHandleCreated || DesignMode)
 			return;
 
-		var Started = false;
-		using var Cleanup = Tools.Scope.ExecuteOnDispose(() => {
-			if (!Started)
+		var started = false;
+		using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
+			if (!started)
 				StopHooks();
 		});
 		_keyHook.StartHook();
 		_mouseHook.StartHook();
 		_acceptHookEvents = true;
 		_refreshTimer.Start();
-		Started = true;
+		started = true;
 	}
 
 	private void StopHooks() {
 		_acceptHookEvents = false;
 		_refreshTimer?.Stop();
-		using var StopMouse = Tools.Scope.ExecuteOnDispose(() => StopHook(_mouseHook));
+		using var stopMouse = Tools.Scope.ExecuteOnDispose(() => StopHook(_mouseHook));
 		StopHook(_keyHook);
 	}
 
-	private static void StopHook(IDeviceHook Hook) {
-		if (Hook == null || Hook.Status == DeviceHookStatus.Uninstalled)
+	private static void StopHook(IDeviceHook hook) {
+		if (hook == null || hook.Status == DeviceHookStatus.Uninstalled)
 			return;
 
-		Hook.StopHook();
-		Hook.UninstallHook();
+		hook.StopHook();
+		hook.UninstallHook();
 	}
 
 	private void DisposeHooks() {
@@ -113,6 +118,7 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 		_acceptHookEvents = false;
 		_refreshTimer.Stop();
 		_refreshTimer.Tick -= RefreshTimer_Tick;
+		_refreshTimer.Dispose();
 		_keyHook.KeyActivity -= _keyHook_KeyActivity;
 		_keyHook.KeyDown -= _keyHook_KeyDown;
 		_keyHook.KeyUp -= _keyHook_KeyUp;
@@ -123,23 +129,23 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 		_mouseHook.Click -= _mouseHook_Click;
 		_mouseHook.Scroll -= _mouseHook_Scroll;
 		_pendingText.Clear();
-		using var DisposeMouse = Tools.Scope.ExecuteOnDispose(_mouseHook.Dispose);
+		using var disposeMouse = Tools.Scope.ExecuteOnDispose(_mouseHook.Dispose);
 		_keyHook.Dispose();
 	}
 
-	private void _mouseHook_Scroll(object Sender, MouseWheelEvent Event) {
+	private void _mouseHook_Scroll(object sender, MouseWheelEvent hookEvent) {
 		if (!_acceptHookEvents)
 			return;
 
 		Interlocked.Increment(ref _mouseWheel);
-		_pendingText.Enqueue($"Wheel Delta = {Event.Delta}{Environment.NewLine}");
+		QueueText($"Wheel Delta = {hookEvent.Delta}{Environment.NewLine}");
 	}
 
-	private void _mouseHook_Click(object Sender, MouseClickEvent Event) {
+	private void _mouseHook_Click(object sender, MouseClickEvent hookEvent) {
 		if (!_acceptHookEvents)
 			return;
 
-		switch (Event.ButtonState) {
+		switch (hookEvent.ButtonState) {
 			case MouseButtonState.Down:
 				Interlocked.Increment(ref _mouseClickDown);
 				break;
@@ -147,51 +153,51 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 				Interlocked.Increment(ref _mouseClickUp);
 				break;
 		}
-		_pendingText.Enqueue($"Clicked {Event.Buttons} {Event.ButtonState} ({Event.ClickType}){Environment.NewLine}");
+		QueueText($"Clicked {hookEvent.Buttons} {hookEvent.ButtonState} ({hookEvent.ClickType}){Environment.NewLine}");
 	}
 
-	private void _mouseHook_Activity(object Sender, MouseEvent Event) {
+	private void _mouseHook_Activity(object sender, MouseEvent hookEvent) {
 		if (_acceptHookEvents)
 			Interlocked.Increment(ref _mouseActivity);
 	}
 
-	private void _mouseHook_MotionStop(object Sender, MouseMoveEvent Event) {
+	private void _mouseHook_MotionStop(object sender, MouseMoveEvent hookEvent) {
 		if (_acceptHookEvents)
 			Interlocked.Increment(ref _mouseMotionStop);
 	}
 
-	private void _mouseHook_MotionStart(object Sender, MouseMoveEvent Event) {
+	private void _mouseHook_MotionStart(object sender, MouseMoveEvent hookEvent) {
 		if (_acceptHookEvents)
 			Interlocked.Increment(ref _mouseMotionStart);
 	}
 
-	private void _mouseHook_Motion(object Sender, MouseMoveEvent Event) {
+	private void _mouseHook_Motion(object sender, MouseMoveEvent hookEvent) {
 		if (_acceptHookEvents)
 			Interlocked.Increment(ref _mouseMotion);
 	}
 
-	private void _keyHook_KeyUp(object Sender, KeyEvent Event) {
+	private void _keyHook_KeyUp(object sender, KeyEvent hookEvent) {
 		if (!_acceptHookEvents)
 			return;
 
 		Interlocked.Increment(ref _keyUp);
-		_pendingText.Enqueue($"Key Up = {Event.Key}{Environment.NewLine}");
+		QueueText($"Key Up = {hookEvent.Key}{Environment.NewLine}");
 	}
 
-	private void _keyHook_KeyDown(object Sender, KeyEvent Event) {
+	private void _keyHook_KeyDown(object sender, KeyEvent hookEvent) {
 		if (!_acceptHookEvents)
 			return;
 
 		Interlocked.Increment(ref _keyDown);
-		_pendingText.Enqueue($"Key Down = {Event.Key}{Environment.NewLine}");
+		QueueText($"Key Down = {hookEvent.Key}{Environment.NewLine}");
 	}
 
-	private void _keyHook_KeyActivity(object Sender, KeyEvent Event) {
+	private void _keyHook_KeyActivity(object sender, KeyEvent hookEvent) {
 		if (_acceptHookEvents)
 			Interlocked.Increment(ref _keyActivity);
 	}
 
-	private void RefreshTimer_Tick(object Sender, EventArgs Event) {
+	private void RefreshTimer_Tick(object sender, EventArgs hookEvent) {
 		if (!_acceptHookEvents || Disposing || IsDisposed || !IsHandleCreated)
 			return;
 
@@ -200,11 +206,14 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 
 	private void RefreshUI() {
 		// Hook callbacks only collect data; the UI timer owns all control updates.
-		var Text = new StringBuilder();
-		while (_pendingText.TryDequeue(out var Line))
-			Text.Append(Line);
-		if (Text.Length > 0)
-			textBox1.AppendText(Text.ToString());
+		var output = new StringBuilder();
+		while (_pendingText.TryDequeue(out var line))
+			output.Append(line);
+		if (output.Length > 0) {
+			textBox1.AppendText(output.ToString());
+			if (textBox1.TextLength > 16000)
+				textBox1.Text = textBox1.Text[^12000..];
+		}
 
 		_keyActivityEventsLabel.Text = Interlocked.Read(ref _keyActivity).ToString();
 		_keyDownEventsLabel.Text = Interlocked.Read(ref _keyDown).ToString();
@@ -216,5 +225,46 @@ public partial class HooksScreen : WinFormsApplicationScreen {
 		_clickDownEventsLabel.Text = Interlocked.Read(ref _mouseClickDown).ToString();
 		_clickUpEventLabel.Text = Interlocked.Read(ref _mouseClickUp).ToString();
 		_wheelEvents.Text = Interlocked.Read(ref _mouseWheel).ToString();
+	}
+
+	// The user starts observation deliberately; construction and screen activation stay resource-free.
+	private void StartClicked(object sender, EventArgs e) {
+		try {
+			_monitorRequested = true;
+			StartHooks();
+			_status.Text = "Monitoring keyboard and mouse events. Stop ends global observation.";
+		} catch (Exception error) {
+			_monitorRequested = false;
+			StopHooks();
+			_status.Text = "Could not start monitoring: " + error.Message;
+		}
+	}
+
+	private void StopClicked(object sender, EventArgs e) {
+		_monitorRequested = false;
+		StopHooks();
+		_status.Text = "Monitoring stopped. Recorded counters remain available.";
+	}
+
+	private void ClearClicked(object sender, EventArgs e) {
+		_pendingText.Clear();
+		textBox1.Clear();
+		Interlocked.Exchange(ref _keyActivity, 0);
+		Interlocked.Exchange(ref _keyDown, 0);
+		Interlocked.Exchange(ref _keyUp, 0);
+		Interlocked.Exchange(ref _mouseActivity, 0);
+		Interlocked.Exchange(ref _mouseMotion, 0);
+		Interlocked.Exchange(ref _mouseMotionStart, 0);
+		Interlocked.Exchange(ref _mouseMotionStop, 0);
+		Interlocked.Exchange(ref _mouseClickDown, 0);
+		Interlocked.Exchange(ref _mouseClickUp, 0);
+		Interlocked.Exchange(ref _mouseWheel, 0);
+		RefreshUI();
+	}
+
+	// Bound callback backlog even when the UI is temporarily busy.
+	private void QueueText(string text) {
+		if (_pendingText.Count < 2000)
+			_pendingText.Enqueue(text);
 	}
 }

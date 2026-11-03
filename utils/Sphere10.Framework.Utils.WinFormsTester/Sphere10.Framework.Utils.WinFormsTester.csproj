@@ -40,6 +40,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="Screens\ControlCatalogScreen.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Screens\ControlCatalogScreen.Designer.cs"><DependentUpon>ControlCatalogScreen.cs</DependentUpon></Compile>
+		<Compile Update="Screens\ControlCatalogHostedScreen.cs"><SubType>UserControl</SubType></Compile>
+		<Compile Update="Screens\ControlCatalogHostedScreen.Designer.cs"><DependentUpon>ControlCatalogHostedScreen.cs</DependentUpon></Compile>
 		<Compile Update="Screens\ChartGalleryScreen.cs"><SubType>UserControl</SubType></Compile>
 		<Compile Update="Screens\ChartGalleryScreen.Designer.cs"><DependentUpon>ChartGalleryScreen.cs</DependentUpon></Compile>
 		<Compile Update="Screens\ChartTestScreen.cs"><SubType>UserControl</SubType></Compile>

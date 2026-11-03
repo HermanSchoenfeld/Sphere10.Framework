@@ -8,15 +8,22 @@
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Wizard;
 
+/// <summary>Retains the current wizard session's validated input without writing application settings.</summary>
 public class DemoWizardModel {
+	/// <summary>The trimmed name collected on the first page.</summary>
+	public string Name {
+		get; set;
+	}
 
-	public string Name { get; set; }
+	/// <summary>The age collected on the second page; null denotes an unanswered field.</summary>
+	public int? Age {
+		get; set;
+	}
 
-	public int? Age { get; set; }
-
-
-	public static DemoWizardModel Default => new DemoWizardModel { Name = string.Empty };
-
+	/// <summary>Creates an independent unanswered session for each wizard invocation.</summary>
+	public static DemoWizardModel Default {
+		get {
+			return new DemoWizardModel { Name = string.Empty };
+		}
+	}
 }
-
-

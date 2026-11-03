@@ -6,25 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.IO;
+using System;
 using Sphere10.Framework.Windows.Forms;
-
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Connects a retained lock choice to an editor and shows the resulting state events.</summary>
 public partial class PadLockTestScreen : WinFormsApplicationScreen {
-	private readonly TextWriter _outputTextWriter;
+	/// <summary>Creates the active and disabled lock examples.</summary>
 	public PadLockTestScreen() {
 		InitializeComponent();
-		_outputTextWriter = new TextBoxWriter(_outputTextBox);
+		Disposables.Add(_heading.Font);
 	}
 
-
-	private void padLockButton1_PadLockStateChanged(PadLockButton arg1, PadLockButton.PadLockState arg2) {
-		_outputTextWriter.WriteLine("{0}: {1}", arg1.Name, arg2);
+	// The lock's completed event controls the editor; the icon itself is not an authorization mechanism.
+	private void PadLockButton1_PadLockStateChanged(PadLockButton control, PadLockButton.PadLockState state) {
+		_textBox2.ReadOnly = state == PadLockButton.PadLockState.Locked;
+		_lockSummary.Text = _textBox2.ReadOnly ? "Locked: the protected value is read-only." : "Unlocked: the protected value is editable.";
+		_outputTextBox.AppendText($"{control.Name}: {state}" + Environment.NewLine);
 	}
-
-
 }
-
-

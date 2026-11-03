@@ -31,9 +31,9 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class DemoPluginRegistrationTests {
 	[Test]
-	public void StartupValidatesAndRegistersModernPluginsWithoutLegacyNavigationServices() {
-		using var provider = CreateProvider();
-		using var scope = provider.CreateScope();
+	public async Task StartupValidatesAndRegistersModernPluginsWithoutLegacyNavigationServices() {
+		await using var provider = CreateProvider();
+		await using var scope = provider.CreateAsyncScope();
 		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
 		var plugins = application.LoadedPlugins;
 		var metadataHost = scope.ServiceProvider.GetRequiredService<IBlazorApplicationScreenHost>();
@@ -120,8 +120,8 @@ public class DemoPluginRegistrationTests {
 					)
 					.WithDefaultScreen<PluginBuilderTests.TestScreen>()
 				);
-		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
-		using var scope = provider.CreateScope();
+		await using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		await using var scope = provider.CreateAsyncScope();
 		var application = scope.ServiceProvider.GetRequiredService<IBlazorApplication>();
 		var scratchpad = application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "new-scratchpad");
 		var guide = application.Menus.Single(menu => menu.Id == "help").Items.Single(item => item.Id == "workspace-help");
@@ -130,7 +130,7 @@ public class DemoPluginRegistrationTests {
 		Assert.That(await application.ScreenHost.ExecuteMenuItemAsync(scratchpad), Is.False);
 		Assert.That(guide.IsEnabled, Is.EqualTo(includeWorkspace));
 		Assert.That(await application.ScreenHost.ExecuteMenuItemAsync(guide), Is.EqualTo(includeWorkspace));
-		Assert.That(application.ScreenHost.ActiveBlock, Is.SameAs(application.Blocks.SingleOrDefault()));
+		Assert.That(application.ScreenHost.SelectedBlock, Is.SameAs(application.Blocks.SingleOrDefault()));
 	}
 
 	[Test]
@@ -149,8 +149,8 @@ public class DemoPluginRegistrationTests {
 		Assert.That(firstHost, Is.Not.SameAs(secondHost));
 		Assert.That(firstHost.AvailableBlocks.Select(block => block.Id), Is.EqualTo(secondHost.AvailableBlocks.Select(block => block.Id)));
 		Assert.That(firstSession.Id, Is.Not.EqualTo(secondSession.Id));
-		Assert.That(firstHost.ActiveBlock.Id, Is.EqualTo("components"));
-		Assert.That(secondHost.ActiveBlock.Id, Is.EqualTo("workspace"));
+		Assert.That(firstHost.SelectedBlock.Id, Is.EqualTo("components"));
+		Assert.That(secondHost.SelectedBlock.Id, Is.EqualTo("workspace"));
 		Assert.That(secondHost.ActiveScreen, Is.SameAs(secondSession));
 		Assert.That(firstHost.OpenScreens, Has.Length.EqualTo(2));
 		Assert.That(secondHost.OpenScreens, Has.Length.EqualTo(1));

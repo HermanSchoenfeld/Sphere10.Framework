@@ -7,350 +7,414 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms;
-using Exception = System.Exception;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Exercises real collection backends, bounded writes and explicit transaction boundaries.</summary>
 public partial class TransactionalCollectionScreen : WinFormsApplicationScreen {
-	private TextWriter _outputWriter;
+	private CancellationTokenSource _operationCancellation;
 
+	/// <summary>Creates a workbench with no files, collection sessions or background work.</summary>
 	public TransactionalCollectionScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
+		Disposables.Add(_outputTextBox.Font);
 		_listTypeComboBox.EnumType = typeof(ListType);
 		_listTypeComboBox.SelectedEnum = ListType.Transactional;
-		_outputWriter = new TextBoxWriter(_outputTextBox);
-		_copyButton.Image = Sphere10.Framework.Windows.Forms.Resources.Copy_16x16.ToBitmap(16, 16);
-		_clearButton.Image = Sphere10.Framework.Windows.Forms.Resources.CrossIcon.ToBitmap(16, 16);
 		_policyBox.EnumType = typeof(ClusteredStreamsPolicy);
 		_policyBox.SelectedEnum = ClusteredStreamsPolicy.Default;
+		UpdateAvailability();
 	}
 
-
-	private void RunListAppendTest() {
-		var rng = new Random(31337);
-		var stats = new Statistics();
-		var totalTime = TimeSpan.Zero;
-
-		using var _ = CreateList(out var list);
-
-		var itemCount = _itemsIntBox.Value.GetValueOrDefault(0);
-		var batchSize = _batchIntBox.Value.GetValueOrDefault(0);
-		var itemSize = _itemSizeIntBox.Value.GetValueOrDefault(0);
-		var commit = _commitCheckBox.Checked && list is ITransactionalObject;
-		var totalBytes = 0;
-		foreach (var batch in Tools.Collection.Partition(itemCount, batchSize)) {
-			var batchDuration = Do(() => {
-				var items = Tools.Collection.Generate(() => new byte[itemSize]).Take(batch);
-				totalBytes += batch * itemSize;
-				list.AddRange(items);
-			});
-			totalTime += batchDuration;
-			var perItemAverageDuration = batchDuration / batch;
-			stats.AddDatum(perItemAverageDuration.TotalMilliseconds, batch);
-			_outputWriter.WriteLine(
-				$"Appended {batch}, Total Duration (ms): {batchDuration.TotalMilliseconds:#.###}, Batch Avg: {perItemAverageDuration.TotalMilliseconds / batch:#.###}, Total Bytes = {Tools.Memory.ConvertToReadable(totalBytes, MemoryMetric.Byte)}");
-			if (commit)
-				((ITransactionalObject)list).Commit();
-		}
-		_outputWriter.WriteLine($"Total: {stats.Sum:#.##} (ms), Avg (ms): {stats.Mean:#.###}, Total Bytes = {Tools.Memory.ConvertToReadable(totalBytes, MemoryMetric.Byte)}");
-
-		TimeSpan Do(Action action) {
-			var start = DateTime.Now;
-			action();
-			return DateTime.Now - start;
+	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override TransactionalCollectionScreenSettings ScreenSettings {
+		get {
+			return (TransactionalCollectionScreenSettings)base.ScreenSettings;
 		}
 	}
 
-	private void RunBufferAppendTest() {
-		var rng = new Random(31337);
-		var stats = new Statistics();
-		var totalTime = TimeSpan.Zero;
+	// Preferences restore before the user creates a temporary storage session.
 
-		using var _ = CreateBuffer(out var list);
-
-		var itemCount = _itemsIntBox.Value.GetValueOrDefault(0);
-		var batchSize = _batchIntBox.Value.GetValueOrDefault(0);
-		var itemSize = _itemSizeIntBox.Value.GetValueOrDefault(0);
-		var commit = _commitCheckBox.Checked && list is ITransactionalObject;
-		;
-		var totalBytes = 0;
-		foreach (var batch in Tools.Collection.Partition(itemCount, batchSize)) {
-			var batchDuration = Do(() => {
-				var items = new byte[itemSize];
-				for (var i = 0; i < batch; i++) {
-					totalBytes += items.Length;
-					list.AddRange(items);
-				}
-			});
-			totalTime += batchDuration;
-			var perItemAverageDuration = batchDuration / batch;
-			stats.AddDatum(perItemAverageDuration.TotalMilliseconds, batch);
-			_outputWriter.WriteLine(
-				$"Appended {batch}, Total Duration (ms): {batchDuration.TotalMilliseconds:#.###}, Batch Avg: {perItemAverageDuration.TotalMilliseconds / batch:#.###}, Total Bytes = {Tools.Memory.ConvertToReadable(totalBytes, MemoryMetric.Byte)}");
-			if (commit)
-				((ITransactionalObject)list).Commit();
-		}
-		_outputWriter.WriteLine($"Total: {stats.Sum:#.##} (ms), Avg (ms): {stats.Mean:#.###}, Total Bytes = {Tools.Memory.ConvertToReadable(totalBytes, MemoryMetric.Byte)}");
-
-		TimeSpan Do(Action action) {
-			var start = DateTime.Now;
-			action();
-			return DateTime.Now - start;
-		}
+	// Options configures the next operation without changing a live worker request.
+	protected override void CopyModelToUI() {
+		base.CopyModelToUI();
+		ApplyPreferences();
 	}
 
-
-	private void RunStreamTest(int clusterSize, int pageSize, int maxMemory, ClusteredStreamsPolicy policy) {
-		var file = Path.GetTempFileName();
-		using var _ = Tools.Scope.ExecuteOnDispose(() => File.Delete(file));
-		using (var transactionalFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(file, pageSize, maxMemory))) {
-			using var rootStream = new ExtendedMemoryStream(transactionalFile);
-			if (rootStream.RequiresLoad)
-				rootStream.Load();
-
-			var storage = new ClusteredStreams(rootStream, clusterSize, policy: policy);
-			var rng = new Random(31337);
-			var stats = new Statistics();
-
-			var totalTime = TimeSpan.Zero;
-			var totalbytes = Tools.Memory.ConvertMemoryMetric(10, MemoryMetric.Megabyte, MemoryMetric.Byte);
-
-
-			using (var scope = storage.Add()) {
-				var bytes = rng.NextBytes(65536);
-				while (totalbytes > 0) {
-					var time = Do(() => scope.WriteBytes(bytes));
-					_outputWriter.WriteLine($"Appended {bytes.Length} b, Chunk Duration (ms): {time.TotalMilliseconds:#.###}");
-					totalTime += time;
-					totalbytes -= bytes.Length;
-				}
-				_outputWriter.WriteLine($"Total {Tools.Memory.ConvertMemoryMetric(10, MemoryMetric.Megabyte, MemoryMetric.Byte)} b, Total Time (sec): {totalTime.TotalSeconds:#.###}");
-			}
-		}
-
-		TimeSpan Do(Action action) {
-			var start = DateTime.Now;
-			action();
-			return DateTime.Now - start;
-		}
+	// Local worker resources unwind on their owner after cancellation.
+	protected override void OnDestroyScreen() {
+		_operationCancellation?.Cancel();
+		base.OnDestroyScreen();
 	}
 
-	private void RunDictAppendTest() {
-		var rng = new Random(31337);
-		var totalTime = TimeSpan.Zero;
-		var policy = (ClusteredStreamsPolicy)_policyBox.SelectedEnum;
-		var dict = new TransactionalDictionary<byte[], byte[]>(
-			Sphere10FrameworkFileDescriptor.From(
-				Path.GetTempFileName(),
-				Path.GetTempPath(),
-				pageSize: _pageSizeIntBox.Value.GetValueOrDefault(0),
-				maxMemory: _cacheSizeIntBox.Value.GetValueOrDefault(0),
-				containerPolicy: policy,
-				clusterSize: _clusterSizeIntBox.Value.GetValueOrDefault(0)
-			),
-			ByteArraySerializer.Instance,
-			ByteArraySerializer.Instance
-		);
-
-		var itemCount = _itemsIntBox.Value.GetValueOrDefault(0);
-		var batchSize = _batchIntBox.Value.GetValueOrDefault(0);
-		var itemSize = _itemSizeIntBox.Value.GetValueOrDefault(0);
-		var commit = _commitCheckBox.Checked;
-		var stats = new Statistics();
-		var batchStats = new Statistics();
-		foreach (var batch in Tools.Collection.Partition(itemCount, batchSize)) {
-			for (var i = 0; i < batch; i++) {
-				batchStats.Reset();
-				var key = rng.NextBytes(32);
-				var value = rng.NextBytes(itemSize);
-				var duration = Do(() => dict.Add(key, value));
-				batchStats.AddDatum(duration.TotalMilliseconds);
-				stats.AddDatum(duration.TotalMilliseconds);
-				if (commit)
-					dict.Commit();
-			}
-			_outputWriter.WriteLine($"Appended {batch}, Batch Duration (ms): {batchStats.Sum:#.###}, Batch Avg: {batchStats.Mean:#.###}, Size = {Tools.Memory.ConvertToReadable(dict.ObjectStream.Streams.RootStream.Length, MemoryMetric.Byte)}");
-		}
-		_outputWriter.WriteLine($"Total: {stats.Sum:#.##} (ms), Avg (ms): {stats.Mean:#.###}, Size = {Tools.Memory.ConvertToReadable(dict.ObjectStream.Streams.RootStream.Length, MemoryMetric.Byte)}");
-
-		TimeSpan Do(Action action) {
-			var start = DateTime.Now;
-			action();
-			return DateTime.Now - start;
-		}
+	// Each native action shares the same admission, capture, cancellation and result path.
+	private async void ListClicked(object sender, EventArgs args) {
+		await RunAsync(Scenario.List);
 	}
 
-	private IDisposable CreateList(out IExtendedList<byte[]> list) {
-		var disposables = new Disposables();
-		list = default;
-		var listType = this.Invoke(() => (ListType)_listTypeComboBox.SelectedEnum);
-		var pageSize = _pageSizeIntBox.Value.GetValueOrDefault(0);
-		var clusterSize = _clusterSizeIntBox.Value.GetValueOrDefault(0);
-		var maxMemory = _cacheSizeIntBox.Value.GetValueOrDefault(0);
-		var policy = (ClusteredStreamsPolicy)_policyBox.SelectedEnum;
-		switch (listType) {
-			case ListType.Transactional:
-				var txnList = new TransactionalList<byte[]>(
-					Sphere10FrameworkFileDescriptor.From(
-						Path.GetTempFileName(),
-						Path.GetTempPath(),
-						pageSize: pageSize,
-						maxMemory: maxMemory,
-						containerPolicy: policy,
-						clusterSize: clusterSize
-					),
-					new ByteArraySerializer()
-				);
-				disposables.Add(txnList);
-				list = txnList;
-				break;
-			case ListType.MerkleizedList:
-				var filename = Path.GetTempFileName();
-				disposables.Add(() => File.Delete(filename));
-				Stream stream = new ExtendedMemoryStream(new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory)), true);
-				var merkleList = new StreamMappedMerkleList<byte[]>(
-					stream,
-					CHF.SHA2_256,
-					clusterSize
-				);
-				disposables.Add(stream);
-				list = merkleList;
-				break;
-			default:
-				//Stream stream = default;
-				switch (listType) {
-					case ListType.MemoryStream:
-						stream = new MemoryStream();
-						break;
-					case ListType.MemoryBuffer:
-						stream = new ExtendedMemoryStream(new MemoryBuffer(pageSize, pageSize), true);
-						break;
-					case ListType.MemoryPagedBuffer:
-						stream = new ExtendedMemoryStream(new MemoryPagedBuffer(pageSize, maxMemory: maxMemory), true);
-						break;
-					case ListType.FilePaged:
-						filename = Path.GetTempFileName();
-						disposables.Add(() => File.Delete(filename));
-						stream = new ExtendedMemoryStream(new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory)), true);
-						break;
-					case ListType.TransactionalFilePaged:
-						var path = Tools.FileSystem.GetTempEmptyDirectory(true);
-						filename = Path.GetTempFileName();
-						disposables.Add(() => File.Delete(filename));
-						disposables.Add(() => Tools.FileSystem.DeleteDirectories(path));
-						stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, path, pageSize, maxMemory: maxMemory)), true);
-						break;
-					default:
-						throw new NotSupportedException(listType.ToString());
-				}
-				var clusteredList = StreamMappedFactory.CreateList(
-					stream,
-					clusterSize,
-					new ByteArraySerializer(),
-					policy: policy
-				);
-				disposables.Add(stream);
-				list = clusteredList;
-				break;
-		}
-		return disposables;
+	// Buffer work is enabled only for actual buffer backends.
+	private async void BufferClicked(object sender, EventArgs args) {
+		await RunAsync(Scenario.Buffer);
 	}
 
-	private IDisposable CreateBuffer(out IBuffer buffer) {
-		var disposables = new Disposables();
-		buffer = default;
-		var listType = this.Invoke(() => (ListType)_listTypeComboBox.SelectedEnum);
-		var pageSize = _pageSizeIntBox.Value.GetValueOrDefault(0);
-		var clusterSize = _clusterSizeIntBox.Value.GetValueOrDefault(0);
-		var maxMemory = _cacheSizeIntBox.Value.GetValueOrDefault(0);
-		switch (listType) {
-			case ListType.Transactional:
-				throw new NotSupportedException();
-			case ListType.MemoryStream:
-				throw new NotSupportedException();
-			case ListType.MemoryBuffer:
-				buffer = new MemoryBuffer(pageSize, pageSize);
-				break;
-			case ListType.MemoryPagedBuffer:
-				buffer = new MemoryPagedBuffer(pageSize, maxMemory);
-				break;
-			case ListType.FilePaged:
-				var filename = Path.GetTempFileName();
-				disposables.Add(() => File.Delete(filename));
-				buffer = new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory));
-				break;
-			case ListType.TransactionalFilePaged:
-				var path = Tools.FileSystem.GetTempEmptyDirectory(true);
-				filename = Path.GetTempFileName();
-				disposables.Add(() => File.Delete(filename));
-				disposables.Add(() => Tools.FileSystem.DeleteDirectories(path));
-				buffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, path, pageSize, maxMemory: maxMemory));
-				break;
-			default:
-				throw new NotSupportedException(listType.ToString());
-		}
-		return disposables;
+	// Dictionary storage is explicitly transactional, independent of the list/backend selector.
+	private async void DictionaryClicked(object sender, EventArgs args) {
+		await RunAsync(Scenario.Dictionary);
 	}
 
-	private async void _clearButton_Click(object sender, EventArgs e) {
-		try {
-			_outputTextBox.Clear();
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
+	// Clustered streams retain the original append scenario with configured geometry.
+	private async void StreamClicked(object sender, EventArgs args) {
+		await RunAsync(Scenario.Stream);
 	}
 
-	private async void _copyButton_Click(object sender, EventArgs e) {
-		try {
+	// Verify persisted membership, rollback and reopened data rather than a warmed cache.
+	private async void RollbackClicked(object sender, EventArgs args) {
+		await RunAsync(Scenario.Rollback);
+	}
+
+	// Cancellation remains available while every other operation is disabled.
+	private void CancelClicked(object sender, EventArgs args) {
+		_operationCancellation?.Cancel();
+	}
+
+	// Copy generated results only when a nonempty result exists.
+	private void CopyClicked(object sender, EventArgs args) {
+		if (_outputTextBox.TextLength > 0)
 			Clipboard.SetText(_outputTextBox.Text);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
 	}
 
-	private async void _appendTestButton_Click(object sender, EventArgs e) {
+	// Clear does not reset the chosen backend or sizing preferences.
+	private void ClearClicked(object sender, EventArgs args) {
+		_outputTextBox.Clear();
+		_status.Text = "Results cleared.";
+	}
+
+	// Capture all native inputs before dispatch; no background code reads a control.
+	private async Task RunAsync(Scenario scenario) {
+		if (_operationCancellation != null)
+			return;
 		try {
-			await Task.Run(RunListAppendTest);
+			var request = CaptureRequest();
+			using var cancellation = new CancellationTokenSource();
+			_operationCancellation = cancellation;
+			UpdateAvailability();
+			_status.Text = $"Running {scenario} with {request.Items:N0} items…";
+			try {
+				var result = await Task.Run(() => Execute(request, scenario, cancellation.Token), cancellation.Token);
+				if (!IsDisposed && !Disposing) {
+					_outputTextBox.Text = result;
+					_status.Text = "Operation complete. Its owned temporary files have been released.";
+				}
+			} finally {
+				_operationCancellation = null;
+				if (!IsDisposed && !Disposing)
+					UpdateAvailability();
+			}
+		} catch (OperationCanceledException) {
+			if (!IsDisposed && !Disposing)
+				_status.Text = "Operation cancelled; the worker released its collection and temporary files.";
 		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
+			SystemLog.Exception(error, "The collection demonstration failed.");
+			if (!IsDisposed && !Disposing)
+				_status.Text = "Could not complete the operation: " + error.Message;
 		}
 	}
 
-	private async void _streamButton_Click(object sender, EventArgs e) {
+	// Cross-field limits keep this interactive example bounded; performance studies belong in the profiler.
+	private Request CaptureRequest() {
+		var request = new Request(
+			Positive(_itemsIntBox.Value, "Items"), Positive(_batchIntBox.Value, "Batch size"), Positive(_itemSizeIntBox.Value, "Item size"),
+			Positive(_clusterSizeIntBox.Value, "Cluster bytes"), Positive(_pageSizeIntBox.Value, "Page bytes"), Positive(_cacheSizeIntBox.Value, "Cache bytes"),
+			(ListType)_listTypeComboBox.SelectedEnum, (ClusteredStreamsPolicy)_policyBox.SelectedEnum, _commitCheckBox.Checked
+		);
+		if (request.Items > 100000 || request.Batch > 10000 || request.ItemSize > 65536 || (long)request.Items * request.ItemSize > 64 * 1024 * 1024)
+			throw new InvalidOperationException("Use at most 100,000 items, 10,000 per batch, 65,536 bytes per item and 64 MiB of payload.");
+		if (request.PageSize > 16 * 1024 * 1024 || request.CacheSize < request.PageSize || request.CacheSize > 512 * 1024 * 1024)
+			throw new InvalidOperationException("Choose a page up to 16 MiB and a cache between one page and 512 MiB.");
+		if (request.Policy.HasFlag(ClusteredStreamsPolicy.MetaData))
+			throw new InvalidOperationException("This raw collection example does not configure a metadata blob. Use the ObjectSpace example for self-describing storage.");
+		return request;
+	}
+
+	// Every file and transactional page is created beneath this one owned, verified temporary directory.
+	private static string Execute(Request request, Scenario scenario, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		var temporaryRoot = Path.GetFullPath(Path.GetTempPath());
+		var directoryName = "Sphere10.CollectionDemo-" + Guid.NewGuid().ToString("N");
+		var directory = Path.Combine(temporaryRoot, directoryName);
+		Directory.CreateDirectory(directory);
 		try {
-			await Task.Run(() => RunStreamTest(
-				_clusterSizeIntBox.Value.GetValueOrDefault(0),
-				_pageSizeIntBox.Value.GetValueOrDefault(0),
-				_cacheSizeIntBox.Value.GetValueOrDefault(0),
-				(ClusteredStreamsPolicy)_policyBox.SelectedEnum
-			));
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
+			var pages = Path.Combine(directory, "pages");
+			Directory.CreateDirectory(pages);
+			var descriptor = Sphere10FrameworkFileDescriptor.From(Path.Combine(directory, "data.s10"), pages, request.PageSize, request.CacheSize, request.ClusterSize, request.Policy);
+			return scenario switch {
+				Scenario.List => RunList(request, descriptor, cancellationToken),
+				Scenario.Buffer => RunBuffer(request, descriptor, cancellationToken),
+				Scenario.Dictionary => RunDictionary(request, descriptor, cancellationToken),
+				Scenario.Stream => RunStream(request, descriptor, cancellationToken),
+				Scenario.Rollback => VerifyTransactions(descriptor, cancellationToken),
+				_ => throw new InvalidOperationException("Select a supported scenario.")
+			};
+		} finally {
+			var resolved = Path.GetFullPath(directory);
+			Guard.Ensure(string.Equals(Path.GetDirectoryName(resolved), Path.TrimEndingDirectorySeparator(temporaryRoot), StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(Path.GetFileName(resolved), directoryName, StringComparison.Ordinal), "Unexpected collection-demo cleanup target.");
+			if (Directory.Exists(resolved))
+				Directory.Delete(resolved, true);
 		}
 	}
 
-	private async void _dictionaryAppend_Click(object sender, EventArgs e) {
+	// The selected list and stream both remain on this worker for their complete lifetime.
+	private static string RunList(Request request, Sphere10FrameworkFileDescriptor descriptor, CancellationToken token) {
+		if (request.Backend == ListType.Transactional) {
+			using var list = new TransactionalList<byte[]>(descriptor, ByteArraySerializer.Instance);
+			if (list.RequiresLoad)
+				list.Load();
+			return AppendList(list, list, request, token);
+		}
+
+		var (stream, transaction) = CreateStream(request, descriptor);
+		using (stream) {
+			using var list = request.Backend == ListType.MerkleizedList
+				? (IStreamMappedList<byte[]>)new StreamMappedMerkleList<byte[]>(stream, CHF.SHA2_256, request.ClusterSize, ByteArraySerializer.Instance, policy: request.Policy)
+				: StreamMappedFactory.CreateList(stream, request.ClusterSize, ByteArraySerializer.Instance, policy: request.Policy);
+			if (list.RequiresLoad)
+				list.Load();
+			return AppendList(list, transaction, request, token);
+		}
+	}
+
+	// Batches report real append/commit durations and a verified final collection count.
+	private static string AppendList(IExtendedList<byte[]> list, ITransactionalObject transaction, Request request, CancellationToken token) {
+		var output = new StringBuilder();
+		var total = Stopwatch.StartNew();
+		var processed = 0;
+		var reports = 0;
+		foreach (var batch in Tools.Collection.Partition(request.Items, request.Batch)) {
+			token.ThrowIfCancellationRequested();
+			var clock = Stopwatch.StartNew();
+			list.AddRange(Enumerable.Range(0, batch).Select(_ => new byte[request.ItemSize]).ToArray());
+			if (request.Commit && transaction != null)
+				transaction.Commit();
+			processed += batch;
+			if (reports++ < 100)
+				output.AppendLine($"Appended {batch:N0}; total {processed:N0}; append/commit {clock.Elapsed.TotalMilliseconds:N3} ms.");
+		}
+		output.AppendLine($"Verified count: {list.Count:N0}. Payload: {(long)request.Items * request.ItemSize:N0} bytes. Total {total.Elapsed.TotalMilliseconds:N3} ms.");
+		output.AppendLine($"Backend: {request.Backend}; commit each batch requested: {request.Commit}; transactional backend: {transaction != null}.");
+		if (reports > 100)
+			output.AppendLine("Only the first 100 batch reports are displayed.");
+		return output.ToString();
+	}
+
+	// Buffer runs keep the original paging/file choices but never leave their disposable buffers open.
+	private static string RunBuffer(Request request, Sphere10FrameworkFileDescriptor descriptor, CancellationToken token) {
+		var buffer = CreateBuffer(request, descriptor);
 		try {
-			await Task.Run(RunDictAppendTest);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
+			if (buffer is ILoadable loadable && loadable.RequiresLoad)
+				loadable.Load();
+			var clock = Stopwatch.StartNew();
+			foreach (var batch in Tools.Collection.Partition(request.Items, request.Batch)) {
+				token.ThrowIfCancellationRequested();
+				for (var index = 0; index < batch; index++)
+					buffer.AddRange(new byte[request.ItemSize]);
+				if (request.Commit && buffer is ITransactionalObject transaction)
+					transaction.Commit();
+			}
+			return $"Buffer bytes: {buffer.Count:N0}\r\nExpected payload: {(long)request.Items * request.ItemSize:N0} bytes\r\nBackend: {request.Backend}\r\nTotal: {clock.Elapsed.TotalMilliseconds:N3} ms";
+		} finally {
+			(buffer as IDisposable)?.Dispose();
 		}
 	}
 
-	private async void _bufferTestButton_Click(object sender, EventArgs e) {
-		try {
-			await Task.Run(RunBufferAppendTest);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
+	// Dictionary keys are deterministic SHA-256 values and its committed/read counts are checked.
+	private static string RunDictionary(Request request, Sphere10FrameworkFileDescriptor descriptor, CancellationToken token) {
+		token.ThrowIfCancellationRequested();
+
+		// Own the file before dictionary activation so a rejected serializer/configuration still releases its handle.
+		using var root = new TransactionalStream(descriptor, FileAccessMode.OpenOrCreate);
+		if (root.RequiresLoad)
+			root.Load();
+		token.ThrowIfCancellationRequested();
+		using var dictionary = new TransactionalDictionary<byte[], byte[]>(
+			root,
+			new ConstantSizeByteArraySerializer(Hashers.GetDigestSizeBytes(CHF.SHA2_256)),
+			ByteArraySerializer.Instance.AsNullableSerializer(),
+			keyComparer: ByteArrayEqualityComparer.Instance,
+			valueComparer: ByteArrayEqualityComparer.Instance,
+			clusterSize: request.ClusterSize,
+			policy: request.Policy
+		);
+		if (dictionary.RequiresLoad)
+			dictionary.Load();
+		var clock = Stopwatch.StartNew();
+		var next = 0;
+		foreach (var batch in Tools.Collection.Partition(request.Items, request.Batch)) {
+			token.ThrowIfCancellationRequested();
+			for (var index = 0; index < batch; index++) {
+				var key = Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes($"Key {next++}"));
+				dictionary.Add(key, new byte[request.ItemSize]);
+			}
+			if (request.Commit)
+				dictionary.Commit();
 		}
+		return $"Transactional dictionary count: {dictionary.Count:N0}\r\nExpected items: {request.Items:N0}\r\nCommit each batch: {request.Commit}\r\nTotal: {clock.Elapsed.TotalMilliseconds:N3} ms";
 	}
 
+	// A single stream uses the configured clustered/file geometry and reports its actual byte length.
+	private static string RunStream(Request request, Sphere10FrameworkFileDescriptor descriptor, CancellationToken token) {
+		using var buffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(descriptor.Path, descriptor.PagesDirectoryPath, request.PageSize, request.CacheSize));
+		using var root = new ExtendedMemoryStream(buffer);
+		if (root.RequiresLoad)
+			root.Load();
+		using var streams = new ClusteredStreams(root, request.ClusterSize, request.Policy);
+		if (streams.RequiresLoad)
+			streams.Load();
+		long length;
+		using (var stream = streams.Add()) {
+			var bytes = new byte[request.ItemSize];
+			for (var index = 0; index < request.Items; index++) {
+				if (index % request.Batch == 0)
+					token.ThrowIfCancellationRequested();
+				stream.WriteBytes(bytes);
+			}
+			length = stream.Length;
+		}
+		if (request.Commit)
+			buffer.Commit();
+		return $"Clustered-stream length: {length:N0} bytes\r\nExpected payload: {(long)request.Items * request.ItemSize:N0} bytes\r\nCluster bytes: {request.ClusterSize:N0}\r\nCommitted: {request.Commit}";
+	}
 
+	// Reopen after commit and confirm that a rolled-back append does not reappear.
+	private static string VerifyTransactions(Sphere10FrameworkFileDescriptor descriptor, CancellationToken token) {
+		token.ThrowIfCancellationRequested();
+		using (var list = new TransactionalList<byte[]>(descriptor, ByteArraySerializer.Instance)) {
+			if (list.RequiresLoad)
+				list.Load();
+			list.Add(new byte[] { 1 });
+			list.Commit();
+			list.Add(new byte[] { 2 });
+			list.Rollback();
+			if (list.Count != 1)
+				throw new InvalidOperationException("Rollback did not restore the committed item count.");
+			list.Add(new byte[] { 3 });
+			list.Commit();
+		}
+		using var reopened = new TransactionalList<byte[]>(descriptor, ByteArraySerializer.Instance);
+		if (reopened.RequiresLoad)
+			reopened.Load();
+		if (reopened.Count != 2 || reopened[0][0] != 1 || reopened[1][0] != 3)
+			throw new InvalidOperationException("Reopened contents did not match the two committed values.");
+		return "PASS: committed [1], rolled back [2], committed [3].\r\nA new collection reopened the file and verified exactly [1, 3].";
+	}
+
+	// The root stream owns its supplied buffer; the optional transaction reference is borrowed.
+	private static (Stream Stream, ITransactionalObject Transaction) CreateStream(Request request, Sphere10FrameworkFileDescriptor descriptor) {
+		if (request.Backend == ListType.MemoryStream)
+			return (new MemoryStream(), null);
+		if (request.Backend == ListType.MerkleizedList)
+			return (new MemoryStream(), null);
+		var buffer = CreateBuffer(request, descriptor);
+		return (new ExtendedMemoryStream(buffer, true), buffer as ITransactionalObject);
+	}
+
+	// Existing buffer families supply storage; no application-specific persistence wrapper is needed.
+	private static IBuffer CreateBuffer(Request request, Sphere10FrameworkFileDescriptor descriptor) {
+		return request.Backend switch {
+			ListType.MemoryBuffer => new MemoryBuffer(request.PageSize, request.PageSize),
+			ListType.MemoryPagedBuffer => new MemoryPagedBuffer(request.PageSize, request.CacheSize),
+			ListType.FilePaged => new FileMappedBuffer(TransactionalFileDescriptor.From(descriptor.Path, request.PageSize, request.CacheSize)),
+			ListType.TransactionalFilePaged => new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(descriptor.Path, descriptor.PagesDirectoryPath, request.PageSize, request.CacheSize)),
+			_ => throw new InvalidOperationException("Choose a memory or file buffer backend for the buffer test.")
+		};
+	}
+
+	// Selection changes update availability and retain the ordinary next-run preferences.
+	private void BackendChanged(object sender, EventArgs args) {
+		UpdateAvailability();
+		PreferencesEdited(sender, args);
+	}
+
+	// No current worker request changes when Options edits its detached next-run values.
+	private void PreferencesEdited(object sender, EventArgs args) {
+		if (!HasSettings || Updating || _listTypeComboBox.SelectedEnum == null)
+			return;
+		var settings = ScreenSettings;
+		settings.Items = _itemsIntBox.Value ?? settings.Items;
+		settings.BatchSize = _batchIntBox.Value ?? settings.BatchSize;
+		settings.ItemBytes = _itemSizeIntBox.Value ?? settings.ItemBytes;
+		settings.ClusterBytes = _clusterSizeIntBox.Value ?? settings.ClusterBytes;
+		settings.PageBytes = _pageSizeIntBox.Value ?? settings.PageBytes;
+		settings.CacheBytes = _cacheSizeIntBox.Value ?? settings.CacheBytes;
+		settings.Backend = (ListType)_listTypeComboBox.SelectedEnum;
+		settings.CommitEachBatch = _commitCheckBox.Checked;
+		MarkSettingsChanged();
+	}
+
+	// Keep design-time and standalone construction independent of services.
+	private void ApplyPreferences() {
+		if (!HasSettings || IsDisposed || Disposing)
+			return;
+		var settings = ScreenSettings;
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
+			_itemsIntBox.Value = settings.Items;
+			_batchIntBox.Value = settings.BatchSize;
+			_itemSizeIntBox.Value = settings.ItemBytes;
+			_clusterSizeIntBox.Value = settings.ClusterBytes;
+			_pageSizeIntBox.Value = settings.PageBytes;
+			_cacheSizeIntBox.Value = settings.CacheBytes;
+			_listTypeComboBox.SelectedEnum = settings.Backend;
+			_commitCheckBox.Checked = settings.CommitEachBatch;
+		}
+		UpdateAvailability();
+	}
+
+	// Disable competing commands while retaining cancellation; incompatible buffer choices stay explicit.
+	private void UpdateAvailability() {
+		if (_commands == null)
+			return;
+		var busy = _operationCancellation != null;
+		foreach (Control control in _commands.Controls)
+			control.Enabled = !busy;
+		_inputs.Enabled = !busy;
+		_cancelButton.Enabled = busy;
+		var backend = _listTypeComboBox.SelectedEnum is ListType selected ? selected : ListType.Transactional;
+		_bufferTestButton.Enabled = !busy && (backend is ListType.MemoryBuffer or ListType.MemoryPagedBuffer or ListType.FilePaged or ListType.TransactionalFilePaged);
+	}
+
+	// Invalid native numeric input never silently becomes a zero-sized storage operation.
+	private static int Positive(int? value, string title) {
+		if (value == null || value <= 0)
+			throw new InvalidOperationException(title + " must be a positive whole number.");
+		return value.Value;
+	}
+
+	// One immutable captured request belongs to one worker operation.
+	private sealed record Request(int Items, int Batch, int ItemSize, int ClusterSize, int PageSize, int CacheSize, ListType Backend, ClusteredStreamsPolicy Policy, bool Commit);
+
+	#region Inner Types
+
+	private enum Scenario {
+		List,
+		Buffer,
+		Dictionary,
+		Stream,
+		Rollback
+	}
+
+	/// <summary>The original list/buffer backend choices supported by this laboratory.</summary>
 	public enum ListType {
 		Transactional,
 		MemoryStream,
@@ -358,11 +422,52 @@ public partial class TransactionalCollectionScreen : WinFormsApplicationScreen {
 		MemoryPagedBuffer,
 		FilePaged,
 		TransactionalFilePaged,
-		MerkleizedList,
+		MerkleizedList
 	}
 
+	/// <summary>The next collection experiment's inputs, separate from its temporary data and measured results.</summary>
+	[UserEditable]
+	public class TransactionalCollectionScreenSettings : SettingsObject {
+		/// <summary>The bounded number of records to append.</summary>
+		[DefaultValue(1000)]
+		[Range(1, 100000)]
+		public int Items { get; set; } = 1000;
 
+		/// <summary>The number of records in one append/commit batch.</summary>
+		[DefaultValue(100)]
+		[DisplayName("Batch size"), Range(1, 10000)]
+		public int BatchSize { get; set; } = 100;
+
+		/// <summary>The payload size of each generated record.</summary>
+		[DefaultValue(64)]
+		[DisplayName("Bytes per item"), Range(1, 65536)]
+		public int ItemBytes { get; set; } = 64;
+
+		/// <summary>The clustered storage allocation size.</summary>
+		[DefaultValue(1024)]
+		[DisplayName("Cluster bytes"), Range(1, 1048576)]
+		public int ClusterBytes { get; set; } = 1024;
+
+		/// <summary>The memory/file page size.</summary>
+		[DefaultValue(65536)]
+		[DisplayName("Page bytes"), Range(1, 16777216)]
+		public int PageBytes { get; set; } = 65536;
+
+		/// <summary>The maximum memory budget for the paged backend.</summary>
+		[DefaultValue(8388608)]
+		[DisplayName("Cache bytes"), Range(1, 536870912)]
+		public int CacheBytes { get; set; } = 8388608;
+
+		/// <summary>The list/buffer implementation chosen for the next operation.</summary>
+		[DefaultValue(TransactionalCollectionScreen.ListType.Transactional)]
+		public TransactionalCollectionScreen.ListType Backend { get; set; } = TransactionalCollectionScreen.ListType.Transactional;
+
+		/// <summary>Commits each completed batch when the selected backend is transactional.</summary>
+		[DefaultValue(false)]
+		[DisplayName("Commit each batch")]
+		public bool CommitEachBatch {
+			get; set;
+		}
+	}
+	#endregion
 }
-
-
-

@@ -6,26 +6,27 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Drawing;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 /// <summary>Adds a live provisional preview to the reusable native property editor for the GPU registration.</summary>
-public class ScreenHostingPreferencesEditor : DefaultCrudEntityEditor {
-	private readonly ScreenHostingPreferences _values;
-	private readonly Label _preview;
+public partial class ScreenHostingPreferencesEditor : DefaultCrudEntityEditor {
+	private readonly ScreenHostingDesignTestScreen.ScreenHostingPreferences _values;
+
+	/// <summary>Creates the designable editor with detached sample values.</summary>
+	public ScreenHostingPreferencesEditor()
+		: this(new ScreenHostingDesignTestScreen.ScreenHostingPreferences()) {
+	}
 
 	/// <summary>Receives only the edit session's detached values; no operational screen or storage is activated.</summary>
-	public ScreenHostingPreferencesEditor(ScreenHostingPreferences values) {
+	public ScreenHostingPreferencesEditor(ScreenHostingDesignTestScreen.ScreenHostingPreferences values) {
 		Guard.ArgumentNotNull(values, nameof(values));
+		InitializeComponent();
 		_values = values;
 		HiddenProperties = new[] { "ID", "Provider" };
 		PropertySort = PropertySort.Categorized;
-		_preview = new Label { Name = "PreferencePreview", Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(8), ForeColor = Color.RoyalBlue };
-		Controls.Add(_preview);
-		_preview.SendToBack();
 		UpdatePreview();
 	}
 

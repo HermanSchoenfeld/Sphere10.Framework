@@ -1,757 +1,556 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Drawing;
+using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-    partial class ImageResizeScreen {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+partial class ImageResizeScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private PathSelectorControl _pathSelectorControl;
+	private NumericUpDown _widthNumeric;
+	private NumericUpDown _heightNumeric;
+	private Label _widthLabel;
+	private Label _heightLabel;
+	private FlowLayoutPanel _dimensionFields;
+	private FlowLayoutPanel _imageFileFields;
+	private Label _imageFileLabel;
+	private Button _sampleButton;
+	private Button _loadButton;
+	private Panel _scroll;
+	private TableLayoutPanel _matrix;
+	private Label _method0;
+	private PictureBoxEx _pictureBoxEx11;
+	private PictureBoxEx _pictureBoxEx12;
+	private PictureBoxEx _pictureBoxEx13;
+	private PictureBoxEx _pictureBoxEx14;
+	private PictureBoxEx _pictureBoxEx15;
+	private PictureBoxEx _pictureBoxEx16;
+	private PictureBoxEx _pictureBoxEx17;
+	private PictureBoxEx _pictureBoxEx18;
+	private PictureBoxEx _pictureBoxEx19;
+	private Label _method1;
+	private PictureBoxEx _pictureBoxEx21;
+	private PictureBoxEx _pictureBoxEx22;
+	private PictureBoxEx _pictureBoxEx23;
+	private PictureBoxEx _pictureBoxEx24;
+	private PictureBoxEx _pictureBoxEx25;
+	private PictureBoxEx _pictureBoxEx26;
+	private PictureBoxEx _pictureBoxEx27;
+	private PictureBoxEx _pictureBoxEx28;
+	private PictureBoxEx _pictureBoxEx29;
+	private Label _method2;
+	private PictureBoxEx _pictureBoxEx31;
+	private PictureBoxEx _pictureBoxEx32;
+	private PictureBoxEx _pictureBoxEx33;
+	private PictureBoxEx _pictureBoxEx34;
+	private PictureBoxEx _pictureBoxEx35;
+	private PictureBoxEx _pictureBoxEx36;
+	private PictureBoxEx _pictureBoxEx37;
+	private PictureBoxEx _pictureBoxEx38;
+	private PictureBoxEx _pictureBoxEx39;
+	private Label _method3;
+	private PictureBoxEx _pictureBoxEx41;
+	private PictureBoxEx _pictureBoxEx42;
+	private PictureBoxEx _pictureBoxEx43;
+	private PictureBoxEx _pictureBoxEx44;
+	private PictureBoxEx _pictureBoxEx45;
+	private PictureBoxEx _pictureBoxEx46;
+	private PictureBoxEx _pictureBoxEx47;
+	private PictureBoxEx _pictureBoxEx48;
+	private PictureBoxEx _pictureBoxEx49;
+	private Label _alignment0;
+	private Label _alignment1;
+	private Label _alignment2;
+	private Label _alignment3;
+	private Label _alignment4;
+	private Label _alignment5;
+	private Label _alignment6;
+	private Label _alignment7;
+	private Label _alignment8;
 
-        #region Windows Form Designer generated code
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_pathSelectorControl = new PathSelectorControl();
+		_widthNumeric = new NumericUpDown();
+		_heightNumeric = new NumericUpDown();
+		_widthLabel = new Label();
+		_heightLabel = new Label();
+		_dimensionFields = new FlowLayoutPanel();
+		_imageFileFields = new FlowLayoutPanel();
+		_imageFileLabel = new Label();
+		_sampleButton = new Button();
+		_loadButton = new Button();
+		_scroll = new Panel();
+		_matrix = new TableLayoutPanel();
+		_method0 = new Label();
+		_pictureBoxEx11 = new PictureBoxEx();
+		_pictureBoxEx12 = new PictureBoxEx();
+		_pictureBoxEx13 = new PictureBoxEx();
+		_pictureBoxEx14 = new PictureBoxEx();
+		_pictureBoxEx15 = new PictureBoxEx();
+		_pictureBoxEx16 = new PictureBoxEx();
+		_pictureBoxEx17 = new PictureBoxEx();
+		_pictureBoxEx18 = new PictureBoxEx();
+		_pictureBoxEx19 = new PictureBoxEx();
+		_method1 = new Label();
+		_pictureBoxEx21 = new PictureBoxEx();
+		_pictureBoxEx22 = new PictureBoxEx();
+		_pictureBoxEx23 = new PictureBoxEx();
+		_pictureBoxEx24 = new PictureBoxEx();
+		_pictureBoxEx25 = new PictureBoxEx();
+		_pictureBoxEx26 = new PictureBoxEx();
+		_pictureBoxEx27 = new PictureBoxEx();
+		_pictureBoxEx28 = new PictureBoxEx();
+		_pictureBoxEx29 = new PictureBoxEx();
+		_method2 = new Label();
+		_pictureBoxEx31 = new PictureBoxEx();
+		_pictureBoxEx32 = new PictureBoxEx();
+		_pictureBoxEx33 = new PictureBoxEx();
+		_pictureBoxEx34 = new PictureBoxEx();
+		_pictureBoxEx35 = new PictureBoxEx();
+		_pictureBoxEx36 = new PictureBoxEx();
+		_pictureBoxEx37 = new PictureBoxEx();
+		_pictureBoxEx38 = new PictureBoxEx();
+		_pictureBoxEx39 = new PictureBoxEx();
+		_method3 = new Label();
+		_pictureBoxEx41 = new PictureBoxEx();
+		_pictureBoxEx42 = new PictureBoxEx();
+		_pictureBoxEx43 = new PictureBoxEx();
+		_pictureBoxEx44 = new PictureBoxEx();
+		_pictureBoxEx45 = new PictureBoxEx();
+		_pictureBoxEx46 = new PictureBoxEx();
+		_pictureBoxEx47 = new PictureBoxEx();
+		_pictureBoxEx48 = new PictureBoxEx();
+		_pictureBoxEx49 = new PictureBoxEx();
+		_alignment0 = new Label();
+		_alignment1 = new Label();
+		_alignment2 = new Label();
+		_alignment3 = new Label();
+		_alignment4 = new Label();
+		_alignment5 = new Label();
+		_alignment6 = new Label();
+		_alignment7 = new Label();
+		_alignment8 = new Label();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-            this._pathSelectorControl = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
-            this._panel = new System.Windows.Forms.Panel();
-            this._pictureBoxEx49 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx39 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx29 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx19 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx48 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx47 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx46 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx45 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx38 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx37 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx36 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx35 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx28 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx27 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx26 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx25 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx18 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx17 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx16 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx15 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx44 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx43 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx42 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx41 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx34 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx33 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx32 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx31 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx24 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx23 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx22 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx21 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx14 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx13 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx12 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBoxEx11 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._widthNumeric = new System.Windows.Forms.NumericUpDown();
-            this._heightNumeric = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this._panel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx49)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx39)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx29)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx19)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx48)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx47)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx46)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx45)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx38)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx37)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx36)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx35)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx28)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx27)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx26)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx25)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx18)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx17)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx16)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx15)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx44)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx43)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx42)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx41)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx34)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx33)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx32)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx31)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx24)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx23)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx22)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx21)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx14)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx13)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx12)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx11)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._widthNumeric)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._heightNumeric)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // _pathSelectorControl
-            // 
-            this._pathSelectorControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._pathSelectorControl.Location = new System.Drawing.Point(23, 0);
-            this._pathSelectorControl.Margin = new System.Windows.Forms.Padding(0);
-            this._pathSelectorControl.Name = "_pathSelectorControl";
-            this._pathSelectorControl.Path = "";
-            this._pathSelectorControl.PlaceHolderText = "Select image";
-            this._pathSelectorControl.Size = new System.Drawing.Size(1135, 23);
-            this._pathSelectorControl.TabIndex = 0;
-            // 
-            // _panel
-            // 
-            this._panel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._panel.AutoScroll = true;
-            this._panel.Controls.Add(this._pictureBoxEx49);
-            this._panel.Controls.Add(this._pictureBoxEx39);
-            this._panel.Controls.Add(this._pictureBoxEx29);
-            this._panel.Controls.Add(this._pictureBoxEx19);
-            this._panel.Controls.Add(this._pictureBoxEx48);
-            this._panel.Controls.Add(this._pictureBoxEx47);
-            this._panel.Controls.Add(this._pictureBoxEx46);
-            this._panel.Controls.Add(this._pictureBoxEx45);
-            this._panel.Controls.Add(this._pictureBoxEx38);
-            this._panel.Controls.Add(this._pictureBoxEx37);
-            this._panel.Controls.Add(this._pictureBoxEx36);
-            this._panel.Controls.Add(this._pictureBoxEx35);
-            this._panel.Controls.Add(this._pictureBoxEx28);
-            this._panel.Controls.Add(this._pictureBoxEx27);
-            this._panel.Controls.Add(this._pictureBoxEx26);
-            this._panel.Controls.Add(this._pictureBoxEx25);
-            this._panel.Controls.Add(this._pictureBoxEx18);
-            this._panel.Controls.Add(this._pictureBoxEx17);
-            this._panel.Controls.Add(this._pictureBoxEx16);
-            this._panel.Controls.Add(this._pictureBoxEx15);
-            this._panel.Controls.Add(this._pictureBoxEx44);
-            this._panel.Controls.Add(this._pictureBoxEx43);
-            this._panel.Controls.Add(this._pictureBoxEx42);
-            this._panel.Controls.Add(this._pictureBoxEx41);
-            this._panel.Controls.Add(this._pictureBoxEx34);
-            this._panel.Controls.Add(this._pictureBoxEx33);
-            this._panel.Controls.Add(this._pictureBoxEx32);
-            this._panel.Controls.Add(this._pictureBoxEx31);
-            this._panel.Controls.Add(this._pictureBoxEx24);
-            this._panel.Controls.Add(this._pictureBoxEx23);
-            this._panel.Controls.Add(this._pictureBoxEx22);
-            this._panel.Controls.Add(this._pictureBoxEx21);
-            this._panel.Controls.Add(this._pictureBoxEx14);
-            this._panel.Controls.Add(this._pictureBoxEx13);
-            this._panel.Controls.Add(this._pictureBoxEx12);
-            this._panel.Controls.Add(this._pictureBoxEx11);
-            this._panel.Location = new System.Drawing.Point(0, 60);
-            this._panel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._panel.Name = "_panel";
-            this._panel.Size = new System.Drawing.Size(1158, 547);
-            this._panel.TabIndex = 1;
-            // 
-            // _pictureBoxEx49
-            // 
-            this._pictureBoxEx49.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx49.Location = new System.Drawing.Point(1959, 749);
-            this._pictureBoxEx49.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx49.Name = "_pictureBoxEx49";
-            this._pictureBoxEx49.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx49.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx49.TabIndex = 53;
-            this._pictureBoxEx49.TabStop = false;
-            // 
-            // _pictureBoxEx39
-            // 
-            this._pictureBoxEx39.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx39.Location = new System.Drawing.Point(1959, 511);
-            this._pictureBoxEx39.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx39.Name = "_pictureBoxEx39";
-            this._pictureBoxEx39.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx39.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx39.TabIndex = 52;
-            this._pictureBoxEx39.TabStop = false;
-            // 
-            // _pictureBoxEx29
-            // 
-            this._pictureBoxEx29.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx29.Location = new System.Drawing.Point(1959, 273);
-            this._pictureBoxEx29.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx29.Name = "_pictureBoxEx29";
-            this._pictureBoxEx29.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx29.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx29.TabIndex = 51;
-            this._pictureBoxEx29.TabStop = false;
-            // 
-            // _pictureBoxEx19
-            // 
-            this._pictureBoxEx19.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx19.Location = new System.Drawing.Point(1959, 36);
-            this._pictureBoxEx19.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx19.Name = "_pictureBoxEx19";
-            this._pictureBoxEx19.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx19.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx19.TabIndex = 50;
-            this._pictureBoxEx19.TabStop = false;
-            // 
-            // _pictureBoxEx48
-            // 
-            this._pictureBoxEx48.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx48.Location = new System.Drawing.Point(1718, 749);
-            this._pictureBoxEx48.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx48.Name = "_pictureBoxEx48";
-            this._pictureBoxEx48.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx48.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx48.TabIndex = 49;
-            this._pictureBoxEx48.TabStop = false;
-            // 
-            // _pictureBoxEx47
-            // 
-            this._pictureBoxEx47.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx47.Location = new System.Drawing.Point(1476, 749);
-            this._pictureBoxEx47.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx47.Name = "_pictureBoxEx47";
-            this._pictureBoxEx47.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx47.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx47.TabIndex = 48;
-            this._pictureBoxEx47.TabStop = false;
-            // 
-            // _pictureBoxEx46
-            // 
-            this._pictureBoxEx46.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx46.Location = new System.Drawing.Point(1236, 749);
-            this._pictureBoxEx46.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx46.Name = "_pictureBoxEx46";
-            this._pictureBoxEx46.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx46.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx46.TabIndex = 47;
-            this._pictureBoxEx46.TabStop = false;
-            // 
-            // _pictureBoxEx45
-            // 
-            this._pictureBoxEx45.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx45.Location = new System.Drawing.Point(993, 749);
-            this._pictureBoxEx45.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx45.Name = "_pictureBoxEx45";
-            this._pictureBoxEx45.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx45.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx45.TabIndex = 46;
-            this._pictureBoxEx45.TabStop = false;
-            // 
-            // _pictureBoxEx38
-            // 
-            this._pictureBoxEx38.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx38.Location = new System.Drawing.Point(1718, 511);
-            this._pictureBoxEx38.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx38.Name = "_pictureBoxEx38";
-            this._pictureBoxEx38.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx38.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx38.TabIndex = 45;
-            this._pictureBoxEx38.TabStop = false;
-            // 
-            // _pictureBoxEx37
-            // 
-            this._pictureBoxEx37.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx37.Location = new System.Drawing.Point(1476, 511);
-            this._pictureBoxEx37.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx37.Name = "_pictureBoxEx37";
-            this._pictureBoxEx37.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx37.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx37.TabIndex = 44;
-            this._pictureBoxEx37.TabStop = false;
-            // 
-            // _pictureBoxEx36
-            // 
-            this._pictureBoxEx36.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx36.Location = new System.Drawing.Point(1236, 511);
-            this._pictureBoxEx36.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx36.Name = "_pictureBoxEx36";
-            this._pictureBoxEx36.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx36.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx36.TabIndex = 43;
-            this._pictureBoxEx36.TabStop = false;
-            // 
-            // _pictureBoxEx35
-            // 
-            this._pictureBoxEx35.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx35.Location = new System.Drawing.Point(993, 511);
-            this._pictureBoxEx35.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx35.Name = "_pictureBoxEx35";
-            this._pictureBoxEx35.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx35.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx35.TabIndex = 42;
-            this._pictureBoxEx35.TabStop = false;
-            // 
-            // _pictureBoxEx28
-            // 
-            this._pictureBoxEx28.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx28.Location = new System.Drawing.Point(1718, 273);
-            this._pictureBoxEx28.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx28.Name = "_pictureBoxEx28";
-            this._pictureBoxEx28.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx28.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx28.TabIndex = 41;
-            this._pictureBoxEx28.TabStop = false;
-            // 
-            // _pictureBoxEx27
-            // 
-            this._pictureBoxEx27.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx27.Location = new System.Drawing.Point(1476, 273);
-            this._pictureBoxEx27.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx27.Name = "_pictureBoxEx27";
-            this._pictureBoxEx27.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx27.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx27.TabIndex = 40;
-            this._pictureBoxEx27.TabStop = false;
-            // 
-            // _pictureBoxEx26
-            // 
-            this._pictureBoxEx26.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx26.Location = new System.Drawing.Point(1236, 273);
-            this._pictureBoxEx26.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx26.Name = "_pictureBoxEx26";
-            this._pictureBoxEx26.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx26.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx26.TabIndex = 39;
-            this._pictureBoxEx26.TabStop = false;
-            // 
-            // _pictureBoxEx25
-            // 
-            this._pictureBoxEx25.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx25.Location = new System.Drawing.Point(993, 273);
-            this._pictureBoxEx25.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx25.Name = "_pictureBoxEx25";
-            this._pictureBoxEx25.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx25.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx25.TabIndex = 38;
-            this._pictureBoxEx25.TabStop = false;
-            // 
-            // _pictureBoxEx18
-            // 
-            this._pictureBoxEx18.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx18.Location = new System.Drawing.Point(1718, 36);
-            this._pictureBoxEx18.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx18.Name = "_pictureBoxEx18";
-            this._pictureBoxEx18.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx18.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx18.TabIndex = 37;
-            this._pictureBoxEx18.TabStop = false;
-            // 
-            // _pictureBoxEx17
-            // 
-            this._pictureBoxEx17.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx17.Location = new System.Drawing.Point(1476, 36);
-            this._pictureBoxEx17.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx17.Name = "_pictureBoxEx17";
-            this._pictureBoxEx17.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx17.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx17.TabIndex = 36;
-            this._pictureBoxEx17.TabStop = false;
-            // 
-            // _pictureBoxEx16
-            // 
-            this._pictureBoxEx16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx16.Location = new System.Drawing.Point(1236, 36);
-            this._pictureBoxEx16.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx16.Name = "_pictureBoxEx16";
-            this._pictureBoxEx16.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx16.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx16.TabIndex = 35;
-            this._pictureBoxEx16.TabStop = false;
-            // 
-            // _pictureBoxEx15
-            // 
-            this._pictureBoxEx15.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx15.Location = new System.Drawing.Point(993, 36);
-            this._pictureBoxEx15.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx15.Name = "_pictureBoxEx15";
-            this._pictureBoxEx15.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx15.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx15.TabIndex = 34;
-            this._pictureBoxEx15.TabStop = false;
-            // 
-            // _pictureBoxEx44
-            // 
-            this._pictureBoxEx44.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx44.Location = new System.Drawing.Point(752, 749);
-            this._pictureBoxEx44.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx44.Name = "_pictureBoxEx44";
-            this._pictureBoxEx44.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx44.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx44.TabIndex = 33;
-            this._pictureBoxEx44.TabStop = false;
-            // 
-            // _pictureBoxEx43
-            // 
-            this._pictureBoxEx43.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx43.Location = new System.Drawing.Point(510, 749);
-            this._pictureBoxEx43.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx43.Name = "_pictureBoxEx43";
-            this._pictureBoxEx43.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx43.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx43.TabIndex = 32;
-            this._pictureBoxEx43.TabStop = false;
-            // 
-            // _pictureBoxEx42
-            // 
-            this._pictureBoxEx42.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx42.Location = new System.Drawing.Point(270, 749);
-            this._pictureBoxEx42.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx42.Name = "_pictureBoxEx42";
-            this._pictureBoxEx42.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx42.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx42.TabIndex = 31;
-            this._pictureBoxEx42.TabStop = false;
-            // 
-            // _pictureBoxEx41
-            // 
-            this._pictureBoxEx41.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx41.Location = new System.Drawing.Point(27, 749);
-            this._pictureBoxEx41.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx41.Name = "_pictureBoxEx41";
-            this._pictureBoxEx41.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx41.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx41.TabIndex = 30;
-            this._pictureBoxEx41.TabStop = false;
-            // 
-            // _pictureBoxEx34
-            // 
-            this._pictureBoxEx34.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx34.Location = new System.Drawing.Point(752, 511);
-            this._pictureBoxEx34.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx34.Name = "_pictureBoxEx34";
-            this._pictureBoxEx34.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx34.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx34.TabIndex = 29;
-            this._pictureBoxEx34.TabStop = false;
-            // 
-            // _pictureBoxEx33
-            // 
-            this._pictureBoxEx33.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx33.Location = new System.Drawing.Point(510, 511);
-            this._pictureBoxEx33.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx33.Name = "_pictureBoxEx33";
-            this._pictureBoxEx33.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx33.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx33.TabIndex = 28;
-            this._pictureBoxEx33.TabStop = false;
-            // 
-            // _pictureBoxEx32
-            // 
-            this._pictureBoxEx32.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx32.Location = new System.Drawing.Point(270, 511);
-            this._pictureBoxEx32.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx32.Name = "_pictureBoxEx32";
-            this._pictureBoxEx32.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx32.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx32.TabIndex = 27;
-            this._pictureBoxEx32.TabStop = false;
-            // 
-            // _pictureBoxEx31
-            // 
-            this._pictureBoxEx31.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx31.Location = new System.Drawing.Point(27, 511);
-            this._pictureBoxEx31.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx31.Name = "_pictureBoxEx31";
-            this._pictureBoxEx31.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx31.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx31.TabIndex = 26;
-            this._pictureBoxEx31.TabStop = false;
-            // 
-            // _pictureBoxEx24
-            // 
-            this._pictureBoxEx24.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx24.Location = new System.Drawing.Point(752, 273);
-            this._pictureBoxEx24.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx24.Name = "_pictureBoxEx24";
-            this._pictureBoxEx24.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx24.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx24.TabIndex = 25;
-            this._pictureBoxEx24.TabStop = false;
-            // 
-            // _pictureBoxEx23
-            // 
-            this._pictureBoxEx23.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx23.Location = new System.Drawing.Point(510, 273);
-            this._pictureBoxEx23.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx23.Name = "_pictureBoxEx23";
-            this._pictureBoxEx23.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx23.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx23.TabIndex = 24;
-            this._pictureBoxEx23.TabStop = false;
-            // 
-            // _pictureBoxEx22
-            // 
-            this._pictureBoxEx22.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx22.Location = new System.Drawing.Point(270, 273);
-            this._pictureBoxEx22.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx22.Name = "_pictureBoxEx22";
-            this._pictureBoxEx22.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx22.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx22.TabIndex = 23;
-            this._pictureBoxEx22.TabStop = false;
-            // 
-            // _pictureBoxEx21
-            // 
-            this._pictureBoxEx21.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx21.Location = new System.Drawing.Point(27, 273);
-            this._pictureBoxEx21.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx21.Name = "_pictureBoxEx21";
-            this._pictureBoxEx21.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx21.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx21.TabIndex = 22;
-            this._pictureBoxEx21.TabStop = false;
-            // 
-            // _pictureBoxEx14
-            // 
-            this._pictureBoxEx14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx14.Location = new System.Drawing.Point(752, 36);
-            this._pictureBoxEx14.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx14.Name = "_pictureBoxEx14";
-            this._pictureBoxEx14.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx14.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx14.TabIndex = 21;
-            this._pictureBoxEx14.TabStop = false;
-            // 
-            // _pictureBoxEx13
-            // 
-            this._pictureBoxEx13.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx13.Location = new System.Drawing.Point(510, 36);
-            this._pictureBoxEx13.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx13.Name = "_pictureBoxEx13";
-            this._pictureBoxEx13.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx13.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx13.TabIndex = 20;
-            this._pictureBoxEx13.TabStop = false;
-            // 
-            // _pictureBoxEx12
-            // 
-            this._pictureBoxEx12.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx12.Location = new System.Drawing.Point(270, 36);
-            this._pictureBoxEx12.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx12.Name = "_pictureBoxEx12";
-            this._pictureBoxEx12.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx12.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx12.TabIndex = 19;
-            this._pictureBoxEx12.TabStop = false;
-            // 
-            // _pictureBoxEx11
-            // 
-            this._pictureBoxEx11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._pictureBoxEx11.Location = new System.Drawing.Point(27, 36);
-            this._pictureBoxEx11.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._pictureBoxEx11.Name = "_pictureBoxEx11";
-            this._pictureBoxEx11.Size = new System.Drawing.Size(233, 230);
-            this._pictureBoxEx11.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBoxEx11.TabIndex = 18;
-            this._pictureBoxEx11.TabStop = false;
-            // 
-            // _widthNumeric
-            // 
-            this._widthNumeric.Increment = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this._widthNumeric.Location = new System.Drawing.Point(75, 30);
-            this._widthNumeric.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._widthNumeric.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this._widthNumeric.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this._widthNumeric.Name = "_widthNumeric";
-            this._widthNumeric.Size = new System.Drawing.Size(140, 23);
-            this._widthNumeric.TabIndex = 2;
-            this._widthNumeric.Value = new decimal(new int[] {
-            200,
-            0,
-            0,
-            0});
-            this._widthNumeric.ValueChanged += new System.EventHandler(this._widthNumeric_ValueChanged);
-            // 
-            // _heightNumeric
-            // 
-            this._heightNumeric.Increment = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this._heightNumeric.Location = new System.Drawing.Point(295, 30);
-            this._heightNumeric.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._heightNumeric.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this._heightNumeric.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this._heightNumeric.Name = "_heightNumeric";
-            this._heightNumeric.Size = new System.Drawing.Size(140, 23);
-            this._heightNumeric.TabIndex = 3;
-            this._heightNumeric.Value = new decimal(new int[] {
-            200,
-            0,
-            0,
-            0});
-            this._heightNumeric.ValueChanged += new System.EventHandler(this._heightNumeric_ValueChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(23, 32);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(39, 15);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Width";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(244, 32);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(43, 15);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Height";
-            // 
-            // ImageResizeScreen
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this._heightNumeric);
-            this.Controls.Add(this._widthNumeric);
-            this.Controls.Add(this._panel);
-            this.Controls.Add(this._pathSelectorControl);
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.Name = "ImageResizeScreen";
-            this.Size = new System.Drawing.Size(1158, 608);
-            this._panel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx49)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx39)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx29)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx19)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx48)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx47)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx46)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx45)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx38)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx37)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx36)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx35)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx28)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx27)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx26)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx25)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx18)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx17)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx16)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx15)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx44)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx43)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx42)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx41)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx34)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx33)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx32)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx31)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx24)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx23)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx22)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx21)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx14)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx13)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx12)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBoxEx11)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._widthNumeric)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._heightNumeric)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_pathSelectorControl.Name = "_pathSelectorControl";
+		_widthNumeric.Name = "_widthNumeric";
+		_heightNumeric.Name = "_heightNumeric";
+		_scroll.Name = "_scroll";
+		_matrix.Name = "_matrix";
+		_method0.Name = "_method0";
+		_pictureBoxEx11.Name = "_pictureBoxEx11";
+		_pictureBoxEx12.Name = "_pictureBoxEx12";
+		_pictureBoxEx13.Name = "_pictureBoxEx13";
+		_pictureBoxEx14.Name = "_pictureBoxEx14";
+		_pictureBoxEx15.Name = "_pictureBoxEx15";
+		_pictureBoxEx16.Name = "_pictureBoxEx16";
+		_pictureBoxEx17.Name = "_pictureBoxEx17";
+		_pictureBoxEx18.Name = "_pictureBoxEx18";
+		_pictureBoxEx19.Name = "_pictureBoxEx19";
+		_method1.Name = "_method1";
+		_pictureBoxEx21.Name = "_pictureBoxEx21";
+		_pictureBoxEx22.Name = "_pictureBoxEx22";
+		_pictureBoxEx23.Name = "_pictureBoxEx23";
+		_pictureBoxEx24.Name = "_pictureBoxEx24";
+		_pictureBoxEx25.Name = "_pictureBoxEx25";
+		_pictureBoxEx26.Name = "_pictureBoxEx26";
+		_pictureBoxEx27.Name = "_pictureBoxEx27";
+		_pictureBoxEx28.Name = "_pictureBoxEx28";
+		_pictureBoxEx29.Name = "_pictureBoxEx29";
+		_method2.Name = "_method2";
+		_pictureBoxEx31.Name = "_pictureBoxEx31";
+		_pictureBoxEx32.Name = "_pictureBoxEx32";
+		_pictureBoxEx33.Name = "_pictureBoxEx33";
+		_pictureBoxEx34.Name = "_pictureBoxEx34";
+		_pictureBoxEx35.Name = "_pictureBoxEx35";
+		_pictureBoxEx36.Name = "_pictureBoxEx36";
+		_pictureBoxEx37.Name = "_pictureBoxEx37";
+		_pictureBoxEx38.Name = "_pictureBoxEx38";
+		_pictureBoxEx39.Name = "_pictureBoxEx39";
+		_method3.Name = "_method3";
+		_pictureBoxEx41.Name = "_pictureBoxEx41";
+		_pictureBoxEx42.Name = "_pictureBoxEx42";
+		_pictureBoxEx43.Name = "_pictureBoxEx43";
+		_pictureBoxEx44.Name = "_pictureBoxEx44";
+		_pictureBoxEx45.Name = "_pictureBoxEx45";
+		_pictureBoxEx46.Name = "_pictureBoxEx46";
+		_pictureBoxEx47.Name = "_pictureBoxEx47";
+		_pictureBoxEx48.Name = "_pictureBoxEx48";
+		_pictureBoxEx49.Name = "_pictureBoxEx49";
+		_alignment0.Name = "_alignment0";
+		_alignment1.Name = "_alignment1";
+		_alignment2.Name = "_alignment2";
+		_alignment3.Name = "_alignment3";
+		_alignment4.Name = "_alignment4";
+		_alignment5.Name = "_alignment5";
+		_alignment6.Name = "_alignment6";
+		_alignment7.Name = "_alignment7";
+		_alignment8.Name = "_alignment8";
 
-        }
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "Image resizing matrix";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Compare four resize methods across nine alignments. Change the destination dimensions, load an image, or use the built-in sample.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_sampleButton.Text = "Use sample";
+		_sampleButton.Name = "_sampleButton";
+		_sampleButton.AutoSize = true;
+		_sampleButton.MinimumSize = new Size(96, 30);
+		_sampleButton.Click += SampleClicked;
+		_commands.Controls.Add(_sampleButton);
+		_loadButton.Text = "Load selected image";
+		_loadButton.Name = "_loadButton";
+		_loadButton.AutoSize = true;
+		_loadButton.MinimumSize = new Size(96, 30);
+		_loadButton.Click += LoadClicked;
+		_commands.Controls.Add(_loadButton);
+		_pathSelectorControl.Width = 310;
+		_imageFileFields.Name = "_imageFileFields";
+		_imageFileFields.AutoSize = true;
+		_imageFileFields.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_imageFileFields.WrapContents = false;
+		_imageFileFields.Margin = new Padding(0);
+		_imageFileLabel.Name = "_imageFileLabel";
+		_imageFileLabel.Text = "Image file";
+		_imageFileLabel.AutoSize = true;
+		_imageFileLabel.Padding = new Padding(0, 6, 0, 0);
+		_dimensionFields.Name = "_dimensionFields";
+		_dimensionFields.AutoSize = true;
+		_dimensionFields.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_dimensionFields.WrapContents = false;
+		_dimensionFields.Margin = new Padding(0);
+		_widthNumeric.Minimum = 24;
+		_widthNumeric.Maximum = 256;
+		_widthNumeric.Value = 80;
+		_widthNumeric.Width = 80;
+		_heightNumeric.Minimum = 24;
+		_heightNumeric.Maximum = 256;
+		_heightNumeric.Value = 80;
+		_heightNumeric.Width = 80;
+		_widthLabel.Name = "_widthLabel";
+		_widthLabel.Text = "Width";
+		_widthLabel.AutoSize = true;
+		_widthLabel.Padding = new Padding(0, 8, 0, 0);
+		_heightLabel.Name = "_heightLabel";
+		_heightLabel.Text = "Height";
+		_heightLabel.AutoSize = true;
+		_heightLabel.Padding = new Padding(0, 8, 0, 0);
+		_imageFileFields.Controls.Add(_imageFileLabel);
+		_imageFileFields.Controls.Add(_pathSelectorControl);
+		_commands.Controls.Add(_imageFileFields);
+		_dimensionFields.Controls.Add(_widthLabel);
+		_dimensionFields.Controls.Add(_widthNumeric);
+		_dimensionFields.Controls.Add(_heightLabel);
+		_dimensionFields.Controls.Add(_heightNumeric);
+		_commands.Controls.Add(_dimensionFields);
+		_scroll.Dock = DockStyle.Fill;
+		_scroll.AutoScroll = true;
+		_matrix.AutoSize = true;
+		_matrix.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_matrix.Location = new Point(0, 0);
+		_matrix.RowCount = 5;
+		_matrix.ColumnCount = 10;
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140));
+		_matrix.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment0.Text = "Top left";
+		_alignment0.AutoSize = true;
+		_matrix.Controls.Add(_alignment0, 1, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment1.Text = "Top centre";
+		_alignment1.AutoSize = true;
+		_matrix.Controls.Add(_alignment1, 2, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment2.Text = "Top right";
+		_alignment2.AutoSize = true;
+		_matrix.Controls.Add(_alignment2, 3, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment3.Text = "Centre left";
+		_alignment3.AutoSize = true;
+		_matrix.Controls.Add(_alignment3, 4, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment4.Text = "Centre";
+		_alignment4.AutoSize = true;
+		_matrix.Controls.Add(_alignment4, 5, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment5.Text = "Centre right";
+		_alignment5.AutoSize = true;
+		_matrix.Controls.Add(_alignment5, 6, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment6.Text = "Bottom left";
+		_alignment6.AutoSize = true;
+		_matrix.Controls.Add(_alignment6, 7, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment7.Text = "Bottom centre";
+		_alignment7.AutoSize = true;
+		_matrix.Controls.Add(_alignment7, 8, 0);
+		_matrix.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+		_alignment8.Text = "Bottom right";
+		_alignment8.AutoSize = true;
+		_matrix.Controls.Add(_alignment8, 9, 0);
+		_matrix.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));
+		_method0.Text = "Stretch";
+		_method0.AutoSize = true;
+		_matrix.Controls.Add(_method0, 0, 1);
+		_pictureBoxEx11.Size = new Size(80, 80);
+		_pictureBoxEx11.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx11.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx11.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx11, 1, 1);
+		_pictureBoxEx12.Size = new Size(80, 80);
+		_pictureBoxEx12.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx12.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx12.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx12, 2, 1);
+		_pictureBoxEx13.Size = new Size(80, 80);
+		_pictureBoxEx13.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx13.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx13.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx13, 3, 1);
+		_pictureBoxEx14.Size = new Size(80, 80);
+		_pictureBoxEx14.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx14.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx14.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx14, 4, 1);
+		_pictureBoxEx15.Size = new Size(80, 80);
+		_pictureBoxEx15.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx15.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx15.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx15, 5, 1);
+		_pictureBoxEx16.Size = new Size(80, 80);
+		_pictureBoxEx16.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx16.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx16.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx16, 6, 1);
+		_pictureBoxEx17.Size = new Size(80, 80);
+		_pictureBoxEx17.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx17.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx17.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx17, 7, 1);
+		_pictureBoxEx18.Size = new Size(80, 80);
+		_pictureBoxEx18.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx18.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx18.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx18, 8, 1);
+		_pictureBoxEx19.Size = new Size(80, 80);
+		_pictureBoxEx19.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx19.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx19.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx19, 9, 1);
+		_matrix.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));
+		_method1.Text = "Aspect fill";
+		_method1.AutoSize = true;
+		_matrix.Controls.Add(_method1, 0, 2);
+		_pictureBoxEx21.Size = new Size(80, 80);
+		_pictureBoxEx21.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx21.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx21.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx21, 1, 2);
+		_pictureBoxEx22.Size = new Size(80, 80);
+		_pictureBoxEx22.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx22.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx22.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx22, 2, 2);
+		_pictureBoxEx23.Size = new Size(80, 80);
+		_pictureBoxEx23.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx23.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx23.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx23, 3, 2);
+		_pictureBoxEx24.Size = new Size(80, 80);
+		_pictureBoxEx24.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx24.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx24.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx24, 4, 2);
+		_pictureBoxEx25.Size = new Size(80, 80);
+		_pictureBoxEx25.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx25.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx25.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx25, 5, 2);
+		_pictureBoxEx26.Size = new Size(80, 80);
+		_pictureBoxEx26.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx26.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx26.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx26, 6, 2);
+		_pictureBoxEx27.Size = new Size(80, 80);
+		_pictureBoxEx27.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx27.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx27.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx27, 7, 2);
+		_pictureBoxEx28.Size = new Size(80, 80);
+		_pictureBoxEx28.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx28.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx28.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx28, 8, 2);
+		_pictureBoxEx29.Size = new Size(80, 80);
+		_pictureBoxEx29.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx29.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx29.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx29, 9, 2);
+		_matrix.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));
+		_method2.Text = "Aspect fit padded";
+		_method2.AutoSize = true;
+		_matrix.Controls.Add(_method2, 0, 3);
+		_pictureBoxEx31.Size = new Size(80, 80);
+		_pictureBoxEx31.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx31.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx31.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx31, 1, 3);
+		_pictureBoxEx32.Size = new Size(80, 80);
+		_pictureBoxEx32.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx32.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx32.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx32, 2, 3);
+		_pictureBoxEx33.Size = new Size(80, 80);
+		_pictureBoxEx33.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx33.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx33.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx33, 3, 3);
+		_pictureBoxEx34.Size = new Size(80, 80);
+		_pictureBoxEx34.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx34.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx34.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx34, 4, 3);
+		_pictureBoxEx35.Size = new Size(80, 80);
+		_pictureBoxEx35.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx35.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx35.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx35, 5, 3);
+		_pictureBoxEx36.Size = new Size(80, 80);
+		_pictureBoxEx36.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx36.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx36.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx36, 6, 3);
+		_pictureBoxEx37.Size = new Size(80, 80);
+		_pictureBoxEx37.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx37.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx37.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx37, 7, 3);
+		_pictureBoxEx38.Size = new Size(80, 80);
+		_pictureBoxEx38.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx38.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx38.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx38, 8, 3);
+		_pictureBoxEx39.Size = new Size(80, 80);
+		_pictureBoxEx39.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx39.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx39.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx39, 9, 3);
+		_matrix.RowStyles.Add(new RowStyle(SizeType.Absolute, 90));
+		_method3.Text = "Aspect fit";
+		_method3.AutoSize = true;
+		_matrix.Controls.Add(_method3, 0, 4);
+		_pictureBoxEx41.Size = new Size(80, 80);
+		_pictureBoxEx41.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx41.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx41.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx41, 1, 4);
+		_pictureBoxEx42.Size = new Size(80, 80);
+		_pictureBoxEx42.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx42.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx42.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx42, 2, 4);
+		_pictureBoxEx43.Size = new Size(80, 80);
+		_pictureBoxEx43.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx43.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx43.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx43, 3, 4);
+		_pictureBoxEx44.Size = new Size(80, 80);
+		_pictureBoxEx44.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx44.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx44.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx44, 4, 4);
+		_pictureBoxEx45.Size = new Size(80, 80);
+		_pictureBoxEx45.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx45.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx45.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx45, 5, 4);
+		_pictureBoxEx46.Size = new Size(80, 80);
+		_pictureBoxEx46.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx46.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx46.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx46, 6, 4);
+		_pictureBoxEx47.Size = new Size(80, 80);
+		_pictureBoxEx47.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx47.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx47.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx47, 7, 4);
+		_pictureBoxEx48.Size = new Size(80, 80);
+		_pictureBoxEx48.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx48.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx48.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx48, 8, 4);
+		_pictureBoxEx49.Size = new Size(80, 80);
+		_pictureBoxEx49.SizeMode = PictureBoxSizeMode.CenterImage;
+		_pictureBoxEx49.BackColor = Color.WhiteSmoke;
+		_pictureBoxEx49.BorderStyle = BorderStyle.FixedSingle;
+		_matrix.Controls.Add(_pictureBoxEx49, 9, 4);
+		_scroll.Controls.Add(_matrix);
+		_widthNumeric.ValueChanged += DestinationSizeChanged;
+		_heightNumeric.ValueChanged += DestinationSizeChanged;
 
-        #endregion
-
-        private PathSelectorControl _pathSelectorControl;
-        private System.Windows.Forms.Panel _panel;
-        private PictureBoxEx _pictureBoxEx49;
-        private PictureBoxEx _pictureBoxEx39;
-        private PictureBoxEx _pictureBoxEx29;
-        private PictureBoxEx _pictureBoxEx19;
-        private PictureBoxEx _pictureBoxEx48;
-        private PictureBoxEx _pictureBoxEx47;
-        private PictureBoxEx _pictureBoxEx46;
-        private PictureBoxEx _pictureBoxEx45;
-        private PictureBoxEx _pictureBoxEx38;
-        private PictureBoxEx _pictureBoxEx37;
-        private PictureBoxEx _pictureBoxEx36;
-        private PictureBoxEx _pictureBoxEx35;
-        private PictureBoxEx _pictureBoxEx28;
-        private PictureBoxEx _pictureBoxEx27;
-        private PictureBoxEx _pictureBoxEx26;
-        private PictureBoxEx _pictureBoxEx25;
-        private PictureBoxEx _pictureBoxEx18;
-        private PictureBoxEx _pictureBoxEx17;
-        private PictureBoxEx _pictureBoxEx16;
-        private PictureBoxEx _pictureBoxEx15;
-        private PictureBoxEx _pictureBoxEx44;
-        private PictureBoxEx _pictureBoxEx43;
-        private PictureBoxEx _pictureBoxEx42;
-        private PictureBoxEx _pictureBoxEx41;
-        private PictureBoxEx _pictureBoxEx34;
-        private PictureBoxEx _pictureBoxEx33;
-        private PictureBoxEx _pictureBoxEx32;
-        private PictureBoxEx _pictureBoxEx31;
-        private PictureBoxEx _pictureBoxEx24;
-        private PictureBoxEx _pictureBoxEx23;
-        private PictureBoxEx _pictureBoxEx22;
-        private PictureBoxEx _pictureBoxEx21;
-        private PictureBoxEx _pictureBoxEx14;
-        private PictureBoxEx _pictureBoxEx13;
-        private PictureBoxEx _pictureBoxEx12;
-        private PictureBoxEx _pictureBoxEx11;
-        private System.Windows.Forms.NumericUpDown _widthNumeric;
-        private System.Windows.Forms.NumericUpDown _heightNumeric;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-    }
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(_scroll, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "ImageResizeScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
+	}
 }
-
-

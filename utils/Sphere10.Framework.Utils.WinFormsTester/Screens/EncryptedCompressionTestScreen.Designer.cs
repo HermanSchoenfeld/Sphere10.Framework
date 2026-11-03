@@ -1,107 +1,152 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class EncryptedCompressionTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class EncryptedCompressionTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private Button _testButton;
+	private Button _cancelButton;
+	private PathSelectorControl fileSelectorControl1;
+	private TextBox textBox1;
+	private TextBox _passwordTextBox;
+	private FlowLayoutPanel _fileFields;
+	private Label _fileLabel;
+	private FlowLayoutPanel _passwordFields;
+	private Label _passwordLabel;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._testButton = new System.Windows.Forms.Button();
-			this.textBox1 = new System.Windows.Forms.TextBox();
-			this.fileSelectorControl1 = new Sphere10.Framework.Windows.Forms.PathSelectorControl();
-			this._passwordTextBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
-			this.SuspendLayout();
-			// 
-			// _testButton
-			// 
-			this._testButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._testButton.Location = new System.Drawing.Point(410, 12);
-			this._testButton.Name = "_testButton";
-			this._testButton.Size = new System.Drawing.Size(110, 23);
-			this._testButton.TabIndex = 1;
-			this._testButton.Text = "&Test";
-			this._testButton.UseVisualStyleBackColor = true;
-			this._testButton.Click += new System.EventHandler(this._testButton_Click);
-			// 
-			// textBox1
-			// 
-			this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.textBox1.Location = new System.Drawing.Point(12, 68);
-			this.textBox1.Multiline = true;
-			this.textBox1.Name = "textBox1";
-			this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.textBox1.Size = new System.Drawing.Size(508, 420);
-			this.textBox1.TabIndex = 2;
-			// 
-			// fileSelectorControl1
-			// 
-			this.fileSelectorControl1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.fileSelectorControl1.Location = new System.Drawing.Point(12, 12);
-			this.fileSelectorControl1.Mode = Sphere10.Framework.Windows.Forms.PathSelectionMode.OpenFile;
-			this.fileSelectorControl1.Name = "fileSelectorControl1";
-			this.fileSelectorControl1.Size = new System.Drawing.Size(392, 20);
-			this.fileSelectorControl1.TabIndex = 0;
-			// 
-			// _passwordTextBox
-			// 
-			this._passwordTextBox.Location = new System.Drawing.Point(12, 42);
-			this._passwordTextBox.Name = "_passwordTextBox";
-			this._passwordTextBox.PlaceHolderText = "Password";
-			this._passwordTextBox.Size = new System.Drawing.Size(352, 20);
-			this._passwordTextBox.TabIndex = 3;
-			// 
-			// EncryptedCompressionTestForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(532, 500);
-			this.Controls.Add(this._passwordTextBox);
-			this.Controls.Add(this.textBox1);
-			this.Controls.Add(this._testButton);
-			this.Controls.Add(this.fileSelectorControl1);
-			this.Name = "EncryptedCompressionTestScreen";
-			this.Text = "CompressionTestForm";
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_testButton = new Button();
+		_cancelButton = new Button();
+		fileSelectorControl1 = new PathSelectorControl();
+		textBox1 = new TextBox();
+		_passwordTextBox = new TextBox();
+		_fileFields = new FlowLayoutPanel();
+		_fileLabel = new Label();
+		_passwordFields = new FlowLayoutPanel();
+		_passwordLabel = new Label();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-		}
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_passwordTextBox.Name = "_passwordTextBox";
 
-		#endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "Encrypted compression";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Choose a file and explicitly verify a compressed round trip. Work runs off the UI thread; cancellation is checked between file operations.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_testButton.Text = "Verify round trip";
+		_testButton.Name = "_testButton";
+		_testButton.AutoSize = true;
+		_testButton.MinimumSize = new Size(96, 30);
+		_testButton.Click += _testButton_Click;
+		_commands.Controls.Add(_testButton);
+		_cancelButton.Text = "Cancel";
+		_cancelButton.Name = "_cancelButton";
+		_cancelButton.AutoSize = true;
+		_cancelButton.MinimumSize = new Size(96, 30);
+		_cancelButton.Click += CancelClicked;
+		_commands.Controls.Add(_cancelButton);
+		_fileFields.Name = "_fileFields";
+		_fileFields.AutoSize = true;
+		_fileFields.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_fileFields.WrapContents = false;
+		_fileFields.Margin = new Padding(0);
+		_fileLabel.Name = "_fileLabel";
+		_fileLabel.Text = "Input file";
+		_fileLabel.AutoSize = true;
+		_fileLabel.Padding = new Padding(0, 6, 0, 0);
+		fileSelectorControl1.Width = 280;
+		fileSelectorControl1.Name = "fileSelectorControl1";
+		_fileFields.Controls.Add(_fileLabel);
+		_fileFields.Controls.Add(fileSelectorControl1);
+		_commands.Controls.Add(_fileFields);
+		_passwordFields.Name = "_passwordFields";
+		_passwordFields.AutoSize = true;
+		_passwordFields.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_passwordFields.WrapContents = false;
+		_passwordFields.Margin = new Padding(0);
+		_passwordLabel.Name = "_passwordLabel";
+		_passwordLabel.Text = "Password";
+		_passwordLabel.AutoSize = true;
+		_passwordLabel.Padding = new Padding(0, 6, 0, 0);
+		_passwordTextBox.Width = 160;
+		_passwordTextBox.UseSystemPasswordChar = true;
+		_passwordTextBox.PlaceholderText = "Session password";
+		_passwordFields.Controls.Add(_passwordLabel);
+		_passwordFields.Controls.Add(_passwordTextBox);
+		_commands.Controls.Add(_passwordFields);
+		textBox1.Dock = DockStyle.Fill;
+		textBox1.Multiline = true;
+		textBox1.ReadOnly = true;
+		textBox1.ScrollBars = ScrollBars.Both;
+		textBox1.WordWrap = false;
+		textBox1.Name = "textBox1";
+		_cancelButton.Enabled = false;
 
-		private Sphere10.Framework.Windows.Forms.PathSelectorControl fileSelectorControl1;
-		private System.Windows.Forms.Button _testButton;
-		private System.Windows.Forms.TextBox textBox1;
-		private Sphere10.Framework.Windows.Forms.TextBoxEx _passwordTextBox;
-
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(textBox1, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "EncryptedCompressionTestScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

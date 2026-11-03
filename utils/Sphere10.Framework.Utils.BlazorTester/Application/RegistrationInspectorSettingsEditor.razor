@@ -13,15 +13,15 @@
 
 <aside class="alert alert-info" data-custom-settings-editor>
 	<strong>Custom GPU preferences editor</strong>
-	<p>This renderer-owned component previews the same detached values edited below.</p>
-	<output aria-label="Inspector preference preview">@(((RegistrationInspectorSettings)Value).Caption)</output>
+	<p>This renderer-owned component previews the actual owner settings edited below.</p>
+	<output aria-label="Inspector preference preview">@(((RegistrationExampleScreen.RegistrationInspectorSettings)Value).Caption)</output>
 </aside>
 <BlazorApplicationSettingsEditor @ref="_editor" Value="Value" Changed="Changed" />
 
 @code {
 	private BlazorApplicationSettingsEditor _editor;
 
-	/// <summary>The same detached page used by the containing Options dialog.</summary>
+	/// <summary>The actual settings object used by the containing Options dialog.</summary>
 	[Parameter] public object Value { get; set; }
 
 	/// <summary>Forwards value edits through the dialog's awaited callback.</summary>

@@ -1,80 +1,164 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-    partial class SettingsTest {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-        #region Windows Form Designer generated code
+partial class SettingsTest {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private Button _loadButton;
+	private Button _saveButton;
+	private CheckBox _globalScope;
+	private Label _languageLabel;
+	private TextBox _language;
+	private Label _counterLabel;
+	private NumericUpDown _counter;
+	private TextBox _secret;
+	private FlowLayoutPanel _secretFields;
+	private Label _secretLabel;
+	private TextBox _outputTextBox;
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-            this._test1Button = new System.Windows.Forms.Button();
-            this._outputTextBox = new System.Windows.Forms.TextBox();
-            this.SuspendLayout();
-            // 
-            // _test1Button
-            // 
-            this._test1Button.Location = new System.Drawing.Point(12, 12);
-            this._test1Button.Name = "_test1Button";
-            this._test1Button.Size = new System.Drawing.Size(75, 23);
-            this._test1Button.TabIndex = 0;
-            this._test1Button.Text = "Test 1";
-            this._test1Button.UseVisualStyleBackColor = true;
-            this._test1Button.Click += new System.EventHandler(this._test1Button_Click);
-            // 
-            // _outputTextBox
-            // 
-            this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._outputTextBox.Location = new System.Drawing.Point(12, 41);
-            this._outputTextBox.Multiline = true;
-            this._outputTextBox.Name = "_outputTextBox";
-            this._outputTextBox.Size = new System.Drawing.Size(572, 278);
-            this._outputTextBox.TabIndex = 1;
-            // 
-            // SettingsTest
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(596, 331);
-            this.Controls.Add(this._outputTextBox);
-            this.Controls.Add(this._test1Button);
-            this.Name = "SettingsTest";
-            this.Text = "SettingsTest";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_loadButton = new Button();
+		_saveButton = new Button();
+		_globalScope = new CheckBox();
+		_languageLabel = new Label();
+		_language = new TextBox();
+		_counterLabel = new Label();
+		_counter = new NumericUpDown();
+		_secret = new TextBox();
+		_secretFields = new FlowLayoutPanel();
+		_secretLabel = new Label();
+		_outputTextBox = new TextBox();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-        }
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_globalScope.Name = "_globalScope";
+		_languageLabel.Name = "_languageLabel";
+		_language.Name = "_language";
+		_counterLabel.Name = "_counterLabel";
+		_counter.Name = "_counter";
+		_secret.Name = "_secret";
 
-        #endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "Screen and standalone settings";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "This screen declares its settings with [Settings(typeof(...))]. Use Screen Options to change its default scope. The controls below edit a separate standalone user/global record.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_loadButton.Text = "Load selected scope";
+		_loadButton.Name = "_loadButton";
+		_loadButton.AutoSize = true;
+		_loadButton.MinimumSize = new Size(96, 30);
+		_loadButton.Click += LoadClicked;
+		_commands.Controls.Add(_loadButton);
+		_saveButton.Text = "Save selected scope";
+		_saveButton.Name = "_saveButton";
+		_saveButton.AutoSize = true;
+		_saveButton.MinimumSize = new Size(96, 30);
+		_saveButton.Click += SaveClicked;
+		_commands.Controls.Add(_saveButton);
+		_globalScope.Text = "Global scope";
+		_globalScope.AutoSize = true;
+		_languageLabel.Text = "Language";
+		_languageLabel.AutoSize = true;
+		_languageLabel.Padding = new Padding(0, 8, 0, 0);
+		_language.Text = "en";
+		_language.Width = 70;
+		_counterLabel.Text = "Counter";
+		_counterLabel.AutoSize = true;
+		_counterLabel.Padding = new Padding(0, 8, 0, 0);
+		_counter.Maximum = int.MaxValue;
+		_counter.Width = 90;
+		_secret.UseSystemPasswordChar = true;
+		_secret.PlaceholderText = "Optional encrypted demo value";
+		_secret.Width = 220;
+		_secretFields.Name = "_secretFields";
+		_secretFields.AutoSize = true;
+		_secretFields.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_secretFields.WrapContents = false;
+		_secretFields.Margin = new Padding(0);
+		_secretLabel.Name = "_secretLabel";
+		_secretLabel.Text = "Encrypted value";
+		_secretLabel.AutoSize = true;
+		_secretLabel.Padding = new Padding(0, 6, 0, 0);
+		_commands.Controls.Add(_globalScope);
+		_commands.Controls.Add(_languageLabel);
+		_commands.Controls.Add(_language);
+		_commands.Controls.Add(_counterLabel);
+		_commands.Controls.Add(_counter);
+		_secretFields.Controls.Add(_secretLabel);
+		_secretFields.Controls.Add(_secret);
+		_commands.Controls.Add(_secretFields);
+		_globalScope.CheckedChanged += ScopeChanged;
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.Name = "_outputTextBox";
 
-        private System.Windows.Forms.Button _test1Button;
-        private System.Windows.Forms.TextBox _outputTextBox;
-    }
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(_outputTextBox, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "SettingsTest";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
+	}
 }
-
-

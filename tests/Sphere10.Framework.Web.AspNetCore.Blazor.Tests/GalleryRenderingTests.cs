@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using ModernWizard = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
@@ -31,12 +30,18 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.Components.Tables;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
+using ModernWizard = Sphere10.Framework.Web.AspNetCore.Blazor.Wizard;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class GalleryRenderingTests {
+
+	// Associates a route template with its demo component.
+	private readonly record struct DemoRoute(string Template, Type Type);
+
+	/// <summary>Verifies every demo alias renders its registered screen in one application shell.</summary>
 	[TestCase("/components/grid", "components", "gallery", "Editable grid")]
 	[TestCase("/modern", "components", "gallery", "Editable grid")]
 	[TestCase("/components/tables", "components", "tables", "Virtual paged table")]
@@ -56,11 +61,13 @@ public class GalleryRenderingTests {
 	public async Task EveryDemoAliasRendersItsRegisteredScreenInOneApplicationShell(string route, string blockId, string screenId, string expectedText) {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
-		services.AddSingleton<IApplicationSettingsStore, EmptySettingsStore>();
+		services.AddSingleton<ISettingsProvider, EmptySettingsProvider>();
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
-		await provider.GetRequiredService<IBlazorApplication>().InitializeAsync();
+		var application = provider.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var html = await renderer.Dispatcher.InvokeAsync(async () => {
@@ -71,7 +78,7 @@ public class GalleryRenderingTests {
 			var rendered = await renderer.RenderComponentAsync<RouteView>(parameters);
 			return rendered.ToHtmlString();
 		});
-		Assert.That(host.ActiveBlock.Id, Is.EqualTo(blockId));
+		Assert.That(host.SelectedBlock.Id, Is.EqualTo(blockId));
 		Assert.That(host.ActiveScreen.MenuItemId, Is.EqualTo(screenId));
 		Assert.That(host.ActiveScreen.Screen, Is.Not.Null, "Alias content must be an attached application screen.");
 		Assert.That(html, Does.Contain(expectedText));
@@ -90,13 +97,14 @@ public class GalleryRenderingTests {
 		Assert.That(html, Does.Not.Contain("// Copyright"), "Source notices must remain Razor comments.");
 	}
 
+	/// <summary>Verifies implicit startup routes wait for browser preferences before opening any default screen.</summary>
 	[TestCase("/")]
 	[TestCase("/application")]
 	public async Task ImplicitStartupRoutesWaitForBrowserPreferencesBeforeOpeningAnyDefaultScreen(string route) {
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
-		var store = new EmptySettingsStore();
-		services.AddSingleton<IApplicationSettingsStore>(store);
+		var store = new EmptySettingsProvider();
+		services.AddSingleton<ISettingsProvider>(store);
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost" + route));
 		services.AddSingleton<IJSRuntime, TestJsRuntime>();
 		await using var provider = services.BuildServiceProvider();
@@ -115,10 +123,11 @@ public class GalleryRenderingTests {
 		Assert.That(store.Reads, Is.Zero, "Prerender cannot perform browser preference IO.");
 	}
 
+	/// <summary>Verifies demo aliases belong to one routable workspace and resolve registered screens.</summary>
 	[Test]
 	public void DemoAliasesBelongToOneRoutableWorkspaceAndResolveRegisteredScreens() {
 		var routes = typeof(Program).Assembly.GetTypes()
-			.SelectMany(type => type.GetCustomAttributes(typeof(RouteAttribute), false).Cast<RouteAttribute>().Select(route => (route.Template, Type: type)))
+			.SelectMany(type => type.GetCustomAttributes(typeof(RouteAttribute), false).Cast<RouteAttribute>().Select(route => new DemoRoute(route.Template, type)))
 			.ToLookup(route => route.Template, route => route.Type);
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
@@ -133,6 +142,7 @@ public class GalleryRenderingTests {
 		Assert.That(routes["/modern"].Single(), Is.EqualTo(routes["/components/grid"].Single()));
 	}
 
+	/// <summary>Verifies not found uses providers without creating another application shell.</summary>
 	[Test]
 	public async Task NotFoundUsesProvidersWithoutCreatingAnotherApplicationShell() {
 		var services = new ServiceCollection().AddLogging();
@@ -152,6 +162,7 @@ public class GalleryRenderingTests {
 		Assert.That(html, Does.Not.Contain("class=\"sphere10-application\""));
 	}
 
+	/// <summary>Verifies workspace preserves stable screen ids and supplies icons for every menu item.</summary>
 	[TestCase(false, ScreenActivationMode.SingleInstance)]
 	[TestCase(false, ScreenActivationMode.MultiInstance)]
 	[TestCase(true, ScreenActivationMode.SingleInstance)]
@@ -195,6 +206,7 @@ public class GalleryRenderingTests {
 		Assert.That(metadataHost.AvailableBlocks.SelectMany(block => block.Menus).SelectMany(menu => menu.Items).Select(item => item.Icon), Is.All.Not.Null.And.Not.Empty);
 	}
 
+	/// <summary>Verifies reusable demos do not own routes or layouts.</summary>
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.GridDemo))]
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.TablesDemo))]
 	[TestCase(typeof(Sphere10.Framework.Utils.BlazorTester.Demos.DialogsDemo))]
@@ -204,6 +216,8 @@ public class GalleryRenderingTests {
 		Assert.That(demoType.GetCustomAttributes(typeof(RouteAttribute), true), Is.Empty);
 		Assert.That(demoType.GetCustomAttributes(typeof(LayoutAttribute), true), Is.Empty);
 	}
+
+	/// <summary>Verifies framework registrations resolve generic components and isolate modal sessions.</summary>
 	[Test]
 	public void FrameworkRegistrationsResolveGenericComponentsAndIsolateModalSessions() {
 		var services = new ServiceCollection().AddSphere10Blazor();
@@ -220,6 +234,7 @@ public class GalleryRenderingTests {
 		Assert.That(first.ServiceProvider.GetRequiredService<Modal.ViewService>(), Is.Not.SameAs(second.ServiceProvider.GetRequiredService<Modal.ViewService>()));
 	}
 
+	/// <summary>Verifies modern grid pages and refreshes local data.</summary>
 	[Test]
 	public async Task ModernGridPagesAndRefreshesLocalData() {
 		var services = new ServiceCollection();
@@ -252,14 +267,17 @@ public class GalleryRenderingTests {
 		});
 	}
 
+	/// <summary>Verifies workspace action updates the retained overview.</summary>
 	[Test]
 	public async Task WorkspaceActionUpdatesTheRetainedOverview() {
 		var services = new ServiceCollection();
 		services.AddLogging();
 		Program.ConfigureServices(services);
-		services.AddSingleton<IApplicationSettingsStore, EmptySettingsStore>();
+		services.AddSingleton<ISettingsProvider, EmptySettingsProvider>();
 		await using var provider = services.BuildServiceProvider();
-		await provider.GetRequiredService<IBlazorApplication>().InitializeAsync();
+		var application = provider.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var action = host.Blocks.Single(block => block.Id == "workspace").Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "action");
@@ -270,11 +288,18 @@ public class GalleryRenderingTests {
 			Assert.That(rendered.ToHtmlString(), Does.Contain("Scoped async action executions: 1"));
 		});
 	}
+	#region Inner Types
+
+	/// <summary>Renders a grid with real component parameters.</summary>
 	public class GridHost : ComponentBase {
+
+		/// <summary>The source supplied to the rendered grid.</summary>
 		[Parameter] public TestClassDataSource DataSource { get; set; }
 
+		/// <summary>Captures the rendered component instance.</summary>
 		[Parameter] public Action<BlazorGrid<TestClass>> Capture { get; set; }
 
+		/// <summary>Renders the real component and captures its reference.</summary>
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<BlazorGrid<TestClass>>(0);
 			builder.AddAttribute(1, nameof(BlazorGrid<TestClass>.DataSource), DataSource);
@@ -284,42 +309,75 @@ public class GalleryRenderingTests {
 		}
 	}
 
+	/// <summary>Supplies inert browser interop for scenarios without browser persistence.</summary>
 	public class TestJsRuntime : IJSRuntime {
+
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			return ValueTask.FromResult(identifier == "import" ? (TValue)(object)new EmptyJsModule() : default);
 		}
 
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
 			return InvokeAsync<TValue>(identifier, args);
 		}
 	}
 
 	// Models an empty browser without activating storage, data sources or platform services.
-	private sealed class EmptySettingsStore : IApplicationSettingsStore {
+	private sealed class EmptySettingsProvider : SyncSettingsProviderBase {
+
+		// Counts fixture storage lookups.
 		public int Reads { get; private set; }
 
-		public Task<ApplicationSettingsStoredProfile> LoadAsync(string key, object defaults, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
-			Reads++;
-			return Task.FromResult<ApplicationSettingsStoredProfile>(null);
+		// Keeps this fixture storage readable for its assertions.
+		public override bool EncryptSettings {
+			get {
+				return false;
+			}
 		}
 
-		public Task SaveAsync(string key, ApplicationSettingsStoredProfile snapshot, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
-			return Task.CompletedTask;
+		// Check whether this fixture has a persisted record.
+		public override bool ContainsSetting(Type settingsType, object id = null) {
+			Reads++;
+			return false;
+		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
+			throw new InvalidOperationException("No test preferences have been saved.");
+		}
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) {
+		}
+
+		// Remove this fixture record.
+		public override void DeleteSetting(SettingsObject settings) {
+		}
+
+		// Clear this fixture storage.
+		public override void ClearSettings() {
 		}
 	}
 
 	// Value-only legacy imports find no record in this isolated browser substitute.
 	private sealed class EmptyJsModule : IJSObjectReference {
+
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			return ValueTask.FromResult(default(TValue));
 		}
 
+		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
 			return InvokeAsync<TValue>(identifier, args);
 		}
 
+		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
 		public ValueTask DisposeAsync() {
 			return ValueTask.CompletedTask;
 		}
 	}
+
+	#endregion
 }

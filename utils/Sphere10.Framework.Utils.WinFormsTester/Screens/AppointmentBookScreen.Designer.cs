@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,182 +6,131 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class AppointmentBookScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class AppointmentBookScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _actions;
+	private Button _populateButton;
+	private EnumComboBox _timeViewSelector;
+	private EnumComboBox _columnFilterComboBox;
+	private Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook _appointmentBook;
+	private Sphere10.Framework.Windows.Forms.AppointmentBook.UnallocatedBook _unallocatedBook;
+	private TextBox _outputTextBox;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._populateButton = new System.Windows.Forms.Button();
-			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this._columnFilterComboBox = new Sphere10.Framework.Windows.Forms.EnumComboBox();
-			this.UnallocatedBook = new Sphere10.Framework.Windows.Forms.AppointmentBook.UnallocatedBook();
-			this.AppointmentBook = new Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook();
-			this._timeViewSelector = new Sphere10.Framework.Windows.Forms.EnumComboBox();
-			this.SuspendLayout();
-			// 
-			// _populateButton
-			// 
-			this._populateButton.Location = new System.Drawing.Point(12, 12);
-			this._populateButton.Name = "_populateButton";
-			this._populateButton.Size = new System.Drawing.Size(120, 23);
-			this._populateButton.TabIndex = 1;
-			this._populateButton.Text = "Generate Data";
-			this._populateButton.UseVisualStyleBackColor = true;
-			this._populateButton.Click += new System.EventHandler(this._populateButton_Click);
-			// 
-			// _outputTextBox
-			// 
-			this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputTextBox.Location = new System.Drawing.Point(12, 562);
-			this._outputTextBox.Multiline = true;
-			this._outputTextBox.Name = "_outputTextBox";
-			this._outputTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-			this._outputTextBox.Size = new System.Drawing.Size(923, 130);
-			this._outputTextBox.TabIndex = 5;
-			// 
-			// _columnFilterComboBox
-			// 
-			this._columnFilterComboBox.AllowEmptyOption = false;
-			this._columnFilterComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._columnFilterComboBox.DisplayMember = "Display";
-			this._columnFilterComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._columnFilterComboBox.EmptyOptionText = "";
-			this._columnFilterComboBox.FormattingEnabled = true;
-			this._columnFilterComboBox.Location = new System.Drawing.Point(687, 14);
-			this._columnFilterComboBox.Name = "_columnFilterComboBox";
-			this._columnFilterComboBox.Size = new System.Drawing.Size(121, 21);
-			this._columnFilterComboBox.TabIndex = 6;
-			this._columnFilterComboBox.ValueMember = "Value";
-			this._columnFilterComboBox.SelectedIndexChanged += new System.EventHandler(this._columnFilterComboBox_SelectedIndexChanged);
-			// 
-			// UnallocatedBook
-			// 
-			this.UnallocatedBook.AllowDrop = true;
-			this.UnallocatedBook.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-			this.UnallocatedBook.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.UnallocatedBook.CanResize = false;
-			this.UnallocatedBook.ColumnFilter = Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBookViewModelFilter.All;
-			this.UnallocatedBook.DataSource = null;
-			this.UnallocatedBook.DistanceMovedToInitiateDragging = 12F;
-			this.UnallocatedBook.HasColHeaders = true;
-			this.UnallocatedBook.HasRowHeaders = false;
-			this.UnallocatedBook.Location = new System.Drawing.Point(12, 41);
-			this.UnallocatedBook.MaxColumnWidth = 400;
-			this.UnallocatedBook.MinColumnWidth = 100;
-			this.UnallocatedBook.Name = "UnallocatedBook";
-			this.UnallocatedBook.RowHeaderColumnWidth = 32;
-			this.UnallocatedBook.Size = new System.Drawing.Size(120, 515);
-			this.UnallocatedBook.TabIndex = 4;
-			this.UnallocatedBook.ViewModel = null;
-			this.UnallocatedBook.AppointmentSelected += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this._unallocatedBook_AppointmentSelected);
-			this.UnallocatedBook.AppointmentDoubleClicked += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this.UnallocatedBook_AppointmentDoubleClicked);
-			this.UnallocatedBook.AppointmentDeselected += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this._unallocatedBook_AppointmentDeselected);
-			this.UnallocatedBook.AppointmentDragStarting += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDragStartingEvent>(this._unallocatedBook_AppointmentDragStarting);
-			this.UnallocatedBook.AppointmentDragging += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDraggingEvent>(this._unallocatedBook_AppointmentDragging);
-			this.UnallocatedBook.AppointmentDragged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDraggedEvent>(this._unallocatedBook_AppointmentDrag);
-			this.UnallocatedBook.AppointmentDropStarting += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDropStartingEvent>(this._unallocatedBook_AppointmentDropStarting);
-			this.UnallocatedBook.AppointmentDrop += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDropEvent>(this._unallocatedBook_AppointmentDrop);
-			// 
-			// AppointmentBook
-			// 
-			this.AppointmentBook.AllowDrop = true;
-			this.AppointmentBook.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.AppointmentBook.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.AppointmentBook.CanResize = true;
-			this.AppointmentBook.ColumnFilter = Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBookViewModelFilter.All;
-			this.AppointmentBook.DataSource = null;
-			this.AppointmentBook.DistanceMovedToInitiateDragging = 12F;
-			this.AppointmentBook.HasColHeaders = true;
-			this.AppointmentBook.HasRowHeaders = true;
-			this.AppointmentBook.Location = new System.Drawing.Point(138, 41);
-			this.AppointmentBook.MaxColumnWidth = 400;
-			this.AppointmentBook.MinColumnWidth = 100;
-			this.AppointmentBook.Name = "AppointmentBook";
-			this.AppointmentBook.RowHeaderColumnWidth = 32;
-			this.AppointmentBook.Size = new System.Drawing.Size(797, 515);
-			this.AppointmentBook.TabIndex = 3;
-			this.AppointmentBook.ViewModel = null;
-			this.AppointmentBook.AppointmentBookFreeRegionSelected += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBookFreeRegionSelected>(this._appointmentBook_AppointmentBookFreeRegionSelected);
-			this.AppointmentBook.AppointmentSelected += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this._appointmentBook_AppointmentSelected);
-			this.AppointmentBook.AppointmentDoubleClicked += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this.AppointmentBook_AppointmentDoubleClicked);
-			this.AppointmentBook.AppointmentDeselected += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this._appointmentBook_AppointmentDeselected);
-			this.AppointmentBook.AppointmentResizingStarted += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentEvent>(this._appointmentBook_AppointmentResizingStarted);
-			this.AppointmentBook.AppointmentResizing += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentResizingEvent>(this._appointmentBook_AppointmentResizing);
-			this.AppointmentBook.AppointmentResizingFinished += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentResizingFinishedEvent>(this._appointmentBook_AppointmentResizingFinished);
-			this.AppointmentBook.AppointmentDragStarting += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDragStartingEvent>(this._appointmentBook_AppointmentDragStarting);
-			this.AppointmentBook.AppointmentDragging += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDraggingEvent>(this._appointmentBook_AppointmentDragging);
-			this.AppointmentBook.AppointmentDragged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDraggedEvent>(this._appointmentBook_AppointmentDrag);
-			this.AppointmentBook.AppointmentDropStarting += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDropStartingEvent>(this._appointmentBook_AppointmentDropStarting);
-			this.AppointmentBook.AppointmentDrop += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentDropEvent>(this._appointmentBook_AppointmentDrop);
-			// 
-			// _timeViewSelector
-			// 
-			this._timeViewSelector.AllowEmptyOption = false;
-			this._timeViewSelector.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._timeViewSelector.DisplayMember = "Display";
-			this._timeViewSelector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._timeViewSelector.EmptyOptionText = "";
-			this._timeViewSelector.FormattingEnabled = true;
-			this._timeViewSelector.Location = new System.Drawing.Point(814, 14);
-			this._timeViewSelector.Name = "_timeViewSelector";
-			this._timeViewSelector.Size = new System.Drawing.Size(121, 21);
-			this._timeViewSelector.TabIndex = 2;
-			this._timeViewSelector.ValueMember = "Value";
-			this._timeViewSelector.SelectedIndexChanged += new System.EventHandler(this._timeViewSelector_SelectedIndexChanged);
-			// 
-			// AppointmentBookForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(947, 704);
-			this.Controls.Add(this._columnFilterComboBox);
-			this.Controls.Add(this._outputTextBox);
-			this.Controls.Add(this.UnallocatedBook);
-			this.Controls.Add(this.AppointmentBook);
-			this.Controls.Add(this._timeViewSelector);
-			this.Controls.Add(this._populateButton);
-			this.Name = "AppointmentBookScreen";
-			this.Text = "ResourceCalendarForm";
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_actions = new FlowLayoutPanel();
+		_actions.Name = "_actions";
+		_populateButton = new Button();
+		_populateButton.Name = "_populateButton";
+		_timeViewSelector = new EnumComboBox();
+		_columnFilterComboBox = new EnumComboBox();
+		_appointmentBook = new Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook();
+		_unallocatedBook = new Sphere10.Framework.Windows.Forms.AppointmentBook.UnallocatedBook();
+		_outputTextBox = new TextBox();
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 6;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Appointment Book";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Generate a synthetic resource schedule, choose a time period or column filter, and drag or resize appointments. The unallocated book and event log expose the complete scheduling workflow.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_populateButton.AutoSize = true;
+		_populateButton.MinimumSize = new Size(110, 34);
+		_populateButton.Text = "Generate sample schedule";
+		_populateButton.UseVisualStyleBackColor = true;
+		_populateButton.Click += PopulateButton_Click;
+		_timeViewSelector.Width = 200;
+		_timeViewSelector.Name = "_timeViewSelector";
+		_timeViewSelector.SelectedIndexChanged += TimeViewSelector_SelectedIndexChanged;
+		_columnFilterComboBox.Width = 200;
+		_columnFilterComboBox.Name = "_columnFilterComboBox";
+		_columnFilterComboBox.SelectedIndexChanged += ColumnFilterComboBox_SelectedIndexChanged;
+		_actions.AutoSize = true;
+		_actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_actions.Dock = DockStyle.Fill;
+		_actions.Margin = Padding.Empty;
+		_actions.Controls.AddRange(new Control[] { _populateButton, _timeViewSelector, _columnFilterComboBox });
+		_appointmentBook.Name = "AppointmentBook";
+		_appointmentBook.Dock = DockStyle.Fill;
+		_unallocatedBook.Name = "UnallocatedBook";
+		_unallocatedBook.Dock = DockStyle.Fill;
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
+		_unallocatedBook.AppointmentSelected += UnallocatedBook_AppointmentSelected;
+		_unallocatedBook.AppointmentDoubleClicked += UnallocatedBook_AppointmentDoubleClicked;
+		_unallocatedBook.AppointmentDeselected += UnallocatedBook_AppointmentDeselected;
+		_unallocatedBook.AppointmentDragStarting += UnallocatedBook_AppointmentDragStarting;
+		_unallocatedBook.AppointmentDragging += UnallocatedBook_AppointmentDragging;
+		_unallocatedBook.AppointmentDragged += UnallocatedBook_AppointmentDrag;
+		_unallocatedBook.AppointmentDropStarting += UnallocatedBook_AppointmentDropStarting;
+		_unallocatedBook.AppointmentDrop += UnallocatedBook_AppointmentDrop;
+		_appointmentBook.AppointmentBookFreeRegionSelected += AppointmentBook_AppointmentBookFreeRegionSelected;
+		_appointmentBook.AppointmentSelected += AppointmentBook_AppointmentSelected;
+		_appointmentBook.AppointmentDoubleClicked += AppointmentBook_AppointmentDoubleClicked;
+		_appointmentBook.AppointmentDeselected += AppointmentBook_AppointmentDeselected;
+		_appointmentBook.AppointmentResizingStarted += AppointmentBook_AppointmentResizingStarted;
+		_appointmentBook.AppointmentResizing += AppointmentBook_AppointmentResizing;
+		_appointmentBook.AppointmentResizingFinished += AppointmentBook_AppointmentResizingFinished;
+		_appointmentBook.AppointmentDragStarting += AppointmentBook_AppointmentDragStarting;
+		_appointmentBook.AppointmentDragging += AppointmentBook_AppointmentDragging;
+		_appointmentBook.AppointmentDragged += AppointmentBook_AppointmentDrag;
+		_appointmentBook.AppointmentDropStarting += AppointmentBook_AppointmentDropStarting;
+		_appointmentBook.AppointmentDrop += AppointmentBook_AppointmentDrop;
 
-		private System.Windows.Forms.Button _populateButton;
-		private Sphere10.Framework.Windows.Forms.EnumComboBox _timeViewSelector;
-		private Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook AppointmentBook;
-		private Sphere10.Framework.Windows.Forms.AppointmentBook.UnallocatedBook UnallocatedBook;
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private Sphere10.Framework.Windows.Forms.EnumComboBox _columnFilterComboBox;
-
-
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_actions, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 65F));
+		_layout.Controls.Add(_appointmentBook, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
+		_layout.Controls.Add(_unallocatedBook, 0, 4);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 35F));
+		_layout.Controls.Add(_outputTextBox, 0, 5);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "AppointmentBookScreen";
+		Text = "Appointment Book";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

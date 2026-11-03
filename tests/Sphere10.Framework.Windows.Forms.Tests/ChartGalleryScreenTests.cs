@@ -156,6 +156,15 @@ public class ChartGalleryScreenTests {
 		using var screen = (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
 		Assert.That(PointCount(screen), Is.Zero, "Constructors create controls; sample initialization belongs to the screen lifecycle.");
 		Assert.That(host.ShowScreen(screen), Is.True);
+
+		// Ad hoc hosts attach no settings profile, but ordinary presentation edits remain usable.
+		if (screen is ChartGalleryScreen)
+			Commands(screen, "galleryCommands").Items.OfType<ToolStripComboBox>().Single().SelectedItem = "Finance";
+		else if (screen is ChartTestScreen charts)
+			charts.SelectScenario("Signed Cash Flow");
+		else
+			Commands(screen, "telemetryCommands").Items.OfType<ToolStripButton>().Single(button => button.Name == "telemetryGaps").PerformClick();
+
 		var points = PointCount(screen);
 		Assert.That(points, Is.GreaterThan(0));
 		Assert.That(host.UndockScreen(screen), Is.True);
@@ -165,6 +174,36 @@ public class ChartGalleryScreenTests {
 		Assert.That(screen.IsDisposed, Is.True);
 		return Task.CompletedTask;
 	});
+
+	[TestCase(typeof(PathSelectorTestScreen))]
+	[TestCase(typeof(DecayGaugeScreen))]
+	[TestCase(typeof(LoadingCircleTestScreen))]
+	public void OptionalControlPreferencesDoNotRequireSettingsForAnAdHocHostedScreen(Type screenType) {
+		RunWithMessageLoop(owner => {
+			using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill, ScreenMode = Sphere10.Framework.Application.UI.ScreenMode.MultiView };
+			owner.Controls.Add(host);
+			using var screen = (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
+			Assert.That(host.ShowScreen(screen), Is.True);
+
+			// These same visible edits save preferences only when a registration supplies a profile.
+			if (screen is PathSelectorTestScreen) {
+				Find<CheckBox>(screen, "_checkBox1").Checked = true;
+				Assert.That(Find<PathSelectorControl>(screen, "pathSelectorControl1").ForcePathExists, Is.True);
+			} else if (screen is DecayGaugeScreen gauge) {
+				Find<NumericUpDown>(screen, "_decayCoefficient").Value = 0;
+				Assert.That(gauge.DecayGauge.DecayCoefficient, Is.Zero);
+			} else {
+				Find<NumericUpDown>(screen, "loadingRadius").Value = 30;
+				Assert.That(Find<LoadingCircle>(screen, "loadingPreview").OuterCircleRadius, Is.EqualTo(30));
+			}
+
+			Assert.That(host.UndockScreen(screen), Is.True);
+			Assert.That(host.DockScreen(screen), Is.True);
+			Assert.That(host.CloseScreen(screen), Is.True);
+			Assert.That(screen.IsDisposed, Is.True);
+			return Task.CompletedTask;
+		});
+	}
 
 	private static ToolStrip Commands(Control parent, string name) => Find<ToolStrip>(parent, name);
 

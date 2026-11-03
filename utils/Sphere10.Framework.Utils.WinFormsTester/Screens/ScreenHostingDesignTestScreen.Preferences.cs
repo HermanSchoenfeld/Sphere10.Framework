@@ -18,12 +18,6 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
 public partial class ScreenHostingDesignTestScreen {
-	private VisualGrid _preferencesGrid;
-	private VisualGrid _detailsGrid;
-	private VisualGrid _standaloneGrid;
-	private LogOutputSelectorControl _preferencesLog;
-	private Label _preferenceHeading;
-	private Label _preferenceSummary;
 	private bool _preferencesBound;
 	private CancellationTokenSource _preferencesLifetime;
 	private Task _preferencesLoading = Task.CompletedTask;
@@ -36,18 +30,18 @@ public partial class ScreenHostingDesignTestScreen {
 	}
 
 	// The native event starts owned asynchronous work; no async-void continuation can escape its owner.
-	protected override void OnLoad(EventArgs args) {
-		base.OnLoad(args);
-		if (_preferencesGrid == null || _preferencesBound || IsDisposed || Disposing)
+	protected override void InitializeUIPrimingData() {
+		base.InitializeUIPrimingData();
+		if (Tools.Runtime.IsDesignMode || _preferencesGrid == null || _preferencesBound || IsDisposed || Disposing)
 			return;
 		_preferencesBound = true;
 		_preferencesLoading = LoadPreferencesAsync(_preferencesLifetime.Token);
 	}
 
 	// Accepted Options updates change presentation without replacing lifecycle notes or grid editing buffers.
-	protected override void OnSettingsChanged() {
-		base.OnSettingsChanged();
-		if (_preferencesGrid != null && _preferencesLoading.IsCompleted && !IsDisposed && !Disposing)
+	protected override void CopyModelToUI() {
+		base.CopyModelToUI();
+		if (HasSettings && _preferencesGrid != null && _preferencesLoading.IsCompleted && !IsDisposed && !Disposing)
 			UpdatePreferenceSummary();
 	}
 
@@ -69,12 +63,17 @@ public partial class ScreenHostingDesignTestScreen {
 			await Task.Yield();
 			CheckPreferenceLifetime(cancellationToken);
 			_preferencesLog.ApplicationLogger = Block?.Parent?.Logger ?? SystemLog.Logger;
-			await BindGridPreferencesAsync(_preferencesGrid, nameof(ScreenHostingPreferences.Grid), cancellationToken);
-			CheckPreferenceLifetime(cancellationToken);
-			await BindGridPreferencesAsync(_detailsGrid, nameof(ScreenHostingPreferences.DetailsGrid), cancellationToken);
-			CheckPreferenceLifetime(cancellationToken);
-			await BindLogOutputPreferencesAsync(_preferencesLog, nameof(ScreenHostingPreferences.LogOutput), cancellationToken);
-			CheckPreferenceLifetime(cancellationToken);
+			if (HasSettings) {
+				_preferenceSummary.Text = "Loading inspector preferences...";
+				await BindGridPreferencesAsync(_preferencesGrid, nameof(ScreenHostingPreferences.Grid), cancellationToken);
+				CheckPreferenceLifetime(cancellationToken);
+				await BindGridPreferencesAsync(_detailsGrid, nameof(ScreenHostingPreferences.DetailsGrid), cancellationToken);
+				CheckPreferenceLifetime(cancellationToken);
+				await BindLogOutputPreferencesAsync(_preferencesLog, nameof(ScreenHostingPreferences.LogOutput), cancellationToken);
+				CheckPreferenceLifetime(cancellationToken);
+			} else {
+				_preferencesLog.RestoreSettings();
+			}
 			foreach (var grid in new[] { _preferencesGrid, _detailsGrid, _standaloneGrid }) {
 				await grid.SetDataSource(
 					new PreferenceDataSource(), DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch | DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage
@@ -86,7 +85,7 @@ public partial class ScreenHostingDesignTestScreen {
 
 			// The real application logger and any consumer preflight are ready; pure preference loading never starts output.
 			var logging = _preferencesLog.CapturePreferences();
-			if (logging.HasConfiguration && logging.Enabled && logging.Configuration.RememberAfterClose)
+			if (HasSettings && logging.HasConfiguration && logging.Enabled && logging.Configuration.RememberAfterClose)
 				_preferencesLog.StartLogging();
 			UpdatePreferenceSummary();
 		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
@@ -105,45 +104,26 @@ public partial class ScreenHostingDesignTestScreen {
 		ObjectDisposedException.ThrowIf(IsDisposed || Disposing, this);
 	}
 
-	// Reuses the original lifecycle content and adds a separate tab; constructors create no data sources or storage IO.
+	// Construct only this registration's optional static inspector surface; bind its runtime data separately.
 	private void InitializePreferencesDemo(string standaloneGridKey) {
 		Guard.ArgumentNotNullOrEmpty(standaloneGridKey, nameof(standaloneGridKey));
 		_preferencesLifetime = new CancellationTokenSource();
-		var lifecycle = new TabPage("Lifecycle and draft");
-		foreach (var control in Controls.Cast<Control>().Where(control => !ReferenceEquals(control, ToolBar)).ToArray())
-			lifecycle.Controls.Add(control);
-		var preferences = new TabPage("Preferences and grids") { AutoScroll = true };
-		var content = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 1, Padding = new Padding(12) };
-		content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-		_preferenceHeading = new Label { Name = "PreferenceHeading", AutoSize = true };
-		_preferenceSummary = new Label { Name = "PreferenceSummary", AutoSize = true, Text = "Loading inspector preferences..." };
-		content.Controls.Add(_preferenceHeading);
-		content.Controls.Add(_preferenceSummary);
-		content.Controls.Add(new Label {
-			AutoSize = true,
-			Text = "Options > Screen Options edits this registration. CPU and GPU keep independent defaults. Lifecycle notes remain unchanged by Apply or Reset."
-		});
-		_preferencesLog = new LogOutputSelectorControl { Name = "PreferenceLogOutput", Dock = DockStyle.Top };
-		content.Controls.Add(_preferencesLog);
-		_preferencesGrid = CreatePreferenceGrid("PreferencesGrid", "Owned records");
-		_detailsGrid = CreatePreferenceGrid("DetailsGrid", "Owned details");
-		_standaloneGrid = CreatePreferenceGrid("StandaloneGrid", "Standalone comparison");
+		var lifecycleControls = Controls.Cast<Control>().Where(control => !ReferenceEquals(control, ScreenToolBar)).ToArray();
+		InitializeComponent();
+		Disposables.Add(_preferenceHeading.Font);
+		foreach (var control in lifecycleControls)
+			_lifecyclePage.Controls.Add(control);
+		ConfigurePreferenceGrid(_preferencesGrid);
+		ConfigurePreferenceGrid(_detailsGrid);
+		ConfigurePreferenceGrid(_standaloneGrid);
 		_standaloneGrid.SettingsKey = standaloneGridKey;
-		content.Controls.Add(_preferencesGrid);
-		content.Controls.Add(_detailsGrid);
-		content.Controls.Add(new Label {
-			AutoSize = true,
-			Text = "The standalone comparison uses its own ordinary grid record. The two owned grids above save only through this registration's profile."
-		});
-		content.Controls.Add(_standaloneGrid);
-		preferences.Controls.Add(content);
-		preferences.ClientSizeChanged += (_, _) => UpdatePreferenceLayout(preferences, content);
-		UpdatePreferenceLayout(preferences, content);
-		var tabs = new TabControl { Name = "InspectorDemoTabs", Dock = DockStyle.Fill };
-		tabs.TabPages.Add(preferences);
-		tabs.TabPages.Add(lifecycle);
-		Controls.Add(tabs);
-		tabs.BringToFront();
+		UpdatePreferenceLayout(_preferencePage, _preferenceContent);
+		_preferenceTabs.BringToFront();
+	}
+
+	// The named Designer handler wraps labels when the optional inspector viewport changes.
+	private void PreferenceViewportChanged(object sender, EventArgs args) {
+		UpdatePreferenceLayout(_preferencePage, _preferenceContent);
 	}
 
 	// Wrap explanatory labels inside the available native viewport while allowing vertical scrolling through the grids.
@@ -155,13 +135,8 @@ public partial class ScreenHostingDesignTestScreen {
 	}
 
 	// Bindings expose stable property identities and one explicitly keyed computed projection.
-	private static VisualGrid CreatePreferenceGrid(string name, string title) {
-		var grid = new VisualGrid {
-			Name = name,
-			GridTitle = title,
-			Dock = DockStyle.Top,
-			Height = 220,
-			GridBindings = new[] {
+	private static void ConfigurePreferenceGrid(VisualGrid grid) {
+		grid.GridBindings = new[] {
 				new VisualGridColumn<PreferenceRow> {
 					ColumnName = "ID",
 					PropertyName = nameof(PreferenceRow.Id),
@@ -187,15 +162,15 @@ public partial class ScreenHostingDesignTestScreen {
 					CanEditCell = false,
 					ExpandsToFit = true
 				}
-			}
 		};
 		grid.ApplyGridPreferences(new VisualGridSettings { PageSize = 5, PageMode = VisualGridPageMode.Paged, SortDirection = SortDirection.None });
-		return grid;
 	}
 
 	// Summaries use current detached values after migration/Options; ordinary notes are never replaced.
 	private void UpdatePreferenceSummary() {
-		var values = GetSettings<ScreenHostingPreferences>();
+		if (!HasSettings)
+			return;
+		var values = ScreenSettings;
 		_preferenceHeading.Text = values.Heading;
 		_preferenceHeading.ForeColor = values.Appearance.HighlightHeading ? Color.RoyalBlue : SystemColors.ControlText;
 		_preferenceSummary.Visible = values.ShowSummary;
@@ -207,23 +182,29 @@ public partial class ScreenHostingDesignTestScreen {
 
 	// Demonstration rows are operational data and are deliberately absent from the preferences object.
 	private sealed class PreferenceRow {
-		public int Id { get; set; }
+		public int Id {
+			get; set;
+		}
 
-		public string Name { get; set; }
+		public string Name {
+			get; set;
+		}
 
-		public string Group { get; set; }
+		public string Group {
+			get; set;
+		}
 	}
 
 	// The demo source implements actual filter/sort/page behavior without reading or writing a database.
 	private sealed class PreferenceDataSource : ListDataSource<PreferenceRow> {
 		public PreferenceDataSource()
 			: base(
-				new ExtendedList<PreferenceRow>(
-					Enumerable.Range(1, 20)
-						.Select(index => new PreferenceRow { Id = index, Name = "Sample " + index, Group = index % 2 == 0 ? "Even" : "Odd" })
-						.ToArray()
-				)
-			) {
+														new ExtendedList<PreferenceRow>(
+															Enumerable.Range(1, 20)
+																.Select(index => new PreferenceRow { Id = index, Name = "Sample " + index, Group = index % 2 == 0 ? "Even" : "Odd" })
+																.ToArray()
+														)
+													) {
 		}
 
 		public override DataSourceItems<PreferenceRow> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {

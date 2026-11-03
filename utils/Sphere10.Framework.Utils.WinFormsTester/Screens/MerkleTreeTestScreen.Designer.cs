@@ -1,194 +1,219 @@
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class MerkleTreeTestScreen {
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		#region Component Designer generated code
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._printAlphabetButton = new System.Windows.Forms.Button();
-			this._commandToolBox = new System.Windows.Forms.GroupBox();
-			this._treePerfTestsButton = new System.Windows.Forms.Button();
-			this._printInvPow2Button = new System.Windows.Forms.Button();
-			this._perfectMerkleButton = new System.Windows.Forms.Button();
-			this._sumPow2Button = new System.Windows.Forms.Button();
-			this._printIntegersButton = new System.Windows.Forms.Button();
-			this._outputGroupBox = new System.Windows.Forms.GroupBox();
-			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this.mergeableMenuStrip1 = new Sphere10.Framework.Windows.Forms.MergeableMenuStrip();
-			this._commandToolBox.SuspendLayout();
-			this._outputGroupBox.SuspendLayout();
-			this.SuspendLayout();
-			// 
-			// _printAlphabetButton
-			// 
-			this._printAlphabetButton.Location = new System.Drawing.Point(10, 37);
-			this._printAlphabetButton.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._printAlphabetButton.Name = "_printAlphabetButton";
-			this._printAlphabetButton.Size = new System.Drawing.Size(164, 45);
-			this._printAlphabetButton.TabIndex = 0;
-			this._printAlphabetButton.Text = "Print Alphabet";
-			this._printAlphabetButton.UseVisualStyleBackColor = true;
-			this._printAlphabetButton.Click += new System.EventHandler(this._printAlphabetButton_Click);
-			// 
-			// _commandToolBox
-			// 
-			this._commandToolBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._commandToolBox.Controls.Add(this._treePerfTestsButton);
-			this._commandToolBox.Controls.Add(this._printInvPow2Button);
-			this._commandToolBox.Controls.Add(this._perfectMerkleButton);
-			this._commandToolBox.Controls.Add(this._sumPow2Button);
-			this._commandToolBox.Controls.Add(this._printIntegersButton);
-			this._commandToolBox.Controls.Add(this._printAlphabetButton);
-			this._commandToolBox.Location = new System.Drawing.Point(6, 510);
-			this._commandToolBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._commandToolBox.Name = "_commandToolBox";
-			this._commandToolBox.Padding = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._commandToolBox.Size = new System.Drawing.Size(1219, 227);
-			this._commandToolBox.TabIndex = 1;
-			this._commandToolBox.TabStop = false;
-			this._commandToolBox.Text = "Commands";
-			// 
-			// _treePerfTestsButton
-			// 
-			this._treePerfTestsButton.Location = new System.Drawing.Point(186, 153);
-			this._treePerfTestsButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-			this._treePerfTestsButton.Name = "_treePerfTestsButton";
-			this._treePerfTestsButton.Size = new System.Drawing.Size(164, 38);
-			this._treePerfTestsButton.TabIndex = 3;
-			this._treePerfTestsButton.Text = "Tree Perf Tests";
-			this._treePerfTestsButton.UseVisualStyleBackColor = true;
-			this._treePerfTestsButton.Click += new System.EventHandler(this._treePerfTestsButton_Click);
-			// 
-			// _printInvPow2Button
-			// 
-			this._printInvPow2Button.Location = new System.Drawing.Point(186, 98);
-			this._printInvPow2Button.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-			this._printInvPow2Button.Name = "_printInvPow2Button";
-			this._printInvPow2Button.Size = new System.Drawing.Size(164, 38);
-			this._printInvPow2Button.TabIndex = 2;
-			this._printInvPow2Button.Text = "Inv Pow2";
-			this._printInvPow2Button.UseVisualStyleBackColor = true;
-			this._printInvPow2Button.Click += new System.EventHandler(this._printInvPow2Button_Click);
-			// 
-			// _perfectMerkleButton
-			// 
-			this._perfectMerkleButton.Location = new System.Drawing.Point(186, 37);
-			this._perfectMerkleButton.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._perfectMerkleButton.Name = "_perfectMerkleButton";
-			this._perfectMerkleButton.Size = new System.Drawing.Size(164, 45);
-			this._perfectMerkleButton.TabIndex = 1;
-			this._perfectMerkleButton.Text = "Perfect Merkle";
-			this._perfectMerkleButton.UseVisualStyleBackColor = true;
-			this._perfectMerkleButton.Click += new System.EventHandler(this._perfectMerkleButton_Click);
-			// 
-			// _sumPow2Button
-			// 
-			this._sumPow2Button.Location = new System.Drawing.Point(10, 147);
-			this._sumPow2Button.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._sumPow2Button.Name = "_sumPow2Button";
-			this._sumPow2Button.Size = new System.Drawing.Size(164, 45);
-			this._sumPow2Button.TabIndex = 1;
-			this._sumPow2Button.Text = "Sum Pow2";
-			this._sumPow2Button.UseVisualStyleBackColor = true;
-			this._sumPow2Button.Click += new System.EventHandler(this._sumPow2Button_Click);
-			// 
-			// _printIntegersButton
-			// 
-			this._printIntegersButton.Location = new System.Drawing.Point(10, 92);
-			this._printIntegersButton.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._printIntegersButton.Name = "_printIntegersButton";
-			this._printIntegersButton.Size = new System.Drawing.Size(164, 45);
-			this._printIntegersButton.TabIndex = 1;
-			this._printIntegersButton.Text = "Print Integers ";
-			this._printIntegersButton.UseVisualStyleBackColor = true;
-			this._printIntegersButton.Click += new System.EventHandler(this._printIntegersButton_Click);
-			// 
-			// _outputGroupBox
-			// 
-			this._outputGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputGroupBox.Controls.Add(this._outputTextBox);
-			this._outputGroupBox.Controls.Add(this.mergeableMenuStrip1);
-			this._outputGroupBox.Location = new System.Drawing.Point(6, 5);
-			this._outputGroupBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._outputGroupBox.Name = "_outputGroupBox";
-			this._outputGroupBox.Padding = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._outputGroupBox.Size = new System.Drawing.Size(1219, 492);
-			this._outputGroupBox.TabIndex = 2;
-			this._outputGroupBox.TabStop = false;
-			this._outputGroupBox.Text = "Output";
-			// 
-			// _outputTextBox
-			// 
-			this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputTextBox.Location = new System.Drawing.Point(10, 37);
-			this._outputTextBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this._outputTextBox.Multiline = true;
-			this._outputTextBox.Name = "_outputTextBox";
-			this._outputTextBox.Size = new System.Drawing.Size(1195, 441);
-			this._outputTextBox.TabIndex = 0;
-			// 
-			// mergeableMenuStrip1
-			// 
-			this.mergeableMenuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
-			this.mergeableMenuStrip1.InheritedToolStrip = null;
-			this.mergeableMenuStrip1.Location = new System.Drawing.Point(644, 16);
-			this.mergeableMenuStrip1.Name = "mergeableMenuStrip1";
-			this.mergeableMenuStrip1.Size = new System.Drawing.Size(303, 36);
-			this.mergeableMenuStrip1.TabIndex = 1;
-			this.mergeableMenuStrip1.Text = "mergeableMenuStrip1";
-			// 
-			// MerkleTreeTestScreen
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._outputGroupBox);
-			this.Controls.Add(this._commandToolBox);
-			this.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-			this.Name = "MerkleTreeTestScreen";
-			this.Size = new System.Drawing.Size(1223, 742);
-			this._commandToolBox.ResumeLayout(false);
-			this._outputGroupBox.ResumeLayout(false);
-			this._outputGroupBox.PerformLayout();
-			this.ResumeLayout(false);
+partial class MerkleTreeTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _inputs;
+	private FlowLayoutPanel _commands;
+	private TextBoxEx _outputTextBox;
+	private Label _status;
+	private Label _countLabel;
+	private NumericUpDown _leafCount;
+	private Label _comparisonHint;
+	private Button _printAlphabetButton;
+	private Button _printIntegersButton;
+	private Button _sumPow2Button;
+	private Button _printInvPow2Button;
+	private Button _perfectMerkleButton;
+	private Button _treePerfTestsButton;
+	private Button _cancelButton;
+	private Button _clearButton;
 
-		}
+	// The complete static demonstration layout remains editable on the designer surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_inputs = new FlowLayoutPanel();
+		_commands = new FlowLayoutPanel();
+		_outputTextBox = new TextBoxEx();
+		_status = new Label();
+		_countLabel = new Label();
+		_leafCount = new NumericUpDown();
+		_comparisonHint = new Label();
+		_printAlphabetButton = new Button();
+		_printIntegersButton = new Button();
+		_sumPow2Button = new Button();
+		_printInvPow2Button = new Button();
+		_perfectMerkleButton = new Button();
+		_treePerfTestsButton = new Button();
+		_cancelButton = new Button();
+		_clearButton = new Button();
+		_layout.SuspendLayout();
+		_inputs.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
+		((ISupportInitialize)_leafCount).BeginInit();
 
-		#endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 6;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_inputs, 0, 2);
+		_layout.Controls.Add(_commands, 0, 3);
+		_layout.Controls.Add(_outputTextBox, 0, 4);
+		_layout.Controls.Add(_status, 0, 5);
 
-		private System.Windows.Forms.Button _printAlphabetButton;
-		private System.Windows.Forms.GroupBox _commandToolBox;
-		private System.Windows.Forms.GroupBox _outputGroupBox;
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private System.Windows.Forms.Button _printIntegersButton;
-		private System.Windows.Forms.Button _sumPow2Button;
-		private System.Windows.Forms.Button _perfectMerkleButton;
-		private System.Windows.Forms.Button _printInvPow2Button;
-		private System.Windows.Forms.Button _treePerfTestsButton;
-		private Sphere10.Framework.Windows.Forms.MergeableMenuStrip mergeableMenuStrip1;
+		_heading.Text = "Merkle Trees And Partitions";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 12);
+		_introduction.Text = "Inspect readable concatenation trees, verify power-of-two partitions, or compare actual SHA-256 roots from the simple and flat implementations.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 16);
+
+		_inputs.AutoSize = true;
+		_inputs.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_inputs.Dock = DockStyle.Fill;
+		_inputs.Margin = new Padding(0, 0, 0, 10);
+
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Dock = DockStyle.Fill;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+
+		_countLabel.Name = "_countLabel";
+		_countLabel.Text = "Comparison leaves";
+		_countLabel.AutoSize = true;
+		_countLabel.Padding = new Padding(0, 5, 0, 0);
+		_countLabel.Margin = new Padding(0, 3, 12, 3);
+		_inputs.Controls.Add(_countLabel);
+
+		_leafCount.Name = "_leafCount";
+		_leafCount.Minimum = 1M;
+		_leafCount.Maximum = 20000M;
+		_leafCount.DecimalPlaces = 0;
+		_leafCount.Value = 256M;
+		_leafCount.Width = 110;
+		_leafCount.ThousandsSeparator = true;
+		_leafCount.Margin = new Padding(0, 3, 12, 3);
+		_inputs.Controls.Add(_leafCount);
+		_leafCount.ValueChanged += PreferencesEdited;
+
+		_comparisonHint.Name = "_comparisonHint";
+		_comparisonHint.Text = "Comparison work runs in a cancellable background task.";
+		_comparisonHint.AutoSize = true;
+		_comparisonHint.Padding = new Padding(0, 5, 0, 0);
+		_comparisonHint.Margin = new Padding(0, 3, 12, 3);
+		_inputs.Controls.Add(_comparisonHint);
+
+		_printAlphabetButton.Name = "_printAlphabetButton";
+		_printAlphabetButton.Text = "Alphabet tree";
+		_printAlphabetButton.AutoSize = true;
+		_printAlphabetButton.MinimumSize = new Size(110, 32);
+		_printAlphabetButton.Margin = new Padding(0, 0, 8, 0);
+		_printAlphabetButton.Click += AlphabetClicked;
+		_commands.Controls.Add(_printAlphabetButton);
+
+		_printIntegersButton.Name = "_printIntegersButton";
+		_printIntegersButton.Text = "Integer tree";
+		_printIntegersButton.AutoSize = true;
+		_printIntegersButton.MinimumSize = new Size(110, 32);
+		_printIntegersButton.Margin = new Padding(0, 0, 8, 0);
+		_printIntegersButton.Click += IntegersClicked;
+		_commands.Controls.Add(_printIntegersButton);
+
+		_sumPow2Button.Name = "_sumPow2Button";
+		_sumPow2Button.Text = "Power-of-two partitions";
+		_sumPow2Button.AutoSize = true;
+		_sumPow2Button.MinimumSize = new Size(110, 32);
+		_sumPow2Button.Margin = new Padding(0, 0, 8, 0);
+		_sumPow2Button.Click += PartitionsClicked;
+		_commands.Controls.Add(_sumPow2Button);
+
+		_printInvPow2Button.Name = "_printInvPow2Button";
+		_printInvPow2Button.Text = "Inverse powers";
+		_printInvPow2Button.AutoSize = true;
+		_printInvPow2Button.MinimumSize = new Size(110, 32);
+		_printInvPow2Button.Margin = new Padding(0, 0, 8, 0);
+		_printInvPow2Button.Click += InversePowersClicked;
+		_commands.Controls.Add(_printInvPow2Button);
+
+		_perfectMerkleButton.Name = "_perfectMerkleButton";
+		_perfectMerkleButton.Text = "Compare roots";
+		_perfectMerkleButton.AutoSize = true;
+		_perfectMerkleButton.MinimumSize = new Size(110, 32);
+		_perfectMerkleButton.Margin = new Padding(0, 0, 8, 0);
+		_perfectMerkleButton.Click += CompareClicked;
+		_commands.Controls.Add(_perfectMerkleButton);
+
+		_treePerfTestsButton.Name = "_treePerfTestsButton";
+		_treePerfTestsButton.Text = "Compare append batches";
+		_treePerfTestsButton.AutoSize = true;
+		_treePerfTestsButton.MinimumSize = new Size(110, 32);
+		_treePerfTestsButton.Margin = new Padding(0, 0, 8, 0);
+		_treePerfTestsButton.Click += AppendClicked;
+		_commands.Controls.Add(_treePerfTestsButton);
+
+		_cancelButton.Name = "_cancelButton";
+		_cancelButton.Text = "Cancel";
+		_cancelButton.AutoSize = true;
+		_cancelButton.MinimumSize = new Size(110, 32);
+		_cancelButton.Margin = new Padding(0, 0, 8, 0);
+		_cancelButton.Click += CancelClicked;
+		_commands.Controls.Add(_cancelButton);
+		_cancelButton.Enabled = false;
+
+		_clearButton.Name = "_clearButton";
+		_clearButton.Text = "Clear results";
+		_clearButton.AutoSize = true;
+		_clearButton.MinimumSize = new Size(110, 32);
+		_clearButton.Margin = new Padding(0, 0, 8, 0);
+		_clearButton.Click += ClearClicked;
+		_commands.Controls.Add(_clearButton);
+
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
+		_outputTextBox.Font = new Font("Consolas", 9F);
+		_outputTextBox.Margin = new Padding(0, 0, 0, 10);
+		_status.Name = "showcaseStatus";
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Text = "Ready. Choose an example to see its results.";
+
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		BackColor = SystemColors.Window;
+		Name = "MerkleTreeTestScreen";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		((ISupportInitialize)_leafCount).EndInit();
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_inputs.ResumeLayout(false);
+		_inputs.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

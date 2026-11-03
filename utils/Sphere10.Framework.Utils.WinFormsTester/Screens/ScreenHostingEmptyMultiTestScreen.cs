@@ -10,7 +10,9 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
+/// <summary>Demonstrates a new independent workspace whenever the host needs its empty fallback.</summary>
 public class ScreenHostingEmptyMultiTestScreen : ScreenHostingTestScreen {
+	/// <summary>Creates this registration's inherited editable lifecycle surface.</summary>
 	public ScreenHostingEmptyMultiTestScreen()
 		: base("Fresh empty workspace", ScreenActivationMode.MultiInstance) {
 	}

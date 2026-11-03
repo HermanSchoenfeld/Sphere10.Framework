@@ -10,27 +10,36 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Wizard;
 
+/// <summary>Collects a validated non-negative age while retaining backward navigation.</summary>
 public partial class EnterAgeScreen : DemoWizardScreenBase {
+	/// <summary>Creates the complete designable page without activating a wizard.</summary>
 	public EnterAgeScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 	}
 
+	/// <summary>Validates the current native inputs before advancing.</summary>
 	public override Task<Result> Validate() {
-		var Validation = int.TryParse(textBox1.Text, out var Age) && Age >= 0
+		var validation = int.TryParse(_textBox1.Text, out var age) && age >= 0
 			? Result.Success
 			: Result.Error("Enter your age as a non-negative whole number.");
-		return Task.FromResult(Validation);
+		return Task.FromResult(validation);
 	}
 
+	/// <summary>Retains validated values in the current wizard model.</summary>
 	public override Task OnNext() {
 		CopyUIToModel();
 		return Task.CompletedTask;
 	}
 
-	protected override void CopyUIToModel() => Model.Age = int.Parse(textBox1.Text);
+	// Copy validated input into this wizard session.
+	protected override void CopyUIToModel() {
+		Model.Age = int.Parse(_textBox1.Text);
+	}
 
+	// Restore the retained model when this page is presented again.
 	protected override void CopyModelToUI() {
 		if (Wizard != null)
-			textBox1.Text = Model.Age?.ToString() ?? string.Empty;
+			_textBox1.Text = Model.Age?.ToString() ?? string.Empty;
 	}
 }

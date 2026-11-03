@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,426 +6,298 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class DecayGaugeScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-				_mouseHook.UninstallHook();
-				_keyboardHook.UninstallHook();
-			}
+namespace Sphere10.Framework.Utils.WinFormsTester;
+
+partial class DecayGaugeScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private IContainer _components;
+	private TableLayoutPanel _curve;
+	private ProgressBar _gauge;
+	private Label _gaugeReadout;
+	private FlowLayoutPanel _actions;
+	private Button _resetButton;
+	private Button _triggerEventButton;
+	private CheckBox _mouseKeyboardEventTriggers;
+	private Label _status;
+	private Timer _timer;
+	private Label _decayCoefficientLabel;
+	private NumericUpDown _decayCoefficient;
+	private Label _decayExponentLabel;
+	private NumericUpDown _decayExponent;
+	private Label _decayOffsetLabel;
+	private NumericUpDown _decayOffset;
+	private Label _gaugeMaxLabel;
+	private NumericUpDown _gaugeMax;
+	private Label _gaugeStartLabel;
+	private NumericUpDown _gaugeStart;
+	private Label _eventStrengthLabel;
+	private NumericUpDown _eventStrength;
+	private Label _keyboardEventStrengthLabel;
+	private NumericUpDown _keyboardEventStrength;
+	private Label _mouseEventStrengthLabel;
+	private NumericUpDown _mouseEventStrength;
+
+	// The component container owns the native UI timer.
+	protected override void Dispose(bool disposing) {
+		try {
+			if (disposing)
+				_components?.Dispose();
+		} finally {
 			base.Dispose(disposing);
 		}
+	}
 
-		#region Windows Form Designer generated code
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_components = new Container();
+		_curve = new TableLayoutPanel();
+		_curve.Name = "_curve";
+		_gauge = new ProgressBar();
+		_gauge.Name = "_gauge";
+		_gaugeReadout = new Label();
+		_gaugeReadout.Name = "_gaugeReadout";
+		_actions = new FlowLayoutPanel();
+		_actions.Name = "_actions";
+		_resetButton = new Button();
+		_resetButton.Name = "_resetButton";
+		_triggerEventButton = new Button();
+		_triggerEventButton.Name = "_triggerEventButton";
+		_mouseKeyboardEventTriggers = new CheckBox();
+		_mouseKeyboardEventTriggers.Name = "_mouseKeyboardEventTriggers";
+		_status = new Label();
+		_status.Name = "_status";
+		_timer = new Timer(_components);
+		_decayCoefficientLabel = new Label();
+		_decayCoefficientLabel.Name = "_decayCoefficientLabel";
+		_decayCoefficient = new NumericUpDown();
+		_decayExponentLabel = new Label();
+		_decayExponentLabel.Name = "_decayExponentLabel";
+		_decayExponent = new NumericUpDown();
+		_decayOffsetLabel = new Label();
+		_decayOffsetLabel.Name = "_decayOffsetLabel";
+		_decayOffset = new NumericUpDown();
+		_gaugeMaxLabel = new Label();
+		_gaugeMaxLabel.Name = "_gaugeMaxLabel";
+		_gaugeMax = new NumericUpDown();
+		_gaugeStartLabel = new Label();
+		_gaugeStartLabel.Name = "_gaugeStartLabel";
+		_gaugeStart = new NumericUpDown();
+		_eventStrengthLabel = new Label();
+		_eventStrengthLabel.Name = "_eventStrengthLabel";
+		_eventStrength = new NumericUpDown();
+		_keyboardEventStrengthLabel = new Label();
+		_keyboardEventStrengthLabel.Name = "_keyboardEventStrengthLabel";
+		_keyboardEventStrength = new NumericUpDown();
+		_mouseEventStrengthLabel = new Label();
+		_mouseEventStrengthLabel.Name = "_mouseEventStrengthLabel";
+		_mouseEventStrength = new NumericUpDown();
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this.components = new System.ComponentModel.Container();
-			this._gauge = new System.Windows.Forms.ProgressBar();
-			this.label1 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
-			this._decayCoefficient = new System.Windows.Forms.NumericUpDown();
-			this._decayExponent = new System.Windows.Forms.NumericUpDown();
-			this._decayOffset = new System.Windows.Forms.NumericUpDown();
-			this._eventStrength = new System.Windows.Forms.NumericUpDown();
-			this.label4 = new System.Windows.Forms.Label();
-			this._gaugeMax = new System.Windows.Forms.NumericUpDown();
-			this.label5 = new System.Windows.Forms.Label();
-			this._gaugeStart = new System.Windows.Forms.NumericUpDown();
-			this.label6 = new System.Windows.Forms.Label();
-			this._resetButton = new System.Windows.Forms.Button();
-			this._mouseKeyboardEventTriggers = new System.Windows.Forms.CheckBox();
-			this._triggerEventButton = new System.Windows.Forms.Button();
-			this._timer = new System.Windows.Forms.Timer(this.components);
-			this._gaugeReadout = new System.Windows.Forms.Label();
-			this._keyboardEventStrength = new System.Windows.Forms.NumericUpDown();
-			this.label7 = new System.Windows.Forms.Label();
-			this._mouseEventStrength = new System.Windows.Forms.NumericUpDown();
-			this.label8 = new System.Windows.Forms.Label();
-			((System.ComponentModel.ISupportInitialize)(this._decayCoefficient)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._decayExponent)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._decayOffset)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._eventStrength)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._gaugeMax)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._gaugeStart)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._keyboardEventStrength)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._mouseEventStrength)).BeginInit();
-			this.SuspendLayout();
-			// 
-			// _gauge
-			// 
-			this._gauge.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._gauge.Location = new System.Drawing.Point(12, 184);
-			this._gauge.MarqueeAnimationSpeed = 0;
-			this._gauge.Name = "_gauge";
-			this._gauge.Size = new System.Drawing.Size(1089, 24);
-			this._gauge.TabIndex = 0;
-			this._gauge.Value = 50;
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(41, 36);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(91, 13);
-			this.label1.TabIndex = 2;
-			this.label1.Text = "Decay Coefficient";
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(46, 62);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(86, 13);
-			this.label2.TabIndex = 4;
-			this.label2.Text = "Decay Exponent";
-			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(63, 88);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(69, 13);
-			this.label3.TabIndex = 6;
-			this.label3.Text = "Decay Offset";
-			// 
-			// _decayCoefficient
-			// 
-			this._decayCoefficient.DecimalPlaces = 2;
-			this._decayCoefficient.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-			this._decayCoefficient.Location = new System.Drawing.Point(138, 34);
-			this._decayCoefficient.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._decayCoefficient.Name = "_decayCoefficient";
-			this._decayCoefficient.Size = new System.Drawing.Size(120, 20);
-			this._decayCoefficient.TabIndex = 7;
-			this._decayCoefficient.ValueChanged += new System.EventHandler(this._decayCoefficient_ValueChanged);
-			// 
-			// _decayExponent
-			// 
-			this._decayExponent.DecimalPlaces = 2;
-			this._decayExponent.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-			this._decayExponent.Location = new System.Drawing.Point(138, 60);
-			this._decayExponent.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._decayExponent.Name = "_decayExponent";
-			this._decayExponent.Size = new System.Drawing.Size(120, 20);
-			this._decayExponent.TabIndex = 8;
-			this._decayExponent.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this._decayExponent.ValueChanged += new System.EventHandler(this._decayExponent_ValueChanged);
-			// 
-			// _decayOffset
-			// 
-			this._decayOffset.DecimalPlaces = 2;
-			this._decayOffset.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-			this._decayOffset.Location = new System.Drawing.Point(138, 86);
-			this._decayOffset.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._decayOffset.Name = "_decayOffset";
-			this._decayOffset.Size = new System.Drawing.Size(120, 20);
-			this._decayOffset.TabIndex = 9;
-			this._decayOffset.ValueChanged += new System.EventHandler(this._decayOffset_ValueChanged);
-			// 
-			// _eventStrength
-			// 
-			this._eventStrength.DecimalPlaces = 3;
-			this._eventStrength.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-			this._eventStrength.Location = new System.Drawing.Point(769, 140);
-			this._eventStrength.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._eventStrength.Name = "_eventStrength";
-			this._eventStrength.Size = new System.Drawing.Size(120, 20);
-			this._eventStrength.TabIndex = 11;
-			this._eventStrength.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-			// 
-			// label4
-			// 
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(685, 140);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(78, 13);
-			this.label4.TabIndex = 10;
-			this.label4.Text = "Event Strength";
-			// 
-			// _gaugeMax
-			// 
-			this._gaugeMax.DecimalPlaces = 2;
-			this._gaugeMax.Location = new System.Drawing.Point(420, 36);
-			this._gaugeMax.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._gaugeMax.Name = "_gaugeMax";
-			this._gaugeMax.Size = new System.Drawing.Size(120, 20);
-			this._gaugeMax.TabIndex = 13;
-			this._gaugeMax.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-			this._gaugeMax.ValueChanged += new System.EventHandler(this._gaugeMax_ValueChanged);
-			// 
-			// label5
-			// 
-			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(352, 38);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(62, 13);
-			this.label5.TabIndex = 12;
-			this.label5.Text = "Gauge Max";
-			// 
-			// _gaugeStart
-			// 
-			this._gaugeStart.DecimalPlaces = 2;
-			this._gaugeStart.Location = new System.Drawing.Point(420, 62);
-			this._gaugeStart.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._gaugeStart.Name = "_gaugeStart";
-			this._gaugeStart.Size = new System.Drawing.Size(120, 20);
-			this._gaugeStart.TabIndex = 15;
-			this._gaugeStart.ValueChanged += new System.EventHandler(this._gaugeStart_ValueChanged);
-			// 
-			// label6
-			// 
-			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(350, 64);
-			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(64, 13);
-			this.label6.TabIndex = 14;
-			this.label6.Text = "Gauge Start";
-			// 
-			// _resetButton
-			// 
-			this._resetButton.Location = new System.Drawing.Point(420, 88);
-			this._resetButton.Name = "_resetButton";
-			this._resetButton.Size = new System.Drawing.Size(120, 23);
-			this._resetButton.TabIndex = 16;
-			this._resetButton.Text = "Reset";
-			this._resetButton.UseVisualStyleBackColor = true;
-			this._resetButton.Click += new System.EventHandler(this._resetButton_Click);
-			// 
-			// _mouseKeyboardEventTriggers
-			// 
-			this._mouseKeyboardEventTriggers.AutoSize = true;
-			this._mouseKeyboardEventTriggers.Location = new System.Drawing.Point(700, 37);
-			this._mouseKeyboardEventTriggers.Name = "_mouseKeyboardEventTriggers";
-			this._mouseKeyboardEventTriggers.Size = new System.Drawing.Size(217, 17);
-			this._mouseKeyboardEventTriggers.TabIndex = 17;
-			this._mouseKeyboardEventTriggers.Text = "Enable Mouse & Keyboard Event Triggers";
-			this._mouseKeyboardEventTriggers.UseVisualStyleBackColor = true;
-			this._mouseKeyboardEventTriggers.CheckedChanged += new System.EventHandler(this._mouseKeyboardEventTriggers_CheckedChanged);
-			// 
-			// _triggerEventButton
-			// 
-			this._triggerEventButton.Location = new System.Drawing.Point(700, 111);
-			this._triggerEventButton.Name = "_triggerEventButton";
-			this._triggerEventButton.Size = new System.Drawing.Size(201, 23);
-			this._triggerEventButton.TabIndex = 18;
-			this._triggerEventButton.Text = "Register Event";
-			this._triggerEventButton.UseVisualStyleBackColor = true;
-			this._triggerEventButton.Click += new System.EventHandler(this._triggerEventButton_Click);
-			// 
-			// _timer
-			// 
-			this._timer.Interval = 2;
-			this._timer.Tick += new System.EventHandler(this._timer_Tick);
-			// 
-			// _gaugeReadout
-			// 
-			this._gaugeReadout.AutoSize = true;
-			this._gaugeReadout.BackColor = System.Drawing.Color.Transparent;
-			this._gaugeReadout.Location = new System.Drawing.Point(486, 190);
-			this._gaugeReadout.Name = "_gaugeReadout";
-			this._gaugeReadout.Size = new System.Drawing.Size(64, 13);
-			this._gaugeReadout.TabIndex = 19;
-			this._gaugeReadout.Text = "Gauge Start";
-			// 
-			// _keyboardEventStrength
-			// 
-			this._keyboardEventStrength.DecimalPlaces = 3;
-			this._keyboardEventStrength.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-			this._keyboardEventStrength.Location = new System.Drawing.Point(769, 57);
-			this._keyboardEventStrength.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._keyboardEventStrength.Name = "_keyboardEventStrength";
-			this._keyboardEventStrength.Size = new System.Drawing.Size(120, 20);
-			this._keyboardEventStrength.TabIndex = 21;
-			this._keyboardEventStrength.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// label7
-			// 
-			this.label7.AutoSize = true;
-			this.label7.Location = new System.Drawing.Point(664, 59);
-			this.label7.Name = "label7";
-			this.label7.Size = new System.Drawing.Size(99, 13);
-			this.label7.TabIndex = 20;
-			this.label7.Text = "Key Event Strength";
-			// 
-			// _mouseEventStrength
-			// 
-			this._mouseEventStrength.DecimalPlaces = 3;
-			this._mouseEventStrength.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-			this._mouseEventStrength.Location = new System.Drawing.Point(769, 81);
-			this._mouseEventStrength.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-			this._mouseEventStrength.Name = "_mouseEventStrength";
-			this._mouseEventStrength.Size = new System.Drawing.Size(120, 20);
-			this._mouseEventStrength.TabIndex = 23;
-			this._mouseEventStrength.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// label8
-			// 
-			this.label8.AutoSize = true;
-			this.label8.Location = new System.Drawing.Point(650, 83);
-			this.label8.Name = "label8";
-			this.label8.Size = new System.Drawing.Size(113, 13);
-			this.label8.TabIndex = 22;
-			this.label8.Text = "Mouse Event Strength";
-			// 
-			// DecayGaugeForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1113, 220);
-			this.Controls.Add(this._mouseEventStrength);
-			this.Controls.Add(this.label8);
-			this.Controls.Add(this._keyboardEventStrength);
-			this.Controls.Add(this.label7);
-			this.Controls.Add(this._gaugeReadout);
-			this.Controls.Add(this._triggerEventButton);
-			this.Controls.Add(this._mouseKeyboardEventTriggers);
-			this.Controls.Add(this._resetButton);
-			this.Controls.Add(this._gaugeStart);
-			this.Controls.Add(this.label6);
-			this.Controls.Add(this._gaugeMax);
-			this.Controls.Add(this.label5);
-			this.Controls.Add(this._eventStrength);
-			this.Controls.Add(this.label4);
-			this.Controls.Add(this._decayOffset);
-			this.Controls.Add(this._decayExponent);
-			this.Controls.Add(this._decayCoefficient);
-			this.Controls.Add(this.label3);
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.label1);
-			this.Controls.Add(this._gauge);
-			this.Name = "DecayGaugeScreen";
-			this.Text = "DecayGaugeForm";
-			this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DecayGaugeForm_KeyPress);
-			((System.ComponentModel.ISupportInitialize)(this._decayCoefficient)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._decayExponent)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._decayOffset)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._eventStrength)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._gaugeMax)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._gaugeStart)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._keyboardEventStrength)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._mouseEventStrength)).EndInit();
-			this.ResumeLayout(false);
-			this.PerformLayout();
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 8;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Decay Gauge";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Tune the curve, register an event and watch its level decay. Global input monitoring is optional and stops while this screen is hidden.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		}
+		_curve.Dock = DockStyle.Top;
+		_curve.AutoSize = true;
+		_curve.ColumnCount = 2;
+		_curve.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 230F));
+		_curve.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_decayCoefficientLabel.AutoSize = true;
+		_decayCoefficientLabel.Dock = DockStyle.Fill;
+		_decayCoefficientLabel.Margin = new Padding(0, 8, 0, 8);
+		_decayCoefficientLabel.Text = "Decay coefficient";
+		_decayCoefficient.Name = "_decayCoefficient";
+		_decayCoefficient.Minimum = 0M;
+		_decayCoefficient.Maximum = 1000M;
+		_decayCoefficient.DecimalPlaces = 2;
+		_decayCoefficient.Increment = 0.1M;
+		_decayCoefficient.Value = 1.25M;
+		_decayCoefficient.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_decayCoefficientLabel, 0, 0);
+		_curve.Controls.Add(_decayCoefficient, 1, 0);
+		_decayExponentLabel.AutoSize = true;
+		_decayExponentLabel.Dock = DockStyle.Fill;
+		_decayExponentLabel.Margin = new Padding(0, 8, 0, 8);
+		_decayExponentLabel.Text = "Decay exponent";
+		_decayExponent.Name = "_decayExponent";
+		_decayExponent.Minimum = 0M;
+		_decayExponent.Maximum = 10M;
+		_decayExponent.DecimalPlaces = 2;
+		_decayExponent.Increment = 0.1M;
+		_decayExponent.Value = 1.4M;
+		_decayExponent.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_decayExponentLabel, 0, 1);
+		_curve.Controls.Add(_decayExponent, 1, 1);
+		_decayOffsetLabel.AutoSize = true;
+		_decayOffsetLabel.Dock = DockStyle.Fill;
+		_decayOffsetLabel.Margin = new Padding(0, 8, 0, 8);
+		_decayOffsetLabel.Text = "Decay offset";
+		_decayOffset.Name = "_decayOffset";
+		_decayOffset.Minimum = 0M;
+		_decayOffset.Maximum = 1000M;
+		_decayOffset.DecimalPlaces = 2;
+		_decayOffset.Increment = 0.1M;
+		_decayOffset.Value = 0.5M;
+		_decayOffset.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_decayOffsetLabel, 0, 2);
+		_curve.Controls.Add(_decayOffset, 1, 2);
+		_gaugeMaxLabel.AutoSize = true;
+		_gaugeMaxLabel.Dock = DockStyle.Fill;
+		_gaugeMaxLabel.Margin = new Padding(0, 8, 0, 8);
+		_gaugeMaxLabel.Text = "Maximum level";
+		_gaugeMax.Name = "_gaugeMax";
+		_gaugeMax.Minimum = 1M;
+		_gaugeMax.Maximum = 10000M;
+		_gaugeMax.DecimalPlaces = 0;
+		_gaugeMax.Increment = 0.1M;
+		_gaugeMax.Value = 100M;
+		_gaugeMax.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_gaugeMaxLabel, 0, 3);
+		_curve.Controls.Add(_gaugeMax, 1, 3);
+		_gaugeStartLabel.AutoSize = true;
+		_gaugeStartLabel.Dock = DockStyle.Fill;
+		_gaugeStartLabel.Margin = new Padding(0, 8, 0, 8);
+		_gaugeStartLabel.Text = "Starting level";
+		_gaugeStart.Name = "_gaugeStart";
+		_gaugeStart.Minimum = 0M;
+		_gaugeStart.Maximum = 10000M;
+		_gaugeStart.DecimalPlaces = 0;
+		_gaugeStart.Increment = 0.1M;
+		_gaugeStart.Value = 30M;
+		_gaugeStart.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_gaugeStartLabel, 0, 4);
+		_curve.Controls.Add(_gaugeStart, 1, 4);
+		_eventStrengthLabel.AutoSize = true;
+		_eventStrengthLabel.Dock = DockStyle.Fill;
+		_eventStrengthLabel.Margin = new Padding(0, 8, 0, 8);
+		_eventStrengthLabel.Text = "Manual event strength";
+		_eventStrength.Name = "_eventStrength";
+		_eventStrength.Minimum = 0M;
+		_eventStrength.Maximum = 1000M;
+		_eventStrength.DecimalPlaces = 2;
+		_eventStrength.Increment = 0.1M;
+		_eventStrength.Value = 8M;
+		_eventStrength.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_eventStrengthLabel, 0, 5);
+		_curve.Controls.Add(_eventStrength, 1, 5);
+		_keyboardEventStrengthLabel.AutoSize = true;
+		_keyboardEventStrengthLabel.Dock = DockStyle.Fill;
+		_keyboardEventStrengthLabel.Margin = new Padding(0, 8, 0, 8);
+		_keyboardEventStrengthLabel.Text = "Keyboard event strength";
+		_keyboardEventStrength.Name = "_keyboardEventStrength";
+		_keyboardEventStrength.Minimum = 0M;
+		_keyboardEventStrength.Maximum = 1000M;
+		_keyboardEventStrength.DecimalPlaces = 2;
+		_keyboardEventStrength.Increment = 0.1M;
+		_keyboardEventStrength.Value = 2M;
+		_keyboardEventStrength.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_keyboardEventStrengthLabel, 0, 6);
+		_curve.Controls.Add(_keyboardEventStrength, 1, 6);
+		_mouseEventStrengthLabel.AutoSize = true;
+		_mouseEventStrengthLabel.Dock = DockStyle.Fill;
+		_mouseEventStrengthLabel.Margin = new Padding(0, 8, 0, 8);
+		_mouseEventStrengthLabel.Text = "Mouse event strength";
+		_mouseEventStrength.Name = "_mouseEventStrength";
+		_mouseEventStrength.Minimum = 0M;
+		_mouseEventStrength.Maximum = 1000M;
+		_mouseEventStrength.DecimalPlaces = 2;
+		_mouseEventStrength.Increment = 0.1M;
+		_mouseEventStrength.Value = 0.5M;
+		_mouseEventStrength.Dock = DockStyle.Fill;
+		_curve.Controls.Add(_mouseEventStrengthLabel, 0, 7);
+		_curve.Controls.Add(_mouseEventStrength, 1, 7);
+		_gauge.Dock = DockStyle.Fill;
+		_gauge.Height = 34;
+		_gaugeReadout.AutoSize = true;
+		_gaugeReadout.Dock = DockStyle.Fill;
+		_gaugeReadout.Margin = new Padding(0, 8, 0, 8);
+		_gaugeReadout.Text = "Level 30 / 100";
+		_triggerEventButton.AutoSize = true;
+		_triggerEventButton.MinimumSize = new Size(110, 34);
+		_triggerEventButton.Text = "Register event";
+		_triggerEventButton.UseVisualStyleBackColor = true;
+		_triggerEventButton.Click += TriggerEventButton_Click;
+		_resetButton.AutoSize = true;
+		_resetButton.MinimumSize = new Size(110, 34);
+		_resetButton.Text = "Reset curve";
+		_resetButton.UseVisualStyleBackColor = true;
+		_resetButton.Click += ResetButton_Click;
+		_actions.AutoSize = true;
+		_actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_actions.Dock = DockStyle.Fill;
+		_actions.Margin = Padding.Empty;
+		_actions.Controls.AddRange(new Control[] { _triggerEventButton, _resetButton });
+		_mouseKeyboardEventTriggers.AutoSize = true;
+		_mouseKeyboardEventTriggers.Text = "Monitor desktop mouse and keyboard input";
+		_mouseKeyboardEventTriggers.CheckedChanged += MouseKeyboardEventTriggers_CheckedChanged;
+		_timer.Interval = 50;
+		_timer.Tick += Timer_Tick;
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 8, 0, 8);
+		_status.Text = "Manual events are ready. Desktop monitoring starts only when you check the option above.";
+		_decayCoefficient.ValueChanged += CurveChanged;
+		_decayExponent.ValueChanged += CurveChanged;
+		_decayOffset.ValueChanged += CurveChanged;
+		_gaugeMax.ValueChanged += CurveChanged;
+		_gaugeStart.ValueChanged += CurveChanged;
+		_eventStrength.ValueChanged += CurveChanged;
+		_keyboardEventStrength.ValueChanged += CurveChanged;
+		_mouseEventStrength.ValueChanged += CurveChanged;
 
-		#endregion
-
-		private System.Windows.Forms.ProgressBar _gauge;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.NumericUpDown _decayCoefficient;
-		private System.Windows.Forms.NumericUpDown _decayExponent;
-		private System.Windows.Forms.NumericUpDown _decayOffset;
-		private System.Windows.Forms.NumericUpDown _eventStrength;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.NumericUpDown _gaugeMax;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.NumericUpDown _gaugeStart;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Button _resetButton;
-		private System.Windows.Forms.CheckBox _mouseKeyboardEventTriggers;
-		private System.Windows.Forms.Button _triggerEventButton;
-		private System.Windows.Forms.Timer _timer;
-		private System.Windows.Forms.Label _gaugeReadout;
-		private System.Windows.Forms.NumericUpDown _keyboardEventStrength;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.NumericUpDown _mouseEventStrength;
-		private System.Windows.Forms.Label label8;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_curve, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+		_layout.Controls.Add(_gauge, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_gaugeReadout, 0, 4);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_actions, 0, 5);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_mouseKeyboardEventTriggers, 0, 6);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_status, 0, 7);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "DecayGaugeScreen";
+		Text = "Decay Gauge";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

@@ -48,7 +48,6 @@ public static class WidgetGalleryPlugin {
 				.WithPosition(1)
 				.AddScreen<ComponentScreen>(screen => screen
 					.WithTitle("Visual grid")
-					.UseSettings<GallerySettings>()
 				)
 				.AddScreen<TablesScreen>("Tables")
 				.AddScreen<DialogsScreen>("Dialogs")

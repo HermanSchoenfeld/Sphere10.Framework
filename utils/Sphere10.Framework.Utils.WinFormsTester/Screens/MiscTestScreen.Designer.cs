@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,278 +6,241 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class MiscTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class MiscTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private TabControl _tools;
+	private TabPage _controlsPage;
+	private TabPage _utilitiesPage;
+	private TableLayoutPanel _controlsLayout;
+	private FlowLayoutPanel _controlActions;
+	private ComboBox _comboBox1;
+	private ListMerger _listMerger1;
+	private Button _button1;
+	private TextBoxEx _outputTextBox;
+	private FlowLayoutPanel _utilityActions;
+	private ProgressBarEx _progressBarEx1;
+	private Button _clipTestButton;
+	private Button _scopedContextTestButton;
+	private Button _compressTestButton;
+	private Button _pathTemplatesButton;
+	private Button _sqliteTestButton;
+	private Button _button2;
+	private Button _sqlServerTest;
+	private Button _button3;
+	private Button _systemPathsButton;
+	private Button _macAddressesButton;
+	private Button _mappingTests;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			comboBox1 = new System.Windows.Forms.ComboBox();
-			button1 = new System.Windows.Forms.Button();
-			_clipTestButton = new System.Windows.Forms.Button();
-			_scopedContextTestButton = new System.Windows.Forms.Button();
-			_outputTextBox = new Windows.Forms.TextBoxEx();
-			listMerger1 = new Windows.Forms.ListMerger();
-			_compressTestButton = new System.Windows.Forms.Button();
-			_pathTemplatesButton = new System.Windows.Forms.Button();
-			_sqliteTestButton = new System.Windows.Forms.Button();
-			button2 = new System.Windows.Forms.Button();
-			_sqlServerTest = new System.Windows.Forms.Button();
-			progressBarEx1 = new Windows.Forms.ProgressBarEx();
-			button3 = new System.Windows.Forms.Button();
-			_systemPathsButton = new System.Windows.Forms.Button();
-			_macAddressesButton = new System.Windows.Forms.Button();
-			_mappingTests = new System.Windows.Forms.Button();
-			SuspendLayout();
-			// 
-			// comboBox1
-			// 
-			comboBox1.FormattingEnabled = true;
-			comboBox1.Location = new System.Drawing.Point(14, 14);
-			comboBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			comboBox1.Name = "comboBox1";
-			comboBox1.Size = new System.Drawing.Size(140, 23);
-			comboBox1.TabIndex = 0;
-			// 
-			// button1
-			// 
-			button1.Location = new System.Drawing.Point(329, 248);
-			button1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			button1.Name = "button1";
-			button1.Size = new System.Drawing.Size(88, 27);
-			button1.TabIndex = 2;
-			button1.Text = "button1";
-			button1.UseVisualStyleBackColor = true;
-			button1.Click += button1_Click;
-			// 
-			// _clipTestButton
-			// 
-			_clipTestButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_clipTestButton.Location = new System.Drawing.Point(38, 549);
-			_clipTestButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_clipTestButton.Name = "_clipTestButton";
-			_clipTestButton.Size = new System.Drawing.Size(88, 27);
-			_clipTestButton.TabIndex = 4;
-			_clipTestButton.Text = "Clip Test";
-			_clipTestButton.UseVisualStyleBackColor = true;
-			_clipTestButton.Click += _clipTestButton_Click;
-			// 
-			// _scopedContextTestButton
-			// 
-			_scopedContextTestButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_scopedContextTestButton.Location = new System.Drawing.Point(133, 549);
-			_scopedContextTestButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_scopedContextTestButton.Name = "_scopedContextTestButton";
-			_scopedContextTestButton.Size = new System.Drawing.Size(134, 27);
-			_scopedContextTestButton.TabIndex = 5;
-			_scopedContextTestButton.Text = "Scoped Context Test";
-			_scopedContextTestButton.UseVisualStyleBackColor = true;
-			_scopedContextTestButton.Click += _scopedContextTestButton_Click;
-			// 
-			// _outputTextBox
-			// 
-			_outputTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_outputTextBox.Location = new System.Drawing.Point(38, 293);
-			_outputTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_outputTextBox.Multiline = true;
-			_outputTextBox.Name = "_outputTextBox";
-			_outputTextBox.Size = new System.Drawing.Size(1109, 252);
-			_outputTextBox.TabIndex = 3;
-			// 
-			// listMerger1
-			// 
-			listMerger1.DisplayMember = "";
-			listMerger1.LeftHeader = "_leftHeaderLabel";
-			listMerger1.Location = new System.Drawing.Point(329, 63);
-			listMerger1.Margin = new System.Windows.Forms.Padding(8);
-			listMerger1.Name = "listMerger1";
-			listMerger1.RightHeader = "_rightHeaderLabel";
-			listMerger1.Size = new System.Drawing.Size(468, 178);
-			listMerger1.TabIndex = 1;
-			listMerger1.ValueMember = "";
-			// 
-			// _compressTestButton
-			// 
-			_compressTestButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_compressTestButton.Location = new System.Drawing.Point(275, 549);
-			_compressTestButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_compressTestButton.Name = "_compressTestButton";
-			_compressTestButton.Size = new System.Drawing.Size(109, 27);
-			_compressTestButton.TabIndex = 7;
-			_compressTestButton.Text = "Compress String";
-			_compressTestButton.UseVisualStyleBackColor = true;
-			_compressTestButton.Click += _compressTestButton_Click;
-			// 
-			// _pathTemplatesButton
-			// 
-			_pathTemplatesButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_pathTemplatesButton.Location = new System.Drawing.Point(392, 549);
-			_pathTemplatesButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_pathTemplatesButton.Name = "_pathTemplatesButton";
-			_pathTemplatesButton.Size = new System.Drawing.Size(104, 27);
-			_pathTemplatesButton.TabIndex = 8;
-			_pathTemplatesButton.Text = "Path Templates";
-			_pathTemplatesButton.UseVisualStyleBackColor = true;
-			_pathTemplatesButton.Click += _pathTemplatesButton_Click;
-			// 
-			// _sqliteTestButton
-			// 
-			_sqliteTestButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_sqliteTestButton.Location = new System.Drawing.Point(504, 549);
-			_sqliteTestButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_sqliteTestButton.Name = "_sqliteTestButton";
-			_sqliteTestButton.Size = new System.Drawing.Size(84, 27);
-			_sqliteTestButton.TabIndex = 9;
-			_sqliteTestButton.Text = "Sqlite Test";
-			_sqliteTestButton.UseVisualStyleBackColor = true;
-			_sqliteTestButton.Click += _sqliteTestButton_Click;
-			// 
-			// button2
-			// 
-			button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			button2.Location = new System.Drawing.Point(596, 549);
-			button2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			button2.Name = "button2";
-			button2.Size = new System.Drawing.Size(82, 27);
-			button2.TabIndex = 10;
-			button2.Text = "Sqlite Test 2";
-			button2.UseVisualStyleBackColor = true;
-			button2.Click += button2_Click;
-			// 
-			// _sqlServerTest
-			// 
-			_sqlServerTest.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_sqlServerTest.Location = new System.Drawing.Point(686, 549);
-			_sqlServerTest.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_sqlServerTest.Name = "_sqlServerTest";
-			_sqlServerTest.Size = new System.Drawing.Size(104, 27);
-			_sqlServerTest.TabIndex = 11;
-			_sqlServerTest.Text = "SQL Server Test";
-			_sqlServerTest.UseVisualStyleBackColor = true;
-			_sqlServerTest.Click += _sqlServerTest_Click;
-			// 
-			// progressBarEx1
-			// 
-			progressBarEx1.CustomText = "sadfasdfasdf";
-			progressBarEx1.DisplayStyle = Windows.Forms.ProgressBarDisplayText.CustomText;
-			progressBarEx1.Location = new System.Drawing.Point(78, 204);
-			progressBarEx1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			progressBarEx1.Name = "progressBarEx1";
-			progressBarEx1.Size = new System.Drawing.Size(217, 27);
-			progressBarEx1.TabIndex = 12;
-			progressBarEx1.Value = 50;
-			// 
-			// button3
-			// 
-			button3.Location = new System.Drawing.Point(1018, 260);
-			button3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			button3.Name = "button3";
-			button3.Size = new System.Drawing.Size(88, 27);
-			button3.TabIndex = 13;
-			button3.Text = "button3";
-			button3.UseVisualStyleBackColor = true;
-			button3.Click += button3_Click;
-			// 
-			// _systemPathsButton
-			// 
-			_systemPathsButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_systemPathsButton.Location = new System.Drawing.Point(798, 549);
-			_systemPathsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_systemPathsButton.Name = "_systemPathsButton";
-			_systemPathsButton.Size = new System.Drawing.Size(97, 27);
-			_systemPathsButton.TabIndex = 14;
-			_systemPathsButton.Text = "System Paths";
-			_systemPathsButton.UseVisualStyleBackColor = true;
-			_systemPathsButton.Click += _systemPathsButton_Click;
-			// 
-			// _macAddressesButton
-			// 
-			_macAddressesButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			_macAddressesButton.Location = new System.Drawing.Point(903, 549);
-			_macAddressesButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_macAddressesButton.Name = "_macAddressesButton";
-			_macAddressesButton.Size = new System.Drawing.Size(102, 27);
-			_macAddressesButton.TabIndex = 15;
-			_macAddressesButton.Text = "MAC Addresses";
-			_macAddressesButton.UseVisualStyleBackColor = true;
-			_macAddressesButton.Click += _macAddressesButton_Click;
-			// 
-			// _mappingTests
-			// 
-			_mappingTests.Location = new System.Drawing.Point(38, 260);
-			_mappingTests.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			_mappingTests.Name = "_mappingTests";
-			_mappingTests.Size = new System.Drawing.Size(102, 27);
-			_mappingTests.TabIndex = 16;
-			_mappingTests.Text = "Mapping Tests";
-			_mappingTests.UseVisualStyleBackColor = true;
-			_mappingTests.Click += _mappingTests_Click;
-			// 
-			// MiscTestScreen
-			// 
-			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			Controls.Add(_mappingTests);
-			Controls.Add(_macAddressesButton);
-			Controls.Add(_systemPathsButton);
-			Controls.Add(button3);
-			Controls.Add(progressBarEx1);
-			Controls.Add(_sqlServerTest);
-			Controls.Add(button2);
-			Controls.Add(_sqliteTestButton);
-			Controls.Add(_pathTemplatesButton);
-			Controls.Add(_compressTestButton);
-			Controls.Add(_scopedContextTestButton);
-			Controls.Add(_clipTestButton);
-			Controls.Add(_outputTextBox);
-			Controls.Add(button1);
-			Controls.Add(listMerger1);
-			Controls.Add(comboBox1);
-			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			Name = "MiscTestScreen";
-			Size = new System.Drawing.Size(1162, 590);
-			ResumeLayout(false);
-			PerformLayout();
-		}
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_tools = new TabControl();
+		_tools.Name = "_tools";
+		_controlsPage = new TabPage();
+		_controlsPage.Name = "_controlsPage";
+		_utilitiesPage = new TabPage();
+		_utilitiesPage.Name = "_utilitiesPage";
+		_controlsLayout = new TableLayoutPanel();
+		_controlsLayout.Name = "_controlsLayout";
+		_controlActions = new FlowLayoutPanel();
+		_controlActions.Name = "_controlActions";
+		_comboBox1 = new ComboBox();
+		_comboBox1.Name = "_comboBox1";
+		_listMerger1 = new ListMerger();
+		_listMerger1.Name = "_listMerger1";
+		_button1 = new Button();
+		_button1.Name = "_button1";
+		_outputTextBox = new TextBoxEx();
+		_utilityActions = new FlowLayoutPanel();
+		_utilityActions.Name = "_utilityActions";
+		_progressBarEx1 = new ProgressBarEx();
+		_progressBarEx1.Name = "_progressBarEx1";
+		_clipTestButton = new Button();
+		_clipTestButton.Name = "_clipTestButton";
+		_scopedContextTestButton = new Button();
+		_scopedContextTestButton.Name = "_scopedContextTestButton";
+		_compressTestButton = new Button();
+		_compressTestButton.Name = "_compressTestButton";
+		_pathTemplatesButton = new Button();
+		_pathTemplatesButton.Name = "_pathTemplatesButton";
+		_sqliteTestButton = new Button();
+		_sqliteTestButton.Name = "_sqliteTestButton";
+		_button2 = new Button();
+		_button2.Name = "_button2";
+		_sqlServerTest = new Button();
+		_sqlServerTest.Name = "_sqlServerTest";
+		_button3 = new Button();
+		_button3.Name = "_button3";
+		_systemPathsButton = new Button();
+		_systemPathsButton.Name = "_systemPathsButton";
+		_macAddressesButton = new Button();
+		_macAddressesButton.Name = "_macAddressesButton";
+		_mappingTests = new Button();
+		_mappingTests.Name = "_mappingTests";
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		#endregion
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Controls And Utility Lab";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Move items between lists or inspect a focused Framework experiment. Database comparisons require the corresponding local provider and run only when explicitly requested.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		private System.Windows.Forms.ComboBox comboBox1;
-		private Sphere10.Framework.Windows.Forms.ListMerger listMerger1;
-		private System.Windows.Forms.Button button1;
-		private Sphere10.Framework.Windows.Forms.TextBoxEx _outputTextBox;
-		private System.Windows.Forms.Button _clipTestButton;
-		private System.Windows.Forms.Button _scopedContextTestButton;
-		private System.Windows.Forms.Button _compressTestButton;
-		private System.Windows.Forms.Button _pathTemplatesButton;
-		private System.Windows.Forms.Button _sqliteTestButton;
-		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.Button _sqlServerTest;
-		private Sphere10.Framework.Windows.Forms.ProgressBarEx progressBarEx1;
-		private System.Windows.Forms.Button button3;
-		private System.Windows.Forms.Button _systemPathsButton;
-		private System.Windows.Forms.Button _macAddressesButton;
-		private System.Windows.Forms.Button _mappingTests;
+		_tools.Dock = DockStyle.Fill;
+		_controlsPage.Text = "Native controls";
+		_utilitiesPage.Text = "Framework utility experiments";
+		_controlsLayout.Dock = DockStyle.Fill;
+		_controlsLayout.RowCount = 2;
+		_controlsLayout.ColumnCount = 1;
+		_controlsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_controlsLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_controlsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_comboBox1.Width = 220;
+		_comboBox1.Items.AddRange(new object[] { "One", "Two", "Three" });
+		_comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+		_button1.AutoSize = true;
+		_button1.MinimumSize = new Size(110, 34);
+		_button1.Text = "Load merger sample";
+		_button1.UseVisualStyleBackColor = true;
+		_button1.Click += Button1_Click;
+		_controlActions.AutoSize = true;
+		_controlActions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_controlActions.Dock = DockStyle.Fill;
+		_controlActions.Margin = Padding.Empty;
+		_controlActions.Controls.AddRange(new Control[] { _comboBox1, _button1 });
+		_listMerger1.Dock = DockStyle.Fill;
+		_listMerger1.Margin = Padding.Empty;
+		_listMerger1.LeftHeader = "Available items";
+		_listMerger1.RightHeader = "Selected items";
+		_controlsLayout.Controls.Add(_controlActions, 0, 0);
+		_controlsLayout.Controls.Add(_listMerger1, 0, 1);
+		_controlsPage.Controls.Add(_controlsLayout);
+		_utilityActions.AutoSize = true;
+		_utilityActions.Dock = DockStyle.Top;
+		_utilityActions.WrapContents = true;
+		_clipTestButton.AutoSize = true;
+		_clipTestButton.MinimumSize = new Size(110, 34);
+		_clipTestButton.Text = "Text clipping";
+		_clipTestButton.UseVisualStyleBackColor = true;
+		_clipTestButton.Click += ClipTestButton_Click;
+		_utilityActions.Controls.Add(_clipTestButton);
+		_scopedContextTestButton.AutoSize = true;
+		_scopedContextTestButton.MinimumSize = new Size(110, 34);
+		_scopedContextTestButton.Text = "Scope policies";
+		_scopedContextTestButton.UseVisualStyleBackColor = true;
+		_scopedContextTestButton.Click += ScopedContextTestButton_Click;
+		_utilityActions.Controls.Add(_scopedContextTestButton);
+		_compressTestButton.AutoSize = true;
+		_compressTestButton.MinimumSize = new Size(110, 34);
+		_compressTestButton.Text = "Compression comparison";
+		_compressTestButton.UseVisualStyleBackColor = true;
+		_compressTestButton.Click += CompressTestButton_Click;
+		_utilityActions.Controls.Add(_compressTestButton);
+		_pathTemplatesButton.AutoSize = true;
+		_pathTemplatesButton.MinimumSize = new Size(110, 34);
+		_pathTemplatesButton.Text = "Path templates";
+		_pathTemplatesButton.UseVisualStyleBackColor = true;
+		_pathTemplatesButton.Click += PathTemplatesButton_Click;
+		_utilityActions.Controls.Add(_pathTemplatesButton);
+		_sqliteTestButton.AutoSize = true;
+		_sqliteTestButton.MinimumSize = new Size(110, 34);
+		_sqliteTestButton.Text = "SQLite batch comparison";
+		_sqliteTestButton.UseVisualStyleBackColor = true;
+		_sqliteTestButton.Click += SqliteTestButton_Click;
+		_utilityActions.Controls.Add(_sqliteTestButton);
+		_button2.AutoSize = true;
+		_button2.MinimumSize = new Size(110, 34);
+		_button2.Text = "Read SQLite sample";
+		_button2.UseVisualStyleBackColor = true;
+		_button2.Click += Button2_Click;
+		_utilityActions.Controls.Add(_button2);
+		_sqlServerTest.AutoSize = true;
+		_sqlServerTest.MinimumSize = new Size(110, 34);
+		_sqlServerTest.Text = "SQL Server batch comparison";
+		_sqlServerTest.UseVisualStyleBackColor = true;
+		_sqlServerTest.Click += SqlServerTest_Click;
+		_utilityActions.Controls.Add(_sqlServerTest);
+		_button3.AutoSize = true;
+		_button3.MinimumSize = new Size(110, 34);
+		_button3.Text = "XML deep deserialization";
+		_button3.UseVisualStyleBackColor = true;
+		_button3.Click += Button3_Click;
+		_utilityActions.Controls.Add(_button3);
+		_systemPathsButton.AutoSize = true;
+		_systemPathsButton.MinimumSize = new Size(110, 34);
+		_systemPathsButton.Text = "System paths";
+		_systemPathsButton.UseVisualStyleBackColor = true;
+		_systemPathsButton.Click += SystemPathsButton_Click;
+		_utilityActions.Controls.Add(_systemPathsButton);
+		_macAddressesButton.AutoSize = true;
+		_macAddressesButton.MinimumSize = new Size(110, 34);
+		_macAddressesButton.Text = "Network adapter addresses";
+		_macAddressesButton.UseVisualStyleBackColor = true;
+		_macAddressesButton.Click += MacAddressesButton_Click;
+		_utilityActions.Controls.Add(_macAddressesButton);
+		_mappingTests.AutoSize = true;
+		_mappingTests.MinimumSize = new Size(110, 34);
+		_mappingTests.Text = "Object mapping";
+		_mappingTests.UseVisualStyleBackColor = true;
+		_mappingTests.Click += MappingTests_Click;
+		_utilityActions.Controls.Add(_mappingTests);
+		_utilitiesPage.AutoScroll = true;
+		_utilitiesPage.Controls.Add(_utilityActions);
+		_tools.TabPages.AddRange(new[] { _controlsPage, _utilitiesPage });
+		_progressBarEx1.Dock = DockStyle.Top;
+		_progressBarEx1.Height = 24;
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
+
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 55F));
+		_layout.Controls.Add(_tools, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+		_layout.Controls.Add(_progressBarEx1, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
+		_layout.Controls.Add(_outputTextBox, 0, 4);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "MiscTestScreen";
+		Text = "Controls And Utility Lab";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,149 +6,555 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class LoadingCircleTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class LoadingCircleTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private TableLayoutPanel _gallery;
+	private GroupBox _spokesCard;
+	private GroupBox _dotsCard;
+	private GroupBox _arcCard;
+	private GroupBox _pulseCard;
+	private LoadingCircle _spokes;
+	private LoadingCircle _dots;
+	private LoadingCircle _arc;
+	private LoadingCircle _pulse;
+	private Label _spokesHint;
+	private Label _dotsHint;
+	private Label _arcHint;
+	private Label _pulseHint;
+	private TableLayoutPanel _body;
+	private GroupBox _previewGroup;
+	private TableLayoutPanel _previewLayout;
+	private LoadingCircle _preview;
+	private Label _previewSummary;
+	private Label _styleLabel;
+	private ComboBox _style;
+	private Label _colourLabel;
+	private ComboBox _colour;
+	private Label _intervalLabel;
+	private NumericUpDown _interval;
+	private Label _radiusLabel;
+	private NumericUpDown _radius;
+	private Label _thicknessLabel;
+	private NumericUpDown _thickness;
+	private FlowLayoutPanel _previewCommands;
+	private Button _pausePreview;
+	private Button _resetPreview;
+	private GroupBox _operationsGroup;
+	private TableLayoutPanel _operationLayout;
+	private Label _operationIntro;
+	private FlowLayoutPanel _operationCommands;
+	private Button _runOverlay;
+	private Button _runInline;
+	private Button _cancelOperation;
+	private Panel _workArea;
+	private Panel _inlineArea;
+	private LoadingCircle _inlineIndicator;
+	private Label _inlineHint;
+	private DataGridView _sampleGrid;
+	private DataGridViewTextBoxColumn _taskColumn;
+	private DataGridViewTextBoxColumn _workloadColumn;
+	private DataGridViewTextBoxColumn _stateColumn;
+	private DataGridViewTextBoxColumn _completedColumn;
+	private Label _operationHint;
+	private Label _status;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-            this.button1 = new System.Windows.Forms.Button();
-            this._panel = new System.Windows.Forms.Panel();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.loadingCircle1 = new Sphere10.Framework.Windows.Forms.LoadingCircle();
-            this.dataGridView2 = new System.Windows.Forms.DataGridView();
-            this.button2 = new System.Windows.Forms.Button();
-            this._panel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(12, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(114, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Test Dynamic Circle";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // _panel
-            // 
-            this._panel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._panel.Controls.Add(this.dataGridView1);
-            this._panel.Location = new System.Drawing.Point(145, 12);
-            this._panel.Name = "_panel";
-            this._panel.Size = new System.Drawing.Size(200, 100);
-            this._panel.TabIndex = 1;
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 0);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(198, 98);
-            this.dataGridView1.TabIndex = 0;
-            // 
-            // panel1
-            // 
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.loadingCircle1);
-            this.panel1.Controls.Add(this.dataGridView2);
-            this.panel1.Location = new System.Drawing.Point(351, 12);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(200, 100);
-            this.panel1.TabIndex = 2;
-            // 
-            // loadingCircle1
-            // 
-            this.loadingCircle1.Active = false;
-            this.loadingCircle1.BackColor = System.Drawing.Color.Transparent;
-            this.loadingCircle1.Color = System.Drawing.Color.DarkGray;
-            this.loadingCircle1.InnerCircleRadius = 5;
-            this.loadingCircle1.Location = new System.Drawing.Point(68, 19);
-            this.loadingCircle1.Name = "loadingCircle1";
-            this.loadingCircle1.NumberSpoke = 12;
-            this.loadingCircle1.OuterCircleRadius = 11;
-            this.loadingCircle1.RotationSpeed = 100;
-            this.loadingCircle1.Size = new System.Drawing.Size(34, 30);
-            this.loadingCircle1.SpokeThickness = 2;
-            this.loadingCircle1.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
-            this.loadingCircle1.TabIndex = 0;
-            this.loadingCircle1.Text = "loadingCircle1";
-            this.loadingCircle1.Visible = false;
-            // 
-            // dataGridView2
-            // 
-            this.dataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView2.Location = new System.Drawing.Point(0, 0);
-            this.dataGridView2.Name = "dataGridView2";
-            this.dataGridView2.Size = new System.Drawing.Size(198, 98);
-            this.dataGridView2.TabIndex = 1;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(12, 53);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(114, 23);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Test Designer Circle";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // LoadingCircleTestForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(766, 256);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this._panel);
-            this.Controls.Add(this.button1);
-            this.Name = "LoadingCircleTestScreen";
-            this.Text = "LoadingCircleTestForm";
-            this._panel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
-            this.ResumeLayout(false);
+	// Keep every static gallery surface and event binding editable in Visual Studio.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_gallery = new TableLayoutPanel();
+		_spokesCard = new GroupBox();
+		_spokesCard.Name = "_spokesCard";
+		_dotsCard = new GroupBox();
+		_dotsCard.Name = "_dotsCard";
+		_arcCard = new GroupBox();
+		_arcCard.Name = "_arcCard";
+		_pulseCard = new GroupBox();
+		_pulseCard.Name = "_pulseCard";
+		_spokes = new LoadingCircle();
+		_dots = new LoadingCircle();
+		_arc = new LoadingCircle();
+		_pulse = new LoadingCircle();
+		_spokesHint = new Label();
+		_spokesHint.Name = "_spokesHint";
+		_dotsHint = new Label();
+		_dotsHint.Name = "_dotsHint";
+		_arcHint = new Label();
+		_arcHint.Name = "_arcHint";
+		_pulseHint = new Label();
+		_pulseHint.Name = "_pulseHint";
+		_body = new TableLayoutPanel();
+		_body.Name = "_body";
+		_previewGroup = new GroupBox();
+		_previewGroup.Name = "_previewGroup";
+		_previewLayout = new TableLayoutPanel();
+		_previewLayout.Name = "_previewLayout";
+		_preview = new LoadingCircle();
+		_previewSummary = new Label();
+		_styleLabel = new Label();
+		_styleLabel.Name = "_styleLabel";
+		_style = new ComboBox();
+		_colourLabel = new Label();
+		_colourLabel.Name = "_colourLabel";
+		_colour = new ComboBox();
+		_intervalLabel = new Label();
+		_intervalLabel.Name = "_intervalLabel";
+		_interval = new NumericUpDown();
+		_radiusLabel = new Label();
+		_radiusLabel.Name = "_radiusLabel";
+		_radius = new NumericUpDown();
+		_thicknessLabel = new Label();
+		_thicknessLabel.Name = "_thicknessLabel";
+		_thickness = new NumericUpDown();
+		_previewCommands = new FlowLayoutPanel();
+		_previewCommands.Name = "_previewCommands";
+		_pausePreview = new Button();
+		_resetPreview = new Button();
+		_operationsGroup = new GroupBox();
+		_operationsGroup.Name = "_operationsGroup";
+		_operationLayout = new TableLayoutPanel();
+		_operationLayout.Name = "_operationLayout";
+		_operationIntro = new Label();
+		_operationIntro.Name = "_operationIntro";
+		_operationCommands = new FlowLayoutPanel();
+		_operationCommands.Name = "_operationCommands";
+		_runOverlay = new Button();
+		_runInline = new Button();
+		_cancelOperation = new Button();
+		_workArea = new Panel();
+		_inlineArea = new Panel();
+		_inlineArea.Name = "_inlineArea";
+		_inlineIndicator = new LoadingCircle();
+		_inlineHint = new Label();
+		_inlineHint.Name = "_inlineHint";
+		_sampleGrid = new DataGridView();
+		_taskColumn = new DataGridViewTextBoxColumn();
+		_taskColumn.Name = "_taskColumn";
+		_workloadColumn = new DataGridViewTextBoxColumn();
+		_workloadColumn.Name = "_workloadColumn";
+		_stateColumn = new DataGridViewTextBoxColumn();
+		_stateColumn.Name = "_stateColumn";
+		_completedColumn = new DataGridViewTextBoxColumn();
+		_completedColumn.Name = "_completedColumn";
+		_operationHint = new Label();
+		_status = new Label();
+		_layout.SuspendLayout();
+		_gallery.SuspendLayout();
+		_spokesCard.SuspendLayout();
+		_dotsCard.SuspendLayout();
+		_arcCard.SuspendLayout();
+		_pulseCard.SuspendLayout();
+		_body.SuspendLayout();
+		_previewGroup.SuspendLayout();
+		_previewLayout.SuspendLayout();
+		_previewCommands.SuspendLayout();
+		_operationsGroup.SuspendLayout();
+		_operationLayout.SuspendLayout();
+		_operationCommands.SuspendLayout();
+		_workArea.SuspendLayout();
+		_inlineArea.SuspendLayout();
+		((ISupportInitialize)_interval).BeginInit();
+		((ISupportInitialize)_radius).BeginInit();
+		((ISupportInitialize)_thickness).BeginInit();
+		((ISupportInitialize)_sampleGrid).BeginInit();
+		SuspendLayout();
 
-		}
+		// Clear hierarchy introduces the gallery before the interactive examples.
+		_layout.Name = "loadingCircleLayout";
+		_layout.Dock = DockStyle.Fill;
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.Padding = new Padding(16, 8, 16, 8);
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 184F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+		_heading.Name = "loadingCircleHeading";
+		_heading.Text = "Loading Indicators";
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 51, 74);
+		_heading.TextAlign = ContentAlignment.MiddleLeft;
+		_introduction.Name = "loadingCircleIntroduction";
+		_introduction.Text = "Compare four animation styles, tune a live preview, then try a scoped overlay or a reusable inline indicator.";
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.ForeColor = Color.FromArgb(70, 82, 96);
+		_introduction.TextAlign = ContentAlignment.MiddleLeft;
+		_gallery.Name = "loadingCircleGallery";
+		_gallery.Dock = DockStyle.Fill;
+		_gallery.ColumnCount = 4;
+		_gallery.RowCount = 1;
+		_gallery.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+		_gallery.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+		_gallery.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+		_gallery.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+		_gallery.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-		#endregion
+		_spokesCard.Text = "Spokes";
+		_spokesCard.Dock = DockStyle.Fill;
+		_spokesCard.Padding = new Padding(8);
+		_spokesCard.Margin = new Padding(4, 4, 4, 10);
+		_spokesCard.BackColor = Color.White;
+		_spokes.Name = "loadingSpokes";
+		_spokes.Dock = DockStyle.Fill;
+		_spokes.AnimationStyle = LoadingCircleAnimationStyle.Spokes;
+		_spokes.Color = Color.FromArgb(37, 112, 184);
+		_spokes.NumberSpoke = 12;
+		_spokes.InnerCircleRadius = 17;
+		_spokes.OuterCircleRadius = 26;
+		_spokes.SpokeThickness = 4;
+		_spokes.RotationSpeed = 80;
+		_spokesHint.Text = "Classic rotating trail";
+		_spokesHint.Dock = DockStyle.Bottom;
+		_spokesHint.Height = 32;
+		_spokesHint.TextAlign = ContentAlignment.MiddleCenter;
+		_spokesHint.ForeColor = Color.FromArgb(70, 82, 96);
+		_spokesCard.Controls.Add(_spokes);
+		_spokesCard.Controls.Add(_spokesHint);
+		_gallery.Controls.Add(_spokesCard, 0, 0);
 
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Panel _panel;
-		private System.Windows.Forms.Panel panel1;
-		private Sphere10.Framework.Windows.Forms.LoadingCircle loadingCircle1;
-		private System.Windows.Forms.Button button2;
-		private System.Windows.Forms.DataGridView dataGridView1;
-		private System.Windows.Forms.DataGridView dataGridView2;
+		_dotsCard.Text = "Dots";
+		_dotsCard.Dock = DockStyle.Fill;
+		_dotsCard.Padding = new Padding(8);
+		_dotsCard.Margin = new Padding(4, 4, 4, 10);
+		_dotsCard.BackColor = Color.White;
+		_dots.Name = "loadingDots";
+		_dots.Dock = DockStyle.Fill;
+		_dots.AnimationStyle = LoadingCircleAnimationStyle.Dots;
+		_dots.Color = Color.FromArgb(0, 139, 123);
+		_dots.NumberSpoke = 12;
+		_dots.InnerCircleRadius = 17;
+		_dots.OuterCircleRadius = 26;
+		_dots.SpokeThickness = 4;
+		_dots.RotationSpeed = 80;
+		_dotsHint.Text = "Soft orbiting points";
+		_dotsHint.Dock = DockStyle.Bottom;
+		_dotsHint.Height = 32;
+		_dotsHint.TextAlign = ContentAlignment.MiddleCenter;
+		_dotsHint.ForeColor = Color.FromArgb(70, 82, 96);
+		_dotsCard.Controls.Add(_dots);
+		_dotsCard.Controls.Add(_dotsHint);
+		_gallery.Controls.Add(_dotsCard, 1, 0);
 
+		_arcCard.Text = "Arc";
+		_arcCard.Dock = DockStyle.Fill;
+		_arcCard.Padding = new Padding(8);
+		_arcCard.Margin = new Padding(4, 4, 4, 10);
+		_arcCard.BackColor = Color.White;
+		_arc.Name = "loadingArc";
+		_arc.Dock = DockStyle.Fill;
+		_arc.AnimationStyle = LoadingCircleAnimationStyle.Arc;
+		_arc.Color = Color.FromArgb(124, 82, 189);
+		_arc.NumberSpoke = 12;
+		_arc.InnerCircleRadius = 17;
+		_arc.OuterCircleRadius = 26;
+		_arc.SpokeThickness = 4;
+		_arc.RotationSpeed = 80;
+		_arcHint.Text = "Continuous ring sweep";
+		_arcHint.Dock = DockStyle.Bottom;
+		_arcHint.Height = 32;
+		_arcHint.TextAlign = ContentAlignment.MiddleCenter;
+		_arcHint.ForeColor = Color.FromArgb(70, 82, 96);
+		_arcCard.Controls.Add(_arc);
+		_arcCard.Controls.Add(_arcHint);
+		_gallery.Controls.Add(_arcCard, 2, 0);
+
+		_pulseCard.Text = "Pulse";
+		_pulseCard.Dock = DockStyle.Fill;
+		_pulseCard.Padding = new Padding(8);
+		_pulseCard.Margin = new Padding(4, 4, 4, 10);
+		_pulseCard.BackColor = Color.White;
+		_pulse.Name = "loadingPulse";
+		_pulse.Dock = DockStyle.Fill;
+		_pulse.AnimationStyle = LoadingCircleAnimationStyle.Pulse;
+		_pulse.Color = Color.FromArgb(211, 125, 28);
+		_pulse.NumberSpoke = 12;
+		_pulse.InnerCircleRadius = 17;
+		_pulse.OuterCircleRadius = 26;
+		_pulse.SpokeThickness = 4;
+		_pulse.RotationSpeed = 80;
+		_pulseHint.Text = "Expanding concentric rings";
+		_pulseHint.Dock = DockStyle.Bottom;
+		_pulseHint.Height = 32;
+		_pulseHint.TextAlign = ContentAlignment.MiddleCenter;
+		_pulseHint.ForeColor = Color.FromArgb(70, 82, 96);
+		_pulseCard.Controls.Add(_pulse);
+		_pulseCard.Controls.Add(_pulseHint);
+		_gallery.Controls.Add(_pulseCard, 3, 0);
+
+		// Appearance controls update one independent preview without rebuilding the gallery.
+		_body.Dock = DockStyle.Fill;
+		_body.ColumnCount = 2;
+		_body.RowCount = 1;
+		_body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
+		_body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
+		_body.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_previewGroup.Text = "Live preview";
+		_previewGroup.Dock = DockStyle.Fill;
+		_previewGroup.Padding = new Padding(12, 8, 12, 8);
+		_previewGroup.Margin = new Padding(4);
+		_previewLayout.Dock = DockStyle.Fill;
+		_previewLayout.ColumnCount = 2;
+		_previewLayout.RowCount = 8;
+		_previewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
+		_previewLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+		_previewLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_preview.Name = "loadingPreview";
+		_preview.Dock = DockStyle.Fill;
+		_preview.BackColor = Color.White;
+		_preview.Color = Color.FromArgb(37, 112, 184);
+		_preview.NumberSpoke = 12;
+		_preview.InnerCircleRadius = 17;
+		_preview.OuterCircleRadius = 26;
+		_preview.SpokeThickness = 4;
+		_preview.RotationSpeed = 80;
+		_previewSummary.Name = "loadingPreviewSummary";
+		_previewSummary.Dock = DockStyle.Fill;
+		_previewSummary.TextAlign = ContentAlignment.MiddleCenter;
+		_previewSummary.ForeColor = Color.DimGray;
+		_previewLayout.Controls.Add(_preview, 0, 0);
+		_previewLayout.SetColumnSpan(_preview, 2);
+		_previewLayout.Controls.Add(_previewSummary, 0, 1);
+		_previewLayout.SetColumnSpan(_previewSummary, 2);
+		_styleLabel.Text = "Style";
+		_styleLabel.Dock = DockStyle.Fill;
+		_styleLabel.TextAlign = ContentAlignment.MiddleLeft;
+		_style.Name = "loadingStyle";
+		_style.Dock = DockStyle.Fill;
+		_style.TabIndex = 0;
+		_previewLayout.Controls.Add(_styleLabel, 0, 2);
+		_previewLayout.Controls.Add(_style, 1, 2);
+		_colourLabel.Text = "Colour";
+		_colourLabel.Dock = DockStyle.Fill;
+		_colourLabel.TextAlign = ContentAlignment.MiddleLeft;
+		_colour.Name = "loadingColour";
+		_colour.Dock = DockStyle.Fill;
+		_colour.TabIndex = 1;
+		_previewLayout.Controls.Add(_colourLabel, 0, 3);
+		_previewLayout.Controls.Add(_colour, 1, 3);
+		_intervalLabel.Text = "Interval (ms)";
+		_intervalLabel.Dock = DockStyle.Fill;
+		_intervalLabel.TextAlign = ContentAlignment.MiddleLeft;
+		_interval.Name = "loadingInterval";
+		_interval.Dock = DockStyle.Fill;
+		_interval.TabIndex = 2;
+		_previewLayout.Controls.Add(_intervalLabel, 0, 4);
+		_previewLayout.Controls.Add(_interval, 1, 4);
+		_radiusLabel.Text = "Radius (px)";
+		_radiusLabel.Dock = DockStyle.Fill;
+		_radiusLabel.TextAlign = ContentAlignment.MiddleLeft;
+		_radius.Name = "loadingRadius";
+		_radius.Dock = DockStyle.Fill;
+		_radius.TabIndex = 3;
+		_previewLayout.Controls.Add(_radiusLabel, 0, 5);
+		_previewLayout.Controls.Add(_radius, 1, 5);
+		_thicknessLabel.Text = "Line / dot (px)";
+		_thicknessLabel.Dock = DockStyle.Fill;
+		_thicknessLabel.TextAlign = ContentAlignment.MiddleLeft;
+		_thickness.Name = "loadingThickness";
+		_thickness.Dock = DockStyle.Fill;
+		_thickness.TabIndex = 4;
+		_previewLayout.Controls.Add(_thicknessLabel, 0, 6);
+		_previewLayout.Controls.Add(_thickness, 1, 6);
+		_style.DropDownStyle = ComboBoxStyle.DropDownList;
+		_style.Items.AddRange(new object[] { "Spokes", "Dots", "Arc", "Pulse" });
+		_style.SelectedIndex = 0;
+		_colour.DropDownStyle = ComboBoxStyle.DropDownList;
+		_colour.Items.AddRange(new object[] { "Ocean blue", "Jade green", "Violet", "Warm amber", "Graphite" });
+		_colour.SelectedIndex = 0;
+		_interval.Minimum = 20M;
+		_interval.Maximum = 250M;
+		_interval.Increment = 10M;
+		_interval.Value = 80M;
+		_radius.Minimum = 12M;
+		_radius.Maximum = 42M;
+		_radius.Value = 26M;
+		_thickness.Minimum = 1M;
+		_thickness.Maximum = 8M;
+		_thickness.Value = 4M;
+		_style.SelectedIndexChanged += PreviewChanged;
+		_colour.SelectedIndexChanged += PreviewChanged;
+		_interval.ValueChanged += PreviewChanged;
+		_radius.ValueChanged += PreviewChanged;
+		_thickness.ValueChanged += PreviewChanged;
+		_previewCommands.Dock = DockStyle.Fill;
+		_previewCommands.AutoSize = true;
+		_previewCommands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_previewCommands.Margin = Padding.Empty;
+		_previewCommands.WrapContents = false;
+		_pausePreview.Name = "pauseLoadingPreview";
+		_pausePreview.Text = "Pause preview";
+		_pausePreview.AutoSize = true;
+		_pausePreview.Padding = new Padding(8, 3, 8, 3);
+		_pausePreview.TabIndex = 5;
+		_pausePreview.Click += PausePreviewClicked;
+		_resetPreview.Name = "resetLoadingPreview";
+		_resetPreview.Text = "Reset";
+		_resetPreview.AutoSize = true;
+		_resetPreview.Padding = new Padding(8, 3, 8, 3);
+		_resetPreview.TabIndex = 6;
+		_resetPreview.Click += ResetPreviewClicked;
+		_previewCommands.Controls.Add(_pausePreview);
+		_previewCommands.Controls.Add(_resetPreview);
+		_previewLayout.Controls.Add(_previewCommands, 0, 7);
+		_previewLayout.SetColumnSpan(_previewCommands, 2);
+		_previewGroup.Controls.Add(_previewLayout);
+		_body.Controls.Add(_previewGroup, 0, 0);
+
+		// Two real animation-lifetime examples share a small, populated work queue.
+		_operationsGroup.Text = "Animation scopes";
+		_operationsGroup.Dock = DockStyle.Fill;
+		_operationsGroup.Padding = new Padding(12, 8, 12, 8);
+		_operationsGroup.Margin = new Padding(4);
+		_operationLayout.Dock = DockStyle.Fill;
+		_operationLayout.ColumnCount = 1;
+		_operationLayout.RowCount = 4;
+		_operationLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_operationLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+		_operationLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_operationLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_operationLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 46F));
+		_operationIntro.Text = "The overlay owns a temporary indicator and disables its workspace. The inline example reuses the indicator below.";
+		_operationIntro.Dock = DockStyle.Fill;
+		_operationIntro.ForeColor = Color.FromArgb(70, 82, 96);
+		_operationCommands.Dock = DockStyle.Fill;
+		_operationCommands.AutoSize = true;
+		_operationCommands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_operationCommands.Margin = Padding.Empty;
+		_operationCommands.WrapContents = false;
+		_runOverlay.Name = "runLoadingOverlay";
+		_runOverlay.Text = "Run overlay";
+		_runOverlay.AutoSize = true;
+		_runOverlay.Padding = new Padding(8, 3, 8, 3);
+		_runOverlay.Click += RunOverlayClicked;
+		_runInline.Name = "runLoadingInline";
+		_runInline.Text = "Run inline";
+		_runInline.AutoSize = true;
+		_runInline.Padding = new Padding(8, 3, 8, 3);
+		_runInline.Click += RunInlineClicked;
+		_cancelOperation.Name = "cancelLoadingOperation";
+		_cancelOperation.Text = "Cancel";
+		_cancelOperation.AutoSize = true;
+		_cancelOperation.Padding = new Padding(8, 3, 8, 3);
+		_cancelOperation.Enabled = false;
+		_cancelOperation.Click += CancelOperationClicked;
+		_operationCommands.Controls.Add(_runOverlay);
+		_operationCommands.Controls.Add(_runInline);
+		_operationCommands.Controls.Add(_cancelOperation);
+		_workArea.Name = "loadingWorkArea";
+		_workArea.Dock = DockStyle.Fill;
+		_workArea.BorderStyle = BorderStyle.FixedSingle;
+		_inlineArea.Dock = DockStyle.Top;
+		_inlineArea.Height = 66;
+		_inlineArea.BackColor = Color.FromArgb(244, 247, 250);
+		_inlineIndicator.Name = "loadingInlineIndicator";
+		_inlineIndicator.Dock = DockStyle.Left;
+		_inlineIndicator.Width = 72;
+		_inlineIndicator.AnimationStyle = LoadingCircleAnimationStyle.Arc;
+		_inlineIndicator.Color = Color.FromArgb(0, 139, 123);
+		_inlineIndicator.InnerCircleRadius = 13;
+		_inlineIndicator.OuterCircleRadius = 20;
+		_inlineIndicator.SpokeThickness = 3;
+		_inlineIndicator.RotationSpeed = 70;
+		_inlineIndicator.Visible = false;
+		_inlineHint.Text = "Reusable inline indicator\r\nAppears while the inline task is running.";
+		_inlineHint.Dock = DockStyle.Fill;
+		_inlineHint.TextAlign = ContentAlignment.MiddleLeft;
+		_inlineHint.Padding = new Padding(10, 0, 10, 0);
+		_inlineHint.ForeColor = Color.FromArgb(70, 82, 96);
+		_inlineArea.Controls.Add(_inlineHint);
+		_inlineArea.Controls.Add(_inlineIndicator);
+		_sampleGrid.Name = "loadingSampleGrid";
+		_sampleGrid.Dock = DockStyle.Fill;
+		_sampleGrid.BackgroundColor = Color.White;
+		_sampleGrid.BorderStyle = BorderStyle.None;
+		_sampleGrid.ReadOnly = true;
+		_sampleGrid.AllowUserToAddRows = false;
+		_sampleGrid.AllowUserToDeleteRows = false;
+		_sampleGrid.AllowUserToResizeRows = false;
+		_sampleGrid.RowHeadersVisible = false;
+		_sampleGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+		_sampleGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+		_sampleGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+		_sampleGrid.RowTemplate.Height = 28;
+		_taskColumn.HeaderText = "Task";
+		_taskColumn.FillWeight = 125F;
+		_workloadColumn.HeaderText = "Workload";
+		_workloadColumn.FillWeight = 90F;
+		_stateColumn.HeaderText = "Status";
+		_stateColumn.FillWeight = 80F;
+		_completedColumn.HeaderText = "Last run";
+		_completedColumn.FillWeight = 90F;
+		_sampleGrid.Columns.AddRange(new DataGridViewColumn[] { _taskColumn, _workloadColumn, _stateColumn, _completedColumn });
+		_workArea.Controls.Add(_sampleGrid);
+		_workArea.Controls.Add(_inlineArea);
+		_operationHint.Name = "loadingOperationHint";
+		_operationHint.Text = "A 1.2-second simulated task. No network or database calls are made.";
+		_operationHint.Dock = DockStyle.Fill;
+		_operationHint.TextAlign = ContentAlignment.MiddleLeft;
+		_operationHint.ForeColor = Color.DimGray;
+		_operationLayout.Controls.Add(_operationIntro, 0, 0);
+		_operationLayout.Controls.Add(_operationCommands, 0, 1);
+		_operationLayout.Controls.Add(_workArea, 0, 2);
+		_operationLayout.Controls.Add(_operationHint, 0, 3);
+		_operationsGroup.Controls.Add(_operationLayout);
+		_body.Controls.Add(_operationsGroup, 1, 0);
+		_status.Name = "loadingOperationStatus";
+		_status.Text = "Ready. Tune the preview or run an animation-scope example.";
+		_status.Dock = DockStyle.Fill;
+		_status.TextAlign = ContentAlignment.MiddleLeft;
+		_status.ForeColor = Color.FromArgb(70, 82, 96);
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_gallery, 0, 2);
+		_layout.Controls.Add(_body, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = Color.White;
+		Font = SystemFonts.MessageBoxFont;
+		Name = "LoadingCircleTestScreen";
+		MinimumSize = new Size(800, 650);
+		Size = new Size(1040, 760);
+		Controls.Add(_layout);
+		((ISupportInitialize)_interval).EndInit();
+		((ISupportInitialize)_radius).EndInit();
+		((ISupportInitialize)_thickness).EndInit();
+		((ISupportInitialize)_sampleGrid).EndInit();
+		_inlineArea.ResumeLayout(false);
+		_workArea.ResumeLayout(false);
+		_operationCommands.ResumeLayout(false);
+		_operationLayout.ResumeLayout(false);
+		_operationsGroup.ResumeLayout(false);
+		_previewCommands.ResumeLayout(false);
+		_previewLayout.ResumeLayout(false);
+		_previewGroup.ResumeLayout(false);
+		_body.ResumeLayout(false);
+		_pulseCard.ResumeLayout(false);
+		_arcCard.ResumeLayout(false);
+		_dotsCard.ResumeLayout(false);
+		_spokesCard.ResumeLayout(false);
+		_gallery.ResumeLayout(false);
+		_layout.ResumeLayout(false);
+		ResumeLayout(false);
 	}
 }
-
-

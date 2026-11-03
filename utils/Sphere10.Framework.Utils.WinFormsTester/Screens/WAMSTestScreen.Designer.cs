@@ -1,320 +1,210 @@
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class WAMSTestScreen {
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		#region Component Designer generated code
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._keyMatchingTestsButton = new System.Windows.Forms.Button();
-			this._commandToolBox = new System.Windows.Forms.GroupBox();
-			this._regFastButton = new System.Windows.Forms.Button();
-			this._registerStandardHashers = new System.Windows.Forms.Button();
-			this._miscTests2 = new System.Windows.Forms.Button();
-			this._miscTests = new System.Windows.Forms.Button();
-			this._verificationSpeedButton = new System.Windows.Forms.Button();
-			this._outputGroupBox = new System.Windows.Forms.GroupBox();
-			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this._optionsGroupBox = new System.Windows.Forms.GroupBox();
-			this.label3 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
-			this._heightControl = new System.Windows.Forms.NumericUpDown();
-			this._winternitzControl = new System.Windows.Forms.NumericUpDown();
-			this._hashAlgControl = new Sphere10.Framework.Windows.Forms.EnumComboBox();
-			this._optimizedPubKeyCheckBox = new System.Windows.Forms.CheckBox();
-			this._commandToolBox.SuspendLayout();
-			this._outputGroupBox.SuspendLayout();
-			this._optionsGroupBox.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this._heightControl)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this._winternitzControl)).BeginInit();
-			this.SuspendLayout();
-			// 
-			// _keyMatchingTestsButton
-			// 
-			this._keyMatchingTestsButton.Location = new System.Drawing.Point(7, 22);
-			this._keyMatchingTestsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._keyMatchingTestsButton.Name = "_keyMatchingTestsButton";
-			this._keyMatchingTestsButton.Size = new System.Drawing.Size(115, 27);
-			this._keyMatchingTestsButton.TabIndex = 0;
-			this._keyMatchingTestsButton.Text = "Key Matching Tests";
-			this._keyMatchingTestsButton.UseVisualStyleBackColor = true;
-			this._keyMatchingTestsButton.Click += new System.EventHandler(this._keyMatchingTestsButton_Click);
-			// 
-			// _commandToolBox
-			// 
-			this._commandToolBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._commandToolBox.Controls.Add(this._regFastButton);
-			this._commandToolBox.Controls.Add(this._registerStandardHashers);
-			this._commandToolBox.Controls.Add(this._miscTests2);
-			this._commandToolBox.Controls.Add(this._miscTests);
-			this._commandToolBox.Controls.Add(this._verificationSpeedButton);
-			this._commandToolBox.Controls.Add(this._keyMatchingTestsButton);
-			this._commandToolBox.Location = new System.Drawing.Point(4, 234);
-			this._commandToolBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._commandToolBox.Name = "_commandToolBox";
-			this._commandToolBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._commandToolBox.Size = new System.Drawing.Size(601, 136);
-			this._commandToolBox.TabIndex = 1;
-			this._commandToolBox.TabStop = false;
-			this._commandToolBox.Text = "Commands";
-			// 
-			// _regFastButton
-			// 
-			this._regFastButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._regFastButton.Location = new System.Drawing.Point(478, 55);
-			this._regFastButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._regFastButton.Name = "_regFastButton";
-			this._regFastButton.Size = new System.Drawing.Size(115, 27);
-			this._regFastButton.TabIndex = 3;
-			this._regFastButton.Text = "Reg Fast";
-			this._regFastButton.UseVisualStyleBackColor = true;
-			this._regFastButton.Click += new System.EventHandler(this._regFastButton_Click);
-			// 
-			// _registerStandardHashers
-			// 
-			this._registerStandardHashers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this._registerStandardHashers.Location = new System.Drawing.Point(478, 22);
-			this._registerStandardHashers.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._registerStandardHashers.Name = "_registerStandardHashers";
-			this._registerStandardHashers.Size = new System.Drawing.Size(115, 27);
-			this._registerStandardHashers.TabIndex = 2;
-			this._registerStandardHashers.Text = "Reg Standard";
-			this._registerStandardHashers.UseVisualStyleBackColor = true;
-			this._registerStandardHashers.Click += new System.EventHandler(this._registerStandardHashers_Click);
-			// 
-			// _miscTests2
-			// 
-			this._miscTests2.Location = new System.Drawing.Point(131, 88);
-			this._miscTests2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._miscTests2.Name = "_miscTests2";
-			this._miscTests2.Size = new System.Drawing.Size(115, 27);
-			this._miscTests2.TabIndex = 1;
-			this._miscTests2.Text = "Misc Tests 2";
-			this._miscTests2.UseVisualStyleBackColor = true;
-			this._miscTests2.Click += new System.EventHandler(this._miscButton2_Click);
-			// 
-			// _miscTests
-			// 
-			this._miscTests.Location = new System.Drawing.Point(8, 88);
-			this._miscTests.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._miscTests.Name = "_miscTests";
-			this._miscTests.Size = new System.Drawing.Size(115, 27);
-			this._miscTests.TabIndex = 1;
-			this._miscTests.Text = "Misc Tests";
-			this._miscTests.UseVisualStyleBackColor = true;
-			this._miscTests.Click += new System.EventHandler(this._miscButton_Click);
-			// 
-			// _verificationSpeedButton
-			// 
-			this._verificationSpeedButton.Location = new System.Drawing.Point(7, 55);
-			this._verificationSpeedButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._verificationSpeedButton.Name = "_verificationSpeedButton";
-			this._verificationSpeedButton.Size = new System.Drawing.Size(115, 27);
-			this._verificationSpeedButton.TabIndex = 1;
-			this._verificationSpeedButton.Text = "Verification Tests";
-			this._verificationSpeedButton.UseVisualStyleBackColor = true;
-			this._verificationSpeedButton.Click += new System.EventHandler(this._verificationSpeedButton_Click);
-			// 
-			// _outputGroupBox
-			// 
-			this._outputGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputGroupBox.Controls.Add(this._outputTextBox);
-			this._outputGroupBox.Location = new System.Drawing.Point(4, 3);
-			this._outputGroupBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._outputGroupBox.Name = "_outputGroupBox";
-			this._outputGroupBox.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._outputGroupBox.Size = new System.Drawing.Size(849, 223);
-			this._outputGroupBox.TabIndex = 2;
-			this._outputGroupBox.TabStop = false;
-			this._outputGroupBox.Text = "Output";
-			// 
-			// _outputTextBox
-			// 
-			this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputTextBox.Location = new System.Drawing.Point(7, 22);
-			this._outputTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this._outputTextBox.Multiline = true;
-			this._outputTextBox.Name = "_outputTextBox";
-			this._outputTextBox.Size = new System.Drawing.Size(834, 195);
-			this._outputTextBox.TabIndex = 0;
-			// 
-			// _optionsGroupBox
-			// 
-			this._optionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this._optionsGroupBox.Controls.Add(this._optimizedPubKeyCheckBox);
-			this._optionsGroupBox.Controls.Add(this.label3);
-			this._optionsGroupBox.Controls.Add(this.label2);
-			this._optionsGroupBox.Controls.Add(this.label1);
-			this._optionsGroupBox.Controls.Add(this._heightControl);
-			this._optionsGroupBox.Controls.Add(this._winternitzControl);
-			this._optionsGroupBox.Controls.Add(this._hashAlgControl);
-			this._optionsGroupBox.Location = new System.Drawing.Point(612, 234);
-			this._optionsGroupBox.Name = "_optionsGroupBox";
-			this._optionsGroupBox.Size = new System.Drawing.Size(241, 136);
-			this._optionsGroupBox.TabIndex = 3;
-			this._optionsGroupBox.TabStop = false;
-			this._optionsGroupBox.Text = "Options";
-			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(37, 80);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(61, 15);
-			this.label3.TabIndex = 5;
-			this.label3.Text = "Height (h)";
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(17, 53);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(81, 15);
-			this.label2.TabIndex = 4;
-			this.label2.Text = "Winternitz (w)";
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(43, 20);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(55, 15);
-			this.label1.TabIndex = 3;
-			this.label1.Text = "Hash Alg";
-			// 
-			// _heightControl
-			// 
-			this._heightControl.Location = new System.Drawing.Point(106, 78);
-			this._heightControl.Maximum = new decimal(new int[] {
-            16,
-            0,
-            0,
-            0});
-			this._heightControl.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this._heightControl.Name = "_heightControl";
-			this._heightControl.Size = new System.Drawing.Size(120, 23);
-			this._heightControl.TabIndex = 2;
-			this._heightControl.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			// 
-			// _winternitzControl
-			// 
-			this._winternitzControl.Location = new System.Drawing.Point(106, 51);
-			this._winternitzControl.Maximum = new decimal(new int[] {
-            16,
-            0,
-            0,
-            0});
-			this._winternitzControl.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this._winternitzControl.Name = "_winternitzControl";
-			this._winternitzControl.Size = new System.Drawing.Size(120, 23);
-			this._winternitzControl.TabIndex = 1;
-			this._winternitzControl.Value = new decimal(new int[] {
-            8,
-            0,
-            0,
-            0});
-			// 
-			// _hashAlgControl
-			// 
-			this._hashAlgControl.AllowEmptyOption = false;
-			this._hashAlgControl.DisplayMember = "Display";
-			this._hashAlgControl.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this._hashAlgControl.EmptyOptionText = "";
-			this._hashAlgControl.FormattingEnabled = true;
-			this._hashAlgControl.Location = new System.Drawing.Point(106, 17);
-			this._hashAlgControl.Name = "_hashAlgControl";
-			this._hashAlgControl.Size = new System.Drawing.Size(121, 23);
-			this._hashAlgControl.TabIndex = 0;
-			this._hashAlgControl.ValueMember = "Value";
-			// 
-			// _optimizedPubKeyCheckBox
-			// 
-			this._optimizedPubKeyCheckBox.AutoSize = true;
-			this._optimizedPubKeyCheckBox.Checked = true;
-			this._optimizedPubKeyCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-			this._optimizedPubKeyCheckBox.Location = new System.Drawing.Point(82, 107);
-			this._optimizedPubKeyCheckBox.Name = "_optimizedPubKeyCheckBox";
-			this._optimizedPubKeyCheckBox.Size = new System.Drawing.Size(144, 19);
-			this._optimizedPubKeyCheckBox.TabIndex = 6;
-			this._optimizedPubKeyCheckBox.Text = "Optimized Public Keys";
-			this._optimizedPubKeyCheckBox.UseVisualStyleBackColor = true;
-			// 
-			// WAMSTestScreen
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._optionsGroupBox);
-			this.Controls.Add(this._outputGroupBox);
-			this.Controls.Add(this._commandToolBox);
-			this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			this.Name = "WAMSTestScreen";
-			this.Size = new System.Drawing.Size(853, 373);
-			this._commandToolBox.ResumeLayout(false);
-			this._outputGroupBox.ResumeLayout(false);
-			this._outputGroupBox.PerformLayout();
-			this._optionsGroupBox.ResumeLayout(false);
-			this._optionsGroupBox.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this._heightControl)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this._winternitzControl)).EndInit();
-			this.ResumeLayout(false);
+partial class WAMSTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private Button _keyMatchingTestsButton;
+	private Button _verificationSpeedButton;
+	private Button _miscButton;
+	private Button _miscButton2;
+	private Button _registerStandardHashers;
+	private Button _regFastButton;
+	private Button _cancelButton;
+	private NumericUpDown _heightControl;
+	private NumericUpDown _winternitzControl;
+	private NumericUpDown _seconds;
+	private EnumComboBox _hashAlgControl;
+	private CheckBox _fullMatrix;
+	private TextBox _outputTextBox;
+	private Label _heightLabel;
+	private Label _winternitzLabel;
+	private Label _secondsLabel;
 
-		}
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_keyMatchingTestsButton = new Button();
+		_verificationSpeedButton = new Button();
+		_miscButton = new Button();
+		_miscButton2 = new Button();
+		_registerStandardHashers = new Button();
+		_regFastButton = new Button();
+		_cancelButton = new Button();
+		_heightControl = new NumericUpDown();
+		_winternitzControl = new NumericUpDown();
+		_seconds = new NumericUpDown();
+		_hashAlgControl = new EnumComboBox();
+		_fullMatrix = new CheckBox();
+		_outputTextBox = new TextBox();
+		_heightLabel = new Label();
+		_winternitzLabel = new Label();
+		_secondsLabel = new Label();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-		#endregion
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_heightControl.Name = "_heightControl";
+		_winternitzControl.Name = "_winternitzControl";
+		_seconds.Name = "_seconds";
+		_hashAlgControl.Name = "_hashAlgControl";
+		_fullMatrix.Name = "_fullMatrix";
+		_heightLabel.Name = "_heightLabel";
+		_winternitzLabel.Name = "_winternitzLabel";
+		_secondsLabel.Name = "_secondsLabel";
 
-		private System.Windows.Forms.Button _keyMatchingTestsButton;
-		private System.Windows.Forms.GroupBox _commandToolBox;
-		private System.Windows.Forms.GroupBox _outputGroupBox;
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private System.Windows.Forms.Button _verificationSpeedButton;
-		private System.Windows.Forms.Button _miscTests;
-		private System.Windows.Forms.Button _miscTests2;
-		private System.Windows.Forms.GroupBox _optionsGroupBox;
-		private Sphere10.Framework.Windows.Forms.EnumComboBox _hashAlgControl;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.NumericUpDown _heightControl;
-		private System.Windows.Forms.NumericUpDown _winternitzControl;
-		private System.Windows.Forms.Button _regFastButton;
-		private System.Windows.Forms.Button _registerStandardHashers;
-		private System.Windows.Forms.CheckBox _optimizedPubKeyCheckBox;
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "WAMS signature laboratory";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Verify signatures and compare bounded key-matching, verification and parameter workloads. Cancel is observed between cryptographic operations.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_keyMatchingTestsButton.Text = "Key matching";
+		_keyMatchingTestsButton.Name = "_keyMatchingTestsButton";
+		_keyMatchingTestsButton.AutoSize = true;
+		_keyMatchingTestsButton.MinimumSize = new Size(96, 30);
+		_keyMatchingTestsButton.Click += _keyMatchingTestsButton_Click;
+		_commands.Controls.Add(_keyMatchingTestsButton);
+		_verificationSpeedButton.Text = "Verification speed";
+		_verificationSpeedButton.Name = "_verificationSpeedButton";
+		_verificationSpeedButton.AutoSize = true;
+		_verificationSpeedButton.MinimumSize = new Size(96, 30);
+		_verificationSpeedButton.Click += _verificationSpeedButton_Click;
+		_commands.Controls.Add(_verificationSpeedButton);
+		_miscButton.Text = "Signature round trip";
+		_miscButton.Name = "_miscButton";
+		_miscButton.AutoSize = true;
+		_miscButton.MinimumSize = new Size(96, 30);
+		_miscButton.Click += _miscButton_Click;
+		_commands.Controls.Add(_miscButton);
+		_miscButton2.Text = "Compare parameters";
+		_miscButton2.Name = "_miscButton2";
+		_miscButton2.AutoSize = true;
+		_miscButton2.MinimumSize = new Size(96, 30);
+		_miscButton2.Click += _miscButton2_Click;
+		_commands.Controls.Add(_miscButton2);
+		_registerStandardHashers.Text = "Standard hash providers";
+		_registerStandardHashers.Name = "_registerStandardHashers";
+		_registerStandardHashers.AutoSize = true;
+		_registerStandardHashers.MinimumSize = new Size(96, 30);
+		_registerStandardHashers.Click += _registerStandardHashers_Click;
+		_commands.Controls.Add(_registerStandardHashers);
+		_regFastButton.Text = "Fast hash providers";
+		_regFastButton.Name = "_regFastButton";
+		_regFastButton.AutoSize = true;
+		_regFastButton.MinimumSize = new Size(96, 30);
+		_regFastButton.Click += _regFastButton_Click;
+		_commands.Controls.Add(_regFastButton);
+		_cancelButton.Text = "Cancel";
+		_cancelButton.Name = "_cancelButton";
+		_cancelButton.AutoSize = true;
+		_cancelButton.MinimumSize = new Size(96, 30);
+		_cancelButton.Click += CancelClicked;
+		_commands.Controls.Add(_cancelButton);
+		_heightLabel.Text = "Height";
+		_heightLabel.AutoSize = true;
+		_heightLabel.Padding = new Padding(0, 8, 0, 0);
+		_heightControl.Minimum = 1;
+		_heightControl.Maximum = 16;
+		_heightControl.Value = 1;
+		_heightControl.Width = 60;
+		_winternitzLabel.Text = "Winternitz";
+		_winternitzLabel.AutoSize = true;
+		_winternitzLabel.Padding = new Padding(0, 8, 0, 0);
+		_winternitzControl.Minimum = 1;
+		_winternitzControl.Maximum = 16;
+		_winternitzControl.Value = 8;
+		_winternitzControl.Width = 60;
+		_secondsLabel.Text = "Seconds";
+		_secondsLabel.AutoSize = true;
+		_secondsLabel.Padding = new Padding(0, 8, 0, 0);
+		_seconds.Minimum = 1;
+		_seconds.Maximum = 30;
+		_seconds.Value = 3;
+		_seconds.Width = 60;
+		_hashAlgControl.Width = 170;
+		_fullMatrix.Text = "Full parameter matrix (large trees are expensive)";
+		_fullMatrix.AutoSize = true;
+		_commands.Controls.Add(_heightLabel);
+		_commands.Controls.Add(_heightControl);
+		_commands.Controls.Add(_winternitzLabel);
+		_commands.Controls.Add(_winternitzControl);
+		_commands.Controls.Add(_hashAlgControl);
+		_commands.Controls.Add(_secondsLabel);
+		_commands.Controls.Add(_seconds);
+		_commands.Controls.Add(_fullMatrix);
+		_cancelButton.Enabled = false;
+		_heightControl.ValueChanged += PreferencesChanged;
+		_winternitzControl.ValueChanged += PreferencesChanged;
+		_seconds.ValueChanged += PreferencesChanged;
+		_hashAlgControl.SelectedIndexChanged += PreferencesChanged;
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.Name = "_outputTextBox";
+
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(_outputTextBox, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "WAMSTestScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

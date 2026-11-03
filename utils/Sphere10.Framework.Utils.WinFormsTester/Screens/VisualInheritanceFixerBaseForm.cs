@@ -6,12 +6,14 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Windows.Forms;
 using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Demonstrates designer-owned inherited native menu, toolbar and status contributions.</summary>
 public partial class VisualInheritanceFixerBaseForm : Form {
+	/// <summary>Creates the visual inheritance example without application or storage side effects.</summary>
 	public VisualInheritanceFixerBaseForm() {
 		InitializeComponent();
 	}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,157 +6,107 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester
-{
-    partial class TabControlTestScreen
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-        #region Windows Form Designer generated code
+partial class TabControlTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private TabControl _tabControl1;
+	private TabPage _tabPage1;
+	private TabPage _tabPage2;
+	private TabControlTestControl _tabControlTestControl1;
+	private GroupBox _groupBox1;
+	private RadioButton _radioButton1;
+	private TextBox _textBox1;
+	private Label _label1;
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.tabControlTestControl1 = new Sphere10.Framework.Utils.WinFormsTester.TabControlTestControl();
-            this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // tabControl1
-            // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(97, 37);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(516, 220);
-            this.tabControl1.TabIndex = 0;
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.tabControlTestControl1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(508, 194);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // tabPage2
-            // 
-            this.tabPage2.Controls.Add(this.groupBox1);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(508, 194);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "tabPage2";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.radioButton1);
-            this.groupBox1.Controls.Add(this.textBox1);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(38, 24);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(365, 150);
-            this.groupBox1.TabIndex = 4;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "groupBox1";
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(70, 78);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(85, 17);
-            this.radioButton1.TabIndex = 5;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "radioButton1";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(70, 113);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 4;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(67, 47);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(64, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Test Control";
-            // 
-            // tabControlTestControl1
-            // 
-            this.tabControlTestControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControlTestControl1.Location = new System.Drawing.Point(3, 3);
-            this.tabControlTestControl1.Name = "tabControlTestControl1";
-            this.tabControlTestControl1.Size = new System.Drawing.Size(502, 188);
-            this.tabControlTestControl1.TabIndex = 0;
-            // 
-            // TabControlTestForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(790, 291);
-            this.Controls.Add(this.tabControl1);
-            this.Name = "TabControlTestScreen";
-            this.Text = "TabControlTester";
-            this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage2.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.ResumeLayout(false);
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_tabControl1 = new TabControl();
+		_tabPage1 = new TabPage();
+		_tabPage1.Name = "_tabPage1";
+		_tabPage2 = new TabPage();
+		_tabPage2.Name = "_tabPage2";
+		_tabControlTestControl1 = new TabControlTestControl();
+		_tabControlTestControl1.Name = "_tabControlTestControl1";
+		_groupBox1 = new GroupBox();
+		_groupBox1.Name = "_groupBox1";
+		_radioButton1 = new RadioButton();
+		_radioButton1.Name = "_radioButton1";
+		_textBox1 = new TextBox();
+		_textBox1.Name = "_textBox1";
+		_label1 = new Label();
+		_label1.Name = "_label1";
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-        }
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 3;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Native Tab Controls";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Compare a composite user control with ordinary grouped inputs. Both pages retain their own draft when you change the selected tab.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-        #endregion
+		_tabControl1.Name = "exampleTabs";
+		_tabControl1.Dock = DockStyle.Fill;
+		_tabPage1.Text = "Nested user control";
+		_tabPage2.Text = "Native grouped inputs";
+		_tabControlTestControl1.Dock = DockStyle.Fill;
+		_tabPage1.Controls.Add(_tabControlTestControl1);
+		_groupBox1.Text = "Settings inside a tab";
+		_groupBox1.Dock = DockStyle.Top;
+		_groupBox1.Height = 180;
+		_groupBox1.Padding = new Padding(20);
+		_radioButton1.Text = "Enable example option";
+		_radioButton1.AutoSize = true;
+		_radioButton1.Location = new Point(20, 80);
+		_textBox1.Text = "An independent tab draft";
+		_textBox1.Location = new Point(20, 120);
+		_textBox1.Width = 380;
+		_label1.Text = "Switching tabs retains each page’s controls and values.";
+		_label1.AutoSize = true;
+		_label1.Location = new Point(20, 35);
+		_groupBox1.Controls.AddRange(new Control[] { _label1, _radioButton1, _textBox1 });
+		_tabPage2.Controls.Add(_groupBox1);
+		_tabControl1.TabPages.AddRange(new[] { _tabPage1, _tabPage2 });
 
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
-        private TabControlTestControl tabControlTestControl1;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.RadioButton radioButton1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label1;
-    }
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_tabControl1, 0, 2);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "TabControlTestScreen";
+		Text = "Native Tab Controls";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
+	}
 }
-
-

@@ -8,76 +8,76 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Demonstrates password policies and local asynchronous sign-in without exposing credentials.</summary>
 public partial class PasswordDialogTestScreen : WinFormsApplicationScreen {
-	private readonly TextWriter _outputTextWriter;
-
+	/// <summary>Creates the three dialog examples without starting authentication.</summary>
 	public PasswordDialogTestScreen() {
 		InitializeComponent();
-		_outputTextWriter = new TextBoxWriter(_outputTextBox);
+		Disposables.Add(_heading.Font);
 	}
 
-	private async void _standardButton_Click(object sender, EventArgs e) {
-		var (Result, Password) = await PasswordDialog.ShowAsync(this, "Password", "Change your Administrator password");
-		_outputTextWriter.WriteLine("Result = {0}, Password = {1}", Result, Password);
+	// Both password paths report outcomes without retaining or printing the entered secret.
+	private async void StandardButton_Click(object sender, EventArgs args) {
+		await ShowPasswordAsync(false);
 	}
 
-	private async void _customButton_Click(object sender, EventArgs e) {
-		var (Result, Password) = await PasswordDialog.ShowAsync(this, "Password", "Change your Administrator password", PolicyValidator);
-		_outputTextWriter.WriteLine("Result = {0}, Password = {1}", Result, Password);
+	// The policy callback validates the provisional value inside the existing dialog.
+	private async void CustomButton_Click(object sender, EventArgs args) {
+		await ShowPasswordAsync(true);
 	}
 
-
-	private IEnumerable<string> PolicyValidator(string password) {
-		var digitCount = password.Count(char.IsDigit);
-		var lowerCount = password.Count(char.IsLower);
-		var higherCount = password.Count(char.IsLower);
-		var whitespaceCount = password.Count(char.IsWhiteSpace);
-
-		if (digitCount == 0)
-			yield return "Password needs at least 1 digit";
-
-		if (lowerCount == 0)
-			yield return "Password needs at least 1 lower case letter";
-
-		if (higherCount == 0)
-			yield return "Password needs at least 1 upper case letter";
-
-		if (whitespaceCount > 0)
-			yield return "Password cannot have spaces, tabs or other whitespace";
-
-		if (password.Length < 5)
-			yield return "Passwords need to contain 5 or more characters";
-	}
-
-	private async void _logonButton_Click(object sender, EventArgs e) {
-		var logonResult = await LogonDialog.ShowAsync(this, "Logon", "Logon to Cranewatch", Authenticator);
-		_outputTextWriter.WriteLine("LogonResult = {0}, UserObject = {1}", logonResult.ResultCode, logonResult.UserObject ?? "(None)");
-	}
-
-	private async Task<AuthenticationResult> Authenticator(string username, string password) {
-		await Task.Delay(1000);
-		if (username == string.Empty) {
-			return new AuthenticationResult {
-				ResultCode = AuthenticationErrorCode.ServerUnavailable
-			};
-		} else if (username == password) {
-			return new AuthenticationResult {
-				ResultCode = AuthenticationErrorCode.Success,
-				UserObject = "User"
-			};
-		} else {
-			return new AuthenticationResult {
-				ResultCode = AuthenticationErrorCode.InvalidCredentials
-			};
+	// Native event adapters contain asynchronous failures and keep the output on this screen.
+	private async Task ShowPasswordAsync(bool validate) {
+		try {
+			var result = await PasswordDialog.ShowAsync(this, "Password example", "Enter a demonstration password", validate ? PolicyValidator : null);
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText($"{(validate ? "Validated" : "Standard")} password dialog: {result.Result}" + Environment.NewLine);
+		} catch (Exception error) {
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText("The dialog could not complete: " + error.Message + Environment.NewLine);
 		}
 	}
+
+	// The upper-case requirement must inspect uppercase characters, independently of lowercase.
+	private IEnumerable<string> PolicyValidator(string password) {
+		password ??= string.Empty;
+		if (!password.Any(char.IsDigit))
+			yield return "Include at least one digit.";
+		if (!password.Any(char.IsLower))
+			yield return "Include at least one lowercase letter.";
+		if (!password.Any(char.IsUpper))
+			yield return "Include at least one uppercase letter.";
+		if (password.Any(char.IsWhiteSpace))
+			yield return "Whitespace is not allowed.";
+		if (password.Length < 5)
+			yield return "Use at least five characters.";
+	}
+
+	// Authentication remains an explicitly invoked local simulation, not a network request.
+	private async void LogonButton_Click(object sender, EventArgs args) {
+		try {
+			var result = await LogonDialog.ShowAsync(this, "Simulated sign in", "Matching username and password succeeds", Authenticator);
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText($"Local sign in: {result.ResultCode} · User: {result.UserObject ?? "(none)"}" + Environment.NewLine);
+		} catch (Exception error) {
+			if (!IsDisposed && !Disposing)
+				_outputTextBox.AppendText("Sign in could not complete: " + error.Message + Environment.NewLine);
+		}
+	}
+
+	// The short delay makes the existing asynchronous busy-state workflow visible.
+	private async Task<AuthenticationResult> Authenticator(string username, string password) {
+		await Task.Delay(500);
+		if (string.IsNullOrEmpty(username))
+			return new AuthenticationResult { ResultCode = AuthenticationErrorCode.ServerUnavailable };
+		if (username == password)
+			return new AuthenticationResult { ResultCode = AuthenticationErrorCode.Success, UserObject = "Demonstration user" };
+		return new AuthenticationResult { ResultCode = AuthenticationErrorCode.InvalidCredentials };
+	}
 }
-
-

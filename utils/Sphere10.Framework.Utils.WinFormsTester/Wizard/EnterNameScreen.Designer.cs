@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,97 +6,91 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester.Wizard {
-    partial class EnterNameScreen {
-        /// <summary> 
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
 
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+namespace Sphere10.Framework.Utils.WinFormsTester.Wizard;
 
-        #region Component Designer generated code
+partial class EnterNameScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _label1;
+	private TableLayoutPanel _fields;
+	private Label _label2;
+	private TextBox _textBox1;
+	private CheckBox _checkBox1;
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-			this.checkBox1 = new System.Windows.Forms.CheckBox();
-			this.label1 = new System.Windows.Forms.Label();
-			this.textBox1 = new System.Windows.Forms.TextBox();
-			this.label2 = new System.Windows.Forms.Label();
-			this.SuspendLayout();
-			// 
-			// checkBox1
-			// 
-			this.checkBox1.AutoSize = true;
-			this.checkBox1.Location = new System.Drawing.Point(180, 255);
-			this.checkBox1.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-			this.checkBox1.Name = "checkBox1";
-			this.checkBox1.Size = new System.Drawing.Size(300, 29);
-			this.checkBox1.TabIndex = 0;
-			this.checkBox1.Text = "This must be checked to proceed";
-			this.checkBox1.UseVisualStyleBackColor = true;
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(180, 99);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(289, 25);
-			this.label1.TabIndex = 1;
-			this.label1.Text = "This is the first screen in the wizard.";
-			// 
-			// textBox1
-			// 
-			this.textBox1.Location = new System.Drawing.Point(180, 170);
-			this.textBox1.Name = "textBox1";
-			this.textBox1.PlaceholderText = "Enter name";
-			this.textBox1.Size = new System.Drawing.Size(329, 31);
-			this.textBox1.TabIndex = 2;
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(102, 173);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(63, 25);
-			this.label2.TabIndex = 3;
-			this.label2.Text = "Name:";
-			// 
-			// WizardScreen1
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.textBox1);
-			this.Controls.Add(this.label1);
-			this.Controls.Add(this.checkBox1);
-			this.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-			this.Name = "EnterNameScreen";
-			this.Size = new System.Drawing.Size(800, 666);
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// The complete wizard page is laid out here for native Designer editing.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_label1 = new Label();
+		_fields = new TableLayoutPanel();
+		_label2 = new Label();
+		_textBox1 = new TextBox();
+		_checkBox1 = new CheckBox();
+		_layout.SuspendLayout();
+		_fields.SuspendLayout();
+		SuspendLayout();
 
-        }
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(28);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 4;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_label1, 0, 1);
+		_layout.Controls.Add(_fields, 0, 2);
+		_heading.Text = "Introduce Yourself";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 12);
+		_label1.Name = "label1";
+		_label1.Text = "Step 1 of 4 · Enter a name and confirm it before continuing. Next demonstrates validation without losing your input.";
+		_label1.AutoSize = true;
+		_label1.Dock = DockStyle.Fill;
+		_label1.Margin = new Padding(0, 0, 0, 24);
+		_fields.Dock = DockStyle.Top;
+		_fields.AutoSize = true;
+		_fields.ColumnCount = 2;
+		_fields.RowCount = 2;
+		_fields.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+		_fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_label2.Text = "Your name";
+		_label2.AutoSize = true;
+		_label2.Margin = new Padding(0, 8, 16, 12);
+		_textBox1.Name = "textBox1";
+		_textBox1.Dock = DockStyle.Fill;
+		_textBox1.PlaceholderText = "For example, Alex Morgan";
+		_textBox1.MaxLength = 120;
+		_textBox1.TabIndex = 0;
+		_checkBox1.Name = "checkBox1";
+		_checkBox1.Text = "I confirm that this is the name to use in the demonstration.";
+		_checkBox1.AutoSize = true;
+		_checkBox1.Dock = DockStyle.Fill;
+		_checkBox1.TabIndex = 1;
+		_checkBox1.Margin = new Padding(0, 16, 0, 0);
+		_fields.Controls.Add(_label2, 0, 0);
+		_fields.Controls.Add(_textBox1, 1, 0);
+		_fields.Controls.Add(_checkBox1, 0, 1);
+		_fields.SetColumnSpan(_checkBox1, 2);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Name = "EnterNameScreen";
+		Size = new Size(800, 560);
+		Controls.Add(_layout);
 
-        #endregion
-
-        private System.Windows.Forms.CheckBox checkBox1;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TextBox textBox1;
-		private System.Windows.Forms.Label label2;
+		_fields.ResumeLayout(false);
+		_fields.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

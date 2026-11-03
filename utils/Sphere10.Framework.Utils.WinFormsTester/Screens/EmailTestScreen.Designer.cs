@@ -1,376 +1,275 @@
-namespace Sphere10.Framework.Utils.WinFormsTester.Screens {
-	partial class EmailTestScreen {
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit https://opensource.org/license/mit.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		#region Component Designer generated code
+namespace Sphere10.Framework.Utils.WinFormsTester.Screens;
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			label1 = new System.Windows.Forms.Label();
-			label2 = new System.Windows.Forms.Label();
-			label3 = new System.Windows.Forms.Label();
-			label4 = new System.Windows.Forms.Label();
-			_fromTextBox = new System.Windows.Forms.TextBox();
-			label6 = new System.Windows.Forms.Label();
-			_smtpPortIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-			_sslCheckBox = new System.Windows.Forms.CheckBox();
-			_bodyTextBox = new System.Windows.Forms.TextBox();
-			label5 = new System.Windows.Forms.Label();
-			_sendButtonAsync = new System.Windows.Forms.Button();
-			_sendButton = new System.Windows.Forms.Button();
-			_smtpUsernameTextBox = new System.Windows.Forms.TextBox();
-			label7 = new System.Windows.Forms.Label();
-			_smtpPasswordTextBox = new System.Windows.Forms.TextBox();
-			label8 = new System.Windows.Forms.Label();
-			_toTextBox = new System.Windows.Forms.TextBox();
-			_replyToTextBox = new System.Windows.Forms.TextBox();
-			_smtpServerTextBox = new System.Windows.Forms.TextBox();
-			_ccTextBox = new System.Windows.Forms.TextBox();
-			label9 = new System.Windows.Forms.Label();
-			_bccTextBox = new System.Windows.Forms.TextBox();
-			label10 = new System.Windows.Forms.Label();
-			label11 = new System.Windows.Forms.Label();
-			_subjectTextBox = new System.Windows.Forms.TextBox();
-			_isHtmlCheckBox = new System.Windows.Forms.CheckBox();
-			_loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
-			SuspendLayout();
-			// 
-			// label1
-			// 
-			label1.AutoSize = true;
-			label1.Location = new System.Drawing.Point(79, 35);
-			label1.Name = "label1";
-			label1.Size = new System.Drawing.Size(22, 15);
-			label1.TabIndex = 0;
-			label1.Text = "To:";
-			// 
-			// label2
-			// 
-			label2.AutoSize = true;
-			label2.Location = new System.Drawing.Point(63, 6);
-			label2.Name = "label2";
-			label2.Size = new System.Drawing.Size(38, 15);
-			label2.TabIndex = 1;
-			label2.Text = "From:";
-			// 
-			// label3
-			// 
-			label3.AutoSize = true;
-			label3.Location = new System.Drawing.Point(45, 122);
-			label3.Name = "label3";
-			label3.Size = new System.Drawing.Size(56, 15);
-			label3.TabIndex = 2;
-			label3.Text = "Reply-To:";
-			// 
-			// label4
-			// 
-			label4.AutoSize = true;
-			label4.Location = new System.Drawing.Point(26, 151);
-			label4.Name = "label4";
-			label4.Size = new System.Drawing.Size(75, 15);
-			label4.TabIndex = 3;
-			label4.Text = "SMTP Server:";
-			// 
-			// _fromTextBox
-			// 
-			_fromTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_fromTextBox.Location = new System.Drawing.Point(107, 3);
-			_fromTextBox.Name = "_fromTextBox";
-			_fromTextBox.Size = new System.Drawing.Size(593, 23);
-			_fromTextBox.TabIndex = 7;
-			// 
-			// label6
-			// 
-			label6.AutoSize = true;
-			label6.Location = new System.Drawing.Point(36, 238);
-			label6.Name = "label6";
-			label6.Size = new System.Drawing.Size(65, 15);
-			label6.TabIndex = 9;
-			label6.Text = "SMTP Port:";
-			// 
-			// _smtpPortIntBox
-			// 
-			_smtpPortIntBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_smtpPortIntBox.Location = new System.Drawing.Point(107, 235);
-			_smtpPortIntBox.Name = "_smtpPortIntBox";
-			_smtpPortIntBox.Size = new System.Drawing.Size(593, 23);
-			_smtpPortIntBox.TabIndex = 10;
-			// 
-			// _sslCheckBox
-			// 
-			_sslCheckBox.AutoSize = true;
-			_sslCheckBox.Location = new System.Drawing.Point(107, 264);
-			_sslCheckBox.Name = "_sslCheckBox";
-			_sslCheckBox.Size = new System.Drawing.Size(44, 19);
-			_sslCheckBox.TabIndex = 11;
-			_sslCheckBox.Text = "SSL";
-			_sslCheckBox.UseVisualStyleBackColor = true;
-			// 
-			// _bodyTextBox
-			// 
-			_bodyTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_bodyTextBox.Location = new System.Drawing.Point(107, 321);
-			_bodyTextBox.MaxLength = 1048576;
-			_bodyTextBox.Multiline = true;
-			_bodyTextBox.Name = "_bodyTextBox";
-			_bodyTextBox.Size = new System.Drawing.Size(593, 174);
-			_bodyTextBox.TabIndex = 12;
-			_bodyTextBox.WordWrap = false;
-			// 
-			// label5
-			// 
-			label5.AutoSize = true;
-			label5.Location = new System.Drawing.Point(64, 324);
-			label5.Name = "label5";
-			label5.Size = new System.Drawing.Size(37, 15);
-			label5.TabIndex = 13;
-			label5.Text = "Body:";
-			// 
-			// _sendButtonAsync
-			// 
-			_sendButtonAsync.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			_sendButtonAsync.Location = new System.Drawing.Point(588, 501);
-			_sendButtonAsync.Name = "_sendButtonAsync";
-			_sendButtonAsync.Size = new System.Drawing.Size(109, 23);
-			_sendButtonAsync.TabIndex = 14;
-			_sendButtonAsync.Text = "Send Async";
-			_sendButtonAsync.UseVisualStyleBackColor = true;
-			_sendButtonAsync.Click += _sendButtonAsync_Click;
-			// 
-			// _sendButton
-			// 
-			_sendButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			_sendButton.Location = new System.Drawing.Point(473, 501);
-			_sendButton.Name = "_sendButton";
-			_sendButton.Size = new System.Drawing.Size(109, 23);
-			_sendButton.TabIndex = 15;
-			_sendButton.Text = "Send Sync";
-			_sendButton.UseVisualStyleBackColor = true;
-			_sendButton.Click += _sendButton_Click;
-			// 
-			// _smtpUsernameTextBox
-			// 
-			_smtpUsernameTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_smtpUsernameTextBox.Location = new System.Drawing.Point(107, 177);
-			_smtpUsernameTextBox.Name = "_smtpUsernameTextBox";
-			_smtpUsernameTextBox.Size = new System.Drawing.Size(593, 23);
-			_smtpUsernameTextBox.TabIndex = 17;
-			// 
-			// label7
-			// 
-			label7.AutoSize = true;
-			label7.Location = new System.Drawing.Point(5, 180);
-			label7.Name = "label7";
-			label7.Size = new System.Drawing.Size(96, 15);
-			label7.TabIndex = 16;
-			label7.Text = "SMTP Username:";
-			// 
-			// _smtpPasswordTextBox
-			// 
-			_smtpPasswordTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_smtpPasswordTextBox.Location = new System.Drawing.Point(107, 206);
-			_smtpPasswordTextBox.Name = "_smtpPasswordTextBox";
-			_smtpPasswordTextBox.Size = new System.Drawing.Size(593, 23);
-			_smtpPasswordTextBox.TabIndex = 19;
-			// 
-			// label8
-			// 
-			label8.AutoSize = true;
-			label8.Location = new System.Drawing.Point(8, 209);
-			label8.Name = "label8";
-			label8.Size = new System.Drawing.Size(93, 15);
-			label8.TabIndex = 18;
-			label8.Text = "SMTP Password:";
-			// 
-			// _toTextBox
-			// 
-			_toTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_toTextBox.Location = new System.Drawing.Point(107, 32);
-			_toTextBox.Name = "_toTextBox";
-			_toTextBox.Size = new System.Drawing.Size(593, 23);
-			_toTextBox.TabIndex = 20;
-			// 
-			// _replyToTextBox
-			// 
-			_replyToTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_replyToTextBox.Location = new System.Drawing.Point(107, 119);
-			_replyToTextBox.Name = "_replyToTextBox";
-			_replyToTextBox.Size = new System.Drawing.Size(593, 23);
-			_replyToTextBox.TabIndex = 21;
-			// 
-			// _smtpServerTextBox
-			// 
-			_smtpServerTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_smtpServerTextBox.Location = new System.Drawing.Point(107, 148);
-			_smtpServerTextBox.Name = "_smtpServerTextBox";
-			_smtpServerTextBox.Size = new System.Drawing.Size(593, 23);
-			_smtpServerTextBox.TabIndex = 22;
-			// 
-			// _ccTextBox
-			// 
-			_ccTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_ccTextBox.Location = new System.Drawing.Point(107, 61);
-			_ccTextBox.Name = "_ccTextBox";
-			_ccTextBox.Size = new System.Drawing.Size(593, 23);
-			_ccTextBox.TabIndex = 24;
-			// 
-			// label9
-			// 
-			label9.AutoSize = true;
-			label9.Location = new System.Drawing.Point(75, 64);
-			label9.Name = "label9";
-			label9.Size = new System.Drawing.Size(26, 15);
-			label9.TabIndex = 23;
-			label9.Text = "CC:";
-			// 
-			// _bccTextBox
-			// 
-			_bccTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_bccTextBox.Location = new System.Drawing.Point(107, 90);
-			_bccTextBox.Name = "_bccTextBox";
-			_bccTextBox.Size = new System.Drawing.Size(593, 23);
-			_bccTextBox.TabIndex = 26;
-			// 
-			// label10
-			// 
-			label10.AutoSize = true;
-			label10.Location = new System.Drawing.Point(68, 93);
-			label10.Name = "label10";
-			label10.Size = new System.Drawing.Size(33, 15);
-			label10.TabIndex = 25;
-			label10.Text = "BCC:";
-			// 
-			// label11
-			// 
-			label11.AutoSize = true;
-			label11.Location = new System.Drawing.Point(52, 292);
-			label11.Name = "label11";
-			label11.Size = new System.Drawing.Size(49, 15);
-			label11.TabIndex = 28;
-			label11.Text = "Subject:";
-			// 
-			// _subjectTextBox
-			// 
-			_subjectTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			_subjectTextBox.Location = new System.Drawing.Point(107, 289);
-			_subjectTextBox.Name = "_subjectTextBox";
-			_subjectTextBox.Size = new System.Drawing.Size(593, 23);
-			_subjectTextBox.TabIndex = 29;
-			// 
-			// _isHtmlCheckBox
-			// 
-			_isHtmlCheckBox.AutoSize = true;
-			_isHtmlCheckBox.Location = new System.Drawing.Point(157, 264);
-			_isHtmlCheckBox.Name = "_isHtmlCheckBox";
-			_isHtmlCheckBox.Size = new System.Drawing.Size(69, 19);
-			_isHtmlCheckBox.TabIndex = 30;
-			_isHtmlCheckBox.Text = "Is HTML";
-			_isHtmlCheckBox.UseVisualStyleBackColor = true;
-			// 
-			// _loadingCircle
-			// 
-			_loadingCircle.Active = false;
-			_loadingCircle.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-			_loadingCircle.BackColor = System.Drawing.Color.Transparent;
-			_loadingCircle.Color = System.Drawing.Color.DarkGray;
-			_loadingCircle.HideStopControl = null;
-			_loadingCircle.InnerCircleRadius = 8;
-			_loadingCircle.Location = new System.Drawing.Point(437, 501);
-			_loadingCircle.Name = "_loadingCircle";
-			_loadingCircle.NumberSpoke = 10;
-			_loadingCircle.OuterCircleRadius = 10;
-			_loadingCircle.RotationSpeed = 100;
-			_loadingCircle.Size = new System.Drawing.Size(30, 23);
-			_loadingCircle.SpokeThickness = 4;
-			_loadingCircle.TabIndex = 31;
-			_loadingCircle.Text = "loadingCircle1";
-			_loadingCircle.Visible = false;
-			// 
-			// EmailTestScreen
-			// 
-			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			Controls.Add(_loadingCircle);
-			Controls.Add(_isHtmlCheckBox);
-			Controls.Add(_subjectTextBox);
-			Controls.Add(label11);
-			Controls.Add(_bccTextBox);
-			Controls.Add(label10);
-			Controls.Add(_ccTextBox);
-			Controls.Add(label9);
-			Controls.Add(_smtpServerTextBox);
-			Controls.Add(_replyToTextBox);
-			Controls.Add(_toTextBox);
-			Controls.Add(_smtpPasswordTextBox);
-			Controls.Add(label8);
-			Controls.Add(_smtpUsernameTextBox);
-			Controls.Add(label7);
-			Controls.Add(_sendButton);
-			Controls.Add(_sendButtonAsync);
-			Controls.Add(label5);
-			Controls.Add(_bodyTextBox);
-			Controls.Add(_sslCheckBox);
-			Controls.Add(_smtpPortIntBox);
-			Controls.Add(label6);
-			Controls.Add(_fromTextBox);
-			Controls.Add(label4);
-			Controls.Add(label3);
-			Controls.Add(label2);
-			Controls.Add(label1);
-			Name = "EmailTestScreen";
-			Size = new System.Drawing.Size(700, 527);
-			ResumeLayout(false);
-			PerformLayout();
-		}
+partial class EmailTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private Button _sendButtonAsync;
+	private Button _sendButton;
+	private TableLayoutPanel _content;
+	private TableLayoutPanel _fields;
+	private NumericUpDown _smtpPortIntBox;
+	private Label _smtpPortLabel;
+	private CheckBox _sslCheckBox;
+	private CheckBox _isHtmlCheckBox;
+	private LoadingCircle _loadingCircle;
+	private TextBox _bodyTextBox;
+	private Label _label0;
+	private TextBox _smtpServerTextBox;
+	private Label _label1;
+	private TextBox _fromTextBox;
+	private Label _label2;
+	private TextBox _toTextBox;
+	private Label _label3;
+	private TextBox _ccTextBox;
+	private Label _label4;
+	private TextBox _bccTextBox;
+	private Label _label5;
+	private TextBox _replyToTextBox;
+	private Label _label6;
+	private TextBox _smtpUsernameTextBox;
+	private Label _label7;
+	private TextBox _smtpPasswordTextBox;
+	private Label _label8;
+	private TextBox _subjectTextBox;
 
-		#endregion
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_sendButtonAsync = new Button();
+		_sendButton = new Button();
+		_content = new TableLayoutPanel();
+		_fields = new TableLayoutPanel();
+		_smtpPortIntBox = new NumericUpDown();
+		_smtpPortLabel = new Label();
+		_sslCheckBox = new CheckBox();
+		_isHtmlCheckBox = new CheckBox();
+		_loadingCircle = new LoadingCircle();
+		_bodyTextBox = new TextBox();
+		_label0 = new Label();
+		_smtpServerTextBox = new TextBox();
+		_label1 = new Label();
+		_fromTextBox = new TextBox();
+		_label2 = new Label();
+		_toTextBox = new TextBox();
+		_label3 = new Label();
+		_ccTextBox = new TextBox();
+		_label4 = new Label();
+		_bccTextBox = new TextBox();
+		_label5 = new Label();
+		_replyToTextBox = new TextBox();
+		_label6 = new Label();
+		_smtpUsernameTextBox = new TextBox();
+		_label7 = new Label();
+		_smtpPasswordTextBox = new TextBox();
+		_label8 = new Label();
+		_subjectTextBox = new TextBox();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.TextBox _smtpUsernameTextBox;
-		private System.Windows.Forms.TextBox _smtpPasswordTextBox;
-		private System.Windows.Forms.TextBox _fromTextBox;
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_content.Name = "_content";
+		_fields.Name = "_fields";
+		_smtpPortIntBox.Name = "_smtpPortIntBox";
+		_smtpPortLabel.Name = "_smtpPortLabel";
+		_sslCheckBox.Name = "_sslCheckBox";
+		_isHtmlCheckBox.Name = "_isHtmlCheckBox";
+		_loadingCircle.Name = "_loadingCircle";
+		_label0.Name = "_label0";
+		_label1.Name = "_label1";
+		_label2.Name = "_label2";
+		_label3.Name = "_label3";
+		_label4.Name = "_label4";
+		_label5.Name = "_label5";
+		_label6.Name = "_label6";
+		_label7.Name = "_label7";
+		_label8.Name = "_label8";
 
-		private System.Windows.Forms.Label label6;
-		private Sphere10.Framework.Windows.Forms.IntBox _smtpPortIntBox;
-		private System.Windows.Forms.CheckBox _sslCheckBox;
-		private System.Windows.Forms.TextBox _bodyTextBox;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.Button _sendButtonAsync;
-		private System.Windows.Forms.Button _sendButton;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.Label label8;
-		private System.Windows.Forms.TextBox _toTextBox;
-		private System.Windows.Forms.TextBox _replyToTextBox;
-		private System.Windows.Forms.TextBox _smtpServerTextBox;
-		private System.Windows.Forms.TextBox _ccTextBox;
-		private System.Windows.Forms.Label label9;
-		private System.Windows.Forms.TextBox _bccTextBox;
-		private System.Windows.Forms.Label label10;
-		private System.Windows.Forms.Label label11;
-		private System.Windows.Forms.TextBox _subjectTextBox;
-		private System.Windows.Forms.CheckBox _isHtmlCheckBox;
-		private Sphere10.Framework.Windows.Forms.LoadingCircle _loadingCircle;
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "SMTP message composer";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Compose a message and send it explicitly through either Framework mail API. Passwords and message drafts are never saved as preferences.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_sendButtonAsync.Text = "Send asynchronously";
+		_sendButtonAsync.Name = "_sendButtonAsync";
+		_sendButtonAsync.AutoSize = true;
+		_sendButtonAsync.MinimumSize = new Size(96, 30);
+		_sendButtonAsync.Click += _sendButtonAsync_Click;
+		_commands.Controls.Add(_sendButtonAsync);
+		_sendButton.Text = "Send with sync API";
+		_sendButton.Name = "_sendButton";
+		_sendButton.AutoSize = true;
+		_sendButton.MinimumSize = new Size(96, 30);
+		_sendButton.Click += _sendButton_Click;
+		_commands.Controls.Add(_sendButton);
+		_content.Dock = DockStyle.Fill;
+		_content.ColumnCount = 1;
+		_content.RowCount = 2;
+		_content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_content.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_fields.AutoSize = true;
+		_fields.Dock = DockStyle.Fill;
+		_fields.ColumnCount = 4;
+		_fields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 95));
+		_fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+		_fields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 95));
+		_fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+		_label0.Text = "SMTP server";
+		_label0.AutoSize = true;
+		_label0.Padding = new Padding(0, 6, 0, 0);
+		_smtpServerTextBox.Dock = DockStyle.Fill;
+		_smtpServerTextBox.Name = "_smtpServerTextBox";
+		_fields.Controls.Add(_label0, 0, 0);
+		_fields.Controls.Add(_smtpServerTextBox, 1, 0);
+		_label1.Text = "From";
+		_label1.AutoSize = true;
+		_label1.Padding = new Padding(0, 6, 0, 0);
+		_fromTextBox.Dock = DockStyle.Fill;
+		_fromTextBox.Name = "_fromTextBox";
+		_fields.Controls.Add(_label1, 2, 0);
+		_fields.Controls.Add(_fromTextBox, 3, 0);
+		_label2.Text = "To";
+		_label2.AutoSize = true;
+		_label2.Padding = new Padding(0, 6, 0, 0);
+		_toTextBox.Dock = DockStyle.Fill;
+		_toTextBox.Name = "_toTextBox";
+		_fields.Controls.Add(_label2, 0, 1);
+		_fields.Controls.Add(_toTextBox, 1, 1);
+		_label3.Text = "CC";
+		_label3.AutoSize = true;
+		_label3.Padding = new Padding(0, 6, 0, 0);
+		_ccTextBox.Dock = DockStyle.Fill;
+		_ccTextBox.Name = "_ccTextBox";
+		_fields.Controls.Add(_label3, 2, 1);
+		_fields.Controls.Add(_ccTextBox, 3, 1);
+		_label4.Text = "BCC";
+		_label4.AutoSize = true;
+		_label4.Padding = new Padding(0, 6, 0, 0);
+		_bccTextBox.Dock = DockStyle.Fill;
+		_bccTextBox.Name = "_bccTextBox";
+		_fields.Controls.Add(_label4, 0, 2);
+		_fields.Controls.Add(_bccTextBox, 1, 2);
+		_label5.Text = "Reply-to";
+		_label5.AutoSize = true;
+		_label5.Padding = new Padding(0, 6, 0, 0);
+		_replyToTextBox.Dock = DockStyle.Fill;
+		_replyToTextBox.Name = "_replyToTextBox";
+		_fields.Controls.Add(_label5, 2, 2);
+		_fields.Controls.Add(_replyToTextBox, 3, 2);
+		_label6.Text = "Username";
+		_label6.AutoSize = true;
+		_label6.Padding = new Padding(0, 6, 0, 0);
+		_smtpUsernameTextBox.Dock = DockStyle.Fill;
+		_smtpUsernameTextBox.Name = "_smtpUsernameTextBox";
+		_fields.Controls.Add(_label6, 0, 3);
+		_fields.Controls.Add(_smtpUsernameTextBox, 1, 3);
+		_label7.Text = "Password";
+		_label7.AutoSize = true;
+		_label7.Padding = new Padding(0, 6, 0, 0);
+		_smtpPasswordTextBox.Dock = DockStyle.Fill;
+		_smtpPasswordTextBox.Name = "_smtpPasswordTextBox";
+		_fields.Controls.Add(_label7, 2, 3);
+		_fields.Controls.Add(_smtpPasswordTextBox, 3, 3);
+		_label8.Text = "Subject";
+		_label8.AutoSize = true;
+		_label8.Padding = new Padding(0, 6, 0, 0);
+		_subjectTextBox.Dock = DockStyle.Fill;
+		_subjectTextBox.Name = "_subjectTextBox";
+		_fields.Controls.Add(_label8, 0, 4);
+		_fields.Controls.Add(_subjectTextBox, 1, 4);
+		_smtpPortLabel.Text = "SMTP port";
+		_smtpPortLabel.AutoSize = true;
+		_smtpPortLabel.Padding = new Padding(0, 6, 0, 0);
+		_fields.Controls.Add(_smtpPortLabel, 2, 4);
+		_fields.Controls.Add(_smtpPortIntBox, 3, 4);
+		_smtpServerTextBox.Text = "localhost";
+		_smtpPasswordTextBox.UseSystemPasswordChar = true;
+		_smtpPortIntBox.Minimum = 1;
+		_smtpPortIntBox.Maximum = 65535;
+		_smtpPortIntBox.Value = 25;
+		_sslCheckBox.Text = "Use TLS";
+		_sslCheckBox.AutoSize = true;
+		_isHtmlCheckBox.Text = "HTML body";
+		_isHtmlCheckBox.AutoSize = true;
+		_loadingCircle.Size = new Size(28, 28);
+		_loadingCircle.Visible = false;
+		_commands.Controls.Add(_sslCheckBox);
+		_commands.Controls.Add(_isHtmlCheckBox);
+		_commands.Controls.Add(_loadingCircle);
+		_bodyTextBox.Dock = DockStyle.Fill;
+		_bodyTextBox.Multiline = true;
+		_bodyTextBox.ScrollBars = ScrollBars.Vertical;
+		_bodyTextBox.Name = "_bodyTextBox";
+		_content.Controls.Add(_fields, 0, 0);
+		_content.Controls.Add(_bodyTextBox, 0, 1);
+		_smtpServerTextBox.TextChanged += PreferencesChanged;
+		_smtpUsernameTextBox.TextChanged += PreferencesChanged;
+		_smtpPortIntBox.ValueChanged += PreferencesChanged;
+		_sslCheckBox.CheckedChanged += PreferencesChanged;
+		_isHtmlCheckBox.CheckedChanged += PreferencesChanged;
+
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(_content, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "EmailTestScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

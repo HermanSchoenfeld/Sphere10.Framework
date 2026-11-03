@@ -7,67 +7,71 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Sphere10.Framework.Windows.Forms;
+using System.Threading.Tasks;
 using Tuple = System.Tuple;
+using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Compares native text rendering and preserves the original character/EPASA generation examples.</summary>
 public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
+	public const string Pascal64CharSet = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+{}[]_:`|<>,.?/~";
+	public const string Pascal64StartCharSet = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+{}[]_:`|<>,.?/~";
+	public const string HexStringCharSet = "0123456789abcdef";
+	public const string Base58CharSet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+	public const string SafeUnescapedAnsiCharSet = "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|~";
+	public string SafeEscapedAnsiCharSet = "\"\\}";
+	public const char EscapeChar = '\\';
+
 	public TextAreaTestsScreen() {
 		InitializeComponent();
-	}
-	private async void _fillStandardButton_Click(object sender, EventArgs e) {
-		try {
-			_standardTextBox.Clear();
-			var start = DateTime.Now;
-			long genSize = 0;
-			while (genSize < 1000000) {
-				var randomString = Tools.Text.GenerateRandomString(50) + Environment.NewLine;
-				genSize += randomString.Length * sizeof(char);
-				_standardTextBox.AppendText(randomString);
-			}
-			await DialogEx.ShowAsync(this, SystemIconType.Information, "Results", "{0} bytes took {1} seconds".FormatWith(genSize, DateTime.Now.Subtract(start).TotalSeconds));
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
-		}
+		Disposables.Add(_heading.Font);
 	}
 
-	private void _fillLockedButton_Click(object sender, EventArgs e) {
-		//try {
-		//    _standardTextBox.Clear();
-		//    var start = DateTime.Now;
-		//    long genSize = 0;
-		//    if (!WinAPI.USER32.LockWindowUpdate(_lockTextBox.Handle)) {
-		//        throw new Exception("Unable to lock");
-		//    }
-		//    while (genSize < 1000000) {
-		//        var randomString = Tools.Text.GenerateRandomString(50) + Environment.NewLine;
-		//        genSize += randomString.Length * sizeof(char);
-		//        _lockTextBox.AppendText(randomString);
-		//    }
-		//    if (!WinAPI.USER32.LockWindowUpdate(IntPtr.Zero)) {
-		//        throw new Exception("Unable to unlock");
-		//    }
-
-		//    DialogEx.Show(this, SystemIconType.Information, "Results", "{0} bytes took {1} seconds".FormatWith(genSize, DateTime.Now.Subtract(start).TotalSeconds));
-		//} catch (Exception error) {
-		//    ExceptionDialog.Show(error);
-		//}
+	// The normal path intentionally appends line by line to expose native rendering cost.
+	private void FillStandardButton_Click(object sender, EventArgs args) {
+		FillText(false);
 	}
 
-	private void _epasaPwdCharsButton_Click(object sender, EventArgs e) {
+	// The former locked stub now uses the Framework's existing rendering scope.
+	private void FillLockedButton_Click(object sender, EventArgs args) {
+		FillText(true);
+	}
+
+	// Both modes use identical generated text; only their rendering boundary differs.
+	private void FillText(bool deferRendering) {
+		var text = GenerateText((int)_sizeKilobytes.Value * 1024);
+		var watch = Stopwatch.StartNew();
+		if (deferRendering) {
+			using (_standardTextBox.EnterRenderingScope())
+				AppendLines(text);
+		} else
+			AppendLines(text);
+		_timing.Text = $"{text.Length * sizeof(char):N0} UTF-16 bytes appended in {watch.Elapsed.TotalMilliseconds:N1} ms · {(deferRendering ? "Deferred rendering" : "Ordinary rendering")}";
+	}
+
+	// UI-owned text assignment stays on the dispatcher in every mode.
+	private void AppendLines(string text) {
+		_standardTextBox.Clear();
+		using var reader = new StringReader(text);
+		while (reader.ReadLine() is { } line)
+			_standardTextBox.AppendText(line + Environment.NewLine);
+	}
+
+	private void EpasaPwdCharsButton_Click(object sender, EventArgs args) {
 		const string regexEscapes = @"[\^$.|?*+(){}";
 		const string epasaEscapes = @":\""[]()<>{}";
 		const string csharpEscapes = @"""";
 		const string pascal64charset = @"abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+{}[]_:`|<>,.?/~";
 
-
 		var sb = new StringBuilder();
-		for (var i = 32; i <= 126; i++)
-			sb.Append($"\"{Encoding.ASCII.GetString(new byte[] { (byte)i })}\" | ");
+		for (var index = 32; index <= 126; index++)
+			sb.Append($"\"{Encoding.ASCII.GetString(new byte[] { (byte)index })}\" | ");
 
 		sb.AppendLine();
 		sb.Append("ANSICHAR = (");
@@ -111,7 +115,6 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 
 		sb.Append(")");
 
-
 		sb.AppendLine();
 		sb.Append(@"EscapedAnsiCharSet = @""");
 		for (var i = 32; i <= 126; i++) {
@@ -135,7 +138,6 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 		}
 		sb.Append(@""";");
 
-
 		sb.AppendLine();
 		sb.Append(@"FullAnsiCharSet = @""");
 		for (var i = 32; i <= 126; i++) {
@@ -149,54 +151,46 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 		_standardTextBox.AppendText(sb.ToString());
 	}
 
-	private async void _genOnlyButton_Click(object sender, EventArgs e) {
+	// Generation-only timing does not include native editor updates.
+	private async void GenOnlyButton_Click(object sender, EventArgs args) {
+		await GenerateAsync(false);
+	}
+
+	// Background generation returns a detached string before touching the native editor.
+	private async void FillLockedAsyncButton_Click(object sender, EventArgs args) {
+		await GenerateAsync(true);
+	}
+
+	// Contain native-event failures and reject delivery after screen disposal.
+	private async Task GenerateAsync(bool display) {
+		_actions.Enabled = false;
 		try {
-			_standardTextBox.Clear();
-			var start = DateTime.Now;
-			long genSize = 0;
-			while (genSize < 1000000) {
-				var randomString = Tools.Text.GenerateRandomString(50) + Environment.NewLine;
-				genSize += randomString.Length * sizeof(char);
-			}
-			await DialogEx.ShowAsync(this, SystemIconType.Information, "Results", "{0} bytes took {1} seconds".FormatWith(genSize, DateTime.Now.Subtract(start).TotalSeconds));
+			var size = (int)_sizeKilobytes.Value * 1024;
+			var watch = Stopwatch.StartNew();
+			var text = await Task.Run(() => GenerateText(size));
+			if (IsDisposed || Disposing)
+				return;
+			if (display)
+				_standardTextBox.Text = text;
+			_timing.Text = $"{text.Length * sizeof(char):N0} UTF-16 bytes generated in {watch.Elapsed.TotalMilliseconds:N1} ms · {(display ? "Published to editor" : "Generation only")}";
 		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
+			if (!IsDisposed && !Disposing)
+				_timing.Text = "Generation could not complete: " + error.Message;
+		} finally {
+			if (!IsDisposed && !Disposing)
+				_actions.Enabled = true;
 		}
 	}
 
-	private async void _fillLockedAsyncButton_Click(object sender, EventArgs e) {
-		try {
-			//_standardTextBox.Clear();
-			//var start = DateTime.Now;
-			//long genSize = 0;
-			//if (!WinAPI.USER32.LockWindowUpdate(_lockTextBox.Handle)) {
-			//    throw new Exception("Unable to lock");
-			//}
-			//while (genSize < 1000000) {                    
-			//    var randomString = Tools.Text.GenerateRandomString(50) + Environment.NewLine;
-			//    genSize += randomString.Length * sizeof(char);
-			//    _lockTextBox.AppendText(randomString);
-			//}
-			//if (!WinAPI.USER32.LockWindowUpdate(IntPtr.Zero)) {
-			//    throw new Exception("Unable to unlock");
-			//}
-
-			//DialogEx.Show(this, SystemIconType.Information, "Results", "{0} bytes took {1} seconds".FormatWith(genSize, DateTime.Now.Subtract(start).TotalSeconds));
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(error);
-		}
+	// A small default keeps the example responsive while allowing explicit larger experiments.
+	private static string GenerateText(int byteLimit) {
+		var text = new StringBuilder();
+		while (text.Length * sizeof(char) < byteLimit)
+			text.AppendLine(Tools.Text.GenerateRandomString(50));
+		return text.ToString();
 	}
 
-	public const string Pascal64CharSet = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-+{}[]_:`|<>,.?/~";
-	public const string Pascal64StartCharSet = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+{}[]_:`|<>,.?/~";
-	public const string HexStringCharSet = "0123456789abcdef";
-	public const string Base58CharSet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-	public const string SafeUnescapedAnsiCharSet = "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|~";
-	public string SafeEscapedAnsiCharSet = "\"\\}";
-	public const char EscapeChar = '\\';
-
-
-	private async void _epasaRegexButton_Click(object sender, EventArgs e) {
+	private async void EpasaRegexButton_Click(object sender, EventArgs args) {
 
 		try {
 			//var unescapedSafeAnsiCharPattern =
@@ -209,9 +203,7 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 				.Select(c => RegexPattern.With.Literal("\\").Literal(c.ToString()));
 
 			var safeAnsiCharPattern = RegexPattern.With.Choice.EitherAny(
-				unescapedSafeAnsiCharPatterns.Concat(escapedSafeAnsiCharPatterns).ToArray()
-			);
-
+unescapedSafeAnsiCharPatterns.Concat(escapedSafeAnsiCharPatterns).ToArray());
 
 			var safeAnsiStringPattern = new RegexPattern(safeAnsiCharPattern)
 				.Repeat.OneOrMore;
@@ -225,14 +217,12 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 				new RegexPattern(pascal64StartPattern)
 					.Set(RegexPattern.With.Literal(Pascal64CharSet, true)).Repeat.InRange(2, 63);
 
-
 			var hexNibblePattern = RegexPattern.With
 				.Set(RegexRange.OfMany(Tuple.Create('0', '9'), Tuple.Create('a', 'f')));
 
 			var hexBytePattern = RegexPattern.With
 				.Group(
-					new RegexPattern(hexNibblePattern).Repeat.Exactly(2)
-				);
+new RegexPattern(hexNibblePattern).Repeat.Exactly(2));
 
 			var hexStringPattern = new RegexPattern(hexBytePattern).Repeat.OneOrMore;
 
@@ -246,7 +236,6 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 
 			var accountNamePattern = RegexPattern
 				.With.NamedGroup("AccountName", pascal64StringPattern);
-
 
 			var accountNumberPattern = RegexPattern
 				.With.NamedGroup("AccountNumber", integerPattern)
@@ -287,11 +276,7 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 
 			var extendedAddressPattern = RegexPattern.With
 				.Choice.EitherAny(
-					publicPayloadPattern,
-					receiverPayloadPattern,
-					senderPayloadPattern,
-					aesPayloadPattern
-				);
+publicPayloadPattern, receiverPayloadPattern, senderPayloadPattern, aesPayloadPattern);
 
 			var epasaChecksumPattern = new RegexPattern(hexBytePattern)
 				.Repeat.Exactly(2);
@@ -301,12 +286,10 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 				.NamedGroup("PASA", pasaPattern)
 				.RegEx(new RegexPattern(extendedAddressPattern)).Repeat.Optional
 				.Group(
-					RegexPattern.With
+RegexPattern.With
 						.Literal(":")
 						.NamedGroup("EPASAChecksum", epasaChecksumPattern)
-						.AtEnd
-				).Repeat.Optional;
-
+						.AtEnd).Repeat.Optional;
 
 			_standardTextBox.Clear();
 			_standardTextBox.AppendText(epasaPattern.ToString());
@@ -337,8 +320,6 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 
 			_standardTextBox.AppendLine("");
 
-
-
 			var regex = new Regex(epasaPattern, RegexOptions.None);
 
 			var result = regex.Match("77-44[0x123]:121f");
@@ -353,5 +334,3 @@ public partial class TextAreaTestsScreen : WinFormsApplicationScreen {
 		}
 	}
 }
-
-

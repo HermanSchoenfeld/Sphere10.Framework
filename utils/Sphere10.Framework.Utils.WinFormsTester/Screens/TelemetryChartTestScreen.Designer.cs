@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 partial class TelemetryChartTestScreen {
-	private IContainer components;
+	private IContainer _components;
 	private ToolStrip _commands;
 	private ToolStripButton _live;
 	private ToolStripButton _addSample;
@@ -43,13 +43,13 @@ partial class TelemetryChartTestScreen {
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
 			StopCapture();
-			components?.Dispose();
+			_components?.Dispose();
 		}
 		base.Dispose(disposing);
 	}
 
 	private void InitializeComponent() {
-		components = new Container();
+		_components = new Container();
 		_commands = new ToolStrip();
 		_live = new ToolStripButton();
 		_addSample = new ToolStripButton();
@@ -57,6 +57,7 @@ partial class TelemetryChartTestScreen {
 		_clear = new ToolStripButton();
 		_gaps = new ToolStripButton();
 		_intervalLabel = new ToolStripLabel();
+		_intervalLabel.Name = "_intervalLabel";
 		_sampleInterval = new ToolStripComboBox();
 		_introduction = new Label();
 		_dashboard = new TableLayoutPanel();
@@ -65,15 +66,19 @@ partial class TelemetryChartTestScreen {
 		_throughputGroup = new GroupBox();
 		_temperatureGroup = new GroupBox();
 		_cpuDescription = new Label();
+		_cpuDescription.Name = "_cpuDescription";
 		_memoryDescription = new Label();
+		_memoryDescription.Name = "_memoryDescription";
 		_throughputDescription = new Label();
+		_throughputDescription.Name = "_throughputDescription";
 		_temperatureDescription = new Label();
+		_temperatureDescription.Name = "_temperatureDescription";
 		_cpuChart = new TelemetryChart();
 		_memoryChart = new TelemetryChart();
 		_throughputChart = new TelemetryChart();
 		_temperatureChart = new TelemetryChart();
 		_status = new Label();
-		_captureTimer = new Timer(components);
+		_captureTimer = new Timer(_components);
 		_commands.SuspendLayout();
 		_dashboard.SuspendLayout();
 		_cpuGroup.SuspendLayout();

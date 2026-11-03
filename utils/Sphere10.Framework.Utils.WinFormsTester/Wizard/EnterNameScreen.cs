@@ -10,29 +10,38 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Wizard;
 
+/// <summary>Collects a validated name and explicit confirmation for the wizard model.</summary>
 public partial class EnterNameScreen : DemoWizardScreenBase {
+	/// <summary>Creates the complete designable page without activating a wizard.</summary>
 	public EnterNameScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 	}
 
+	/// <summary>Validates the current native inputs before advancing.</summary>
 	public override Task<Result> Validate() {
-		var Validation = Result.Default;
-		if (string.IsNullOrWhiteSpace(textBox1.Text))
-			Validation.AddError("Enter your name.");
-		if (!checkBox1.Checked)
-			Validation.AddError("Check the confirmation box to proceed.");
-		return Task.FromResult(Validation);
+		var validation = Result.Default;
+		if (string.IsNullOrWhiteSpace(_textBox1.Text))
+			validation.AddError("Enter your name.");
+		if (!_checkBox1.Checked)
+			validation.AddError("Check the confirmation box to proceed.");
+		return Task.FromResult(validation);
 	}
 
+	/// <summary>Retains validated values in the current wizard model.</summary>
 	public override Task OnNext() {
 		CopyUIToModel();
 		return Task.CompletedTask;
 	}
 
-	protected override void CopyUIToModel() => Model.Name = textBox1.Text.Trim();
+	// Copy validated input into this wizard session.
+	protected override void CopyUIToModel() {
+		Model.Name = _textBox1.Text.Trim();
+	}
 
+	// Restore the retained model when this page is presented again.
 	protected override void CopyModelToUI() {
 		if (Wizard != null)
-			textBox1.Text = Model.Name;
+			_textBox1.Text = Model.Name;
 	}
 }

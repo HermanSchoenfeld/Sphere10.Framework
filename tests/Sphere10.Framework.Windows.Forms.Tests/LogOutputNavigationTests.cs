@@ -56,7 +56,7 @@ public class LogOutputNavigationTests {
 			var strip = new ToolStrip { Name = "captureCommands" };
 			strip.Items.Add(new ToolStripControlHost(selector));
 			source.Controls.Add(strip);
-			source.ToolBar = strip;
+			source.ScreenToolBar = strip;
 		} else
 			source.Controls.Add(selector);
 		Assert.That(form.ShowScreen(source), Is.True);
@@ -68,7 +68,7 @@ public class LogOutputNavigationTests {
 		Assert.That(selector.EnqueueInfo("Retained Capture"), Is.True);
 		await selector.FlushLoggingAsync();
 		await WaitForAsync(() => Output(log).Text.Contains("Retained Capture"));
-		form.ActiveBlock = second;
+		form.SelectedBlock = second;
 		AssertNavigation(form, second);
 		Assert.That(form.ScreenHost.DockScreen(log), Is.True);
 		AssertNavigation(form, first);
@@ -170,11 +170,11 @@ public class LogOutputNavigationTests {
 		var split = form.Controls.OfType<SplitContainer>().Single();
 		var bar = split.Panel1.Controls.OfType<ApplicationBar>().Single();
 		Assert.Multiple(() => {
-			Assert.That(form.ActiveBlock, Is.SameAs(block));
-			Assert.That(bar.SelectedItem?.MenuControl, Is.SameAs(form.BlockBindings[block]));
-			Assert.That(bar.ApplicationBarControl, Is.SameAs(form.BlockBindings[block]));
+			Assert.That(form.SelectedBlock, Is.SameAs(block));
+			Assert.That(bar.SelectedItem?.Button.Tag, Is.SameAs(block));
+			Assert.That(bar.ApplicationBarControl, Is.SameAs(bar.SelectedItem.MenuControl));
 			Assert.That(bar.ApplicationBarControl.Visible, Is.True);
-			Assert.That(form.BlockBindings[block].Controls.Count, Is.GreaterThan(0));
+			Assert.That(bar.ApplicationBarControl.Controls.Count, Is.GreaterThan(0));
 			Assert.That(split.Panel1Collapsed, Is.False);
 		});
 	}

@@ -1,219 +1,173 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-    partial class ScheduleTestScreen {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-        #region Windows Form Designer generated code
+partial class ScheduleTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private Button _job1Button;
+	private Button TestButton;
+	private Button SyncStartButton;
+	private Button SyncStopButton;
+	private Button AsyncTestButton;
+	private Button AsyncStartButton;
+	private Button AsyncStopButton;
+	private Button SyncSerializeButton;
+	private Button XmlSerializeButton;
+	private Button _clearButton;
+	private TextBox textBox1;
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this._job1Button = new System.Windows.Forms.Button();
-            this.TestButton = new System.Windows.Forms.Button();
-            this.SyncStopButton = new System.Windows.Forms.Button();
-            this.SyncStartButton = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.SyncSerializeButton = new System.Windows.Forms.Button();
-            this.XmlSerializeButton = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.AsyncTestButton = new System.Windows.Forms.Button();
-            this.AsyncStartButton = new System.Windows.Forms.Button();
-            this.AsyncStopButton = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            // 
-            // textBox1
-            // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(14, 89);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(771, 497);
-            this.textBox1.TabIndex = 1;
-            // 
-            // _job1Button
-            // 
-            this._job1Button.Location = new System.Drawing.Point(395, 14);
-            this._job1Button.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this._job1Button.Name = "_job1Button";
-            this._job1Button.Size = new System.Drawing.Size(88, 27);
-            this._job1Button.TabIndex = 2;
-            this._job1Button.Text = "Job 1";
-            this._job1Button.UseVisualStyleBackColor = true;
-            this._job1Button.Click += new System.EventHandler(this._job1Button_Click);
-            // 
-            // TestButton
-            // 
-            this.TestButton.Location = new System.Drawing.Point(107, 56);
-            this.TestButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.TestButton.Name = "TestButton";
-            this.TestButton.Size = new System.Drawing.Size(88, 27);
-            this.TestButton.TabIndex = 3;
-            this.TestButton.Text = "Test";
-            this.TestButton.UseVisualStyleBackColor = true;
-            this.TestButton.Click += new System.EventHandler(this.TestButton_Click);
-            // 
-            // SyncStopButton
-            // 
-            this.SyncStopButton.Location = new System.Drawing.Point(299, 56);
-            this.SyncStopButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.SyncStopButton.Name = "SyncStopButton";
-            this.SyncStopButton.Size = new System.Drawing.Size(88, 27);
-            this.SyncStopButton.TabIndex = 4;
-            this.SyncStopButton.Text = "Stop";
-            this.SyncStopButton.UseVisualStyleBackColor = true;
-            this.SyncStopButton.Click += new System.EventHandler(this.SyncStopButton_Click);
-            // 
-            // SyncStartButton
-            // 
-            this.SyncStartButton.Location = new System.Drawing.Point(203, 56);
-            this.SyncStartButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.SyncStartButton.Name = "SyncStartButton";
-            this.SyncStartButton.Size = new System.Drawing.Size(88, 27);
-            this.SyncStartButton.TabIndex = 5;
-            this.SyncStartButton.Text = "Start";
-            this.SyncStartButton.UseVisualStyleBackColor = true;
-            this.SyncStartButton.Click += new System.EventHandler(this.SyncStartButton_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(21, 62);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(79, 15);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "Synchronous:";
-            // 
-            // SyncSerializeButton
-            // 
-            this.SyncSerializeButton.Location = new System.Drawing.Point(395, 56);
-            this.SyncSerializeButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.SyncSerializeButton.Name = "SyncSerializeButton";
-            this.SyncSerializeButton.Size = new System.Drawing.Size(88, 27);
-            this.SyncSerializeButton.TabIndex = 7;
-            this.SyncSerializeButton.Text = "Serialize";
-            this.SyncSerializeButton.UseVisualStyleBackColor = true;
-            this.SyncSerializeButton.Click += new System.EventHandler(this.SyncSerializeButton_Click);
-            // 
-            // XmlSerializeButton
-            // 
-            this.XmlSerializeButton.Location = new System.Drawing.Point(491, 56);
-            this.XmlSerializeButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.XmlSerializeButton.Name = "XmlSerializeButton";
-            this.XmlSerializeButton.Size = new System.Drawing.Size(88, 27);
-            this.XmlSerializeButton.TabIndex = 8;
-            this.XmlSerializeButton.Text = "XML Serialize";
-            this.XmlSerializeButton.UseVisualStyleBackColor = true;
-            this.XmlSerializeButton.Click += new System.EventHandler(this.XmlSerializeButton_Click);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(14, 20);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(86, 15);
-            this.label2.TabIndex = 9;
-            this.label2.Text = "Asynchronous:";
-            // 
-            // AsyncTestButton
-            // 
-            this.AsyncTestButton.Location = new System.Drawing.Point(107, 14);
-            this.AsyncTestButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.AsyncTestButton.Name = "AsyncTestButton";
-            this.AsyncTestButton.Size = new System.Drawing.Size(88, 27);
-            this.AsyncTestButton.TabIndex = 10;
-            this.AsyncTestButton.Text = "Test";
-            this.AsyncTestButton.UseVisualStyleBackColor = true;
-            this.AsyncTestButton.Click += new System.EventHandler(this.AsyncTestButton_Click);
-            // 
-            // AsyncStartButton
-            // 
-            this.AsyncStartButton.Location = new System.Drawing.Point(203, 14);
-            this.AsyncStartButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.AsyncStartButton.Name = "AsyncStartButton";
-            this.AsyncStartButton.Size = new System.Drawing.Size(88, 27);
-            this.AsyncStartButton.TabIndex = 11;
-            this.AsyncStartButton.Text = "Start";
-            this.AsyncStartButton.UseVisualStyleBackColor = true;
-            this.AsyncStartButton.Click += new System.EventHandler(this.AsyncStartButton_Click);
-            // 
-            // AsyncStopButton
-            // 
-            this.AsyncStopButton.Location = new System.Drawing.Point(299, 14);
-            this.AsyncStopButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.AsyncStopButton.Name = "AsyncStopButton";
-            this.AsyncStopButton.Size = new System.Drawing.Size(88, 27);
-            this.AsyncStopButton.TabIndex = 12;
-            this.AsyncStopButton.Text = "Stop";
-            this.AsyncStopButton.UseVisualStyleBackColor = true;
-            this.AsyncStopButton.Click += new System.EventHandler(this.AsyncStopButton_Click);
-            // 
-            // ScheduleTestScreen
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.AsyncStopButton);
-            this.Controls.Add(this.AsyncStartButton);
-            this.Controls.Add(this.AsyncTestButton);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.XmlSerializeButton);
-            this.Controls.Add(this.SyncSerializeButton);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.SyncStartButton);
-            this.Controls.Add(this.SyncStopButton);
-            this.Controls.Add(this.TestButton);
-            this.Controls.Add(this._job1Button);
-            this.Controls.Add(this.textBox1);
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.Name = "ScheduleTestScreen";
-            this.Size = new System.Drawing.Size(800, 600);
-            this.ResumeLayout(false);
-            this.PerformLayout();
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_job1Button = new Button();
+		TestButton = new Button();
+		SyncStartButton = new Button();
+		SyncStopButton = new Button();
+		AsyncTestButton = new Button();
+		AsyncStartButton = new Button();
+		AsyncStopButton = new Button();
+		SyncSerializeButton = new Button();
+		XmlSerializeButton = new Button();
+		_clearButton = new Button();
+		textBox1 = new TextBox();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-        }
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
 
-        #endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "Owned job scheduling";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Create bounded synchronous or asynchronous job schedules, start/stop them, and compare surrogate/XML persistence. This screen owns its schedulers.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_job1Button.Text = "Start sample pair";
+		_job1Button.Name = "_job1Button";
+		_job1Button.AutoSize = true;
+		_job1Button.MinimumSize = new Size(96, 30);
+		_job1Button.Click += _job1Button_Click;
+		_commands.Controls.Add(_job1Button);
+		TestButton.Text = "Create synchronous";
+		TestButton.Name = "TestButton";
+		TestButton.AutoSize = true;
+		TestButton.MinimumSize = new Size(96, 30);
+		TestButton.Click += TestButton_Click;
+		_commands.Controls.Add(TestButton);
+		SyncStartButton.Text = "Start sync";
+		SyncStartButton.Name = "SyncStartButton";
+		SyncStartButton.AutoSize = true;
+		SyncStartButton.MinimumSize = new Size(96, 30);
+		SyncStartButton.Click += SyncStartButton_Click;
+		_commands.Controls.Add(SyncStartButton);
+		SyncStopButton.Text = "Stop sync";
+		SyncStopButton.Name = "SyncStopButton";
+		SyncStopButton.AutoSize = true;
+		SyncStopButton.MinimumSize = new Size(96, 30);
+		SyncStopButton.Click += SyncStopButton_Click;
+		_commands.Controls.Add(SyncStopButton);
+		AsyncTestButton.Text = "Create asynchronous";
+		AsyncTestButton.Name = "AsyncTestButton";
+		AsyncTestButton.AutoSize = true;
+		AsyncTestButton.MinimumSize = new Size(96, 30);
+		AsyncTestButton.Click += AsyncTestButton_Click;
+		_commands.Controls.Add(AsyncTestButton);
+		AsyncStartButton.Text = "Start async";
+		AsyncStartButton.Name = "AsyncStartButton";
+		AsyncStartButton.AutoSize = true;
+		AsyncStartButton.MinimumSize = new Size(96, 30);
+		AsyncStartButton.Click += AsyncStartButton_Click;
+		_commands.Controls.Add(AsyncStartButton);
+		AsyncStopButton.Text = "Stop async";
+		AsyncStopButton.Name = "AsyncStopButton";
+		AsyncStopButton.AutoSize = true;
+		AsyncStopButton.MinimumSize = new Size(96, 30);
+		AsyncStopButton.Click += AsyncStopButton_Click;
+		_commands.Controls.Add(AsyncStopButton);
+		SyncSerializeButton.Text = "Surrogate round trip";
+		SyncSerializeButton.Name = "SyncSerializeButton";
+		SyncSerializeButton.AutoSize = true;
+		SyncSerializeButton.MinimumSize = new Size(96, 30);
+		SyncSerializeButton.Click += SyncSerializeButton_Click;
+		_commands.Controls.Add(SyncSerializeButton);
+		XmlSerializeButton.Text = "XML round trip";
+		XmlSerializeButton.Name = "XmlSerializeButton";
+		XmlSerializeButton.AutoSize = true;
+		XmlSerializeButton.MinimumSize = new Size(96, 30);
+		XmlSerializeButton.Click += XmlSerializeButton_Click;
+		_commands.Controls.Add(XmlSerializeButton);
+		_clearButton.Text = "Clear log";
+		_clearButton.Name = "_clearButton";
+		_clearButton.AutoSize = true;
+		_clearButton.MinimumSize = new Size(96, 30);
+		_clearButton.Click += ClearClicked;
+		_commands.Controls.Add(_clearButton);
+		textBox1.Dock = DockStyle.Fill;
+		textBox1.Multiline = true;
+		textBox1.ReadOnly = true;
+		textBox1.ScrollBars = ScrollBars.Both;
+		textBox1.WordWrap = false;
+		textBox1.Name = "textBox1";
 
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button _job1Button;
-        private System.Windows.Forms.Button TestButton;
-        private System.Windows.Forms.Button SyncStopButton;
-        private System.Windows.Forms.Button SyncStartButton;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button SyncSerializeButton;
-        private System.Windows.Forms.Button XmlSerializeButton;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button AsyncTestButton;
-        private System.Windows.Forms.Button AsyncStartButton;
-        private System.Windows.Forms.Button AsyncStopButton;
-    }
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(textBox1, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "ScheduleTestScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
+	}
 }
-
-

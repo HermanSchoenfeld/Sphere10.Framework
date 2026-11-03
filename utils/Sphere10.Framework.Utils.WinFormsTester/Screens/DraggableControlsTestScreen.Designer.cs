@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,99 +6,122 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class DraggableControlsTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class DraggableControlsTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private Panel _playground;
+	private PictureBoxEx _pictureBox1;
+	private PictureBoxEx _pictureBox2;
+	private PictureBoxEx _pictureBox3;
+	private FlowLayoutPanel _actions;
+	private Button _resetPositions;
+	private Label _positionSummary;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-            this._pictureBox1 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBox2 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            this._pictureBox3 = new Sphere10.Framework.Windows.Forms.PictureBoxEx();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBox3)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // _pictureBox1
-            // 
-            this._pictureBox1.BackColor = System.Drawing.Color.Transparent;
-            this._pictureBox1.Image = global::Sphere10.Framework.Utils.WinFormsTester.Resources.LargeSearchIcon;
-            this._pictureBox1.Location = new System.Drawing.Point(48, 41);
-            this._pictureBox1.Name = "_pictureBox1";
-            this._pictureBox1.Size = new System.Drawing.Size(102, 94);
-            this._pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this._pictureBox1.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBox1.TabIndex = 0;
-            this._pictureBox1.TabStop = false;
-            this._pictureBox1.Click += new System.EventHandler(this._pictureBox1_Click);
-            // 
-            // _pictureBox2
-            // 
-            this._pictureBox2.BackColor = System.Drawing.Color.Transparent;
-            this._pictureBox2.Image = global::Sphere10.Framework.Utils.WinFormsTester.Resources.LargeSearchIcon;
-            this._pictureBox2.Location = new System.Drawing.Point(275, 139);
-            this._pictureBox2.Name = "_pictureBox2";
-            this._pictureBox2.Size = new System.Drawing.Size(102, 94);
-            this._pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this._pictureBox2.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBox2.TabIndex = 1;
-            this._pictureBox2.TabStop = false;
-            // 
-            // _pictureBox3
-            // 
-            this._pictureBox3.BackColor = System.Drawing.Color.Transparent;
-            this._pictureBox3.Image = global::Sphere10.Framework.Utils.WinFormsTester.Resources.LargeSearchIcon;
-            this._pictureBox3.Location = new System.Drawing.Point(374, 29);
-            this._pictureBox3.Name = "_pictureBox3";
-            this._pictureBox3.Size = new System.Drawing.Size(102, 94);
-            this._pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this._pictureBox3.SystemIcon = Sphere10.Framework.Windows.Forms.SystemIconType.None;
-            this._pictureBox3.TabIndex = 2;
-            this._pictureBox3.TabStop = false;
-            // 
-            // DraggableControlsTestForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(652, 373);
-            this.Controls.Add(this._pictureBox3);
-            this.Controls.Add(this._pictureBox2);
-            this.Controls.Add(this._pictureBox1);
-            this.Name = "DraggableControlsTestScreen";
-            this.Text = "DraggableControlsTestForm";
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._pictureBox3)).EndInit();
-            this.ResumeLayout(false);
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_playground = new Panel();
+		_pictureBox1 = new PictureBoxEx();
+		_pictureBox2 = new PictureBoxEx();
+		_pictureBox3 = new PictureBoxEx();
+		_actions = new FlowLayoutPanel();
+		_actions.Name = "_actions";
+		_resetPositions = new Button();
+		_resetPositions.Name = "_resetPositions";
+		_positionSummary = new Label();
+		_positionSummary.Name = "_positionSummary";
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Draggable Controls";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Move the three native picture controls inside the playground. Position feedback and Reset make the drag extension easy to inspect repeatedly.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_playground.Name = "dragPlayground";
+		_playground.Dock = DockStyle.Fill;
+		_playground.BorderStyle = BorderStyle.FixedSingle;
+		_playground.BackColor = SystemColors.ControlLightLight;
+		_pictureBox1.Name = "_pictureBox1";
+		_pictureBox1.Location = new Point(40, 35);
+		_pictureBox1.Size = new Size(90, 90);
+		_pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+		_pictureBox1.Image = Resources.LargeSearchIcon;
+		_pictureBox1.LocationChanged += PictureMoved;
+		_playground.Controls.Add(_pictureBox1);
+		_pictureBox2.Name = "_pictureBox2";
+		_pictureBox2.Location = new Point(220, 120);
+		_pictureBox2.Size = new Size(90, 90);
+		_pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+		_pictureBox2.Image = Resources.LargeSearchIcon;
+		_pictureBox2.LocationChanged += PictureMoved;
+		_playground.Controls.Add(_pictureBox2);
+		_pictureBox3.Name = "_pictureBox3";
+		_pictureBox3.Location = new Point(390, 50);
+		_pictureBox3.Size = new Size(90, 90);
+		_pictureBox3.SizeMode = PictureBoxSizeMode.Zoom;
+		_pictureBox3.Image = Resources.LargeSearchIcon;
+		_pictureBox3.LocationChanged += PictureMoved;
+		_playground.Controls.Add(_pictureBox3);
+		_resetPositions.AutoSize = true;
+		_resetPositions.MinimumSize = new Size(110, 34);
+		_resetPositions.Text = "Reset positions";
+		_resetPositions.UseVisualStyleBackColor = true;
+		_resetPositions.Click += ResetPositionsClicked;
+		_actions.AutoSize = true;
+		_actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_actions.Dock = DockStyle.Fill;
+		_actions.Margin = Padding.Empty;
+		_actions.Controls.AddRange(new Control[] { _resetPositions });
+		_positionSummary.AutoSize = true;
+		_positionSummary.Dock = DockStyle.Fill;
+		_positionSummary.Margin = new Padding(0, 8, 0, 8);
+		_positionSummary.Text = "Drag an image with the left mouse button to move it.";
 
-		private Sphere10.Framework.Windows.Forms.PictureBoxEx _pictureBox1;
-		private Sphere10.Framework.Windows.Forms.PictureBoxEx _pictureBox2;
-		private Sphere10.Framework.Windows.Forms.PictureBoxEx _pictureBox3;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_actions, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_playground, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_positionSummary, 0, 4);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "DraggableControlsTestScreen";
+		Text = "Draggable Controls";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

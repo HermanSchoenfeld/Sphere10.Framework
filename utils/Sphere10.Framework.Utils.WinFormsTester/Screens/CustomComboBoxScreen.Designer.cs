@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,121 +6,132 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Drawing;
+using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class CustomComboBoxScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+partial class CustomComboBoxScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private CustomComboBox _customComboBox1;
+	private CustomComboBox _customComboBox2;
+	private CustomComboBox _customComboBox3;
+	private DataGridView _gridPopup;
+	private UserControl1 _editorPopup;
+	private RichTextBox _textPopup;
+	private Label _label1;
 
-		#region Windows Form Designer generated code
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_customComboBox1 = new CustomComboBox();
+		_customComboBox2 = new CustomComboBox();
+		_customComboBox3 = new CustomComboBox();
+		_gridPopup = new DataGridView();
+		_gridPopup.Name = "_gridPopup";
+		_editorPopup = new UserControl1();
+		_editorPopup.Name = "_editorPopup";
+		_textPopup = new RichTextBox();
+		_textPopup.Name = "_textPopup";
+		_label1 = new Label();
+		_label1.Name = "_label1";
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this.label1 = new System.Windows.Forms.Label();
-			this.customComboBox3 = new CustomComboBox();
-			this.customComboBox2 = new CustomComboBox();
-			this.customComboBox1 = new CustomComboBox();
-			this.SuspendLayout();
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.ForeColor = System.Drawing.Color.SteelBlue;
-			this.label1.Location = new System.Drawing.Point(9, 9);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(198, 13);
-			this.label1.TabIndex = 9;
-			this.label1.Text = "DropDown and DropDownClosed Status";
-			// 
-			// customComboBox3
-			// 
-			this.customComboBox3.AllowResizeDropDown = true;
-			this.customComboBox3.ControlSize = new System.Drawing.Size(121, 106);
-			this.customComboBox3.DropDownControl = null;
-			this.customComboBox3.DropSize = new System.Drawing.Size(121, 106);
-			this.customComboBox3.FormattingEnabled = true;
-			this.customComboBox3.Location = new System.Drawing.Point(12, 151);
-			this.customComboBox3.Name = "customComboBox3";
-			this.customComboBox3.Size = new System.Drawing.Size(329, 21);
-			this.customComboBox3.TabIndex = 8;
-			this.customComboBox3.Text = "Click arrow to view a rich text box...";
-			this.customComboBox3.DropDownClosed += new System.EventHandler(this.customComboBox3_DropDownClosed);
-			this.customComboBox3.DropDown += new System.EventHandler(this.customComboBox3_DropDown);
-			// 
-			// customComboBox2
-			// 
-			this.customComboBox2.AllowResizeDropDown = true;
-			this.customComboBox2.ControlSize = new System.Drawing.Size(1, 1);
-			this.customComboBox2.DropDownControl = null;
-			this.customComboBox2.DropDownSizeMode = CustomComboBox.SizeMode.UseInitialControlSize;
-			this.customComboBox2.DropSize = new System.Drawing.Size(121, 106);
-			this.customComboBox2.FormattingEnabled = true;
-			this.customComboBox2.Location = new System.Drawing.Point(12, 92);
-			this.customComboBox2.Name = "customComboBox2";
-			this.customComboBox2.Size = new System.Drawing.Size(329, 21);
-			this.customComboBox2.TabIndex = 7;
-			this.customComboBox2.Text = "Click arrow to view a custom user control...";
-			this.customComboBox2.DropDownClosed += new System.EventHandler(this.customComboBox2_DropDownClosed);
-			this.customComboBox2.DropDown += new System.EventHandler(this.customComboBox2_DropDown);
-			// 
-			// customComboBox1
-			// 
-			this.customComboBox1.AllowResizeDropDown = false;
-			this.customComboBox1.ControlSize = new System.Drawing.Size(320, 222);
-			this.customComboBox1.DropDownControl = null;
-			this.customComboBox1.DropDownSizeMode = CustomComboBox.SizeMode.UseDropDownSize;
-			this.customComboBox1.DropSize = new System.Drawing.Size(420, 200);
-			this.customComboBox1.FormattingEnabled = true;
-			this.customComboBox1.Location = new System.Drawing.Point(12, 33);
-			this.customComboBox1.Name = "customComboBox1";
-			this.customComboBox1.Size = new System.Drawing.Size(329, 21);
-			this.customComboBox1.TabIndex = 6;
-			this.customComboBox1.Text = "Click arrow to view data grid...";
-			this.customComboBox1.DropDownClosed += new System.EventHandler(this.customComboBox1_DropDownClosed);
-			this.customComboBox1.DropDown += new System.EventHandler(this.customComboBox1_DropDown);
-			// 
-			// Form1
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(369, 193);
-			this.Controls.Add(this.label1);
-			this.Controls.Add(this.customComboBox3);
-			this.Controls.Add(this.customComboBox2);
-			this.Controls.Add(this.customComboBox1);
-			this.Name = "Form1";
-			this.Text = "Custom ComboBox Demonstration";
-			this.Load += new System.EventHandler(this.Form1_Load);
-			this.ResumeLayout(false);
-			this.PerformLayout();
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 6;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Custom Dropdowns";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "The same native dropdown hosts a table, a composite editor or rich text. Drag a popup corner to resize it; closing preserves the hosted control.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		}
+		_customComboBox1.Name = "customComboBox1";
+		_customComboBox1.Dock = DockStyle.Top;
+		_customComboBox1.Text = "Browse a tabular item catalog…";
+		_customComboBox1.AllowResizeDropDown = true;
+		_customComboBox1.DropSize = new Size(460, 240);
+		_customComboBox1.DropDownSizeMode = CustomComboBox.SizeMode.UseDropDownSize;
+		_customComboBox1.DropDown += CustomComboBox1_DropDown;
+		_customComboBox1.DropDownClosed += CustomComboBox1_DropDownClosed;
+		_customComboBox2.Name = "customComboBox2";
+		_customComboBox2.Dock = DockStyle.Top;
+		_customComboBox2.Text = "Open a custom selection panel…";
+		_customComboBox2.AllowResizeDropDown = true;
+		_customComboBox2.DropSize = new Size(460, 240);
+		_customComboBox2.DropDownSizeMode = CustomComboBox.SizeMode.UseDropDownSize;
+		_customComboBox2.DropDown += CustomComboBox2_DropDown;
+		_customComboBox2.DropDownClosed += CustomComboBox2_DropDownClosed;
+		_customComboBox3.Name = "customComboBox3";
+		_customComboBox3.Dock = DockStyle.Top;
+		_customComboBox3.Text = "Edit rich text in a popup…";
+		_customComboBox3.AllowResizeDropDown = true;
+		_customComboBox3.DropSize = new Size(460, 240);
+		_customComboBox3.DropDownSizeMode = CustomComboBox.SizeMode.UseDropDownSize;
+		_customComboBox3.DropDown += CustomComboBox3_DropDown;
+		_customComboBox3.DropDownClosed += CustomComboBox3_DropDownClosed;
+		_gridPopup.Size = new Size(460, 240);
+		_gridPopup.ReadOnly = true;
+		_gridPopup.AllowUserToAddRows = false;
+		_gridPopup.RowHeadersVisible = false;
+		_gridPopup.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+		_gridPopup.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+		_gridPopup.Columns.Add("Item", "Item");
+		_gridPopup.Columns.Add("Category", "Category");
+		_gridPopup.Columns.Add("Price", "Unit price");
+		_gridPopup.CellDoubleClick += CatalogChosen;
+		_editorPopup.Size = new Size(460, 180);
+		_editorPopup.SelectionAccepted += CompositeChosen;
+		_textPopup.Size = new Size(460, 240);
+		_textPopup.BorderStyle = BorderStyle.None;
+		_textPopup.Text = "A popup can host a full native editor. Select text, edit it, then click outside to close the popup.";
+		_customComboBox1.DropDownControl = _gridPopup;
+		_customComboBox2.DropDownControl = _editorPopup;
+		_customComboBox3.DropDownControl = _textPopup;
+		_label1.AutoSize = true;
+		_label1.Dock = DockStyle.Fill;
+		_label1.Margin = new Padding(0, 8, 0, 8);
+		_label1.Text = "Open an arrow to compare hosted content. Double-click a catalog row to accept it.";
 
-		#endregion
-
-		private CustomComboBox customComboBox1;
-		private CustomComboBox customComboBox2;
-		private CustomComboBox customComboBox3;
-		private System.Windows.Forms.Label label1;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_customComboBox1, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_customComboBox2, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_customComboBox3, 0, 4);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_label1, 0, 5);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "CustomComboBoxScreen";
+		Text = "Custom Dropdowns";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-
-

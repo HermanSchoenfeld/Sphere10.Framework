@@ -1,425 +1,418 @@
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class TransactionalCollectionScreen {
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		#region Component Designer generated code
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-            this._listAppendTestButton = new System.Windows.Forms.Button();
-            this._testsGroupBox = new System.Windows.Forms.GroupBox();
-            this._bufferTestButton = new System.Windows.Forms.Button();
-            this._dictionaryAppend = new System.Windows.Forms.Button();
-            this._storageStreamButton = new System.Windows.Forms.Button();
-            this._outputGroupBox = new System.Windows.Forms.GroupBox();
-            this._copyButton = new System.Windows.Forms.Button();
-            this._clearButton = new System.Windows.Forms.Button();
-            this._outputTextBox = new System.Windows.Forms.TextBox();
-            this.mergeableMenuStrip1 = new Sphere10.Framework.Windows.Forms.MergeableMenuStrip();
-            this._configGroupBox = new System.Windows.Forms.GroupBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this._listTypeComboBox = new Sphere10.Framework.Windows.Forms.EnumComboBox();
-            this._batchIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this._commitCheckBox = new System.Windows.Forms.CheckBox();
-            this._itemSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this._cacheSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this._pageSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this._clusterSizeIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this._itemsIntBox = new Sphere10.Framework.Windows.Forms.IntBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this._policyBox = new Sphere10.Framework.Windows.Forms.FlagsCheckedListBox();
-            this._testsGroupBox.SuspendLayout();
-            this._outputGroupBox.SuspendLayout();
-            this._configGroupBox.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // _listAppendTestButton
-            // 
-            this._listAppendTestButton.Location = new System.Drawing.Point(10, 37);
-            this._listAppendTestButton.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._listAppendTestButton.Name = "_listAppendTestButton";
-            this._listAppendTestButton.Size = new System.Drawing.Size(164, 45);
-            this._listAppendTestButton.TabIndex = 0;
-            this._listAppendTestButton.Text = "List Append";
-            this._listAppendTestButton.UseVisualStyleBackColor = true;
-            this._listAppendTestButton.Click += new System.EventHandler(this._appendTestButton_Click);
-            // 
-            // _testsGroupBox
-            // 
-            this._testsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._testsGroupBox.Controls.Add(this._bufferTestButton);
-            this._testsGroupBox.Controls.Add(this._dictionaryAppend);
-            this._testsGroupBox.Controls.Add(this._storageStreamButton);
-            this._testsGroupBox.Controls.Add(this._listAppendTestButton);
-            this._testsGroupBox.Location = new System.Drawing.Point(6, 1009);
-            this._testsGroupBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._testsGroupBox.Name = "_testsGroupBox";
-            this._testsGroupBox.Padding = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._testsGroupBox.Size = new System.Drawing.Size(1949, 100);
-            this._testsGroupBox.TabIndex = 1;
-            this._testsGroupBox.TabStop = false;
-            this._testsGroupBox.Text = "Tests";
-            // 
-            // _bufferTestButton
-            // 
-            this._bufferTestButton.Location = new System.Drawing.Point(584, 37);
-            this._bufferTestButton.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._bufferTestButton.Name = "_bufferTestButton";
-            this._bufferTestButton.Size = new System.Drawing.Size(164, 45);
-            this._bufferTestButton.TabIndex = 3;
-            this._bufferTestButton.Text = "Simple List";
-            this._bufferTestButton.UseVisualStyleBackColor = true;
-            this._bufferTestButton.Click += new System.EventHandler(this._bufferTestButton_Click);
-            // 
-            // _dictionaryAppend
-            // 
-            this._dictionaryAppend.Location = new System.Drawing.Point(361, 37);
-            this._dictionaryAppend.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._dictionaryAppend.Name = "_dictionaryAppend";
-            this._dictionaryAppend.Size = new System.Drawing.Size(214, 45);
-            this._dictionaryAppend.TabIndex = 2;
-            this._dictionaryAppend.Text = "Dictionary Append";
-            this._dictionaryAppend.UseVisualStyleBackColor = true;
-            this._dictionaryAppend.Click += new System.EventHandler(this._dictionaryAppend_Click);
-            // 
-            // _storageStreamButton
-            // 
-            this._storageStreamButton.Location = new System.Drawing.Point(186, 37);
-            this._storageStreamButton.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._storageStreamButton.Name = "_storageStreamButton";
-            this._storageStreamButton.Size = new System.Drawing.Size(164, 45);
-            this._storageStreamButton.TabIndex = 1;
-            this._storageStreamButton.Text = "Stream Append";
-            this._storageStreamButton.UseVisualStyleBackColor = true;
-            this._storageStreamButton.Click += new System.EventHandler(this._streamButton_Click);
-            // 
-            // _outputGroupBox
-            // 
-            this._outputGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._outputGroupBox.Controls.Add(this._copyButton);
-            this._outputGroupBox.Controls.Add(this._clearButton);
-            this._outputGroupBox.Controls.Add(this._outputTextBox);
-            this._outputGroupBox.Controls.Add(this.mergeableMenuStrip1);
-            this._outputGroupBox.Location = new System.Drawing.Point(6, 369);
-            this._outputGroupBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._outputGroupBox.Name = "_outputGroupBox";
-            this._outputGroupBox.Padding = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._outputGroupBox.Size = new System.Drawing.Size(1949, 629);
-            this._outputGroupBox.TabIndex = 2;
-            this._outputGroupBox.TabStop = false;
-            this._outputGroupBox.Text = "Output";
-            // 
-            // _copyButton
-            // 
-            this._copyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this._copyButton.Location = new System.Drawing.Point(1840, 581);
-            this._copyButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._copyButton.Name = "_copyButton";
-            this._copyButton.Size = new System.Drawing.Size(44, 38);
-            this._copyButton.TabIndex = 3;
-            this._copyButton.UseVisualStyleBackColor = true;
-            this._copyButton.Click += new System.EventHandler(this._copyButton_Click);
-            // 
-            // _clearButton
-            // 
-            this._clearButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this._clearButton.Location = new System.Drawing.Point(1893, 581);
-            this._clearButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._clearButton.Name = "_clearButton";
-            this._clearButton.Size = new System.Drawing.Size(44, 38);
-            this._clearButton.TabIndex = 2;
-            this._clearButton.UseVisualStyleBackColor = true;
-            this._clearButton.Click += new System.EventHandler(this._clearButton_Click);
-            // 
-            // _outputTextBox
-            // 
-            this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._outputTextBox.Location = new System.Drawing.Point(10, 37);
-            this._outputTextBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._outputTextBox.Multiline = true;
-            this._outputTextBox.Name = "_outputTextBox";
-            this._outputTextBox.Size = new System.Drawing.Size(1926, 538);
-            this._outputTextBox.TabIndex = 0;
-            // 
-            // mergeableMenuStrip1
-            // 
-            this.mergeableMenuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
-            this.mergeableMenuStrip1.InheritedToolStrip = null;
-            this.mergeableMenuStrip1.Location = new System.Drawing.Point(6, 29);
-            this.mergeableMenuStrip1.Name = "mergeableMenuStrip1";
-            this.mergeableMenuStrip1.Size = new System.Drawing.Size(1937, 24);
-            this.mergeableMenuStrip1.TabIndex = 1;
-            this.mergeableMenuStrip1.Text = "mergeableMenuStrip1";
-            // 
-            // _configGroupBox
-            // 
-            this._configGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._configGroupBox.Controls.Add(this._policyBox);
-            this._configGroupBox.Controls.Add(this.label7);
-            this._configGroupBox.Controls.Add(this._listTypeComboBox);
-            this._configGroupBox.Controls.Add(this._batchIntBox);
-            this._configGroupBox.Controls.Add(this.label6);
-            this._configGroupBox.Controls.Add(this._commitCheckBox);
-            this._configGroupBox.Controls.Add(this._itemSizeIntBox);
-            this._configGroupBox.Controls.Add(this.label5);
-            this._configGroupBox.Controls.Add(this._cacheSizeIntBox);
-            this._configGroupBox.Controls.Add(this.label4);
-            this._configGroupBox.Controls.Add(this._pageSizeIntBox);
-            this._configGroupBox.Controls.Add(this.label3);
-            this._configGroupBox.Controls.Add(this._clusterSizeIntBox);
-            this._configGroupBox.Controls.Add(this.label2);
-            this._configGroupBox.Controls.Add(this._itemsIntBox);
-            this._configGroupBox.Controls.Add(this.label1);
-            this._configGroupBox.Location = new System.Drawing.Point(6, 0);
-            this._configGroupBox.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._configGroupBox.Name = "_configGroupBox";
-            this._configGroupBox.Padding = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this._configGroupBox.Size = new System.Drawing.Size(1949, 359);
-            this._configGroupBox.TabIndex = 3;
-            this._configGroupBox.TabStop = false;
-            this._configGroupBox.Text = "Test Config";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(17, 284);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(49, 25);
-            this.label7.TabIndex = 19;
-            this.label7.Text = "Type";
-            // 
-            // _listTypeComboBox
-            // 
-            this._listTypeComboBox.AllowEmptyOption = false;
-            this._listTypeComboBox.DisplayMember = "Display";
-            this._listTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this._listTypeComboBox.EmptyOptionText = "";
-            this._listTypeComboBox.FormattingEnabled = true;
-            this._listTypeComboBox.Location = new System.Drawing.Point(150, 281);
-            this._listTypeComboBox.Name = "_listTypeComboBox";
-            this._listTypeComboBox.Size = new System.Drawing.Size(182, 33);
-            this._listTypeComboBox.TabIndex = 18;
-            this._listTypeComboBox.ValueMember = "Value";
-            // 
-            // _batchIntBox
-            // 
-            this._batchIntBox.Location = new System.Drawing.Point(150, 81);
-            this._batchIntBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._batchIntBox.Name = "_batchIntBox";
-            this._batchIntBox.Size = new System.Drawing.Size(78, 31);
-            this._batchIntBox.TabIndex = 16;
-            this._batchIntBox.Text = "100";
-            this._batchIntBox.Value = 100;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 84);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(91, 25);
-            this.label6.TabIndex = 15;
-            this.label6.Text = "Batch Size";
-            // 
-            // _commitCheckBox
-            // 
-            this._commitCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this._commitCheckBox.AutoSize = true;
-            this._commitCheckBox.Location = new System.Drawing.Point(395, 285);
-            this._commitCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._commitCheckBox.Name = "_commitCheckBox";
-            this._commitCheckBox.Size = new System.Drawing.Size(239, 29);
-            this._commitCheckBox.TabIndex = 12;
-            this._commitCheckBox.Text = "Commit after every batch";
-            this._commitCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // _itemSizeIntBox
-            // 
-            this._itemSizeIntBox.Location = new System.Drawing.Point(150, 242);
-            this._itemSizeIntBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._itemSizeIntBox.Name = "_itemSizeIntBox";
-            this._itemSizeIntBox.Size = new System.Drawing.Size(141, 31);
-            this._itemSizeIntBox.TabIndex = 11;
-            this._itemSizeIntBox.Text = "300";
-            this._itemSizeIntBox.Value = 300;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(13, 245);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(110, 25);
-            this.label5.TabIndex = 10;
-            this.label5.Text = "Item Size (b)";
-            // 
-            // _cacheSizeIntBox
-            // 
-            this._cacheSizeIntBox.Location = new System.Drawing.Point(150, 201);
-            this._cacheSizeIntBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._cacheSizeIntBox.Name = "_cacheSizeIntBox";
-            this._cacheSizeIntBox.Size = new System.Drawing.Size(141, 31);
-            this._cacheSizeIntBox.TabIndex = 9;
-            this._cacheSizeIntBox.Text = "10000000";
-            this._cacheSizeIntBox.Value = 10000000;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(13, 204);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(121, 25);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Cache Size (b)";
-            // 
-            // _pageSizeIntBox
-            // 
-            this._pageSizeIntBox.Location = new System.Drawing.Point(150, 163);
-            this._pageSizeIntBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._pageSizeIntBox.Name = "_pageSizeIntBox";
-            this._pageSizeIntBox.Size = new System.Drawing.Size(141, 31);
-            this._pageSizeIntBox.TabIndex = 7;
-            this._pageSizeIntBox.Text = "256000";
-            this._pageSizeIntBox.Value = 256000;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(10, 166);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(112, 25);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Page Size (b)";
-            // 
-            // _clusterSizeIntBox
-            // 
-            this._clusterSizeIntBox.Location = new System.Drawing.Point(150, 122);
-            this._clusterSizeIntBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._clusterSizeIntBox.Name = "_clusterSizeIntBox";
-            this._clusterSizeIntBox.Size = new System.Drawing.Size(141, 31);
-            this._clusterSizeIntBox.TabIndex = 5;
-            this._clusterSizeIntBox.Text = "310";
-            this._clusterSizeIntBox.Value = 310;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 125);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(128, 25);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Cluster Size (b)";
-            // 
-            // _itemsIntBox
-            // 
-            this._itemsIntBox.Location = new System.Drawing.Point(150, 43);
-            this._itemsIntBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this._itemsIntBox.Name = "_itemsIntBox";
-            this._itemsIntBox.Size = new System.Drawing.Size(78, 31);
-            this._itemsIntBox.TabIndex = 3;
-            this._itemsIntBox.Text = "5000";
-            this._itemsIntBox.Value = 5000;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 43);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 25);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Items";
-            // 
-            // _policyBox
-            // 
-            this._policyBox.CheckOnClick = true;
-            this._policyBox.FormattingEnabled = true;
-            this._policyBox.Location = new System.Drawing.Point(395, 43);
-            this._policyBox.Name = "_policyBox";
-            this._policyBox.Size = new System.Drawing.Size(304, 228);
-            this._policyBox.TabIndex = 4;
-            // 
-            // TransactionalCollectionScreen
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this._configGroupBox);
-            this.Controls.Add(this._outputGroupBox);
-            this.Controls.Add(this._testsGroupBox);
-            this.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
-            this.Name = "TransactionalCollectionScreen";
-            this.Size = new System.Drawing.Size(1954, 1114);
-            this._testsGroupBox.ResumeLayout(false);
-            this._outputGroupBox.ResumeLayout(false);
-            this._outputGroupBox.PerformLayout();
-            this._configGroupBox.ResumeLayout(false);
-            this._configGroupBox.PerformLayout();
-            this.ResumeLayout(false);
+partial class TransactionalCollectionScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _inputs;
+	private FlowLayoutPanel _itemsInput;
+	private FlowLayoutPanel _batchInput;
+	private FlowLayoutPanel _itemSizeInput;
+	private FlowLayoutPanel _clusterSizeInput;
+	private FlowLayoutPanel _pageSizeInput;
+	private FlowLayoutPanel _cacheSizeInput;
+	private FlowLayoutPanel _backendInput;
+	private FlowLayoutPanel _policyInput;
+	private FlowLayoutPanel _commands;
+	private TextBoxEx _outputTextBox;
+	private Label _status;
+	private Label _itemsIntBoxLabel;
+	private IntBox _itemsIntBox;
+	private Label _batchIntBoxLabel;
+	private IntBox _batchIntBox;
+	private Label _itemSizeIntBoxLabel;
+	private IntBox _itemSizeIntBox;
+	private Label _clusterSizeIntBoxLabel;
+	private IntBox _clusterSizeIntBox;
+	private Label _pageSizeIntBoxLabel;
+	private IntBox _pageSizeIntBox;
+	private Label _cacheSizeIntBoxLabel;
+	private IntBox _cacheSizeIntBox;
+	private Label _backendLabel;
+	private EnumComboBox _listTypeComboBox;
+	private CheckBox _commitCheckBox;
+	private Label _policyLabel;
+	private FlagsCheckedListBox _policyBox;
+	private Button _listAppendTestButton;
+	private Button _bufferTestButton;
+	private Button _dictionaryAppend;
+	private Button _storageStreamButton;
+	private Button _rollbackButton;
+	private Button _cancelButton;
+	private Button _copyButton;
+	private Button _clearButton;
 
-		}
+	// The complete static demonstration layout remains editable on the designer surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_inputs = new FlowLayoutPanel();
+		_itemsInput = new FlowLayoutPanel();
+		_batchInput = new FlowLayoutPanel();
+		_itemSizeInput = new FlowLayoutPanel();
+		_clusterSizeInput = new FlowLayoutPanel();
+		_pageSizeInput = new FlowLayoutPanel();
+		_cacheSizeInput = new FlowLayoutPanel();
+		_backendInput = new FlowLayoutPanel();
+		_policyInput = new FlowLayoutPanel();
+		_commands = new FlowLayoutPanel();
+		_outputTextBox = new TextBoxEx();
+		_status = new Label();
+		_itemsIntBoxLabel = new Label();
+		_itemsIntBox = new IntBox();
+		_batchIntBoxLabel = new Label();
+		_batchIntBox = new IntBox();
+		_itemSizeIntBoxLabel = new Label();
+		_itemSizeIntBox = new IntBox();
+		_clusterSizeIntBoxLabel = new Label();
+		_clusterSizeIntBox = new IntBox();
+		_pageSizeIntBoxLabel = new Label();
+		_pageSizeIntBox = new IntBox();
+		_cacheSizeIntBoxLabel = new Label();
+		_cacheSizeIntBox = new IntBox();
+		_backendLabel = new Label();
+		_listTypeComboBox = new EnumComboBox();
+		_commitCheckBox = new CheckBox();
+		_policyLabel = new Label();
+		_policyBox = new FlagsCheckedListBox();
+		_listAppendTestButton = new Button();
+		_bufferTestButton = new Button();
+		_dictionaryAppend = new Button();
+		_storageStreamButton = new Button();
+		_rollbackButton = new Button();
+		_cancelButton = new Button();
+		_copyButton = new Button();
+		_clearButton = new Button();
+		_layout.SuspendLayout();
+		_inputs.SuspendLayout();
+		_itemsInput.SuspendLayout();
+		_batchInput.SuspendLayout();
+		_itemSizeInput.SuspendLayout();
+		_clusterSizeInput.SuspendLayout();
+		_pageSizeInput.SuspendLayout();
+		_cacheSizeInput.SuspendLayout();
+		_backendInput.SuspendLayout();
+		_policyInput.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-		#endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 6;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_inputs, 0, 2);
+		_layout.Controls.Add(_commands, 0, 3);
+		_layout.Controls.Add(_outputTextBox, 0, 4);
+		_layout.Controls.Add(_status, 0, 5);
 
-		private System.Windows.Forms.Button _listAppendTestButton;
-		private System.Windows.Forms.GroupBox _testsGroupBox;
-		private System.Windows.Forms.GroupBox _outputGroupBox;
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private Sphere10.Framework.Windows.Forms.MergeableMenuStrip mergeableMenuStrip1;
-		private System.Windows.Forms.GroupBox _configGroupBox;
-		private Sphere10.Framework.Windows.Forms.IntBox _itemsIntBox;
-		private System.Windows.Forms.Label label1;
-		private Sphere10.Framework.Windows.Forms.IntBox _clusterSizeIntBox;
-		private System.Windows.Forms.Label label2;
-		private Sphere10.Framework.Windows.Forms.IntBox _pageSizeIntBox;
-		private System.Windows.Forms.Label label3;
-		private Sphere10.Framework.Windows.Forms.IntBox _cacheSizeIntBox;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Button _clearButton;
-		private System.Windows.Forms.Button _copyButton;
-		private Sphere10.Framework.Windows.Forms.IntBox _itemSizeIntBox;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.CheckBox _commitCheckBox;
-		private Sphere10.Framework.Windows.Forms.IntBox _batchIntBox;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.Button _storageStreamButton;
-		private System.Windows.Forms.Button _dictionaryAppend;
-		private System.Windows.Forms.Label label7;
-		private Sphere10.Framework.Windows.Forms.EnumComboBox _listTypeComboBox;
-		private System.Windows.Forms.Button _bufferTestButton;
-		private Sphere10.Framework.Windows.Forms.FlagsCheckedListBox _policyBox;
+		_heading.Text = "Transactional Collections";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 12);
+		_introduction.Text = "Compare real list, buffer, dictionary and clustered-stream writes. All work uses an owned temporary directory, bounded input, explicit commit choices and cancellable worker execution.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 16);
+
+		_inputs.AutoSize = true;
+		_inputs.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_inputs.Dock = DockStyle.Fill;
+		_inputs.Margin = new Padding(0, 0, 0, 10);
+
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Dock = DockStyle.Fill;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+
+		_itemsIntBoxLabel.Name = "_itemsIntBoxLabel";
+		_itemsIntBoxLabel.Text = "Items";
+		_itemsIntBoxLabel.AutoSize = true;
+		_itemsIntBoxLabel.Padding = new Padding(0, 5, 0, 0);
+		_itemsIntBoxLabel.Margin = new Padding(0, 3, 12, 3);
+		_itemsInput.AutoSize = true;
+		_itemsInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_itemsInput.WrapContents = false;
+		_itemsInput.Margin = new Padding(0, 0, 12, 0);
+		_itemsInput.Controls.Add(_itemsIntBoxLabel);
+		_inputs.Controls.Add(_itemsInput);
+
+		_itemsIntBox.Name = "_itemsIntBox";
+		_itemsIntBox.Value = 1000;
+		_itemsIntBox.Width = 95;
+		_itemsIntBox.Margin = new Padding(0, 3, 0, 3);
+		_itemsInput.Controls.Add(_itemsIntBox);
+		_itemsIntBox.ValueChanged += PreferencesEdited;
+
+		_batchIntBoxLabel.Name = "_batchIntBoxLabel";
+		_batchIntBoxLabel.Text = "Batch size";
+		_batchIntBoxLabel.AutoSize = true;
+		_batchIntBoxLabel.Padding = new Padding(0, 5, 0, 0);
+		_batchIntBoxLabel.Margin = new Padding(0, 3, 12, 3);
+		_batchInput.AutoSize = true;
+		_batchInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_batchInput.WrapContents = false;
+		_batchInput.Margin = new Padding(0, 0, 12, 0);
+		_batchInput.Controls.Add(_batchIntBoxLabel);
+		_inputs.Controls.Add(_batchInput);
+
+		_batchIntBox.Name = "_batchIntBox";
+		_batchIntBox.Value = 100;
+		_batchIntBox.Width = 95;
+		_batchIntBox.Margin = new Padding(0, 3, 0, 3);
+		_batchInput.Controls.Add(_batchIntBox);
+		_batchIntBox.ValueChanged += PreferencesEdited;
+
+		_itemSizeIntBoxLabel.Name = "_itemSizeIntBoxLabel";
+		_itemSizeIntBoxLabel.Text = "Bytes per item";
+		_itemSizeIntBoxLabel.AutoSize = true;
+		_itemSizeIntBoxLabel.Padding = new Padding(0, 5, 0, 0);
+		_itemSizeIntBoxLabel.Margin = new Padding(0, 3, 12, 3);
+		_itemSizeInput.AutoSize = true;
+		_itemSizeInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_itemSizeInput.WrapContents = false;
+		_itemSizeInput.Margin = new Padding(0, 0, 12, 0);
+		_itemSizeInput.Controls.Add(_itemSizeIntBoxLabel);
+		_inputs.Controls.Add(_itemSizeInput);
+
+		_itemSizeIntBox.Name = "_itemSizeIntBox";
+		_itemSizeIntBox.Value = 64;
+		_itemSizeIntBox.Width = 95;
+		_itemSizeIntBox.Margin = new Padding(0, 3, 0, 3);
+		_itemSizeInput.Controls.Add(_itemSizeIntBox);
+		_itemSizeIntBox.ValueChanged += PreferencesEdited;
+
+		_clusterSizeIntBoxLabel.Name = "_clusterSizeIntBoxLabel";
+		_clusterSizeIntBoxLabel.Text = "Cluster bytes";
+		_clusterSizeIntBoxLabel.AutoSize = true;
+		_clusterSizeIntBoxLabel.Padding = new Padding(0, 5, 0, 0);
+		_clusterSizeIntBoxLabel.Margin = new Padding(0, 3, 12, 3);
+		_clusterSizeInput.AutoSize = true;
+		_clusterSizeInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_clusterSizeInput.WrapContents = false;
+		_clusterSizeInput.Margin = new Padding(0, 0, 12, 0);
+		_clusterSizeInput.Controls.Add(_clusterSizeIntBoxLabel);
+		_inputs.Controls.Add(_clusterSizeInput);
+
+		_clusterSizeIntBox.Name = "_clusterSizeIntBox";
+		_clusterSizeIntBox.Value = 1024;
+		_clusterSizeIntBox.Width = 95;
+		_clusterSizeIntBox.Margin = new Padding(0, 3, 0, 3);
+		_clusterSizeInput.Controls.Add(_clusterSizeIntBox);
+		_clusterSizeIntBox.ValueChanged += PreferencesEdited;
+
+		_pageSizeIntBoxLabel.Name = "_pageSizeIntBoxLabel";
+		_pageSizeIntBoxLabel.Text = "Page bytes";
+		_pageSizeIntBoxLabel.AutoSize = true;
+		_pageSizeIntBoxLabel.Padding = new Padding(0, 5, 0, 0);
+		_pageSizeIntBoxLabel.Margin = new Padding(0, 3, 12, 3);
+		_pageSizeInput.AutoSize = true;
+		_pageSizeInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_pageSizeInput.WrapContents = false;
+		_pageSizeInput.Margin = new Padding(0, 0, 12, 0);
+		_pageSizeInput.Controls.Add(_pageSizeIntBoxLabel);
+		_inputs.Controls.Add(_pageSizeInput);
+
+		_pageSizeIntBox.Name = "_pageSizeIntBox";
+		_pageSizeIntBox.Value = 65536;
+		_pageSizeIntBox.Width = 95;
+		_pageSizeIntBox.Margin = new Padding(0, 3, 0, 3);
+		_pageSizeInput.Controls.Add(_pageSizeIntBox);
+		_pageSizeIntBox.ValueChanged += PreferencesEdited;
+
+		_cacheSizeIntBoxLabel.Name = "_cacheSizeIntBoxLabel";
+		_cacheSizeIntBoxLabel.Text = "Cache bytes";
+		_cacheSizeIntBoxLabel.AutoSize = true;
+		_cacheSizeIntBoxLabel.Padding = new Padding(0, 5, 0, 0);
+		_cacheSizeIntBoxLabel.Margin = new Padding(0, 3, 12, 3);
+		_cacheSizeInput.AutoSize = true;
+		_cacheSizeInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_cacheSizeInput.WrapContents = false;
+		_cacheSizeInput.Margin = new Padding(0, 0, 12, 0);
+		_cacheSizeInput.Controls.Add(_cacheSizeIntBoxLabel);
+		_inputs.Controls.Add(_cacheSizeInput);
+
+		_cacheSizeIntBox.Name = "_cacheSizeIntBox";
+		_cacheSizeIntBox.Value = 8388608;
+		_cacheSizeIntBox.Width = 95;
+		_cacheSizeIntBox.Margin = new Padding(0, 3, 0, 3);
+		_cacheSizeInput.Controls.Add(_cacheSizeIntBox);
+		_cacheSizeIntBox.ValueChanged += PreferencesEdited;
+
+		_backendLabel.Name = "_backendLabel";
+		_backendLabel.Text = "List / buffer backend";
+		_backendLabel.AutoSize = true;
+		_backendLabel.Padding = new Padding(0, 5, 0, 0);
+		_backendLabel.Margin = new Padding(0, 3, 12, 3);
+		_backendInput.AutoSize = true;
+		_backendInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_backendInput.WrapContents = false;
+		_backendInput.Margin = new Padding(0, 0, 12, 0);
+		_backendInput.Controls.Add(_backendLabel);
+		_inputs.Controls.Add(_backendInput);
+
+		_listTypeComboBox.Name = "_listTypeComboBox";
+		_listTypeComboBox.Width = 185;
+		_listTypeComboBox.Margin = new Padding(0, 3, 0, 3);
+		_backendInput.Controls.Add(_listTypeComboBox);
+		_listTypeComboBox.SelectedIndexChanged += BackendChanged;
+
+		_commitCheckBox.Name = "_commitCheckBox";
+		_commitCheckBox.Text = "Commit each batch when supported";
+		_commitCheckBox.AutoSize = true;
+		_commitCheckBox.Margin = new Padding(0, 3, 12, 3);
+		_inputs.Controls.Add(_commitCheckBox);
+		_commitCheckBox.CheckedChanged += PreferencesEdited;
+
+		_policyLabel.Name = "_policyLabel";
+		_policyLabel.Text = "Cluster policy";
+		_policyLabel.AutoSize = true;
+		_policyLabel.Padding = new Padding(0, 5, 0, 0);
+		_policyLabel.Margin = new Padding(0, 3, 12, 3);
+		_policyInput.AutoSize = true;
+		_policyInput.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_policyInput.WrapContents = false;
+		_policyInput.Margin = new Padding(0, 0, 12, 0);
+		_policyInput.Controls.Add(_policyLabel);
+		_inputs.Controls.Add(_policyInput);
+
+		_policyBox.Name = "_policyBox";
+		_policyBox.Width = 230;
+		_policyBox.Height = 100;
+		_policyBox.CheckOnClick = true;
+		_policyBox.Margin = new Padding(0, 3, 0, 3);
+		_policyInput.Controls.Add(_policyBox);
+
+		_listAppendTestButton.Name = "_listAppendTestButton";
+		_listAppendTestButton.Text = "Append list";
+		_listAppendTestButton.AutoSize = true;
+		_listAppendTestButton.MinimumSize = new Size(110, 32);
+		_listAppendTestButton.Margin = new Padding(0, 0, 8, 0);
+		_listAppendTestButton.Click += ListClicked;
+		_commands.Controls.Add(_listAppendTestButton);
+
+		_bufferTestButton.Name = "_bufferTestButton";
+		_bufferTestButton.Text = "Append buffer";
+		_bufferTestButton.AutoSize = true;
+		_bufferTestButton.MinimumSize = new Size(110, 32);
+		_bufferTestButton.Margin = new Padding(0, 0, 8, 0);
+		_bufferTestButton.Click += BufferClicked;
+		_commands.Controls.Add(_bufferTestButton);
+
+		_dictionaryAppend.Name = "_dictionaryAppend";
+		_dictionaryAppend.Text = "Transactional dictionary";
+		_dictionaryAppend.AutoSize = true;
+		_dictionaryAppend.MinimumSize = new Size(110, 32);
+		_dictionaryAppend.Margin = new Padding(0, 0, 8, 0);
+		_dictionaryAppend.Click += DictionaryClicked;
+		_commands.Controls.Add(_dictionaryAppend);
+
+		_storageStreamButton.Name = "_storageStreamButton";
+		_storageStreamButton.Text = "Clustered stream";
+		_storageStreamButton.AutoSize = true;
+		_storageStreamButton.MinimumSize = new Size(110, 32);
+		_storageStreamButton.Margin = new Padding(0, 0, 8, 0);
+		_storageStreamButton.Click += StreamClicked;
+		_commands.Controls.Add(_storageStreamButton);
+
+		_rollbackButton.Name = "_rollbackButton";
+		_rollbackButton.Text = "Verify commit / rollback";
+		_rollbackButton.AutoSize = true;
+		_rollbackButton.MinimumSize = new Size(110, 32);
+		_rollbackButton.Margin = new Padding(0, 0, 8, 0);
+		_rollbackButton.Click += RollbackClicked;
+		_commands.Controls.Add(_rollbackButton);
+
+		_cancelButton.Name = "_cancelButton";
+		_cancelButton.Text = "Cancel";
+		_cancelButton.AutoSize = true;
+		_cancelButton.MinimumSize = new Size(110, 32);
+		_cancelButton.Margin = new Padding(0, 0, 8, 0);
+		_cancelButton.Click += CancelClicked;
+		_commands.Controls.Add(_cancelButton);
+		_cancelButton.Enabled = false;
+
+		_copyButton.Name = "_copyButton";
+		_copyButton.Text = "Copy results";
+		_copyButton.AutoSize = true;
+		_copyButton.MinimumSize = new Size(110, 32);
+		_copyButton.Margin = new Padding(0, 0, 8, 0);
+		_copyButton.Click += CopyClicked;
+		_commands.Controls.Add(_copyButton);
+
+		_clearButton.Name = "_clearButton";
+		_clearButton.Text = "Clear results";
+		_clearButton.AutoSize = true;
+		_clearButton.MinimumSize = new Size(110, 32);
+		_clearButton.Margin = new Padding(0, 0, 8, 0);
+		_clearButton.Click += ClearClicked;
+		_commands.Controls.Add(_clearButton);
+
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
+		_outputTextBox.Font = new Font("Consolas", 9F);
+		_outputTextBox.Margin = new Padding(0, 0, 0, 10);
+		_status.Name = "showcaseStatus";
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Text = "Ready. Choose an example to see its results.";
+
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		BackColor = SystemColors.Window;
+		Name = "TransactionalCollectionScreen";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_itemsInput.ResumeLayout(false);
+		_itemsInput.PerformLayout();
+		_batchInput.ResumeLayout(false);
+		_batchInput.PerformLayout();
+		_itemSizeInput.ResumeLayout(false);
+		_itemSizeInput.PerformLayout();
+		_clusterSizeInput.ResumeLayout(false);
+		_clusterSizeInput.PerformLayout();
+		_pageSizeInput.ResumeLayout(false);
+		_pageSizeInput.PerformLayout();
+		_cacheSizeInput.ResumeLayout(false);
+		_cacheSizeInput.PerformLayout();
+		_backendInput.ResumeLayout(false);
+		_backendInput.PerformLayout();
+		_policyInput.ResumeLayout(false);
+		_policyInput.PerformLayout();
+		_inputs.ResumeLayout(false);
+		_inputs.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

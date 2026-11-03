@@ -7,206 +7,238 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Shows real Merkle structures, partition arithmetic and cancellable implementation comparisons.</summary>
 public partial class MerkleTreeTestScreen : WinFormsApplicationScreen {
-	private TextWriter _outputWriter;
+	private CancellationTokenSource _comparisonCancellation;
 
+	/// <summary>Creates a bounded workbench without allocating a tree or starting work.</summary>
 	public MerkleTreeTestScreen() {
 		InitializeComponent();
-		_outputWriter = new TextBoxWriter(_outputTextBox);
+		Disposables.Add(_heading.Font);
+		Disposables.Add(_outputTextBox.Font);
 	}
 
-	private void _printAlphabetButton_Click(object sender, EventArgs e) {
-		var elems = new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-		var tree = new SimpleMerkleTree(CHF.ConcatBytes);
-
-		_outputWriter.WriteLine($"Tree: #: {tree.Size.LeafCount}, Levels: {tree.Size.Height}");
-		foreach (var elem in elems) {
-			tree.Leafs.Add(Encoding.ASCII.GetBytes(elem));
-			_outputWriter.WriteLine($"Tree: #: {tree.Size.LeafCount}, Levels: {tree.Size.Height}");
-			if (tree.Size.LeafCount > 0) {
-				_outputWriter.PrintTree(
-					tree.GetRootNode(),
-					c => Encoding.ASCII.GetString(c.Hash),
-					c => {
-						if (!MerkleMath.IsLeaf(c.Coordinate)) {
-							var childs = tree.GetChildren(c.Coordinate);
-							return
-								new[] { childs.Left }
-									.Concat(childs.Right != null ? new[] { childs.Right } : Enumerable.Empty<MerkleNode>());
-						}
-						return Enumerable.Empty<MerkleNode>();
-					}
-				);
-			}
-			_outputWriter.WriteLine();
-
-			//// Write existence proof path for last item
-			//var lastItemIX = tree.LeafCount - 1;
-			//var existenceProof = tree.GetExistenceProof(lastItemIX).ToArray();
-			//// Print existence proof
-			//foreach (var hash in existenceProof.WithDescriptions()) {
-			//	_outputWriter.Write(hash.Item);
-			//	if (!hash.Description.HasFlag(EnumeratedItemDescription.Last)) 
-			//		_outputWriter.Write(" -> ");
-			//}
-			//_outputWriter.WriteLine();
-
-			//// Verify existence proof
-			//var passed = MerkleTreeMath.VerifyExistenceProof((h1, h2) => h1 + h2, tree.Root, tree.LeafCount, MerkleCoordinate.LeafAt(lastItemIX), tree.Leafs.Last(), existenceProof);
-			//_outputWriter.Write($"ExistenceProofPassed: {passed}");
+	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override MerkleTreeScreenSettings ScreenSettings {
+		get {
+			return (MerkleTreeScreenSettings)base.ScreenSettings;
 		}
 	}
 
-	private void _printIntegersButton_Click(object sender, EventArgs e) {
-		var tree = new SimpleMerkleTree(CHF.ConcatBytes);
-		_outputWriter.WriteLine($"Tree: #: {tree.Size.LeafCount}, Levels: {tree.Size.Height}");
-		foreach (var elem in Enumerable.Range(1, 100)) {
-			tree.Leafs.Add(Encoding.ASCII.GetBytes(elem.ToString()));
-			_outputWriter.WriteLine($"Tree: #: {tree.Size.LeafCount}, Levels: {tree.Size.Height}");
-			if (tree.Size.LeafCount > 0) {
+	// Apply restored calculation choices after profile attachment.
 
-				_outputWriter.PrintTree(
-					tree.GetRootNode(),
-					c => Encoding.ASCII.GetString(c.Hash),
-					c => {
-						if (MerkleMath.IsLeaf(c.Coordinate))
-							return Enumerable.Empty<MerkleNode>();
+	// Accepted Options updates change the next comparison, never its current tree data.
+	protected override void CopyModelToUI() {
+		base.CopyModelToUI();
+		ApplyPreferences();
+	}
 
-						var childs = tree.GetChildren(c.Coordinate);
-						return new[] { childs.Left }.Concat(childs.Right != null ? new[] { childs.Right } : Enumerable.Empty<MerkleNode>());
-					}
-				);
-			}
-			_outputWriter.WriteLine();
+	// The background operation owns only local trees and checks cancellation before publishing.
+	protected override void OnDestroyScreen() {
+		_comparisonCancellation?.Cancel();
+		base.OnDestroyScreen();
+	}
 
-			//// Write existence proof path for last item
-			//var lastItemIX = tree.LeafCount - 1;
-			//var existenceProof = tree.GetExistenceProof(lastItemIX).ToArray();
-			//// Print existence proof
-			//foreach (var hash in existenceProof.WithDescriptions()) {
-			//	_outputWriter.Write(hash.Item);
-			//	if (!hash.Description.HasFlag(EnumeratedItemDescription.Last))
-			//		_outputWriter.Write(" -> ");
-			//}
-			//_outputWriter.WriteLine();
+	// Readable concatenation makes the alphabet's parent/child structure visible.
+	private void AlphabetClicked(object sender, EventArgs args) {
+		ShowReadableTree(Enumerable.Range('A', 26).Select(value => ((char)value).ToString()).ToArray(), "Alphabet");
+	}
 
-			//// Verify existence proof
-			//var passed = MerkleTreeMath.VerifyExistenceProof((h1, h2) => h1 + h2, tree.Root, tree.LeafCount, MerkleCoordinate.LeafAt(lastItemIX), tree.Leafs.Last(), existenceProof);
-			//_outputWriter.Write($"ExistenceProofPassed: {passed}");
+	// Keep the integer example useful without printing every previous complete tree.
+	private void IntegersClicked(object sender, EventArgs args) {
+		ShowReadableTree(Enumerable.Range(1, 32).Select(value => value.ToString()).ToArray(), "Integers 1–32");
+	}
+
+	// Exercise the original partition multiplication with explicit expected-result verification.
+	private void PartitionsClicked(object sender, EventArgs args) {
+		using var output = new StringWriter();
+		output.WriteLine("POWER-OF-TWO PARTITION MULTIPLICATION");
+		for (var value = 0; value < 64; value++) {
+			var result = Pow2.Mul(Pow2.CalculatePow2Partition(value), Pow2.CalculatePow2Partition(value + 1));
+			var expected = Pow2.CalculatePow2Partition(value * (value + 1));
+			output.WriteLine($"{value} × {value + 1} = {value * (value + 1)}: [{result.ToDelimittedString(", ")}] — {(result.SequenceEqual(expected) ? "PASS" : "FAIL")}");
 		}
+		_outputTextBox.Text = output.ToString();
+		_status.Text = "Verified 64 adjacent-integer products against their direct power-of-two partition.";
 	}
 
-	private void _sumPow2Button_Click(object sender, EventArgs e) {
-
-		var start = Enumerable.Empty<int>();
-		for (var i = 0; i < 1000; i++) {
-			var left = i;
-			var right = i + 1;
-			var a = Pow2.CalculatePow2Partition(left);
-			var b = Pow2.CalculatePow2Partition(right);
-			var c = Pow2.Mul(a, b);
-			var expected = Pow2.CalculatePow2Partition(left * right);
-			var eq = expected.SequenceEqual(c);
-			_outputWriter.WriteLine($"{left} * {right} = {left * right}: {c.ToDelimittedString(", ")}");
-			if (!eq)
-				_outputWriter.Write($"ERROR: Expected - {expected.ToDelimittedString(", ")}");
-			//start = Pow2.AddOne(start);
-		}
-
-	}
-
-	private void _perfectMerkleButton_Click(object sender, EventArgs e) {
-		//var n = 100;
-		//var standard = new MerkleTree(CHF.SHA2_256);
-		//var perfect = new SubRootTree(CHF.SHA2_256);
-		//var rng = new Random(31337 * (n + 1));
-		//for (var i = 0; i < n; i++) {
-		//	var data = /*new[] { (byte)i }; //*/rng.NextBytes(32);
-		//	standard.Leafs.Add(data);
-		//	perfect.Leafs.Add(data);
-		//	_outputWriter.WriteLine($"EQ: {standard.Size.LeafCount == perfect.Size.LeafCount}, Standard Count: {standard.Size.LeafCount}, Perfect Count: {perfect.Size.LeafCount}");
-		//	_outputWriter.WriteLine($"EQ: {ByteArrayEqualityComparer.Instance.Equals(standard.Root, perfect.Root)}, Standard Root: {standard.Root.ToHexString()}, Perfect Root: {perfect.Root.ToHexString()}");
-		//}
-
-		//var standard = new MerkleTree(CHF.ConcatBytes);
-		//var perfect = new PerfectTree(CHF.ConcatBytes);
-		//for (var i = 0; i < 15; i++) {
-		//	var data = new[] { (byte)i };
-		//	standard.Add(data);
-		//	perfect.Add(data);
-		//	_outputWriter.WriteLine($"EQ: {standard.Count == perfect.Count}, Standard Count: {standard.Count}, Perfect Count: {perfect.Count}");
-		//	_outputWriter.WriteLine($"EQ: {ByteArrayEqualityComparer.Instance.Equals(standard.Root, perfect.Root)}, Standard Root: {standard.Root.ToHexString()}, Perfect Root: {perfect.Root.ToHexString()}");
-		//}
-
-
-		//var _hashStack = new int[10];
-		//var _ix = -1; 
-
-		//void AddOne() {
-		//	int aggHash = 0;
-		//	while (true) {
-		//		if (_ix < 0 || _hashStack[_ix] > aggHash) {
-		//			_hashStack[++_ix] = aggHash;
-		//			return;
-		//		}
-		//		var tip = _hashStack[_ix--];
-		//		aggHash = tip + 1;
-		//	}
-		//}
-
-		//var i = 0;
-		//do {
-		//	_outputWriter.WriteLine($"{i}: {_hashStack.Take(_ix + 1).ToDelimittedString(" ")}");
-		//	AddOne();
-		//} while (i++ <= 1000);
-
-		////	for (int i = 0; i <= 10000; i++) {
-		////		_outputWriter.WriteLine($"{i}: {AsPower2Sum(i).ToDelimittedString(" ")}");
-		////	}
-		////}
-
-	}
-
-	private void _printInvPow2Button_Click(object sender, EventArgs e) {
-		_outputWriter.WriteLine("Inv Pow2");
+	// Retain the finite reciprocal-series demonstration with readable precision.
+	private void InversePowersClicked(object sender, EventArgs args) {
+		using var output = new StringWriter();
 		var sum = 0M;
-		for (var i = 0; i < 64; i++) {
-			var pow2 = 1M / (1UL << i);
-			sum += pow2;
-			_outputWriter.WriteLine($"{i}: 1/2^{i} = {pow2}, sum = {sum}");
+		for (var power = 0; power < 64; power++) {
+			var term = 1M / (1UL << power);
+			sum += term;
+			output.WriteLine($"1 / 2^{power} = {term}; cumulative sum = {sum}");
+		}
+		_outputTextBox.Text = output.ToString();
+		_status.Text = "Inverse powers complete. Decimal precision limits the smallest displayed terms.";
+	}
+
+	// Native command adapters keep the owned task and its error reporting on the UI dispatcher.
+	private async void CompareClicked(object sender, EventArgs args) {
+		await CompareAsync(false);
+	}
+
+	// Append comparison preserves the original batch/root recalculation scenario.
+	private async void AppendClicked(object sender, EventArgs args) {
+		await CompareAsync(true);
+	}
+
+	// Cancel the existing operation without starting a second worker.
+	private void CancelClicked(object sender, EventArgs args) {
+		_comparisonCancellation?.Cancel();
+	}
+
+	// Clear only output, leaving the comparison choices intact.
+	private void ClearClicked(object sender, EventArgs args) {
+		_outputTextBox.Clear();
+		_status.Text = "Results cleared.";
+	}
+
+	// Capture input once; worker code never reads native controls.
+	private async Task CompareAsync(bool appendBatches) {
+		if (_comparisonCancellation != null)
+			return;
+		var count = (int)_leafCount.Value;
+		using var cancellation = new CancellationTokenSource();
+		_comparisonCancellation = cancellation;
+		SetBusy(true);
+		_status.Text = $"Comparing {count:N0} SHA-256 leaves…";
+		try {
+			var result = await Task.Run(() => CompareTrees(count, appendBatches, cancellation.Token), cancellation.Token);
+			if (!IsDisposed && !Disposing) {
+				_outputTextBox.Text = result;
+				_status.Text = "Comparison complete. Matching roots validate the same input sequence; timings are illustrative.";
+			}
+		} catch (OperationCanceledException) when (cancellation.IsCancellationRequested) {
+			if (!IsDisposed && !Disposing)
+				_status.Text = "Comparison cancelled.";
+		} catch (Exception error) {
+			SystemLog.Exception(error, "The Merkle comparison failed.");
+			if (!IsDisposed && !Disposing)
+				_status.Text = "Could not complete the comparison: " + error.Message;
+		} finally {
+			_comparisonCancellation = null;
+			if (!IsDisposed && !Disposing)
+				SetBusy(false);
 		}
 	}
 
-	private void _treePerfTestsButton_Click(object sender, EventArgs e) {
-		var items = Tools.Maths.RNG.NextByteArrays(32, 1000000);
-		var reference = new SimpleMerkleTree(CHF.SHA2_256, items);
+	// All implementations receive identical deterministic hashes; no global hasher registrations are changed.
+	private static string CompareTrees(int count, bool appendBatches, CancellationToken cancellationToken) {
+		var items = new byte[count][];
+		for (var index = 0; index < count; index++) {
+			cancellationToken.ThrowIfCancellationRequested();
+			items[index] = Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes($"Demonstration leaf {index}"));
+		}
+		var clock = Stopwatch.StartNew();
+		var simple = new SimpleMerkleTree(CHF.SHA2_256, items);
+		var simpleRoot = simple.Root;
+		var simpleDuration = clock.Elapsed;
+		clock.Restart();
 		var flat = new FlatMerkleTree(CHF.SHA2_256, items);
-		var root = reference.Root;
-		root = flat.Root;
+		var flatRoot = flat.Root;
+		var flatDuration = clock.Elapsed;
+		var output = new StringBuilder();
+		output.AppendLine($"INITIAL {count:N0} LEAVES");
+		output.AppendLine($"Simple: {simpleRoot.ToHexString()} ({simpleDuration.TotalMilliseconds:N3} ms)");
+		output.AppendLine($"Flat:   {flatRoot.ToHexString()} ({flatDuration.TotalMilliseconds:N3} ms)");
+		output.AppendLine($"Roots match: {ByteArrayEqualityComparer.Instance.Equals(simpleRoot, flatRoot)}");
 
-
-		var itemList = Tools.Collection.Generate(() => Tools.Maths.RNG.NextByteArrays(32, Tools.Maths.RNG.Next(0, 100))).Take(5).ToArray();
-		foreach (var list in itemList) {
-			var start = DateTime.Now;
-			reference.Leafs.AddRange(list);
-			root = reference.Root;
-			var end = DateTime.Now;
-			_outputWriter.WriteLine($"Reference: Root: {MURMUR3_32.Execute(root)} Count {reference.Size.LeafCount}, Added {list.Length}, Duration: {end.Subtract(start).TotalMilliseconds}");
-			start = DateTime.Now;
-			flat.Leafs.AddRange(list);
-			root = flat.Root;
-			end = DateTime.Now;
-			_outputWriter.WriteLine($"Flat: Root: {MURMUR3_32.Execute(root)} Count {flat.Size.LeafCount}, Added {list.Length}, Duration: {end.Subtract(start).TotalMilliseconds}");
+		if (appendBatches) {
+			for (var batch = 0; batch < 5; batch++) {
+				cancellationToken.ThrowIfCancellationRequested();
+				var additions = Enumerable.Range(0, 32)
+					.Select(index => Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes($"Batch {batch}, leaf {index}")))
+					.ToArray();
+				clock.Restart();
+				simple.Leafs.AddRange(additions);
+				simpleRoot = simple.Root;
+				simpleDuration = clock.Elapsed;
+				clock.Restart();
+				flat.Leafs.AddRange(additions);
+				flatRoot = flat.Root;
+				flatDuration = clock.Elapsed;
+				output.AppendLine();
+				output.AppendLine($"Batch {batch + 1}: {simple.Size.LeafCount:N0} leaves; roots match: {ByteArrayEqualityComparer.Instance.Equals(simpleRoot, flatRoot)}");
+				output.AppendLine($"Simple {simpleDuration.TotalMilliseconds:N3} ms; flat {flatDuration.TotalMilliseconds:N3} ms; root {flatRoot.ToHexString()}");
+			}
 		}
-
+		cancellationToken.ThrowIfCancellationRequested();
+		return output.ToString();
 	}
+
+	// Render the actual node hierarchy for the final state of a small readable tree.
+	private void ShowReadableTree(string[] values, string description) {
+		var tree = new SimpleMerkleTree(CHF.ConcatBytes);
+		tree.Leafs.AddRange(values.Select(Encoding.ASCII.GetBytes));
+		using var output = new StringWriter();
+		output.WriteLine($"{description}: {tree.Size.LeafCount} leaves, height {tree.Size.Height}");
+		output.PrintTree(
+			tree.GetRootNode(),
+			node => Encoding.ASCII.GetString(node.Hash),
+			node => {
+				if (MerkleMath.IsLeaf(node.Coordinate))
+					return Enumerable.Empty<MerkleNode>();
+				var children = tree.GetChildren(node.Coordinate);
+				return new[] { children.Left }.Concat(children.Right != null ? new[] { children.Right } : Enumerable.Empty<MerkleNode>());
+			}
+		);
+		_outputTextBox.Text = output.ToString();
+		_status.Text = "Readable tree rendered. Concatenation is used only to expose the structure in this example.";
+	}
+
+	// Prevent overlapping calculations while retaining a usable cancellation action.
+	private void SetBusy(bool busy) {
+		foreach (Control control in _commands.Controls)
+			control.Enabled = !busy;
+		_cancelButton.Enabled = busy;
+		_leafCount.Enabled = !busy;
+	}
+
+	// Only deliberate changes update the ordinary profile values.
+	private void PreferencesEdited(object sender, EventArgs args) {
+		if (!HasSettings || Updating)
+			return;
+		ScreenSettings.ComparisonLeaves = (int)_leafCount.Value;
+		MarkSettingsChanged();
+	}
+
+	// Standalone/designer instances use their existing bounded defaults.
+	private void ApplyPreferences() {
+		if (!HasSettings || IsDisposed || Disposing)
+			return;
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing))
+			_leafCount.Value = Math.Clamp(ScreenSettings.ComparisonLeaves, 1, 20000);
+	}
+
+	#region Inner Types
+
+	/// <summary>The bounded input size of the Merkle comparison, without its generated trees or hashes.</summary>
+	[UserEditable]
+	public class MerkleTreeScreenSettings : SettingsObject {
+		/// <summary>The number of identical leaves supplied to both implementations.</summary>
+		[DefaultValue(256)]
+		[DisplayName("Comparison leaves"), Range(1, 20000)]
+		public int ComparisonLeaves {
+			get; set;
+		} = 256;
+	}
+	#endregion
 }
-
-

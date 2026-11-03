@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,90 +6,139 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-    partial class ObservableCollectionsTestScreen {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+partial class ObservableCollectionsTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _inputs;
+	private FlowLayoutPanel _commands;
+	private TextBoxEx _textBoxEx1;
+	private Label _status;
+	private CheckBox _includeAccess;
+	private Button _listTestButton;
+	private Button _dictionaryTestButton;
+	private Button _clearButton;
 
-        #region Windows Form Designer generated code
+	// The complete static demonstration layout remains editable on the designer surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_inputs = new FlowLayoutPanel();
+		_commands = new FlowLayoutPanel();
+		_textBoxEx1 = new TextBoxEx();
+		_status = new Label();
+		_includeAccess = new CheckBox();
+		_listTestButton = new Button();
+		_dictionaryTestButton = new Button();
+		_clearButton = new Button();
+		_layout.SuspendLayout();
+		_inputs.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-            this.textBoxEx1 = new Sphere10.Framework.Windows.Forms.TextBoxEx();
-            this._dictionaryTestButton = new System.Windows.Forms.Button();
-            this._listTestButton = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            // 
-            // textBoxEx1
-            // 
-            this.textBoxEx1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxEx1.Location = new System.Drawing.Point(12, 41);
-            this.textBoxEx1.Multiline = true;
-            this.textBoxEx1.Name = "textBoxEx1";
-            this.textBoxEx1.Size = new System.Drawing.Size(751, 302);
-            this.textBoxEx1.TabIndex = 0;
-            // 
-            // _dictionaryTestButton
-            // 
-            this._dictionaryTestButton.Location = new System.Drawing.Point(12, 12);
-            this._dictionaryTestButton.Name = "_dictionaryTestButton";
-            this._dictionaryTestButton.Size = new System.Drawing.Size(121, 23);
-            this._dictionaryTestButton.TabIndex = 3;
-            this._dictionaryTestButton.Text = "Dictionary Test";
-            this._dictionaryTestButton.UseVisualStyleBackColor = true;
-            this._dictionaryTestButton.Click += new System.EventHandler(this._dictionaryTestButton_Click);
-            // 
-            // _listTestButton
-            // 
-            this._listTestButton.Location = new System.Drawing.Point(139, 12);
-            this._listTestButton.Name = "_listTestButton";
-            this._listTestButton.Size = new System.Drawing.Size(121, 23);
-            this._listTestButton.TabIndex = 4;
-            this._listTestButton.Text = "List Test";
-            this._listTestButton.UseVisualStyleBackColor = true;
-            this._listTestButton.Click += new System.EventHandler(this._listTestButton_Click);
-            // 
-            // ObservableCollectionsTest
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(775, 355);
-            this.Controls.Add(this._listTestButton);
-            this.Controls.Add(this._dictionaryTestButton);
-            this.Controls.Add(this.textBoxEx1);
-            this.Name = "ObservableCollectionsTestScreen";
-            this.Text = "ObservableCollectionsTest";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+		_layout.Dock = DockStyle.Fill;
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 6;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_inputs, 0, 2);
+		_layout.Controls.Add(_commands, 0, 3);
+		_layout.Controls.Add(_textBoxEx1, 0, 4);
+		_layout.Controls.Add(_status, 0, 5);
 
-        }
+		_heading.Text = "Observable Collections";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 12);
+		_introduction.Text = "Run the list or dictionary sequence, then inspect the current membership and event order. Range operations remain distinct from individual mutations.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 16);
 
-        #endregion
+		_inputs.AutoSize = true;
+		_inputs.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_inputs.Dock = DockStyle.Fill;
+		_inputs.Margin = new Padding(0, 0, 0, 10);
 
-        private TextBoxEx textBoxEx1;
-        private System.Windows.Forms.Button _dictionaryTestButton;
-        private System.Windows.Forms.Button _listTestButton;
-    }
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Dock = DockStyle.Fill;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+
+		_includeAccess.Name = "_includeAccess";
+		_includeAccess.Text = "Include access notifications";
+		_includeAccess.AutoSize = true;
+		_includeAccess.Margin = new Padding(0, 3, 12, 3);
+		_inputs.Controls.Add(_includeAccess);
+		_includeAccess.CheckedChanged += PreferencesEdited;
+
+		_listTestButton.Name = "_listTestButton";
+		_listTestButton.Text = "Run list sequence";
+		_listTestButton.AutoSize = true;
+		_listTestButton.MinimumSize = new Size(110, 32);
+		_listTestButton.Margin = new Padding(0, 0, 8, 0);
+		_listTestButton.Click += ListClicked;
+		_commands.Controls.Add(_listTestButton);
+
+		_dictionaryTestButton.Name = "_dictionaryTestButton";
+		_dictionaryTestButton.Text = "Run dictionary sequence";
+		_dictionaryTestButton.AutoSize = true;
+		_dictionaryTestButton.MinimumSize = new Size(110, 32);
+		_dictionaryTestButton.Margin = new Padding(0, 0, 8, 0);
+		_dictionaryTestButton.Click += DictionaryClicked;
+		_commands.Controls.Add(_dictionaryTestButton);
+
+		_clearButton.Name = "_clearButton";
+		_clearButton.Text = "Clear results";
+		_clearButton.AutoSize = true;
+		_clearButton.MinimumSize = new Size(110, 32);
+		_clearButton.Margin = new Padding(0, 0, 8, 0);
+		_clearButton.Click += ClearClicked;
+		_commands.Controls.Add(_clearButton);
+
+		_textBoxEx1.Name = "textBoxEx1";
+		_textBoxEx1.Dock = DockStyle.Fill;
+		_textBoxEx1.Multiline = true;
+		_textBoxEx1.ReadOnly = true;
+		_textBoxEx1.ScrollBars = ScrollBars.Both;
+		_textBoxEx1.WordWrap = false;
+		_textBoxEx1.BackColor = SystemColors.Window;
+		_textBoxEx1.Font = new Font("Consolas", 9F);
+		_textBoxEx1.Margin = new Padding(0, 0, 0, 10);
+		_status.Name = "showcaseStatus";
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Text = "Ready. Choose an example to see its results.";
+
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		BackColor = SystemColors.Window;
+		Name = "ObservableCollectionsTestScreen";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_inputs.ResumeLayout(false);
+		_inputs.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
+	}
 }
-
-

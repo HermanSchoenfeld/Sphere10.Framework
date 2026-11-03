@@ -7,12 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.DataVisualization;
@@ -34,8 +37,29 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		Title = "Data Visualization Gallery";
 	}
 
-	protected override void OnLoad(EventArgs args) {
-		base.OnLoad(args);
+	public ChartGallerySample SelectedExample {
+		get {
+			return _selected;
+		}
+	}
+
+	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override ChartGalleryScreenSettings ScreenSettings {
+		get {
+			return (ChartGalleryScreenSettings)base.ScreenSettings;
+		}
+	}
+
+	public void SelectExample(string id) {
+		var sample = ChartGallerySamples.All.Single(example => example.Id == id);
+		if (!_filtered.Contains(sample))
+			_categories.SelectedIndex = 0;
+		ShowExample(sample, true);
+	}
+
+	protected override void InitializeUIPrimingData() {
+		base.InitializeUIPrimingData();
 		if (_initialized || Tools.Runtime.IsDesignMode)
 			return;
 		_initialized = true;
@@ -44,8 +68,12 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		_categories.Items.Add("All Chart Families");
 		_categories.Items.AddRange(ChartGallerySamples.All.Select(sample => sample.Category).Distinct().Cast<object>().ToArray());
 		_palette.Items.AddRange(new object[] { "Example Colors", "Bright Pastel", "Pastel", "Earth Tones", "Berry", "Sea Green" });
-		_palette.SelectedIndex = 0;
-		_categories.SelectedIndex = 0;
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
+			_palette.SelectedIndex = 0;
+			_categories.SelectedIndex = 0;
+			if (HasSettings)
+				ApplyScreenPreferences();
+		}
 		_chartLogOutput = new ChartLogOutputBehavior(_chart);
 		_logOutputLifetime = DemoLogOutputLifetime.RegisterCurrent(this, _chartLogOutput);
 		_chartLogOutput.RestoreSettings();
@@ -57,20 +85,11 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		base.OnDestroyScreen();
 	}
 
-	public ChartGallerySample SelectedExample => _selected;
-
-	public void SelectExample(string id) {
-		var sample = ChartGallerySamples.All.Single(example => example.Id == id);
-		if (!_filtered.Contains(sample))
-			_categories.SelectedIndex = 0;
-		ShowExample(sample, true);
-	}
-
-	public async Task SavePngAsync(string path) {
-		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
-		using var image = new MemoryStream();
-		_chart.SaveImage(image, ChartImageFormat.Png);
-		await File.WriteAllBytesAsync(path, image.ToArray());
+	/// <summary>Applies the accepted family while retaining the gallery's native exploration tools.</summary>
+	protected override void CopyModelToUI() {
+		base.CopyModelToUI();
+		if (HasSettings && _initialized && !IsDisposed && !Disposing)
+			ApplyScreenPreferences();
 	}
 
 	private void CategoryChanged(object sender, EventArgs args) {
@@ -91,6 +110,24 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		if (_filtered.Length > 0)
 			ShowExample(_filtered[0], false);
 		_views.SelectedTab = _galleryPage;
+		if (HasSettings && !Updating) {
+			ScreenSettings.Category = _categories.SelectedItem.ToString();
+			MarkSettingsChanged();
+		}
+	}
+
+	private void PreviousClicked(object sender, EventArgs args) {
+		if (_page > 0) {
+			_page--;
+			RenderGallery();
+		}
+	}
+
+	private void NextClicked(object sender, EventArgs args) {
+		if ((_page + 1) * _tiles.Length < _filtered.Length) {
+			_page++;
+			RenderGallery();
+		}
 	}
 
 	private void RenderGallery() {
@@ -102,37 +139,6 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		_pageNumber.Text = $"Page {_page + 1} Of {Math.Max(1, (_filtered.Length + _tiles.Length - 1) / _tiles.Length)}";
 		_status.Text = $"{_filtered.Length} Examples In This Family • Click A Chart Or Explore Example • Drag In The Explorer To Zoom Numeric Charts";
 	}
-
-	private void ShowExample(ChartGallerySample sample, bool explore) {
-		_selected = sample;
-		_changing = true;
-		using (Tools.Scope.ExecuteOnDispose(() => _changing = false)) {
-			ChartGalleryRenderer.Render(_chart, sample);
-			_examples.SelectedIndex = Array.IndexOf(_filtered, sample);
-			_description.Text = sample.Description;
-			_legend.Checked = _chart.Legends.Any(legend => legend.Enabled);
-			_labels.Checked = _chart.Series.Any(series => series.IsValueShownAsLabel || !string.IsNullOrEmpty(series.Label)
-				|| series.Points.Any(point => point.IsValueShownAsLabel || !string.IsNullOrEmpty(point.Label)));
-			_threeD.Enabled = _chart.Series.All(series => SupportsThreeDimensions(series.ChartType));
-			_threeD.Checked = _threeD.Enabled && _chart.ChartAreas.Any(area => area.Area3DStyle.Enable3D);
-			_zoom.Enabled = _chart.Series.All(series => series.ChartType is not (SeriesChartType.Pie or SeriesChartType.Doughnut or SeriesChartType.Radar or SeriesChartType.Polar or SeriesChartType.Funnel or SeriesChartType.Pyramid));
-			_zoom.Checked = _zoom.Enabled;
-			_palette.SelectedIndex = 0;
-		}
-		ApplyZoom();
-		_pointDetails.Text = "Hover For Values. Click A Data Point To Inspect It. Numeric Charts Support Drag Selection To Zoom.";
-		if (explore)
-			_views.SelectedTab = _explorePage;
-	}
-
-	private static bool SupportsThreeDimensions(SeriesChartType type) => type is SeriesChartType.Line or SeriesChartType.Spline or SeriesChartType.Area
-		or SeriesChartType.StackedArea or SeriesChartType.StackedArea100 or SeriesChartType.Column or SeriesChartType.Bar
-		or SeriesChartType.StackedColumn or SeriesChartType.StackedColumn100 or SeriesChartType.StackedBar or SeriesChartType.StackedBar100
-		or SeriesChartType.Pie or SeriesChartType.Doughnut or SeriesChartType.Funnel or SeriesChartType.Pyramid;
-
-	private void PreviousClicked(object sender, EventArgs args) { if (_page > 0) { _page--; RenderGallery(); } }
-
-	private void NextClicked(object sender, EventArgs args) { if ((_page + 1) * _tiles.Length < _filtered.Length) { _page++; RenderGallery(); } }
 
 	private void ExampleChanged(object sender, EventArgs args) {
 		if (!_changing && _examples.SelectedIndex >= 0)
@@ -166,15 +172,6 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		ApplyZoom();
 	}
 
-	private void ApplyZoom() {
-		foreach (var area in _chart.ChartAreas) {
-			area.CursorX.IsUserEnabled = area.CursorY.IsUserEnabled = _zoom.Enabled && _zoom.Checked;
-			area.CursorX.IsUserSelectionEnabled = area.CursorY.IsUserSelectionEnabled = _zoom.Enabled && _zoom.Checked;
-			area.AxisX.ScaleView.Zoomable = area.AxisY.ScaleView.Zoomable = _zoom.Enabled && _zoom.Checked;
-			area.AxisX.ScrollBar.Enabled = area.AxisY.ScrollBar.Enabled = true;
-		}
-	}
-
 	private void PaletteChanged(object sender, EventArgs args) {
 		if (_changing || _selected == null || _palette.SelectedIndex < 0)
 			return;
@@ -190,7 +187,48 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		}
 	}
 
-	private void ResetExampleClicked(object sender, EventArgs args) { if (_selected != null) ShowExample(_selected, true); }
+	private void ResetExampleClicked(object sender, EventArgs args) {
+		if (_selected != null)
+			ShowExample(_selected, true);
+	}
+
+	private void ShowExample(ChartGallerySample sample, bool explore) {
+		_selected = sample;
+		_changing = true;
+		using (Tools.Scope.ExecuteOnDispose(() => _changing = false)) {
+			ChartGalleryRenderer.Render(_chart, sample);
+			_examples.SelectedIndex = Array.IndexOf(_filtered, sample);
+			_description.Text = sample.Description;
+			_legend.Checked = _chart.Legends.Any(legend => legend.Enabled);
+			_labels.Checked = _chart.Series.Any(series => series.IsValueShownAsLabel || !string.IsNullOrEmpty(series.Label)
+				|| series.Points.Any(point => point.IsValueShownAsLabel || !string.IsNullOrEmpty(point.Label)));
+			_threeD.Enabled = _chart.Series.All(series => SupportsThreeDimensions(series.ChartType));
+			_threeD.Checked = _threeD.Enabled && _chart.ChartAreas.Any(area => area.Area3DStyle.Enable3D);
+			_zoom.Enabled = _chart.Series.All(series => series.ChartType is not (SeriesChartType.Pie or SeriesChartType.Doughnut or SeriesChartType.Radar or SeriesChartType.Polar or SeriesChartType.Funnel or SeriesChartType.Pyramid));
+			_zoom.Checked = _zoom.Enabled;
+			_palette.SelectedIndex = 0;
+		}
+		ApplyZoom();
+		_pointDetails.Text = "Hover For Values. Click A Data Point To Inspect It. Numeric Charts Support Drag Selection To Zoom.";
+		if (explore)
+			_views.SelectedTab = _explorePage;
+	}
+
+	private static bool SupportsThreeDimensions(SeriesChartType type) {
+		return type is SeriesChartType.Line or SeriesChartType.Spline or SeriesChartType.Area
+				or SeriesChartType.StackedArea or SeriesChartType.StackedArea100 or SeriesChartType.Column or SeriesChartType.Bar
+				or SeriesChartType.StackedColumn or SeriesChartType.StackedColumn100 or SeriesChartType.StackedBar or SeriesChartType.StackedBar100
+				or SeriesChartType.Pie or SeriesChartType.Doughnut or SeriesChartType.Funnel or SeriesChartType.Pyramid;
+	}
+
+	private void ApplyZoom() {
+		foreach (var area in _chart.ChartAreas) {
+			area.CursorX.IsUserEnabled = area.CursorY.IsUserEnabled = _zoom.Enabled && _zoom.Checked;
+			area.CursorX.IsUserSelectionEnabled = area.CursorY.IsUserSelectionEnabled = _zoom.Enabled && _zoom.Checked;
+			area.AxisX.ScaleView.Zoomable = area.AxisY.ScaleView.Zoomable = _zoom.Enabled && _zoom.Checked;
+			area.AxisX.ScrollBar.Enabled = area.AxisY.ScrollBar.Enabled = true;
+		}
+	}
 
 	private void ResetZoomClicked(object sender, EventArgs args) {
 		foreach (var area in _chart.ChartAreas) {
@@ -208,21 +246,51 @@ public partial class ChartGalleryScreen : WinFormsApplicationScreen {
 		_pointDetails.Text = $"{hit.Series.Name} • {x} • {string.Join(" / ", point.YValues.Select(value => value.ToString("G6", CultureInfo.InvariantCulture)))}";
 	}
 
-	private async void CSharpClicked(object sender, EventArgs args) => await ExecuteAsync(async () => {
-		var code = ChartGalleryRenderer.CreateCSharpExample(_chart);
-		await ReviewTextDialog.ShowAsync(this, _selected.Name + " — C# Example", "Copy Or Save A C# Factory That Recreates This Chart, Including Your Current Settings And Data.",
-			code, "ChartExample.cs", "C# Files (*.cs)|*.cs|All Files (*.*)|*.*");
-	});
+	private async void CSharpClicked(object sender, EventArgs args) {
+		await ExecuteAsync(async () => {
+			var code = ChartGalleryRenderer.CreateCSharpExample(_chart);
+			await ReviewTextDialog.ShowAsync(this, _selected.Name + " — C# Example", "Copy Or Save A C# Factory That Recreates This Chart, Including Your Current Settings And Data.",
+				code, "ChartExample.cs", "C# Files (*.cs)|*.cs|All Files (*.*)|*.*");
+		});
+	}
 
-	private async void SaveImageClicked(object sender, EventArgs args) => await ExecuteAsync(async () => {
-		using var picker = new SaveFileDialog { Filter = "PNG Images (*.png)|*.png", DefaultExt = "png", FileName = _selected.Id + ".png", AddExtension = true, OverwritePrompt = true };
-		if (picker.ShowDialog(this) == DialogResult.OK)
-			await SavePngAsync(picker.FileName);
-	});
+	private async void SaveImageClicked(object sender, EventArgs args) {
+		await ExecuteAsync(async () => {
+			using var picker = new SaveFileDialog { Filter = "PNG Images (*.png)|*.png", DefaultExt = "png", FileName = _selected.Id + ".png", AddExtension = true, OverwritePrompt = true };
+			if (picker.ShowDialog(this) == DialogResult.OK)
+				await SavePngAsync(picker.FileName);
+		});
+	}
+
+	public async Task SavePngAsync(string path) {
+		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
+		using var image = new MemoryStream();
+		_chart.SaveImage(image, ChartImageFormat.Png);
+		await File.WriteAllBytesAsync(path, image.ToArray());
+	}
 
 	private async Task ExecuteAsync(Func<Task> work) {
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(work);
 		if (error != null && !IsDisposed)
 			await ExceptionDialog.ShowAsync(this, "Chart Example", error);
 	}
+
+	// An older or unavailable category safely returns to the full gallery.
+	private void ApplyScreenPreferences() {
+		var category = ScreenSettings.Category;
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing))
+			_categories.SelectedItem = _categories.Items.Contains(category) ? category : "All Chart Families";
+	}
+
+	#region Inner Types
+
+	/// <summary>Remembers the gallery family selected by the user.</summary>
+	[UserEditable]
+	public class ChartGalleryScreenSettings : SettingsObject {
+		/// <summary>The family shown when opening this gallery.</summary>
+		[DefaultValue("All Chart Families")]
+		[Required, DisplayName("Chart family")]
+		public string Category { get; set; } = "All Chart Families";
+	}
+	#endregion
 }

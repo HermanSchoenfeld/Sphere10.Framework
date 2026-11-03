@@ -10,10 +10,11 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Compares nested composite content and ordinary grouped controls in native tab pages.</summary>
 public partial class TabControlTestScreen : WinFormsApplicationScreen {
+	/// <summary>Creates the two independently editable native pages.</summary>
 	public TabControlTestScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 	}
 }
-
-

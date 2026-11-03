@@ -10,15 +10,31 @@ using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Demonstrates independently populated native grids in expandable task-pane groups.</summary>
 public partial class ScreenC : WinFormsApplicationScreen {
+	/// <summary>Creates the real Designer layout; sample data waits for first native load.</summary>
 	public ScreenC() {
 		InitializeComponent();
-		taskPane1.Padding.Bottom = 0;
-		taskPane1.Padding.Left = 0;
-		taskPane1.Padding.Right = 0;
-		taskPane1.Padding.Top = 0;
+		Disposables.Add(_heading.Font);
+	}
 
+	// The three distinct data shapes generate their native columns through ordinary data binding.
+	protected override void InitializeUIPrimingData() {
+		base.InitializeUIPrimingData();
+		_dataGridView1.DataSource = new[] {
+			new { Milestone = "Requirements", Owner = "Product", State = "Complete" },
+			new { Milestone = "Implementation", Owner = "Engineering", State = "In progress" },
+			new { Milestone = "Acceptance", Owner = "Review", State = "Planned" }
+		};
+		_dataGridView2.DataSource = new[] {
+			new { Resource = "Build agent", Allocation = "Continuous integration", Available = true },
+			new { Resource = "Test station", Allocation = "Native UI verification", Available = true },
+			new { Resource = "Review environment", Allocation = "Acceptance", Available = false }
+		};
+		_dataGridView3.DataSource = new[] {
+			new { Item = "Data model", Priority = "High", Reviewer = "Architecture" },
+			new { Item = "User flow", Priority = "Normal", Reviewer = "Product" },
+			new { Item = "Documentation", Priority = "Normal", Reviewer = "Engineering" }
+		};
 	}
 }
-
-

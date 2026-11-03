@@ -9,9 +9,14 @@
 *@
 
 @namespace Sphere10.Framework.Utils.BlazorTester.Application
+@using System
+@using System.Collections.Generic
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
 @using Sphere10.Framework.Web.AspNetCore.Blazor
 @using Sphere10.Framework.Application
 @inherits BlazorApplicationScreen
+@attribute [Settings(typeof(RegistrationExampleScreen.RegistrationInspectorSettings))]
 
 <article data-demo="screen-registration">
 	<h2>@Name inspector</h2>
@@ -35,7 +40,18 @@
 @code {
 	private readonly Guid _instance = Guid.NewGuid();
 	private string _draft;
-	private RegistrationInspectorSettings _settings = new();
+
+	public override RegistrationInspectorSettings ScreenSettings {
+		get {
+			return (RegistrationInspectorSettings)base.ScreenSettings;
+		}
+	}
+
+	private RegistrationInspectorSettings _settings {
+		get {
+			return ScreenSettings;
+		}
+	}
 
 	[Parameter]
 	public string Name { get; set; }
@@ -44,17 +60,6 @@
 		get {
 			return Name + " inspector";
 		}
-	}
-
-	// Settings Apply changes presentation while the unrelated retained draft and instance identity stay intact.
-	protected override Task OnSettingsChangedAsync(object values) {
-		_settings = (RegistrationInspectorSettings)values;
-		return Task.CompletedTask;
-	}
-
-	// Only plain preference values enter the profile's detached background snapshot.
-	protected override object CaptureSettings() {
-		return _settings;
 	}
 
 	// A completed control action is accepted once; layout and pointer movement never save preferences.
@@ -68,4 +73,86 @@
 	private async Task OpenDetailsAsync() {
 		await Host.ActivateScreenAsync(Block, typeof(RegistrationDetailsScreen));
 	}
+
+	#region Inner Types
+
+	/// <summary>Plain inspector display preferences used by two independent registrations of the same screen.</summary>
+	[UserEditable]
+	public class RegistrationInspectorSettings : SettingsObject, IValidatableObject {
+		[Category("Summary")]
+		[DisplayName("Summary heading")]
+		[DefaultValue("Inspector summary")]
+		[Description("The heading shown inside this inspector; its navigation identity remains unchanged.")]
+		public string Caption { get; set; } = "Inspector summary";
+
+		[Category("Summary")]
+		[DisplayName("Show summary")]
+		[DefaultValue(true)]
+		public bool ShowSummary { get; set; } = true;
+
+		[Category("Summary")]
+		[DisplayName("Detail level")]
+		[DefaultValue(InspectorDetailLevel.Compact)]
+		public InspectorDetailLevel DetailLevel { get; set; } = InspectorDetailLevel.Compact;
+
+		[Category("Presentation")]
+		[Description("Nested presentation values are provisional until Apply or OK.")]
+		public InspectorPresentation Presentation { get; set; } = new();
+
+		[Category("Saved views")]
+		[DisplayName("Saved views")]
+		[Description("Add, edit or remove named views without changing the retained screen draft.")]
+		public InspectorSavedView[] SavedViews { get; set; } = new[] { new InspectorSavedView() };
+
+		/// <summary>Restores attributed scalar defaults and the inspector's nested presentation values.</summary>
+		public override void RestoreDefaultValues() {
+			base.RestoreDefaultValues();
+			Presentation = new InspectorPresentation();
+			SavedViews = new[] { new InspectorSavedView() };
+		}
+
+		/// <summary>Rejects unusable display values before accepted settings are saved.</summary>
+		public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
+			if (string.IsNullOrWhiteSpace(Caption) || Caption.Length > 60)
+				yield return new ValidationResult("Summary heading must contain between 1 and 60 characters.", new[] { nameof(Caption) });
+			if (Presentation == null || Presentation.FontScale is < 80 or > 150)
+				yield return new ValidationResult("Font scale must be between 80 and 150 percent.", new[] { nameof(Presentation) });
+			if (!Enum.IsDefined(DetailLevel))
+				yield return new ValidationResult("Select a supported detail level.", new[] { nameof(DetailLevel) });
+			if (SavedViews == null || Array.Exists(SavedViews, view => view == null || string.IsNullOrWhiteSpace(view.Name)))
+				yield return new ValidationResult("Every saved view needs a name.", new[] { nameof(SavedViews) });
+		}
+
+		#region Inner Types
+
+		/// <summary>Controls how much summary content the demonstration displays.</summary>
+		public enum InspectorDetailLevel {
+			[Description("Compact summary")]
+			Compact,
+
+			[Description("Detailed summary")]
+			Detailed
+		}
+
+		/// <summary>Nested preferences saved through the inspector's actual settings root.</summary>
+		public class InspectorPresentation {
+			[DisplayName("Font scale")]
+			[Description("Inspector summary text size as a percentage, from 80 to 150.")]
+			public int FontScale { get; set; } = 100;
+
+			[DisplayName("Emphasize heading")]
+			public bool EmphasizeHeading { get; set; } = true;
+		}
+
+		/// <summary>One editable item in the demonstration's detached collection.</summary>
+		public class InspectorSavedView {
+			public string Name { get; set; } = "Overview";
+
+			public string Description { get; set; } = "The inspector's default summary.";
+		}
+
+		#endregion
+	}
+	#endregion
+
 }

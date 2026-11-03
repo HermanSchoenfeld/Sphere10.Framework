@@ -21,6 +21,7 @@ namespace Sphere10.Framework.Utils.BlazorTester.Loader;
 
 /// <summary>Configures the running workspace and services used by the original loader routes.</summary>
 public static class Sphere10Plugin {
+	/// <summary>Composes the tester plugin, screens and demonstration commands.</summary>
 	public static void Configure(BlazorPluginBuilder plugin) {
 		Guard.ArgumentNotNull(plugin, nameof(plugin));
 		const string pluginName = "Sphere10.Framework";
@@ -48,7 +49,7 @@ public static class Sphere10Plugin {
 					.WithTitle("CPU inspector")
 					.WithStableKey("cpu-inspector")
 					.AsSingleInstance()
-					.UseSettings<RegistrationInspectorSettings>(() => new RegistrationInspectorSettings { Caption = "CPU summary" })
+					.UseSettings(new RegistrationExampleScreen.RegistrationInspectorSettings { Caption = "CPU summary" })
 					.WithActivator(context => new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "CPU" })),
 					out var cpuInspector
 				)
@@ -56,7 +57,8 @@ public static class Sphere10Plugin {
 					.WithTitle("GPU inspector")
 					.WithStableKey("gpu-inspector")
 					.AsSingleInstance()
-					.UseSettings<RegistrationInspectorSettings, RegistrationInspectorSettingsEditor>(() => new RegistrationInspectorSettings { Caption = "GPU summary" })
+					.UseSettings(new RegistrationExampleScreen.RegistrationInspectorSettings { Caption = "GPU summary" })
+					.WithSettingsEditor<RegistrationInspectorSettingsEditor>()
 					.WithActivator(context => new BlazorApplicationScreenActivation(new Dictionary<string, object> { [nameof(RegistrationExampleScreen.Name)] = "GPU" })),
 					out var gpuInspector
 				)

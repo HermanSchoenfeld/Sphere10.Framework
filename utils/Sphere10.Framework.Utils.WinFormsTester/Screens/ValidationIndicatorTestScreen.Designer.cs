@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,181 +6,156 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class ValidationIndicatorTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class ValidationIndicatorTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _manualRow;
+	private Button _validButton;
+	private Button _errorButton;
+	private Button _validatingButton;
+	private Button _disabledButton;
+	private ValidationIndicator _validationIndicator1;
+	private FlowLayoutPanel _inputRow;
+	private ValidationIndicator _validationIndicator2;
+	private TextBox _textBox;
+	private Button _enableDisableButton;
+	private Label _label1;
+	private TextBox _outputTextBox;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ValidationIndicatorTestScreen));
-            this._outputTextBox = new System.Windows.Forms.TextBox();
-            this._validButton = new System.Windows.Forms.Button();
-            this._errorButton = new System.Windows.Forms.Button();
-            this._validatingButton = new System.Windows.Forms.Button();
-            this._disabledButton = new System.Windows.Forms.Button();
-            this._validationIndicator1 = new Sphere10.Framework.Windows.Forms.ValidationIndicator();
-            this._validationIndicator2 = new Sphere10.Framework.Windows.Forms.ValidationIndicator();
-            this._textBox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this._enableDisableButton = new System.Windows.Forms.Button();
-            this.SuspendLayout();
-            // 
-            // _outputTextBox
-            // 
-            this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._outputTextBox.Location = new System.Drawing.Point(12, 206);
-            this._outputTextBox.Multiline = true;
-            this._outputTextBox.Name = "_outputTextBox";
-            this._outputTextBox.Size = new System.Drawing.Size(848, 151);
-            this._outputTextBox.TabIndex = 0;
-            // 
-            // _validButton
-            // 
-            this._validButton.Location = new System.Drawing.Point(12, 12);
-            this._validButton.Name = "_validButton";
-            this._validButton.Size = new System.Drawing.Size(75, 23);
-            this._validButton.TabIndex = 1;
-            this._validButton.Text = "Valid";
-            this._validButton.UseVisualStyleBackColor = true;
-            this._validButton.Click += new System.EventHandler(this._validButton_Click);
-            // 
-            // _errorButton
-            // 
-            this._errorButton.Location = new System.Drawing.Point(12, 41);
-            this._errorButton.Name = "_errorButton";
-            this._errorButton.Size = new System.Drawing.Size(75, 23);
-            this._errorButton.TabIndex = 2;
-            this._errorButton.Text = "Error";
-            this._errorButton.UseVisualStyleBackColor = true;
-            this._errorButton.Click += new System.EventHandler(this._errorButton_Click);
-            // 
-            // _validatingButton
-            // 
-            this._validatingButton.Location = new System.Drawing.Point(12, 70);
-            this._validatingButton.Name = "_validatingButton";
-            this._validatingButton.Size = new System.Drawing.Size(75, 23);
-            this._validatingButton.TabIndex = 3;
-            this._validatingButton.Text = "Validating";
-            this._validatingButton.UseVisualStyleBackColor = true;
-            this._validatingButton.Click += new System.EventHandler(this._validatingButton_Click);
-            // 
-            // _disabledButton
-            // 
-            this._disabledButton.Location = new System.Drawing.Point(12, 99);
-            this._disabledButton.Name = "_disabledButton";
-            this._disabledButton.Size = new System.Drawing.Size(75, 23);
-            this._disabledButton.TabIndex = 4;
-            this._disabledButton.Text = "Disabled";
-            this._disabledButton.UseVisualStyleBackColor = true;
-            this._disabledButton.Click += new System.EventHandler(this._disabledButton_Click);
-            // 
-            // _validationIndicator1
-            // 
-            this._validationIndicator1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("_validationIndicator1.BackgroundImage")));
-            this._validationIndicator1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this._validationIndicator1.Location = new System.Drawing.Point(90, 15);
-            this._validationIndicator1.Margin = new System.Windows.Forms.Padding(0);
-            this._validationIndicator1.Name = "_validationIndicator1";
-            this._validationIndicator1.Size = new System.Drawing.Size(20, 20);
-            this._validationIndicator1.TabIndex = 5;
-            this._validationIndicator1.ValidationStateChanged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.ValidationIndicator, Sphere10.Framework.Windows.Forms.ValidationState, Sphere10.Framework.Windows.Forms.ValidationState>(this._validationIndicator1_ValidationStateChanged);
-            // 
-            // _validationIndicator2
-            // 
-            this._validationIndicator2.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("_validationIndicator2.BackgroundImage")));
-            this._validationIndicator2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this._validationIndicator2.Location = new System.Drawing.Point(430, 86);
-            this._validationIndicator2.Margin = new System.Windows.Forms.Padding(0);
-            this._validationIndicator2.Name = "_validationIndicator2";
-            this._validationIndicator2.RunValidatorWhenEnabled = true;
-            this._validationIndicator2.Size = new System.Drawing.Size(20, 20);
-            this._validationIndicator2.TabIndex = 6;
-            this._validationIndicator2.PerformValidation += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.ValidationIndicator, Sphere10.Framework.Windows.Forms.ValidationIndicatorEvent>(this._validationIndicator2_PerformValidation);
-            this._validationIndicator2.ValidationStateChanged += new Sphere10.Framework.EventHandlerEx<Sphere10.Framework.Windows.Forms.ValidationIndicator, Sphere10.Framework.Windows.Forms.ValidationState, Sphere10.Framework.Windows.Forms.ValidationState>(this._validationIndicator2_ValidationStateChanged);
-            // 
-            // _textBox
-            // 
-            this._textBox.Location = new System.Drawing.Point(298, 86);
-            this._textBox.Name = "_textBox";
-            this._textBox.Size = new System.Drawing.Size(129, 20);
-            this._textBox.TabIndex = 7;
-            this._textBox.TextChanged += new System.EventHandler(this._textBox_TextChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(295, 70);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(132, 13);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Type \'Herman\' for success";
-            // 
-            // _enableDisableButton
-            // 
-            this._enableDisableButton.Location = new System.Drawing.Point(298, 112);
-            this._enableDisableButton.Name = "_enableDisableButton";
-            this._enableDisableButton.Size = new System.Drawing.Size(129, 23);
-            this._enableDisableButton.TabIndex = 9;
-            this._enableDisableButton.Text = "Enable/Disable";
-            this._enableDisableButton.UseVisualStyleBackColor = true;
-            this._enableDisableButton.Click += new System.EventHandler(this._enableDisableButton_Click);
-            // 
-            // ValidationIndicatorTestForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(872, 369);
-            this.Controls.Add(this._enableDisableButton);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this._textBox);
-            this.Controls.Add(this._validationIndicator2);
-            this.Controls.Add(this._validationIndicator1);
-            this.Controls.Add(this._disabledButton);
-            this.Controls.Add(this._validatingButton);
-            this.Controls.Add(this._errorButton);
-            this.Controls.Add(this._validButton);
-            this.Controls.Add(this._outputTextBox);
-            this.Name = "ValidationIndicatorTestScreen";
-            this.Text = "ValidationIndicatorTestForm";
-            this.ResumeLayout(false);
-            this.PerformLayout();
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_manualRow = new FlowLayoutPanel();
+		_manualRow.Name = "_manualRow";
+		_validButton = new Button();
+		_validButton.Name = "_validButton";
+		_errorButton = new Button();
+		_errorButton.Name = "_errorButton";
+		_validatingButton = new Button();
+		_validatingButton.Name = "_validatingButton";
+		_disabledButton = new Button();
+		_disabledButton.Name = "_disabledButton";
+		_validationIndicator1 = new ValidationIndicator();
+		_inputRow = new FlowLayoutPanel();
+		_inputRow.Name = "_inputRow";
+		_validationIndicator2 = new ValidationIndicator();
+		_textBox = new TextBox();
+		_enableDisableButton = new Button();
+		_enableDisableButton.Name = "_enableDisableButton";
+		_label1 = new Label();
+		_label1.Name = "_label1";
+		_outputTextBox = new TextBox();
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 6;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Validation Feedback";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Compare explicit visual states with the control’s real asynchronous PerformValidation callback. Completed states and results appear in the log.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_validButton.AutoSize = true;
+		_validButton.MinimumSize = new Size(110, 34);
+		_validButton.Text = "Valid";
+		_validButton.UseVisualStyleBackColor = true;
+		_validButton.Click += ValidButton_Click;
+		_errorButton.AutoSize = true;
+		_errorButton.MinimumSize = new Size(110, 34);
+		_errorButton.Text = "Error";
+		_errorButton.UseVisualStyleBackColor = true;
+		_errorButton.Click += ErrorButton_Click;
+		_validatingButton.AutoSize = true;
+		_validatingButton.MinimumSize = new Size(110, 34);
+		_validatingButton.Text = "Validating";
+		_validatingButton.UseVisualStyleBackColor = true;
+		_validatingButton.Click += ValidatingButton_Click;
+		_disabledButton.AutoSize = true;
+		_disabledButton.MinimumSize = new Size(110, 34);
+		_disabledButton.Text = "Disabled";
+		_disabledButton.UseVisualStyleBackColor = true;
+		_disabledButton.Click += DisabledButton_Click;
+		_validationIndicator1.Name = "manualValidation";
+		_validationIndicator1.Size = new Size(30, 30);
+		_validationIndicator1.ValidationStateChanged += ValidationIndicator1_ValidationStateChanged;
+		_manualRow.AutoSize = true;
+		_manualRow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_manualRow.Dock = DockStyle.Fill;
+		_manualRow.Margin = Padding.Empty;
+		_manualRow.Controls.AddRange(new Control[] { _validButton, _errorButton, _validatingButton, _disabledButton, _validationIndicator1 });
+		_textBox.Name = "validationInput";
+		_textBox.Width = 320;
+		_textBox.TextChanged += TextBox_TextChanged;
+		_validationIndicator2.Name = "inputValidation";
+		_validationIndicator2.Size = new Size(30, 30);
+		_validationIndicator2.PerformValidation += ValidationIndicator2_PerformValidation;
+		_validationIndicator2.ValidationStateChanged += ValidationIndicator2_ValidationStateChanged;
+		_enableDisableButton.AutoSize = true;
+		_enableDisableButton.MinimumSize = new Size(110, 34);
+		_enableDisableButton.Text = "Disable validator";
+		_enableDisableButton.UseVisualStyleBackColor = true;
+		_enableDisableButton.Click += EnableDisableButton_Click;
+		_inputRow.AutoSize = true;
+		_inputRow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_inputRow.Dock = DockStyle.Fill;
+		_inputRow.Margin = Padding.Empty;
+		_inputRow.Controls.AddRange(new Control[] { _textBox, _validationIndicator2, _enableDisableButton });
+		_label1.AutoSize = true;
+		_label1.Dock = DockStyle.Fill;
+		_label1.Margin = new Padding(0, 8, 0, 8);
+		_label1.Text = "Input example: type Herman for a successful result. Validation uses an immutable text snapshot on its worker.";
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
 
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private System.Windows.Forms.Button _validButton;
-		private System.Windows.Forms.Button _errorButton;
-		private System.Windows.Forms.Button _validatingButton;
-		private System.Windows.Forms.Button _disabledButton;
-		private Sphere10.Framework.Windows.Forms.ValidationIndicator _validationIndicator1;
-        private Sphere10.Framework.Windows.Forms.ValidationIndicator _validationIndicator2;
-		private System.Windows.Forms.TextBox _textBox;
-		private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button _enableDisableButton;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_manualRow, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_label1, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_inputRow, 0, 4);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_outputTextBox, 0, 5);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "ValidationIndicatorTestScreen";
+		Text = "Validation Feedback";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

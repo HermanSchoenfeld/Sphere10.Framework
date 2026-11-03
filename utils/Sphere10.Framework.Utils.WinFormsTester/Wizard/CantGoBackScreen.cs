@@ -10,13 +10,18 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Wizard;
 
+/// <summary>Demonstrates a forward-only page without changing the retained wizard model.</summary>
 public partial class CantGoBackScreen : DemoWizardScreenBase {
+	/// <summary>Creates the complete designable page without activating a wizard.</summary>
 	public CantGoBackScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 	}
 
+	/// <summary>Restores the model and hides the previous-page action for this step.</summary>
 	public override async Task OnPresent() {
 		await base.OnPresent();
-		Wizard.HidePrevious = true;
+		if (Wizard != null)
+			Wizard.HidePrevious = true;
 	}
 }

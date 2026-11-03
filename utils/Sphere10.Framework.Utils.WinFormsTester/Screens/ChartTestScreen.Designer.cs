@@ -14,7 +14,7 @@ using Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 partial class ChartTestScreen {
-	private IContainer components;
+	private IContainer _components;
 	private TableLayoutPanel _workspace;
 	private TableLayoutPanel _dashboard;
 	private Label _heading;
@@ -48,13 +48,13 @@ partial class ChartTestScreen {
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
 			StopCapture();
-			components?.Dispose();
+			_components?.Dispose();
 		}
 		base.Dispose(disposing);
 	}
 
 	private void InitializeComponent() {
-		components = new Container();
+		_components = new Container();
 		_workspace = new TableLayoutPanel();
 		_dashboard = new TableLayoutPanel();
 		_heading = new Label();
@@ -62,8 +62,10 @@ partial class ChartTestScreen {
 		_commands = new ToolStrip();
 		_options = new ToolStrip();
 		_scenarioLabel = new ToolStripLabel();
+		_scenarioLabel.Name = "_scenarioLabel";
 		_scenario = new ToolStripComboBox();
 		_intervalLabel = new ToolStripLabel();
+		_intervalLabel.Name = "_intervalLabel";
 		_interval = new ToolStripComboBox();
 		_live = new ToolStripButton();
 		_addSample = new ToolStripButton();
@@ -83,7 +85,7 @@ partial class ChartTestScreen {
 		_columns = new BarChart();
 		_bars = new BarChart();
 		_status = new Label();
-		_timer = new Timer(components);
+		_timer = new Timer(_components);
 		_workspace.SuspendLayout();
 		_dashboard.SuspendLayout();
 		_commands.SuspendLayout();

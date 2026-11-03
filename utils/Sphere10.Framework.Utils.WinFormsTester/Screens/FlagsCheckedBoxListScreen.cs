@@ -8,33 +8,52 @@
 
 using System;
 using System.ComponentModel;
-using System.IO;
+using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
-// There is an issue dealing with flags that have value '0'. How is such a flag to be interpreted?
+/// <summary>Demonstrates individual, combined and zero-valued flags with a live bit-mask readout.</summary>
 public partial class FlagsCheckedBoxListScreen : WinFormsApplicationScreen {
-	private readonly TextWriter _textWriter;
-
+	/// <summary>Creates the list without selecting operational data or writing preferences.</summary>
 	public FlagsCheckedBoxListScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 		_flagsCheckedListBox.EnumType = typeof(Test1Enum);
-		var selectedEnum = _flagsCheckedListBox.SelectedEnum;
-		_textWriter = new TextBoxWriter(_outputTextBox);
-		_textWriter.WriteLine("Initial value: {0}", selectedEnum != null ? ((Test1Enum)selectedEnum).ToString() : string.Empty);
+		UpdateSelection();
 	}
 
-	private void _flagsCheckedListBox_SelectedValueChanged(object sender, EventArgs e) {
-		var selectedEnum = _flagsCheckedListBox.SelectedEnum;
-		_textWriter.WriteLine("Selected Value Changed: {0}", selectedEnum != null ? ((Test1Enum)selectedEnum).ToString() : string.Empty);
+	// ItemChecked is the existing post-mutation event, unlike the native ItemCheck preview.
+	private void FlagsItemChecked(object sender, ItemCheckEventArgs args) {
+		if (IsDisposed || Disposing)
+			return;
+		UpdateSelection();
+		_outputTextBox.AppendText(_selectionSummary.Text + Environment.NewLine);
 	}
 
-	private void _flagsCheckedListBox_SelectedFlagChanged(FlagsCheckedListBox arg) {
-		var selectedEnum = _flagsCheckedListBox.SelectedEnum;
-		_textWriter.WriteLine("Selected Flag Changed: {0}", selectedEnum != null ? ((Test1Enum)selectedEnum).ToString() : string.Empty);
+	// The zero value is explicitly distinct from an absent selection.
+	private void ClearFlagsClicked(object sender, EventArgs args) {
+		_flagsCheckedListBox.SelectedEnum = Test1Enum.Zero;
+		UpdateSelection();
 	}
 
+	// The original default combines the first and third flags.
+	private void DefaultFlagsClicked(object sender, EventArgs args) {
+		_flagsCheckedListBox.SelectedEnum = Test1Enum.Default;
+		UpdateSelection();
+	}
+
+	// Combined members retain the same component flags as individual choices.
+	private void AllFlagsClicked(object sender, EventArgs args) {
+		_flagsCheckedListBox.SelectedEnum = Test1Enum.All;
+		UpdateSelection();
+	}
+
+	// There is an issue dealing with flags that have value '0': display absence and zero separately.
+	private void UpdateSelection() {
+		var selected = _flagsCheckedListBox.SelectedEnum;
+		_selectionSummary.Text = selected == null ? "No checked value · Mask: 0" : $"{selected} · Mask: {Convert.ToInt64(selected)} (0x{Convert.ToInt64(selected):X})";
+	}
 
 	[Flags]
 	private enum Test1Enum {
@@ -42,13 +61,9 @@ public partial class FlagsCheckedBoxListScreen : WinFormsApplicationScreen {
 		Flag1 = 1 << 0,
 		Flag2 = 1 << 1,
 		Flag3 = 1 << 2,
-		[Description("Flags 1 & 2")] Flag1And2 = Flag1 | Flag2,
+		[Description("Flags 1 & 2")]
+		Flag1And2 = Flag1 | Flag2,
 		All = Flag1 | Flag2 | Flag3,
-		Default = Flag1 | Flag3,
-		//[Description("All (with Zero)")]
-		//SuperAll = All | Zero
+		Default = Flag1 | Flag3
 	}
-
 }
-
-

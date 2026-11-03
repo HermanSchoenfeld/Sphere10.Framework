@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,75 +6,111 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class RegionToolTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class RegionToolTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _actions;
+	private TextBox _filter;
+	private Button _button1;
+	private DataGridView _cultureGrid;
+	private Label _summary;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this.button1 = new System.Windows.Forms.Button();
-			this.SuspendLayout();
-			// 
-			// _outputTextBox
-			// 
-			this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputTextBox.Location = new System.Drawing.Point(12, 150);
-			this._outputTextBox.Multiline = true;
-			this._outputTextBox.Name = "_outputTextBox";
-			this._outputTextBox.Size = new System.Drawing.Size(939, 180);
-			this._outputTextBox.TabIndex = 3;
-			// 
-			// button1
-			// 
-			this.button1.Location = new System.Drawing.Point(12, 12);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(75, 23);
-			this.button1.TabIndex = 4;
-			this.button1.Text = "button1";
-			this.button1.UseVisualStyleBackColor = true;
-			this.button1.Click += new System.EventHandler(this.button1_Click);
-			// 
-			// RegionToolTestForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(963, 342);
-			this.Controls.Add(this.button1);
-			this.Controls.Add(this._outputTextBox);
-			this.Name = "RegionToolTestScreen";
-			this.Text = "RegionToolTestForm";
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_actions = new FlowLayoutPanel();
+		_actions.Name = "_actions";
+		_filter = new TextBox();
+		_button1 = new Button();
+		_button1.Name = "_button1";
+		_cultureGrid = new DataGridView();
+		_summary = new Label();
+		_summary.Name = "_summary";
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Cultures And Regions";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Browse language and region data from the runtime culture catalog. Neutral cultures are shown without a region; filtering does not change the system locale.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_filter.Name = "cultureFilter";
+		_filter.Width = 280;
+		_filter.PlaceholderText = "Filter culture, language or region…";
+		_filter.TextChanged += FilterChanged;
+		_button1.AutoSize = true;
+		_button1.MinimumSize = new Size(110, 34);
+		_button1.Text = "Refresh cultures";
+		_button1.UseVisualStyleBackColor = true;
+		_button1.Click += Button1_Click;
+		_actions.AutoSize = true;
+		_actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_actions.Dock = DockStyle.Fill;
+		_actions.Margin = Padding.Empty;
+		_actions.Controls.AddRange(new Control[] { _filter, _button1 });
+		_cultureGrid.Name = "cultureGrid";
+		_cultureGrid.Dock = DockStyle.Fill;
+		_cultureGrid.ReadOnly = true;
+		_cultureGrid.AllowUserToAddRows = false;
+		_cultureGrid.AllowUserToDeleteRows = false;
+		_cultureGrid.RowHeadersVisible = false;
+		_cultureGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+		_cultureGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+		_cultureGrid.MultiSelect = false;
+		_cultureGrid.BackgroundColor = SystemColors.Window;
+		_cultureGrid.Columns.Add("Culture", "Culture");
+		_cultureGrid.Columns.Add("Language", "Language");
+		_cultureGrid.Columns.Add("Region", "Region");
+		_cultureGrid.Columns.Add("Code", "ISO region");
+		_summary.AutoSize = true;
+		_summary.Dock = DockStyle.Fill;
+		_summary.Margin = new Padding(0, 8, 0, 8);
+		_summary.Text = "Refresh to enumerate the cultures installed in this .NET runtime.";
 
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private System.Windows.Forms.Button button1;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_actions, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_cultureGrid, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_summary, 0, 4);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "RegionToolTestScreen";
+		Text = "Cultures And Regions";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

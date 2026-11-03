@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
@@ -27,21 +28,29 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+/// <summary>Verifies gallery settings restoration before the first grid query.</summary>
 [TestFixture]
 public class GallerySettingsMigrationTests {
+
+	// Records the first query made by a named demo grid.
+	private readonly record struct SourceQuery(string Key, int PageSize, int Page, string Sort, SortDirection Direction);
+
+	/// <summary>Verifies delayed legacy import precedes child grid construction and their first queries.</summary>
 	[Test]
 	public async Task DelayedLegacyImportPrecedesChildGridConstructionAndTheirFirstQueries() {
-		var store = new EmptyStore();
+		var store = new EmptySettingsProvider();
 		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		var runtime = new LegacyRuntime { ReadGate = release.Task };
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/components/grid"));
 		services.AddSingleton<IJSRuntime>(runtime);
-		services.AddSingleton<IApplicationSettingsStore>(store);
+		services.AddSingleton<ISettingsProvider>(store);
 		services.AddSingleton<IComponentActivator, QueryCaptureActivator>();
 		await using var provider = services.BuildServiceProvider();
-		await provider.GetRequiredService<IBlazorApplication>().InitializeAsync();
+		var application = provider.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			var rendered = renderer.BeginRenderingComponent<RouteView>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -58,9 +67,9 @@ public class GallerySettingsMigrationTests {
 				await rendered.QuiescenceTask;
 
 				Assert.That(capture.Queries.Single(query => query.Key == "tester.editable-grid"),
-					Is.EqualTo(("tester.editable-grid", 7, 1, "Name", SortDirection.Descending)));
+					Is.EqualTo(new SourceQuery("tester.editable-grid", 7, 1, "Name", SortDirection.Descending)));
 				Assert.That(capture.Queries.Single(query => query.Key == "tester.live-grid"),
-					Is.EqualTo(("tester.live-grid", 4, 1, "Name", SortDirection.Descending)));
+					Is.EqualTo(new SourceQuery("tester.live-grid", 4, 1, "Name", SortDirection.Descending)));
 				Assert.That(store.Writes, Is.Zero);
 			} finally {
 				release.TrySetResult();
@@ -68,18 +77,20 @@ public class GallerySettingsMigrationTests {
 		});
 	}
 
+	/// <summary>Verifies paging only legacy records keep both declared column schemas before any accepted capture.</summary>
 	[Test]
 	public async Task PagingOnlyLegacyRecordsKeepBothDeclaredColumnSchemasBeforeAnyAcceptedCapture() {
-		var store = new EmptyStore();
+		var store = new EmptySettingsProvider();
 		var runtime = new LegacyRuntime();
 		var services = new ServiceCollection().AddLogging();
 		Program.ConfigureServices(services);
 		services.AddSingleton<NavigationManager>(new TestNavigationManager("http://localhost/", "http://localhost/components/grid"));
 		services.AddSingleton<IJSRuntime>(runtime);
-		services.AddSingleton<IApplicationSettingsStore>(store);
+		services.AddSingleton<ISettingsProvider>(store);
 		await using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IBlazorApplication>();
 		await application.InitializeAsync();
+		using var settingsScope = UserSettings.UseProvider(application.Settings);
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			await renderer.RenderComponentAsync<RouteView>(ParameterView.FromDictionary(new Dictionary<string, object> {
@@ -91,8 +102,8 @@ public class GallerySettingsMigrationTests {
 		var host = provider.GetRequiredService<IBlazorApplicationScreenHost>();
 		var block = host.AvailableBlocks.Single(item => item.Id == "components");
 		var definition = block.ScreenDefinitions.Single(item => item.ScreenType == typeof(ComponentScreen));
-		var values = application.Settings.GetProfile(block, definition.Registration).GetValues<GallerySettings>();
-		var defaults = new GallerySettings();
+		var values = (ComponentScreen.GallerySettings)definition.Settings;
+		var defaults = new ComponentScreen.GallerySettings();
 		Assert.That(values.Grid.Columns.Select(column => (column.Key, column.Title)), Is.EqualTo(defaults.Grid.Columns.Select(column => (column.Key, column.Title))));
 		Assert.That(values.LiveGrid.Columns.Select(column => (column.Key, column.Title)), Is.EqualTo(defaults.LiveGrid.Columns.Select(column => (column.Key, column.Title))));
 		Assert.That(values.Grid.Columns.All(column => !column.Width.HasValue), Is.True);
@@ -107,32 +118,63 @@ public class GallerySettingsMigrationTests {
 		Assert.That(store.Writes, Is.Zero, "Importing old values preserves schema without eagerly saving or accepting a control edit.");
 	}
 
-	// Loads defaults through the actual application catalog without touching any user or browser profile.
-	private sealed class EmptyStore : IApplicationSettingsStore {
+	#region Inner Types
+
+	// Loads defaults through the actual application settings lifecycle without touching any user or browser profile.
+	private sealed class EmptySettingsProvider : SyncSettingsProviderBase {
+
+		// Counts successful fixture writes.
 		public int Writes { get; private set; }
 
-		public Task<ApplicationSettingsStoredProfile> LoadAsync(string key, object defaults, bool hasExplicitStorageId, object storageId, CancellationToken token = default) {
-			return Task.FromResult<ApplicationSettingsStoredProfile>(null);
+		// Keeps this fixture storage readable for its assertions.
+		public override bool EncryptSettings {
+			get {
+				return false;
+			}
 		}
 
-		public Task SaveAsync(string key, ApplicationSettingsStoredProfile values, bool hasExplicitStorageId, object storageId, CancellationToken token = default) {
+		// Check whether this fixture has a persisted record.
+		public override bool ContainsSetting(Type settingsType, object id = null) {
+			return false;
+		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
+			throw new InvalidOperationException("No test preferences have been saved.");
+		}
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) {
 			Writes++;
-			return Task.CompletedTask;
+		}
+
+		// Remove this fixture record.
+		public override void DeleteSetting(SettingsObject settings) {
+		}
+
+		// Clear this fixture storage.
+		public override void ClearSettings() {
 		}
 	}
 
 	// Models old paging-only browser records, whose original schema contained no manual-width entries.
 	private sealed class LegacyRuntime : IJSRuntime {
+
+		/// <summary>The legacy grid keys read before child control activation.</summary>
 		public List<string> Reads { get; } = new();
 
+		/// <summary>The optional gate delaying legacy grid restoration.</summary>
 		public Task ReadGate { get; init; } = Task.CompletedTask;
 
+		/// <summary>Signals that legacy restoration has reached its asynchronous boundary.</summary>
 		public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			return ValueTask.FromResult(identifier == "import" ? (TValue)(object)new LegacyModule(this) : default);
 		}
 
+		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] args) {
 			return InvokeAsync<TValue>(identifier, args);
 		}
@@ -140,6 +182,8 @@ public class GallerySettingsMigrationTests {
 
 	// Delays actual legacy IO without delaying application/profile readiness or the renderer's interim render.
 	private sealed class LegacyModule(LegacyRuntime runtime) : IJSObjectReference {
+
+		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
 			if (identifier != "ReadLegacySettings")
 				return default;
@@ -158,10 +202,12 @@ public class GallerySettingsMigrationTests {
 			return (TValue)(object)settings;
 		}
 
+		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] args) {
 			return InvokeAsync<TValue>(identifier, args);
 		}
 
+		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
 		public ValueTask DisposeAsync() {
 			return ValueTask.CompletedTask;
 		}
@@ -169,10 +215,14 @@ public class GallerySettingsMigrationTests {
 
 	// Observes real controller query starts without replacing the gallery's sources or operational components.
 	private sealed class QueryCaptureActivator(IServiceProvider provider) : IComponentActivator {
+
+		/// <summary>The named grid roles shown by the dictionary editor.</summary>
 		public List<IComponent> Grids { get; } = new();
 
-		public List<(string Key, int PageSize, int Page, string Sort, SortDirection Direction)> Queries { get; } = new();
+		/// <summary>The first data-source queries recorded during grid construction.</summary>
+		public List<SourceQuery> Queries { get; } = new();
 
+		/// <summary>Constructs real demonstration components and records their first grid queries.</summary>
 		public IComponent CreateInstance(Type componentType) {
 			var component = (IComponent)ActivatorUtilities.CreateInstance(provider, componentType);
 			if (component is BlazorGrid<TestClass> editable)
@@ -190,8 +240,10 @@ public class GallerySettingsMigrationTests {
 				if (captured || !grid.Controller.IsLoading)
 					return;
 				captured = true;
-				Queries.Add((grid.SettingsKey, grid.Controller.ManualPageSize, grid.Controller.CurrentPage, grid.Controller.SortProperty, grid.Controller.SortDirection));
+				Queries.Add(new SourceQuery(grid.SettingsKey, grid.Controller.ManualPageSize, grid.Controller.CurrentPage, grid.Controller.SortProperty, grid.Controller.SortDirection));
 			};
 		}
 	}
+
+	#endregion
 }

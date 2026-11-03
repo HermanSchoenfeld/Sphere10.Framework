@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,138 +6,150 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-    partial class TextAreaTestsScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class TextAreaTestsScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _actions;
+	private NumericUpDown _sizeKilobytes;
+	private Label _sizeLabel;
+	private Button _fillStandardButton;
+	private Button _fillLockedButton;
+	private Button _fillLockedAsyncButton;
+	private Button _genOnlyButton;
+	private Button _epasaPwdCharsButton;
+	private Button _epasaRegexButton;
+	private TextBox _standardTextBox;
+	private Label _timing;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._standardTextBox = new System.Windows.Forms.TextBox();
-			this._fillStandardButton = new System.Windows.Forms.Button();
-			this._fillLockedButton = new System.Windows.Forms.Button();
-			this._genOnlyButton = new System.Windows.Forms.Button();
-			this._fillLockedAsyncButton = new System.Windows.Forms.Button();
-			this._epasaPwdCharsButton = new System.Windows.Forms.Button();
-			this._epasaRegexButton = new System.Windows.Forms.Button();
-			this.SuspendLayout();
-			// 
-			// _standardTextBox
-			// 
-			this._standardTextBox.Location = new System.Drawing.Point(12, 41);
-			this._standardTextBox.Multiline = true;
-			this._standardTextBox.Name = "_standardTextBox";
-			this._standardTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this._standardTextBox.Size = new System.Drawing.Size(609, 224);
-			this._standardTextBox.TabIndex = 0;
-			// 
-			// _fillStandardButton
-			// 
-			this._fillStandardButton.Location = new System.Drawing.Point(12, 12);
-			this._fillStandardButton.Name = "_fillStandardButton";
-			this._fillStandardButton.Size = new System.Drawing.Size(110, 23);
-			this._fillStandardButton.TabIndex = 2;
-			this._fillStandardButton.Text = "Fill Standard";
-			this._fillStandardButton.UseVisualStyleBackColor = true;
-			this._fillStandardButton.Click += new System.EventHandler(this._fillStandardButton_Click);
-			// 
-			// _fillLockedButton
-			// 
-			this._fillLockedButton.Location = new System.Drawing.Point(128, 12);
-			this._fillLockedButton.Name = "_fillLockedButton";
-			this._fillLockedButton.Size = new System.Drawing.Size(75, 23);
-			this._fillLockedButton.TabIndex = 3;
-			this._fillLockedButton.Text = "Fill Locked";
-			this._fillLockedButton.UseVisualStyleBackColor = true;
-			this._fillLockedButton.Click += new System.EventHandler(this._fillLockedButton_Click);
-			// 
-			// _genOnlyButton
-			// 
-			this._genOnlyButton.Location = new System.Drawing.Point(442, 12);
-			this._genOnlyButton.Name = "_genOnlyButton";
-			this._genOnlyButton.Size = new System.Drawing.Size(75, 23);
-			this._genOnlyButton.TabIndex = 4;
-			this._genOnlyButton.Text = "Generate only";
-			this._genOnlyButton.UseVisualStyleBackColor = true;
-			this._genOnlyButton.Click += new System.EventHandler(this._genOnlyButton_Click);
-			// 
-			// _fillLockedAsyncButton
-			// 
-			this._fillLockedAsyncButton.Location = new System.Drawing.Point(209, 12);
-			this._fillLockedAsyncButton.Name = "_fillLockedAsyncButton";
-			this._fillLockedAsyncButton.Size = new System.Drawing.Size(109, 23);
-			this._fillLockedAsyncButton.TabIndex = 5;
-			this._fillLockedAsyncButton.Text = "Fill Locked Async";
-			this._fillLockedAsyncButton.UseVisualStyleBackColor = true;
-			this._fillLockedAsyncButton.Click += new System.EventHandler(this._fillLockedAsyncButton_Click);
-			// 
-			// _epasaPwdCharsButton
-			// 
-			this._epasaPwdCharsButton.Location = new System.Drawing.Point(324, 12);
-			this._epasaPwdCharsButton.Name = "_epasaPwdCharsButton";
-			this._epasaPwdCharsButton.Size = new System.Drawing.Size(109, 23);
-			this._epasaPwdCharsButton.TabIndex = 6;
-			this._epasaPwdCharsButton.Text = "EPASA PWD Chars";
-			this._epasaPwdCharsButton.UseVisualStyleBackColor = true;
-			this._epasaPwdCharsButton.Click += new System.EventHandler(this._epasaPwdCharsButton_Click);
-			// 
-			// _epasaRegexButton
-			// 
-			this._epasaRegexButton.Location = new System.Drawing.Point(523, 12);
-			this._epasaRegexButton.Name = "_epasaRegexButton";
-			this._epasaRegexButton.Size = new System.Drawing.Size(98, 23);
-			this._epasaRegexButton.TabIndex = 7;
-			this._epasaRegexButton.Text = "EPASA Regex";
-			this._epasaRegexButton.UseVisualStyleBackColor = true;
-			this._epasaRegexButton.Click += new System.EventHandler(this._epasaRegexButton_Click);
-			// 
-			// TextAreaTests
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(633, 277);
-			this.Controls.Add(this._epasaRegexButton);
-			this.Controls.Add(this._epasaPwdCharsButton);
-			this.Controls.Add(this._fillLockedAsyncButton);
-			this.Controls.Add(this._genOnlyButton);
-			this.Controls.Add(this._fillLockedButton);
-			this.Controls.Add(this._fillStandardButton);
-			this.Controls.Add(this._standardTextBox);
-			this.Name = "TextAreaTestsScreen";
-			this.Text = "MiscTestForm";
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_actions = new FlowLayoutPanel();
+		_actions.Name = "_actions";
+		_sizeKilobytes = new NumericUpDown();
+		_sizeLabel = new Label();
+		_sizeLabel.Name = "_sizeLabel";
+		_fillStandardButton = new Button();
+		_fillStandardButton.Name = "_fillStandardButton";
+		_fillLockedButton = new Button();
+		_fillLockedButton.Name = "_fillLockedButton";
+		_fillLockedAsyncButton = new Button();
+		_fillLockedAsyncButton.Name = "_fillLockedAsyncButton";
+		_genOnlyButton = new Button();
+		_genOnlyButton.Name = "_genOnlyButton";
+		_epasaPwdCharsButton = new Button();
+		_epasaPwdCharsButton.Name = "_epasaPwdCharsButton";
+		_epasaRegexButton = new Button();
+		_epasaRegexButton.Name = "_epasaRegexButton";
+		_standardTextBox = new TextBox();
+		_timing = new Label();
+		_timing.Name = "_timing";
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Text Area Laboratory";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Compare ordinary appending, deferred rendering and background generation at a chosen size. The character and EPASA tools retain the original escaping and regular-expression examples.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_sizeLabel.AutoSize = true;
+		_sizeLabel.Dock = DockStyle.Fill;
+		_sizeLabel.Margin = new Padding(0, 8, 0, 8);
+		_sizeLabel.Text = "Output size (KiB):";
+		_sizeKilobytes.Name = "textSizeKilobytes";
+		_sizeKilobytes.Minimum = 1;
+		_sizeKilobytes.Maximum = 1024;
+		_sizeKilobytes.Value = 32;
+		_sizeKilobytes.Width = 80;
+		_fillStandardButton.AutoSize = true;
+		_fillStandardButton.MinimumSize = new Size(110, 34);
+		_fillStandardButton.Text = "Append normally";
+		_fillStandardButton.UseVisualStyleBackColor = true;
+		_fillStandardButton.Click += FillStandardButton_Click;
+		_fillLockedButton.AutoSize = true;
+		_fillLockedButton.MinimumSize = new Size(110, 34);
+		_fillLockedButton.Text = "Append in rendering scope";
+		_fillLockedButton.UseVisualStyleBackColor = true;
+		_fillLockedButton.Click += FillLockedButton_Click;
+		_fillLockedAsyncButton.AutoSize = true;
+		_fillLockedAsyncButton.MinimumSize = new Size(110, 34);
+		_fillLockedAsyncButton.Text = "Generate on worker";
+		_fillLockedAsyncButton.UseVisualStyleBackColor = true;
+		_fillLockedAsyncButton.Click += FillLockedAsyncButton_Click;
+		_genOnlyButton.AutoSize = true;
+		_genOnlyButton.MinimumSize = new Size(110, 34);
+		_genOnlyButton.Text = "Generate without display";
+		_genOnlyButton.UseVisualStyleBackColor = true;
+		_genOnlyButton.Click += GenOnlyButton_Click;
+		_epasaPwdCharsButton.AutoSize = true;
+		_epasaPwdCharsButton.MinimumSize = new Size(110, 34);
+		_epasaPwdCharsButton.Text = "Character escaping";
+		_epasaPwdCharsButton.UseVisualStyleBackColor = true;
+		_epasaPwdCharsButton.Click += EpasaPwdCharsButton_Click;
+		_epasaRegexButton.AutoSize = true;
+		_epasaRegexButton.MinimumSize = new Size(110, 34);
+		_epasaRegexButton.Text = "EPASA regular expression";
+		_epasaRegexButton.UseVisualStyleBackColor = true;
+		_epasaRegexButton.Click += EpasaRegexButton_Click;
+		_actions.AutoSize = true;
+		_actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_actions.Dock = DockStyle.Fill;
+		_actions.Margin = Padding.Empty;
+		_actions.Controls.AddRange(new Control[] { _sizeLabel, _sizeKilobytes, _fillStandardButton, _fillLockedButton, _fillLockedAsyncButton, _genOnlyButton, _epasaPwdCharsButton, _epasaRegexButton });
+		_standardTextBox.Name = "_standardTextBox";
+		_standardTextBox.Dock = DockStyle.Fill;
+		_standardTextBox.Multiline = true;
+		_standardTextBox.ScrollBars = ScrollBars.Both;
+		_standardTextBox.WordWrap = false;
+		_timing.AutoSize = true;
+		_timing.Dock = DockStyle.Fill;
+		_timing.Margin = new Padding(0, 8, 0, 8);
+		_timing.Text = "Choose an operation to compare text generation and native editor rendering.";
 
-        private System.Windows.Forms.TextBox _standardTextBox;
-        private System.Windows.Forms.Button _fillStandardButton;
-        private System.Windows.Forms.Button _fillLockedButton;
-        private System.Windows.Forms.Button _genOnlyButton;
-        private System.Windows.Forms.Button _fillLockedAsyncButton;
-		private System.Windows.Forms.Button _epasaPwdCharsButton;
-		private System.Windows.Forms.Button _epasaRegexButton;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_actions, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_standardTextBox, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_timing, 0, 4);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "TextAreaTestsScreen";
+		Text = "Text Area Laboratory";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

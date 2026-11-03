@@ -8,7 +8,9 @@
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Demonstrates designer-owned inherited native menu, toolbar and status contributions.</summary>
 public partial class VisualInheritanceFixerSubForm : VisualInheritanceFixerBaseForm {
+	/// <summary>Creates the visual inheritance example without application or storage side effects.</summary>
 	public VisualInheritanceFixerSubForm() {
 		InitializeComponent();
 	}

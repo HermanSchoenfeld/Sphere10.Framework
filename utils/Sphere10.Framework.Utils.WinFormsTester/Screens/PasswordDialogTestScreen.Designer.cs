@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,101 +6,114 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-	partial class PasswordDialogTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class PasswordDialogTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _actions;
+	private Button _standardButton;
+	private Button _customButton;
+	private Button _logonButton;
+	private Label _policySummary;
+	private TextBox _outputTextBox;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-			this._standardButton = new System.Windows.Forms.Button();
-			this._customButton = new System.Windows.Forms.Button();
-			this._outputTextBox = new System.Windows.Forms.TextBox();
-			this._logonButton = new System.Windows.Forms.Button();
-			this.SuspendLayout();
-			// 
-			// _standardButton
-			// 
-			this._standardButton.Location = new System.Drawing.Point(12, 12);
-			this._standardButton.Name = "_standardButton";
-			this._standardButton.Size = new System.Drawing.Size(75, 23);
-			this._standardButton.TabIndex = 0;
-			this._standardButton.Text = "Standard";
-			this._standardButton.UseVisualStyleBackColor = true;
-			this._standardButton.Click += new System.EventHandler(this._standardButton_Click);
-			// 
-			// _customButton
-			// 
-			this._customButton.Location = new System.Drawing.Point(13, 42);
-			this._customButton.Name = "_customButton";
-			this._customButton.Size = new System.Drawing.Size(75, 23);
-			this._customButton.TabIndex = 1;
-			this._customButton.Text = "Custom";
-			this._customButton.UseVisualStyleBackColor = true;
-			this._customButton.Click += new System.EventHandler(this._customButton_Click);
-			// 
-			// _outputTextBox
-			// 
-			this._outputTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this._outputTextBox.Location = new System.Drawing.Point(13, 148);
-			this._outputTextBox.Multiline = true;
-			this._outputTextBox.Name = "_outputTextBox";
-			this._outputTextBox.Size = new System.Drawing.Size(623, 94);
-			this._outputTextBox.TabIndex = 2;
-			// 
-			// _logonButton
-			// 
-			this._logonButton.Location = new System.Drawing.Point(194, 12);
-			this._logonButton.Name = "_logonButton";
-			this._logonButton.Size = new System.Drawing.Size(75, 23);
-			this._logonButton.TabIndex = 3;
-			this._logonButton.Text = "Logon";
-			this._logonButton.UseVisualStyleBackColor = true;
-			this._logonButton.Click += new System.EventHandler(this._logonButton_Click);
-			// 
-			// PasswordDialogTestForm
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(648, 254);
-			this.Controls.Add(this._logonButton);
-			this.Controls.Add(this._outputTextBox);
-			this.Controls.Add(this._customButton);
-			this.Controls.Add(this._standardButton);
-			this.Name = "PasswordDialogTestScreen";
-			this.Text = "PasswordDialogTestForm";
-			this.ResumeLayout(false);
-			this.PerformLayout();
+	// Static layout and named event wiring remain editable in the native Designer.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_layout.Name = "_layout";
+		_heading = new Label();
+		_heading.Name = "_heading";
+		_introduction = new Label();
+		_introduction.Name = "_introduction";
+		_actions = new FlowLayoutPanel();
+		_actions.Name = "_actions";
+		_standardButton = new Button();
+		_standardButton.Name = "_standardButton";
+		_customButton = new Button();
+		_customButton.Name = "_customButton";
+		_logonButton = new Button();
+		_logonButton.Name = "_logonButton";
+		_policySummary = new Label();
+		_policySummary.Name = "_policySummary";
+		_outputTextBox = new TextBox();
+		_layout.SuspendLayout();
+		SuspendLayout();
 
-		}
+		// The heading and instructions remain with this screen when it is detached.
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.AutoSize = true;
+		_heading.Dock = DockStyle.Fill;
+		_heading.Font = new Font(SystemFonts.MessageBoxFont.FontFamily, 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 10);
+		_heading.Text = "Password And Sign-in Dialogs";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 18);
+		_introduction.Text = "Explore standard, validated and asynchronous authentication dialogs. Only outcomes are shown here; entered passwords are never printed or stored.";
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
 
-		#endregion
+		_standardButton.AutoSize = true;
+		_standardButton.MinimumSize = new Size(110, 34);
+		_standardButton.Text = "Standard password";
+		_standardButton.UseVisualStyleBackColor = true;
+		_standardButton.Click += StandardButton_Click;
+		_customButton.AutoSize = true;
+		_customButton.MinimumSize = new Size(110, 34);
+		_customButton.Text = "Validated password";
+		_customButton.UseVisualStyleBackColor = true;
+		_customButton.Click += CustomButton_Click;
+		_logonButton.AutoSize = true;
+		_logonButton.MinimumSize = new Size(110, 34);
+		_logonButton.Text = "Simulated sign in";
+		_logonButton.UseVisualStyleBackColor = true;
+		_logonButton.Click += LogonButton_Click;
+		_actions.AutoSize = true;
+		_actions.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_actions.Dock = DockStyle.Fill;
+		_actions.Margin = Padding.Empty;
+		_actions.Controls.AddRange(new Control[] { _standardButton, _customButton, _logonButton });
+		_policySummary.AutoSize = true;
+		_policySummary.Dock = DockStyle.Fill;
+		_policySummary.Margin = new Padding(0, 8, 0, 8);
+		_policySummary.Text = "Custom policy: at least 5 characters, one uppercase letter, one lowercase letter and one digit; no whitespace. Local sign in accepts matching username/password; an empty username simulates an unavailable server.";
+		_outputTextBox.Name = "_outputTextBox";
+		_outputTextBox.Dock = DockStyle.Fill;
+		_outputTextBox.Multiline = true;
+		_outputTextBox.ReadOnly = true;
+		_outputTextBox.ScrollBars = ScrollBars.Both;
+		_outputTextBox.WordWrap = false;
+		_outputTextBox.BackColor = SystemColors.Window;
 
-		private System.Windows.Forms.Button _standardButton;
-		private System.Windows.Forms.Button _customButton;
-		private System.Windows.Forms.TextBox _outputTextBox;
-		private System.Windows.Forms.Button _logonButton;
+		// Content-sized command rows keep their complete buttons visible at smaller widths.
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_actions, 0, 2);
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.Controls.Add(_policySummary, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_layout.Controls.Add(_outputTextBox, 0, 4);
+		Font = SystemFonts.MessageBoxFont;
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		BackColor = SystemColors.Window;
+		Name = "PasswordDialogTestScreen";
+		Text = "Password And Sign-in Dialogs";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-

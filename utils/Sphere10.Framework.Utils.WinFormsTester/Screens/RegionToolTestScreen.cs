@@ -8,34 +8,58 @@
 
 using System;
 using System.Globalization;
-using System.IO;
+using System.Linq;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Explores installed culture and region information without changing the machine locale.</summary>
 public partial class RegionToolTestScreen : WinFormsApplicationScreen {
-	private readonly TextWriter _outputTextWriter;
-
+	/// <summary>Creates the table and filter without querying an external service.</summary>
 	public RegionToolTestScreen() {
 		InitializeComponent();
-		_outputTextWriter = new TextBoxWriter(_outputTextBox);
+		Disposables.Add(_heading.Font);
 	}
 
-	private void button1_Click(object sender, EventArgs e) {
-		foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures)) {
-			if (culture.IsNeutralCulture)
-				_outputTextWriter.WriteLine("NETRUAL {0}: {1}", culture.EnglishName, culture.TwoLetterISOLanguageName);
-			else
-				try {
-					var region = new RegionInfo(culture.LCID);
-					_outputTextWriter.WriteLine("{0}: {1} - {2} - {3}", region.DisplayName, region.Name, region.TwoLetterISORegionName, region.ThreeLetterISORegionName);
+	/// <summary>Populates the runtime culture catalog on first display.</summary>
+	protected override void OnLoad(EventArgs e) {
+		base.OnLoad(e);
+		if (!Tools.Runtime.IsDesignMode)
+			ShowCultures();
+	}
 
-				} catch (Exception error) {
-					_outputTextWriter.WriteLine("Error: {0}", error.ToDisplayString());
+	// Refresh and filtering share one deterministic catalog projection.
+	private void Button1_Click(object sender, EventArgs args) {
+		ShowCultures();
+	}
+
+	// Local filtering neither persists input nor changes a system preference.
+	private void FilterChanged(object sender, EventArgs args) {
+		ShowCultures();
+	}
+
+	// RegionInfo supports specific cultures; neutral languages intentionally have no region.
+	private void ShowCultures() {
+		var query = _filter.Text.Trim();
+		using (_cultureGrid.EnterRenderingScope()) {
+			_cultureGrid.Rows.Clear();
+			foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures).Where(culture => culture.Name.Length > 0).OrderBy(culture => culture.EnglishName)) {
+				var regionName = "Neutral culture";
+				var regionCode = string.Empty;
+				if (!culture.IsNeutralCulture) {
+					try {
+						var region = new RegionInfo(culture.Name);
+						regionName = region.EnglishName;
+						regionCode = region.TwoLetterISORegionName + " / " + region.ThreeLetterISORegionName;
+					} catch (ArgumentException) {
+						regionName = "No region information";
+					}
 				}
+				var text = culture.EnglishName + " " + culture.Name + " " + regionName + " " + regionCode;
+				if (query.Length == 0 || text.Contains(query, StringComparison.OrdinalIgnoreCase))
+					_cultureGrid.Rows.Add(culture.EnglishName, culture.Name, regionName, regionCode);
+			}
 		}
-
+		_summary.Text = $"{_cultureGrid.Rows.Count:N0} cultures shown · Region information is unavailable for neutral cultures.";
 	}
 }
-
-

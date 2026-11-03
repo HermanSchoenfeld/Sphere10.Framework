@@ -1,4 +1,4 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
@@ -6,109 +6,94 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester
-{
-    partial class ScreenA
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-        #region Windows Form Designer generated code
+partial class ScreenA {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private Panel _content;
+	private MonthCalendar _monthCalendar1;
+	private RadioButton _radioButton1;
+	private Label _selection;
+	private ToolStrip _toolStrip1;
+	private ToolStripLabel _toolStripLabel1;
+	private ToolStripButton _toolStripButton1;
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent() {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScreenA));
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
-            this.toolStrip1.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Location = new System.Drawing.Point(420, 109);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(85, 17);
-            this.radioButton1.TabIndex = 0;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "radioButton1";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // monthCalendar1
-            // 
-            this.monthCalendar1.Location = new System.Drawing.Point(176, 62);
-            this.monthCalendar1.Name = "monthCalendar1";
-            this.monthCalendar1.TabIndex = 1;
-            // 
-            // toolStrip1
-            // 
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripLabel1,
-            this.toolStripButton1});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(626, 25);
-            this.toolStrip1.TabIndex = 2;
-            this.toolStrip1.Text = "toolStrip1";
-            // 
-            // toolStripLabel1
-            // 
-            this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(86, 22);
-            this.toolStripLabel1.Text = "toolStripLabel1";
-            // 
-            // toolStripButton1
-            // 
-            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
-            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
-            this.toolStripButton1.Text = "toolStripButton1";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
-            // 
-            // ScreenA
-            // 
-            this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.monthCalendar1);
-            this.Controls.Add(this.radioButton1);
-            this.Name = "ScreenA";
-            this.Size = new System.Drawing.Size(626, 465);
-            this.ToolBar = this.toolStrip1;
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+	// The full navigation sample remains editable on its concrete Designer surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_content = new Panel();
+		_monthCalendar1 = new MonthCalendar();
+		_radioButton1 = new RadioButton();
+		_selection = new Label();
+		_toolStrip1 = new ToolStrip();
+		_toolStripLabel1 = new ToolStripLabel();
+		_toolStripButton1 = new ToolStripButton();
+		_layout.SuspendLayout();
+		_content.SuspendLayout();
+		SuspendLayout();
 
-        }
-
-        #endregion
-
-        private System.Windows.Forms.RadioButton radioButton1;
-        private System.Windows.Forms.MonthCalendar monthCalendar1;
-        private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripButton toolStripButton1;
-    }
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(20);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 3;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_content, 0, 2);
+		_heading.Text = "Calendar And Contextual Toolbar";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.Margin = new Padding(0, 0, 0, 12);
+		_introduction.Text = "Choose dates and compare the contextual toolbar while switching screens or undocking this instance. Its selection stays with this screen.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 16);
+		_content.Dock = DockStyle.Fill;
+		_monthCalendar1.Name = "monthCalendar1";
+		_monthCalendar1.Location = new Point(12, 12);
+		_monthCalendar1.DateChanged += SelectionChanged;
+		_radioButton1.Name = "radioButton1";
+		_radioButton1.Text = "Selection confirmed by this screen’s toolbar";
+		_radioButton1.AutoSize = true;
+		_radioButton1.Location = new Point(12, 200);
+		_radioButton1.CheckedChanged += SelectionChanged;
+		_selection.AutoSize = true;
+		_selection.Location = new Point(12, 240);
+		_selection.Text = "Choose a date range, then use Confirm selection in the toolbar.";
+		_toolStrip1.Name = "toolStrip1";
+		_toolStrip1.GripStyle = ToolStripGripStyle.Hidden;
+		_toolStrip1.Items.AddRange(new ToolStripItem[] { _toolStripLabel1, _toolStripButton1 });
+		_toolStripLabel1.Text = "Calendar tools";
+		_toolStripButton1.Text = "Confirm selection";
+		_toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+		_toolStripButton1.Click += ToolStripButton1_Click;
+		_content.Controls.Add(_monthCalendar1);
+		_content.Controls.Add(_radioButton1);
+		_content.Controls.Add(_selection);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Name = "ScreenA";
+		Size = new Size(1000, 720);
+		Controls.Add(_layout);
+		Controls.Add(_toolStrip1);
+		ScreenToolBar = _toolStrip1;
+		_content.ResumeLayout(false);
+		_content.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
+	}
 }
-
-

@@ -8,15 +8,19 @@
 
 namespace Sphere10.Framework.Utils.WinFormsTester.Wizard;
 
+/// <summary>Displays the final values from the current wizard session.</summary>
 public partial class ConfirmScreen : DemoWizardScreenBase {
+	/// <summary>Creates the complete designable page without activating a wizard.</summary>
 	public ConfirmScreen() {
 		InitializeComponent();
+		Disposables.Add(_heading.Font);
 	}
 
+	// Restore the retained model when this page is presented again.
 	protected override void CopyModelToUI() {
 		if (Wizard == null)
 			return;
-		label3.Text = Model.Name;
-		label4.Text = Model.Age?.ToString() ?? string.Empty;
+		_label3.Text = Model.Name;
+		_label4.Text = Model.Age?.ToString() ?? string.Empty;
 	}
 }

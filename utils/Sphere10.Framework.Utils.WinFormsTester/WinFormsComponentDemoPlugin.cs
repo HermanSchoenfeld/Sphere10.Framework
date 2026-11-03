@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Utils.WinFormsTester.Screens;
 using Sphere10.Framework.Windows.Forms;
@@ -23,7 +24,10 @@ public static class WinFormsComponentDemoPlugin {
 		// Native definitions own their images independently of the workspace plugin.
 		plugin
 			.WithName("Component demonstrations")
-			.AddServices(services => services.AddSingleton<DemoLogOutputLifetime>())
+			.AddServices(services => {
+				services.AddSingleton<DemoLogOutputLifetime>();
+				services.TryAddTransient<ApplicationBanner>();
+			})
 			.AddInitializer<DemoComponentInitializer>()
 			.AddInitializer<DemoIntegrationInitializer>()
 			.AddFinalizer<DemoComponentFinalizer>()
@@ -31,6 +35,7 @@ public static class WinFormsComponentDemoPlugin {
 			.AddBlock(block => block
 				.WithName("Controls")
 				.WithImage32x32((Image)Resources.Tests32x32.Clone())
+				.AddScreen<ControlCatalogScreen>("Control catalog")
 				.AddScreen<EnumComboScreen>("Enum Choices")
 				.AddScreen<FlagsCheckedBoxListScreen>("Flag Choices")
 				.AddScreen<CustomComboBoxScreen>("Custom Dropdown")
@@ -41,7 +46,7 @@ public static class WinFormsComponentDemoPlugin {
 				.AddScreen<ExpandoTesterScreen>("Expandable Panels")
 				.AddScreen<PlaceHolderTestScreen>("Placeholder")
 				.AddScreen<DraggableControlsTestScreen>("Draggable Controls")
-				.AddScreen<RegionToolTestScreen>("Control Regions")
+				.AddScreen<RegionToolTestScreen>("Cultures And Regions")
 				.AddScreen<AppointmentBookScreen>("Appointment Book")
 				.AddScreen<MiscTestScreen>("Miscellaneous Controls")
 				.AddScreen<DecayGaugeScreen>("Decay Gauge")
@@ -52,6 +57,7 @@ public static class WinFormsComponentDemoPlugin {
 				.AddScreen<ChartTestScreen>("Graph And Bar Charts")
 				.AddScreen<TelemetryChartTestScreen>("Live Telemetry")
 				.AddMenuItem("Input", (Image)Resources.Tests32x32.Clone(), configure: menu => menu
+					.AddShowScreenItem<ControlCatalogScreen>("All controls by class name", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<EnumComboScreen>("Enum Choices", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<FlagsCheckedBoxListScreen>("Flag Choices", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<CustomComboBoxScreen>("Custom Dropdown", (Image)Resources.Generic16x16.Clone())
@@ -64,7 +70,7 @@ public static class WinFormsComponentDemoPlugin {
 					.AddShowScreenItem<ExpandoTesterScreen>("Expandable Panels", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<PlaceHolderTestScreen>("Placeholder", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<DraggableControlsTestScreen>("Draggable Controls", (Image)Resources.Generic16x16.Clone())
-					.AddShowScreenItem<RegionToolTestScreen>("Control Regions", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<RegionToolTestScreen>("Cultures And Regions", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<AppointmentBookScreen>("Appointment Book", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<MiscTestScreen>("Miscellaneous Controls", (Image)Resources.Generic16x16.Clone())
 				)
@@ -84,6 +90,7 @@ public static class WinFormsComponentDemoPlugin {
 				.WithName("Data And Collections")
 				.WithImage32x32((Image)Resources.Tests232x32.Clone())
 				.AddScreen<VisualGridTestScreen>("Visual Grid")
+				.AddScreen<SourceGridGalleryScreen>("SourceGrid Engine")
 				.AddScreen<ObjectSpaceScreen>("ObjectSpace")
 				.AddScreen<TransactionalCollectionScreen>("Transactional Collections")
 				.AddScreen<ObservableCollectionsTestScreen>("Observable Collections")
@@ -92,6 +99,9 @@ public static class WinFormsComponentDemoPlugin {
 				.AddMenuItem("Data Editing", (Image)Resources.Tests32x32.Clone(), configure: menu => menu
 					.AddShowScreenItem<VisualGridTestScreen>("Visual Grid", (Image)Resources.Database16x16.Clone())
 					.AddShowScreenItem<ObjectSpaceScreen>("ObjectSpace", (Image)Resources.ObjectSpace16x16.Clone())
+				)
+				.AddMenuItem("SourceGrid", (Image)Resources.Tests32x32.Clone(), configure: menu => menu
+					.AddShowScreenItem<SourceGridGalleryScreen>("Raw Grid Engine Gallery", (Image)Resources.Database16x16.Clone())
 				)
 				.AddMenuItem("Collections", (Image)Resources.Tests232x32.Clone(), configure: menu => menu
 					.AddShowScreenItem<TransactionalCollectionScreen>("Transactional Collections", (Image)Resources.Database16x16.Clone())
@@ -108,7 +118,7 @@ public static class WinFormsComponentDemoPlugin {
 				.AddScreen<ConnectionPanelTestScreen>("Database Connection Panel")
 				.AddScreen<ConnectionBarTestScreen>("Database Connection Bar")
 				.AddScreen<HooksScreen>("Input Hooks")
-				.AddScreen<TestArtificialKeysScreen>("Simulated Input")
+				.AddScreen<TestArtificialKeysScreen>("Artificial Database Keys")
 				.AddScreen<TestSoundsScreen>("Sounds")
 				.AddScreen<ApplicationServicesTestScreen>("Application Services")
 				.AddMenuItem("Connections", (Image)Resources.Menu32x32.Clone(), configure: menu => menu
@@ -119,7 +129,7 @@ public static class WinFormsComponentDemoPlugin {
 				)
 				.AddMenuItem("Windows Integration", (Image)Resources.Tests32x32.Clone(), configure: menu => menu
 					.AddShowScreenItem<HooksScreen>("Input Hooks", (Image)Resources.Generic16x16.Clone())
-					.AddShowScreenItem<TestArtificialKeysScreen>("Simulated Input", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<TestArtificialKeysScreen>("Artificial Database Keys", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<TestSoundsScreen>("Sounds", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<ApplicationServicesTestScreen>("Application Services", (Image)Resources.Settings16x16.Clone())
 				)

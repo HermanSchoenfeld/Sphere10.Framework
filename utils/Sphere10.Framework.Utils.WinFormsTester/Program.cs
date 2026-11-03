@@ -58,10 +58,9 @@ static class Program {
 
 		Sphere10Framework.Instance
 			.BuildWinFormsApplication()
+			.UseAssemblyInfo()
 			.UseMainForm<BlockMainForm>(form => {
 				form.ScreenMode = ScreenMode.MultiView;
-				form.Shown += (_, _) => WinFormsDemoPlugin.ConfigureApplicationCommands(
-					(WinFormsApplication)Sphere10Framework.Instance.ServiceProvider.GetRequiredService<IWinFormsApplication>());
 			})
 			.UseMainFormSettings()
 			.AddServices(services => {

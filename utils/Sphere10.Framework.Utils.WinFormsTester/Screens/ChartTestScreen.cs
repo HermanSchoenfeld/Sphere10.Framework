@@ -8,8 +8,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Linq;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Utils.WinFormsTester.Lifecycle;
 using Sphere10.Framework.Windows.Forms;
 
@@ -18,7 +21,7 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 public partial class ChartTestScreen : WinFormsApplicationScreen {
 	public const int SampleCapacity = 120;
 	public const int InitialSamples = 48;
-	private static readonly Color[] SeriesColors = { Color.FromArgb(34, 112, 177), Color.FromArgb(221, 117, 42), Color.FromArgb(36, 151, 126) };
+	private static readonly Color[] _seriesColors = { Color.FromArgb(34, 112, 177), Color.FromArgb(221, 117, 42), Color.FromArgb(36, 151, 126) };
 	private readonly List<GraphChartPoint> _first = new();
 	private readonly List<GraphChartPoint> _second = new();
 	private readonly List<GraphChartPoint> _third = new();
@@ -32,15 +35,38 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		InitializeComponent();
 	}
 
-	protected override void OnLoad(EventArgs args) {
-		base.OnLoad(args);
+	public string SelectedScenario {
+		get {
+			return _scenario.SelectedItem as string;
+		}
+	}
+
+	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public override ChartTestScreenSettings ScreenSettings {
+		get {
+			return (ChartTestScreenSettings)base.ScreenSettings;
+		}
+	}
+
+	public void SelectScenario(string scenario) {
+		Guard.Argument(_scenario.Items.Contains(scenario), nameof(scenario), "Choose a scenario from the demonstration catalog.");
+		_scenario.SelectedItem = scenario;
+	}
+
+	protected override void InitializeUIPrimingData() {
+		base.InitializeUIPrimingData();
 		if (_initialized || _finalized || Tools.Runtime.IsDesignMode)
 			return;
 		_initialized = true;
 		_logOutputs = DemoLogOutputLifetime.RegisterCurrent(this, _line.LogOutputBehavior, _area.LogOutputBehavior, _columns.LogOutputBehavior, _bars.LogOutputBehavior);
 		_ready = true;
-		_interval.SelectedIndex = 1;
-		_scenario.SelectedIndex = 0;
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
+			_interval.SelectedIndex = 1;
+			_scenario.SelectedIndex = 0;
+			if (HasSettings)
+				ApplyScreenPreferences();
+		}
 		UpdateTimer();
 	}
 
@@ -54,6 +80,18 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		base.OnDestroyScreen();
 	}
 
+	protected override void OnVisibleChanged(EventArgs args) {
+		base.OnVisibleChanged(args);
+		UpdateTimer();
+	}
+
+	/// <summary>Applies accepted chart preferences without replacing another screen's values.</summary>
+	protected override void CopyModelToUI() {
+		base.CopyModelToUI();
+		if (HasSettings && _ready && !IsDisposed && !Disposing)
+			ApplyScreenPreferences();
+	}
+
 	private void StopCapture() {
 		if (_finalized)
 			return;
@@ -65,16 +103,51 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 			_timer.Tick -= TimerTick;
 	}
 
-	public string SelectedScenario => _scenario.SelectedItem as string;
-
-	public void SelectScenario(string scenario) {
-		Guard.Argument(_scenario.Items.Contains(scenario), nameof(scenario), "Choose a scenario from the demonstration catalog.");
-		_scenario.SelectedItem = scenario;
+	private void TimerTick(object sender, EventArgs args) {
+		AddSample();
 	}
 
-	protected override void OnVisibleChanged(EventArgs args) {
-		base.OnVisibleChanged(args);
+	private void AddSampleClicked(object sender, EventArgs args) {
+		AddSample();
+	}
+
+	private void ResetClicked(object sender, EventArgs args) {
+		ResetSamples();
+	}
+
+	private void LiveChanged(object sender, EventArgs args) {
 		UpdateTimer();
+	}
+
+	private void UpdateTimer() {
+		if (!_finalized && _timer != null)
+			_timer.Enabled = _ready && !IsDisposed && !Tools.Runtime.IsDesignMode && Visible && _live.Checked;
+	}
+
+	private void ScenarioChanged(object sender, EventArgs args) {
+		if (_ready) {
+			ResetSamples();
+			SaveScreenPreferences();
+		}
+	}
+
+	private void GapsChanged(object sender, EventArgs args) {
+		if (_ready) {
+			ResetSamples();
+			SaveScreenPreferences();
+		}
+	}
+
+	private void ResetSamples() {
+		_first.Clear();
+		_second.Clear();
+		_third.Clear();
+		_sample = 0;
+		ConfigureScenario();
+		ApplyPresentation();
+		for (var index = 0; index < InitialSamples; index++)
+			AddSample(false);
+		RenderSamples();
 	}
 
 	private void AddSample(bool render = true) {
@@ -128,10 +201,10 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 			_ => new[] { "Web Requests", "API Calls", "Background Jobs" }
 		};
 		var data = new[] { _first.ToArray(), _second.ToArray(), _third.ToArray() };
-		_line.SetSeries(data.Select((points, index) => new GraphChartSeries(names[index], points, SeriesColors[index])).ToArray());
-		_area.SetSeries(data.Select((points, index) => new GraphChartSeries(names[index], points, Color.FromArgb(105, SeriesColors[index]))).ToArray());
+		_line.SetSeries(data.Select((points, index) => new GraphChartSeries(names[index], points, _seriesColors[index])).ToArray());
+		_area.SetSeries(data.Select((points, index) => new GraphChartSeries(names[index], points, Color.FromArgb(105, _seriesColors[index]))).ToArray());
 		var categories = data.Select((points, index) => new GraphChartSeries(names[index], points.TakeLast(6)
-			.Select((point, category) => new GraphChartPoint(category, point.Y, PeriodLabel((int)point.X))).ToArray(), SeriesColors[index])).ToArray();
+			.Select((point, category) => new GraphChartPoint(category, point.Y, PeriodLabel((int)point.X))).ToArray(), _seriesColors[index])).ToArray();
 		_columns.SetSeries(categories);
 		_bars.SetSeries(categories);
 		ApplyPresentation();
@@ -139,13 +212,6 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		var zeros = data.Sum(points => points.Count(point => point.Y == 0));
 		_status.Text = $"{SelectedScenario}  •  {_sample:N0} Captured  •  {_first.Count:N0} / {SampleCapacity} Retained Per Series  •  {missing} Missing  •  {zeros} Real Zeros";
 	}
-
-	private string PeriodLabel(int index) => SelectedScenario switch {
-		"Quarterly Revenue" => $"Q{index % 4 + 1} '{21 + index / 4:00}",
-		"Signed Cash Flow" => new DateTime(2024, 1, 1).AddMonths(Math.Max(0, index) % 120).ToString("MMM yy"),
-		"Missing Observations" => "Day " + (index + 1),
-		_ => TimeSpan.FromMinutes(9 * 60 + index).ToString(@"hh\:mm")
-	};
 
 	private void ConfigureScenario() {
 		_description.Text = SelectedScenario switch {
@@ -157,10 +223,68 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		_line.XLabelFormatter = _area.XLabelFormatter = value => PeriodLabel(Math.Max(0, (int)Math.Round(value)));
 	}
 
+	private string PeriodLabel(int index) {
+		return SelectedScenario switch {
+			"Quarterly Revenue" => $"Q{index % 4 + 1} '{21 + index / 4:00}",
+			"Signed Cash Flow" => new DateTime(2024, 1, 1).AddMonths(Math.Max(0, index) % 120).ToString("MMM yy"),
+			"Missing Observations" => "Day " + (index + 1),
+			_ => TimeSpan.FromMinutes(9 * 60 + index).ToString(@"hh\:mm")
+		};
+	}
+
+	private void PresentationChanged(object sender, EventArgs args) {
+		if (_ready) {
+			ApplyPresentation();
+			SaveScreenPreferences();
+		}
+	}
+
+	private void IntervalChanged(object sender, EventArgs args) {
+		if (_ready && _interval.SelectedIndex >= 0)
+			_timer.Interval = new[] { 250, 500, 1000, 2000 }[_interval.SelectedIndex];
+		SaveScreenPreferences();
+	}
+
+	private void ClearClicked(object sender, EventArgs args) {
+		_live.Checked = false;
+		_first.Clear();
+		_second.Clear();
+		_third.Clear();
+		_sample = 0;
+		foreach (var chart in new GraphChart[] { _line, _area, _columns, _bars })
+			chart.Clear();
+		_status.Text = "Capture Cleared  •  All Four Charts Have No Data  •  Add A Sample Or Reset Capture To Begin";
+	}
+
+	// One ordinary value object owns this screen's presentation, not its generated samples.
+	private void ApplyScreenPreferences() {
+		var values = ScreenSettings;
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
+			_scenario.SelectedItem = values.Scenario;
+			_interval.SelectedIndex = values.SampleIntervalMilliseconds switch {
+				250 => 0,
+				1000 => 2,
+				2000 => 3,
+				_ => 1
+			};
+			_gaps.Checked = values.ShowGaps;
+			_legends.Checked = values.ShowLegends;
+			_labels.Checked = values.ShowLabels;
+			_tooltips.Checked = values.ShowTooltips;
+			_fixedRange.Checked = values.FixedRanges;
+			ApplyPresentation();
+		}
+	}
+
 	private void ApplyPresentation() {
 		var currency = SelectedScenario is "Quarterly Revenue" or "Signed Cash Flow";
 		var units = currency ? "Amount (USD)" : SelectedScenario == "Missing Observations" ? "Rainfall (mm)" : "Requests / Minute";
-		var maximum = SelectedScenario switch { "Quarterly Revenue" => 160000D, "Signed Cash Flow" => 30000D, "Missing Observations" => 25D, _ => 220D };
+		var maximum = SelectedScenario switch {
+			"Quarterly Revenue" => 160000D,
+			"Signed Cash Flow" => 30000D,
+			"Missing Observations" => 25D,
+			_ => 220D
+		};
 		foreach (var chart in new GraphChart[] { _line, _area, _columns, _bars }) {
 			chart.ShowLegend = _legends.Checked;
 			chart.YValueFormat = currency ? "C0" : SelectedScenario == "Missing Observations" ? "0.0" : "N0";
@@ -182,44 +306,62 @@ public partial class ChartTestScreen : WinFormsApplicationScreen {
 		}
 	}
 
-	private void ResetSamples() {
-		_first.Clear();
-		_second.Clear();
-		_third.Clear();
-		_sample = 0;
-		ConfigureScenario();
-		ApplyPresentation();
-		for (var index = 0; index < InitialSamples; index++)
-			AddSample(false);
-		RenderSamples();
+	// Only deliberate UI changes mark values for the existing accepted-close persistence.
+	private void SaveScreenPreferences() {
+		if (!HasSettings || Updating || !_ready)
+			return;
+		var values = ScreenSettings;
+		values.Scenario = SelectedScenario;
+		values.SampleIntervalMilliseconds = _timer.Interval;
+		values.ShowGaps = _gaps.Checked;
+		values.ShowLegends = _legends.Checked;
+		values.ShowLabels = _labels.Checked;
+		values.ShowTooltips = _tooltips.Checked;
+		values.FixedRanges = _fixedRange.Checked;
+		MarkSettingsChanged();
 	}
 
-	private void UpdateTimer() {
-		if (!_finalized && _timer != null)
-			_timer.Enabled = _ready && !IsDisposed && !Tools.Runtime.IsDesignMode && Visible && _live.Checked;
-	}
+	#region Inner Types
 
-	private void TimerTick(object sender, EventArgs args) => AddSample();
-	private void AddSampleClicked(object sender, EventArgs args) => AddSample();
-	private void ResetClicked(object sender, EventArgs args) => ResetSamples();
-	private void LiveChanged(object sender, EventArgs args) => UpdateTimer();
-	private void ScenarioChanged(object sender, EventArgs args) { if (_ready) ResetSamples(); }
-	private void GapsChanged(object sender, EventArgs args) { if (_ready) ResetSamples(); }
-	private void PresentationChanged(object sender, EventArgs args) { if (_ready) ApplyPresentation(); }
+	/// <summary>Remembers the graph-and-bar example's scenario and presentation choices.</summary>
+	[UserEditable]
+	public class ChartTestScreenSettings : SettingsObject {
+		/// <summary>The generated dataset used by all four charts.</summary>
+		[DefaultValue("Service Activity")]
+		[AllowedValues("Service Activity", "Quarterly Revenue", "Signed Cash Flow", "Missing Observations")]
+		public string Scenario { get; set; } = "Service Activity";
 
-	private void IntervalChanged(object sender, EventArgs args) {
-		if (_ready && _interval.SelectedIndex >= 0)
-			_timer.Interval = new[] { 250, 500, 1000, 2000 }[_interval.SelectedIndex];
-	}
+		/// <summary>The interval between simulated observations.</summary>
+		[DefaultValue(500)]
+		[AllowedValues(250, 500, 1000, 2000), DisplayName("Sample interval (ms)")]
+		public int SampleIntervalMilliseconds { get; set; } = 500;
 
-	private void ClearClicked(object sender, EventArgs args) {
-		_live.Checked = false;
-		_first.Clear();
-		_second.Clear();
-		_third.Clear();
-		_sample = 0;
-		foreach (var chart in new GraphChart[] { _line, _area, _columns, _bars })
-			chart.Clear();
-		_status.Text = "Capture Cleared  •  All Four Charts Have No Data  •  Add A Sample Or Reset Capture To Begin";
+		/// <summary>Whether unavailable observations are retained as gaps.</summary>
+		[DefaultValue(true)]
+		[DisplayName("Include missing observations")]
+		public bool ShowGaps { get; set; } = true;
+
+		/// <summary>Whether charts display series legends.</summary>
+		[DefaultValue(true)]
+		[DisplayName("Show legends")]
+		public bool ShowLegends { get; set; } = true;
+
+		/// <summary>Whether the bar and column charts display value labels.</summary>
+		[DefaultValue(false)]
+		[DisplayName("Show value labels")]
+		public bool ShowLabels {
+			get; set;
+		}
+
+		/// <summary>Whether the native chart offers point details.</summary>
+		[DefaultValue(true)]
+		[DisplayName("Show tooltips")]
+		public bool ShowTooltips { get; set; } = true;
+
+		/// <summary>Whether each scenario retains its comparable fixed scale.</summary>
+		[DefaultValue(true)]
+		[DisplayName("Use fixed ranges")]
+		public bool FixedRanges { get; set; } = true;
 	}
+	#endregion
 }

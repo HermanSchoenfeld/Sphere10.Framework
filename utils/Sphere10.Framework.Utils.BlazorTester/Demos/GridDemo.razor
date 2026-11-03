@@ -59,7 +59,7 @@
 	</select></label>
 	<label><input type="checkbox" checked="@_stretchLiveColumns" @onchange="LiveStretchChanged" /> Stretch Name and Details</label>
 </div>
-<p>Use the compact paging menu to choose Single, Auto or Manual. Settings edits the same grid values shown in Screen Options. Drag a header edge to give it a manual width,
+<p>Use the compact paging menu to choose Single, Auto or Manual. Settings edits the same grid values shown in Screen Options; accepted changes save through the screen’s user settings. Drag a header edge to give it a manual width,
 	then page, search or publish a snapshot: that width remains. Name and Details are the preferred stretch columns.</p>
 <BlazorGrid TItem="GridDemoSnapshotDataSource.Row" @ref="_liveGrid" Caption="Live Samples" DataSource="_liveDataSource"
 	Columns="_liveColumns" PageSize="12" PageSizeOptions="_pageSizeOptions" PageMode="BlazorGridPageMode.Auto" Height="360"

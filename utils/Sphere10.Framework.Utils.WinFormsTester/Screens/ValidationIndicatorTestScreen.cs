@@ -7,65 +7,74 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.IO;
 using System.Threading;
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
+/// <summary>Demonstrates manual states and completed asynchronous validation without worker-thread UI access.</summary>
 public partial class ValidationIndicatorTestScreen : WinFormsApplicationScreen {
-	private TextWriter _outputTextWriter;
+	private string _validationInput = string.Empty;
 
+	/// <summary>Creates both validation paths without starting a validation request.</summary>
 	public ValidationIndicatorTestScreen() {
 		InitializeComponent();
-		_outputTextWriter = new TextBoxWriter(_outputTextBox);
+		Disposables.Add(_heading.Font);
 	}
 
-	private void _validButton_Click(object sender, EventArgs e) {
+	// Manual state buttons expose the same real control state machine independently of validation.
+	private void ValidButton_Click(object sender, EventArgs args) {
 		_validationIndicator1.State = ValidationState.Valid;
 	}
 
-	private void _errorButton_Click(object sender, EventArgs e) {
+	// An error has its own visible state and tooltip semantics.
+	private void ErrorButton_Click(object sender, EventArgs args) {
 		_validationIndicator1.State = ValidationState.Error;
 	}
 
-	private void _validatingButton_Click(object sender, EventArgs e) {
+	// The pending state uses the control's actual loading indicator.
+	private void ValidatingButton_Click(object sender, EventArgs args) {
 		_validationIndicator1.State = ValidationState.Validating;
 	}
 
-	private void _disabledButton_Click(object sender, EventArgs e) {
-		_validationIndicator1.State =
-			ValidationState.Disabled;
+	// Disabled state clears the current validation presentation.
+	private void DisabledButton_Click(object sender, EventArgs args) {
+		_validationIndicator1.State = ValidationState.Disabled;
 	}
 
-	private void _textBox_TextChanged(object sender, EventArgs e) {
+	// Capture text on its native owner before the control invokes PerformValidation on a worker.
+	private void TextBox_TextChanged(object sender, EventArgs args) {
+		Volatile.Write(ref _validationInput, _textBox.Text);
 		_validationIndicator2.RunValidation();
 	}
 
-	private void _validationIndicator2_PerformValidation(ValidationIndicator arg1, ValidationIndicatorEvent arg2) {
-		var input = _textBox.Text;
-		Thread.Sleep(1000);
-		if (input == "Herman") {
-			arg2.ValidationResult = true;
-			arg2.ValidationMessage = "Success";
-		} else {
-			arg2.ValidationResult = false;
-			arg2.ValidationMessage = string.Format("'{0}' does not match 'Herman'", input);
-		}
-		_outputTextWriter.WriteLine("{0}: PerformedValidation on input '{1}'", arg1.Name, input);
+	// The callback reads only the immutable snapshot and writes the supplied result object.
+	private void ValidationIndicator2_PerformValidation(ValidationIndicator control, ValidationIndicatorEvent args) {
+		var input = Volatile.Read(ref _validationInput);
+		Thread.Sleep(250);
+		args.ValidationResult = string.Equals(input, "Herman", StringComparison.Ordinal);
+		args.ValidationMessage = args.ValidationResult == true ? "The input matches Herman." : "Enter Herman to satisfy this demonstration rule.";
 	}
 
-	private void _validationIndicator1_ValidationStateChanged(ValidationIndicator arg1, ValidationState arg2, ValidationState arg3) {
-		_outputTextWriter.WriteLine("{0}: State Changed {1} -> {2}", arg1.Name, arg2, arg3);
+	// State completion returns to the native dispatcher before touching the output.
+	private void ValidationIndicator1_ValidationStateChanged(ValidationIndicator control, ValidationState previous, ValidationState current) {
+		RecordState(control, previous, current);
 	}
 
-	private void _validationIndicator2_ValidationStateChanged(ValidationIndicator arg1, ValidationState arg2, ValidationState arg3) {
-		_outputTextWriter.WriteLine("{0}: State Changed {1} -> {2}", arg1.Name, arg2, arg3);
+	// The input example shares the same completed-state reporting path.
+	private void ValidationIndicator2_ValidationStateChanged(ValidationIndicator control, ValidationState previous, ValidationState current) {
+		RecordState(control, previous, current);
 	}
 
-	private void _enableDisableButton_Click(object sender, EventArgs e) {
+	// Ignore delivery to a screen whose native lifetime has ended.
+	private void RecordState(ValidationIndicator control, ValidationState previous, ValidationState current) {
+		if (!IsDisposed && !Disposing)
+			_outputTextBox.AppendText($"{control.Name}: {previous} → {current}" + Environment.NewLine);
+	}
+
+	// Availability is separate from the last validation result.
+	private void EnableDisableButton_Click(object sender, EventArgs args) {
 		_validationIndicator2.Enabled = !_validationIndicator2.Enabled;
+		_enableDisableButton.Text = _validationIndicator2.Enabled ? "Disable validator" : "Enable validator";
 	}
 }
-
-

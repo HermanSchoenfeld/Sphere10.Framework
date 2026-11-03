@@ -1,127 +1,138 @@
-﻿// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
+// Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Sphere10.Framework.Utils.WinFormsTester {
-    partial class ConnectionBarTestScreen {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+namespace Sphere10.Framework.Utils.WinFormsTester;
 
-		#region Windows Form Designer generated code
+partial class ConnectionBarTestScreen {
+	private TableLayoutPanel _layout;
+	private Label _heading;
+	private Label _introduction;
+	private FlowLayoutPanel _commands;
+	private Label _status;
+	private DatabaseConnectionBar _databaseConnectionBar;
+	private Button _testConnectionButton;
+	private Button _saveButton;
+	private Button _cancelButton;
+	private LoadingCircle _loadingCircle;
+	private TableLayoutPanel _content;
+	private TextBox _summary;
 
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent() {
-            this._testConnectionButton = new System.Windows.Forms.Button();
-            this._loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this._databaseConnectionBar = new Sphere10.Framework.Windows.Forms.DatabaseConnectionBar();
-            this.SuspendLayout();
-            // 
-            // _testConnectionButton
-            // 
-            this._testConnectionButton.Location = new System.Drawing.Point(83, 169);
-            this._testConnectionButton.Name = "_testConnectionButton";
-            this._testConnectionButton.Size = new System.Drawing.Size(124, 23);
-            this._testConnectionButton.TabIndex = 1;
-            this._testConnectionButton.Text = "Test Connection";
-            this._testConnectionButton.UseVisualStyleBackColor = true;
-            this._testConnectionButton.Click += new System.EventHandler(this._testConnectionButton_Click);
-            // 
-            // _loadingCircle
-            // 
-            this._loadingCircle.Active = false;
-            this._loadingCircle.BackColor = System.Drawing.Color.Transparent;
-            this._loadingCircle.Color = System.Drawing.Color.DarkGray;
-            this._loadingCircle.InnerCircleRadius = 8;
-            this._loadingCircle.Location = new System.Drawing.Point(213, 169);
-            this._loadingCircle.Name = "_loadingCircle";
-            this._loadingCircle.NumberSpoke = 10;
-            this._loadingCircle.OuterCircleRadius = 10;
-            this._loadingCircle.RotationSpeed = 100;
-            this._loadingCircle.Size = new System.Drawing.Size(41, 31);
-            this._loadingCircle.SpokeThickness = 4;
-            this._loadingCircle.TabIndex = 2;
-            this._loadingCircle.Text = "loadingCircle1";
-            this._loadingCircle.Visible = false;
-            // 
-            // button1
-            // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(689, 223);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(94, 23);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "&Cancel";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // button2
-            // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(589, 223);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(94, 23);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "&Save";
-            this.button2.UseVisualStyleBackColor = true;
-            // 
-            // _databaseConnectionBar
-            // 
-            this._databaseConnectionBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._databaseConnectionBar.ArtificialKeysFile = null;
-            this._databaseConnectionBar.Location = new System.Drawing.Point(12, 12);
-            this._databaseConnectionBar.Margin = new System.Windows.Forms.Padding(0);
-            this._databaseConnectionBar.MinimumSize = new System.Drawing.Size(500, 40);
-            this._databaseConnectionBar.Name = "_databaseConnectionBar";
-            this._databaseConnectionBar.SelectedDBMSType = Sphere10.Framework.Data.DBMSType.SQLServer;
-            this._databaseConnectionBar.Size = new System.Drawing.Size(771, 40);
-            this._databaseConnectionBar.TabIndex = 5;
-            // 
-            // ConnectionBarTestForm
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(795, 258);
-            this.Controls.Add(this._databaseConnectionBar);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this._loadingCircle);
-            this.Controls.Add(this._testConnectionButton);
-            this.Name = "ConnectionBarTestScreen";
-            this.Text = "Connection Settings";
-            this.ResumeLayout(false);
+	// Keep the complete static demonstration editable on the native design surface.
+	private void InitializeComponent() {
+		_layout = new TableLayoutPanel();
+		_heading = new Label();
+		_introduction = new Label();
+		_commands = new FlowLayoutPanel();
+		_status = new Label();
+		_databaseConnectionBar = new DatabaseConnectionBar();
+		_testConnectionButton = new Button();
+		_saveButton = new Button();
+		_cancelButton = new Button();
+		_loadingCircle = new LoadingCircle();
+		_content = new TableLayoutPanel();
+		_summary = new TextBox();
+		_layout.SuspendLayout();
+		_commands.SuspendLayout();
+		SuspendLayout();
 
-		}
+		_layout.Name = "_layout";
+		_heading.Name = "_heading";
+		_introduction.Name = "_introduction";
+		_commands.Name = "_commands";
+		_status.Name = "_status";
+		_databaseConnectionBar.Name = "_databaseConnectionBar";
+		_loadingCircle.Name = "_loadingCircle";
+		_content.Name = "_content";
 
-		#endregion
+		_layout.Dock = DockStyle.Fill;
+		_layout.Padding = new Padding(16);
+		_layout.ColumnCount = 1;
+		_layout.RowCount = 5;
+		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		_heading.Text = "Database connection bar";
+		_heading.AutoSize = true;
+		_heading.Font = new Font("Segoe UI", 17F, FontStyle.Bold);
+		_heading.ForeColor = Color.FromArgb(34, 61, 91);
+		_heading.Margin = new Padding(0, 0, 0, 8);
+		_introduction.Text = "Configure a provider, test its connection explicitly, then accept or restore the local editor draft. No database is contacted when this screen opens.";
+		_introduction.AutoSize = true;
+		_introduction.Dock = DockStyle.Fill;
+		_introduction.Margin = new Padding(0, 0, 0, 12);
+		_commands.Dock = DockStyle.Fill;
+		_commands.AutoSize = true;
+		_commands.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+		_commands.Margin = new Padding(0, 0, 0, 10);
+		_status.AutoSize = true;
+		_status.Dock = DockStyle.Fill;
+		_status.Margin = new Padding(0, 10, 0, 0);
+		_status.Text = "Ready.";
+		_testConnectionButton.Text = "Test connection";
+		_testConnectionButton.Name = "_testConnectionButton";
+		_testConnectionButton.AutoSize = true;
+		_testConnectionButton.MinimumSize = new Size(96, 30);
+		_testConnectionButton.Click += _testConnectionButton_Click;
+		_commands.Controls.Add(_testConnectionButton);
+		_saveButton.Text = "Accept draft";
+		_saveButton.Name = "_saveButton";
+		_saveButton.AutoSize = true;
+		_saveButton.MinimumSize = new Size(96, 30);
+		_saveButton.Click += AcceptClicked;
+		_commands.Controls.Add(_saveButton);
+		_cancelButton.Text = "Restore draft";
+		_cancelButton.Name = "_cancelButton";
+		_cancelButton.AutoSize = true;
+		_cancelButton.MinimumSize = new Size(96, 30);
+		_cancelButton.Click += RestoreClicked;
+		_commands.Controls.Add(_cancelButton);
+		_content.Dock = DockStyle.Fill;
+		_content.ColumnCount = 1;
+		_content.RowCount = 2;
+		_content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+		_content.RowStyles.Add(new RowStyle(SizeType.Absolute, 64));
+		_content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+		_databaseConnectionBar.Dock = DockStyle.Fill;
+		_content.Controls.Add(_databaseConnectionBar, 0, 0);
+		_content.Controls.Add(_summary, 0, 1);
+		_loadingCircle.Size = new Size(28, 28);
+		_loadingCircle.Visible = false;
+		_commands.Controls.Add(_loadingCircle);
+		_summary.Dock = DockStyle.Fill;
+		_summary.Multiline = true;
+		_summary.ReadOnly = true;
+		_summary.ScrollBars = ScrollBars.Both;
+		_summary.WordWrap = false;
+		_summary.Name = "_summary";
 
-        private System.Windows.Forms.Button _testConnectionButton;
-		private Sphere10.Framework.Windows.Forms.LoadingCircle _loadingCircle;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Button button2;
-        private Sphere10.Framework.Windows.Forms.DatabaseConnectionBar _databaseConnectionBar;
+		_layout.Controls.Add(_heading, 0, 0);
+		_layout.Controls.Add(_introduction, 0, 1);
+		_layout.Controls.Add(_commands, 0, 2);
+		_layout.Controls.Add(_content, 0, 3);
+		_layout.Controls.Add(_status, 0, 4);
+		Controls.Add(_layout);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		Font = SystemFonts.MessageBoxFont;
+		Size = new Size(1000, 700);
+		MinimumSize = new Size(680, 440);
+		Name = "ConnectionBarTestScreen";
+		_commands.ResumeLayout(false);
+		_commands.PerformLayout();
+		_layout.ResumeLayout(false);
+		_layout.PerformLayout();
+		ResumeLayout(false);
 	}
 }
-
-
