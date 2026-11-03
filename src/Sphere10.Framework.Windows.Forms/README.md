@@ -447,6 +447,10 @@ It no longer clears native selection, an unsupported operation on .NET 10.
 See [grids and screen hosts on both platforms](../../docs/guidelines/patterns/grids-and-screen-hosts.md)
 for the Blazor equivalents, shared contracts and platform differences.
 
+The search editor shows a centered magnifier when empty and a red cross while
+filter text is present. Click the cross to clear the text and restore the grid's
+unfiltered query through its existing search workflow.
+
 Set `GridTitle` to a meaningful content name in the designer or constructor.
 It updates the caption synchronously on the creating UI thread without requiring
 an existing window. When a live handle requires cross-thread dispatch, the

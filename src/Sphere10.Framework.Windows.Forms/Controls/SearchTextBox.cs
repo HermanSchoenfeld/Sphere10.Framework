@@ -12,35 +12,72 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
+/// <summary>A search editor whose inline action clears the current filter.</summary>
 [ToolboxBitmap(typeof(SearchTextBox), "SmallSearchIcon")]
-public class SearchTextBox : TextBoxEx {
-	private readonly PictureBox _pictureBox;
+public partial class SearchTextBox : TextBoxEx {
+	private const int LogicalIconWidth = 20;
 
+	/// <summary>Creates a search editor with an inline clear action when text is present.</summary>
 	public SearchTextBox() {
-		base.PlaceHolderText = "Search";
-		var bitmap = Resources.SmallSearchIcon;
-		_pictureBox = new PictureBox { Cursor = Cursors.Default, Image = bitmap, Size = bitmap.Size, BackColor = Color.Transparent };
-		Controls.Add(_pictureBox);
-		PictureBox.SizeChanged += (o, e) => OnResize(e);
+		InitializeComponent();
 		FitPicture();
 	}
 
+	/// <summary>The inline image surface, owned by this control; its resource images remain borrowed.</summary>
 	public PictureBox PictureBox {
-		get { return _pictureBox; }
+		get {
+			return _pictureBox;
+		}
 	}
 
+	/// <summary>Updates the action before notifying consumers of the current search text.</summary>
+	protected override void OnTextChanged(EventArgs e) {
+		if (_pictureBox != null) {
+			_pictureBox.Image = TextLength == 0 ? Resources.SmallSearchIcon : Resources.Cross;
+			_pictureBox.Cursor = TextLength == 0 ? Cursors.Default : Cursors.Hand;
+			_pictureBox.AccessibleName = TextLength == 0 ? "Search" : "Clear search";
+		}
+		base.OnTextChanged(e);
+	}
+
+	/// <summary>Restores the native text margin whenever Windows recreates the editor.</summary>
+	protected override void OnHandleCreated(EventArgs e) {
+		base.OnHandleCreated(e);
+		FitPicture();
+	}
+
+	/// <summary>Keeps the action centered when the editor or its font changes size.</summary>
 	protected override void OnResize(EventArgs e) {
 		base.OnResize(e);
 		FitPicture();
 	}
 
-	private void FitPicture() {
-		_pictureBox.Size = new Size(_pictureBox.Width, this.ClientSize.Height + 2);
-		_pictureBox.Location = new Point(this.ClientSize.Width - _pictureBox.Width, -1);
-		// Send EM_SETMARGINS to prevent text from disappearing underneath the button
-		WinAPI.USER32.SendMessage(this.Handle, WinAPI.WindowMessageFlags.EM_SETMARGINS, (IntPtr)2, (IntPtr)(_pictureBox.Width << 16));
+	/// <summary>Scales the action's reserved width with its owning window's DPI.</summary>
+	protected override void OnDpiChangedAfterParent(EventArgs e) {
+		base.OnDpiChangedAfterParent(e);
+		FitPicture();
 	}
 
+	// Clear uses the ordinary TextChanged event so every consumer retains its existing search workflow.
+	private void PictureBox_Click(object sender, EventArgs e) {
+		Clear();
+		Focus();
+	}
 
+	// Parent font/DPI scaling can resize the child after the editor's own resize callback.
+	private void PictureBox_SizeChanged(object sender, EventArgs e) {
+		FitPicture();
+	}
+
+	// Center within the native client area and reserve the same space for the editor's text.
+	private void FitPicture() {
+		if (_pictureBox == null)
+			return;
+
+		var width = Math.Min(ClientSize.Width, LogicalToDeviceUnits(LogicalIconWidth));
+		_pictureBox.Bounds = new Rectangle(ClientSize.Width - width, 0, width, ClientSize.Height);
+		if (IsHandleCreated)
+			WinAPI.USER32.SendMessage(Handle, WinAPI.WindowMessageFlags.EM_SETMARGINS, (IntPtr)2, (IntPtr)(width << 16));
+	}
 }
 
