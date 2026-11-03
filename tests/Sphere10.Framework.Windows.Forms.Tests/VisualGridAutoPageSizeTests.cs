@@ -80,7 +80,7 @@ public class VisualGridAutoPageSizeTests {
 
 	[Test]
 	public void AutomaticSizingKeepsAllPagerButtonsAndDirectPageEntryWorking() => RunWithMessageLoop(async owner => {
-		using var crud = NewGrid(owner, "Auto-navigation");
+		using var crud = NewGrid(owner);
 		crud.AutoPageSize = true;
 		var source = await BindAsync(crud);
 		var capacity = source.Requests.Last().Length;
@@ -108,68 +108,77 @@ public class VisualGridAutoPageSizeTests {
 	});
 
 	[Test]
-	public void AutomaticPageSelectionSurvivesAFreshUserSettingsProvider() => RunWithMessageLoop(async owner => {
-		using (var first = NewGrid(owner, "Auto-page-persistence")) {
-			first.AutoPageSize = true;
-			await BindAsync(first);
-			Find<IntBox>(first, "_pageNumberBox").Value = 3;
-			await CompleteRefreshAsync(first);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = NewGrid(owner, "Auto-page-persistence");
-		var source = await BindAsync(restored);
-		Assert.That(restored.AutoPageSize, Is.True);
-		Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
-		Assert.That(Find<IntBox>(restored, "_pageNumberBox").Value, Is.EqualTo(3));
-	});
+	public void CapturedAutoPageSelectionCanBeAppliedToAnotherGrid() {
+		RunWithMessageLoop(async owner => {
+			VisualGridSettings values;
+			using (var first = NewGrid(owner)) {
+				first.AutoPageSize = true;
+				await BindAsync(first);
+				Find<IntBox>(first, "_pageNumberBox").Value = 3;
+				await CompleteRefreshAsync(first);
+				values = first.CaptureGridPreferences();
+			}
+			using var restored = NewGrid(owner);
+			restored.ApplyGridPreferences(values);
+			var source = await BindAsync(restored);
+			Assert.That(restored.AutoPageSize, Is.True);
+			Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
+			Assert.That(Find<IntBox>(restored, "_pageNumberBox").Value, Is.EqualTo(3));
+		});
+	}
 
 	[TestCase(VisualGridPageMode.Paged)]
 	[TestCase(VisualGridPageMode.Auto)]
 	[TestCase(VisualGridPageMode.Single)]
-	public void SelectedModePersistsAcrossSessionsAndRetainsTheManualSize(VisualGridPageMode mode) => RunWithMessageLoop(async owner => {
-		using (var first = NewGrid(owner, "Mode-persistence")) {
-			await BindAsync(first);
-			Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 41;
-			await CompleteRefreshAsync(first);
-			ModeSelector(first).SelectedItem = mode;
-			await CompleteRefreshAsync(first);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = NewGrid(owner, "Mode-persistence");
-		var source = await BindAsync(restored);
-		Assert.That(restored.PageMode, Is.EqualTo(mode));
-		Assert.That(UserSettings.Get<VisualGridSettings>("Mode-persistence").PageMode, Is.EqualTo(mode));
-		Assert.That(UserSettings.Get<VisualGridSettings>("Mode-persistence").PageSize, Is.EqualTo(41));
-		Assert.That(source.Requests.Last().Page, Is.Zero);
-		if (mode == VisualGridPageMode.Single)
-			Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(240));
-		restored.PageMode = VisualGridPageMode.Paged;
-		await CompleteRefreshAsync(restored);
-		Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(41));
-		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(41));
-	});
+	public void OwnerValuesRetainTheSelectedModeAndManualSize(VisualGridPageMode mode) {
+		RunWithMessageLoop(async owner => {
+			VisualGridSettings values;
+			using (var first = NewGrid(owner)) {
+				await BindAsync(first);
+				Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 41;
+				await CompleteRefreshAsync(first);
+				ModeSelector(first).SelectedItem = mode;
+				await CompleteRefreshAsync(first);
+				values = first.CaptureGridPreferences();
+			}
+			using var restored = NewGrid(owner);
+			restored.ApplyGridPreferences(values);
+			var source = await BindAsync(restored);
+			Assert.That(restored.PageMode, Is.EqualTo(mode));
+			Assert.That(values.PageMode, Is.EqualTo(mode));
+			Assert.That(values.PageSize, Is.EqualTo(41));
+			Assert.That(source.Requests.Last().Page, Is.Zero);
+			if (mode == VisualGridPageMode.Single)
+				Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(240));
+			restored.PageMode = VisualGridPageMode.Paged;
+			await CompleteRefreshAsync(restored);
+			Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(41));
+			Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(41));
+		});
+	}
 
 	[TestCase(false, null, VisualGridPageMode.Paged)]
 	[TestCase(true, null, VisualGridPageMode.Auto)]
 	[TestCase(false, 999, VisualGridPageMode.Paged)]
 	[TestCase(true, 999, VisualGridPageMode.Auto)]
-	public void OldOrInvalidModeSettingsFallBackToTheLegacyAutoPreference(bool automatic, int? storedMode, VisualGridPageMode expected) => RunWithMessageLoop(async owner => {
-		var settings = UserSettings.Get<VisualGridSettings>("Legacy-mode");
-		settings.AutoPageSize = automatic;
-		settings.PageMode = storedMode.HasValue ? (VisualGridPageMode)storedMode.Value : null;
-		settings.PageSize = 23;
-		settings.Save();
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var crud = NewGrid(owner, "Legacy-mode");
-		await BindAsync(crud);
-		Assert.That(crud.PageMode, Is.EqualTo(expected));
-		Assert.That(ModeSelector(crud).SelectedItem, Is.EqualTo(expected));
-		Assert.That(_provider.SaveCount, Is.EqualTo(1), "Migration reads must not overwrite cached preferences.");
-		crud.AutoPageSize = false;
-		await CompleteRefreshAsync(crud);
-		Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
-		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(23));
-	});
+	public void OldOrInvalidSuppliedModesFallBackToTheLegacyAutoPreference(bool automatic, int? storedMode, VisualGridPageMode expected) {
+		RunWithMessageLoop(async owner => {
+			var settings = new VisualGridSettings();
+			settings.AutoPageSize = automatic;
+			settings.PageMode = storedMode.HasValue ? (VisualGridPageMode)storedMode.Value : null;
+			settings.PageSize = 23;
+			using var crud = NewGrid(owner);
+			crud.ApplyGridPreferences(settings);
+			await BindAsync(crud);
+			Assert.That(crud.PageMode, Is.EqualTo(expected));
+			Assert.That(ModeSelector(crud).SelectedItem, Is.EqualTo(expected));
+			Assert.That(_provider.SaveCount, Is.Zero, "Applying values does not write settings.");
+			crud.AutoPageSize = false;
+			await CompleteRefreshAsync(crud);
+			Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
+			Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(23));
+		});
+	}
 
 	[Test]
 	public void ModeDropdownSwitchesToOneScrollablePageAndBackWithoutChangingWidths() => RunWithMessageLoop(async owner => {
@@ -203,37 +212,6 @@ public class VisualGridAutoPageSizeTests {
 		Assert.That(source.Requests.Last().Page, Is.Zero);
 		Assert.That(Find<NumericUpDown>(crud, "_pageSizeUpDown").Value, Is.EqualTo(25));
 		Assert.That(grid.Columns.Cast<ColumnInfo>().Select(column => column.Width), Is.EqualTo(widths));
-	});
-
-	[Test]
-	public void ConsumerMigrationIsDetachedAndLaterExplicitSingleSurvivesAFreshProvider() => RunWithMessageLoop(async owner => {
-		const string key = "Consumer-migration";
-		var settings = UserSettings.Get<VisualGridSettings>(key);
-		settings.PageMode = VisualGridPageMode.Single;
-		settings.PageSize = 37;
-		settings.SortColumnName = "Address";
-		settings.SortDirection = SortDirection.Descending;
-		settings.Save();
-		using (var crud = new UpgradedGrid { Dock = DockStyle.Fill, SettingsKey = key }) {
-			owner.Controls.Add(crud);
-			await BindAsync(crud);
-			Assert.That(crud.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
-			Assert.That(crud.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0239"));
-			Assert.That(settings.ConsumerVersion, Is.Zero, "Restoring must not mutate the provider's cached payload.");
-			Assert.That(settings.PageMode, Is.EqualTo(VisualGridPageMode.Single));
-			Assert.That(_provider.SaveCount, Is.EqualTo(1), "Restoring must not write preferences.");
-			crud.PageMode = VisualGridPageMode.Single;
-			await CompleteRefreshAsync(crud);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = new UpgradedGrid { Dock = DockStyle.Fill, SettingsKey = key };
-		owner.Controls.Add(restored);
-		await BindAsync(restored);
-		var saved = UserSettings.Get<VisualGridSettings>(key);
-		Assert.That(saved.ConsumerVersion, Is.EqualTo(1));
-		Assert.That(saved.PageSize, Is.EqualTo(37));
-		Assert.That(saved.SortDirection, Is.EqualTo(SortDirection.Descending));
-		Assert.That(restored.PageMode, Is.EqualTo(VisualGridPageMode.Single));
 	});
 
 	[Test]
@@ -336,7 +314,6 @@ public class VisualGridAutoPageSizeTests {
 	[TestCase(true)]
 	public void PagingAndRefreshKeepColumnWidthsAcrossDifferentLengthValues(bool stretch) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner);
-		crud.PersistSettings = false;
 		crud.GridBindings = new[] {
 			new VisualGridColumn<string> { ColumnName = "Value", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = stretch }
 		};
@@ -360,7 +337,7 @@ public class VisualGridAutoPageSizeTests {
 
 	[Test]
 	public void AllFourPagerButtonsUpdateRowsAndTheDisplayedPage() => RunWithMessageLoop(async owner => {
-		using var crud = NewGrid(owner, "Pager-buttons");
+		using var crud = NewGrid(owner);
 		var source = await BindAsync(crud);
 		Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 20;
 		await CompleteRefreshAsync(crud);
@@ -388,7 +365,7 @@ public class VisualGridAutoPageSizeTests {
 
 	[Test]
 	public void SearchingFromALaterPageRequestsAndDisplaysTheFirstFilteredPage() => RunWithMessageLoop(async owner => {
-		using var crud = NewGrid(owner, "Search-reset");
+		using var crud = NewGrid(owner);
 		var source = await BindAsync(crud);
 		Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 20;
 		await CompleteRefreshAsync(crud);
@@ -492,7 +469,7 @@ public class VisualGridAutoPageSizeTests {
 
 	[Test]
 	public void AutoModeResizesWithoutRepeatedReadsOrPreferenceWrites() => RunWithMessageLoop(async owner => {
-		using var crud = NewGrid(owner, "Auto-resize");
+		using var crud = NewGrid(owner);
 		crud.AutoPageSize = true;
 		var source = await BindAsync(crud);
 		var originalCount = crud.VisibleEntities.Count();
@@ -510,259 +487,206 @@ public class VisualGridAutoPageSizeTests {
 	});
 
 	[Test]
-	public void PreferencesSurviveAFreshProviderAndKeepManualPagingAndSort() => RunWithMessageLoop(async owner => {
-		using (var first = NewGrid(owner, "Persistent-grid")) {
-			await BindAsync(first);
-			Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 25;
-			await CompleteRefreshAsync(first);
-			await ClickHeaderAsync(first);
-			await ClickHeaderAsync(first);
-			Find<IntBox>(first, "_pageNumberBox").Value = 3;
-			await CompleteRefreshAsync(first);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = NewGrid(owner, "Persistent-grid");
-		var source = await BindAsync(restored);
-		Assert.That(restored.AutoPageSize, Is.False);
-		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(25));
-		Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
-		Assert.That(source.Requests.Last().Sort, Is.EqualTo("Address"));
-		Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.Descending));
-		Assert.That(restored.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0189"));
-	});
-
-	[Test]
-	public void HeaderClicksCycleThroughAscendingDescendingAndNaturalOrderWithoutChangingPageOrWidths() => RunWithMessageLoop(async owner => {
-		using var crud = NewGrid(owner, "Three-state-sort");
-		crud.GridBindings = new[] {
-			new VisualGridColumn<SortRow> { ColumnName = "Number", SortName = nameof(SortRow.Number), DataType = typeof(int), PropertyValue = row => row.Number }
-		};
-		var source = new SnapshotDataSource<SortRow> { DefaultSortProperty = nameof(SortRow.Number), DefaultSortDirection = SortDirection.Descending };
-		source.ReplaceSnapshot(new[] { 6, 1, 5, 2, 4, 3 }.Select(number => new SortRow { Number = number }).ToArray());
-		await crud.SetDataSource(source);
-		await CompleteRefreshAsync(crud);
-		Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 2;
-		await CompleteRefreshAsync(crud);
-		Find<IntBox>(crud, "_pageNumberBox").Value = 2;
-		await CompleteRefreshAsync(crud);
-		var grid = Find<Grid>(crud, "_grid");
-		grid.Columns[0].Width = 193;
-		Assert.That(crud.VisibleEntities.Cast<SortRow>().Select(row => row.Number), Is.EqualTo(new[] { 4, 3 }), "Initial null sorting must still use the source's configured default.");
-		var directions = new[] { SortDirection.Ascending, SortDirection.Descending, SortDirection.None, SortDirection.Ascending };
-		var orders = new[] { new[] { 3, 4 }, new[] { 4, 3 }, new[] { 5, 2 }, new[] { 3, 4 } };
-		var styles = new[] { Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Descending, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending };
-		for (var index = 0; index < directions.Length; index++) {
-			await ClickHeaderAsync(crud);
-			Assert.That(crud.VisibleEntities.Cast<SortRow>().Select(row => row.Number), Is.EqualTo(orders[index]));
-			Assert.That(Find<IntBox>(crud, "_pageNumberBox").Value, Is.EqualTo(2));
-			Assert.That(grid.Columns[0].Width, Is.EqualTo(193));
-			var sortable = (SourceGrid.Cells.Models.ISortableHeader)grid[0, 0].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader));
-			Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(styles[index]));
-			Assert.That(UserSettings.Get<VisualGridSettings>("Three-state-sort").SortDirection, Is.EqualTo(directions[index]));
-		}
-	});
-
-	[Test]
-	public void ClearingSortSurvivesAFreshProviderWithoutReapplyingDefaultSorting() => RunWithMessageLoop(async owner => {
-		using (var first = NewGrid(owner, "Natural-sort-grid")) {
-			await BindAsync(first);
-			await ClickHeaderAsync(first);
-			await ClickHeaderAsync(first);
-			await ClickHeaderAsync(first);
-			Find<IntBox>(first, "_pageNumberBox").Value = 2;
-			await CompleteRefreshAsync(first);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = NewGrid(owner, "Natural-sort-grid");
-		var source = await BindAsync(restored);
-		Assert.That(source.Requests.Last().Sort, Is.Null);
-		Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.None));
-		Assert.That(source.Requests.Last().Page, Is.EqualTo(1));
-		var grid = Find<Grid>(restored, "_grid");
-		var sortable = (SourceGrid.Cells.Models.ISortableHeader)grid[0, 0].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader));
-		Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None));
-	});
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void AnUnchangedInstanceCannotOverwriteAnotherInstancesAcceptedPreferences(bool automatic) => RunWithMessageLoop(async owner => {
-		using (var first = NewGrid(owner, "Shared-grid")) {
-			await BindAsync(first);
-			var unchanged = NewGrid(owner, "Shared-grid");
-			await BindAsync(unchanged);
-			Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 25;
-			await CompleteRefreshAsync(first);
-			Find<IntBox>(first, "_pageNumberBox").Value = 3;
-			await CompleteRefreshAsync(first);
-			first.AutoPageSize = automatic;
-			await CompleteRefreshAsync(first);
-			var writes = _provider.SaveCount;
-			unchanged.Dispose();
-			Assert.That(_provider.SaveCount, Is.EqualTo(writes), "An unchanged control must not save its stale view of shared preferences.");
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = NewGrid(owner, "Shared-grid");
-		var source = await BindAsync(restored);
-		Assert.That(restored.AutoPageSize, Is.EqualTo(automatic));
-		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(25));
-		Assert.That(UserSettings.Get<VisualGridSettings>("Shared-grid").PageSize, Is.EqualTo(25), "Fitted capacity must not replace the manual preference.");
-		Assert.That(source.Requests.Last().Page, Is.EqualTo(automatic ? 0 : 2));
-	});
-
-	[Test]
-	public void RestoringMissingColumnsDoesNotMutateTheSharedSettingsObject() => RunWithMessageLoop(async owner => {
-		var settings = UserSettings.Get<VisualGridSettings>("Shared-columns");
-		settings.SortColumnName = "Address";
-		settings.SortDirection = SortDirection.Descending;
-		settings.Save();
-		using (var other = NewGrid(owner, "Shared-columns")) {
-			other.GridBindings = new[] {
-				new VisualGridColumn<string> { ColumnName = "Other", SortName = "Other", DataType = typeof(string), PropertyValue = value => value }
-			};
-			await other.SetDataSource(new RecordingSource(240));
-			await CompleteRefreshAsync(other);
-			Assert.That(settings.SortColumnName, Is.EqualTo("Address"));
-			Assert.That(settings.SortDirection, Is.EqualTo(SortDirection.Descending));
-		}
-		Assert.That(_provider.SaveCount, Is.EqualTo(1), "Restore and disposal must not write normalized defaults over another column layout.");
-	});
-
-	[Test]
-	public void DisposalRetriesAnAcceptedPreferenceWriteThatFailed() {
+	public void CapturedPreferencesKeepManualPagingAndSort() {
 		RunWithMessageLoop(async owner => {
-			var crud = NewGrid(owner, "Retry-grid");
-			using (crud) {
-				await BindAsync(crud);
-				_provider.FailNextSave = true;
-				crud.AutoPageSize = true;
-				await CompleteRefreshAsync(crud);
-				Assert.That(_provider.SaveCount, Is.EqualTo(1));
+			VisualGridSettings values;
+			using (var first = NewGrid(owner)) {
+				await BindAsync(first);
+				Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 25;
+				await CompleteRefreshAsync(first);
+				await ClickHeaderAsync(first);
+				await ClickHeaderAsync(first);
+				Find<IntBox>(first, "_pageNumberBox").Value = 3;
+				await CompleteRefreshAsync(first);
+				values = first.CaptureGridPreferences();
 			}
-
-			// Observe disposal starting the retry before flushing, so flushing cannot substitute for a missing retry.
-			await _provider.SecondWriteStarted.WaitAsync(TimeSpan.FromSeconds(5));
-			Assert.That(_provider.SaveCount, Is.EqualTo(2));
-			await crud.FlushPreferencesAsync();
-			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-			Assert.That(UserSettings.Get<VisualGridSettings>("Retry-grid").AutoPageSize, Is.True);
+			using var restored = NewGrid(owner);
+			restored.ApplyGridPreferences(values);
+			var source = await BindAsync(restored);
+			Assert.That(restored.AutoPageSize, Is.False);
+			Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Value, Is.EqualTo(25));
+			Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
+			Assert.That(source.Requests.Last().Sort, Is.EqualTo("Address"));
+			Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.Descending));
+			Assert.That(restored.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0189"));
 		});
 	}
 
 	[Test]
-	public void PersistedAutoModeRetainsItsManualSizeForLaterUse() => RunWithMessageLoop(async owner => {
-		using (var first = NewGrid(owner, "Automatic-grid")) {
-			await BindAsync(first);
-			Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 41;
-			await CompleteRefreshAsync(first);
-			first.AutoPageSize = true;
-			await CompleteRefreshAsync(first);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restored = NewGrid(owner, "Automatic-grid");
-		var source = await BindAsync(restored);
-		Assert.That(restored.AutoPageSize, Is.True);
-		Assert.That(source.Requests.Last().Page, Is.Zero);
-		Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Visible, Is.False);
-		Assert.That(UserSettings.Get<VisualGridSettings>("Automatic-grid").PageSize, Is.EqualTo(41));
-		AssertCompleteRows(restored);
-		restored.AutoPageSize = false;
-		await CompleteRefreshAsync(restored);
-		Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(41));
-	});
+	public void HeaderClicksCycleThroughAscendingDescendingAndNaturalOrderWithoutChangingPageOrWidths() {
+		RunWithMessageLoop(async owner => {
+			using var crud = NewGrid(owner);
+			crud.GridBindings = new[] {
+				new VisualGridColumn<SortRow> { ColumnName = "Number", SortName = nameof(SortRow.Number), DataType = typeof(int), PropertyValue = row => row.Number }
+			};
+			var source = new SnapshotDataSource<SortRow> { DefaultSortProperty = nameof(SortRow.Number), DefaultSortDirection = SortDirection.Descending };
+			source.ReplaceSnapshot(new[] { 6, 1, 5, 2, 4, 3 }.Select(number => new SortRow { Number = number }).ToArray());
+			await crud.SetDataSource(source);
+			await CompleteRefreshAsync(crud);
+			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 2;
+			await CompleteRefreshAsync(crud);
+			Find<IntBox>(crud, "_pageNumberBox").Value = 2;
+			await CompleteRefreshAsync(crud);
+			var grid = Find<Grid>(crud, "_grid");
+			grid.Columns[0].Width = 193;
+			Assert.That(crud.VisibleEntities.Cast<SortRow>().Select(row => row.Number), Is.EqualTo(new[] { 4, 3 }), "Initial null sorting must still use the source's configured default.");
+			var directions = new[] { SortDirection.Ascending, SortDirection.Descending, SortDirection.None, SortDirection.Ascending };
+			var orders = new[] { new[] { 3, 4 }, new[] { 4, 3 }, new[] { 5, 2 }, new[] { 3, 4 } };
+			var styles = new[] { Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Descending, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending };
+			for (var index = 0; index < directions.Length; index++) {
+				await ClickHeaderAsync(crud);
+				Assert.That(crud.VisibleEntities.Cast<SortRow>().Select(row => row.Number), Is.EqualTo(orders[index]));
+				Assert.That(Find<IntBox>(crud, "_pageNumberBox").Value, Is.EqualTo(2));
+				Assert.That(grid.Columns[0].Width, Is.EqualTo(193));
+				var sortable = (SourceGrid.Cells.Models.ISortableHeader)grid[0, 0].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader));
+				Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(styles[index]));
+				Assert.That(crud.CaptureGridPreferences().SortDirection, Is.EqualTo(directions[index]));
+			}
+		});
+	}
 
 	[Test]
-	public void DelayedOldReadCannotOverwriteNewPageOrSorting() => RunWithMessageLoop(async owner => {
-		using var crud = NewGrid(owner, "In-flight-grid");
-		var source = new DelayedRecordingSource(240);
-		await BindAsync(crud, source);
-		Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 25;
-		await CompleteRefreshAsync(crud);
-		var previousRows = crud.VisibleEntities.ToArray();
-		source.DelayNextRead();
-		var pending = crud.RefreshGrid();
-		await source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		var firstSort = ClickHeaderAsync(crud);
-		var secondSort = ClickHeaderAsync(crud);
-		Find<IntBox>(crud, "_pageNumberBox").Value = 3;
-		Assert.That(crud.VisibleEntities, Is.EqualTo(previousRows), "An in-flight read must retain the displayed row mapping.");
-		source.ContinueRead.SetResult();
-		await Task.WhenAll(pending, firstSort, secondSort);
-		await CompleteRefreshAsync(crud);
-		Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
-		Assert.That(source.Requests.Last().Sort, Is.EqualTo("Address"));
-		Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.Descending));
-		Assert.That(Find<IntBox>(crud, "_pageNumberBox").Value, Is.EqualTo(3));
-		Assert.That(crud.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0189"));
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		var saved = UserSettings.Get<VisualGridSettings>("In-flight-grid");
-		Assert.That(saved.PageNumber, Is.EqualTo(2));
-		Assert.That(saved.SortDirection, Is.EqualTo(SortDirection.Descending));
-	});
+	public void CapturedClearedSortDoesNotReapplyDefaultSorting() {
+		RunWithMessageLoop(async owner => {
+			VisualGridSettings values;
+			using (var first = NewGrid(owner)) {
+				await BindAsync(first);
+				await ClickHeaderAsync(first);
+				await ClickHeaderAsync(first);
+				await ClickHeaderAsync(first);
+				Find<IntBox>(first, "_pageNumberBox").Value = 2;
+				await CompleteRefreshAsync(first);
+				values = first.CaptureGridPreferences();
+			}
+			using var restored = NewGrid(owner);
+			restored.ApplyGridPreferences(values);
+			var source = await BindAsync(restored);
+			Assert.That(source.Requests.Last().Sort, Is.Null);
+			Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.None));
+			Assert.That(source.Requests.Last().Page, Is.EqualTo(1));
+			var grid = Find<Grid>(restored, "_grid");
+			var sortable = (SourceGrid.Cells.Models.ISortableHeader)grid[0, 0].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader));
+			Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None));
+		});
+	}
+
+	[Test]
+	public void ApplyingValuesForMissingColumnsDoesNotMutateTheSuppliedObject() {
+		RunWithMessageLoop(async owner => {
+			var settings = new VisualGridSettings();
+			settings.SortColumnName = "Address";
+			settings.SortDirection = SortDirection.Descending;
+			using (var other = NewGrid(owner)) {
+				other.Preferences = settings;
+				other.GridBindings = new[] {
+					new VisualGridColumn<string> { ColumnName = "Other", SortName = "Other", DataType = typeof(string), PropertyValue = value => value }
+				};
+				await other.SetDataSource(new RecordingSource(240));
+				await CompleteRefreshAsync(other);
+				Assert.That(settings.SortColumnName, Is.EqualTo("Address"));
+				Assert.That(settings.SortDirection, Is.EqualTo(SortDirection.Descending));
+			}
+			Assert.That(_provider.SaveCount, Is.Zero, "Applying values and disposal must not write settings.");
+		});
+	}
+
+	[Test]
+	public void CapturedAutoModeRetainsItsManualSizeForLaterUse() {
+		RunWithMessageLoop(async owner => {
+			VisualGridSettings values;
+			using (var first = NewGrid(owner)) {
+				await BindAsync(first);
+				Find<NumericUpDown>(first, "_pageSizeUpDown").Value = 41;
+				await CompleteRefreshAsync(first);
+				first.AutoPageSize = true;
+				await CompleteRefreshAsync(first);
+				values = first.CaptureGridPreferences();
+			}
+			using var restored = NewGrid(owner);
+			restored.ApplyGridPreferences(values);
+			var source = await BindAsync(restored);
+			Assert.That(restored.AutoPageSize, Is.True);
+			Assert.That(source.Requests.Last().Page, Is.Zero);
+			Assert.That(Find<NumericUpDown>(restored, "_pageSizeUpDown").Visible, Is.False);
+			Assert.That(values.PageSize, Is.EqualTo(41));
+			AssertCompleteRows(restored);
+			restored.AutoPageSize = false;
+			await CompleteRefreshAsync(restored);
+			Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(41));
+		});
+	}
+
+	[Test]
+	public void DelayedOldReadCannotOverwriteNewPageOrSorting() {
+		RunWithMessageLoop(async owner => {
+			using var crud = NewGrid(owner);
+			var source = new DelayedRecordingSource(240);
+			await BindAsync(crud, source);
+			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 25;
+			await CompleteRefreshAsync(crud);
+			var previousRows = crud.VisibleEntities.ToArray();
+			source.DelayNextRead();
+			var pending = crud.RefreshGrid();
+			await source.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			var firstSort = ClickHeaderAsync(crud);
+			var secondSort = ClickHeaderAsync(crud);
+			Find<IntBox>(crud, "_pageNumberBox").Value = 3;
+			Assert.That(crud.VisibleEntities, Is.EqualTo(previousRows), "An in-flight read must retain the displayed row mapping.");
+			source.ContinueRead.SetResult();
+			await Task.WhenAll(pending, firstSort, secondSort);
+			await CompleteRefreshAsync(crud);
+			Assert.That(source.Requests.Last().Page, Is.EqualTo(2));
+			Assert.That(source.Requests.Last().Sort, Is.EqualTo("Address"));
+			Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.Descending));
+			Assert.That(Find<IntBox>(crud, "_pageNumberBox").Value, Is.EqualTo(3));
+			Assert.That(crud.VisibleEntities.Cast<string>().First(), Is.EqualTo("Address 0189"));
+			var saved = crud.CaptureGridPreferences();
+			Assert.That(saved.PageNumber, Is.EqualTo(2));
+			Assert.That(saved.SortDirection, Is.EqualTo(SortDirection.Descending));
+		});
+	}
 
 	[TestCase(-100, -1, "Removed column", 999, 1)]
 	[TestCase(100000, int.MaxValue, "Address", 999, 9999)]
-	public void InvalidStoredOptionsAreNormalizedBeforeTheSourceIsRead(int pageSize, int pageNumber, string sort, int direction, int expectedPageSize) => RunWithMessageLoop(async owner => {
-		var settings = UserSettings.Get<VisualGridSettings>("Invalid-grid");
-		settings.PageSize = pageSize;
-		settings.PageNumber = pageNumber;
-		settings.SortColumnName = sort;
-		settings.SortDirection = (SortDirection)direction;
-		settings.Save();
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var crud = NewGrid(owner, "Invalid-grid");
-		var source = await BindAsync(crud, 0);
-		Assert.That(source.Requests.Last().Length, Is.EqualTo(expectedPageSize));
-		Assert.That(source.Requests.Last().Page, Is.Zero);
-		Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.Ascending));
-		Assert.That(crud.VisibleEntities, Is.Empty);
-	});
+	public void SuppliedOptionsAreNormalizedBeforeTheSourceIsRead(int pageSize, int pageNumber, string sort, int direction, int expectedPageSize) {
+		RunWithMessageLoop(async owner => {
+			var settings = new VisualGridSettings();
+			settings.PageSize = pageSize;
+			settings.PageNumber = pageNumber;
+			settings.SortColumnName = sort;
+			settings.SortDirection = (SortDirection)direction;
+			using var crud = NewGrid(owner);
+			crud.ApplyGridPreferences(settings);
+			var source = await BindAsync(crud, 0);
+			Assert.That(source.Requests.Last().Length, Is.EqualTo(expectedPageSize));
+			Assert.That(source.Requests.Last().Page, Is.Zero);
+			Assert.That(source.Requests.Last().Direction, Is.EqualTo(SortDirection.Ascending));
+			Assert.That(crud.VisibleEntities, Is.Empty);
+		});
+	}
 
 	[Test]
-	public void ConsumerDefaultsAreNotOverwrittenOnFirstUseAndOptOutNeverWrites() => RunWithMessageLoop(async owner => {
-		using (var crud = NewGrid(owner, "Default-grid")) {
-			crud.AutoPageSize = true;
-			await BindAsync(crud);
-			Assert.That(crud.AutoPageSize, Is.True);
-		}
-		Assert.That(Directory.Exists(_directory), Is.False, "Defaults alone must not create preference files.");
-		using (var transient = NewGrid(owner, "Transient-grid")) {
-			transient.PersistSettings = false;
-			await BindAsync(transient);
-			Find<NumericUpDown>(transient, "_pageSizeUpDown").Value = 17;
-			await CompleteRefreshAsync(transient);
-			transient.AutoPageSize = true;
-			await CompleteRefreshAsync(transient);
-		}
-		Assert.That(Directory.Exists(_directory), Is.False);
-	});
+	public void GridDefaultsAndOperationalChangesDoNotWriteSettings() {
+		RunWithMessageLoop(async owner => {
+			using (var crud = NewGrid(owner)) {
+				crud.AutoPageSize = true;
+				await BindAsync(crud);
+				Assert.That(crud.AutoPageSize, Is.True);
+			}
+			Assert.That(Directory.Exists(_directory), Is.False, "Defaults alone must not create preference files.");
+			using (var transient = NewGrid(owner)) {
+				await BindAsync(transient);
+				Find<NumericUpDown>(transient, "_pageSizeUpDown").Value = 17;
+				await CompleteRefreshAsync(transient);
+				transient.AutoPageSize = true;
+				await CompleteRefreshAsync(transient);
+			}
+			Assert.That(Directory.Exists(_directory), Is.False);
+		});
+	}
 
-	[Test]
-	public void OwnerAndNamedChildKeysSurviveMovingTheScreenBetweenForms() => RunWithMessageLoop(async owner => {
-		using (var screen = new PreferenceScreen { Dock = DockStyle.Fill }) {
-			owner.Controls.Add(screen);
-			using var crud = new VisualGrid { Name = "Events", Dock = DockStyle.Fill };
-			screen.Controls.Add(crud);
-			await BindAsync(crud);
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 19;
-			await CompleteRefreshAsync(crud);
-			using var detached = new Form { Name = "Detached window", ClientSize = new Size(600, 350) };
-			detached.Controls.Add(screen);
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 23;
-			await CompleteRefreshAsync(crud);
-			owner.Controls.Add(screen);
-		}
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		using var restoredScreen = new PreferenceScreen { Dock = DockStyle.Fill };
-		owner.Controls.Add(restoredScreen);
-		using var restored = new VisualGrid { Name = "Events", Dock = DockStyle.Fill };
-		restoredScreen.Controls.Add(restored);
-		await BindAsync(restored);
-		Assert.That(restored.VisibleEntities.Count(), Is.EqualTo(23));
-		Assert.That(Directory.GetFiles(_directory, "*.setting").Length, Is.EqualTo(1), "Undocking must not create a second identity.");
-	});
-
-	private static VisualGrid NewGrid(Form owner, string key = "") {
-		var crud = new VisualGrid { Dock = DockStyle.Fill, SettingsKey = key };
+	private static VisualGrid NewGrid(Form owner) {
+		var crud = new VisualGrid { Dock = DockStyle.Fill };
 		owner.Controls.Add(crud);
 		return crud;
 	}
@@ -830,47 +754,18 @@ public class VisualGridAutoPageSizeTests {
 		Assert.That(failure, Is.Null, failure?.ToString());
 	}
 
-	private sealed class UpgradedGrid : VisualGrid {
-		protected override void UpgradeGridSettings(VisualGridSettings settings) {
-			if (settings.ConsumerVersion >= 1)
-				return;
-			if (settings.PageMode == VisualGridPageMode.Single)
-				settings.PageMode = VisualGridPageMode.Auto;
-			settings.ConsumerVersion = 1;
-		}
-	}
-
+	// Observes any accidental control-owned writes while grid operations run.
 	private sealed class CountingProvider : DirectoryFileSettingsProvider {
-		private readonly TaskCompletionSource _secondWriteStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
 		public CountingProvider(string directory)
 			: base(directory) {
 		}
 
 		public int SaveCount { get; private set; }
 
-		public bool FailNextSave { get; set; }
-
-		// Expose the retry's start without relying on the worker's scheduling or file completion timing.
-		public Task SecondWriteStarted {
-			get {
-				return _secondWriteStarted.Task;
-			}
-		}
-
 		public override void SaveSetting(SettingsObject settings) {
 			SaveCount++;
-			if (SaveCount == 2)
-				_secondWriteStarted.TrySetResult();
-			if (FailNextSave) {
-				FailNextSave = false;
-				throw new IOException("Simulated optional preference write failure.");
-			}
 			base.SaveSetting(settings);
 		}
-	}
-
-	private sealed class PreferenceScreen : UserControl {
 	}
 
 	private sealed class SortRow {

@@ -357,8 +357,23 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 		CopyUIToModel();
 		if (SettingsBinding != null)
 			await SettingsBinding.SaveAsync(cancellationToken);
-		foreach (var grid in GetChildGrids(this))
-			await grid.FlushPreferencesAsync();
+	}
+
+	// The reusable header menu resolves its screen and existing grid binding on demand.
+	internal bool CanConfigureGrid(VisualGrid grid) {
+		return SettingsBinding?.CanConfigureGrid(grid) == true;
+	}
+
+	// Explicit grid configuration saves use the screen's existing settings provider and notification path.
+	internal Task SaveGridConfigurationAsync(VisualGrid grid, CancellationToken cancellationToken = default) {
+		Guard.Ensure(SettingsBinding != null, "Declare settings before saving a grid configuration.");
+		return SettingsBinding.SaveGridConfigurationAsync(grid, cancellationToken);
+	}
+
+	// Reset only this grid's live presentation; saving the reset is a separate user action.
+	internal Task RestoreGridDefaultsAsync(VisualGrid grid, CancellationToken cancellationToken = default) {
+		Guard.Ensure(SettingsBinding != null, "Declare settings before restoring a grid configuration.");
+		return SettingsBinding.RestoreGridDefaultsAsync(grid, cancellationToken);
 	}
 
 	/// <summary>Applies the selected culture to this screen and its child application controls.</summary>
@@ -483,16 +498,6 @@ public class WinFormsApplicationScreen : ApplicationControl, IWinFormsApplicatio
 	// Command membership is configured before activation; native appearance and checked/enabled state remain mutable.
 	private void EnsureCommandsNotActivated() {
 		Guard.Ensure(_menus == null && _toolBarItems == null, "Command membership is read-only after activation.");
-	}
-
-	// Standalone child grids retain their existing persistence owner and ordered flush contract.
-	private static IEnumerable<VisualGrid> GetChildGrids(Control owner) {
-		foreach (Control child in owner.Controls) {
-			if (child is VisualGrid grid)
-				yield return grid;
-			foreach (var nested in GetChildGrids(child))
-				yield return nested;
-		}
 	}
 
 	// Recurses through child application controls to apply the selected culture.

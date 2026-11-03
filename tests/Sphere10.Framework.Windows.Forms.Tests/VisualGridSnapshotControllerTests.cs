@@ -201,7 +201,7 @@ public class VisualGridSnapshotControllerTests {
 	});
 
 	private static VisualGrid CreateGrid(Form owner) {
-		var grid = new VisualGrid { Name = "snapshotGrid", Dock = DockStyle.Fill, PersistSettings = false };
+		var grid = new VisualGrid { Name = "snapshotGrid", Dock = DockStyle.Fill };
 		grid.GridBindings = new[] {
 			new VisualGridColumn<Row> { ColumnName = "ID", DataType = typeof(int), SortName = nameof(Row.Id), PropertyValue = row => row.Id },
 			new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), SortName = nameof(Row.Name), PropertyValue = row => row.Name }

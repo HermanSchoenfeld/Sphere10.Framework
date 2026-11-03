@@ -65,7 +65,7 @@ public static class WinFormsDemoPlugin {
 				.AddScreen<ScreenHostingDesignTestScreen>(screen => screen
 					.WithTitle("CPU Inspector")
 					.WithStableKey("cpu-inspector")
-					.WithActivator(context => new ScreenHostingDesignTestScreen("CPU Inspector", "tester.cpu-inspector.standalone-grid"))
+					.WithActivator(context => new ScreenHostingDesignTestScreen("CPU Inspector", includePreferences: true))
 					.UseSettings(new ScreenHostingDesignTestScreen.ScreenHostingPreferences { Heading = "CPU summary" })
 					.AsSingleInstance(),
 					out var cpuInspector
@@ -73,7 +73,7 @@ public static class WinFormsDemoPlugin {
 				.AddScreen<ScreenHostingDesignTestScreen>(screen => screen
 					.WithTitle("GPU Inspector")
 					.WithStableKey("gpu-inspector")
-					.WithActivator(context => new ScreenHostingDesignTestScreen("GPU Inspector", "tester.gpu-inspector.standalone-grid"))
+					.WithActivator(context => new ScreenHostingDesignTestScreen("GPU Inspector", includePreferences: true))
 					.UseSettings(new ScreenHostingDesignTestScreen.ScreenHostingPreferences { Heading = "GPU summary" })
 					.WithSettingsEditor(context => new ScreenHostingPreferencesEditor((ScreenHostingDesignTestScreen.ScreenHostingPreferences)context.Settings))
 					.AsSingleInstance(),

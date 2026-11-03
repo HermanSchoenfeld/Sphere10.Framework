@@ -14,6 +14,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -380,6 +381,112 @@ public class ApplicationSettingsNativeTests {
 		});
 	}
 
+	// Saving a screen scalar must neither accept nor reset the grid's temporary presentation.
+	[Test]
+	public void OrdinaryGridChangesRemainTemporaryAcrossScreenSavesAndClose() {
+		RunWithMessageLoop(async owner => {
+			var store = new MemoryStore();
+			using var block = CreateBlock("Temporary grid");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var screen = (ProbeScreen)main.ActiveScreen;
+			await screen.BindGridAsync();
+			var actual = screen.ScreenSettings;
+			var temporary = screen.Grid.CaptureGridPreferences();
+			temporary.PageMode = VisualGridPageMode.Single;
+			temporary.Columns[0].Width = 243;
+			screen.Grid.ApplyGridPreferences(temporary);
+			await screen.Grid.RefreshGrid();
+
+			screen.EditName("Accepted scalar");
+			await screen.SaveSettingsAsync();
+			Assert.That(store.Writes, Is.EqualTo(1));
+			Assert.That(actual.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
+			Assert.That(actual.Grid.Columns[0].Width, Is.Null);
+			Assert.That(screen.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Single));
+			Assert.That(screen.Grid.Preferences.Columns[0].Width, Is.EqualTo(243));
+
+			Assert.That(await main.ScreenHost.CloseScreenAsync(screen), Is.True);
+			Assert.That(store.Writes, Is.EqualTo(1), "Closing does not accept temporary grid changes.");
+			var restored = (ProbeScreen.Preferences)await store.LoadSettingAsync(typeof(ProbeScreen.Preferences), actual.ID);
+			Assert.That(restored.Name, Is.EqualTo("Accepted scalar"));
+			Assert.That(restored.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Paged));
+			Assert.That(restored.Grid.Columns[0].Width, Is.Null);
+		});
+	}
+
+	// The native menu awaits storage while later user operations remain outside the accepted snapshot.
+	[Test]
+	public void ExplicitGridSavePreservesNewerTemporaryChangesDuringStorage() {
+		RunWithMessageLoop(async owner => {
+			var store = new PendingStore();
+			using var block = CreateBlock("Pending grid save");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var screen = (ProbeScreen)main.ActiveScreen;
+			await screen.BindGridAsync();
+			screen.Grid.PageMode = VisualGridPageMode.Single;
+			using var menu = new VisualGridConfigurationContextMenu();
+			menu.Show(screen.Grid, Point.Empty);
+			((ToolStripMenuItem)menu.Items[0]).PerformClick();
+			menu.Close();
+			await store.FirstWriteStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			// An operation after Save was selected is still only a live view choice.
+			screen.Grid.PageMode = VisualGridPageMode.Auto;
+			store.ReleaseFirstWrite.TrySetResult();
+			await WaitUntilAsync(() => store.SavedNames.Length == 1);
+			Assert.That(screen.ScreenSettings.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Single));
+			Assert.That(screen.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
+			await screen.SaveSettingsAsync();
+			Assert.That(store.SavedNames, Has.Length.EqualTo(1));
+		});
+	}
+
+	// An explicit failed write does not publish accepted changes, and the same command can be retried.
+	[Test]
+	public void ExplicitGridSaveFailureCanBeRetriedWithoutAcceptingIncidentalChanges() {
+		RunWithMessageLoop(async owner => {
+			var store = new MemoryStore();
+			using var block = CreateBlock("Rejected grid save");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var screen = (ProbeScreen)main.ActiveScreen;
+			await screen.BindGridAsync();
+			var notifications = 0;
+			screen.ScreenSettings.OnChanged += () => notifications++;
+			screen.Grid.PageMode = VisualGridPageMode.Single;
+			store.FailSave = true;
+			await Assert.ThatAsync(() => SaveGridConfigurationAsync(screen), Throws.TypeOf<IOException>());
+			Assert.That(store.Writes, Is.Zero);
+			Assert.That(notifications, Is.Zero);
+
+			screen.Grid.PageMode = VisualGridPageMode.Auto;
+			Assert.That(screen.ScreenSettings.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Single), "Only the explicit selection was captured.");
+			store.FailSave = false;
+			screen.EditName("Retry pending accepted values");
+			await screen.SaveSettingsAsync();
+			Assert.That(store.Writes, Is.EqualTo(1));
+			Assert.That(notifications, Is.EqualTo(1));
+			Assert.That(screen.ScreenSettings.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Single));
+			Assert.That(screen.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Auto), "Retrying the pending write does not reset later temporary choices.");
+
+			await SaveGridConfigurationAsync(screen);
+			Assert.That(store.Writes, Is.EqualTo(2));
+			Assert.That(notifications, Is.EqualTo(2));
+			Assert.That(screen.ScreenSettings.Grid.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
+		});
+	}
+
 	// A failed accepted-close write leaves its screen available for an explicit retry.
 	[Test]
 	public void AcceptedCloseRetainsItsScreenWhenSettingsCannotBeSaved() {
@@ -490,6 +597,12 @@ public class ApplicationSettingsNativeTests {
 			Assert.That(main.ScreenHost.Screens.Length, Is.EqualTo(count));
 			dialog.Close();
 		});
+	}
+
+	// Await the production save operation without presenting an error dialog in the failure test.
+	private static Task SaveGridConfigurationAsync(ProbeScreen screen) {
+		return (Task)typeof(WinFormsApplicationScreen).GetMethod("SaveGridConfigurationAsync", BindingFlags.Instance | BindingFlags.NonPublic)
+			.Invoke(screen, new object[] { screen.Grid, CancellationToken.None });
 	}
 
 	// Keep application startup composition inside the existing DI path.
@@ -639,7 +752,6 @@ public class ApplicationSettingsNativeTests {
 		public async Task BindGridAsync() {
 			Grid = new VisualGrid {
 				Dock = DockStyle.Fill,
-				PersistSettings = false,
 				GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Record", PreferenceKey = "record", DataType = typeof(string), PropertyValue = value => value } }
 			};
 			Controls.Add(Grid);

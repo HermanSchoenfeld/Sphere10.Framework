@@ -321,7 +321,6 @@ public class SpecializedControlStateEventProviderTests {
 			owner.Controls.Add(combo);
 			owner.Controls.Add(combo.VisualGrid);
 			combo.VisualGrid.Dock = DockStyle.Fill;
-			combo.VisualGrid.PersistSettings = false;
 			combo.VisualGrid.SuppressLoadingIndicator = true;
 			combo.VisualGrid.GridBindings = new[] {
 				new VisualGridColumn<ChoiceRow> {

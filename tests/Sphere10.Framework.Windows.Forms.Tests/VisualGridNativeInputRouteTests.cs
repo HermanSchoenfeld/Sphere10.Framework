@@ -29,7 +29,7 @@ public class VisualGridNativeInputRouteTests {
 	[TestCase(true)]
 	public void PreparedRefreshKeepsTheCommittedNativeInputWindowVisibleToBackgroundHitTesting(bool measureRows) => RunWithMessageLoop(async owner => {
 		using var crud = new VisualGrid {
-			Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, AllowCellEditing = false,
+			Dock = DockStyle.Fill, SuppressLoadingIndicator = true, AllowCellEditing = false,
 			LeftClickToDeselect = true, PageMode = VisualGridPageMode.Single, PrepareReadOnlyCellsInBackground = true,
 			AutoSizeRowsOnRefresh = measureRows,
 			GridBindings = Enumerable.Range(0, 12).Select(index => new VisualGridColumn<Row> {

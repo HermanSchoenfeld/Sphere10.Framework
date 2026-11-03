@@ -158,7 +158,6 @@ public class VisualGridAutoPageFillTests {
 		var crud = new VisualGrid {
 			Dock = DockStyle.Fill,
 			Font = owner.Font,
-			PersistSettings = false,
 			PageMode = VisualGridPageMode.Single,
 			PrepareReadOnlyCellsInBackground = true,
 			GridBindings = new IVisualGridColumn[] {

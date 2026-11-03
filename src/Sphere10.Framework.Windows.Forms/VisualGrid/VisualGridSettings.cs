@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing.Design;
+using System.Linq;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
@@ -47,7 +49,9 @@ public class VisualGridSettings : SettingsObject {
 		get; set;
 	}
 
-	/// <summary>Column width and stretch choices, keyed by stable column identity; widths use 96-DPI logical pixels.</summary>
+	/// <summary>Displayed column order, widths and stretch choices, keyed by stable column identity; widths use 96-DPI logical pixels.</summary>
+	[Description("Column array order determines displayed column order. Widths use 96-DPI logical pixels.")]
+	[Editor(typeof(VisualGridColumnsEditor), typeof(UITypeEditor))]
 	public ApplicationGridColumnPreferences[] Columns { get; set; } = Array.Empty<ApplicationGridColumnPreferences>();
 
 	/// <summary>The source sort identity, or an empty value when no column is selected.</summary>
@@ -97,5 +101,46 @@ public class VisualGridSettings : SettingsObject {
 				result.AddError("The manual width for '{0}' must be greater than zero and no more than 100000 logical pixels.", column.Title ?? column.Key);
 		}
 		return result;
+	}
+
+	/// <summary>Copies presentation values without transferring their owner's provider or identity.</summary>
+	internal VisualGridSettings Copy() {
+		return new VisualGridSettings {
+			ConsumerVersion = ConsumerVersion,
+			PageMode = PageMode,
+			AutoPageSize = AutoPageSize,
+			PageSize = PageSize,
+			PageNumber = PageNumber,
+			SortColumnName = SortColumnName,
+			SortDirection = SortDirection,
+			Columns = CopyColumns(Columns)
+		};
+	}
+
+	// Compare accepted configuration values so unrelated screen saves preserve temporary grid choices.
+	internal bool HasSameConfiguration(VisualGridSettings other) {
+		if (other == null || PageMode != other.PageMode || AutoPageSize != other.AutoPageSize
+			|| PageSize != other.PageSize || PageNumber != other.PageNumber || SortColumnName != other.SortColumnName || SortDirection != other.SortDirection)
+			return false;
+
+		var columns = Columns ?? Array.Empty<ApplicationGridColumnPreferences>();
+		var otherColumns = other.Columns ?? Array.Empty<ApplicationGridColumnPreferences>();
+		return columns.Length == otherColumns.Length && Enumerable.Range(0, columns.Length).All(index => {
+			var column = columns[index];
+			var otherColumn = otherColumns[index];
+			return ReferenceEquals(column, otherColumn) || column != null && otherColumn != null
+				&& column.Key == otherColumn.Key && column.Title == otherColumn.Title && column.Width == otherColumn.Width && column.ExpandsToFit == otherColumn.ExpandsToFit;
+		});
+	}
+
+	/// <summary>Retains column order while detaching editable widths and stretch choices.</summary>
+	internal static ApplicationGridColumnPreferences[] CopyColumns(ApplicationGridColumnPreferences[] columns) {
+		return (columns ?? Array.Empty<ApplicationGridColumnPreferences>()).Where(column => column != null)
+			.Select(column => new ApplicationGridColumnPreferences {
+				Key = column.Key,
+				Title = column.Title,
+				Width = column.Width,
+				ExpandsToFit = column.ExpandsToFit
+			}).ToArray();
 	}
 }

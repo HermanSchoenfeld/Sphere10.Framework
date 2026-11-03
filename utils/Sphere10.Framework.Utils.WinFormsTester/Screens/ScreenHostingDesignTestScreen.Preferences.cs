@@ -105,8 +105,7 @@ public partial class ScreenHostingDesignTestScreen {
 	}
 
 	// Construct only this registration's optional static inspector surface; bind its runtime data separately.
-	private void InitializePreferencesDemo(string standaloneGridKey) {
-		Guard.ArgumentNotNullOrEmpty(standaloneGridKey, nameof(standaloneGridKey));
+	private void InitializePreferencesDemo() {
 		_preferencesLifetime = new CancellationTokenSource();
 		var lifecycleControls = Controls.Cast<Control>().Where(control => !ReferenceEquals(control, ScreenToolBar)).ToArray();
 		InitializeComponent();
@@ -116,7 +115,6 @@ public partial class ScreenHostingDesignTestScreen {
 		ConfigurePreferenceGrid(_preferencesGrid);
 		ConfigurePreferenceGrid(_detailsGrid);
 		ConfigurePreferenceGrid(_standaloneGrid);
-		_standaloneGrid.SettingsKey = standaloneGridKey;
 		UpdatePreferenceLayout(_preferencePage, _preferenceContent);
 		_preferenceTabs.BringToFront();
 	}

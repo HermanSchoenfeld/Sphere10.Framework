@@ -245,7 +245,7 @@ public class TesterDataShowcaseTests {
 			using var host = new WinFormsApplicationScreenHost { Dock = DockStyle.Fill };
 			owner.Controls.Add(host);
 			using var screen = screenType == typeof(ScreenHostingDesignTestScreen)
-				? new ScreenHostingDesignTestScreen("Ad hoc inspector", "AdHocInspector.Standalone")
+				? new ScreenHostingDesignTestScreen("Ad hoc inspector", includePreferences: true)
 				: (WinFormsApplicationScreen)Activator.CreateInstance(screenType);
 			Assert.That(host.ShowScreen(screen), Is.True);
 			await Task.Yield();

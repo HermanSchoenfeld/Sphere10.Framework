@@ -9,9 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -58,27 +61,62 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 		Guard.ArgumentNotNull(set, nameof(set));
 		Guard.Ensure(!_grids.Exists(binding => ReferenceEquals(binding.Grid, grid)), "Each grid can be bound only once.");
 
-		// Claim settings ownership before legacy IO, preventing the grid's standalone restore path.
+		// Apply the screen's declared columns before reading an optional old control record.
 		var binding = new GridBinding(grid, values => get((TSettings)values), (values, preferences) => set((TSettings)values, preferences));
 		ApplyGrid(binding);
 		if (await ShouldReadLegacyAsync(cancellationToken)) {
-			var legacy = await ReadOptionalLegacyAsync(() => grid.ReadLegacyPreferencesAsync(_settings.Provider, cancellationToken), cancellationToken);
-			if (legacy != null && !_dirty)
+			var legacy = await ReadOptionalLegacyAsync(() => ReadLegacyGridPreferencesAsync(grid, cancellationToken), cancellationToken);
+			if (legacy != null && !_dirty) {
+				// Old control records may contain only width overrides; retain the screen's complete column schema.
+				var columns = binding.Get(_settings).Columns;
+				var overrides = (legacy.Columns ?? Array.Empty<ApplicationGridColumnPreferences>())
+					.Where(column => column != null && !string.IsNullOrWhiteSpace(column.Key))
+					.GroupBy(column => column.Key, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.Last(), StringComparer.Ordinal);
+				legacy.Columns = VisualGridSettings.CopyColumns(columns);
+				foreach (var column in legacy.Columns) {
+					if (!overrides.Remove(column.Key, out var previous))
+						continue;
+					column.Width = previous.Width;
+					column.ExpandsToFit = previous.ExpandsToFit;
+				}
+				legacy.Columns = legacy.Columns.Concat(VisualGridSettings.CopyColumns(overrides.Values.ToArray())).ToArray();
 				binding.Set(_settings, legacy);
+			}
 		}
 		cancellationToken.ThrowIfCancellationRequested();
 		ObjectDisposedException.ThrowIf(_disposed, this);
 		ApplyGrid(binding);
 
-		// Native edits modify the actual owner object and save at the existing accepted-close boundary.
-		binding.Changed = preferences => {
-			if (_applying)
-				return;
-			binding.Set(_settings, preferences);
-			_dirty = true;
-		};
-		grid.PreferencesChanged += binding.Changed;
+		// Ordinary grid operations remain local until the user explicitly saves that grid's configuration.
 		_grids.Add(binding);
+	}
+
+	// The standard header menu is available only for an existing provider-bound grid section.
+	public bool CanConfigureGrid(VisualGrid grid) {
+		return !_disposed && _settings.Provider != null && _grids.Exists(binding => ReferenceEquals(binding.Grid, grid));
+	}
+
+	// Capture only this grid; unrelated grids keep both their saved values and temporary presentation.
+	public async Task SaveGridConfigurationAsync(VisualGrid grid, CancellationToken cancellationToken) {
+		var binding = GetGridBinding(grid);
+		var preferences = grid.CaptureGridPreferences();
+		binding.Set(_settings, preferences);
+
+		// A successful save notification must not replace newer live edits made while storage was pending.
+		binding.AppliedPreferences = preferences.Copy();
+		_dirty = true;
+		await SaveAsync(cancellationToken);
+	}
+
+	// Use the settings class's declared grid defaults without changing any accepted owner values.
+	public async Task RestoreGridDefaultsAsync(VisualGrid grid, CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		var binding = GetGridBinding(grid);
+		var defaults = (SettingsObject)Tools.Object.Create(_settings.GetType());
+		var preferences = binding.Get(defaults);
+		Guard.Ensure(preferences != null, "Declare the grid's defaults on its screen settings class.");
+		grid.ApplyGridPreferences(preferences);
+		await grid.RefreshGrid();
 	}
 
 	// Restore remembered output values without starting resources during the binding operation.
@@ -141,8 +179,8 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 		_applying = true;
 		try {
 			foreach (var binding in _grids) {
-				ApplyGrid(binding);
-				await binding.Grid.RefreshGrid();
+				if (ApplyGrid(binding))
+					await binding.Grid.RefreshGrid();
 				if (_disposed)
 					return;
 			}
@@ -163,12 +201,58 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 	// Release native event subscriptions without inventing a disposal-time write.
 	public void Dispose() {
 		_disposed = true;
-		foreach (var binding in _grids)
-			binding.Grid.PreferencesChanged -= binding.Changed;
 		_grids.Clear();
 		foreach (var binding in _logs)
 			binding.Selector.PreferencesChanged -= binding.Changed;
 		_logs.Clear();
+	}
+
+	// Legacy grid records are read only by the screen owner, never by the visual control.
+	private async Task<VisualGridSettings> ReadLegacyGridPreferencesAsync(VisualGrid grid, CancellationToken cancellationToken) {
+		var key = GetLegacyGridSettingsKey(grid);
+		if (key == null)
+			return null;
+		var provider = _settings.Provider;
+		VisualGridSettings values;
+		if (await provider.ContainsSettingAsync(typeof(VisualGridSettings), key, cancellationToken)) {
+			values = ((VisualGridSettings)await provider.LoadSettingAsync(typeof(VisualGridSettings), key, cancellationToken)).Copy();
+		} else if (await provider.ContainsSettingAsync(typeof(CrudGridSettings), key, cancellationToken)) {
+			var legacy = (CrudGridSettings)await provider.LoadSettingAsync(typeof(CrudGridSettings), key, cancellationToken);
+			values = new VisualGridSettings {
+				ConsumerVersion = legacy.ConsumerVersion,
+				PageMode = legacy.PageMode.HasValue ? (VisualGridPageMode)legacy.PageMode.Value : null,
+				AutoPageSize = legacy.AutoPageSize,
+				PageSize = legacy.PageSize,
+				PageNumber = legacy.PageNumber,
+				SortColumnName = legacy.SortColumnName,
+				SortDirection = legacy.SortDirection,
+				Columns = VisualGridSettings.CopyColumns(legacy.Columns)
+			};
+		} else {
+			return null;
+		}
+		if (grid.IsDisposed || grid.Disposing)
+			return null;
+
+		values.PageMode ??= values.AutoPageSize ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
+		return values;
+	}
+
+	// Preserve the former control identity solely for importing an existing record into its screen.
+	private static string GetLegacyGridSettingsKey(VisualGrid grid) {
+		var path = new List<string>();
+		for (Control control = grid; control != null; control = control.Parent) {
+			if (control is WinFormsApplicationScreen || control != grid && control is UserControl && control.GetType() != typeof(UserControl))
+				return $"{control.GetType().FullName}.{string.Join(".", path)}";
+			if (control is Form form) {
+				if (form.GetType() == typeof(Form) && string.IsNullOrWhiteSpace(form.Name))
+					return null;
+				return $"{form.GetType().FullName}.{form.Name}.{string.Join(".", path)}";
+			}
+			if (!string.IsNullOrWhiteSpace(control.Name))
+				path.Insert(0, control.Name);
+		}
+		return null;
 	}
 
 	// A typed record is authoritative; old standalone control records are consulted only before it exists.
@@ -197,20 +281,34 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 		return property;
 	}
 
-	// Native grids borrow the corresponding actual nested settings value from their screen.
-	private void ApplyGrid(GridBinding binding) {
+	// Reapply accepted configuration changes while leaving temporary views intact after unrelated saves.
+	private bool ApplyGrid(GridBinding binding) {
 		var preferences = binding.Get(_settings);
 		if (preferences == null) {
 			preferences = new VisualGridSettings();
 			binding.Set(_settings, preferences);
 		}
+		if (binding.AppliedPreferences?.HasSameConfiguration(preferences) == true)
+			return false;
 		binding.Grid.Preferences = preferences;
-		binding.Grid.ApplyGridPreferences(preferences);
+		// Options edits the owner object, so populate its full column list instead of hiding gaps in a local editor.
+		preferences.Columns = binding.Grid.CaptureGridPreferences().Columns;
+		binding.AppliedPreferences = preferences.Copy();
+		return true;
+	}
+
+	// Configuration commands must target a grid already bound to this settings owner.
+	private GridBinding GetGridBinding(VisualGrid grid) {
+		Guard.ArgumentNotNull(grid, nameof(grid));
+		ObjectDisposedException.ThrowIf(_disposed, this);
+		var binding = _grids.Find(binding => ReferenceEquals(binding.Grid, grid));
+		Guard.Ensure(binding != null, "Bind the grid to its screen settings before configuring it.");
+		return binding;
 	}
 
 	#region Inner Types
 
-	// Retain only the native control, its actual-value accessors and its removable subscription.
+	// Remember owner values last applied or explicitly captured so later saves preserve temporary views.
 	private sealed class GridBinding(VisualGrid grid, Func<SettingsObject, VisualGridSettings> get, Action<SettingsObject, VisualGridSettings> set) {
 		public VisualGrid Grid { get; } = grid;
 
@@ -218,7 +316,7 @@ internal sealed class WinFormsApplicationScreenSettings : IDisposable {
 
 		public Action<SettingsObject, VisualGridSettings> Set { get; } = set;
 
-		public EventHandlerEx<VisualGridSettings> Changed { get; set; }
+		public VisualGridSettings AppliedPreferences { get; set; }
 	}
 
 	// Logging bindings retain the same minimal ownership information as grid bindings.

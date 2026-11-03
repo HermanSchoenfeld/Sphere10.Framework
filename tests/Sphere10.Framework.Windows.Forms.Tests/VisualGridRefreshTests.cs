@@ -30,7 +30,7 @@ public class VisualGridRefreshTests {
 	[Test]
 	public void GridTitleCanBeConfiguredBeforeAHandleOrApplicationFormExists() {
 		var forms = FormsApplication.OpenForms.Count;
-		using var crud = new VisualGrid { PersistSettings = false, GridTitle = "Devices" };
+		using var crud = new VisualGrid { GridTitle = "Devices" };
 		Assert.That(crud.IsHandleCreated, Is.False);
 		Assert.That(Find<Label>(crud, "_titleLabel").Text, Is.EqualTo("Devices"));
 		Assert.That(FormsApplication.OpenForms.Count, Is.EqualTo(forms), "An appearance property must not require or create an application window.");
@@ -145,7 +145,7 @@ public class VisualGridRefreshTests {
 
 	[Test]
 	public void ConstructorPageAndCapabilitySettingsDoNotScheduleAnUnconfiguredBinding() {
-		using var crud = new VisualGrid { PersistSettings = false };
+		using var crud = new VisualGrid();
 		crud.PageMode = VisualGridPageMode.Auto;
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Result", PropertyValue = row => row, DataType = typeof(string) } };
 		crud.Capabilities = CrudReferenceBinding.ReadOnlyCapabilities;
@@ -421,7 +421,7 @@ public class VisualGridRefreshTests {
 	});
 
 	private static VisualGrid NewGrid(Form owner, bool suppress) {
-		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = suppress };
+		var crud = new VisualGrid { Dock = DockStyle.Fill, SuppressLoadingIndicator = suppress };
 		owner.Controls.Add(crud);
 		return crud;
 	}

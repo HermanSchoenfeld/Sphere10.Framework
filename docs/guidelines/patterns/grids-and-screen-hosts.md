@@ -27,14 +27,23 @@ guides for concrete configuration and examples.
 | Targeted refresh | `RefreshEntityAsync`, `RefreshSelectedEntityAsync`. | Same methods plus typed `RefreshRowsAsync`; `RemoveRows` applies caller-known removals. |
 | Filtered export input | `ReadFilteredEntitiesAsync` returns a typed `Array`. | `ReadFilteredEntitiesAsync` returns `TItem[]`. Both read all matches across pages in current sort order. |
 | Reference selection | `CrudComboBox`, shared grid configuration and reference bindings. | `BlazorGridReferencePicker`, typed reference bindings/editor templates. |
-| Preferences | `VisualGridSettings` in the owning screen object, or standalone through the captured application provider. | `BlazorGridSettings` in the owning screen object, or standalone in browser storage with an explicit `SettingsKey`. |
-| Persistent manual widths | Stable column `PreferenceKey`, logical 96-DPI width, captured after a deliberate drag. | Stable column `PreferenceKey`, CSS-pixel width, applied before first markup/sizing. |
+| Preferences | Accepted `VisualGridSettings` in the owning screen object; runtime operations stay transient until explicit configuration Save. | `BlazorGridSettings` in the owning screen object, or standalone in browser storage with an explicit `SettingsKey`. |
+| Persistent manual widths | Stable column `PreferenceKey`, logical 96-DPI width, explicitly saved after a deliberate drag. | Stable column `PreferenceKey`, CSS-pixel width, applied before first markup/sizing. |
 
 For screen-owned preferences, declare `[Settings(typeof(...))]` on the screen
 with its nested `SettingsObject` schema, declare named grid roles on that root
-and bind non-null `Preferences`. That suppresses independent
-standalone writes while retaining the same grid capture/apply path. Default
-column schemas serve unopened Options pages; screens without settings are omitted.
+and bind non-null `Preferences`. Native grids use that owner through their
+capture/apply path and have no local settings editor or independent persistence.
+A bound browser grid suppresses its standalone writes. Complete default column
+schemas serve unopened Options pages; older saved overrides reconcile by key,
+and screens without settings are omitted. The native screen's `Columns`
+collection order controls its displayed column order while preserving overrides
+by stable key. The native footer retains its page-mode selector, manual size and
+page navigation as transient grid operations. An optional designer-owned
+`VisualGridConfigurationContextMenu` on `HeaderContextMenuStrip` saves only the
+clicked grid into the actual screen root or temporarily restores that grid's
+screen-declared defaults. Screen close/finalization does not capture runtime
+grid choices. Screen Options uses explicit Apply/OK for its edits.
 Import legacy standalone records only while the typed screen record is absent;
 Reset of an existing typed record must not reimport them after restart. See
 [Screen Options](../../usage/screen-options.md) for startup, detached editing,

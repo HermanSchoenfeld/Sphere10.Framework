@@ -374,7 +374,7 @@ public class WidgetStateEventTests {
 
 	// The real grid retains its nested layout and native input routing.
 	private static VisualGrid CreateGrid(Form owner) {
-		var grid = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PrepareReadOnlyCellsInBackground = true };
+		var grid = new VisualGrid { Dock = DockStyle.Fill, SuppressLoadingIndicator = true, PrepareReadOnlyCellsInBackground = true };
 		grid.GridBindings = new[] {
 			new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), PropertyValue = row => row.Name }
 		};

@@ -34,7 +34,7 @@ public class CrudReferencePicker : UserControlEx {
 		MaximumSize = Binding.MaximumDropDownSize;
 		Size = MaximumSize;
 		Padding = new Padding(4);
-		Grid = new ReferenceGrid { Dock = DockStyle.Fill, BorderStyle = BorderStyle.None, MinimumSize = Size.Empty, PersistSettings = false, Capabilities = CrudReferenceBinding.ReadOnlyCapabilities };
+		Grid = new ReferenceGrid { Dock = DockStyle.Fill, BorderStyle = BorderStyle.None, MinimumSize = Size.Empty, Capabilities = CrudReferenceBinding.ReadOnlyCapabilities };
 		Grid.SelectedEntityDirect = SelectedEntity!;
 		Grid.EntitySelected += (_, entity) => {
 			if (!_loading)

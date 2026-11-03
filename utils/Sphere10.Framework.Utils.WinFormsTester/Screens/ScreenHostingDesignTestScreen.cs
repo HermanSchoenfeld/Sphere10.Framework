@@ -24,7 +24,7 @@ public partial class ScreenHostingDesignTestScreen : ScreenHostingTestScreen {
 	public ScreenHostingDesignTestScreen()
 		: this("Design") {
 		if (Tools.Runtime.IsDesignMode)
-			InitializePreferencesDemo("DesignerPreview");
+			InitializePreferencesDemo();
 	}
 
 	/// <summary>Lets independent registrations supply their own construction-time workspace profile.</summary>
@@ -33,9 +33,10 @@ public partial class ScreenHostingDesignTestScreen : ScreenHostingTestScreen {
 	}
 
 	/// <summary>Adds the typed preference demonstration while preserving the registration's original constructor argument.</summary>
-	public ScreenHostingDesignTestScreen(string profile, string standaloneGridKey)
+	public ScreenHostingDesignTestScreen(string profile, bool includePreferences)
 		: this(profile) {
-		InitializePreferencesDemo(standaloneGridKey);
+		if (includePreferences)
+			InitializePreferencesDemo();
 	}
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>

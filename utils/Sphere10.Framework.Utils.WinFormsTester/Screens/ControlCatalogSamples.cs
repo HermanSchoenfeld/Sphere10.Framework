@@ -160,7 +160,7 @@ public static class ControlCatalogSamples {
 			Sample<ValidatedTextBoxButton>("Editors", CreateValidatedEditor),
 			Sample<ValidationIndicator>("Feedback", () => new ValidationIndicatorTestScreen()),
 			Sample<VisualGrid>("Data", () => new VisualGridTestScreen()),
-			Window<VisualGridSettingsDialog>(() => new VisualGridSettingsDialog(new VisualGridSettings())),
+			Sample<VisualGridConfigurationContextMenu>("Data", CreateGridConfigurationMenu, "The registered Visual Grid Laboratory demonstrates this header menu on both grids. Commands require a hosted settings role; use that main-shell screen to exercise Save configuration and Restore defaults."),
 			Sample<WhoAreYouControl>("Application", () => new WhoAreYouControl()),
 			Sample<WinFormsApplicationScreen>("Application", () => Composed(new WinFormsApplicationScreen { Title = "Standalone screen example" })),
 			new ControlCatalogEntry(typeof(WinFormsApplicationScreenForm), "Application", "Opens an isolated screen through its native host, then detaches it using the native hosting API.", null, true, ShowDetachedScreenAsync),
@@ -404,6 +404,13 @@ public static class ControlCatalogSamples {
 		form.Disposed += (_, _) => closed.TrySetResult();
 		form.Owner = owner.FindForm();
 		await closed.Task;
+	}
+
+	// Expose the designer-owned nonvisual menu to the catalog while retaining its normal screen ownership.
+	private static Control CreateGridConfigurationMenu() {
+		var screen = new VisualGridTestScreen();
+		screen.Tag = screen.Controls.Find("_crudGrid", true).OfType<VisualGrid>().Single().HeaderContextMenuStrip;
+		return screen;
 	}
 
 	private static VisualGridColumn<Employee> EmployeeColumn(string property, string caption, Func<Employee, object> value) {

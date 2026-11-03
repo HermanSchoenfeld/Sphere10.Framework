@@ -272,7 +272,7 @@ public class VisualGridReadOnlyCellTests {
 	});
 
 	private static VisualGrid NewGrid(Form owner) {
-		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true };
+		var crud = new VisualGrid { Dock = DockStyle.Fill, SuppressLoadingIndicator = true };
 		owner.Controls.Add(crud);
 		return crud;
 	}

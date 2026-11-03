@@ -18,8 +18,6 @@ partial class VisualGrid {
 	private System.Windows.Forms.TableLayoutPanel _topPanel;
 	private System.Windows.Forms.Button _createButton;
 	private System.Windows.Forms.Button _deleteButton;
-	private System.Windows.Forms.Button _settingsButton;
-	private System.Windows.Forms.ToolTip _settingsToolTip;
 	private System.Windows.Forms.TableLayoutPanel _bottomPanel;
 	private System.Windows.Forms.FlowLayoutPanel _pagingControlsPanel;
 	private System.Windows.Forms.FlowLayoutPanel _totalRecordsPanel;
@@ -52,10 +50,8 @@ partial class VisualGrid {
 	/// </summary>
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
-		if (disposing) {
+		if (disposing)
 			this._initialLoadingCircle.Active = false;
-			SaveGridSettings();
-		}
 		if (disposing && (_components != null))
 			_components.Dispose();
 
@@ -75,8 +71,6 @@ partial class VisualGrid {
 		this._titleLabel = new System.Windows.Forms.Label();
 		this._createButton = new System.Windows.Forms.Button();
 		this._deleteButton = new System.Windows.Forms.Button();
-		this._settingsButton = new System.Windows.Forms.Button();
-		this._settingsToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._bottomPanel = new System.Windows.Forms.TableLayoutPanel();
 		this._pagingControlsPanel = new System.Windows.Forms.FlowLayoutPanel();
 		this._totalRecordsPanel = new System.Windows.Forms.FlowLayoutPanel();
@@ -148,17 +142,15 @@ partial class VisualGrid {
 		//
 		this._topPanel.AutoSize = true;
 		this._topPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-		this._topPanel.ColumnCount = 5;
+		this._topPanel.ColumnCount = 4;
 		this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 		this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 		this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-		this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 		this._topPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
 		this._topPanel.Controls.Add(this._createButton, 0, 0);
 		this._topPanel.Controls.Add(this._deleteButton, 1, 0);
 		this._topPanel.Controls.Add(this._titleLabel, 2, 0);
 		this._topPanel.Controls.Add(this._searchTextBox, 3, 0);
-		this._topPanel.Controls.Add(this._settingsButton, 4, 0);
 		this._topPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 		this._topPanel.Location = new System.Drawing.Point(3, 3);
 		this._topPanel.Name = "_topPanel";
@@ -167,21 +159,6 @@ partial class VisualGrid {
 		this._topPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
 		this._topPanel.Size = new System.Drawing.Size(518, 25);
 		this._topPanel.TabIndex = 2;
-		//
-		// _settingsButton
-		//
-		this._settingsButton.AccessibleName = "Grid settings";
-		this._settingsButton.AccessibleDescription = "Configure paging, sorting and column widths for this grid.";
-		this._settingsButton.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right));
-		this._settingsButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.SmallEditIcon;
-		this._settingsButton.Margin = new System.Windows.Forms.Padding(3, 2, 2, 0);
-		this._settingsButton.Name = "_settingsButton";
-		this._settingsButton.Size = new System.Drawing.Size(28, 23);
-		this._settingsButton.TabIndex = 5;
-		this._settingsButton.UseVisualStyleBackColor = true;
-		this._settingsButton.Visible = false;
-		this._settingsToolTip.SetToolTip(this._settingsButton, "Grid settings");
-		this._settingsButton.Click += new System.EventHandler(this.SettingsButtonClick);
 		//
 		// _titleLabel
 		//

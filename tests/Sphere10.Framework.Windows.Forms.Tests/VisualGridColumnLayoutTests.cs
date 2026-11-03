@@ -236,7 +236,7 @@ public class VisualGridColumnLayoutTests {
 	}
 
 	private static VisualGrid NewGrid(Form owner, bool prepared) {
-		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PageMode = VisualGridPageMode.Single,
+		var crud = new VisualGrid { Dock = DockStyle.Fill, SuppressLoadingIndicator = true, PageMode = VisualGridPageMode.Single,
 			PrepareReadOnlyCellsInBackground = prepared, AutoSizeRowsOnRefresh = false };
 		owner.Controls.Add(crud);
 		return crud;

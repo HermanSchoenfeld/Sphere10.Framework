@@ -199,6 +199,13 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		get; set;
 	}
 
+	/// <summary>The optional native menu shown only for a right-click on a column header; its supplying container owns it.</summary>
+	[Category("Behavior")]
+	[DefaultValue(null)]
+	[Description("The menu shown when a column header is right-clicked. Row commands use their separate context menu.")]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+	public ContextMenuStrip HeaderContextMenuStrip { get; set; }
+
 	[Description("When selecting a row, selection occurs on mouse up (as opposed to default behavior of mouse down)")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
@@ -240,7 +247,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 				SetVisiblePageNumberText(0);
 				OrganizeLayout();
 			}
-			SaveGridSettings(true);
+			NotifyPreferencesChanged();
 			RefreshAutoPageSize(true);
 		}
 	}
@@ -403,8 +410,14 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 			var bindings = (value ?? Enumerable.Empty<IVisualGridColumn>()).ToArray();
 			if (_preferences != null)
 				ValidatePreferenceBindings(bindings);
+			bindings = OrderColumnBindings(bindings, _preferences?.Columns);
 			_columnsBindings = bindings;
-			RestoreColumnPreferences(_preferences?.Columns ?? _gridSettings?.Columns);
+
+			// Screen preferences can arrive before the source supplies its column schema.
+			if (_preferences != null && !_restoringGridSettings)
+				ApplyGridPreferencesCore(_preferences);
+			else
+				RestoreColumnPreferences(_preferences?.Columns);
 			_imageCellViews.Clear();
 			ResetRowHeightMeasurements();
 			if (_sortColumnName == null)
@@ -481,8 +494,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		ResolvePublishedEntity = null;
 		ResetRowHeightMeasurements();
 		_crudCapabilities = available & capabilities;
-		await RestoreGridSettingsAsync();
-		RestoreColumnPreferences(_preferences?.Columns ?? _gridSettings?.Columns);
+		RestoreColumnPreferences(_preferences?.Columns);
 		UpdateCellInteraction();
 		OrganizeLayout();
 	}
@@ -622,7 +634,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		_editToolStripMenuItem.Enabled = _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate);
 		_searchTextBox.Enabled = _crudCapabilities.HasFlag(DataSourceCapabilities.CanSearch);
 
-		UpdateSettingsButton();
 		var shouldBind = !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead) && _grid.Rows.Count > 0;
 		shouldBind = shouldBind || _crudCapabilities.HasFlag(DataSourceCapabilities.CanRead) && _grid.Rows.Count == 0;
 		shouldBind = shouldBind || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) && _sortColumnName != null;
@@ -734,7 +745,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 
 	private void UpdateButtonBarVisibility() {
 		// A disabled parent does not remove the title or the commands supported by its source.
-		if (_preferences != null || _gridSettings != null || !string.IsNullOrEmpty(_gridTitle) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)
+		if (!string.IsNullOrEmpty(_gridTitle) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)
 			|| _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanSearch))
 			ShowButtonBar();
 		else
@@ -842,7 +853,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 				: SortDirection.Ascending;
 			_sortColumnIndex = col;
 			_sortColumnName = _sortDirection == SortDirection.None ? null : _columnsBindings[col].SortName;
-			SaveGridSettings(true);
+			NotifyPreferencesChanged();
 			await RefreshGrid();
 		});
 		if (error != null)
@@ -854,7 +865,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 			if (_restoringGridSettings || _updatingPageSizeDisplay || PageMode != VisualGridPageMode.Paged || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage))
 				return;
 			_manualPageSize = _pageSize = (int)_pageSizeUpDown.Value;
-			SaveGridSettings(true);
+			NotifyPreferencesChanged();
 			await RefreshGrid();
 		});
 		if (error != null)
@@ -936,7 +947,7 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 		_pageNumber = PageMode == VisualGridPageMode.Single || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)
 			? 0 : pageNumber.ClipTo(0, _endPageNumber);
 		SetVisiblePageNumberText(_pageNumber);
-		SaveGridSettings(true);
+		NotifyPreferencesChanged();
 		await RefreshGrid();
 	}
 
@@ -1034,6 +1045,13 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 					break;
 				case MouseButtons.Right:
 					var position = _grid.PositionAtPoint(args.Location);
+					if (CanInteractWithCommittedRows && HeaderContextMenuStrip != null && !position.IsEmpty() && position.Row == 0
+						&& _grid.GetCell(position) is SourceGrid.Cells.ColumnHeader && _grid.PositionToRectangle(position).Contains(args.Location)) {
+						// Native SourceControl identifies this public grid without retaining a menu-to-grid binding.
+						HeaderContextMenuStrip.Show(this, PointToClient(_grid.PointToScreen(args.Location)));
+						break;
+					}
+
 					if (CanInteractWithCommittedRows && RightClickForContextMenu && !position.IsEmpty()
 						&& _rowToEntityMap.ContainsKey(position.Row) && _grid.Selection.IsSelectedRow(position.Row))
 						_selectionContextMenuStrip.Show(_grid.PointToScreen(args.Location));
@@ -1278,8 +1296,6 @@ public partial class VisualGrid : UserControlEx, IVisualGrid {
 
 	/// <summary>Serializes refresh admission and publishes the latest current page.</summary>
 	private async Task RefreshGridInternal() {
-		// Keep restoration inside the existing shared refresh task so repeated requests retain task identity.
-		await RestoreGridSettingsAsync();
 		if (DesignMode || IsDisposed || State == VisualState.Loading && !_awaitingInitialBinding)
 			return;
 		using var admission = await _bindingGate.EnterScopeAsync();

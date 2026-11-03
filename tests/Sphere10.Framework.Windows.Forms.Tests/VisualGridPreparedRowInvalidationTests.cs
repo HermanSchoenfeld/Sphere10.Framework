@@ -32,7 +32,7 @@ public class VisualGridPreparedRowInvalidationTests {
 		var source = new RefreshableSnapshotDataSource<Row, int>(row => row.Id, row => row.Id == original.Id ? replacement : row);
 		source.ReplaceSnapshot(new[] { original, other });
 		using var crud = new VisualGrid {
-			Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true,
+			Dock = DockStyle.Fill, SuppressLoadingIndicator = true,
 			PageMode = VisualGridPageMode.Single, PrepareReadOnlyCellsInBackground = true, AutoSizeRowsOnRefresh = false
 		};
 		owner.Controls.Add(crud);

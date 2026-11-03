@@ -130,7 +130,9 @@ observe and save the same actual plugin/block objects.
 
 Hide, a vetoed close, paint, layout and unchanged disposal do not save settings.
 Accepted close and approved finalization await the existing save boundary while
-the provider is available. Failures remain visible and retryable.
+the provider is available. Native grids are excluded from automatic runtime
+capture: their current page, sort and layout do not replace accepted screen
+configuration at this boundary. Failures remain visible and retryable.
 
 ## Options editors
 
@@ -173,19 +175,41 @@ Editor metadata is not serialized.
 
 Each logical grid uses its own existing `VisualGridSettings` or
 `BlazorGridSettings` value inside the screen root. Bind before first sizing/query,
-with stable column keys and readable default titles. Non-null grid `Preferences`
-selects screen ownership and suppresses its separate standalone record.
+with stable column keys and readable default titles. Native grids apply the
+screen-owned configuration, while their ordinary page, sort and resize operations
+remain transient. Their configuration editor is Screen Options; they have no
+settings button, local settings dialog or independent settings record. A bound
+browser grid continues to suppress its separate standalone record.
 
-The grid settings button edits that same value. Native `ShowGridSettings`
-controls visibility; `AllowsSettingsChange` controls enablement. Column settings
+Declare every column in the screen's settings defaults, so the Options page is
+complete even before that screen opens. Merge older or empty column records with
+those declarations while preserving accepted overrides by key. Column settings
 expose **Manual width** and **Stretch to fit**. Null restores natural width or
 the column definition's stretch choice; a manual width takes precedence.
-Native widths use logical 96-DPI pixels; browser widths use CSS pixels. Preserve
-layout overrides across refresh/paging/rebinding and protect active cell drafts.
+For native grids, arrange the `Columns` collection in the desired displayed
+order; width and stretch choices remain attached to stable column keys. Use
+the standard WinForms array editor's **Up** and **Down** buttons to move columns.
+Accepted changes apply through the screen's existing settings notification and
+model/UI lifecycle. Native widths use logical 96-DPI pixels; browser widths use
+CSS pixels. Preserve layout across refresh/paging/rebinding and protect active
+cell drafts.
 
 The footer's compact page-mode button offers Single, Auto and Manual; Manual
 retains the `Paged` enum value. Automatic fitted capacity does not replace the
 remembered manual size. Resize and refresh do not authorize writes.
+
+A screen may attach the reusable `VisualGridConfigurationContextMenu` to a
+native grid's generic `HeaderContextMenuStrip`. Right-clicking a column header
+then offers **Save configuration** and **Restore defaults**. Save captures the
+clicked grid's current values into its existing section and saves the actual
+screen settings root. Restore applies that grid's complete defaults from the
+screen settings class only to the current view by default. The menu's
+`DefaultsRestorePolicy` is `VisualGridDefaultsRestorePolicy.RestoreOnly` by
+default; choose `RestoreAndSave` to persist the restored configuration through
+the same screen owner as part of that command.
+Other grids' transient choices are not captured by that command. Closing the
+screen or application does not implicitly save grid choices. Screen Options
+continues to edit accepted configuration through Apply and OK.
 
 Typed screen records are authoritative. Optional legacy standalone imports are
 used only before that record exists; Reset must not reimport retired records

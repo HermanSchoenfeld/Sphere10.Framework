@@ -20,6 +20,7 @@ screen; reusable control, block and plugin settings retain their own owners.
 using System.ComponentModel;
 using Sphere10.Framework;
 using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms;
 
 [Settings(typeof(MailScreen.MailScreenSettings))]
@@ -59,7 +60,17 @@ public partial class MailScreen : WinFormsApplicationScreen {
 
 		public override void RestoreDefaultValues() {
 			base.RestoreDefaultValues();
-			Messages = new VisualGridSettings();
+			Messages = new VisualGridSettings {
+				PageMode = VisualGridPageMode.Auto,
+				PageSize = 50,
+				SortColumnName = "Received",
+				SortDirection = SortDirection.Descending,
+				Columns = new[] {
+					new ApplicationGridColumnPreferences { Key = "sender", Title = "Sender" },
+					new ApplicationGridColumnPreferences { Key = "subject", Title = "Subject", ExpandsToFit = true },
+					new ApplicationGridColumnPreferences { Key = "received", Title = "Received" }
+				}
+			};
 		}
 	}
 
@@ -119,11 +130,38 @@ keystroke events. Do not block synchronous model/UI hooks on asynchronous work.
 Grid/log initialization can remain asynchronous. Configure columns, await the
 existing `BindGridPreferencesAsync(grid, nameof(MailScreenSettings.Messages))`,
 then bind and refresh the source through its normal awaited initialization task.
-Each logical grid has its own `VisualGridSettings` object and stable column keys.
-A bound grid uses that screen-owned value; standalone grids retain
-`PersistSettings` / `SettingsKey`. Grid settings and Options edit the same value.
-Manual width takes priority over `ExpandsToFit`; `ShowGridSettings` controls the
-settings button's visibility and `AllowsSettingsChange` controls enablement.
+Each logical grid has its own `VisualGridSettings` value in the screen root,
+with stable column keys and readable titles declared in its defaults. Options
+must list those columns before the screen opens and preserve accepted width and
+stretch overrides when loading an older or empty record. The grid applies that
+configuration; the screen owns its editor and persistence. Native grids have no
+settings button, local settings dialog or independent settings record. The screen's
+`Columns` collection determines displayed column order, with width and stretch
+overrides attached to stable keys. Manual width takes priority over `ExpandsToFit`.
+The Auto/Single/Manual selector, manual page size, page navigation, search,
+sorting and column resizing remain transient operations. Binding does not copy
+them back into accepted `ScreenSettings` during capture, close or finalization.
+
+For explicit configuration commands, drop `VisualGridConfigurationContextMenu`
+onto the screen and assign it to the grid's `HeaderContextMenuStrip`, or attach
+it after `InitializeComponent()`:
+
+```csharp
+_messages.HeaderContextMenuStrip = new VisualGridConfigurationContextMenu(components);
+await BindGridPreferencesAsync(_messages, nameof(MailScreenSettings.Messages));
+```
+
+Right-click a column header to choose **Save configuration** or **Restore
+defaults**. The reusable menu resolves the clicked grid's owning screen. Save
+copies only that grid's current configuration to its existing settings section,
+then persists the actual root through its provider. Restore applies the selected
+grid's complete defaults from the screen settings class. The default
+`DefaultsRestorePolicy` is `VisualGridDefaultsRestorePolicy.RestoreOnly`;
+`RestoreAndSave` persists the restored values through the same owner. Declare its
+complete column schema, order, initial page mode, manual size and sort in those defaults. A shared menu
+can serve several grids; `SourceControl` identifies the clicked one.
+`HeaderContextMenuStrip` also accepts an ordinary custom `ContextMenuStrip`.
+Screen Options remains the configuration editor, with explicit Apply/OK.
 
 ## Block and plugin settings
 
@@ -194,7 +232,9 @@ Exercise unopened Options without constructing screens; independent same-type
 registration defaults; real Apply/Cancel/Reset and failure/retry; typed owner
 access with and without screen settings; first-query restoration; and accepted
 versus rejected closure. Include a scalar-only edit, accepted close and fresh-provider
-reopen so a grid edit cannot mask a missing dirty notification. Verify
+reopen so a grid edit cannot mask a missing dirty notification. Verify transient
+grid changes do not enter that save, explicit Save captures only the selected grid,
+and the default RestoreOnly policy stays temporary until saved. Verify
 `ScreenSettings` is non-browsable and hidden from
 designer serialization on each concrete screen. Stop queued owner refreshes
 after removal. `[Transient]` members must not appear in either native or

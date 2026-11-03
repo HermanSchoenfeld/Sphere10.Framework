@@ -187,7 +187,7 @@ public class VisualGridLiveInputTests {
 
 	private static VisualGrid NewGrid(Form owner, bool suppress, bool leftClickToDeselect, bool selectOnMouseUp = false) {
 		var crud = new VisualGrid {
-			Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = suppress, AllowCellEditing = false,
+			Dock = DockStyle.Fill, SuppressLoadingIndicator = suppress, AllowCellEditing = false,
 			LeftClickToDeselect = leftClickToDeselect, SelectOnMouseUp = selectOnMouseUp, PageMode = VisualGridPageMode.Single,
 			AutoSizeRowsOnRefresh = false, PrepareReadOnlyCellsInBackground = true
 		};

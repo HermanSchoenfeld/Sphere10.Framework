@@ -76,8 +76,6 @@ public class VisualGridLiveDemoTests {
 
 	private static VisualGridTestScreen CreateScreen(Form owner) {
 		var screen = new VisualGridTestScreen { Dock = DockStyle.Fill };
-		foreach (var grid in screen.Controls.Find("_visualGrid", true).OfType<VisualGrid>())
-			grid.PersistSettings = false;
 		owner.Controls.Add(screen);
 		var tabs = Find<TabControl>(screen, "_contentTabs");
 		tabs.SelectedTab = Find<TabPage>(screen, "_liveTab");

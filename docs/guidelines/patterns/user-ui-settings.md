@@ -43,9 +43,11 @@ and unsubscribe on removal. Nonvisual services use those same objects and events
 Native screens use the existing `ApplicationControl` / `UserControlEx` lifecycle:
 restore before work, present in `CopyModelToUI`, capture deliberate UI changes in
 `CopyUIToModel`, and use `Refresh` after accepted settings changes. Scalar changes
-call `MarkSettingsChanged()` when they need accepted-close persistence; bound
-grid/log controls already track their edits. Hide, vetoed close, painting,
-layout and unchanged disposal do not authorize saves.
+call `MarkSettingsChanged()` when they need accepted-close persistence. Logging
+bindings retain their existing accepted-change behavior. Native grid operations
+remain transient until explicitly saved; they do not dirty or overwrite the
+screen's accepted grid section during close. Hide, vetoed close, painting, layout
+and unchanged disposal do not authorize saves.
 
 Options editors borrow the actual object. Local dialog backups restore unapplied
 edits on Cancel; earlier successful Applies remain saved. Reset only changes
@@ -123,66 +125,62 @@ Remember normal bounds as well as the monitor and maximized state. Use restore b
 ## Reusable grid preferences
 
 [VisualGridSettings](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSettings.cs)
-is a settings data object for one logical grid. It stores nullable `PageMode`, the
-manual `PageSize`, zero-based Paged/Auto `PageNumber`, `SortColumnName` and
-`SortDirection`. It contains values rather than controls, row data or a live
-provider graph. [VisualGrid](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/Controls/VisualGrid.cs)
-uses the same `Get<T>(id)` / instance `Save()` pattern as form preferences.
+is a reusable settings value for one logical grid. The owning screen keeps it
+inside its actual `ScreenSettings` object and owns editing, restoration and
+persistence through `UserSettings`. A standalone control's consumer may own the
+same value through its existing settings lifecycle. `VisualGrid` has no settings
+button, settings dialog or independent settings record.
 
-`VisualGrid.PersistSettings` defaults to true. `SettingsKey` supplies an explicit
-stable ID when needed. Otherwise the control uses the nearest concrete hosted
-screen or user-control type plus its named child path, with a form type/name
-fallback. The ID must remain stable across docking, captions, localization and
-application sessions; different logical grids need different IDs. Dynamic or
-unnamed owners should supply an explicit key. Transient reference pickers set
-`PersistSettings = false`.
+Declare the complete column keys and readable titles in the screen's value-only
+defaults so Options can edit them before the operational screen is opened.
+Reconcile older or sparse saved column arrays against that declaration, retaining
+accepted width and stretch overrides by stable key. An empty saved array must not
+make the screen's declared columns disappear from Options.
 
-Restore after source/column bindings and the user provider are available,
-before querying the first page. If there is no saved file, retain the actual
-control/consumer defaults rather than overriding them with an unrelated
-settings default. Clamp old page sizes and page numbers and validate sort names
-against the current column `SortName` values. Renamed/removed columns fall back
-to the configured source ordering.
+Bind the screen's section with `BindGridPreferencesAsync` before first sizing or
+query. The grid's `Preferences`, `CaptureGridPreferences()` and
+`ApplyGridPreferences(values)` support that owner binding. Captures are detached
+values; applying preferences does not save settings or discard a live cell draft.
+`PreferencesChanged` reports runtime page, sort and completed column-resize
+changes. Those operations do not update the screen's accepted settings section
+or authorize a write, including on accepted close or application finalization.
+The screen's `Columns` collection order determines the displayed native column
+order. Reordering entries preserves width and stretch settings by stable key;
+it does not change the source sort.
 
-Save accepted page-size, page-navigation, sort and page-mode changes.
-The footer's compact grid-icon menu selects **Single**, **Auto** or **Manual**,
-with a checkmark on the current mode. Manual retains the `Paged` API value and shows the
-manual size and navigator; Auto hides the manual size and retains the navigator;
-Single shows all matching rows on page zero and hides both. The remembered manual
-value is restored on returning to Manual and is stored in `VisualGridSettings.PageSize`.
-Navigation in Auto is an accepted preference; the source clamps the restored page
-when its data or fitted capacity changes. A null or invalid saved `PageMode` falls
-back to the retained legacy `AutoPageSize` flag without writing during restore.
-Automatic fitted row counts depend on the current viewport and must not replace
-the remembered manual size. Resize/font/DPI changes, source refreshes and
-normalizing old values do not authorize preference writes. Because a cached
-settings object can be shared by instances with the same ID, unchanged disposal
-must not overwrite another instance's accepted preferences. Track accepted dirty
-state and retry failed writes through the original provider-bound object.
+For optional header commands, drop `VisualGridConfigurationContextMenu` onto the
+screen in the designer and assign it to the grid's generic
+`HeaderContextMenuStrip`. Right-clicking a column header offers **Save
+configuration** and **Restore defaults**. Save captures only that grid's current
+configuration into its existing screen settings section and persists the actual
+root through its provider. Restore applies that grid's complete defaults from
+the screen settings class to the current view. `DefaultsRestorePolicy` defaults
+to `VisualGridDefaultsRestorePolicy.RestoreOnly`, which keeps the result temporary
+until Save; `RestoreAndSave` persists it through the same screen owner.
+The same component can serve several bound grids, resolving the clicked grid
+from its native `SourceControl`. A custom `ContextMenuStrip` can be assigned
+instead. Unbound grids have no screen configuration to save.
 
-Consumers with a versioned preference migration can override
-`VisualGrid.UpgradeGridSettings(VisualGridSettings)`. It receives a detached value
-copy for either stored preferences or fresh control defaults, before the first
-page query. Use `ConsumerVersion` for the consumer's migration version. The hook
-must not perform IO. Its upgraded values and version are saved together with the
-next accepted preference change; restoration and unchanged disposal do not write
-or mutate the provider's cached payload. This allows a one-time default migration
-while respecting subsequent deliberate user choices.
+The footer's compact grid-icon menu remains an ordinary grid operation. It
+selects **Single**, **Auto** or **Manual**, with a checkmark on the current mode.
+Manual retains the `Paged` API value and shows the manual size and navigator;
+Auto hides the manual size and retains the navigator; Single shows all matching
+rows on page zero and hides both. Search, sorting and page navigation remain
+available according to source capabilities. Automatic fitted capacity does not
+replace the remembered manual size. Resize, font/DPI changes and source refresh
+must not cause preference writes.
 
-For a registered screen, bind its existing `VisualGridSettings` (native) or
-`BlazorGridSettings` (web) root section
-to the grid's non-null `Preferences` property. That explicitly replaces its
-standalone persistence owner; do not leave two records competing. Declare column
-keys/titles in value-only defaults, with a distinct role for each grid. Deliberate
-manual widths use stable `PreferenceKey` identities and logical 96-DPI units;
-web widths use CSS pixels. Columns without an override retain natural/stretch
-sizing. Restore before first sizing/query and preserve a live cell draft when
-accepted Options changes alter layout or defer query settings.
+Persisted manual widths use stable `IVisualGridColumn.PreferenceKey` identities
+and logical 96-DPI pixels. Screen Options exposes **Manual width** and **Stretch
+to fit** for each column. Manual width takes priority; clearing an override
+restores the binding's natural width or configured stretch behavior. Preserve
+accepted choices across refresh, paging and rebinding.
 
-A stored typed screen root is authoritative. Consult old standalone records only
-when that typed root is absent; do not maintain a section-version registry or
-sidecar. Resetting saved values must not cause a later restart to reimport old
-control records. Standalone grids retain their own existing persistence.
+Run any existing consumer migration in the owning settings lifecycle before
+applying values to the grid. A stored typed screen root is authoritative;
+resetting it must not reimport retired control records. Blazor retains its
+existing `BlazorGridSettings` browser-storage contract; these native ownership
+rules do not remove its separate supported APIs.
 
 ## Reusable logging preferences
 

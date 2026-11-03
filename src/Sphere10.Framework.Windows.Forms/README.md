@@ -545,7 +545,7 @@ The footer keeps **Total** on the left and a compact grid-icon menu button, **Pa
 | **Auto** (`Auto`) | Page navigator remains available; the manual label/editor are hidden. The actual ordered row heights, header and scrollbar-adjusted viewport determine how many complete rows fit, with a minimum of one. Resize, font and DPI changes recalculate capacity. Taller individual rows do not inflate the budget for every ordinary row. |
 | **Single** (`Single`) | All matching rows in one vertically scrollable page. The manual size and page navigator are hidden; the source receives page zero and `int.MaxValue` page length. Search and sorting still apply. |
 
-Switching modes starts at page zero and retains the remembered manual size for returning to **Manual**. `AutoPageSize` remains a compatibility alias: true selects **Auto**, false selects **Manual**. The `Paged` enum value and stored preferences remain unchanged. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting are remembered for **Manual** and **Auto**; **Single** always uses page zero.
+Switching modes starts at page zero and retains the remembered manual size for returning to **Manual**. `AutoPageSize` remains a compatibility alias: true selects **Auto**, false selects **Manual**. The `Paged` enum value and stored preferences remain unchanged. Sources without `CanPage` retain their existing complete-result behavior and hide the paging footer. Navigation and sorting remain active for **Manual** and **Auto**; **Single** always uses page zero. Saving their configuration is an explicit screen-owned action.
 
 Auto paging settles both larger and smaller capacities after native measurement.
 Measured viewport/header/row dimensions already use the window's device pixels;
@@ -568,7 +568,7 @@ At runtime a newly created grid shows its loading surface immediately. First bin
 
 After a selected-row operation, await `RefreshEntityAsync(entity)` or `RefreshSelectedEntityAsync()` to reread only that visible row through the source's `RefreshRangeAsync`. The source can replace the array entry with a fresh instance, or null when it disappeared. The grid retains page/sort settings, column widths and unaffected rows, and transfers selection to the replacement. A false result means the row is no longer visible or a source/query change superseded it. This requires a source that implements entity refresh; the standard read-only `SnapshotDataSource<T>` deliberately does not. A caller-owned snapshot source can supply that behavior without adding application collection policy to the grid. Targeted and full-page refreshes share scoped asynchronous admission.
 
-Click a sortable column header to cycle **Ascending → Descending → None**, then ascending again. **None** clears the header arrow and requests the source's natural order with `SortDirection.None`; changing to another column starts ascending. Sorting preserves the current page and established column widths, and an explicitly cleared sort persists across sessions. `SnapshotDataSource<T>` honors explicit **None** even when a default sort is configured; the initial null column with **Ascending** still requests that configured default.
+Click a sortable column header to cycle **Ascending → Descending → None**, then ascending again. **None** clears the header arrow and requests the source's natural order with `SortDirection.None`; changing to another column starts ascending. Sorting preserves the current page and established column widths. An explicitly saved cleared sort persists across sessions. `SnapshotDataSource<T>` honors explicit **None** even when a default sort is configured; the initial null column with **Ascending** still requests that configured default.
 
 `grid.TotalRecords` exposes the last accepted query's filtered total across all
 pages. `DataBindingComplete` runs on the grid's owning thread after the current
@@ -586,16 +586,66 @@ collector; snapshot sources therefore reuse their published inventory.
 
 Columns take their natural widths from the first nonempty result for a binding set, then keep those widths across paging, searching and refresh. Longer values on a later page do not resize the table. Explicit user resizing takes precedence and survives subsequent reads. Columns marked `ExpandsToFit` share spare viewport width when the viewport changes; an explicitly resized column keeps its chosen width. Assigning a new binding set starts a fresh natural-width calculation. Right mouse-down selects the clicked data row before a context menu opens in either left-click selection mode, without starting an editor or toggling checkbox values; headers and empty space do not open an entity menu.
 
-`PersistSettings` defaults to true. Each logical grid uses a typed `VisualGridSettings` object through `UserSettings` to remember its page mode, manual size, page number and source sort name/direction across sessions. Older settings without `PageMode` migrate through their retained `AutoPageSize` flag. The default settings ID uses its concrete screen/control type and named child path, so docking and caption changes do not change it. Set `SettingsKey` for an explicit stable identity when names are dynamic or ambiguous; set `PersistSettings = false` for transient grids. Reference pickers already opt out. Settings restore after bindings and the provider are available, validate obsolete values, and preserve the consumer's configured defaults on first use. Accepted preference changes save; viewport resizing and source refreshes do not write settings. See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
+The owning screen keeps one `VisualGridSettings` value per logical grid inside
+its actual `ScreenSettings` object. Screen Options owns the configuration editor,
+and the screen's existing settings provider owns persistence. `VisualGrid` has no
+settings button, local settings dialog or independent settings record. An ordinary
+standalone consumer may retain a settings value through its own lifecycle.
+See [per-user UI settings](../../docs/guidelines/patterns/user-ui-settings.md).
 
-A non-null `VisualGrid.Preferences` selects screen-owned `VisualGridSettings` and suppresses the separate standalone record. Use a distinct named role for each grid in the root settings object. `CaptureGridPreferences()` returns detached values; `ApplyGridPreferences(values)` applies accepted values without changing the chosen persistence owner, saving, or discarding a live cell draft. Query changes defer until the editor ends. `PreferencesChanged` reports accepted page/sort choices and completed header drags. The binding updates the actual screen settings object, which saves through its existing provider at the accepted-close boundary; Options edits that same object.
+Declare complete column keys and readable titles in the screen's value-only
+defaults so Options lists the columns before the screen opens. Reconcile older or
+empty saved column arrays against those declarations, preserving accepted widths
+and stretch choices by key. Do not depend on a grid-local dialog to discover the
+column schema. Arrange the screen's `Columns` collection to choose the displayed
+column order. Width and stretch choices remain associated with each stable key
+when columns move.
 
-The grid's top **Grid settings** button appears when it has bound preferences or a restored standalone settings object. `Traits` defaults to `VisualGridTraits.AllowsSettingsChange`; the designer-friendly `AllowsSettingsChange` property wraps that flag. Turning it off keeps the button visible and disabled. Without a settings object the button is hidden. The button opens an ordinary value editor for the same `VisualGridSettings` used by Options. OK validates and applies through the existing preference-change path; Cancel discards the local edit. Persistence remains with the existing screen or standalone settings owner.
+Bind `VisualGrid.Preferences` to the appropriate screen-owned value, using a
+distinct named role for each grid. `CaptureGridPreferences()` returns detached
+values; `ApplyGridPreferences(values)` applies accepted values without saving or
+discarding a live cell draft. Query changes defer until the editor ends.
+`PreferencesChanged` reports runtime page/sort choices and completed header
+drags. Those operations remain transient: they do not overwrite the accepted
+screen settings section or become persistent merely because the screen closes
+or the application finalizes.
 
-Existing JSON/XML grid records remain readable under their original internal storage type names. Restoration copies those values into `VisualGridSettings` without writing during load; an existing record with the new name takes precedence. The compatibility types remain internal and do not retain the old public grid API.
+A screen can drop a [VisualGridConfigurationContextMenu](VisualGrid/Controls/VisualGridConfigurationContextMenu.cs) component into its
+designer and assign it to the grid's generic `HeaderContextMenuStrip` property.
+For code-based attachment after `InitializeComponent()`:
 
-Persisted manual widths use `IVisualGridColumn.PreferenceKey`, which normally falls back to the property or source sort name. Supply an explicit key for computed columns and keep keys unique. Captions and column positions can change without losing widths. Widths use logical pixels at 96 DPI, remain stable across rebinds and DPI changes, and leave untouched natural/stretch columns unspecified. Reset clears deliberate overrides. Before an actual screen settings record exists, its binding can read legacy standalone values with `ReadLegacyPreferencesAsync(provider)`. The typed root becomes authoritative when it is first saved. Standalone reads finish before the first query, and accepted standalone saves run off the UI thread through the captured provider. Await `FlushPreferencesAsync()` during an accepted standalone close/shutdown; `PreferenceSaveError` exposes a failed write and flush retries it.
+```csharp
+_messages.HeaderContextMenuStrip = new VisualGridConfigurationContextMenu(components);
+await BindGridPreferencesAsync(_messages, nameof(MailScreenSettings.Messages));
+```
 
+Right-click a column header for **Save configuration** and **Restore defaults**.
+Save captures only the clicked grid's current configuration into its existing
+screen settings section and persists the actual root through its provider.
+Restore applies that grid's complete defaults from the screen settings class to
+the current view. `DefaultsRestorePolicy` defaults to
+`VisualGridDefaultsRestorePolicy.RestoreOnly`; `RestoreAndSave` also persists
+those restored values through the same screen owner.
+Those defaults include columns/order, page mode/manual size and sorting. The
+same menu can serve multiple bound grids; its native `SourceControl` identifies
+the clicked grid, and it resolves the owner on demand. An ordinary custom
+`ContextMenuStrip` can be assigned instead. Unbound grids have no screen
+configuration to save. Screen Options remains the column configuration editor
+and saves accepted edits through its Apply/OK actions.
+
+The compact footer selector continues to offer **Single**, **Auto** and **Manual**
+(`Paged` in the API), alongside the normal manual page-size control and navigator
+where appropriate. Search, sorting and paging remain ordinary grid operations.
+Automatic fitted capacity never overwrites the remembered manual size, and
+viewport resizing or source refresh does not write settings.
+
+Manual widths use `IVisualGridColumn.PreferenceKey`, normally the property or
+source sort name. Supply an explicit stable key for computed columns and keep
+keys unique. Captions and column positions can change without losing overrides.
+Widths use logical pixels at 96 DPI, remain stable across rebinds and DPI changes,
+and leave untouched natural/stretch columns unspecified. The header's Restore
+defaults command uses the menu's configured policy, defaulting to a temporary
+restore; Screen Options Reset remains provisional until Apply/OK.
 
 ### Snapshot collection and binding
 
@@ -638,7 +688,7 @@ The picker is read-only, automatically fits complete rows, and supports paging, 
 
 Set `ExpandsToFit = true` on the column that should occupy spare width, such as the Name column in a reference picker. Other columns keep their initial measured widths. Multiple configured columns share extra space; none stretch implicitly when no column is configured. Resizing redistributes spare width from remembered minimum widths. Explicitly resized columns retain the chosen width and leave automatic stretching. Pages, search and refresh do not remeasure columns from their new values. Existing columns wider than the viewport use horizontal scrolling. Automatic page sizing continues to fit complete rows in the available grid height.
 
-The grid settings editor exposes **Manual width** and **Stretch to fit** under each column. The latter overrides the binding's `ExpandsToFit`; clearing it restores the binding's default. A manual width takes precedence over stretch. Accepted settings update the visible columns and survive refresh. Set `ShowGridSettings = false` to hide the settings button; it otherwise appears when a settings object exists, with `AllowsSettingsChange` controlling whether it is enabled.
+Screen Options controls displayed column order through its `Columns` collection and exposes **Manual width** and **Stretch to fit** under each declared column. The latter overrides the binding's `ExpandsToFit`; clearing it restores the binding's default. A manual width takes precedence over stretch. Accepted screen settings update the visible columns and survive refresh. Configuration editing and persistence stay with the screen; the grid retains its ordinary paging, search, sorting and column interaction.
 
 `VisualGrid.ReferenceBindings` and `DefaultCrudEntityEditor.ReferenceBindings` also accept bindings keyed by a property path, such as `"Manager"` or `"Address.Contact"`. The grid supplies its own data source automatically for properties whose type matches the edited entity type and which have no custom editor or converter. Explicit bindings take precedence. This avoids expanding recursive entity relationships while ordinary nested values such as Address remain editable.
 

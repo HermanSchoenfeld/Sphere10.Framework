@@ -84,7 +84,7 @@ partial class ScreenHostingDesignTestScreen {
 		_preferenceHeading.Margin = new Padding(0, 0, 0, 10);
 		_preferenceSummary.Name = "PreferenceSummary";
 		_preferenceSummary.AutoSize = true;
-		_preferenceSummary.Text = "Default inspector presentation. Each sample grid retains its own settings button.";
+		_preferenceSummary.Text = "Default inspector presentation. Configure the owned grids through screen Options.";
 		_preferenceSummary.Margin = new Padding(0, 0, 0, 10);
 		_preferenceIntroduction.AutoSize = true;
 		_preferenceIntroduction.Text = "Options > Screen Options edits this registration. CPU and GPU retain independent defaults. Apply and Reset update these presentation values while preserving the lifecycle draft.";
@@ -103,10 +103,10 @@ partial class ScreenHostingDesignTestScreen {
 		_detailsGrid.Height = 220;
 		_detailsGrid.Margin = new Padding(0, 0, 0, 12);
 		_standaloneIntroduction.AutoSize = true;
-		_standaloneIntroduction.Text = "The comparison below uses its independent grid record. The two owned grids above save through this registration's ordinary composed VisualGridSettings values.";
+		_standaloneIntroduction.Text = "The comparison below uses transient values. Configure the two grids above through this screen's Options; the comparison is not saved.";
 		_standaloneIntroduction.Margin = new Padding(0, 0, 0, 12);
 		_standaloneGrid.Name = "StandaloneGrid";
-		_standaloneGrid.GridTitle = "Standalone comparison";
+		_standaloneGrid.GridTitle = "Transient comparison";
 		_standaloneGrid.Dock = DockStyle.Top;
 		_standaloneGrid.Height = 220;
 		_standaloneGrid.Margin = new Padding(0);

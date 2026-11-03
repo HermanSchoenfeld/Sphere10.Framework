@@ -25,62 +25,27 @@ using EditorControlBase = Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Edit
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
+/// <summary>Verifies screen-supplied grid values and deliberate changes without control-owned persistence.</summary>
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class VisualGridPreferencesTests {
+	private readonly record struct QueryRequest(int Length, int Page, string Sort, SortDirection Direction);
+
 	private ISettingsProvider _previousProvider;
-	private string _directory;
 	private ProbeProvider _provider;
 
 	[SetUp]
 	public void SetUp() {
 		_previousProvider = (ISettingsProvider)typeof(UserSettings).GetField("_provider", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-		_directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "grid-preferences-" + Guid.NewGuid().ToString("N"));
-		_provider = new ProbeProvider(_directory);
+		var directory = Path.Combine(TestContext.CurrentContext.TestDirectory, "grid-preferences-" + Guid.NewGuid().ToString("N"));
+		_provider = new ProbeProvider(directory);
 		UserSettings.Provider = new CachedSettingsProvider(_provider);
 	}
 
 	[TearDown]
 	public void TearDown() {
-		_provider.ReleaseSave.Set();
-		_provider.ReleaseLoad.TrySetResult();
 		UserSettings.Provider = _previousProvider;
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public void RenamedGridImportsOriginalJsonAndXmlRecordsAndPrefersCurrentRecords(bool xml) {
-		RunWithMessageLoop(async owner => {
-			var files = new DirectoryFileSettingsProvider(_directory);
-			var legacyType = typeof(VisualGrid).Assembly.GetType("Sphere10.Framework.Windows.Forms.CrudGridSettings", throwOnError: true);
-			var legacy = (SettingsObject)Activator.CreateInstance(legacyType);
-			legacy.ID = "Renamed";
-			legacyType.GetProperty("PageSize").SetValue(legacy, 23);
-			var mode = legacyType.GetProperty("PageMode");
-			mode.SetValue(legacy, Enum.Parse(Nullable.GetUnderlyingType(mode.PropertyType), "Auto"));
-			legacyType.GetProperty("Columns").SetValue(legacy, new[] {
-				new ApplicationGridColumnPreferences { Key = "name", Title = "Name", Width = 183 }
-			});
-			Directory.CreateDirectory(_directory);
-			var originalFile = Path.Combine(_directory, "CrudGridSettings_Renamed.setting");
-			if (xml)
-				Tools.Xml.DeepWriteToFile(originalFile, legacy);
-			else
-				files.SaveSetting(legacy);
-
-			using var grid = CreateGrid(owner, "Renamed");
-			var imported = await grid.ReadLegacyPreferencesAsync(files);
-			Assert.That(imported.PageSize, Is.EqualTo(23));
-			Assert.That(imported.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
-			Assert.That(imported.Columns.Single().Width, Is.EqualTo(183));
-			Assert.That(imported.Provider, Is.Null);
-			Assert.That(File.Exists(originalFile), Is.True);
-
-			files.SaveSetting(new VisualGridSettings { ID = "Renamed", PageSize = 41 });
-			Assert.That((await grid.ReadLegacyPreferencesAsync(files)).PageSize, Is.EqualTo(41));
-			Assert.That(File.Exists(originalFile), Is.True, "Import must preserve the old record.");
-		});
 	}
 
 	[Test]
@@ -157,7 +122,7 @@ public class VisualGridPreferencesTests {
 			var source = new ProbeSource();
 			await crud.SetDataSource(source);
 			await crud.RefreshGrid();
-			Assert.That(source.Requests.First(), Is.EqualTo((2, 1, "Name", SortDirection.Descending)));
+			Assert.That(source.Requests.First(), Is.EqualTo(new QueryRequest(2, 1, "Name", SortDirection.Descending)));
 			Assert.That(changes, Is.Empty, "Restore and binding are not accepted user edits.");
 			Assert.That(_provider.ReadCount, Is.Zero);
 			Assert.That(_provider.SaveCount, Is.Zero);
@@ -178,60 +143,64 @@ public class VisualGridPreferencesTests {
 	[Test]
 	public void ManualWidthsRoundTripByStableKeyWhileOtherColumnsKeepStretching() {
 		RunWithMessageLoop(async owner => {
+			VisualGridSettings captured;
 			double logical;
 			using (var first = CreateGrid(owner, "Widths")) {
+				first.Preferences = Preferences(20);
 				await first.SetDataSource(new ProbeSource());
 				await first.RefreshGrid();
 				var grid = Find<Grid>(first, "_grid");
 				grid.Columns[0].Width = 193;
 				CompleteResize(grid);
-				await first.FlushPreferencesAsync();
-				logical = first.CaptureGridPreferences().Columns.Single(column => column.Key == "name").Width.Value;
+				captured = first.CaptureGridPreferences();
+				logical = captured.Columns.Single(column => column.Key == "name").Width.Value;
+
+				// Automatic viewport stretching does not become a deliberate width or a stored record.
 				var other = grid.Columns[1].Width;
-				var writes = _provider.SaveCount;
 				owner.Width += 300;
 				await first.RefreshGrid();
 				Assert.That(grid.Columns[0].Width, Is.EqualTo(193));
 				Assert.That(grid.Columns[1].Width, Is.GreaterThan(other));
 				Assert.That(first.CaptureGridPreferences().Columns.Single(column => column.Key == "group").Width, Is.Null);
-				Assert.That(_provider.SaveCount, Is.EqualTo(writes), "Viewport stretching never becomes a manual preference.");
+				Assert.That(_provider.SaveCount, Is.Zero);
 			}
 
-			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-			using var restored = CreateGrid(owner, "Widths", "Renamed caption");
+			// The screen owns the captured value and supplies it to the next grid instance.
+			using var restored = CreateGrid(owner, "Restored widths", "Renamed caption");
+			restored.Preferences = captured;
 			await restored.SetDataSource(new ProbeSource());
 			await restored.RefreshGrid();
 			Assert.That(Find<Grid>(restored, "_grid").Columns[0].Width, Is.EqualTo((int)Math.Round(logical * restored.DeviceDpi / 96D)));
 			Assert.That(restored.CaptureGridPreferences().Columns.Single(column => column.Key == "name").Title, Is.EqualTo("Renamed caption"));
+
 			var reset = restored.CaptureGridPreferences();
 			foreach (var column in reset.Columns)
 				column.Width = null;
 			restored.ApplyGridPreferences(reset);
 			await restored.RefreshGrid();
 			Assert.That(restored.CaptureGridPreferences().Columns.All(column => column.Width == null), Is.True);
+			Assert.That(_provider.ReadCount, Is.Zero);
+			Assert.That(_provider.SaveCount, Is.Zero);
 		});
 	}
 
 	[Test]
-	public void StretchOnlyChangesPersistAndRestoreByStableColumnKey() {
+	public void StretchOnlyValuesApplyAndRoundTripByStableColumnKey() {
 		RunWithMessageLoop(async owner => {
+			VisualGridSettings captured;
 			using (var first = CreateGrid(owner, "Stretch")) {
+				first.Preferences = Preferences(20);
 				await first.SetDataSource(new ProbeSource());
 				await first.RefreshGrid();
-				var editing = first.ShowSettingsAsync();
-				await Task.Yield();
-				using (var dialog = FormsApplication.OpenForms.OfType<VisualGridSettingsDialog>().Single()) {
-					dialog.Settings.Columns.Single(column => column.Key == "name").ExpandsToFit = false;
-					Find<System.Windows.Forms.Button>(dialog, "_ok").PerformClick();
-				}
-				Assert.That(await editing, Is.True);
-				await first.FlushPreferencesAsync();
-				Assert.That(_provider.SaveCount, Is.EqualTo(1), "A stretch-only edit must be saved.");
+				var values = first.CaptureGridPreferences();
+				values.Columns.Single(column => column.Key == "name").ExpandsToFit = false;
+				first.ApplyGridPreferences(values);
+				await first.RefreshGrid();
+				captured = first.CaptureGridPreferences();
 			}
 
-			// Read through a fresh provider so a cached in-memory value cannot mask a missing serialized field.
-			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-			using var restored = CreateGrid(owner, "Stretch", "Renamed caption");
+			using var restored = CreateGrid(owner, "Restored stretch", "Renamed caption");
+			restored.Preferences = captured;
 			await restored.SetDataSource(new ProbeSource());
 			await restored.RefreshGrid();
 			var columns = restored.CaptureGridPreferences().Columns;
@@ -248,78 +217,86 @@ public class VisualGridPreferencesTests {
 			restored.ApplyGridPreferences(reset);
 			await restored.RefreshGrid();
 			Assert.That(native.Columns[0].AutoSizeMode.HasFlag(SourceGrid.AutoSizeMode.EnableStretch), Is.True, "Clearing the override restores the binding default.");
+			Assert.That(_provider.ReadCount, Is.Zero);
+			Assert.That(_provider.SaveCount, Is.Zero);
 		});
 	}
 
 	[Test]
-	public void LegacyReadUsesItsCapturedProviderAndNeverCreatesOrMutatesARecord() {
+	public void ScreenColumnOrderAppliesToHeadersRowsAndCapturedValues() {
 		RunWithMessageLoop(async owner => {
-			var captured = UserSettings.Provider;
-			var saved = new VisualGridSettings { ID = "Legacy", Provider = captured, PageMode = VisualGridPageMode.Single, PageSize = 7 };
-			captured.SaveSetting(saved);
-			var writes = _provider.SaveCount;
-			using var crud = new UpgradedGrid { SettingsKey = "Legacy", Dock = DockStyle.Fill };
-			owner.Controls.Add(crud);
-			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(_directory, "other")));
-			var imported = await crud.ReadLegacyPreferencesAsync(captured);
-			Assert.That(imported.ConsumerVersion, Is.EqualTo(1));
-			Assert.That(imported.PageMode, Is.EqualTo(VisualGridPageMode.Auto));
-			Assert.That(crud.UpgradeThread, Is.EqualTo(Environment.CurrentManagedThreadId));
-			Assert.That(saved.PageMode, Is.EqualTo(VisualGridPageMode.Single));
-			Assert.That(saved.ConsumerVersion, Is.Zero, "Consumer upgrades cannot edit the provider's cached root.");
-			Assert.That(_provider.SaveCount, Is.EqualTo(writes));
-			crud.SettingsKey = "Absent";
-			Assert.That(await crud.ReadLegacyPreferencesAsync(captured), Is.Null);
-			Assert.That(captured.ContainsSetting(typeof(VisualGridSettings), "Absent"), Is.False);
-		});
-	}
-
-	[Test]
-	public void OrderedDetachedSavesUseTheOriginalProviderWithoutBlockingTheUi() {
-		RunWithMessageLoop(async owner => {
-			using var crud = CreateGrid(owner, "Queued");
+			using var crud = CreateGrid(owner, "Ordered columns");
+			var declared = crud.GridBindings;
+			var values = Preferences(2, width: 171);
+			values.Columns = values.Columns.Reverse().ToArray();
+			crud.Preferences = values;
 			await crud.SetDataSource(new ProbeSource());
 			await crud.RefreshGrid();
-			_provider.BlockNextSave = true;
-			var thread = Environment.CurrentManagedThreadId;
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 3;
-			await _provider.SaveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			using var timer = new System.Windows.Forms.Timer { Interval = 10 };
-			var ticked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-			timer.Tick += (_, _) => ticked.TrySetResult();
-			timer.Start();
-			await ticked.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(Path.Combine(_directory, "other")));
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 4;
-			_provider.ReleaseSave.Set();
-			await crud.FlushPreferencesAsync();
-			Assert.That(_provider.SavedSizes, Is.EqualTo(new[] { 3, 4 }));
-			Assert.That(_provider.SaveThreads, Has.None.EqualTo(thread));
-			var fresh = new DirectoryFileSettingsProvider(_directory);
-			Assert.That(((VisualGridSettings)fresh.LoadSetting(typeof(VisualGridSettings), "Queued")).PageSize, Is.EqualTo(4));
-			Assert.That(UserSettings.Provider.ContainsSetting(typeof(VisualGridSettings), "Queued"), Is.False);
+
+			// Moving a column must move its value cells and retain the width associated with its stable key.
+			var native = Find<Grid>(crud, "_grid");
+			Assert.That(crud.GridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "group", "name" }));
+			Assert.That(native[0, 0].Value, Is.EqualTo("Group"));
+			Assert.That(native[0, 1].Value, Is.EqualTo("Name"));
+			Assert.That(native[1, 0].Value, Is.EqualTo("Group"));
+			Assert.That(native[1, 1].Value, Is.EqualTo("Name 19"));
+			Assert.That(native.Columns[1].Width, Is.EqualTo((int)Math.Round(171 * crud.DeviceDpi / 96D)));
+			Assert.That(crud.CaptureGridPreferences().Columns.Select(column => column.Key), Is.EqualTo(new[] { "group", "name" }));
+			Assert.That(declared.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "name", "group" }), "Applying display order must not reorder the caller's binding array.");
 		});
 	}
 
 	[Test]
-	public void FailedStandaloneSaveRemainsObservableAndCanBeRetried() {
+	public void ScreenColumnOrderAndWidthsSurviveRebinding() {
 		RunWithMessageLoop(async owner => {
-			using var crud = CreateGrid(owner, "Retry");
+			using var crud = CreateGrid(owner, "Rebound columns");
+			var declared = crud.GridBindings.ToArray();
+			var values = Preferences(2, width: 171);
+			values.Columns = values.Columns.Reverse().ToArray();
+			crud.Preferences = values;
 			await crud.SetDataSource(new ProbeSource());
 			await crud.RefreshGrid();
-			_provider.FailNextSave = true;
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 3;
-			await Assert.ThatAsync(() => crud.FlushPreferencesAsync(), Throws.InstanceOf<InvalidOperationException>());
-			Assert.That(crud.PreferenceSaveError, Is.TypeOf<IOException>());
-			Assert.That(UserSettings.Provider.ContainsSetting(typeof(VisualGridSettings), "Retry"), Is.False);
-			await crud.FlushPreferencesAsync();
-			Assert.That(crud.PreferenceSaveError, Is.Null);
-			Assert.That(((VisualGridSettings)new DirectoryFileSettingsProvider(_directory).LoadSetting(typeof(VisualGridSettings), "Retry")).PageSize, Is.EqualTo(3));
+
+			// A refreshed declaration must not erase an accepted screen column order.
+			crud.GridBindings = declared;
+			await crud.RefreshGrid();
+			var native = Find<Grid>(crud, "_grid");
+			Assert.That(crud.GridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "group", "name" }));
+			Assert.That(native[0, 0].Value, Is.EqualTo("Group"));
+			Assert.That(native[1, 1].Value, Is.EqualTo("Name 19"));
+			Assert.That(native.Columns[1].Width, Is.EqualTo((int)Math.Round(171 * crud.DeviceDpi / 96D)));
+			Assert.That(crud.CaptureGridPreferences().Columns.Single(column => column.Key == "name").Width, Is.EqualTo(171));
 		});
 	}
 
 	[Test]
-	public void OwnedComputedColumnsRequireStableKeysWhileStandaloneColumnsRemainCompatible() {
+	public void PageModeAndManualSizeChangesNotifyTheScreenOwner() {
+		RunWithMessageLoop(async owner => {
+			using var crud = CreateGrid(owner, "Paging choices");
+			crud.Preferences = Preferences(2);
+			await crud.SetDataSource(new ProbeSource());
+			await crud.RefreshGrid();
+			var changes = new List<VisualGridSettings>();
+			crud.PreferencesChanged += changes.Add;
+
+			crud.PageMode = VisualGridPageMode.Single;
+			await crud.RefreshGrid();
+			Assert.That(changes.Last().PageMode, Is.EqualTo(VisualGridPageMode.Single));
+			Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(20));
+			crud.PageMode = VisualGridPageMode.Paged;
+			await crud.RefreshGrid();
+			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 3;
+			await crud.RefreshGrid();
+			Assert.That(changes.Last().PageMode, Is.EqualTo(VisualGridPageMode.Paged));
+			Assert.That(changes.Last().PageSize, Is.EqualTo(3));
+			Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(3));
+			Assert.That(_provider.ReadCount, Is.Zero);
+			Assert.That(_provider.SaveCount, Is.Zero, "Operational controls report values; only the screen owner saves them.");
+		});
+	}
+
+	[Test]
+	public void ScreenOwnedComputedColumnsRequireStableKeys() {
 		RunWithMessageLoop(owner => {
 			using var crud = CreateGrid(owner, "Computed");
 			var column = new VisualGridColumn<Row> { ColumnName = "Projection", PropertyValue = row => row.Name };
@@ -335,61 +312,7 @@ public class VisualGridPreferencesTests {
 	}
 
 	[Test]
-	public void ReturningToAnEarlierSettingsKeyRejectsItsOriginalPendingLoad() {
-		RunWithMessageLoop(async owner => {
-			// Read two detached versions of the same record without a cache serializing the reads.
-			UserSettings.Provider = _provider;
-			_provider.SaveSetting(new VisualGridSettings { ID = "Repeated", PageMode = VisualGridPageMode.Paged, PageSize = 2 });
-			using var crud = CreateGrid(owner, "Repeated");
-			var source = new ProbeSource();
-			_provider.BlockNextLoad = true;
-			using var releaseLoad = Tools.Scope.ExecuteOnDispose(() => _provider.ReleaseLoad.TrySetResult());
-			var originalLoad = crud.SetDataSource(source);
-			await _provider.LoadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-			// A later activation of the same identity must win even when the first read finishes last.
-			crud.SettingsKey = "Other";
-			crud.SettingsKey = "Repeated";
-			_provider.SaveSetting(new VisualGridSettings { ID = "Repeated", PageMode = VisualGridPageMode.Paged, PageSize = 7 });
-			await crud.SetDataSource(source);
-			_provider.ReleaseLoad.TrySetResult();
-			await originalLoad;
-			await crud.RefreshGrid();
-
-			Assert.That(crud.CaptureGridPreferences().PageSize, Is.EqualTo(7));
-			Assert.That(source.Requests.Last().Length, Is.EqualTo(7));
-		});
-	}
-
-	[Test]
-	public void PreviousIdentitySaveFailureCannotMarkTheNewIdentityDirtyOrRetargetItsSnapshot() {
-		RunWithMessageLoop(async owner => {
-			using var crud = CreateGrid(owner, "Old identity");
-			await crud.SetDataSource(new ProbeSource());
-			await crud.RefreshGrid();
-			_provider.BlockNextSave = true;
-			_provider.FailNextSave = true;
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 3;
-			await _provider.SaveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-			// Finish the independently coalesced data query while the old preference write remains blocked.
-			await crud.RefreshGrid();
-			crud.SettingsKey = "New identity";
-			await crud.RefreshGrid();
-			_provider.ReleaseSave.Set();
-			await crud.FlushPreferencesAsync();
-			Assert.That(crud.PreferenceSaveError, Is.Null);
-			Assert.That(_provider.SaveCount, Is.EqualTo(1));
-			Assert.That(UserSettings.Provider.ContainsSetting(typeof(VisualGridSettings), "New identity"), Is.False);
-			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 4;
-			await crud.FlushPreferencesAsync();
-			Assert.That(((VisualGridSettings)new DirectoryFileSettingsProvider(_directory).LoadSetting(typeof(VisualGridSettings), "New identity")).PageSize, Is.EqualTo(4));
-			Assert.That(UserSettings.Provider.ContainsSetting(typeof(VisualGridSettings), "Old identity"), Is.False);
-		});
-	}
-
-	[Test]
-	public void ApplyingPreferencesPreservesTheLiveCellDraftAndDefersItsQuery() {
+	public void ApplyingPreferencesPreservesTheLiveCellDraftAndDefersQueryAndColumnOrder() {
 		RunWithMessageLoop(async owner => {
 			using var crud = CreateGrid(owner, "Draft");
 			crud.Preferences = Preferences(pageSize: 2);
@@ -405,22 +328,32 @@ public class VisualGridPreferencesTests {
 			Assert.That(context.IsEditing(), Is.True);
 			var editor = ((EditorControlBase)context.Cell.Editor).Control;
 			editor.Text = "Unapplied draft";
-			var reads = source.Requests.Count;
-			crud.ApplyGridPreferences(Preferences(pageSize: 4, width: 185));
+
+			// Options changes cannot replace the active column or trigger a read before the draft ends.
+			var reads = source.Requests.Length;
+			var values = Preferences(pageSize: 4, width: 185);
+			values.Columns = values.Columns.Reverse().ToArray();
+			crud.ApplyGridPreferences(values);
 			await crud.RefreshGrid();
 			Assert.That(context.IsEditing(), Is.True);
 			Assert.That(editor.Text, Is.EqualTo("Unapplied draft"));
-			Assert.That(source.Requests, Has.Count.EqualTo(reads));
+			Assert.That(source.Requests, Has.Length.EqualTo(reads));
+			Assert.That(crud.GridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "name", "group" }));
+			Assert.That(grid[0, 0].Value, Is.EqualTo("Name"));
+
 			context.EndEdit(true);
 			await crud.RefreshGrid();
 			Assert.That(source.Requests.Last().Length, Is.EqualTo(4));
+			Assert.That(crud.GridBindings.Select(column => column.PreferenceKey), Is.EqualTo(new[] { "group", "name" }));
+			Assert.That(grid[0, 0].Value, Is.EqualTo("Group"));
+			Assert.That(grid[1, 1].Value, Is.EqualTo("Name 19"));
 			Assert.That(source.Rows.All(row => row.Name != "Unapplied draft"), Is.True);
 		});
 	}
 
+	// Supply the ordinary value a screen owns, independently of any control or provider.
 	private static VisualGridSettings Preferences(int pageSize, int page = 0, double? width = null) {
 		return new VisualGridSettings {
-			ConsumerVersion = 1,
 			PageMode = VisualGridPageMode.Paged,
 			PageSize = pageSize,
 			PageNumber = page,
@@ -433,9 +366,10 @@ public class VisualGridPreferencesTests {
 		};
 	}
 
-	private static VisualGrid CreateGrid(Form owner, string key, string caption = "Name", VisualGrid grid = null) {
+	// Create a named native surface with stable declaration keys and no persistence responsibility.
+	private static VisualGrid CreateGrid(Form owner, string name, string caption = "Name", VisualGrid grid = null) {
 		var crud = grid ?? new VisualGrid();
-		crud.SettingsKey = key;
+		crud.Name = name;
 		crud.Dock = DockStyle.Fill;
 		owner.Controls.Add(crud);
 		crud.GridBindings = new[] {
@@ -464,15 +398,19 @@ public class VisualGridPreferencesTests {
 		return crud;
 	}
 
-	private static T Find<T>(Control control, string name) where T : Control {
+	// Resolve a designer-owned control through its public control tree.
+	private static T Find<T>(Control control, string name)
+		where T : Control {
 		return (T)control.Controls.Find(name, true).Single();
 	}
 
+	// Finish the native header interaction that distinguishes a user resize from layout.
 	private static void CompleteResize(Grid grid) {
 		typeof(Control).GetMethod("OnMouseUp", BindingFlags.Instance | BindingFlags.NonPublic)
 			.Invoke(grid, new object[] { new MouseEventArgs(MouseButtons.Left, 1, -1, -1, 0) });
 	}
 
+	// Keep asynchronous native assertions on the same live Forms dispatcher with bounded completion.
 	private static void RunWithMessageLoop(Func<Form, Task> test) {
 		Exception failure = null;
 		var previous = SynchronizationContext.Current;
@@ -487,40 +425,48 @@ public class VisualGridPreferencesTests {
 		};
 		owner.Shown += async (_, _) => {
 			using var close = Tools.Scope.ExecuteOnDispose(owner.Close);
-			try {
-				await test(owner);
-			} catch (Exception error) {
-				failure = error;
-			}
+			failure = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => test(owner));
 		};
 		watchdog.Start();
 		FormsApplication.Run(owner);
 		Assert.That(failure, Is.Null, failure?.ToString());
 	}
 
-	private class ProbeSource : ListDataSource<Row> {
-		public ProbeSource() : base(new ExtendedList<Row>()) {
+	#region Inner Types
+
+	// Return predictable rows while recording the public paging contract requested by the grid.
+	private sealed class ProbeSource : ListDataSource<Row> {
+		private readonly List<QueryRequest> _requests = new();
+
+		public ProbeSource()
+			: base(new ExtendedList<Row>()) {
 			Rows = Enumerable.Range(0, 20).Select(index => new Row { Name = "Name " + index.ToString("D2"), Group = "Group" }).ToArray();
 		}
 
 		public Row[] Rows { get; }
 
-		public List<(int Length, int Page, string Sort, SortDirection Direction)> Requests { get; } = new();
+		public QueryRequest[] Requests {
+			get {
+				return _requests.ToArray();
+			}
+		}
 
 		public override Task<DataSourceItems<Row>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-			Requests.Add((pageLength, page, sortProperty, sortDirection));
+			_requests.Add(new QueryRequest(pageLength, page, sortProperty, sortDirection));
 			var rows = sortDirection == SortDirection.Descending ? Rows.Reverse().ToArray() : Rows;
 			page = Math.Min(page, (rows.Length - 1) / pageLength);
 			return Task.FromResult(new DataSourceItems<Row> { Items = rows.Skip(page * pageLength).Take(pageLength).ToArray(), Page = page, TotalCount = rows.Length });
 		}
 	}
 
+	// Supply editable text and a second value with an independent stable column identity.
 	private sealed class Row {
 		public string Name { get; set; }
 
 		public string Group { get; set; }
 	}
 
+	// Observe the public template hook before subscribers receive the same accepted capture.
 	private sealed class HookGrid(List<string> order) : VisualGrid {
 		protected override void OnPreferencesChanged(VisualGridSettings preferences) {
 			order.Add("hook");
@@ -528,74 +474,31 @@ public class VisualGridPreferencesTests {
 		}
 	}
 
-	private sealed class UpgradedGrid : VisualGrid {
-		public int UpgradeThread { get; private set; }
-
-		protected override void UpgradeGridSettings(VisualGridSettings settings) {
-			UpgradeThread = Environment.CurrentManagedThreadId;
-			settings.ConsumerVersion = 1;
-			settings.PageMode = VisualGridPageMode.Auto;
-		}
-	}
-
+	// Detect accidental control-owned provider reads or writes; the screen owns those operations.
 	private sealed class ProbeProvider : DirectoryFileSettingsProvider {
-		public ProbeProvider(string directory) : base(directory) {
+		public ProbeProvider(string directory)
+			: base(directory) {
 		}
 
 		public int ReadCount { get; private set; }
 
 		public int SaveCount { get; private set; }
 
-		public bool BlockNextSave { get; set; }
-
-		public bool FailNextSave { get; set; }
-
-		public bool BlockNextLoad { get; set; }
-
-		public TaskCompletionSource LoadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		public TaskCompletionSource ReleaseLoad { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		public TaskCompletionSource SaveStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		public ManualResetEventSlim ReleaseSave { get; } = new(false);
-
-		public List<int> SavedSizes { get; } = new();
-
-		public List<int> SaveThreads { get; } = new();
-
 		public override bool ContainsSetting(Type type, object id = null) {
 			ReadCount++;
 			return base.ContainsSetting(type, id);
 		}
 
-		// Hold the original detached value while a later read of the same identity completes.
 		public override SettingsObject LoadSetting(Type type, object id = null) {
-			var settings = base.LoadSetting(type, id);
-			if (BlockNextLoad) {
-				BlockNextLoad = false;
-				LoadStarted.TrySetResult();
-				if (!ReleaseLoad.Task.Wait(TimeSpan.FromSeconds(10)))
-					throw new TimeoutException("The test did not release its blocked settings read.");
-			}
-			return settings;
+			ReadCount++;
+			return base.LoadSetting(type, id);
 		}
 
 		public override void SaveSetting(SettingsObject settings) {
 			SaveCount++;
-			SaveThreads.Add(Environment.CurrentManagedThreadId);
-			SavedSizes.Add(((VisualGridSettings)settings).PageSize);
-			if (BlockNextSave) {
-				BlockNextSave = false;
-				SaveStarted.TrySetResult();
-				if (!ReleaseSave.Wait(TimeSpan.FromSeconds(10)))
-					throw new TimeoutException("The test did not release its blocked save.");
-			}
-			if (FailNextSave) {
-				FailNextSave = false;
-				throw new IOException("Simulated preference write failure.");
-			}
 			base.SaveSetting(settings);
 		}
 	}
+
+	#endregion
 }

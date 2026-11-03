@@ -75,7 +75,7 @@ public class VisualGridQuerySummaryTests {
 	});
 
 	private static VisualGrid CreateGrid(Form owner) {
-		var grid = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PrepareReadOnlyCellsInBackground = true };
+		var grid = new VisualGrid { Dock = DockStyle.Fill, SuppressLoadingIndicator = true, PrepareReadOnlyCellsInBackground = true };
 		grid.GridBindings = new[] {
 			new VisualGridColumn<QueryRow> { ColumnName = "ID", SortName = nameof(QueryRow.Id), DataType = typeof(int), PropertyValue = row => row.Id },
 			new VisualGridColumn<QueryRow> { ColumnName = "Name", SortName = nameof(QueryRow.Name), DataType = typeof(string), PropertyValue = row => row.Name }

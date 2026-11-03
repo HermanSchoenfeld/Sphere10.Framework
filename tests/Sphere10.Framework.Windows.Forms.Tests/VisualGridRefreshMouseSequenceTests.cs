@@ -29,7 +29,7 @@ public class VisualGridRefreshMouseSequenceTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void PressSpanningOneSecondSnapshotReplacementDoesNotGateMovementReleaseOrTheNextPress(bool processFlags) => RunWithMessageLoop(async owner => {
-		using var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true };
+		using var crud = new VisualGrid { Dock = DockStyle.Fill, SuppressLoadingIndicator = true };
 		if (processFlags) {
 			crud.LeftClickToDeselect = true;
 			crud.AllowCellEditing = false;

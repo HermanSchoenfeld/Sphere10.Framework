@@ -49,6 +49,7 @@ partial class VisualGridTestScreen {
 	private TabPage _editingTab;
 	private TabPage _liveTab;
 	private VisualGrid _liveGrid;
+	private VisualGridConfigurationContextMenu _gridConfigurationMenu;
 	private FlowLayoutPanel _liveActions;
 	private FlowLayoutPanel _liveOptions;
 	private CheckBox _liveUpdatesCheckBox;
@@ -99,6 +100,7 @@ partial class VisualGridTestScreen {
 	/// </summary>
 	private void InitializeComponent() {
 		_components = new System.ComponentModel.Container();
+		_gridConfigurationMenu = new VisualGridConfigurationContextMenu(_components);
 		_outputTextBox = new System.Windows.Forms.TextBox();
 		_generateDeleteErrorCheckBox = new System.Windows.Forms.CheckBox();
 		_crudDialogButton = new System.Windows.Forms.Button();
@@ -327,6 +329,7 @@ partial class VisualGridTestScreen {
 		_visualGrid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		_visualGrid.Dock = DockStyle.Fill;
 		_visualGrid.GridTitle = "Employees";
+		_visualGrid.HeaderContextMenuStrip = _gridConfigurationMenu;
 		_visualGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
 		_visualGrid.Capabilities = DataSourceCapabilities.CanCreate | DataSourceCapabilities.CanRead;
 		_visualGrid.Location = new System.Drawing.Point(217, 15);
@@ -415,10 +418,10 @@ partial class VisualGridTestScreen {
 		_liveTab.BackColor = SystemColors.Control;
 		_liveTab.Padding = new Padding(3);
 		_liveGrid.Name = "_liveGrid";
+		_liveGrid.HeaderContextMenuStrip = _gridConfigurationMenu;
 		_liveGrid.Dock = DockStyle.Fill;
 		_liveGrid.GridTitle = "Background Snapshot Samples";
 		_liveGrid.GridTitleAlignment = ContentAlignment.MiddleLeft;
-		_liveGrid.PersistSettings = false;
 		_liveGrid.PageMode = VisualGridPageMode.Auto;
 		_liveGrid.PrepareReadOnlyCellsInBackground = true;
 		_liveGrid.SuppressLoadingIndicator = true;
@@ -569,7 +572,7 @@ partial class VisualGridTestScreen {
 		_showcaseHeading.Margin = new Padding(0, 0, 0, 10);
 		_showcaseIntroduction.AutoSize = true;
 		_showcaseIntroduction.Dock = DockStyle.Fill;
-		_showcaseIntroduction.Text = "Edit employee records and references, explore failure handling, or switch to live snapshots to compare background collection, sizing and retained selection. Each grid shares its settings button with this screen’s Options values.";
+		_showcaseIntroduction.Text = "Edit records or compare live snapshots. Configure columns through screen Options; right-click a column header to Save configuration or Restore defaults. Ordinary grid changes remain temporary until saved.";
 		_showcaseIntroduction.Margin = new Padding(0, 0, 0, 12);
 		_showcaseBody.Dock = DockStyle.Fill;
 		_capabilitiesHeading.Text = "DATA SOURCE CAPABILITIES";

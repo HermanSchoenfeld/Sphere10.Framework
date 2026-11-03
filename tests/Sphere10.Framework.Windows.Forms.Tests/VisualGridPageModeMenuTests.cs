@@ -31,7 +31,6 @@ public class VisualGridPageModeMenuTests {
 			using var grid = new VisualGrid {
 				Dock = DockStyle.Fill,
 				Font = font,
-				PersistSettings = false,
 				GridBindings = new[] {
 					new VisualGridColumn<string> { ColumnName = "Record", PropertyValue = value => value, DataType = typeof(string), ExpandsToFit = true }
 				}
