@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>A schema-owned column identity and optional deliberate logical or CSS pixel width.</summary>
+/// <summary>A schema-owned column identity with optional width and stretch preferences.</summary>
 public sealed class ApplicationGridColumnPreferences {
 	/// <summary>The stable key supplied by the column schema.</summary>
 	[ReadOnly(true)]
@@ -30,6 +30,11 @@ public sealed class ApplicationGridColumnPreferences {
 	[DisplayName("Manual width")]
 	[Description("An optional logical pixel width; leave empty to use natural sizing.")]
 	public double? Width { get; set; }
+
+	/// <summary>Null retains the schema's stretch setting; manual width takes precedence.</summary>
+	[DisplayName("Stretch to fit")]
+	[Description("Uses spare grid width for this column. Leave empty to use its default. Manual width takes precedence.")]
+	public bool? ExpandsToFit { get; set; }
 
 	/// <summary>Shows the readable schema name in ordinary collection editors without using it as persistent identity.</summary>
 	public override string ToString() {

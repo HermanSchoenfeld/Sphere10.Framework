@@ -19,12 +19,14 @@ internal sealed class VisualGridPreparedTextEditor : EditorBase {
 	private bool _hasPreparedValue;
 	private VisualGridPreparedTextEditor _converter;
 
+	/// <summary>Creates a nonvisual converter for the bound value type.</summary>
 	public VisualGridPreparedTextEditor(Type type)
 		: base(type) {
 		EnableEdit = false;
 		EditableMode = EditableMode.None;
 	}
 
+	/// <summary>Formats a worker value using the ordinary cell conversion failure presentation.</summary>
 	public string PrepareValue(object value) {
 		string text = null;
 		Tools.Exceptions.ExecuteCapturingException(() => text = base.ValueToDisplayString(value), out var error);
@@ -32,6 +34,7 @@ internal sealed class VisualGridPreparedTextEditor : EditorBase {
 		return error == null ? text : "Error:" + error.Message;
 	}
 
+	/// <summary>Copies prepared converter metadata for one native cell's retained value.</summary>
 	public VisualGridPreparedTextEditor CopyForValue(object value, string displayText) {
 		// Clone the worker-initialized converter metadata, without running constructors or type factories on the UI thread.
 		var editor = (VisualGridPreparedTextEditor)MemberwiseClone();
@@ -39,6 +42,7 @@ internal sealed class VisualGridPreparedTextEditor : EditorBase {
 		return editor;
 	}
 
+	/// <summary>Replaces cached cell text while retaining the worker's converter metadata.</summary>
 	public void ReplacePreparedValue(object value, string displayText, VisualGridPreparedTextEditor converter) {
 		_value = value;
 		_displayText = displayText;
@@ -46,6 +50,8 @@ internal sealed class VisualGridPreparedTextEditor : EditorBase {
 		_converter = converter;
 	}
 
-	public override string ValueToDisplayString(object value)
-		=> _hasPreparedValue && ReferenceEquals(value, _value) ? _displayText : _converter != null ? _converter.ValueToDisplayString(value) : base.ValueToDisplayString(value);
+	/// <summary>Returns cached text for the prepared value and delegates other conversions.</summary>
+	public override string ValueToDisplayString(object value) {
+		return _hasPreparedValue && ReferenceEquals(value, _value) ? _displayText : _converter != null ? _converter.ValueToDisplayString(value) : base.ValueToDisplayString(value);
+	}
 }

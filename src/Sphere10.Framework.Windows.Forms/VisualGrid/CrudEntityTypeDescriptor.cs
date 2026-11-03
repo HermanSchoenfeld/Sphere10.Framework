@@ -13,6 +13,8 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Drawing.Design;
 using System.Linq;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -301,6 +303,10 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 					return Tools.Object.Create(_property.PropertyType);
 				if (Text == EmptyValue)
 					return null;
+
+				// PropertyGrid paints standard choices by round-tripping their displayed captions.
+				if (_property.GetValue(null) is { } Current && Text == ConvertToString(Context, Culture, Current))
+					return Current;
 			}
 			return _converter.ConvertFrom(Context, Culture, Value);
 		}
@@ -318,8 +324,10 @@ internal sealed class CrudEntityTypeDescriptor : CustomTypeDescriptor {
 				if (Value is string)
 					return Value;
 				var Summary = Value.ToString();
-				if (Summary == Value.GetType().FullName || Summary == Value.GetType().Name || string.IsNullOrWhiteSpace(Summary))
-					Summary = "Expand to edit";
+				var valueType = Value.GetType();
+				// Preserve entity captions and meaningful ToString overrides; marked options use an expansion prompt.
+				if (Summary == valueType.FullName || string.IsNullOrWhiteSpace(Summary))
+					Summary = valueType.IsDefined(typeof(UserEditableAttribute), true) ? "Expand to edit" : valueType.Name;
 				return _property.IsCircular ? $"{Summary} (already shown)" : Summary;
 			}
 			return _converter.ConvertTo(Context, Culture, Value, DestinationType);

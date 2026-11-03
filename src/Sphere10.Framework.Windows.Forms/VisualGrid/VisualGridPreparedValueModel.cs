@@ -16,8 +16,12 @@ namespace Sphere10.Framework.Windows.Forms;
 internal sealed class VisualGridPreparedValueModel : IValueModel {
 	private object _value;
 
-	public object GetValue(CellContext cellContext) => _value;
+	/// <summary>Returns the accepted raw value without display conversion.</summary>
+	public object GetValue(CellContext cellContext) {
+		return _value;
+	}
 
+	/// <summary>Applies an edit through SourceGrid's ordinary value-change callbacks.</summary>
 	public void SetValue(CellContext cellContext, object value) {
 		// Preserve SourceGrid's ordinary null/empty equality and external value-change callbacks.
 		if (ReferenceEquals(value, _value) || (value ?? string.Empty).Equals(_value ?? string.Empty))
@@ -30,5 +34,8 @@ internal sealed class VisualGridPreparedValueModel : IValueModel {
 			cellContext.Grid.Controller.OnValueChanged(cellContext, EventArgs.Empty);
 	}
 
-	public void ReplaceValue(object value) => _value = value;
+	/// <summary>Replaces an accepted snapshot value without raising edit notifications.</summary>
+	public void ReplaceValue(object value) {
+		_value = value;
+	}
 }

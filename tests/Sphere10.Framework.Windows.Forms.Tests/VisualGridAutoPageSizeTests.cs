@@ -550,7 +550,7 @@ public class VisualGridAutoPageSizeTests {
 		Assert.That(crud.VisibleEntities.Cast<SortRow>().Select(row => row.Number), Is.EqualTo(new[] { 4, 3 }), "Initial null sorting must still use the source's configured default.");
 		var directions = new[] { SortDirection.Ascending, SortDirection.Descending, SortDirection.None, SortDirection.Ascending };
 		var orders = new[] { new[] { 3, 4 }, new[] { 4, 3 }, new[] { 5, 2 }, new[] { 3, 4 } };
-		var styles = new[] { SourceGrid.Drawing.HeaderSortStyle.Ascending, SourceGrid.Drawing.HeaderSortStyle.Descending, SourceGrid.Drawing.HeaderSortStyle.None, SourceGrid.Drawing.HeaderSortStyle.Ascending };
+		var styles = new[] { Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Descending, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending };
 		for (var index = 0; index < directions.Length; index++) {
 			await ClickHeaderAsync(crud);
 			Assert.That(crud.VisibleEntities.Cast<SortRow>().Select(row => row.Number), Is.EqualTo(orders[index]));
@@ -580,7 +580,7 @@ public class VisualGridAutoPageSizeTests {
 		Assert.That(source.Requests.Last().Page, Is.EqualTo(1));
 		var grid = Find<Grid>(restored, "_grid");
 		var sortable = (SourceGrid.Cells.Models.ISortableHeader)grid[0, 0].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader));
-		Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(SourceGrid.Drawing.HeaderSortStyle.None));
+		Assert.That(sortable.GetSortStatus(new CellContext(grid, new Position(0, 0))).Style, Is.EqualTo(Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None));
 	});
 
 	[TestCase(false)]
@@ -628,18 +628,25 @@ public class VisualGridAutoPageSizeTests {
 	});
 
 	[Test]
-	public void DisposalRetriesAnAcceptedPreferenceWriteThatFailed() => RunWithMessageLoop(async owner => {
-		using (var crud = NewGrid(owner, "Retry-grid")) {
-			await BindAsync(crud);
-			_provider.FailNextSave = true;
-			crud.AutoPageSize = true;
-			await CompleteRefreshAsync(crud);
-			Assert.That(_provider.SaveCount, Is.EqualTo(1));
-		}
-		Assert.That(_provider.SaveCount, Is.EqualTo(2));
-		UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
-		Assert.That(UserSettings.Get<VisualGridSettings>("Retry-grid").AutoPageSize, Is.True);
-	});
+	public void DisposalRetriesAnAcceptedPreferenceWriteThatFailed() {
+		RunWithMessageLoop(async owner => {
+			var crud = NewGrid(owner, "Retry-grid");
+			using (crud) {
+				await BindAsync(crud);
+				_provider.FailNextSave = true;
+				crud.AutoPageSize = true;
+				await CompleteRefreshAsync(crud);
+				Assert.That(_provider.SaveCount, Is.EqualTo(1));
+			}
+
+			// Observe disposal starting the retry before flushing, so flushing cannot substitute for a missing retry.
+			await _provider.SecondWriteStarted.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.That(_provider.SaveCount, Is.EqualTo(2));
+			await crud.FlushPreferencesAsync();
+			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
+			Assert.That(UserSettings.Get<VisualGridSettings>("Retry-grid").AutoPageSize, Is.True);
+		});
+	}
 
 	[Test]
 	public void PersistedAutoModeRetainsItsManualSizeForLaterUse() => RunWithMessageLoop(async owner => {
@@ -834,6 +841,8 @@ public class VisualGridAutoPageSizeTests {
 	}
 
 	private sealed class CountingProvider : DirectoryFileSettingsProvider {
+		private readonly TaskCompletionSource _secondWriteStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 		public CountingProvider(string directory)
 			: base(directory) {
 		}
@@ -842,8 +851,17 @@ public class VisualGridAutoPageSizeTests {
 
 		public bool FailNextSave { get; set; }
 
+		// Expose the retry's start without relying on the worker's scheduling or file completion timing.
+		public Task SecondWriteStarted {
+			get {
+				return _secondWriteStarted.Task;
+			}
+		}
+
 		public override void SaveSetting(SettingsObject settings) {
 			SaveCount++;
+			if (SaveCount == 2)
+				_secondWriteStarted.TrySetResult();
 			if (FailNextSave) {
 				FailNextSave = false;
 				throw new IOException("Simulated optional preference write failure.");

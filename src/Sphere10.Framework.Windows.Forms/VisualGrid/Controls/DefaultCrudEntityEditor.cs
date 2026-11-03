@@ -14,7 +14,7 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<object> {
+public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<object> {
 	public event EventHandlerEx<CrudEntityPropertyChangedEventArgs>? PropertyChanged;
 
 	private object? _entity;
@@ -32,18 +32,31 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 
 	/// <summary>Optional visibility filter for properties on the root and its nested objects.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Func<object, PropertyDescriptor, bool> PropertyFilter { get; set; }
+	public Func<object, PropertyDescriptor, bool> PropertyFilter {
+		get; set;
+	}
 
 	/// <summary>Controls whether the native property editor groups the model's declared categories.</summary>
 	[Category("Appearance"), DefaultValue(PropertySort.Alphabetical)]
 	public PropertySort PropertySort {
-		get => _propertyGrid.PropertySort;
-		set => _propertyGrid.PropertySort = value;
+		get {
+			return _propertyGrid.PropertySort;
+		}
+
+		set {
+			_propertyGrid.PropertySort = value;
+		}
 	}
 
-	public bool HasChanges => _entityDescriptor?.HasChanges ?? false;
+	public bool HasChanges {
+		get {
+			return _entityDescriptor?.HasChanges ?? false;
+		}
+	}
 
-	public Control AsControl() => this;
+	public Control AsControl() {
+		return this;
+	}
 
 	public void SetEntity(DataSourceCapabilities Capabilities, object Entity, bool IsNewEntity) {
 		Guard.ArgumentNotNull(Entity, nameof(Entity));
@@ -53,7 +66,9 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 		_propertyGrid.Enabled = true;
 	}
 
-	public object GetEntityWithChanges() => _entity!;
+	public object GetEntityWithChanges() {
+		return _entity!;
+	}
 
 	public void UndoChanges() {
 		_entityDescriptor?.UndoChanges();
@@ -65,18 +80,26 @@ public partial class DefaultCrudEntityEditor : UserControl, ICrudEntityEditor<ob
 		_propertyGrid.Refresh();
 	}
 
-	public new IEnumerable<string> Validate() => Enumerable.Empty<string>();
-
-	protected virtual void OnPropertyChanged(object Entity, object PropertyName, object OldValue, object NewValue) {
+	public new IEnumerable<string> Validate() {
+		return Enumerable.Empty<string>();
 	}
 
-	private void _propertyGrid_PropertyValueChanged(object Source, PropertyValueChangedEventArgs Args) {
-		var Path = new Stack<string>();
-		for (var Item = Args.ChangedItem; Item != null; Item = Item.Parent)
-			if (Item.PropertyDescriptor != null)
-				Path.Push(Item.PropertyDescriptor.Name);
-		var Change = new CrudEntityPropertyChangedEventArgs(_entity!, string.Join(".", Path), Args.OldValue!, Args.ChangedItem.Value!);
-		OnPropertyChanged(_entity!, Change.PropertyName, Change.OldValue, Change.NewValue);
-		PropertyChanged?.Invoke(Change);
+	/// <summary>Publishes the completed entity edit rather than the internal property's intermediate notifications.</summary>
+	protected override bool ShouldObserveChildStateChanges(Control child) {
+		return false;
+	}
+
+	private void PropertyGrid_PropertyValueChanged(object source, PropertyValueChangedEventArgs args) {
+		var path = new Stack<string>();
+		for (var item = args.ChangedItem; item != null; item = item.Parent)
+			if (item.PropertyDescriptor != null)
+				path.Push(item.PropertyDescriptor.Name);
+		var change = new CrudEntityPropertyChangedEventArgs(_entity!, string.Join(".", path), args.OldValue!, args.ChangedItem.Value!);
+		OnPropertyChanged(_entity!, change.PropertyName, change.OldValue, change.NewValue);
+		PropertyChanged?.Invoke(change);
+		NotifyStateChanged();
+	}
+
+	protected virtual void OnPropertyChanged(object Entity, object PropertyName, object OldValue, object NewValue) {
 	}
 }

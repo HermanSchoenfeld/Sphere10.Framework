@@ -18,27 +18,58 @@ namespace Sphere10.Framework.Windows.Forms;
 [UserEditable]
 public class VisualGridSettings : SettingsObject {
 	/// <summary>Optional consumer-owned migration version, saved with the next accepted grid preference change.</summary>
+	[DefaultValue(0)]
 	[Browsable(false)]
-	public int ConsumerVersion { get; set; }
+	public int ConsumerVersion {
+		get; set;
+	}
 
 	/// <summary>The selected page mode. Null preserves compatibility with settings saved before the dropdown existed.</summary>
-	public VisualGridPageMode? PageMode { get; set; }
+	[DefaultValue(null)]
+	public VisualGridPageMode? PageMode {
+		get; set;
+	}
 
 	/// <summary>Legacy Auto/Paged preference, retained for migration and older consumers.</summary>
+	[DefaultValue(false)]
 	[Browsable(false)]
-	public bool AutoPageSize { get; set; }
+	public bool AutoPageSize {
+		get; set;
+	}
 
+	/// <summary>The positive number of rows requested in manual page mode.</summary>
+	[DefaultValue(100)]
 	public int PageSize { get; set; } = 100;
 
 	/// <summary>The zero-based Paged/Auto page; Single always uses zero. The source clamps it when its record count changes.</summary>
-	public int PageNumber { get; set; }
+	[DefaultValue(0)]
+	public int PageNumber {
+		get; set;
+	}
 
-	/// <summary>Only deliberate manual widths, in 96-DPI logical pixels, keyed by column schema identity.</summary>
+	/// <summary>Column width and stretch choices, keyed by stable column identity; widths use 96-DPI logical pixels.</summary>
 	public ApplicationGridColumnPreferences[] Columns { get; set; } = Array.Empty<ApplicationGridColumnPreferences>();
 
+	/// <summary>The source sort identity, or an empty value when no column is selected.</summary>
+	[DefaultValue("")]
 	public string SortColumnName { get; set; } = string.Empty;
 
+	/// <summary>The requested source sort direction.</summary>
+	[DefaultValue(SortDirection.Ascending)]
 	public SortDirection SortDirection { get; set; } = SortDirection.Ascending;
+
+	/// <summary>Restores paging/sort defaults and clears layout edits while retaining the grid's declared column identities.</summary>
+	public override void RestoreDefaultValues() {
+		base.RestoreDefaultValues();
+		if (Columns == null)
+			return;
+		foreach (var column in Columns) {
+			if (column == null)
+				continue;
+			column.Width = null;
+			column.ExpandsToFit = null;
+		}
+	}
 
 	/// <summary>Validates query preferences and stable column identities before accepting edited values.</summary>
 	public override Result Validate() {

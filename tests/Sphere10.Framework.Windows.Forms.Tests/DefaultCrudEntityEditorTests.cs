@@ -119,6 +119,22 @@ public class DefaultCrudEntityEditorTests {
 	}
 
 	[Test]
+	public void NestedStandardValueCaptionsPreserveTheCurrentReference() {
+		var Entity = new Employee { Address = new Address { Street = "Original" } };
+		using var Editor = CreateEditor(Entity);
+		var Converter = FindItem(GetGrid(Editor), "Address").PropertyDescriptor!.Converter;
+
+		// PropertyGrid round-trips each standard value's caption while painting its dropdown.
+		var Caption = Converter.ConvertToString(Entity.Address);
+		Assert.That(Converter.ConvertFromString(Caption!), Is.SameAs(Entity.Address));
+		Assert.That(Converter.ConvertFromString(Converter.ConvertToString(null)!), Is.Null);
+		Assert.That(Converter.ConvertFromString("(Create new)"), Is.TypeOf<Address>().And.Not.SameAs(Entity.Address));
+		Assert.That(() => Converter.ConvertFromString("An unrelated caption"), Throws.TypeOf<NotSupportedException>());
+		Assert.That(Entity.Address.Street, Is.EqualTo("Original"));
+		Assert.That(Editor.HasChanges, Is.False, "Displaying choices must not mutate the edited object.");
+	}
+
+	[Test]
 	public void CreatingEditingThenClearingAReferenceReturnsToUnchanged() {
 		var Entity = new Employee();
 		using var Editor = CreateEditor(Entity);

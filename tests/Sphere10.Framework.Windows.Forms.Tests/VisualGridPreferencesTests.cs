@@ -44,6 +44,7 @@ public class VisualGridPreferencesTests {
 	[TearDown]
 	public void TearDown() {
 		_provider.ReleaseSave.Set();
+		_provider.ReleaseLoad.TrySetResult();
 		UserSettings.Provider = _previousProvider;
 	}
 
@@ -212,6 +213,45 @@ public class VisualGridPreferencesTests {
 	}
 
 	[Test]
+	public void StretchOnlyChangesPersistAndRestoreByStableColumnKey() {
+		RunWithMessageLoop(async owner => {
+			using (var first = CreateGrid(owner, "Stretch")) {
+				await first.SetDataSource(new ProbeSource());
+				await first.RefreshGrid();
+				var editing = first.ShowSettingsAsync();
+				await Task.Yield();
+				using (var dialog = FormsApplication.OpenForms.OfType<VisualGridSettingsDialog>().Single()) {
+					dialog.Settings.Columns.Single(column => column.Key == "name").ExpandsToFit = false;
+					Find<System.Windows.Forms.Button>(dialog, "_ok").PerformClick();
+				}
+				Assert.That(await editing, Is.True);
+				await first.FlushPreferencesAsync();
+				Assert.That(_provider.SaveCount, Is.EqualTo(1), "A stretch-only edit must be saved.");
+			}
+
+			// Read through a fresh provider so a cached in-memory value cannot mask a missing serialized field.
+			UserSettings.Provider = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
+			using var restored = CreateGrid(owner, "Stretch", "Renamed caption");
+			await restored.SetDataSource(new ProbeSource());
+			await restored.RefreshGrid();
+			var columns = restored.CaptureGridPreferences().Columns;
+			Assert.That(columns.Single(column => column.Key == "name").ExpandsToFit, Is.False);
+			Assert.That(columns.Single(column => column.Key == "group").ExpandsToFit, Is.True);
+			Assert.That(columns.All(column => column.Width == null), Is.True);
+			var native = Find<Grid>(restored, "_grid");
+			Assert.That(native.Columns[0].AutoSizeMode.HasFlag(SourceGrid.AutoSizeMode.EnableStretch), Is.False);
+			Assert.That(native.Columns[1].AutoSizeMode.HasFlag(SourceGrid.AutoSizeMode.EnableStretch), Is.True);
+			Assert.That(native.Columns[1].Width, Is.GreaterThan(native.Columns[0].Width));
+
+			var reset = restored.CaptureGridPreferences();
+			reset.Columns.Single(column => column.Key == "name").ExpandsToFit = null;
+			restored.ApplyGridPreferences(reset);
+			await restored.RefreshGrid();
+			Assert.That(native.Columns[0].AutoSizeMode.HasFlag(SourceGrid.AutoSizeMode.EnableStretch), Is.True, "Clearing the override restores the binding default.");
+		});
+	}
+
+	[Test]
 	public void LegacyReadUsesItsCapturedProviderAndNeverCreatesOrMutatesARecord() {
 		RunWithMessageLoop(async owner => {
 			var captured = UserSettings.Provider;
@@ -291,6 +331,33 @@ public class VisualGridPreferencesTests {
 			Assert.That(_provider.ReadCount, Is.Zero);
 			Assert.That(_provider.SaveCount, Is.Zero);
 			return Task.CompletedTask;
+		});
+	}
+
+	[Test]
+	public void ReturningToAnEarlierSettingsKeyRejectsItsOriginalPendingLoad() {
+		RunWithMessageLoop(async owner => {
+			// Read two detached versions of the same record without a cache serializing the reads.
+			UserSettings.Provider = _provider;
+			_provider.SaveSetting(new VisualGridSettings { ID = "Repeated", PageMode = VisualGridPageMode.Paged, PageSize = 2 });
+			using var crud = CreateGrid(owner, "Repeated");
+			var source = new ProbeSource();
+			_provider.BlockNextLoad = true;
+			using var releaseLoad = Tools.Scope.ExecuteOnDispose(() => _provider.ReleaseLoad.TrySetResult());
+			var originalLoad = crud.SetDataSource(source);
+			await _provider.LoadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+			// A later activation of the same identity must win even when the first read finishes last.
+			crud.SettingsKey = "Other";
+			crud.SettingsKey = "Repeated";
+			_provider.SaveSetting(new VisualGridSettings { ID = "Repeated", PageMode = VisualGridPageMode.Paged, PageSize = 7 });
+			await crud.SetDataSource(source);
+			_provider.ReleaseLoad.TrySetResult();
+			await originalLoad;
+			await crud.RefreshGrid();
+
+			Assert.That(crud.CaptureGridPreferences().PageSize, Is.EqualTo(7));
+			Assert.That(source.Requests.Last().Length, Is.EqualTo(7));
 		});
 	}
 
@@ -483,6 +550,12 @@ public class VisualGridPreferencesTests {
 
 		public bool FailNextSave { get; set; }
 
+		public bool BlockNextLoad { get; set; }
+
+		public TaskCompletionSource LoadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		public TaskCompletionSource ReleaseLoad { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 		public TaskCompletionSource SaveStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		public ManualResetEventSlim ReleaseSave { get; } = new(false);
@@ -494,6 +567,18 @@ public class VisualGridPreferencesTests {
 		public override bool ContainsSetting(Type type, object id = null) {
 			ReadCount++;
 			return base.ContainsSetting(type, id);
+		}
+
+		// Hold the original detached value while a later read of the same identity completes.
+		public override SettingsObject LoadSetting(Type type, object id = null) {
+			var settings = base.LoadSetting(type, id);
+			if (BlockNextLoad) {
+				BlockNextLoad = false;
+				LoadStarted.TrySetResult();
+				if (!ReleaseLoad.Task.Wait(TimeSpan.FromSeconds(10)))
+					throw new TimeoutException("The test did not release its blocked settings read.");
+			}
+			return settings;
 		}
 
 		public override void SaveSetting(SettingsObject settings) {

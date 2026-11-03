@@ -13,11 +13,17 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Nonvisual snapshot binding operations shared by concrete nongeneric grid surfaces.</summary>
 public interface IVisualGridSnapshotController {
-	long Count { get; }
+	/// <summary>The number of currently published source rows.</summary>
+	long Count {
+		get;
+	}
 
+	/// <summary>Collects and publishes a new snapshot on the grid's owner context.</summary>
 	Task RefreshAsync(CancellationToken cancellationToken = default);
 
+	/// <summary>Configures fallback sorting for subsequent source reads.</summary>
 	void SetDefaultSort(string property, SortDirection direction);
 
+	/// <summary>Returns the controller's currently published snapshot.</summary>
 	object CaptureSnapshot();
 }

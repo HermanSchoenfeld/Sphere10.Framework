@@ -15,44 +15,41 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public partial class VisualGrid : UserControl, IVisualGrid {
-
-	#region Constants
-
-	private const int DefaultRowHeight = 24;
-	private const int DefaultPageSize = 100;
-
-	#endregion
-
-	#region Events
-
+/// <summary>Displays and edits source-backed entities with native selection, paging and user preferences.</summary>
+public partial class VisualGrid : UserControlEx, IVisualGrid {
+	// Events
 	[Category("Behavior")]
 	public event EventHandlerEx<VisualGrid, object> EntitySelected;
+
 	[Category("Behavior")]
 	public event EventHandlerEx<VisualGrid, object> EntityDeselected;
+
 	[Category("Behavior")]
 	public event EventHandlerEx<VisualGrid, object> EntityCreated;
+
 	[Category("Behavior")]
 	public event EventHandlerEx<VisualGrid, object> EntityUpdated;
+
 	[Category("Behavior")]
 	public event EventHandlerEx<VisualGrid, object> EntityDeleted;
+
 	[Category("Behavior")]
 	public event EventHandlerEx<VisualGrid, CrudEntityPropertyChangedEventArgs> EntityPropertyChanged;
+
 	/// <summary>Raised on the owning UI thread after the current filtered query has been bound, including empty results.</summary>
 	[Category("Behavior")]
 	public event EventHandler DataBindingComplete;
-	#endregion
 
-	#region Fields
+	// Constants
+	private const int _defaultRowHeight = 24;
+	private const int _defaultPageSize = 100;
 
-	private readonly object _threadLock;
+	// Fields
 	private IDataSource<object> _dataSource;
 	private CrudEntityEditorAdapter _entityEditorAdapter;
 	private Type _entityEditorType;
@@ -101,26 +98,18 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	private IVisualGridColumn[] _boundColumns;
 	private int _sourceAssignmentVersion;
 	private int _dataPublicationVersion;
-	private IDataSource<object> _rowHeightDataSource;
-	private IVisualGridColumn[] _rowHeightBindings;
-	private int[] _rowHeightColumnWidths = Array.Empty<int>();
-	private (int ImageHeight, bool HasText)[] _rowHeightSignatures = Array.Empty<(int, bool)>();
-	private (System.Drawing.Font GridFont, System.Drawing.Font CellFont, int Dpi, int MinimumHeight, SourceGrid.Drawing.Padding Padding, System.Drawing.SizeF BorderExtent, object TextElement, object ImageElement, SourceGrid.Drawing.ElementsDrawMode DrawMode) _rowHeightGeometry;
+	private readonly VisualGridRowMeasurements _rowMeasurements = new();
 
-	#endregion
-
-	#region Constructors
-
+	// Constructors
 	public VisualGrid() {
 		State = VisualState.Normal;
 		using (EnterVisualState(VisualState.Loading)) {
-		_threadLock = new object();
 			InitializeComponent();
 			_pageModeButton.ItemTextProvider = mode => (VisualGridPageMode)mode == VisualGridPageMode.Paged ? "Manual" : mode.ToString();
 			_pageModeButton.SetItems(new object[] { VisualGridPageMode.Single, VisualGridPageMode.Auto, VisualGridPageMode.Paged });
 			Disposed += (_, _) => ResetRowHeightMeasurements();
-			_grid.MouseDown += _grid_MouseDown;
-			_grid.KeyDown += _grid_KeyDown;
+			_grid.MouseDown += Grid_MouseDown;
+			_grid.KeyDown += Grid_KeyDown;
 			_grid.Columns.ColumnWidthChanged += GridColumnWidthChanged;
 			_grid.MouseUp += GridPreferenceResizeCompleted;
 			var preferenceEvents = new SourceGrid.Cells.Controllers.CustomEvents();
@@ -137,8 +126,8 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			_sortColumnIndex = 0;
 			_sortColumnName = null;
 			_sortDirection = SortDirection.Ascending;
-			_pageSize = DefaultPageSize;
-			_manualPageSize = DefaultPageSize;
+			_pageSize = _defaultPageSize;
+			_manualPageSize = _defaultPageSize;
 			_pageSizeUpDown.Minimum = 1;
 			_pageSizeUpDown.Maximum = 9999;
 			_pageSizeUpDown.Value = _pageSize;
@@ -153,13 +142,13 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			_columnsBindings = new IVisualGridColumn[0];
 			_entityEditorAdapter = new CrudEntityEditorAdapter<object>();
 			_entityEditorType = typeof(DefaultCrudEntityEditor);
-			_gridContainerPanel.Resize += new EventHandler(_gridContainerPanel_Resize);
+			_gridContainerPanel.Resize += new EventHandler(GridContainerPanel_Resize);
 			LeftClickToDeselect = true;
 			RightClickForContextMenu = true;
 			UseEntityReferenceForLookup = false;
 			AutoSelectOnCreate = false;
 			_refreshThrottle = new Throttle(TimeSpan.FromMilliseconds(250));
-			_grid.MinimumHeight = DefaultRowHeight;
+			_grid.MinimumHeight = _defaultRowHeight;
 			OrganizeLayout();
 		}
 		if (!Tools.Runtime.IsDesignMode) {
@@ -170,15 +159,15 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
-	#endregion
-
-	#region Properties
-
+	// Properties
 	[Description("Allows editing a cell directly. With LeftClickToDeselect enabled, double-click the cell or press F2 to edit; otherwise a single click edits.")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
 	public bool AllowCellEditing {
-		get => _allowCellEditing;
+		get {
+			return _allowCellEditing;
+		}
+
 		set {
 			if (_allowCellEditing == value)
 				return;
@@ -191,7 +180,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Category("Behavior")]
 	[DefaultValue(true)]
 	public bool LeftClickToDeselect {
-		get => _leftClickToDeselect;
+		get {
+			return _leftClickToDeselect;
+		}
+
 		set {
 			if (_leftClickToDeselect == value)
 				return;
@@ -203,13 +195,18 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Description("When clicking a selected row this will deselect that row")]
 	[Category("Behavior")]
 	[DefaultValue(true)]
-	public bool RightClickForContextMenu { get; set; }
+	public bool RightClickForContextMenu {
+		get; set;
+	}
 
 	[Description("When selecting a row, selection occurs on mouse up (as opposed to default behavior of mouse down)")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
 	public bool SelectOnMouseUp {
-		get => _selectOnMouseUp;
+		get {
+			return _selectOnMouseUp;
+		}
+
 		set {
 			if (_selectOnMouseUp == value)
 				return;
@@ -221,13 +218,18 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Description("When a new entity is created successfully this will select that entity.")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
-	public bool AutoSelectOnCreate { get; set; }
+	public bool AutoSelectOnCreate {
+		get; set;
+	}
 
 	[Description("Selects manual paging, viewport-fitted paging, or all matching rows in one scrollable page.")]
 	[Category("Appearance")]
 	[DefaultValue(VisualGridPageMode.Paged)]
 	public VisualGridPageMode PageMode {
-		get => _pageMode;
+		get {
+			return _pageMode;
+		}
+
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Select a supported CRUD grid page mode.");
 			if (_pageMode == value)
@@ -247,29 +249,42 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Category("Appearance")]
 	[DefaultValue(false)]
 	public bool AutoPageSize {
-		get => PageMode == VisualGridPageMode.Auto;
-		set => PageMode = value ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
+		get {
+			return PageMode == VisualGridPageMode.Auto;
+		}
+
+		set {
+			PageMode = value ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
+		}
 	}
 
 	[Description("Uses reference equality (in place of standard equality) when programatically selecting an entity.")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
-	public bool UseEntityReferenceForLookup { get; set; }
+	public bool UseEntityReferenceForLookup {
+		get; set;
+	}
 
 	[Description("Refreshes entire grid when a row is updated (will only refresh row when false)")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
-	public bool RefreshEntireGridOnUpdate { get; set; }
+	public bool RefreshEntireGridOnUpdate {
+		get; set;
+	}
 
 	[Description("Refresh entire grid when a row is deleted (will only refresh row when false)")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
-	public bool RefreshEntireGridOnDelete { get; set; }
+	public bool RefreshEntireGridOnDelete {
+		get; set;
+	}
 
 	[Description("Refreshes immediately without a loading animation or disabling the grid. Logical refresh admission and stale-query protection remain active.")]
 	[Category("Appearance")]
 	[DefaultValue(false)]
-	public bool SuppressLoadingIndicator { get; set; }
+	public bool SuppressLoadingIndicator {
+		get; set;
+	}
 
 	[Description("Measures row heights on every refresh. Disable for frequently refreshed single-line, read-only text/image tables to retain measured heights; new rows and changes to layout, fonts or image heights are still measured. Multiline, wrapped, editable and custom cells always measure normally.")]
 	[Category("Appearance")]
@@ -279,42 +294,56 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Description("Prepares read-only Text/Image pages on a worker, including source reads, enumeration, column delegates and display conversion. Opt in only when those operations and borrowed images are safe off the UI thread. Editable or other cell types retain their normal UI-thread binding.")]
 	[Category("Behavior")]
 	[DefaultValue(false)]
-	public bool PrepareReadOnlyCellsInBackground { get; set; }
+	public bool PrepareReadOnlyCellsInBackground {
+		get; set;
+	}
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object SelectedEntity {
-		get { return _selectedEntity; }
+		get {
+			return _selectedEntity;
+		}
 		set {
 			if (value == null && _selectedEntity != null) {
 				RaiseEntityDeselectedEvent(_selectedEntity);
 				_selectedEntity = null;
 				HighlightSelectedEntity();
+				NotifyStateChanged();
 				return;
 			}
 
-			if (value == _selectedEntity) {
+			if (value == _selectedEntity)
 				return;
-			}
 
-			if (_selectedEntity != null) {
+			if (_selectedEntity != null)
 				RaiseEntityDeselectedEvent(_selectedEntity);
-			}
 
 			_selectedEntity = value;
 			HighlightSelectedEntity();
 
 			RaiseEntitySelectedEvent(_selectedEntity);
+			NotifyStateChanged();
 		}
 	}
 
+	// Public Methods
+	/// <summary>Binds a typed source and restores its applicable paging, layout and preferences.</summary>
+	public Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource) {
+		return SetDataSource(dataSource, DataSourceCapabilities.Default);
+	}
+
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Type EntityEditorDisplay { get; set; }
+	public Type EntityEditorDisplay {
+		get; set;
+	}
 
 	[Category("Appearance")]
 	[DefaultValue("")]
 	public string GridTitle {
-		get { return _gridTitle; }
+		get {
+			return _gridTitle;
+		}
 		set {
 			if (IsDisposed || Disposing)
 				return;
@@ -342,7 +371,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Category("Appearance")]
 	[DefaultValue(System.Drawing.ContentAlignment.MiddleCenter)]
 	public System.Drawing.ContentAlignment GridTitleAlignment {
-		get => _titleLabel.TextAlign;
+		get {
+			return _titleLabel.TextAlign;
+		}
+
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Select a supported title alignment.");
 			_titleLabel.TextAlign = value;
@@ -352,7 +384,9 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Category("Behavior")]
 	[DefaultValue(DataSourceCapabilities.Default)]
 	public DataSourceCapabilities Capabilities {
-		get { return _crudCapabilities; }
+		get {
+			return _crudCapabilities;
+		}
 		set {
 			_crudCapabilities = value;
 			UpdateCellInteraction();
@@ -362,7 +396,9 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IEnumerable<IVisualGridColumn> GridBindings {
-		get { return _columnsBindings; }
+		get {
+			return _columnsBindings;
+		}
 		set {
 			var bindings = (value ?? Enumerable.Empty<IVisualGridColumn>()).ToArray();
 			if (_preferences != null)
@@ -387,41 +423,53 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IEnumerable<object> VisibleEntities {
-		get { return _rowToEntityMap.Keys.Select(row => _rowToEntityMap[row]); }
+		get {
+			return _rowToEntityMap.Keys.Select(row => _rowToEntityMap[row]);
+		}
 	}
 
 	/// <summary>The total matching records in the last accepted query, across every page.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int TotalRecords => _totalRecords;
+	public int TotalRecords {
+		get {
+			return _totalRecords;
+		}
+	}
+
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public IDictionary<string, CrudReferenceBinding> ReferenceBindings { get; } = new Dictionary<string, CrudReferenceBinding>(StringComparer.Ordinal);
 
 	internal object SelectedEntityDirect {
-		get => _selectedEntity;
+		get {
+			return _selectedEntity;
+		}
+
 		set {
 			_selectedEntity = value;
 			UpdateDeleteButtonVisibility();
 		}
 	}
 
-	internal Func<object, object> ResolvePublishedEntity { get; set; }
+	internal Func<object, object> ResolvePublishedEntity {
+		get; set;
+	}
 
-	[Browsable(false)]
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IDictionary<string, CrudReferenceBinding> ReferenceBindings { get; } = new Dictionary<string, CrudReferenceBinding>(StringComparer.Ordinal);
-
-	private VisualState State { get; set; }
+	private VisualState State {
+		get; set;
+	}
 
 	// A suppressed background read keeps the last committed view usable. Internal selection/commit
 	// scopes remain noninteractive; logical refresh admission is independent of native row input.
-	private bool CanInteractWithCommittedRows => State == VisualState.Normal
-		|| State == VisualState.Loading && _refreshing && SuppressLoadingIndicator && !_awaitingInitialBinding
-		&& _boundDataSource == _dataSource && _boundColumns == _columnsBindings && _crudCapabilities.HasFlag(DataSourceCapabilities.CanRead);
+	private bool CanInteractWithCommittedRows {
+		get {
+			return State == VisualState.Normal
+					|| State == VisualState.Loading && _refreshing && SuppressLoadingIndicator && !_awaitingInitialBinding
+					&& _boundDataSource == _dataSource && _boundColumns == _columnsBindings && _crudCapabilities.HasFlag(DataSourceCapabilities.CanRead);
+		}
+	}
 
-	#endregion
-
-	#region Public Methods
-
-	public Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource) => SetDataSource(dataSource, DataSourceCapabilities.Default);
-
+	/// <summary>Binds a typed source and restores its applicable paging, layout and preferences.</summary>
 	public async Task SetDataSource<TEntity>(IDataSource<TEntity> dataSource, DataSourceCapabilities capabilities) {
 		var assignmentVersion = ++_sourceAssignmentVersion;
 		var projected = new ProjectedDataSource<TEntity, object>(dataSource, entity => entity, entity => (TEntity)entity);
@@ -439,37 +487,20 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		OrganizeLayout();
 	}
 
+	/// <summary>Releases the current source binding and invalidates retained row measurements.</summary>
 	public void ClearDataSource() {
 		_sourceAssignmentVersion++;
 		_dataSource = null;
 		_dataSourceItemType = typeof(object);
 		ResolvePublishedEntity = null;
 		_columnWidthOverrides.Clear();
+		_columnStretchOverrides.Clear();
 		ResetRowHeightMeasurements();
 	}
 
-	/// <summary>Reads all matching rows using the current filter and sort, independent of the visible page. Capture on the owning UI thread.</summary>
-	/// <remarks>Queries the bound source on a worker without rebinding, disabling or changing the selection. The returned one-dimensional array retains its source item type, including when empty.</remarks>
-	public async Task<Array> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default) {
-		Guard.Ensure(!InvokeRequired, "Capture the grid query on its owning UI thread.");
-		cancellationToken.ThrowIfCancellationRequested();
-		var source = _dataSource;
-		var itemType = _dataSourceItemType;
-		var search = _searchText;
-		var sort = _sortColumnName;
-		var direction = _sortDirection;
-		if (source == null || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead))
-			return Array.CreateInstance(itemType, 0);
-		return await Task.Run(async () => {
-			cancellationToken.ThrowIfCancellationRequested();
-			var read = await source.ReadRangeAsync(search, int.MaxValue, 0, sort, direction).ConfigureAwait(false);
-			cancellationToken.ThrowIfCancellationRequested();
-			var rows = read.Items?.ToArray() ?? Array.Empty<object>();
-			var snapshot = Array.CreateInstance(itemType, rows.Length);
-			for (var index = 0; index < rows.Length; index++)
-				snapshot.SetValue(rows[index], index);
-			return snapshot;
-		}, cancellationToken);
+	/// <summary>Refreshes the selected row without rereading or resizing the current page.</summary>
+	public Task<bool> RefreshSelectedEntityAsync() {
+		return _selectedEntity == null ? Task.FromResult(false) : RefreshEntityAsync(_selectedEntity);
 	}
 
 	/// <summary>Refreshes the supplied visible entity through the source and replaces only its displayed row. A null refreshed entity removes that row.</summary>
@@ -498,9 +529,9 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			} catch when (IsDisposed || Disposing) {
 				return false;
 			}
-		} else {
+		} else
 			await source.RefreshRangeAsync(refreshed);
-		}
+
 		if (IsDisposed || Disposing || source != _dataSource || bindings != _columnsBindings || bindingVersion != _bindingVersion
 			|| !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead)
 			|| query != (_searchText, _pageSize, _pageNumber, _sortColumnName, _sortDirection)
@@ -543,111 +574,47 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		return true;
 	}
 
-	/// <summary>Refreshes the selected row without rereading or resizing the current page.</summary>
-	public Task<bool> RefreshSelectedEntityAsync() => _selectedEntity == null ? Task.FromResult(false) : RefreshEntityAsync(_selectedEntity);
-
-	public void SetEntityEditor<TEntity>(Type entityEditorType) {
-		if (!typeof(ICrudEntityEditor<TEntity>).IsAssignableFrom(entityEditorType) && !typeof(ICrudEntityEditor<object>).IsAssignableFrom(entityEditorType))
-			throw new ArgumentException(string.Format("Does not implement {0}", typeof(ICrudEntityEditor<TEntity>)), "entityEditorType");
-		_entityEditorAdapter = new CrudEntityEditorAdapter<TEntity>();
-		_entityEditorType = entityEditorType;
+	/// <summary>Reads all matching rows using the current filter and sort, independent of the visible page. Capture on the owning UI thread.</summary>
+	/// <remarks>Queries the bound source on a worker without rebinding, disabling or changing the selection. The returned one-dimensional array retains its source item type, including when empty.</remarks>
+	public async Task<Array> ReadFilteredEntitiesAsync(CancellationToken cancellationToken = default) {
+		Guard.Ensure(!InvokeRequired, "Capture the grid query on its owning UI thread.");
+		cancellationToken.ThrowIfCancellationRequested();
+		var source = _dataSource;
+		var itemType = _dataSourceItemType;
+		var search = _searchText;
+		var sort = _sortColumnName;
+		var direction = _sortDirection;
+		if (source == null || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead))
+			return Array.CreateInstance(itemType, 0);
+		return await Task.Run(async () => {
+			cancellationToken.ThrowIfCancellationRequested();
+			var read = await source.ReadRangeAsync(search, int.MaxValue, 0, sort, direction).ConfigureAwait(false);
+			cancellationToken.ThrowIfCancellationRequested();
+			var rows = read.Items?.ToArray() ?? Array.Empty<object>();
+			var snapshot = Array.CreateInstance(itemType, rows.Length);
+			for (var index = 0; index < rows.Length; index++)
+				snapshot.SetValue(rows[index], index);
+			return snapshot;
+		}, cancellationToken);
 	}
 
-	public virtual async Task CreateNewRecord() {
-		var newEntity = _dataSource.New();
-		if (await ShowEntityEditor(newEntity, true) == CrudAction.Create) {
-			await RefreshGrid();
-			RaiseEntityCreatedEvent(newEntity);
-			if (AutoSelectOnCreate)
-				SelectedEntity = newEntity;
-		}
+	/// <summary>Reports accepted grid operations instead of native drafts, layout and snapshot publication.</summary>
+	protected override bool ShouldObserveChildStateChanges(Control child) {
+		return false;
 	}
 
-	public virtual async Task DeleteSelectedRecord() {
-		if (_selectedEntity == null)
-			return;
-		await DeleteEntity(_selectedEntity);
+	/// <summary>Invalidates accepted row content after the owner publishes a new source snapshot.</summary>
+	internal void NotifyDataSourceChanged() {
+		_dataPublicationVersion++;
 	}
 
-	public virtual async Task EditSelectedEntity() {
-		if (_selectedEntity == null)
-			return;
-		await EditEntity(_selectedEntity);
+	/// <summary>Updates displayed rows for an entity already present in the current binding.</summary>
+	internal async Task NotifyEntityUpdated(object entity) {
+		if (_entityToRowLookup.Contains(entity))
+			await UpdateGridAfterEdit(entity);
 	}
 
-	public virtual async Task DeleteEntity(object entity) {
-		if (await DialogEx.ShowAsync(this, SystemIconType.Question, "Confirm Delete", "Are you sure you want to delete this record?", "&No", "&Yes") == DialogExResult.Button2) {
-			using (EnterVisualState(VisualState.Loading))
-			using (EnterLoadingIndicator()) {
-				var deleteValidationResult = await _dataSource.ValidateAsync(entity, CrudAction.Delete);
-				if (deleteValidationResult.IsSuccess) {
-					await _dataSource.DeleteAsync(entity);
-					await UpdateGridAfterDelete(entity);
-				} else {
-					await DialogEx.ShowAsync(this, SystemIconType.Shield, "Validation Error", deleteValidationResult.ErrorMessages.ToParagraphCase(), "OK");
-				}
-			}
-		}
-	}
-
-	public virtual async Task EditEntity(object entity) {
-		switch (await ShowEntityEditor(entity, false)) {
-			case CrudAction.Update:
-				await RefreshGrid();
-				RaiseEntityUpdatedEvent(entity);
-				break;
-			case CrudAction.Delete:
-				await UpdateGridAfterDelete(entity);
-				break;
-		}
-	}
-
-	protected virtual void OnEntitySelected(object selectedEntity) {
-	}
-
-	protected virtual void OnEntityDeselected(object deselectedEntity) {
-	}
-	
-	protected virtual void OnEntityEditing(object selectedEntity, string propertyName, object oldValue, object newValue) {
-	}
-
-	protected virtual void OnEntityCreated(object deselectedEntity) {
-	}
-
-	protected virtual void OnEntityUpdated(object updatedEntity) {
-	}
-
-	protected virtual void OnEntityDeleted(object deletedEntity) {
-	}
-
-	private async Task<CrudAction?> ShowEntityEditor(object entity, bool isNewEntity) {
-		using var entityEditorDialog = new CrudEntityEditorDialog();
-		var entityEditor = Tools.Object.Create(_entityEditorType);
-		if (entityEditor is DefaultCrudEntityEditor DefaultEditor)
-			ConfigureReferenceBindings(DefaultEditor, entity);
-		_entityEditorAdapter.SetAdaptee(entityEditor);
-		_entityEditorAdapter.PropertyChanged += RaiseEntityEditingEvent;
-		entityEditorDialog.SetEntityEditor(_dataSource, _entityEditorAdapter, _crudCapabilities, entity, isNewEntity);
-		await entityEditorDialog.ShowDialogAsync(this);
-		return entityEditorDialog.UserAction;
-	}
-
-	private void ConfigureReferenceBindings(DefaultCrudEntityEditor Editor, object Entity) {
-		// Exact self references use this grid's datasource unless the model declares its own editor/converter.
-		foreach (PropertyDescriptor Property in TypeDescriptor.GetProperties(Entity))
-			if (Property.PropertyType == Entity.GetType() && Property.GetEditor(typeof(System.Drawing.Design.UITypeEditor)) == null
-				&& Property.Converter.GetType() == typeof(TypeConverter))
-				Editor.ReferenceBindings[Property.Name] = new CrudReferenceBinding<object>(_dataSource, _columnsBindings);
-		foreach (var Column in _columnsBindings)
-			if (Column.ReferenceBinding != null && !string.IsNullOrEmpty(Column.PropertyName))
-				Editor.ReferenceBindings[Column.PropertyName] = Column.ReferenceBinding;
-		foreach (var Binding in ReferenceBindings)
-			Editor.ReferenceBindings[Binding.Key] = Binding.Value;
-	}
-	#endregion
-
-	#region Layout
-
+	// Layout
 	private void OrganizeLayout() {
 		_createButton.Visible = _createButton.Enabled = _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate);
 		_deleteButton.Enabled = _deleteToolStripMenuItem.Enabled = _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete);
@@ -694,20 +661,6 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_pageModeButton.AccessibleDescription = _pageModeButton.ToolTipText;
 	}
 
-	private void UpdateDeleteButtonVisibility() {
-		_deleteButton.Visible = _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) && _selectedEntity != null &&
-		                       _entityToRowLookup != null && _entityToRowLookup[_selectedEntity].Any(Row => _grid.Selection.IsSelectedRow(Row));
-	}
-	internal void NotifyDataSourceChanged() => _dataPublicationVersion++;
-
-	internal void AutoSizeCells() {
-		if (_sizedColumnBindings != _columnsBindings)
-			return;
-		SizeBoundColumns();
-		RememberRowHeightGeometry();
-		RefreshAutoPageSize();
-	}
-
 	private void PageBarLayout(object sender, LayoutEventArgs args) {
 		if (_layingOutPageBar || _pageSizeUpDown == null)
 			return;
@@ -730,7 +683,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_pageModeButton.Size = new System.Drawing.Size(height + spacing * 4, height);
 		_pageModeToolStrip.Size = _pageModeButton.Size;
 		_pageNumberBox.Width = TextRenderer.MeasureText(Math.Max(9999, _endPageNumber + 1).ToString(), Font).Width + 12;
-		foreach (var control in new Control[] { label3, _totalRecordsLabel, _pageSizeLabel, _pageCountLabel })
+		foreach (var control in new Control[] { _label3, _totalRecordsLabel, _pageSizeLabel, _pageCountLabel })
 			control.Margin = new Padding(spacing, Math.Max(0, (height - control.PreferredSize.Height) / 2) + spacing, spacing, spacing);
 		// Narrow hosts put the right-aligned paging groups below Total, without clipping a group.
 		var pagingWidth = _pageModeToolStrip.Width + _pageModeToolStrip.Margin.Horizontal;
@@ -759,6 +712,535 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
+	private void GridColumnWidthChanged(object sender, ColumnInfoEventArgs args) {
+		var column = args.Column.Index;
+		if (_sizingColumns || _restoringGridSettings || column < 0 || column >= _columnsBindings.Length)
+			return;
+		if (State == VisualState.Loading && PrepareReadOnlyCellsInBackground) {
+			_columnResizePending = true;
+			_columnWidthOverrides[_columnsBindings[column]] = args.Column.Width;
+			args.Column.AutoSizeMode = SourceGrid.AutoSizeMode.None;
+			return;
+		}
+		if (State != VisualState.Normal || column >= _columnMinimumWidths.Length)
+			return;
+		// A user's explicit width takes precedence over both natural sizing and viewport stretching.
+		_columnResizePending = true;
+		_columnWidthOverrides[_columnsBindings[column]] = args.Column.Width;
+		_columnMinimumWidths[column] = args.Column.Width;
+		_columnsSizedFromData = true;
+		args.Column.AutoSizeMode = SourceGrid.AutoSizeMode.None;
+	}
+
+	private void UpdateButtonBarVisibility() {
+		// A disabled parent does not remove the title or the commands supported by its source.
+		if (_preferences != null || _gridSettings != null || !string.IsNullOrEmpty(_gridTitle) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)
+			|| _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanSearch))
+			ShowButtonBar();
+		else
+			HideButtonBar();
+	}
+
+	private void ShowButtonBar() {
+		_topPanel.Visible = true;
+		_layoutPanel.RowStyles[0].SizeType = SizeType.AutoSize;
+	}
+
+	private void HideButtonBar() {
+		_topPanel.Visible = false;
+		_layoutPanel.RowStyles[0].SizeType = SizeType.Absolute;
+		_layoutPanel.RowStyles[0].Height = 0;
+	}
+
+	private void ShowPageBar() {
+		_bottomPanel.Visible = true;
+		_layoutPanel.RowStyles[2].SizeType = SizeType.AutoSize;
+	}
+
+	private void HidePageBar() {
+		_bottomPanel.Visible = false;
+		_layoutPanel.RowStyles[2].SizeType = SizeType.Absolute;
+		_layoutPanel.RowStyles[2].Height = 0;
+	}
+
+	private void UpdateCellInteraction() {
+		if (_grid == null || _rowToEntityMap == null)
+			return;
+
+		// VisualGrid owns row toggling; SourceGrid's Ctrl-click selection must not process the same press again.
+		_mouseSelectionController.MouseButtons = LeftClickToDeselect ? MouseButtons.None : MouseButtons.Left;
+		foreach (var row in _rowToEntityMap) {
+			for (var column = 0; column < Math.Min(_columnsBindings.Length, _grid.ColumnsCount); column++) {
+				var cell = _grid[row.Key, column];
+				if (cell != null)
+					ConfigureCellInteraction(cell, _columnsBindings[column], row.Value);
+			}
+		}
+	}
+
+	private async Task UpdateGridAfterEdit(object entity) {
+		if (RefreshEntireGridOnUpdate)
+			await RefreshGrid();
+		else {
+			var rowNumbers = Enumerable.Empty<int>();
+			if (_entityToRowLookup.Contains(entity))
+				rowNumbers = _entityToRowLookup[entity];
+
+			//var refreshedEntity = _dataSource.Refresh(entity);
+			foreach (var rowNumber in rowNumbers)
+				BindRowInternal(rowNumber, entity);
+
+			CalculateEntityToRowLookup();
+		}
+		RaiseEntityUpdatedEvent(_selectedEntity);
+	}
+
+	// Event Handlers
+	private void LoadingIndicatorResized(object sender, EventArgs args) {
+		// Initial loading and subsequent refreshes share this full-viewport circle and geometry.
+		var sideLength = Math.Max(1, Math.Min(_initialLoadingCircle.ClientSize.Width, _initialLoadingCircle.ClientSize.Height) - 1);
+		_initialLoadingCircle.InnerCircleRadius = Math.Max(1, sideLength / 5);
+		_initialLoadingCircle.OuterCircleRadius = Math.Max(1, sideLength / 3);
+		_initialLoadingCircle.SpokeThickness = Math.Max(1, _initialLoadingCircle.InnerCircleRadius / 3);
+	}
+
+	private void GridContainerPanel_Resize(object sender, EventArgs args) {
+		RefreshAutoPageSize();
+	}
+
+	private void GridViewportChanged(object sender, EventArgs args) {
+		if (_grid == null)
+			return;
+
+		// Custom scrollbars alter the usable viewport without changing the control's client size.
+		if (!_sizingColumns && _columnViewportWidth != _grid.DisplayRectangle.Width)
+			StretchColumnsToViewport();
+		RefreshAutoPageSize();
+	}
+
+	private void GridMetricsChanged(object sender, EventArgs args) {
+		if (AutoPageSize)
+			RefreshAutoPageSize(true);
+	}
+
+	private void PageModeSelectedIndexChanged(object sender, EventArgs args) {
+		if (!_updatingPageModeControl && _pageModeButton.SelectedItem is VisualGridPageMode mode)
+			PageMode = mode;
+	}
+
+	internal async void _grid_SortColumnPressed(int col) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (!_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) || _columnsBindings == null || col < 0 || col >= _columnsBindings.Length || string.IsNullOrEmpty(_columnsBindings[col].SortName))
+				return;
+
+			_sortDirection = _sortColumnName != null && _sortColumnIndex == col
+				? _sortDirection switch {
+					SortDirection.Ascending => SortDirection.Descending,
+					SortDirection.Descending => SortDirection.None,
+					_ => SortDirection.Ascending
+				}
+				: SortDirection.Ascending;
+			_sortColumnIndex = col;
+			_sortColumnName = _sortDirection == SortDirection.None ? null : _columnsBindings[col].SortName;
+			SaveGridSettings(true);
+			await RefreshGrid();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void PageSizeUpDown_ValueChanged(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (_restoringGridSettings || _updatingPageSizeDisplay || PageMode != VisualGridPageMode.Paged || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage))
+				return;
+			_manualPageSize = _pageSize = (int)_pageSizeUpDown.Value;
+			SaveGridSettings(true);
+			await RefreshGrid();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void SearchTextBox_TextChanged(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			_searchText = _searchTextBox.Text;
+			await ChangePageNumberAsync(0);
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void FirstPageButton_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (!CanInteractWithCommittedRows)
+				return;
+
+			await ChangePageNumberAsync(0);
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void PreviousPageButton_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (!CanInteractWithCommittedRows)
+				return;
+
+			await ChangePageNumberAsync(_pageNumber - 1);
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void NextPageButton_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (!CanInteractWithCommittedRows)
+				return;
+
+			await ChangePageNumberAsync(_pageNumber + 1);
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void LastPageButton_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (!CanInteractWithCommittedRows)
+				return;
+
+			await ChangePageNumberAsync(_endPageNumber);
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void PageNumberBox_ValueChanged(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (_updatingPageNumberText || State == VisualState.Selecting)
+				return;
+
+			await ChangePageNumberAsync(GetVisiblePageNumberText());
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	// Paging
+	// TODO: SHould be property
+	private int GetVisiblePageNumberText() {
+		return int.Parse(_pageNumberBox.Text) - 1;
+	}
+
+	// TODO: Should be SetPageNumberAsync
+	private async Task ChangePageNumberAsync(int pageNumber) {
+		_pageNumber = PageMode == VisualGridPageMode.Single || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)
+			? 0 : pageNumber.ClipTo(0, _endPageNumber);
+		SetVisiblePageNumberText(_pageNumber);
+		SaveGridSettings(true);
+		await RefreshGrid();
+	}
+
+	private async void CreateButton_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (State != VisualState.Normal)
+				return;
+
+			await CreateNewRecord();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	/// <summary>Uses the configured entity editor to create a record and refresh its visible result.</summary>
+	public virtual async Task CreateNewRecord() {
+		var newEntity = _dataSource.New();
+		if (await ShowEntityEditor(newEntity, true) == CrudAction.Create) {
+			await RefreshGrid();
+			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
+			RaiseEntityCreatedEvent(newEntity);
+			if (AutoSelectOnCreate)
+				SelectedEntity = newEntity;
+		}
+	}
+
+	protected void RaiseEntityCreatedEvent(object createdEntity) {
+		if (this.CanRaiseEvents) {
+			OnEntityCreated(createdEntity);
+			if (EntityCreated != null)
+				EntityCreated(this, createdEntity);
+		}
+		NotifyStateChanged();
+	}
+
+	protected virtual void OnEntityCreated(object deselectedEntity) {
+	}
+
+	private async void DeleteButton_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (State != VisualState.Normal)
+				return;
+
+			await DeleteSelectedRecord();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void Grid_MouseDoubleClick(object sender, MouseEventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			if (!CanInteractWithCommittedRows)
+				return;
+			if (LeftClickToDeselect && args.Button == MouseButtons.Left) {
+				if (!TryStartCellEdit(_grid.PositionAtPoint(args.Location)))
+					ToggleRowSelection(args);
+			} else if (!LeftClickToDeselect)
+				await EditSelectedEntity();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void Grid_MouseDown(object sender, MouseEventArgs args) {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+			_selectedRowOnMouseDown = -1;
+			if (!CanInteractWithCommittedRows)
+				return;
+
+			var position = _grid.PositionAtPoint(args.Location);
+			if (position.IsEmpty() || !_rowToEntityMap.ContainsKey(position.Row))
+				return;
+
+			if (args.Button == MouseButtons.Left)
+				_lastClickedCell = position;
+			if (LeftClickToDeselect)
+				_grid.Focus(false);
+
+			// Remember the selection before SourceGrid processes the press, regardless of its duration.
+			if (args.Button == MouseButtons.Left && _grid.Selection.IsSelectedRow(position.Row))
+				_selectedRowOnMouseDown = position.Row;
+			if (args.Button == MouseButtons.Right || LeftClickToDeselect && args.Button == MouseButtons.Left && !SelectOnMouseUp)
+				_grid.Selection.SelectRow(position.Row, true);
+		}, out var Error);
+		if (Error != null)
+			await ExceptionDialog.ShowAsync(this, Error);
+	}
+
+	private async void Grid_MouseClick(object sender, MouseEventArgs args) {
+		Tools.Exceptions.ExecuteCapturingException(() => {
+			switch (args.Button) {
+				case MouseButtons.Left:
+					if (LeftClickToDeselect)
+						ToggleRowSelection(args);
+					break;
+				case MouseButtons.Right:
+					var position = _grid.PositionAtPoint(args.Location);
+					if (CanInteractWithCommittedRows && RightClickForContextMenu && !position.IsEmpty()
+						&& _rowToEntityMap.ContainsKey(position.Row) && _grid.Selection.IsSelectedRow(position.Row))
+						_selectionContextMenuStrip.Show(_grid.PointToScreen(args.Location));
+					break;
+			}
+		}, out var error);
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void Grid_KeyDown(object sender, KeyEventArgs args) {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+			if (!LeftClickToDeselect || !AllowCellEditing || args.KeyCode != Keys.F2)
+				return;
+
+			var position = _lastClickedCell;
+			if (position.IsEmpty() || !_grid.Selection.IsSelectedRow(position.Row)) {
+				var row = _grid.Selection.GetSelectionRegion().GetRowsIndex().FirstOrDefault(_rowToEntityMap.ContainsKey, -1);
+				if (row < 0)
+					return;
+				var column = Enumerable.Range(0, _grid.ColumnsCount).FirstOrDefault(index => _grid[row, index]?.Editor?.EnableEdit == true, -1);
+				if (column < 0)
+					return;
+				position = new Position(row, column);
+			}
+			args.Handled = TryStartCellEdit(position);
+			args.SuppressKeyPress = args.Handled;
+		}, out var Error);
+		if (Error != null)
+			await ExceptionDialog.ShowAsync(this, Error);
+	}
+
+	private bool TryStartCellEdit(Position position) {
+		if (State != VisualState.Normal || position.IsEmpty() || !_rowToEntityMap.ContainsKey(position.Row) || position.Column >= _grid.ColumnsCount)
+			return false;
+
+		var context = new CellContext(_grid, position);
+		if (context.Cell?.Editor?.EnableEdit != true)
+			return false;
+		if (context.IsEditing())
+			return true;
+
+		_grid.Selection.SelectRow(position.Row, true);
+		context.Cell.RemoveController(SourceGrid.Cells.Controllers.Unselectable.Default);
+		using var restoreFocusBehavior = new ActionDisposable(() => {
+			if (LeftClickToDeselect)
+				context.Cell.AddController(SourceGrid.Cells.Controllers.Unselectable.Default);
+		});
+		// Activating an editor resets SourceGrid's focus internally without changing the selected entity.
+		using (EnterVisualState(VisualState.Selecting))
+			context.StartEdit();
+		if (context.Cell is SourceGrid.Cells.CheckBox)
+			return context.Cell.Editor.SetCellValue(context, !((bool?)context.Value ?? false));
+		return context.IsEditing();
+	}
+
+	private void ToggleRowSelection(MouseEventArgs args) {
+		if (!CanInteractWithCommittedRows)
+			return;
+
+		var position = _grid.PositionAtPoint(args.Location);
+		if (position.IsEmpty() || !_rowToEntityMap.ContainsKey(position.Row))
+			return;
+
+		if (_selectedRowOnMouseDown == position.Row)
+			_grid.Selection.ResetSelection(false);
+		else
+			_grid.Selection.SelectRow(position.Row, true);
+	}
+
+	private async void DeselectToolStripMenuItem_Click(object sender, EventArgs args) {
+		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
+			_grid.Selection.ResetSelection(false);
+		}, out var error);
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	private async void EditToolStripMenuItem_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			await EditSelectedEntity();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	/// <summary>Opens the configured editor for the current selection when an entity is selected.</summary>
+	public virtual async Task EditSelectedEntity() {
+		if (_selectedEntity == null)
+			return;
+		await EditEntity(_selectedEntity);
+	}
+
+	private async void DeleteToolStripMenuItem_Click(object sender, EventArgs args) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			await DeleteSelectedRecord();
+		});
+		if (error != null)
+			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	/// <summary>Deletes the currently selected entity when a selection exists.</summary>
+	public virtual async Task DeleteSelectedRecord() {
+		if (_selectedEntity == null)
+			return;
+		await DeleteEntity(_selectedEntity);
+	}
+
+	/// <summary>Queues the current filtered page for refresh through the existing refresh throttle.</summary>
+	public Task RefreshGrid() {
+		if (_pendingQueryPreferences != null && IsPreferenceCellEditing())
+			return Task.CompletedTask;
+		if (_refreshTask is not { IsCompleted: false })
+			_refreshTask = RefreshGridInternal();
+		return _refreshTask;
+	}
+
+	/// <summary>Uses the configured editor to update or delete an existing entity.</summary>
+	public virtual async Task EditEntity(object entity) {
+		switch (await ShowEntityEditor(entity, false)) {
+			case CrudAction.Update:
+				await RefreshGrid();
+				RaiseEntityUpdatedEvent(entity);
+				break;
+			case CrudAction.Delete:
+				await UpdateGridAfterDelete(entity);
+				break;
+		}
+	}
+
+	/// <summary>Confirms and deletes an entity through the bound source, then updates the visible grid.</summary>
+	public virtual async Task DeleteEntity(object entity) {
+		if (await DialogEx.ShowAsync(this, SystemIconType.Question, "Confirm Delete", "Are you sure you want to delete this record?", "&No", "&Yes") == DialogExResult.Button2) {
+			using (EnterVisualState(VisualState.Loading))
+			using (EnterLoadingIndicator()) {
+				var deleteValidationResult = await _dataSource.ValidateAsync(entity, CrudAction.Delete);
+				if (deleteValidationResult.IsSuccess) {
+					await _dataSource.DeleteAsync(entity);
+					await UpdateGridAfterDelete(entity);
+				} else
+					await DialogEx.ShowAsync(this, SystemIconType.Shield, "Validation Error", deleteValidationResult.ErrorMessages.ToParagraphCase(), "OK");
+			}
+		}
+	}
+
+	/// <summary>Selects the entity editor and typed adapter used by subsequent editing commands.</summary>
+	public void SetEntityEditor<TEntity>(Type entityEditorType) {
+		if (!typeof(ICrudEntityEditor<TEntity>).IsAssignableFrom(entityEditorType) && !typeof(ICrudEntityEditor<object>).IsAssignableFrom(entityEditorType))
+			throw new ArgumentException(string.Format("Does not implement {0}", typeof(ICrudEntityEditor<TEntity>)), "entityEditorType");
+		_entityEditorAdapter = new CrudEntityEditorAdapter<TEntity>();
+		_entityEditorType = entityEditorType;
+	}
+
+	/// <summary>Measures current columns and rows using the existing native sizing path.</summary>
+	internal void AutoSizeCells() {
+		if (_sizedColumnBindings != _columnsBindings)
+			return;
+		SizeBoundColumns();
+		RememberRowHeightGeometry();
+		RefreshAutoPageSize();
+	}
+
+	protected virtual void OnEntitySelected(object selectedEntity) {
+	}
+
+	protected virtual void OnEntityDeselected(object deselectedEntity) {
+	}
+
+	protected virtual void OnEntityEditing(object selectedEntity, string propertyName, object oldValue, object newValue) {
+	}
+
+	protected virtual void OnEntityUpdated(object updatedEntity) {
+	}
+
+	protected virtual void OnEntityDeleted(object deletedEntity) {
+	}
+
+	private async Task<CrudAction?> ShowEntityEditor(object entity, bool isNewEntity) {
+		using var entityEditorDialog = new CrudEntityEditorDialog();
+		var entityEditor = Tools.Object.Create(_entityEditorType);
+		if (entityEditor is DefaultCrudEntityEditor DefaultEditor)
+			ConfigureReferenceBindings(DefaultEditor, entity);
+		_entityEditorAdapter.SetAdaptee(entityEditor);
+		_entityEditorAdapter.PropertyChanged += RaiseEntityEditingEvent;
+		entityEditorDialog.SetEntityEditor(_dataSource, _entityEditorAdapter, _crudCapabilities, entity, isNewEntity);
+		await entityEditorDialog.ShowDialogAsync(this);
+		return entityEditorDialog.UserAction;
+	}
+
+	private void ConfigureReferenceBindings(DefaultCrudEntityEditor editor, object entity) {
+		// Exact self references use this grid's datasource unless the model declares its own editor/converter.
+		foreach (PropertyDescriptor Property in TypeDescriptor.GetProperties(entity))
+			if (Property.PropertyType == entity.GetType() && Property.GetEditor(typeof(System.Drawing.Design.UITypeEditor)) == null
+				&& Property.Converter.GetType() == typeof(TypeConverter))
+				editor.ReferenceBindings[Property.Name] = new CrudReferenceBinding<object>(_dataSource, _columnsBindings);
+		foreach (var column in _columnsBindings)
+			if (column.ReferenceBinding != null && !string.IsNullOrEmpty(column.PropertyName))
+				editor.ReferenceBindings[column.PropertyName] = column.ReferenceBinding;
+		foreach (var binding in ReferenceBindings)
+			editor.ReferenceBindings[binding.Key] = binding.Value;
+	}
+
+	private void UpdateDeleteButtonVisibility() {
+		_deleteButton.Visible = _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) && _selectedEntity != null &&
+							   _entityToRowLookup != null && _entityToRowLookup[_selectedEntity].Any(row => _grid.Selection.IsSelectedRow(row));
+	}
+
 	private void SizeBoundColumns() {
 		if (_grid.ColumnsCount == 0)
 			return;
@@ -769,8 +1251,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_columnsSizedFromData = _rowToEntityMap.Count > 0;
 		_columnMinimumWidths = new int[_grid.ColumnsCount];
 		for (var column = 0; column < _grid.ColumnsCount; column++)
-			_grid.Columns[column].AutoSizeMode = _columnWidthOverrides.ContainsKey(_columnsBindings[column]) ? SourceGrid.AutoSizeMode.None : _columnsBindings[column].ExpandsToFit
-				? SourceGrid.AutoSizeMode.EnableAutoSize | SourceGrid.AutoSizeMode.EnableStretch : SourceGrid.AutoSizeMode.EnableAutoSize;
+			_grid.Columns[column].AutoSizeMode = GetColumnAutoSizeMode(_columnsBindings[column]);
 		_grid.AutoSizeCells();
 		for (var column = 0; column < _grid.ColumnsCount; column++) {
 			if (_columnWidthOverrides.TryGetValue(_columnsBindings[column], out var manual))
@@ -792,68 +1273,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 				_grid.Columns[column].Width = _columnMinimumWidths[column];
 		}
 		_grid.Columns.StretchToFit();
-		_columnViewportWidth = _grid.ClientSize.Width;
+		_columnViewportWidth = _grid.DisplayRectangle.Width;
 	}
 
-	private void GridColumnWidthChanged(object sender, ColumnInfoEventArgs args) {
-		var column = args.Column.Index;
-		if (_sizingColumns || _restoringGridSettings || column < 0 || column >= _columnsBindings.Length)
-			return;
-		if (State == VisualState.Loading && PrepareReadOnlyCellsInBackground) {
-			_columnResizePending = true;
-			_columnWidthOverrides[_columnsBindings[column]] = args.Column.Width;
-			args.Column.AutoSizeMode = SourceGrid.AutoSizeMode.None;
-			return;
-		}
-		if (State != VisualState.Normal || column >= _columnMinimumWidths.Length)
-			return;
-		// A user's explicit width takes precedence over both natural sizing and viewport stretching.
-		_columnResizePending = true;
-		_columnWidthOverrides[_columnsBindings[column]] = args.Column.Width;
-		_columnMinimumWidths[column] = args.Column.Width;
-		_columnsSizedFromData = true;
-		args.Column.AutoSizeMode = SourceGrid.AutoSizeMode.None;
-	}
-
-	private void ShowButtonBar() {
-		_topPanel.Visible = true;
-		_layoutPanel.RowStyles[0].SizeType = SizeType.AutoSize;
-	}
-
-	private void UpdateButtonBarVisibility() {
-		// A disabled parent does not remove the title or the commands supported by its source.
-		if (_preferences != null || _gridSettings != null || !string.IsNullOrEmpty(_gridTitle) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanCreate)
-			|| _crudCapabilities.HasFlag(DataSourceCapabilities.CanDelete) || _crudCapabilities.HasFlag(DataSourceCapabilities.CanSearch))
-			ShowButtonBar();
-		else
-			HideButtonBar();
-	}
-
-	private void HideButtonBar() {
-		_topPanel.Visible = false;
-		_layoutPanel.RowStyles[0].SizeType = SizeType.Absolute;
-		_layoutPanel.RowStyles[0].Height = 0;
-	}
-
-	private void ShowPageBar() {
-		_bottomPanel.Visible = true;
-		_layoutPanel.RowStyles[2].SizeType = SizeType.AutoSize;
-	}
-
-	private void HidePageBar() {
-		_bottomPanel.Visible = false;
-		_layoutPanel.RowStyles[2].SizeType = SizeType.Absolute;
-		_layoutPanel.RowStyles[2].Height = 0;
-	}
-
-	public Task RefreshGrid() {
-		if (_pendingQueryPreferences != null && IsPreferenceCellEditing())
-			return Task.CompletedTask;
-		if (_refreshTask is not { IsCompleted: false })
-			_refreshTask = RefreshGridInternal();
-		return _refreshTask;
-	}
-
+	/// <summary>Serializes refresh admission and publishes the latest current page.</summary>
 	private async Task RefreshGridInternal() {
 		// Keep restoration inside the existing shared refresh task so repeated requests retain task identity.
 		await RestoreGridSettingsAsync();
@@ -879,7 +1302,8 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 				_grid.Enabled = false;
 			var pageSizing = new AutoPageSizing();
 			while (!IsDisposed) {
-				while (await BindInternal(pageSizing)) ;
+				while (await BindInternal(pageSizing))
+					;
 				if (!initialBinding || _dataSource == null || IsDisposed)
 					break;
 				// Hidden controls retain their old bounds. Lay out accepted data under the opaque loading mask
@@ -925,84 +1349,64 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			_initialLoadingCircle.StopAnimating();
 	}
 
-	#endregion
-
-	#region Selection & Misc
-
+	// Selection & Misc
 	private void InitializeGridSelectionMode() {
 		_grid.SelectionMode = SourceGrid.GridSelectionMode.Row;
 		_grid.Selection.EnableMultiSelection = false;
 		_grid.Selection.FocusStyle = SourceGrid.FocusStyle.RemoveFocusCellOnLeave;
-		_grid.Selection.SelectionChanged -= _grid_Selection_SelectionChanged;
-		_grid.Selection.SelectionChanged += _grid_Selection_SelectionChanged;
-		_grid.Selection.CellGotFocus -= _grid_Selection_CellGotFocus;
-		_grid.Selection.CellGotFocus += _grid_Selection_CellGotFocus;
+		_grid.Selection.SelectionChanged -= Grid_Selection_SelectionChanged;
+		_grid.Selection.SelectionChanged += Grid_Selection_SelectionChanged;
+		_grid.Selection.CellGotFocus -= Grid_Selection_CellGotFocus;
+		_grid.Selection.CellGotFocus += Grid_Selection_CellGotFocus;
 	}
 
-	private void UpdateCellInteraction() {
-		if (_grid == null || _rowToEntityMap == null)
-			return;
-
-		// VisualGrid owns row toggling; SourceGrid's Ctrl-click selection must not process the same press again.
-		_mouseSelectionController.MouseButtons = LeftClickToDeselect ? MouseButtons.None : MouseButtons.Left;
-		foreach (var Row in _rowToEntityMap) {
-			for (var Column = 0; Column < Math.Min(_columnsBindings.Length, _grid.ColumnsCount); Column++) {
-				var Cell = _grid[Row.Key, Column];
-				if (Cell != null)
-					ConfigureCellInteraction(Cell, _columnsBindings[Column], Row.Value);
-			}
-		}
-	}
-
-	private void ConfigureCellInteraction(ICell Cell, IVisualGridColumn Column, object Entity) {
-		var CanEdit = AllowCellEditing && _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) && Column.CanEditCell && Column.CellHasValue(Entity);
+	private void ConfigureCellInteraction(ICell cell, IVisualGridColumn column, object entity) {
+		var canEdit = AllowCellEditing && _crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) && column.CanEditCell && column.CellHasValue(entity);
 		// Display-only text cells keep conversion support without constructing an unused native editor control.
 		// Promote the existing cell when editing is enabled later; do not require another data-source read.
-		if (CanEdit && Column.DisplayType == CrudCellDisplayType.Text && Cell.Editor is not SourceGrid.Cells.Editors.EditorControlBase)
-			Cell.Editor = SourceGrid.Cells.Editors.Factory.Create(Column.DataType);
-		if (Cell.Editor != null) {
-			if (!CanEdit && Cell.Editor.IsEditing)
-				new CellContext(_grid, new Position(Cell.Row.Index, Cell.Column.Index)).EndEdit(true);
-			Cell.Editor.EnableEdit = CanEdit;
-			Cell.Editor.EditableMode = LeftClickToDeselect ? EditableMode.None : EditableMode.Focus | EditableMode.SingleClick;
+		if (canEdit && column.DisplayType == CrudCellDisplayType.Text && cell.Editor is not SourceGrid.Cells.Editors.EditorControlBase)
+			cell.Editor = SourceGrid.Cells.Editors.Factory.Create(column.DataType);
+		if (cell.Editor != null) {
+			if (!canEdit && cell.Editor.IsEditing)
+				new CellContext(_grid, new Position(cell.Row.Index, cell.Column.Index)).EndEdit(true);
+			cell.Editor.EnableEdit = canEdit;
+			cell.Editor.EditableMode = LeftClickToDeselect ? EditableMode.None : EditableMode.Focus | EditableMode.SingleClick;
 		}
-		var valueController = Cell.FindController<UpdateEntityOnValueChangedController>();
-		if (CanEdit && Cell.Editor != null && valueController == null)
-			Cell.AddController(new UpdateEntityOnValueChangedController(this, _dataSource, Column, Entity));
-		else if (!CanEdit && valueController != null)
-			Cell.RemoveController(valueController);
+		var valueController = cell.FindController<UpdateEntityOnValueChangedController>();
+		if (canEdit && cell.Editor != null && valueController == null)
+			cell.AddController(new UpdateEntityOnValueChangedController(this, _dataSource, column, entity));
+		else if (!canEdit && valueController != null)
+			cell.RemoveController(valueController);
 
 		// Selection-only cells must not activate SourceGrid's focus-driven editor or row selection.
-		Cell.RemoveController(SourceGrid.Cells.Controllers.Unselectable.Default);
+		cell.RemoveController(SourceGrid.Cells.Controllers.Unselectable.Default);
 		if (!AllowCellEditing || LeftClickToDeselect)
-			Cell.AddController(SourceGrid.Cells.Controllers.Unselectable.Default);
+			cell.AddController(SourceGrid.Cells.Controllers.Unselectable.Default);
 
 		// Checkbox clicks normally change the value directly; reserve that action for the explicit edit gesture when rows toggle.
-		if (Cell is SourceGrid.Cells.CheckBox) {
-			Cell.RemoveController(SourceGrid.Cells.Controllers.CheckBox.Default);
+		if (cell is SourceGrid.Cells.CheckBox) {
+			cell.RemoveController(SourceGrid.Cells.Controllers.CheckBox.Default);
 			if (!LeftClickToDeselect)
-				Cell.AddController(SourceGrid.Cells.Controllers.CheckBox.Default);
+				cell.AddController(SourceGrid.Cells.Controllers.CheckBox.Default);
 		}
 
-		var RowSelector = Cell.FindController<SourceGrid.Cells.Controllers.RowSelector>();
-		if (RowSelector != null)
-			Cell.RemoveController(RowSelector);
+		var rowSelector = cell.FindController<SourceGrid.Cells.Controllers.RowSelector>();
+		if (rowSelector != null)
+			cell.RemoveController(rowSelector);
 		if (!LeftClickToDeselect)
-			Cell.AddController(new SourceGrid.Cells.Controllers.RowSelector(!SelectOnMouseUp));
+			cell.AddController(new SourceGrid.Cells.Controllers.RowSelector(!SelectOnMouseUp));
 	}
 
 	private void HighlightSelectedEntity() {
 		using (EnterVisualState(VisualState.Selecting)) {
 			_grid.Selection.ResetSelection(false);
 			if (_selectedEntity != null && _entityToRowLookup.Contains(_selectedEntity)) {
-				foreach (var rowNum in _entityToRowLookup[_selectedEntity]) {
+				foreach (var rowNum in _entityToRowLookup[_selectedEntity])
 					_grid.Selection.SelectRow(rowNum, true);
-				}
 			}
 			UpdateDeleteButtonVisibility();
 		}
 	}
-	
 
 	private void SetVisiblePageNumberText(int number) {
 		_updatingPageNumberText = true;
@@ -1010,36 +1414,14 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_pageNumberBox.Text = (number + 1).ToString();
 	}
 
-	internal async Task NotifyEntityUpdated(object entity) {
-		if (_entityToRowLookup.Contains(entity))
-			await UpdateGridAfterEdit(entity);
-	}
-
-	private async Task UpdateGridAfterEdit(object entity) {
-		if (RefreshEntireGridOnUpdate) {
-			await RefreshGrid();
-		} else {
-			var rowNumbers = Enumerable.Empty<int>();
-			if (_entityToRowLookup.Contains(entity))
-				rowNumbers = _entityToRowLookup[entity];
-
-			//var refreshedEntity = _dataSource.Refresh(entity);
-			foreach (var rowNumber in rowNumbers)
-				BindRowInternal(rowNumber, entity);
-
-			CalculateEntityToRowLookup();
-		}
-		RaiseEntityUpdatedEvent(_selectedEntity);
-	}
-
 	private async Task UpdateGridAfterDelete(object entity) {
 		var wasSelectedEntity = ReferenceEquals(entity, _selectedEntity);
 		if (wasSelectedEntity)
 			_selectedEntity = null; // set null here so as to avoid highlight when refreshing grid
 
-		if (RefreshEntireGridOnDelete) {
+		if (RefreshEntireGridOnDelete)
 			await RefreshGrid();
-		} else {
+		else {
 			var rowNumbers = Enumerable.Empty<int>();
 			if (_entityToRowLookup.Contains(entity))
 				rowNumbers = _entityToRowLookup[entity];
@@ -1056,28 +1438,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		RaiseEntityDeletedEvent(entity);
 	}
 
-	#endregion
-
-	#region Paging
-
-	// TODO: SHould be property
-	private int GetVisiblePageNumberText() {
-		return int.Parse(_pageNumberBox.Text) - 1;
-	}
-
-	// TODO: Should be SetPageNumberAsync
-	private async Task ChangePageNumberAsync(int pageNumber) {
-		_pageNumber = PageMode == VisualGridPageMode.Single || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage)
-			? 0 : pageNumber.ClipTo(0, _endPageNumber);
-		SetVisiblePageNumberText(_pageNumber);
-		SaveGridSettings(true);
-		await RefreshGrid();
-	}
-
 	private int CalculateAutoPageSize(AutoPageSizing sizing = null) {
 		// Native row, header and viewport measurements already use the current window's device pixels.
 		// Scale only the unmeasured fallback; a tall image must not inflate the budget for every ordinary row.
-		var fallbackHeight = Math.Max(_grid.MinimumHeight, (int)Math.Round(DefaultRowHeight * _grid.DeviceDpi / 96.0));
+		var fallbackHeight = Math.Max(_grid.MinimumHeight, (int)Math.Round(_defaultRowHeight * _grid.DeviceDpi / 96.0));
 		var headerHeight = _grid.Rows.Count > 0 ? _grid.Rows[0].Height : fallbackHeight;
 		var available = Math.Max(0, _grid.DisplayRectangle.Height - headerHeight);
 		var fitted = 0;
@@ -1122,12 +1486,9 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_pageSizeUpDown.Value = Math.Max((int)_pageSizeUpDown.Minimum, Math.Min(value, (int)_pageSizeUpDown.Maximum));
 	}
 
-	#endregion
-
-	#region Binding
-
+	// Binding
 	/// <summary>
-	/// Binds the datasource to the view. 
+	/// Binds the datasource to the view.
 	/// </summary>
 	/// <returns>True if search parameters changed during search, false otherwise.</returns>
 	private async Task<bool> BindInternal(AutoPageSizing pageSizing) {
@@ -1141,13 +1502,14 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		var sortDirection = _sortDirection;
 		var prepareInBackground = PrepareReadOnlyCellsInBackground;
 		var referenceLookup = UseEntityReferenceForLookup;
-		bool QueryChanged() => dataSource != _dataSource || dataPublicationVersion != _dataPublicationVersion || columns != _columnsBindings || searchText != _searchText || pageSize != _pageSize
-			|| pageNumber != _pageNumber || sortColumnName != _sortColumnName || sortDirection != _sortDirection || prepareInBackground != PrepareReadOnlyCellsInBackground
-			|| referenceLookup != UseEntityReferenceForLookup || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead);
-		if (pageSize == 0) {
-			return false;
+		bool QueryChanged() {
+			return dataSource != _dataSource || dataPublicationVersion != _dataPublicationVersion || columns != _columnsBindings || searchText != _searchText || pageSize != _pageSize
+						|| pageNumber != _pageNumber || sortColumnName != _sortColumnName || sortDirection != _sortDirection || prepareInBackground != PrepareReadOnlyCellsInBackground
+						|| referenceLookup != UseEntityReferenceForLookup || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead);
 		}
 
+		if (pageSize == 0)
+			return false;
 
 		// Take care of null grid
 		if (_columnsBindings == null || _dataSource == null || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanRead)) {
@@ -1228,8 +1590,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_titleLabel.Text = GridTitle;
 		var sizeColumns = _sizedColumnBindings != columns || !_columnsSizedFromData && data.Length > 0;
 		var acceptedVersion = _bindingVersion;
-		bool AcceptedBindingIsCurrent() => !IsDisposed && !Disposing && !QueryChanged() && _bindingVersion == acceptedVersion
-			&& CanPrepareReadOnlyCells(columns) && !columns.Where((column, index) => (column.DisplayType, column.DataType) != formats[index]).Any();
+		bool AcceptedBindingIsCurrent() {
+			return !IsDisposed && !Disposing && !QueryChanged() && _bindingVersion == acceptedVersion
+						&& CanPrepareReadOnlyCells(columns) && !columns.Where((column, index) => (column.DisplayType, column.DataType) != formats[index]).Any();
+		}
 
 		// SourceGrid already buffers painting. WM_SETREDRAW would remove WS_VISIBLE and make native clicks miss these committed rows.
 		// Keep its HWND visible while synchronously publishing cells, and defer layout until the publication is complete.
@@ -1267,9 +1631,8 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 				if (prepared == null && sizeColumns) {
 					SizeBoundColumns();
 					RememberRowHeightGeometry();
-				} else if (prepared == null) {
+				} else if (prepared == null)
 					SizeBoundRows();
-				}
 			}
 		}
 		// Replace the selected immutable row with the same identity in the same publication as its cells.
@@ -1290,6 +1653,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			}
 			if (!AcceptedBindingIsCurrent())
 				return !IsDisposed && !Disposing;
+
+			// Publishing prepared rows can change scrollbars while guarded layout events defer stretching.
+			if (_columnViewportWidth != _grid.DisplayRectangle.Width)
+				StretchColumnsToViewport();
 		}
 		_bottomPanel.PerformLayout();
 		if (prepared != null)
@@ -1306,10 +1673,14 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		return QueryChanged();
 	}
 
-	private bool CanPrepareReadOnlyCells(IVisualGridColumn[] columns)
-		=> PrepareReadOnlyCellsInBackground && columns.All(column => column.DisplayType is CrudCellDisplayType.Text or CrudCellDisplayType.Image)
-			&& (!AllowCellEditing || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) || columns.All(column => !column.CanEditCell));
+	/// <summary>Checks whether the current bindings support detached read-only value preparation.</summary>
+	private bool CanPrepareReadOnlyCells(IVisualGridColumn[] columns) {
+		return PrepareReadOnlyCellsInBackground && columns.All(column => column.DisplayType is CrudCellDisplayType.Text or CrudCellDisplayType.Image)
+					&& (!AllowCellEditing || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanUpdate) || columns.All(column => !column.CanEditCell));
+	}
 
+	// Measure columns and rows in bounded UI batches, accepting only the captured native layout.
+	/// <summary>Measures native column batches while retaining the owner thread's dispatcher.</summary>
 	private async Task<bool> SizeBoundColumnsAsync(Func<bool> isCurrent) {
 		var columns = _columnsBindings;
 		var widths = Enumerable.Range(0, _grid.ColumnsCount).Select(column => _grid.Columns[column].Width).ToArray();
@@ -1318,14 +1689,16 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		var geometry = GetRowHeightGeometry();
 		var headerFont = SourceGrid.Cells.Views.ColumnHeader.Default.Font;
 		var minimumWidth = _grid.MinimumWidth;
-		var signatures = new (int ImageHeight, bool HasText)[rowCount];
-		bool Current() => isCurrent() && rowCount == _grid.RowsCount && widths.Length == _grid.ColumnsCount
-			&& geometry.Equals(GetRowHeightGeometry()) && Equals(headerFont, SourceGrid.Cells.Views.ColumnHeader.Default.Font)
-			&& minimumWidth == _grid.MinimumWidth && NativeWidthsAreCurrent(columns, geometryWidths);
+		var signatures = new VisualGridRowMeasurements.Signature[rowCount];
+		bool Current() {
+			return isCurrent() && rowCount == _grid.RowsCount && widths.Length == _grid.ColumnsCount
+						&& geometry.Equals(GetRowHeightGeometry()) && Equals(headerFont, SourceGrid.Cells.Views.ColumnHeader.Default.Font)
+						&& minimumWidth == _grid.MinimumWidth && NativeWidthsAreCurrent(columns, geometryWidths);
+		}
+
 		_grid.AutoStretchColumnsToFitWidth = false;
 		for (var column = 0; column < columns.Length; column++)
-			_grid.Columns[column].AutoSizeMode = _columnWidthOverrides.ContainsKey(columns[column]) ? SourceGrid.AutoSizeMode.None
-				: columns[column].ExpandsToFit ? SourceGrid.AutoSizeMode.EnableAutoSize | SourceGrid.AutoSizeMode.EnableStretch : SourceGrid.AutoSizeMode.EnableAutoSize;
+			_grid.Columns[column].AutoSizeMode = GetColumnAutoSizeMode(columns[column]);
 		if (!await RunNativeSizingAsync(MeasureColumnsAndRows(), Current)) {
 			_sizedColumnBindings = null;
 			_columnsSizedFromData = false;
@@ -1368,26 +1741,28 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
+	// Retain compatible native heights and measure changed rows without monopolizing the dispatcher.
+	/// <summary>Measures invalidated native rows and retains successful geometry captures.</summary>
 	private async Task<bool> SizeBoundRowsAsync(Func<bool> isCurrent) {
 		var rowCount = _grid.RowsCount;
 		var columns = _columnsBindings;
 		var widths = Enumerable.Range(0, _grid.ColumnsCount).Select(column => _grid.Columns[column].Width).ToArray();
 		var geometry = GetRowHeightGeometry();
 		var autoSize = AutoSizeRowsOnRefresh;
-		var full = autoSize || _rowHeightDataSource != _dataSource || _rowHeightBindings != columns
-			|| !_rowHeightGeometry.Equals(geometry) || !_rowHeightColumnWidths.SequenceEqual(widths);
-		var signatures = new (int ImageHeight, bool HasText)[rowCount];
+		var full = autoSize || !_rowMeasurements.Matches(_dataSource, columns, geometry, widths);
+		var signatures = new VisualGridRowMeasurements.Signature[rowCount];
 		var measure = new bool[rowCount];
-		bool Current() => isCurrent() && rowCount == _grid.RowsCount && widths.Length == _grid.ColumnsCount
-			&& geometry.Equals(GetRowHeightGeometry()) && autoSize == AutoSizeRowsOnRefresh && NativeWidthsAreCurrent(columns, widths);
+		bool Current() {
+			return isCurrent() && rowCount == _grid.RowsCount && widths.Length == _grid.ColumnsCount
+						&& geometry.Equals(GetRowHeightGeometry()) && autoSize == AutoSizeRowsOnRefresh && NativeWidthsAreCurrent(columns, widths);
+		}
+
 		if (!await RunNativeSizingAsync(MeasureRows(), Current))
 			return false;
 		if (full)
 			RememberRowHeightGeometry(signatures);
-		else {
-			_rowHeightSignatures = signatures;
-			_rowHeightColumnWidths = widths;
-		}
+		else
+			_rowMeasurements.UpdateSignatures(signatures, widths);
 		return true;
 
 		IEnumerable<bool> MeasureRows() {
@@ -1396,7 +1771,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			for (var row = 0; row < rowCount; row++) {
 				var signature = GetRowHeightSignature(row);
 				signatures[row] = signature;
-				measure[row] = full || signature.ImageHeight < 0 || row >= _rowHeightSignatures.Length || signature != _rowHeightSignatures[row];
+				measure[row] = full || _rowMeasurements.RequiresMeasurement(row, signature);
 				yield return true;
 			}
 			foreach (var step in MeasureNativeRows(measure))
@@ -1404,6 +1779,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
+	/// <summary>Yields after bounded native measurement work for each requested row.</summary>
 	private IEnumerable<bool> MeasureNativeRows(bool[] measure) {
 		for (var row = measure.Length - 1; row >= 0; row--) {
 			if (!measure[row] || (_grid.Rows.GetAutoSizeMode(row) & SourceGrid.AutoSizeMode.EnableAutoSize) != SourceGrid.AutoSizeMode.EnableAutoSize
@@ -1421,6 +1797,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
+	/// <summary>Checks whether awaited work still matches the current native column widths.</summary>
 	private bool NativeWidthsAreCurrent(IVisualGridColumn[] columns, int[] expected) {
 		for (var column = 0; column < expected.Length; column++) {
 			var actual = _grid.Columns[column].Width;
@@ -1433,11 +1810,15 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		return true;
 	}
 
+	/// <summary>Runs native measurement batches until completion or a superseding binding.</summary>
 	private async Task<bool> RunNativeSizingAsync(IEnumerable<bool> steps, Func<bool> isCurrent) {
 		using var timer = new System.Windows.Forms.Timer { Interval = 1 };
 		TaskCompletionSource resume = null;
 		timer.Tick += (_, _) => { timer.Stop(); resume?.TrySetResult(); };
-		void DisposedWhileSizing(object sender, EventArgs args) => resume?.TrySetResult();
+		void DisposedWhileSizing(object sender, EventArgs args) {
+			resume?.TrySetResult();
+		}
+
 		Disposed += DisposedWhileSizing;
 		using var removeDisposed = Tools.Scope.ExecuteOnDispose(() => Disposed -= DisposedWhileSizing);
 		using var work = steps.GetEnumerator();
@@ -1474,6 +1855,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		return false;
 	}
 
+	/// <summary>Captures source values and display strings before native cell publication.</summary>
 	private static VisualGridPreparedValue[][] PrepareReadOnlyRows(object[] entities, IVisualGridColumn[] columns, (CrudCellDisplayType DisplayType, Type DataType)[] formats) {
 		// Conversion metadata is initialized once per populated text column on the worker; rows carry only values and prepared strings.
 		var editors = new VisualGridPreparedTextEditor[columns.Length];
@@ -1495,6 +1877,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		return rows;
 	}
 
+	/// <summary>Updates or creates stable native cell slots from one prepared row.</summary>
 	private void BindPreparedRow(int row, object entity, VisualGridPreparedValue[] cells, bool reuse, VisualGridPreparedCell[] newCells = null) {
 		_rowToEntityMap[row] = entity;
 		for (var column = 0; column < cells.Length; column++) {
@@ -1502,10 +1885,9 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			var view = GetColumnCellView(_columnsBindings[column]);
 			if (reuse && _grid[row, column] is VisualGridPreparedCell existing && existing.CanApplyPreparedValue && existing.View == view
 				&& existing.RowSpan == 1 && existing.ColumnSpan == 1 && existing.Editor is not SourceGrid.Cells.Editors.EditorControlBase
-				&& existing.FindController<UpdateEntityOnValueChangedController>() == null) {
-				// Retain the native cell's complete graph; publishing new data does not allocate or fire edit callbacks.
+				&& existing.FindController<UpdateEntityOnValueChangedController>() == null)                 // Retain the native cell's complete graph; publishing new data does not allocate or fire edit callbacks.
 				existing.ApplyPreparedValue(prepared);
-			} else {
+			else {
 				var cell = newCells?[column] ?? new VisualGridPreparedCell(prepared);
 				cell.View = view;
 				ConfigureCellInteraction(cell, _columnsBindings[column], entity);
@@ -1514,89 +1896,91 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
+	// Remeasure changed content while retaining actual native heights for compatible rows.
 	private void SizeBoundRows() {
-		if (AutoSizeRowsOnRefresh || _rowHeightDataSource != _dataSource || _rowHeightBindings != _columnsBindings
-			|| !_rowHeightGeometry.Equals(GetRowHeightGeometry()) || _rowHeightColumnWidths.Length != _grid.ColumnsCount
-			|| Enumerable.Range(0, _grid.ColumnsCount).Any(column => _rowHeightColumnWidths[column] != _grid.Columns[column].Width)) {
+		if (AutoSizeRowsOnRefresh || !_rowMeasurements.Matches(_dataSource, _columnsBindings, GetRowHeightGeometry(), _grid)) {
 			_grid.Rows.AutoSize(false);
 			RememberRowHeightGeometry();
 			return;
 		}
 		// Redim preserves existing RowInfo instances. Keep their actual measured heights, rather than imposing a fixed height.
-		var signatures = new (int ImageHeight, bool HasText)[_grid.RowsCount];
+		var signatures = new VisualGridRowMeasurements.Signature[_grid.RowsCount];
 		for (var row = 0; row < _grid.RowsCount; row++) {
 			var signature = GetRowHeightSignature(row);
-			if (signature.ImageHeight < 0 || row >= _rowHeightSignatures.Length || signature != _rowHeightSignatures[row])
+			if (_rowMeasurements.RequiresMeasurement(row, signature))
 				_grid.Rows.AutoSizeRow(row, false, 0, _grid.ColumnsCount - 1);
 			signatures[row] = signature;
 		}
-		_rowHeightSignatures = signatures;
+		_rowMeasurements.UpdateSignatures(signatures);
 	}
 
-	private void RememberRowHeightGeometry((int ImageHeight, bool HasText)[] signatures = null) {
+	// Accept only completed native measurements, or clear them when reuse is disabled.
+	/// <summary>Retains geometry and content signatures after successful row sizing.</summary>
+	private void RememberRowHeightGeometry(VisualGridRowMeasurements.Signature[] signatures = null) {
 		if (AutoSizeRowsOnRefresh) {
 			ResetRowHeightMeasurements();
 			return;
 		}
-		_rowHeightDataSource = _dataSource;
-		_rowHeightBindings = _columnsBindings;
-		_rowHeightGeometry = GetRowHeightGeometry();
-		_rowHeightColumnWidths = Enumerable.Range(0, _grid.ColumnsCount).Select(column => _grid.Columns[column].Width).ToArray();
-		_rowHeightSignatures = signatures ?? Enumerable.Range(0, _grid.RowsCount).Select(GetRowHeightSignature).ToArray();
+		_rowMeasurements.Remember(_dataSource, _columnsBindings, GetRowHeightGeometry(),
+			Enumerable.Range(0, _grid.ColumnsCount).Select(column => _grid.Columns[column].Width).ToArray(),
+			signatures ?? Enumerable.Range(0, _grid.RowsCount).Select(GetRowHeightSignature).ToArray()
+		);
 	}
 
+	// Release borrowed source and visual references when the binding or control lifetime ends.
+	/// <summary>Invalidates retained native row geometry and content signatures.</summary>
 	private void ResetRowHeightMeasurements() {
-		_rowHeightDataSource = null;
-		_rowHeightBindings = null;
-		_rowHeightColumnWidths = Array.Empty<int>();
-		_rowHeightSignatures = Array.Empty<(int, bool)>();
-		_rowHeightGeometry = default;
+		_rowMeasurements.Clear();
 	}
 
-	private (System.Drawing.Font, System.Drawing.Font, int, int, SourceGrid.Drawing.Padding, System.Drawing.SizeF, object, object, SourceGrid.Drawing.ElementsDrawMode) GetRowHeightGeometry() {
+	// Capture layout inputs on the native control's owning UI thread.
+	/// <summary>Captures the native metrics used to validate row-height reuse.</summary>
+	private VisualGridRowMeasurements.Geometry GetRowHeightGeometry() {
 		var view = SourceGrid.Cells.Views.Cell.Default;
-		return (_grid.Font, view.Font, _grid.DeviceDpi, _grid.MinimumHeight, view.Padding, view.Border?.GetExtent(System.Drawing.SizeF.Empty) ?? System.Drawing.SizeF.Empty, view.ElementText, view.ElementImage, view.ElementsDrawMode);
+		return new VisualGridRowMeasurements.Geometry(_grid.Font, view.Font, _grid.DeviceDpi, _grid.MinimumHeight, view.Padding,
+			view.Border?.GetExtent(System.Drawing.SizeF.Empty) ?? System.Drawing.SizeF.Empty, view.ElementText, view.ElementImage, view.ElementsDrawMode
+		);
 	}
 
-	private (int ImageHeight, bool HasText) GetRowHeightSignature(int row) {
+	// Restrict reuse to native single-line text/image cells with the default measurement behavior.
+	/// <summary>Summarizes visible cell content that can reuse its last measured height.</summary>
+	private VisualGridRowMeasurements.Signature GetRowHeightSignature(int row) {
 		var view = SourceGrid.Cells.Views.Cell.Default;
-		if (row == 0 || view.WordWrap || view.ElementText?.GetType() != typeof(SourceGrid.Drawing.VisualElements.TextGDI)
-			|| view.ElementImage?.GetType() != typeof(SourceGrid.Drawing.VisualElements.Image))
-			return (-1, false);
+		if (row == 0 || view.WordWrap || view.ElementText?.GetType() != typeof(Sphere10.Framework.Windows.Forms.Drawing.VisualElements.TextGDI)
+			|| view.ElementImage?.GetType() != typeof(Sphere10.Framework.Windows.Forms.Drawing.VisualElements.Image))
+			return new VisualGridRowMeasurements.Signature(-1, false);
 		var imageHeight = 0;
 		var hasText = false;
 		for (var column = 0; column < _grid.ColumnsCount; column++) {
 			if (_columnsBindings[column].DisplayType is not (CrudCellDisplayType.Text or CrudCellDisplayType.Image)
 				|| _grid[row, column] is not Cell cell || cell.GetType() != typeof(Cell) && cell is not VisualGridPreparedCell
 				|| cell.View != GetColumnCellView(_columnsBindings[column]) || cell.Editor is SourceGrid.Cells.Editors.EditorControlBase)
-				return (-1, false);
+				return new VisualGridRowMeasurements.Signature(-1, false);
 			var cellView = (SourceGrid.Cells.Views.Cell)cell.View;
 			if (cellView != view && (cellView.WordWrap || !Equals(cellView.Font, view.Font) || !ReferenceEquals(cellView.Border, view.Border)
 				|| cellView.Padding.Left != view.Padding.Left || cellView.Padding.Right != view.Padding.Right
 				|| cellView.Padding.Top != view.Padding.Top || cellView.Padding.Bottom != view.Padding.Bottom
 				|| cellView.ElementsDrawMode != view.ElementsDrawMode || cellView.ElementText != view.ElementText))
-				return (-1, false);
+				return new VisualGridRowMeasurements.Signature(-1, false);
 			var text = new CellContext(_grid, new Position(row, column)).DisplayText;
 			if (text.AsSpan().IndexOfAny("\r\n\u0085\u2028\u2029") >= 0)
-				return (-1, false);
+				return new VisualGridRowMeasurements.Signature(-1, false);
 			hasText |= !string.IsNullOrEmpty(text);
 			imageHeight = Math.Max(imageHeight, cell.Image?.Height ?? 0);
 		}
-		return (imageHeight, hasText);
+		return new VisualGridRowMeasurements.Signature(imageHeight, hasText);
 	}
-
 
 	private void BindColumnHeaders(int col) {
 		_grid[0, col] = new SourceGrid.Cells.ColumnHeader(_columnsBindings[col].ColumnName);
 		_grid[0, col].AddController(new CustomSortHeaderCellController(this));
 
 		// if we are sorting by this column, set the sort icon on the column
-		if (_sortDirection != SortDirection.None && _sortColumnName != null && _sortColumnIndex == col) {
+		if (_sortDirection != SortDirection.None && _sortColumnName != null && _sortColumnIndex == col)
 			((SourceGrid.Cells.Models.ISortableHeader)_grid[0, col].Model.FindModel(typeof(SourceGrid.Cells.Models.ISortableHeader))).SetSortMode(
 				SourceGrid.CellContext.Empty,
-				_sortDirection == SortDirection.Ascending ? Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Ascending : Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Descending
+				_sortDirection == SortDirection.Ascending ? Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending : Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Descending
 			);
-		}
 	}
 
 	private void BindRowInternal(int row, object entity) {
@@ -1652,10 +2036,8 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 				default:
 					throw new NotImplementedException(string.Format("CrudColumnType not supported '{0}'", column.DisplayType));
 			}
-
-		} else {
+		} else
 			cell = CreateEmptyCell();
-		}
 
 		if (column.DisplayType == CrudCellDisplayType.Image)
 			cell.View = GetColumnCellView(column);
@@ -1669,30 +2051,36 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			return standard;
 		Guard.Argument(Enum.IsDefined(column.ImageAlignment), nameof(column.ImageAlignment), "Select a supported image alignment.");
 		Guard.Argument(!column.ImageResizeMethod.HasValue || Enum.IsDefined(column.ImageResizeMethod.Value), nameof(column.ImageResizeMethod), "Select a supported image resize method.");
-		if (!_imageCellViews.TryGetValue(column, out var view) || view.ElementImage is not SourceGrid.Drawing.VisualElements.Image) {
+		if (!_imageCellViews.TryGetValue(column, out var view) || view.ElementImage is not Sphere10.Framework.Windows.Forms.Drawing.VisualElements.Image) {
 			// Share one view per image binding, including the ordinary and prepared-cell paths.
 			// Borrow default styling without cloning its transient image model or owned fonts.
 			view = new SourceGrid.Cells.Views.Cell {
-				Font = standard.Font, ForeColor = standard.ForeColor, BackColor = standard.BackColor,
-				Border = standard.Border, Padding = standard.Padding, WordWrap = standard.WordWrap,
-				TrimmingMode = standard.TrimmingMode, TextAlignment = standard.TextAlignment,
-				ElementsDrawMode = standard.ElementsDrawMode, ElementText = standard.ElementText
+				Font = standard.Font,
+				ForeColor = standard.ForeColor,
+				BackColor = standard.BackColor,
+				Border = standard.Border,
+				Padding = standard.Padding,
+				WordWrap = standard.WordWrap,
+				TrimmingMode = standard.TrimmingMode,
+				TextAlignment = standard.TextAlignment,
+				ElementsDrawMode = standard.ElementsDrawMode,
+				ElementText = standard.ElementText
 			};
 			_imageCellViews[column] = view;
 		}
 		view.ImageAlignment = column.ImageAlignment switch {
-			Sphere10.Framework.ResizeAlignment.TopLeft => SourceGrid.Drawing.ContentAlignment.TopLeft,
-			Sphere10.Framework.ResizeAlignment.TopCenter => SourceGrid.Drawing.ContentAlignment.TopCenter,
-			Sphere10.Framework.ResizeAlignment.TopRight => SourceGrid.Drawing.ContentAlignment.TopRight,
-			Sphere10.Framework.ResizeAlignment.CenterLeft => SourceGrid.Drawing.ContentAlignment.MiddleLeft,
-			Sphere10.Framework.ResizeAlignment.CenterCenter => SourceGrid.Drawing.ContentAlignment.MiddleCenter,
-			Sphere10.Framework.ResizeAlignment.CenterRight => SourceGrid.Drawing.ContentAlignment.MiddleRight,
-			Sphere10.Framework.ResizeAlignment.BottomLeft => SourceGrid.Drawing.ContentAlignment.BottomLeft,
-			Sphere10.Framework.ResizeAlignment.BottomCenter => SourceGrid.Drawing.ContentAlignment.BottomCenter,
-			_ => SourceGrid.Drawing.ContentAlignment.BottomRight
+			Sphere10.Framework.ResizeAlignment.TopLeft => System.Drawing.ContentAlignment.TopLeft,
+			Sphere10.Framework.ResizeAlignment.TopCenter => System.Drawing.ContentAlignment.TopCenter,
+			Sphere10.Framework.ResizeAlignment.TopRight => System.Drawing.ContentAlignment.TopRight,
+			Sphere10.Framework.ResizeAlignment.CenterLeft => System.Drawing.ContentAlignment.MiddleLeft,
+			Sphere10.Framework.ResizeAlignment.CenterCenter => System.Drawing.ContentAlignment.MiddleCenter,
+			Sphere10.Framework.ResizeAlignment.CenterRight => System.Drawing.ContentAlignment.MiddleRight,
+			Sphere10.Framework.ResizeAlignment.BottomLeft => System.Drawing.ContentAlignment.BottomLeft,
+			Sphere10.Framework.ResizeAlignment.BottomCenter => System.Drawing.ContentAlignment.BottomCenter,
+			_ => System.Drawing.ContentAlignment.BottomRight
 		};
 		view.ImageStretch = column.ImageResizeMethod.HasValue;
-		var image = (SourceGrid.Drawing.VisualElements.Image)view.ElementImage;
+		var image = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.Image)view.ElementImage;
 		image.ResizeMethod = column.ImageResizeMethod;
 		image.ResizeAlignment = column.ImageAlignment;
 		return view;
@@ -1727,13 +2115,13 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 
 	private Cell CreateDateTimeCell(IVisualGridColumn columnBinding, object entity, object cellValue) {
 		const DateTimeStyles dtStyles = System.Globalization.DateTimeStyles.AllowInnerWhite | System.Globalization.DateTimeStyles.AllowLeadingWhite | System.Globalization.DateTimeStyles.AllowTrailingWhite |
-		                                System.Globalization.DateTimeStyles.AllowWhiteSpaces;
+										System.Globalization.DateTimeStyles.AllowWhiteSpaces;
 		var editor = columnBinding.DisplayType == CrudCellDisplayType.Time ? new SourceGrid.Cells.Editors.TimePicker() : new SourceGrid.Cells.Editors.DateTimePicker();
 		editor.AllowNull = columnBinding.DataType == typeof(DateTime?);
 		var customFormat = columnBinding.GetDateTimeFormat(entity);
 		editor.Control.CustomFormat = customFormat;
 		var dtParseFormats = new string[] { customFormat };
-		var dtConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.DateTimeTypeConverter(customFormat, dtParseFormats, dtStyles);
+		var dtConverter = new Sphere10.Framework.ComponentModel.DateTimeTypeConverter(customFormat, dtParseFormats, dtStyles);
 		editor.TypeConverter = dtConverter;
 		return new Cell(cellValue, editor);
 	}
@@ -1744,10 +2132,10 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		var editor = new SourceGrid.Cells.Editors.DropDownList(columnBinding.DataType, columnBinding.DropDownItemDisplayMember);
 		editor.Control.ValueMember = columnBinding.DropDownItemDisplayMember;
 		editor.Control.DisplayMember = columnBinding.DropDownItemDisplayMember;
-		editor.EditException += async (o, e) => {
-			e.Handled = true;
+		editor.EditException += async (o, args) => {
+			args.Handled = true;
 			editor.UndoEditValue();
-			await ExceptionDialog.ShowAsync(this, e.Exception);
+			await ExceptionDialog.ShowAsync(this, args.Exception);
 		};
 		var cell = new Cell(columnBinding.DataType, editor);
 		editor.Control.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -1776,8 +2164,8 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			default:
 				throw new ArgumentException(string.Format("Invalid command '{0}'", action), "action");
 		}
-		return CreateButtonCell(columnBinding, entity, string.Empty, image, async Entity => {
-			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => callback(Entity));
+		return CreateButtonCell(columnBinding, entity, string.Empty, image, async entity => {
+			var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => callback(entity));
 			if (error != null)
 				await ExceptionDialog.ShowAsync(this, error);
 		});
@@ -1788,7 +2176,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			Image = image
 		};
 		var clickHandlerController = new SourceGrid.Cells.Controllers.Button();
-		clickHandlerController.Executed += (o, e) => clickHandler(entity);
+		clickHandlerController.Executed += (o, args) => clickHandler(entity);
 		button.AddController(clickHandlerController);
 		return button;
 	}
@@ -1797,17 +2185,15 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		if (row == 0)
 			throw new ArgumentOutOfRangeException("Cannot remove header row (at 0)", "row");
 
-
 		// Remove from the lookup tables
 		_rowToEntityMap.Remove(row);
 		var followingRows = new List<object>();
-		for (int i = row + 1; i < _grid.RowsCount; i++) {
-			followingRows.Add(_rowToEntityMap[i]);
-			_rowToEntityMap.Remove(i);
+		for (var index = row + 1; index < _grid.RowsCount; index++) {
+			followingRows.Add(_rowToEntityMap[index]);
+			_rowToEntityMap.Remove(index);
 		}
-		foreach (var rowObject in followingRows.WithDescriptions()) {
+		foreach (var rowObject in followingRows.WithDescriptions())
 			_rowToEntityMap[rowObject.Index + row] = rowObject.Item;
-		}
 
 		// Remove the grid row
 		_grid.Rows.Remove(row);
@@ -1820,10 +2206,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		_entityToRowLookup = UseEntityReferenceForLookup ? _rowToEntityMap.InverseUsingValueReferenceAsKey() : _rowToEntityMap.Inverse();
 	}
 
-	#endregion
-
-	#region Event Triggers
-
+	// Event Triggers
 	protected void RaiseEntitySelectedEvent(object selectedEntity) {
 		UpdateDeleteButtonVisibility();
 		if (this.CanRaiseEvents) {
@@ -1850,20 +2233,13 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
-	protected void RaiseEntityCreatedEvent(object createdEntity) {
-		if (this.CanRaiseEvents) {
-			OnEntityCreated(createdEntity);
-			if (EntityCreated != null)
-				EntityCreated(this, createdEntity);
-		}
-	}
-
 	protected void RaiseEntityUpdatedEvent(object updatedEntity) {
 		if (this.CanRaiseEvents) {
 			OnEntityUpdated(updatedEntity);
 			if (EntityUpdated != null)
 				EntityUpdated(this, updatedEntity);
 		}
+		NotifyStateChanged();
 	}
 
 	protected void RaiseEntityDeletedEvent(object deletedEntity) {
@@ -1872,40 +2248,7 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 			if (EntityDeleted != null)
 				EntityDeleted(this, deletedEntity);
 		}
-	}
-
-	#endregion
-
-	#region Event Handlers
-
-	private void LoadingIndicatorResized(object sender, EventArgs args) {
-		// Initial loading and subsequent refreshes share this full-viewport circle and geometry.
-		var sideLength = Math.Max(1, Math.Min(_initialLoadingCircle.ClientSize.Width, _initialLoadingCircle.ClientSize.Height) - 1);
-		_initialLoadingCircle.InnerCircleRadius = Math.Max(1, sideLength / 5);
-		_initialLoadingCircle.OuterCircleRadius = Math.Max(1, sideLength / 3);
-		_initialLoadingCircle.SpokeThickness = Math.Max(1, _initialLoadingCircle.InnerCircleRadius / 3);
-	}
-
-	private void _gridContainerPanel_Resize(object Sender, EventArgs Args) {
-		RefreshAutoPageSize();
-	}
-
-	private void GridViewportChanged(object sender, EventArgs args) {
-		if (_grid == null)
-			return;
-		if (!_sizingColumns && _columnViewportWidth != _grid.ClientSize.Width)
-			StretchColumnsToViewport();
-		RefreshAutoPageSize();
-	}
-
-	private void GridMetricsChanged(object sender, EventArgs args) {
-		if (AutoPageSize)
-			RefreshAutoPageSize(true);
-	}
-
-	private void PageModeSelectedIndexChanged(object sender, EventArgs args) {
-		if (!_updatingPageModeControl && _pageModeButton.SelectedItem is VisualGridPageMode mode)
-			PageMode = mode;
+		NotifyStateChanged();
 	}
 
 	private async void RefreshAutoPageSize(bool forceRefresh = false) {
@@ -1931,320 +2274,88 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		}
 	}
 
-	internal async void _grid_SortColumnPressed(int col) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (!_crudCapabilities.HasFlag(DataSourceCapabilities.CanSort) || _columnsBindings == null || col < 0 || col >= _columnsBindings.Length || string.IsNullOrEmpty(_columnsBindings[col].SortName))
-				return;
-
-			_sortDirection = _sortColumnName != null && _sortColumnIndex == col
-				? _sortDirection switch {
-					SortDirection.Ascending => SortDirection.Descending,
-					SortDirection.Descending => SortDirection.None,
-					_ => SortDirection.Ascending
-				}
-				: SortDirection.Ascending;
-			_sortColumnIndex = col;
-			_sortColumnName = _sortDirection == SortDirection.None ? null : _columnsBindings[col].SortName;
-			SaveGridSettings(true);
-			await RefreshGrid();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _pageSizeUpDown_ValueChanged(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (_restoringGridSettings || _updatingPageSizeDisplay || PageMode != VisualGridPageMode.Paged || !_crudCapabilities.HasFlag(DataSourceCapabilities.CanPage))
-				return;
-			_manualPageSize = _pageSize = (int)_pageSizeUpDown.Value;
-			SaveGridSettings(true);
-			await RefreshGrid();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _searchTextBox_TextChanged(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			_searchText = _searchTextBox.Text;
-			await ChangePageNumberAsync(0);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _firstPageButton_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (!CanInteractWithCommittedRows)
-				return;
-
-			await ChangePageNumberAsync(0);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _previousPageButton_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (!CanInteractWithCommittedRows)
-				return;
-
-			await ChangePageNumberAsync(_pageNumber - 1);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _nextPageButton_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (!CanInteractWithCommittedRows)
-				return;
-
-			await ChangePageNumberAsync(_pageNumber + 1);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _lastPageButton_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (!CanInteractWithCommittedRows)
-				return;
-
-			await ChangePageNumberAsync(_endPageNumber);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _pageNumberBox_ValueChanged(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (_updatingPageNumberText || State == VisualState.Selecting)
-				return;
-
-			await ChangePageNumberAsync(GetVisiblePageNumberText());
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _createButton_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (State != VisualState.Normal)
-				return;
-
-			await CreateNewRecord();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _deleteButton_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (State != VisualState.Normal)
-				return;
-
-			await DeleteSelectedRecord();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _grid_Selection_SelectionChanged(object sender, SourceGrid.RangeRegionChangedEventArgs e) {
+	private async void Grid_Selection_SelectionChanged(object sender, SourceGrid.RangeRegionChangedEventArgs args) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 			if (!CanInteractWithCommittedRows)
 				return;
 
-			var SelectedRows = _grid.Selection.GetSelectionRegion().GetRowsIndex();
-			var Entity = SelectedRows.Where(_rowToEntityMap.ContainsKey).Select(Row => _rowToEntityMap[Row]).FirstOrDefault();
-			if (ReferenceEquals(Entity, _selectedEntity))
+			var selectedRows = _grid.Selection.GetSelectionRegion().GetRowsIndex();
+			var entity = selectedRows.Where(_rowToEntityMap.ContainsKey).Select(row => _rowToEntityMap[row]).FirstOrDefault();
+			if (ReferenceEquals(entity, _selectedEntity))
 				return;
 
-			var PreviousEntity = _selectedEntity;
-			_selectedEntity = Entity;
-			if (PreviousEntity != null)
-				RaiseEntityDeselectedEvent(PreviousEntity);
-			if (Entity != null)
-				RaiseEntitySelectedEvent(Entity);
+			var previousEntity = _selectedEntity;
+			_selectedEntity = entity;
+			if (previousEntity != null)
+				RaiseEntityDeselectedEvent(previousEntity);
+			if (entity != null)
+				RaiseEntitySelectedEvent(entity);
+			NotifyStateChanged();
 		}, out var error);
-		if (error != null) {
+		if (error != null)
 			await ExceptionDialog.ShowAsync(this, error);
-		}
 	}
 
-	private async void _grid_Selection_CellGotFocus(SourceGrid.Selection.SelectionBase sender, SourceGrid.ChangeActivePositionEventArgs e) {
+	private async void Grid_Selection_CellGotFocus(SourceGrid.Selection.SelectionBase sender, SourceGrid.ChangeActivePositionEventArgs args) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
 		}, out var error);
-		if (error != null) {
+		if (error != null)
 			await ExceptionDialog.ShowAsync(this, error);
+	}
+
+	/// <summary>Restores the previous interaction state when the returned scope is disposed.</summary>
+	private IDisposable EnterVisualState(VisualState newState) {
+		var previousState = State;
+		var initialBinding = _awaitingInitialBinding;
+		State = newState;
+		return new ActionDisposable(() => State = initialBinding && !_awaitingInitialBinding ? VisualState.Normal : previousState);
+	}
+
+	#region Inner Types
+
+	/// <summary>Publishes a completed native interaction after SourceGrid finishes its synchronous controllers.</summary>
+	private sealed class InputGrid : SourceGrid.Grid {
+		/// <summary>Allows ordinary parameterless activation by the native designer.</summary>
+		public InputGrid() {
+		}
+
+		/// <summary>Groups row replacement and focus changes made by one native press.</summary>
+		protected override void OnMouseDown(MouseEventArgs e) {
+			using var update = EnterOwnerUpdateScope();
+			base.OnMouseDown(e);
+		}
+
+		/// <summary>Groups click-driven row selection without changing SourceGrid's callback order.</summary>
+		protected override void OnMouseClick(MouseEventArgs e) {
+			using var update = EnterOwnerUpdateScope();
+			base.OnMouseClick(e);
+		}
+
+		/// <summary>Groups the selection and editor activation performed by a double click.</summary>
+		protected override void OnMouseDoubleClick(MouseEventArgs e) {
+			using var update = EnterOwnerUpdateScope();
+			base.OnMouseDoubleClick(e);
+		}
+
+		/// <summary>Groups keyboard selection and editor activation until their synchronous work completes.</summary>
+		protected override void OnKeyDown(KeyEventArgs e) {
+			using var update = EnterOwnerUpdateScope();
+			base.OnKeyDown(e);
+		}
+
+		// Resolve the actual owner only for input; an unparented designer control has no state to publish.
+		private UpdateScope EnterOwnerUpdateScope() {
+			for (var parent = Parent; parent != null; parent = parent.Parent)
+				if (parent is VisualGrid owner)
+					return owner.EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
+			return default;
 		}
 	}
-
-	private async void _grid_MouseDoubleClick(object sender, MouseEventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			if (!CanInteractWithCommittedRows)
-				return;
-			if (LeftClickToDeselect && e.Button == MouseButtons.Left) {
-				if (!TryStartCellEdit(_grid.PositionAtPoint(e.Location)))
-					ToggleRowSelection(e);
-			} else if (!LeftClickToDeselect)
-				await EditSelectedEntity();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _grid_MouseDown(object Sender, MouseEventArgs Event) {
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			_selectedRowOnMouseDown = -1;
-			if (!CanInteractWithCommittedRows)
-				return;
-
-			var Position = _grid.PositionAtPoint(Event.Location);
-			if (Position.IsEmpty() || !_rowToEntityMap.ContainsKey(Position.Row))
-				return;
-
-			if (Event.Button == MouseButtons.Left)
-				_lastClickedCell = Position;
-			if (LeftClickToDeselect)
-				_grid.Focus(false);
-
-			// Remember the selection before SourceGrid processes the press, regardless of its duration.
-			if (Event.Button == MouseButtons.Left && _grid.Selection.IsSelectedRow(Position.Row))
-				_selectedRowOnMouseDown = Position.Row;
-			if (Event.Button == MouseButtons.Right || LeftClickToDeselect && Event.Button == MouseButtons.Left && !SelectOnMouseUp)
-				_grid.Selection.SelectRow(Position.Row, true);
-		}, out var Error);
-		if (Error != null) {
-			await ExceptionDialog.ShowAsync(this, Error);
-		}
-	}
-
-	private async void _grid_MouseClick(object sender, MouseEventArgs e) {
-		Tools.Exceptions.ExecuteCapturingException(() => {
-			switch (e.Button) {
-				case MouseButtons.Left:
-					if (LeftClickToDeselect)
-						ToggleRowSelection(e);
-					break;
-				case MouseButtons.Right:
-					var position = _grid.PositionAtPoint(e.Location);
-					if (CanInteractWithCommittedRows && RightClickForContextMenu && !position.IsEmpty()
-						&& _rowToEntityMap.ContainsKey(position.Row) && _grid.Selection.IsSelectedRow(position.Row))
-						_selectionContextMenuStrip.Show(_grid.PointToScreen(e.Location));
-					break;
-			}
-		}, out var error);
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _grid_KeyDown(object Sender, KeyEventArgs Event) {
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			if (!LeftClickToDeselect || !AllowCellEditing || Event.KeyCode != Keys.F2)
-				return;
-
-			var Position = _lastClickedCell;
-			if (Position.IsEmpty() || !_grid.Selection.IsSelectedRow(Position.Row)) {
-				var Row = _grid.Selection.GetSelectionRegion().GetRowsIndex().FirstOrDefault(_rowToEntityMap.ContainsKey, -1);
-				if (Row < 0)
-					return;
-				var Column = Enumerable.Range(0, _grid.ColumnsCount).FirstOrDefault(Index => _grid[Row, Index]?.Editor?.EnableEdit == true, -1);
-				if (Column < 0)
-					return;
-				Position = new Position(Row, Column);
-			}
-			Event.Handled = TryStartCellEdit(Position);
-			Event.SuppressKeyPress = Event.Handled;
-		}, out var Error);
-		if (Error != null) {
-			await ExceptionDialog.ShowAsync(this, Error);
-		}
-	}
-
-	private bool TryStartCellEdit(Position Position) {
-		if (State != VisualState.Normal || Position.IsEmpty() || !_rowToEntityMap.ContainsKey(Position.Row) || Position.Column >= _grid.ColumnsCount)
-			return false;
-
-		var Context = new CellContext(_grid, Position);
-		if (Context.Cell?.Editor?.EnableEdit != true)
-			return false;
-		if (Context.IsEditing())
-			return true;
-
-		_grid.Selection.SelectRow(Position.Row, true);
-		Context.Cell.RemoveController(SourceGrid.Cells.Controllers.Unselectable.Default);
-		using var RestoreFocusBehavior = new ActionDisposable(() => {
-			if (LeftClickToDeselect)
-				Context.Cell.AddController(SourceGrid.Cells.Controllers.Unselectable.Default);
-		});
-		// Activating an editor resets SourceGrid's focus internally without changing the selected entity.
-		using (EnterVisualState(VisualState.Selecting))
-			Context.StartEdit();
-		if (Context.Cell is SourceGrid.Cells.CheckBox)
-			return Context.Cell.Editor.SetCellValue(Context, !((bool?)Context.Value ?? false));
-		return Context.IsEditing();
-	}
-
-	private void ToggleRowSelection(MouseEventArgs Event) {
-		if (!CanInteractWithCommittedRows)
-			return;
-
-		var Position = _grid.PositionAtPoint(Event.Location);
-		if (Position.IsEmpty() || !_rowToEntityMap.ContainsKey(Position.Row))
-			return;
-
-		if (_selectedRowOnMouseDown == Position.Row)
-			_grid.Selection.ResetSelection(false);
-		else
-			_grid.Selection.SelectRow(Position.Row, true);
-	}
-
-	private async void _deselectToolStripMenuItem_Click(object sender, EventArgs e) {
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			_grid.Selection.ResetSelection(false);
-		}, out var error);
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _editToolStripMenuItem_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			await EditSelectedEntity();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void _deleteToolStripMenuItem_Click(object sender, EventArgs e) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			await DeleteSelectedRecord();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	#endregion
-
-	#region Internal Types
 
 	private sealed class AutoPageSizing {
-		public object Query { get; set; }
+		public object Query {
+			get; set;
+		}
 
 		public int MaximumPageSize { get; set; } = int.MaxValue;
 	}
@@ -2254,204 +2365,5 @@ public partial class VisualGrid : UserControl, IVisualGrid {
 		Selecting,
 		Loading
 	}
-
-	private IDisposable EnterVisualState(VisualState newState) {
-		var previousState = State;
-		var initialBinding = _awaitingInitialBinding;
-		State = newState;
-		return new ActionDisposable(() => State = initialBinding && !_awaitingInitialBinding ? VisualState.Normal : previousState);
-	}
-
 	#endregion
-
-	private VisualGridSettings _gridSettings;
-	private string _settingsKey = string.Empty;
-	private bool _persistSettings = true;
-	private bool _restoringGridSettings;
-	private bool _savingGridSettings;
-	private bool _settingsSaveFailed;
-	private bool _gridSettingsDirty;
-	private int _settingsConsumerVersion;
-	private (VisualGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection, string Widths) _capturedPreferenceState;
-	private ISettingsProvider _settingsProvider;
-	private string _resolvedSettingsKey;
-	private Task _settingsLoadTask;
-	private Task _settingsSaveTask = Task.CompletedTask;
-	private long _settingsSaveVersion;
-	private Exception _settingsSaveError;
-	private ILogger _settingsLogger;
-
-	[Category("Behavior")]
-	[DefaultValue(true)]
-	[Description("Remembers paging and sorting through UserSettings. A stable owner/control name or an explicit SettingsKey identifies the grid.")]
-	public bool PersistSettings {
-		get => _persistSettings;
-		set => _persistSettings = value;
-	}
-
-	[Category("Behavior")]
-	[DefaultValue("")]
-	[Description("Optional stable UserSettings identifier. An empty value uses the owning screen/control type and the named child path, or the owning form.")]
-	public string SettingsKey {
-		get => _settingsKey;
-		set {
-			value ??= string.Empty;
-			if (_settingsKey == value)
-				return;
-			SaveGridSettings();
-			_settingsKey = value;
-			_gridSettings = null;
-			_settingsLoadTask = null;
-			_settingsProvider = null;
-			_resolvedSettingsKey = null;
-			_settingsConsumerVersion = 0;
-
-			// A late completion for the previous identity must not mark this new identity dirty or failed.
-			_settingsSaveVersion++;
-			_settingsSaveError = null;
-			_settingsSaveFailed = false;
-			_gridSettingsDirty = false;
-		}
-	}
-
-	/// <summary>Upgrades a detached preference payload before restoration. Changes persist with the next accepted preference change.</summary>
-	/// <remarks>Called for stored preferences and new control defaults; never receives the provider's cached settings object.</remarks>
-	protected virtual void UpgradeGridSettings(VisualGridSettings settings) {
-	}
-
-	// Captures provider and identity before worker IO; a standalone grid may retry after Framework startup.
-	private Task RestoreGridSettingsAsync() {
-		if (_preferences != null || !_persistSettings || _gridSettings != null || _dataSource == null || DesignMode || Tools.Runtime.IsDesignMode || IsDisposed || Disposing)
-			return Task.CompletedTask;
-		if (_settingsLoadTask != null)
-			return _settingsLoadTask;
-		var key = ResolveSettingsKey();
-		if (key == null)
-			return Task.CompletedTask;
-		Tools.Exceptions.ExecuteCapturingException<InvalidOperationException>(() => {
-			_settingsProvider = UserSettings.Provider;
-		}, out var capturedError);
-		if (capturedError != null)
-			return Task.CompletedTask;
-		_resolvedSettingsKey = key;
-		_settingsLogger = ResolveSettingsLogger();
-		return _settingsLoadTask = RestoreGridSettingsCoreAsync(_settingsProvider, key);
-	}
-
-	// Loading never creates a provider-bound default record or writes merely because a control opens.
-	private async Task RestoreGridSettingsCoreAsync(ISettingsProvider provider, string key) {
-		VisualGridSettings settings = null;
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			settings = await Task.Run(() => ReadGridSettings(provider, key));
-		});
-		if (IsDisposed || Disposing || _preferences != null || !ReferenceEquals(provider, _settingsProvider) || key != _resolvedSettingsKey)
-			return;
-		if (error != null)
-			_settingsLogger.Exception(error, "Could not restore CRUD grid preferences.");
-
-		_restoringGridSettings = true;
-		using var restoring = Tools.Scope.ExecuteOnDispose(() => _restoringGridSettings = false);
-		_gridSettings = settings ?? new VisualGridSettings();
-		if (settings == null)
-			CaptureGridSettings(_gridSettings);
-		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {
-			// Consumer upgrades receive a detached root on the owner thread, never the provider's cached object.
-			UpgradeGridSettings(_gridSettings);
-			_settingsConsumerVersion = _gridSettings.ConsumerVersion;
-			_gridSettings.PageMode ??= _gridSettings.AutoPageSize ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
-			ApplyGridPreferencesCore(_gridSettings);
-			_capturedPreferenceState = CapturePreferenceState();
-		}, out var applyError);
-		if (applyError != null)
-			_settingsLogger.Exception(applyError, "Could not apply CRUD grid preferences.");
-	}
-
-	// Completed actions capture detached values synchronously; the captured provider serializes them off the UI thread.
-	private void SaveGridSettings(bool acceptedChange = false) {
-		if (_preferences != null) {
-			if (acceptedChange)
-				PublishGridPreferences();
-			return;
-		}
-		if (!_persistSettings || _gridSettings == null || _settingsProvider == null || _restoringGridSettings || _savingGridSettings || DesignMode || Tools.Runtime.IsDesignMode)
-			return;
-		var preferences = CapturePreferenceState();
-		if (acceptedChange && preferences != _capturedPreferenceState)
-			_gridSettingsDirty = true;
-		if (!_gridSettingsDirty && !_settingsSaveFailed)
-			return;
-
-		_savingGridSettings = true;
-		using var saving = Tools.Scope.ExecuteOnDispose(() => _savingGridSettings = false);
-		CaptureGridSettings(_gridSettings);
-		var snapshot = CopyGridSettings(_gridSettings);
-		snapshot.ID = _resolvedSettingsKey;
-		snapshot.Provider = _settingsProvider;
-		var version = ++_settingsSaveVersion;
-		_capturedPreferenceState = preferences;
-		_gridSettingsDirty = false;
-		_settingsSaveFailed = false;
-		_settingsSaveTask = SaveGridSnapshotAsync(_settingsSaveTask, _settingsProvider, snapshot, version, preferences);
-	}
-
-	// Serializes each accepted snapshot in order; only the latest completion can clear this control's dirty state.
-	private async Task SaveGridSnapshotAsync(Task previous, ISettingsProvider provider, VisualGridSettings snapshot, long version,
-		(VisualGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection, string Widths) preferences) {
-		await previous;
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(() => Task.Run(() => provider.SaveSetting(snapshot)));
-		if (error != null)
-			(_settingsLogger ?? SystemLog.Logger).Exception(error, "Could not save CRUD grid preferences.");
-		if (version != _settingsSaveVersion)
-			return;
-		_settingsSaveError = error;
-		_settingsSaveFailed = error != null;
-		_gridSettingsDirty = error != null;
-		if (error == null)
-			_capturedPreferenceState = preferences;
-	}
-
-	// Includes only deliberate widths; viewport stretching and natural measurement never mark preferences dirty.
-	private (VisualGridPageMode PageMode, int PageSize, int PageNumber, string SortColumnName, SortDirection SortDirection, string Widths) CapturePreferenceState() {
-		var widths = string.Join(";", CaptureGridPreferences().Columns.Where(column => column.Width.HasValue).OrderBy(column => column.Key, StringComparer.Ordinal)
-			.Select(column => column.Key.Length + ":" + column.Key + "=" + column.Width.Value.ToString("R", CultureInfo.InvariantCulture)));
-		return (_pageMode, _manualPageSize, _pageNumber, _sortColumnName ?? string.Empty, _sortDirection, widths);
-	}
-
-	// The legacy root and the screen-owned root use the same detached capture, with one persistence authority at a time.
-	private void CaptureGridSettings(VisualGridSettings settings) {
-		var values = CaptureGridPreferences();
-		settings.ConsumerVersion = values.ConsumerVersion;
-		settings.PageMode = (VisualGridPageMode?)values.PageMode;
-		settings.AutoPageSize = values.AutoPageSize;
-		settings.PageSize = values.PageSize;
-		settings.PageNumber = values.PageNumber;
-		settings.SortColumnName = values.SortColumnName;
-		settings.SortDirection = values.SortDirection;
-		settings.Columns = values.Columns;
-	}
-
-	private string ResolveSettingsKey() {
-		if (!string.IsNullOrWhiteSpace(_settingsKey))
-			return _settingsKey;
-		var path = new List<string>();
-		for (var control = (Control)this; control != null; control = control.Parent) {
-			if (control is WinFormsApplicationScreen || control != this && control is UserControl && control.GetType() != typeof(UserControl))
-				return $"{control.GetType().FullName}.{string.Join(".", path)}";
-			if (control is Form form) {
-				if (form.GetType() == typeof(Form) && string.IsNullOrWhiteSpace(form.Name))
-					return null;
-				return $"{form.GetType().FullName}.{form.Name}.{string.Join(".", path)}";
-			}
-			if (!string.IsNullOrWhiteSpace(control.Name))
-				path.Insert(0, control.Name);
-		}
-		return null;
-	}
-
-	private ILogger ResolveSettingsLogger() {
-		for (var control = Parent; control != null; control = control.Parent)
-			if (control is WinFormsApplicationScreen screen && screen.Block?.Parent?.Logger is { } logger)
-				return logger;
-		return SystemLog.Logger;
-	}
 }

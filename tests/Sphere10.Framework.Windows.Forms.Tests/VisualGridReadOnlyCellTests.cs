@@ -308,8 +308,8 @@ public class VisualGridReadOnlyCellTests {
 		public bool HasValue { get; set; } = true;
 	}
 
-	private sealed class ContentSizedText : SourceGrid.Drawing.VisualElements.TextGDI {
-		protected override SizeF OnMeasureContent(SourceGrid.Drawing.MeasureHelper measure, SizeF maxSize) => new(100, Value.Length * 10);
+	private sealed class ContentSizedText : Sphere10.Framework.Windows.Forms.Drawing.VisualElements.TextGDI {
+		protected override SizeF OnMeasureContent(Sphere10.Framework.Windows.Forms.Drawing.GraphicsMeasurement measure, SizeF maxSize) => new(100, Value.Length * 10);
 	}
 
 	[TypeConverter(typeof(DisplayValueConverter))]

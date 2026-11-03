@@ -13,10 +13,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NUnit.Framework;
+using Sphere10.Framework.Drawing;
+using Sphere10.Framework.Windows.Forms.Drawing;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
-using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
 using FormsApplication = System.Windows.Forms.Application;
 using DrawingResizeAlignment = Sphere10.Framework.ResizeAlignment;
 using DrawingResizeMethod = Sphere10.Framework.ResizeMethod;
@@ -28,6 +29,94 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class VisualGridColumnLayoutTests {
+	[Test]
+	public void SwitchingPagedRowsToSingleKeepsTheTrailingCommandInsideTheViewport([Values(false, true)] bool prepared) => RunWithMessageLoop(async owner => {
+		using var visualGrid = NewGrid(owner, prepared);
+		visualGrid.GridBindings = CommandColumns();
+		visualGrid.ApplyGridPreferences(new VisualGridSettings { PageMode = VisualGridPageMode.Paged, PageSize = 2 });
+		var source = new SnapshotDataSource<string>();
+		source.ReplaceSnapshot(Enumerable.Repeat("Employee", 1000).ToArray());
+		await visualGrid.SetDataSource(source);
+		await visualGrid.RefreshGrid();
+		var grid = FindGrid(visualGrid);
+		Assert.That(grid.RowsCount, Is.EqualTo(3));
+		Assert.That(grid.VScrollBarVisible, Is.False);
+		var pagedWidth = grid.Columns[0].Width;
+
+		// Keep the same bindings and native grid while the vertical scrollbar appears.
+		visualGrid.PageMode = VisualGridPageMode.Single;
+		await visualGrid.RefreshGrid();
+		Assert.That(grid.RowsCount, Is.EqualTo(1001));
+		Assert.That(grid.VScrollBarVisible, Is.True);
+		Assert.That(grid.HScrollBarVisible, Is.False, "Stretchable columns must relinquish scrollbar space rather than overflow.");
+		Assert.That(grid.PositionToRectangle(new Position(1, 1)).Right, Is.LessThanOrEqualTo(grid.DisplayRectangle.Right), "The entire trailing command must remain beside the vertical scrollbar.");
+		var command = grid[1, 1];
+		var required = command.View.Measure(new CellContext(grid, new Position(1, 1)), Size.Empty);
+		Assert.That(grid.Columns[1].Width, Is.GreaterThanOrEqualTo(required.Width), "The command retains its measured icon and padding width.");
+		var singleWidth = grid.Columns[0].Width;
+		Assert.That(singleWidth, Is.LessThan(pagedWidth));
+
+		// Removing the scrollbar must return its space to the stretchable column.
+		visualGrid.PageMode = VisualGridPageMode.Paged;
+		await visualGrid.RefreshGrid();
+		Assert.That(grid.VScrollBarVisible, Is.False);
+		Assert.That(grid.HScrollBarVisible, Is.False);
+		Assert.That(grid.Columns[0].Width, Is.EqualTo(pagedWidth));
+		Assert.That(grid.PositionToRectangle(new Position(1, 1)).Right, Is.LessThanOrEqualTo(grid.DisplayRectangle.Right));
+
+		source.ReplaceSnapshot(new[] { "Employee", "Employee" });
+		visualGrid.PageMode = VisualGridPageMode.Single;
+		await visualGrid.RefreshGrid();
+		Assert.That(grid.RowsCount, Is.EqualTo(3));
+		Assert.That(grid.VScrollBarVisible, Is.False);
+		Assert.That(grid.HScrollBarVisible, Is.False);
+		Assert.That(grid.Columns[0].Width, Is.EqualTo(pagedWidth));
+	});
+
+	[Test]
+	public void GenuineColumnOverflowKeepsHorizontalScrolling([Values(false, true)] bool prepared, [Values(false, true)] bool manualWidth) => RunWithMessageLoop(async owner => {
+		using var visualGrid = NewGrid(owner, prepared);
+		visualGrid.GridBindings = CommandColumns();
+		if (manualWidth) {
+			var preferences = visualGrid.CaptureGridPreferences();
+			preferences.Columns.Single(column => column.Key == "name").Width = 1400;
+			visualGrid.Preferences = preferences;
+		}
+		var source = new SnapshotDataSource<string>();
+		source.ReplaceSnapshot(Enumerable.Repeat(manualWidth ? "Employee" : new string('W', 250), 1000).ToArray());
+		await visualGrid.SetDataSource(source);
+		await visualGrid.RefreshGrid();
+		var grid = FindGrid(visualGrid);
+		var naturalWidth = grid.Columns[0].Width;
+		Assert.That(grid.VScrollBarVisible, Is.True);
+		Assert.That(grid.HScrollBarVisible, Is.True, "Real content or manual widths must remain horizontally scrollable.");
+		Assert.That(grid.Columns[0].Width + grid.Columns[1].Width, Is.GreaterThan(grid.DisplayRectangle.Width));
+		if (manualWidth)
+			Assert.That(naturalWidth, Is.EqualTo((int)Math.Round(1400 * visualGrid.DeviceDpi / 96D)));
+
+		owner.Width += 100;
+		await visualGrid.RefreshGrid();
+		Assert.That(grid.HScrollBarVisible, Is.True);
+		Assert.That(grid.Columns[0].Width, Is.EqualTo(naturalWidth), "Viewport changes must preserve natural minima and explicit manual widths.");
+	});
+
+	[Test]
+	public void OneScrollbarCanRequireTheOtherAndBothDisappearWhenContentFits([Values(false, true)] bool verticalFirst) => RunWithMessageLoop(owner => {
+		using var scroll = new ScrollAreaProbe { Dock = DockStyle.Fill };
+		owner.Controls.Add(scroll);
+		var available = scroll.ClientSize;
+		scroll.SetContent(verticalFirst ? new Size(available.Width, available.Height + 1) : new Size(available.Width + 1, available.Height));
+		Assert.That(scroll.HScrollBarVisible, Is.True, "A vertical scrollbar can introduce horizontal overflow.");
+		Assert.That(scroll.VScrollBarVisible, Is.True, "A horizontal scrollbar can introduce vertical overflow.");
+		Assert.That(scroll.HScrollBar.Maximum - scroll.HScrollBar.LargeChange + 1, Is.EqualTo(Math.Max(0, scroll.ContentSize.Width - scroll.DisplayRectangle.Width)));
+		Assert.That(scroll.VScrollBar.Maximum - scroll.VScrollBar.LargeChange + 1, Is.EqualTo(Math.Max(0, scroll.ContentSize.Height - scroll.DisplayRectangle.Height)));
+
+		scroll.SetContent(new Size(1, 1));
+		Assert.That(scroll.HScrollBarVisible, Is.False);
+		Assert.That(scroll.VScrollBarVisible, Is.False);
+		return Task.CompletedTask;
+	});
+
 	[Test]
 	public void FirstNaturalHeaderWidthAlreadyFitsEverySortState([Values(false, true)] bool prepared, [Values(9f, 18f)] float fontSize) => RunWithMessageLoop(async owner => {
 		using var crud = NewGrid(owner, prepared);
@@ -53,10 +142,10 @@ public class VisualGridColumnLayoutTests {
 			using var graphics = Graphics.FromImage(bitmap);
 			using var cache = new GraphicsCache(graphics);
 			view.DrawCell(context, cache, new Rectangle(Point.Empty, bitmap.Size));
-			using var measure = new MeasureHelper(graphics);
+			using var measure = new GraphicsMeasurement(graphics);
 			var content = view.GetContentRectangle(measure, new Rectangle(Point.Empty, bitmap.Size));
 			var glyph = view.ElementSort.GetDrawingArea(measure, content);
-			var text = SourceGrid.Drawing.VisualElements.ContainerBase.CalculateRemainingArea(content, view.ElementSort.AnchorArea, glyph);
+			var text = Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ContainerBase.CalculateRemainingArea(content, view.ElementSort.AnchorArea, glyph);
 			Assert.That(view.ElementText.Measure(measure, SizeF.Empty, SizeF.Empty).Width, Is.LessThanOrEqualTo(text.Width), "Header text must fit beside, rather than underneath, the reserved glyph.");
 			Assert.That(text.Right, Is.LessThanOrEqualTo(glyph.Left));
 			Assert.That(grid.Columns[0].Width, Is.EqualTo(naturalWidth));
@@ -138,6 +227,14 @@ public class VisualGridColumnLayoutTests {
 		Assert.That(image.GetPixel(0, 0).ToArgb(), Is.EqualTo(Color.Lime.ToArgb()));
 	});
 
+	// Reuses a stretchable content column followed by the real row-edit command.
+	private static IVisualGridColumn[] CommandColumns() {
+		return new IVisualGridColumn[] {
+			new VisualGridColumn<string> { ColumnName = "Name", PreferenceKey = "name", DataType = typeof(string), PropertyValue = value => value, ExpandsToFit = true },
+			new VisualGridColumn<string> { ColumnName = string.Empty, PreferenceKey = "edit", DataType = typeof(string), DisplayType = CrudCellDisplayType.EditCommand }
+		};
+	}
+
 	private static VisualGrid NewGrid(Form owner, bool prepared) {
 		var crud = new VisualGrid { Dock = DockStyle.Fill, PersistSettings = false, SuppressLoadingIndicator = true, PageMode = VisualGridPageMode.Single,
 			PrepareReadOnlyCellsInBackground = prepared, AutoSizeRowsOnRefresh = false };
@@ -151,7 +248,7 @@ public class VisualGridColumnLayoutTests {
 		var cell = grid[1, 0];
 		var view = (SourceGrid.Cells.Views.Cell)cell.View;
 		view.Border = RectangleBorder.NoBorder;
-		view.Padding = SourceGrid.Drawing.Padding.Empty;
+		view.Padding = Sphere10.Framework.Drawing.Padding.Empty;
 		view.BackColor = Color.White;
 		var bitmap = new Bitmap(size.Width, size.Height);
 		var transferred = false;
@@ -182,5 +279,33 @@ public class VisualGridColumnLayoutTests {
 		FormsApplication.Run(owner);
 		Assert.That(failure, Is.Null, failure?.ToString());
 		Assert.That(completed, Is.True);
+	}
+
+	// Supplies deterministic pixel extents while retaining real native scrollbar layout.
+	private sealed class ScrollAreaProbe : CustomScrollControl {
+		public Size ContentSize {
+			get; private set;
+		}
+
+		public void SetContent(Size size) {
+			ContentSize = size;
+			LoadScrollArea(1, 1);
+		}
+
+		protected override int GetScrollRows(int displayHeight) {
+			return Math.Max(0, ContentSize.Height - displayHeight);
+		}
+
+		protected override int GetScrollColumns(int displayWidth) {
+			return Math.Max(0, ContentSize.Width - displayWidth);
+		}
+
+		protected override int GetActualFixedRows() {
+			return 0;
+		}
+
+		protected override void InvalidateScrollableArea() {
+			Invalidate();
+		}
 	}
 }

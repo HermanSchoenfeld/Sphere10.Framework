@@ -17,6 +17,7 @@ internal sealed class VisualGridPreparedCell : Cell {
 	private readonly SourceGrid.Cells.Models.Image _imageModel;
 	private VisualGridPreparedTextEditor _textEditor;
 
+	/// <summary>Creates a native slot backed by retained snapshot value and image models.</summary>
 	public VisualGridPreparedCell(VisualGridPreparedValue prepared) {
 		_modelContainer = Model;
 		Model.ValueModel = _valueModel;
@@ -24,9 +25,15 @@ internal sealed class VisualGridPreparedCell : Cell {
 		ApplyPreparedValue(prepared);
 	}
 
-	public bool CanApplyPreparedValue => ReferenceEquals(Model, _modelContainer) && ReferenceEquals(Model.ValueModel, _valueModel)
-		&& ReferenceEquals(Model.FindModel(typeof(SourceGrid.Cells.Models.Image)), _imageModel);
+	/// <summary>Whether callers have retained the models required for an in-place snapshot update.</summary>
+	public bool CanApplyPreparedValue {
+		get {
+			return ReferenceEquals(Model, _modelContainer) && ReferenceEquals(Model.ValueModel, _valueModel)
+					&& ReferenceEquals(Model.FindModel(typeof(SourceGrid.Cells.Models.Image)), _imageModel);
+		}
+	}
 
+	/// <summary>Publishes a prepared value without entering SourceGrid's cell-edit lifecycle.</summary>
 	public void ApplyPreparedValue(VisualGridPreparedValue prepared) {
 		// Snapshot publication is not an edit: replace exact raw values without notifying model/controller callbacks.
 		_valueModel.ReplaceValue(prepared.HasValue && prepared.TextEditor != null ? prepared.Value : string.Empty);

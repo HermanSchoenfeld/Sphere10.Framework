@@ -23,13 +23,15 @@ public sealed class VisualGridSnapshotController<T> : IVisualGridSnapshotControl
 	private readonly int _ownerThreadId;
 	private bool _bound;
 
+	/// <summary>Binds collection and identity callbacks to a grid on its creating UI thread.</summary>
 	public VisualGridSnapshotController(VisualGrid grid, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect, Action<T[]> changed = null,
-		Func<object, string> formatValue = null)
+				Func<object, string> formatValue = null)
 		: this(grid, new SnapshotDataSource<T>(formatValue), identity, collect, changed) {
 	}
 
+	/// <summary>Binds collection and identity callbacks to a grid on its creating UI thread.</summary>
 	public VisualGridSnapshotController(VisualGrid grid, SnapshotDataSource<T> source, Func<T, object> identity, Func<CancellationToken, Task<T[]>> collect,
-		Action<T[]> changed = null) {
+				Action<T[]> changed = null) {
 		Guard.ArgumentNotNull(grid, nameof(grid));
 		Guard.ArgumentNotNull(source, nameof(source));
 		Guard.ArgumentNotNull(identity, nameof(identity));
@@ -42,9 +44,19 @@ public sealed class VisualGridSnapshotController<T> : IVisualGridSnapshotControl
 		_ownerThreadId = Environment.CurrentManagedThreadId;
 	}
 
-	public long Count => _source.Count;
+	/// <summary>The number of rows in the currently published snapshot.</summary>
+	public long Count {
+		get {
+			return _source.Count;
+		}
+	}
 
-	public T[] Rows => _source.Snapshot;
+	/// <summary>The currently published typed source snapshot.</summary>
+	public T[] Rows {
+		get {
+			return _source.Snapshot;
+		}
+	}
 
 	/// <summary>Call on the grid's UI thread with its dispatcher context. Collection is caller-supplied; refreshes serialize through a disposable admission scope.</summary>
 	public async Task RefreshAsync(CancellationToken cancellationToken = default) {
@@ -72,14 +84,19 @@ public sealed class VisualGridSnapshotController<T> : IVisualGridSnapshotControl
 		_changed?.Invoke(_source.Snapshot);
 	}
 
+	/// <summary>Configures the source's fallback sorting on the owner thread.</summary>
 	public void SetDefaultSort(string property, SortDirection direction) {
 		EnsureOwnerThread();
 		_source.DefaultSortProperty = property;
 		_source.DefaultSortDirection = direction;
 	}
 
-	public object CaptureSnapshot() => Rows;
+	/// <summary>Returns the typed snapshot through the nonvisual controller contract.</summary>
+	public object CaptureSnapshot() {
+		return Rows;
+	}
 
+	/// <summary>Finds the selected entity's matching identity in the latest published snapshot.</summary>
 	private object ResolvePublishedEntity(object selected) {
 		if (selected is not T entity)
 			return null;
@@ -91,6 +108,8 @@ public sealed class VisualGridSnapshotController<T> : IVisualGridSnapshotControl
 		return null;
 	}
 
-	private void EnsureOwnerThread()
-		=> Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThreadId, "Refresh and configure the grid snapshot controller on its creating UI thread.");
+	/// <summary>Requires configuration and native publication on the creating UI thread.</summary>
+	private void EnsureOwnerThread() {
+		Guard.Ensure(Environment.CurrentManagedThreadId == _ownerThreadId, "Refresh and configure the grid snapshot controller on its creating UI thread.");
+	}
 }

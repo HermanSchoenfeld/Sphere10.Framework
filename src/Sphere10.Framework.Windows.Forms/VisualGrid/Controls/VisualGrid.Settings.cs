@@ -15,6 +15,19 @@ namespace Sphere10.Framework.Windows.Forms;
 
 public partial class VisualGrid {
 	private VisualGridTraits _traits = VisualGridTraits.AllowsSettingsChange;
+	private bool _showGridSettings = true;
+
+	/// <summary>Shows the settings button when this grid has a settings object.</summary>
+	[Category("Appearance"), DefaultValue(true)]
+	public bool ShowGridSettings {
+		get {
+			return _showGridSettings;
+		}
+		set {
+			_showGridSettings = value;
+			UpdateSettingsButton();
+		}
+	}
 
 	/// <summary>Optional interaction features; bound settings remain visible when editing is disabled.</summary>
 	[Category("Behavior"), DefaultValue(VisualGridTraits.AllowsSettingsChange)]
@@ -39,6 +52,24 @@ public partial class VisualGrid {
 		}
 	}
 
+	// Presence controls visibility; the trait controls enabled state and never creates a settings object.
+	private void UpdateSettingsButton() {
+		if (_settingsButton == null)
+			return;
+		_settingsButton.Visible = ShowGridSettings && (_preferences != null || _gridSettings != null);
+		_settingsButton.Enabled = AllowsSettingsChange;
+		UpdateButtonBarVisibility();
+	}
+
+	// The ordinary grid value editor owns only its provisional copy; persistence stays on the existing accepted-change path.
+	private async void SettingsButtonClick(object sender, EventArgs args) {
+		try {
+			await ShowSettingsAsync();
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
 	/// <summary>Edits a detached grid value and publishes accepted changes through the grid's existing settings owner.</summary>
 	public async Task<bool> ShowSettingsAsync() {
 		if (!AllowsSettingsChange || _preferences == null && _gridSettings == null)
@@ -52,23 +83,5 @@ public partial class VisualGrid {
 		SaveGridSettings(true);
 		await RefreshGrid();
 		return true;
-	}
-
-	// Presence controls visibility; the trait controls enabled state and never creates a settings object.
-	private void UpdateSettingsButton() {
-		if (_settingsButton == null)
-			return;
-		_settingsButton.Visible = _preferences != null || _gridSettings != null;
-		_settingsButton.Enabled = AllowsSettingsChange;
-		UpdateButtonBarVisibility();
-	}
-
-	// The ordinary grid value editor owns only its provisional copy; persistence stays on the existing accepted-change path.
-	private async void SettingsButtonClick(object sender, EventArgs args) {
-		try {
-			await ShowSettingsAsync();
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
 	}
 }

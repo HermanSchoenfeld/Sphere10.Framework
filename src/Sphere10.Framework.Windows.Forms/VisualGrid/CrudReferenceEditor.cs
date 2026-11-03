@@ -9,7 +9,6 @@
 using System;
 using System.ComponentModel;
 using System.Drawing.Design;
-using System.Globalization;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
@@ -39,17 +38,4 @@ public class CrudReferenceEditor : UITypeEditor {
 		Service.DropDownControl(Picker);
 		return Picker.HasSelection ? Picker.SelectedEntity : Value;
 	}
-}
-
-internal sealed class CrudReferenceConverter : TypeConverter {
-	private readonly CrudReferenceBinding _binding;
-
-	public CrudReferenceConverter(CrudReferenceBinding Binding) => _binding = Binding;
-
-	public override bool CanConvertTo(ITypeDescriptorContext? Context, Type? DestinationType) => DestinationType == typeof(string) || base.CanConvertTo(Context, DestinationType);
-
-	public override object? ConvertTo(ITypeDescriptorContext? Context, CultureInfo? Culture, object? Value, Type DestinationType) =>
-		DestinationType == typeof(string) ? _binding.GetDisplayText(Value) : base.ConvertTo(Context, Culture, Value, DestinationType);
-
-	public override bool GetPropertiesSupported(ITypeDescriptorContext? Context) => false;
 }

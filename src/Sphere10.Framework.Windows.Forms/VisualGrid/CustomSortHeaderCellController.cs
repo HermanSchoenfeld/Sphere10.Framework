@@ -30,10 +30,10 @@ internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.Con
 		var col = cell.Column;
 		var row = cell.Row;
 
-		var _logicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(Color.Black, 4));
+		var _logicalBorder = new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(Color.Black, 4));
 		float distanceFromBorder;
 		switch (_logicalBorder.GetPointPartType(cellRect, mousePoint, out distanceFromBorder)) {
-			case Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.ContentArea:
+			case Sphere10.Framework.Drawing.RectanglePartType.ContentArea:
 				_visualGrid._grid_SortColumnPressed(sender.Position.Column);
 				break;
 
