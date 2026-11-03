@@ -14,13 +14,13 @@
 	private readonly Dictionary<string, string> _errors = new();
 	private object _draft;
 
-	/// <summary>The selected page's detached settings object.</summary>
+	/// <summary>The selected page's actual settings object.</summary>
 	[Parameter] public object Value { get; set; }
 
 	/// <summary>Notifies the dialog after a draft edit without saving it.</summary>
 	[Parameter] public EventCallback Changed { get; set; }
 
-	/// <summary>Rejects invalid pending text before the session runs its declared value validation.</summary>
+	/// <summary>Rejects invalid pending text before the dialog runs its declared value validation.</summary>
 	public Task<Result> ValidateAsync(CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		var result = new Result();

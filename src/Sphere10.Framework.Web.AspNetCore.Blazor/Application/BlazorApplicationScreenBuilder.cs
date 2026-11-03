@@ -20,25 +20,20 @@ public class BlazorApplicationScreenBuilder : ApplicationScreenBuilderBase<Blazo
 	private Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> _activator;
 	private Type _settingsEditor;
 
+	/// <summary>Starts configuration for a component registration.</summary>
 	public BlazorApplicationScreenBuilder() {
 	}
 
+	/// <summary>Starts configuration for a component registration.</summary>
 	internal BlazorApplicationScreenBuilder(Type screenType, ApplicationScreenRegistration registration)
 		: base(screenType, registration) {
 	}
 
 	/// <summary>Declares typed preferences with a dedicated renderer-owned editor component.</summary>
 	public BlazorApplicationScreenBuilder UseSettings<TSettings, TEditor>()
-		where TSettings : new()
+		where TSettings : SettingsObject, new()
 		where TEditor : IComponent, IBlazorApplicationSettingsEditor {
 		UseSettings<TSettings>();
-		return WithSettingsEditor<TEditor>();
-	}
-
-	/// <summary>Uses the supplied object factory and a dedicated editor, including models without a default constructor.</summary>
-	public BlazorApplicationScreenBuilder UseSettings<TSettings, TEditor>(Func<TSettings> defaults)
-		where TEditor : IComponent, IBlazorApplicationSettingsEditor {
-		UseSettings(defaults);
 		return WithSettingsEditor<TEditor>();
 	}
 
@@ -63,10 +58,12 @@ public class BlazorApplicationScreenBuilder : ApplicationScreenBuilderBase<Blazo
 		return this;
 	}
 
+	/// <inheritdoc />
 	protected override ApplicationScreenDefinition CreateDefinition() {
-		return new BlazorApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _parameters, _activator, Settings, SettingsFactory, _settingsEditor);
+		return new BlazorApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _parameters, _activator, Settings, _settingsEditor);
 	}
 
+	/// <inheritdoc />
 	protected override void ValidateScreenType(Type screenType) {
 		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 	}
@@ -75,10 +72,12 @@ public class BlazorApplicationScreenBuilder : ApplicationScreenBuilderBase<Blazo
 /// <summary>Configures a component registration with a compile-time screen type.</summary>
 public sealed class BlazorApplicationScreenBuilder<TScreen> : BlazorApplicationScreenBuilder
 	where TScreen : IBlazorApplicationScreen {
+	/// <summary>Starts configuration for a component registration.</summary>
 	public BlazorApplicationScreenBuilder()
 		: this(new ApplicationScreenRegistration<TScreen>()) {
 	}
 
+	/// <summary>Starts configuration for a component registration.</summary>
 	internal BlazorApplicationScreenBuilder(ApplicationScreenRegistration<TScreen> registration)
 		: base(typeof(TScreen), registration) {
 	}

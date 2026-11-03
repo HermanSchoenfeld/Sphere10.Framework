@@ -13,14 +13,14 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
-/// <summary>Edits one detached page; the containing dialog retains validation, persistence and acceptance ownership.</summary>
+/// <summary>Edits one actual settings object; the containing dialog retains validation, persistence and acceptance ownership.</summary>
 public interface IBlazorApplicationSettingsEditor {
-	/// <summary>Expose this as a component parameter and edit only this detached settings value.</summary>
+	/// <summary>Expose this as a component parameter and edit only this actual settings value.</summary>
 	object Value { get; set; }
 
 	/// <summary>Expose this as a component parameter and await it after a draft value changes.</summary>
 	EventCallback Changed { get; set; }
 
-	/// <summary>Validates pending editor input before the session invokes the declared settings validation.</summary>
+	/// <summary>Validates pending editor input before the dialog invokes the declared settings validation.</summary>
 	Task<Result> ValidateAsync(CancellationToken cancellationToken = default);
 }

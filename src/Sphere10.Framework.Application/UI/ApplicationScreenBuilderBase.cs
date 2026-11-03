@@ -31,11 +31,8 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 
 	protected ApplicationScreenRegistration Registration { get; private set; }
 
-	/// <summary>The ordinary settings object edited by this registration's Options page.</summary>
-	protected object Settings { get; private set; }
-
-	/// <summary>Creates fresh defaults without constructing an operational screen.</summary>
-	protected Func<object> SettingsFactory { get; private set; }
+	/// <summary>The typed settings object edited by this registration's Options page.</summary>
+	protected SettingsObject Settings { get; private set; }
 
 	/// <summary>Validates and captures the declared registration metadata.</summary>
 	public virtual ApplicationScreenDefinition Build() {
@@ -77,34 +74,23 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 		return (TSelf)(object)this;
 	}
 
-	/// <summary>Sets a persistent key for startup choices and settings profiles.</summary>
+	/// <summary>Sets a persistent key for startup choices and settings records.</summary>
 	public TSelf WithStableKey(string stableKey) {
 		Guard.ArgumentNotNullOrEmpty(stableKey, nameof(stableKey));
 		StableKey = stableKey;
 		return (TSelf)(object)this;
 	}
 
-	/// <summary>Declares ordinary values; the factory creates settings defaults, never an operational screen.</summary>
+	/// <summary>Declares typed settings without constructing an operational screen.</summary>
 	public TSelf UseSettings<TSettings>()
-		where TSettings : new() {
-		return UseSettings(() => new TSettings());
+		where TSettings : SettingsObject, new() {
+		return UseSettings(new TSettings());
 	}
 
-	/// <summary>Uses an ordinary settings factory, including values whose constructors require arguments.</summary>
-	public TSelf UseSettings<TSettings>(Func<TSettings> defaults) {
-		Guard.ArgumentNotNull(defaults, nameof(defaults));
-		SettingsFactory = () => defaults();
-		Settings = SettingsFactory();
-		Guard.ArgumentNotNull(Settings, nameof(defaults));
-		return (TSelf)(object)this;
-	}
-
-	/// <summary>Edits an ordinary object; its initial values also supply detached defaults for Reset.</summary>
-	public TSelf UseSettings(object settings) {
+	/// <summary>Uses the supplied settings instance for this registration.</summary>
+	public TSelf UseSettings(SettingsObject settings) {
 		Guard.ArgumentNotNull(settings, nameof(settings));
-		var defaults = ApplicationSettingsValueCloner.Copy(settings);
-		Settings = ApplicationSettingsValueCloner.Copy(defaults);
-		SettingsFactory = () => ApplicationSettingsValueCloner.Copy(defaults);
+		Settings = settings;
 		return (TSelf)(object)this;
 	}
 
@@ -125,7 +111,7 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 
 	/// <summary>Copies only declared values; building never activates an operational screen.</summary>
 	protected virtual ApplicationScreenDefinition CreateDefinition() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings, SettingsFactory);
+		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings);
 	}
 
 	// Platform builders additionally validate their supported screen contract.

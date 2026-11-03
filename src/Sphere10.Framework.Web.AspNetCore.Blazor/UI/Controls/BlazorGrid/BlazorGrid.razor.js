@@ -22,18 +22,8 @@ export function Initialize(element, receiver, initialWidths = {}) {
 	let drag = null;
 	let resizedWidths = new WeakMap();
 	const naturalWidths = new WeakMap();
-	let settingsKey = null;
-	let settings = null;
 	let storedWidths = SanitizeWidths(initialWidths);
 	const Configuration = column => column.dataset.gridWidth + ":" + column.dataset.gridExpands + ":" + element.dataset.gridAutoSize;
-	const WriteSettings = () => {
-		if (!settingsKey || !settings) return;
-		try {
-			localStorage.setItem("sphere10-grid:" + settingsKey, JSON.stringify({ ...settings, columnWidths: storedWidths }));
-		} catch {
-			// Private browsing, storage policy or quota must not disable a usable grid.
-		}
-	};
 
 	const SetStyle = (target, property, value) => {
 		if (target.style[property] !== value)
@@ -220,25 +210,11 @@ export function Initialize(element, receiver, initialWidths = {}) {
 
 	// Blazor calls Update after rendering; geometry changes are coalesced into the next animation frame.
 	return {
-		ReadSettings(key, defaults) {
-			settingsKey = key;
-			settings = ReadLegacySettings(key) ?? defaults;
-			storedWidths = SanitizeWidths(settings?.columnWidths);
-			resizedWidths = new WeakMap();
-			return key ? settings : null;
-		},
 		ApplyWidths(widths) {
 			storedWidths = SanitizeWidths(widths);
 			resizedWidths = new WeakMap();
 			layoutPending = true;
 			Schedule();
-		},
-		WriteSettings(key, value) {
-			if (!key) return;
-			settingsKey = key;
-			settings = value;
-			storedWidths = SanitizeWidths(value?.columnWidths);
-			WriteSettings();
 		},
 		Update(enabled) {
 			if (enabled && !autoPageSize)
@@ -257,7 +233,7 @@ export function Initialize(element, receiver, initialWidths = {}) {
 	};
 }
 
-// Reads a detached legacy value; importing it into an application profile is the caller's decision.
+// Reads an existing legacy value only; current preferences are saved through UserSettings.
 export function ReadLegacySettings(key) {
 	if (!key) return null;
 	try {

@@ -18,6 +18,7 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
+/// <summary>Checks actual provider restoration before native screen activation.</summary>
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
@@ -25,6 +26,7 @@ public class ApplicationSettingsStartupTests {
 	private bool _startedFramework;
 	private string _directory;
 
+	// Start only the Framework lifetime required by this fixture.
 	[OneTimeSetUp]
 	public void StartFramework() {
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
@@ -32,12 +34,14 @@ public class ApplicationSettingsStartupTests {
 			Sphere10Framework.Instance.Build().Start();
 	}
 
+	// End only the Framework lifetime started by this fixture.
 	[OneTimeTearDown]
 	public void StopFramework() {
 		if (_startedFramework)
 			Sphere10Framework.Instance.EndFramework();
 	}
 
+	// Create isolated storage and reset activation observations.
 	[SetUp]
 	public void CreateOwnedSettings() {
 		_directory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "ApplicationSettingsStartup-" + Guid.NewGuid().ToString("N"))).FullName;
@@ -46,63 +50,90 @@ public class ApplicationSettingsStartupTests {
 		SettingsBlock.Activating = null;
 	}
 
+	// Remove only this fixture's records and activation callback.
 	[TearDown]
 	public void RemoveOwnedSettings() {
 		SettingsBlock.Activating = null;
 		using var cleanup = Tools.Scope.DeleteDirOnDispose(_directory);
 	}
 
+	// Verify provider restoration precedes activation without resolving transient blocks twice.
 	[Test]
-	public async Task CatalogRestoresBeforeDefaultActivationAndKeepsTheApplicationsCanonicalTransientBlocks() {
-		var store = new WinFormsApplicationSettingsStore(new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory)));
+	public async Task SettingsRestoreBeforeDefaultActivationAndKeepTheApplicationsCanonicalTransientBlocks() {
+		ISettingsProvider store = new CachedSettingsProvider(new DirectoryFileSettingsProvider(_directory));
 		using (var seedBlock = new SettingsBlock()) {
-			var seed = new ApplicationSettingsCatalog("SettingsTests", store, new[] { seedBlock });
-			await seed.InitializeAsync();
-			var edit = seed.GetProfile(seedBlock, seedBlock.DefaultScreenDefinition.Registration).BeginEdit();
-			((Preferences)edit.Draft).Name = "Restored before query";
-			Assert.That((await edit.ApplyAsync()).IsSuccess, Is.True);
-			Assert.That(SettingsProbe.CreationCount, Is.Zero, "Catalog discovery and editing must not activate operational screens.");
+			var definition = seedBlock.DefaultScreenDefinition;
+			var settings = (Preferences)definition.Settings;
+			settings.ID = Tools.UI.GetScreenSettingsId("SettingsTests", seedBlock, definition);
+			settings.Provider = store;
+			settings.Name = "Restored before query";
+			await settings.SaveAsync();
+			Assert.That(SettingsProbe.CreationCount, Is.Zero, "Reading declarations must not activate operational screens.");
 		}
 		SettingsBlock.Activating = context => {
-			Assert.That(context.Application.Settings.IsInitialized, Is.True);
-			Assert.That(context.Application.Settings.GetProfile(context.Block, context.Definition.Registration).GetValues<Preferences>().Name,
-				Is.EqualTo("Restored before query"));
+			Assert.That(context.Application.Settings, Is.SameAs(store));
+			Assert.That(((Preferences)context.Definition.Settings).Name, Is.EqualTo("Restored before query"));
 		};
 		var services = new ServiceCollection();
-		services.AddSingleton<IApplicationSettingsStore>(store);
+		services.AddSingleton(new Local<ISettingsProvider>(store));
 		services.AddMainForm<BlockMainForm>();
 		services.AddApplicationBlock<SettingsBlock>();
 		services.AddApplicationSettings("SettingsTests");
 		await using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IWinFormsApplication>();
 		await application.InitializeAsync();
-		Assert.That(application.Settings, Is.SameAs(provider.GetRequiredService<ApplicationSettingsCatalog>()));
-		Assert.That(application.Settings.Profiles.Single().Block, Is.SameAs(application.Blocks.Single()));
-		Assert.That(SettingsBlock.Created, Is.EqualTo(2), "The catalog must not resolve transient block services a second time.");
+		Assert.That(application.Settings, Is.SameAs(store));
+		Assert.That(application.Blocks.Single().ScreenDefinitions.Single().Settings.Provider, Is.SameAs(store));
+		Assert.That(SettingsBlock.Created, Is.EqualTo(2), "Settings restoration must not resolve transient block services a second time.");
 		Assert.That(SettingsProbe.CreationCount, Is.EqualTo(1));
 	}
 
+	// Verify a block uses its ordinary typed provider record without a synthetic screen.
 	[Test]
-	public async Task PlainMainFormUsesOneApplicationRootCatalogWithoutAnArtificialScreenOrApplication() {
-		var definition = new ApplicationSettingsDefinition("preferences", "Preferences", new Preferences()).WithStorageId(null);
+	public async Task BlockPreferencesUseTheExistingLegacyUserRecordWithoutAnArtificialScreen() {
+		using var block = new WinFormsApplicationBlock { Name = "Preferences", BlockSettings = new Preferences() };
 		var services = new ServiceCollection();
-		services.AddSingleton<IApplicationSettingsStore>(new WinFormsApplicationSettingsStore(new DirectoryFileSettingsProvider(_directory)));
-		services.AddMainForm<MainForm>();
-		services.AddApplicationSettings("PlainSettingsTests", definition);
+		services.AddSingleton(new Local<ISettingsProvider>(new DirectoryFileSettingsProvider(_directory)));
+		services.AddMainForm<BlockMainForm>();
+		services.AddApplicationBlock(block);
+		services.AddApplicationSettings("PlainSettingsTests");
 		await using var provider = services.BuildServiceProvider();
-		var catalog = provider.GetRequiredService<ApplicationSettingsCatalog>();
-		await catalog.InitializeAsync();
-		Assert.That(provider.GetService<IApplication>(), Is.Null);
-		Assert.That(catalog, Is.SameAs(provider.GetRequiredService<ApplicationSettingsCatalog>()));
-		Assert.That(catalog.Profiles.Single().ScreenDefinition, Is.Null);
-		Assert.That(catalog.Profiles.Single().ApplicationDefinition, Is.SameAs(definition));
+		await provider.GetRequiredService<IWinFormsApplication>().InitializeAsync();
+		Assert.That(block.ScreenDefinitions, Is.Empty);
 		Assert.That(Directory.GetFiles(_directory), Is.Empty);
-		var edit = catalog.GetProfile("preferences").BeginEdit();
-		((Preferences)edit.Draft).Name = "Accepted";
-		Assert.That((await edit.ApplyAsync()).IsSuccess, Is.True);
+		var settings = (Preferences)block.BlockSettings;
+		settings.Name = "Accepted";
+		await settings.SaveAsync();
 		ISettingsProvider fresh = new DirectoryFileSettingsProvider(_directory);
 		Assert.That(fresh.Get<Preferences>().Name, Is.EqualTo("Accepted"));
 	}
+
+	// Verify configured user settings services take precedence over a fallback provider.
+	[Test]
+	public async Task NativeApplicationUsesTheExistingSettingsServicesUserProvider() {
+		var intendedDirectory = Directory.CreateDirectory(Path.Combine(_directory, "intended")).FullName;
+		var unrelatedDirectory = Directory.CreateDirectory(Path.Combine(_directory, "unrelated")).FullName;
+		ISettingsProvider intended = new DirectoryFileSettingsProvider(intendedDirectory);
+		ISettingsProvider unrelated = new DirectoryFileSettingsProvider(unrelatedDirectory);
+		using var block = new WinFormsApplicationBlock { Name = "Preferences", BlockSettings = new Preferences() };
+		var services = new ServiceCollection();
+		services.AddSingleton<ISettingsServices>(new ExistingSettingsServices(intended));
+		services.AddSingleton(new Local<ISettingsProvider>(unrelated));
+		services.AddMainForm<BlockMainForm>();
+		services.AddApplicationBlock(block);
+		services.AddApplicationSettings("Existing native user provider");
+		await using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IWinFormsApplication>();
+		await application.InitializeAsync();
+		var values = (Preferences)block.BlockSettings;
+		values.Name = "Existing provider accepted";
+		await values.SaveAsync();
+		ISettingsProvider fresh = new DirectoryFileSettingsProvider(intendedDirectory);
+		Assert.That(fresh.Get<Preferences>().Name, Is.EqualTo("Existing provider accepted"));
+		Assert.That(Directory.GetFiles(unrelatedDirectory), Is.Empty);
+	}
+
+	#region Inner Types
 
 	public class Preferences : SettingsObject {
 		public string Name { get; set; } = "Default";
@@ -120,7 +151,7 @@ public class ApplicationSettingsStartupTests {
 				activator: context => {
 					Activating?.Invoke(context);
 					return new SettingsProbe();
-				}, settings: new Preferences());
+				});
 			AddScreenDefinition(definition);
 			DefaultScreenDefinition = definition;
 		}
@@ -129,8 +160,31 @@ public class ApplicationSettingsStartupTests {
 	public class SettingsProbe : WinFormsApplicationScreen {
 		public static int CreationCount;
 
+		public override Preferences ScreenSettings {
+			get {
+				return (Preferences)base.ScreenSettings;
+			}
+		}
+
 		public SettingsProbe() {
 			CreationCount++;
 		}
 	}
+
+	private sealed class ExistingSettingsServices(ISettingsProvider provider) : BaseSettingsServices {
+		public override ISettingsProvider UserSettings {
+			get {
+				return provider;
+			}
+		}
+
+		public override ISettingsProvider SystemSettings {
+			get {
+				return provider;
+			}
+		}
+	}
+
+	#endregion
+
 }

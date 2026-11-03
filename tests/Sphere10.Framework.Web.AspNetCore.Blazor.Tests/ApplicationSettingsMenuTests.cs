@@ -28,6 +28,7 @@ public class ApplicationSettingsMenuTests {
 		var block = new BlazorApplicationBlockBuilder()
 			.WithId("product")
 			.WithName("Product")
+			.AddScreen<MenuScreen>("Menu screen")
 			.AddMenu(menu => menu
 				.WithId("file")
 				.WithText("File")
@@ -50,19 +51,20 @@ public class ApplicationSettingsMenuTests {
 			.AddActionItem("about", "About", () => { })
 		);
 		var services = new ServiceCollection().AddLogging();
-		services.AddSingleton<IApplicationSettingsStore, MissingStore>();
+		services.AddSingleton<ISettingsProvider, MissingSettingsProvider>();
 		services.BuildBlazorApplication()
 			.WithSettingsKey("product")
-			.AddSettings<Preferences>("preferences")
 			.AddPlugin(plugin => plugin
 				.WithName("Product")
+				.UseSettings<Preferences>()
 				.AddBlock(block.Build())
 			)
 			.Build();
 		await using var provider = services.BuildServiceProvider();
 		var application = provider.GetRequiredService<IBlazorApplication>();
 		await application.InitializeAsync();
-		await application.ScreenHost.SelectBlockAsync("product");
+		var activeBlock = application.Blocks.Single();
+		await application.ScreenHost.OpenScreenAsync(activeBlock, activeBlock.ScreenDefinitions.Single());
 		using var shell = new ApplicationShell { Application = application, ScreenHost = application.ScreenHost };
 		var menus = (IBlazorApplicationMenu[])typeof(ApplicationShell).GetProperty("MergedMenus", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(shell);
 
@@ -76,18 +78,48 @@ public class ApplicationSettingsMenuTests {
 		}
 	}
 
+	#region Inner Types
+
 	// This composition test restores declared defaults without invoking browser storage or writing preferences.
-	private sealed class MissingStore : IApplicationSettingsStore {
-		public Task<ApplicationSettingsStoredProfile> LoadAsync(string profileKey, object defaults, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
-			return Task.FromResult<ApplicationSettingsStoredProfile>(null);
+	private sealed class MissingSettingsProvider : SyncSettingsProviderBase {
+		// Keeps this fixture storage readable for its assertions.
+		public override bool EncryptSettings {
+			get {
+				return false;
+			}
 		}
 
-		public Task SaveAsync(string profileKey, ApplicationSettingsStoredProfile snapshot, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
+		// Check whether this fixture has a persisted record.
+		public override bool ContainsSetting(Type settingsType, object id = null) {
+			return false;
+		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
+			throw new InvalidOperationException("No test preferences have been saved.");
+		}
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) {
 			throw new InvalidOperationException("Menu composition must not write settings.");
+		}
+
+		// Remove this fixture record.
+		public override void DeleteSetting(SettingsObject settings) {
+		}
+
+		// Clear this fixture storage.
+		public override void ClearSettings() {
 		}
 	}
 
 	public sealed class Preferences : SettingsObject {
 		public bool ShowDetails { get; set; } = true;
 	}
+
+	/// <summary>Supplies the visible block owner for contextual menu composition without browser rendering.</summary>
+	public sealed class MenuScreen : BlazorApplicationScreen {
+	}
+
+	#endregion
 }

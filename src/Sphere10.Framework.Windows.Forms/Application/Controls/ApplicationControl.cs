@@ -7,63 +7,118 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>
-/// A base class for all controls in the application. Provides access to application services and 
-/// features like automatically detect child control state changes. Draws theme-aware borders.
-/// </summary>
+/// <summary>Provides application services and refreshes the existing control lifecycle when its actual settings change.</summary>
 public partial class ApplicationControl : UserControlEx {
-
 	private IServiceProvider _serviceProvider;
-	private WinFormsApplicationScreenSettings _applicationSettings;
+	private SettingsObject _screenSettings;
+	private SettingsObject[] _observedSettings;
+	private WinFormsApplicationScreenSettings _settingsBinding;
 	private IFuture<ISettingsServices> _settingsServices;
 	private IFuture<IUserInterfaceServices> _userInterfaceServices;
 
-	/// <summary>Resolves and retains the active runtime's settings service; unavailable on the design surface or outside its lifetime.</summary>
-	[Browsable(false)]
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected ISettingsServices SettingsServices => TryInitializeServiceCache() ? _settingsServices.Value : null;
-
-	/// <summary>Resolves and retains the active runtime's UI service; unavailable on the design surface or outside its lifetime.</summary>
-	[Browsable(false)]
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected IUserInterfaceServices UserInterfaceServices => TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
-
-	// Plain application controls borrow the same class-valued preferences and ordered saves as hosted screens.
-	protected bool TryGetApplicationSettings<TSettings>(string key, out TSettings settings) {
-		if (_applicationSettings == null) {
-			var framework = Sphere10Framework.Instance;
-			var catalog = framework.IsStarted ? framework.ServiceProvider.GetService<ApplicationSettingsCatalog>() : null;
-			if (catalog?.IsInitialized != true) {
-				settings = default;
-				return false;
-			}
-			_applicationSettings = new WinFormsApplicationScreenSettings(this, catalog.GetProfile(key), null, OnApplicationSettingsChanged);
-			Disposables.Add(_applicationSettings);
+	/// <summary>The existing user and system settings services for the running application.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	protected ISettingsServices SettingsServices {
+		get {
+			return TryInitializeServiceCache() ? _settingsServices.Value : null;
 		}
-		settings = _applicationSettings.GetValues<TSettings>();
-		return true;
 	}
 
-	// Deliberate accepted control edits are snapshotted and persisted by the existing internal coordinator.
-	protected Task SaveApplicationSettingsAsync(CancellationToken cancellationToken = default) {
-		Guard.Ensure(_applicationSettings != null, "Load declared application settings before saving them.");
-		_applicationSettings.MarkChanged();
-		return _applicationSettings.SaveAsync(cancellationToken);
+	/// <summary>The existing interaction service for the running application.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	protected IUserInterfaceServices UserInterfaceServices {
+		get {
+			return TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
+		}
 	}
 
-	// Products react to accepted values without observing profiles, producer tokens or revisions.
-	protected virtual void OnApplicationSettingsChanged(object previous, object settings) {
+	/// <summary>Whether this control has an actual settings instance attached before model initialization.</summary>
+	protected bool HasSettings {
+		get {
+			return _screenSettings != null;
+		}
 	}
 
+	// Keep the actual declared instance available to typed screen properties.
+	private protected SettingsObject DeclaredSettings {
+		get {
+			return _screenSettings;
+		}
+	}
+
+	// Create native grid/log bindings only when this screen has settings to bind.
+	private protected WinFormsApplicationScreenSettings SettingsBinding {
+		get {
+			return _screenSettings == null ? null : _settingsBinding ??= new WinFormsApplicationScreenSettings(_screenSettings);
+		}
+	}
+
+	// Attach actual owner instances before the existing Load/CopyModelToUI lifecycle runs.
+	internal void AttachSettings(SettingsObject screenSettings, SettingsObject blockSettings, SettingsObject pluginSettings) {
+		Guard.Ensure(_observedSettings == null, "A hosted control cannot change its settings owners.");
+		_screenSettings = screenSettings;
+		_observedSettings = new[] { screenSettings, blockSettings, pluginSettings }.Where(settings => settings != null)
+			.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();
+		foreach (var settings in _observedSettings)
+			settings.OnChanged += SettingsChanged;
+		Disposables.Add(ReleaseSettings);
+		if (Loaded)
+			SettingsChanged();
+	}
+
+	// Stop observing settings before the control's native destruction callbacks run.
+	private protected void ReleaseSettings() {
+		_settingsBinding?.Dispose();
+		if (_observedSettings == null)
+			return;
+		foreach (var settings in _observedSettings)
+			settings.OnChanged -= SettingsChanged;
+		_observedSettings = null;
+	}
+
+	// Handle recreation reapplies current values on the owning UI thread without queuing state while the handle is absent.
+	protected override void OnHandleCreated(EventArgs e) {
+		base.OnHandleCreated(e);
+		if (Loaded && _observedSettings != null)
+			ApplySettings();
+	}
+
+	// Settings may be saved on a worker; presentation always returns to the control's UI thread.
+	private void SettingsChanged() {
+		if (!Loaded || IsDisposed || Disposing || _observedSettings == null)
+			return;
+		if (InvokeRequired) {
+			BeginInvoke((Action)ApplySettings);
+			return;
+		}
+		if (IsHandleCreated)
+			ApplySettings();
+	}
+
+	// Reuse grid/log application and the normal model-to-UI refresh without replacing settings identities.
+	private async void ApplySettings() {
+		if (!Loaded || !IsHandleCreated || IsDisposed || Disposing || _observedSettings == null)
+			return;
+		try {
+			if (_settingsBinding != null)
+				await _settingsBinding.ApplyAsync();
+			if (!IsDisposed && !Disposing && _observedSettings != null)
+				Refresh();
+		} catch (Exception error) {
+			Tools.Exceptions.ExecuteIgnoringException(() => SystemLog.Exception(error));
+		}
+	}
+
+	// Cache services from the running Framework owner, leaving designer and standalone controls usable.
 	private bool TryInitializeServiceCache() {
 		var framework = Sphere10Framework.Instance;
 		if (DesignMode || Tools.Runtime.IsDesignMode || !framework.IsStarted)
@@ -79,4 +134,3 @@ public partial class ApplicationControl : UserControlEx {
 		return true;
 	}
 }
-

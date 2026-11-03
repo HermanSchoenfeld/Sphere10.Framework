@@ -10,18 +10,20 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Components;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Owns a component registration's parameters and optional renderer activation preparation.</summary>
 public sealed class BlazorApplicationScreenDefinition : ApplicationScreenDefinition {
+	/// <summary>Declares component parameters, activation metadata and the actual settings type.</summary>
 	public BlazorApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
 		ScreenKind screenKind = ScreenKind.Normal, ApplicationScreenRegistration registration = null, string stableKey = null,
 		IReadOnlyDictionary<string, object> parameters = null,
 		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null,
-		object settings = null, Func<object> settingsFactory = null, Type settingsEditor = null)
-		: base(screenType, title, activationMode, screenKind, registration, stableKey, settings, settingsFactory) {
+		SettingsObject settings = null, Type settingsEditor = null)
+		: base(screenType, title, activationMode, screenKind, registration, stableKey, settings) {
 		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 		Guard.Argument(settingsEditor == null || !settingsEditor.IsAbstract && !settingsEditor.ContainsGenericParameters
 			&& typeof(IComponent).IsAssignableFrom(settingsEditor)
@@ -32,15 +34,17 @@ public sealed class BlazorApplicationScreenDefinition : ApplicationScreenDefinit
 		SettingsEditor = settingsEditor;
 	}
 
+	/// <inheritdoc />
 	public IReadOnlyDictionary<string, object> Parameters { get; }
 
+	/// <inheritdoc />
 	public Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> Activator { get; }
 
-	/// <summary>The optional renderer-owned component that edits this registration's detached settings value.</summary>
+	/// <summary>The optional renderer-owned component that edits this registration's actual settings object.</summary>
 	public Type SettingsEditor { get; }
 
 	/// <summary>Copies configuration without sharing the snapshot's reverse command membership.</summary>
 	public override ApplicationScreenDefinition Clone() {
-		return new BlazorApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Parameters, Activator, Settings, SettingsFactory, SettingsEditor);
+		return new BlazorApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Parameters, Activator, Settings, SettingsEditor);
 	}
 }

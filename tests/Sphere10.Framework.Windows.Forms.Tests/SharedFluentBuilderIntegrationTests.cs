@@ -160,6 +160,7 @@ public class SharedFluentBuilderIntegrationTests {
 	[TestCase(false)]
 	[TestCase(true)]
 	public void NativeCachedEmptyDefaultRemainsBlockOwnedAfterRemovingItsNavigation(bool removeEntireMenu) {
+		IWinFormsApplicationMenuItem registeredItem = null;
 		var builder = new WinFormsApplicationBlockBuilder()
 			.WithName("Workspace")
 			.AddScreen<Screen>(screen => screen
@@ -173,12 +174,16 @@ public class SharedFluentBuilderIntegrationTests {
 				.AddItem(item => item
 					.AsScreenItem()
 					.WithText("Empty workspace")
-					.WithScreen<Screen>()
-				)
+					.WithScreen<Screen>(),
+					out registeredItem
+				),
+				out var registeredMenu
 			);
 		using var block = builder.Build();
-		var menu = (WinFormsApplicationMenu)block.Menus[0];
-		var item = (WinFormsScreenMenuItem)menu.Items[0];
+
+		// Change configuration through the captured definitions before command access activates the readonly collections.
+		var menu = (WinFormsApplicationMenu)registeredMenu;
+		var item = (WinFormsScreenMenuItem)registeredItem;
 		var definition = item.ScreenDefinition;
 		block.Name = "Edited workspace";
 		if (removeEntireMenu)

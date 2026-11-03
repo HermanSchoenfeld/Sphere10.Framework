@@ -7,11 +7,11 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Drawing;
-using System.Drawing.Design;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -19,604 +19,529 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
 
+/// <summary>Verifies actual native settings identity, persistence, Options and model-refresh lifecycle behavior.</summary>
 [TestFixture]
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class ApplicationSettingsNativeTests {
 	private bool _startedFramework;
-	private bool _hasRequiredDpiMode;
 
-	[TestCase(false, false)]
-	[TestCase(true, false)]
-	[TestCase(false, true)]
-	[TestCase(true, true)]
-	public void InitializingALaterRolePreservesAnotherLivePreferenceDraftAndItsNextCapture(bool anotherInstance, bool previousSaveFailed) {
-		RunWithMessageLoop(async owner => {
-			var directory = Tools.FileSystem.GetTempEmptyDirectory();
-			using var cleanup = Tools.Scope.DeleteDirOnDispose(directory);
-			ISettingsProvider legacy = new DirectoryFileSettingsProvider(directory);
-			var storedRole = legacy.Get<VisualGridSettings>("LazyRoles.secondary");
-			storedRole.PageMode = VisualGridPageMode.Paged;
-			storedRole.PageSize = 29;
-			storedRole.Save();
-			var store = new ProbeStore();
-			using var block = new WinFormsApplicationBlock { Name = "Lazy roles" };
-			var defaults = new Preferences {
-				Grids = new() { ["primary"] = new(), ["secondary"] = new() }
-			};
-			var definition = new WinFormsApplicationScreenDefinition(typeof(LazyRolesScreen), "Lazy", settings: defaults);
-			block.AddScreenDefinition(definition);
-			block.DefaultScreenDefinition = definition;
-			var services = new ServiceCollection();
-			services.AddSingleton(new Local<ISettingsProvider>(legacy));
-			services.AddSingleton<IApplicationSettingsStore>(store);
-			services.AddMainForm<QuietMainForm>();
-			services.AddApplicationBlock(block);
-			services.AddApplicationSettings("Native lazy roles");
-			await using var provider = services.BuildServiceProvider();
-			var app = provider.GetRequiredService<IWinFormsApplication>();
-			await app.InitializeAsync();
-			var main = (QuietMainForm)provider.GetRequiredService<IMainForm>();
-			main.ScreenMode = ScreenMode.MultiView;
-			main.Show(owner);
-			var first = (LazyRolesScreen)main.ActiveScreen;
-			await first.BindRoleAsync("primary");
-			Assert.That(await main.ScreenHost.CloseScreenAsync(first), Is.True);
-			Assert.That(store.Saves, Is.Zero, "Initializing an unchanged screen must not turn close into a preference save.");
-			first = (LazyRolesScreen)await main.ScreenHost.OpenScreenAsync(block, definition);
-			await first.BindRoleAsync("primary");
-			first.EditName("Unaccepted live preference");
-			if (previousSaveFailed) {
-				store.Fail = true;
-				await Assert.ThatAsync(async () => await first.SaveSettingsAsync(), Throws.TypeOf<InvalidOperationException>());
-				store.Fail = false;
-			}
-			var later = anotherInstance ? (LazyRolesScreen)await main.ScreenHost.OpenScreenAsync(block, definition) : first;
-
-			await later.BindRoleAsync("secondary");
-
-			Assert.That(first.ReadName(), Is.EqualTo("Unaccepted live preference"), "A later section import must not replace unrelated working values.");
-			var profile = app.Settings.GetProfile(block, definition.Registration);
-			Assert.That(profile.LastSaveError != null, Is.EqualTo(previousSaveFailed), "Initialization must retain a previous failure until the user's retry succeeds.");
-			await first.SaveSettingsAsync();
-			Assert.That(profile.GetValues<Preferences>().Name, Is.EqualTo("Unaccepted live preference"), "Initializing another role must not supersede an existing producer's next accepted capture.");
-			Assert.That(profile.GetValues<Preferences>().Grids["secondary"].PageSize, Is.EqualTo(29), "An earlier full-root draft must not discard the newly imported role.");
-			Assert.That(store.Saves, Is.EqualTo(1));
-			Assert.That(profile.LastSaveError, Is.Null);
-			Assert.That(profile.SectionVersions, Does.ContainKey("Grids[secondary]"));
-		});
-	}
-
+	// Start the existing Framework owner before native controls resolve their services.
 	[OneTimeSetUp]
 	public void StartFramework() {
-		_hasRequiredDpiMode = System.Windows.Forms.Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 		_startedFramework = !Sphere10Framework.Instance.IsStarted;
 		if (_startedFramework)
 			Sphere10Framework.Instance.Build().Start();
 	}
 
+	// End only the Framework lifetime started by this fixture.
 	[OneTimeTearDown]
 	public void StopFramework() {
 		if (_startedFramework)
 			Sphere10Framework.Instance.EndFramework();
 	}
 
+	// A cached provider must not substitute a different root for the supplied owner settings instance.
 	[Test]
-	public void OptionsRetainsDetachedPageDraftsAndCancelDoesNotUndoAnEarlierApply() {
+	public void ActualSettingsLoadBeforeActivationAndRetainSuppliedIdentity() {
 		RunWithMessageLoop(async owner => {
-			var store = new ProbeStore();
-			var catalog = new ApplicationSettingsCatalog("NativeOptions", store, Array.Empty<IApplicationBlock>(), new[] { Definition("one"), Definition("two") });
-			await catalog.InitializeAsync();
-			using var dialog = new WinFormsApplicationSettingsDialog(catalog) { ShowInTaskbar = false };
-			dialog.Show(owner);
-			var first = catalog.GetProfile("one");
-			var second = catalog.GetProfile("two");
-			SetName(dialog, "Accepted first");
-			Assert.That(first.GetValues<Preferences>().Name, Is.EqualTo("Default"));
-			Assert.That(store.Saves, Is.Zero);
-			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
-			dialog.SelectProfile(second);
-			SetName(dialog, "Keep draft");
-			dialog.SelectProfile(first);
-			dialog.SelectProfile(second);
-			Assert.That(GetName(dialog), Is.EqualTo("Keep draft"));
-			dialog.ResetSelectedDefaults();
-			Assert.That(GetName(dialog), Is.EqualTo("Default"));
-			Assert.That(store.Saves, Is.EqualTo(1));
-			dialog.CancelEdits();
-			dialog.Close();
-			Assert.That(first.GetValues<Preferences>().Name, Is.EqualTo("Accepted first"));
-			Assert.That(second.GetValues<Preferences>().Name, Is.EqualTo("Default"));
-			Assert.That(store.Saves, Is.EqualTo(1));
+			var store = new CachedSettingsProvider(new MemoryStore());
+			using var block = CreateBlock("First");
+			var definition = block.ScreenDefinitions.Single();
+			var supplied = (ProbeScreen.Preferences)definition.Settings;
+			var id = Tools.UI.GetScreenSettingsId("NativeActualSettings", block, definition);
+			ISettingsProvider provider = store;
+			var earlier = new ProbeScreen.Preferences { ID = id, Provider = provider, Name = "Restored before activation" };
+			await earlier.SaveAsync();
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var screen = (ProbeScreen)main.ActiveScreen;
+
+			Assert.That(application.Settings, Is.SameAs(provider));
+			Assert.That(definition.Settings, Is.SameAs(supplied));
+			Assert.That(screen.ScreenSettings, Is.SameAs(supplied));
+			Assert.That(screen.FirstName, Is.EqualTo("Restored before activation"));
+			Assert.That(supplied.ID, Is.EqualTo(id));
+			Assert.That(supplied.Provider, Is.SameAs(provider));
+			Assert.That(supplied.Items, Is.EqualTo(new[] { "Initial" }));
 		});
 	}
 
+	// Actual block changes refresh their screens on the UI thread, and closed screens unsubscribe.
 	[Test]
-	public void InvalidAndFailedApplyLeaveTheDraftOpenAndRetryable() {
+	public void OwnerNotificationsUseTheExistingRefreshLifecycleAndStopAfterClose() {
 		RunWithMessageLoop(async owner => {
-			var store = new ProbeStore();
-			var catalog = new ApplicationSettingsCatalog("NativeValidation", store, Array.Empty<IApplicationBlock>(), new[] { Definition("one") });
-			await catalog.InitializeAsync();
-			using var dialog = new WinFormsApplicationSettingsDialog(catalog);
+			using var firstBlock = CreateBlock("First");
+			using var otherBlock = CreateBlock("Other");
+			firstBlock.BlockSettings = new ProbeScreen.Preferences { Name = "Block before" };
+			otherBlock.BlockSettings = new ProbeScreen.Preferences { ID = "other", Name = "Other before" };
+			await using var services = CreateApplication(new MemoryStore(), firstBlock, otherBlock);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.ScreenMode = ScreenMode.MultiView;
+			main.Show(owner);
+			var first = (ProbeScreen)main.ActiveScreen;
+			var other = (ProbeScreen)await main.ScreenHost.OpenScreenAsync(otherBlock, otherBlock.ScreenDefinitions.Single());
+			var firstCopies = first.ModelCopies;
+			var otherCopies = other.ModelCopies;
+			var uiThread = Environment.CurrentManagedThreadId;
+
+			// Publish from a worker, exercising native dispatch instead of a test-only direct refresh.
+			((ProbeScreen.Preferences)firstBlock.BlockSettings).Name = "Block after";
+			await Task.Run(firstBlock.BlockSettings.Save);
+			await WaitUntilAsync(() => first.ModelCopies > firstCopies);
+			Assert.That(first.BlockName, Is.EqualTo("Block after"));
+			Assert.That(first.LastCopyThread, Is.EqualTo(uiThread));
+			Assert.That(other.ModelCopies, Is.EqualTo(otherCopies));
+
+			// A queued or later notification cannot revive a disposed screen.
+			Assert.That(await main.ScreenHost.CloseScreenAsync(first), Is.True);
+			var closedCopies = first.ModelCopies;
+			await firstBlock.BlockSettings.SaveAsync();
+			await Task.Yield();
+			Assert.That(first.ModelCopies, Is.EqualTo(closedCopies));
+		});
+	}
+
+	// A worker save during handle recreation must defer presentation until the UI creates the replacement handle.
+	[Test]
+	public void BackgroundSaveDuringHandleRecreationNeverRefreshesTheScreenOnTheWorker() {
+		RunWithMessageLoop(async owner => {
+			using var block = CreateBlock("Handle recreation");
+			await using var services = CreateApplication(new MemoryStore(), block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var screen = (ProbeScreen)main.ActiveScreen;
+			var copies = screen.ModelCopies;
+			var uiThread = Environment.CurrentManagedThreadId;
+			await screen.RecreateNativeHandleAsync(async () => {
+				Assert.That(screen.IsHandleCreated, Is.False);
+				screen.ScreenSettings.Name = "Saved during recreation";
+				// Save after destruction returns, leaving the UI free to dispatch the worker notification.
+				await Task.Run(screen.ScreenSettings.Save).WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.That(screen.ModelCopies, Is.EqualTo(copies));
+			});
+			await WaitUntilAsync(() => screen.DisplayedName == "Saved during recreation");
+			Assert.That(screen.LastCopyThread, Is.EqualTo(uiThread));
+		});
+	}
+
+	/// <summary>Options identifies the application through its configured product information rather than its CLR type.</summary>
+	[TestCase("System Expert", "System Expert")]
+	[TestCase(null, "Application")]
+	[TestCase("", "Application")]
+	[TestCase("  ", "Application")]
+	public void OptionsRootUsesTheConfiguredProductName(string productName, string expectedCaption) {
+		RunWithMessageLoop(async owner => {
+			using var block = CreateBlock("Diagnostics");
+			await using var services = CreateApplication(new MemoryStore(), block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			var productServices = new ServiceCollection();
+			if (productName != null)
+				productServices.AddSingleton<IProductInformationProvider>(new CaptionProductInformationProvider(productName));
+			await using var provider = productServices.BuildServiceProvider();
+			using var dialog = new WinFormsApplicationSettingsDialog(application, provider);
+			dialog.Show(owner);
+
+			Assert.That(Find<TreeView>(dialog).Nodes[0].Text, Is.EqualTo(expectedCaption));
+			Assert.That(Find<TreeView>(dialog).Nodes[0].Text, Is.Not.EqualTo(application.GetType().Name));
+		});
+	}
+
+	// Menu and programmatic openings follow the visible screen, independently of browsed navigation.
+	[TestCase(false)]
+	[TestCase(true)]
+	public void OptionsInitiallySelectTheActiveScreensSettings(bool openFromMenu) {
+		RunWithMessageLoop(async owner => {
+			using var firstBlock = CreateBlock("First");
+			using var activeBlock = CreateBlock("Active");
+			await using var services = CreateApplication(new MemoryStore(), firstBlock, activeBlock);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var definition = activeBlock.ScreenDefinitions.Single();
+			var screen = await main.ScreenHost.OpenScreenAsync(activeBlock, definition);
+			main.ScreenHost.SelectBlock(firstBlock);
+			Assert.That(main.ActiveScreen, Is.SameAs(screen));
+			Assert.That(main.SelectedBlock, Is.SameAs(firstBlock));
+
+			// Exercise the actual modal dialog from both supported opening paths.
+			Task<DialogResult> opening = null;
+			if (openFromMenu)
+				Find<MenuStrip>(main).Items.OfType<ToolStripMenuItem>().SelectMany(item => item.DropDownItems.OfType<ToolStripMenuItem>())
+					.Single(item => item.Name == "_screenOptionsMenuItem").PerformClick();
+			else
+				opening = main.ShowScreenOptionsAsync();
+			await WaitUntilAsync(() => System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Any());
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<WinFormsApplicationSettingsDialog>().Single();
+			try {
+				Assert.That(dialog.SelectedOwner, Is.SameAs(definition));
+				Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(screen.ScreenSettings));
+			} finally {
+				dialog.DialogResult = DialogResult.Cancel;
+				dialog.Close();
+			}
+			if (opening != null)
+				Assert.That(await opening, Is.EqualTo(DialogResult.Cancel));
+		});
+	}
+
+	// Explicit owners remain authoritative, and screens without preferences retain the ordinary fallback.
+	[Test]
+	public void OptionsKeepExplicitSelectionAndTheNoSettingsFallback() {
+		RunWithMessageLoop(async owner => {
+			using var firstBlock = CreateBlock("First");
+			using var activeBlock = CreateBlock("Active");
+			var plain = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Plain");
+			activeBlock.AddScreenDefinition(plain);
+			await using var services = CreateApplication(new MemoryStore(), firstBlock, activeBlock);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			await main.ScreenHost.OpenScreenAsync(activeBlock, activeBlock.ScreenDefinitions.First());
+			using (var explicitSelection = new WinFormsApplicationSettingsDialog(application, selectedOwner: firstBlock.ScreenDefinitions.Single())) {
+				explicitSelection.Show(owner);
+				Assert.That(explicitSelection.SelectedOwner, Is.SameAs(firstBlock.ScreenDefinitions.Single()));
+			}
+
+			await main.ScreenHost.OpenScreenAsync(activeBlock, plain);
+			using var fallback = new WinFormsApplicationSettingsDialog(application);
+			fallback.Show(owner);
+			Assert.That(fallback.SelectedOwner, Is.SameAs(firstBlock.ScreenDefinitions.Single()));
+		});
+	}
+
+	// Options lists actual settings-bearing registrations without activating their operational screens.
+	[TestCase(false)]
+	[TestCase(true)]
+	public void OptionsHideScreensWithoutSettingsAndKeepUnopenedAndUnmarkedSettings(bool selectScreenWithoutSettings) {
+		RunWithMessageLoop(async owner => {
+			using var block = new WinFormsApplicationBlock { Name = "Filtered Options" };
+			var plain = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "No settings", stableKey: "plain");
+			var unopened = new WinFormsApplicationScreenDefinition(typeof(UnopenedSettingsScreen), "Unopened settings");
+			var unmarked = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Stored settings", stableKey: "stored", settings: new UnmarkedPreferences());
+			block.AddScreenDefinition(plain);
+			block.AddScreenDefinition(unopened);
+			block.AddScreenDefinition(unmarked);
+			block.DefaultScreenDefinition = plain;
+			var store = new MemoryStore();
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: selectScreenWithoutSettings ? plain : null);
+			dialog.Show(owner);
+
+			var screenNodes = Find<TreeView>(dialog).Nodes[0].Nodes[0].Nodes.Cast<TreeNode>().ToArray();
+			Assert.That(screenNodes.Select(node => node.Tag), Is.EqualTo(new[] { unopened, unmarked }));
+			Assert.That(dialog.SelectedOwner, Is.SameAs(unopened));
+			Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(unopened.Settings));
+			Assert.That(unopened.Settings, Is.TypeOf<UnopenedSettingsScreen.Preferences>());
+			Assert.That(store.Writes, Is.Zero, "Opening Options must not save or activate an unopened settings screen.");
+		});
+	}
+
+	// Apply saves the actual object and Cancel restores only subsequent dialog-local edits.
+	[Test]
+	public void OptionsEditActualObjectsAndCancelKeepsAnEarlierSuccessfulApply() {
+		RunWithMessageLoop(async owner => {
+			var store = new MemoryStore();
+			using var block = CreateBlock("Options");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var definition = block.ScreenDefinitions.Single();
+			var actual = (ProbeScreen.Preferences)definition.Settings;
+			var notifications = 0;
+			actual.OnChanged += () => notifications++;
+			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+			dialog.Show(owner);
+			Assert.That(Find<DefaultCrudEntityEditor>(dialog).GetEntityWithChanges(), Is.SameAs(actual));
+
+			// Provisional edits affect this actual object, without persisting or publishing yet.
+			SetName(dialog, "Accepted");
+			Assert.That(actual.Name, Is.EqualTo("Accepted"));
+			Assert.That(store.Writes, Is.Zero);
+			Assert.That(notifications, Is.Zero);
+			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
+			SetName(dialog, "Discarded");
+			dialog.CancelEdits();
+			dialog.Close();
+
+			Assert.That(actual.Name, Is.EqualTo("Accepted"));
+			Assert.That(definition.Settings, Is.SameAs(actual));
+			Assert.That(store.Writes, Is.EqualTo(1));
+			Assert.That(notifications, Is.EqualTo(1));
+		});
+	}
+
+	// Repeated local restores replace nested values and getter-only list membership without appending duplicates.
+	[TestCase(false)]
+	[TestCase(true)]
+	public void CancelAndResetRestoreNestedCollectionsWithoutReplacingTheActualRoot(bool guidIdentity) {
+		RunWithMessageLoop(async owner => {
+			using var block = CreateBlock("Collections");
+			object id = guidIdentity ? Guid.NewGuid() : 7;
+			block.ScreenDefinitions.Single().Settings.ID = id;
+			await using var services = CreateApplication(new MemoryStore(), block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var definition = block.ScreenDefinitions.Single();
+			var actual = (ProbeScreen.Preferences)definition.Settings;
+			for (var attempt = 0; attempt < 2; attempt++) {
+				using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+				dialog.Show(owner);
+				SetName(dialog, "Temporary");
+				actual.Items.Add("Temporary");
+				actual.Nested.Values.Add("Temporary");
+				dialog.CancelEdits();
+				dialog.Close();
+				Assert.That(actual.ID, Is.SameAs(id));
+				Assert.That(actual.Items, Is.EqualTo(new[] { "Initial" }));
+				Assert.That(actual.Nested.Values, Is.EqualTo(new[] { "Nested" }));
+			}
+
+			// Reset uses declared attributes and the settings object's existing nested-default override.
+			using var reset = new WinFormsApplicationSettingsDialog(application, selectedOwner: definition);
+			reset.Show(owner);
+			SetName(reset, "Temporary");
+			actual.Grid.PageSize = 37;
+			reset.ResetSelectedDefaults();
+			Assert.That(actual.Name, Is.EqualTo("Default"));
+			Assert.That(actual.Grid.PageSize, Is.EqualTo(12));
+			Assert.That(actual.Items, Is.EqualTo(new[] { "Initial" }));
+			Assert.That(definition.Settings, Is.SameAs(actual));
+			reset.CancelEdits();
+			reset.Close();
+		});
+	}
+
+	// Failed validation or storage does not notify consumers; the same actual object remains editable and retryable.
+	[Test]
+	public void InvalidAndFailedSavesRemainRetryableWithoutPublishingNotifications() {
+		RunWithMessageLoop(async owner => {
+			var store = new MemoryStore();
+			using var block = CreateBlock("Validation");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var actual = block.ScreenDefinitions.Single().Settings;
+			var notifications = 0;
+			actual.OnChanged += () => notifications++;
+			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: actual);
 			dialog.Show(owner);
 			SetName(dialog, string.Empty);
 			Assert.That(await dialog.ApplySelectedAsync(), Is.False);
-			Assert.That(store.Saves, Is.Zero);
-			SetName(dialog, "Retry value");
-			store.Fail = true;
+			SetName(dialog, "Retry");
+			store.FailSave = true;
 			Assert.That(await dialog.ApplySelectedAsync(), Is.False);
-			Assert.That(GetName(dialog), Is.EqualTo("Retry value"));
-			Assert.That(catalog.Profiles.Single().GetValues<Preferences>().Name, Is.EqualTo("Default"));
-			store.Fail = false;
+			Assert.That(store.Writes, Is.Zero);
+			Assert.That(notifications, Is.Zero);
+			store.FailSave = false;
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
-			Assert.That(catalog.Profiles.Single().GetValues<Preferences>().Name, Is.EqualTo("Retry value"));
+			Assert.That(store.Writes, Is.EqualTo(1));
+			Assert.That(notifications, Is.EqualTo(1));
 			dialog.Close();
 		});
 	}
 
+	// Grid and Options read the same nested actual settings value after a successful save.
 	[Test]
-	public void DefaultEditorHidesStorageOwnershipOnlyForOptionsAndExpandsDeclaredGridRoles() {
-		using var editor = new DefaultCrudEntityEditor {
-			PropertyFilter = (owner, property) => owner is not SettingsObject
-				|| property.Name is not (nameof(SettingsObject.ID) or nameof(SettingsObject.Provider))
-		};
-		var values = new Preferences();
-		editor.SetEntity(DataSourceCapabilities.CanUpdate, values, false);
-		var descriptor = Find<PropertyGrid>(editor).SelectedObject;
-		var properties = TypeDescriptor.GetProperties(descriptor);
-		Assert.That(properties["ID"], Is.Null);
-		Assert.That(properties["Provider"], Is.Null);
-		var roles = properties[nameof(Preferences.Grids)];
-		Assert.That(roles.Converter.GetPropertiesSupported(), Is.True);
-		Assert.That(roles.Converter.ConvertToString(roles.GetValue(descriptor)), Is.EqualTo("1 entry"));
-		var role = roles.Converter.GetProperties(roles.GetValue(descriptor))["primary"];
-		Assert.That(role, Is.Not.Null);
-		var children = role.Converter.GetProperties(role.GetValue(null));
-		Assert.That(role.Converter.ConvertToString(role.GetValue(null)), Is.EqualTo("Expand to edit"));
-		Assert.That(children["ID"], Is.Null);
-		Assert.That(children["Provider"], Is.Null);
-		var columns = children[nameof(VisualGridSettings.Columns)];
-		Assert.That(columns.Converter.ConvertToString(columns.GetValue(null)), Is.EqualTo("2 items"));
-		var firstColumn = columns.Converter.GetProperties(columns.GetValue(null))["[0]"];
-		Assert.That(firstColumn.DisplayName, Is.EqualTo("Process name"));
-		Assert.That(firstColumn.Name, Is.EqualTo("[0]"), "Only its readable label changes, preserving existing property paths.");
-		var width = firstColumn.Converter.GetProperties(firstColumn.GetValue(null))[nameof(ApplicationGridColumnPreferences.Width)];
-		width.SetValue(null, 237D);
-		Assert.That(values.Grids["primary"].Columns[0].Width, Is.EqualTo(237D));
-		children[nameof(VisualGridSettings.PageSize)].SetValue(null, 47);
-		Assert.That(values.Grids["primary"].PageSize, Is.EqualTo(47));
-		Assert.That(editor.HasChanges, Is.True);
-		using var ordinary = new DefaultCrudEntityEditor();
-		ordinary.SetEntity(DataSourceCapabilities.CanUpdate, new Preferences(), false);
-		Assert.That(TypeDescriptor.GetProperties(Find<PropertyGrid>(ordinary).SelectedObject)["ID"], Is.Not.Null);
-	}
-
-	[Test]
-	public void PlainObjectOptionsKeepProductIdentifiersAndHideNestedGridPersistenceContext() {
+	public void SavedSettingsImmediatelyUpdateTheBoundGridThroughOnChanged() {
 		RunWithMessageLoop(async owner => {
-			var catalog = new ApplicationSettingsCatalog("Plain grid", new ProbeStore(), Array.Empty<IApplicationBlock>(), applicationSettings: new[] {
-				new ApplicationSettingsDefinition("grid", "Grid", new PlainGridPreferences())
-			});
-			await catalog.InitializeAsync();
-			using var dialog = new WinFormsApplicationSettingsDialog(catalog);
-			dialog.Show(owner);
-			var descriptor = Find<PropertyGrid>(dialog).SelectedObject;
-			var properties = TypeDescriptor.GetProperties(descriptor);
-			Assert.That(properties[nameof(PlainGridPreferences.ID)], Is.Not.Null);
-			Assert.That(properties[nameof(PlainGridPreferences.ID)].IsReadOnly, Is.True);
-			Assert.That(TypeDescriptor.GetProperties(descriptor, new Attribute[] { BrowsableAttribute.Yes })[nameof(PlainGridPreferences.InternalValue)], Is.Null);
-			var grid = properties[nameof(PlainGridPreferences.Grid)];
-			var children = grid.Converter.GetProperties(grid.GetValue(descriptor));
-			Assert.That(children[nameof(SettingsObject.ID)], Is.Null);
-			Assert.That(children[nameof(SettingsObject.Provider)], Is.Null);
-			Assert.That(children[nameof(VisualGridSettings.PageSize)], Is.Not.Null);
-			children[nameof(VisualGridSettings.PageSize)].SetValue(null, 47);
-			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
-			var accepted = catalog.GetProfile("grid").GetValues<PlainGridPreferences>();
-			Assert.That(accepted.ID, Is.EqualTo("Product identifier"));
-			Assert.That(accepted.InternalValue, Is.EqualTo("Persisted internal state"));
-			Assert.That(accepted.Grid.PageSize, Is.EqualTo(47));
-			dialog.Close();
-		});
-	}
-
-	[Test]
-	public void NoOptionsAndCustomPagesDoNotActivateTheirOperationalScreen() {
-		RunWithMessageLoop(async owner => {
-			using var block = new WinFormsApplicationBlock { Name = "Metadata only" };
-			var activated = 0;
-			var editors = 0;
-			var defaults = new PlainPreferences { Name = "Custom default" };
-			var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Custom", stableKey: "custom",
-				activator: _ => {
-					activated++;
-					return new ProbeScreen();
-				}, settings: defaults,
-				settingsEditor: context => {
-					editors++;
-					Assert.That(context.Settings, Is.TypeOf<PlainPreferences>().And.Not.SameAs(defaults));
-					Assert.That(((PlainPreferences)context.Settings).Name, Is.EqualTo("Custom default"));
-					Assert.That(context.Owner, Is.InstanceOf<WinFormsApplicationSettingsDialog>());
-					return new DefaultCrudEntityEditor();
-				});
-			block.AddScreenDefinition(definition);
-			var none = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "No options", stableKey: "none");
-			block.AddScreenDefinition(none);
-			var catalog = new ApplicationSettingsCatalog("CustomEditor", new ProbeStore(), new[] { block });
-			await catalog.InitializeAsync();
-			using var dialog = new WinFormsApplicationSettingsDialog(catalog);
-			dialog.Show(owner);
-			dialog.SelectProfile(catalog.GetProfile(block, none.Registration));
-			Assert.That(dialog.SelectedProfile.HasOptions, Is.False);
-			Assert.That(FindAll<DefaultCrudEntityEditor>(dialog), Is.Empty);
-			Assert.That(editors, Is.EqualTo(1));
-			Assert.That(activated, Is.Zero);
-			dialog.Close();
-		});
-	}
-
-
-	// Run this fixture in a fresh host so its DPI mode is established before any native HWND.
-	[TestCase(9F, 96)]
-	[TestCase(14F, 96)]
-	[TestCase(9F, 144)]
-	public void NativeOptionsKeepsAllButtonsVisibleWithLargeFontsAndActualMonitorDpi(float fontSize, int dpi) {
-		if (!_hasRequiredDpiMode)
-			Assert.Ignore("Run ApplicationSettingsNativeTests in a fresh testhost: another fixture already created a native HWND before PerMonitorV2 initialization.");
-		RunWithMessageLoop(async owner => {
-			var catalog = new ApplicationSettingsCatalog("Native presentation", new ProbeStore(), Array.Empty<IApplicationBlock>(), new[] { Definition("Preferences") });
-			await catalog.InitializeAsync();
-			using var awareness = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
-			using var font = new Font("Segoe UI", fontSize);
-			using var dialog = new KeyboardOptionsDialog(catalog) { Font = font, StartPosition = FormStartPosition.Manual, Location = new Point(40, 40) };
-			dialog.Show(owner);
-			foreach (var monitor in Screen.AllScreens) {
-				dialog.Location = new Point(monitor.WorkingArea.Left + 24, monitor.WorkingArea.Top + 24);
-				System.Windows.Forms.Application.DoEvents();
-				if (dialog.DeviceDpi == dpi)
-					break;
-			}
-			if (dialog.DeviceDpi != dpi)
-				Assert.Ignore($"No available monitor renders the owned native dialog at {dpi} DPI.");
-			Assert.That(WinAPI.USER32.GetDpiForWindow(dialog.Handle), Is.EqualTo((uint)dpi), "The native HWND and managed control must report the same actual monitor DPI.");
-
-			dialog.BringToFront();
-			dialog.Refresh();
-			System.Windows.Forms.Application.DoEvents();
-			Assert.That(Screen.FromControl(dialog).WorkingArea.Contains(dialog.Bounds), Is.True, "The complete native dialog must remain within its monitor's work area.");
-			var grid = Find<PropertyGrid>(dialog);
-			grid.ExpandAllGridItems();
-			var buttons = FindAll<Button>(dialog).Where(button => button.Parent is FlowLayoutPanel).ToArray();
-			Assert.That(buttons, Has.Length.EqualTo(4));
-			foreach (var button in buttons) {
-				var bounds = dialog.RectangleToClient(button.RectangleToScreen(button.ClientRectangle));
-				Assert.That(button.Visible && button.Enabled, Is.True, button.Text);
-				Assert.That(dialog.ClientRectangle.Contains(bounds), Is.True, $"{button.Text} {bounds} must fit in {dialog.ClientRectangle}.");
-				Assert.That(button.ClientSize.Width, Is.GreaterThanOrEqualTo(TextRenderer.MeasureText(button.Text.Replace("&", string.Empty), button.Font).Width));
-			}
-			Assert.That(grid.ClientSize.Width, Is.GreaterThan(200));
-			Assert.That(grid.ClientSize.Height, Is.GreaterThan(120));
-			var file = Path.Combine(TestContext.CurrentContext.WorkDirectory, $"native-options-{fontSize:0}pt-{dpi}dpi.png");
-			using var bitmap = new Bitmap(dialog.Width, dialog.Height);
-			// Render this owned HWND only, so an unrelated foreground window cannot enter the visual evidence.
-			dialog.DrawToBitmap(bitmap, new Rectangle(Point.Empty, bitmap.Size));
-			bitmap.Save(file, ImageFormat.Png);
-			TestContext.AddTestAttachment(file, "Owned native Options HWND render, independent of desktop occlusion");
-			TestContext.Progress.WriteLine($"Native Options: DeviceDpi={dialog.DeviceDpi}, font={dialog.Font}, client={dialog.ClientSize}, image={file}");
-			var navigation = Find<TreeView>(dialog);
-			navigation.Focus();
-			Assert.That(dialog.DispatchKey(Keys.Tab), Is.True);
-			Assert.That(navigation.ContainsFocus, Is.False, "Tab must enter the selected page's real editor.");
-			Assert.That(dialog.DispatchKey(Keys.Escape), Is.True);
-			Assert.That(dialog.DialogResult, Is.EqualTo(DialogResult.Cancel));
-		});
-	}
-
-	[Test]
-	public void KeyboardOkAppliesOnlyTheSelectedPageAndKeepsOtherDraftsVisibleUntilResolved() {
-		RunWithMessageLoop(async owner => {
-			var store = new ProbeStore();
-			var catalog = new ApplicationSettingsCatalog("Keyboard Options", store, Array.Empty<IApplicationBlock>(), new[] { Definition("one"), Definition("two") });
-			await catalog.InitializeAsync();
-			using var dialog = new KeyboardOptionsDialog(catalog);
-			dialog.Show(owner);
-			SetName(dialog, "Other draft");
-			dialog.SelectProfile(catalog.GetProfile("two"));
-			SetName(dialog, "Selected saved");
-			Assert.That(dialog.DispatchKey(Keys.Enter), Is.True);
-			Assert.That(dialog.Visible, Is.True, "An unresolved other-page draft must remain available after selected-page OK.");
-			Assert.That(store.Saves, Is.EqualTo(1));
-			Assert.That(catalog.GetProfile("one").GetValues<Preferences>().Name, Is.EqualTo("Default"));
-			Assert.That(catalog.GetProfile("two").GetValues<Preferences>().Name, Is.EqualTo("Selected saved"));
-			Assert.That(dialog.DispatchKey(Keys.Escape), Is.True);
-			Assert.That(catalog.GetProfile("one").GetValues<Preferences>().Name, Is.EqualTo("Default"));
-		});
-	}
-
-	[Test]
-	public void AcceptedNativeCloseWaitsAfterAllGuardsAndRetainsTheScreenOnSaveFailure() {
-		RunWithMessageLoop(async owner => {
-			var services = new ServiceCollection();
-			services.AddSingleton<IApplicationSettingsStore>(new ProbeStore());
-			services.AddMainForm<QuietMainForm>();
-			using var block = new WinFormsApplicationBlock { Name = "Close settings" };
-			var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Probe", settings: new Preferences());
-			block.AddScreenDefinition(definition);
-			block.DefaultScreenDefinition = definition;
-			services.AddApplicationBlock(block);
-			services.AddApplicationSettings("NativeClose");
-			await using var provider = services.BuildServiceProvider();
-			var application = provider.GetRequiredService<IWinFormsApplication>();
+			using var block = CreateBlock("Grid");
+			await using var services = CreateApplication(new MemoryStore(), block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
 			await application.InitializeAsync();
-			var main = (QuietMainForm)provider.GetRequiredService<IMainForm>();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
 			var screen = (ProbeScreen)main.ActiveScreen;
-			Assert.That(screen.InitialName, Is.EqualTo("Default"));
-			screen.Veto = true;
-			Assert.That(await main.ScreenHost.CloseScreenAsync(screen), Is.False);
-			Assert.That(screen.SaveCount, Is.Zero);
-			screen.Veto = false;
-			screen.FailSave = true;
-			await Assert.ThatAsync(async () => await main.ScreenHost.CloseScreenAsync(screen), Throws.TypeOf<InvalidOperationException>());
+			await screen.BindGridAsync();
+			var actual = screen.ScreenSettings;
+			actual.Grid.PageSize = 7;
+			await actual.SaveAsync();
+			await WaitUntilAsync(() => screen.Grid.VisibleEntities.Count() == 7);
+
+			Assert.That(screen.Grid.Preferences.PageSize, Is.EqualTo(actual.Grid.PageSize));
+		});
+	}
+
+	// A failed accepted-close write leaves its screen available for an explicit retry.
+	[Test]
+	public void AcceptedCloseRetainsItsScreenWhenSettingsCannotBeSaved() {
+		RunWithMessageLoop(async owner => {
+			var store = new MemoryStore();
+			using var block = CreateBlock("Close");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			main.Show(owner);
+			var screen = (ProbeScreen)main.ActiveScreen;
+			screen.EditName("Save on close");
+			store.FailSave = true;
+			await Assert.ThatAsync(async () => await main.ScreenHost.CloseScreenAsync(screen), Throws.TypeOf<IOException>());
 			Assert.That(main.ScreenHost.Screens, Does.Contain(screen));
 			Assert.That(screen.IsDisposed, Is.False);
-			screen.FailSave = false;
-			screen.Pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-			var closing = main.ScreenHost.CloseScreenAsync(screen);
-			Assert.That(closing.IsCompleted, Is.False);
-			Assert.That(screen.IsDisposed, Is.False);
-			screen.Pending.SetResult();
-			Assert.That(await closing, Is.True);
-			Assert.That(screen.IsDisposed, Is.True);
+			store.FailSave = false;
+			Assert.That(await main.ScreenHost.CloseScreenAsync(screen), Is.True);
+			Assert.That(store.Writes, Is.EqualTo(1));
 		});
 	}
 
+	// A write acknowledgement must not consume a newer edit made while that write was pending.
 	[Test]
-	public void SharedRegistrationAppliesForeignOptionsAndAnUnchangedOldInstanceCannotOverwriteThemOnClose() {
+	public void ASecondEditDuringAPendingSaveRemainsDirtyForTheNextSave() {
 		RunWithMessageLoop(async owner => {
-			var store = new ProbeStore();
-			using var block = new WinFormsApplicationBlock { Name = "Shared profile" };
-			var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Shared", settings: new Preferences());
-			block.AddScreenDefinition(definition);
-			block.DefaultScreenDefinition = definition;
-			var services = new ServiceCollection();
-			services.AddSingleton<IApplicationSettingsStore>(store);
-			services.AddMainForm<QuietMainForm>();
-			services.AddApplicationBlock(block);
-			services.AddApplicationSettings("Native shared capture");
-			await using var provider = services.BuildServiceProvider();
-			var app = provider.GetRequiredService<IWinFormsApplication>();
-			await app.InitializeAsync();
-			var main = (QuietMainForm)provider.GetRequiredService<IMainForm>();
-			main.ScreenMode = ScreenMode.MultiView;
-			main.Show(owner);
-			await Task.Yield();
-			Assert.That(main.ReportedError, Is.Null, main.ReportedError?.ToString());
-			var first = (ProbeScreen)main.ActiveScreen;
-			var second = (ProbeScreen)await main.ScreenHost.OpenScreenAsync(block, definition);
-			Assert.That(second, Is.Not.SameAs(first));
-			first.EditName("From live instance");
-			await first.SaveSettingsAsync();
-			System.Windows.Forms.Application.DoEvents();
-			Assert.That(main.ReportedError, Is.Null, main.ReportedError?.ToString());
-			Assert.That(second.ReadName(), Is.EqualTo("From live instance"));
-			first.EditName("Stale local draft");
-			var profile = app.Settings.GetProfile(block, definition.Registration);
-			var options = profile.BeginEdit();
-			((Preferences)options.Draft).Name = "Explicit Options wins";
-			Assert.That((await options.ApplyAsync()).IsSuccess, Is.True);
-			await main.ScreenHost.CloseScreenAsync(first);
-			await main.ScreenHost.CloseScreenAsync(second);
-			Assert.That(profile.GetValues<Preferences>().Name, Is.EqualTo("Explicit Options wins"));
-			Assert.That(store.Saves, Is.EqualTo(2), "Neither unchanged nor superseded close may write an older snapshot over Options.");
-		});
-	}
-
-	[Test]
-	public void OrderedOwnCapturesRetainANewerPendingEditWhenTheOlderWritePublishes() {
-		RunWithMessageLoop(async owner => {
-			var store = new ProbeStore { WriteGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) };
-			using var block = new WinFormsApplicationBlock { Name = "Ordered capture" };
-			var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Ordered", settings: new Preferences());
-			block.AddScreenDefinition(definition);
-			block.DefaultScreenDefinition = definition;
-			var services = new ServiceCollection();
-			services.AddSingleton<IApplicationSettingsStore>(store);
-			services.AddMainForm<QuietMainForm>();
-			services.AddApplicationBlock(block);
-			services.AddApplicationSettings("Native ordered captures");
-			await using var provider = services.BuildServiceProvider();
-			var app = provider.GetRequiredService<IWinFormsApplication>();
-			await app.InitializeAsync();
-			var main = (QuietMainForm)provider.GetRequiredService<IMainForm>();
+			var store = new PendingStore();
+			using var block = CreateBlock("Pending save");
+			await using var services = CreateApplication(store, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
 			main.Show(owner);
 			var screen = (ProbeScreen)main.ActiveScreen;
-			screen.EditName("Older capture");
-			var older = screen.SaveSettingsAsync();
-			screen.EditName("Newer capture");
-			var newer = screen.SaveSettingsAsync();
-			Assert.That(store.Saves, Is.Zero);
-			store.WriteGate.SetResult();
-			await Task.WhenAll(older, newer);
-			System.Windows.Forms.Application.DoEvents();
-			Assert.That(screen.ReadName(), Is.EqualTo("Newer capture"));
-			Assert.That(app.Settings.GetProfile(block, definition.Registration).GetValues<Preferences>().Name, Is.EqualTo("Newer capture"));
-			Assert.That(store.Saves, Is.EqualTo(2));
+
+			// The provider has captured the first value but has not acknowledged it yet.
+			screen.EditName("First edit");
+			var saving = screen.SaveSettingsAsync();
+			await store.FirstWriteStarted.Task.WaitAsync(TimeSpan.FromSeconds(3));
+			screen.EditName("Second edit");
+			store.ReleaseFirstWrite.TrySetResult();
+			await saving;
+			await screen.SaveSettingsAsync();
+
+			Assert.That(store.SavedNames, Is.EqualTo(new[] { "First edit", "Second edit" }));
+			Assert.That(screen.ScreenSettings.Name, Is.EqualTo("Second edit"));
 		});
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public void CorruptLegacySectionsKeepDefaultsAndFirstQueryUsableWithoutRestoreWritesOrRepeatedImports(bool logging) {
+	/// <summary>Rejected optional reads restore configured defaults on the same owner without writing a replacement record.</summary>
+	[TestCase("invalid")]
+	[TestCase("annotation")]
+	[TestCase("partial")]
+	[TestCase("cancelled")]
+	public void InvalidOrInterruptedReadsRetainTheActualConfiguredSettings(string failure) {
 		RunWithMessageLoop(async owner => {
-			var directory = Tools.FileSystem.GetTempEmptyDirectory();
-			using var cleanup = Tools.Scope.DeleteDirOnDispose(directory);
-			ISettingsProvider seed = new DirectoryFileSettingsProvider(directory);
-			if (logging) {
-				var old = seed.Get<LogOutputSelectorSettings>(BoundScreen.LegacyKey);
-				old.HasConfiguration = true;
-				old.Configuration = new LogOutputConfiguration { Destination = LogOutputDestination.Application, RememberAfterClose = true };
-				old.Save();
-			} else {
-				var old = seed.Get<VisualGridSettings>(BoundScreen.LegacyKey);
-				old.PageMode = VisualGridPageMode.Paged;
-				old.PageSize = 23;
-				old.Save();
-			}
-			var legacyFile = Directory.GetFiles(directory).Single();
-			File.WriteAllText(legacyFile, "{ corrupt optional preferences");
-			var reads = new LegacyProvider(directory);
-			ISettingsProvider native = new CachedSettingsProvider(reads);
-			await using (var first = CreateBoundProvider(logging, new WinFormsApplicationSettingsStore(native))) {
-				var app = first.GetRequiredService<IWinFormsApplication>();
-				await app.InitializeAsync();
-				var main = (QuietMainForm)first.GetRequiredService<IMainForm>();
-				main.Show(owner);
-				var screen = (BoundScreen)main.ActiveScreen;
-				await screen.Ready.Task;
-				Assert.That(screen.LastSettingsLoadError, Is.Not.Null);
-				Assert.That(screen.LoggingStarts, Is.Zero, "Loading optional values cannot open logging output.");
-				if (!logging)
-					Assert.That(screen.Source.FirstPageSize, Is.EqualTo(7), "A corrupt old record must not prevent the first query using declared defaults.");
-				Assert.That(reads.LegacyReads, Is.EqualTo(1));
-				Assert.That(reads.Writes, Is.Zero, "Restoration and migration presence remain in memory until an accepted edit.");
-				Assert.That(File.ReadAllText(legacyFile), Is.EqualTo("{ corrupt optional preferences"));
-				Assert.That(await main.ScreenHost.CloseScreenAsync(screen), Is.True);
-				Assert.That(reads.Writes, Is.Zero, "Closing an unchanged restored screen does not save preferences.");
-				var block = app.Blocks.Single();
-				screen = (BoundScreen)await main.ScreenHost.OpenScreenAsync(block, block.ScreenDefinitions.Single());
-				await screen.Ready.Task;
-				screen.EditName("Accepted preference edit");
-				Assert.That(await main.ScreenHost.CloseScreenAsync(screen), Is.True);
-				Assert.That(reads.Writes, Is.EqualTo(1));
-			}
-			var freshFiles = new LegacyProvider(directory);
-			ISettingsProvider fresh = new CachedSettingsProvider(freshFiles);
-			await using var second = CreateBoundProvider(logging, new WinFormsApplicationSettingsStore(fresh));
-			var reopened = second.GetRequiredService<IWinFormsApplication>();
-			await reopened.InitializeAsync();
-			var reopenedMain = (QuietMainForm)second.GetRequiredService<IMainForm>();
-			reopenedMain.Show(owner);
-			var reopenedScreen = (BoundScreen)reopenedMain.ActiveScreen;
-			await reopenedScreen.Ready.Task;
-			Assert.That(reopenedScreen.LastSettingsLoadError, Is.Null);
-			Assert.That(freshFiles.LegacyReads, Is.Zero, "A persisted section marker prevents repeatedly importing the corrupt legacy file.");
-			Assert.That(freshFiles.Writes, Is.Zero);
-		});
-	}
-
-	[Test]
-	public void NativeLegacyOwnerIsCapturedBeforeALaterStaticProviderReplacement() {
-		RunWithMessageLoop(async owner => {
-			var directory = Tools.FileSystem.GetTempEmptyDirectory();
-			using var cleanup = Tools.Scope.DeleteDirOnDispose(directory);
-			ISettingsProvider seed = new DirectoryFileSettingsProvider(directory);
-			var old = seed.Get<VisualGridSettings>(BoundScreen.LegacyKey);
-			old.PageMode = VisualGridPageMode.Paged;
-			old.PageSize = 23;
-			old.Save();
-			var originalFiles = new LegacyProvider(directory);
-			ISettingsProvider original = new CachedSettingsProvider(originalFiles);
-			var replacement = new ProhibitedSettingsProvider();
-			UserSettings.TryGetProvider(out var previous);
-			using var restore = Tools.Scope.ExecuteOnDispose(() => UserSettings.Provider = previous);
-			await using var provider = CreateBoundProvider(false, new DelegatingStore(new WinFormsApplicationSettingsStore(original)), original);
-			var app = provider.GetRequiredService<IWinFormsApplication>();
-			await app.InitializeAsync();
-			UserSettings.Provider = replacement;
-			var main = (QuietMainForm)provider.GetRequiredService<IMainForm>();
-			main.Show(owner);
-			var screen = (BoundScreen)main.ActiveScreen;
-			await screen.Ready.Task;
-			Assert.That(screen.Source.FirstPageSize, Is.EqualTo(23));
-			Assert.That(originalFiles.LegacyReads, Is.EqualTo(1));
-			Assert.That(originalFiles.Writes, Is.Zero);
-		});
-	}
-
-	[Test]
-	public void CustomStoreWithoutANativeProviderUsesDeclaredDefaultsAndRuntimeNoOptionsBlocksStillOpen() {
-		RunWithMessageLoop(async owner => {
-			UserSettings.TryGetProvider(out var previous);
-			using var restore = Tools.Scope.ExecuteOnDispose(() => UserSettings.Provider = previous);
-			UserSettings.Provider = null;
-			await using var provider = CreateBoundProvider(false, new ProbeStore());
-			var app = provider.GetRequiredService<IWinFormsApplication>();
-			await app.InitializeAsync();
-			var main = (QuietMainForm)provider.GetRequiredService<IMainForm>();
-			main.Show(owner);
-			await ((BoundScreen)main.ActiveScreen).Ready.Task;
-			Assert.That(((BoundScreen)main.ActiveScreen).Source.FirstPageSize, Is.EqualTo(7));
-			using var late = new WinFormsApplicationBlock { Name = "Late no-options block" };
-			var definition = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Late screen");
-			late.AddScreenDefinition(definition);
-			main.RegisterBlock(late);
-			var opened = await main.ScreenHost.OpenScreenAsync(late, definition);
-			Assert.That(opened, Is.InstanceOf<PlainScreen>());
-		});
-	}
-
-	// Use normal DI construction; custom profile stores borrow a separately captured native owner only for optional migration.
-	private static ServiceProvider CreateBoundProvider(bool logging, IApplicationSettingsStore store, ISettingsProvider legacy = null) {
-		var services = new ServiceCollection();
-		services.AddSingleton(store);
-		if (legacy != null)
-			services.AddSingleton(new Local<ISettingsProvider>(legacy));
-		services.AddMainForm<QuietMainForm>();
-		services.AddSingleton<IWinFormsApplicationBlock>(_ => {
-			var block = new WinFormsApplicationBlock { Name = "Bound sections" };
-			var defaults = new Preferences {
-				Grids = new Dictionary<string, VisualGridSettings> { ["primary"] = new VisualGridSettings {
-					PageMode = VisualGridPageMode.Paged, PageSize = 7,
-					Columns = new[] { new ApplicationGridColumnPreferences { Key = "name", Title = "Name" } }
-				} }
-			};
-			var definition = new WinFormsApplicationScreenDefinition(typeof(BoundScreen), "Bound screen", stableKey: "bound",
-				activator: _ => new BoundScreen(logging), settings: defaults);
+			using var cancellation = new CancellationTokenSource();
+			var storage = new RejectedLoadStore(failure, cancellation);
+			var provider = new CachedSettingsProvider(storage);
+			var settings = new AnnotatedPreferences { Name = "Configured default" };
+			settings.Nested.Values = new List<string> { "Configured nested" };
+			using var block = new WinFormsApplicationBlock { Name = "Rejected load" };
+			var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe", settings: settings);
 			block.AddScreenDefinition(definition);
 			block.DefaultScreenDefinition = definition;
-			return block;
+			var id = Tools.UI.GetScreenSettingsId("NativeActualSettings", block, definition);
+			await using var services = CreateApplication(provider, block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+
+			if (failure == "cancelled")
+				await Assert.ThatAsync(() => application.InitializeAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+			else
+				await application.InitializeAsync(cancellation.Token);
+
+			Assert.That(definition.Settings, Is.SameAs(settings));
+			Assert.That(settings.Name, Is.EqualTo("Configured default"));
+			Assert.That(settings.Interval, Is.EqualTo(12));
+			Assert.That(settings.Items, Is.EqualTo(new[] { "Initial" }));
+			Assert.That(settings.Nested.Values, Is.EqualTo(new[] { "Configured nested" }));
+			Assert.That(settings.ID, Is.EqualTo(id));
+			Assert.That(settings.Provider, Is.SameAs(provider));
+			Assert.That(storage.Writes, Is.Zero);
 		});
-		services.AddApplicationSettings("Native bound preferences");
+	}
+
+	// Screens declare their settings statically; Options must not activate operational controls.
+	[Test]
+	public void SettingsClassEditorReceivesTheActualOwnerAndRegistrationEditorsTakePrecedence() {
+		RunWithMessageLoop(async owner => {
+			using var block = new WinFormsApplicationBlock { Name = "Editors" };
+			var actual = new AttributedPreferences();
+			var attributed = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Attributed", stableKey: "attributed", settings: actual);
+			var explicitEditor = new WinFormsApplicationScreenDefinition(typeof(PlainScreen), "Explicit", stableKey: "explicit",
+				settings: new AttributedPreferences(), settingsEditor: _ => new DefaultCrudEntityEditor());
+			block.AddScreenDefinition(attributed);
+			block.AddScreenDefinition(explicitEditor);
+			await using var services = CreateApplication(new MemoryStore(), block);
+			var application = services.GetRequiredService<IWinFormsApplication>();
+			await application.InitializeAsync();
+			var main = (QuietMainForm)services.GetRequiredService<IMainForm>();
+			var count = main.ScreenHost.Screens.Length;
+			using var dialog = new WinFormsApplicationSettingsDialog(application, selectedOwner: attributed);
+			dialog.Show(owner);
+			Assert.That(Find<DeclaredEditor>(dialog).Context.Settings, Is.SameAs(actual));
+			dialog.SelectOwner(explicitEditor);
+			Assert.That(Find<DefaultCrudEntityEditor>(dialog), Is.TypeOf<DefaultCrudEntityEditor>());
+			Assert.That(main.ScreenHost.Screens.Length, Is.EqualTo(count));
+			dialog.Close();
+		});
+	}
+
+	// Keep application startup composition inside the existing DI path.
+	private static ServiceProvider CreateApplication(ISettingsProvider store, params IWinFormsApplicationBlock[] blocks) {
+		var services = new ServiceCollection();
+		services.AddSingleton(new Local<ISettingsProvider>(store));
+		services.AddMainForm<QuietMainForm>();
+		foreach (var block in blocks)
+			services.AddApplicationBlock(block);
+		services.AddApplicationSettings("NativeActualSettings");
 		return services.BuildServiceProvider();
 	}
 
-	private static ApplicationSettingsDefinition Definition(string key) {
-		return new ApplicationSettingsDefinition(key, key, new Preferences());
+	// Declare a real typed default registration without creating its screen.
+	private static WinFormsApplicationBlock CreateBlock(string name) {
+		var block = new WinFormsApplicationBlock { Name = name };
+		var definition = new WinFormsApplicationScreenDefinition(typeof(ProbeScreen), "Probe", stableKey: "probe");
+		block.AddScreenDefinition(definition);
+		block.DefaultScreenDefinition = definition;
+		return block;
 	}
 
-	private static PropertyDescriptor NameProperty(WinFormsApplicationSettingsDialog dialog, out object descriptor) {
-		descriptor = Find<PropertyGrid>(dialog).SelectedObject;
-		return TypeDescriptor.GetProperties(descriptor)[nameof(Preferences.Name)];
-	}
-
+	// Use the real property descriptor path to retain normal editor change detection.
 	private static void SetName(WinFormsApplicationSettingsDialog dialog, string value) {
-		var property = NameProperty(dialog, out var descriptor);
-		property.SetValue(descriptor, value);
+		var descriptor = Find<PropertyGrid>(dialog).SelectedObject;
+		TypeDescriptor.GetProperties(descriptor)[nameof(ProbeScreen.Preferences.Name)].SetValue(descriptor, value);
 	}
 
-	private static string GetName(WinFormsApplicationSettingsDialog dialog) {
-		var property = NameProperty(dialog, out var descriptor);
-		return (string)property.GetValue(descriptor);
+	// Find the actual native editor control rather than constructing a substitute.
+	private static T Find<T>(Control owner)
+		where T : Control {
+		return owner.Controls.Cast<Control>().SelectMany(Descendants).OfType<T>().Single();
 	}
 
-	private static IEnumerable<T> FindAll<T>(Control owner) where T : Control {
-		foreach (Control child in owner.Controls) {
-			if (child is T match)
-				yield return match;
-			foreach (var nested in FindAll<T>(child))
-				yield return nested;
+	// Traverse the owned native control tree for fixture assertions.
+	private static IEnumerable<Control> Descendants(Control owner) {
+		yield return owner;
+		foreach (Control child in owner.Controls)
+			foreach (var descendant in Descendants(child))
+				yield return descendant;
+	}
+
+	// Await actual message-loop progress with a bounded failure instead of blocking the UI thread.
+	private static async Task WaitUntilAsync(Func<bool> condition) {
+		var deadline = DateTime.UtcNow.AddSeconds(5);
+		while (!condition()) {
+			Assert.That(DateTime.UtcNow, Is.LessThan(deadline), "Native settings did not finish updating.");
+			await Task.Delay(10);
 		}
 	}
 
-	private static T Find<T>(Control owner) where T : Control => FindAll<T>(owner).Single();
-
+	// Own a real native pump while asynchronous settings operations return to its context.
 	private static void RunWithMessageLoop(Func<Form, Task> test) {
 		Exception failure = null;
 		var previous = SynchronizationContext.Current;
@@ -625,7 +550,10 @@ public class ApplicationSettingsNativeTests {
 		SynchronizationContext.SetSynchronizationContext(context);
 		using var owner = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Location = new Point(-20000, -20000) };
 		using var watchdog = new System.Windows.Forms.Timer { Interval = 30000 };
-		watchdog.Tick += (_, _) => { failure = new AssertionException("Native settings test timed out."); owner.Close(); };
+		watchdog.Tick += (_, _) => {
+			failure = new AssertionException("Native settings test timed out.");
+			owner.Close();
+		};
 		owner.Shown += async (_, _) => {
 			try {
 				await test(owner);
@@ -641,239 +569,323 @@ public class ApplicationSettingsNativeTests {
 			ExceptionDispatchInfo.Capture(failure).Throw();
 	}
 
-	private sealed class KeyboardOptionsDialog(ApplicationSettingsCatalog catalog) : WinFormsApplicationSettingsDialog(catalog) {
-		public bool DispatchKey(Keys key) => base.ProcessDialogKey(key);
-	}
+	#region Inner Types
 
-	public class PlainPreferences {
-		public string Name { get; set; }
-	}
-
-	[UserEditable]
-	public class PlainGridPreferences {
-		[ReadOnly(true)]
-		public string ID { get; set; } = "Product identifier";
-
-		[Browsable(false)]
-		public string InternalValue { get; set; } = "Persisted internal state";
-
-		public VisualGridSettings Grid { get; set; } = new();
-	}
-
-	[UserEditable]
-	public class Preferences : SettingsObject {
-		public string Name { get; set; } = "Default";
-
-		public Dictionary<string, VisualGridSettings> Grids { get; set; } = new() { ["primary"] = new VisualGridSettings {
-			Columns = new[] { new ApplicationGridColumnPreferences { Key = "name", Title = "Process name" }, new ApplicationGridColumnPreferences { Key = "cpu", Title = "CPU usage" } }
-		} };
-
-		public LogOutputSelectorPreferences LogOutput { get; set; } = new();
-
-		public override Result Validate() {
-			var result = string.IsNullOrWhiteSpace(Name) ? Result.Error("A name is required.") : new Result();
-			foreach (var preferences in Grids.Values)
-				result.Merge(preferences.Validate());
-			result.Merge(LogOutput.Validate());
-			return result;
+	/// <summary>Supplies the product identity selected by application composition.</summary>
+	private sealed class CaptionProductInformationProvider : IProductInformationProvider {
+		/// <summary>Retains the configured product name for the Options heading.</summary>
+		public CaptionProductInformationProvider(string productName) {
+			ProductInformation = new ProductInformation { ProductName = productName };
 		}
+
+		/// <inheritdoc />
+		public ProductInformation ProductInformation { get; }
 	}
 
+	// Omit product startup dialogs while retaining the actual native screen host.
 	public class QuietMainForm : BlockMainForm {
-		public QuietMainForm() {
-			StartPosition = FormStartPosition.Manual;
-			Location = new Point(-20000, -20000);
-		}
-
-		public Exception ReportedError { get; private set; }
-
-		protected override void OnLoad(EventArgs e) { }
-
-		protected override Task<bool> ConfirmExitAsync() => Task.FromResult(true);
-
-		public override void ReportError(Exception error) {
-			ReportedError = error;
-			TestContext.Progress.WriteLine("native owned error: " + error);
-		}
-	}
-
-	public class ProbeScreen : WinFormsApplicationScreen {
-		public string InitialName { get; private set; }
-
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public bool Veto { get; set; }
-
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public bool FailSave { get; set; }
-
-		public int SaveCount { get; private set; }
-
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public TaskCompletionSource Pending { get; set; }
-
+		// Skip product startup dialogs while retaining the native host used by this fixture.
 		protected override void OnLoad(EventArgs e) {
-			InitialName = GetSettings<Preferences>().Name;
-			base.OnLoad(e);
-		}
-
-		public string ReadName() => GetSettings<Preferences>().Name;
-
-		public void EditName(string name) {
-			GetSettings<Preferences>().Name = name;
-			MarkSettingsChanged();
-		}
-
-		protected override void OnHide(ref bool cancelHide) => cancelHide = Veto;
-
-		public override async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-			SaveCount++;
-			if (FailSave)
-				throw new InvalidOperationException("Failed preference store.");
-			if (Pending != null)
-				await Pending.Task;
-			await base.SaveSettingsAsync(cancellationToken);
 		}
 	}
 
-	public class PlainScreen : WinFormsApplicationScreen { }
+	// Capture the real settings and model-to-UI lifecycle observed by hosted screens.
+	public class ProbeScreen : WinFormsApplicationScreen {
+		public string FirstName { get; private set; }
 
-	public class LazyRolesScreen : WinFormsApplicationScreen {
-		public async Task BindRoleAsync(string role) {
-			var grid = new VisualGrid { SettingsKey = $"LazyRoles.{role}", Dock = DockStyle.Top, Height = 100 };
-			grid.GridBindings = new[] { new VisualGridColumn<PreferenceRow> {
-				PreferenceKey = "name", ColumnName = "Name", PropertyName = nameof(PreferenceRow.Name),
-				DataType = typeof(string), PropertyValue = row => row.Name
-			} };
-			var binding = BindGridPreferencesAsync<Preferences>(grid, $"Grids[{role}]", values => values.Grids[role], (values, value) => values.Grids[role] = value);
-			Controls.Add(grid);
-			await binding;
-		}
+		public string BlockName { get; private set; }
 
-		public string ReadName() {
-			return GetSettings<Preferences>().Name;
-		}
+		public string DisplayedName { get; private set; }
 
-		public void EditName(string name) {
-			GetSettings<Preferences>().Name = name;
-			MarkSettingsChanged();
-		}
-	}
+		public int ModelCopies { get; private set; }
 
-	public class BoundScreen : WinFormsApplicationScreen {
-		public const string LegacyKey = "BoundScreen.Legacy";
+		public int LastCopyThread { get; private set; }
 
-		private readonly bool _logging;
+		public VisualGrid Grid { get; private set; }
 
-		public BoundScreen(bool logging) {
-			_logging = logging;
-			if (logging) {
-				LogOutput = new LogOutputSelectorControl { SettingsKey = LegacyKey, Dock = DockStyle.Fill };
-				LogOutput.LoggingStarting += _ => LoggingStarts++;
-				Controls.Add(LogOutput);
-			} else {
-				Grid = new VisualGrid { SettingsKey = LegacyKey, Dock = DockStyle.Fill };
-				Grid.GridBindings = new[] { new VisualGridColumn<PreferenceRow> {
-					PreferenceKey = "name", ColumnName = "Name", PropertyName = nameof(PreferenceRow.Name), SortName = nameof(PreferenceRow.Name),
-					DataType = typeof(string), PropertyValue = row => row.Name, ExpandsToFit = true
-				} };
-				Controls.Add(Grid);
+		public override Preferences ScreenSettings {
+			get {
+				return (Preferences)base.ScreenSettings;
 			}
 		}
 
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public VisualGrid Grid { get; }
-
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public LogOutputSelectorControl LogOutput { get; }
-
-		public TaskCompletionSource Ready { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		public PreferenceSource Source { get; } = new();
-
-		public int LoggingStarts { get; private set; }
-
-		public void EditName(string name) {
-			GetSettings<Preferences>().Name = name;
-			MarkSettingsChanged();
+		// Capture the value available before the first real data query.
+		protected override void InitializeUIPrimingData() {
+			FirstName = ScreenSettings?.Name;
+			base.InitializeUIPrimingData();
 		}
 
-		protected override async void OnLoad(EventArgs e) {
-			base.OnLoad(e);
+		// Observe actual owner values through the existing refresh lifecycle.
+		protected override void CopyModelToUI() {
+			base.CopyModelToUI();
+			ModelCopies++;
+			DisplayedName = ScreenSettings?.Name;
+			LastCopyThread = Environment.CurrentManagedThreadId;
+			if (Block?.BlockSettings is Preferences)
+				BlockName = GetBlockSettings<Preferences>().Name;
+		}
+
+		// Release the native destruction call before awaiting a worker, then restore the handle on the UI thread.
+		public async Task RecreateNativeHandleAsync(Func<Task> whileHandleAbsent) {
+			DestroyHandle();
 			try {
-				if (_logging)
-					await BindLogOutputPreferencesAsync<Preferences>(LogOutput, nameof(Preferences.LogOutput), values => values.LogOutput, (values, preferences) => values.LogOutput = preferences);
-				else {
-					await BindGridPreferencesAsync<Preferences>(Grid, "Grids[primary]", values => values.Grids["primary"], (values, preferences) => values.Grids["primary"] = preferences);
-					await Grid.SetDataSource(Source);
-					await Grid.RefreshGrid();
-				}
-				Ready.TrySetResult();
-			} catch (Exception error) {
-				Ready.TrySetException(error);
+				await whileHandleAbsent();
+			} finally {
+				CreateHandle();
 			}
 		}
+
+		// Bind an actual visual grid using the screen's ordinary settings property.
+		public async Task BindGridAsync() {
+			Grid = new VisualGrid {
+				Dock = DockStyle.Fill,
+				PersistSettings = false,
+				GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "Record", PreferenceKey = "record", DataType = typeof(string), PropertyValue = value => value } }
+			};
+			Controls.Add(Grid);
+			await BindGridPreferencesAsync(Grid, nameof(Preferences.Grid));
+			await Grid.SetDataSource(new ListDataSource<string>(new ExtendedList<string>(Enumerable.Range(0, 40).Select(value => value.ToString()).ToArray())),
+				DataSourceCapabilities.CanRead | DataSourceCapabilities.CanPage);
+		}
+
+		// Deliberate screen edits use the existing accepted-close persistence boundary.
+		public void EditName(string value) {
+			ScreenSettings.Name = value;
+			MarkSettingsChanged();
+		}
+
+		#region Inner Types
+
+		/// <summary>Actual screen-owned values used by the native lifecycle and Options tests.</summary>
+		[UserEditable]
+		public class Preferences : SettingsObject {
+			[DefaultValue("Default")]
+			public string Name { get; set; } = "Default";
+
+			public List<string> Items { get; } = new() { "Initial" };
+
+			public NestedValues Nested { get; set; } = new();
+
+			public VisualGridSettings Grid { get; set; } = new() { PageMode = VisualGridPageMode.Paged, PageSize = 12 };
+
+			// Reset nested grid defaults through the same existing settings lifecycle as scalar attributes.
+			public override void RestoreDefaultValues() {
+				base.RestoreDefaultValues();
+				if (Grid != null)
+					Grid.PageSize = 12;
+			}
+
+			// Reject empty names through the settings object's existing validation contract.
+			public override Result Validate() {
+				return string.IsNullOrWhiteSpace(Name) ? Result.Error("A name is required.") : Result.Success;
+			}
+		}
+
+		/// <summary>Nested mutable values used to check repeated local backup restoration.</summary>
+		public class NestedValues {
+			public List<string> Values { get; set; } = new() { "Nested" };
+		}
+
+		#endregion
 	}
 
-	public class PreferenceRow {
-		public string Name { get; set; }
+	// No operational settings initialization is needed to enumerate this registration in Options.
+	public class PlainScreen : WinFormsApplicationScreen {
 	}
 
-	public class PreferenceSource() : ListDataSource<PreferenceRow>(new ExtendedList<PreferenceRow>()) {
-		public int FirstPageSize { get; private set; }
+	/// <summary>Declares settings by attribute and rejects any attempt to activate the operational screen.</summary>
+	[Settings(typeof(UnopenedSettingsScreen.Preferences))]
+	public class UnopenedSettingsScreen : WinFormsApplicationScreen {
+		/// <summary>Options discovery must only read the class declaration.</summary>
+		public UnopenedSettingsScreen() {
+			throw new InvalidOperationException("Options must not activate an unopened screen.");
+		}
 
-		public override Task<DataSourceItems<PreferenceRow>> ReadRangeAsync(string search, int length, int page, string sort, SortDirection direction) {
-			if (FirstPageSize == 0)
-				FirstPageSize = length;
-			return Task.FromResult(new DataSourceItems<PreferenceRow> {
-				Items = new[] { new PreferenceRow { Name = "First row" } }, Page = 0, TotalCount = 1
-			});
+		#region Inner Types
+
+		/// <summary>The screen's editable values discovered without constructing its control.</summary>
+		[UserEditable]
+		public class Preferences : SettingsObject {
+			/// <summary>A default value supplied by the existing settings activation lifecycle.</summary>
+			[DefaultValue(10)]
+			public int Number { get; set; }
+		}
+
+		#endregion
+	}
+
+	/// <summary>Persisted settings remain visible even without an automatic or custom editor.</summary>
+	public class UnmarkedPreferences : SettingsObject {
+	}
+
+	/// <summary>Declares a custom class editor through the standard component-model attribute.</summary>
+	[Editor(typeof(DeclaredEditor), typeof(ICrudEntityEditor<object>))]
+	public class AttributedPreferences : SettingsObject {
+		public string Name { get; set; } = "Attributed";
+	}
+
+	// Observe the actual object and services supplied to a settings-class editor.
+	public sealed class DeclaredEditor : DefaultCrudEntityEditor {
+		public DeclaredEditor(WinFormsApplicationSettingsEditorContext context) {
+			Context = context;
+		}
+
+		public WinFormsApplicationSettingsEditorContext Context { get; }
+	}
+
+	// Isolated storage exercises the actual directional base and normal SettingsObject save lifecycle.
+	private sealed class PendingStore : AsyncSettingsProviderBase {
+		private readonly List<string> _savedNames = new();
+
+		public TaskCompletionSource FirstWriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		public TaskCompletionSource ReleaseFirstWrite { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		public string[] SavedNames {
+			get {
+				return _savedNames.ToArray();
+			}
+		}
+
+		public override bool EncryptSettings {
+			get {
+				return false;
+			}
+		}
+
+		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(false);
+		}
+
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
+			throw new NotSupportedException("This fixture starts with no stored settings.");
+		}
+
+		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
+			var name = ((ProbeScreen.Preferences)settings).Name;
+			if (_savedNames.Count == 0) {
+				FirstWriteStarted.TrySetResult();
+				await ReleaseFirstWrite.Task.WaitAsync(cancellationToken);
+			}
+			_savedNames.Add(name);
+		}
+
+		public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.CompletedTask;
+		}
+
+		public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			_savedNames.Clear();
+			return Task.CompletedTask;
 		}
 	}
 
-	private sealed class LegacyProvider(string directory) : DirectoryFileSettingsProvider(directory) {
-		public int LegacyReads { get; private set; }
+	/// <summary>Adds an annotation constraint while retaining the screen's declared base settings schema.</summary>
+	public sealed class AnnotatedPreferences : ProbeScreen.Preferences {
+		[DefaultValue(12), System.ComponentModel.DataAnnotations.Range(1, 60)]
+		public int Interval { get; set; }
+	}
 
+	/// <summary>Mutates the supplied owner exactly as a partially read, invalid or cancelled backing store can.</summary>
+	private sealed class RejectedLoadStore(string failure, CancellationTokenSource cancellation) : AsyncSettingsProviderBase {
 		public int Writes { get; private set; }
 
-		protected override SettingsObject LoadInternal(Type type, object id) {
-			if (type == typeof(VisualGridSettings) || type == typeof(LogOutputSelectorSettings))
-				LegacyReads++;
-			return base.LoadInternal(type, id);
+		public override bool EncryptSettings {
+			get {
+				return false;
+			}
 		}
 
-		protected override void SaveInternal(SettingsObject values) {
+		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(true);
+		}
+
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
+			throw new NotSupportedException("This fixture deliberately populates the actual owner.");
+		}
+
+		protected override Task<SettingsObject> LoadInternalAsync(SettingsObject defaults, CancellationToken cancellationToken) {
+			var payload = failure switch {
+				"invalid" => "{\"Name\":\"\",\"Items\":[\"Changed\"],\"id\":\"Changed\"}",
+				"annotation" => "{\"Name\":\"Changed\",\"Interval\":0,\"Items\":[\"Changed\"]}",
+				"partial" => "{\"Name\":\"Changed\",\"Items\":[\"Changed\"],\"Nested\":{\"Values\":[\"Changed\"]},\"Interval\":\"invalid\"}",
+				_ => "{\"Name\":\"Changed\",\"Items\":[\"Changed\"]}"
+			};
+			using var reader = new JsonTextReader(new StringReader(payload));
+			new SettingsObjectJsonSerializer().Populate(reader, defaults);
+			if (failure == "cancelled")
+				cancellation.Cancel();
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(defaults);
+		}
+
+		protected override Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
+			cancellationToken.ThrowIfCancellationRequested();
 			Writes++;
-			base.SaveInternal(values);
+			return Task.CompletedTask;
+		}
+
+		public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.CompletedTask;
+		}
+
+		public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.CompletedTask;
 		}
 	}
 
-	private sealed class DelegatingStore(IApplicationSettingsStore inner) : IApplicationSettingsStore {
-		public Task<ApplicationSettingsStoredProfile> LoadAsync(string key, object defaults, bool hasExplicitStorageId = false, object storageId = null, CancellationToken token = default) {
-			return inner.LoadAsync(key, defaults, hasExplicitStorageId, storageId, token);
+	// Isolated storage exercises the actual directional base and normal SettingsObject save lifecycle.
+	private sealed class MemoryStore : SyncSettingsProviderBase {
+		private readonly record struct SettingKey(Type Type, object Id);
+
+		private readonly ConcurrentDictionary<SettingKey, string> _records = new();
+		private int _writes;
+
+		public bool FailSave { get; set; }
+
+		public int Writes {
+			get {
+				return _writes;
+			}
 		}
 
-		public Task SaveAsync(string key, ApplicationSettingsStoredProfile values, bool hasExplicitStorageId = false, object storageId = null, CancellationToken token = default) {
-			return inner.SaveAsync(key, values, hasExplicitStorageId, storageId, token);
+		// Test persistence through the same type and identity used by the actual setting.
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
+			return _records.ContainsKey(new SettingKey(settingsObjectType, id));
+		}
+
+		// Restore serialized values while the provider base manages context and encryption.
+		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
+			using var reader = new JsonTextReader(new StringReader(_records[new SettingKey(settingsObjectType, id)]));
+			return (SettingsObject)new SettingsObjectJsonSerializer().Deserialize(reader, settingsObjectType);
+		}
+
+		// Record only successful writes so failed saves cannot look accepted.
+		protected override void SaveInternal(SettingsObject settings) {
+			if (FailSave)
+				throw new IOException("Fixture storage rejected the write.");
+			using var writer = new StringWriter();
+			new SettingsObjectJsonSerializer().Serialize(writer, settings);
+			_records[new SettingKey(settings.GetType(), settings.ID)] = writer.ToString();
+			Interlocked.Increment(ref _writes);
+		}
+
+		// Remove the fixture's real stored value.
+		public override void DeleteSetting(SettingsObject settings) {
+			_records.TryRemove(new SettingKey(settings.GetType(), settings.ID), out _);
+		}
+
+		// Clear the fixture storage without introducing an application-specific registry.
+		public override void ClearSettings() {
+			_records.Clear();
 		}
 	}
 
-	private sealed class ProbeStore : IApplicationSettingsStore {
-		public bool Fail { get; set; }
-
-		public int Saves { get; private set; }
-
-		public TaskCompletionSource WriteGate { get; set; }
-
-		public Task<ApplicationSettingsStoredProfile> LoadAsync(string key, object defaults, bool hasExplicitStorageId = false, object storageId = null, CancellationToken token = default) {
-			return Task.FromResult<ApplicationSettingsStoredProfile>(null);
-		}
-
-		public async Task SaveAsync(string key, ApplicationSettingsStoredProfile profile, bool hasExplicitStorageId = false, object storageId = null, CancellationToken token = default) {
-			if (WriteGate != null)
-				await WriteGate.Task.WaitAsync(token);
-			if (Fail)
-				throw new InvalidOperationException("Failed preference store.");
-			Saves++;
-		}
-	}
+	#endregion
 }

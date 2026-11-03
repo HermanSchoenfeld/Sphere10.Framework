@@ -12,12 +12,12 @@ using System.Linq;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>Immutable screen metadata with reverse membership of the navigation commands that activate it.</summary>
+/// <summary>Screen registration metadata, actual settings and the navigation commands that activate it.</summary>
 public class ApplicationScreenDefinition {
 	private readonly List<IApplicationMenuItem> _activators = new();
 
 	public ApplicationScreenDefinition(Type screenType, string title = null, ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal,
-		ApplicationScreenRegistration registration = null, string stableKey = null, object settings = null, Func<object> settingsFactory = null) {
+		ApplicationScreenRegistration registration = null, string stableKey = null, SettingsObject settings = null) {
 		Tools.UI.ValidateScreenType(screenType);
 		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(registration == null || registration.ScreenType == screenType && !registration.IsTypeReference, nameof(registration), "A definition requires an exact registration of its screen type.");
@@ -28,9 +28,15 @@ public class ApplicationScreenDefinition {
 		ScreenKind = screenKind;
 		Registration = registration ?? new ApplicationScreenRegistration(screenType);
 		StableKey = stableKey;
-		Settings = settings == null ? null : ApplicationSettingsValueCloner.Copy(settings);
-		var defaults = settings == null || settingsFactory != null ? null : ApplicationSettingsValueCloner.Copy(settings);
-		SettingsFactory = settingsFactory ?? (defaults == null ? null : () => ApplicationSettingsValueCloner.Copy(defaults));
+		var declaredSettingsType = Tools.UI.GetScreenSettingsType(screenType);
+		if (settings == null && declaredSettingsType != null) {
+			Guard.Argument(!declaredSettingsType.IsAbstract && declaredSettingsType.GetConstructor(Type.EmptyTypes) != null, nameof(settings),
+				"The declared screen settings need a public parameterless constructor or explicit registration defaults.");
+			settings = (SettingsObject)Tools.Object.Create(declaredSettingsType);
+		}
+		Guard.Argument(settings == null || declaredSettingsType == null || declaredSettingsType.IsInstanceOfType(settings), nameof(settings),
+			"Registration settings must match the screen's declared settings type.");
+		Settings = settings;
 	}
 
 	public Type ScreenType { get; }
@@ -47,11 +53,8 @@ public class ApplicationScreenDefinition {
 	/// <summary>An explicit persistent identity, required when the owning block has several registrations of this type.</summary>
 	public string StableKey { get; }
 
-	/// <summary>Optional declared preferences, discoverable without constructing this registration's screen.</summary>
-	public object Settings { get; }
-
-	/// <summary>Creates fresh default values for Reset; an omitted factory copies the supplied object's initial values.</summary>
-	public Func<object> SettingsFactory { get; }
+	/// <summary>The actual settings instance shared by this registration and its screen instances.</summary>
+	public SettingsObject Settings { get; set; }
 
 	/// <summary>Returns a membership snapshot of commands attached to menus that reference this definition.</summary>
 	public IApplicationMenuItem[] Activators => _activators.ToArray();
@@ -78,7 +81,7 @@ public class ApplicationScreenDefinition {
 
 	/// <summary>Copies registration metadata into an independent graph with no command membership.</summary>
 	public virtual ApplicationScreenDefinition Clone() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings, SettingsFactory);
+		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings);
 	}
 
 	public virtual ApplicationScreenDefinition WithActivationMode(ScreenActivationMode activationMode) {

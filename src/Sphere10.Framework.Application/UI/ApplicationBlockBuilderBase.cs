@@ -12,10 +12,10 @@ using System.Linq;
 
 namespace Sphere10.Framework.Application.UI;
 
-/// <summary>Accumulates neutral block configuration; UI builders supply their platform-specific product.</summary>
+/// <summary>Accumulates screen registrations and presentation commands for platform block builders.</summary>
 public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationUIBuilder<TBlock>
 	where TMenu : IApplicationMenu
-	where TBlock : IApplicationBlock {
+	where TBlock : IApplicationBlock, IApplicationCommandProvider {
 	private readonly List<TMenu> _menus = new();
 	private readonly List<ApplicationScreenDefinition> _screenDefinitions = new();
 	private ApplicationScreenRegistration _defaultScreenRegistration;
@@ -23,6 +23,8 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 	protected string Name { get; private set; }
 
 	protected int Position { get; private set; }
+
+	protected SettingsObject BlockSettings { get; private set; }
 
 	protected string IconUrl { get; private set; }
 
@@ -48,6 +50,8 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 		ValidateConfiguration();
 		ResolveDefaultScreen();
 		var block = CreateBlock(Array.AsReadOnly(_menus.ToArray()));
+		if (BlockSettings != null)
+			block.BlockSettings = BlockSettings;
 		RegisterScreenDefinitions(block);
 		ResolveScreenReferences(block);
 		Tools.UI.GetScreenDefinitions(new IApplicationBlock[] { block });
@@ -66,8 +70,14 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 	}
 
 	/// <summary>Completes pending navigation bindings against this product's canonical registrations.</summary>
-	protected void ResolveScreenReferences(TBlock block) {
-		Tools.UI.ResolveScreenReferences(block);
+	protected virtual void ResolveScreenReferences(TBlock block) {
+		Tools.UI.ResolveScreenReferences(block, block);
+	}
+
+	protected void SetBlockSettings(SettingsObject settings) {
+		Guard.ArgumentNotNull(settings, nameof(settings));
+		BlockSettings = settings;
+		OnConfigurationChanged(nameof(BlockSettings));
 	}
 
 	protected void SetName(string name) {
@@ -149,8 +159,18 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TBlock> : ApplicationBlockBuilderBase<TMenu, TBlock>
 	where TSelf : class
 	where TMenu : IApplicationMenu
-	where TBlock : IApplicationBlock
+	where TBlock : IApplicationBlock, IApplicationCommandProvider
 	where TMenuBuilder : IApplicationUIBuilder<TMenu>, new() {
+	public TSelf UseSettings<TSettings>()
+		where TSettings : SettingsObject, new() {
+		return UseSettings(new TSettings());
+	}
+
+	public TSelf UseSettings(SettingsObject settings) {
+		SetBlockSettings(settings);
+		return (TSelf)(object)this;
+	}
+
 	public TSelf WithName(string name) {
 		SetName(name);
 		return (TSelf)(object)this;

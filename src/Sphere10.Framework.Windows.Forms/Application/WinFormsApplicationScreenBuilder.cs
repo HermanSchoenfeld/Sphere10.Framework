@@ -32,7 +32,7 @@ public class WinFormsApplicationScreenBuilder : ApplicationScreenBuilderBase<Win
 		return this;
 	}
 
-	/// <summary>Supplies a dedicated detached editor while leaving validation and accepted persistence with Options.</summary>
+	/// <summary>Supplies an editor for the actual settings object while Options owns validation and persistence.</summary>
 	public WinFormsApplicationScreenBuilder WithSettingsEditor(Func<WinFormsApplicationSettingsEditorContext, ICrudEntityEditor<object>> editorFactory) {
 		Guard.ArgumentNotNull(editorFactory, nameof(editorFactory));
 		_settingsEditor = editorFactory;
@@ -46,7 +46,7 @@ public class WinFormsApplicationScreenBuilder : ApplicationScreenBuilderBase<Win
 
 	// Builds metadata only; activation remains deferred until the host opens this registration.
 	protected override ApplicationScreenDefinition CreateDefinition() {
-		return new WinFormsApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _activator, Settings, _settingsEditor, SettingsFactory);
+		return new WinFormsApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _activator, Settings, _settingsEditor);
 	}
 }
 

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -21,39 +22,39 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 
 	/// <summary>Adds a component using optional inline registration metadata.</summary>
 	public BlazorApplicationBlockBuilder AddScreen<TScreen>(string title = null, ScreenActivationMode? activationMode = null,
-		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, object settings = null, Func<object> settingsFactory = null,
+		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, SettingsObject settings = null,
 		IReadOnlyDictionary<string, object> parameters = null,
 		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null)
 		where TScreen : IBlazorApplicationScreen {
-		return AddScreen<TScreen>(title, out _, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor);
+		return AddScreen<TScreen>(title, out _, activationMode, screenKind, stableKey, settings, parameters, activator, settingsEditor);
 	}
 
 	/// <summary>Adds a component and captures its exact registration for later navigation.</summary>
 	public BlazorApplicationBlockBuilder AddScreen<TScreen>(string title, out ApplicationScreenRegistration<TScreen> registration,
 		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
-		object settings = null, Func<object> settingsFactory = null, IReadOnlyDictionary<string, object> parameters = null,
+		SettingsObject settings = null, IReadOnlyDictionary<string, object> parameters = null,
 		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null)
 		where TScreen : IBlazorApplicationScreen {
 		registration = new ApplicationScreenRegistration<TScreen>();
-		AddScreenDefinitionInternal(CreateScreenDefinition(typeof(TScreen), registration, title, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor));
+		AddScreenDefinitionInternal(CreateScreenDefinition(typeof(TScreen), registration, title, activationMode, screenKind, stableKey, settings, parameters, activator, settingsEditor));
 		return this;
 	}
 
 	/// <summary>Adds a runtime component type using optional inline registration metadata.</summary>
 	public BlazorApplicationBlockBuilder AddScreen(Type screenType, string title = null, ScreenActivationMode? activationMode = null,
-		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, object settings = null, Func<object> settingsFactory = null,
+		ScreenKind screenKind = ScreenKind.Normal, string stableKey = null, SettingsObject settings = null,
 		IReadOnlyDictionary<string, object> parameters = null,
 		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null) {
-		return AddScreen(screenType, title, out _, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor);
+		return AddScreen(screenType, title, out _, activationMode, screenKind, stableKey, settings, parameters, activator, settingsEditor);
 	}
 
 	/// <summary>Adds a runtime component type and captures its exact registration.</summary>
 	public BlazorApplicationBlockBuilder AddScreen(Type screenType, string title, out ApplicationScreenRegistration registration,
 		ScreenActivationMode? activationMode = null, ScreenKind screenKind = ScreenKind.Normal, string stableKey = null,
-		object settings = null, Func<object> settingsFactory = null, IReadOnlyDictionary<string, object> parameters = null,
+		SettingsObject settings = null, IReadOnlyDictionary<string, object> parameters = null,
 		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator = null, Type settingsEditor = null) {
 		registration = new ApplicationScreenRegistration(screenType);
-		AddScreenDefinitionInternal(CreateScreenDefinition(screenType, registration, title, activationMode, screenKind, stableKey, settings, settingsFactory, parameters, activator, settingsEditor));
+		AddScreenDefinitionInternal(CreateScreenDefinition(screenType, registration, title, activationMode, screenKind, stableKey, settings, parameters, activator, settingsEditor));
 		return this;
 	}
 
@@ -123,19 +124,25 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 		return this;
 	}
 
+	/// <summary>Sets the stable browser identity of the configured block.</summary>
 	public BlazorApplicationBlockBuilder WithId(string id) {
 		Guard.ArgumentNotNullOrEmpty(id, nameof(id));
 		_id = id;
 		return this;
 	}
 
-	public BlazorApplicationBlockBuilder WithTitle(string title) => WithName(title);
+	/// <summary>Sets the display name of the configured block.</summary>
+	public BlazorApplicationBlockBuilder WithTitle(string title) {
+		return WithName(title);
+	}
 
+	/// <summary>Sets the block navigation icon.</summary>
 	public BlazorApplicationBlockBuilder WithIconUrl(string iconUrl) {
 		SetIconUrl(iconUrl);
 		return this;
 	}
 
+	/// <summary>Sets the block navigation tooltip.</summary>
 	public BlazorApplicationBlockBuilder WithTooltip(string tooltip) {
 		SetTooltip(tooltip);
 		return this;
@@ -220,6 +227,7 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 		return ConfigureToolBarItem(item => item.WithChildren(children), text, out registration, id, icon, isVisible, canExecute);
 	}
 
+	/// <summary>Adds a toolbar command to the configured block.</summary>
 	public BlazorApplicationBlockBuilder AddToolBarItem(IBlazorApplicationMenuItem item) {
 		return AddToolBarItem(item, out _);
 	}
@@ -232,6 +240,7 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 		return this;
 	}
 
+	/// <summary>Adds a toolbar command to the configured block.</summary>
 	public BlazorApplicationBlockBuilder AddToolBarItem(Action<BlazorApplicationMenuItemBuilder> configure) {
 		return AddToolBarItem(configure, out _);
 	}
@@ -244,19 +253,30 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 		return AddToolBarItem(builder.Build(), out registration);
 	}
 
-	public BlazorApplicationBlockBuilder AddToolBarSeparator() => AddToolBarItem(new BlazorMenuSeparator());
+	/// <summary>Adds a toolbar separator at the current declaration position.</summary>
+	public BlazorApplicationBlockBuilder AddToolBarSeparator() {
+		return AddToolBarItem(new BlazorMenuSeparator());
+	}
 
-	protected override void ValidateName(string name) => Guard.ArgumentNotNullOrEmpty(name, nameof(name));
+	/// <inheritdoc />
+	protected override void ValidateName(string name) {
+		Guard.ArgumentNotNullOrEmpty(name, nameof(name));
+	}
 
-	protected override void ValidateScreenType(Type screenType) => Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+	/// <inheritdoc />
+	protected override void ValidateScreenType(Type screenType) {
+		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
+	}
 
-	protected override BlazorApplicationBlock CreateBlock(IReadOnlyList<IBlazorApplicationMenu> menus) =>
-		BlazorApplicationBlockSnapshot.Create(new BlockSource {
-			Id = _id ?? Name, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip,
+	/// <inheritdoc />
+	protected override BlazorApplicationBlock CreateBlock(IReadOnlyList<IBlazorApplicationMenu> menus) {
+		return BlazorApplicationBlockSnapshot.Create(new BlockSource {
+			Id = _id ?? Name, Title = Name, Position = Position, IconUrl = IconUrl, Tooltip = Tooltip, BlockSettings = BlockSettings,
 			ScreenDefinitions = ScreenDefinitions, DefaultScreenDefinition = DefaultScreenDefinition,
 			DefaultScreen = DefaultScreen, DefaultScreenTitle = DefaultScreenTitle,
 			DefaultScreenActivationMode = DefaultScreenActivationMode, DefaultScreenKind = DefaultScreenKind, Menus = menus.ToArray(), ToolBarItems = _toolBarItems.ToArray()
 		});
+	}
 
 	// Reuse the child builder's behavior validation and the block's existing toolbar ownership path.
 	private BlazorApplicationBlockBuilder ConfigureToolBarItem(Action<BlazorApplicationMenuItemBuilder> configureBehavior, string text,
@@ -278,51 +298,68 @@ public class BlazorApplicationBlockBuilder : ApplicationBlockBuilderBase<BlazorA
 
 	// Capture settings defaults during composition; the renderer still owns operational components.
 	private static BlazorApplicationScreenDefinition CreateScreenDefinition(Type screenType, ApplicationScreenRegistration registration,
-		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, object settings,
-		Func<object> settingsFactory, IReadOnlyDictionary<string, object> parameters,
+		string title, ScreenActivationMode? activationMode, ScreenKind screenKind, string stableKey, SettingsObject settings,
+		IReadOnlyDictionary<string, object> parameters,
 		Func<BlazorApplicationScreenActivationContext, BlazorApplicationScreenActivation> activator, Type settingsEditor) {
 		Tools.UI.ValidateScreenType(screenType, typeof(IBlazorApplicationScreen));
 		Tools.UI.ValidateScreenPolicy(activationMode, screenKind);
 		Guard.Argument(title == null || title.Length > 0, nameof(title), "A screen title cannot be empty.");
 
-		if (settingsFactory != null) {
-			settings ??= settingsFactory();
-			Guard.ArgumentNotNull(settings, nameof(settingsFactory));
-		}
-
-		return new BlazorApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, parameters, activator, settings, settingsFactory, settingsEditor);
+		return new BlazorApplicationScreenDefinition(screenType, title, activationMode, screenKind, registration, stableKey, parameters, activator, settings, settingsEditor);
 	}
+
+	#region Inner Types
 
 	/// <summary>Builder inputs are borrowed until the final snapshot owns their cloned graph.</summary>
 	private sealed class BlockSource : IBlazorApplicationBlock {
+		/// <inheritdoc />
 		public IBlazorApplication Parent { get; set; }
 
+		/// <inheritdoc />
 		public IBlazorPlugin Source { get; set; }
 
+		/// <inheritdoc />
 		public string Id { get; init; }
 
+		/// <inheritdoc />
 		public string Title { get; init; }
 
+		/// <inheritdoc />
 		public int Position { get; init; }
 
+		/// <inheritdoc />
 		public string IconUrl { get; init; }
 
+		/// <inheritdoc />
 		public string Tooltip { get; init; }
 
+		/// <inheritdoc />
 		public IBlazorApplicationMenu[] Menus { get; init; }
 
+		/// <inheritdoc />
 		public IBlazorApplicationMenuItem[] ToolBarItems { get; init; }
 
+		/// <inheritdoc />
+		public SettingsObject BlockSettings { get; set; }
+
+		/// <inheritdoc />
 		public ApplicationScreenDefinition[] ScreenDefinitions { get; init; }
 
+		/// <inheritdoc />
 		public ApplicationScreenDefinition DefaultScreenDefinition { get; init; }
 
+		/// <inheritdoc />
 		public Type DefaultScreen { get; init; }
 
+		/// <inheritdoc />
 		public string DefaultScreenTitle { get; init; }
 
+		/// <inheritdoc />
 		public ScreenActivationMode? DefaultScreenActivationMode { get; init; }
 
+		/// <inheritdoc />
 		public ScreenKind DefaultScreenKind { get; init; }
 	}
+
+	#endregion
 }

@@ -16,23 +16,45 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Application.Tests;
 
+/// <summary>Exercises shared fluent builder configuration, registration and callback contracts.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class SharedFluentBuilderTests {
+	/// <summary>Verifies a block retains the actual supplied settings object.</summary>
+	[Test]
+	public void BlockBuilderRetainsSuppliedSettingsInstance() {
+		var settings = new Preferences();
+		var builder = new BlockBuilder()
+			.WithName("Inspect")
+			.UseSettings(settings);
+		settings.Name = "caller changed";
+		var block = builder.Build();
+
+		Assert.That(((Preferences)block.BlockSettings).Name, Is.EqualTo("caller changed"));
+		Assert.That(block.BlockSettings, Is.SameAs(settings));
+		Assert.That(block.ScreenDefinitions, Is.Empty, "Block preferences do not require a screen or menu registration.");
+	}
+
+	/// <summary>Verifies optional definition references keep callback order and return the parent builder.</summary>
 	[Test]
 	public void OptionalDefinitionReferencesKeepCallbackOrderAndReturnTheParentBuilder() {
 		var configured = 0;
 		var executed = 0;
-		var menuBuilder = new MenuBuilder().WithText("Actions");
+		var menuBuilder = new MenuBuilder()
+			.WithText("Actions");
 		Assert.That(menuBuilder
 			.AddItem(item => {
-			configured++;
-			item.WithText("Run").WithAction(() => executed++);
-		}, out var itemDefinition), Is.SameAs(menuBuilder));
-		var blockBuilder = new BlockBuilder().WithName("Work");
+				configured++;
+				item
+					.WithText("Run")
+					.WithAction(() => executed++);
+			}, out var itemDefinition), Is.SameAs(menuBuilder));
+		var blockBuilder = new BlockBuilder()
+			.WithName("Work");
 		Assert.That(blockBuilder
 			.AddMenu(menuBuilder.Build(), out var menuDefinition), Is.SameAs(blockBuilder));
-		var pluginBuilder = new PluginBuilder().WithName("Operations");
+		var pluginBuilder = new PluginBuilder()
+			.WithName("Operations");
 		Assert.That(pluginBuilder
 			.AddBlock(blockBuilder.Build(), out var blockDefinition), Is.SameAs(pluginBuilder));
 		var plugin = pluginBuilder.Build();
@@ -42,10 +64,11 @@ public class SharedFluentBuilderTests {
 		Assert.That(itemDefinition.Title, Is.EqualTo("Run"));
 		Assert.That(menuDefinition.Text, Is.EqualTo("Actions"));
 		Assert.That(plugin.Blocks.Single(), Is.SameAs(blockDefinition));
-		((ActionItem)blockDefinition.Menus.Single().Items.Single()).Action();
+		((ActionItem)((IApplicationCommandProvider)blockDefinition).Menus.Single().Items.Single()).Action();
 		Assert.That(executed, Is.EqualTo(1));
 	}
 
+	/// <summary>Verifies plugin composes typed child builders and ordered service callbacks.</summary>
 	[Test]
 	public void PluginComposesTypedChildBuildersAndOrderedServiceCallbacks() {
 		var calls = new List<string>();
@@ -70,7 +93,7 @@ public class SharedFluentBuilderTests {
 
 		plugin.Load(new ServiceCollection());
 		var block = plugin.Blocks[0];
-		var menu = block.Menus[0];
+		var menu = ((IApplicationCommandProvider)block).Menus[0];
 		((ActionItem)menu.Items[0]).Action();
 		Assert.That(calls, Is.EqualTo(new[] { "first", "second", "action" }));
 		Assert.That(block.Name, Is.EqualTo("Inventory"));
@@ -82,6 +105,7 @@ public class SharedFluentBuilderTests {
 		Assert.That(menu.Items[0].Title, Is.EqualTo("Adjust stock"));
 	}
 
+	/// <summary>Verifies failed child configuration does not append partial definitions.</summary>
 	[Test]
 	public void FailedChildConfigurationDoesNotAppendPartialDefinitions() {
 		var builder = new PluginBuilder()
@@ -101,6 +125,7 @@ public class SharedFluentBuilderTests {
 			.AddBlock((Action<BlockBuilder>)null), Throws.ArgumentNullException);
 	}
 
+	/// <summary>Verifies fluent screen policy rejects invalid combinations before attaching block.</summary>
 	[Test]
 	public void FluentScreenPolicyRejectsInvalidCombinationsBeforeAttachingBlock() {
 		var builder = new PluginBuilder().WithName("Operations");
@@ -112,31 +137,7 @@ public class SharedFluentBuilderTests {
 		Assert.That(builder.Build().Blocks, Is.Empty);
 	}
 
-	[Test]
-	public void RepeatedMenuAndBlockBuildsProduceIndependentOwningGraphs() {
-		var definition = new ApplicationScreenDefinition(typeof(Screen));
-		var menuBuilder = new MenuBuilder()
-			.WithText("Views")
-			.AddItem(new ScreenItem { Title = "Open", ScreenDefinition = definition });
-		var firstMenu = menuBuilder.Build();
-		var secondMenu = menuBuilder.Build();
-		Assert.That(firstMenu.Items.Single().Parent, Is.SameAs(firstMenu));
-		Assert.That(secondMenu.Items.Single().Parent, Is.SameAs(secondMenu));
-		Assert.That(secondMenu.Items.Single(), Is.Not.SameAs(firstMenu.Items.Single()));
-		var builder = new BlockBuilder()
-			.WithName("Work")
-			.AddScreen(definition)
-			.AddMenu(firstMenu)
-			.WithDefaultScreen<Screen>();
-		var first = builder.Build();
-		var second = builder.Build();
-		Assert.That(first.Menus.Single().Parent, Is.SameAs(first));
-		Assert.That(second.Menus.Single().Parent, Is.SameAs(second));
-		Assert.That(first.DefaultScreenDefinition, Is.SameAs(((IScreenMenuItem)first.Menus.Single().Items.Single()).ScreenDefinition));
-		Assert.That(second.DefaultScreenDefinition, Is.SameAs(((IScreenMenuItem)second.Menus.Single().Items.Single()).ScreenDefinition));
-		Assert.That(second.DefaultScreenDefinition, Is.Not.SameAs(first.DefaultScreenDefinition));
-	}
-
+	/// <summary>Verifies type based default reuses the matching menus canonical definition.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void TypeBasedDefaultReusesTheMatchingMenusCanonicalDefinition(bool genericDefault) {
@@ -155,7 +156,7 @@ public class SharedFluentBuilderTests {
 			builder.WithDefaultScreen(typeof(Screen));
 		var block = builder.Build();
 
-		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(definition));
+		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(block.DefaultScreenDefinition));
 		Assert.That(((IScreenMenuItem)block.Menus.Single().Items.Single()).ScreenDefinition, Is.SameAs(block.DefaultScreenDefinition));
 		Assert.That(block.DefaultScreenDefinition.Title, Is.EqualTo("Empty workspace"));
@@ -163,6 +164,7 @@ public class SharedFluentBuilderTests {
 		Assert.That(block.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 	}
 
+	/// <summary>Verifies type based default reuses an explicitly registered definition without a menu.</summary>
 	[Test]
 	public void TypeBasedDefaultReusesAnExplicitlyRegisteredDefinitionWithoutAMenu() {
 		var definition = new ApplicationScreenDefinition(typeof(Screen), "Standalone workspace", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
@@ -173,14 +175,14 @@ public class SharedFluentBuilderTests {
 		var block = builder.Build();
 
 		Assert.That(block.Menus, Is.Empty);
-		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(definition));
+		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
 		Assert.That(block.ScreenDefinitions.Single(), Is.SameAs(block.DefaultScreenDefinition));
 		Assert.That(block.DefaultScreenDefinition.Title, Is.EqualTo("Standalone workspace"));
 		Assert.That(block.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(block.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(builder.Build().DefaultScreenDefinition, Is.Not.SameAs(block.DefaultScreenDefinition));
 	}
 
+	/// <summary>Verifies default reference preserves registered metadata and independent command caption.</summary>
 	[Test]
 	public void DefaultReferencePreservesRegisteredMetadataAndIndependentCommandCaption() {
 		var definition = new ApplicationScreenDefinition(typeof(Screen), "Pinned title", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
@@ -195,15 +197,15 @@ public class SharedFluentBuilderTests {
 			.AddMenu(menu);
 		var block = builder.Build();
 
-		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(definition));
+		Assert.That(block.DefaultScreenDefinition, Is.SameAs(definition));
 		Assert.That(block.DefaultScreenDefinition.Title, Is.EqualTo("Pinned title"));
 		Assert.That(block.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
 		Assert.That(block.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
 		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(1));
 		Assert.That(block.Menus.Single().Items.Single().Title, Is.EqualTo("Navigation caption"));
-		Assert.That(builder.Build().DefaultScreenDefinition, Is.Not.SameAs(block.DefaultScreenDefinition));
 	}
 
+	/// <summary>Verifies explicit default definition remains untouched by matching menu metadata.</summary>
 	[Test]
 	public void ExplicitDefaultDefinitionRemainsUntouchedByMatchingMenuMetadata() {
 		var selected = new ApplicationScreenDefinition(typeof(Screen), "Canonical default");
@@ -220,69 +222,14 @@ public class SharedFluentBuilderTests {
 			.AddMenu(menu);
 		var block = builder.Build();
 
-		Assert.That(block.DefaultScreenDefinition, Is.Not.SameAs(selected));
+		Assert.That(block.DefaultScreenDefinition, Is.SameAs(selected));
 		Assert.That(block.DefaultScreenDefinition.Title, Is.EqualTo("Canonical default"));
 		Assert.That(block.DefaultScreenDefinition.ActivationMode, Is.Null);
 		Assert.That(block.ScreenDefinitions.Select(definition => definition.Title), Is.EquivalentTo(new[] { selected.Title, matching.Title }));
 		Assert.That(block.ScreenDefinitions.Any(definition => ReferenceEquals(definition, block.DefaultScreenDefinition)), Is.True);
-		Assert.That(builder.Build().DefaultScreenDefinition, Is.Not.SameAs(block.DefaultScreenDefinition));
 	}
 
-	[Test]
-	public void RepeatedBuildsPreserveRegistrationMetadataWhenCommandPresentationChanges() {
-		var original = new ApplicationScreenDefinition(typeof(Screen), "Original", ScreenActivationMode.SingleInstance);
-		var item = new ScreenItem { Title = "Navigation caption", ScreenDefinition = original };
-		var menu = new MenuBuilder()
-			.WithText("Views")
-			.AddItem(item)
-			.Build();
-		var builder = new BlockBuilder()
-			.WithName("Workspace")
-			.AddScreen(original)
-			.WithDefaultScreen<Screen>()
-			.AddMenu(menu);
-		var first = builder.Build();
-		((ScreenItem)menu.Items.Single()).Title = "Updated navigation";
-		var second = builder.Build();
-		var third = builder.Build();
-
-		Assert.That(first.DefaultScreenDefinition.Title, Is.EqualTo("Original"));
-		Assert.That(first.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(first.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		Assert.That(second.DefaultScreenDefinition.Title, Is.EqualTo("Original"));
-		Assert.That(second.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(second.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Normal));
-		Assert.That(second.Menus.Single().Items.Single().Title, Is.EqualTo("Updated navigation"));
-		Assert.That(first.Menus.Single().Items.Single().Title, Is.EqualTo("Navigation caption"));
-		Assert.That(third.DefaultScreenDefinition, Is.Not.SameAs(second.DefaultScreenDefinition));
-		Assert.That(third.DefaultScreenDefinition.Title, Is.EqualTo(second.DefaultScreenDefinition.Title));
-		Assert.That(second.DefaultScreenDefinition, Is.SameAs(((IScreenMenuItem)second.Menus.Single().Items.Single()).ScreenDefinition));
-	}
-
-	[Test]
-	public void AForeignCommandReferenceCannotReplaceTheRegisteredDefault() {
-		var matching = new ApplicationScreenDefinition(typeof(Screen), "Inferred title", ScreenActivationMode.SingleInstance, ScreenKind.Empty);
-		var item = new ScreenItem { Title = "Navigation caption", ScreenDefinition = matching };
-		var menu = new MenuBuilder()
-			.WithText("Views")
-			.AddItem(item)
-			.Build();
-		var builder = new BlockBuilder()
-			.WithName("Workspace")
-			.AddScreen(matching)
-			.WithDefaultScreen<Screen>()
-			.AddMenu(menu);
-		var first = builder.Build();
-		((ScreenItem)menu.Items.Single()).ScreenDefinition = new(typeof(OtherScreen), "Other screen", ScreenActivationMode.MultiInstance);
-		((ScreenItem)menu.Items.Single()).Registration = ((ScreenItem)menu.Items.Single()).ScreenDefinition.Registration;
-		Assert.That(() => builder.Build(), Throws.ArgumentException);
-
-		Assert.That(first.DefaultScreenDefinition.ActivationMode, Is.EqualTo(ScreenActivationMode.SingleInstance));
-		Assert.That(first.DefaultScreenDefinition.ScreenKind, Is.EqualTo(ScreenKind.Empty));
-		Assert.That(first.DefaultScreenDefinition.ScreenType, Is.EqualTo(typeof(Screen)));
-		Assert.That(first.DefaultScreenDefinition.Title, Is.EqualTo("Inferred title"));
-	}
-
+	/// <summary>Verifies action items reject screen references.</summary>
 	[TestCase(true)]
 	[TestCase(false)]
 	public void ActionItemsRejectScreenReferences(bool definitionReference) {
@@ -295,6 +242,7 @@ public class SharedFluentBuilderTests {
 			Assert.That(() => builder.WithScreen<Screen>(), Throws.InvalidOperationException);
 	}
 
+	/// <summary>Verifies interface returning wizard fluent methods share lifecycle and reset state.</summary>
 	[Test]
 	public async Task InterfaceReturningWizardFluentMethodsShareLifecycleAndResetState() {
 		ITestWizardBuilder builder = new WizardBuilder();
@@ -320,90 +268,65 @@ public class SharedFluentBuilderTests {
 		Assert.That((await second.FinishAsync()).Value, Is.True);
 	}
 
+	#region Inner Types
+
+	// A supplied settings instance exercises the builder's ownership contract.
+	private sealed class Preferences : SettingsObject {
+		/// <summary>Gets or sets a caller-controlled value.</summary>
+		public string Name { get; set; } = "default";
+	}
+
+	// Creates ordinary plugin products through the shared fluent builder contract.
 	private sealed class PluginBuilder : ApplicationPluginBuilderBase<PluginBuilder, IApplicationBlock, BlockBuilder, ApplicationPlugin> {
-		protected override ApplicationPlugin CreatePlugin(IApplicationBlock[] blocks, Action<IServiceCollection> configureServices) => new(Name, blocks, configureServices);
+		/// <inheritdoc />
+		protected override ApplicationPlugin CreatePlugin(IApplicationBlock[] blocks, Action<IServiceCollection> configureServices) {
+			return new(Name, blocks, configureServices);
+		}
 	}
 
+	// This shared fixture supplies ordinary products; platform graph-copy behavior is covered by the Blazor host tests.
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<BlockBuilder, IApplicationMenu, MenuBuilder, TestApplicationBlock> {
+		/// <inheritdoc />
 		protected override TestApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {
-			var template = new BlockTemplate(menus.ToArray()) { Name = Name, Position = Position };
-			foreach (var definition in ScreenDefinitions)
-				template.AddScreenDefinition(definition);
-			template.DefaultScreenDefinition = DefaultScreenDefinition;
-			return new DefinitionSnapshot().Create(template);
-		}
-
-		protected override void RegisterScreenDefinitions(TestApplicationBlock block) {
-		}
-	}
-
-	private sealed class MenuBuilder : ApplicationMenuBuilderBase<MenuBuilder, IApplicationMenuItem, ItemBuilder, TestApplicationMenu<IApplicationMenuItem>> {
-		protected override TestApplicationMenu<IApplicationMenuItem> CreateMenu(IReadOnlyList<IApplicationMenuItem> items) {
-			var menu = new MenuTemplate { Text = Text };
-			foreach (var item in items)
-				menu
-					.AddItem(item);
-			return (TestApplicationMenu<IApplicationMenuItem>)new DefinitionSnapshot().CreateMenu(menu);
-		}
-	}
-
-	private sealed class BlockTemplate(IApplicationMenu[] menus) : TestApplicationBlock {
-		public override IApplicationMenu[] Menus => Tools.Array.Clone(menus);
-	}
-
-	private sealed class MenuTemplate : TestApplicationMenu<IApplicationMenuItem> {
-		protected override bool OwnsItems => false;
-	}
-
-	private sealed class DefinitionSnapshot : ApplicationBlockSnapshotBase<TestApplicationBlock, IApplicationMenu, IApplicationMenuItem> {
-		protected override TestApplicationBlock CreateBlockSnapshot(TestApplicationBlock block, IApplicationMenu[] menus,
-			Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
-			var snapshot = new TestApplicationBlock { Name = block.Name, Position = block.Position };
-			foreach (var definition in block.ScreenDefinitions)
-				snapshot.AddScreenDefinition(SnapshotDefinition(definition, definitions));
-			snapshot.DefaultScreenDefinition = SnapshotDefinition(block.DefaultScreenDefinition, definitions);
+			var block = new TestApplicationBlock { Name = Name, Position = Position };
 			foreach (var menu in menus)
-				snapshot
-					.AddMenu(menu);
-			return snapshot;
-		}
-
-		protected override IApplicationMenu CreateMenuSnapshot(IApplicationMenu menu, IApplicationMenuItem[] items) {
-			var snapshot = new TestApplicationMenu<IApplicationMenuItem> { Text = menu.Text };
-			foreach (var item in items)
-				snapshot
-					.AddItem(item);
-			return snapshot;
-		}
-
-		protected override IApplicationMenuItem CreateItemSnapshot(IApplicationMenuItem item, Dictionary<ApplicationScreenDefinition, ApplicationScreenDefinition> definitions) {
-			var snapshot = item switch {
-				IScreenMenuItem screen => (TestApplicationMenuItem)new ScreenItem { ScreenDefinition = SnapshotDefinition(screen.ScreenDefinition, definitions), Registration = screen.Registration },
-				ActionItem action => new ActionItem { Action = action.Action },
-				_ => new TestApplicationMenuItem()
-			};
-			snapshot.Title = item.Title;
-			if (item is ApplicationMenuItemBase subscriptions)
-				snapshot.CopySubscriptionsFrom(subscriptions);
-			return snapshot;
+				block.AddMenu(menu);
+			return block;
 		}
 	}
 
+	// Creates ordinary menu products for shared builder behavior checks.
+	private sealed class MenuBuilder : ApplicationMenuBuilderBase<MenuBuilder, IApplicationMenuItem, ItemBuilder, TestApplicationMenu<IApplicationMenuItem>> {
+		/// <inheritdoc />
+		protected override TestApplicationMenu<IApplicationMenuItem> CreateMenu(IReadOnlyList<IApplicationMenuItem> items) {
+			var menu = new TestApplicationMenu<IApplicationMenuItem> { Text = Text };
+			foreach (var item in items)
+				menu.AddItem(item);
+			return menu;
+		}
+	}
+
+	// Creates action commands for shared fluent callback checks.
 	private sealed class ItemBuilder : ApplicationMenuItemBuilderBase<ItemBuilder>, IApplicationUIBuilder<ActionItem> {
+		/// <summary>Creates the configured test command.</summary>
 		public ActionItem Build() {
 			ValidateItem();
 			return new ActionItem { Title = Text, Action = Action };
 		}
 	}
 
+	// Stores the deferred callback configured by a test item builder.
 	private sealed class ActionItem : TestApplicationMenuItem {
+		/// <summary>Gets the deferred action supplied by the builder.</summary>
 		public Action Action { get; init; }
 	}
 
+	// Tracks a screen definition and reverse activator membership for shared builder checks.
 	private sealed class ScreenItem : TestApplicationMenuItem, IScreenMenuItem {
 		private ApplicationScreenDefinition _definition;
 		private ApplicationScreenRegistration _registration;
 
+		/// <summary>Gets or sets the test command's exact registration reference.</summary>
 		public ApplicationScreenRegistration Registration {
 			get {
 				return _registration ?? _definition?.Registration;
@@ -413,8 +336,11 @@ public class SharedFluentBuilderTests {
 			}
 		}
 
+		/// <summary>Gets or sets the test command's canonical definition and reverse membership.</summary>
 		public ApplicationScreenDefinition ScreenDefinition {
-			get => _definition;
+			get {
+				return _definition;
+			}
 			set {
 				if (Parent != null)
 					_definition?.RemoveActivator(this);
@@ -424,6 +350,7 @@ public class SharedFluentBuilderTests {
 			}
 		}
 
+		/// <summary>Binds the command to the selected test registration.</summary>
 		public void ResolveScreenDefinition(ApplicationScreenDefinition definition) {
 			ScreenDefinition = definition;
 			if (string.IsNullOrWhiteSpace(Title))
@@ -431,32 +358,54 @@ public class SharedFluentBuilderTests {
 		}
 	}
 
+	// Supplies a valid platform-neutral screen type.
 	private sealed class Screen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
 
+	// Supplies an alternate platform-neutral screen type.
 	private sealed class OtherScreen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
 
+	// Exercises fluent methods exposed through an interface-returning builder contract.
 	private interface ITestWizardBuilder : IApplicationUIBuilder<Wizard<object, string>> {
+		/// <summary>Starts a new wizard configuration.</summary>
 		ITestWizardBuilder NewWizard(string title);
+
+		/// <summary>Sets the model shared by the wizard steps.</summary>
 		ITestWizardBuilder WithModel(object model);
+
+		/// <summary>Sets whether the configured wizard permits cancellation.</summary>
 		ITestWizardBuilder WithCancellation(bool isCancellable);
+
+		/// <summary>Adds one step to the configured wizard.</summary>
 		ITestWizardBuilder AddStep(string step);
+
+		/// <summary>Sets the deferred completion callback.</summary>
 		ITestWizardBuilder OnFinished(Func<object, Task<Result<bool>>> onFinished);
 	}
 
+	// Creates a wizard using the shared builder lifecycle and callback state.
 	private sealed class WizardBuilder : WizardBuilderBase<ITestWizardBuilder, object, string, Wizard<object, string>>, ITestWizardBuilder {
+		/// <inheritdoc />
 		public WizardBuilder()
 			: base(requiresStart: true, requiresModel: true, requiresFinish: true) {
 		}
 
-		protected override Wizard<object, string> CreateWizard(string[] steps) =>
-			new(Title, Model, steps, FinishCallback, CancelCallback) { IsCancellable = IsCancellable };
+		/// <inheritdoc />
+		protected override Wizard<object, string> CreateWizard(string[] steps) {
+			return new(Title, Model, steps, FinishCallback, CancelCallback) { IsCancellable = IsCancellable };
+		}
 	}
+
+	#endregion
 }

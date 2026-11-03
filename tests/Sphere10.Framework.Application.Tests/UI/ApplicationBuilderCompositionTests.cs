@@ -16,11 +16,13 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Application.Tests;
 
+/// <summary>Exercises shared application builder composition tests.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationBuilderCompositionTests {
 	private static readonly AsyncLocal<ChildBuilderProbe> _currentProbe = new();
 
+	/// <summary>Verifies add retains existing definition without creating or building achild.</summary>
 	[TestCase("item")]
 	[TestCase("menu")]
 	[TestCase("block")]
@@ -37,6 +39,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.Zero);
 	}
 
+	/// <summary>Verifies configure builds one child immediately and preserves declaration order.</summary>
 	[Test]
 	public void ConfigureBuildsOneChildImmediatelyAndPreservesDeclarationOrder([Values("item", "menu", "block", "plugin")] string definitionKind, [Values] bool configuredFirst) {
 		using var scenario = CreateScenario(definitionKind);
@@ -59,6 +62,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.EqualTo(1));
 	}
 
+	/// <summary>Verifies configure uses anew child builder for each definition.</summary>
 	[TestCase("item")]
 	[TestCase("menu")]
 	[TestCase("block")]
@@ -75,6 +79,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.EqualTo(2));
 	}
 
+	/// <summary>Verifies add rejects null definitions without creating achild.</summary>
 	[TestCase("item")]
 	[TestCase("menu")]
 	[TestCase("block")]
@@ -88,6 +93,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.Zero);
 	}
 
+	/// <summary>Verifies configure rejects null callbacks before creating achild.</summary>
 	[TestCase("item")]
 	[TestCase("menu")]
 	[TestCase("block")]
@@ -101,6 +107,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.Zero);
 	}
 
+	/// <summary>Verifies failed configuration does not build or append the child.</summary>
 	[TestCase("item")]
 	[TestCase("menu")]
 	[TestCase("block")]
@@ -115,6 +122,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.Zero);
 	}
 
+	/// <summary>Verifies failed child build does not append adefinition.</summary>
 	[TestCase("item")]
 	[TestCase("menu")]
 	[TestCase("block")]
@@ -130,6 +138,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.EqualTo(1));
 	}
 
+	/// <summary>Verifies terminal application rejects configuration before creating achild.</summary>
 	[Test]
 	public void TerminalApplicationRejectsConfigurationBeforeCreatingAChild() {
 		using var scenario = CreateScenario("plugin");
@@ -142,6 +151,7 @@ public class ApplicationBuilderCompositionTests {
 		Assert.That(scenario.Probe.Builds, Is.Zero);
 	}
 
+	/// <summary>Composes one builder hierarchy level and the callbacks exercised by the fixture.</summary>
 	private static CompositionScenario CreateScenario(string definitionKind) {
 		var probe = new ChildBuilderProbe();
 		_currentProbe.Value = probe;
@@ -201,34 +211,48 @@ public class ApplicationBuilderCompositionTests {
 		}
 	}
 
+	#region Inner Types
+
+	/// <summary>Supplies composition scenario for the fixture's existing contract checks.</summary>
 	private sealed record CompositionScenario(
 		ChildBuilderProbe Probe, object Existing, object Configured, Action<object> Add, Action<Action> Configure, Func<object[]> Build
 	) : IDisposable {
-		public void Dispose() => _currentProbe.Value = null;
+		/// <inheritdoc />
+		public void Dispose() {
+			_currentProbe.Value = null;
+		}
 	}
 
+	/// <summary>Supplies child builder probe for the fixture's existing contract checks.</summary>
 	private sealed class ChildBuilderProbe {
+		/// <inheritdoc />
 		public int Constructions { get; set; }
 
+		/// <inheritdoc />
 		public int Builds { get; set; }
 
+		/// <inheritdoc />
 		public bool FailBuild { get; set; }
 	}
 
+	/// <summary>Supplies child builder for the fixture's existing contract checks.</summary>
 	private sealed class ChildBuilder<TProduct> : IApplicationUIBuilder<TProduct> {
 		private readonly ChildBuilderProbe _probe;
 		private TProduct _product;
 
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public ChildBuilder() {
 			_probe = _currentProbe.Value;
 			_probe.Constructions++;
 		}
 
+		/// <summary>Sets the product returned by the fixture's child builder.</summary>
 		public ChildBuilder<TProduct> WithProduct(TProduct product) {
 			_product = product;
 			return this;
 		}
 
+		/// <summary>Builds the configured test product without running deferred actions.</summary>
 		public TProduct Build() {
 			_probe.Builds++;
 			Guard.Ensure(!_probe.FailBuild, "Child build failed.");
@@ -236,48 +260,102 @@ public class ApplicationBuilderCompositionTests {
 		}
 	}
 
+	/// <summary>Supplies item definition for the fixture's existing contract checks.</summary>
 	private sealed record ItemDefinition(string Title) : IApplicationMenuItem {
+		/// <inheritdoc />
 		public IApplicationMenu Parent { get; set; }
 	}
 
+	/// <summary>Supplies menu definition for the fixture's existing contract checks.</summary>
 	private sealed record MenuDefinition(string Text, ItemDefinition[] ItemDefinitions) : IApplicationMenu {
+		/// <inheritdoc />
 		public IApplicationBlock Parent { get; set; }
 
-		public IApplicationMenuItem[] Items => ItemDefinitions;
+		/// <inheritdoc />
+		public IApplicationMenuItem[] Items {
+			get {
+				return ItemDefinitions;
+			}
+		}
 	}
 
-	private sealed record BlockDefinition(string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock {
+	/// <summary>Supplies block definition for the fixture's existing contract checks.</summary>
+	private sealed record BlockDefinition(string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock, IApplicationCommandProvider {
+		/// <inheritdoc />
+		public SettingsObject BlockSettings { get; set; }
+
+		/// <inheritdoc />
 		public IApplication Parent { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationPlugin Source { get; set; }
 
-		public int Position => 0;
+		/// <inheritdoc />
+		public int Position {
+			get {
+				return 0;
+			}
+		}
 
-		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
+		/// <inheritdoc />
+		public ApplicationScreenDefinition[] ScreenDefinitions {
+			get {
+				return Array.Empty<ApplicationScreenDefinition>();
+			}
+		}
 
-		public ApplicationScreenDefinition DefaultScreenDefinition => null;
+		/// <inheritdoc />
+		public ApplicationScreenDefinition DefaultScreenDefinition {
+			get {
+				return null;
+			}
+		}
 
-		public IApplicationMenu[] Menus => MenuDefinitions;
+		/// <inheritdoc />
+		public IApplicationMenu[] Menus {
+			get {
+				return MenuDefinitions;
+			}
+		}
 	}
 
+	/// <summary>Supplies menu builder for the fixture's existing contract checks.</summary>
 	private sealed class MenuBuilder : ApplicationMenuBuilderBase<MenuBuilder, ItemDefinition, ChildBuilder<ItemDefinition>, MenuDefinition> {
-		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) => new(Text, items.ToArray());
+		/// <inheritdoc />
+		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) {
+			return new(Text, items.ToArray());
+		}
 	}
 
+	/// <summary>Supplies block builder for the fixture's existing contract checks.</summary>
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<BlockBuilder, MenuDefinition, ChildBuilder<MenuDefinition>, BlockDefinition> {
-		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) => new(Name, menus.ToArray());
+		/// <inheritdoc />
+		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) {
+			return new(Name, menus.ToArray());
+		}
 	}
 
+	/// <summary>Supplies plugin builder for the fixture's existing contract checks.</summary>
 	private sealed class PluginBuilder : ApplicationPluginBuilderBase<PluginBuilder, BlockDefinition, ChildBuilder<BlockDefinition>, ApplicationPlugin> {
-		protected override ApplicationPlugin CreatePlugin(BlockDefinition[] blocks, Action<IServiceCollection> configureServices) => new(Name, blocks, configureServices);
+		/// <inheritdoc />
+		protected override ApplicationPlugin CreatePlugin(BlockDefinition[] blocks, Action<IServiceCollection> configureServices) {
+			return new(Name, blocks, configureServices);
+		}
 	}
 
+	/// <summary>Supplies registration builder for the fixture's existing contract checks.</summary>
 	private sealed class RegistrationBuilder
 		: ApplicationBuilderBase<RegistrationBuilder, IApplication, ApplicationPlugin, ChildBuilder<ApplicationPlugin>, ApplicationPlugin[]> {
+		/// <summary>Initializes the existing host or test adapter without changing its registration ownership.</summary>
 		public RegistrationBuilder()
 			: base("Application") {
 		}
 
-		protected override ApplicationPlugin[] CreateApplication(ApplicationPlugin[] plugins, Action<IApplication> configureApplication) => plugins;
+		/// <inheritdoc />
+		protected override ApplicationPlugin[] CreateApplication(ApplicationPlugin[] plugins, Action<IApplication> configureApplication) {
+			return plugins;
+		}
 	}
+
+	#endregion
 }

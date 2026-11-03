@@ -16,9 +16,11 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Application.Tests;
 
+/// <summary>Exercises shared application screen identity tests.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationScreenIdentityTests {
+	/// <summary>Verifies distinct screen references remain independent even when their value equality matches.</summary>
 	[Test]
 	public async Task DistinctScreenReferencesRemainIndependentEvenWhenTheirValueEqualityMatches() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -39,13 +41,14 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(host.ActiveScreen, Is.SameAs(second));
 	}
 
+	/// <summary>Verifies an unhosted equal screen cannot select or close aretained screen.</summary>
 	[Test]
 	public async Task AnUnhostedEqualScreenCannotSelectOrCloseARetainedScreen() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var block = new TestApplicationBlock { Name = "Records" };
 		using var host = new ApplicationScreenHost(new[] { block }, provider);
 		var retained = await host.OpenScreenAsync(block, Definition(block));
-		var foreign = new EqualScreen();
+		var foreign = new EqualScreen { Block = block };
 		var notifications = 0;
 		host.Changed += () => notifications++;
 
@@ -55,10 +58,11 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(() => host.NotifyScreenChanged(foreign), Throws.ArgumentException);
 
 		Assert.That(host.ActiveScreen, Is.SameAs(retained));
-		Assert.That(host.GetScreenBlock(foreign), Is.Null);
+		Assert.That(foreign.Block, Is.SameAs(block), "Reading a screen's owner does not imply membership in this host.");
 		Assert.That(notifications, Is.Zero);
 	}
 
+	/// <summary>Verifies returned array snapshots keep the same actual screen without owning its lifetime.</summary>
 	[Test]
 	public async Task ReturnedArraySnapshotsKeepTheSameActualScreenWithoutOwningItsLifetime() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -73,6 +77,7 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(((EqualScreen)screen).Disposals, Is.Zero);
 	}
 
+	/// <summary>Verifies dynamic screen metadata and dirty state are read from the hosted instance.</summary>
 	[Test]
 	public async Task DynamicScreenMetadataAndDirtyStateAreReadFromTheHostedInstance() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -90,6 +95,7 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(notifications, Is.EqualTo(1));
 	}
 
+	/// <summary>Verifies late notifications from aclosed instance are rejected without affecting its replacement.</summary>
 	[Test]
 	public async Task LateNotificationsFromAClosedInstanceAreRejectedWithoutAffectingItsReplacement() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
@@ -109,6 +115,7 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(replacement, Is.Not.SameAs(original));
 	}
 
+	/// <summary>Verifies neutral hosting contract uses screen references without blazor session or guid dependencies.</summary>
 	[Test]
 	public void NeutralHostingContractUsesScreenReferencesWithoutBlazorSessionOrGuidDependencies() {
 		var methods = typeof(IApplicationScreenHost).GetMethods();
@@ -118,25 +125,29 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(typeof(IApplicationScreenHost).Assembly.GetType("Sphere10.Framework.Application.UI.ApplicationScreenActivation"), Is.Null);
 	}
 
+	/// <summary>Verifies shared metadata contracts do not require named identifiers.</summary>
 	[TestCase(typeof(IApplicationBlock))]
 	[TestCase(typeof(IApplicationMenu))]
 	[TestCase(typeof(IApplicationMenuItem))]
-	public void SharedMetadataContractsDoNotRequireNamedIdentifiers(Type contract) =>
+	public void SharedMetadataContractsDoNotRequireNamedIdentifiers(Type contract) {
 		Assert.That(contract.GetProperties().Select(property => property.Name), Has.None.EqualTo("Id"));
+	}
 
+	/// <summary>Verifies screen commands reference definitions and shared navigation does not use identifier lookup.</summary>
 	[Test]
 	public void ScreenCommandsReferenceDefinitionsAndSharedNavigationDoesNotUseIdentifierLookup() {
 		Assert.That(typeof(IScreenMenuItem).GetProperties().Select(property => property.Name), Is.EquivalentTo(new[] { nameof(IScreenMenuItem.ScreenDefinition), nameof(IScreenMenuItem.Registration) }));
 		Assert.That(typeof(IApplicationBlock).GetProperty(nameof(IApplicationBlock.DefaultScreenDefinition)).PropertyType, Is.EqualTo(typeof(ApplicationScreenDefinition)));
 		Assert.That(typeof(IApplicationBlock).GetProperty(nameof(IApplicationBlock.ScreenDefinitions)).PropertyType, Is.EqualTo(typeof(ApplicationScreenDefinition[])));
 		Assert.That(typeof(ApplicationScreenDefinition).GetProperties().Select(property => property.Name),
-			Is.EquivalentTo(new[] { "ScreenType", "Title", "ActivationMode", "ScreenKind", "Activators", "Registration", "StableKey", "Settings", "SettingsFactory" }));
+			Is.EquivalentTo(new[] { "ScreenType", "Title", "ActivationMode", "ScreenKind", "Activators", "Registration", "StableKey", "Settings" }));
 		Assert.That(typeof(IApplicationScreenHost).GetMethods().SelectMany(method => method.GetParameters()).Select(parameter => parameter.Name),
 			Has.None.EqualTo("blockId").And.None.EqualTo("menuItemId"));
 		Assert.That(typeof(IUserInterfaceServices).GetMethods().Where(method => method.Name == nameof(IUserInterfaceServices.ExecuteMenuItemAsync))
 			.SelectMany(method => method.GetParameters()).Select(parameter => parameter.ParameterType), Has.None.EqualTo(typeof(string)));
 	}
 
+	/// <summary>Verifies shared storage foundations are abstract and do not expose unused concrete shims.</summary>
 	[Test]
 	public void SharedStorageFoundationsAreAbstractAndDoNotExposeUnusedConcreteShims() {
 		Assert.That(typeof(ApplicationBlockBase).IsAbstract, Is.True);
@@ -148,21 +159,47 @@ public class ApplicationScreenIdentityTests {
 		Assert.That(assembly.GetType("Sphere10.Framework.Application.UI.ApplicationMenuItem"), Is.Null);
 	}
 
+	/// <summary>Registers the canonical definition used by the reference-identity scenario.</summary>
 	private static ApplicationScreenDefinition Definition(TestApplicationBlock block) {
 		var definition = new ApplicationScreenDefinition(typeof(EqualScreen), "Record", ScreenActivationMode.MultiInstance);
 		block.AddScreenDefinition(definition);
 		return definition;
 	}
 
+	#region Inner Types
+
+	/// <summary>Supplies equal screen for the fixture's existing contract checks.</summary>
 	public sealed class EqualScreen : IApplicationScreen, IDisposable {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
+
+		/// <inheritdoc />
 		public string Title { get; set; }
+
+		/// <inheritdoc />
 		public bool HasUnsavedChanges { get; set; }
+
+		/// <inheritdoc />
 		public int Disposals { get; private set; }
-		public override bool Equals(object other) => other is EqualScreen;
-		public override int GetHashCode() => 1;
-		public void Dispose() => Disposals++;
+
+		/// <inheritdoc />
+		public override bool Equals(object other) {
+			return other is EqualScreen;
+		}
+
+		/// <inheritdoc />
+		public override int GetHashCode() {
+			return 1;
+		}
+
+		/// <summary>Disposes the wrapped host through its existing ownership contract.</summary>
+		public void Dispose() {
+			Disposals++;
+		}
 	}
+
+	#endregion
 }

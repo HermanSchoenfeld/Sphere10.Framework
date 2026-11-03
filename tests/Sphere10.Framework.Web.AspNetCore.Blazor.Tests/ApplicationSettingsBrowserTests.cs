@@ -21,6 +21,10 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Category("Browser")]
 [NonParallelizable]
 public class ApplicationSettingsBrowserTests {
+
+	// Records each footer button's actual viewport geometry for the browser evidence attachment.
+	private sealed record FooterButtonBounds(string Name, float Left, float Top, float Right, float Bottom);
+
 	[Test]
 	public async Task OptionsDraftsValidationApplyResetAndBrowserRestartPreserveRegistrationOwnership() {
 		var url = TestContext.Parameters.Get("BlazorTesterUrl", "");
@@ -54,6 +58,10 @@ public class ApplicationSettingsBrowserTests {
 
 		// Nested and collection edits are provisional; cancelling them creates no preference records.
 		var dialog = await OpenOptionsAsync(page);
+		await Assertions.Expect(dialog.GetByRole(AriaRole.Heading, new() { Name = "CPU inspector", Exact = true })).ToBeVisibleAsync();
+		var optionsPages = dialog.GetByRole(AriaRole.Navigation, new() { Name = "Options pages", Exact = true });
+		await Assertions.Expect(optionsPages.GetByRole(AriaRole.Button, new() { Name = "Overview", Exact = true })).ToHaveCountAsync(0);
+		await Assertions.Expect(optionsPages.GetByRole(AriaRole.Button, new() { Name = "Menu-free details", Exact = true })).ToHaveCountAsync(0);
 		await CaptureAsync(page, "options-initial.png");
 		await SelectOptionsPageAsync(dialog, "CPU");
 		Assert.That(await dialog.GetByText("Saved preferences could not be loaded. Defaults are shown.", new() { Exact = true }).CountAsync(), Is.Zero);
@@ -92,17 +100,17 @@ public class ApplicationSettingsBrowserTests {
 		await page.EvaluateAsync("() => { Storage.prototype.setItem = window.__settingsOriginalSetItem; delete window.__settingsOriginalSetItem; }");
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Apply", Exact = true }).ClickAsync();
 		await WaitCaptionAsync(page, "CPU applied");
-		Assert.That(await page.EvaluateAsync<bool>("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key)).values?.Caption === 'CPU applied')"), Is.True);
+		Assert.That(await page.EvaluateAsync<bool>("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => JSON.parse(localStorage.getItem(key)).Caption === 'CPU applied')"), Is.True);
 		Assert.That(await screen.Locator("[data-registration-instance]").InnerTextAsync(), Is.EqualTo(instance));
 		await CaptureAsync(page, "options-desktop.png");
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
 		await dialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
 
-		// Reset uses this registration's defaults and remains provisional until explicitly applied.
+		// Reset uses the settings class's declared defaults and remains provisional until explicitly applied.
 		dialog = await OpenOptionsAsync(page);
 		await SelectOptionsPageAsync(dialog, "CPU");
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Reset Defaults", Exact = true }).ClickAsync();
-		await page.WaitForFunctionAsync("() => document.querySelector('.sphere10-options-host [data-option-path=Caption] input')?.value === 'CPU summary'");
+		await page.WaitForFunctionAsync("() => document.querySelector('.sphere10-options-host [data-option-path=Caption] input')?.value === 'Inspector summary'");
 		await WaitCaptionAsync(page, "CPU applied");
 		await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel", Exact = true }).ClickAsync();
 		await dialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
@@ -116,11 +124,11 @@ public class ApplicationSettingsBrowserTests {
 		await dialog.GetByLabel("Detail level", new() { Exact = true }).SelectOptionAsync("Detailed");
 		await page.SetViewportSizeAsync(390, 844);
 		await CaptureAsync(page, "options-mobile.png");
-		var footerBounds = new List<(string Name, float Left, float Top, float Right, float Bottom)>();
+		var footerBounds = new List<FooterButtonBounds>();
 		foreach (var name in new[] { "OK", "Cancel", "Apply", "Reset Defaults" }) {
 			var bounds = await dialog.GetByRole(AriaRole.Button, new() { Name = name, Exact = true }).BoundingBoxAsync();
 			Assert.That(bounds, Is.Not.Null);
-			footerBounds.Add((name, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height));
+			footerBounds.Add(new FooterButtonBounds(name, bounds.X, bounds.Y, bounds.X + bounds.Width, bounds.Y + bounds.Height));
 		}
 		var boundsPath = Path.Combine(TestContext.CurrentContext.WorkDirectory, nameof(ApplicationSettingsBrowserTests), "mobile-footer-bounds.json");
 		File.WriteAllText(boundsPath, Tools.Json.WriteToString(footerBounds));
@@ -155,7 +163,7 @@ public class ApplicationSettingsBrowserTests {
 
 		// A completed ordinary control action uses the same ordered owner and survives a browser reload without teardown delivery.
 		await screen.GetByRole(AriaRole.Button, new() { Name = "Toggle summary", Exact = true }).ClickAsync();
-		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => { const values = JSON.parse(localStorage.getItem(key)).values; return values?.Caption === 'CPU applied' && values.ShowSummary === false; })");
+		await page.WaitForFunctionAsync("() => Object.keys(localStorage).filter(key => key.startsWith('sphere10.settings:')).some(key => { const values = JSON.parse(localStorage.getItem(key)); return values?.Caption === 'CPU applied' && values.ShowSummary === false; })");
 		await page.ReloadAsync();
 		await screen.GetByRole(AriaRole.Heading, new() { Name = "CPU inspector", Exact = true }).WaitForAsync();
 		Assert.That(await screen.GetByRole(AriaRole.Region, new() { Name = "Inspector summary", Exact = true }).CountAsync(), Is.Zero);
@@ -178,12 +186,12 @@ public class ApplicationSettingsBrowserTests {
 		await commands.GetByRole(AriaRole.Button, new() { Name = "Options", Exact = true }).ClickAsync();
 		await commands.GetByRole(AriaRole.Button, new() { Name = "Screen Options...", Exact = true }).ClickAsync();
 		var dialog = page.Locator(".sphere10-options-host");
-		await dialog.GetByRole(AriaRole.Heading, new() { Name = "Screen Options", Exact = true }).WaitForAsync();
+		await dialog.GetByRole(AriaRole.Heading, new() { Name = "Options", Exact = true }).WaitForAsync();
 		return dialog;
 	}
 
 	private static async Task SelectOptionsPageAsync(ILocator dialog, string name) {
-		await dialog.GetByRole(AriaRole.Navigation, new() { Name = "Screen options pages", Exact = true })
+		await dialog.GetByRole(AriaRole.Navigation, new() { Name = "Options pages", Exact = true })
 			.GetByRole(AriaRole.Button, new() { Name = name + " inspector", Exact = true }).ClickAsync();
 		await dialog.GetByRole(AriaRole.Heading, new() { Name = name + " inspector", Exact = true }).WaitForAsync();
 	}

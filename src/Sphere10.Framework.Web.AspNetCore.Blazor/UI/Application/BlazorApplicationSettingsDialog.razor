@@ -10,43 +10,35 @@
 
 <div class="sphere10-options-host">
 	<ModalTemplate Options="Options" OnCloseFunc="RequestCloseAsync">
-		<HeaderTemplate><h2>Screen Options</h2></HeaderTemplate>
+		<HeaderTemplate><h2>Options</h2></HeaderTemplate>
 		<BodyTemplate>
 			<fieldset disabled="@_saving" class="sphere10-options-fieldset">
 				<div class="sphere10-options-layout">
-					<nav class="sphere10-options-navigation" aria-label="Screen options pages">
+					<nav class="sphere10-options-navigation" aria-label="Options pages">
 						<h3>@ApplicationTitle</h3>
-						@foreach (var profile in Catalog.Profiles.Where(profile => profile.Block == null)) {
-							<button type="button" class="@PageClass(profile)" aria-current="@(ReferenceEquals(_selected, profile) ? "page" : null)" @onclick="() => SelectPageAsync(profile)">@profile.Title@(_dirty.Contains(profile) ? " *" : "")</button>
-						}
-						@foreach (var plugin in Catalog.Profiles.Where(profile => profile.Block != null).GroupBy(profile => profile.Plugin?.Name ?? "Application")) {
+						@foreach (var plugin in Application.LoadedPlugins) {
 							<details open>
-								<summary>@plugin.Key</summary>
-								@foreach (var block in plugin.GroupBy(profile => profile.Block)) {
-									<details open>
-										<summary>@block.Key.Name</summary>
-										@foreach (var profile in block) {
-											<button type="button" class="@PageClass(profile)" aria-current="@(ReferenceEquals(_selected, profile) ? "page" : null)" @onclick="() => SelectPageAsync(profile)">@profile.Title@(_dirty.Contains(profile) ? " *" : "")</button>
-										}
-									</details>
+								<summary><button type="button" class="@PageClass(plugin)" @onclick="() => SelectOwnerAsync(plugin)">@plugin.Name@(_dirty.Contains(GetSettings(plugin)) ? " *" : "")</button></summary>
+								@foreach (var block in Application.ScreenHost.AvailableBlocks.Where(block => ReferenceEquals(block.Source, plugin))) {
+									@BlockNode(block)
 								}
 							</details>
+						}
+						@foreach (var block in Application.ScreenHost.AvailableBlocks.Where(block => block.Source == null)) {
+							@BlockNode(block)
 						}
 					</nav>
 					<section class="sphere10-options-page" aria-label="Selected options page">
 						@if (_selected == null) {
-							<p>No screen registrations are available.</p>
+							<p>No settings are available.</p>
 						} else {
-							<h3>@_selected.Title</h3>
-							@if (!_selected.HasOptions) {
-								<p>This screen has no configurable preferences.</p>
+							<h3>@GetTitle(_selected)</h3>
+							@if (GetSettings(_selected) == null) {
+								<p>This item has no configurable preferences.</p>
 							} else if (!CanEditSelected) {
 								<p>These preferences have not enabled automatic user editing.</p>
 							} else {
-								@if (_selected.LastLoadError != null) {
-									<p role="status">Saved preferences could not be loaded. Defaults are shown.</p>
-								}
-								<DynamicComponent @key="_edits[_selected].Draft" @ref="_editor" Type="EditorType" Parameters="EditorParameters" />
+								<DynamicComponent @key="_editorKey" @ref="_editor" Type="EditorType" Parameters="EditorParameters" />
 							}
 						}
 						@foreach (var error in _errors) {
@@ -63,7 +55,21 @@
 			<button type="button" class="btn btn-outline-secondary sphere10-options-reset" disabled="@(_saving || !CanEditSelected)" @onclick="ResetDefaults">Reset Defaults</button>
 			<button type="button" class="btn btn-primary" disabled="@_saving" @onclick="AcceptAsync">OK</button>
 			<button type="button" class="btn btn-outline-secondary" disabled="@_saving" @onclick="CancelEditing">Cancel</button>
-			<button type="button" class="btn btn-outline-primary" disabled="@(_saving || _selected == null || !_dirty.Contains(_selected))" @onclick="ApplyAsync">Apply</button>
+			<button type="button" class="btn btn-outline-primary" disabled="@(_saving || _selected == null || !_dirty.Contains(GetSettings(_selected)))" @onclick="ApplyAsync">Apply</button>
 		</FooterTemplate>
 	</ModalTemplate>
 </div>
+
+@code {
+	// Render the same actual block and settings-bearing registrations at their existing owner depth.
+	private RenderFragment<IBlazorApplicationBlock> BlockNode {
+		get {
+			return block => @<details open>
+				<summary><button type="button" class="@PageClass(block)" @onclick="() => SelectOwnerAsync(block)">@block.Name@(_dirty.Contains(GetSettings(block)) ? " *" : "")</button></summary>
+				@foreach (var definition in block.ScreenDefinitions.Where(definition => definition.Settings != null)) {
+					<button type="button" class="@PageClass(definition)" @onclick="() => SelectOwnerAsync(definition)">@definition.Title@(_dirty.Contains(definition.Settings) ? " *" : "")</button>
+				}
+			</details>;
+		}
+	}
+}

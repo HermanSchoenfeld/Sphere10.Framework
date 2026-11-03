@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
@@ -27,6 +28,36 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorApplicationBuilderTests {
+	/// <summary>Both builder sources register the same product services for metadata consumers without constructing a circuit.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public void ProductInformationComesFromTheSelectedBuilderSource(bool useAssemblyInfo) {
+		var services = new ServiceCollection();
+		var information = new ProductInformation { ProductName = "Builder product", CompanyName = "Builder company" };
+		var assembly = typeof(BlazorApplicationBuilderTests).Assembly;
+		var builder = services
+			.BuildBlazorApplication()
+			.WithTitle("Window caption");
+		if (useAssemblyInfo)
+			builder.UseAssemblyInfo(assembly);
+		else
+			builder.WithProductInformation(information);
+		builder.Build();
+
+		// Product identity is available before any browser, settings provider or application is activated.
+		using var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
+		var selected = provider.GetRequiredService<IProductServicesProvider>();
+		Assert.That(provider.GetRequiredService<IProductInformationProvider>(), Is.SameAs(selected));
+		if (useAssemblyInfo) {
+			Assert.That(selected, Is.TypeOf<AssemblyInfoProductServicesProvider>());
+			Assert.That(selected.ProductInformation.ProductName, Is.EqualTo(new AssemblyAttributesProductInformationProvider(assembly).ProductInformation.ProductName));
+		} else
+			Assert.That(selected.ProductInformation, Is.SameAs(information));
+		Assert.That(provider.GetRequiredService<BlazorApplicationOptions>().Title, Is.EqualTo("Window caption"));
+		Assert.That(() => builder.UseAssemblyInfo(assembly), Throws.InvalidOperationException);
+		Assert.That(() => builder.WithProductInformation(information), Throws.InvalidOperationException);
+	}
+
 	[Test]
 	public async Task BuildUsesExistingPluginAndScopedApplicationRegistrations() {
 		var loaded = 0;

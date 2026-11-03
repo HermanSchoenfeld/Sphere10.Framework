@@ -21,6 +21,8 @@ public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicati
 
 	protected string Name { get; private set; }
 
+	protected SettingsObject PluginSettings { get; private set; }
+
 	public virtual TPlugin Build() {
 		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "A plugin name is required.");
 		var configureServices = _configureServices;
@@ -30,9 +32,17 @@ public abstract class ApplicationPluginBuilderBase<TBlock, TPlugin> : IApplicati
 			configureServices(services, pluginName);
 		});
 		Guard.Ensure(plugin is not null, "A plugin definition is required.");
+		if (PluginSettings != null)
+			plugin.PluginSettings = PluginSettings;
+		Guard.Ensure(PluginSettings == null || plugin.PluginSettings != null, "The plugin factory must retain its configured settings defaults.");
 		pluginName = plugin.Name;
 		Guard.Ensure(!string.IsNullOrWhiteSpace(pluginName), "A plugin name is required.");
 		return plugin;
+	}
+
+	protected void SetPluginSettings(SettingsObject settings) {
+		Guard.ArgumentNotNull(settings, nameof(settings));
+		PluginSettings = settings;
 	}
 
 	protected void SetName(string name) {
@@ -63,6 +73,16 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 	where TSelf : class
 	where TBlock : class, IApplicationBlock
 	where TPlugin : IApplicationPlugin {
+	public TSelf UseSettings<TSettings>()
+		where TSettings : SettingsObject, new() {
+		return UseSettings(new TSettings());
+	}
+
+	public TSelf UseSettings(SettingsObject settings) {
+		SetPluginSettings(settings);
+		return (TSelf)(object)this;
+	}
+
 	public TSelf WithName(string name) {
 		SetName(name);
 		return (TSelf)(object)this;

@@ -8,6 +8,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -17,62 +19,64 @@ using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
 
-/// <summary>Edits catalog pages through detached sessions with explicit validation and persist-before-publish acceptance.</summary>
+/// <summary>Edits actual application owner settings, retaining local serialized backups only for Cancel.</summary>
 public partial class BlazorApplicationSettingsDialog : ModalComponent {
-	private readonly Dictionary<ApplicationSettingsProfile, ApplicationSettingsEditSession> _edits = new();
-	private readonly HashSet<ApplicationSettingsProfile> _dirty = new();
-	private ApplicationSettingsProfile _selected;
+	private readonly Dictionary<SettingsObject, string> _backups = new(ReferenceEqualityComparer.Instance);
+	private readonly HashSet<SettingsObject> _dirty = new(ReferenceEqualityComparer.Instance);
+	private object _selected;
+	private object _editorKey = new();
 	private DynamicComponent _editor;
 	private string[] _errors = Array.Empty<string>();
 	private bool _saving;
 
-	/// <summary>The owning application's catalog, including unopened and menu-free registrations.</summary>
-	[Parameter] public ApplicationSettingsCatalog Catalog { get; set; }
+	/// <summary>The application supplying its actual plugin, block and screen settings owners.</summary>
+	[Parameter] public IBlazorApplication Application { get; set; }
 
-	/// <summary>The readable application heading, separate from its persistence key.</summary>
+	/// <summary>The readable application heading, separate from persistent settings identity.</summary>
 	[Parameter] public string ApplicationTitle { get; set; } = "Application";
 
-	// A settings value remains persistent even when it has not opted into the automatic editor.
+	/// <summary>The optional owner to select when the dialog opens.</summary>
+	[Parameter] public object SelectedOwner { get; set; }
+
+	// Settings remain persistent even when their classes have not enabled automatic editing.
 	private bool CanEditSelected {
 		get {
 			return CanEdit(_selected);
 		}
 	}
 
-	// Editors are renderer-owned components; the dialog alone owns each edit session and its acceptance boundary.
+	// Custom editors belong to the settings class or the existing screen registration.
 	private Type EditorType {
 		get {
-			var editor = (_selected?.ScreenDefinition as BlazorApplicationScreenDefinition)?.SettingsEditor
-				?? _selected?.ApplicationDefinition?.SettingsEditor ?? typeof(BlazorApplicationSettingsEditor);
-			Guard.Argument(!editor.IsAbstract && !editor.ContainsGenericParameters && typeof(IComponent).IsAssignableFrom(editor)
+			var editor = (_selected as BlazorApplicationScreenDefinition)?.SettingsEditor
+				?? GetDeclaredEditorType(GetSettings(_selected).GetType()) ?? typeof(BlazorApplicationSettingsEditor);
+			Guard.Argument(!editor.IsAbstract && !editor.ContainsGenericParameters && typeof(Microsoft.AspNetCore.Components.IComponent).IsAssignableFrom(editor)
 				&& typeof(IBlazorApplicationSettingsEditor).IsAssignableFrom(editor), nameof(EditorType),
 				"A settings editor must be a concrete component implementing IBlazorApplicationSettingsEditor.");
 			return editor;
 		}
 	}
 
-	// Capture the page in its callback so an unmounted editor cannot dirty a newly selected registration.
+	// A stale editor callback can only dirty the actual settings object that it was given.
 	private IDictionary<string, object> EditorParameters {
 		get {
-			var profile = _selected;
+			var settings = GetSettings(_selected);
 			return new Dictionary<string, object> {
-				[nameof(IBlazorApplicationSettingsEditor.Value)] = _edits[profile].Draft,
-				[nameof(IBlazorApplicationSettingsEditor.Changed)] = EventCallback.Factory.Create(this, () => MarkDirty(profile))
+				[nameof(IBlazorApplicationSettingsEditor.Value)] = settings,
+				[nameof(IBlazorApplicationSettingsEditor.Changed)] = EventCallback.Factory.Create(this, () => _dirty.Add(settings))
 			};
 		}
 	}
 
-	/// <summary>Applies the selected page and retains the dialog and all other provisional pages.</summary>
+	/// <summary>Saves the selected changed owner while retaining other unapplied edits.</summary>
 	public async Task ApplyAsync() {
-		if (_selected != null && _dirty.Contains(_selected))
+		if (GetSettings(_selected) is { } settings && _dirty.Contains(settings))
 			await SaveSelectedPageAsync();
 	}
 
-	/// <summary>Accepts the selected page and closes once no other page has unapplied edits.</summary>
+	/// <summary>Accepts the selected owner and closes after all other edits have been applied.</summary>
 	public async Task AcceptAsync() {
-		if (_saving)
-			return;
-		if (!await SaveSelectedPageAsync())
+		if (_saving || !await SaveSelectedPageAsync())
 			return;
 		if (_dirty.Count != 0) {
 			_errors = new[] { "Other pages still have unapplied changes. Apply those pages, or choose Cancel to discard unapplied changes." };
@@ -81,25 +85,28 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 		await Ok();
 	}
 
-	/// <summary>Replaces the selected draft with its authoritative fresh defaults without saving.</summary>
+	/// <summary>Restores the actual object through its existing default-value lifecycle without saving.</summary>
 	public void ResetDefaults() {
 		if (_saving || !CanEditSelected)
 			return;
-		_edits[_selected].Reset();
-		_dirty.Add(_selected);
+		var settings = GetSettings(_selected);
+		settings.RestoreDefaultValues();
+		_dirty.Add(settings);
+		_editorKey = new object();
 		_errors = Array.Empty<string>();
 	}
 
-	/// <summary>Discards edits since the last successful Apply; accepted preferences remain published.</summary>
+	/// <summary>Restores local backups of unapplied values; successfully saved edits remain accepted.</summary>
 	public void CancelEditing() {
 		if (_saving)
 			return;
-		foreach (var session in _edits.Values)
-			session.Cancel();
+		foreach (var settings in _dirty)
+			SettingsObjectJsonSerializer.PopulateValues(_backups[settings], settings);
+		_dirty.Clear();
 		Cancel();
 	}
 
-	/// <summary>Escape, the close button and backdrop follow the same cancellation boundary.</summary>
+	/// <summary>Escape, the close button and backdrop use the same Cancel boundary.</summary>
 	public override Task<bool> RequestCloseAsync() {
 		if (_saving)
 			return Task.FromResult(false);
@@ -107,52 +114,64 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 		return Task.FromResult(true);
 	}
 
-	// Restoration normally completed at circuit startup; direct hosts still use that same catalog initialization.
-	protected override async Task OnInitializedAsync() {
-		Guard.ArgumentNotNull(Catalog, nameof(Catalog));
-		await Catalog.InitializeAsync();
-		await SelectPageAsync(Catalog.Profiles.FirstOrDefault(CanEdit) ?? Catalog.Profiles.FirstOrDefault());
-	}
-
-	// Valid pending input is retained per page; invalid text must be corrected before its editor is unmounted.
-	private async Task SelectPageAsync(ApplicationSettingsProfile profile) {
-		if (_saving || ReferenceEquals(profile, _selected))
+	/// <summary>Selects an existing owner after validating pending editor input.</summary>
+	public async Task SelectOwnerAsync(object owner) {
+		if (_saving || ReferenceEquals(owner, _selected))
 			return;
 		_saving = true;
-		var editor = _editor?.Instance as IBlazorApplicationSettingsEditor;
 		try {
-			if (!await ValidateEditorAsync(editor))
+			if (!await ValidateEditorAsync())
 				return;
-			_selected = profile;
+			_selected = owner;
 			_editor = null;
+			_editorKey = new object();
 			_errors = Array.Empty<string>();
-			if (CanEdit(profile) && !_edits.ContainsKey(profile))
-				_edits.Add(profile, profile.BeginEdit());
+			if (GetSettings(owner) is { } settings && !_backups.ContainsKey(settings))
+				_backups.Add(settings, SettingsObjectJsonSerializer.SerializeValues(settings));
 		} finally {
 			_saving = false;
 		}
 	}
 
-	// A save failure leaves this detached page dirty and visible; no other page is implicitly accepted.
+	/// <summary>Uses the application's existing initialization before exposing any settings owner.</summary>
+	protected override async Task OnInitializedAsync() {
+		Guard.ArgumentNotNull(Application, nameof(Application));
+		await Application.InitializeAsync();
+		var owners = GetOwners().ToArray();
+		var selected = owners.FirstOrDefault(owner => ReferenceEquals(owner, SelectedOwner)
+			|| SelectedOwner != null && ReferenceEquals(GetSettings(owner), SelectedOwner));
+
+		// The active session knows its registration even before its operational component is rendered.
+		var activeScreen = Application.ScreenHost.ActiveScreen;
+		if (selected == null && activeScreen?.Definition.Settings != null)
+			selected = activeScreen.Definition;
+		if (selected == null && activeScreen?.Block?.BlockSettings != null)
+			selected = activeScreen.Block;
+		await SelectOwnerAsync(selected ?? owners.FirstOrDefault(CanEdit) ?? owners.FirstOrDefault(owner => GetSettings(owner) != null));
+	}
+
+	// Saving the actual object publishes its existing OnChanged event only after the provider succeeds.
 	private async Task<bool> SaveSelectedPageAsync() {
 		if (_saving)
 			return false;
-		// Keep this page and its editor together while custom validation yields to the renderer.
 		_saving = true;
-		var profile = _selected;
-		var editor = _editor?.Instance as IBlazorApplicationSettingsEditor;
 		try {
-			if (!await ValidateEditorAsync(editor))
+			if (!await ValidateEditorAsync())
 				return false;
-			if (profile == null || !_dirty.Contains(profile))
+			var settings = GetSettings(_selected);
+			if (settings == null || !_dirty.Contains(settings))
 				return true;
-			_errors = Array.Empty<string>();
-			var validation = await _edits[profile].ApplyAsync();
-			if (validation.IsFailure) {
-				_errors = validation.ErrorMessages.ToArray();
+			var validation = settings.Validate();
+			var failures = new List<ValidationResult>();
+			Validator.TryValidateObject(settings, new ValidationContext(settings), failures, true);
+			foreach (var failure in failures)
+				validation.AddError(failure.ErrorMessage ?? "The settings value is invalid.");
+			_errors = validation.ErrorMessages.ToArray();
+			if (validation.IsFailure)
 				return false;
-			}
-			_dirty.Remove(profile);
+			await settings.SaveAsync();
+			_backups[settings] = SettingsObjectJsonSerializer.SerializeValues(settings);
+			_dirty.Remove(settings);
 			return true;
 		} catch (Exception error) {
 			_errors = new[] { "Preferences could not be saved. Correct the problem and try again. " + error.Message };
@@ -162,9 +181,9 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 		}
 	}
 
-	// Pending text belongs to the active component; declared value validation is invoked once by ApplyAsync.
-	private async Task<bool> ValidateEditorAsync(IBlazorApplicationSettingsEditor editor) {
-		if (editor == null)
+	// The current component owns any invalid pending text that has not reached the settings object.
+	private async Task<bool> ValidateEditorAsync() {
+		if (_editor?.Instance is not IBlazorApplicationSettingsEditor editor)
 			return true;
 		var validation = await editor.ValidateAsync();
 		if (validation.IsSuccess)
@@ -173,19 +192,52 @@ public partial class BlazorApplicationSettingsDialog : ModalComponent {
 		return false;
 	}
 
-	// The callback captures its own page so an old component cannot mark another registration's draft dirty.
-	private void MarkDirty(ApplicationSettingsProfile profile) {
-		_dirty.Add(profile);
+	// Enumerate existing owners and only settings-bearing screens, including unopened and menu-free registrations.
+	private IEnumerable<object> GetOwners() {
+		foreach (var plugin in Application.LoadedPlugins)
+			yield return plugin;
+		foreach (var block in Application.ScreenHost.AvailableBlocks) {
+			yield return block;
+			foreach (var definition in block.ScreenDefinitions.Where(definition => definition.Settings != null))
+				yield return definition;
+		}
 	}
 
-	// An explicit editor owns its object contract; automatic editing requires the class-level opt-in.
-	private static bool CanEdit(ApplicationSettingsProfile profile) {
-		return profile?.HasOptions == true && ((profile.ScreenDefinition as BlazorApplicationScreenDefinition)?.SettingsEditor != null
-			|| profile.ApplicationDefinition?.SettingsEditor != null || Attribute.IsDefined(profile.SettingsType, typeof(UserEditableAttribute), true));
+	// The same actual owner references drive navigation, editing and persistence.
+	private static SettingsObject GetSettings(object owner) {
+		return owner switch {
+			ApplicationScreenDefinition screen => screen.Settings,
+			IApplicationBlock block => block.BlockSettings,
+			IApplicationPlugin plugin => plugin.PluginSettings,
+			_ => null
+		};
 	}
 
-	// Selection and unsaved markers are presentation only and never become profile identity.
-	private string PageClass(ApplicationSettingsProfile profile) {
-		return ReferenceEquals(profile, _selected) ? "sphere10-options-page-link selected" : "sphere10-options-page-link";
+	// Display text remains independent of provider IDs and registration identity.
+	private static string GetTitle(object owner) {
+		return owner switch {
+			ApplicationScreenDefinition screen => screen.Title,
+			IApplicationBlock block => block.Name,
+			IApplicationPlugin plugin => plugin.Name,
+			_ => string.Empty
+		};
+	}
+
+	// Automatic editing is opt-in; explicit editors may edit an otherwise unmarked settings class.
+	private static bool CanEdit(object owner) {
+		return GetSettings(owner) is { } settings && ((owner as BlazorApplicationScreenDefinition)?.SettingsEditor != null
+			|| GetDeclaredEditorType(settings.GetType()) != null || Attribute.IsDefined(settings.GetType(), typeof(UserEditableAttribute), true));
+	}
+
+	// Ordinary component-model editor metadata belongs to the settings class.
+	private static Type GetDeclaredEditorType(Type settingsType) {
+		var editor = TypeDescriptor.GetAttributes(settingsType).OfType<EditorAttribute>()
+			.FirstOrDefault(attribute => Type.GetType(attribute.EditorBaseTypeName, false) == typeof(IBlazorApplicationSettingsEditor));
+		return editor == null ? null : Type.GetType(editor.EditorTypeName, true);
+	}
+
+	// The selected owner and unapplied marker are presentation state only.
+	private string PageClass(object owner) {
+		return ReferenceEquals(owner, _selected) ? "sphere10-options-page-link selected" : "sphere10-options-page-link";
 	}
 }

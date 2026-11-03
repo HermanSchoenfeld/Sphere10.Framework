@@ -8,13 +8,14 @@
 
 using System;
 using System.Windows.Forms;
+using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>The ordinary detached settings value and borrowed native services available to a custom editor.</summary>
+/// <summary>The actual settings object and borrowed native services available to a custom editor.</summary>
 public sealed class WinFormsApplicationSettingsEditorContext {
-	// Editors borrow this context; the Options dialog retains session, control and persistence ownership.
-	internal WinFormsApplicationSettingsEditorContext(object settings, IWinFormsApplication application,
+	// Editors borrow this context; the Options dialog owns the native editor control.
+	internal WinFormsApplicationSettingsEditorContext(SettingsObject settings, IWinFormsApplication application,
 		IServiceProvider services, IWin32Window owner) {
 		Settings = settings;
 		Application = application;
@@ -22,8 +23,8 @@ public sealed class WinFormsApplicationSettingsEditorContext {
 		Owner = owner;
 	}
 
-	/// <summary>The ordinary detached object edited by this page.</summary>
-	public object Settings { get; }
+	/// <summary>The actual settings object owned by the selected plugin, block or screen.</summary>
+	public SettingsObject Settings { get; }
 
 	/// <summary>The owning block application, or null for a plain main-form application.</summary>
 	public IWinFormsApplication Application { get; }

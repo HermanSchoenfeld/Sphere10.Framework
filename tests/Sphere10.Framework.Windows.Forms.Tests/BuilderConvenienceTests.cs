@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
@@ -22,15 +23,12 @@ public class BuilderConvenienceTests {
 	[Test]
 	public void InlineRegistrationsAndMenusKeepExactMonikersAndTheRetainedNativeGraph() {
 		var activations = 0;
-		var defaults = 0;
+		var defaults = new Preferences { Value = 7 };
 		var builder = new WinFormsApplicationBlockBuilder()
 			.WithName("Input")
 			.AddScreen<ProbeScreen>("First", out var first)
 			.AddScreen<ProbeScreen>("Second", out var second, activationMode: ScreenActivationMode.SingleInstance,
-				stableKey: "second", settingsFactory: () => {
-					defaults++;
-					return new Preferences { Value = 7 };
-				}, activator: _ => {
+				stableKey: "second", settings: defaults, activator: _ => {
 					activations++;
 					return new ProbeScreen();
 				}
@@ -43,7 +41,7 @@ public class BuilderConvenienceTests {
 		using var block = builder.Build();
 
 		Assert.That(builder.Build(), Is.SameAs(block));
-		Assert.That(defaults, Is.EqualTo(1));
+		Assert.That(block.DefaultScreenDefinition.Settings, Is.SameAs(defaults));
 		Assert.That(activations, Is.Zero);
 		Assert.That(block.Menus.Single(), Is.SameAs(menu));
 		Assert.That(menu.Parent, Is.SameAs(block));
@@ -89,7 +87,6 @@ public class BuilderConvenienceTests {
 
 		Assert.That(() => builder.AddScreen<ProbeScreen>(""), Throws.ArgumentException);
 		Assert.That(() => builder.AddScreen<ProbeScreen>("Bad", activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
-		Assert.That(() => builder.AddScreen<ProbeScreen>("No defaults", settingsFactory: () => null), Throws.ArgumentNullException);
 		Assert.That(() => builder.AddMenuItem("Broken", configure: menu => menu.AddItem("Run", (Action)null)), Throws.ArgumentNullException);
 		using var block = builder.AddScreen<ProbeScreen>("Valid").Build();
 		Assert.That(block.ScreenDefinitions, Has.Length.EqualTo(1));
@@ -99,7 +96,7 @@ public class BuilderConvenienceTests {
 	private sealed class ProbeScreen : WinFormsApplicationScreen {
 	}
 
-	private sealed class Preferences {
+	private sealed class Preferences : SettingsObject {
 		public int Value { get; set; }
 	}
 }

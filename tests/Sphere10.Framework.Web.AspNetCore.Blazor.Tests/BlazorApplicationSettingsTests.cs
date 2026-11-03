@@ -17,6 +17,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -32,197 +33,679 @@ using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Modal;
 using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Application;
+using Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 
+/// <summary>Exercises actual settings ownership, browser persistence, editor validation and renderer notifications.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BlazorApplicationSettingsTests {
+
+	/// <summary>Verifies settings class editor is inherited and registration can override it.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public async Task UnmarkedObjectsPersistButRequireAnExplicitEditorForOptions(bool customEditor) {
-		await using var owner = new StoreOwner(new BrowserState("browser"), null);
-		var catalog = new ApplicationSettingsCatalog("app", owner.Store, Array.Empty<IApplicationBlock>(), new[] {
-			new ApplicationSettingsDefinition("plain", "Plain values", new ConstructorOptions("Original"),
-				settingsEditor: customEditor ? typeof(CustomEditor) : null)
+	public async Task SettingsClassEditorIsInheritedAndRegistrationCanOverrideIt(bool overrideEditor) {
+		await using var owner = new ProviderOwner(new BrowserState("declared editor"), null);
+		var defaults = new DeclaredEditorScreen.Preferences();
+		var definition = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Declared", stableKey: "declared",
+			settings: defaults, settingsEditor: overrideEditor ? typeof(CustomEditor) : null);
+		await using var services = CreateServices(owner.Provider, new BlazorApplicationBlock { Id = "declared", Title = "Declared", ScreenDefinitions = new[] { definition } });
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var actualDefinition = application.Blocks.Single().ScreenDefinitions.Single();
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BlazorApplicationSettingsDialog dialog = null;
+			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = actualDefinition,
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+			}));
+			var editor = GetField<DynamicComponent>(dialog, "_editor").Instance;
+			Assert.That(editor, Is.TypeOf(overrideEditor ? typeof(CustomEditor) : typeof(DeclaredSettingsEditor)));
+			Assert.That(((IBlazorApplicationSettingsEditor)editor).Value, Is.SameAs(actualDefinition.Settings));
+			Assert.That(actualDefinition.Settings, Is.Not.SameAs(defaults), "The runtime circuit owns this settings instance.");
 		});
-		await catalog.InitializeAsync();
-		var profile = catalog.GetProfile("plain");
-		Assert.That(profile.HasOptions, Is.True, "Automatic editing policy must not change settings ownership or persistence.");
-		var edit = profile.BeginEdit();
-		((ConstructorOptions)edit.Draft).Caption = "Accepted unmarked values";
-		Assert.That((await edit.ApplyAsync()).IsSuccess, Is.True);
+	}
 
-		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
+	/// <summary>Options omits screens without settings while retaining unopened and noneditable settings owners.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task OptionsHideScreensWithoutSettingsAndKeepUnopenedAndUnmarkedSettings(bool selectScreenWithoutSettings) {
+		var browser = new BrowserState("filtered Options");
+		await using var owner = new ProviderOwner(browser, null);
+		var plain = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "No settings", stableKey: "plain");
+		var unopened = new BlazorApplicationScreenDefinition(typeof(UnopenedAttributeSettingsScreen), "Unopened settings");
+		var unmarked = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Stored settings", stableKey: "stored", settings: new TransientPreferences());
+		await using var services = CreateServices(owner.Provider,
+			new BlazorApplicationBlock { Id = "filtered", Title = "Filtered Options", ScreenDefinitions = new[] { plain, unopened, unmarked } });
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var definitions = application.Blocks.Single().ScreenDefinitions;
 		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(async () => {
 			BlazorApplicationSettingsDialog dialog = null;
 			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(DialogHarness.Catalog)] = catalog,
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = selectScreenWithoutSettings ? definitions[0] : null,
 				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
 			}));
-			var edits = GetField<Dictionary<ApplicationSettingsProfile, ApplicationSettingsEditSession>>(dialog, "_edits");
-			Assert.That(edits.ContainsKey(profile), Is.EqualTo(customEditor));
-			Assert.That(rendered.ToHtmlString().Contains("have not enabled automatic user editing"), Is.EqualTo(!customEditor));
-			dialog.ResetDefaults();
-			Assert.That(profile.GetValues<ConstructorOptions>().Caption, Is.EqualTo("Accepted unmarked values"));
+			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("No settings").And.Contain("Unopened settings").And.Contain("Stored settings"));
+			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(definitions[1]));
+			Assert.That(((IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(definitions[1].Settings));
+			Assert.That(definitions[1].Settings, Is.TypeOf<UnopenedAttributeSettingsScreen.Preferences>());
+			Assert.That(browser.Values, Is.Empty, "Opening Options must not save or activate an unopened settings screen.");
 		});
 	}
 
-	[Test]
-	public async Task ConstructorArgumentObjectFactoryWorksWithTheDirectEditorConvenienceOverload() {
-		var block = new BlazorApplicationBlockBuilder()
-			.WithName("Factory settings")
-			.AddScreen<UnopenedScreen>(screen => screen
-				.WithStableKey("factory")
-				.UseSettings<ConstructorOptions, CustomEditor>(() => new ConstructorOptions("Factory caption")), out var registration
-			)
-			.Build();
-		await using var owner = new StoreOwner(new BrowserState("browser"), null);
-		var catalog = new ApplicationSettingsCatalog("app", owner.Store, new[] { block });
-		await catalog.InitializeAsync();
-		var profile = catalog.GetProfile(block, registration);
-		var edit = profile.BeginEdit();
-		((ConstructorOptions)edit.Draft).Caption = "Accepted caption";
-		Assert.That((await edit.ApplyAsync()).IsSuccess, Is.True);
-		edit.Reset();
-		Assert.That(((ConstructorOptions)edit.Draft).Caption, Is.EqualTo("Factory caption"));
-		Assert.That(profile.GetValues<ConstructorOptions>().Caption, Is.EqualTo("Accepted caption"));
-		Assert.That(((BlazorApplicationScreenDefinition)profile.ScreenDefinition).SettingsEditor, Is.EqualTo(typeof(CustomEditor)));
+	/// <summary>Only real owner groups appear below the application heading, with standalone blocks directly at the root.</summary>
+	[TestCase(false, false)]
+	[TestCase(true, false)]
+	[TestCase(false, true)]
+	[TestCase(true, true)]
+	public async Task OptionsHierarchyContainsOnlyRealPluginAndBlockOwners(bool includePlugin, bool includeStandaloneBlock) {
+		// Compose actual plugin-owned and standalone registrations without activating their operational screens.
+		await using var owner = new ProviderOwner(new BrowserState("owner hierarchy"), null);
+		var registrations = new ServiceCollection()
+			.AddLogging()
+			.AddSingleton<ISettingsProvider>(owner.Provider)
+			.AddSphere10Blazor();
+		if (includePlugin)
+			registrations.AddSphere10BlazorPlugin(plugin => plugin
+				.WithName("Plugin owner")
+				.AddBlock(block => block
+					.WithId("plugin-block")
+					.WithName("Plugin block")
+					.AddScreen<UnopenedAttributeSettingsScreen>("Plugin screen")
+				)
+			);
+		if (includeStandaloneBlock)
+			registrations.AddApplicationBlock(block => block
+				.WithId("standalone")
+				.WithName("Standalone block")
+				.AddScreen<UnopenedAttributeSettingsScreen>("Standalone screen")
+			);
+		await using var services = registrations.BuildServiceProvider();
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(_ => { })
+			}));
+
+			// Remove valueless CSS isolation markers, then normalize the navigation's HTML boolean attribute for XML assertions.
+			var markup = Regex.Match(rendered.ToHtmlString(), "<nav class=\"sphere10-options-navigation\"[^>]*>.*?</nav>", RegexOptions.Singleline).Value;
+			var navigationMarkup = Regex.Replace(markup, @"\s+b-[a-z0-9]+(?=[\s>])", string.Empty);
+			navigationMarkup = Regex.Replace(navigationMarkup, @"(<details)\s+open(?=[\s>])", "$1 open=\"open\"");
+			var navigation = XElement.Parse(navigationMarkup);
+			var roots = navigation.Elements("details").ToArray();
+			var expected = new[] { includePlugin ? "Plugin owner" : null, includeStandaloneBlock ? "Standalone block" : null }.Where(name => name != null);
+			Assert.That(roots.Select(node => node.Element("summary").Value.Trim()), Is.EqualTo(expected));
+			Assert.That(navigation.Descendants("summary").Select(node => node.Value.Trim()), Does.Not.Contain("Application"));
+			if (includePlugin) {
+				var block = roots[0].Elements("details").Single();
+				Assert.That(block.Element("summary").Value.Trim(), Is.EqualTo("Plugin block"));
+				Assert.That(block.Elements("button").Select(button => button.Value), Is.EqualTo(new[] { "Plugin screen" }));
+			}
+			if (includeStandaloneBlock)
+				Assert.That(roots.Last().Elements("button").Select(button => button.Value), Is.EqualTo(new[] { "Standalone screen" }));
+		});
 	}
 
-	[Test]
-	public async Task OrdinaryPrototypeAndDirectEditorValidateResetAndSurviveCircuitRecreation() {
-		var prototype = new RegistrationInspectorSettings { Caption = "Prototype caption" };
-		var block = new BlazorApplicationBlockBuilder()
-			.WithId("plain-settings")
-			.WithName("Plain settings")
-			.AddScreen<UnopenedScreen>(screen => screen
-				.WithStableKey("plain")
-				.UseSettings(prototype)
-				.WithSettingsEditor<RegistrationInspectorSettingsEditor>(), out var registration
-			)
-			.Build();
-		var browser = new BrowserState("browser");
-		await using var firstOwner = new StoreOwner(browser, null);
-		var catalog = new ApplicationSettingsCatalog("app", firstOwner.Store, new[] { block });
-		await catalog.InitializeAsync();
-		var profile = catalog.GetProfile(block, registration);
-		Assert.That(typeof(SettingsObject).IsAssignableFrom(profile.SettingsType), Is.False);
-		Assert.That(((BlazorApplicationScreenDefinition)profile.ScreenDefinition).SettingsEditor, Is.EqualTo(typeof(RegistrationInspectorSettingsEditor)));
-
-		var edit = profile.BeginEdit();
-		((RegistrationInspectorSettings)edit.Draft).Caption = " ";
-		Assert.That((await edit.ApplyAsync()).IsFailure, Is.True);
-		Assert.That(browser.Values, Is.Empty, "Ordinary object validation runs before persistence.");
-		((RegistrationInspectorSettings)edit.Draft).Caption = "Accepted plain object";
-		Assert.That((await edit.ApplyAsync()).IsSuccess, Is.True);
-		edit.Reset();
-		Assert.That(((RegistrationInspectorSettings)edit.Draft).Caption, Is.EqualTo("Prototype caption"));
-		Assert.That(profile.GetValues<RegistrationInspectorSettings>().Caption, Is.EqualTo("Accepted plain object"));
-		Assert.That(prototype.Caption, Is.EqualTo("Prototype caption"));
-		edit.Cancel();
-
-		await using var restartedOwner = new StoreOwner(browser, null);
-		var restarted = new ApplicationSettingsCatalog("app", restartedOwner.Store, new[] { block });
-		await restarted.InitializeAsync();
-		Assert.That(restarted.GetProfile(block, registration).GetValues<RegistrationInspectorSettings>().Caption, Is.EqualTo("Accepted plain object"));
-	}
-
+	/// <summary>The visible session's settings take priority over sidebar browsing unless a caller requests another owner.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public async Task StoreSurvivesCircuitRecreationAndKeepsApplicationAndUserNamespacesSeparate(bool authenticated) {
-		var browser = new BrowserState("browser-one");
-		await using (var first = new StoreOwner(browser, authenticated ? "alice" : null)) {
-			await first.Store.SaveAsync("app-one/preferences", Snapshot(25), false, null);
-		}
-		await using var restarted = new StoreOwner(browser, authenticated ? "alice" : null);
-		await using var otherUser = new StoreOwner(browser, authenticated ? "bob" : "signed-in-user");
-		await using var otherBrowser = new StoreOwner(new BrowserState("browser-two"), authenticated ? "alice" : null);
-
-		var loaded = await restarted.Store.LoadAsync("app-one/preferences", Defaults(), false, null);
-		Assert.That(((Options)loaded.Values).Number, Is.EqualTo(25));
-		Assert.That(loaded.SectionVersions["Grid"], Is.EqualTo(2));
-		Assert.That(await restarted.Store.LoadAsync("app-two/preferences", Defaults(), false, null), Is.Null);
-		Assert.That(await otherUser.Store.LoadAsync("app-one/preferences", Defaults(), false, null), Is.Null);
-		Assert.That(await otherBrowser.Store.LoadAsync("app-one/preferences", Defaults(), false, null), Is.Null);
+	public async Task OptionsPreferActiveScreenSettingsAndRetainExplicitSelection(bool selectExplicitOwner) {
+		await using var owner = new ProviderOwner(new BrowserState("active Options"), null);
+		await using var services = CreateServices(owner.Provider, SettingsBlock("first", Defaults()), SettingsBlock("active", Defaults()));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var first = application.Blocks[0];
+		var active = application.Blocks[1];
+		await application.ScreenHost.OpenScreenAsync(active, active.ScreenDefinitions.Single());
+		await application.ScreenHost.SelectBlockAsync(first);
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BlazorApplicationSettingsDialog dialog = null;
+			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = selectExplicitOwner ? first.ScreenDefinitions.Single() : null,
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+			}));
+			var expected = (selectExplicitOwner ? first : active).ScreenDefinitions.Single();
+			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(expected));
+			Assert.That(((IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(expected.Settings));
+		});
 	}
 
+	/// <summary>Verifies dialog saves actual settings and cancel restores only unapplied edits.</summary>
+	[Test]
+	public async Task DialogSavesActualSettingsAndCancelRestoresOnlyUnappliedEdits() {
+		var browser = new BrowserState("dialog");
+		await using var owner = new ProviderOwner(browser, null);
+		await using var services = CreateServices(owner.Provider, SettingsBlock("preferences", Defaults()));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var definition = application.Blocks.Single().ScreenDefinitions.Single();
+		var settings = (Options)definition.Settings;
+		var changes = 0;
+		settings.OnChanged += () => changes++;
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BlazorApplicationSettingsDialog dialog = null;
+			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = definition,
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+			}));
+			var editor = (IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
+			Assert.That(editor.Value, Is.SameAs(settings));
+			settings.Number = -1;
+			await editor.Changed.InvokeAsync();
+			await dialog.ApplyAsync();
+			Assert.That(browser.Values, Is.Empty);
+			Assert.That(changes, Is.Zero);
+			settings.Number = 25;
+			await editor.Changed.InvokeAsync();
+			await dialog.ApplyAsync();
+			Assert.That(changes, Is.EqualTo(1));
+			Assert.That(browser.Values, Has.Count.EqualTo(1));
+			settings.Number = 99;
+			await editor.Changed.InvokeAsync();
+			dialog.CancelEditing();
+			Assert.That(settings.Number, Is.EqualTo(25));
+			Assert.That(changes, Is.EqualTo(1), "Discarding unapplied edits does not publish another change.");
+		});
+	}
+
+	/// <summary>Verifies actual settings save refreshes both mounted screens without replacing their business draft.</summary>
+	[Test]
+	public async Task ActualSettingsSaveRefreshesBothMountedScreensWithoutReplacingTheirBusinessDraft() {
+		await using var provider = new ProviderOwner(new BrowserState("screen settings"), null);
+		await using var owner = await LifecycleOwner.CreateAsync(provider.Provider);
+		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
+			owner.FirstScreen.OperationalDraft = "Unsaved operation";
+			Assert.That(owner.FirstScreen.ScreenSettings, Is.SameAs(owner.Settings));
+			Assert.That(owner.SecondScreen.ScreenSettings, Is.SameAs(owner.Settings));
+			((Options)owner.Settings).Number = 37;
+			await owner.Settings.SaveAsync();
+		});
+		await owner.WaitForSettingsAsync();
+		Assert.That(owner.FirstScreen.Values.Number, Is.EqualTo(37));
+		Assert.That(owner.SecondScreen.Values.Number, Is.EqualTo(37));
+		Assert.That(owner.FirstScreen.OperationalDraft, Is.EqualTo("Unsaved operation"));
+	}
+
+	/// <summary>Verifies renderer veto and hide do not save while failed accepted close keeps ownership for retry.</summary>
+	[Test]
+	public async Task RendererVetoAndHideDoNotSaveWhileFailedAcceptedCloseKeepsOwnershipForRetry() {
+		var browser = new BrowserState("lifecycle");
+		await using var provider = new ProviderOwner(browser, null);
+		await using var owner = await LifecycleOwner.CreateAsync(provider.Provider);
+		var screen = owner.FirstScreen;
+		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
+			await owner.Host.ShowScreenAsync(owner.First);
+			screen.Edit(15);
+			await owner.Host.ShowScreenAsync(owner.Second);
+			Assert.That(screen.Deactivations, Is.EqualTo(1));
+			Assert.That(browser.Values, Is.Empty, "Hiding a retained screen does not save preferences.");
+			await owner.Host.ShowScreenAsync(owner.First);
+			screen.AllowLeave = false;
+			Assert.That(await owner.Host.CloseScreenAsync(owner.First), Is.False);
+			Assert.That(browser.Values, Is.Empty);
+			screen.AllowLeave = true;
+			browser.FailWrite = true;
+			var deactivations = screen.Deactivations;
+			await Assert.ThatAsync(async () => await owner.Host.CloseScreenAsync(owner.First), Throws.InstanceOf<JSException>());
+			Assert.That(owner.Host.ActiveScreen, Is.SameAs(owner.First));
+			Assert.That(owner.First.Screen, Is.SameAs(screen));
+			Assert.That(screen.Host, Is.SameAs(owner.Host));
+			Assert.That(screen.Deactivations, Is.EqualTo(deactivations));
+			Assert.That(screen.SettingsError, Does.Contain("unavailable"));
+			browser.FailWrite = false;
+			Assert.That(await owner.Host.CloseScreenAsync(owner.First), Is.True);
+		});
+		Assert.That(browser.Values, Has.Count.EqualTo(1));
+	}
+
+	/// <summary>Approved application finalization persists dirty mounted screens before their provider is released.</summary>
+	[Test]
+	public async Task ApprovedFinalizationSavesMountedSettingsOnceAfterInitializedStateIsCleared() {
+		var browser = new BrowserState("finalization");
+		await using var provider = new ProviderOwner(browser, null);
+		await using var owner = await LifecycleOwner.CreateAsync(provider.Provider);
+		var application = owner.First.Block.Parent;
+		var changes = 0;
+		owner.Settings.OnChanged += () => changes++;
+		Assert.That(application.IsInitialized, Is.True);
+
+		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
+			owner.FirstScreen.Edit(63);
+			await application.FinalizeAsync();
+		});
+
+		Assert.That(application.IsInitialized, Is.False);
+		Assert.That(browser.Values, Has.Count.EqualTo(1));
+		Assert.That(changes, Is.EqualTo(1));
+		var stored = (Options)await provider.Provider.LoadSettingAsync(typeof(Options), owner.Settings.ID);
+		Assert.That(stored.Number, Is.EqualTo(63));
+
+		await application.FinalizeAsync();
+		Assert.That(changes, Is.EqualTo(1), "Repeated finalization must not save the accepted edit again.");
+	}
+
+	/// <summary>Verifies committed browser write notifies even when the caller cancels at acknowledgement.</summary>
+	[Test]
+	public async Task CommittedBrowserWriteNotifiesEvenWhenTheCallerCancelsAtAcknowledgement() {
+		using var cancellation = new CancellationTokenSource();
+		var browser = new BrowserState("browser") { AfterWrite = cancellation.Cancel };
+		await using var owner = new ProviderOwner(browser, null);
+		var settings = Snapshot(44);
+		settings.Provider = owner.Provider;
+		var changes = 0;
+		settings.OnChanged += () => changes++;
+		await settings.SaveAsync(cancellation.Token);
+		Assert.That(changes, Is.EqualTo(1));
+		Assert.That(((Options)await owner.Provider.LoadSettingAsync(Defaults())).Number, Is.EqualTo(44));
+	}
+
+	/// <summary>Verifies reset and cancel use the actual root and preserve previously applied grid values.</summary>
+	[Test]
+	public async Task ResetAndCancelUseTheActualRootAndPreservePreviouslyAppliedGridValues() {
+		await using var owner = new ProviderOwner(new BrowserState("reset"), null);
+		await using var services = CreateServices(owner.Provider, SettingsBlock("preferences", Defaults()));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var definition = application.Blocks.Single().ScreenDefinitions.Single();
+		var settings = (Options)definition.Settings;
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BlazorApplicationSettingsDialog dialog = null;
+			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = definition,
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+			}));
+			var editor = (IBlazorApplicationSettingsEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
+			settings.Number = 33;
+			settings.Grid.Columns.Single().Width = 281;
+			await editor.Changed.InvokeAsync();
+			await dialog.ApplyAsync();
+			dialog.ResetDefaults();
+			Assert.That(settings.Number, Is.EqualTo(10));
+			Assert.That(settings.Grid.Columns.Single().Width, Is.EqualTo(150));
+			dialog.CancelEditing();
+			Assert.That(definition.Settings, Is.SameAs(settings));
+			Assert.That(settings.Number, Is.EqualTo(33));
+			Assert.That(settings.Grid.Columns.Single().Width, Is.EqualTo(281));
+		});
+	}
+
+	/// <summary>Verifies pending custom validation keeps its owner and prevents reset cancel or another selection.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task PendingCustomValidationKeepsItsOwnerAndPreventsResetCancelOrAnotherSelection(bool valid) {
+		await using var owner = new ProviderOwner(new BrowserState("validation"), null);
+		await using var services = CreateServices(owner.Provider, SettingsBlock("first", Defaults(), typeof(BlockingValidationEditor)), SettingsBlock("second", Defaults()));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var definitions = application.Blocks.Select(block => block.ScreenDefinitions.Single()).ToArray();
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BlazorApplicationSettingsDialog dialog = null;
+			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = definitions[0],
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+			}));
+			var editor = (BlockingValidationEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
+			var settings = (Options)definitions[0].Settings;
+			settings.Number = 41;
+			await editor.Changed.InvokeAsync();
+			var release = new TaskCompletionSource<Result>(TaskCreationOptions.RunContinuationsAsynchronously);
+			editor.PendingValidation = release.Task;
+			var apply = dialog.ApplyAsync();
+			dialog.ResetDefaults();
+			dialog.CancelEditing();
+			await dialog.SelectOwnerAsync(definitions[1]);
+			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(definitions[0]));
+			Assert.That(settings.Number, Is.EqualTo(41));
+			release.SetResult(valid ? Result.Success : Result.Error("Pending text is invalid."));
+			await apply;
+			Assert.That(await owner.Provider.ContainsSettingAsync(typeof(Options), settings.ID), Is.EqualTo(valid));
+		});
+	}
+
+	/// <summary>Verifies restoration populates the actual owner when the provider returns another record.</summary>
+	[Test]
+	public async Task RestorationPopulatesTheActualOwnerWhenTheProviderReturnsAnotherRecord() {
+		var provider = new DistinctRecordProvider();
+		await using var services = CreateServices(provider, SettingsBlock("preferences", Defaults()));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		var definition = application.Blocks.Single().ScreenDefinitions.Single();
+		var actual = definition.Settings;
+		await application.InitializeAsync();
+		Assert.That(definition.Settings, Is.SameAs(actual));
+		Assert.That(((Options)actual).Number, Is.EqualTo(73));
+		Assert.That(actual.ID, Is.EqualTo("preferences"));
+		Assert.That(actual.Provider, Is.SameAs(provider));
+	}
+
+	/// <summary>Damaged or invalid browser records cannot replace usable owner defaults or publish changes.</summary>
+	[TestCase("{\"Number\":0,\"Nested\":{\"Text\":\"Changed\"}}", false)]
+	[TestCase("{\"Number\":31,\"Nested\":{\"Text\":\"Changed\"},\"Numbers\":\"broken\"}", false)]
+	[TestCase("{\"Number\":0,\"Nested\":{\"Text\":\"Changed\"}}", true)]
+	[TestCase("{\"Number\":31,\"Nested\":{\"Text\":\"Changed\"},\"Numbers\":\"broken\"}", true)]
+	public async Task ApplicationRestorationRejectsInvalidAndPartiallyPopulatedValues(string payload, bool legacyEnvelope) {
+		var browser = new BrowserState("invalid application settings");
+		await using var owner = new ProviderOwner(browser, null);
+		var defaults = Defaults();
+		defaults.Nested.Text = "Configured nested default";
+		await owner.Provider.SaveSettingAsync(defaults);
+		var key = browser.Values.Keys.Single();
+		browser.Values[key] = payload;
+		var provider = new SettingsProviderDecorator(owner.Provider);
+		await using var services = CreateServices(provider, SettingsBlock("preferences", defaults));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		var block = application.Blocks.Single();
+		var definition = block.ScreenDefinitions.Single();
+		var actual = (Options)definition.Settings;
+		var changes = 0;
+		actual.OnChanged += () => changes++;
+		if (legacyEnvelope) {
+			var prefix = key[..(key.IndexOf(":app/", StringComparison.Ordinal) + 1)];
+			var legacyKey = Tools.UI.GetScreenSettingsKey(Tools.Runtime.GetEntryAssembly().GetName().Name, block, definition, block.Id);
+			browser.Values.Clear();
+			key = prefix + legacyKey;
+			browser.Values[key] = "{\"values\":" + payload + "}";
+		}
+		var storedPayload = browser.Values[key];
+
+		await application.InitializeAsync();
+
+		Assert.That(definition.Settings, Is.SameAs(actual));
+		Assert.That(actual.Number, Is.EqualTo(10));
+		Assert.That(actual.Nested.Text, Is.EqualTo("Configured nested default"));
+		Assert.That(actual.Numbers, Is.EqualTo(new[] { 10, 20 }));
+		Assert.That(actual.ID, Is.EqualTo("preferences"));
+		Assert.That(actual.Provider, Is.SameAs(provider));
+		Assert.That(changes, Is.Zero);
+		Assert.That(browser.Values[key], Is.EqualTo(storedPayload), "An optional rejected record is not rewritten during startup.");
+	}
+
+	/// <summary>Annotations participate in load validation even when the settings class has no custom Validate override.</summary>
+	[Test]
+	public async Task ApplicationRestorationRejectsAnnotationFailures() {
+		var browser = new BrowserState("annotation validation");
+		await using var owner = new ProviderOwner(browser, null);
+		var defaults = new AnnotatedOptions { ID = "annotations", Number = 5, Caption = "Configured default" };
+		await owner.Provider.SaveSettingAsync(defaults);
+		var key = browser.Values.Keys.Single();
+		browser.Values[key] = "{\"Number\":0,\"Caption\":\"Changed\"}";
+		var definition = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Annotations", stableKey: "annotations", settings: defaults);
+		await using var services = CreateServices(owner.Provider,
+			new BlazorApplicationBlock { Id = "annotations", Title = "Annotations", ScreenDefinitions = new[] { definition } });
+		var application = services.GetRequiredService<IBlazorApplication>();
+		var actual = (AnnotatedOptions)application.Blocks.Single().ScreenDefinitions.Single().Settings;
+
+		await application.InitializeAsync();
+
+		Assert.That(actual.Number, Is.EqualTo(5));
+		Assert.That(actual.Caption, Is.EqualTo("Configured default"));
+		Assert.That(actual.ID, Is.EqualTo("annotations"));
+		Assert.That(actual.Provider, Is.SameAs(owner.Provider));
+	}
+
+	/// <summary>Cancellation restores a partial overlay before the normal cancellation escapes initialization.</summary>
+	[Test]
+	public async Task CancelledRestorationRetainsTheActualDefaultValues() {
+		await using var owner = new ProviderOwner(new BrowserState("cancelled restoration"), null);
+		using var cancellation = new CancellationTokenSource();
+		var provider = new CancelledOverlayProvider(owner.Provider, cancellation);
+		await using var services = CreateServices(provider, SettingsBlock("preferences", Defaults()));
+		var application = services.GetRequiredService<IBlazorApplication>();
+		var definition = application.Blocks.Single().ScreenDefinitions.Single();
+		var actual = (Options)definition.Settings;
+
+		await Assert.ThatAsync(async () => await application.InitializeAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+
+		Assert.That(definition.Settings, Is.SameAs(actual));
+		Assert.That(actual.Number, Is.EqualTo(10));
+		Assert.That(actual.Nested.Text, Is.EqualTo("default"));
+		Assert.That(actual.ID, Is.EqualTo("preferences"));
+		Assert.That(actual.Provider, Is.SameAs(provider));
+	}
+
+	/// <summary>A second completed edit remains dirty while an earlier save waits for acknowledgement.</summary>
+	[Test]
+	public async Task EditDuringPendingSaveIsPersistedByTheNextSave() {
+		var browser = new BrowserState("pending save edits");
+		await using var store = new ProviderOwner(browser, null);
+		var provider = new PendingSaveProvider(store.Provider);
+		await using var owner = await LifecycleOwner.CreateAsync(provider);
+		using var release = Tools.Scope.ExecuteOnDispose(() => provider.Release.TrySetResult());
+		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
+			owner.FirstScreen.Edit(20);
+			var saving = owner.FirstScreen.SaveSettingsAsync();
+			await provider.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			Assert.That(JObject.Parse(browser.Values.Single().Value)[nameof(Options.Number)].Value<int>(), Is.EqualTo(20));
+			owner.FirstScreen.Edit(37);
+			provider.Release.TrySetResult();
+			await saving;
+			await owner.FirstScreen.SaveSettingsAsync();
+		});
+
+		Assert.That(provider.SaveCalls, Is.EqualTo(2));
+		Assert.That(JObject.Parse(browser.Values.Single().Value)[nameof(Options.Number)].Value<int>(), Is.EqualTo(37));
+	}
+
+	/// <summary>Verifies unmarked settings require an explicit editor without losing their persistence.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task UnmarkedSettingsRequireAnExplicitEditorWithoutLosingTheirPersistence(bool customEditor) {
+		await using var owner = new ProviderOwner(new BrowserState("unmarked"), null);
+		var definition = new BlazorApplicationScreenDefinition(typeof(DeclaredEditorScreen), "Preferences", stableKey: "preferences",
+			settings: new TransientPreferences(), settingsEditor: customEditor ? typeof(CustomEditor) : null);
+		await using var services = CreateServices(owner.Provider,
+			new BlazorApplicationBlock { Id = "preferences", Title = "Preferences", ScreenDefinitions = new[] { definition } });
+		var application = services.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		var actualDefinition = application.Blocks.Single().ScreenDefinitions.Single();
+		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			BlazorApplicationSettingsDialog dialog = null;
+			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
+				[nameof(DialogHarness.Application)] = application,
+				[nameof(DialogHarness.Owner)] = customEditor ? actualDefinition : null,
+				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
+			}));
+			Assert.That(GetField<object>(dialog, "_selected"), Is.SameAs(actualDefinition));
+			if (customEditor)
+				Assert.That(((CustomEditor)GetField<DynamicComponent>(dialog, "_editor").Instance).Value, Is.SameAs(actualDefinition.Settings));
+			else
+				Assert.That(rendered.ToHtmlString(), Does.Contain("not enabled automatic user editing"));
+		});
+		((TransientPreferences)actualDefinition.Settings).Name = "Saved by the owner";
+		await actualDefinition.Settings.SaveAsync();
+		Assert.That(await owner.Provider.ContainsSettingAsync(typeof(TransientPreferences), actualDefinition.Settings.ID), Is.True);
+	}
+
+	// Compose the actual application/provider lifecycle without activating operational screens.
+	private static ServiceProvider CreateServices(ISettingsProvider provider, params IBlazorApplicationBlock[] blocks) {
+		var services = new ServiceCollection().AddLogging().AddSingleton<ISettingsProvider>(provider).AddSphere10Blazor();
+		foreach (var block in blocks)
+			services.AddApplicationBlock(block);
+		return services.BuildServiceProvider();
+	}
+
+
+	/// <summary>Verifies transient properties remain excluded across overrides and circuit recreation.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task TransientPropertiesRemainExcludedAcrossOverridesAndCircuitRecreation(bool overridden) {
+		var browser = new BrowserState("browser");
+		TransientPreferences values = overridden ? new InheritedTransientPreferences() : new TransientPreferences();
+		values.Name = "Accepted";
+		values.Runtime = "must-not-persist";
+		values.ID = "preferences";
+		await using (var owner = new ProviderOwner(browser, null)) {
+			await owner.Provider.SaveSettingAsync(values);
+		}
+
+		var record = browser.Values.Single();
+		Assert.That(record.Value, Does.Not.Contain("must-not-persist").And.Not.Contain("Runtime"));
+		var payload = JObject.Parse(record.Value);
+		payload[nameof(TransientPreferences.Runtime)] = "ignored-old-runtime";
+		browser.Values[record.Key] = payload.ToString();
+
+		await using var restarted = new ProviderOwner(browser, null);
+		TransientPreferences defaults = overridden ? new InheritedTransientPreferences() : new TransientPreferences();
+		defaults.ID = "preferences";
+		var runtimeDefault = defaults.Runtime;
+		var restored = (TransientPreferences)await restarted.Provider.LoadSettingAsync(defaults);
+		Assert.That(restored.Name, Is.EqualTo("Accepted"));
+		Assert.That(restored.Runtime, Is.EqualTo(runtimeDefault));
+	}
+
+	/// <summary>Verifies provider survives circuit recreation and keeps application user and registration namespaces separate.</summary>
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task ProviderSurvivesCircuitRecreationAndKeepsApplicationUserAndRegistrationNamespacesSeparate(bool authenticated) {
+		var browser = new BrowserState("browser-one");
+		await using (var first = new ProviderOwner(browser, authenticated ? "alice" : null, "app-one")) {
+			await first.Provider.SaveSettingAsync(Snapshot(25));
+		}
+		await using var restarted = new ProviderOwner(browser, authenticated ? "alice" : null, "app-one");
+		await using var otherApplication = new ProviderOwner(browser, authenticated ? "alice" : null, "app-two");
+		await using var otherUser = new ProviderOwner(browser, authenticated ? "bob" : "signed-in-user", "app-one");
+		await using var otherBrowser = new ProviderOwner(new BrowserState("browser-two"), authenticated ? "alice" : null, "app-one");
+
+		var loaded = (Options)await restarted.Provider.LoadSettingAsync(Defaults());
+		Assert.That(loaded.Number, Is.EqualTo(25));
+		Assert.That(loaded.Provider, Is.SameAs(restarted.Provider));
+		Assert.That(loaded.ID, Is.EqualTo("preferences"));
+		Assert.That(await restarted.Provider.ContainsSettingAsync(typeof(Options), "another-registration"), Is.False);
+		Assert.That(await otherApplication.Provider.ContainsSettingAsync(typeof(Options), "preferences"), Is.False);
+		Assert.That(await otherUser.Provider.ContainsSettingAsync(typeof(Options), "preferences"), Is.False);
+		Assert.That(await otherBrowser.Provider.ContainsSettingAsync(typeof(Options), "preferences"), Is.False);
+	}
+
+	/// <summary>Verifies existing circuit cannot retarget its live profile when the authenticated subject changes.</summary>
 	[Test]
 	public async Task ExistingCircuitCannotRetargetItsLiveProfileWhenTheAuthenticatedSubjectChanges() {
 		var browser = new BrowserState("browser");
-		await using var owner = new StoreOwner(browser, "alice");
-		await owner.Store.SaveAsync("app/preferences", Snapshot(10), false, null);
+		await using var owner = new ProviderOwner(browser, "alice");
+		await owner.Provider.SaveSettingAsync(Snapshot(10));
 		var original = browser.Values.Single();
 		owner.Authentication.Subject = "bob";
 
-		await Assert.ThatAsync(async () => await owner.Store.LoadAsync("app/preferences", Defaults(), false, null), Throws.InvalidOperationException);
-		await Assert.ThatAsync(async () => await owner.Store.SaveAsync("app/preferences", Snapshot(20), false, null), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await owner.Provider.LoadSettingAsync(Defaults()), Throws.InvalidOperationException);
+		await Assert.ThatAsync(async () => await owner.Provider.SaveSettingAsync(Snapshot(20)), Throws.InvalidOperationException);
 		Assert.That(browser.Values.Single(), Is.EqualTo(original));
 	}
 
+	/// <summary>Verifies user change during serialization cannot commit into the old browser namespace.</summary>
 	[Test]
-	public async Task StoreHydratesOnlyTheDeclaredTypeAndRejectsMalformedEnvelopes() {
+	public async Task UserChangeDuringSerializationCannotCommitIntoTheOldBrowserNamespace() {
 		var browser = new BrowserState("browser");
-		await using var owner = new StoreOwner(browser, "alice");
-		await owner.Store.SaveAsync("app/preferences", Snapshot(18), false, null);
-		var key = browser.Values.Keys.Single();
-		var envelope = JObject.Parse(browser.Values[key]);
-		((JObject)envelope["values"])["$type"] = typeof(UnrelatedSettings).AssemblyQualifiedName;
-		browser.Values[key] = envelope.ToString();
+		await using var owner = new ProviderOwner(browser, "alice");
+		await owner.Provider.SaveSettingAsync(Snapshot(10));
+		var original = browser.Values.Single();
+		var settings = new SerializationProbe { Serialized = () => owner.Authentication.Subject = "bob" };
 
-		var loaded = await owner.Store.LoadAsync("app/preferences", Defaults(), false, null);
-		Assert.That(loaded.Values.GetType(), Is.EqualTo(typeof(Options)));
-		Assert.That(((Options)loaded.Values).Number, Is.EqualTo(18));
-		browser.Values[key] = "{ \"values\": [] }";
-		await Assert.ThatAsync(async () => await owner.Store.LoadAsync("app/preferences", Defaults(), false, null), Throws.TypeOf<JsonSerializationException>());
+		await Assert.ThatAsync(async () => await owner.Provider.SaveSettingAsync(settings), Throws.InvalidOperationException);
+
+		Assert.That(browser.Values.Single(), Is.EqualTo(original));
 	}
 
+	/// <summary>Verifies delete and clear retain other application and user settings.</summary>
+	[Test]
+	public async Task DeleteAndClearRetainOtherApplicationAndUserSettings() {
+		var browser = new BrowserState("browser");
+		await using var owner = new ProviderOwner(browser, "alice", "one");
+		await using var otherApplication = new ProviderOwner(browser, "alice", "two");
+		await using var otherUser = new ProviderOwner(browser, "bob", "one");
+		await owner.Provider.SaveSettingAsync(Snapshot(10));
+		await otherApplication.Provider.SaveSettingAsync(Snapshot(20));
+		await otherUser.Provider.SaveSettingAsync(Snapshot(30));
+		await owner.Provider.DeleteSettingAsync(Defaults());
+		Assert.That(await owner.Provider.ContainsSettingAsync(typeof(Options), "preferences"), Is.False);
+		await owner.Provider.SaveSettingAsync(Snapshot(40));
+		await owner.Provider.ClearSettingsAsync();
+
+		Assert.That(await owner.Provider.ContainsSettingAsync(typeof(Options), "preferences"), Is.False);
+		Assert.That(((Options)await otherApplication.Provider.LoadSettingAsync(Defaults())).Number, Is.EqualTo(20));
+		Assert.That(((Options)await otherUser.Provider.LoadSettingAsync(Defaults())).Number, Is.EqualTo(30));
+	}
+
+	/// <summary>Verifies provider hydrates only the declared type and rejects malformed settings.</summary>
+	[Test]
+	public async Task ProviderHydratesOnlyTheDeclaredTypeAndRejectsMalformedSettings() {
+		var browser = new BrowserState("browser");
+		await using var owner = new ProviderOwner(browser, "alice");
+		await owner.Provider.SaveSettingAsync(Snapshot(18));
+		var key = browser.Values.Keys.Single();
+		var payload = JObject.Parse(browser.Values[key]);
+		payload["$type"] = typeof(UnrelatedSettings).AssemblyQualifiedName;
+		browser.Values[key] = payload.ToString();
+
+		var loaded = await owner.Provider.LoadSettingAsync(Defaults());
+		Assert.That(loaded.GetType(), Is.EqualTo(typeof(Options)));
+		Assert.That(((Options)loaded).Number, Is.EqualTo(18));
+		browser.Values[key] = "[]";
+		await Assert.ThatAsync(async () => await owner.Provider.LoadSettingAsync(Defaults()), Throws.TypeOf<JsonSerializationException>());
+	}
+
+	/// <summary>Verifies partial payload keeps factory defaults and explicit empty collections replace them.</summary>
 	[Test]
 	public async Task PartialPayloadKeepsFactoryDefaultsAndExplicitEmptyCollectionsReplaceThem() {
 		var browser = new BrowserState("browser");
-		await using var owner = new StoreOwner(browser, null);
+		await using var owner = new ProviderOwner(browser, null);
 		var defaults = new PartialOptions {
+			ID = "partial",
 			Caption = "Registration factory default",
 			Nested = new NestedOptions { Text = "Nested factory default" },
 			Items = new List<string> { "Factory item" },
 			Tags = new[] { "Factory tag" },
 			Roles = new Dictionary<string, string> { ["factory"] = "Factory role" }
 		};
-		await owner.Store.SaveAsync("app/partial", new ApplicationSettingsStoredProfile { Values = defaults }, false, null);
+		await owner.Provider.SaveSettingAsync(defaults);
 		var key = browser.Values.Keys.Single();
-		browser.Values[key] = "{\"values\":{\"Nested\":{},\"Items\":[],\"Tags\":[],\"Roles\":{}},\"sectionVersions\":{\"Grid\":2}}";
+		browser.Values[key] = "{\"Nested\":{},\"Items\":[],\"Tags\":[],\"Roles\":{}}";
 		var storedPayload = browser.Values[key];
 
-		var loaded = await owner.Store.LoadAsync("app/partial", defaults, false, null);
-		var values = (PartialOptions)loaded.Values;
+		var values = (PartialOptions)await owner.Provider.LoadSettingAsync(defaults);
 
 		Assert.That(values.Caption, Is.EqualTo("Registration factory default"));
 		Assert.That(values.Nested.Text, Is.EqualTo("Nested factory default"));
 		Assert.That(values.Items, Is.Empty);
 		Assert.That(values.Tags, Is.Empty);
 		Assert.That(values.Roles, Is.Empty);
-		Assert.That(loaded.SectionVersions["Grid"], Is.EqualTo(2));
 		Assert.That(browser.Values[key], Is.EqualTo(storedPayload), "Restoring missing defaults must not rewrite the stored record.");
 	}
 
+	/// <summary>Verifies explicit null in stored values is not replaced with factory defaults.</summary>
 	[Test]
 	public async Task ExplicitNullInStoredValuesIsNotReplacedWithFactoryDefaults() {
 		var browser = new BrowserState("browser");
-		await using var owner = new StoreOwner(browser, null);
-		var defaults = new PartialOptions { Caption = "Factory caption" };
-		await owner.Store.SaveAsync("app/partial", new ApplicationSettingsStoredProfile { Values = defaults }, false, null);
+		await using var owner = new ProviderOwner(browser, null);
+		var defaults = new PartialOptions { ID = "partial", Caption = "Factory caption" };
+		await owner.Provider.SaveSettingAsync(defaults);
 		var key = browser.Values.Keys.Single();
-		browser.Values[key] = "{\"values\":{\"Caption\":null}}";
+		browser.Values[key] = "{\"Caption\":null}";
 
-		var loaded = await owner.Store.LoadAsync("app/partial", defaults, false, null);
+		var loaded = await owner.Provider.LoadSettingAsync(defaults);
 
-		Assert.That(((PartialOptions)loaded.Values).Caption, Is.Null);
+		Assert.That(((PartialOptions)loaded).Caption, Is.Null);
 	}
 
+	/// <summary>Verifies provider serializes its exclusive snapshot outside the owners synchronization context.</summary>
 	[Test]
-	public async Task StoreSerializesItsExclusiveSnapshotOutsideTheOwnersSynchronizationContext() {
-		await using var owner = new StoreOwner(new BrowserState("browser"), null);
+	public async Task ProviderSerializesItsExclusiveSnapshotOutsideTheOwnersSynchronizationContext() {
+		await using var owner = new ProviderOwner(new BrowserState("browser"), null);
 		var context = new SynchronizationContext();
 		SynchronizationContext observed = context;
 		var values = new SerializationProbe { Serialized = () => observed = SynchronizationContext.Current };
@@ -230,7 +713,7 @@ public class BlazorApplicationSettingsTests {
 		Task saving;
 		SynchronizationContext.SetSynchronizationContext(context);
 		try {
-			saving = owner.Store.SaveAsync("app/preferences", new ApplicationSettingsStoredProfile { Values = values }, false, null);
+			saving = owner.Provider.SaveSettingAsync(values);
 		} finally {
 			SynchronizationContext.SetSynchronizationContext(original);
 		}
@@ -239,49 +722,7 @@ public class BlazorApplicationSettingsTests {
 		Assert.That(observed, Is.Not.SameAs(context));
 	}
 
-	[Test]
-	public async Task CommittedBrowserWritePublishesEvenWhenTheCallerCancelsAtAcknowledgement() {
-		using var cancellation = new CancellationTokenSource();
-		var browser = new BrowserState("browser") { AfterWrite = cancellation.Cancel };
-		await using var owner = new StoreOwner(browser, null);
-		var profile = await ProfileAsync(owner.Store);
-		var edit = profile.BeginEdit();
-		((Options)edit.Draft).Number = 44;
-
-		Assert.That((await edit.ApplyAsync(cancellation.Token)).IsSuccess, Is.True);
-		Assert.That(profile.GetValues<Options>(out var revision).Number, Is.EqualTo(44));
-		Assert.That(revision, Is.EqualTo(1));
-	}
-
-	[Test]
-	public async Task DirectEditorTypesAndSourceMonikersSurviveIndependentCatalogGraphs() {
-		var root = new ApplicationSettingsDefinition("root", "Root", new Options(), settingsEditor: typeof(CustomEditor)).WithStorageId(null);
-		var builder = new BlazorApplicationBlockBuilder()
-			.WithId("stable-block")
-			.WithName("A caption")
-			.AddScreen<UnopenedScreen>(screen => screen
-				.WithStableKey("preferences")
-				.UseSettings<Options>()
-				.WithSettingsEditor<CustomEditor>(), out var registration
-			);
-		var first = builder.Build();
-		var second = builder.WithName("A changed caption").Build();
-		await using var storeOwner = new StoreOwner(new BrowserState("browser"), null);
-		var firstCatalog = new ApplicationSettingsCatalog("app", storeOwner.Store, new[] { first }, new[] { root }, blockKeySelector: block => ((IBlazorApplicationBlock)block).Id);
-		var secondCatalog = new ApplicationSettingsCatalog("app", storeOwner.Store, new[] { second }, new[] { root }, blockKeySelector: block => ((IBlazorApplicationBlock)block).Id);
-		await firstCatalog.InitializeAsync();
-		await secondCatalog.InitializeAsync();
-
-		var profile = firstCatalog.GetProfile(first, registration);
-		Assert.That(((BlazorApplicationScreenDefinition)profile.ScreenDefinition).SettingsEditor, Is.EqualTo(typeof(CustomEditor)));
-		Assert.That(firstCatalog.GetProfile("root").ApplicationDefinition.SettingsEditor, Is.EqualTo(typeof(CustomEditor)));
-		Assert.That(firstCatalog.GetProfile("root").HasExplicitStorageId, Is.True);
-		Assert.That(firstCatalog.GetProfile("root").StorageId, Is.Null);
-		Assert.That(secondCatalog.GetProfile(second, registration).ProfileKey, Is.EqualTo(profile.ProfileKey));
-		Assert.That(secondCatalog.GetProfile(second, registration).ScreenDefinition, Is.Not.SameAs(profile.ScreenDefinition));
-		Assert.That(profile.ScreenDefinition.Activators, Is.Empty);
-	}
-
+	/// <summary>Verifies default editor renders readable nested values and schema columns without provider or membership controls.</summary>
 	[Test]
 	public async Task DefaultEditorRendersReadableNestedValuesAndSchemaColumnsWithoutProviderOrMembershipControls() {
 		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
@@ -305,6 +746,7 @@ public class BlazorApplicationSettingsTests {
 		});
 	}
 
+	/// <summary>Verifies dictionary grid roles render their readable schema and editable widths.</summary>
 	[Test]
 	public async Task DictionaryGridRolesRenderTheirReadableSchemaAndEditableWidths() {
 		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
@@ -320,22 +762,7 @@ public class BlazorApplicationSettingsTests {
 		});
 	}
 
-	[Test]
-	public async Task TesterCustomEditorPreviewsTheDetachedCaptionRatherThanItsModelTypeName() {
-		await using var owner = new StoreOwner(new BrowserState("browser"), null);
-		var catalog = new ApplicationSettingsCatalog("app", owner.Store, Array.Empty<IApplicationBlock>(),
-			new[] { new ApplicationSettingsDefinition("gpu", "GPU", new RegistrationInspectorSettings { Caption = "GPU summary" }, settingsEditor: typeof(RegistrationInspectorSettingsEditor)) });
-		await catalog.InitializeAsync();
-		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
-		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
-		await renderer.Dispatcher.InvokeAsync(async () => {
-			var rendered = await renderer.RenderComponentAsync<RegistrationInspectorSettingsEditor>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(RegistrationInspectorSettingsEditor.Value)] = catalog.GetProfile("gpu").BeginEdit().Draft
-			}));
-			Assert.That(rendered.ToHtmlString(), Does.Contain(">GPU summary</output>"));
-		});
-	}
-
+	/// <summary>Verifies invalid collection item text remains an error when another item is edited successfully.</summary>
 	[Test]
 	public async Task InvalidCollectionItemTextRemainsAnErrorWhenAnotherItemIsEditedSuccessfully() {
 		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
@@ -358,193 +785,7 @@ public class BlazorApplicationSettingsTests {
 		});
 	}
 
-	[Test]
-	public async Task ValueEditorUsesDeclaredScalarTypesAndNestedDraftEditsCancelWithoutPublishing() {
-		await using var owner = new StoreOwner(new BrowserState("browser"), null);
-		var profile = await ProfileAsync(owner.Store);
-		var session = profile.BeginEdit();
-		var draft = (Options)session.Draft;
-		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
-		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
-		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsValueEditor editor = null;
-			await renderer.RenderComponentAsync<ValueHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(ValueHarness.Value)] = draft,
-				[nameof(ValueHarness.Capture)] = (Action<BlazorApplicationSettingsValueEditor>)(component => editor = component)
-			}));
-			await InvokeAsync(editor, "ChangeValueAsync", TypeDescriptor.GetProperties(draft)[nameof(Options.Number)], "21");
-			await InvokeAsync(editor, "ChangeValueAsync", TypeDescriptor.GetProperties(draft)[nameof(Options.Mode)], "Second");
-			await InvokeAsync(editor, "AddItemAsync", TypeDescriptor.GetProperties(draft)[nameof(Options.Words)]);
-			draft.Nested.Text = "provisional nested edit";
-			Assert.That(draft.Number, Is.EqualTo(21));
-			Assert.That(draft.Mode, Is.EqualTo(OptionMode.Second));
-			Assert.That(draft.Words, Has.Length.EqualTo(2));
-			Assert.That(profile.GetValues<Options>().Number, Is.EqualTo(10));
-			session.Cancel();
-			Assert.That(((Options)session.Draft).Nested.Text, Is.EqualTo("default"));
-			Assert.That(((Options)session.Draft).Words, Is.EqualTo(new[] { "first" }));
-		});
-	}
-
-	[TestCase(false, false)]
-	[TestCase(false, true)]
-	[TestCase(true, false)]
-	[TestCase(true, true)]
-	public async Task BlockedCustomValidationKeepsItsPageAndRejectsOtherDialogActions(bool selecting, bool valid) {
-		var browser = new BrowserState("browser");
-		await using var owner = new StoreOwner(browser, null);
-		var catalog = new ApplicationSettingsCatalog("app", owner.Store, Array.Empty<IApplicationBlock>(), new[] {
-			new ApplicationSettingsDefinition("first", "First", new Options(), settingsEditor: typeof(BlockingValidationEditor)),
-			new ApplicationSettingsDefinition("second", "Second", Defaults())
-		});
-		await catalog.InitializeAsync();
-		var first = catalog.GetProfile("first");
-		var second = catalog.GetProfile("second");
-		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
-		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
-		var validation = new TaskCompletionSource<Result>(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var release = Tools.Scope.ExecuteOnDispose(() => validation.TrySetResult(Result.Success));
-		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
-			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(DialogHarness.Catalog)] = catalog,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
-			}));
-			var edits = GetField<Dictionary<ApplicationSettingsProfile, ApplicationSettingsEditSession>>(dialog, "_edits");
-			dialog.ResetDefaults();
-			((Options)edits[first].Draft).Number = 31;
-			await EventCallback.Factory.Create(dialog, () => InvokeAsync(dialog, "SelectPageAsync", second)).InvokeAsync();
-			dialog.ResetDefaults();
-			((Options)edits[second].Draft).Number = 41;
-			await EventCallback.Factory.Create(dialog, () => InvokeAsync(dialog, "SelectPageAsync", first)).InvokeAsync();
-			var draft = edits[first].Draft;
-			var editor = (BlockingValidationEditor)GetField<DynamicComponent>(dialog, "_editor").Instance;
-			var previousValidations = editor.Validations;
-			editor.PendingValidation = validation.Task;
-
-			// A real asynchronous custom editor holds the selected page while other UI events are admitted.
-			var pending = selecting
-				? EventCallback.Factory.Create(dialog, () => InvokeAsync(dialog, "SelectPageAsync", second)).InvokeAsync()
-				: EventCallback.Factory.Create(dialog, dialog.ApplyAsync).InvokeAsync();
-			Assert.That(pending.IsCompleted, Is.False);
-			Assert.That(GetField<bool>(dialog, "_saving"), Is.True);
-			await dialog.ApplyAsync();
-			await dialog.AcceptAsync();
-			await InvokeAsync(dialog, "SelectPageAsync", second);
-			dialog.ResetDefaults();
-			dialog.CancelEditing();
-			Assert.That(await dialog.RequestCloseAsync(), Is.False);
-			Assert.That(GetField<ApplicationSettingsProfile>(dialog, "_selected"), Is.SameAs(first));
-			Assert.That(edits[first].Draft, Is.SameAs(draft));
-			Assert.That(((Options)draft).Number, Is.EqualTo(31));
-			Assert.That(((Options)edits[second].Draft).Number, Is.EqualTo(41));
-			Assert.That(editor.Validations, Is.EqualTo(previousValidations + 1));
-			Assert.That(browser.Values, Is.Empty);
-			Assert.That(dialog.ShowAsync().IsCompleted, Is.False);
-
-			validation.SetResult(valid ? Result.Success : Result.Error("Correct the selected page."));
-			await pending;
-			Assert.That(GetField<bool>(dialog, "_saving"), Is.False, "Both successful and rejected validation release the dialog admission guard.");
-			Assert.That(GetField<ApplicationSettingsProfile>(dialog, "_selected"), Is.SameAs(selecting && valid ? second : first));
-			Assert.That(first.GetValues<Options>().Number, Is.EqualTo(!selecting && valid ? 31 : 10));
-			Assert.That(second.GetValues<Options>().Number, Is.EqualTo(10));
-			if (!valid)
-				Assert.That(GetField<string[]>(dialog, "_errors"), Does.Contain("Correct the selected page."));
-
-			// A rejected validation keeps its draft editable, and each later Apply still accepts only its own page.
-			editor.PendingValidation = null;
-			await EventCallback.Factory.Create(dialog, () => InvokeAsync(dialog, "SelectPageAsync", first)).InvokeAsync();
-			await dialog.ApplyAsync();
-			await EventCallback.Factory.Create(dialog, () => InvokeAsync(dialog, "SelectPageAsync", second)).InvokeAsync();
-			await dialog.ApplyAsync();
-			Assert.That(first.GetValues<Options>().Number, Is.EqualTo(31));
-			Assert.That(second.GetValues<Options>().Number, Is.EqualTo(41));
-		});
-	}
-
-	[Test]
-	public async Task DialogValidationAndFailedApplyRetainTheDetachedDraftAndDoNotClose() {
-		var browser = new BrowserState("browser");
-		await using var owner = new StoreOwner(browser, null);
-		var catalog = Catalog(owner.Store);
-		await catalog.InitializeAsync();
-		var profile = catalog.GetProfile("preferences");
-		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
-		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
-		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
-			var rendered = await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(DialogHarness.Catalog)] = catalog,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
-			}));
-			Assert.That(Regex.Match(rendered.ToHtmlString(), "<fieldset[^>]*sphere10-options-fieldset[^>]*>").Value, Does.Not.Contain("disabled"),
-				"An idle Options page must leave its navigation and value controls enabled.");
-			dialog.ResetDefaults();
-			var session = GetField<Dictionary<ApplicationSettingsProfile, ApplicationSettingsEditSession>>(dialog, "_edits")[profile];
-			((Options)session.Draft).Number = -1;
-			await dialog.AcceptAsync();
-			Assert.That(dialog.ShowAsync().IsCompleted, Is.False);
-			Assert.That(GetField<string[]>(dialog, "_errors"), Is.Not.Empty);
-			Assert.That(browser.Values, Is.Empty);
-			((Options)session.Draft).Number = 23;
-			browser.FailWrite = true;
-			var draft = session.Draft;
-			await dialog.ApplyAsync();
-			Assert.That(dialog.ShowAsync().IsCompleted, Is.False);
-			Assert.That(session.Draft, Is.SameAs(draft));
-			Assert.That(((Options)session.Draft).Number, Is.EqualTo(23));
-			Assert.That(profile.Revision, Is.Zero);
-			Assert.That(GetField<string[]>(dialog, "_errors").Single(), Does.Contain("try again"));
-			browser.FailWrite = false;
-			await dialog.ApplyAsync();
-			Assert.That(profile.GetValues<Options>().Number, Is.EqualTo(23));
-			((Options)session.Draft).Nested.Text = "cancel since Apply";
-			dialog.CancelEditing();
-			Assert.That((await dialog.ShowAsync()).ResultType, Is.EqualTo(ModalResult.Cancel.ResultType));
-			Assert.That(profile.GetValues<Options>().Nested.Text, Is.EqualTo("default"));
-		});
-	}
-
-	[Test]
-	public async Task DialogOkAcceptsOnlyTheSelectedPageAndRetainsOtherUnappliedDrafts() {
-		await using var owner = new StoreOwner(new BrowserState("browser"), null);
-		var catalog = new ApplicationSettingsCatalog("app", owner.Store, Array.Empty<IApplicationBlock>(), new[] {
-			new ApplicationSettingsDefinition("first", "First", Defaults()),
-			new ApplicationSettingsDefinition("second", "Second", Defaults())
-		});
-		await catalog.InitializeAsync();
-		var first = catalog.GetProfile("first");
-		var second = catalog.GetProfile("second");
-		await using var services = new ServiceCollection().AddLogging().BuildServiceProvider();
-		await using var renderer = new HtmlRenderer(services, services.GetRequiredService<ILoggerFactory>());
-		await renderer.Dispatcher.InvokeAsync(async () => {
-			BlazorApplicationSettingsDialog dialog = null;
-			await renderer.RenderComponentAsync<DialogHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(DialogHarness.Catalog)] = catalog,
-				[nameof(DialogHarness.Capture)] = (Action<BlazorApplicationSettingsDialog>)(component => dialog = component)
-			}));
-			dialog.ResetDefaults();
-			var edits = GetField<Dictionary<ApplicationSettingsProfile, ApplicationSettingsEditSession>>(dialog, "_edits");
-			((Options)edits[first].Draft).Number = 31;
-			await InvokeAsync(dialog, "SelectPageAsync", second);
-			dialog.ResetDefaults();
-			((Options)edits[second].Draft).Number = 41;
-
-			await dialog.AcceptAsync();
-
-			Assert.That(first.GetValues<Options>().Number, Is.EqualTo(10));
-			Assert.That(second.GetValues<Options>().Number, Is.EqualTo(41));
-			Assert.That(((Options)edits[first].Draft).Number, Is.EqualTo(31));
-			Assert.That(dialog.ShowAsync().IsCompleted, Is.False);
-			Assert.That(GetField<string[]>(dialog, "_errors").Single(), Does.Contain("Other pages"));
-			await InvokeAsync(dialog, "SelectPageAsync", first);
-			await dialog.ApplyAsync();
-			await dialog.AcceptAsync();
-			Assert.That(first.GetValues<Options>().Number, Is.EqualTo(31));
-			Assert.That((await dialog.ShowAsync()).ResultType, Is.EqualTo(ModalResult.Ok.ResultType));
-		});
-	}
-
+	/// <summary>Verifies application installs one screen options command into the existing heading without running operations.</summary>
 	[Test]
 	public async Task ApplicationInstallsOneScreenOptionsCommandIntoTheExistingHeadingWithoutRunningOperations() {
 		var browser = new BrowserState("browser");
@@ -553,7 +794,7 @@ public class BlazorApplicationSettingsTests {
 		var services = new ServiceCollection().AddLogging().AddSingleton<IJSRuntime>(runtime);
 		new BlazorApplicationBuilder(services)
 			.WithSettingsKey("stable-app")
-			.AddSettings<Options>("preferences", "Preferences")
+			.AddPlugin(plugin => plugin.WithName("Preferences").UseSettings<Options>())
 			.OnApplicationCreated(application => application.SetMenus(new[] {
 				new BlazorApplicationMenu { Id = "existing-options", Text = "&Options", Items = new[] {
 					new BlazorActionMenuItem { Id = "operation", Title = "Existing operation", Action = () => calls++ }
@@ -574,316 +815,53 @@ public class BlazorApplicationSettingsTests {
 		Assert.That(calls, Is.EqualTo(1));
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task LateSectionInitializationRebasesBothInstancesWithoutAcceptingOrDiscardingDirtyValues(bool failedSave) {
-		var store = new LifecycleStore { FailWrite = failedSave };
-		await using var owner = await LifecycleOwner.CreateAsync(store);
-		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
-			owner.FirstScreen.OperationalDraft = "Retained business draft";
-			owner.FirstScreen.Edit(41);
-			if (failedSave)
-				await owner.FirstScreen.SaveChangeAsync();
-
-			// Occupy the renderer while both worker notifications queue; each frozen delta must survive the newer global revision.
-			Task.Run(() => {
-				Assert.That(owner.Profile.TryInitializeSection("Grid", 1, values => ((Options)values).Grid.PageSize = 29,
-					(source, target) => ((Options)target).Grid = ((Options)source).Grid), Is.True);
-				Assert.That(owner.Profile.TryInitializeSection("Nested", 1, values => ((Options)values).Nested.Text = "Imported section",
-					(source, target) => ((Options)target).Nested = ((Options)source).Nested), Is.True);
-			}).GetAwaiter().GetResult();
+	/// <summary>The real Options command passes the configured product name to its modal rather than the shell caption.</summary>
+	[TestCase("System Expert", "System Expert")]
+	[TestCase(null, "Host caption")]
+	[TestCase("", "Host caption")]
+	[TestCase("  ", "Host caption")]
+	public async Task OptionsCommandUsesTheConfiguredProductName(string productName, string expectedCaption) {
+		var displayed = new TaskCompletionSource<BlazorApplicationSettingsDialog>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var services = new ServiceCollection()
+			.AddLogging()
+			.AddSingleton<IJSRuntime>(new BrowserRuntime(new BrowserState("product caption")))
+			.AddSingleton(displayed);
+		services.AddApplicationBlock(SettingsBlock("options", Defaults()));
+		services
+			.BuildBlazorApplication()
+			.WithTitle("Host caption")
+			.Build();
+		services.AddSingleton<IProductInformationProvider>(new CaptionProductInformationProvider(productName));
+		await using var provider = services.BuildServiceProvider();
+		var application = provider.GetRequiredService<IBlazorApplication>();
+		await application.InitializeAsync();
+		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
+		await renderer.Dispatcher.InvokeAsync(async () => {
+			await renderer.RenderComponentAsync<OptionsCaptionHost>();
+			var command = (BlazorActionMenuItem)application.Menus.SelectMany(menu => menu.Items).Single(item => item.Id == "sphere10-screen-options");
+			await command.AsyncAction(provider, CancellationToken.None);
 		});
-		await owner.WaitForSettingsAsync();
 
-		Assert.That(owner.FirstScreen.Values.Number, Is.EqualTo(41));
-		Assert.That(owner.SecondScreen.Values.Number, Is.EqualTo(10));
-		Assert.That(owner.FirstScreen.Values.Grid.PageSize, Is.EqualTo(29));
-		Assert.That(owner.SecondScreen.Values.Grid.PageSize, Is.EqualTo(29));
-		Assert.That(owner.FirstScreen.Values.Nested.Text, Is.EqualTo("Imported section"));
-		Assert.That(owner.SecondScreen.Values.Nested.Text, Is.EqualTo("Imported section"));
-		Assert.That(owner.FirstScreen.OperationalDraft, Is.EqualTo("Retained business draft"));
-		Assert.That(owner.Profile.GetValues<Options>().Number, Is.EqualTo(10));
-		Assert.That(store.SavedNumbers, Is.Empty, "Initialization does not persist working edits or create a restore-time write.");
-		if (failedSave)
-			Assert.That(owner.FirstScreen.SettingsError, Does.Contain("Write failed"));
-
-		store.FailWrite = false;
-		await owner.Renderer.Dispatcher.InvokeAsync(() => owner.FirstScreen.SaveSettingsAsync());
-		await owner.WaitForSettingsAsync();
-
-		Assert.That(owner.Profile.GetValues<Options>().Number, Is.EqualTo(41));
-		Assert.That(owner.Profile.GetValues<Options>().Grid.PageSize, Is.EqualTo(29));
-		Assert.That(owner.Profile.GetValues<Options>().Nested.Text, Is.EqualTo("Imported section"));
-		Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 41 }));
-		Assert.That(owner.FirstScreen.SettingsError, Is.Null);
+		var dialog = await displayed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.That(dialog.Application, Is.SameAs(application));
+		Assert.That(dialog.ApplicationTitle, Is.EqualTo(expectedCaption));
 	}
 
-	[Test]
-	public async Task RendererOwnWriteAcknowledgementsPreserveNewerLocalValuesAndForeignApplyUpdatesBothInstances() {
-		var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var secondEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var releaseSecond = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var store = new LifecycleStore {
-			BeforeSave = async values => {
-				if (values.Number == 11) {
-					firstEntered.TrySetResult();
-					await releaseFirst.Task;
-				} else if (values.Number == 12) {
-					secondEntered.TrySetResult();
-					await releaseSecond.Task;
-				}
-			}
-		};
-		await using var owner = await LifecycleOwner.CreateAsync(store);
-		using var release = Tools.Scope.ExecuteOnDispose(() => {
-			releaseFirst.TrySetResult();
-			releaseSecond.TrySetResult();
-		});
-		var first = owner.FirstScreen;
-		var second = owner.SecondScreen;
-		Task firstSave = null;
-		Task secondSave = null;
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			first.OperationalDraft = "first row draft";
-			second.OperationalDraft = "second row draft";
-			first.Edit(11);
-			firstSave = first.SaveChangeAsync();
-		});
-		await firstEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			first.Edit(12);
-			secondSave = first.SaveChangeAsync();
-		});
-		releaseFirst.TrySetResult();
-		await firstSave;
-		await secondEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			Assert.That(first.Values.Number, Is.EqualTo(12), "An older own save acknowledgement cannot replace a newer local model.");
-			Assert.That(first.Applications, Is.EqualTo(1), "Own acknowledgements do not rerun preference application.");
-		});
-		var edit = owner.Profile.BeginEdit();
-		((Options)edit.Draft).Number = 21;
-		var applying = edit.ApplyAsync();
-		releaseSecond.TrySetResult();
-		await Task.WhenAll(secondSave, applying);
-		await owner.WaitForSettingsAsync();
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			Assert.That(first.Values.Number, Is.EqualTo(21));
-			Assert.That(second.Values.Number, Is.EqualTo(21));
-			Assert.That(first.OperationalDraft, Is.EqualTo("first row draft"));
-			Assert.That(second.OperationalDraft, Is.EqualTo("second row draft"));
-		});
-		Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 11, 12, 21 }));
-		await owner.Renderer.Dispatcher.InvokeAsync(() => owner.Host.CloseScreenAsync(owner.First));
-		Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 11, 12, 21 }), "An unchanged instance cannot overwrite the accepted Options value at close.");
-		await owner.Renderer.Dispatcher.InvokeAsync(() => second.Edit(99));
-		await owner.DisposeRendererAsync();
-		Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 11, 12, 21 }), "Renderer disposal is not an accepted-save boundary.");
-	}
-
-	[Test]
-	public async Task RendererVetoAndHideDoNotSaveWhileFailedAcceptedCloseKeepsOwnershipForRetry() {
-		var store = new LifecycleStore();
-		await using var owner = await LifecycleOwner.CreateAsync(store);
-		var screen = owner.FirstScreen;
-		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
-			await owner.Host.ShowScreenAsync(owner.First);
-			screen.Edit(15);
-			await owner.Host.ShowScreenAsync(owner.Second);
-			Assert.That(screen.Deactivations, Is.EqualTo(1));
-			Assert.That(store.SavedNumbers, Is.Empty, "Hiding a retained component does not save preferences.");
-			await owner.Host.ShowScreenAsync(owner.First);
-			screen.AllowLeave = false;
-			Assert.That(await owner.Host.CloseScreenAsync(owner.First), Is.False);
-			Assert.That(store.SavedNumbers, Is.Empty);
-			screen.AllowLeave = true;
-			store.FailWrite = true;
-			var deactivations = screen.Deactivations;
-			await Assert.ThatAsync(async () => await owner.Host.CloseScreenAsync(owner.First), Throws.InvalidOperationException);
-			Assert.That(owner.Host.ActiveScreen, Is.SameAs(owner.First));
-			Assert.That(owner.First.Screen, Is.SameAs(screen));
-			Assert.That(screen.Host, Is.SameAs(owner.Host));
-			Assert.That(screen.Deactivations, Is.EqualTo(deactivations));
-			Assert.That(screen.SettingsError, Does.Contain("Write failed"));
-			store.FailWrite = false;
-			Assert.That(await owner.Host.CloseScreenAsync(owner.First), Is.True);
-		});
-		Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 15 }));
-	}
-
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task AcceptedSaveWaitsForPendingSectionApplicationBeforeCapturingItsNewBaseline(bool closeScreen) {
-		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var store = new LifecycleStore();
-		await using var owner = await LifecycleOwner.CreateAsync(store);
-		using var releaseScope = Tools.Scope.ExecuteOnDispose(() => release.TrySetResult());
-		var screen = owner.FirstScreen;
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			screen.CaptureDetached = true;
-			screen.OperationalDraft = "Retained operation";
-			screen.Edit(41);
-			screen.BeforeApply = async values => {
-				if (values.Grid.PageSize != 29)
-					return;
-				entered.TrySetResult();
-				await release.Task;
-			};
-			Assert.That(owner.Profile.TryInitializeSection("Grid", 1, values => ((Options)values).Grid.PageSize = 29,
-				(source, target) => ((Options)target).Grid = ((Options)source).Grid), Is.True);
-		});
-		await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-		Task saving = null;
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			saving = closeScreen ? owner.Host.CloseScreenAsync(owner.First) : screen.SaveSettingsAsync();
-		});
-		Assert.That(saving.IsCompleted, Is.False, "Accepted close and direct saves must await the pending model application.");
-		Assert.That(store.SavedNumbers, Is.Empty);
-
-		release.TrySetResult();
-		await saving.WaitAsync(TimeSpan.FromSeconds(5));
-		if (!closeScreen)
-			await owner.WaitForSettingsAsync();
-		Assert.Multiple(() => {
-			Assert.That(owner.Profile.GetValues<Options>().Number, Is.EqualTo(41));
-			Assert.That(owner.Profile.GetValues<Options>().Grid.PageSize, Is.EqualTo(29));
-			Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 41 }));
-			Assert.That(screen.OperationalDraft, Is.EqualTo("Retained operation"));
-		});
-	}
-
-	[Test]
-	public async Task AcceptedCloseRetriesACaptureSupersededByConcurrentSectionInitialization() {
-		var store = new LifecycleStore();
-		await using var owner = await LifecycleOwner.CreateAsync(store);
-		var screen = owner.FirstScreen;
-		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
-			screen.CaptureDetached = true;
-			screen.Edit(41);
-			screen.AfterCapture = () => {
-				screen.AfterCapture = null;
-				// Complete the worker's import while this renderer still holds the old detached capture.
-				Task.Run(() => Assert.That(owner.Profile.TryInitializeSection("Grid", 1, values => ((Options)values).Grid.PageSize = 29,
-					(source, target) => ((Options)target).Grid = ((Options)source).Grid), Is.True)).GetAwaiter().GetResult();
-			};
-			Assert.That(await owner.Host.CloseScreenAsync(owner.First), Is.True);
-		});
-
-		Assert.Multiple(() => {
-			Assert.That(owner.Profile.GetValues<Options>().Number, Is.EqualTo(41));
-			Assert.That(owner.Profile.GetValues<Options>().Grid.PageSize, Is.EqualTo(29));
-			Assert.That(store.SavedNumbers, Is.EqualTo(new[] { 41 }), "A rejected capture must not let accepted close discard the remaining local edit.");
-		});
-	}
-
-	[Test]
-	public async Task ReentrantSectionInitializationWaitsForTheActivePreferenceHookBeforeRebasing() {
-		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		await using var owner = await LifecycleOwner.CreateAsync(new LifecycleStore());
-		using var releaseScope = Tools.Scope.ExecuteOnDispose(() => release.TrySetResult());
-		var screen = owner.FirstScreen;
-		var initialized = false;
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			screen.OperationalDraft = "Retained operation";
-			screen.BeforeApply = async values => {
-				if (values.Number != 21 || initialized)
-					return;
-				initialized = true;
-				Assert.That(owner.Profile.TryInitializeSection("Grid", 1, root => ((Options)root).Grid.PageSize = 29,
-					(source, target) => ((Options)target).Grid = ((Options)source).Grid), Is.True);
-				entered.TrySetResult();
-				await release.Task;
-			};
-
-			// Complete acceptance while the renderer is occupied, so the hook starts after the store's queue has drained.
-			var values = owner.Profile.GetValues<Options>(out var revision);
-			values.Number = 21;
-			Task.Run(async () => await owner.Profile.SaveCaptureAsync(owner.Profile.Capture(values, new object(), revision, 1))).GetAwaiter().GetResult();
-		});
-		await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		Task updates = null;
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			updates = (Task)typeof(BlazorApplicationScreen).GetField("_settingsUpdates", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(screen);
-		});
-		release.TrySetResult();
-		await updates.WaitAsync(TimeSpan.FromSeconds(5));
-		var livePageSize = 0;
-		await owner.Renderer.Dispatcher.InvokeAsync(async () => {
-			livePageSize = screen.Values.Grid.PageSize;
-			screen.Edit(22);
-			await screen.SaveChangeAsync();
-		});
-
-		Assert.Multiple(() => {
-			Assert.That(livePageSize, Is.EqualTo(29), "A nested initialization must rebase the model after the outer hook assigns it.");
-			Assert.That(owner.Profile.GetValues<Options>().Grid.PageSize, Is.EqualTo(29), "The next accepted capture must keep the imported section.");
-			Assert.That(owner.Profile.GetValues<Options>().Number, Is.EqualTo(22));
-			Assert.That(screen.OperationalDraft, Is.EqualTo("Retained operation"));
-		});
-	}
-
-	[Test]
-	public async Task RendererSerializesSlowPreferenceApplicationBeforeNewerAcceptedValues() {
-		var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var applied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		await using var owner = await LifecycleOwner.CreateAsync(new LifecycleStore());
-		using var releaseScope = Tools.Scope.ExecuteOnDispose(() => release.TrySetResult());
-		var screen = owner.FirstScreen;
-		var started = new List<int>();
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			screen.OperationalDraft = "operation in progress";
-			screen.BeforeApply = async values => {
-				started.Add(values.Number);
-				if (values.Number == 21) {
-					entered.TrySetResult();
-					await release.Task;
-				}
-			};
-			screen.AfterApply = values => {
-				if (values.Number == 22)
-					applied.TrySetResult();
-			};
-		});
-		var first = owner.Profile.BeginEdit();
-		((Options)first.Draft).Number = 21;
-		await first.ApplyAsync();
-		await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		var second = owner.Profile.BeginEdit();
-		((Options)second.Draft).Number = 22;
-		await second.ApplyAsync();
-		await owner.Renderer.Dispatcher.InvokeAsync(() => Assert.That(started, Is.EqualTo(new[] { 21 })));
-		release.TrySetResult();
-		await applied.Task.WaitAsync(TimeSpan.FromSeconds(5));
-		await owner.Renderer.Dispatcher.InvokeAsync(() => {
-			Assert.That(started, Is.EqualTo(new[] { 21, 22 }));
-			Assert.That(screen.Values.Number, Is.EqualTo(22));
-			Assert.That(screen.OperationalDraft, Is.EqualTo("operation in progress"));
-		});
-	}
-
-	// Store calls are real adapter boundaries; only browser interop and principal discovery are substituted.
+	// Provider calls exercise actual persistence; only browser interop and principal discovery are substituted.
 	private static Options Defaults() {
-		return new Options();
+		return new Options { ID = "preferences" };
 	}
 
-	private static ApplicationSettingsStoredProfile Snapshot(int number) {
-		return new ApplicationSettingsStoredProfile { Values = new Options { Number = number }, SectionVersions = new Dictionary<string, int> { ["Grid"] = 2 } };
+	/// <summary>Creates a settings value with the requested refresh count and persistent ID.</summary>
+	private static Options Snapshot(int number) {
+		return new Options { ID = "preferences", Number = number };
 	}
 
-	private static ApplicationSettingsCatalog Catalog(IApplicationSettingsStore store) {
-		return new ApplicationSettingsCatalog("app", store, Array.Empty<IApplicationBlock>(),
-			new[] { new ApplicationSettingsDefinition("preferences", "Preferences", Defaults()) });
-	}
-
-	private static async Task<ApplicationSettingsProfile> ProfileAsync(IApplicationSettingsStore store) {
-		var catalog = Catalog(store);
-		await catalog.InitializeAsync();
-		return catalog.GetProfile("preferences");
+	// Each Options page belongs to a statically declared screen rather than a separate root descriptor.
+	private static IBlazorApplicationBlock SettingsBlock(string key, SettingsObject settings, Type editor = null) {
+		var screenType = settings is RegistrationExampleScreen.RegistrationInspectorSettings ? typeof(RegistrationExampleScreen) : typeof(UnopenedScreen);
+		var definition = new BlazorApplicationScreenDefinition(screenType, key, stableKey: key, settings: settings, settingsEditor: editor);
+		return new BlazorApplicationBlock { Id = key, Title = key, ScreenDefinitions = new[] { definition } };
 	}
 
 	// HtmlRenderer owns components; reflection invokes the same private event handlers used by their rendered controls.
@@ -891,15 +869,124 @@ public class BlazorApplicationSettingsTests {
 		return (Task)component.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(component, arguments);
 	}
 
+	/// <summary>Reads a renderer-owned test component member for its interaction assertions.</summary>
 	private static T GetField<T>(object component, string field) {
 		return (T)component.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(component);
 	}
 
+	#region Inner Types
+
+	/// <summary>Provides annotation-only constraints for optional owner restoration.</summary>
+	public class AnnotatedOptions : SettingsObject {
+		/// <summary>The validated positive page size.</summary>
+		[System.ComponentModel.DataAnnotations.Range(1, 10)]
+		public int Number { get; set; }
+
+		/// <summary>A configured scalar default that must survive rejection.</summary>
+		public string Caption { get; set; }
+	}
+
+	/// <summary>Pauses the first acknowledged write at the outer provider boundary.</summary>
+	private sealed class PendingSaveProvider : SettingsProviderDecorator {
+		/// <summary>Borrows the actual browser-backed store used by the application.</summary>
+		public PendingSaveProvider(ISettingsProvider provider)
+			: base(provider) {
+		}
+
+		/// <summary>Signals the first complete snapshot before its outer acknowledgement.</summary>
+		public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		/// <summary>Releases the pending first acknowledgement.</summary>
+		public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+		/// <summary>The number of actual persistence calls received by this outer provider.</summary>
+		public int SaveCalls { get; private set; }
+
+		/// <inheritdoc />
+		public override async Task SaveSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
+			SaveCalls++;
+			await base.SaveSettingAsync(settings, cancellationToken);
+			if (SaveCalls != 1)
+				return;
+			Entered.TrySetResult();
+			await Release.Task.WaitAsync(cancellationToken);
+		}
+	}
+
+	/// <summary>Simulates cancellation after storage has changed part of the supplied actual object.</summary>
+	private sealed class CancelledOverlayProvider : SettingsProviderDecorator {
+		private readonly CancellationTokenSource _cancellation;
+
+		/// <summary>Borrows a real provider and the cancellation owner used by this read.</summary>
+		public CancelledOverlayProvider(ISettingsProvider provider, CancellationTokenSource cancellation)
+			: base(provider) {
+			_cancellation = cancellation;
+		}
+
+		/// <inheritdoc />
+		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
+			return Task.FromResult(true);
+		}
+
+		/// <inheritdoc />
+		public override Task<SettingsObject> LoadSettingAsync(SettingsObject defaults, CancellationToken cancellationToken = default) {
+			var values = (Options)defaults;
+			values.Number = 99;
+			values.Nested.Text = "Partially loaded";
+			_cancellation.Cancel();
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(defaults);
+		}
+	}
+
+	/// <summary>Supplies product identity independently of the web host caption.</summary>
+	private sealed class CaptionProductInformationProvider : IProductInformationProvider {
+		/// <summary>Retains the product name selected by application composition.</summary>
+		public CaptionProductInformationProvider(string productName) {
+			ProductInformation = new ProductInformation { ProductName = productName };
+		}
+
+		/// <inheritdoc />
+		public ProductInformation ProductInformation { get; }
+	}
+
+	/// <summary>Captures the actual command-created Options component and dismisses it without browser interaction.</summary>
+	public sealed class OptionsCaptionHost : Sphere10.Framework.Web.AspNetCore.Blazor.UI.Dialogs.ModalHost {
+		/// <summary>The existing modal service used by application commands.</summary>
+		[Inject] public ModalService ModalService { get; set; }
+
+		/// <summary>The completion receiving the real rendered Options component.</summary>
+		[Inject] public TaskCompletionSource<BlazorApplicationSettingsDialog> Displayed { get; set; }
+
+		/// <inheritdoc />
+		protected override void OnInitialized() {
+			ModalService.Initialize(this);
+		}
+
+		/// <inheritdoc />
+		protected override Task WaitUntilRenderedAsync(ModalComponent component) {
+			return Task.CompletedTask;
+		}
+
+		/// <inheritdoc />
+		protected override Task<ModalResult> GetResultAsync(ModalComponent component) {
+			Displayed.TrySetResult((BlazorApplicationSettingsDialog)component);
+			return Task.FromResult(ModalResult.Cancel);
+		}
+	}
+
+	/// <summary>Hosts the real default value editor and exposes its renderer-created instance to interaction tests.</summary>
 	public sealed class ValueHarness : ComponentBase {
+		/// <summary>The actual settings value supplied to this fixture editor.</summary>
 		[Parameter] public object Value { get; set; }
+
+		/// <summary>Pending input errors retained by the default editor.</summary>
 		[Parameter] public IDictionary<string, string> Errors { get; set; } = new Dictionary<string, string>();
+
+		/// <summary>Captures the renderer-created component for interaction checks.</summary>
 		[Parameter] public Action<BlazorApplicationSettingsValueEditor> Capture { get; set; }
 
+		/// <inheritdoc />
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<BlazorApplicationSettingsValueEditor>(0);
 			builder.AddAttribute(1, nameof(BlazorApplicationSettingsValueEditor.Value), Value);
@@ -909,60 +996,106 @@ public class BlazorApplicationSettingsTests {
 		}
 	}
 
+	/// <summary>Hosts the real Options dialog with an actual application owner and selection.</summary>
 	public sealed class DialogHarness : ComponentBase {
-		[Parameter] public ApplicationSettingsCatalog Catalog { get; set; }
+		/// <summary>The actual application supplied to the dialog.</summary>
+		[Parameter] public IBlazorApplication Application { get; set; }
+
+		/// <summary>The actual plugin, block or screen definition selected in the dialog.</summary>
+		[Parameter] public object Owner { get; set; }
+
+		/// <summary>Captures the renderer-created component for interaction checks.</summary>
 		[Parameter] public Action<BlazorApplicationSettingsDialog> Capture { get; set; }
 
+		/// <inheritdoc />
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<BlazorApplicationSettingsDialog>(0);
-			builder.AddAttribute(1, nameof(BlazorApplicationSettingsDialog.Catalog), Catalog);
+			builder.AddAttribute(1, nameof(BlazorApplicationSettingsDialog.Application), Application);
 			builder.AddAttribute(2, nameof(BlazorApplicationSettingsDialog.Options), new ModalOptions());
-			builder.AddComponentReferenceCapture(3, value => Capture((BlazorApplicationSettingsDialog)value));
+			builder.AddAttribute(3, nameof(BlazorApplicationSettingsDialog.SelectedOwner), Owner);
+			builder.AddComponentReferenceCapture(4, value => Capture((BlazorApplicationSettingsDialog)value));
 			builder.CloseComponent();
 		}
 	}
 
+	/// <summary>Supplies scalar, nested, collection and grid values for settings behavior checks.</summary>
 	[UserEditable]
 	public class Options : SettingsObject {
+		/// <summary>The refresh count used by the fixture.</summary>
 		[DisplayName("Refresh count")]
+		[DefaultValue(10)]
 		public int Number { get; set; } = 10;
 
+		/// <summary>A scalar value that the automatic editor must display without allowing changes.</summary>
 		[ReadOnly(true)]
 		[DisplayName("Read-only preference")]
+		[DefaultValue("read only")]
 		public string ReadOnlyValue { get; set; } = "read only";
 
+		/// <summary>The selected enum value used by conversion and rendering checks.</summary>
+		[DefaultValue(OptionMode.First)]
 		public OptionMode Mode { get; set; }
+
+		/// <summary>The nested editable settings values.</summary>
 		public NestedOptions Nested { get; set; } = new();
+
+		/// <summary>The numeric collection used to verify independent pending-input errors.</summary>
 		public int[] Numbers { get; set; } = { 10, 20 };
+
+		/// <summary>The editable text collection.</summary>
 		public string[] Words { get; set; } = { "first" };
+
+		/// <summary>The declared grid schema and manual widths.</summary>
 		public BlazorGridSettings Grid { get; set; } = new() {
 			Columns = new[] { new ApplicationGridColumnPreferences { Key = "name", Title = "Name column", Width = 150 } }
 		};
 
+		/// <summary>Restores the fixture's declared nested defaults through the normal settings lifecycle.</summary>
+		public override void RestoreDefaultValues() {
+			base.RestoreDefaultValues();
+			Nested = new NestedOptions();
+			Numbers = new[] { 10, 20 };
+			Words = new[] { "first" };
+			Grid = new BlazorGridSettings {
+				Columns = new[] { new ApplicationGridColumnPreferences { Key = "name", Title = "Name column", Width = 150 } }
+			};
+		}
+
+		/// <inheritdoc />
 		public override Result Validate() {
 			return Number > 0 ? Result.Success : Result.Error("Refresh count must be positive.");
 		}
 	}
 
-	public class ConstructorOptions(string caption) {
-		public string Caption { get; set; } = caption;
-	}
-
+	/// <summary>Supplies constructor defaults for partial-record hydration checks.</summary>
 	public class PartialOptions : SettingsObject {
+		/// <summary>The settings heading used by default hydration and editor checks.</summary>
 		public string Caption { get; set; } = "Constructor caption";
+
+		/// <summary>The nested editable settings values.</summary>
 		public NestedOptions Nested { get; set; } = new();
+
+		/// <summary>The list used to verify replacement of explicit empty stored collections.</summary>
 		public List<string> Items { get; set; } = new() { "Constructor item" };
+
+		/// <summary>The array used to verify replacement of explicit empty stored collections.</summary>
 		public string[] Tags { get; set; } = { "Constructor tag" };
+
+		/// <summary>The dictionary used to verify replacement of explicit empty stored collections.</summary>
 		public Dictionary<string, string> Roles { get; set; } = new() { ["constructor"] = "Constructor role" };
 	}
 
+	/// <summary>Supplies nested editable values for default-editor and persistence checks.</summary>
 	public class NestedOptions {
+		/// <summary>The nested text value used by the default editor.</summary>
 		[DisplayName("Nested preference")]
 		public string Text { get; set; } = "default";
 	}
 
+	/// <summary>Supplies named grid roles for dictionary editor coverage.</summary>
 	[UserEditable]
 	public class DictionaryOptions : SettingsObject {
+		/// <summary>The named grid roles shown by the dictionary editor.</summary>
 		public Dictionary<string, BlazorGridSettings> Grids { get; set; } = new() {
 			["processes"] = new BlazorGridSettings {
 				Columns = new[] { new ApplicationGridColumnPreferences { Key = "name", Title = "Process name", Width = 190 } }
@@ -970,118 +1103,234 @@ public class BlazorApplicationSettingsTests {
 		};
 	}
 
+	/// <summary>Supplies persisted and transient properties for serializer filtering checks.</summary>
+	public class TransientPreferences : SettingsObject {
+		/// <summary>The persisted name used by the fixture.</summary>
+		[DefaultValue("Default")]
+		public string Name { get; set; } = "Default";
+
+		/// <summary>The transient value that must remain excluded from persistence.</summary>
+		[Transient]
+		public virtual string Runtime { get; set; } = "Runtime default";
+	}
+
+	/// <summary>Verifies transient member metadata survives property overrides.</summary>
+	public class InheritedTransientPreferences : TransientPreferences {
+		/// <inheritdoc />
+		public override string Runtime { get; set; } = "Overridden runtime default";
+	}
+
+	/// <summary>Supplies enum choices for the automatic value editor.</summary>
 	public enum OptionMode { First, Second }
 
+	/// <summary>Exposes a callback at the actual JSON serialization boundary.</summary>
 	public class SerializationProbe : SettingsObject {
+		/// <summary>The callback executed while the provider serializes this value.</summary>
 		[JsonIgnore] public Action Serialized { get; set; }
 
+		/// <summary>Runs the fixture callback at the provider serialization boundary.</summary>
 		[OnSerializing]
 		private void OnSerializing(StreamingContext context) {
 			Serialized?.Invoke();
 		}
 	}
 
+	/// <summary>Supplies an unrelated declared type for persisted type-name rejection checks.</summary>
 	public class UnrelatedSettings : SettingsObject;
 
+	/// <summary>Rejects operational construction so Options discovery must use registration metadata.</summary>
 	public class UnopenedScreen : BlazorApplicationScreen {
+		/// <inheritdoc />
+		public override Options ScreenSettings {
+			get {
+				return (Options)base.ScreenSettings;
+			}
+		}
+
+		/// <summary>Rejects operational construction during metadata-only Options checks.</summary>
 		public UnopenedScreen() {
 			throw new InvalidOperationException("Options discovery cannot activate an operational screen.");
 		}
 	}
 
+	/// <summary>Declares Options values by attribute without constructing an operational component.</summary>
+	[Settings(typeof(UnopenedAttributeSettingsScreen.Preferences))]
+	public class UnopenedAttributeSettingsScreen : BlazorApplicationScreen {
+		/// <summary>Metadata-only Options discovery must not construct this component.</summary>
+		public UnopenedAttributeSettingsScreen() {
+			throw new InvalidOperationException("Options must not activate an unopened screen.");
+		}
+
+		#region Inner Types
+
+		/// <summary>The screen's ordinary editable settings value.</summary>
+		[UserEditable]
+		public class Preferences : SettingsObject {
+			/// <summary>A value supplied by normal attribute-based defaults.</summary>
+			[DefaultValue(10)]
+			public int Number { get; set; }
+		}
+
+		#endregion
+	}
+
+	/// <summary>Provides a pending validation boundary for modal ownership checks.</summary>
 	public class BlockingValidationEditor : ComponentBase, IBlazorApplicationSettingsEditor {
+		/// <summary>The actual settings value supplied to this fixture editor.</summary>
 		[Parameter] public object Value { get; set; }
+
+		/// <summary>The editor callback marking a completed input change.</summary>
 		[Parameter] public EventCallback Changed { get; set; }
 
+		/// <summary>The optional asynchronous validation decision.</summary>
 		public Task<Result> PendingValidation { get; set; }
 
+		/// <summary>The number of validation calls received by the editor.</summary>
 		public int Validations { get; private set; }
 
+		/// <summary>Returns the fixture editor's pending or immediate validation decision.</summary>
 		public Task<Result> ValidateAsync(CancellationToken cancellationToken = default) {
 			Validations++;
 			return PendingValidation?.WaitAsync(cancellationToken) ?? Task.FromResult(Result.Success);
 		}
 	}
 
+	/// <summary>Owns settings classes that declare their editor through ordinary component metadata.</summary>
+	public class DeclaredEditorScreen : BlazorApplicationScreen {
+		#region Inner Types
+
+		/// <summary>Declares an editor inherited by the concrete settings class.</summary>
+		[Editor(typeof(DeclaredSettingsEditor), typeof(IBlazorApplicationSettingsEditor))]
+		public class PreferenceDefaults : SettingsObject {
+			/// <summary>The settings heading used by default hydration and editor checks.</summary>
+			public string Caption { get; set; } = "Declared default";
+		}
+
+		/// <summary>Retains the settings class's inherited editor metadata.</summary>
+		public sealed class Preferences : PreferenceDefaults {
+		}
+
+		#endregion
+	}
+
+	/// <summary>Distinguishes the attribute-selected editor from a registration override.</summary>
+	public sealed class DeclaredSettingsEditor : CustomEditor {
+	}
+
+	/// <summary>Implements the explicit editor contract over the actual supplied settings object.</summary>
 	public class CustomEditor : ComponentBase, IBlazorApplicationSettingsEditor {
+		/// <summary>The actual settings value supplied to this fixture editor.</summary>
 		[Parameter] public object Value { get; set; }
+
+		/// <summary>The editor callback marking a completed input change.</summary>
 		[Parameter] public EventCallback Changed { get; set; }
 
+		/// <summary>Returns the fixture editor's pending or immediate validation decision.</summary>
 		public Task<Result> ValidateAsync(CancellationToken cancellationToken = default) {
 			return Task.FromResult(Result.Success);
 		}
 	}
 
+	/// <summary>Captures actual settings, business drafts and screen deactivation behavior.</summary>
 	public class LifecycleScreen : BlazorApplicationScreen {
-		public Options Values { get; private set; }
-		public bool CaptureDetached { get; set; }
-		public Action AfterCapture { get; set; }
-		public string OperationalDraft { get; set; }
-		public bool AllowLeave { get; set; } = true;
-		public int Applications { get; private set; }
-		public int Deactivations { get; private set; }
-		public Func<Options, Task> BeforeApply { get; set; }
-		public Action<Options> AfterApply { get; set; }
+		/// <inheritdoc />
+		public override Options ScreenSettings {
+			get {
+				return (Options)base.ScreenSettings;
+			}
+		}
 
+		/// <summary>The current actual settings instance applied to this screen.</summary>
+		public Options Values { get; private set; }
+
+		/// <summary>An independent unsaved business draft retained across preference changes.</summary>
+		public string OperationalDraft { get; set; }
+
+		/// <summary>Whether this screen accepts the next navigation guard.</summary>
+		public bool AllowLeave { get; set; } = true;
+
+		/// <summary>The number of accepted deactivation callbacks.</summary>
+		public int Deactivations { get; private set; }
+
+		/// <summary>Updates the actual settings value and marks a completed local screen edit.</summary>
 		public void Edit(int number) {
 			Values.Number = number;
 			MarkSettingsChanged();
 		}
 
+		/// <summary>Saves the completed local edit through the screen's existing settings lifecycle.</summary>
 		public Task SaveChangeAsync() {
 			return SaveSettingsChangesAsync();
 		}
 
-		protected override async Task OnSettingsChangedAsync(object values) {
-			var options = (Options)values;
-			if (BeforeApply != null)
-				await BeforeApply(options);
-			Values = options;
-			Applications++;
-			AfterApply?.Invoke(options);
+		/// <inheritdoc />
+		protected override Task OnSettingsChangedAsync(SettingsObject values) {
+			Values = (Options)values;
+			return Task.CompletedTask;
 		}
 
-		protected override object CaptureSettings() {
-			var values = CaptureDetached ? Tools.Json.ReadFromString<Options>(Tools.Json.WriteToString(Values)) : Values;
-			AfterCapture?.Invoke();
-			return values;
-		}
-
+		/// <inheritdoc />
 		protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
 			return Task.FromResult(AllowLeave);
 		}
 
+		/// <inheritdoc />
 		protected override Task OnDeactivatedAsync(CancellationToken cancellationToken) {
 			Deactivations++;
 			return Task.CompletedTask;
 		}
 
+		/// <inheritdoc />
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.AddContent(0, Values?.Number);
 			builder.AddContent(1, OperationalDraft);
 		}
 	}
 
+	/// <summary>Owns a real renderer and application for accepted-close and notification checks.</summary>
 	private sealed class LifecycleOwner : IAsyncDisposable {
 		private readonly ServiceProvider _services;
 		private bool _rendererDisposed;
 
+		/// <summary>Owns the configured renderer, services and screen host.</summary>
 		private LifecycleOwner(ServiceProvider services, HtmlRenderer renderer) {
 			_services = services;
 			Renderer = renderer;
 			Host = services.GetRequiredService<IBlazorApplicationScreenHost>();
 		}
 
+		/// <summary>The renderer owned by this fixture lifetime.</summary>
 		public HtmlRenderer Renderer { get; }
-		public IBlazorApplicationScreenHost Host { get; }
-		public BlazorApplicationScreenSession First { get; private set; }
-		public BlazorApplicationScreenSession Second { get; private set; }
-		public ApplicationSettingsProfile Profile { get; private set; }
-		public LifecycleScreen FirstScreen => (LifecycleScreen)First.Screen;
-		public LifecycleScreen SecondScreen => (LifecycleScreen)Second.Screen;
 
-		public static async Task<LifecycleOwner> CreateAsync(LifecycleStore store) {
-			var services = new ServiceCollection().AddLogging().AddSingleton<IApplicationSettingsStore>(store).AddSphere10Blazor();
+		/// <summary>The existing circuit presentation host.</summary>
+		public IBlazorApplicationScreenHost Host { get; }
+
+		/// <summary>The first retained logical screen.</summary>
+		public BlazorApplicationScreenSession First { get; private set; }
+
+		/// <summary>The second retained logical screen.</summary>
+		public BlazorApplicationScreenSession Second { get; private set; }
+
+		/// <summary>The actual registration-owned settings shared by both screen instances.</summary>
+		public SettingsObject Settings { get; private set; }
+
+		/// <summary>The first renderer-created screen component.</summary>
+		public LifecycleScreen FirstScreen {
+			get {
+				return (LifecycleScreen)First.Screen;
+			}
+		}
+
+		/// <summary>The second renderer-created screen component.</summary>
+		public LifecycleScreen SecondScreen {
+			get {
+				return (LifecycleScreen)Second.Screen;
+			}
+		}
+
+		/// <summary>Creates the actual application, host and two retained renderer components for lifecycle checks.</summary>
+		public static async Task<LifecycleOwner> CreateAsync(ISettingsProvider store) {
+			var services = new ServiceCollection().AddLogging().AddSingleton<ISettingsProvider>(store).AddSphere10Blazor();
 			services.AddSingleton<IJSRuntime>(new BrowserRuntime(new BrowserState("renderer")));
 			services.AddApplicationBlock(block => block
 				.WithId("settings")
@@ -1100,7 +1349,7 @@ public class BlazorApplicationSettingsTests {
 				await application.InitializeAsync();
 				var block = owner.Host.Blocks.Single();
 				var definition = block.ScreenDefinitions.Single();
-				owner.Profile = application.Settings.GetProfile(block, definition.Registration);
+				owner.Settings = definition.Settings;
 				await renderer.Dispatcher.InvokeAsync(async () => {
 					owner.First = await owner.Host.OpenScreenAsync(block, definition);
 					owner.Second = await owner.Host.OpenScreenAsync(block, definition);
@@ -1113,19 +1362,12 @@ public class BlazorApplicationSettingsTests {
 			}
 		}
 
-		// Join the actual renderer update tails, including sections queued by an earlier asynchronous hook.
-		public async Task WaitForSettingsAsync() {
-			var field = typeof(BlazorApplicationScreen).GetField("_settingsUpdates", BindingFlags.Instance | BindingFlags.NonPublic);
-			Task[] pending;
-			bool changed;
-			do {
-				pending = await Renderer.Dispatcher.InvokeAsync(() => new[] { (Task)field.GetValue(FirstScreen), (Task)field.GetValue(SecondScreen) });
-				await Task.WhenAll(pending).WaitAsync(TimeSpan.FromSeconds(5));
-				changed = await Renderer.Dispatcher.InvokeAsync(() => !ReferenceEquals(pending[0], field.GetValue(FirstScreen))
-					|| !ReferenceEquals(pending[1], field.GetValue(SecondScreen)));
-			} while (changed);
+		// Drain settings notifications already queued on this renderer.
+		public Task WaitForSettingsAsync() {
+			return Renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 		}
 
+		/// <summary>Disposes the owned renderer once before releasing its application services.</summary>
 		public async Task DisposeRendererAsync() {
 			if (_rendererDisposed)
 				return;
@@ -1133,78 +1375,105 @@ public class BlazorApplicationSettingsTests {
 			await Renderer.DisposeAsync();
 		}
 
+		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
 		public async ValueTask DisposeAsync() {
 			await DisposeRendererAsync();
 			await _services.DisposeAsync();
 		}
 	}
 
-	private sealed class LifecycleStore : IApplicationSettingsStore {
-		private readonly ConcurrentDictionary<string, string> _values = new();
-
-		public ConcurrentQueue<int> SavedNumbers { get; } = new();
-		public Func<Options, Task> BeforeSave { get; init; }
-		public bool FailWrite { get; set; }
-
-		public Task<ApplicationSettingsStoredProfile> LoadAsync(string key, object defaults, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
-			return Task.Run(() => _values.TryGetValue(key, out var values)
-				? new ApplicationSettingsStoredProfile { Values = Tools.Json.ReadFromString<Options>(values) } : null, cancellationToken);
+	// Exercise the existing provider contract that may return a different loaded record.
+	private sealed class DistinctRecordProvider : SyncSettingsProviderBase {
+		/// <inheritdoc />
+		public override bool EncryptSettings {
+			get {
+				return false;
+			}
 		}
 
-		public Task SaveAsync(string key, ApplicationSettingsStoredProfile snapshot, bool hasExplicitStorageId, object storageId, CancellationToken cancellationToken = default) {
-			return Task.Run(async () => {
-				var values = (Options)snapshot.Values;
-				if (BeforeSave != null)
-					await BeforeSave(values);
-				if (FailWrite)
-					throw new InvalidOperationException("Write failed.");
-				cancellationToken.ThrowIfCancellationRequested();
-				_values[key] = Tools.Json.WriteToString(values);
-				SavedNumbers.Enqueue(values.Number);
-			}, cancellationToken);
+		/// <inheritdoc />
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
+			return true;
+		}
+
+		/// <inheritdoc />
+		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
+			return new Options { ID = id, Number = 73 };
+		}
+
+		/// <inheritdoc />
+		protected override void SaveInternal(SettingsObject settings) {
+		}
+
+		/// <inheritdoc />
+		public override void DeleteSetting(SettingsObject settings) {
+		}
+
+		/// <inheritdoc />
+		public override void ClearSettings() {
 		}
 	}
 
+	/// <summary>Retains isolated browser records and acknowledgement/failure controls for the fixture.</summary>
 	private sealed class BrowserState(string anonymousProfile) {
+		/// <summary>The browser's anonymous owner identity.</summary>
 		public string AnonymousProfile { get; } = anonymousProfile;
+
+		/// <summary>The current actual settings instance applied to this screen.</summary>
 		public ConcurrentDictionary<string, string> Values { get; } = new();
+
+		/// <summary>The callback executed after browser storage acknowledges a write.</summary>
 		public Action AfterWrite { get; init; }
+
+		/// <summary>Whether the fixture rejects a browser write.</summary>
 		public bool FailWrite { get; set; }
 	}
 
-	private sealed class StoreOwner : IAsyncDisposable {
+	/// <summary>Owns a browser-backed settings provider and its authentication services.</summary>
+	private sealed class ProviderOwner : IAsyncDisposable {
 		private readonly ServiceProvider _services;
 
-		public StoreOwner(BrowserState browser, string subject) {
+		/// <summary>Creates the actual browser provider with isolated storage and authentication services.</summary>
+		public ProviderOwner(BrowserState browser, string subject, string applicationKey = "app") {
 			Authentication = new TestAuthentication { Subject = subject };
 			_services = new ServiceCollection().AddSingleton<IJSRuntime>(new BrowserRuntime(browser))
 				.AddSingleton<AuthenticationStateProvider>(Authentication).BuildServiceProvider();
-			Store = new BlazorApplicationSettingsStore(_services);
+			Provider = new BlazorSettingsProvider(_services, applicationKey);
 		}
 
+		/// <summary>The circuit authentication state supplied to the provider.</summary>
 		public TestAuthentication Authentication { get; }
-		public BlazorApplicationSettingsStore Store { get; }
 
+		/// <summary>The browser-backed provider owned by this fixture.</summary>
+		public BlazorSettingsProvider Provider { get; }
+
+		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
 		public async ValueTask DisposeAsync() {
-			await Store.DisposeAsync();
+			await Provider.DisposeAsync();
 			await _services.DisposeAsync();
 		}
 	}
 
+	/// <summary>Supplies the circuit's current authenticated subject to provider checks.</summary>
 	private sealed class TestAuthentication : AuthenticationStateProvider {
+		/// <summary>The circuit's current authenticated user identity.</summary>
 		public string Subject { get; set; }
 
+		/// <inheritdoc />
 		public override Task<AuthenticationState> GetAuthenticationStateAsync() {
 			return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(Subject == null ? new ClaimsIdentity()
 				: new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, Subject) }, "test"))));
 		}
 	}
 
+	/// <summary>Implements only the browser storage calls used by the real provider.</summary>
 	private sealed class BrowserRuntime(BrowserState browser) : IJSRuntime, IJSObjectReference {
+		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] arguments) {
 			return InvokeAsync<TValue>(identifier, CancellationToken.None, arguments);
 		}
 
+		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] arguments) {
 			token.ThrowIfCancellationRequested();
 			object value = null;
@@ -1219,6 +1488,13 @@ public class BlazorApplicationSettingsTests {
 					browser.Values.TryGetValue((string)arguments[0], out var stored);
 					value = stored;
 					break;
+				case "Delete":
+					browser.Values.TryRemove((string)arguments[0], out _);
+					break;
+				case "Clear":
+					foreach (var key in browser.Values.Keys.Where(key => key.StartsWith((string)arguments[0], StringComparison.Ordinal)))
+						browser.Values.TryRemove(key, out _);
+					break;
 				case "Write":
 					if (browser.FailWrite)
 						throw new JSException("Browser storage is unavailable.");
@@ -1229,8 +1505,11 @@ public class BlazorApplicationSettingsTests {
 			return ValueTask.FromResult(value == null ? default : (TValue)value);
 		}
 
+		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
 		public ValueTask DisposeAsync() {
 			return ValueTask.CompletedTask;
 		}
 	}
+
+	#endregion
 }

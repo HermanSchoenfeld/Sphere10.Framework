@@ -17,25 +17,30 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
 /// <summary>Plain grid query and deliberate width values for a screen-owned or standalone browser profile.</summary>
 [UserEditable]
-public class BlazorGridSettings : IValidatableObject {
+public class BlazorGridSettings : SettingsObject, IValidatableObject {
 	/// <summary>The grid's existing paging mode, independent of its current viewport capacity.</summary>
 	[DisplayName("Page mode")]
+	[DefaultValue(BlazorGridPageMode.Paged)]
 	public BlazorGridPageMode PageMode { get; set; }
 
 	/// <summary>The remembered manual page size.</summary>
 	[DisplayName("Page size")]
+	[DefaultValue(10)]
 	public int PageSize { get; set; } = 10;
 
 	/// <summary>The zero-based current page, clamped by the grid to its source.</summary>
 	[DisplayName("Page number")]
+	[DefaultValue(0)]
 	public int PageNumber { get; set; }
 
 	/// <summary>The stable sort-column identity.</summary>
 	[DisplayName("Sort column")]
+	[DefaultValue(null)]
 	public string SortColumnName { get; set; }
 
 	/// <summary>The ordering applied to the selected sort column.</summary>
 	[DisplayName("Sort direction")]
+	[DefaultValue(SortDirection.None)]
 	public SortDirection SortDirection { get; set; }
 
 	/// <summary>Legacy standalone width values, used when no declared column schema is supplied.</summary>
@@ -46,8 +51,19 @@ public class BlazorGridSettings : IValidatableObject {
 	[DisplayName("Column widths")]
 	public ApplicationGridColumnPreferences[] Columns { get; set; } = Array.Empty<ApplicationGridColumnPreferences>();
 
+	/// <summary>Restores attributed query values and releases manual widths while retaining the declared columns.</summary>
+	public override void RestoreDefaultValues() {
+		base.RestoreDefaultValues();
+		ColumnWidths?.Clear();
+		foreach (var column in Columns ?? Array.Empty<ApplicationGridColumnPreferences>())
+			if (column != null) {
+				column.Width = null;
+				column.ExpandsToFit = null;
+			}
+	}
+
 	/// <summary>Checks query and schema values without constructing a control or reading data.</summary>
-	public Result Validate() {
+	public override Result Validate() {
 		var result = new Result();
 		if (!Enum.IsDefined(PageMode))
 			result.AddError("Select a supported grid page mode.");

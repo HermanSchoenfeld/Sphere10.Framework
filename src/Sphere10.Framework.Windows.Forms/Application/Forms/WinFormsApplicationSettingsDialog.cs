@@ -9,88 +9,110 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Extensions.DependencyInjection;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Edits selected application and screen preferences on detached pages without creating their operational screens.</summary>
+/// <summary>Edits the actual plugin, block and screen settings owned by the running application.</summary>
 public partial class WinFormsApplicationSettingsDialog : Form {
-	private readonly Dictionary<ApplicationSettingsProfile, PageState> _pages = new(ReferenceEqualityComparer.Instance);
-	private readonly ApplicationSettingsCatalog _catalog;
+	private readonly Dictionary<SettingsObject, string> _backups = new(ReferenceEqualityComparer.Instance);
+	private readonly HashSet<SettingsObject> _dirty = new(ReferenceEqualityComparer.Instance);
 	private readonly IWinFormsApplication _application;
 	private readonly IServiceProvider _services;
-	private ApplicationSettingsProfile _selected;
+	private object _selectedOwner;
 	private ICrudEntityEditor<object> _editor;
 	private Control _editorControl;
 	private bool _applying;
 
-	/// <summary>Creates only the native designer surface, without resolving providers or preference data.</summary>
+	/// <summary>Creates the native designer surface without resolving application services or settings.</summary>
 	public WinFormsApplicationSettingsDialog() {
 		InitializeComponent();
 		UpdateButtons();
 	}
 
-	/// <summary>Projects an initialized catalog and optionally selects the active registration's page.</summary>
-	public WinFormsApplicationSettingsDialog(ApplicationSettingsCatalog catalog, IWinFormsApplication application = null,
-		IServiceProvider services = null, ApplicationSettingsProfile selectedProfile = null)
+	/// <summary>Enumerates existing owners and prefers the active screen's settings unless an owner is supplied.</summary>
+	public WinFormsApplicationSettingsDialog(IWinFormsApplication application, IServiceProvider services = null, object selectedOwner = null)
 		: this() {
-		Guard.ArgumentNotNull(catalog, nameof(catalog));
-		Guard.Ensure(catalog.IsInitialized, "Initialize application preferences before displaying Options.");
-		_catalog = catalog;
 		_application = application;
 		_services = services;
 		PopulateNavigation();
-		var profile = selectedProfile ?? catalog.Profiles.FirstOrDefault(item => item.HasOptions) ?? catalog.Profiles.FirstOrDefault();
-		if (profile != null)
-			SelectProfile(profile);
+
+		// Follow the visible screen rather than the block currently browsed in navigation.
+		if (selectedOwner is ApplicationScreenDefinition { Settings: null })
+			selectedOwner = null;
+		var activeScreen = _application?.ScreenHost?.ActiveScreen;
+		selectedOwner ??= activeScreen?.ScreenSettings ?? activeScreen?.Block?.BlockSettings;
+		if (selectedOwner != null)
+			SelectOwner(selectedOwner);
+		else {
+			var node = FindFirstSettingsNode(_navigation.Nodes);
+			if (node != null)
+				_navigation.SelectedNode = node;
+		}
 	}
 
-	/// <summary>The selected root or canonical screen registration, including no-options pages.</summary>
+	/// <summary>The selected existing plugin, block or screen definition.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public ApplicationSettingsProfile SelectedProfile => _selected;
+	public object SelectedOwner {
+		get {
+			return _selectedOwner;
+		}
+	}
 
-	/// <summary>Whether any visited page has unapplied changes, independently of successful earlier Apply operations.</summary>
+	/// <summary>Whether any visited settings object contains unapplied dialog edits.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasUnappliedChanges => _pages.Values.Any(page => page.Dirty);
+	public bool HasUnappliedChanges {
+		get {
+			return _dirty.Count > 0 || _editor?.HasChanges == true;
+		}
+	}
 
-	/// <summary>Selects an existing catalog page without reconstructing its owning screen.</summary>
-	public void SelectProfile(ApplicationSettingsProfile profile) {
-		Guard.ArgumentNotNull(profile, nameof(profile));
-		var node = FindProfileNode(_navigation.Nodes, profile);
-		Guard.Argument(node != null, nameof(profile), "The profile does not belong to this Options catalog.");
+	/// <summary>Selects an owner already present in the running application's graph.</summary>
+	public void SelectOwner(object owner) {
+		Guard.ArgumentNotNull(owner, nameof(owner));
+		var node = FindOwnerNode(_navigation.Nodes, owner);
+		Guard.Argument(node != null, nameof(owner), "The owner does not belong to this application's Options tree.");
 		_navigation.SelectedNode = node;
 		node.EnsureVisible();
 	}
 
-	/// <summary>Validates and persists only the selected detached page before accepting its new revision.</summary>
+	/// <summary>Validates and saves the selected actual settings object, which then notifies its listeners.</summary>
 	public async Task<bool> ApplySelectedAsync(CancellationToken cancellationToken = default) {
-		if (!CanEditProfile(_selected))
+		var settings = GetSettings(_selectedOwner);
+		if (!CanEdit(_selectedOwner))
 			return true;
-		Guard.Ensure(!_applying, "A preference page is already being saved.");
+		Guard.Ensure(!_applying, "Settings are already being saved.");
 		CaptureEditorChanges();
-		var profile = _selected;
-		var page = _pages[profile];
 		_applying = true;
 		UpdateButtons();
 		_status.ForeColor = SystemColors.ControlText;
-		_status.Text = "Saving preferences...";
+		_status.Text = "Saving settings...";
 		try {
-			var validation = await page.Session.ApplyAsync(cancellationToken);
-			if (validation.IsFailure) {
-				ShowError(string.Join(Environment.NewLine, validation.ErrorMessages));
+			// Use the settings object's existing validation and ordinary data annotations.
+			var result = settings.Validate();
+			var annotations = new List<ValidationResult>();
+			Validator.TryValidateObject(settings, new ValidationContext(settings), annotations, true);
+			if (result.IsFailure || annotations.Count > 0) {
+				ShowError(string.Join(Environment.NewLine, result.ErrorMessages.Concat(annotations.Select(error => error.ErrorMessage))));
 				return false;
 			}
-			page.Dirty = false;
-			RefreshPageCaption(profile);
-			CreateEditor(page);
+
+			// A successful explicit save is the only boundary that publishes OnChanged.
+			await settings.SaveAsync(cancellationToken);
+			_backups[settings] = SettingsObjectJsonSerializer.SerializeValues(settings);
+			_dirty.Remove(settings);
+			RefreshPageCaption(_selectedOwner);
+			CreateEditor();
 			_status.ForeColor = SystemColors.ControlText;
-			_status.Text = "Preferences saved.";
+			_status.Text = "Settings saved.";
 			return true;
 		} catch (Exception error) {
 			ShowError(error.Message);
@@ -101,29 +123,30 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		}
 	}
 
-	/// <summary>Restores provisional defaults for the selected page without saving or clearing migration presence.</summary>
+	/// <summary>Restores the selected object's declared defaults without saving them.</summary>
 	public void ResetSelectedDefaults() {
-		Guard.Ensure(!_applying, "Wait for the current preference save to complete.");
-		if (!CanEditProfile(_selected))
+		Guard.Ensure(!_applying, "Wait for the current settings save to complete.");
+		if (!CanEdit(_selectedOwner))
 			return;
-		var page = _pages[_selected];
-		page.Session.Reset();
-		page.Dirty = true;
-		CreateEditor(page);
-		RefreshPageCaption(_selected);
+		var settings = GetSettings(_selectedOwner);
+		settings.RestoreDefaultValues();
+		_dirty.Add(settings);
+		CreateEditor();
+		RefreshPageCaption(_selectedOwner);
 		_status.ForeColor = SystemColors.ControlText;
 		_status.Text = "Defaults are provisional until Apply or OK succeeds.";
 	}
 
-	/// <summary>Discards all unapplied page drafts while preserving preferences already accepted by Apply.</summary>
+	/// <summary>Restores local backups for unapplied edits while retaining earlier successful Apply operations.</summary>
 	public void CancelEdits() {
-		foreach (var pair in _pages) {
-			pair.Value.Session.Cancel();
-			pair.Value.Dirty = false;
-		}
+		CaptureEditorChanges();
+		foreach (var settings in _dirty)
+			SettingsObjectJsonSerializer.PopulateValues(_backups[settings], settings);
+		_dirty.Clear();
+		ClearEditor();
 	}
 
-	// An accepted write must finish before closing; disposing a draft never queues another save.
+	// Do not dispose an editor while its explicitly accepted save is still running.
 	protected override void OnFormClosing(FormClosingEventArgs e) {
 		if (_applying) {
 			e.Cancel = true;
@@ -134,52 +157,57 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		base.OnFormClosing(e);
 	}
 
-	// Each profile keeps its own detached draft while navigation groups remain metadata-only nodes.
+	// Navigation retains only dialog-local backups; the owner always keeps the actual settings object.
 	private void NavigationAfterSelect(object sender, TreeViewEventArgs e) {
 		CaptureEditorChanges();
 		ClearEditor();
-		_selected = e.Node.Tag as ApplicationSettingsProfile;
+		_selectedOwner = e.Node.Tag;
 		_status.Clear();
-		_title.Text = _selected?.Title ?? e.Node.Text;
+		_title.Text = e.Node.Text;
 		_emptyPage.Visible = true;
-		if (_selected?.HasOptions != true) {
-			_emptyPage.Text = _selected == null ? "Select an application or screen to inspect its preferences."
-				: "This screen has no configurable preferences.";
+		var settings = GetSettings(_selectedOwner);
+		if (settings == null) {
+			_emptyPage.Text = "This item has no configurable settings.";
 			UpdateButtons();
 			return;
 		}
-		if (!_pages.TryGetValue(_selected, out var page)) {
-			page = new PageState(_selected.BeginEdit());
-			_pages.Add(_selected, page);
-		} else if (!page.Dirty)
-			page.Session.Cancel();
+		_backups.TryAdd(settings, SettingsObjectJsonSerializer.SerializeValues(settings));
 		try {
-			CreateEditor(page);
-			if (_selected.LastLoadError != null)
-				ShowError("Saved preferences could not be restored; validated defaults are shown. " + _selected.LastLoadError.Message);
+			CreateEditor();
 		} catch (Exception error) {
 			ShowError(error.Message);
 		}
 		UpdateButtons();
 	}
 
-	// Only the selected GUI is instantiated; factories borrow the detached session and existing application context.
-	private void CreateEditor(PageState page) {
+	// Factories and attributed editors receive the actual object, rather than an edit-session surrogate.
+	private void CreateEditor() {
 		ClearEditor();
-		var profile = page.Session.Profile;
-		if (!CanEditProfile(profile)) {
-			_emptyPage.Text = "These preferences do not have a user editor.";
+		if (!CanEdit(_selectedOwner)) {
+			_emptyPage.Text = "These settings do not have a user editor.";
 			_emptyPage.Visible = true;
 			return;
 		}
-		var factory = (profile.ScreenDefinition as WinFormsApplicationScreenDefinition)?.SettingsEditor
-			?? (profile.ApplicationDefinition as WinFormsApplicationSettingsDefinition)?.EditorFactory;
-		var editor = factory != null ? factory(new WinFormsApplicationSettingsEditorContext(page.Session.Draft, _application, _services, this))
-			: new DefaultCrudEntityEditor {
-				PropertyFilter = (owner, property) => owner is not SettingsObject
-					|| property.Name is not (nameof(SettingsObject.ID) or nameof(SettingsObject.Provider)),
+		var settings = GetSettings(_selectedOwner);
+		var factory = (_selectedOwner as WinFormsApplicationScreenDefinition)?.SettingsEditor;
+		var editorType = factory == null ? GetDeclaredEditorType(settings.GetType()) : null;
+		var context = new WinFormsApplicationSettingsEditorContext(settings, _application, _services, this);
+		ICrudEntityEditor<object> editor;
+		if (factory != null)
+			editor = factory(context);
+		else if (editorType != null) {
+			Guard.Argument(!editorType.IsAbstract && !editorType.ContainsGenericParameters && typeof(ICrudEntityEditor<object>).IsAssignableFrom(editorType),
+				nameof(editorType), "A settings editor must implement ICrudEntityEditor<object>.");
+			var constructor = editorType.GetConstructor(new[] { typeof(WinFormsApplicationSettingsEditorContext) });
+			editor = (ICrudEntityEditor<object>)(constructor == null ? Tools.Object.Create(editorType) : constructor.Invoke(new object[] { context }));
+		} else
+			editor = new DefaultCrudEntityEditor {
+				PropertyFilter = (owner, property) => Tools.UI.IsSettingsMember(property.PropertyType, property.Attributes.Cast<Attribute>())
+					&& (owner is not SettingsObject || property.Name is not (nameof(SettingsObject.ID) or nameof(SettingsObject.Provider))),
 				PropertySort = PropertySort.CategorizedAlphabetical
 			};
+
+		// The dialog owns the fresh editor control; the settings and application services are borrowed.
 		Guard.Ensure(editor != null, "A settings editor factory must return an editor.");
 		var control = editor.AsControl();
 		Guard.Ensure(control != null && !control.IsDisposed && control.Parent == null, "A settings editor must return a new unattached control.");
@@ -188,7 +216,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 			if (!accepted)
 				control.Dispose();
 		});
-		editor.SetEntity(DataSourceCapabilities.CanUpdate, page.Session.Draft, false);
+		editor.SetEntity(DataSourceCapabilities.CanUpdate, settings, false);
 		control.Dock = DockStyle.Fill;
 		_editorHost.Controls.Add(control);
 		_editor = editor;
@@ -198,143 +226,169 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		accepted = true;
 	}
 
-	// Editors modify the supplied detached root in place; the shared session remains the sole Apply boundary.
+	// Editors keep the supplied settings root; dirty state belongs only to this modal dialog.
 	private void CaptureEditorChanges() {
-		if (_editor == null || _selected == null || !_pages.TryGetValue(_selected, out var page))
+		if (_editor == null)
 			return;
-		Guard.Ensure(ReferenceEquals(_editor.GetEntityWithChanges(), page.Session.Draft), "A settings editor must edit the detached session root supplied by SetEntity.");
+		var settings = GetSettings(_selectedOwner);
+		Guard.Ensure(ReferenceEquals(_editor.GetEntityWithChanges(), settings), "A settings editor must edit the actual settings object supplied by SetEntity.");
 		if (_editor.HasChanges) {
-			page.Dirty = true;
-			RefreshPageCaption(_selected);
+			_dirty.Add(settings);
+			RefreshPageCaption(_selectedOwner);
 		}
 	}
 
-	// Native editor notifications only mark the draft; they do not serialize or persist it.
+	// Property changes remain provisional until the user explicitly saves the actual settings object.
 	private void EditorPropertyChanged(CrudEntityPropertyChangedEventArgs change) {
-		if (_selected == null || !_pages.TryGetValue(_selected, out var page))
+		var settings = GetSettings(_selectedOwner);
+		if (settings == null)
 			return;
-		page.Dirty = true;
-		RefreshPageCaption(_selected);
+		_dirty.Add(settings);
+		RefreshPageCaption(_selectedOwner);
 	}
 
-	// Editor controls belong to this dialog; borrowed factories and sessions have no disposal side effects.
+	// Release only the native editor and its removable event subscription.
 	private void ClearEditor() {
 		if (_editor != null)
 			_editor.PropertyChanged -= EditorPropertyChanged;
 		_editor = null;
-		if (_editorControl != null) {
-			_editorHost.Controls.Remove(_editorControl);
-			_editorControl.Dispose();
-			_editorControl = null;
-		}
+		if (_editorControl == null)
+			return;
+		_editorHost.Controls.Remove(_editorControl);
+		_editorControl.Dispose();
+		_editorControl = null;
 	}
 
-	// Group by the actual application/plugin/block metadata, retaining distinct registration leaves.
+	// Project the existing application graph directly into the native navigation tree.
 	private void PopulateNavigation() {
-		var application = _navigation.Nodes.Add(_catalog.ApplicationKey);
-		var roots = _catalog.Profiles.Where(profile => profile.ApplicationDefinition != null).ToArray();
-		if (roots.Length != 0) {
-			var preferences = application.Nodes.Add("Application Preferences");
-			foreach (var profile in roots)
-				AddProfileNode(preferences.Nodes, profile, profile.Title);
+		var productName = _services?.GetService<IProductInformationProvider>()?.ProductInformation?.ProductName;
+		var root = _navigation.Nodes.Add(string.IsNullOrWhiteSpace(productName) ? "Application" : productName);
+		if (_application == null)
+			return;
+		foreach (var plugin in _application.LoadedPlugins.Cast<IApplicationPlugin>().Concat(_application.Blocks.Select(block => block.Source).Where(plugin => plugin != null))
+			.Distinct<IApplicationPlugin>(ReferenceEqualityComparer.Instance)) {
+			var node = new TreeNode(plugin.Name) { Tag = plugin };
+			root.Nodes.Add(node);
+			foreach (var block in _application.Blocks.Where(block => ReferenceEquals(block.Source, plugin)))
+				AddBlock(node.Nodes, block);
 		}
-		foreach (var plugin in _catalog.Profiles.Where(profile => profile.ScreenDefinition != null).GroupBy(profile => profile.Plugin)) {
-			var pluginNode = application.Nodes.Add(plugin.Key?.Name ?? "Application Screens");
-			foreach (var block in plugin.GroupBy(profile => profile.Block)) {
-				var blockNode = pluginNode.Nodes.Add(block.Key.Name);
-				foreach (var profile in block) {
-					var duplicates = block.Count(other => string.Equals(other.Title, profile.Title, StringComparison.Ordinal)) > 1;
-					var caption = duplicates ? $"{profile.Title} ({profile.ScreenDefinition.StableKey ?? (block.ToList().IndexOf(profile) + 1).ToString()})" : profile.Title;
-					AddProfileNode(blockNode.Nodes, profile, caption);
-				}
-			}
-		}
-		application.Expand();
+		foreach (var block in _application.Blocks.Where(block => block.Source == null))
+			AddBlock(root.Nodes, block);
+		root.Expand();
 	}
 
-	// Node names retain their readable base captions when dirty markers are refreshed.
-	private static void AddProfileNode(TreeNodeCollection nodes, ApplicationSettingsProfile profile, string caption) {
-		nodes.Add(new TreeNode(caption) { Name = caption, Tag = profile });
+	// Only settings-bearing screen definitions belong in Options, including registrations not yet opened.
+	private static void AddBlock(TreeNodeCollection nodes, IApplicationBlock block) {
+		var node = new TreeNode(block.Name) { Tag = block };
+		nodes.Add(node);
+		foreach (var definition in block.ScreenDefinitions.Where(definition => definition.Settings != null)) {
+			var duplicate = block.ScreenDefinitions.Count(other => other.Settings != null && other.Title == definition.Title) > 1;
+			var caption = duplicate ? $"{definition.Title} ({Tools.UI.GetScreenRegistrationKey(block, definition)})" : definition.Title;
+			node.Nodes.Add(new TreeNode(caption) { Tag = definition });
+		}
 	}
 
-	// Lookup stays in this dialog's projected tree rather than creating another settings registry.
-	private static TreeNode FindProfileNode(TreeNodeCollection nodes, ApplicationSettingsProfile profile) {
+	// Resolve values through their existing owners rather than a parallel settings registry.
+	private static SettingsObject GetSettings(object owner) {
+		return owner switch {
+			IApplicationPlugin plugin => plugin.PluginSettings,
+			IApplicationBlock block => block.BlockSettings,
+			ApplicationScreenDefinition definition => definition.Settings,
+			_ => null
+		};
+	}
+
+	// Select the first actual settings page when the caller did not choose an owner.
+	private static TreeNode FindFirstSettingsNode(TreeNodeCollection nodes) {
 		foreach (TreeNode node in nodes) {
-			if (ReferenceEquals(node.Tag, profile))
+			if (GetSettings(node.Tag) != null)
 				return node;
-			var child = FindProfileNode(node.Nodes, profile);
+			var child = FindFirstSettingsNode(node.Nodes);
 			if (child != null)
 				return child;
 		}
 		return null;
 	}
 
-	// Caption changes are presentation only and never alter the profile's persistent identity.
-	private void RefreshPageCaption(ApplicationSettingsProfile profile) {
-		var dirty = _pages.TryGetValue(profile, out var page) && page.Dirty;
-		var node = FindProfileNode(_navigation.Nodes, profile);
-		if (node != null)
-			node.Text = node.Name + (dirty ? " *" : string.Empty);
-		if (ReferenceEquals(profile, _selected))
-			_title.Text = profile.Title + (dirty ? " *" : string.Empty);
+	// Find an existing node by owner identity without creating another settings model.
+	private static TreeNode FindOwnerNode(TreeNodeCollection nodes, object owner) {
+		foreach (TreeNode node in nodes) {
+			if (ReferenceEquals(node.Tag, owner) || ReferenceEquals(GetSettings(node.Tag), owner))
+				return node;
+			var child = FindOwnerNode(node.Nodes, owner);
+			if (child != null)
+				return child;
+		}
+		return null;
 	}
 
-	// Keep the form responsive while an accepted snapshot is persisted off the UI thread.
+	// Dirty markers affect presentation only, preserving each owner's registration identity.
+	private void RefreshPageCaption(object owner) {
+		var node = FindOwnerNode(_navigation.Nodes, owner);
+		if (node == null)
+			return;
+		node.Name = string.IsNullOrEmpty(node.Name) ? node.Text : node.Name;
+		node.Text = node.Name + (_dirty.Contains(GetSettings(owner)) ? " *" : string.Empty);
+		if (ReferenceEquals(owner, _selectedOwner))
+			_title.Text = node.Text;
+	}
+
+	// Keep the existing native layout responsive while an explicit settings save is pending.
 	private void UpdateButtons() {
 		_navigation.Enabled = !_applying;
 		_editorHost.Enabled = !_applying;
-		_apply.Enabled = !_applying && CanEditProfile(_selected);
+		_apply.Enabled = !_applying && CanEdit(_selectedOwner);
 		_reset.Enabled = _apply.Enabled;
-		_ok.Enabled = !_applying && _catalog != null;
+		_ok.Enabled = !_applying;
 		_cancel.Enabled = !_applying;
 	}
 
-	// Automatic editing is explicitly allowed by the value class; a product-supplied editor remains independent of that marker.
-	private static bool CanEditProfile(ApplicationSettingsProfile profile) {
-		return profile?.HasOptions == true && ((profile.ScreenDefinition as WinFormsApplicationScreenDefinition)?.SettingsEditor != null
-			|| (profile.ApplicationDefinition as WinFormsApplicationSettingsDefinition)?.EditorFactory != null
-			|| Attribute.IsDefined(profile.SettingsType, typeof(UserEditableAttribute), true));
+	// Automatic editing is opt-in on the settings class; explicit editors take precedence.
+	private static bool CanEdit(object owner) {
+		var settings = GetSettings(owner);
+		return settings != null && ((owner as WinFormsApplicationScreenDefinition)?.SettingsEditor != null
+			|| GetDeclaredEditorType(settings.GetType()) != null || Attribute.IsDefined(settings.GetType(), typeof(UserEditableAttribute), true));
 	}
 
-	// Validation/storage failures leave the draft and dialog available for a deliberate retry.
+	// The standard component-model attribute names a custom editor shared by any owner of that settings type.
+	private static Type GetDeclaredEditorType(Type settingsType) {
+		var editor = TypeDescriptor.GetAttributes(settingsType).OfType<EditorAttribute>()
+			.FirstOrDefault(attribute => Type.GetType(attribute.EditorBaseTypeName, false) == typeof(ICrudEntityEditor<object>));
+		return editor == null ? null : Type.GetType(editor.EditorTypeName, true);
+	}
+
+	// Failed validation or storage leaves the editor available for correction and retry.
 	private void ShowError(string message) {
 		_status.ForeColor = Color.Firebrick;
 		_status.Text = message;
 	}
 
-	// Apply the selected page while preserving every other visited draft.
+	// Apply only the selected actual owner while retaining other dialog-local edits.
 	private async void ApplyClick(object sender, EventArgs e) {
 		await ApplySelectedAsync();
 	}
 
-	// OK resolves the selected page and keeps the dialog open while another page has unapplied work.
+	// Close only after the selected save succeeds and other visited pages have been resolved.
 	private async void OkClick(object sender, EventArgs e) {
 		if (!await ApplySelectedAsync())
 			return;
 		if (HasUnappliedChanges) {
-			ShowError("Other pages have unapplied changes. Apply those pages or Cancel to discard the remaining drafts.");
+			ShowError("Other pages have unapplied changes. Apply them or Cancel to discard the remaining edits.");
 			return;
 		}
 		DialogResult = DialogResult.OK;
 		Close();
 	}
 
-	// Reset only the selected provisional page.
+	// Use the settings object's existing declared-default lifecycle.
 	private void ResetClick(object sender, EventArgs e) {
 		ResetSelectedDefaults();
 	}
 
-	// Discard remaining drafts without undoing previously accepted preferences.
+	// Discard only unapplied local edits; previously accepted saves remain authoritative.
 	private void CancelClick(object sender, EventArgs e) {
 		CancelEdits();
 		DialogResult = DialogResult.Cancel;
 		Close();
-	}
-
-	// Each visited page retains its own detached session until this dialog closes.
-	private sealed class PageState(ApplicationSettingsEditSession session) {
-		public ApplicationSettingsEditSession Session { get; } = session;
-
-		public bool Dirty { get; set; }
 	}
 }

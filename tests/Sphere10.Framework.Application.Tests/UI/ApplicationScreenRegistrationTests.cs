@@ -20,6 +20,48 @@ namespace Sphere10.Framework.Application.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationScreenRegistrationTests {
 	[Test]
+	public void NavigationResolutionAcceptsSeparatePresentationAlongsideEmptyBlockCommands() {
+		var definition = new ApplicationScreenDefinition(typeof(Screen), "Inspector");
+		var block = new RegistrationOnlyBlock { Name = "Work" };
+		block.AddScreenDefinition(definition);
+		var command = new ShowScreenItem(definition.Registration);
+		var menu = new TestApplicationMenu<ShowScreenItem> { Text = "Inspect", Parent = block };
+		menu.AddItem(command);
+		var commands = new PresentationCommands { Menus = new[] { menu } };
+
+		Tools.UI.ResolveScreenReferences(block, commands);
+
+		Assert.That(command.ScreenDefinition, Is.SameAs(definition));
+		Assert.That(definition.Activators.Single(), Is.SameAs(command));
+		IApplicationBlock sharedBlock = block;
+		Assert.That(sharedBlock.Menus, Is.Empty);
+		Assert.That(sharedBlock.ToolBarItems, Is.Empty);
+		block.RemoveScreenDefinition(definition);
+		Assert.That(block.ScreenDefinitions, Is.Empty, "The presentation adapter owns navigation-reference removal policy.");
+		Assert.That(command.ScreenDefinition, Is.SameAs(definition));
+	}
+
+	[Test]
+	public async Task RegistrationAndHostingDoNotInspectOptionalBlockPresentationProviders() {
+		using var services = new ServiceCollection().BuildServiceProvider();
+		var definition = new ApplicationScreenDefinition(typeof(Screen), "Inspector");
+		var block = new RejectPresentationReadsBlock { Name = "Work" };
+		block.AddScreenDefinition(definition);
+		block.DefaultScreenDefinition = definition;
+
+		Assert.That(Tools.UI.GetScreenDefinitions(new[] { block }).Single(), Is.SameAs(definition));
+		using var host = new ApplicationScreenHost(new[] { block }, services);
+		await host.InitializeAsync();
+		var screen = await host.OpenScreenAsync(block, definition);
+
+		Assert.That(screen.Block, Is.SameAs(block));
+		Assert.That(screen.Host, Is.SameAs(host));
+		Assert.That(await host.UnregisterBlockAsync(block), Is.True);
+		Assert.That(screen.Host, Is.Null);
+		Assert.That(block.PresentationReads, Is.Zero);
+	}
+
+	[Test]
 	public async Task OneSourceMonikerResolvesIndependentDefinitionsAndSingletonsInTwoGraphs() {
 		using var services = new ServiceCollection().BuildServiceProvider();
 		var source = new ApplicationScreenBuilder<Screen>().WithTitle("Inspector").AsSingleInstance().Build();
@@ -73,7 +115,7 @@ public class ApplicationScreenRegistrationTests {
 		menu.AddItem(exactCommand);
 		block.AddMenu(menu);
 
-		Tools.UI.ResolveScreenReferences(block);
+		Tools.UI.ResolveScreenReferences(block, block);
 
 		Assert.That(typeCommand.ScreenDefinition, Is.SameAs(first));
 		Assert.That(exactCommand.ScreenDefinition, Is.SameAs(second));
@@ -105,7 +147,7 @@ public class ApplicationScreenRegistrationTests {
 		menu.AddItem(command);
 		block.AddMenu(menu);
 
-		Assert.That(() => Tools.UI.ResolveScreenReferences(block), Throws.ArgumentException);
+		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.ArgumentException);
 
 		Assert.That(block.ScreenDefinitions, Is.Empty);
 		Assert.That(command.ScreenDefinition, Is.Null);
@@ -163,6 +205,31 @@ public class ApplicationScreenRegistrationTests {
 		Assert.That(copy.Activators, Is.Empty);
 		Assert.That(definition.Activators.Single(), Is.SameAs(command));
 		Assert.That(definition.ActivationMode, Is.Null);
+	}
+
+	private class RegistrationOnlyBlock : ApplicationBlockBase {
+	}
+
+	private sealed class RejectPresentationReadsBlock : RegistrationOnlyBlock, IApplicationCommandProvider {
+		public int PresentationReads { get; private set; }
+
+		public IApplicationMenu[] Menus {
+			get {
+				PresentationReads++;
+				throw new InvalidOperationException("The presentation provider is unavailable.");
+			}
+		}
+
+		public IApplicationMenuItem[] ToolBarItems {
+			get {
+				PresentationReads++;
+				throw new InvalidOperationException("The presentation provider is unavailable.");
+			}
+		}
+	}
+
+	private sealed class PresentationCommands : IApplicationCommandProvider {
+		public IApplicationMenu[] Menus { get; init; } = Array.Empty<IApplicationMenu>();
 	}
 
 	private sealed class ShowScreenItem(ApplicationScreenRegistration registration) : ApplicationMenuItemBase, IScreenMenuItem {

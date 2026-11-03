@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
@@ -21,19 +22,17 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class BuilderConvenienceTests {
+	/// <summary>Verifies inline screen and menu arguments preserve independent snapshots and exact navigation.</summary>
 	[Test]
 	public void InlineScreenAndMenuArgumentsPreserveIndependentSnapshotsAndExactNavigation() {
 		var activations = 0;
-		var defaults = 0;
+		var settings = new Preferences { Value = 7 };
 		var parameters = new Dictionary<string, object> { [nameof(ProbeScreen.Name)] = "second" };
 		var builder = new BlazorApplicationBlockBuilder()
 			.WithName("Input")
 			.AddScreen<ProbeScreen>("First", out var first)
 			.AddScreen<ProbeScreen>("Second", out var second, activationMode: ScreenActivationMode.SingleInstance,
-				stableKey: "second", parameters: parameters, settingsFactory: () => {
-					defaults++;
-					return new Preferences { Value = 7 };
-				}, activator: _ => {
+				stableKey: "second", parameters: parameters, settings: settings, activator: _ => {
 					activations++;
 					return new BlazorApplicationScreenActivation();
 				}
@@ -47,7 +46,6 @@ public class BuilderConvenienceTests {
 		var secondGraph = builder.Build();
 		parameters[nameof(ProbeScreen.Name)] = "changed";
 
-		Assert.That(defaults, Is.EqualTo(1));
 		Assert.That(activations, Is.Zero);
 		Assert.That(menu.Parent, Is.Null);
 		Assert.That(firstGraph.Menus.Single(), Is.Not.SameAs(secondGraph.Menus.Single()));
@@ -61,8 +59,10 @@ public class BuilderConvenienceTests {
 		Assert.That(firstGraph.DefaultScreenDefinition, Is.Not.SameAs(secondGraph.DefaultScreenDefinition));
 		Assert.That(((BlazorApplicationScreenDefinition)firstGraph.DefaultScreenDefinition).Parameters[nameof(ProbeScreen.Name)], Is.EqualTo("second"));
 		Assert.That(((Preferences)firstGraph.DefaultScreenDefinition.Settings).Value, Is.EqualTo(7));
+		Assert.That(firstGraph.DefaultScreenDefinition.Settings, Is.Not.SameAs(secondGraph.DefaultScreenDefinition.Settings));
 	}
 
+	/// <summary>Verifies inline toolbar commands and groups retain execution timing and graph local references.</summary>
 	[Test]
 	public async Task InlineToolbarCommandsAndGroupsRetainExecutionTimingAndGraphLocalReferences() {
 		var calls = 0;
@@ -100,13 +100,13 @@ public class BuilderConvenienceTests {
 		Assert.That(calls, Is.EqualTo(1));
 	}
 
+	/// <summary>Verifies invalid inline children leave the builder graph unchanged.</summary>
 	[Test]
 	public void InvalidInlineChildrenLeaveTheBuilderGraphUnchanged() {
 		var builder = new BlazorApplicationBlockBuilder().WithName("Valid");
 
 		Assert.That(() => builder.AddScreen<ProbeScreen>(""), Throws.ArgumentException);
 		Assert.That(() => builder.AddScreen<ProbeScreen>("Bad", activationMode: ScreenActivationMode.PermanentSingleton, screenKind: ScreenKind.Empty), Throws.ArgumentException);
-		Assert.That(() => builder.AddScreen<ProbeScreen>("No defaults", settingsFactory: () => null), Throws.ArgumentNullException);
 		Assert.That(() => builder.AddMenuItem("Broken", configure: menu => menu.AddItem("Run", (Action)null)), Throws.ArgumentNullException);
 		Assert.That(() => builder.AddToolBarItem("Broken", (Action)null), Throws.ArgumentNullException);
 		var block = builder.AddScreen<ProbeScreen>("Valid").Build();
@@ -115,13 +115,20 @@ public class BuilderConvenienceTests {
 		Assert.That(block.ToolBarItems, Is.Empty);
 	}
 
+	#region Inner Types
+
 	private sealed class ProbeScreen : BlazorApplicationScreen {
+		/// <summary>The persisted name used by the fixture.</summary>
 		[Parameter]
 		public string Name { get; set; }
 	}
 
-	private sealed class Preferences {
+	/// <summary>Retains the settings class's inherited editor metadata.</summary>
+	private sealed class Preferences : SettingsObject {
+		/// <summary>The actual settings value supplied to this fixture editor.</summary>
 		public int Value { get; set; }
 	}
+
+	#endregion
 }
 

@@ -150,7 +150,7 @@ public class ApplicationScreenDefinitionTests {
 	[TestCase(false)]
 	public void ResolutionRejectsMalformedMenuMembership(bool nullMenu) {
 		var block = new MalformedBlock(nullMenu ? new IApplicationMenu[] { null } : new IApplicationMenu[] { new NullItemsMenu() }, Array.Empty<ApplicationScreenDefinition>());
-		Assert.That(() => Tools.UI.GetScreenDefinitions(new[] { block }), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => Tools.UI.ResolveScreenReferences(block, block), Throws.InstanceOf<ArgumentException>());
 	}
 
 	[Test]

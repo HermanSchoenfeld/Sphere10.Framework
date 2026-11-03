@@ -18,7 +18,20 @@ export function Read(key) {
 	return localStorage.getItem(key);
 }
 
-// A successful return is the browser acceptance boundary used by the catalog's ordered save gate.
+// A successful return confirms the browser write before SettingsObject.SaveAsync publishes its change notification.
 export function Write(key, value) {
 	localStorage.setItem(key, value);
+}
+
+// Delete only the requested typed settings record.
+export function Delete(key) {
+	localStorage.removeItem(key);
+}
+
+// Clear this application's namespace without affecting another application's preferences or the browser identity.
+export function Clear(prefix) {
+	for (const key of Object.keys(localStorage)) {
+		if (key.startsWith(prefix))
+			localStorage.removeItem(key);
+	}
 }

@@ -134,8 +134,25 @@ public partial class BlazorGrid<TItem> {
 	// Imports the standalone record before binding, so its query is the first query issued.
 	private async Task ReadInitialSettingsAsync() {
 		_settingsKey = SettingsKey;
-		var settings = await _module.InvokeAsync<BlazorGridSettings>("ReadLegacySettings", _settingsKey);
-		AcceptPreferenceValues(settings ?? new BlazorGridSettings { PageMode = _parameterPageMode, PageSize = PageSize });
+		var settings = await ReadStandaloneSettingsAsync(_settingsKey)
+			?? new BlazorGridSettings { PageMode = _parameterPageMode, PageSize = PageSize };
+		AcceptPreferenceValues(GetPreferenceSettings(settings), settings);
+	}
+
+	// Typed user records take precedence; the original raw browser key is a read-only migration fallback.
+	private async Task<BlazorGridSettings> ReadStandaloneSettingsAsync(string key) {
+		BlazorGridSettings settings = null;
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+			if (await UserSettings.HasAsync<BlazorGridSettings>(key))
+				settings = await UserSettings.GetAsync<BlazorGridSettings>(key);
+			else {
+				var legacy = await _module.InvokeAsync<BlazorGridSettings>("ReadLegacySettings", key);
+				settings = legacy == null ? null : ToPreferences(legacy, _columns);
+			}
+		}, exception => exception is JSException or Newtonsoft.Json.JsonException);
+		if (error != null)
+			SystemLog.Exception(error);
+		return settings;
 	}
 
 	// Completes a deferred browser-local initialization after its values and geometry have been seeded.

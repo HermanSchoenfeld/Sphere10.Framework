@@ -16,9 +16,14 @@ using Sphere10.Framework.Application.UI;
 
 namespace Sphere10.Framework.Application.Tests;
 
+/// <summary>Exercises shared application builder tests.</summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
 public class ApplicationBuilderTests {
+	// A screen command retains its definition alongside the inherited deferred-action values.
+	private sealed record ScreenItemDefinition(string ScreenTitle, ApplicationScreenDefinition ScreenDefinition) : ItemDefinition(ScreenTitle, null, null), IScreenMenuItem;
+
+	/// <summary>Verifies block builds retain independent menu arrays.</summary>
 	[Test]
 	public void BlockBuildsRetainIndependentMenuArrays() {
 		var firstMenu = new MenuBuilder()
@@ -44,6 +49,7 @@ public class ApplicationBuilderTests {
 		Assert.That(builder.Build().MenuDefinitions, Is.EqualTo(new[] { firstMenu, secondMenu }));
 	}
 
+	/// <summary>Verifies menu builds retain independent item arrays.</summary>
 	[Test]
 	public void MenuBuildsRetainIndependentItemArrays() {
 		var firstItem = new ItemBuilder()
@@ -71,6 +77,7 @@ public class ApplicationBuilderTests {
 		Assert.That(builder.Build().ItemDefinitions, Is.EqualTo(new[] { firstItem, secondItem }));
 	}
 
+	/// <summary>Verifies item builds retain their immutable screen definition references.</summary>
 	[Test]
 	public void ItemBuildsRetainTheirImmutableScreenDefinitionReferences() {
 		var firstDefinition = new ApplicationScreenDefinition(typeof(PlainScreen), "Original", ScreenActivationMode.SingleInstance);
@@ -87,6 +94,7 @@ public class ApplicationBuilderTests {
 		Assert.That(second.ScreenDefinition.Title, Is.EqualTo("Second"));
 	}
 
+	/// <summary>Verifies explicit definition identity does not depend on caption configuration order.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
 	public void ExplicitDefinitionIdentityDoesNotDependOnCaptionConfigurationOrder(bool captionFirst) {
@@ -103,6 +111,7 @@ public class ApplicationBuilderTests {
 		Assert.That(item.ScreenDefinition.Title, Is.EqualTo("Screen title"));
 	}
 
+	/// <summary>Verifies action configuration replaces the other action kind.</summary>
 	[Test]
 	public void ActionConfigurationReplacesTheOtherActionKind() {
 		var syncCalls = 0;
@@ -122,6 +131,7 @@ public class ApplicationBuilderTests {
 		Assert.That(third.AsyncAction, Is.Null);
 	}
 
+	/// <summary>Verifies screen and action are mutually exclusive.</summary>
 	[Test]
 	public void ScreenAndActionAreMutuallyExclusive([Values] bool screenFirst, [Values] bool asynchronousAction) {
 		var builder = new ItemBuilder().WithText("Item");
@@ -137,6 +147,7 @@ public class ApplicationBuilderTests {
 		}
 	}
 
+	/// <summary>Verifies build rejects incomplete definitions.</summary>
 	[TestCase("block")]
 	[TestCase("menu")]
 	[TestCase("item")]
@@ -150,98 +161,158 @@ public class ApplicationBuilderTests {
 		Assert.That(() => build(), Throws.TypeOf<InvalidOperationException>());
 	}
 
-	private sealed record BlockDefinition(string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock {
+	#region Inner Types
+
+	/// <summary>Supplies block definition for the fixture's existing contract checks.</summary>
+	private sealed record BlockDefinition(string Name, MenuDefinition[] MenuDefinitions) : IApplicationBlock, IApplicationCommandProvider {
+		/// <inheritdoc />
+		public SettingsObject BlockSettings { get; set; }
+
+		/// <inheritdoc />
 		public IApplication Parent { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationPlugin Source { get; set; }
 
-		public int Position => 0;
+		/// <inheritdoc />
+		public int Position {
+			get {
+				return 0;
+			}
+		}
 
-		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
+		/// <inheritdoc />
+		public ApplicationScreenDefinition[] ScreenDefinitions {
+			get {
+				return Array.Empty<ApplicationScreenDefinition>();
+			}
+		}
 
-		public ApplicationScreenDefinition DefaultScreenDefinition => null;
+		/// <inheritdoc />
+		public ApplicationScreenDefinition DefaultScreenDefinition {
+			get {
+				return null;
+			}
+		}
 
-		public IApplicationMenu[] Menus => MenuDefinitions;
+		/// <inheritdoc />
+		public IApplicationMenu[] Menus {
+			get {
+				return MenuDefinitions;
+			}
+		}
 	}
 
+	/// <summary>Supplies menu definition for the fixture's existing contract checks.</summary>
 	private sealed record MenuDefinition(string Text, ItemDefinition[] ItemDefinitions) : IApplicationMenu {
+		/// <inheritdoc />
 		public IApplicationBlock Parent { get; set; }
 
-		public IApplicationMenuItem[] Items => ItemDefinitions;
+		/// <inheritdoc />
+		public IApplicationMenuItem[] Items {
+			get {
+				return ItemDefinitions;
+			}
+		}
 	}
 
+	/// <summary>Supplies item definition for the fixture's existing contract checks.</summary>
 	private record ItemDefinition(
 		string Title, Action Action, Func<IServiceProvider, CancellationToken, Task> AsyncAction
 	) : IApplicationMenuItem {
+		/// <inheritdoc />
 		public IApplicationMenu Parent { get; set; }
 	}
 
-	private sealed record ScreenItemDefinition(string ScreenTitle, ApplicationScreenDefinition ScreenDefinition)
-		: ItemDefinition(ScreenTitle, null, null), IScreenMenuItem;
 
+
+	/// <summary>Supplies block builder for the fixture's existing contract checks.</summary>
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<MenuDefinition, BlockDefinition> {
+		/// <summary>Sets the test block's display name.</summary>
 		public BlockBuilder WithName(string name) {
 			SetName(name);
 			return this;
 		}
 
+		/// <summary>Adds the supplied menu to the test builder.</summary>
 		public BlockBuilder AddMenu(MenuDefinition menu) {
 			AddMenuDefinition(menu);
 			return this;
 		}
 
-		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) => new(Name, menus.ToArray());
+		/// <inheritdoc />
+		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) {
+			return new(Name, menus.ToArray());
+		}
 	}
 
+	/// <summary>Supplies menu builder for the fixture's existing contract checks.</summary>
 	private sealed class MenuBuilder : ApplicationMenuBuilderBase<ItemDefinition, MenuDefinition> {
+		/// <summary>Sets the test command or menu display text.</summary>
 		public MenuBuilder WithText(string text) {
 			SetText(text);
 			return this;
 		}
 
+		/// <summary>Adds the supplied item to the test menu builder.</summary>
 		public MenuBuilder AddItem(ItemDefinition item) {
 			AddItemInternal(item);
 			return this;
 		}
 
-		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) => new(Text, items.ToArray());
+		/// <inheritdoc />
+		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) {
+			return new(Text, items.ToArray());
+		}
 	}
 
+	/// <summary>Supplies item builder for the fixture's existing contract checks.</summary>
 	private sealed class ItemBuilder : ApplicationMenuItemBuilderBase {
+		/// <summary>Sets the test command or menu display text.</summary>
 		public ItemBuilder WithText(string text) {
 			SetText(text);
 			return this;
 		}
 
+		/// <summary>Sets the test command's screen registration.</summary>
 		public ItemBuilder WithScreen(Type screenType) {
 			SetScreenType(screenType);
 			return this;
 		}
 
+		/// <summary>Sets the test command's screen registration.</summary>
 		public ItemBuilder WithScreen(ApplicationScreenDefinition definition) {
 			SetScreenDefinition(definition);
 			return this;
 		}
 
+		/// <summary>Sets the test command's deferred action.</summary>
 		public ItemBuilder WithAction(Action action) {
 			SetAction(action);
 			return this;
 		}
 
+		/// <summary>Sets the test command's deferred action.</summary>
 		public ItemBuilder WithAction(Func<IServiceProvider, CancellationToken, Task> action) {
 			SetAction(action);
 			return this;
 		}
 
+		/// <summary>Builds the configured test product without running deferred actions.</summary>
 		public ItemDefinition Build() {
 			ValidateItem();
 			return ScreenDefinition == null ? new ItemDefinition(Text, Action, AsyncAction) : new ScreenItemDefinition(Text, ScreenDefinition);
 		}
 	}
 
+	/// <summary>Supplies plain screen for the fixture's existing contract checks.</summary>
 	private class PlainScreen : IApplicationScreen {
+		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
 
+		/// <inheritdoc />
 		public IApplicationBlock Block { get; set; }
 	}
+
+	#endregion
 }

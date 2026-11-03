@@ -13,12 +13,12 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Application.UI;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
-using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Web.AspNetCore.Blazor;
 
@@ -39,7 +39,8 @@ public static class IServiceCollectionExtensions {
 		services.TryAddTransient(typeof(Wizard.IBlazorWizardBuilder<>), typeof(Wizard.BlazorWizardBuilder<>));
 		services.TryAddScoped<Modal.ModalService>();
 		services.TryAddScoped<Modal.ViewService>();
-		services.TryAddScoped<IApplicationSettingsStore, BlazorApplicationSettingsStore>();
+		services.TryAddScoped<BlazorSettingsProvider>();
+		services.TryAddScoped<ISettingsProvider>(provider => provider.GetRequiredService<BlazorSettingsProvider>());
 		services.TryAddScoped<IBlazorApplicationScreenHost>(provider => new BlazorApplicationScreenHost(provider.GetServices<IBlazorApplicationBlock>(), provider));
 		services.TryAddScoped<IApplicationScreenHost>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
 		services.TryAddScoped<IApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
@@ -49,8 +50,14 @@ public static class IServiceCollectionExtensions {
 		services.TryAddScoped<IMultiApplicationScreenHost<IBlazorApplicationBlock, BlazorApplicationScreenSession>>(provider => provider.GetRequiredService<IBlazorApplicationScreenHost>());
 		services.TryAddScoped<IBlazorUserInterfaceServices>(provider => new BlazorUserInterfaceServices(provider.GetRequiredService<IBlazorApplicationScreenHost>(), provider));
 		services.TryAddScoped<IUserInterfaceServices>(provider => provider.GetRequiredService<IBlazorUserInterfaceServices>());
-		services.TryAddScoped<IBlazorApplication>(provider => new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
-			provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider));
+		services.TryAddScoped<IBlazorApplication>(provider => {
+			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
+				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider);
+
+			// Capture the backend before DI owns the application, including circuits that never initialize.
+			using var settings = UserSettings.UseProvider(application.Settings);
+			return application;
+		});
 		services.TryAddScoped<IApplication>(provider => provider.GetRequiredService<IBlazorApplication>());
 		services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, BlazorApplicationCircuitHandler>());
 		services.TryAddScoped<IThemeService, ThemeService>();
@@ -60,17 +67,22 @@ public static class IServiceCollectionExtensions {
 	/// <summary>Configures application-level commands once per circuit, using the same aggregate exposed through IApplication.</summary>
 	public static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
-		return AddSphere10BlazorApplication(services, configure, null, null);
+		return AddSphere10BlazorApplication(services, configure, null);
 	}
 
 	// Builder metadata travels into each circuit's application; no application or preference values are resolved at registration time.
 	internal static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<BlazorApplication> configure,
-		string settingsKey, ApplicationSettingsDefinition[] settingsDefinitions) {
+		string settingsKey) {
 		Guard.ArgumentNotNull(services, nameof(services));
 		services.AddSphere10Blazor();
+		if (settingsKey != null)
+			services.Replace(ServiceDescriptor.Scoped<BlazorSettingsProvider>(provider => new BlazorSettingsProvider(provider, settingsKey)));
 		services.Replace(ServiceDescriptor.Scoped<IBlazorApplication>(provider => {
 			var application = new BlazorApplication(provider.GetRequiredService<IBlazorApplicationScreenHost>(),
-				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider, settingsKey, settingsDefinitions);
+				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider, settingsKey);
+
+			// Configuration and later disposal share the provider captured while this circuit scope is alive.
+			using var settings = UserSettings.UseProvider(application.Settings);
 			try {
 				configure?.Invoke(application);
 				return application;
