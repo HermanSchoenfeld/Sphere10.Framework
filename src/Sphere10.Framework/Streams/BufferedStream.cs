@@ -18,13 +18,29 @@ namespace Sphere10.Framework;
 /// Use the source only through this decorator while it is active. Sequential reads require neither seeking nor sizing.
 /// Read-ahead can advance the source beyond this stream's logical position; <see cref="FlushUnreadData"/> explicitly
 /// returns unread bytes on seekable sources. Disposal never seeks or flushes the source. Instances are not thread safe.
+/// <para>
+/// Indicative performance versus ordinary FileStream with a 4 KiB buffer: .NET 10.0.14, Windows x64,
+/// warm OS cache, median of five rounds after two warmups, measured 3 November 2026. This stream uses
+/// 64 KiB read-ahead over an unbuffered FileStream; setup and validation are outside the timed loop.
+/// </para>
+/// <list type="table">
+/// <listheader><term>Workload</term><description>Measured relative performance</description></listheader>
+/// <item><term>4 KiB reads over 64 MiB</term><description>2.61 times faster.</description></item>
+/// <item><term>8-256 byte reads over 256 KiB</term><description>1.21-4.83 times faster.</description></item>
+/// <item><term>Single-byte reads over 256 KiB</term><description>Near parity; about 3 percent slower in this run.</description></item>
+/// <item><term>64 KiB-1 MiB reads and Length queries</term><description>Near parity.</description></item>
+/// </list>
+/// <para>
+/// Results vary with workload and environment; the .NET 64 KiB BufferedStream was faster for 1-64 byte reads.
+/// Timed loops allocated no managed memory after warmup; the retained read buffer still costs 64 KiB.
+/// See the Streams README and BufferedStreamPerformanceTests for conditions and reproducible comparisons.
+/// </para>
 /// </remarks>
-public class BufferedStream : Stream {
+public class BufferedStream : StreamDecorator {
 
 	/// <summary>The default read-ahead capacity, in bytes.</summary>
 	public const int DefaultBufferSize = 64 * 1024;
 
-	private readonly Stream _stream;
 	private byte[] _buffer;
 	private int _bufferOffset;
 	private int _bufferCount;
@@ -43,13 +59,13 @@ public class BufferedStream : Stream {
 	/// <param name="enableStreamLengthCaching">Whether successful length queries are cached while read buffering is enabled.</param>
 	/// <param name="enableReadBuffering">Whether reads use the private buffer rather than forwarding directly.</param>
 	public BufferedStream(Stream stream, int bufferSize = DefaultBufferSize, bool leaveOpen = true,
-		bool enableStreamLengthCaching = true, bool enableReadBuffering = true) {
+		bool enableStreamLengthCaching = true, bool enableReadBuffering = true)
+		: base(stream) {
 		Guard.ArgumentNotNull(stream, nameof(stream));
 		Guard.ArgumentGT(bufferSize, 0, nameof(bufferSize));
 
 		// Allocate before retaining ownership; failed construction must leave the supplied source with its caller.
 		_buffer = enableReadBuffering ? new byte[bufferSize] : Array.Empty<byte>();
-		_stream = stream;
 		BufferSize = bufferSize;
 		LeaveOpen = leaveOpen;
 		_enableReadBuffering = enableReadBuffering;
@@ -59,7 +75,7 @@ public class BufferedStream : Stream {
 	/// <summary>The source whose physical cursor may be ahead of this stream's logical position.</summary>
 	public Stream WrappedStream {
 		get {
-			return _stream;
+			return InnerStream;
 		}
 	}
 
@@ -109,28 +125,28 @@ public class BufferedStream : Stream {
 	/// <inheritdoc />
 	public override bool CanRead {
 		get {
-			return !_disposed && _stream.CanRead;
+			return !_disposed && InnerStream.CanRead;
 		}
 	}
 
 	/// <inheritdoc />
 	public override bool CanWrite {
 		get {
-			return !_disposed && _stream.CanWrite;
+			return !_disposed && InnerStream.CanWrite;
 		}
 	}
 
 	/// <inheritdoc />
 	public override bool CanSeek {
 		get {
-			return !_disposed && _stream.CanSeek;
+			return !_disposed && InnerStream.CanSeek;
 		}
 	}
 
 	/// <inheritdoc />
 	public override bool CanTimeout {
 		get {
-			return !_disposed && _stream.CanTimeout;
+			return !_disposed && InnerStream.CanTimeout;
 		}
 	}
 
@@ -142,7 +158,7 @@ public class BufferedStream : Stream {
 				return _streamLength;
 
 			try {
-				var length = _stream.Length;
+				var length = InnerStream.Length;
 				if (length < 0)
 					throw new IOException("The source returned a negative stream length.");
 				if (_enableReadBuffering && _enableStreamLengthCaching) {
@@ -183,11 +199,11 @@ public class BufferedStream : Stream {
 	public override int ReadTimeout {
 		get {
 			EnsureOpen();
-			return _stream.ReadTimeout;
+			return InnerStream.ReadTimeout;
 		}
 		set {
 			EnsureOpen();
-			_stream.ReadTimeout = value;
+			InnerStream.ReadTimeout = value;
 		}
 	}
 
@@ -195,11 +211,11 @@ public class BufferedStream : Stream {
 	public override int WriteTimeout {
 		get {
 			EnsureOpen();
-			return _stream.WriteTimeout;
+			return InnerStream.WriteTimeout;
 		}
 		set {
 			EnsureOpen();
-			_stream.WriteTimeout = value;
+			InnerStream.WriteTimeout = value;
 		}
 	}
 
@@ -224,7 +240,7 @@ public class BufferedStream : Stream {
 
 		try {
 			if (!_enableReadBuffering) {
-				var count = _stream.Read(buffer);
+				var count = InnerStream.Read(buffer);
 				ValidateReadCount(count, buffer.Length);
 				return count;
 			}
@@ -237,13 +253,13 @@ public class BufferedStream : Stream {
 			var remaining = buffer[copied..];
 			if (remaining.Length >= BufferSize) {
 				// Caller-managed bulk reads bypass the intermediate allocation and copy.
-				var count = _stream.Read(remaining);
+				var count = InnerStream.Read(remaining);
 				ValidateReadCount(count, remaining.Length);
 				AdvancePosition(count);
 				return copied + count;
 			}
 
-			_bufferCount = _stream.Read(_buffer.AsSpan());
+			_bufferCount = InnerStream.Read(_buffer.AsSpan());
 			ValidateReadCount(_bufferCount, _buffer.Length);
 			return copied + CopyBufferedBytes(remaining);
 		} catch {
@@ -273,7 +289,7 @@ public class BufferedStream : Stream {
 
 		try {
 			if (!_enableReadBuffering) {
-				var count = await _stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+				var count = await InnerStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 				ValidateReadCount(count, buffer.Length);
 				return count;
 			}
@@ -285,19 +301,50 @@ public class BufferedStream : Stream {
 			DiscardReadBuffer();
 			var remaining = buffer[copied..];
 			if (remaining.Length >= BufferSize) {
-				var count = await _stream.ReadAsync(remaining, cancellationToken).ConfigureAwait(false);
+				var count = await InnerStream.ReadAsync(remaining, cancellationToken).ConfigureAwait(false);
 				ValidateReadCount(count, remaining.Length);
 				AdvancePosition(count);
 				return copied + count;
 			}
 
-			_bufferCount = await _stream.ReadAsync(_buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+			_bufferCount = await InnerStream.ReadAsync(_buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
 			ValidateReadCount(_bufferCount, _buffer.Length);
 			return copied + CopyBufferedBytes(remaining.Span);
 		} catch {
 			InvalidateAfterFailure();
 			throw;
 		}
+	}
+
+	/// <summary>Copies through this decorator's reads so retained read-ahead reaches the destination.</summary>
+	public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) {
+		ValidateCopyToArguments(destination, bufferSize);
+		EnsureOpen();
+		if (!CanRead) {
+			ObjectDisposedException.ThrowIf(!CanWrite, this);
+			throw new NotSupportedException("The stream does not support reading.");
+		}
+		if (cancellationToken.IsCancellationRequested)
+			return Task.FromCanceled(cancellationToken);
+
+		return CopyBufferedToAsync(destination, bufferSize, cancellationToken);
+	}
+
+	/// <summary>Runs the legacy asynchronous read through this decorator, preserving callback state.</summary>
+	public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state) {
+		ValidateBufferArguments(buffer, offset, count);
+		EnsureOpen();
+		var task = Task<int>.Factory.StartNew(_ => Read(buffer, offset, count), state, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+		if (callback != null)
+			_ = task.ContinueWith(result => callback(result), TaskScheduler.Default);
+		return task;
+	}
+
+	/// <summary>Completes the read started by this decorator and propagates its original failure.</summary>
+	public override int EndRead(IAsyncResult asyncResult) {
+		Guard.ArgumentNotNull(asyncResult, nameof(asyncResult));
+		Guard.Argument(asyncResult is Task<int>, nameof(asyncResult), "Expected the result returned by BeginRead.");
+		return ((Task<int>)asyncResult).GetAwaiter().GetResult();
 	}
 
 	/// <summary>Writes immediately at the logical cursor, first returning unread read-ahead to the source.</summary>
@@ -313,7 +360,7 @@ public class BufferedStream : Stream {
 			return;
 
 		if (!_enableReadBuffering) {
-			_stream.Write(buffer);
+			InnerStream.Write(buffer);
 			return;
 		}
 
@@ -321,7 +368,7 @@ public class BufferedStream : Stream {
 		_streamLengthKnown = false;
 		FlushUnreadData();
 		try {
-			_stream.Write(buffer);
+			InnerStream.Write(buffer);
 			AdvancePosition(buffer.Length);
 		} catch {
 			InvalidateAfterFailure();
@@ -350,19 +397,36 @@ public class BufferedStream : Stream {
 			return;
 
 		if (!_enableReadBuffering) {
-			await _stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+			await InnerStream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
 			return;
 		}
 
 		_streamLengthKnown = false;
 		FlushUnreadData();
 		try {
-			await _stream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+			await InnerStream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
 			AdvancePosition(buffer.Length);
 		} catch {
 			InvalidateAfterFailure();
 			throw;
 		}
+	}
+
+	/// <summary>Runs the legacy asynchronous write through this decorator's cursor synchronization.</summary>
+	public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state) {
+		ValidateBufferArguments(buffer, offset, count);
+		EnsureOpen();
+		var task = Task.Factory.StartNew(_ => Write(buffer, offset, count), state, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+		if (callback != null)
+			_ = task.ContinueWith(result => callback(result), TaskScheduler.Default);
+		return task;
+	}
+
+	/// <summary>Completes the write started by this decorator and propagates its original failure.</summary>
+	public override void EndWrite(IAsyncResult asyncResult) {
+		Guard.ArgumentNotNull(asyncResult, nameof(asyncResult));
+		Guard.Argument(asyncResult is Task, nameof(asyncResult), "Expected the result returned by BeginWrite.");
+		((Task)asyncResult).GetAwaiter().GetResult();
 	}
 
 	/// <summary>Seeks in the retained window when possible, otherwise forwards an adjusted logical offset.</summary>
@@ -384,7 +448,7 @@ public class BufferedStream : Stream {
 		}
 
 		try {
-			var position = _stream.Seek(adjusted, origin);
+			var position = InnerStream.Seek(adjusted, origin);
 			ValidatePosition(position);
 			DiscardReadBuffer();
 			_position = position;
@@ -402,14 +466,14 @@ public class BufferedStream : Stream {
 		EnsureOpen();
 		Guard.ArgumentNotNegative(value, nameof(value));
 		if (!_enableReadBuffering) {
-			_stream.SetLength(value);
+			InnerStream.SetLength(value);
 			return;
 		}
 
 		_streamLengthKnown = false;
 		FlushUnreadData();
 		try {
-			_stream.SetLength(value);
+			InnerStream.SetLength(value);
 			_positionKnown = false;
 		} catch {
 			InvalidateAfterFailure();
@@ -420,14 +484,14 @@ public class BufferedStream : Stream {
 	/// <summary>Forwards output flushing without implicitly rewinding or discarding unread data.</summary>
 	public override void Flush() {
 		EnsureOpen();
-		_stream.Flush();
+		InnerStream.Flush();
 	}
 
 	/// <inheritdoc />
 	public override Task FlushAsync(CancellationToken cancellationToken) {
 		EnsureOpen();
 		cancellationToken.ThrowIfCancellationRequested();
-		return _stream.FlushAsync(cancellationToken);
+		return InnerStream.FlushAsync(cancellationToken);
 	}
 
 	/// <summary>Enables both settings, allocating read-ahead before changing either disabled setting.</summary>
@@ -448,7 +512,7 @@ public class BufferedStream : Stream {
 		var unread = UnreadCount;
 		if (unread > 0) {
 			try {
-				var position = _stream.Seek(-unread, SeekOrigin.Current);
+				var position = InnerStream.Seek(-unread, SeekOrigin.Current);
 				ValidatePosition(position);
 				_position = position;
 				_positionKnown = true;
@@ -465,6 +529,12 @@ public class BufferedStream : Stream {
 		FlushUnreadData();
 	}
 
+	/// <summary>Closes this decorator while respecting its source ownership policy.</summary>
+	public override void Close() {
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
 	/// <summary>Releases the private buffer and closes only an owned source, without flushing or seeking.</summary>
 	protected override void Dispose(bool disposing) {
 		if (_disposed)
@@ -474,8 +544,7 @@ public class BufferedStream : Stream {
 		_buffer = Array.Empty<byte>();
 		DiscardReadBuffer();
 		if (disposing && !LeaveOpen)
-			_stream.Dispose();
-		base.Dispose(disposing);
+			InnerStream.Dispose();
 	}
 
 	/// <summary>Releases the private buffer and awaits only an owned source's asynchronous disposal.</summary>
@@ -487,8 +556,17 @@ public class BufferedStream : Stream {
 		_buffer = Array.Empty<byte>();
 		DiscardReadBuffer();
 		if (!LeaveOpen)
-			await _stream.DisposeAsync().ConfigureAwait(false);
+			await InnerStream.DisposeAsync().ConfigureAwait(false);
 		GC.SuppressFinalize(this);
+	}
+
+	// Keep the borrowed copy buffer alive until both decorated reads and destination writes complete.
+	private async Task CopyBufferedToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) {
+		using var bufferScope = Tools.Scope.EnterBorrowArrayScope(bufferSize);
+		var buffer = bufferScope.Item.AsMemory(0, bufferSize);
+		int count;
+		while ((count = await ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+			await destination.WriteAsync(buffer[..count], cancellationToken).ConfigureAwait(false);
 	}
 
 	// Consume only retained bytes and update an already-known logical cursor without probing the source.
@@ -502,7 +580,7 @@ public class BufferedStream : Stream {
 
 	// An absolute position is queried only at the caller's explicit metadata boundary.
 	private long ReadSourcePosition() {
-		var position = _stream.Position;
+		var position = InnerStream.Position;
 		ValidatePosition(position);
 		return position;
 	}
@@ -551,7 +629,7 @@ public class BufferedStream : Stream {
 			throw new IOException("The source returned a negative stream position.");
 	}
 
-	// Stream owns the disposal entry points; no separate disposable facade or lifecycle state is needed.
+	// Enforce this wrapper's lifetime independently of a borrowed source's lifetime.
 	private void EnsureOpen() {
 		ObjectDisposedException.ThrowIf(_disposed, this);
 	}

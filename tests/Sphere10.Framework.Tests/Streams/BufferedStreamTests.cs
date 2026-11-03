@@ -86,6 +86,25 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
+	public void DecoratorCloseDisposesTheWrapperAndHonorsOwnershipWithoutRewinding([Values] bool leaveOpen) {
+		using var source = new ObservedStream(Pattern(24));
+		using StreamDecorator buffered = new BufferedStream(source, 8, leaveOpen);
+		Assert.That(buffered.ReadByte(), Is.Zero);
+		var position = source.PhysicalPosition;
+		var seeks = source.SeekCalls;
+
+		buffered.Close();
+		buffered.Close();
+
+		Assert.That(source.DisposeCalls, Is.EqualTo(leaveOpen ? 0 : 1));
+		Assert.That(source.PhysicalPosition, Is.EqualTo(position));
+		Assert.That(source.SeekCalls, Is.EqualTo(seeks));
+		Assert.That(source.FlushCalls, Is.Zero);
+		Assert.That(buffered.CanRead, Is.False);
+		Assert.That(buffered.ReadByte, Throws.InstanceOf<ObjectDisposedException>());
+	}
+
+	[Test]
 	public async Task AsyncDisposalUsesTheOwnedSourcesAsyncPath([Values] bool leaveOpen) {
 		using var source = new ObservedStream(Pattern(24));
 		var buffered = new BufferedStream(source, 8, leaveOpen);
@@ -976,6 +995,59 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
+	public async Task CopyToAsyncRejectsInvalidDestinationsBeforeConsumingUnreadBytes([Values("null", "readonly", "disposed")] string destinationKind) {
+		using var source = new ObservedStream(Pattern(24));
+		await using var buffered = new BufferedStream(source, 8);
+		buffered.ReadByte();
+		using var destination = destinationKind == "readonly" ? new MemoryStream(Pattern(8), false) : new MemoryStream();
+		if (destinationKind == "disposed")
+			destination.Dispose();
+		var expected = destinationKind switch {
+			"null" => typeof(ArgumentNullException),
+			"readonly" => typeof(NotSupportedException),
+			_ => typeof(ObjectDisposedException)
+		};
+
+		await Assert.ThatAsync(async () => await buffered.CopyToAsync(destinationKind == "null" ? null : destination, 11), Throws.TypeOf(expected));
+
+		Assert.That(source.ReadCalls, Is.EqualTo(1));
+		Assert.That(source.SeekCalls, Is.Zero);
+		Assert.That(buffered.ReadByte(), Is.EqualTo(1));
+	}
+
+	[Test]
+	public async Task CopyToAsyncRejectsInvalidBufferSizesBeforeConsumingUnreadBytes([Values(0, -1)] int bufferSize) {
+		using var source = new ObservedStream(Pattern(24));
+		await using var buffered = new BufferedStream(source, 8);
+		buffered.ReadByte();
+		using var destination = new MemoryStream();
+
+		await Assert.ThatAsync(async () => await buffered.CopyToAsync(destination, bufferSize), Throws.InstanceOf<ArgumentOutOfRangeException>());
+
+		Assert.That(destination.Length, Is.Zero);
+		Assert.That(source.ReadCalls, Is.EqualTo(1));
+		Assert.That(source.SeekCalls, Is.Zero);
+		Assert.That(buffered.ReadByte(), Is.EqualTo(1));
+	}
+
+	[Test]
+	public async Task CancelledCopyToAsyncDoesNotConsumeUnreadBytesOrWriteTheDestination() {
+		using var source = new ObservedStream(Pattern(24));
+		await using var buffered = new BufferedStream(source, 8);
+		buffered.ReadByte();
+		using var destination = new MemoryStream();
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+
+		await Assert.ThatAsync(async () => await buffered.CopyToAsync(destination, 11, cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+
+		Assert.That(destination.Length, Is.Zero);
+		Assert.That(source.ReadCalls, Is.EqualTo(1));
+		Assert.That(source.SeekCalls, Is.Zero);
+		Assert.That(buffered.ReadByte(), Is.EqualTo(1));
+	}
+
+	[Test]
 	public async Task FlushRoutesForwardWithoutRewindingOrDiscardingUnreadBytes([Values] bool useAsync) {
 		using var source = new ObservedStream(Pattern(24));
 		await using var buffered = new BufferedStream(source, 8);
@@ -1019,6 +1091,56 @@ public class BufferedStreamTests {
 		buffered.EndWrite(write);
 		Assert.That(source.Bytes[3], Is.EqualTo(240));
 		Assert.That(buffered.Position, Is.EqualTo(4));
+	}
+
+	[Test]
+	public async Task ApmCallbacksReceiveTheirReturnedResultsAndStates() {
+		using var source = new ObservedStream(Pattern(24));
+		using StreamDecorator buffered = new BufferedStream(source, 8);
+		buffered.ReadByte();
+		var readState = new object();
+		var readCallback = new TaskCompletionSource<IAsyncResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var bytes = new byte[2];
+		var read = buffered.BeginRead(bytes, 0, bytes.Length, result => readCallback.TrySetResult(result), readState);
+
+		Assert.That(await readCallback.Task.WaitAsync(TimeSpan.FromSeconds(5)), Is.SameAs(read));
+		Assert.That(read.AsyncState, Is.SameAs(readState));
+		Assert.That(buffered.EndRead(read), Is.EqualTo(2));
+		Assert.That(bytes, Is.EqualTo(new byte[] { 1, 2 }));
+		Assert.That(source.ReadCalls, Is.EqualTo(1));
+
+		var writeState = new object();
+		var writeCallback = new TaskCompletionSource<IAsyncResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var write = buffered.BeginWrite(new byte[] { 240 }, 0, 1, result => writeCallback.TrySetResult(result), writeState);
+
+		Assert.That(await writeCallback.Task.WaitAsync(TimeSpan.FromSeconds(5)), Is.SameAs(write));
+		Assert.That(write.AsyncState, Is.SameAs(writeState));
+		buffered.EndWrite(write);
+		Assert.That(source.Bytes[3], Is.EqualTo(240));
+		Assert.That(buffered.Position, Is.EqualTo(4));
+	}
+
+	[Test]
+	public async Task ApmEndPreservesTheOriginalSourceFailure([Values] bool write) {
+		using var source = new ObservedStream(Pattern(24));
+		using StreamDecorator buffered = new BufferedStream(source, 8);
+		buffered.ReadByte();
+		var failure = new IOException("APM source failure");
+		if (write)
+			source.WriteFailure = failure;
+		else
+			source.ReadFailure = failure;
+		var callback = new TaskCompletionSource<IAsyncResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var bytes = new byte[16];
+		var operation = write
+			? buffered.BeginWrite(bytes, 0, bytes.Length, result => callback.TrySetResult(result), null)
+			: buffered.BeginRead(bytes, 0, bytes.Length, result => callback.TrySetResult(result), null);
+
+		Assert.That(await callback.Task.WaitAsync(TimeSpan.FromSeconds(5)), Is.SameAs(operation));
+		if (write)
+			Assert.That(() => buffered.EndWrite(operation), Throws.Exception.SameAs(failure));
+		else
+			Assert.That(() => buffered.EndRead(operation), Throws.Exception.SameAs(failure));
 	}
 
 	[Test]

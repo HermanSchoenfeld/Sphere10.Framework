@@ -4,6 +4,10 @@
 to .NET streams. It provides bounded read-ahead and optional lazy length caching.
 It does not buffer writes or add synchronization.
 
+It extends the Framework's `StreamDecorator` and uses its inner stream reference.
+Copy, legacy asynchronous and close entry points retain buffering and `leaveOpen`
+semantics through explicit overrides.
+
 ```csharp
 using System.IO;
 using BufferedStream = Sphere10.Framework.BufferedStream;
@@ -64,11 +68,15 @@ Run the behavioral fixture with the repository's ordinary NUnit runner:
 dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter FullyQualifiedName~BufferedStreamTests
 ```
 
-The port passed 148 behavioral cases, including the Pascal implementation's 86
+The decorator implementation passed 159 behavioral cases, including the Pascal implementation's 86
 semantic groups and the additional .NET asynchronous, span, copy and disposal
 routes. The core and test builds completed without warnings or errors.
 
 ## Measured file performance
+
+The [Streams README](../../src/Sphere10.Framework/Streams/README.md) retains the
+latest decorator measurements and a compact performance summary. The table below
+preserves the original port's baseline for comparison.
 
 The explicit NUnit diagnostic can be selected independently:
 
@@ -80,7 +88,8 @@ It writes JSON and CSV results to a unique temporary output directory. An option
 NUnit `BufferedStreamPerformanceDirectory` test parameter selects another output
 directory. The fixture deletes its own temporary data file after the run.
 
-The following measurements were taken on 3 November 2026 using .NET 10.0.14,
+The following baseline measurements were taken at commit `ac2fa149a`, before the
+StreamDecorator refactor, on 3 November 2026 using .NET 10.0.14,
 Windows x64 and 20 logical processors. Each value is the median of five measured
 rounds following two warm-up rounds. All variants use synchronous
 `FileAccess.Read`, `FileShare.Read` and `FileOptions.SequentialScan`, with a warm
