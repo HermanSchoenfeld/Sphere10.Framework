@@ -1,108 +1,67 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Planning;
 
 /// <summary>
-/// Summary description for PlanningGrid.
+/// Displays appointments across day columns and configurable time slots.
 /// </summary>
-public class PlanningGrid : System.Windows.Forms.UserControl {
-	private Grid grid;
+public partial class PlanningGrid : UserControlEx {
+	public event AppointmentEventHandler AppointmentClick;
 
-	/// <summary> 
-	/// Required designer variable.
-	/// </summary>
-	private System.ComponentModel.Container components = null;
+	public event AppointmentEventHandler AppointmentDoubleClick;
+
+	private DateTime _dateTimeStart;
+
+	private DateTime _dateTimeEnd;
+
+	private int _minAppointmentLength;
+
+	private AppointmentCollection _appointments = new AppointmentCollection();
+
+	private const int _rowsHeader = 2;
+
+	private const int _columnsHeader = 2;
 
 	public PlanningGrid() {
 		// This call is required by the Windows.Forms Form Designer.
 		InitializeComponent();
-
-		grid.Selection.FocusStyle = FocusStyle.None;
 	}
-
-	/// <summary> 
-	/// Clean up any resources being used.
-	/// </summary>
-	protected override void Dispose(bool disposing) {
-		if (disposing) {
-			if (components != null) {
-				components.Dispose();
-			}
-		}
-		base.Dispose(disposing);
-	}
-
-	#region Component Designer generated code
-
-	/// <summary> 
-	/// Required method for Designer support - do not modify 
-	/// the contents of this method with the code editor.
-	/// </summary>
-	private void InitializeComponent() {
-		this.grid = new Grid();
-		this.SuspendLayout();
-		// 
-		// grid
-		// 
-		this.grid.AutoStretchColumnsToFitWidth = false;
-		this.grid.AutoStretchRowsToFitHeight = false;
-		this.grid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.grid.Dock = System.Windows.Forms.DockStyle.Fill;
-		this.grid.Location = new System.Drawing.Point(0, 0);
-		this.grid.Name = "grid";
-		this.grid.Size = new System.Drawing.Size(360, 340);
-		this.grid.SpecialKeys = GridSpecialKeys.Default;
-		this.grid.TabIndex = 0;
-		// 
-		// PlanningGrid
-		// 
-		this.Controls.Add(this.grid);
-		this.Name = "PlanningGrid";
-		this.Size = new System.Drawing.Size(360, 340);
-		this.ResumeLayout(false);
-
-	}
-
-	#endregion
-
-	protected override void OnLoad(EventArgs e) {
-		base.OnLoad(e);
-
-		grid.Controller.AddController(new AppointmentController(this));
-	}
-
-	private DateTime m_DateTimeStart;
-	private DateTime m_DateTimeEnd;
-	private int m_MinAppointmentLength;
-
-	private AppointmentCollection m_Appointments = new AppointmentCollection();
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public AppointmentCollection Appointments {
-		get { return m_Appointments; }
+		get {
+			return _appointments;
+		}
 	}
 
 	public DateTime DateTimeStart {
-		get { return m_DateTimeStart; }
+		get {
+			return _dateTimeStart;
+		}
 	}
 
 	public DateTime DateTimeEnd {
-		get { return m_DateTimeEnd; }
+		get {
+			return _dateTimeEnd;
+		}
 	}
 
 	public int MinAppointmentLength {
-		get { return m_MinAppointmentLength; }
+		get {
+			return _minAppointmentLength;
+		}
 	}
 
 	/// <summary>
@@ -110,11 +69,10 @@ public class PlanningGrid : System.Windows.Forms.UserControl {
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Grid Grid {
-		get { return grid; }
+		get {
+			return _grid;
+		}
 	}
-
-	private const int c_RowsHeader = 2;
-	private const int c_ColumnsHeader = 2;
 
 	/// <summary>
 	/// Load the grid using the parameters specified
@@ -123,25 +81,25 @@ public class PlanningGrid : System.Windows.Forms.UserControl {
 	/// <param name="dateTimeEnd"></param>
 	/// <param name="minAppointmentLength"></param>
 	public void LoadPlanning(DateTime dateTimeStart, DateTime dateTimeEnd, int minAppointmentLength) {
-		m_DateTimeStart = dateTimeStart;
-		m_DateTimeEnd = dateTimeEnd;
-		m_MinAppointmentLength = minAppointmentLength;
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
+		_dateTimeStart = dateTimeStart;
+		_dateTimeEnd = dateTimeEnd;
+		_minAppointmentLength = minAppointmentLength;
 
 		if (dateTimeStart >= dateTimeEnd)
 			throw new ApplicationException("Invalid Planning Range");
 		if (dateTimeStart.TimeOfDay >= dateTimeEnd.TimeOfDay)
 			throw new ApplicationException("Invalid Plannnin Range");
-		if (dateTimeStart.TimeOfDay.Minutes != 0 ||
-		    dateTimeEnd.TimeOfDay.Minutes != 0)
+		if (dateTimeStart.TimeOfDay.Minutes != 0 || dateTimeEnd.TimeOfDay.Minutes != 0)
 			throw new ApplicationException("Invalid Start or End hours must be with 0 minutes");
 		if (minAppointmentLength <= 0 || minAppointmentLength > 60)
 			throw new ApplicationException("Invalid Minimum Appointment Length");
 		if (60 % minAppointmentLength != 0)
 			throw new ApplicationException("Invalid Minimum Appointment Length must be multiple of 60");
 
-		TimeSpan dayInterval = dateTimeEnd - dateTimeStart;
-		TimeSpan timeInterval = dateTimeEnd.TimeOfDay - dateTimeStart.TimeOfDay;
-		int partsForHour = 60 / minAppointmentLength;
+		var dayInterval = dateTimeEnd - dateTimeStart;
+		var timeInterval = dateTimeEnd.TimeOfDay - dateTimeStart.TimeOfDay;
+		var partsForHour = 60 / minAppointmentLength;
 
 		if (dayInterval.TotalDays > 30)
 			throw new ApplicationException("Range too big");
@@ -149,85 +107,83 @@ public class PlanningGrid : System.Windows.Forms.UserControl {
 			throw new ApplicationException("Invalid Minimum Appointment Length for current Planning Range");
 
 		//Redim Grid
-		grid.Redim((int)((timeInterval.TotalHours + 1) * partsForHour + c_RowsHeader),
-			(int)(dayInterval.TotalDays + 1 + c_ColumnsHeader));
+		_grid.Redim((int)((timeInterval.TotalHours + 1) * partsForHour + _rowsHeader), (int)(dayInterval.TotalDays + 1 + _columnsHeader));
 
 		//Load Header
-		grid[0, 0] = new Header00(null);
-		grid[0, 0].RowSpan = 2;
-		grid[0, 0].ColumnSpan = 2;
+		_grid[0, 0] = new Header00(null);
+		_grid[0, 0].RowSpan = 2;
+		_grid[0, 0].ColumnSpan = 2;
 		//create day caption
-		DateTime captionDate = dateTimeStart;
-		for (int c = c_ColumnsHeader; c < grid.ColumnsCount; c++) {
-			grid[0, c] = new HeaderDay1(captionDate.ToShortDateString());
-			grid[1, c] = new HeaderDay2(captionDate.ToString("dddd"));
+		var captionDate = dateTimeStart;
+		for (var c = _columnsHeader; c < _grid.ColumnsCount; c++) {
+			_grid[0, c] = new HeaderDay1(captionDate.ToShortDateString());
+			_grid[1, c] = new HeaderDay2(captionDate.ToString("dddd"));
 
 			captionDate = captionDate.AddDays(1);
 		}
 
 		//create hour caption
-		int hours = dateTimeStart.Hour;
-		for (int r = c_RowsHeader; r < grid.RowsCount; r += partsForHour) {
-			grid[r, 0] = new HeaderHour1(hours);
-			grid[r, 0].RowSpan = partsForHour;
+		var hours = dateTimeStart.Hour;
+		for (var r = _rowsHeader; r < _grid.RowsCount; r += partsForHour) {
+			_grid[r, 0] = new HeaderHour1(hours);
+			_grid[r, 0].RowSpan = partsForHour;
 
-			int minutes = 0;
-			for (int rs = r; rs < (r + partsForHour); rs++) {
-				grid[rs, 1] = new HeaderHour2(minutes);
+			var minutes = 0;
+			for (var rs = r; rs < (r + partsForHour); rs++) {
+				_grid[rs, 1] = new HeaderHour2(minutes);
 				minutes += minAppointmentLength;
 			}
 			hours++;
 		}
 
-		grid.FixedColumns = c_ColumnsHeader;
-		grid.FixedRows = c_RowsHeader;
+		_grid.FixedColumns = _columnsHeader;
+		_grid.FixedRows = _rowsHeader;
 
 		//Fix the width of the first 2 columns
-		grid.Columns[0].Width = 40;
-		grid.Columns[0].AutoSizeMode = SourceGrid.AutoSizeMode.None;
-		grid.Columns[1].Width = 40;
-		grid.Columns[1].AutoSizeMode = SourceGrid.AutoSizeMode.None;
+		_grid.Columns[0].Width = 40;
+		_grid.Columns[0].AutoSizeMode = SourceGrid.AutoSizeMode.None;
+		_grid.Columns[1].Width = 40;
+		_grid.Columns[1].AutoSizeMode = SourceGrid.AutoSizeMode.None;
 
-		grid.AutoStretchColumnsToFitWidth = true;
-		grid.AutoStretchRowsToFitHeight = true;
-		grid.AutoSizeCells();
-
+		_grid.AutoStretchColumnsToFitWidth = true;
+		_grid.AutoStretchRowsToFitHeight = true;
+		_grid.AutoSizeCells();
 
 		//Create Appointment Cells
 		//Days
-		for (int c = c_ColumnsHeader; c < grid.ColumnsCount; c++) {
-			DateTime currentTime = dateTimeStart.AddDays(c - c_ColumnsHeader);
-			int indexAppointment = -1;
+		for (var c = _columnsHeader; c < _grid.ColumnsCount; c++) {
+			var currentTime = dateTimeStart.AddDays(c - _columnsHeader);
+			var indexAppointment = -1;
 			Cells.Cell appointmentCell = null;
 			//Hours
-			for (int r = c_RowsHeader; r < grid.RowsCount; r += partsForHour) {
+			for (var r = _rowsHeader; r < _grid.RowsCount; r += partsForHour) {
 				//Minutes
-				for (int rs = r; rs < (r + partsForHour); rs++) {
+				for (var rs = r; rs < (r + partsForHour); rs++) {
 
-					bool l_bFound = false;
+					var found = false;
 					//Appointments
-					for (int i = 0; i < m_Appointments.Count; i++) {
-						if (m_Appointments[i].ContainsDateTime(currentTime)) {
-							l_bFound = true;
+					for (var index = 0; index < _appointments.Count; index++) {
+						if (_appointments[index].ContainsDateTime(currentTime)) {
+							found = true;
 
-							if (indexAppointment != i) {
-								appointmentCell = new CellAppointment(m_Appointments[i]);
-								appointmentCell.View = m_Appointments[i].View;
-								if (m_Appointments[i].Controller != null)
-									appointmentCell.AddController(m_Appointments[i].Controller);
-								grid[rs, c] = appointmentCell;
-								indexAppointment = i;
+							if (indexAppointment != index) {
+								appointmentCell = new CellAppointment(_appointments[index]);
+								appointmentCell.View = _appointments[index].View;
+								if (_appointments[index].Controller != null)
+									appointmentCell.AddController(_appointments[index].Controller);
+								_grid[rs, c] = appointmentCell;
+								indexAppointment = index;
 							} else {
-								grid[rs, c] = null;
+								_grid[rs, c] = null;
 								appointmentCell.RowSpan++;
 							}
 
 							break;
 						}
 					}
-					if (l_bFound) {
+					if (found) {
 					} else {
-						grid[rs, c] = new CellEmpty(currentTime, currentTime.AddMinutes(minAppointmentLength));
+						_grid[rs, c] = new CellEmpty(currentTime, currentTime.AddMinutes(minAppointmentLength));
 						indexAppointment = -1;
 						appointmentCell = null;
 					}
@@ -236,227 +192,71 @@ public class PlanningGrid : System.Windows.Forms.UserControl {
 				}
 			}
 		}
-
 	}
 
 	public void UnLoadPlanning() {
-		grid.Redim(0, 0);
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
+		_grid.Redim(0, 0);
 	}
 
-	public event AppointmentEventHandler AppointmentClick;
-	protected virtual void OnAppointmentClick(AppointmentEventArgs e) {
+	/// <summary>
+	/// Clean up any resources being used.
+	/// </summary>
+	protected override void Dispose(bool disposing) {
+		if (disposing) {
+			if (_components != null)
+				_components.Dispose();
+		}
+		base.Dispose(disposing);
+	}
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+
+		_grid.Controller.AddController(new AppointmentController(this));
+	}
+
+	protected virtual void OnAppointmentClick(AppointmentEventArgs args) {
 		if (AppointmentClick != null)
-			AppointmentClick(this, e);
+			AppointmentClick(this, args);
 	}
-	public event AppointmentEventHandler AppointmentDoubleClick;
-	protected virtual void OnAppointmentDoubleClick(AppointmentEventArgs e) {
+
+	protected virtual void OnAppointmentDoubleClick(AppointmentEventArgs args) {
 		if (AppointmentDoubleClick != null)
-			AppointmentDoubleClick(this, e);
+			AppointmentDoubleClick(this, args);
 	}
 
-
-	public delegate void AppointmentEventHandler(object sender, AppointmentEventArgs e);
-
+	public delegate void AppointmentEventHandler(object sender, AppointmentEventArgs args);
 
 	class AppointmentController : ControllerBase {
+		private PlanningGrid _planningGrid;
+
 		public AppointmentController(PlanningGrid planningGrid) {
-			mPlanningGrid = planningGrid;
+			_planningGrid = planningGrid;
 		}
 
-		private PlanningGrid mPlanningGrid;
-
-		public override void OnClick(CellContext sender, EventArgs e) {
-			base.OnClick(sender, e);
+		public override void OnClick(CellContext sender, EventArgs args) {
+			base.OnClick(sender, args);
 
 			if (sender.Cell is CellAppointment) {
-				CellAppointment cell = (CellAppointment)sender.Cell;
-				mPlanningGrid.OnAppointmentClick(new AppointmentEventArgs(cell.Appointment.DateTimeStart, cell.Appointment.DateTimeEnd, cell.Appointment));
+				var cell = (CellAppointment)sender.Cell;
+				_planningGrid.OnAppointmentClick(new AppointmentEventArgs(cell.Appointment.DateTimeStart, cell.Appointment.DateTimeEnd, cell.Appointment));
 			} else if (sender.Cell is CellEmpty) {
-				CellEmpty cell = (CellEmpty)sender.Cell;
-				mPlanningGrid.OnAppointmentClick(new AppointmentEventArgs(cell.Start, cell.End, null));
+				var cell = (CellEmpty)sender.Cell;
+				_planningGrid.OnAppointmentClick(new AppointmentEventArgs(cell.Start, cell.End, null));
 			}
 		}
 
-		public override void OnDoubleClick(CellContext sender, EventArgs e) {
-			base.OnDoubleClick(sender, e);
+		public override void OnDoubleClick(CellContext sender, EventArgs args) {
+			base.OnDoubleClick(sender, args);
 
 			if (sender.Cell is CellAppointment) {
-				CellAppointment cell = (CellAppointment)sender.Cell;
-				mPlanningGrid.OnAppointmentDoubleClick(new AppointmentEventArgs(cell.Appointment.DateTimeStart, cell.Appointment.DateTimeEnd, cell.Appointment));
+				var cell = (CellAppointment)sender.Cell;
+				_planningGrid.OnAppointmentDoubleClick(new AppointmentEventArgs(cell.Appointment.DateTimeStart, cell.Appointment.DateTimeEnd, cell.Appointment));
 			} else if (sender.Cell is CellEmpty) {
-				CellEmpty cell = (CellEmpty)sender.Cell;
-				mPlanningGrid.OnAppointmentDoubleClick(new AppointmentEventArgs(cell.Start, cell.End, null));
+				var cell = (CellEmpty)sender.Cell;
+				_planningGrid.OnAppointmentDoubleClick(new AppointmentEventArgs(cell.Start, cell.End, null));
 			}
 		}
 	}
 }
-
-
-public class CellAppointment : Cells.Cell {
-	public CellAppointment(IAppointment appointment) : base(appointment.Title) {
-		m_Appointment = appointment;
-
-	}
-
-	private IAppointment m_Appointment;
-
-	public IAppointment Appointment {
-		get { return m_Appointment; }
-	}
-}
-
-
-public class CellEmpty : Cells.Cell {
-	public CellEmpty(DateTime start, DateTime end) : base(null) {
-		m_Start = start;
-		m_End = end;
-	}
-
-	private DateTime m_Start;
-
-	public DateTime Start {
-		get { return m_Start; }
-	}
-
-	private DateTime m_End;
-
-	public DateTime End {
-		get { return m_End; }
-	}
-
-}
-
-
-public class Header00 : Cells.Header {
-	public Header00(object val) : base(val) {
-	}
-}
-
-
-public class HeaderDay1 : Cells.Header {
-	public HeaderDay1(object val) : base(val) {
-	}
-}
-
-
-public class HeaderDay2 : Cells.Header {
-	public HeaderDay2(object val) : base(val) {
-	}
-}
-
-
-public class HeaderHour1 : Cells.RowHeader {
-	public HeaderHour1(object val) : base(val) {
-	}
-}
-
-
-public class HeaderHour2 : Cells.RowHeader {
-	public HeaderHour2(object val) : base(val) {
-	}
-}
-
-
-public class AppointmentEventArgs : EventArgs {
-	public AppointmentEventArgs(DateTime start, DateTime end, IAppointment appointment) {
-		m_DateTimeEnd = end;
-		m_DateTimeStart = start;
-		m_Appointment = appointment;
-	}
-
-	private DateTime m_DateTimeStart;
-
-	public DateTime DateTimeStart {
-		get { return m_DateTimeStart; }
-	}
-
-	private DateTime m_DateTimeEnd;
-
-	public DateTime DateTimeEnd {
-		get { return m_DateTimeEnd; }
-	}
-
-	private IAppointment m_Appointment;
-
-	public IAppointment Appointment {
-		get { return m_Appointment; }
-	}
-}
-
-
-public interface IAppointment {
-	string Title { get; }
-
-	Cells.Views.IView View { get; }
-
-	DateTime DateTimeStart { get; }
-	DateTime DateTimeEnd { get; }
-
-	bool ContainsDateTime(DateTime p_DateTime);
-
-	Cells.Controllers.IController Controller { get; set; }
-}
-
-
-public class AppointmentBase : IAppointment {
-	public AppointmentBase(string title, DateTime dateTimeStart, DateTime dateTimeEnd) {
-		m_Title = title;
-		m_DateTimeEnd = dateTimeEnd;
-		m_DateTimeStart = dateTimeStart;
-
-		m_View = new Cells.Views.Cell();
-		m_View.Border = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder.RectangleBlack1Width;
-	}
-
-	public AppointmentBase() : this("", DateTime.Now, DateTime.Now) {
-	}
-
-	private DateTime m_DateTimeStart;
-
-	public DateTime DateTimeStart {
-		get { return m_DateTimeStart; }
-		set { m_DateTimeStart = value; }
-	}
-
-	private DateTime m_DateTimeEnd;
-
-	public DateTime DateTimeEnd {
-		get { return m_DateTimeEnd; }
-		set { m_DateTimeEnd = value; }
-	}
-
-	private string m_Title;
-
-	public virtual string Title {
-		get { return m_Title; }
-		set { m_Title = value; }
-	}
-
-	private Cells.Views.IView m_View;
-
-	[Browsable(false)]
-	public virtual Cells.Views.IView View {
-		get { return m_View; }
-		set { m_View = value; }
-	}
-
-	public bool ContainsDateTime(DateTime p_DateTime) {
-		return (m_DateTimeStart <= p_DateTime && m_DateTimeEnd > p_DateTime);
-	}
-
-	private Cells.Controllers.IController mController;
-
-	[Browsable(false)]
-	public Cells.Controllers.IController Controller {
-		get { return mController; }
-		set { mController = value; }
-	}
-}
-
-
-/// <summary>
-/// A collection of elements of type IAppointment
-/// </summary>
-public class AppointmentCollection : List<IAppointment> {
-}
-

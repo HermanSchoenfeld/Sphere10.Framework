@@ -308,9 +308,7 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 		// Post-operation notification
 		var postOpEventArgs = postOpArgsConstructor(result);
 		if (EventFilter.HasFlag(operationTrait)) {
-			if (preOpEventArgs is PreEventArgs<ItemsCallArgs<TItem>> preOpEventArgs2  &&
-		        postOpEventArgs is PostEventArgs<ItemsCallArgs<TItem>> postOp2)
-				postOp2.CallArgs = preOpEventArgs2.CallArgs;
+			preOpEventArgs?.CopyCallArgsTo(postOpEventArgs);
 			postEventNotify.Invoke(postOpEventArgs);
 		}
 

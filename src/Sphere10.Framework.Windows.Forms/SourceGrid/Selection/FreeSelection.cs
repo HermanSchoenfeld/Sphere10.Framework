@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,156 +13,53 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 /// <summary>
-/// Similar to <see cref="RangeMergerByRows"/>, this class merge adjancent
-/// ranges if they are differ only by row or column count.
-/// 
-/// See TestRangeMergerByCells for unit tests, which show how this class works
-/// </summary>
-public class RangeMergerByCells {
-	private List<CellRange> m_ranges = new List<CellRange>();
-
-	private bool IntersectWithCurrentRangesRecursive(RangeRegion rangeRegionToIntersect) {
-		// check against each range
-		foreach (CellRange range in m_ranges) {
-			RangeRegion excludedResults = null;
-			CellRange remove = CellRange.Empty;
-			bool excluded = false;
-			// loop through our new ranges
-			foreach (CellRange rangeToIntersect in rangeRegionToIntersect) {
-				// if we intersect with at least one range
-				// get the exclusion range.
-				// mark a flag, that we need to remove our 
-				// range, and add an excluded range
-				if (range.IntersectsWith(rangeToIntersect)) {
-					excludedResults = rangeToIntersect.Exclude(range);
-					excluded = true;
-					remove = rangeToIntersect;
-					break;
-				}
-			}
-			if (excluded) {
-				rangeRegionToIntersect.Remove(remove);
-				rangeRegionToIntersect.Add(excludedResults);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private RangeRegion IntersectWithCurrentRanges(RangeRegion rangeRegionToIntersect) {
-		while (IntersectWithCurrentRangesRecursive(rangeRegionToIntersect)) {
-		}
-		return rangeRegionToIntersect;
-	}
-
-	public RangeMergerByCells AddRange(CellRange rangeToAdd) {
-		RangeRegion rangeRegionToAdd = IntersectWithCurrentRanges(new RangeRegion(rangeToAdd));
-		foreach (CellRange range in rangeRegionToAdd) {
-			m_ranges.Add(range);
-		}
-		JoinAdjanced();
-		return this;
-	}
-
-	private void Join(CellRange range1, CellRange range2) {
-		CellRange result = CellRange.GetBounds(range1, range2);
-		m_ranges.Remove(range1);
-		m_ranges.Remove(range2);
-		m_ranges.Add(result);
-	}
-
-
-	private void JoinAdjanced() {
-		while (JoinAdjancedRecursive()) {
-		}
-	}
-
-
-	/// <summary>
-	/// Repeat this function until it returns false to recursively merge all ranges
-	/// </summary>
-	/// <returns>true, if at least two ranges were joined into single</returns>
-	private bool JoinAdjancedRecursive() {
-		List<CellRange> cloneRanges = new List<CellRange>(m_ranges);
-		foreach (CellRange clonedRange in cloneRanges) {
-			foreach (CellRange rangeToTest in m_ranges) {
-				if (rangeToTest.Equals(clonedRange))
-					continue;
-				if ((rangeToTest.Start.Row == clonedRange.Start.Row) &&
-				    (rangeToTest.End.Row == clonedRange.End.Row)) {
-					if (Math.Abs(rangeToTest.Start.Column - clonedRange.End.Column) == 1) {
-						Join(rangeToTest, clonedRange);
-						return true;
-					}
-
-				}
-
-				if ((rangeToTest.Start.Column == clonedRange.Start.Column) &&
-				    (rangeToTest.End.Column == clonedRange.End.Column)) {
-					if (Math.Abs(rangeToTest.Start.Row - clonedRange.End.Row) == 1) {
-						Join(rangeToTest, clonedRange);
-						return true;
-					}
-
-				}
-			}
-		}
-		return false;
-	}
-
-	public List<CellRange> GetSelectedRowRegions() {
-		return m_ranges;
-	}
-}
-
-
-/// <summary>
 /// A selection class that support free selection of cells (ranges)
 /// </summary>
 public class FreeSelection : SelectionBase {
-	private RangeRegion mRegion = new RangeRegion();
+	private RangeRegion _region = new RangeRegion();
+	private Decorators.DecoratorSelection _decorator;
 
 	public FreeSelection() {
-		mRegion.Changed += delegate(object sender, RangeRegionChangedEventArgs e) { OnSelectionChanged(e); };
+		_region.Changed += delegate (object sender, RangeRegionChangedEventArgs args) {
+			OnSelectionChanged(args);
+		};
 	}
 
-	public override void BindToGrid(GridVirtual p_grid) {
-		base.BindToGrid(p_grid);
+	public override void BindToGrid(GridVirtual grid) {
+		base.BindToGrid(grid);
 
-		mDecorator = new Decorators.DecoratorSelection(this);
-		Grid.Decorators.Add(mDecorator);
+		_decorator = new Decorators.DecoratorSelection(this);
+		Grid.Decorators.Add(_decorator);
 	}
 
 	public override void UnBindToGrid() {
-		Grid.Decorators.Remove(mDecorator);
+		Grid.Decorators.Remove(_decorator);
 
 		base.UnBindToGrid();
 	}
 
-	private Decorators.DecoratorSelection mDecorator;
-
 	public override bool IsSelectedColumn(int column) {
-		return mRegion.ContainsColumn(column);
+		return _region.ContainsColumn(column);
 	}
 
 	public override void SelectColumn(int column, bool select) {
-		CellRange rng = Grid.Columns.GetRange(column);
+		var rng = Grid.Columns.GetRange(column);
 
 		SelectRange(rng, select);
 	}
 
 	public override bool IsSelectedRow(int row) {
-		return mRegion.ContainsRow(row);
+		return _region.ContainsRow(row);
 	}
 
 	public override void SelectRow(int row, bool select) {
-		CellRange rng = Grid.Rows.GetRange(row);
+		var rng = Grid.Rows.GetRange(row);
 
 		SelectRange(rng, select);
 	}
 
 	public override bool IsSelectedCell(Position position) {
-		return mRegion.Contains(position);
+		return _region.Contains(position);
 	}
 
 	public override void SelectCell(Position position, bool select) {
@@ -169,19 +67,15 @@ public class FreeSelection : SelectionBase {
 	}
 
 	public override bool IsSelectedRange(CellRange range) {
-		return mRegion.Contains(range);
+		return _region.Contains(range);
 	}
 
 	public override void SelectRange(CellRange range, bool select) {
-		CellRange newRange = Grid.RangeToCellRange(range);
+		var newRange = Grid.RangeToCellRange(range);
 		if (select)
-			mRegion.Add(ValidateRange(newRange));
+			_region.Add(ValidateRange(newRange));
 		else
-			mRegion.Remove(newRange);
-	}
-
-	protected override void OnResetSelection() {
-		mRegion.Clear();
+			_region.Remove(newRange);
 	}
 
 	/// <summary>
@@ -189,7 +83,7 @@ public class FreeSelection : SelectionBase {
 	/// </summary>
 	/// <returns></returns>
 	public override bool IsEmpty() {
-		return mRegion.IsEmpty();
+		return _region.IsEmpty();
 	}
 
 	/// <summary>
@@ -197,7 +91,7 @@ public class FreeSelection : SelectionBase {
 	/// </summary>
 	/// <returns></returns>
 	public override RangeRegion GetSelectionRegion() {
-		return new RangeRegion(mRegion);
+		return new RangeRegion(_region);
 	}
 
 	/// <summary>
@@ -206,7 +100,10 @@ public class FreeSelection : SelectionBase {
 	/// <param name="rng"></param>
 	/// <returns></returns>
 	public override bool IntersectsWith(CellRange rng) {
-		return mRegion.IntersectsWith(rng);
+		return _region.IntersectsWith(rng);
+	}
+
+	protected override void OnResetSelection() {
+		_region.Clear();
 	}
 }
-

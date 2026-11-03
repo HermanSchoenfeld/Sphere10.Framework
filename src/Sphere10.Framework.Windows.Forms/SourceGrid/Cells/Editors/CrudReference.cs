@@ -1,5 +1,6 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit https://opensource.org/license/mit.
@@ -14,14 +15,14 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 public class CrudReference : TextBoxUITypeEditor {
 	private readonly CrudReferenceBinding _binding;
 
-	public CrudReference(Type EntityType, CrudReferenceBinding Binding)
-		: base(EntityType) {
-		Guard.ArgumentNotNull(Binding, nameof(Binding));
-		_binding = Binding;
-		AllowNull = Binding.AllowNull;
-		NullString = Binding.GetDisplayText(null);
+	public CrudReference(Type entityType, CrudReferenceBinding binding)
+		: base(entityType) {
+		Guard.ArgumentNotNull(binding, nameof(binding));
+		_binding = binding;
+		AllowNull = binding.AllowNull;
+		NullString = binding.GetDisplayText(null);
 		NullDisplayString = NullString;
-		Control.UITypeEditor = new CrudReferenceEditor(Binding);
+		Control.UITypeEditor = new CrudReferenceEditor(binding);
 		Control.TextBox.ReadOnly = true;
 		Control.Button.Text = "▼";
 		Control.Button.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -31,15 +32,19 @@ public class CrudReference : TextBoxUITypeEditor {
 		};
 	}
 
-	public override bool IsStringConversionSupported() => false;
-
-	protected override void OnConvertingValueToDisplayString(ComponentModel.ConvertingObjectEventArgs Args) => Args.Value = _binding.GetDisplayText(Args.Value);
-
-	protected override void OnSendCharToEditor(char Key) {
+	public override bool IsStringConversionSupported() {
+		return false;
 	}
 
-	internal override void InternalStartEdit(CellContext Context) {
-		base.InternalStartEdit(Context);
+	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ComponentModel.ConvertingObjectEventArgs args) {
+		args.Value = _binding.GetDisplayText(args.Value);
+	}
+
+	protected override void OnSendCharToEditor(char key) {
+	}
+
+	internal override void InternalStartEdit(CellContext context) {
+		base.InternalStartEdit(context);
 		if (IsEditing)
 			Control.BeginInvoke(new Action(() => {
 				if (IsEditing && !Control.IsDisposed)

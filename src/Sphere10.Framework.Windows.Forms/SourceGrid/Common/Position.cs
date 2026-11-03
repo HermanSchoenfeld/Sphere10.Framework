@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -15,42 +16,50 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 [Serializable]
 public struct Position {
+	private int _row;
+	private int _col;
+
+	/// <summary>
+	/// Empty position
+	/// </summary>
+	public readonly static Position Empty;
+
+	/// <summary>
+	/// An empty index constant
+	/// </summary>
+	public const int EmptyIndex = -1;
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="row"></param>
-	/// <param name="col"></param>
-	public Position(int row, int col) {
-		m_Row = row;
-		m_Col = col;
+	/// <param name="column"></param>
+	public Position(int row, int column) {
+		_row = row;
+		_col = column;
 	}
 
 	static Position() {
-		Empty = new Position(c_EmptyIndex, c_EmptyIndex);
+		Empty = new Position(EmptyIndex, EmptyIndex);
 	}
-
-	private int m_Row;
-
-	private int m_Col;
 
 	/// <summary>
 	/// Row
 	/// </summary>
 	public int Row {
-		get { return m_Row; }
+		get {
+			return _row;
+		}
 	}
 
 	/// <summary>
 	/// Column
 	/// </summary>
 	public int Column {
-		get { return m_Col; }
+		get {
+			return _col;
+		}
 	}
-
-	/// <summary>
-	/// Empty position
-	/// </summary>
-	public readonly static Position Empty;
 
 	/// <summary>
 	/// Returns true if the current struct is empty
@@ -61,11 +70,6 @@ public struct Position {
 	}
 
 	/// <summary>
-	/// An empty index constant
-	/// </summary>
-	public const int c_EmptyIndex = -1;
-
-	/// <summary>
 	/// GetHashCode
 	/// </summary>
 	/// <returns></returns>
@@ -74,16 +78,16 @@ public struct Position {
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
-	/// <param name="p_Position"></param>
+	/// <param name="position"></param>
 	/// <returns></returns>
-	public bool Equals(Position p_Position) {
-		return (m_Col == p_Position.m_Col && m_Row == p_Position.m_Row);
+	public bool Equals(Position position) {
+		return (_col == position._col && _row == position._row);
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
@@ -92,27 +96,27 @@ public struct Position {
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
-	/// <param name="Left"></param>
-	/// <param name="Right"></param>
+	/// <param name="left"></param>
+	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator ==(Position Left, Position Right) {
-		return Left.Equals(Right);
+	public static bool operator ==(Position left, Position right) {
+		return left.Equals(right);
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
-	/// <param name="Left"></param>
-	/// <param name="Right"></param>
+	/// <param name="left"></param>
+	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator !=(Position Left, Position Right) {
-		return !Left.Equals(Right);
+	public static bool operator !=(Position left, Position right) {
+		return !left.Equals(right);
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <returns></returns>
 	public override string ToString() {
@@ -122,38 +126,38 @@ public struct Position {
 	/// <summary>
 	/// Returns a position with the smaller Row and the smaller column
 	/// </summary>
-	/// <param name="p_Position1"></param>
-	/// <param name="p_Position2"></param>
+	/// <param name="position1"></param>
+	/// <param name="position2"></param>
 	/// <returns></returns>
-	public static Position Min(Position p_Position1, Position p_Position2) {
-		int l_Row, l_Col;
-		if (p_Position1.Row < p_Position2.Row)
-			l_Row = p_Position1.Row;
+	public static Position Min(Position position1, Position position2) {
+		int row, column;
+		if (position1.Row < position2.Row)
+			row = position1.Row;
 		else
-			l_Row = p_Position2.Row;
-		if (p_Position1.Column < p_Position2.Column)
-			l_Col = p_Position1.Column;
+			row = position2.Row;
+		if (position1.Column < position2.Column)
+			column = position1.Column;
 		else
-			l_Col = p_Position2.Column;
-		return new Position(l_Row, l_Col);
+			column = position2.Column;
+		return new Position(row, column);
 	}
+
 	/// <summary>
 	/// Returns a position with the bigger Row and the bigger column
 	/// </summary>
-	/// <param name="p_Position1"></param>
-	/// <param name="p_Position2"></param>
+	/// <param name="position1"></param>
+	/// <param name="position2"></param>
 	/// <returns></returns>
-	public static Position Max(Position p_Position1, Position p_Position2) {
-		int l_Row, l_Col;
-		if (p_Position1.Row > p_Position2.Row)
-			l_Row = p_Position1.Row;
+	public static Position Max(Position position1, Position position2) {
+		int row, column;
+		if (position1.Row > position2.Row)
+			row = position1.Row;
 		else
-			l_Row = p_Position2.Row;
-		if (p_Position1.Column > p_Position2.Column)
-			l_Col = p_Position1.Column;
+			row = position2.Row;
+		if (position1.Column > position2.Column)
+			column = position1.Column;
 		else
-			l_Col = p_Position2.Column;
-		return new Position(l_Row, l_Col);
+			column = position2.Column;
+		return new Position(row, column);
 	}
 }
-

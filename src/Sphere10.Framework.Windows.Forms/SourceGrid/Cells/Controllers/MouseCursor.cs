@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,35 +15,41 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Allow to customize the cursor of a cell. The cell must implement ICellCursor. This behavior can be shared between multiple cells.
 /// </summary>
 public class MouseCursor : ControllerBase {
+	private bool _applyOnMouseEnter = false;
+	private System.Windows.Forms.Cursor _cursor = null;
+
 	public readonly static MouseCursor Default = new MouseCursor(System.Windows.Forms.Cursors.Default, true);
 	public readonly static MouseCursor Hand = new MouseCursor(System.Windows.Forms.Cursors.Hand, true);
 
-	#region Constructor
-
+	// Constructor
 	public MouseCursor(System.Windows.Forms.Cursor cursor, bool applyOnMouseEnter) {
-		mApplyOnMouseEnter = applyOnMouseEnter;
-		mCursor = cursor;
+		_applyOnMouseEnter = applyOnMouseEnter;
+		_cursor = cursor;
 	}
 
-	#endregion
+	public System.Windows.Forms.Cursor Cursor {
+		get {
+			return _cursor;
+		}
+		set {
+			_cursor = value;
+		}
+	}
 
-	#region IBehaviorModel Members
-
+	// IBehaviorModel Members
 	public override void OnMouseEnter(CellContext sender, EventArgs e) {
 		base.OnMouseEnter(sender, e);
 
-		if (mApplyOnMouseEnter)
+		if (_applyOnMouseEnter)
 			ApplyCursor(sender, e);
 	}
 
 	public override void OnMouseLeave(CellContext sender, EventArgs e) {
 		base.OnMouseLeave(sender, e);
 
-		if (mApplyOnMouseEnter)
+		if (_applyOnMouseEnter)
 			ResetCursor(sender, e);
 	}
-
-	#endregion
 
 	/// <summary>
 	/// Change the cursor with the cursor of the cell
@@ -61,13 +68,4 @@ public class MouseCursor : ControllerBase {
 				sender.Grid.Cursor = null;
 		}
 	}
-
-	private bool mApplyOnMouseEnter = false;
-	private System.Windows.Forms.Cursor mCursor = null;
-
-	public System.Windows.Forms.Cursor Cursor {
-		get { return mCursor; }
-		set { mCursor = value; }
-	}
 }
-

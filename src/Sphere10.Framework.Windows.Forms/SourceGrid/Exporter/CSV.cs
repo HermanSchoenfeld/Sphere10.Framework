@@ -1,63 +1,68 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
 /// <summary>
-/// An utility class to export a grid to a csv delimited format file.
+/// Exports grid display text through the shared CSV row and field writers.
 /// </summary>
 public class CSV {
+	private string _fieldSeparator;
+	private string _lineSeparator;
+
+	/// <summary>Uses the current culture’s list separator and the platform line separator.</summary>
 	public CSV() {
-		mFieldSeparator = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ListSeparator;
-		mLineSeparator = System.Environment.NewLine;
+		_fieldSeparator = CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+		_lineSeparator = Environment.NewLine;
 	}
 
-	private string mFieldSeparator;
-
+	/// <summary>The separator written between fields.</summary>
 	public string FieldSeparator {
-		get { return mFieldSeparator; }
-		set { mFieldSeparator = value; }
+		get {
+			return _fieldSeparator;
+		}
+		set {
+			_fieldSeparator = value;
+		}
 	}
 
-	private string mLineSeparator;
-
+	/// <summary>The separator written after each row; null or empty omits it.</summary>
 	public string LineSeparator {
-		get { return mLineSeparator; }
-		set { mLineSeparator = value; }
-	}
-
-	public virtual void Export(GridVirtual grid, System.IO.TextWriter stream) {
-		for (int r = 0; r < grid.Rows.Count; r++) {
-			for (int c = 0; c < grid.Columns.Count; c++) {
-				if (c > 0)
-					stream.Write(mFieldSeparator);
-
-				Cells.ICellVirtual cell = grid.GetCell(r, c);
-				Position pos = new Position(r, c);
-				CellContext context = new CellContext(grid, pos, cell);
-				ExportCSVCell(context, stream);
-			}
-			stream.Write(mLineSeparator);
+		get {
+			return _lineSeparator;
+		}
+		set {
+			_lineSeparator = value;
 		}
 	}
 
-	protected virtual void ExportCSVCell(CellContext context, System.IO.TextWriter stream) {
-		if (context.Cell != null) {
-			string text = context.DisplayText;
-			if (text == null)
-				text = string.Empty;
-			text = text.Replace("\r\n", " ");
-			text = text.Replace("\n", " ");
-			text = text.Replace("\r", " ");
-			stream.Write(text);
-		} else {
-			stream.Write("");
-		}
+	/// <summary>Writes every grid row and leaves the caller’s writer open.</summary>
+	public virtual void Export(GridVirtual grid, TextWriter stream) {
+		for (var row = 0; row < grid.Rows.Count; row++)
+			Tools.Data.WriteCsvRow(stream, Enumerable.Range(0, grid.Columns.Count), (column, destination) => {
+				var cell = grid.GetCell(row, column);
+				var context = new CellContext(grid, new Position(row, column), cell);
+				ExportCSVCell(context, destination);
+			}, _fieldSeparator, _lineSeparator);
+	}
+
+	/// <summary>Flattens display-text line endings before the shared writer escapes one field.</summary>
+	protected virtual void ExportCSVCell(CellContext context, TextWriter stream) {
+		var text = context.Cell == null ? string.Empty : context.DisplayText ?? string.Empty;
+		text = text.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+
+		// Reuse the shared escaping rules for separators and embedded quotation marks.
+		Tools.Data.WriteCsvField(stream, text, _fieldSeparator);
 	}
 }
-

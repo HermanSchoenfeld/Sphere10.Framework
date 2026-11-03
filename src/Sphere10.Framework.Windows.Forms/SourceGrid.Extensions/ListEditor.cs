@@ -1,397 +1,402 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
+using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
-/// Summary description for ListEditor.
+/// Edits a list through reflected property columns with add, remove, refresh and row-movement commands.
 /// </summary>
-public class ListEditor : System.Windows.Forms.UserControl {
-	private Grid grid;
-	private System.Windows.Forms.Button btDown;
-	private System.Windows.Forms.Button btUp;
-	private System.Windows.Forms.Button btRemove;
-	private System.Windows.Forms.Button btAdd;
-	private System.Windows.Forms.Button btrRefreshList;
+public partial class ListEditor : UserControlEx {
+	/// <summary>Raised after a complete list edit.</summary>
+	public event EventHandler ListChanged;
 
-	/// <summary> 
-	/// Required designer variable.
-	/// </summary>
-	private System.ComponentModel.Container components = null;
+	private IList _list;
 
+	private Type _itemType;
+
+	private Cells.Editors.EditorBase[] _editors;
+
+	private readonly List<Cells.Editors.EditorBase> _ownedEditors = new();
+
+	private System.Reflection.PropertyInfo[] _properties;
+
+	/// <summary>Creates the grid and its list-editing commands.</summary>
 	public ListEditor() {
 		// This call is required by the Windows.Forms Form Designer.
 		InitializeComponent();
-
-		grid.Selection.FocusRowLeaving += new RowCancelEventHandler(Selection_FocusRowLeaving);
-		grid.Selection.FocusRowEntered += new RowEventHandler(Selection_FocusRowEntered);
-		grid.Selection.FocusStyle = FocusStyle.None;
 	}
 
-	/// <summary> 
-	/// Clean up any resources being used.
-	/// </summary>
-	protected override void Dispose(bool disposing) {
-		if (disposing) {
-			if (components != null) {
-				components.Dispose();
-			}
+	/// <summary>Gets or sets the mutable list, including generic lists exposed through their runtime IList contract.</summary>
+	public IList List {
+		get {
+			return _list;
 		}
-		base.Dispose(disposing);
-	}
-
-	#region Component Designer generated code
-
-	/// <summary> 
-	/// Required method for Designer support - do not modify 
-	/// the contents of this method with the code editor.
-	/// </summary>
-	private void InitializeComponent() {
-		System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(ListEditor));
-		this.grid = new Grid();
-		this.btDown = new System.Windows.Forms.Button();
-		this.btUp = new System.Windows.Forms.Button();
-		this.btRemove = new System.Windows.Forms.Button();
-		this.btAdd = new System.Windows.Forms.Button();
-		this.btrRefreshList = new System.Windows.Forms.Button();
-		this.SuspendLayout();
-		// 
-		// grid
-		// 
-		this.grid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-		                                                          | System.Windows.Forms.AnchorStyles.Left)
-		                                                         | System.Windows.Forms.AnchorStyles.Right)));
-		this.grid.AutoStretchColumnsToFitWidth = false;
-		this.grid.AutoStretchRowsToFitHeight = false;
-		this.grid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-		this.grid.CustomSort = false;
-		this.grid.Location = new System.Drawing.Point(4, 32);
-		this.grid.Name = "grid";
-		this.grid.Size = new System.Drawing.Size(332, 216);
-		this.grid.SpecialKeys = GridSpecialKeys.Default;
-		this.grid.TabIndex = 0;
-		// 
-		// btDown
-		// 
-		this.btDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-		this.btDown.Enabled = false;
-		this.btDown.Image = ((System.Drawing.Image)(resources.GetObject("btDown.Image")));
-		this.btDown.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.btDown.Location = new System.Drawing.Point(312, 4);
-		this.btDown.Name = "btDown";
-		this.btDown.Size = new System.Drawing.Size(24, 23);
-		this.btDown.TabIndex = 1;
-		this.btDown.Click += new System.EventHandler(this.btDown_Click);
-		// 
-		// btUp
-		// 
-		this.btUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-		this.btUp.Enabled = false;
-		this.btUp.Image = ((System.Drawing.Image)(resources.GetObject("btUp.Image")));
-		this.btUp.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.btUp.Location = new System.Drawing.Point(284, 4);
-		this.btUp.Name = "btUp";
-		this.btUp.Size = new System.Drawing.Size(24, 23);
-		this.btUp.TabIndex = 2;
-		this.btUp.Click += new System.EventHandler(this.btUp_Click);
-		// 
-		// btRemove
-		// 
-		this.btRemove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-		this.btRemove.Enabled = false;
-		this.btRemove.Image = ((System.Drawing.Image)(resources.GetObject("btRemove.Image")));
-		this.btRemove.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.btRemove.Location = new System.Drawing.Point(220, 4);
-		this.btRemove.Name = "btRemove";
-		this.btRemove.Size = new System.Drawing.Size(24, 23);
-		this.btRemove.TabIndex = 3;
-		this.btRemove.Click += new System.EventHandler(this.btRemove_Click);
-		// 
-		// btAdd
-		// 
-		this.btAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-		this.btAdd.Image = ((System.Drawing.Image)(resources.GetObject("btAdd.Image")));
-		this.btAdd.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.btAdd.Location = new System.Drawing.Point(192, 4);
-		this.btAdd.Name = "btAdd";
-		this.btAdd.Size = new System.Drawing.Size(24, 23);
-		this.btAdd.TabIndex = 4;
-		this.btAdd.Click += new System.EventHandler(this.btAdd_Click);
-		// 
-		// btrRefreshList
-		// 
-		this.btrRefreshList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-		this.btrRefreshList.Image = ((System.Drawing.Image)(resources.GetObject("btrRefreshList.Image")));
-		this.btrRefreshList.ImageAlign = System.Drawing.ContentAlignment.MiddleCenter;
-		this.btrRefreshList.Location = new System.Drawing.Point(252, 4);
-		this.btrRefreshList.Name = "btrRefreshList";
-		this.btrRefreshList.Size = new System.Drawing.Size(24, 23);
-		this.btrRefreshList.TabIndex = 5;
-		this.btrRefreshList.Click += new System.EventHandler(this.btrRefreshList_Click);
-		// 
-		// ListEditor
-		// 
-		this.Controls.Add(this.btrRefreshList);
-		this.Controls.Add(this.btAdd);
-		this.Controls.Add(this.btRemove);
-		this.Controls.Add(this.btUp);
-		this.Controls.Add(this.btDown);
-		this.Controls.Add(this.grid);
-		this.Name = "ListEditor";
-		this.Size = new System.Drawing.Size(340, 252);
-		this.ResumeLayout(false);
-
-	}
-
-	#endregion
-
-	private ArrayList m_List;
-
-	public ArrayList List {
-		get { return m_List; }
-		set { m_List = value; }
-	}
-
-	private Type m_ItemType;
-
-	public Type ItemType {
-		get { return m_ItemType; }
 		set {
-			m_ItemType = value;
+			_list = value;
+		}
+	}
+
+	/// <summary>Gets the displayed grid for selection, presentation and export configuration.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public Grid Grid {
+		get {
+			return _grid;
+		}
+	}
+
+	/// <summary>Gets or sets the item schema used to create property editors.</summary>
+	public Type ItemType {
+		get {
+			return _itemType;
+		}
+		set {
+			_itemType = value;
 			LoadEditors();
 		}
 	}
 
-	private Cells.Editors.EditorBase[] m_Editors;
-
+	/// <summary>Gets or sets the editors associated with the displayed properties.</summary>
 	[Browsable(false)]
 	public Cells.Editors.EditorBase[] Editors {
-		get { return m_Editors; }
-		set { m_Editors = value; }
+		get {
+			return _editors;
+		}
+		set {
+			if (ReferenceEquals(_editors, value))
+				return;
+			CancelCurrentEdit();
+			DetachBorrowedEditors();
+			ReleaseOwnedEditors(value);
+			_editors = value;
+		}
 	}
 
-	private System.Reflection.PropertyInfo[] m_Properties;
-
+	/// <summary>Gets or sets the reflected properties displayed as columns.</summary>
 	[Browsable(false)]
 	public System.Reflection.PropertyInfo[] Properties {
-		get { return m_Properties; }
-		set { m_Properties = value; }
+		get {
+			return _properties;
+		}
+		set {
+			_properties = value;
+		}
 	}
 
-	private void LoadEditors() {
-		if (m_ItemType != null) {
-			m_Properties = m_ItemType.GetProperties();
-
-			ArrayList l_Tmp = new ArrayList();
-			//remove not Browsable attribute
-			for (int i = 0; i < m_Properties.Length; i++) {
-				AttributeCollection attributes =
-					TypeDescriptor.GetProperties(m_ItemType)[m_Properties[i].Name].Attributes;
-
-				// Checks to see if the value of the BrowsableAttribute is Yes.
-				if (attributes[typeof(BrowsableAttribute)].Equals(BrowsableAttribute.Yes)) {
-					l_Tmp.Add(m_Properties[i]);
-				}
-			}
-
-			m_Editors = new Cells.Editors.EditorBase[l_Tmp.Count];
-			m_Properties = new System.Reflection.PropertyInfo[l_Tmp.Count];
-
-			for (int i = 0; i < l_Tmp.Count; i++) {
-				System.Reflection.PropertyInfo prop = (System.Reflection.PropertyInfo)l_Tmp[i];
-				m_Properties[i] = prop;
-				m_Editors[i] = Cells.Editors.Factory.Create(prop.PropertyType);
-				if (m_Editors[i] != null)
-					m_Editors[i].EnableEdit = prop.CanWrite;
-			}
-		} else
-			m_Editors = null;
+	/// <summary>Gets or sets whether the add command is visible.</summary>
+	public bool EnableAdd {
+		get {
+			return _addButton.Visible;
+		}
+		set {
+			_addButton.Visible = value;
+		}
 	}
 
+	/// <summary>Gets or sets whether the remove command is visible.</summary>
+	public bool EnableRemove {
+		get {
+			return _removeButton.Visible;
+		}
+		set {
+			_removeButton.Visible = value;
+		}
+	}
+
+	/// <summary>Gets or sets whether the refresh command is visible.</summary>
+	public bool EnableRefresh {
+		get {
+			return _refreshButton.Visible;
+		}
+		set {
+			_refreshButton.Visible = value;
+		}
+	}
+
+	/// <summary>Gets or sets whether row-movement commands are visible.</summary>
+	public bool EnableMove {
+		get {
+			return _moveUpButton.Visible;
+		}
+		set {
+			_moveUpButton.Visible = value;
+			_moveDownButton.Visible = value;
+		}
+	}
+
+	/// <summary>Rebuilds the grid from the current schema and list membership.</summary>
 	public void LoadList() {
-		if (m_ItemType == null)
+		// End any in-place edit before rebuilding the list's cells.
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
+		CancelCurrentEdit();
+		if (_itemType == null)
 			throw new ApplicationException("ItemType is null");
-		if (m_List == null)
-			m_List = new ArrayList();
+		if (_list == null)
+			_list = new List<object>();
 
-		if (m_Properties.Length != m_Editors.Length)
+		if (_properties.Length != _editors.Length)
 			throw new ApplicationException("Properteis.Length != Editors.Length");
 
-		grid.FixedRows = 1;
-		grid.FixedColumns = 0;
-		grid.Redim(m_List.Count + grid.FixedRows, m_Properties.Length + grid.FixedColumns);
+		// Size the grid from the reflected schema and current list membership.
+		_grid.FixedRows = 1;
+		_grid.FixedColumns = 0;
+		_grid.Redim(_list.Count + _grid.FixedRows, _properties.Length + _grid.FixedColumns);
 
 		//HeaderCell
 		//grid[0,0] = new Cells.Header();
-		for (int i = 0; i < m_Properties.Length; i++) {
-			Cells.ColumnHeader l_Header = new Cells.ColumnHeader(m_Properties[i].Name);
-			grid[0, i + grid.FixedColumns] = l_Header;
+		for (var index = 0; index < _properties.Length; index++) {
+			var header = new Cells.ColumnHeader(_properties[index].Name);
+			_grid[0, index + _grid.FixedColumns] = header;
 
-			l_Header.AutomaticSortEnabled = false;
-//				//If the column type support the IComparable then I can use the value to sort the column, otherwise I use the string representation for sort.
-//				if (typeof(IComparable).IsAssignableFrom(m_Properties[i].PropertyType))
-//					l_Header.Comparer = new ValueCellComparer();
-//				else
-//					l_Header.Comparer = new DisplayStringCellComparer();
+			header.AutomaticSortEnabled = false;
+			//				//If the column type support the IComparable then I can use the value to sort the column, otherwise I use the string representation for sort.
+			//				if (typeof(IComparable).IsAssignableFrom(m_Properties[i].PropertyType))
+			//					l_Header.Comparer = new ValueCellComparer();
+			//				else
+			//					l_Header.Comparer = new DisplayStringCellComparer();
 		}
 
-		for (int r = 0; r < m_List.Count; r++) {
-			PopulateRow(r + grid.FixedRows, m_List[r]);
+		// Bind each list item before sizing the completed grid.
+		for (var r = 0; r < _list.Count; r++)
+			PopulateRow(r + _grid.FixedRows, _list[r]);
+
+		_grid.AutoStretchColumnsToFitWidth = true;
+		_grid.AutoSizeCells();
+		UpdateCommandState(_grid.Selection.ActivePosition.Row);
+	}
+
+	/// <summary>Reports complete list edits and row selection rather than intermediate child-grid notifications.</summary>
+	protected override bool ShouldObserveChildStateChanges(Control child) {
+		return false;
+	}
+
+	/// <summary>
+	/// Clean up any resources being used.
+	/// </summary>
+	protected override void Dispose(bool disposing) {
+		if (disposing) {
+			_grid.Selection.FocusRowLeaving -= SelectionFocusRowLeaving;
+			_grid.Selection.FocusRowEntered -= SelectionFocusRowEntered;
+			CancelCurrentEdit();
+			DetachBorrowedEditors();
+			ReleaseOwnedEditors();
+			if (_components != null)
+				_components.Dispose();
 		}
-
-		grid.AutoStretchColumnsToFitWidth = true;
-		grid.AutoSizeCells();
+		base.Dispose(disposing);
 	}
 
-	private void PopulateRow(int p_GridRow, object p_Object) {
-		for (int c = 0; c < m_Properties.Length; c++) {
-			PopulateCell(p_GridRow, c + grid.FixedColumns, m_Properties[c], m_Editors[c], p_Object);
-		}
-		grid.Rows[p_GridRow].Tag = p_Object;
+	/// <summary>Notifies list subscribers and the containing control's state observers.</summary>
+	protected virtual void OnListChanged(EventArgs args) {
+		if (ListChanged != null)
+			ListChanged(this, args);
+		NotifyStateChanged();
 	}
 
-	private void PopulateCell(int p_GridRow, int p_GridCol, System.Reflection.PropertyInfo p_PropInfo, Cells.Editors.EditorBase p_Editor, object p_Object) {
-		grid[p_GridRow, p_GridCol] = new Cells.Cell(p_PropInfo.GetValue(p_Object, null));
-		grid[p_GridRow, p_GridCol].Editor = p_Editor;
-
-		Cells.Controllers.BindProperty l_Bind = new Cells.Controllers.BindProperty(p_PropInfo, p_Object);
-		grid[p_GridRow, p_GridCol].AddController(l_Bind);
-
-		Cells.Controllers.CustomEvents l_CustomEvents = new Cells.Controllers.CustomEvents();
-		l_CustomEvents.ValueChanged += new EventHandler(Grid_ValueChanged);
-		grid[p_GridRow, p_GridCol].AddController(l_CustomEvents);
-	}
-
-	private async void btAdd_Click(object sender, System.EventArgs e) {
+	// Creates a schema item through the shared activator and appends its row.
+	private async void AddClicked(object sender, System.EventArgs args) {
 		try {
-			int l_Row = grid.RowsCount;
-			grid.Rows.Insert(l_Row);
-			object l_Obj = Activator.CreateInstance(m_ItemType);
-			m_List.Add(l_Obj);
-			PopulateRow(l_Row, l_Obj);
+			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
+			var row = _grid.RowsCount;
+			_grid.Rows.Insert(row);
+			var item = Tools.Object.Create(_itemType);
+			_list.Add(item);
+			PopulateRow(row, item);
+			UpdateCommandState(_grid.Selection.ActivePosition.Row);
 
 			OnListChanged(EventArgs.Empty);
-		} catch (Exception err) {
-			await Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.ShowAsync(this, err, "Error");
+		} catch (Exception exception) {
+			await ExceptionDialog.ShowAsync(this, "Error", exception);
 		}
 	}
 
-	public event EventHandler ListChanged;
-
-	protected virtual void OnListChanged(EventArgs e) {
-		if (ListChanged != null)
-			ListChanged(this, e);
-	}
-
-	private void Grid_ValueChanged(object sender, EventArgs e) {
-		OnListChanged(e);
-	}
-
-	private async void btRemove_Click(object sender, System.EventArgs e) {
+	// Removes the selected data row and its underlying item.
+	private async void RemoveClicked(object sender, System.EventArgs args) {
 		try {
-			if (grid.Selection.ActivePosition.IsEmpty() == false &&
-				grid.Selection.ActivePosition.Row >= grid.FixedRows) {
-				m_List.Remove(grid.Rows[grid.Selection.ActivePosition.Row].Tag);
-				grid.Rows.Remove(grid.Selection.ActivePosition.Row);
+			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
+			if (_grid.Selection.ActivePosition.IsEmpty() == false && _grid.Selection.ActivePosition.Row >= _grid.FixedRows) {
+				_list.Remove(_grid.Rows[_grid.Selection.ActivePosition.Row].Tag);
+				_grid.Rows.Remove(_grid.Selection.ActivePosition.Row);
+				UpdateCommandState(_grid.Selection.ActivePosition.Row);
 
 				OnListChanged(EventArgs.Empty);
 			}
-		} catch (Exception err) {
-			await Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.ShowAsync(this, err, "Error");
+		} catch (Exception exception) {
+			await ExceptionDialog.ShowAsync(this, "Error", exception);
 		}
 	}
 
-	private async void btrRefreshList_Click(object sender, System.EventArgs e) {
+	// Reloads the grid and presents any data-source failure.
+	private async void RefreshListClicked(object sender, System.EventArgs args) {
 		try {
 			LoadList();
-		} catch (Exception err) {
-			await Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.ShowAsync(this, err, "Error");
+		} catch (Exception exception) {
+			await ExceptionDialog.ShowAsync(this, "Error", exception);
 		}
 	}
 
-	private async void btUp_Click(object sender, System.EventArgs e) {
+	// Moves the selected item and its grid row one position upward.
+	private async void MoveUpClicked(object sender, System.EventArgs args) {
 		try {
-			if (grid.Selection.ActivePosition.IsEmpty() == false &&
-			    grid.Selection.ActivePosition.Row >= grid.FixedRows) {
-				object tag = grid.Rows[grid.Selection.ActivePosition.Row].Tag;
-				int gridRow = grid.Selection.ActivePosition.Row;
-				int listIndex = m_List.IndexOf(tag);
-				m_List.Remove(tag);
-				m_List.Insert(listIndex - 1, tag);
-				grid.Rows.Move(gridRow, gridRow - 1);
+			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
+			if (_grid.Selection.ActivePosition.IsEmpty() == false && _grid.Selection.ActivePosition.Row > _grid.FixedRows) {
+				var tag = _grid.Rows[_grid.Selection.ActivePosition.Row].Tag;
+				var gridRow = _grid.Selection.ActivePosition.Row;
+				var listIndex = _list.IndexOf(tag);
+				_list.Remove(tag);
+				_list.Insert(listIndex - 1, tag);
+				_grid.Rows.Move(gridRow, gridRow - 1);
 
-				grid.Selection.FocusRow(gridRow - 1);
+				_grid.Selection.FocusRow(gridRow - 1);
+				UpdateCommandState(_grid.Selection.ActivePosition.Row);
 
 				OnListChanged(EventArgs.Empty);
 			}
-		} catch (Exception err) {
-			await Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.ShowAsync(this, err, "Error");
+		} catch (Exception exception) {
+			await ExceptionDialog.ShowAsync(this, "Error", exception);
 		}
 	}
 
-	private async void btDown_Click(object sender, System.EventArgs e) {
+	// Moves the selected item and its grid row one position downward.
+	private async void MoveDownClicked(object sender, System.EventArgs args) {
 		try {
-			if (grid.Selection.ActivePosition.IsEmpty() == false &&
-			    grid.Selection.ActivePosition.Row >= grid.FixedRows &&
-			    grid.Selection.ActivePosition.Row < grid.Rows.Count - 1) {
-				object tag = grid.Rows[grid.Selection.ActivePosition.Row].Tag;
-				int gridRow = grid.Selection.ActivePosition.Row;
-				int listIndex = m_List.IndexOf(tag);
-				m_List.Remove(tag);
-				m_List.Insert(listIndex + 1, tag);
-				grid.Rows.Move(gridRow, gridRow + 1);
+			using var update = EnterUpdateScope(FinishedUpdateBehaviour.NotifyStateChanged);
+			if (_grid.Selection.ActivePosition.IsEmpty() == false &&
+				_grid.Selection.ActivePosition.Row >= _grid.FixedRows &&
+				_grid.Selection.ActivePosition.Row < _grid.Rows.Count - 1) {
+				var tag = _grid.Rows[_grid.Selection.ActivePosition.Row].Tag;
+				var gridRow = _grid.Selection.ActivePosition.Row;
+				var listIndex = _list.IndexOf(tag);
+				_list.Remove(tag);
+				_list.Insert(listIndex + 1, tag);
+				_grid.Rows.Move(gridRow, gridRow + 1);
 
-				grid.Selection.FocusRow(gridRow + 1);
+				_grid.Selection.FocusRow(gridRow + 1);
+				UpdateCommandState(_grid.Selection.ActivePosition.Row);
 
 				OnListChanged(EventArgs.Empty);
 			}
-		} catch (Exception err) {
-			await Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.ErrorDialog.ShowAsync(this, err, "Error");
+		} catch (Exception exception) {
+			await ExceptionDialog.ShowAsync(this, "Error", exception);
 		}
 	}
 
-	public bool EnableAdd {
-		get { return btAdd.Visible; }
-		set { btAdd.Visible = value; }
+	// Reports completed cell edits through the list-level notification.
+	private void GridValueChanged(object sender, EventArgs args) {
+		OnListChanged(args);
 	}
 
-	public bool EnableRemove {
-		get { return btRemove.Visible; }
-		set { btRemove.Visible = value; }
+	// Disables row commands while focus leaves the current row.
+	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
+		UpdateCommandState(-1);
 	}
 
-	public bool EnableRefresh {
-		get { return btrRefreshList.Visible; }
-		set { btrRefreshList.Visible = value; }
+	// Updates commands and state observers for the newly focused row.
+	private void SelectionFocusRowEntered(object sender, RowEventArgs args) {
+		UpdateCommandState(args.Row);
+		NotifyStateChanged();
 	}
 
-	public bool EnableMove {
-		get { return btUp.Visible; }
-		set {
-			btUp.Visible = value;
-			btDown.Visible = value;
+	// Creates owned editors for the browsable properties of the configured schema.
+	private void LoadEditors() {
+		CancelCurrentEdit();
+		DetachBorrowedEditors();
+		ReleaseOwnedEditors();
+		if (_itemType != null) {
+			_properties = _itemType.GetProperties();
+
+			var browsableProperties = new List<PropertyInfo>();
+			//remove not Browsable attribute
+			for (var index = 0; index < _properties.Length; index++) {
+				var attributes = TypeDescriptor.GetProperties(_itemType)[_properties[index].Name].Attributes;
+
+				// Checks to see if the value of the BrowsableAttribute is Yes.
+				if (attributes[typeof(BrowsableAttribute)].Equals(BrowsableAttribute.Yes))
+					browsableProperties.Add(_properties[index]);
+			}
+
+			_editors = new Cells.Editors.EditorBase[browsableProperties.Count];
+			_properties = browsableProperties.ToArray();
+
+			for (var index = 0; index < _properties.Length; index++) {
+				var property = _properties[index];
+				_editors[index] = Cells.Editors.Factory.Create(property.PropertyType);
+				if (_editors[index] != null) {
+					_ownedEditors.Add(_editors[index]);
+					_editors[index].EnableEdit = property.CanWrite;
+				}
+			}
+		} else
+			_editors = null;
+	}
+
+	// Binds an item's properties to one grid row.
+	private void PopulateRow(int gridRow, object item) {
+		for (var c = 0; c < _properties.Length; c++)
+			PopulateCell(gridRow, c + _grid.FixedColumns, _properties[c], _editors[c], item);
+
+		_grid.Rows[gridRow].Tag = item;
+	}
+
+	// Connects the property value, editor, binding controller and change notification.
+	private void PopulateCell(int gridRow, int gridColumn, System.Reflection.PropertyInfo propertyInfo, Cells.Editors.EditorBase editor, object item) {
+		_grid[gridRow, gridColumn] = new Cells.Cell(propertyInfo.GetValue(item, null));
+		_grid[gridRow, gridColumn].Editor = editor;
+
+		var bind = new Cells.Controllers.BindProperty(propertyInfo, item);
+		_grid[gridRow, gridColumn].AddController(bind);
+
+		var customEvents = new Cells.Controllers.CustomEvents();
+		customEvents.ValueChanged += new EventHandler(GridValueChanged);
+		_grid[gridRow, gridColumn].AddController(customEvents);
+	}
+
+	/// <summary>Cancels this grid's current edits before rebuilding or releasing its editors.</summary>
+	private void CancelCurrentEdit() {
+		if (_editors == null)
+			return;
+		foreach (var editor in new HashSet<Cells.Editors.EditorBase>(_editors, ReferenceEqualityComparer.Instance))
+			if (editor != null && editor.IsEditing && ReferenceEquals(editor.EditCellContext.Grid, _grid))
+				editor.EditCellContext.EndEdit(true);
+	}
+
+	/// <summary>Detaches borrowed editing surfaces so disposing the grid cannot dispose their controls.</summary>
+	private void DetachBorrowedEditors() {
+		if (_editors == null)
+			return;
+		foreach (var editor in new HashSet<Cells.Editors.EditorBase>(_editors, ReferenceEqualityComparer.Instance))
+			if (editor is Cells.Editors.EditorControlBase controlEditor && ReferenceEquals(controlEditor.Grid, _grid) && !_ownedEditors.Exists(owned => ReferenceEquals(owned, editor)))
+				controlEditor.DetachControl();
+	}
+
+	/// <summary>Disposes only factory-created editors that are absent from a replacement array.</summary>
+	private void ReleaseOwnedEditors(Cells.Editors.EditorBase[] retained = null) {
+		for (var index = _ownedEditors.Count - 1; index >= 0; index--) {
+			var editor = _ownedEditors[index];
+			if (retained != null && Array.Exists(retained, item => ReferenceEquals(item, editor)))
+				continue;
+			_ownedEditors.RemoveAt(index);
+			editor.Dispose();
 		}
 	}
 
-	private void Selection_FocusRowLeaving(object sender, RowCancelEventArgs e) {
-		btDown.Enabled = false;
-		btUp.Enabled = false;
-		btRemove.Enabled = false;
-	}
-
-	private void Selection_FocusRowEntered(object sender, RowEventArgs e) {
-		btDown.Enabled = true;
-		btUp.Enabled = true;
-		btRemove.Enabled = true;
+	/// <summary>Reflects first/last-row movement boundaries and the presence of a removable data row.</summary>
+	private void UpdateCommandState(int gridRow) {
+		var hasDataRow = gridRow >= _grid.FixedRows && gridRow < _grid.Rows.Count;
+		_removeButton.Enabled = hasDataRow;
+		_moveUpButton.Enabled = hasDataRow && gridRow > _grid.FixedRows;
+		_moveDownButton.Enabled = hasDataRow && gridRow < _grid.Rows.Count - 1;
 	}
 }
-

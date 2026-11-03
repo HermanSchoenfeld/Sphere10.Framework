@@ -1,26 +1,21 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 public class ControllerContainer : IController {
-	private ControllerList m_ControllerList = null;
+	private ControllerList _controllerList = null;
 	private IController[] _dispatchControllers;
-
-
-	/// <summary>
-	/// A collection of elements of type IController. Only one instance of the same controller is allowed.
-	/// </summary>
-	public class ControllerList : Sphere10.Framework.Windows.Forms.SourceGrid.Collections.ListByType<IController> {
-	}
-
 
 	/// <summary>
 	/// Returns null if not exist
@@ -28,32 +23,26 @@ public class ControllerContainer : IController {
 	/// <param name="modelType"></param>
 	/// <returns></returns>
 	public virtual IController FindController(Type modelType) {
-		if (m_ControllerList == null)
-			m_ControllerList = new ControllerList();
+		if (_controllerList == null)
+			_controllerList = new ControllerList();
 
-		return m_ControllerList.GetByType(modelType);
+		return _controllerList.GetByType(modelType);
 	}
 
-
 	public virtual void AddController(IController model) {
-		if (m_ControllerList == null)
-			m_ControllerList = new ControllerList();
+		if (_controllerList == null)
+			_controllerList = new ControllerList();
 
-		m_ControllerList.Add(model);
+		_controllerList.Add(model);
 		_dispatchControllers = null;
 	}
 
 	public virtual void RemoveController(IController model) {
-		if (m_ControllerList != null && m_ControllerList.Remove(model))
+		if (_controllerList != null && _controllerList.Remove(model))
 			_dispatchControllers = null;
 	}
 
-	// A callback can rebuild cells and modify their controllers. Keep the admitted dispatch stable,
-	// while nested/subsequent events see the new list; reuse the snapshot until membership changes.
-	private IController[] GetDispatchControllers() => _dispatchControllers ??= m_ControllerList?.ToArray() ?? Array.Empty<IController>();
-
-	#region IController Members
-
+	// IController Members
 	public void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
 		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseDown(sender, e);
@@ -153,6 +142,7 @@ public class ControllerContainer : IController {
 		foreach (var controller in GetDispatchControllers())
 			controller.OnEditStarting(sender, e);
 	}
+
 	/// <summary>
 	/// Fired when the StartEdit is sucesfully called.
 	/// </summary>
@@ -162,6 +152,7 @@ public class ControllerContainer : IController {
 		foreach (var controller in GetDispatchControllers())
 			controller.OnEditStarted(sender, e);
 	}
+
 	/// <summary>
 	/// Fired when the EndEdit is called. You can read the Cancel property to determine if the edit is completed. If you change the cancel property there is no effect.
 	/// </summary>
@@ -206,7 +197,19 @@ public class ControllerContainer : IController {
 			controller.OnGiveFeedback(sender, e);
 	}
 
-	#endregion
+	// A callback can rebuild cells and modify their controllers. Keep the admitted dispatch stable,
+	// while nested/subsequent events see the new list; reuse the snapshot until membership changes.
+	private IController[] GetDispatchControllers() {
+		return _dispatchControllers ??= _controllerList?.ToArray() ?? Array.Empty<IController>();
+	}
 
+	/// <summary>
+	/// A collection of elements of type IController. Only one instance of the same controller is allowed.
+	/// </summary>
+	public class ControllerList : List<IController> {
+		/// <summary>Returns the first controller assignable to the requested type.</summary>
+		public IController GetByType(Type searchType) {
+			return this.FirstOrDefault(controller => searchType.IsAssignableFrom(controller.GetType()));
+		}
+	}
 }
-

@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -43,7 +44,7 @@ public class CellEventDispatcher : ControllerBase {
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
@@ -68,7 +69,6 @@ public class CellEventDispatcher : ControllerBase {
 			sender.Cell.Controller.OnFocusLeft(sender, e);
 	}
 
-
 	/// <summary>
 	/// Fired when the SetValue method is called.
 	/// </summary>
@@ -90,7 +90,7 @@ public class CellEventDispatcher : ControllerBase {
 	}
 
 	public override bool CanReceiveFocus(CellContext sender, EventArgs e) {
-		bool canReceiveFocus = base.CanReceiveFocus(sender, e);
+		var canReceiveFocus = base.CanReceiveFocus(sender, e);
 		if (canReceiveFocus == false)
 			return false;
 
@@ -180,7 +180,6 @@ public class CellEventDispatcher : ControllerBase {
 			sender.Cell.Controller.OnMouseUp(sender, e);
 	}
 
-
 	public override void OnDragDrop(CellContext sender, DragEventArgs e) {
 		base.OnDragDrop(sender, e);
 
@@ -216,4 +215,3 @@ public class CellEventDispatcher : ControllerBase {
 			sender.Cell.Controller.OnGiveFeedback(sender, e);
 	}
 }
-

@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,9 +13,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 /// A Model interface specific to contain the value of the cell.
 /// </summary>
 public interface IValueModel : IModel {
-
-	#region GetValue, SetValue
-
+	// GetValue, SetValue
 	/// <summary>
 	/// Get the value of the cell at the specified position
 	/// </summary>
@@ -26,10 +25,6 @@ public interface IValueModel : IModel {
 	/// Set the value of the cell at the specified position. This method must call OnValueChanging and OnValueChanged() event.
 	/// </summary>
 	/// <param name="cellContext"></param>
-	/// <param name="p_Value"></param>
-	void SetValue(CellContext cellContext, object p_Value);
-
-	#endregion
-
+	/// <param name="value"></param>
+	void SetValue(CellContext cellContext, object value);
 }
-

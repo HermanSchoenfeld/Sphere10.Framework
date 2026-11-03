@@ -1,70 +1,139 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework;
-using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Runtime.Versioning;
+using Sphere10.Framework;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
 
 public partial class Drawing {
-	private static ImageAttributes _sDisabledImageAttr;
+	private static ImageAttributes _disabledImageAttributes;
+
+	/// <summary>Returns the content alignment represented by a string format.</summary>
+	[SupportedOSPlatform("windows")]
+	public static ContentAlignment StringFormatToContentAlignment(StringFormat format) {
+		return (format.LineAlignment, format.Alignment) switch {
+			(StringAlignment.Far, StringAlignment.Near) => ContentAlignment.BottomLeft,
+			(StringAlignment.Far, StringAlignment.Far) => ContentAlignment.BottomRight,
+			(StringAlignment.Far, StringAlignment.Center) => ContentAlignment.BottomCenter,
+			(StringAlignment.Near, StringAlignment.Near) => ContentAlignment.TopLeft,
+			(StringAlignment.Near, StringAlignment.Far) => ContentAlignment.TopRight,
+			(StringAlignment.Near, StringAlignment.Center) => ContentAlignment.TopCenter,
+			(StringAlignment.Center, StringAlignment.Near) => ContentAlignment.MiddleLeft,
+			(StringAlignment.Center, StringAlignment.Far) => ContentAlignment.MiddleRight,
+			_ => ContentAlignment.MiddleCenter
+		};
+	}
+
+	/// <summary>Applies content alignment to the horizontal and vertical string-format axes.</summary>
+	[SupportedOSPlatform("windows")]
+	public static void ApplyContentAlignmentToStringFormat(ContentAlignment alignment, StringFormat format) {
+		format.LineAlignment = IsBottom(alignment) ? StringAlignment.Far : IsMiddle(alignment) ? StringAlignment.Center : StringAlignment.Near;
+		format.Alignment = IsRight(alignment) ? StringAlignment.Far : IsCenter(alignment) ? StringAlignment.Center : StringAlignment.Near;
+	}
+
+	/// <summary>Tests whether content is aligned to the bottom edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsBottom(ContentAlignment alignment) {
+		return alignment is ContentAlignment.BottomCenter or ContentAlignment.BottomLeft or ContentAlignment.BottomRight;
+	}
+
+	/// <summary>Tests whether content is aligned to the top edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsTop(ContentAlignment alignment) {
+		return alignment is ContentAlignment.TopCenter or ContentAlignment.TopLeft or ContentAlignment.TopRight;
+	}
+
+	/// <summary>Tests whether content is vertically centered.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsMiddle(ContentAlignment alignment) {
+		return alignment is ContentAlignment.MiddleCenter or ContentAlignment.MiddleLeft or ContentAlignment.MiddleRight;
+	}
+
+	/// <summary>Tests whether content is horizontally centered.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsCenter(ContentAlignment alignment) {
+		return alignment is ContentAlignment.TopCenter or ContentAlignment.MiddleCenter or ContentAlignment.BottomCenter;
+	}
+
+	/// <summary>Tests whether content is aligned to the left edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsLeft(ContentAlignment alignment) {
+		return alignment is ContentAlignment.BottomLeft or ContentAlignment.MiddleLeft or ContentAlignment.TopLeft;
+	}
+
+	/// <summary>Tests whether content is aligned to the right edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsRight(ContentAlignment alignment) {
+		return alignment is ContentAlignment.BottomRight or ContentAlignment.MiddleRight or ContentAlignment.TopRight;
+	}
+
+	/// <summary>Tests whether a string format aligns content to the bottom edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsBottom(StringFormat format) {
+		return format.LineAlignment == StringAlignment.Far;
+	}
+
+	/// <summary>Tests whether a string format aligns content to the top edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsTop(StringFormat format) {
+		return format.LineAlignment == StringAlignment.Near;
+	}
+
+	/// <summary>Tests whether a string format centers content vertically.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsMiddle(StringFormat format) {
+		return format.LineAlignment == StringAlignment.Center;
+	}
+
+	/// <summary>Tests whether a string format centers content horizontally.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsCenter(StringFormat format) {
+		return format.Alignment == StringAlignment.Center;
+	}
+
+	/// <summary>Tests whether a string format aligns content to the left edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsLeft(StringFormat format) {
+		return format.Alignment == StringAlignment.Near;
+	}
+
+	/// <summary>Tests whether a string format aligns content to the right edge.</summary>
+	[SupportedOSPlatform("windows")]
+	public static bool IsRight(StringFormat format) {
+		return format.Alignment == StringAlignment.Far;
+	}
 
 	/// <summary>
 	/// Converts a string to a color
 	/// </summary>
-	/// <param name="col">The string to be converted</param>
+	/// <param name="colorText">The string to be converted</param>
 	/// <returns>The converted Color</returns>
-	public static Color ConvertStringToColor(string col) {
-		if (string.IsNullOrWhiteSpace(col)) {
+	public static Color ConvertStringToColor(string colorText) {
+		if (string.IsNullOrWhiteSpace(colorText))
 			return Color.Empty;
-		}
-		var s = col.Split(new char[] { ':' });
-		switch (s.Length) {
-			case 3: return Color.FromArgb(Int32.Parse(s[0]), Int32.Parse(s[1]), Int32.Parse(s[2]));
-			case 4: return Color.FromArgb(Int32.Parse(s[0]), Int32.Parse(s[1]), Int32.Parse(s[2]), Int32.Parse(s[3]));
+
+		var parts = colorText.Split(new char[] { ':' });
+		switch (parts.Length) {
+			case 3:
+				return Color.FromArgb(Int32.Parse(parts[0]), Int32.Parse(parts[1]), Int32.Parse(parts[2]));
+			case 4:
+				return Color.FromArgb(Int32.Parse(parts[0]), Int32.Parse(parts[1]), Int32.Parse(parts[2]), Int32.Parse(parts[3]));
 		}
 		return Color.Empty;
-	}
-
-	/// <summary>
-	/// Interpolate the specified number of times between start and end color
-	/// </summary>
-	/// <param name="p_StartColor"></param>
-	/// <param name="p_EndColor"></param>
-	/// <param name="p_NumberOfGradients"></param>
-	/// <returns></returns>
-	public static Color[] CalculateColorGradient(Color p_StartColor, Color p_EndColor, int p_NumberOfGradients) {
-		if (p_NumberOfGradients < 2)
-			throw new ArgumentException("Invalid Number of gradients, must be 2 or more");
-		Color[] l_Colors = new Color[p_NumberOfGradients];
-		l_Colors[0] = p_StartColor;
-		l_Colors[l_Colors.Length - 1] = p_EndColor;
-
-		float l_IncrementA = ((float)(p_EndColor.A - p_StartColor.A)) / (float)p_NumberOfGradients;
-		float l_IncrementR = ((float)(p_EndColor.R - p_StartColor.R)) / (float)p_NumberOfGradients;
-		float l_IncrementG = ((float)(p_EndColor.G - p_StartColor.G)) / (float)p_NumberOfGradients;
-		float l_IncrementB = ((float)(p_EndColor.B - p_StartColor.B)) / (float)p_NumberOfGradients;
-
-		for (int i = 1; i < (l_Colors.Length - 1); i++) {
-			l_Colors[i] = Color.FromArgb((int)(p_StartColor.A + l_IncrementA * (float)i),
-				(int)(p_StartColor.R + l_IncrementR * (float)i),
-				(int)(p_StartColor.G + l_IncrementG * (float)i),
-				(int)(p_StartColor.B + l_IncrementB * (float)i));
-		}
-
-		return l_Colors;
 	}
 
 	/// <summary>
@@ -75,53 +144,60 @@ public partial class Drawing {
 	/// <param name="light"></param>
 	/// <returns></returns>
 	public static Color CalculateLightDarkColor(Color source, float light) {
-		if (light == 0)
-			return source;
 		if (light > 1 || light < -1)
-			throw new ArgumentException("Must be between 1 and -1", "light");
+			throw new ArgumentException("Must be between 1 and -1", nameof(light));
 
-		float _IncrementR, _IncrementG, _IncrementB;
+		// Keep this public entry point's argument contract while sharing the Framework shading calculation.
+		return source.GetShade(light);
+	}
 
-		if (light < 0) {
-			_IncrementR = ((float)(source.R)) / (float)100;
-			_IncrementG = ((float)(source.G)) / (float)100;
-			_IncrementB = ((float)(source.B)) / (float)100;
-		} else {
-			_IncrementR = ((float)(255 - source.R)) / (float)100;
-			_IncrementG = ((float)(255 - source.G)) / (float)100;
-			_IncrementB = ((float)(255 - source.B)) / (float)100;
+	/// <summary>Chooses black or white text for the greater contrast against the supplied background.</summary>
+	public static Color GetContrastingTextColor(Color background) {
+		// Convert sRGB channels to relative luminance before comparing both text colors.
+		static double Linearize(byte channel) {
+			var value = channel / 255.0;
+			return value <= 0.04045 ? value / 12.92 : Math.Pow((value + 0.055) / 1.055, 2.4);
 		}
-
-		int newR, newG, newB;
-
-		newR = source.R + (int)(_IncrementR * light * (float)100);
-		newG = source.G + (int)(_IncrementG * light * (float)100);
-		newB = source.B + (int)(_IncrementB * light * (float)100);
-
-		if (newR > 255)
-			newR = 255;
-		else if (newR < 0)
-			newR = 0;
-		if (newG > 255)
-			newG = 255;
-		else if (newG < 0)
-			newG = 0;
-		if (newB > 255)
-			newB = 255;
-		else if (newB < 0)
-			newB = 0;
-
-		return Color.FromArgb(source.A, newR, newG, newB);
+		var luminance = 0.2126 * Linearize(background.R) + 0.7152 * Linearize(background.G) + 0.0722 * Linearize(background.B);
+		return (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05) ? Color.Black : Color.White;
 	}
 
 	/// <summary>
 	/// Calculate the middle color between the start and the end color.
 	/// </summary>
-	/// <param name="p_StartColor"></param>
-	/// <param name="p_EndColor"></param>
+	/// <param name="startColor"></param>
+	/// <param name="endColor"></param>
 	/// <returns></returns>
-	public static Color CalculateMiddleColor(Color p_StartColor, Color p_EndColor) {
-		return CalculateColorGradient(p_StartColor, p_EndColor, 3)[1];
+	public static Color CalculateMiddleColor(Color startColor, Color endColor) {
+		return CalculateColorGradient(startColor, endColor, 3)[1];
+	}
+
+	/// <summary>
+	/// Interpolate the specified number of times between start and end color
+	/// </summary>
+	/// <param name="startColor"></param>
+	/// <param name="endColor"></param>
+	/// <param name="numberOfGradients"></param>
+	/// <returns></returns>
+	public static Color[] CalculateColorGradient(Color startColor, Color endColor, int numberOfGradients) {
+		if (numberOfGradients < 2)
+			throw new ArgumentException("Invalid Number of gradients, must be 2 or more");
+		var colors = new Color[numberOfGradients];
+		colors[0] = startColor;
+		colors[colors.Length - 1] = endColor;
+
+		var incrementA = ((float)(endColor.A - startColor.A)) / (float)numberOfGradients;
+		var incrementR = ((float)(endColor.R - startColor.R)) / (float)numberOfGradients;
+		var incrementG = ((float)(endColor.G - startColor.G)) / (float)numberOfGradients;
+		var incrementB = ((float)(endColor.B - startColor.B)) / (float)numberOfGradients;
+
+		for (var index = 1; index < (colors.Length - 1); index++)
+			colors[index] = Color.FromArgb((int)(startColor.A + incrementA * (float)index),
+				(int)(startColor.R + incrementR * (float)index),
+				(int)(startColor.G + incrementG * (float)index),
+				(int)(startColor.B + incrementB * (float)index));
+
+		return colors;
 	}
 
 	public static string ConvertColorToString(Color color) {
@@ -134,11 +210,10 @@ public partial class Drawing {
 
 	[SupportedOSPlatform("windows6.1")]
 	public static bool IsRecognisedImageFile(string fileName) {
-		string targetExtension = Path.GetExtension(fileName);
+		var targetExtension = Path.GetExtension(fileName);
 		if (String.IsNullOrEmpty(targetExtension))
 			return false;
-		else
-			targetExtension = "*" + targetExtension.ToLowerInvariant();
+		targetExtension = "*" + targetExtension.ToLowerInvariant();
 
 		var recognisedImageExtensions = new List<string>();
 
@@ -146,17 +221,6 @@ public partial class Drawing {
 			recognisedImageExtensions.AddRange(imageCodec.FilenameExtension.ToLowerInvariant().Split(";".ToCharArray()));
 
 		return recognisedImageExtensions.Any(extension => extension.Equals(targetExtension));
-	}
-
-	/// <summary>
-	/// Retrieves the Encoder Information for a given MimeType
-	/// </summary>
-	/// <param name="mimeType">String: Mimetype</param>
-	/// <returns>ImageCodecInfo: Mime info or null if not found</returns>
-	[SupportedOSPlatform("windows")]
-	public static ImageCodecInfo GetEncoderInfo(String mimeType) {
-		var encoders = ImageCodecInfo.GetImageEncoders();
-		return encoders.FirstOrDefault(t => t.MimeType == mimeType);
 	}
 
 	/// <summary>
@@ -171,10 +235,10 @@ public partial class Drawing {
 		if (!(0 <= compression && compression <= 100))
 			throw new ArgumentOutOfRangeException("compression", "Must be between 0 and 100");
 
-		var eps = new EncoderParameters(1);
-		eps.Param[0] = new EncoderParameter(Encoder.Quality, compression);
-		var ici = GetEncoderInfo("image/jpeg");
-		image.Save(fileName, ici, eps);
+		var encoderParameters = new EncoderParameters(1);
+		encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, compression);
+		var imageCodec = GetEncoderInfo("image/jpeg");
+		image.Save(fileName, imageCodec, encoderParameters);
 	}
 
 	/// <summary>
@@ -189,10 +253,21 @@ public partial class Drawing {
 		if (!(0 <= compression && compression <= 100))
 			throw new ArgumentOutOfRangeException("compression", "Must be between 0 and 100");
 
-		var eps = new EncoderParameters(1);
-		eps.Param[0] = new EncoderParameter(Encoder.Quality, compression);
-		var ici = GetEncoderInfo("image/jpeg");
-		image.Save(stream, ici, eps);
+		var encoderParameters = new EncoderParameters(1);
+		encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, compression);
+		var imageCodec = GetEncoderInfo("image/jpeg");
+		image.Save(stream, imageCodec, encoderParameters);
+	}
+
+	/// <summary>
+	/// Retrieves the Encoder Information for a given MimeType
+	/// </summary>
+	/// <param name="mimeType">String: Mimetype</param>
+	/// <returns>ImageCodecInfo: Mime info or null if not found</returns>
+	[SupportedOSPlatform("windows")]
+	public static ImageCodecInfo GetEncoderInfo(String mimeType) {
+		var encoders = ImageCodecInfo.GetImageEncoders();
+		return encoders.FirstOrDefault(t => t.MimeType == mimeType);
 	}
 
 	[SupportedOSPlatform("windows")]
@@ -207,9 +282,8 @@ public partial class Drawing {
 		const int mostBytesNeeded = 11; //For JPEG
 		imageFormat = null;
 
-		if (imageStream.Length < mostBytesNeeded) {
+		if (imageStream.Length < mostBytesNeeded)
 			return false;
-		}
 
 		var headerBytes = new byte[mostBytesNeeded];
 		if (imageStream.ReadAtLeast(headerBytes, mostBytesNeeded, throwOnEndOfStream: false) != mostBytesNeeded)
@@ -222,57 +296,57 @@ public partial class Drawing {
 
 		//JPEG:
 		if (headerBytes[0] == 0xFF && //FF D8
-		    headerBytes[1] == 0xD8 &&
-		    (
-			    (headerBytes[6] == 0x4A && //'JFIF'
-			     headerBytes[7] == 0x46 &&
-			     headerBytes[8] == 0x49 &&
-			     headerBytes[9] == 0x46)
-			    ||
-			    (headerBytes[6] == 0x45 && //'EXIF'
-			     headerBytes[7] == 0x78 &&
-			     headerBytes[8] == 0x69 &&
-			     headerBytes[9] == 0x66)
-		    ) &&
-		    headerBytes[10] == 00) {
+			headerBytes[1] == 0xD8 &&
+			(
+				(headerBytes[6] == 0x4A && //'JFIF'
+					headerBytes[7] == 0x46 &&
+					headerBytes[8] == 0x49 &&
+					headerBytes[9] == 0x46)
+				||
+				(headerBytes[6] == 0x45 && //'EXIF'
+					headerBytes[7] == 0x78 &&
+					headerBytes[8] == 0x69 &&
+					headerBytes[9] == 0x66)
+			) &&
+			headerBytes[10] == 00) {
 			imageFormat = ImageFormat.Jpeg;
 			return true;
 		}
-		//PNG 
+		//PNG
 		if (headerBytes[0] == 0x89 && //89 50 4E 47 0D 0A 1A 0A
-		    headerBytes[1] == 0x50 &&
-		    headerBytes[2] == 0x4E &&
-		    headerBytes[3] == 0x47 &&
-		    headerBytes[4] == 0x0D &&
-		    headerBytes[5] == 0x0A &&
-		    headerBytes[6] == 0x1A &&
-		    headerBytes[7] == 0x0A) {
+			headerBytes[1] == 0x50 &&
+			headerBytes[2] == 0x4E &&
+			headerBytes[3] == 0x47 &&
+			headerBytes[4] == 0x0D &&
+			headerBytes[5] == 0x0A &&
+			headerBytes[6] == 0x1A &&
+			headerBytes[7] == 0x0A) {
 			imageFormat = ImageFormat.Png;
 			return true;
 		}
 		//GIF
 		if (headerBytes[0] == 0x47 && //'GIF'
-		    headerBytes[1] == 0x49 &&
-		    headerBytes[2] == 0x46) {
+			headerBytes[1] == 0x49 &&
+			headerBytes[2] == 0x46) {
 			imageFormat = ImageFormat.Gif;
 			return true;
 		}
 		//BMP
 		if (headerBytes[0] == 0x42 && //42 4D
-		    headerBytes[1] == 0x4D) {
+			headerBytes[1] == 0x4D) {
 			imageFormat = ImageFormat.Bmp;
 			return true;
 		}
 		//TIFF
 		if ((headerBytes[0] == 0x49 && //49 49 2A 00
-		     headerBytes[1] == 0x49 &&
-		     headerBytes[2] == 0x2A &&
-		     headerBytes[3] == 0x00)
-		    ||
-		    (headerBytes[0] == 0x4D && //4D 4D 00 2A
-		     headerBytes[1] == 0x4D &&
-		     headerBytes[2] == 0x00 &&
-		     headerBytes[3] == 0x2A)) {
+				headerBytes[1] == 0x49 &&
+				headerBytes[2] == 0x2A &&
+				headerBytes[3] == 0x00)
+			||
+			(headerBytes[0] == 0x4D && //4D 4D 00 2A
+				headerBytes[1] == 0x4D &&
+				headerBytes[2] == 0x00 &&
+				headerBytes[3] == 0x2A)) {
 			imageFormat = ImageFormat.Tiff;
 			return true;
 		}
@@ -282,10 +356,9 @@ public partial class Drawing {
 
 	[SupportedOSPlatform("windows")]
 	public static bool TryGetImageFormatFromFilenameExtension(string filePath, out ImageFormat imageFormat) {
-		string extension = Path.GetExtension(filePath);
+		var extension = Path.GetExtension(filePath);
 		if (string.IsNullOrEmpty(extension))
-			throw new ArgumentException(
-				string.Format("Unable to determine file extension for fileName: {0}", filePath));
+			throw new ArgumentException(string.Format("Unable to determine file extension for fileName: {0}", filePath));
 
 		switch (extension.ToLower()) {
 			case @".bmp":
@@ -322,17 +395,9 @@ public partial class Drawing {
 		extension = null;
 		var encoders = ImageCodecInfo.GetImageEncoders().ToArray();
 		if (encoders.Any(x => x.FormatID == format.Guid)) {
-			var extensions =
-				encoders
-					.First(x => x.FormatID == format.Guid)
-					.FilenameExtension
-					.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+			var extensions = encoders.First(x => x.FormatID == format.Guid).FilenameExtension.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 			if (extensions.Any()) {
-				extension =
-					extensions
-						.First()
-						.Trim('*')
-						.ToLower();
+				extension = extensions.First().Trim('*').ToLower();
 				return true;
 			}
 		}
@@ -355,29 +420,28 @@ public partial class Drawing {
 		if (image == null)
 			return null;
 
-		Size imgSize = image.Size;
-		if (_sDisabledImageAttr == null) {
-			float[][] arrayJagged = new float[5][];
+		var imgSize = image.Size;
+		if (_disabledImageAttributes == null) {
+			var arrayJagged = new float[5][];
 			arrayJagged[0] = new float[5] { 0.2125f, 0.2125f, 0.2125f, 0f, 0f };
 			arrayJagged[1] = new float[5] { 0.2577f, 0.2577f, 0.2577f, 0f, 0f };
 			arrayJagged[2] = new float[5] { 0.0361f, 0.0361f, 0.0361f, 0f, 0f };
-			float[] arraySingle = new float[5];
+			var arraySingle = new float[5];
 			arraySingle[3] = 1f;
 			arrayJagged[3] = arraySingle;
 			arrayJagged[4] = new float[5] { 0.38f, 0.38f, 0.38f, 0f, 1f };
-			System.Drawing.Imaging.ColorMatrix matrix = new System.Drawing.Imaging.ColorMatrix(arrayJagged);
-			_sDisabledImageAttr = new System.Drawing.Imaging.ImageAttributes();
-			_sDisabledImageAttr.ClearColorKey();
+			var matrix = new System.Drawing.Imaging.ColorMatrix(arrayJagged);
+			_disabledImageAttributes = new System.Drawing.Imaging.ImageAttributes();
+			_disabledImageAttributes.ClearColorKey();
 
-			_sDisabledImageAttr.SetColorMatrix(matrix);
+			_disabledImageAttributes.SetColorMatrix(matrix);
 		}
 
-		Bitmap bitmap = new Bitmap(image.Width, image.Height);
-		using (Graphics g = Graphics.FromImage(bitmap)) {
-			g.DrawImage(image, new Rectangle(0, 0, imgSize.Width, imgSize.Height), 0, 0, imgSize.Width, imgSize.Height, GraphicsUnit.Pixel, _sDisabledImageAttr);
+		var bitmap = new Bitmap(image.Width, image.Height);
+		using (var graphics = Graphics.FromImage(bitmap)) {
+			graphics.DrawImage(image, new Rectangle(0, 0, imgSize.Width, imgSize.Height), 0, 0, imgSize.Width, imgSize.Height, GraphicsUnit.Pixel, _disabledImageAttributes);
 		}
 
 		return bitmap;
 	}
 }
-

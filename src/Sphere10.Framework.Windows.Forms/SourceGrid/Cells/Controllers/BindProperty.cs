@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,13 +15,18 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Summary description for BindProperty.
 /// </summary>
 public class BindProperty : ControllerBase {
+	// Bind Property
+	//propriet√† per gestire il link di una cella ad una property
+	private System.Reflection.PropertyInfo _linkPropertyInfo = null;
+	private object _linkObject = null;
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	/// <param name="p_Property">Property of the object that you want to lint to the cell. When the value of the cell changed this behavior call automatically this property.</param>
-	/// <param name="p_LinkObject">Instance of the object to link</param>
-	public BindProperty(System.Reflection.PropertyInfo p_Property, object p_LinkObject) {
-		BindValueAtProperty(p_Property, p_LinkObject);
+	/// <param name="property">Property of the object that you want to lint to the cell. When the value of the cell changed this behavior call automatically this property.</param>
+	/// <param name="linkObject">Instance of the object to link</param>
+	public BindProperty(System.Reflection.PropertyInfo property, object linkObject) {
+		BindValueAtProperty(property, linkObject);
 	}
 
 	/// <summary>
@@ -30,52 +36,40 @@ public class BindProperty : ControllerBase {
 		base.OnValueChanged(sender, e);
 
 		//gestione eventuale link ad una property
-		if (m_LinkPropertyInfo != null)
-			m_LinkPropertyInfo.SetValue(m_LinkObject, sender.Cell.Model.ValueModel.GetValue(sender), null);
+		if (_linkPropertyInfo != null)
+			_linkPropertyInfo.SetValue(_linkObject, sender.Cell.Model.ValueModel.GetValue(sender), null);
 	}
-
-
-	#region Bind Property
-
-	//propriet‡ per gestire il link di una cella ad una property
-	private System.Reflection.PropertyInfo m_LinkPropertyInfo = null;
-	private object m_LinkObject = null;
 
 	/// <summary>
 	/// Bind the cell's value with the property p_Property of the object p_LinkObject
 	/// when the cell's value change also the property change
 	/// </summary>
-	/// <param name="p_Property">linked property</param>
-	/// <param name="p_LinkObject">Can be null to call static property</param>
-	protected virtual void BindValueAtProperty(System.Reflection.PropertyInfo p_Property, object p_LinkObject) {
-		m_LinkPropertyInfo = p_Property;
-		m_LinkObject = p_LinkObject;
+	/// <param name="property">linked property</param>
+	/// <param name="linkObject">Can be null to call static property</param>
+	protected virtual void BindValueAtProperty(System.Reflection.PropertyInfo property, object linkObject) {
+		_linkPropertyInfo = property;
+		_linkObject = linkObject;
 	}
 
 	/// <summary>
 	/// UnBind the cell with the property
 	/// </summary>
 	protected virtual void UnBindValueAtProperty() {
-		m_LinkPropertyInfo = null;
-		m_LinkObject = null;
+		_linkPropertyInfo = null;
+		_linkObject = null;
 	}
-
-//		/// <summary>
-//		/// Method that can be used to refresh the cell value
-//		/// </summary>
-//		/// <param name="sender"></param>
-//		/// <param name="e"></param>
-//		public void BindObject_ValueChanged(object sender, EventArgs e)
-//		{
-//			if (m_LinkPropertyInfo!=null)
-//			{
-//				object tmp = m_LinkPropertyInfo.GetValue(m_LinkObject,null);
-//				if (tmp!=Value)
-//					Value = tmp;
-//			}
-//		}
-
-	#endregion
-
+	//		/// <summary>
+	//		/// Method that can be used to refresh the cell value
+	//		/// </summary>
+	//		/// <param name="sender"></param>
+	//		/// <param name="e"></param>
+	//		public void BindObject_ValueChanged(object sender, EventArgs e)
+	//		{
+	//			if (m_LinkPropertyInfo!=null)
+	//			{
+	//				object tmp = m_LinkPropertyInfo.GetValue(m_LinkObject,null);
+	//				if (tmp!=Value)
+	//					Value = tmp;
+	//			}
+	//		}
 }
-

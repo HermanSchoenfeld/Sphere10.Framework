@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -17,58 +18,42 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 public class ImagePicker : EditorControlBase {
 	public readonly static ImagePicker Default = new ImagePicker();
 
-	#region Constructor
-
+	// Constructor
 	/// <summary>
 	/// Construct an Editor of type ImagePicker.
 	/// </summary>
-	public ImagePicker() : base(typeof(byte[])) {
-	}
-
-	#endregion
-
-	#region Edit Control
-
-	/// <summary>
-	/// Create the editor control
-	/// </summary>
-	/// <returns></returns>
-	protected override Control CreateControl() {
-		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor();
-		editor.BorderStyle = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle.None;
-		editor.Validator = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
-		return editor;
+	public ImagePicker()
+		: base(typeof(byte[])) {
 	}
 
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor Control {
-		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.TextBoxUITypeEditor)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor Control {
+		get {
+			return (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
+		}
 	}
 
-	#endregion
-
 	public override object GetEditedValue() {
-		object val = Control.Value;
+		var val = Control.Value;
 		if (val == null)
 			return null;
-		else if (val is System.Drawing.Image) {
-			Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter imageValidator = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Validator.ValidatorTypeConverter(typeof(System.Drawing.Image));
+		if (val is System.Drawing.Image) {
+			var imageValidator = new Sphere10.Framework.ComponentModel.TypeConverterValidator(typeof(System.Drawing.Image));
 			return imageValidator.ValueToObject(val, typeof(byte[]));
-
 			//Stranamente questo codice in caso di ico va in eccezione!
-//				System.Drawing.Image img = (System.Drawing.Image)val;
-//				using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
-//				{
-//					img.Save(memStream, System.Drawing.Imaging.ImageCodecInfo.);
-//
-//					return memStream.ToArray();
-//				}
-		} else if (val is byte[])
+			//				System.Drawing.Image img = (System.Drawing.Image)val;
+			//				using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
+			//				{
+			//					img.Save(memStream, System.Drawing.Imaging.ImageCodecInfo.);
+			//
+			//					return memStream.ToArray();
+			//				}
+		}
+		if (val is byte[])
 			return val;
-		else
-			throw new SourceGridException("Invalid edited value, expected byte[] or Image");
+		throw new SourceGridException("Invalid edited value, expected byte[] or Image");
 	}
 
 	public override void SetEditValue(object editValue) {
@@ -79,14 +64,25 @@ public class ImagePicker : EditorControlBase {
 	/// <summary>
 	/// Used to returns the display string for a given value. In this case return null.
 	/// </summary>
-	/// <param name="p_Value"></param>
+	/// <param name="value"></param>
 	/// <returns></returns>
-	public override string ValueToDisplayString(object p_Value) {
+	public override string ValueToDisplayString(object value) {
 		return null;
+	}
+
+	// Edit Control
+	/// <summary>
+	/// Create the editor control
+	/// </summary>
+	/// <returns></returns>
+	protected override Control CreateControl() {
+		var editor = new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor();
+		editor.BorderStyle = Sphere10.Framework.Windows.Forms.Drawing.BorderStyle.None;
+		editor.Validator = new Sphere10.Framework.ComponentModel.TypeConverterValidator(typeof(System.Drawing.Image));
+		return editor;
 	}
 
 	protected override void OnSendCharToEditor(char key) {
 		//No implementation
 	}
 }
-

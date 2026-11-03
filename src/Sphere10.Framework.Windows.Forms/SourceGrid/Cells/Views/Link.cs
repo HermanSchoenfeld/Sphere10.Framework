@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -26,8 +27,7 @@ public class Link : Cell {
 		Default = new Link();
 	}
 
-	#region Constructors
-
+	// Constructors
 	/// <summary>
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
@@ -35,17 +35,16 @@ public class Link : Cell {
 		Font = new Font(Control.DefaultFont, FontStyle.Underline);
 		ForeColor = Color.Blue;
 	}
+
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
-	/// <param name="p_Source"></param>
-	public Link(Link p_Source) : base(p_Source) {
+	/// <param name="source"></param>
+	public Link(Link source)
+		: base(source) {
 	}
 
-	#endregion
-
-	#region Clone
-
+	// Clone
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
@@ -53,8 +52,4 @@ public class Link : Cell {
 	public override object Clone() {
 		return new Link(this);
 	}
-
-	#endregion
-
 }
-

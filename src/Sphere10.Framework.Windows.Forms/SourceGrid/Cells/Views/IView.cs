@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -16,10 +17,46 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 /// Support a deep cloning.
 /// </summary>
 public interface IView : ICloneable {
+	// Format
+	Font Font {
+		get; set;
+	}
 
-	#region Format
+	/// <summary>
+	/// Word Wrap.
+	/// </summary>
+	bool WordWrap {
+		get; set;
+	}
 
-	Font Font { get; set; }
+	/// <summary>
+	/// Text Alignment.
+	/// </summary>
+	System.Drawing.ContentAlignment TextAlignment {
+		get; set;
+	}
+
+	/// <summary>
+	/// The normal border of a cell. Usually it is an instance of a Sphere10.Framework.Drawing.RectangleBorder structure
+	/// </summary>
+	Sphere10.Framework.Drawing.IBorder Border {
+		get; set;
+	}
+
+	/// <summary>
+	/// The BackColor of a cell
+	/// </summary>
+	Color BackColor {
+		get; set;
+	}
+
+	/// <summary>
+	/// The ForeColor of a cell
+	/// </summary>
+	Color ForeColor {
+		get; set;
+	}
+
 	/// <summary>
 	/// Get the font of the cell, check if the current font is null and in this case return the grid font
 	/// </summary>
@@ -28,43 +65,12 @@ public interface IView : ICloneable {
 	Font GetDrawingFont(GridVirtual grid);
 
 	/// <summary>
-	/// Word Wrap.
-	/// </summary>
-	bool WordWrap { get; set; }
-
-	/// <summary>
-	/// Text Alignment.
-	/// </summary>
-	Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment { get; set; }
-
-
-	/// <summary>
-	/// The normal border of a cell. Usually it is an instance of a Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder structure
-	/// </summary>
-	Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.IBorder Border { get; set; }
-
-	/// <summary>
-	/// The BackColor of a cell
-	/// </summary>
-	Color BackColor { get; set; }
-
-	/// <summary>
-	/// The ForeColor of a cell
-	/// </summary>
-	Color ForeColor { get; set; }
-
-	#endregion
-
-	/// <summary>
 	/// Draw the cell specified
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <param name="graphics">Paint arguments</param>
 	/// <param name="rectangle">Rectangle where draw the current cell</param>
-	void DrawCell(CellContext cellContext,
-	              Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics,
-	              System.Drawing.RectangleF rectangle);
-
+	void DrawCell(CellContext cellContext, Sphere10.Framework.Drawing.GraphicsCache graphics, System.Drawing.RectangleF rectangle);
 
 	/// <summary>
 	/// Returns the minimum required size of the current cell, calculating using the current DisplayString, Image and Borders informations.
@@ -72,7 +78,5 @@ public interface IView : ICloneable {
 	/// <param name="cellContext"></param>
 	/// <param name="maxLayoutArea">SizeF structure that specifies the maximum layout area for the text. If width or height are zero the value is set to a default maximum value.</param>
 	/// <returns></returns>
-	Size Measure(CellContext cellContext,
-	             Size maxLayoutArea);
+	Size Measure(CellContext cellContext, Size maxLayoutArea);
 }
-

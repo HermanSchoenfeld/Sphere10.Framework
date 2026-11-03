@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -23,31 +24,6 @@ public interface ISortableHeader : IModel {
 	/// Set the current sort mode
 	/// </summary>
 	/// <param name="cellContext"></param>
-	/// <param name="pStyle"></param>
-	void SetSortMode(CellContext cellContext, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle pStyle);
+	/// <param name="style"></param>
+	void SetSortMode(CellContext cellContext, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle style);
 }
-
-
-public struct SortStatus {
-	/// <summary>
-	/// Constructor
-	/// </summary>
-	/// <param name="p_Style">Status of current sort.</param>
-	public SortStatus(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle p_Style) {
-		Style = p_Style;
-		Comparer = null;
-	}
-	/// <summary>
-	/// Constructor
-	/// </summary>
-	/// <param name="p_Style">Status of current sort.</param>
-	/// <param name="p_Comparer">Comparer used to sort the column. The comparer will take 2 Cell. If null the default ValueCellComparer is used.</param>
-	public SortStatus(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle p_Style, System.Collections.IComparer p_Comparer)
-		: this(p_Style) {
-		Comparer = p_Comparer;
-	}
-	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle Style;
-
-	public System.Collections.IComparer Comparer;
-}
-

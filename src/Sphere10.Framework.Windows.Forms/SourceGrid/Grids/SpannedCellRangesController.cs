@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -11,12 +12,26 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class SpannedCellRangesController : ISpannedCellRangesController {
-	Grid m_grid = null;
+	Grid _grid = null;
 
-	public ISpannedRangesCollection SpannedRangesCollection { get; private set; }
+	public SpannedCellRangesController(Grid grid, ISpannedRangesCollection spannedRangeCollection)
+		: this(grid) {
+		SpannedRangesCollection = spannedRangeCollection;
+	}
+
+	public SpannedCellRangesController(Grid grid) {
+		_grid = grid;
+		SpannedRangesCollection = new SpannedRangesList();
+	}
+
+	public ISpannedRangesCollection SpannedRangesCollection {
+		get; private set;
+	}
 
 	public Grid Grid {
-		get { return m_grid; }
+		get {
+			return _grid;
+		}
 	}
 
 	/// <summary>
@@ -27,46 +42,18 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 	public void UpdateOrAdd(CellRange newRange) {
 		if (newRange.Equals(CellRange.Empty))
 			throw new ArgumentException("Range can not be empty");
-		CellRange? index = this.SpannedRangesCollection.FindRangeWithStart(newRange.Start);
+		var index = this.SpannedRangesCollection.FindRangeWithStart(newRange.Start);
 		if (index == null)
 			this.SpannedRangesCollection.Add(newRange);
 		else
 			this.SpannedRangesCollection.Update(CellRange.FromPosition(newRange.Start), newRange);
 	}
 
-	/// <summary>
-	/// Updates range whose start position matches.
-	/// If no matches found, an exception is thrown
-	/// </summary>
-	/// <param name="newRange"></param>
-	public void Update(CellRange newRange) {
-		CellRange? index = this.SpannedRangesCollection.FindRangeWithStart(newRange.Start);
-		if (index == null)
-			throw new ArgumentException(string.Format(
-				"Could not find a spanned cell range with the same starting point as {0}",
-				newRange.Start));
-		this.SpannedRangesCollection.Update(index.Value, newRange);
-	}
-
-
-	public SpannedCellRangesController(Grid grid, ISpannedRangesCollection spannedRangeCollection)
-		: this(grid) {
-		SpannedRangesCollection = spannedRangeCollection;
-	}
-
-	public SpannedCellRangesController(Grid grid) {
-		this.m_grid = grid;
-		SpannedRangesCollection = new SpannedRangesList();
-	}
-
 	public void MoveLeftSpannedRanges(int startIndex, int moveCount) {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			if (range.Start.Column <= startIndex)
 				continue;
-			var newRange = new CellRange(range.Start.Row,
-				range.Start.Column - moveCount,
-				range.End.Row,
-				range.End.Column - moveCount);
+			var newRange = new CellRange(range.Start.Row, range.Start.Column - moveCount, range.End.Row, range.End.Column - moveCount);
 			this.SpannedRangesCollection.Update(range, newRange);
 		}
 	}
@@ -75,10 +62,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			if (range.Start.Row <= startIndex)
 				continue;
-			var newRange = new CellRange(range.Start.Row - moveCount,
-				range.Start.Column,
-				range.End.Row - moveCount,
-				range.End.Column);
+			var newRange = new CellRange(range.Start.Row - moveCount, range.Start.Column, range.End.Row - moveCount, range.End.Column);
 			this.SpannedRangesCollection.Update(range, newRange);
 		}
 	}
@@ -105,15 +89,11 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		}
 	}
 
-
 	public void MoveDownSpannedRanges(int startIndex, int moveCount) {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			if (range.Start.Row < startIndex)
 				continue;
-			var newRange = new CellRange(range.Start.Row + moveCount,
-				range.Start.Column,
-				range.End.Row + moveCount,
-				range.End.Column);
+			var newRange = new CellRange(range.Start.Row + moveCount, range.Start.Column, range.End.Row + moveCount, range.End.Column);
 			this.SpannedRangesCollection.Update(range, newRange);
 		}
 	}
@@ -122,40 +102,47 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			if (range.Start.Column < startIndex)
 				continue;
-			var newRange = new CellRange(range.Start.Row,
-				range.Start.Column + moveCount,
-				range.End.Row,
-				range.End.Column + moveCount);
+			var newRange = new CellRange(range.Start.Row, range.Start.Column + moveCount, range.End.Row, range.End.Column + moveCount);
 			this.SpannedRangesCollection.Update(range, newRange);
 		}
 	}
 
+	/// <summary>
+	/// Updates range whose start position matches.
+	/// If no matches found, an exception is thrown
+	/// </summary>
+	/// <param name="newRange"></param>
+	public void Update(CellRange newRange) {
+		var index = this.SpannedRangesCollection.FindRangeWithStart(newRange.Start);
+		if (index == null)
+			throw new ArgumentException(string.Format(
+"Could not find a spanned cell range with the same starting point as {0}", newRange.Start));
+		this.SpannedRangesCollection.Update(index.Value, newRange);
+	}
 
 	public void RemoveSpannedCellReferencesInRows(int startIndex, int count) {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			if ((range.Start.Row >= startIndex) &&
-			    (range.Start.Row < startIndex + count)) {
+				(range.Start.Row < startIndex + count))
 				this.SpannedRangesCollection.Remove(range);
-			}
 		}
 	}
 
 	public void RemoveSpannedCellReferencesInColumns(int startIndex, int count) {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			if ((range.Start.Column >= startIndex) &&
-			    (range.Start.Column < startIndex + count)) {
+				(range.Start.Column < startIndex + count))
 				this.SpannedRangesCollection.Remove(range);
-			}
 		}
 	}
 
 	public void ExpandSpannedColumns(int startIndex, int count) {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
-			bool isInsideStart = (range.Start.Column >= startIndex) && (range.Start.Column <= startIndex + count - 1);
-			bool isInsideEnd = (range.End.Column >= startIndex) && (range.End.Column <= startIndex + count - 1);
-			bool isInside = isInsideStart || isInsideEnd;
+			var isInsideStart = (range.Start.Column >= startIndex) && (range.Start.Column <= startIndex + count - 1);
+			var isInsideEnd = (range.End.Column >= startIndex) && (range.End.Column <= startIndex + count - 1);
+			var isInside = isInsideStart || isInsideEnd;
 			if (isInside) {
-				var cell = m_grid[range.Start];
+				var cell = _grid[range.Start];
 				cell.ColumnSpan += count;
 			}
 		}
@@ -163,11 +150,11 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 
 	public void ExpandSpannedRows(int startIndex, int count) {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
-			bool isInsideStart = (range.Start.Row >= startIndex) && (range.Start.Row <= startIndex + count - 1);
-			bool isInsideEnd = (range.End.Row >= startIndex) && (range.End.Row <= startIndex + count - 1);
-			bool isInside = isInsideStart || isInsideEnd;
+			var isInsideStart = (range.Start.Row >= startIndex) && (range.Start.Row <= startIndex + count - 1);
+			var isInsideEnd = (range.End.Row >= startIndex) && (range.End.Row <= startIndex + count - 1);
+			var isInside = isInsideStart || isInsideEnd;
 			if (isInside) {
-				var cell = m_grid[range.Start];
+				var cell = _grid[range.Start];
 				cell.RowSpan += count;
 			}
 		}
@@ -180,7 +167,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			var intersection = range.Intersect(removeRange);
 			if (intersection.IsEmpty() == false) {
-				var cell = m_grid[range.Start];
+				var cell = _grid[range.Start];
 				var span = cell.RowSpan - count;
 				if (span <= 1 && cell.ColumnSpan <= 1) {
 					cell.RowSpan = 1;
@@ -198,7 +185,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		foreach (var range in this.SpannedRangesCollection.ToArray()) {
 			var intersection = range.Intersect(removeRange);
 			if (intersection.IsEmpty() == false) {
-				var cell = m_grid[range.Start];
+				var cell = _grid[range.Start];
 				var span = cell.ColumnSpan - count;
 				if (span <= 1 && cell.ColumnSpan <= 1) {
 					cell.ColumnSpan = 1;
@@ -209,4 +196,3 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		}
 	}
 }
-

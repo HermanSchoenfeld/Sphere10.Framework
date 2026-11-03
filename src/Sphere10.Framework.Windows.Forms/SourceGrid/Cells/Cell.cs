@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,13 +15,23 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// Represents a Cell in a grid, with Cell.Value support and row/col span. Support also ToolTipText, ContextMenu and Cursor
 /// </summary>
 public class Cell : Virtual.CellVirtual, ICell {
+	private Grid _grid;
+	private GridColumn _column;
+	private GridRow _row;
 
-	#region Constructors
+	/// <summary>
+	/// Object to put additional info for this cell
+	/// </summary>
+	private object _tag = null;
+	private int _columnSpan = 1;
+	private int _rowSpan = 1;
 
+	// Constructors
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	public Cell() : this(null) {
+	public Cell()
+		: this(null) {
 	}
 
 	/// <summary>
@@ -41,71 +52,47 @@ public class Cell : Virtual.CellVirtual, ICell {
 	/// Constructor
 	/// </summary>
 	/// <param name="cellValue"></param>
-	/// <param name="pType"></param>
-	public Cell(object cellValue, Type pType) : this(cellValue) {
-		Editor = Editors.Factory.Create(pType);
+	/// <param name="type"></param>
+	public Cell(object cellValue, Type type)
+		: this(cellValue) {
+		Editor = Editors.Factory.Create(type);
 	}
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="cellValue"></param>
-	/// <param name="pEditor"></param>
-	public Cell(object cellValue, Editors.EditorBase pEditor) : this(cellValue) {
-		Editor = pEditor;
+	/// <param name="editor"></param>
+	public Cell(object cellValue, Editors.EditorBase editor)
+		: this(cellValue) {
+		Editor = editor;
 	}
-
-	#endregion
-
-	#region LinkToGrid
-
-	/// <summary>
-	/// Link the cell at the specified grid.
-	/// For internal use only.
-	/// </summary>
-	/// <param name="p_grid"></param>
-	/// <param name="p_Position"></param>
-	public virtual void BindToGrid(Grid p_grid, Position p_Position) {
-		mGrid = p_grid;
-		mRow = Grid.Rows[p_Position.Row];
-		mColumn = Grid.Columns[p_Position.Column] as GridColumn;
-	}
-
-	/// <summary>
-	/// Remove the link of the cell from the grid.
-	/// For internal use only.
-	/// </summary>
-	public virtual void UnBindToGrid() {
-		mGrid = null;
-		mColumn = null;
-		mRow = null;
-	}
-
-	private Grid mGrid;
 
 	/// <summary>
 	/// The Grid object
 	/// </summary>
 	public Grid Grid {
-		get { return mGrid; }
+		get {
+			return _grid;
+		}
 	}
-
-	private GridColumn mColumn;
 
 	/// <summary>
 	/// Gets the column of the specified cell
 	/// </summary>
 	public GridColumn Column {
-		get { return mColumn; }
+		get {
+			return _column;
+		}
 	}
-
-	private GridRow mRow;
 
 	/// <summary>
 	/// Gets the row of the specified cell
 	/// </summary>
 	public GridRow Row {
-		get { return mRow; }
+		get {
+			return _row;
+		}
 	}
 
 	/// <summary>
@@ -116,23 +103,13 @@ public class Cell : Virtual.CellVirtual, ICell {
 			if (Grid == null)
 				return CellRange.Empty;
 
-			int col = Column.Index;
-			int row = Row.Index;
-			return new CellRange(row,
-				col,
-				row + RowSpan - 1,
-				col + ColumnSpan - 1);
+			var column = Column.Index;
+			var row = Row.Index;
+			return new CellRange(row, column, row + RowSpan - 1, column + ColumnSpan - 1);
 		}
 	}
 
-	protected CellContext GetContext() {
-		return new CellContext(Grid, Range.Start, this);
-	}
-
-	#endregion
-
-	#region Cell Data (Value, DisplayText, Tag)
-
+	// Cell Data (Value, DisplayText, Tag)
 	//ATTENTION: is reccomanded that all the actions fired by the user interface does not modify this property
 	// instead call the CellEditor.ChangeCellValue to preserve data consistence
 
@@ -140,28 +117,124 @@ public class Cell : Virtual.CellVirtual, ICell {
 	/// The string representation of the Cell.Value property (default Value.ToString())
 	/// </summary>
 	public virtual string DisplayText {
-		get { return GetContext().DisplayText; }
+		get {
+			return GetContext().DisplayText;
+		}
 	}
 
 	/// <summary>
 	/// Value of the cell
 	/// </summary>
 	public virtual object Value {
-		get { return Model.ValueModel.GetValue(GetContext()); }
-		set { Model.ValueModel.SetValue(GetContext(), value); }
+		get {
+			return Model.ValueModel.GetValue(GetContext());
+		}
+		set {
+			Model.ValueModel.SetValue(GetContext(), value);
+		}
 	}
 
 	/// <summary>
 	/// Object to put additional info for this cell
 	/// </summary>
-	private object m_Tag = null;
+	public virtual object Tag {
+		get {
+			return _tag;
+		}
+		set {
+			_tag = value;
+		}
+	}
 
 	/// <summary>
-	/// Object to put additional info for this cell
+	/// ColSpan for merge operation
 	/// </summary>
-	public virtual object Tag {
-		get { return m_Tag; }
-		set { m_Tag = value; }
+	public int ColumnSpan {
+		get {
+			return _columnSpan;
+		}
+		set {
+			if (value < 1)
+				throw new ArgumentOutOfRangeException("ColumnSpan");
+
+			SetSpan(this.RowSpan, value);
+		}
+	}
+
+	/// <summary>
+	/// RowSpan for merge operation
+	/// </summary>
+	public int RowSpan {
+		get {
+			return _rowSpan;
+		}
+		set {
+			if (value < 1)
+				throw new ArgumentOutOfRangeException("RowSpan");
+
+			SetSpan(value, this.ColumnSpan);
+		}
+	}
+
+	/// <summary>
+	/// Gets or sets the tool tip text of the cell. Internally use the Models.ToolTip class.
+	/// </summary>
+	public string ToolTipText {
+		get {
+			return ToolTipModel.ToolTipText;
+		}
+		set {
+			ToolTipModel.ToolTipText = value;
+		}
+	}
+
+	/// <summary>
+	/// Gets or sets the Image associeted with the Cell. Internally use a Models.Image class.
+	/// </summary>
+	public System.Drawing.Image Image {
+		get {
+			return ImageModel.ImageValue;
+		}
+		set {
+			ImageModel.ImageValue = value;
+		}
+	}
+
+	// ToolTipText
+	private Models.ToolTip ToolTipModel {
+		get {
+			return (Models.ToolTip)Model.FindModel(typeof(Models.ToolTip));
+		}
+	}
+
+	// Image
+	private Models.Image ImageModel {
+		get {
+			return (Models.Image)Model.FindModel(typeof(Models.Image));
+		}
+	}
+
+	// LinkToGrid
+	/// <summary>
+	/// Link the cell at the specified grid.
+	/// For internal use only.
+	/// </summary>
+	/// <param name="grid"></param>
+	/// <param name="position"></param>
+	public virtual void BindToGrid(Grid grid, Position position) {
+		_grid = grid;
+		_row = Grid.Rows[position.Row];
+		_column = Grid.Columns[position.Column] as GridColumn;
+	}
+
+	/// <summary>
+	/// Remove the link of the cell from the grid.
+	/// For internal use only.
+	/// </summary>
+	public virtual void UnBindToGrid() {
+		_grid = null;
+		_column = null;
+		_row = null;
 	}
 
 	/// <summary>
@@ -172,99 +245,34 @@ public class Cell : Virtual.CellVirtual, ICell {
 		return DisplayText;
 	}
 
-	#endregion
-
-	#region Row/Col Span
-
+	// Row/Col Span
 	public void SetSpan(int rowSpan, int colSpan) {
-		int oldColSpan = ColumnSpan;
-		int oldRowSpan = mRowSpan;
+		var oldColSpan = ColumnSpan;
+		var oldRowSpan = _rowSpan;
 
 		try {
-			bool update = false;
-			if ((mColumnSpan > 1) || (mRowSpan > 1))
+			var update = false;
+			if ((_columnSpan > 1) || (_rowSpan > 1))
 				update = true;
-			mColumnSpan = colSpan;
-			mRowSpan = rowSpan;
+			_columnSpan = colSpan;
+			_rowSpan = rowSpan;
 
-			if (mGrid != null) {
-				if (mColumnSpan != 1 || mRowSpan != 1) {
+			if (_grid != null) {
+				if (_columnSpan != 1 || _rowSpan != 1) {
 					if (update)
-						mGrid.UpdateSpannedArea(this.Row.Index, this.Column.Index, this);
+						_grid.UpdateSpannedArea(this.Row.Index, this.Column.Index, this);
 					else
-						mGrid.OccupySpannedArea(this.Row.Index, this.Column.Index, this);
+						_grid.OccupySpannedArea(this.Row.Index, this.Column.Index, this);
 				}
 			}
-		} catch (OverlappingCellException e) {
-			mColumnSpan = oldColSpan;
-			mRowSpan = oldRowSpan;
-			throw new OverlappingCellException("Can not change span", e);
+		} catch (OverlappingCellException exception) {
+			_columnSpan = oldColSpan;
+			_rowSpan = oldRowSpan;
+			throw new OverlappingCellException("Can not change span", exception);
 		}
 	}
 
-	private int mColumnSpan = 1;
-
-	/// <summary>
-	/// ColSpan for merge operation
-	/// </summary>
-	public int ColumnSpan {
-		get { return mColumnSpan; }
-		set {
-			if (value < 1)
-				throw new ArgumentOutOfRangeException("ColumnSpan");
-
-			SetSpan(this.RowSpan, value);
-		}
+	protected CellContext GetContext() {
+		return new CellContext(Grid, Range.Start, this);
 	}
-
-	private int mRowSpan = 1;
-
-	/// <summary>
-	/// RowSpan for merge operation
-	/// </summary>
-	public int RowSpan {
-		get { return mRowSpan; }
-		set {
-			if (value < 1)
-				throw new ArgumentOutOfRangeException("RowSpan");
-
-			SetSpan(value, this.ColumnSpan);
-		}
-	}
-
-	#endregion
-
-	#region ToolTipText
-
-	private Models.ToolTip ToolTipModel {
-		get { return (Models.ToolTip)Model.FindModel(typeof(Models.ToolTip)); }
-	}
-
-	/// <summary>
-	/// Gets or sets the tool tip text of the cell. Internally use the Models.ToolTip class.
-	/// </summary>
-	public string ToolTipText {
-		get { return ToolTipModel.ToolTipText; }
-		set { ToolTipModel.ToolTipText = value; }
-	}
-
-	#endregion
-
-	#region Image
-
-	private Models.Image ImageModel {
-		get { return (Models.Image)Model.FindModel(typeof(Models.Image)); }
-	}
-
-	/// <summary>
-	/// Gets or sets the Image associeted with the Cell. Internally use a Models.Image class.
-	/// </summary>
-	public System.Drawing.Image Image {
-		get { return ImageModel.ImageValue; }
-		set { ImageModel.ImageValue = value; }
-	}
-
-	#endregion
-
 }
-

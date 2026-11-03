@@ -1,18 +1,18 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 /// <summary>
-/// An extension point, where users could define their own 
+/// An extension point, where users could define their own
 /// property resolver
 /// </summary>
 public interface IPropertyResolver {
-	object ReadValue(object obj, string propertyPath);
+	object ReadValue(object item, string propertyPath);
 }
-

@@ -1,12 +1,14 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
@@ -14,36 +16,40 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 /// An utility class to export the grid in a html format file.
 /// </summary>
 public class HTML {
-	protected ExportHTMLMode m_Mode = ExportHTMLMode.Default;
-	protected System.IO.Stream m_Stream;
-	protected string m_ImageFullPath;
-	protected string m_ImageRelativePath;
+	protected ExportHTMLMode ExportMode = ExportHTMLMode.Default;
+	protected System.IO.Stream OutputStream;
+	protected string ImageFullPath;
+	protected string ImageRelativePath;
 
 	/// <summary>
 	/// Key:Image, Value:ImageFileName
 	/// </summary>
-	protected System.Collections.Hashtable m_EmbeddedImagesPath = new System.Collections.Hashtable();
+	protected Dictionary<System.Drawing.Image, string> EmbeddedImagePaths = new Dictionary<System.Drawing.Image, string>();
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	/// <param name="p_Mode"></param>
-	/// <param name="p_ImageFullPath">The path to write embedded images files</param>
-	/// <param name="p_ImageRelativePath">The path used in the HTML source. If you save the images in the same path of the HTML file you can leave this path empty.</param>
-	/// <param name="p_HtmlStream">The stream to write</param>
-	public HTML(ExportHTMLMode p_Mode, string p_ImageFullPath, string p_ImageRelativePath, System.IO.Stream p_HtmlStream) {
-		m_Mode = p_Mode;
-		m_Stream = p_HtmlStream;
-		m_ImageFullPath = p_ImageFullPath;
-		m_ImageRelativePath = p_ImageRelativePath;
+	/// <param name="mode"></param>
+	/// <param name="imageFullPath">The path to write embedded images files</param>
+	/// <param name="imageRelativePath">The path used in the HTML source. If you save the images in the same path of the HTML file you can leave this path empty.</param>
+	/// <param name="htmlStream">The stream to write</param>
+	public HTML(ExportHTMLMode mode, string imageFullPath, string imageRelativePath, System.IO.Stream htmlStream) {
+		ExportMode = mode;
+		OutputStream = htmlStream;
+		ImageFullPath = imageFullPath;
+		ImageRelativePath = imageRelativePath;
 	}
 
 	/// <summary>
 	/// Export mode
 	/// </summary>
 	public virtual ExportHTMLMode Mode {
-		get { return m_Mode; }
-		set { m_Mode = value; }
+		get {
+			return ExportMode;
+		}
+		set {
+			ExportMode = value;
+		}
 	}
 
 	/// <summary>
@@ -51,9 +57,15 @@ public class HTML {
 	/// </summary>
 	public virtual string[] EmbeddedImagesPath {
 		get {
-			string[] l_Images = new string[m_EmbeddedImagesPath.Count];
-			m_EmbeddedImagesPath.Values.CopyTo(l_Images, 0);
-			return l_Images;
+			var images = new string[EmbeddedImagePaths.Count];
+			EmbeddedImagePaths.Values.CopyTo(images, 0);
+			return images;
+		}
+	}
+
+	public virtual System.IO.Stream Stream {
+		get {
+			return OutputStream;
 		}
 	}
 
@@ -61,109 +73,12 @@ public class HTML {
 	/// Clear the list of embedded images. This method don't delete the files only clear the list.
 	/// </summary>
 	public virtual void ClearEmbeddedImages() {
-		m_EmbeddedImagesPath.Clear();
+		EmbeddedImagePaths.Clear();
 	}
 
-	public virtual System.IO.Stream Stream {
-		get { return m_Stream; }
-	}
-
-	/// <summary>
-	/// Save the Image to file and returns the file
-	/// </summary>
-	/// <param name="p_Image"></param>
-	/// <returns>Returns the path where the image is exported valid for the HTML page</returns>
-	public virtual string ExportImage(System.Drawing.Image p_Image) {
-		string l_FileName;
-		if (m_EmbeddedImagesPath.ContainsKey(p_Image)) {
-			l_FileName = (string)m_EmbeddedImagesPath[p_Image];
-		} else {
-			l_FileName = System.IO.Path.Combine(m_ImageFullPath, System.IO.Path.GetTempFileName() + ".jpg");
-			p_Image.Save(l_FileName, System.Drawing.Imaging.ImageFormat.Jpeg);
-
-			m_EmbeddedImagesPath.Add(p_Image, l_FileName);
-		}
-
-		//change to use relative path
-		l_FileName = l_FileName.Replace(m_ImageFullPath, m_ImageRelativePath);
-		return l_FileName;
-	}
-
-	/// <summary>
-	/// Convert a Color to HTML compatible string
-	/// </summary>
-	/// <param name="p_Color"></param>
-	/// <returns></returns>
-	public static string ColorToHTML(System.Drawing.Color p_Color) {
-		//non uso direttamente ToHtml su p_Color petchË se questo contiene dei valori tipo (Window, Control, cioË valori definiti in base al sistema) su Mozilla non funzionano
-		return System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(p_Color.A, p_Color.R, p_Color.G, p_Color.B));
-	}
-
-	public static string BorderToHTMLStyle(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine p_Border) {
-		if (p_Border.Width > 0) {
-			return p_Border.Width.ToString() + "px solid " + ColorToHTML(p_Border.Color);
-		} else
-			return "none";
-	}
-
-	public static string BorderToHTMLStyle(Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.IBorder border) {
-		if (border is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder) {
-			Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder brd = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder)border;
-
-			return "border-top:" + BorderToHTMLStyle(brd.Top) +
-			       ";border-right:" + BorderToHTMLStyle(brd.Right) +
-			       ";border-bottom:" + BorderToHTMLStyle(brd.Bottom) +
-			       ";border-left:" + BorderToHTMLStyle(brd.Left) + ";";
-		} else
-			return string.Empty;
-	}
-
-	/// <summary>
-	/// Export a font html element with the specified font and text
-	/// </summary>
-	/// <param name="p_Writer"></param>
-	/// <param name="p_DisplayText"></param>
-	/// <param name="p_Font"></param>
-	public static void ExportHTML_Element_Font(System.Xml.XmlTextWriter p_Writer, string p_DisplayText, System.Drawing.Font p_Font) {
-		if (p_Font != null) {
-			p_Writer.WriteAttributeString("style", "font-size:" + p_Font.SizeInPoints + "pt");
-
-			if (p_Font.Bold)
-				p_Writer.WriteStartElement("b");
-
-			if (p_Font.Underline)
-				p_Writer.WriteStartElement("u");
-
-			if (p_Font.Italic)
-				p_Writer.WriteStartElement("i");
-		}
-
-		//displaytext
-		if (p_DisplayText == null || p_DisplayText.Trim().Length <= 0)
-			p_Writer.WriteRaw("&nbsp;");
-		else {
-			//l_Display = l_Display.Replace("\r\n","<br>");
-			p_Writer.WriteString(p_DisplayText);
-		}
-
-		if (p_Font != null) {
-			//i
-			if (p_Font.Italic)
-				p_Writer.WriteEndElement();
-
-			//u
-			if (p_Font.Underline)
-				p_Writer.WriteEndElement();
-
-			//b
-			if (p_Font.Bold)
-				p_Writer.WriteEndElement();
-		}
-	}
-
+	/// <summary>Exports grid presentation at the stream's current position without closing the borrowed stream.</summary>
 	public void Export(GridVirtual grid) {
-		System.Xml.XmlTextWriter writer = new System.Xml.XmlTextWriter(Stream,
-			System.Text.Encoding.UTF8);
+		var writer = new System.Xml.XmlTextWriter(Stream, System.Text.Encoding.UTF8);
 
 		//write HTML and BODY
 		if ((Mode & ExportHTMLMode.HTMLAndBody) == ExportHTMLMode.HTMLAndBody) {
@@ -176,13 +91,13 @@ public class HTML {
 		writer.WriteAttributeString("cellspacing", "0");
 		writer.WriteAttributeString("cellpadding", "0");
 
-		for (int r = 0; r < grid.Rows.Count; r++) {
+		for (var r = 0; r < grid.Rows.Count; r++) {
 			writer.WriteStartElement("tr");
 
-			for (int c = 0; c < grid.Columns.Count; c++) {
-				Cells.ICellVirtual cell = grid.GetCell(r, c);
-				Position pos = new Position(r, c);
-				CellContext context = new CellContext(grid, pos, cell);
+			for (var c = 0; c < grid.Columns.Count; c++) {
+				var cell = grid.GetCell(r, c);
+				var position = new Position(r, c);
+				var context = new CellContext(grid, position, cell);
 				ExportHTMLCell(context, writer);
 			}
 
@@ -214,18 +129,18 @@ public class HTML {
 			//start element td
 			writer.WriteStartElement("td");
 			writer.WriteRaw("&nbsp;");
+			writer.WriteEndElement();
 		} else {
 
-			#region TD style
-
-			CellRange rangeCell = context.Grid.PositionToCellRange(context.Position);
+			// TD style
+			var rangeCell = context.Grid.PositionToCellRange(context.Position);
 			if (rangeCell.Start != context.Position)
 				return;
 
 			//start element td
 			writer.WriteStartElement("td");
 
-			//check for rowspan and colspan 
+			//check for rowspan and colspan
 			if (rangeCell.ColumnsCount > 1 || rangeCell.RowsCount > 1) {
 				//colspan, rowspan
 				writer.WriteAttributeString("colspan", rangeCell.ColumnsCount.ToString());
@@ -233,58 +148,53 @@ public class HTML {
 			}
 
 			if (context.Cell.View is Cells.Views.Cell) {
-				Cells.Views.Cell viewCell = (Cells.Views.Cell)context.Cell.View;
+				var viewCell = (Cells.Views.Cell)context.Cell.View;
 
 				//write backcolor
-				if ((Mode & ExportHTMLMode.CellBackColor) == ExportHTMLMode.CellBackColor) {
+				if ((Mode & ExportHTMLMode.CellBackColor) == ExportHTMLMode.CellBackColor)
 					writer.WriteAttributeString("bgcolor", ColorToHTML(context.Cell.View.BackColor));
-				}
 
-				string l_Style = "";
+				var style = "";
 
 				//border
-				l_Style = BorderToHTMLStyle(viewCell.Border);
+				style = BorderToHTMLStyle(viewCell.Border);
 
 				//style
-				writer.WriteAttributeString("style", l_Style);
+				writer.WriteAttributeString("style", style);
 
 				//alignment
-				writer.WriteAttributeString("align", Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentToHorizontalAlignment(viewCell.TextAlignment).ToString().ToLower());
-				if (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.IsBottom(viewCell.TextAlignment))
+				writer.WriteAttributeString("align", Tools.WinForms.ContentToHorizontalAlignment(viewCell.TextAlignment).ToString().ToLower());
+				if (Tools.Drawing.IsBottom(viewCell.TextAlignment))
 					writer.WriteAttributeString("valign", "bottom");
-				else if (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.IsTop(viewCell.TextAlignment))
+				else if (Tools.Drawing.IsTop(viewCell.TextAlignment))
 					writer.WriteAttributeString("valign", "top");
-				else if (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Utilities.IsMiddle(viewCell.TextAlignment))
+				else if (Tools.Drawing.IsMiddle(viewCell.TextAlignment))
 					writer.WriteAttributeString("valign", "middle");
 			}
 
-			#endregion
-
 			if (context.Cell.View is Cells.Views.CheckBox) {
-				Cells.Models.ICheckBox checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
-				Cells.Models.CheckBoxStatus status = checkModel.GetCheckBoxStatus(context);
+				var checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
+				var status = checkModel.GetCheckBoxStatus(context);
 				if (status.Checked == true)
 					writer.WriteRaw("<input type=\"checkbox\" checked>");
 				else
 					writer.WriteRaw("<input type=\"checkbox\">");
 			}
 
-			#region Font
-
+			// Font
 			if (context.Cell.View is Cells.Views.Cell) {
 				//Read the image
 				System.Drawing.Image img = null;
-				Cells.Models.IImage imgModel = (Cells.Models.IImage)context.Cell.Model.FindModel(typeof(Cells.Models.IImage));
+				var imgModel = (Cells.Models.IImage)context.Cell.Model.FindModel(typeof(Cells.Models.IImage));
 				if (imgModel != null)
 					img = imgModel.GetImage(context);
 
+				var viewCell = (Cells.Views.Cell)context.Cell.View;
 
-				Cells.Views.Cell viewCell = (Cells.Views.Cell)context.Cell.View;
-
-				if (img != null) {
+				if (img != null && Mode.HasFlag(ExportHTMLMode.CellImages)) {
 					writer.WriteStartElement("img");
 
-					writer.WriteAttributeString("align", Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.Utilities.ContentToHorizontalAlignment(viewCell.ImageAlignment).ToString().ToLower());
+					writer.WriteAttributeString("align", Tools.WinForms.ContentToHorizontalAlignment(viewCell.ImageAlignment).ToString().ToLower());
 					writer.WriteAttributeString("src", ExportImage(img));
 
 					//img
@@ -302,36 +212,105 @@ public class HTML {
 			} else
 				ExportHTMLCellContent(context, writer);
 
-			#endregion
-
 			//td
 			writer.WriteEndElement();
 		}
 	}
 
+	/// <summary>
+	/// Save the Image to file and returns the file
+	/// </summary>
+	/// <param name="image"></param>
+	/// <returns>Returns the path where the image is exported valid for the HTML page</returns>
+	public virtual string ExportImage(System.Drawing.Image image) {
+		if (!EmbeddedImagePaths.TryGetValue(image, out var fileName)) {
+			// Allocate the image name in its requested directory without creating an unused temporary file.
+			fileName = System.IO.Path.ChangeExtension(Tools.FileSystem.GetTempFileName(ImageFullPath, create: false), ".jpg");
+			image.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg);
+
+			EmbeddedImagePaths.Add(image, fileName);
+		}
+
+		//change to use relative path
+		var relativeFileName = System.IO.Path.GetFileName(fileName);
+		return string.IsNullOrEmpty(ImageRelativePath) ? relativeFileName : Tools.Url.Combine(ImageRelativePath, relativeFileName);
+	}
+
+	public static string BorderToHTMLStyle(Sphere10.Framework.Drawing.BorderLine border) {
+		if (border.Width > 0)
+			return border.Width.ToString() + "px solid " + ColorToHTML(border.Color);
+		return "none";
+	}
+
+	/// <summary>
+	/// Convert a Color to HTML compatible string
+	/// </summary>
+	/// <param name="color"></param>
+	/// <returns></returns>
+	public static string ColorToHTML(System.Drawing.Color color) {
+		//non uso direttamente ToHtml su p_Color petch√® se questo contiene dei valori tipo (Window, Control, cio√® valori definiti in base al sistema) su Mozilla non funzionano
+		return System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B));
+	}
+
+	public static string BorderToHTMLStyle(Sphere10.Framework.Drawing.IBorder border) {
+		if (border is Sphere10.Framework.Drawing.RectangleBorder) {
+			var brd = (Sphere10.Framework.Drawing.RectangleBorder)border;
+
+			return "border-top:" + BorderToHTMLStyle(brd.Top) +
+					";border-right:" + BorderToHTMLStyle(brd.Right) +
+					";border-bottom:" + BorderToHTMLStyle(brd.Bottom) +
+					";border-left:" + BorderToHTMLStyle(brd.Left) + ";";
+		}
+		return string.Empty;
+	}
+
 	protected virtual void ExportHTMLCellContent(CellContext context, System.Xml.XmlTextWriter writer) {
 		if (context.Cell.View is Cells.Views.CheckBox) {
-			Cells.Models.ICheckBox checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
-			Cells.Models.CheckBoxStatus status = checkModel.GetCheckBoxStatus(context);
-			ExportHTML_Element_Font(writer, status.Caption, context.Cell.View.GetDrawingFont(context.Grid));
+			var checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
+			var status = checkModel.GetCheckBoxStatus(context);
+			ExportHTMLElementFont(writer, status.Caption, context.Cell.View.GetDrawingFont(context.Grid));
 		} else
-			ExportHTML_Element_Font(writer, context.DisplayText, context.Cell.View.GetDrawingFont(context.Grid));
+			ExportHTMLElementFont(writer, context.DisplayText, context.Cell.View.GetDrawingFont(context.Grid));
+	}
+
+	/// <summary>
+	/// Export a font html element with the specified font and text
+	/// </summary>
+	/// <param name="writer"></param>
+	/// <param name="displayText"></param>
+	/// <param name="font"></param>
+	public static void ExportHTMLElementFont(System.Xml.XmlTextWriter writer, string displayText, System.Drawing.Font font) {
+		if (font != null) {
+			writer.WriteAttributeString("style", "font-size:" + font.SizeInPoints + "pt");
+
+			if (font.Bold)
+				writer.WriteStartElement("b");
+
+			if (font.Underline)
+				writer.WriteStartElement("u");
+
+			if (font.Italic)
+				writer.WriteStartElement("i");
+		}
+
+		//displaytext
+		if (displayText == null || displayText.Trim().Length <= 0)
+			writer.WriteRaw("&nbsp;");
+		else            //l_Display = l_Display.Replace("\r\n","<br>");
+			writer.WriteString(displayText);
+
+		if (font != null) {
+			//i
+			if (font.Italic)
+				writer.WriteEndElement();
+
+			//u
+			if (font.Underline)
+				writer.WriteEndElement();
+
+			//b
+			if (font.Bold)
+				writer.WriteEndElement();
+		}
 	}
 }
-
-
-/// <summary>
-/// Flags for the export html features (Flags)
-/// </summary>
-[Flags]
-public enum ExportHTMLMode {
-	None = 0,
-	HTMLAndBody = 1,
-	GridBackColor = 2,
-	CellBackColor = 4,
-	RectangleBorder = 8,
-	CellForeColor = 16,
-	CellImages = 32,
-	Default = (HTMLAndBody | GridBackColor | CellBackColor | RectangleBorder | CellForeColor | CellImages)
-}
-

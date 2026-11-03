@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -19,39 +20,29 @@ public class NumericUpDown : EditorControlBase {
 	/// <summary>
 	/// Create a model of type Decimal
 	/// </summary>
-	public NumericUpDown() : base(typeof(decimal)) {
+	public NumericUpDown()
+		: base(typeof(decimal)) {
 	}
 
-	public NumericUpDown(Type p_CellType, decimal p_Maximum, decimal p_Minimum, decimal p_Increment) : base(p_CellType) {
-		if (p_CellType == null || p_CellType == typeof(int) ||
-		    p_CellType == typeof(long) || p_CellType == typeof(decimal)) {
-			Control.Maximum = p_Maximum;
-			Control.Minimum = p_Minimum;
-			Control.Increment = p_Increment;
+	public NumericUpDown(Type cellType, decimal maximum, decimal minimum, decimal increment)
+		: base(cellType) {
+		if (cellType == null || cellType == typeof(int) ||
+			cellType == typeof(long) || cellType == typeof(decimal)) {
+			Control.Maximum = maximum;
+			Control.Minimum = minimum;
+			Control.Increment = increment;
 		} else
 			throw new SourceGridException("Invalid CellType expected long, int or decimal");
-	}
-
-	#region Edit Control
-
-	/// <summary>
-	/// Create the editor control
-	/// </summary>
-	/// <returns></returns>
-	protected override Control CreateControl() {
-		System.Windows.Forms.NumericUpDown l_Control = new System.Windows.Forms.NumericUpDown();
-		l_Control.BorderStyle = System.Windows.Forms.BorderStyle.None;
-		return l_Control;
 	}
 
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new System.Windows.Forms.NumericUpDown Control {
-		get { return (System.Windows.Forms.NumericUpDown)base.Control; }
+		get {
+			return (System.Windows.Forms.NumericUpDown)base.Control;
+		}
 	}
-
-	#endregion
 
 	/// <summary>
 	/// Set the specified value in the current editor control.
@@ -71,7 +62,7 @@ public class NumericUpDown : EditorControlBase {
 			throw new SourceGridException("Invalid value, expected Decimal, Int or Long");
 
 		//.NET BUG:  First I must get the value, otherwise seems that the control don't work properly (when I hit the Escape so I never getthe value so the control use always the previous value also if I manually set the value)
-		decimal oldValue = Control.Value;
+		var oldValue = Control.Value;
 
 		Control.Value = dec;
 	}
@@ -93,8 +84,18 @@ public class NumericUpDown : EditorControlBase {
 		throw new SourceGridException("Invalid type of the cell expected decimal, long or int");
 	}
 
+	// Edit Control
+	/// <summary>
+	/// Create the editor control
+	/// </summary>
+	/// <returns></returns>
+	protected override Control CreateControl() {
+		var control = new System.Windows.Forms.NumericUpDown();
+		control.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		return control;
+	}
+
 	protected override void OnSendCharToEditor(char key) {
 		//No implementation
 	}
 }
-

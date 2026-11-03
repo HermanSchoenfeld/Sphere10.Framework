@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,58 +13,50 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 public class StandardHiddenRowCoordinator : IHiddenRowCoordinator {
-	protected RowsBase m_rows = null;
-	protected int m_totalHiddenRows = 0;
+	protected RowsBase GridRows = null;
+	protected int TotalHiddenRows = 0;
 
 	/// <summary>
 	/// This will help us track which rows are hidden, and which are not
 	/// </summary>
-	protected RangeMergerByRows m_rowMerger = new RangeMergerByRows();
-
-	public RowsBase Rows {
-		get { return m_rows; }
-	}
-
-	public int GetTotalHiddenRows() {
-		return m_totalHiddenRows;
-	}
+	protected RangeMergerByRows HiddenRowRanges = new RangeMergerByRows();
 
 	public StandardHiddenRowCoordinator(RowsBase rows) {
-		this.m_rows = rows;
+		this.GridRows = rows;
 
-		rows.RowVisibilityChanged += delegate(int rowIndex, bool becameVisible) {
+		rows.RowVisibilityChanged += delegate (int rowIndex, bool becameVisible) {
 			var range = new CellRange(rowIndex, 0, rowIndex, 1);
 			if (becameVisible)
-				m_rowMerger.RemoveRange(range);
+				HiddenRowRanges.RemoveRange(range);
 			else
-				m_rowMerger.AddRange(range);
+				HiddenRowRanges.AddRange(range);
 		};
 
-		rows.RowVisibilityChanged += delegate(int rowIndex, bool becameVisible) {
+		rows.RowVisibilityChanged += delegate (int rowIndex, bool becameVisible) {
 			if (becameVisible == true)
-				m_totalHiddenRows -= 1;
+				TotalHiddenRows -= 1;
 			else
-				m_totalHiddenRows += 1;
-			if (m_totalHiddenRows < 0)
+				TotalHiddenRows += 1;
+			if (TotalHiddenRows < 0)
 				throw new SourceGridException("Total hidden rows becamse less than 0. This indicates a bug");
 		};
 	}
 
-	private int? GetNextVisibleRow(int startFrom) {
-		var i = startFrom + 1;
-		while (i < Rows.Count) {
-			if (Rows.IsRowVisible(i) == true)
-				return i;
-			i++;
+	public RowsBase Rows {
+		get {
+			return GridRows;
 		}
-		return null;
+	}
+
+	public int GetTotalHiddenRows() {
+		return TotalHiddenRows;
 	}
 
 	public int ConvertScrollbarValueToRowIndex(int scrollBarValue) {
 		//return scrollBarValue;
 		var processedAllRows = 0;
 		var processedVisibleRows = 0;
-		foreach (var range in m_rowMerger.LoopAllRanges()) {
+		foreach (var range in HiddenRowRanges.LoopAllRanges()) {
 			var deltaAllRows = range.End.Row - processedAllRows + 1;
 			var deltaVisibleRows = range.Start.Row - processedAllRows;
 
@@ -72,16 +65,15 @@ public class StandardHiddenRowCoordinator : IHiddenRowCoordinator {
 				break;
 
 			// cap current range, if we are near our needed range
-			if (processedVisibleRows + deltaVisibleRows > scrollBarValue) {
+			if (processedVisibleRows + deltaVisibleRows > scrollBarValue)
 				deltaAllRows = deltaVisibleRows - (processedVisibleRows + deltaVisibleRows - scrollBarValue);
-			}
 
 			processedAllRows += deltaAllRows;
 			processedVisibleRows += deltaVisibleRows;
 		}
-		if (processedVisibleRows < scrollBarValue) {
+		if (processedVisibleRows < scrollBarValue)
 			processedAllRows += scrollBarValue - processedVisibleRows;
-		}
+
 		return processedAllRows;
 	}
 
@@ -109,7 +101,6 @@ public class StandardHiddenRowCoordinator : IHiddenRowCoordinator {
 			currentRow = next.Value;
 		}
 
-
 		// produce speicifc number of visible row indexes
 		while (producedRows <= numberOfRowsToProduce) {
 			yield return currentRow;
@@ -119,10 +110,16 @@ public class StandardHiddenRowCoordinator : IHiddenRowCoordinator {
 			if (nextRow == null)
 				break;
 			currentRow = nextRow.Value;
-
 		}
-
 	}
 
+	private int? GetNextVisibleRow(int startFrom) {
+		var index = startFrom + 1;
+		while (index < Rows.Count) {
+			if (Rows.IsRowVisible(index) == true)
+				return index;
+			index++;
+		}
+		return null;
+	}
 }
-

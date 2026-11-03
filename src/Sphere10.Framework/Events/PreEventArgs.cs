@@ -11,6 +11,9 @@ using System;
 namespace Sphere10.Framework;
 
 public class PreEventArgs : EventArgs {
+	// Argumentless notifications have no payload to forward to their completion event.
+	internal virtual void CopyCallArgsTo(PostEventArgs target) {
+	}
 }
 
 
@@ -20,5 +23,11 @@ public class PreEventArgs<TArgs> : PreEventArgs
 	}
 
 	public TArgs CallArgs { get; set; }
+
+	// Preserve the operation's argument instance for the matching completion notification.
+	internal override void CopyCallArgsTo(PostEventArgs target) {
+		if (target is PostEventArgs<TArgs> typedTarget)
+			typedTarget.CallArgs = CallArgs;
+	}
 }
 

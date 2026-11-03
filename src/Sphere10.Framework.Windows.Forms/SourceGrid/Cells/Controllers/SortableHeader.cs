@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -15,6 +16,18 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// A behavior that support sort and resize. Once created cannot be modified. When calculated automatically the range to sort is all the grid range without the rows minor of the current row and the range header is all the grid range with the rows minor or equal of the current row
 /// </summary>
 public class SortableHeader : ControllerBase {
+	// Sort Methods
+	// Status Properties
+	/// <summary>
+	/// Range to sort
+	/// </summary>
+	private IRangeLoader _rangeToSort;
+
+	/// <summary>
+	/// Header range (can be null).
+	/// </summary>
+	private IRangeLoader _headerRange;
+
 	/// <summary>
 	/// Column header behavior with sort and resize support, same as SortResizeHeader.
 	/// </summary>
@@ -23,10 +36,9 @@ public class SortableHeader : ControllerBase {
 	/// <summary>
 	/// Border used to calculate the region where the sort is enabled.
 	/// </summary>
-	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder LogicalBorder = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder(new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4), new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderLine(System.Drawing.Color.Black, 4));
+	public Sphere10.Framework.Drawing.RectangleBorder LogicalBorder = new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(System.Drawing.Color.Black, 4), new Sphere10.Framework.Drawing.BorderLine(System.Drawing.Color.Black, 4));
 
-	#region Constructor
-
+	// Constructor
 	/// <summary>
 	/// Static constructor
 	/// </summary>
@@ -34,80 +46,119 @@ public class SortableHeader : ControllerBase {
 		Default = new SortableHeader();
 	}
 
-
-	public SortableHeader() : this(null, null) {
+	public SortableHeader()
+		: this(null, null) {
 	}
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	/// <param name="p_RangeToSort">If null then the range is automatically calculated.</param>
-	/// <param name="p_HeaderRange">If null then the range is automatically calculated.</param>
-	public SortableHeader(IRangeLoader p_RangeToSort, IRangeLoader p_HeaderRange) {
-		m_HeaderRange = p_HeaderRange;
-		m_RangeToSort = p_RangeToSort;
+	/// <param name="rangeToSort">If null then the range is automatically calculated.</param>
+	/// <param name="headerRange">If null then the range is automatically calculated.</param>
+	public SortableHeader(IRangeLoader rangeToSort, IRangeLoader headerRange) {
+		_headerRange = headerRange;
+		_rangeToSort = rangeToSort;
 	}
-
-	#endregion
-
-	#region IBehaviorModel Members
-
-	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
-		base.OnMouseUp(sender, e);
-
-		//Note: I can't use the click event because I don't have Button information (Control.MouseButtons returns always None inside the Click event)
-
-		Point currentPoint = sender.Grid.PointToClient(System.Windows.Forms.Control.MousePosition);
-		Rectangle cellRect = sender.Grid.PositionToRectangle(sender.Position);
-		float distance;
-		Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
-
-		//eseguo il sort solo se non sono attualmente in resize
-		if (IsSortEnable(sender) &&
-		    partType == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectanglePartType.ContentArea &&
-		    e.Button == System.Windows.Forms.MouseButtons.Left) {
-			Models.ISortableHeader sortHeader = (Models.ISortableHeader)sender.Cell.Model.FindModel(typeof(Models.ISortableHeader));
-			Models.SortStatus l_Status = sortHeader.GetSortStatus(sender);
-			if (l_Status.Style == Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Ascending)
-				SortColumn(sender, false, l_Status.Comparer);
-			else
-				SortColumn(sender, true, l_Status.Comparer);
-		}
-	}
-
-	#endregion
-
-	#region Sort Methods
-
-	#region Status Properties
-
-	/// <summary>
-	/// Range to sort
-	/// </summary>
-	private IRangeLoader m_RangeToSort;
-
-	/// <summary>
-	/// Header range (can be null).
-	/// </summary>
-	private IRangeLoader m_HeaderRange;
 
 	/// <summary>
 	/// Range to sort. If null and EnableSort is true the range is automatically calculated.
 	/// </summary>
 	public IRangeLoader RangeToSort {
-		get { return m_RangeToSort; }
+		get {
+			return _rangeToSort;
+		}
 	}
 
 	/// <summary>
 	/// Header range. If null and EnableSort is true the range is automatically calculated.
 	/// </summary>
 	public IRangeLoader RangeHeader {
-		get { return m_HeaderRange; }
+		get {
+			return _headerRange;
+		}
 	}
 
-	#endregion
+	// IBehaviorModel Members
+	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
+		base.OnMouseUp(sender, e);
 
-	#region Support Function
+		//Note: I can't use the click event because I don't have Button information (Control.MouseButtons returns always None inside the Click event)
 
+		var currentPoint = sender.Grid.PointToClient(System.Windows.Forms.Control.MousePosition);
+		var cellRect = sender.Grid.PositionToRectangle(sender.Position);
+		float distance;
+		var partType = LogicalBorder.GetPointPartType(cellRect, currentPoint, out distance);
+
+		//eseguo il sort solo se non sono attualmente in resize
+		if (IsSortEnable(sender) &&
+			partType == Sphere10.Framework.Drawing.RectanglePartType.ContentArea &&
+			e.Button == System.Windows.Forms.MouseButtons.Left) {
+			var sortHeader = (Models.ISortableHeader)sender.Cell.Model.FindModel(typeof(Models.ISortableHeader));
+			var status = sortHeader.GetSortStatus(sender);
+			if (status.Style == Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending)
+				SortColumn(sender, false, status.Comparer);
+			else
+				SortColumn(sender, true, status.Comparer);
+		}
+	}
+
+	/// <summary>
+	/// Sort the current column. If the range contains all the columns this method move directly the row object otherwise move each cell.
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="ascending"></param>
+	/// <param name="comparer"></param>
+	public void SortColumn(CellContext sender, bool ascending, System.Collections.IComparer comparer) {
+		if (IsSortEnable(sender) == false)
+			return;
+		//verifico che il sort sia abilitato e che ci sia almeno una riga da ordinare oltra a quella corrente
+		if (sender.Position.Row < (sender.Grid.Rows.Count) && sender.Grid.Columns.Count > 0) {
+			CellRange rangeToSort;
+			CellRange rangeHeader;
+			if (_rangeToSort != null)
+				rangeToSort = _rangeToSort.GetRange(sender.Grid);
+			else
+				//the range to sort is all the grid range without the rows < of the current row
+				rangeToSort = new CellRange(sender.Position.Row + 1, 0, sender.Grid.Rows.Count - 1, sender.Grid.Columns.Count - 1);
+
+			if (_headerRange != null)
+				rangeHeader = _headerRange.GetRange(sender.Grid);
+			else
+				//the range header is all the grid range with the rows <= of the current row
+				rangeHeader = new CellRange(0, 0, sender.Position.Row, sender.Grid.Columns.Count - 1);
+
+			var modelSortable = (Models.ISortableHeader)sender.Cell.Model.FindModel(typeof(Models.ISortableHeader));
+
+			if (sender.Grid.Rows.Count > (sender.Position.Row + 1) &&
+				sender.Grid.Columns.Count > sender.Grid.FixedColumns) {
+				//Sort
+				sender.Grid.SortRangeRows(rangeToSort, sender.Position.Column, ascending, comparer);
+				if (ascending)
+					modelSortable.SetSortMode(sender, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Ascending);
+				else
+					modelSortable.SetSortMode(sender, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.Descending);
+
+				//Remove the image from others ColHeaderSort
+				for (var r = rangeHeader.Start.Row; r <= rangeHeader.End.Row; r++) {
+					for (var c = rangeHeader.Start.Column; c <= rangeHeader.End.Column; c++) {
+						var tmpCell = sender.Grid.GetCell(r, c);
+
+						if (tmpCell != sender.Cell &&
+							tmpCell != null &&
+							tmpCell.Model.FindModel(typeof(Models.ISortableHeader)) != null) {
+							var header = (Models.ISortableHeader)tmpCell.Model.FindModel(typeof(Models.ISortableHeader));
+
+							header.SetSortMode(new CellContext(sender.Grid, new Position(r, c), tmpCell), Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None);
+						}
+					}
+				}
+
+				sender.Grid.InvalidateRange(rangeHeader);
+			}
+		}
+	}
+
+	// Support Function
 	/// <summary>
 	/// Indicates if for the specified cell the sort is enabled.
 	/// </summary>
@@ -119,69 +170,6 @@ public class SortableHeader : ControllerBase {
 
 		if (sender.Cell.Model.FindModel(typeof(Models.ISortableHeader)) != null)
 			return true;
-		else
-			return false;
+		return false;
 	}
-
-	/// <summary>
-	/// Sort the current column. If the range contains all the columns this method move directly the row object otherwise move each cell.
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="p_bAscending"></param>
-	/// <param name="p_Comparer"></param>
-	public void SortColumn(CellContext sender, bool p_bAscending, System.Collections.IComparer p_Comparer) {
-		if (IsSortEnable(sender) == false)
-			return;
-		//verifico che il sort sia abilitato e che ci sia almeno una riga da ordinare oltra a quella corrente
-		if (sender.Position.Row < (sender.Grid.Rows.Count) && sender.Grid.Columns.Count > 0) {
-			CellRange l_RangeToSort;
-			CellRange l_RangeHeader;
-			if (m_RangeToSort != null)
-				l_RangeToSort = m_RangeToSort.GetRange(sender.Grid);
-			else
-				//the range to sort is all the grid range without the rows < of the current row
-				l_RangeToSort = new CellRange(sender.Position.Row + 1, 0, sender.Grid.Rows.Count - 1, sender.Grid.Columns.Count - 1);
-
-			if (m_HeaderRange != null)
-				l_RangeHeader = m_HeaderRange.GetRange(sender.Grid);
-			else
-				//the range header is all the grid range with the rows <= of the current row
-				l_RangeHeader = new CellRange(0, 0, sender.Position.Row, sender.Grid.Columns.Count - 1);
-
-			Models.ISortableHeader modelSortable = (Models.ISortableHeader)sender.Cell.Model.FindModel(typeof(Models.ISortableHeader));
-
-			if (sender.Grid.Rows.Count > (sender.Position.Row + 1) &&
-			    sender.Grid.Columns.Count > sender.Grid.FixedColumns) {
-				//Sort
-				sender.Grid.SortRangeRows(l_RangeToSort, sender.Position.Column, p_bAscending, p_Comparer);
-				if (p_bAscending)
-					modelSortable.SetSortMode(sender, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Ascending);
-				else
-					modelSortable.SetSortMode(sender, Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.Descending);
-
-				//Remove the image from others ColHeaderSort
-				for (int r = l_RangeHeader.Start.Row; r <= l_RangeHeader.End.Row; r++) {
-					for (int c = l_RangeHeader.Start.Column; c <= l_RangeHeader.End.Column; c++) {
-						Cells.ICellVirtual tmpCell = sender.Grid.GetCell(r, c);
-
-						if (tmpCell != sender.Cell &&
-						    tmpCell != null &&
-						    tmpCell.Model.FindModel(typeof(Models.ISortableHeader)) != null) {
-							Models.ISortableHeader header = (Models.ISortableHeader)tmpCell.Model.FindModel(typeof(Models.ISortableHeader));
-
-							header.SetSortMode(new CellContext(sender.Grid, new Position(r, c), tmpCell), Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.HeaderSortStyle.None);
-						}
-					}
-				}
-
-				sender.Grid.InvalidateRange(l_RangeHeader);
-			}
-		}
-	}
-
-	#endregion
-
-	#endregion
-
 }
-

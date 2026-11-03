@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -17,32 +18,34 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Override the OnExecuted to add your code or use the Executed event.
 /// </summary>
 public class Button : ControllerBase {
+	public event EventHandler Executed;
+
 	/// <summary>
 	/// I mantain the last mouse button pressed here to simulate exactly the behavior of the standard system button.
-	/// 
+	///
 	/// Here are the events executed on a system button:
-	/// 
+	///
 	/// [status checked = false]
 	/// MouseDown [status checked = false]
 	/// CheckedChanged [status checked = true]
 	/// Click [status checked = true]
 	/// MouseUp [status checked = true]
-	/// 
+	///
 	/// Consider that I can use this member varialbes because also if you have multiple grid or multiple threads there is only one mouse that can fire the events.
 	/// Consider also that I cannot use the Click event because in that event I don't have informations about the button pressed.
 	/// </summary>
-	private MouseButtons mLastButton = MouseButtons.None;
+	private MouseButtons _lastButton = MouseButtons.None;
 
 	public override void OnMouseDown(CellContext sender, MouseEventArgs e) {
 		base.OnMouseDown(sender, e);
 
-		mLastButton = e.Button;
+		_lastButton = e.Button;
 	}
 
 	public override void OnClick(CellContext sender, EventArgs e) {
 		base.OnClick(sender, e);
 
-		if (mLastButton == MouseButtons.Left)
+		if (_lastButton == MouseButtons.Left)
 			OnExecuted(sender, e);
 	}
 
@@ -58,10 +61,8 @@ public class Button : ControllerBase {
 		}
 	}
 
-	public event EventHandler Executed;
 	public virtual void OnExecuted(CellContext sender, EventArgs e) {
 		if (Executed != null)
 			Executed(sender, e);
 	}
 }
-

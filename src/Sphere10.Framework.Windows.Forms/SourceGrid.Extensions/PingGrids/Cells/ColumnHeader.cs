@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,8 +13,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells
 /// A cell header used for the columns. Usually used in the HeaderCell property of a DataGridColumn.
 /// </summary>
 public class ColumnHeader : SourceGrid.Cells.Virtual.ColumnHeader {
-	public ColumnHeader(string pCaption) {
-		Model.AddModel(new SourceGrid.Cells.Models.ValueModel(pCaption));
+	public ColumnHeader(string caption) {
+		Model.AddModel(new SourceGrid.Cells.Models.ValueModel(caption));
 	}
 }
-

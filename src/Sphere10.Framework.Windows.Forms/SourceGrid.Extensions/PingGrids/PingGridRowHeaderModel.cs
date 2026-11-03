@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -15,23 +16,15 @@ public class PingGridRowHeaderModel : IValueModel {
 	public PingGridRowHeaderModel() {
 	}
 
-	#region IValueModel Members
-
+	// IValueModel Members
 	public object GetValue(CellContext cellContext) {
-		DataGrid dataGrid = (DataGrid)cellContext.Grid;
-		if (dataGrid.DataSource != null &&
-		    dataGrid.DataSource.AllowNew &&
-		    cellContext.Position.Row == (dataGrid.Rows.Count - 1))
+		var dataGrid = (DataGrid)cellContext.Grid;
+		if (dataGrid.DataSource != null && dataGrid.DataSource.AllowNew && cellContext.Position.Row == (dataGrid.Rows.Count - 1))
 			return "*";
-		else
-			return null;
+		return null;
 	}
 
-	public void SetValue(CellContext cellContext, object p_Value) {
+	public void SetValue(CellContext cellContext, object value) {
 		throw new ApplicationException("Not supported");
 	}
-
-	#endregion
-
 }
-

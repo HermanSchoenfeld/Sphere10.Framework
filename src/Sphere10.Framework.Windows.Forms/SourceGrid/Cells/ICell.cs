@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,85 +13,99 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// Represents a Cell to use with Grid control.
 /// </summary>
 public interface ICell : ICellVirtual {
-
-	#region Value, DisplayText, ToolTipText, Image, Tag
-
+	// Value, DisplayText, ToolTipText, Image, Tag
 	/// <summary>
 	/// Gets the string representation of the Cell.Value property (default Value.ToString())
 	/// </summary>
-	string DisplayText { get; }
+	string DisplayText {
+		get;
+	}
 
 	/// <summary>
-	/// Gets or sets the value of the cell 
+	/// Gets or sets the value of the cell
 	/// </summary>
-	object Value { get; set; }
+	object Value {
+		get; set;
+	}
 
 	/// <summary>
 	/// Gets or sets additional info for this cell
 	/// </summary>
-	object Tag { get; set; }
+	object Tag {
+		get; set;
+	}
 
 	/// <summary>
 	/// Gets or sets the ToolTipText
 	/// </summary>
-	string ToolTipText { get; set; }
+	string ToolTipText {
+		get; set;
+	}
 
 	/// <summary>
 	/// Gets or set the image of the cell.
 	/// </summary>
-	System.Drawing.Image Image { get; set; }
+	System.Drawing.Image Image {
+		get; set;
+	}
 
-	#endregion
-
-	#region LinkToGrid
-
+	// LinkToGrid
 	/// <summary>
 	/// The Grid object
 	/// </summary>
-	Grid Grid { get; }
+	Grid Grid {
+		get;
+	}
+
+	/// <summary>
+	/// Gets the column of the specified cell
+	/// </summary>
+	GridColumn Column {
+		get;
+	}
+
+	/// <summary>
+	/// Gets the row of the specified cell
+	/// </summary>
+	GridRow Row {
+		get;
+	}
+
+	/// <summary>
+	/// Gets the range of the cell
+	/// </summary>
+	CellRange Range {
+		get;
+	}
+
+	// Row/Col Span
+	/// <summary>
+	/// ColSpan for merge operation, calculated using the current range.
+	/// </summary>
+	int ColumnSpan {
+		get; set;
+	}
+
+	/// <summary>
+	/// RowSpan for merge operation, calculated using the current range.
+	/// </summary>
+	int RowSpan {
+		get; set;
+	}
 
 	/// <summary>
 	/// Link the cell at the specified grid.
 	/// For internal use only.
 	/// </summary>
-	/// <param name="p_grid"></param>
-	/// <param name="p_Position"></param>
-	void BindToGrid(Grid p_grid, Position p_Position);
+	/// <param name="grid"></param>
+	/// <param name="position"></param>
+	void BindToGrid(Grid grid, Position position);
 
 	/// <summary>
 	/// Remove the link of the cell from the grid.
 	/// For internal use only.
 	/// </summary>
 	void UnBindToGrid();
-
-	/// <summary>
-	/// Gets the column of the specified cell
-	/// </summary>
-	GridColumn Column { get; }
-
-	/// <summary>
-	/// Gets the row of the specified cell
-	/// </summary>
-	GridRow Row { get; }
-
-	/// <summary>
-	/// Gets the range of the cell
-	/// </summary>
-	CellRange Range { get; }
-
-	#endregion
-
-	#region Row/Col Span
-
-	/// <summary>
-	/// ColSpan for merge operation, calculated using the current range.
-	/// </summary>
-	int ColumnSpan { get; set; }
-
-	/// <summary>
-	/// RowSpan for merge operation, calculated using the current range.
-	/// </summary>
-	int RowSpan { get; set; }
 
 	/// <summary>
 	/// Setting a col/row spann is a costly operation, so it's better
@@ -100,8 +115,4 @@ public interface ICell : ICellVirtual {
 	/// <param name="rowSpan"></param>
 	/// <param name="colSpan"></param>
 	void SetSpan(int rowSpan, int colSpan);
-
-	#endregion
-
 }
-

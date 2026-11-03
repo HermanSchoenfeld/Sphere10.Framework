@@ -12,17 +12,22 @@ using System.Linq;
 
 namespace Sphere10.Framework;
 
+/// <summary>Applies ordered comparisons until a key distinguishes the compared values.</summary>
 public class CompositeComparer<T> : IComparer<T> {
 	private readonly IComparer<T> _primary;
 	private readonly IComparer<T> _secondary;
 
-	public CompositeComparer(IComparer<T> single) : this(single, IdempotentComparer<T>.Instance) {
+	/// <summary>Creates a comparer with one effective ordering key.</summary>
+	public CompositeComparer(IComparer<T> single)
+		: this(single, IdempotentComparer<T>.Instance) {
 	}
 
-	public CompositeComparer(IEnumerable<IComparer<T>> comparers) 
+	/// <summary>Creates a comparer from an ordered sequence of comparison keys.</summary>
+	public CompositeComparer(IEnumerable<IComparer<T>> comparers)
 		: this(From(comparers)) {
 	}
 
+	/// <summary>Creates a comparer that uses the secondary key when the primary key is equal.</summary>
 	public CompositeComparer(IComparer<T> primary, IComparer<T> secondary) {
 		Guard.ArgumentNotNull(primary, nameof(primary));
 		Guard.ArgumentNotNull(secondary, nameof(secondary));
@@ -30,25 +35,26 @@ public class CompositeComparer<T> : IComparer<T> {
 		_secondary = secondary;
 	}
 
+	/// <summary>Compares the primary key before considering the secondary key.</summary>
 	public int Compare(T x, T y) {
 		var result = _primary.Compare(x, y);
 		return result == 0 ? _secondary.Compare(x, y) : result;
 	}
 
+	/// <summary>Composes keys in order, applying each subsequent comparison only when the preceding keys are equal.</summary>
 	public static CompositeComparer<T> From(IEnumerable<IComparer<T>> comparers) {
 		Guard.ArgumentNotNull(comparers, nameof(comparers));
-		var comparersArr = comparers as IComparer<T>[] ?? comparers.ToArray();
-		switch(comparersArr.Count()) {
-			case 0: 
+		var comparerArray = comparers as IComparer<T>[] ?? comparers.ToArray();
+		switch (comparerArray.Length) {
+			case 0:
 				throw new ArgumentException("Must have at least one comparer", nameof(comparers));
 			case 1:
-				return new CompositeComparer<T>(comparersArr.Single());
+				return new CompositeComparer<T>(comparerArray[0]);
 			case 2:
-				return new CompositeComparer<T>(comparersArr.Single(), comparersArr.Skip(1).Single());
+				return new CompositeComparer<T>(comparerArray[0], comparerArray[1]);
 			default:
-				return new CompositeComparer<T>(comparersArr.First(), From(comparersArr.Skip(1)));
+				return new CompositeComparer<T>(comparerArray.First(), From(comparerArray.Skip(1)));
 		}
 	}
-
 }
 

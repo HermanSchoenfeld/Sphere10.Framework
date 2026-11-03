@@ -1,68 +1,51 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Threading.Tasks;
+using Sphere10.Framework.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
-using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 [System.ComponentModel.ToolboxItem(true)]
 public class PingGrid : GridVirtual {
+	private IPingData _boundList;
+
+	private bool _endEditingRowOnValidate = true;
+
+	private bool _deleteRowsWithDeleteKey = true;
+
+	private bool _cancelEditingWithEscapeKey = true;
+
+	private string _deleteQuestionMessage = "Are you sure to delete all the selected rows?";
+
 	public PingGrid() {
+		// Configure row binding, editing and selection for the data source.
 		FixedRows = 1;
 		FixedColumns = 0;
-
 		Controller.AddController(new PingGridCellController());
-
 		this.DataSource = new EmptyPingSource();
 		SelectionMode = GridSelectionMode.Row;
 	}
-
-	protected override void Dispose(bool disposing) {
-		base.Dispose(disposing);
-	}
-
-	/// <summary>
-	/// Method used to create the rows object, in this class of type PingGridRows.
-	/// </summary>
-	protected override RowsBase CreateRowsObject() {
-		return new PingGridRows(this);
-	}
-
-	/// <summary>
-	/// Method used to create the columns object, in this class of type DataGridColumns.
-	/// </summary>
-	protected override ColumnsBase CreateColumnsObject() {
-		return new PingGridColumns(this);
-	}
-
-	protected override SelectionBase CreateSelectionObject() {
-		SourceGrid.Selection.SelectionBase selObj = base.CreateSelectionObject();
-
-		selObj.EnableMultiSelection = true;
-		selObj.FocusStyle = SourceGrid.FocusStyle.RemoveFocusCellOnLeave;
-		selObj.FocusRowLeaving += new RowCancelEventHandler(Selection_FocusRowLeaving);
-
-		return selObj;
-	}
-
-	private IPingData mBoundList;
 
 	/// <summary>
 	/// Sorting is always enabled
 	/// </summary>
 	public override bool EnableSort {
-		get { return true; }
-		set { }
+		get {
+			return true;
+		}
+		set {
+		}
 	}
 
 	/// <summary>
@@ -71,54 +54,17 @@ public class PingGrid : GridVirtual {
 	///  (that can be used to bind to a generic List) or BoundDataView (that can be used to bind to a DataView).
 	/// </summary>
 	public IPingData DataSource {
-		get { return mBoundList; }
+		get {
+			return _boundList;
+		}
 		set {
 			Unbind();
 			if (value == null)
-				mBoundList = new EmptyPingSource();
+				_boundList = new EmptyPingSource();
 			else
-				mBoundList = value;
-			if (mBoundList != null)
+				_boundList = value;
+			if (_boundList != null)
 				Bind();
-		}
-	}
-
-	protected virtual void Unbind() {
-		if (mBoundList != null) {
-			//mBoundList.ListChanged -= new ListChangedEventHandler(mBoundList_ListChanged);
-			//mBoundList.ItemDeleted -= new ItemDeletedEventHandler(mBoundList_ItemDeleted);
-			//mBoundList.ListCleared -= new EventHandler(mBoundList_ListCleared);
-		}
-
-		Rows.RowsChanged();
-	}
-
-	protected virtual void Bind() {
-		//if (Columns.Count == 0)
-		//	CreateColumns();
-		//InvalidateDataGridColumns();
-
-		//mBoundList.ListChanged += new ListChangedEventHandler(mBoundList_ListChanged);
-		//mBoundList.ItemDeleted += new ItemDeletedEventHandler(mBoundList_ItemDeleted);
-		//mBoundList.ListCleared += new EventHandler(mBoundList_ListCleared);
-		Rows.RowsChanged();
-		//Rows.ResetRowHeigth();
-	}
-
-	[Obsolete]
-	void mBoundList_ListCleared(object sender, EventArgs e) {
-		Rows.ResetRowHeigth();
-	}
-
-	[Obsolete]
-	void mBoundList_ItemDeleted(object sender, Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.ItemDeletedEventArgs e) {
-		Rows.RowDeleted(e.Item);
-	}
-
-	[Obsolete]
-	private void InvalidateDataGridColumns() {
-		foreach (PingGridColumn column in Columns) {
-			column.Invalidate();
 		}
 	}
 
@@ -126,51 +72,18 @@ public class PingGrid : GridVirtual {
 	/// Gets the rows information as a PingGridRows object.
 	/// </summary>
 	public new PingGridRows Rows {
-		get { return (PingGridRows)base.Rows; }
+		get {
+			return (PingGridRows)base.Rows;
+		}
 	}
 
 	/// <summary>
 	/// Gets the columns informations as a PingGridColumns object.
 	/// </summary>
 	public new PingGridColumns Columns {
-		get { return (PingGridColumns)base.Columns; }
-	}
-
-	protected virtual void mBoundList_ListChanged(object sender, ListChangedEventArgs e) {
-		if (base.IsSuspended() == true)
-			return;
-		Rows.RowsChanged();
-		Invalidate(true);
-	}
-
-	/// <summary>
-	/// Gets a specified Cell by its row and column.
-	/// </summary>
-	/// <param name="p_iRow"></param>
-	/// <param name="p_iCol"></param>
-	/// <returns></returns>
-	public override ICellVirtual GetCell(int p_iRow, int p_iCol) {
-		if (mBoundList == null)
-			return null;
-		if (p_iCol >= Columns.Count)
-			return null;
-
-		if (p_iRow < FixedRows)
-			return Columns[p_iCol].HeaderCell;
-		else
-			return Columns[p_iCol].GetDataCell(p_iRow);
-	}
-
-	protected override void OnSortingRangeRows(SortRangeRowsEventArgs e) {
-		base.OnSortingRangeRows(e);
-
-		if (DataSource == null || DataSource.AllowSort == false)
-			return;
-		var prop = this.Columns[e.KeyColumn].PropertyName;
-		DataSource.ApplySort(prop, e.Ascending);
-
-		// force redraw
-		this.Invalidate();
+		get {
+			return (PingGridColumns)base.Columns;
+		}
 	}
 
 	/// <summary>
@@ -180,25 +93,26 @@ public class PingGrid : GridVirtual {
 	[Obsolete]
 	public object[] SelectedDataRows {
 		get {
-			if (mBoundList == null)
+			if (_boundList == null)
 				return new System.Data.DataRowView[0];
 
-			int[] rowsSel = Selection.GetSelectionRegion().GetRowsIndex();
-
-			int count = 0;
-			for (int i = 0; i < rowsSel.Length; i++) {
-				object objRow = Rows.IndexToDataSourceRow(rowsSel[i]);
-				if (objRow != null)
+			// Count only selected rows that map to source items.
+			var selectedRows = Selection.GetSelectionRegion().GetRowsIndex();
+			var count = 0;
+			for (var index = 0; index < selectedRows.Length; index++) {
+				var row = Rows.IndexToDataSourceRow(selectedRows[index]);
+				if (row != null)
 					count++;
 			}
 
-			object[] dataRows = new object[count];
-			int indexRows = 0;
-			for (int i = 0; i < rowsSel.Length; i++) {
-				object objRow = Rows.IndexToDataSourceRow(rowsSel[i]);
-				if (objRow != null) {
-					dataRows[indexRows] = objRow;
-					indexRows++;
+			// Materialize the selected items without a trailing placeholder row.
+			var dataRows = new object[count];
+			var rowIndex = 0;
+			for (var i = 0; i < selectedRows.Length; i++) {
+				var row = Rows.IndexToDataSourceRow(selectedRows[i]);
+				if (row != null) {
+					dataRows[rowIndex] = row;
+					rowIndex++;
 				}
 			}
 			return dataRows;
@@ -206,12 +120,12 @@ public class PingGrid : GridVirtual {
 		set {
 			Selection.ResetSelection(false);
 
-			if (mBoundList != null && value != null) {
-				for (int i = 0; i < value.Length; i++) {
-					for (int r = FixedRows; r < Rows.Count; r++) {
-						object objRow = Rows.IndexToDataSourceRow(r);
+			if (_boundList != null && value != null) {
+				for (var index = 0; index < value.Length; index++) {
+					for (var r = FixedRows; r < Rows.Count; r++) {
+						var row = Rows.IndexToDataSourceRow(r);
 
-						if (object.ReferenceEquals(objRow, value[i])) {
+						if (object.ReferenceEquals(row, value[index])) {
 							Selection.SelectRow(r, true);
 							break;
 						}
@@ -221,110 +135,73 @@ public class PingGrid : GridVirtual {
 		}
 	}
 
-	/*[Obsolete]
-	protected override void OnKeyDown(System.Windows.Forms.KeyEventArgs e)
-	{
-		base.OnKeyDown(e);
-
-		if (e.KeyCode == System.Windows.Forms.Keys.Delete &&
-		    mBoundList != null &&
-		    mBoundList.AllowDelete &&
-		    e.Handled == false &&
-		    mDeleteRowsWithDeleteKey)
-		{
-			object[] rows = SelectedDataRows;
-			if (rows != null && rows.Length > 0)
-				DeleteSelectedRows();
-
-			e.Handled = true;
-		}
-		else if (e.KeyCode == System.Windows.Forms.Keys.Escape &&
-		         e.Handled == false &&
-		         mCancelEditingWithEscapeKey)
-		{
-			EndEditingRow(true);
-
-			e.Handled = true;
-		}
-	}*/
-
-
-	protected override void OnValidating(CancelEventArgs e) {
-		base.OnValidating(e);
-
-		try {
-			//if (EndEditingRowOnValidate)
-			{
-				//EndEditingRow(false);
-			}
-		} catch (Exception ex) {
-			OnUserException(new ExceptionEventArgs(ex));
-		}
-	}
-
-	private bool mEndEditingRowOnValidate = true;
-
 	/// <summary>
 	/// Gets or sets a property to force an End Editing when the control loose the focus
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	[Obsolete]
 	public bool EndEditingRowOnValidate {
-		get { return mEndEditingRowOnValidate; }
-		set { mEndEditingRowOnValidate = value; }
+		get {
+			return _endEditingRowOnValidate;
+		}
+		set {
+			_endEditingRowOnValidate = value;
+		}
 	}
-
-	private bool mDeleteRowsWithDeleteKey = true;
 
 	/// <summary>
 	/// Gets or sets if enable the delete of the selected rows when pressing Delete key.
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool DeleteRowsWithDeleteKey {
-		get { return mDeleteRowsWithDeleteKey; }
-		set { mDeleteRowsWithDeleteKey = value; }
+		get {
+			return _deleteRowsWithDeleteKey;
+		}
+		set {
+			_deleteRowsWithDeleteKey = value;
+		}
 	}
-
-	private bool mCancelEditingWithEscapeKey = true;
 
 	/// <summary>
 	/// Gets or sets if enable the Cancel Editing feature when pressing escape key
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool CancelEditingWithEscapeKey {
-		get { return mCancelEditingWithEscapeKey; }
-		set { mCancelEditingWithEscapeKey = value; }
+		get {
+			return _cancelEditingWithEscapeKey;
+		}
+		set {
+			_cancelEditingWithEscapeKey = value;
+		}
 	}
-
-	private string mDeleteQuestionMessage = "Are you sure to delete all the selected rows?";
 
 	/// <summary>
 	/// Message showed with the DeleteSelectedRowsAsync method. Set to null to not show any message.
 	/// </summary>
 	public string DeleteQuestionMessage {
-		get { return mDeleteQuestionMessage; }
-		set { mDeleteQuestionMessage = value; }
+		get {
+			return _deleteQuestionMessage;
+		}
+		set {
+			_deleteQuestionMessage = value;
+		}
 	}
 
 	/// <summary>
-	/// Delete all the selected rows.
+	/// Gets a specified Cell by its row and column.
 	/// </summary>
-	/// <returns>Returns true if one or more row is deleted otherwise false.</returns>
-	[Obsolete]
-	public virtual async Task<bool> DeleteSelectedRowsAsync() {
-		if (string.IsNullOrEmpty(mDeleteQuestionMessage) ||
-		    await DialogEx.ShowAsync(this, SystemIconType.Question, mDeleteQuestionMessage, System.Windows.Forms.Application.ProductName, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question) ==
-		    System.Windows.Forms.DialogResult.Yes) {
-			foreach (int gridRow in Selection.GetSelectionRegion().GetRowsIndex()) {
-				int dataIndex = Rows.IndexToDataSourceIndex(gridRow);
-				//if (dataIndex < DataSource.Count)
-				//	DataSource.RemoveAt(dataIndex);
-			}
+	/// <param name="row"></param>
+	/// <param name="column"></param>
+	/// <returns></returns>
+	public override ICellVirtual GetCell(int row, int column) {
+		if (_boundList == null)
+			return null;
+		if (column >= Columns.Count)
+			return null;
 
-			return true;
-		}
-
-		return false;
+		if (row < FixedRows)
+			return Columns[column].HeaderCell;
+		return Columns[column].GetDataCell(row);
 	}
 
 	/// <summary>
@@ -332,18 +209,8 @@ public class PingGrid : GridVirtual {
 	/// </summary>
 	public override void AutoSizeCells() {
 		Columns.AutoSizeView();
-		for (int i = 0; i < Rows.Count; i++)
-			Rows.AutoSizeRow(i);
-	}
-
-	private void Selection_FocusRowLeaving(object sender, RowCancelEventArgs e) {
-		try {
-			//EndEditingRow(false);
-		} catch (Exception exc) {
-			OnUserException(new ExceptionEventArgs(new EndEditingException(exc)));
-
-			e.Cancel = true;
-		}
+		for (var index = 0; index < Rows.Count; index++)
+			Rows.AutoSizeRow(index);
 	}
 
 	/// <summary>
@@ -390,8 +257,168 @@ public class PingGrid : GridVirtual {
 	public void EndEditingRow(bool cancel) {
 		//if (mBoundList != null)
 		//	mBoundList.EndEdit(cancel);
-
 		//mEditingRow = null;
 	}
-}
 
+	/// <summary>
+	/// Delete all the selected rows.
+	/// </summary>
+	/// <returns>Returns true if one or more row is deleted otherwise false.</returns>
+	[Obsolete]
+	public virtual async Task<bool> DeleteSelectedRowsAsync() {
+		// Ask once before applying the deletion to the selected source rows.
+		if (string.IsNullOrEmpty(_deleteQuestionMessage) ||
+			await DialogEx.ShowAsync(
+				this,
+				SystemIconType.Question,
+				_deleteQuestionMessage,
+				System.Windows.Forms.Application.ProductName,
+				System.Windows.Forms.MessageBoxButtons.YesNo,
+				System.Windows.Forms.MessageBoxIcon.Question
+			) == System.Windows.Forms.DialogResult.Yes
+		) {
+			foreach (var gridRow in Selection.GetSelectionRegion().GetRowsIndex()) {
+				var dataIndex = Rows.IndexToDataSourceIndex(gridRow);
+				//if (dataIndex < DataSource.Count)
+				//	DataSource.RemoveAt(dataIndex);
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Method used to create the rows object, in this class of type PingGridRows.
+	/// </summary>
+	protected override RowsBase CreateRowsObject() {
+		return new PingGridRows(this);
+	}
+
+	/// <summary>
+	/// Method used to create the columns object, in this class of type DataGridColumns.
+	/// </summary>
+	protected override ColumnsBase CreateColumnsObject() {
+		return new PingGridColumns(this);
+	}
+
+	protected override SelectionBase CreateSelectionObject() {
+		var selection = base.CreateSelectionObject();
+
+		selection.EnableMultiSelection = true;
+		selection.FocusStyle = SourceGrid.FocusStyle.RemoveFocusCellOnLeave;
+		selection.FocusRowLeaving += new RowCancelEventHandler(SelectionFocusRowLeaving);
+
+		return selection;
+	}
+
+	protected override void OnSortingRangeRows(SortRangeRowsEventArgs args) {
+		base.OnSortingRangeRows(args);
+
+		if (DataSource == null || DataSource.AllowSort == false)
+			return;
+		var property = this.Columns[args.KeyColumn].PropertyName;
+		DataSource.ApplySort(property, args.Ascending);
+
+		// force redraw
+		this.Invalidate();
+	}
+
+	/*[Obsolete]
+							protected override void OnKeyDown(System.Windows.Forms.KeyEventArgs e)
+							{
+								base.OnKeyDown(e);
+
+								if (e.KeyCode == System.Windows.Forms.Keys.Delete &&
+									mBoundList != null &&
+									mBoundList.AllowDelete &&
+									e.Handled == false &&
+									mDeleteRowsWithDeleteKey)
+								{
+									object[] rows = SelectedDataRows;
+									if (rows != null && rows.Length > 0)
+										DeleteSelectedRows();
+
+									e.Handled = true;
+								}
+								else if (e.KeyCode == System.Windows.Forms.Keys.Escape &&
+										 e.Handled == false &&
+										 mCancelEditingWithEscapeKey)
+								{
+									EndEditingRow(true);
+
+									e.Handled = true;
+								}
+							}*/
+
+	protected override void OnValidating(CancelEventArgs args) {
+		base.OnValidating(args);
+
+		try {
+			//if (EndEditingRowOnValidate)
+			//EndEditingRow(false);
+		} catch (Exception exception) {
+			OnUserException(new ExceptionEventArgs(exception));
+		}
+	}
+
+	protected override void Dispose(bool disposing) {
+		base.Dispose(disposing);
+	}
+
+	protected virtual void Bind() {
+		//if (Columns.Count == 0)
+		//	CreateColumns();
+		//InvalidateDataGridColumns();
+
+		//mBoundList.ListChanged += new ListChangedEventHandler(mBoundList_ListChanged);
+		//mBoundList.ItemDeleted += new ItemDeletedEventHandler(mBoundList_ItemDeleted);
+		//mBoundList.ListCleared += new EventHandler(mBoundList_ListCleared);
+		Rows.RowsChanged();
+		//Rows.ResetRowHeigth();
+	}
+
+	protected virtual void Unbind() {
+		if (_boundList != null) {
+			//mBoundList.ListChanged -= new ListChangedEventHandler(mBoundList_ListChanged);
+			//mBoundList.ItemDeleted -= new ItemDeletedEventHandler(mBoundList_ItemDeleted);
+			//mBoundList.ListCleared -= new EventHandler(mBoundList_ListCleared);
+		}
+
+		Rows.RowsChanged();
+	}
+
+	protected virtual void BoundListChanged(object sender, ListChangedEventArgs args) {
+		if (base.IsSuspended() == true)
+			return;
+		Rows.RowsChanged();
+		Invalidate(true);
+	}
+
+	[Obsolete]
+	private void BoundListCleared(object sender, EventArgs args) {
+		Rows.ResetRowHeigth();
+	}
+
+	[Obsolete]
+	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) {
+		Rows.RowDeleted(args.Item);
+	}
+
+	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
+		try {
+			//EndEditingRow(false);
+		} catch (Exception exception) {
+			OnUserException(new ExceptionEventArgs(new EndEditingException(exception)));
+
+			args.Cancel = true;
+		}
+	}
+
+	[Obsolete]
+	private void InvalidateDataGridColumns() {
+		foreach (PingGridColumn column in Columns)
+			column.Invalidate();
+	}
+}

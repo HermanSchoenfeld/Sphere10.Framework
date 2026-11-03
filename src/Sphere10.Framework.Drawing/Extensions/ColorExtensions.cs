@@ -35,6 +35,12 @@ public static class ColorExtensions {
 		if (shade > 1 || shade < -1)
 			throw new ArgumentException("Must be within 1 and -1", "shade");
 
+		// Exact endpoints avoid truncating floating-point interpolation one channel short.
+		if (shade == 1)
+			return Color.FromArgb(color.A, Color.White);
+		if (shade == -1)
+			return Color.FromArgb(color.A, Color.Black);
+
 		float incrementR, incrementG, incrementB;
 
 		if (shade < 0) {

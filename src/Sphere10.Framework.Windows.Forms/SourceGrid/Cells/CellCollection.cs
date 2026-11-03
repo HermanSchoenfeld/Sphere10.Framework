@@ -1,17 +1,24 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// A collection of elements of type Cells.ICellVirtual
 /// </summary>
-public class CellCollection : System.Collections.CollectionBase {
+public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICellVirtual> {
+	private readonly List<Cells.ICellVirtual> _items = new();
+
 	/// <summary>
 	/// Initializes a new empty instance of the CellBaseCollection class.
 	/// </summary>
@@ -41,6 +48,43 @@ public class CellCollection : System.Collections.CollectionBase {
 		this.AddRange(items);
 	}
 
+	/// <summary>Gets the number of cells in the collection.</summary>
+	public int Count {
+		get {
+			return _items.Count;
+		}
+	}
+
+	/// <summary>Gets or sets the allocated capacity without changing collection membership.</summary>
+	public int Capacity {
+		get {
+			return _items.Capacity;
+		}
+		set {
+			_items.Capacity = value;
+		}
+	}
+
+	/// <summary>Gets whether the collection rejects membership changes.</summary>
+	public bool IsReadOnly {
+		get {
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Gets or sets the Cells.ICellVirtual at the given index in this CellBaseCollection.
+	/// </summary>
+	public virtual Cells.ICellVirtual this[int index] {
+		get {
+			return _items[index];
+		}
+		set {
+			Guard.ArgumentNotNull(value, nameof(value));
+			_items[index] = value;
+		}
+	}
+
 	/// <summary>
 	/// Adds the elements of an array to the end of this CellBaseCollection.
 	/// </summary>
@@ -48,9 +92,8 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// The array whose elements are to be added to the end of this CellBaseCollection.
 	/// </param>
 	public virtual void AddRange(Cells.ICellVirtual[] items) {
-		foreach (Cells.ICellVirtual item in items) {
-			this.List.Add(item);
-		}
+		foreach (var item in items)
+			Add(item);
 	}
 
 	/// <summary>
@@ -60,9 +103,8 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// The CellBaseCollection whose elements are to be added to the end of this CellBaseCollection.
 	/// </param>
 	public virtual void AddRange(CellCollection items) {
-		foreach (Cells.ICellVirtual item in items) {
-			this.List.Add(item);
-		}
+		foreach (var item in items)
+			Add(item);
 	}
 
 	/// <summary>
@@ -72,7 +114,8 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// The Cells.ICellVirtual to be added to the end of this CellBaseCollection.
 	/// </param>
 	public virtual void Add(Cells.ICellVirtual value) {
-		this.List.Add(value);
+		Guard.ArgumentNotNull(value, nameof(value));
+		_items.Add(value);
 	}
 
 	/// <summary>
@@ -86,7 +129,7 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// false otherwise.
 	/// </returns>
 	public virtual bool Contains(Cells.ICellVirtual value) {
-		return this.List.Contains(value);
+		return _items.Contains(value);
 	}
 
 	/// <summary>
@@ -101,7 +144,7 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// -1 otherwise.
 	/// </returns>
 	public virtual int IndexOf(Cells.ICellVirtual value) {
-		return this.List.IndexOf(value);
+		return _items.IndexOf(value);
 	}
 
 	/// <summary>
@@ -114,15 +157,8 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// The Cells.ICellVirtual to insert.
 	/// </param>
 	public virtual void Insert(int index, Cells.ICellVirtual value) {
-		this.List.Insert(index, value);
-	}
-
-	/// <summary>
-	/// Gets or sets the Cells.ICellVirtual at the given index in this CellBaseCollection.
-	/// </summary>
-	public virtual Cells.ICellVirtual this[int index] {
-		get { return (Cells.ICellVirtual)this.List[index]; }
-		set { this.List[index] = value; }
+		Guard.ArgumentNotNull(value, nameof(value));
+		_items.Insert(index, value);
 	}
 
 	/// <summary>
@@ -132,63 +168,104 @@ public class CellCollection : System.Collections.CollectionBase {
 	/// The Cells.ICellVirtual value to remove from this CellBaseCollection.
 	/// </param>
 	public virtual void Remove(Cells.ICellVirtual value) {
-		this.List.Remove(value);
+		Guard.ArgumentNotNull(value, nameof(value));
+		if (!_items.Remove(value))
+			throw new ArgumentException("The cell is not part of this collection.", nameof(value));
 	}
 
-
-	/// <summary>
-	/// Type-specific enumeration class, used by CellBaseCollection.GetEnumerator.
-	/// </summary>
-	public class Enumerator : System.Collections.IEnumerator {
-		private System.Collections.IEnumerator wrapped;
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="collection"></param>
-		public Enumerator(CellCollection collection) {
-			this.wrapped = ((System.Collections.CollectionBase)collection).GetEnumerator();
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		public Cells.ICellVirtual Current {
-			get { return (Cells.ICellVirtual)(this.wrapped.Current); }
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		object System.Collections.IEnumerator.Current {
-			get { return (Cells.ICellVirtual)(this.wrapped.Current); }
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <returns></returns>
-		public bool MoveNext() {
-			return this.wrapped.MoveNext();
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		public void Reset() {
-			this.wrapped.Reset();
-		}
+	/// <summary>Removes the cell at its zero-based position.</summary>
+	public virtual void RemoveAt(int index) {
+		_items.RemoveAt(index);
 	}
 
+	/// <summary>Removes all cells without disposing their borrowed contents.</summary>
+	public virtual void Clear() {
+		_items.Clear();
+	}
+
+	/// <summary>Copies the current cells into the supplied typed array.</summary>
+	public void CopyTo(Cells.ICellVirtual[] array, int arrayIndex) {
+		_items.CopyTo(array, arrayIndex);
+	}
 
 	/// <summary>
 	/// Returns an enumerator that can iterate through the elements of this CellBaseCollection.
 	/// </summary>
 	/// <returns>
 	/// An object that implements System.Collections.IEnumerator.
-	/// </returns>        
-	public new virtual CellCollection.Enumerator GetEnumerator() {
+	/// </returns>
+	public virtual CellCollection.Enumerator GetEnumerator() {
 		return new CellCollection.Enumerator(this);
 	}
-}
 
+	// Generic collection removal reports absence while the original public method still rejects it.
+	bool ICollection<Cells.ICellVirtual>.Remove(Cells.ICellVirtual item) {
+		Guard.ArgumentNotNull(item, nameof(item));
+		if (!Contains(item))
+			return false;
+		Remove(item);
+		return true;
+	}
+
+	// Both enumeration interfaces use the same typed cursor and invalid-state checks.
+	IEnumerator<Cells.ICellVirtual> IEnumerable<Cells.ICellVirtual>.GetEnumerator() {
+		return GetEnumerator();
+	}
+
+	IEnumerator IEnumerable.GetEnumerator() {
+		return GetEnumerator();
+	}
+
+	/// <summary>
+	/// Type-specific enumeration class, used by CellBaseCollection.GetEnumerator.
+	/// </summary>
+	public class Enumerator : IEnumerator<Cells.ICellVirtual> {
+		private readonly IEnumerator<Cells.ICellVirtual> _wrapped;
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="collection"></param>
+		public Enumerator(CellCollection collection) {
+			_wrapped = collection._items.GetEnumerator();
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		public Cells.ICellVirtual Current {
+			get {
+				return (Cells.ICellVirtual)((IEnumerator)_wrapped).Current;
+			}
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		object System.Collections.IEnumerator.Current {
+			get {
+				return Current;
+			}
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		/// <returns></returns>
+		public bool MoveNext() {
+			return _wrapped.MoveNext();
+		}
+
+		/// <summary>
+		///
+		/// </summary>
+		public void Reset() {
+			_wrapped.Reset();
+		}
+
+		/// <summary>Releases the wrapped cursor without disposing its cells or collection.</summary>
+		public void Dispose() {
+			_wrapped.Dispose();
+		}
+	}
+}

@@ -28,13 +28,24 @@ public static class TypeActivator {
 		return Activate(targetType, parameters);
 	}
 
-	public static T Activate<T>() => (T)Activate(typeof(T));
+	public static T Activate<T>() {
+		return (T)Activate(typeof(T));
+	}
 
-	public static object Activate(Type targetType) => Activate(targetType, Array.Empty<object>());
+	public static object Activate(Type targetType) {
+		return Activate(targetType, Array.Empty<object>());
+	}
 
-	public static T Activate<T>(params object[] args) => (T)Activate(typeof(T), args);
+	public static T Activate<T>(params object[] args) {
+		return (T)Activate(typeof(T), args);
+	}
 
+	/// <summary>Invokes the requested constructor, including implicit struct defaults used by list editors.</summary>
 	public static object Activate(Type targetType, params object[] parameters) {
+		// Implicit value-type constructors are not returned by GetConstructor.
+		if (targetType.IsValueType && (parameters == null || parameters.Length == 0))
+			return Activator.CreateInstance(targetType);
+
 		// get the default constructor and instantiate
 		var types = parameters?.Where(x => x != null).Select(x => x.GetType()).ToArray() ?? new Type[0];
 		var constructor = targetType.GetConstructor(types);
@@ -42,7 +53,7 @@ public static class TypeActivator {
 			throw new ArgumentException("Can't instantiate type " + targetType.FullName);
 
 #if USE_FAST_REFLECTION
-	    var targetObject = info.FastInvoke(parameters);		// using FastReflectionLib
+		var targetObject = info.FastInvoke(parameters);		// using FastReflectionLib
 #else
 		var targetObject = constructor.Invoke(parameters); // using standard Reflection
 #endif
@@ -77,7 +88,7 @@ public static class TypeActivator {
 				}
 
 				// If there are any unmatched provided types left, it's not a match.
-				if (unmatchedTypes.Any()) 
+				if (unmatchedTypes.Any())
 					return false;
 
 				// If we've made it this far, it's a match.
@@ -164,8 +175,9 @@ public static class TypeActivator {
 //	}
 
 
-	public static T ActivateWithCompatibleArgs<T>(Type type, object[] args) 
-		=> (T)ActivateWithCompatibleArgs(type, args);
+	public static T ActivateWithCompatibleArgs<T>(Type type, object[] args) {
+		return (T)ActivateWithCompatibleArgs(type, args);
+	}
 
 	public static object ActivateWithCompatibleArgs(Type type, object[] args) {
 		if (!TryActivateWithCompatibleArgs(type, args, out var instance))

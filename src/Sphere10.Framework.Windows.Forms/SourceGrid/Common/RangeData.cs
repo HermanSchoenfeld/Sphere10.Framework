@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -16,17 +17,24 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 [Serializable]
 public class RangeData {
+	[Obsolete] private Position _startDragPosition;
+	private CellRange _sourceRange;
+	private object[,] _sourceValues;
+	[NonSerialized] private GridVirtual _sourceGrid;
+	[Obsolete] private CutMode _cutMode = CutMode.None;
+	[NonSerialized] private System.Windows.Forms.DataObject _clipboardDataObject = null;
+
 	/// <summary>
 	/// The string constant used with the System.Windows.Forms.DataFormats.GetFormat to register the clipboard format RangeData object.
 	/// </summary>
-	public const string RANGEDATA_FORMAT = "SourceGrid.RangeData";
+	public const string RangeDataFormat = "SourceGrid.RangeData";
 
 	/// <summary>
 	/// Static constructor
 	/// </summary>
 	static RangeData() {
 		//Register custom DataFormats
-		System.Windows.Forms.DataFormats.GetFormat(RANGEDATA_FORMAT);
+		System.Windows.Forms.DataFormats.GetFormat(RangeDataFormat);
 	}
 
 	/// <summary>
@@ -35,31 +43,27 @@ public class RangeData {
 	public RangeData() {
 	}
 
-	public RangeData(GridVirtual mSourceGrid) : this() {
-		this.mSourceGrid = mSourceGrid;
+	public RangeData(GridVirtual sourceGrid)
+		: this() {
+		_sourceGrid = sourceGrid;
 	}
-
-
-	[Obsolete] private Position mStartDragPosition;
-	private CellRange mSourceRange;
-	private object[,] mSourceValues;
-	[NonSerialized] private GridVirtual mSourceGrid;
-	[Obsolete] private CutMode mCutMode = CutMode.None;
-
-	[NonSerialized] private System.Windows.Forms.DataObject mClipboardDataObject = null;
 
 	/// <summary>
 	/// Range source
 	/// </summary>
 	public CellRange SourceRange {
-		get { return mSourceRange; }
+		get {
+			return _sourceRange;
+		}
 	}
 
 	/// <summary>
 	/// String array for values.
 	/// </summary>
 	public object[,] SourceValues {
-		get { return mSourceValues; }
+		get {
+			return _sourceValues;
+		}
 	}
 
 	/// <summary>
@@ -67,14 +71,18 @@ public class RangeData {
 	/// </summary>
 	[Obsolete]
 	public Position StartDragPosition {
-		get { return mStartDragPosition; }
+		get {
+			return _startDragPosition;
+		}
 	}
 
 	/// <summary>
 	/// Working grid.
 	/// </summary>
 	public GridVirtual SourceGrid {
-		get { return mSourceGrid; }
+		get {
+			return _sourceGrid;
+		}
 	}
 
 	/// <summary>
@@ -82,106 +90,32 @@ public class RangeData {
 	/// </summary>
 	[Obsolete]
 	public CutMode CutMode {
-		get { return mCutMode; }
-	}
-
-	#region Loading data
-
-	[Obsolete("Use LoadData method without startDragPosition")]
-	public void LoadData(GridVirtual sourceGrid, CellRange sourceRange, Position startDragPosition, CutMode cutMode) {
-		LoadData(sourceGrid, sourceRange, Position.Empty, cutMode);
-	}
-
-	/// <summary>
-	/// Load the specified range data into a string array. This method use the cell editor to get the value.
-	/// </summary>
-	/// <param name="sourceGrid"></param>
-	/// <param name="sourceRange"></param>
-	/// <param name="cutMode">Cut mode. Can be used to remove the data from the source when pasting it to the destination or immediately.</param>
-	public static RangeData LoadData(GridVirtual sourceGrid, CellRange sourceRange, CutMode cutMode) {
-		RangeData data = new RangeData(sourceGrid);
-		//mCutMode = cutMode;
-		data.mSourceRange = sourceRange;
-		data.mSourceValues = new object[sourceRange.RowsCount, GetVisibleColumnCount(sourceGrid, sourceRange)];
-
-		int arrayRow = 0;
-		for (int r = sourceRange.Start.Row; r <= sourceRange.End.Row; r++, arrayRow++) {
-			int arrayCol = 0;
-			for (int c = sourceRange.Start.Column; c <= sourceRange.End.Column; c++) {
-				if (sourceGrid.Columns.IsColumnVisible(c) == false)
-					continue;
-				Position posCell = new Position(r, c);
-				Cells.ICellVirtual cell = sourceGrid.GetCell(posCell);
-				CellContext cellContext = new CellContext(sourceGrid, posCell, cell);
-				/*if (cell != null && cell.Editor != null && cell.Editor.IsStringConversionSupported())
-					data.mSourceValues[arrayRow, arrayCol] = cell.Editor.ValueToString( cell.Model.ValueModel.GetValue(cellContext) );
-				else if (cell != null)
-					data.mSourceValues[arrayRow, arrayCol] = cellContext.DisplayText;*/
-				if (cell != null)
-					data.mSourceValues[arrayRow, arrayCol] = cellContext.Value;
-				arrayCol++;
-			}
+		get {
+			return _cutMode;
 		}
-
-		//Cut Data
-		if (cutMode == CutMode.CutImmediately && sourceGrid != null) {
-			sourceGrid.ClearValues(new RangeRegion(sourceRange));
-		}
-
-		data.mClipboardDataObject = new System.Windows.Forms.DataObject();
-		data.mClipboardDataObject.SetData(RANGEDATA_FORMAT, data);
-		string[,] values = DataToStringArray(sourceGrid, data.mSourceRange);
-		data.mClipboardDataObject.SetData(typeof(string), StringArrayToString(values));
-		return data;
 	}
 
-	private static int GetVisibleColumnCount(GridVirtual sourceGrid, CellRange sourceRange) {
-		int visibleCount = 0;
-		for (int c = sourceRange.Start.Column; c <= sourceRange.End.Column; c++) {
-			if (sourceGrid.Columns.IsColumnVisible(c))
-				visibleCount++;
-		}
-		return visibleCount;
-	}
-
-	/// <summary>
-	/// Load the data from a Tab delimited string of data. Each column is separated by a Tab and each row by a LineFeed character.
-	/// </summary>
-	public void LoadData(string data) {
-		mSourceGrid = null;
-		StringToData(data, out mSourceRange, out mSourceValues);
-
-		mClipboardDataObject = new System.Windows.Forms.DataObject();
-		mClipboardDataObject.SetData(RANGEDATA_FORMAT, this);
-		mClipboardDataObject.SetData(typeof(string), StringArrayToString(mSourceValues as string[,]));
-	}
-
-	#endregion
-
-	#region Write data
-
+	// Write data
 	/// <summary>
 	/// Write the current loaded array string in the specified grid range. This method use the cell editor to set the value.
 	/// </summary>
 	public void WriteData(GridVirtual sourceGrid, Position destinationPosition) {
-		int sourceRow = this.SourceValues.GetUpperBound(0);
-		int sourceColumn = this.SourceValues.GetUpperBound(1);
+		var sourceRow = this.SourceValues.GetUpperBound(0);
+		var sourceColumn = this.SourceValues.GetUpperBound(1);
 		var dataRow = 0;
-		for (int r = destinationPosition.Row; r <= destinationPosition.Row + sourceRow; r++) {
-			int dataColumn = 0;
-			for (int c = destinationPosition.Column; c <= destinationPosition.Column + sourceColumn; c++) {
-				Position posCell = new Position(r, c);
-				Cells.ICellVirtual cell = sourceGrid.GetCell(posCell);
-				CellContext cellContext = new CellContext(sourceGrid, posCell, cell);
+		for (var r = destinationPosition.Row; r <= destinationPosition.Row + sourceRow; r++) {
+			var dataColumn = 0;
+			for (var c = destinationPosition.Column; c <= destinationPosition.Column + sourceColumn; c++) {
+				var posCell = new Position(r, c);
+				var cell = sourceGrid.GetCell(posCell);
+				var cellContext = new CellContext(sourceGrid, posCell, cell);
 
-				if (cell != null && cell.Editor != null && mSourceValues[dataRow, dataColumn] != null)
-					cell.Editor.SetCellValue(cellContext, mSourceValues[dataRow, dataColumn]);
+				if (cell != null && cell.Editor != null && _sourceValues[dataRow, dataColumn] != null)
+					cell.Editor.SetCellValue(cellContext, _sourceValues[dataRow, dataColumn]);
 				dataColumn++;
 			}
 			dataRow++;
 		}
-
-
 		/*int sourceRow = this.SourceValues.Length - 1;
 		int sourceColumn = this.SourceValues.Rank - 1;
 		//Calculate the destination Range merging the source range
@@ -212,7 +146,122 @@ public class RangeData {
 		}*/
 	}
 
-	#endregion
+	/// <summary>
+	/// Calculate the destination range for the drop or paste operations.
+	/// </summary>
+	/// <param name="destinationGrid"></param>
+	/// <param name="dropDestination"></param>
+	/// <returns></returns>
+	[Obsolete("Completely not used. Will be removed in future versions")]
+	public CellRange FindDestinationRange(GridVirtual destinationGrid, Position dropDestination) {
+		if (dropDestination.IsEmpty())
+			return CellRange.Empty;
+
+		var destinationStart = new Position(dropDestination.Row + (_sourceRange.Start.Row - _startDragPosition.Row),
+			dropDestination.Column + (_sourceRange.Start.Column - _startDragPosition.Column));
+
+		destinationStart = Position.Max(destinationStart, new Position(0, 0));
+
+		var destination = _sourceRange;
+		destination.MoveTo(destinationStart);
+
+		destination = destination.Intersect(destinationGrid.CompleteRange);
+
+		return destination;
+	}
+
+	/// <summary>
+	/// Copy the specified RangeData object the the clipboard
+	/// </summary>
+	/// <param name="rangeData"></param>
+	public static void ClipboardSetData(RangeData rangeData) {
+		if (rangeData._clipboardDataObject == null)
+			throw new SourceGridException("No data loaded, use the LoadData method");
+		System.Windows.Forms.Clipboard.SetDataObject(rangeData._clipboardDataObject);
+	}
+
+	/// <summary>
+	/// Get a RangeData object from the clipboard. Return null if the clipboard doesn't contains valid data formats.
+	/// </summary>
+	/// <returns></returns>
+	public static RangeData ClipboardGetData() {
+		var dtObj = System.Windows.Forms.Clipboard.GetDataObject();
+		RangeData rngData = null;
+		if (dtObj.GetDataPresent(RangeDataFormat))
+			rngData = (RangeData)dtObj.GetData(RangeDataFormat);
+
+		// if RANGEDATA_FORMAT or GetData returns null use string buffer as rngData
+		if (rngData == null) {
+			// get unicode text instead of text
+			if (dtObj.GetDataPresent(System.Windows.Forms.DataFormats.UnicodeText, true)) {
+				var buffer = (string)dtObj.GetData(System.Windows.Forms.DataFormats.UnicodeText, true);
+				rngData = new RangeData();
+				rngData.LoadData(buffer);
+			}
+		}
+
+		return rngData;
+	}
+
+	// Loading data
+	[Obsolete("Use LoadData method without startDragPosition")]
+	public void LoadData(GridVirtual sourceGrid, CellRange sourceRange, Position startDragPosition, CutMode cutMode) {
+		LoadData(sourceGrid, sourceRange, Position.Empty, cutMode);
+	}
+
+	/// <summary>
+	/// Load the specified range data into a string array. This method use the cell editor to get the value.
+	/// </summary>
+	/// <param name="sourceGrid"></param>
+	/// <param name="sourceRange"></param>
+	/// <param name="cutMode">Cut mode. Can be used to remove the data from the source when pasting it to the destination or immediately.</param>
+	public static RangeData LoadData(GridVirtual sourceGrid, CellRange sourceRange, CutMode cutMode) {
+		var data = new RangeData(sourceGrid);
+		//mCutMode = cutMode;
+		data._sourceRange = sourceRange;
+		data._sourceValues = new object[sourceRange.RowsCount, GetVisibleColumnCount(sourceGrid, sourceRange)];
+
+		var arrayRow = 0;
+		for (var r = sourceRange.Start.Row; r <= sourceRange.End.Row; r++, arrayRow++) {
+			var arrayCol = 0;
+			for (var c = sourceRange.Start.Column; c <= sourceRange.End.Column; c++) {
+				if (sourceGrid.Columns.IsColumnVisible(c) == false)
+					continue;
+				var posCell = new Position(r, c);
+				var cell = sourceGrid.GetCell(posCell);
+				var cellContext = new CellContext(sourceGrid, posCell, cell);
+				/*if (cell != null && cell.Editor != null && cell.Editor.IsStringConversionSupported())
+					data.mSourceValues[arrayRow, arrayCol] = cell.Editor.ValueToString( cell.Model.ValueModel.GetValue(cellContext) );
+				else if (cell != null)
+					data.mSourceValues[arrayRow, arrayCol] = cellContext.DisplayText;*/
+				if (cell != null)
+					data._sourceValues[arrayRow, arrayCol] = cellContext.Value;
+				arrayCol++;
+			}
+		}
+
+		//Cut Data
+		if (cutMode == CutMode.CutImmediately && sourceGrid != null)
+			sourceGrid.ClearValues(new RangeRegion(sourceRange));
+
+		data._clipboardDataObject = new System.Windows.Forms.DataObject();
+		data._clipboardDataObject.SetData(RangeDataFormat, data);
+		var values = DataToStringArray(sourceGrid, data._sourceRange);
+		data._clipboardDataObject.SetData(typeof(string), StringArrayToString(values));
+		return data;
+	}
+
+	/// <summary>
+	/// Load the data from a Tab delimited string of data. Each column is separated by a Tab and each row by a LineFeed character.
+	/// </summary>
+	public void LoadData(string data) {
+		_sourceGrid = null;
+		StringToData(data, out _sourceRange, out _sourceValues);
+
+		_clipboardDataObject = new System.Windows.Forms.DataObject();
+		_clipboardDataObject.SetData(RangeDataFormat, this);
+		_clipboardDataObject.SetData(typeof(string), StringArrayToString(_sourceValues as string[,]));
+	}
 
 	/// <summary>
 	/// Convert a string buffer into a Range object and an array of string.
@@ -223,13 +272,13 @@ public class RangeData {
 	protected virtual void StringToData(string data, out CellRange range, out object[,] values) {
 		//tolgo uno dei due caratteri di a capo per usare lo split
 		data = data.Replace("\x0D\x0A", "\x0A");
-		string[] rowsData = data.Split('\x0A', '\x0D');
+		var rowsData = data.Split('\x0A', '\x0D');
 
 		//Check if the last row is not null (some application put a last \n character at the end of the cells, for example excel)
-		int rows = rowsData.Length;
+		var rows = rowsData.Length;
 		if (rows > 0 &&
-		    (rowsData[rows - 1] == null ||
-		     rowsData[rows - 1].Length == 0))
+			(rowsData[rows - 1] == null ||
+				rowsData[rows - 1].Length == 0))
 			rows--;
 
 		if (rows == 0) {
@@ -239,18 +288,18 @@ public class RangeData {
 		}
 
 		//Calculate the columns based on the first rows! Note: probably is better to calculate the maximum columns.
-		string[] firstColumnsData = rowsData[0].Split('\t');
-		int cols = firstColumnsData.Length;
+		var firstColumnsData = rowsData[0].Split('\t');
+		var cols = firstColumnsData.Length;
 
 		range = new CellRange(0, 0, rows - 1, cols - 1);
 		values = new string[rows, cols];
 
-		int arrayRow = 0;
-		for (int r = range.Start.Row; r < range.Start.Row + rows; r++, arrayRow++) {
-			string rowData = rowsData[arrayRow];
-			string[] columnsData = rowData.Split('\t');
-			int arrayCol = 0;
-			for (int c = range.Start.Column; c <= range.End.Column; c++, arrayCol++) {
+		var arrayRow = 0;
+		for (var r = range.Start.Row; r < range.Start.Row + rows; r++, arrayRow++) {
+			var rowData = rowsData[arrayRow];
+			var columnsData = rowData.Split('\t');
+			var arrayCol = 0;
+			for (var c = range.Start.Column; c <= range.End.Column; c++, arrayCol++) {
 				if (arrayCol < columnsData.Length)
 					values[arrayRow, arrayCol] = columnsData[arrayCol];
 				else
@@ -265,12 +314,12 @@ public class RangeData {
 	/// </summary>
 	/// <returns></returns>
 	protected static string StringArrayToString(string[,] values) {
-		System.Text.StringBuilder builder = new System.Text.StringBuilder();
+		var builder = new System.Text.StringBuilder();
 
-		int nr = values.GetLength(0);
-		int nc = values.GetLength(1);
-		for (int r = 0; r < nr; ++r) {
-			for (int c = 0; c < nc; ++c) {
+		var nr = values.GetLength(0);
+		var nc = values.GetLength(1);
+		for (var r = 0; r < nr; ++r) {
+			for (var c = 0; c < nc; ++c) {
 				builder.Append(values[r, c]);
 				if (c != nr - 1)
 					builder.Append('\t');
@@ -288,19 +337,19 @@ public class RangeData {
 	/// </summary>
 	/// <returns></returns>
 	protected static string[,] DataToStringArray(GridVirtual sourceGrid, CellRange range) {
-		int numberOfRows = range.End.Row - range.Start.Row + 1;
-		int numberOfCols = range.End.Column - range.Start.Column + 1;
-		string[,] values = new string[numberOfRows, numberOfCols];
+		var numberOfRows = range.End.Row - range.Start.Row + 1;
+		var numberOfCols = range.End.Column - range.Start.Column + 1;
+		var values = new string[numberOfRows, numberOfCols];
 
-		int arrayRow = 0;
-		for (int r = range.Start.Row; r <= range.End.Row; r++, arrayRow++) {
-			int arrayCol = 0;
-			for (int c = range.Start.Column; c <= range.End.Column; c++, arrayCol++) {
-				String val = String.Empty;
+		var arrayRow = 0;
+		for (var r = range.Start.Row; r <= range.End.Row; r++, arrayRow++) {
+			var arrayCol = 0;
+			for (var c = range.Start.Column; c <= range.End.Column; c++, arrayCol++) {
+				var val = String.Empty;
 
-				Position posCell = new Position(r, c);
-				Cells.ICellVirtual cell = sourceGrid.GetCell(posCell);
-				CellContext cellContext = new CellContext(sourceGrid, posCell, cell);
+				var posCell = new Position(r, c);
+				var cell = sourceGrid.GetCell(posCell);
+				var cellContext = new CellContext(sourceGrid, posCell, cell);
 
 				if (cell != null && cell.Editor != null && cell.Editor.IsStringConversionSupported())
 					values[arrayRow, arrayCol] = cell.Editor.ValueToString(cell.Model.ValueModel.GetValue(cellContext));
@@ -312,62 +361,12 @@ public class RangeData {
 		return values;
 	}
 
-	/// <summary>
-	/// Calculate the destination range for the drop or paste operations.
-	/// </summary>
-	/// <param name="destinationGrid"></param>
-	/// <param name="dropDestination"></param>
-	/// <returns></returns>
-	[Obsolete("Completely not used. Will be removed in future versions")]
-	public CellRange FindDestinationRange(GridVirtual destinationGrid, Position dropDestination) {
-		if (dropDestination.IsEmpty())
-			return CellRange.Empty;
-
-		Position destinationStart = new Position(dropDestination.Row + (mSourceRange.Start.Row - mStartDragPosition.Row),
-			dropDestination.Column + (mSourceRange.Start.Column - mStartDragPosition.Column));
-
-		destinationStart = Position.Max(destinationStart, new Position(0, 0));
-
-		CellRange destination = mSourceRange;
-		destination.MoveTo(destinationStart);
-
-		destination = destination.Intersect(destinationGrid.CompleteRange);
-
-		return destination;
-	}
-
-
-	/// <summary>
-	/// Copy the specified RangeData object the the clipboard
-	/// </summary>
-	/// <param name="rangeData"></param>
-	public static void ClipboardSetData(RangeData rangeData) {
-		if (rangeData.mClipboardDataObject == null)
-			throw new SourceGridException("No data loaded, use the LoadData method");
-		System.Windows.Forms.Clipboard.SetDataObject(rangeData.mClipboardDataObject);
-	}
-
-	/// <summary>
-	/// Get a RangeData object from the clipboard. Return null if the clipboard doesn't contains valid data formats.
-	/// </summary>
-	/// <returns></returns>
-	public static RangeData ClipboardGetData() {
-		System.Windows.Forms.IDataObject dtObj = System.Windows.Forms.Clipboard.GetDataObject();
-		RangeData rngData = null;
-		if (dtObj.GetDataPresent(RANGEDATA_FORMAT))
-			rngData = (RangeData)dtObj.GetData(RANGEDATA_FORMAT);
-
-		// if RANGEDATA_FORMAT or GetData returns null use string buffer as rngData
-		if (rngData == null) {
-			// get unicode text instead of text
-			if (dtObj.GetDataPresent(System.Windows.Forms.DataFormats.UnicodeText, true)) {
-				string buffer = (string)dtObj.GetData(System.Windows.Forms.DataFormats.UnicodeText, true);
-				rngData = new RangeData();
-				rngData.LoadData(buffer);
-			}
+	private static int GetVisibleColumnCount(GridVirtual sourceGrid, CellRange sourceRange) {
+		var visibleCount = 0;
+		for (var c = sourceRange.Start.Column; c <= sourceRange.End.Column; c++) {
+			if (sourceGrid.Columns.IsColumnVisible(c))
+				visibleCount++;
 		}
-
-		return rngData;
+		return visibleCount;
 	}
 }
-

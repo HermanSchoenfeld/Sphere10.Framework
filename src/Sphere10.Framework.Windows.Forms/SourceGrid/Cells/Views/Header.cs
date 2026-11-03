@@ -1,13 +1,15 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
+using Sphere10.Framework.Drawing;
+using Sphere10.Framework.Windows.Forms.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
@@ -23,8 +25,7 @@ public class Header : Cell {
 	/// </summary>
 	public new readonly static Header Default;
 
-	#region Constructors
-
+	// Constructors
 	static Header() {
 		Default = new Header();
 	}
@@ -33,22 +34,30 @@ public class Header : Cell {
 	/// Use default setting
 	/// </summary>
 	public Header() {
-		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.HeaderThemed();
+		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.HeaderThemed();
 		Border = Header.DefaultBorder;
 	}
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
-	/// <param name="p_Source"></param>
-	public Header(Header p_Source) : base(p_Source) {
-		Background = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IHeader)p_Source.Background.Clone();
+	/// <param name="source"></param>
+	public Header(Header source)
+		: base(source) {
+		Background = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)source.Background.Clone();
 	}
 
-	#endregion
+	// Visual Elements
+	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader Background {
+		get {
+			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)base.Background;
+		}
+		set {
+			base.Background = value;
+		}
+	}
 
-	#region Clone
-
+	// Clone
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
@@ -57,27 +66,14 @@ public class Header : Cell {
 		return new Header(this);
 	}
 
-	#endregion
-
-	#region Visual Elements
-
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IHeader Background {
-		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IHeader)base.Background; }
-		set { base.Background = value; }
-	}
-
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
 
 		if (context.CellRange.Contains(context.Grid.MouseDownPosition))
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Pressed;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ControlDrawStyle.Pressed;
 		else if (context.CellRange.Contains(context.Grid.MouseCellPosition))
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Hot;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ControlDrawStyle.Hot;
 		else
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ControlDrawStyle.Normal;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ControlDrawStyle.Normal;
 	}
-
-	#endregion
-
 }
-

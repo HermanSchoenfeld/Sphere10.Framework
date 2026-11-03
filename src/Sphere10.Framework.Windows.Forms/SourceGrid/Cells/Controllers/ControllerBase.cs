@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,9 +15,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Implements all the method of the controller interface without any implementation
 /// </summary>
 public abstract class ControllerBase : IController {
-
-	#region IController Members
-
+	// IController Members
 	public virtual void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
 	}
 
@@ -66,6 +65,7 @@ public abstract class ControllerBase : IController {
 	/// <param name="e"></param>
 	public virtual void OnValueChanging(CellContext sender, ValueChangeEventArgs e) {
 	}
+
 	/// <summary>
 	/// Fired after the value of the cell is changed.
 	/// </summary>
@@ -101,8 +101,4 @@ public abstract class ControllerBase : IController {
 
 	public virtual void OnGiveFeedback(CellContext sender, System.Windows.Forms.GiveFeedbackEventArgs e) {
 	}
-
-	#endregion
-
 }
-

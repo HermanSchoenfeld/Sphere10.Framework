@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -44,11 +45,9 @@ public class MouseInvalidate : ControllerBase {
 		sender.Grid.InvalidateCell(sender.Position);
 	}
 
-
 	public override void OnMouseLeave(CellContext sender, EventArgs e) {
 		base.OnMouseLeave(sender, e);
 
 		sender.Grid.InvalidateCell(sender.Position);
 	}
 }
-

@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,7 +13,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
 /// <summary>
 /// This interface helps work with spanned ranges collection
-/// 
+///
 /// There are two implementations at the moment.
 /// One is SpannedRangesList,
 /// another is QuadTree implementation, which is much faster.
@@ -23,12 +24,14 @@ public interface ISpannedRangesCollection {
 	/// <summary>
 	/// Returns the number of ranges contained
 	/// </summary>
-	int Count { get; }
+	int Count {
+		get;
+	}
 
 	void Add(CellRange range);
 
 	/// <summary>
-	/// Searches for an old range. If finds, updates 
+	/// Searches for an old range. If finds, updates
 	/// found region. Else throws RangeNotFoundException
 	/// </summary>
 	void Update(CellRange oldRange, CellRange newRange);
@@ -60,4 +63,3 @@ public interface ISpannedRangesCollection {
 
 	CellRange[] ToArray();
 }
-

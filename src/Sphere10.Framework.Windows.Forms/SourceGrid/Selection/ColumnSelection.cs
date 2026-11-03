@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,40 +13,23 @@ using System.Collections.Generic;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 public class ColumnSelection : SelectionBase {
+	private Decorators.DecoratorSelection _decorator;
+	private List<int> _list = new List<int>();
+
 	public ColumnSelection() {
 	}
 
-	public override void BindToGrid(GridVirtual p_grid) {
-		base.BindToGrid(p_grid);
+	public override void BindToGrid(GridVirtual grid) {
+		base.BindToGrid(grid);
 
-		mDecorator = new Decorators.DecoratorSelection(this);
-		Grid.Decorators.Add(mDecorator);
+		_decorator = new Decorators.DecoratorSelection(this);
+		Grid.Decorators.Add(_decorator);
 	}
 
 	public override void UnBindToGrid() {
-		Grid.Decorators.Remove(mDecorator);
+		Grid.Decorators.Remove(_decorator);
 
 		base.UnBindToGrid();
-	}
-
-	private Decorators.DecoratorSelection mDecorator;
-
-	private List<int> mList = new List<int>();
-
-	public override bool IsSelectedColumn(int column) {
-		return mList.Contains(column);
-	}
-
-	public override void SelectColumn(int column, bool select) {
-		if (select && mList.Contains(column) == false) {
-			mList.Add(column);
-
-			OnSelectionChanged(new RangeRegionChangedEventArgs(Grid.Columns.GetRange(column), CellRange.Empty));
-		} else if (!select && mList.Contains(column)) {
-			mList.Remove(column);
-
-			OnSelectionChanged(new RangeRegionChangedEventArgs(CellRange.Empty, Grid.Columns.GetRange(column)));
-		}
 	}
 
 	public override bool IsSelectedRow(int row) {
@@ -65,7 +49,7 @@ public class ColumnSelection : SelectionBase {
 	}
 
 	public override bool IsSelectedRange(CellRange range) {
-		for (int c = range.Start.Column; c <= range.End.Column; c++) {
+		for (var c = range.Start.Column; c <= range.End.Column; c++) {
 			if (IsSelectedColumn(c) == false)
 				return false;
 		}
@@ -74,42 +58,55 @@ public class ColumnSelection : SelectionBase {
 	}
 
 	public override void SelectRange(CellRange range, bool select) {
-		for (int c = range.Start.Column; c <= range.End.Column; c++) {
+		for (var c = range.Start.Column; c <= range.End.Column; c++)
 			SelectColumn(c, select);
-		}
 	}
 
-	protected override void OnResetSelection() {
-		RangeRegion prevRange = GetSelectionRegion();
+	public override void SelectColumn(int column, bool select) {
+		if (select && _list.Contains(column) == false) {
+			_list.Add(column);
 
-		mList.Clear();
+			OnSelectionChanged(new RangeRegionChangedEventArgs(Grid.Columns.GetRange(column), CellRange.Empty));
+		} else if (!select && _list.Contains(column)) {
+			_list.Remove(column);
 
-		OnSelectionChanged(new RangeRegionChangedEventArgs(null, prevRange));
+			OnSelectionChanged(new RangeRegionChangedEventArgs(CellRange.Empty, Grid.Columns.GetRange(column)));
+		}
 	}
 
 	public override bool IsEmpty() {
-		return mList.Count == 0;
-	}
-
-	public override RangeRegion GetSelectionRegion() {
-		RangeRegion region = new RangeRegion();
-
-		if (Grid.Rows.Count > 0) {
-			foreach (int col in mList) {
-				region.Add(ValidateRange(new CellRange(Grid.FixedRows, col, Grid.Rows.Count - 1, col)));
-			}
-		}
-
-		return region;
+		return _list.Count == 0;
 	}
 
 	public override bool IntersectsWith(CellRange rng) {
-		for (int c = rng.Start.Column; c <= rng.End.Column; c++) {
+		for (var c = rng.Start.Column; c <= rng.End.Column; c++) {
 			if (IsSelectedColumn(c))
 				return true;
 		}
 
 		return false;
 	}
-}
 
+	public override bool IsSelectedColumn(int column) {
+		return _list.Contains(column);
+	}
+
+	protected override void OnResetSelection() {
+		var prevRange = GetSelectionRegion();
+
+		_list.Clear();
+
+		OnSelectionChanged(new RangeRegionChangedEventArgs(null, prevRange));
+	}
+
+	public override RangeRegion GetSelectionRegion() {
+		var region = new RangeRegion();
+
+		if (Grid.Rows.Count > 0) {
+			foreach (var column in _list)
+				region.Add(ValidateRange(new CellRange(Grid.FixedRows, column, Grid.Rows.Count - 1, column)));
+		}
+
+		return region;
+	}
+}

@@ -1,14 +1,14 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Windows.Forms;
-
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
@@ -17,52 +17,22 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBoxButton : EditorControlBase {
-
-	#region Constructor
-
+	// Constructor
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
-	/// <param name="p_Type">The type of this model</param>
-	public TextBoxButton(Type p_Type) : base(p_Type) {
-	}
-
-	#endregion
-
-	#region Edit Control
-
-	/// <summary>
-	/// Create the editor control
-	/// </summary>
-	/// <returns></returns>
-	protected override Control CreateControl() {
-		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton();
-		editor.BorderStyle = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.BorderStyle.None;
-		editor.Validator = this;
-		return editor;
+	/// <param name="type">The type of this model</param>
+	public TextBoxButton(Type type)
+		: base(type) {
 	}
 
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton Control {
-		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton)base.Control; }
-	}
-
-	#endregion
-
-	/// <summary>
-	/// This method is called just before the edit start. You can use this method to customize the editor with the cell informations.
-	/// </summary>
-	/// <param name="cellContext"></param>
-	/// <param name="editorControl"></param>
-	protected override void OnStartingEdit(CellContext cellContext, Control editorControl) {
-		base.OnStartingEdit(cellContext, editorControl);
-
-		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton editor = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeTextBoxButton)editorControl;
-		//to set the scroll of the textbox to the initial position (otherwise the textbox use the previous scroll position)
-		editor.TextBox.SelectionStart = 0;
-		editor.TextBox.SelectionLength = 0;
+	public new Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton Control {
+		get {
+			return (Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton)base.Control;
+		}
 	}
 
 	/// <summary>
@@ -82,10 +52,35 @@ public class TextBoxButton : EditorControlBase {
 		return Control.Value;
 	}
 
+	// Edit Control
+	/// <summary>
+	/// Create the editor control
+	/// </summary>
+	/// <returns></returns>
+	protected override Control CreateControl() {
+		var editor = new Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton();
+		editor.BorderStyle = Sphere10.Framework.Windows.Forms.Drawing.BorderStyle.None;
+		editor.Validator = this;
+		return editor;
+	}
+
+	/// <summary>
+	/// This method is called just before the edit start. You can use this method to customize the editor with the cell informations.
+	/// </summary>
+	/// <param name="cellContext"></param>
+	/// <param name="editorControl"></param>
+	protected override void OnStartingEdit(CellContext cellContext, Control editorControl) {
+		base.OnStartingEdit(cellContext, editorControl);
+
+		var editor = (Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton)editorControl;
+		//to set the scroll of the textbox to the initial position (otherwise the textbox use the previous scroll position)
+		editor.TextBox.SelectionStart = 0;
+		editor.TextBox.SelectionLength = 0;
+	}
+
 	protected override void OnSendCharToEditor(char key) {
 		Control.TextBox.Text = key.ToString();
 		if (Control.TextBox.Text != null)
 			Control.TextBox.SelectionStart = Control.TextBox.Text.Length;
 	}
 }
-

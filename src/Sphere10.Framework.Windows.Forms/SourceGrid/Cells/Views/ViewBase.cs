@@ -1,14 +1,16 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
 using System.Drawing;
-using Sphere10.Framework.Windows.Forms.SourceGrid.Drawing;
+using Sphere10.Framework.Drawing;
+using Sphere10.Framework.Windows.Forms.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
@@ -16,27 +18,31 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 /// Base abstract class to manage the visual aspect of a cell. This class can be shared beetween multiple cells.
 /// </summary>
 [Serializable]
-public abstract class ViewBase : Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ContainerBase, IView {
+public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ContainerBase, IView {
+	// Format
+	private bool _imageStretch = false;
+	private System.Drawing.ContentAlignment _imageAlignment;
+	private Font _font = null;
+	private Color _foreColor;
+	private bool _wordWrap = false;
+	private TrimmingMode _trimmingMode = TrimmingMode.Char;
+	private System.Drawing.ContentAlignment _textAlignment;
+
 	/// <summary>
 	/// A default RectangleBorder instance with a 1 pixed LightGray border on bottom and right side
 	/// </summary>
-	public static RectangleBorder DefaultBorder = new RectangleBorder(new BorderLine(Color.LightGray, 1),
-		new BorderLine(Color.LightGray, 1));
-
-	public static Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding DefaultPadding = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding(2);
+	public static RectangleBorder DefaultBorder = new RectangleBorder(new BorderLine(Color.LightGray, 1), new BorderLine(Color.LightGray, 1));
+	public static Sphere10.Framework.Drawing.Padding DefaultPadding = new Sphere10.Framework.Drawing.Padding(2);
 	public static Color DefaultBackColor = Color.FromKnownColor(KnownColor.Window);
 	public static Color DefaultForeColor = Color.FromKnownColor(KnownColor.WindowText);
-	public static Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment DefaultAlignment = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment.MiddleLeft;
+	public static System.Drawing.ContentAlignment DefaultAlignment = System.Drawing.ContentAlignment.MiddleLeft;
 
-
-	#region Constructors
-
+	// Constructors
 	/// <summary>
 	/// Use default setting
 	/// </summary>
 	public ViewBase() {
-		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid();
-
+		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.BackgroundSolid();
 
 		Padding = DefaultPadding;
 		ForeColor = DefaultForeColor;
@@ -49,100 +55,174 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.SourceGrid.Dra
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
-	/// <param name="p_Source"></param>
-	public ViewBase(ViewBase p_Source) : base(p_Source) {
-		ForeColor = p_Source.ForeColor;
+	/// <param name="source"></param>
+	public ViewBase(ViewBase source)
+		: base(source) {
+		ForeColor = source.ForeColor;
 
-		BackColor = p_Source.BackColor;
-		Border = p_Source.Border;
-		Padding = p_Source.Padding;
+		BackColor = source.BackColor;
+		Border = source.Border;
+		Padding = source.Padding;
 
 		//Duplicate the reference fields
 		Font tmpFont = null;
-		if (p_Source.Font != null)
-			tmpFont = (Font)p_Source.Font.Clone();
+		if (source.Font != null)
+			tmpFont = (Font)source.Font.Clone();
 
 		Font = tmpFont;
 
-		WordWrap = p_Source.WordWrap;
-		TextAlignment = p_Source.TextAlignment;
-		TrimmingMode = p_Source.TrimmingMode;
-		ImageAlignment = p_Source.ImageAlignment;
-		ImageStretch = p_Source.ImageStretch;
+		WordWrap = source.WordWrap;
+		TextAlignment = source.TextAlignment;
+		TrimmingMode = source.TrimmingMode;
+		ImageAlignment = source.ImageAlignment;
+		ImageStretch = source.ImageStretch;
 	}
-
-	#endregion
-
-	#region Format
-
-	private bool m_ImageStretch = false;
 
 	/// <summary>
 	/// True to stretch the image to all the cell
 	/// </summary>
 	public bool ImageStretch {
-		get { return m_ImageStretch; }
-		set { m_ImageStretch = value; }
+		get {
+			return _imageStretch;
+		}
+		set {
+			_imageStretch = value;
+		}
 	}
-
-	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment m_ImageAlignment;
 
 	/// <summary>
 	/// Image Alignment
 	/// </summary>
-	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment ImageAlignment {
-		get { return m_ImageAlignment; }
-		set { m_ImageAlignment = value; }
+	public System.Drawing.ContentAlignment ImageAlignment {
+		get {
+			return _imageAlignment;
+		}
+		set {
+			_imageAlignment = value;
+		}
 	}
-
-	private Font m_Font = null;
 
 	/// <summary>
 	/// If null the grid font is used
 	/// </summary>
 	public Font Font {
-		get { return m_Font; }
-		set { m_Font = value; }
+		get {
+			return _font;
+		}
+		set {
+			_font = value;
+		}
 	}
-
-	private Color m_ForeColor;
 
 	/// <summary>
 	/// ForeColor of the cell
 	/// </summary>
 	public Color ForeColor {
-		get { return m_ForeColor; }
-		set { m_ForeColor = value; }
+		get {
+			return _foreColor;
+		}
+		set {
+			_foreColor = value;
+		}
 	}
-
-	private bool mWordWrap = false;
 
 	/// <summary>
 	/// Word Wrap, default false.
 	/// </summary>
 	public bool WordWrap {
-		get { return mWordWrap; }
-		set { mWordWrap = value; }
+		get {
+			return _wordWrap;
+		}
+		set {
+			_wordWrap = value;
+		}
 	}
-
-	private TrimmingMode mTrimmingMode = TrimmingMode.Char;
 
 	/// <summary>
 	/// TrimmingMode, default Char.
 	/// </summary>
 	public TrimmingMode TrimmingMode {
-		get { return mTrimmingMode; }
-		set { mTrimmingMode = value; }
+		get {
+			return _trimmingMode;
+		}
+		set {
+			_trimmingMode = value;
+		}
 	}
-
-	private Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment mTextAlignment;
 
 	/// <summary>
 	/// Text Alignment.
 	/// </summary>
-	public Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ContentAlignment TextAlignment {
-		get { return mTextAlignment; }
-		set { mTextAlignment = value; }
+	public System.Drawing.ContentAlignment TextAlignment {
+		get {
+			return _textAlignment;
+		}
+		set {
+			_textAlignment = value;
+		}
+	}
+
+	/// <summary>
+	/// Returns the color of the Background. If the Background it isn't an instance of BackgroundSolid then returns DefaultBackColor
+	/// </summary>
+	public Color BackColor {
+		get {
+			if (Background is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.BackgroundSolid)
+				return ((Sphere10.Framework.Windows.Forms.Drawing.VisualElements.BackgroundSolid)Background).BackColor;
+			return DefaultBackColor;
+		}
+		set {
+			if (Background is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.BackgroundSolid)
+				((Sphere10.Framework.Windows.Forms.Drawing.VisualElements.BackgroundSolid)Background).BackColor = value;
+		}
+	}
+
+	/// <summary>
+	/// The border of the Cell. Usually it is an instance of the Sphere10.Framework.Drawing.RectangleBorder structure.
+	/// </summary>
+	public new IBorder Border {
+		get {
+			return base.Border;
+		}
+		set {
+			base.Border = value;
+		}
+	}
+
+	/// <summary>
+	/// The padding of the cell. Usually it is 2 pixel on all sides.
+	/// </summary>
+	public new Sphere10.Framework.Drawing.Padding Padding {
+		get {
+			return base.Padding;
+		}
+		set {
+			base.Padding = value;
+		}
+	}
+
+	/// <summary>
+	/// Gets or sets a property that specify how to draw the elements.
+	/// </summary>
+	public new ElementsDrawMode ElementsDrawMode {
+		get {
+			return base.ElementsDrawMode;
+		}
+		set {
+			base.ElementsDrawMode = value;
+		}
+	}
+
+	/// <summary>
+	/// Background of the cell. Usually it is an instance of BackgroundSolid
+	/// </summary>
+	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement Background {
+		get {
+			return base.Background;
+		}
+		set {
+			base.Background = value;
+		}
 	}
 
 	/// <summary>
@@ -153,66 +233,36 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.SourceGrid.Dra
 	public virtual Font GetDrawingFont(GridVirtual grid) {
 		if (Font == null)
 			return grid.Font;
-		else
-			return Font;
+		return Font;
 	}
 
-	/// <summary>
-	/// Returns the color of the Background. If the Background it isn't an instance of BackgroundSolid then returns DefaultBackColor
-	/// </summary>
-	public Color BackColor {
-		get {
-			if (Background is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)
-				return ((Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)Background).BackColor;
-			else
-				return DefaultBackColor;
-		}
-		set {
-			if (Background is Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)
-				((Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.BackgroundSolid)Background).BackColor = value;
-		}
-	}
-
-	/// <summary>
-	/// The border of the Cell. Usually it is an instance of the Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.RectangleBorder structure.
-	/// </summary>
-	public new IBorder Border {
-		get { return base.Border; }
-		set { base.Border = value; }
-	}
-
-	/// <summary>
-	/// The padding of the cell. Usually it is 2 pixel on all sides.
-	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.Padding Padding {
-		get { return base.Padding; }
-		set { base.Padding = value; }
-	}
-
-	/// <summary>
-	/// Gets or sets a property that specify how to draw the elements.
-	/// </summary>
-	public new ElementsDrawMode ElementsDrawMode {
-		get { return base.ElementsDrawMode; }
-		set { base.ElementsDrawMode = value; }
-	}
-
-	#endregion
-
-	#region DrawCell
-
+	// DrawCell
 	/// <summary>
 	/// Draw the cell specified
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <param name="graphics">Paint arguments</param>
 	/// <param name="rectangle">Rectangle where draw the current cell</param>
-	public void DrawCell(CellContext cellContext,
-	                     Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.GraphicsCache graphics,
-	                     RectangleF rectangle) {
+	public void DrawCell(CellContext cellContext, Sphere10.Framework.Drawing.GraphicsCache graphics, RectangleF rectangle) {
 		PrepareView(cellContext);
 
 		Draw(graphics, rectangle);
+	}
+
+	// Measure (GetRequiredSize)
+	/// <summary>
+	/// Returns the minimum required size of the current cell, calculating using the current DisplayString, Image and Borders informations.
+	/// </summary>
+	/// <param name="cellContext"></param>
+	/// <param name="maxLayoutArea">SizeF structure that specifies the maximum layout area for the text. If width or height are zero the value is set to a default maximum value.</param>
+	/// <returns></returns>
+	public Size Measure(CellContext cellContext, Size maxLayoutArea) {
+		using (var measure = new Sphere10.Framework.Windows.Forms.Drawing.GraphicsMeasurement(cellContext.Grid)) {
+			PrepareView(cellContext);
+
+			var measureSize = Measure(measure, SizeF.Empty, maxLayoutArea);
+			return Size.Ceiling(measureSize);
+		}
 	}
 
 	/// <summary>
@@ -221,35 +271,4 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.SourceGrid.Dra
 	/// <param name="context">Current context. Cell to draw. This property is set before drawing. Only inside the PrepareView you can access this property.</param>
 	protected virtual void PrepareView(CellContext context) {
 	}
-
-	#endregion
-
-	#region Measure (GetRequiredSize)
-
-	/// <summary>
-	/// Returns the minimum required size of the current cell, calculating using the current DisplayString, Image and Borders informations.
-	/// </summary>
-	/// <param name="cellContext"></param>
-	/// <param name="maxLayoutArea">SizeF structure that specifies the maximum layout area for the text. If width or height are zero the value is set to a default maximum value.</param>
-	/// <returns></returns>
-	public Size Measure(CellContext cellContext,
-	                    Size maxLayoutArea) {
-		using (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.MeasureHelper measure = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.MeasureHelper(cellContext.Grid)) {
-			PrepareView(cellContext);
-
-			SizeF measureSize = Measure(measure, SizeF.Empty, maxLayoutArea);
-			return Size.Ceiling(measureSize);
-		}
-	}
-
-	#endregion
-
-	/// <summary>
-	/// Background of the cell. Usually it is an instance of BackgroundSolid
-	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IVisualElement Background {
-		get { return base.Background; }
-		set { base.Background = value; }
-	}
 }
-

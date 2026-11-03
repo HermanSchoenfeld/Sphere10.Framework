@@ -1,19 +1,24 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
 public interface IPingData {
-	int Count { get; }
-	bool AllowSort { get; set; }
+	int Count {
+		get;
+	}
+
+	bool AllowSort {
+		get; set;
+	}
 
 	void ApplySort(string propertyName, bool ascending);
 
 	object GetItemValue(int index, string propertyName);
 }
-

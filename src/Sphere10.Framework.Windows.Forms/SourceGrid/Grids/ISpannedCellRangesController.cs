@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -13,12 +14,14 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// are handled.
 /// At the moment this interface is bloated, since it was
 /// copy pasted from implementation straight from Grid.
-/// 
+///
 /// In the future it would be nice to reduce it
 /// so that separate implementations would be possible
 /// </summary>
 public interface ISpannedCellRangesController {
-	ISpannedRangesCollection SpannedRangesCollection { get; }
+	ISpannedRangesCollection SpannedRangesCollection {
+		get;
+	}
 
 	void MoveLeftSpannedRanges(int startIndex, int moveCount);
 
@@ -40,7 +43,6 @@ public interface ISpannedCellRangesController {
 
 	void RemoveSpannedCellReferencesInColumns(int startIndex, int count);
 
-
 	void Swap(int rowIndex1, int rowIndex2);
 
 	/// <summary>
@@ -52,4 +54,3 @@ public interface ISpannedCellRangesController {
 
 	void Update(CellRange newRange);
 }
-

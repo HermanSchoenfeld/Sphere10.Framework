@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -16,134 +17,217 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 	/// <summary>
+	/// Fired when the number of rows change
+	/// </summary>
+	public event IndexRangeEventHandler RowsAdded;
+
+	/// <summary>
+	/// Fired when some rows are removed
+	/// </summary>
+	public event IndexRangeEventHandler RowsRemoved;
+
+	/// <summary>
+	/// Fired before some rows are removed
+	/// </summary>
+	public event IndexRangeEventHandler RowsRemoving;
+
+	/// <summary>
+	/// Fired when the user change the Height property of one of the Row
+	/// </summary>
+	public event RowInfoEventHandler RowHeightChanged;
+
+	private List<RowInfo> _list = new List<RowInfo>();
+
+	/// <summary>
 	/// Constructor
 	/// </summary>
 	/// <param name="grid"></param>
-	public RowInfoCollection(GridVirtual grid) : base(grid) {
-		m_HiddenRowsCoordinator = new RowInfoCollectoinHiddenRowCoordinator(this);
+	public RowInfoCollection(GridVirtual grid)
+		: base(grid) {
+		HiddenRowCoordinator = new RowInfoCollectoinHiddenRowCoordinator(this);
 	}
 
-	private List<RowInfo> m_List = new List<RowInfo>();
-
-	/// <summary>
-	/// Returns true if the range passed is valid
-	/// </summary>
-	/// <param name="p_StartIndex"></param>
-	/// <param name="p_Count"></param>
-	/// <returns></returns>
-	public bool IsValidRange(int p_StartIndex, int p_Count) {
-		if (p_StartIndex < Count && p_StartIndex >= 0 &&
-		    p_Count > 0 && (p_StartIndex + p_Count) <= Count)
-			return true;
-		else
-			return false;
-	}
-
-	/// <summary>
-	/// Returns true if the range passed is valid for insert method
-	/// </summary>
-	/// <param name="p_StartIndex"></param>
-	/// <param name="p_Count"></param>
-	/// <returns></returns>
-	public bool IsValidRangeForInsert(int p_StartIndex, int p_Count) {
-		if (p_StartIndex <= Count && p_StartIndex >= 0 &&
-		    p_Count > 0)
-			return true;
-		else
-			return false;
-	}
-
-
-	#region Insert/Remove Methods
-
-	/// <summary>
-	/// Insert the specified number of rows at the specified position
-	/// </summary>
-	/// <param name="p_StartIndex"></param>
-	/// <param name="rows"></param>
-	protected void InsertRange(int p_StartIndex, RowInfo[] rows) {
-		if (IsValidRangeForInsert(p_StartIndex, rows.Length) == false)
-			throw new SourceGridException("Invalid index");
-
-		for (int r = 0; r < rows.Length; r++) {
-			m_List.Insert(p_StartIndex + r, rows[r]);
+	public override int Count {
+		get {
+			return _list.Count;
 		}
+	}
 
-		PerformLayout();
-
-		OnRowsAdded(new IndexRangeEventArgs(p_StartIndex, rows.Length));
+	/// <summary>
+	/// Indexer. Returns a RowInfo at the specified position
+	/// </summary>
+	public RowInfo this[int p] {
+		get {
+			if (p < 0)
+				return null;
+			if (p >= _list.Count)
+				return null;
+			return _list[p];
+		}
 	}
 
 	/// <summary>
 	/// Remove a row at the speicifed position
 	/// </summary>
-	/// <param name="p_Index"></param>
-	public void Remove(int p_Index) {
-		RemoveRange(p_Index, 1);
+	/// <param name="index"></param>
+	public void Remove(int index) {
+		RemoveRange(index, 1);
 	}
-	/// <summary>
-	/// Remove the RowInfo at the specified positions
-	/// </summary>
-	/// <param name="p_StartIndex"></param>
-	/// <param name="p_Count"></param>
-	public virtual void RemoveRange(int p_StartIndex, int p_Count) {
-		if (IsValidRange(p_StartIndex, p_Count) == false)
-			throw new SourceGridException("Invalid index");
-
-		IndexRangeEventArgs eventArgs = new IndexRangeEventArgs(p_StartIndex, p_Count);
-		OnRowsRemoving(eventArgs);
-
-		m_List.RemoveRange(p_StartIndex, p_Count);
-
-		OnRowsRemoved(eventArgs);
-
-		PerformLayout();
-	}
-
-	#endregion
 
 	/// <summary>
 	/// Move a row from one position to another position
 	/// </summary>
-	/// <param name="p_CurrentRowPosition"></param>
-	/// <param name="p_NewRowPosition"></param>
-	public void Move(int p_CurrentRowPosition, int p_NewRowPosition) {
-		if (p_CurrentRowPosition == p_NewRowPosition)
+	/// <param name="currentRowPosition"></param>
+	/// <param name="newRowPosition"></param>
+	public void Move(int currentRowPosition, int newRowPosition) {
+		if (currentRowPosition == newRowPosition)
 			return;
 
-		if (p_CurrentRowPosition < p_NewRowPosition) {
-			for (int r = p_CurrentRowPosition; r < p_NewRowPosition; r++) {
+		if (currentRowPosition < newRowPosition) {
+			for (var r = currentRowPosition; r < newRowPosition; r++)
 				Swap(r, r + 1);
-			}
 		} else {
-			for (int r = p_CurrentRowPosition; r > p_NewRowPosition; r--) {
+			for (var r = currentRowPosition; r > newRowPosition; r--)
 				Swap(r, r - 1);
-			}
 		}
 	}
 
 	/// <summary>
 	/// Change the position of row 1 with row 2.
 	/// </summary>
-	/// <param name="p_RowIndex1"></param>
-	/// <param name="p_RowIndex2"></param>
-	public virtual void Swap(int p_RowIndex1, int p_RowIndex2) {
-		if (p_RowIndex1 == p_RowIndex2)
+	/// <param name="rowIndex1"></param>
+	/// <param name="rowIndex2"></param>
+	public virtual void Swap(int rowIndex1, int rowIndex2) {
+		if (rowIndex1 == rowIndex2)
 			return;
 
-		RowInfo row1 = this[p_RowIndex1];
-		RowInfo row2 = this[p_RowIndex2];
+		var row1 = this[rowIndex1];
+		var row2 = this[rowIndex2];
 
-		m_List[p_RowIndex1] = row2;
-		m_List[p_RowIndex2] = row1;
+		_list[rowIndex1] = row2;
+		_list[rowIndex2] = row1;
 
 		PerformLayout();
 	}
 
 	/// <summary>
-	/// Fired when the number of rows change
+	/// Execute the RowHeightChanged event
 	/// </summary>
-	public event IndexRangeEventHandler RowsAdded;
+	/// <param name="e"></param>
+	public void OnRowHeightChanged(RowInfoEventArgs e) {
+		PerformLayout();
+
+		if (RowHeightChanged != null)
+			RowHeightChanged(this, e);
+	}
+
+	public int IndexOf(RowInfo info) {
+		return _list.IndexOf(info);
+	}
+
+	/// <summary>
+	/// Auto size the rows calculating the required size only on the columns currently visible
+	/// </summary>
+	public void AutoSizeView() {
+		var list = Grid.Columns.ColumnsInsideRegion(Grid.DisplayRectangle.X, Grid.DisplayRectangle.Width, true, false);
+		if (list.Count > 0)
+			AutoSize(false, list[0], list[list.Count - 1]);
+	}
+
+	/// <summary>
+	/// Remove all the columns
+	/// </summary>
+	public void Clear() {
+		if (Count == 0)
+			return;
+		this.Grid.LinkedControls.Clear();
+		RemoveRange(0, Count);
+	}
+
+	/// <summary>
+	/// Remove the RowInfo at the specified positions
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="count"></param>
+	public virtual void RemoveRange(int startIndex, int count) {
+		if (IsValidRange(startIndex, count) == false)
+			throw new SourceGridException("Invalid index");
+
+		var eventArgs = new IndexRangeEventArgs(startIndex, count);
+		OnRowsRemoving(eventArgs);
+
+		_list.RemoveRange(startIndex, count);
+
+		OnRowsRemoved(eventArgs);
+
+		PerformLayout();
+	}
+
+	/// <summary>
+	/// Returns true if the range passed is valid
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="count"></param>
+	/// <returns></returns>
+	public bool IsValidRange(int startIndex, int count) {
+		if (startIndex < Count && startIndex >= 0 &&
+			count > 0 && (startIndex + count) <= Count)
+			return true;
+		return false;
+	}
+
+	// RowsBase
+	public override int GetHeight(int row) {
+		return this[row].Height;
+	}
+
+	public override void SetHeight(int row, int height) {
+		this[row].Height = height;
+	}
+
+	public override AutoSizeMode GetAutoSizeMode(int row) {
+		return this[row].AutoSizeMode;
+	}
+
+	// IEnumerable<RowInfo> Members
+	public IEnumerator<RowInfo> GetEnumerator() {
+		return _list.GetEnumerator();
+	}
+
+	protected override void OnLayout() {
+		base.OnLayout();
+	}
+
+	// Insert/Remove Methods
+	/// <summary>
+	/// Insert the specified number of rows at the specified position
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="rows"></param>
+	protected void InsertRange(int startIndex, RowInfo[] rows) {
+		if (IsValidRangeForInsert(startIndex, rows.Length) == false)
+			throw new SourceGridException("Invalid index");
+
+		for (var r = 0; r < rows.Length; r++)
+			_list.Insert(startIndex + r, rows[r]);
+
+		PerformLayout();
+
+		OnRowsAdded(new IndexRangeEventArgs(startIndex, rows.Length));
+	}
+
+	/// <summary>
+	/// Returns true if the range passed is valid for insert method
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="count"></param>
+	/// <returns></returns>
+	public bool IsValidRangeForInsert(int startIndex, int count) {
+		if (startIndex <= Count && startIndex >= 0 &&
+			count > 0)
+			return true;
+		return false;
+	}
 
 	/// <summary>
 	/// Fired when the number of rows change
@@ -159,11 +243,6 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 	/// <summary>
 	/// Fired when some rows are removed
 	/// </summary>
-	public event IndexRangeEventHandler RowsRemoved;
-
-	/// <summary>
-	/// Fired when some rows are removed
-	/// </summary>
 	/// <param name="e"></param>
 	protected virtual void OnRowsRemoved(IndexRangeEventArgs e) {
 		if (RowsRemoved != null)
@@ -175,111 +254,15 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 	/// <summary>
 	/// Fired before some rows are removed
 	/// </summary>
-	public event IndexRangeEventHandler RowsRemoving;
-
-	/// <summary>
-	/// Fired before some rows are removed
-	/// </summary>
 	/// <param name="e"></param>
 	protected virtual void OnRowsRemoving(IndexRangeEventArgs e) {
 		if (RowsRemoving != null)
 			RowsRemoving(this, e);
-
 		//Grid.OnRowsRemoving(e);
 	}
 
-	/// <summary>
-	/// Indexer. Returns a RowInfo at the specified position
-	/// </summary>
-	public RowInfo this[int p] {
-		get {
-			if (p < 0)
-				return null;
-			if (p >= m_List.Count)
-				return null;
-			return m_List[p];
-		}
-	}
-
-	protected override void OnLayout() {
-		base.OnLayout();
-	}
-
-	/// <summary>
-	/// Fired when the user change the Height property of one of the Row
-	/// </summary>
-	public event RowInfoEventHandler RowHeightChanged;
-
-	/// <summary>
-	/// Execute the RowHeightChanged event
-	/// </summary>
-	/// <param name="e"></param>
-	public void OnRowHeightChanged(RowInfoEventArgs e) {
-		PerformLayout();
-
-		if (RowHeightChanged != null)
-			RowHeightChanged(this, e);
-	}
-
-
-	public int IndexOf(RowInfo p_Info) {
-		return m_List.IndexOf(p_Info);
-	}
-
-	/// <summary>
-	/// Auto size the rows calculating the required size only on the columns currently visible
-	/// </summary>
-	public void AutoSizeView() {
-		List<int> list = Grid.Columns.ColumnsInsideRegion(Grid.DisplayRectangle.X, Grid.DisplayRectangle.Width, true, false);
-		if (list.Count > 0) {
-			AutoSize(false, list[0], list[list.Count - 1]);
-		}
-	}
-
-	/// <summary>
-	/// Remove all the columns
-	/// </summary>
-	public void Clear() {
-		if (Count == 0)
-			return;
-		this.Grid.LinkedControls.Clear();
-		RemoveRange(0, Count);
-	}
-
-
-	#region RowsBase
-
-	public override int GetHeight(int row) {
-		return this[row].Height;
-	}
-	public override void SetHeight(int row, int height) {
-		this[row].Height = height;
-	}
-	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return this[row].AutoSizeMode;
-	}
-
-	#endregion
-
-	public override int Count {
-		get { return m_List.Count; }
-	}
-
-	#region IEnumerable<RowInfo> Members
-
-	public IEnumerator<RowInfo> GetEnumerator() {
-		return m_List.GetEnumerator();
-	}
-
-	#endregion
-
-	#region IEnumerable Members
-
+	// IEnumerable Members
 	IEnumerator IEnumerable.GetEnumerator() {
-		return m_List.GetEnumerator();
+		return _list.GetEnumerator();
 	}
-
-	#endregion
-
 }
-

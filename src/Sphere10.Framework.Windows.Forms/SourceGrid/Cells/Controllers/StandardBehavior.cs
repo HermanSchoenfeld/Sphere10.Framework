@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -12,7 +13,7 @@ using System.Windows.Forms;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 /// <summary>
-/// Common behavior of the cell. 
+/// Common behavior of the cell.
 /// This controller can be shared between multiple cells and is usually used as the default Grid.Controller. Removing this controller can cause unexpected behaviors.
 /// </summary>
 public class StandardBehavior : ControllerBase {
@@ -25,7 +26,7 @@ public class StandardBehavior : ControllerBase {
 		base.OnKeyDown(sender, e);
 
 		if (e.KeyCode == Keys.F2 &&
-		    sender.Cell.Editor != null && ((sender.Cell.Editor.EditableMode & EditableMode.F2Key) == EditableMode.F2Key)) {
+			sender.Cell.Editor != null && ((sender.Cell.Editor.EditableMode & EditableMode.F2Key) == EditableMode.F2Key)) {
 			e.Handled = true;
 			sender.StartEdit();
 		}
@@ -35,9 +36,9 @@ public class StandardBehavior : ControllerBase {
 		base.OnKeyPress(sender, e);
 
 		if (sender.Cell.Editor != null &&
-		    (sender.Cell.Editor.EditableMode & EditableMode.AnyKey) == EditableMode.AnyKey &&
-		    sender.IsEditing() == false &&
-		    char.IsControl(e.KeyChar) == false) {
+			(sender.Cell.Editor.EditableMode & EditableMode.AnyKey) == EditableMode.AnyKey &&
+			sender.IsEditing() == false &&
+			char.IsControl(e.KeyChar) == false) {
 			e.Handled = true;
 			sender.StartEdit();
 			sender.Cell.Editor.SendCharToEditor(e.KeyChar);
@@ -48,8 +49,8 @@ public class StandardBehavior : ControllerBase {
 		base.OnDoubleClick(sender, e);
 
 		if (sender.Cell.Editor != null &&
-		    (sender.Cell.Editor.EditableMode & EditableMode.DoubleClick) == EditableMode.DoubleClick &&
-		    sender.Grid.Selection.ActivePosition == sender.Position)
+			(sender.Cell.Editor.EditableMode & EditableMode.DoubleClick) == EditableMode.DoubleClick &&
+			sender.Grid.Selection.ActivePosition == sender.Position)
 			sender.StartEdit();
 	}
 
@@ -57,8 +58,8 @@ public class StandardBehavior : ControllerBase {
 		base.OnClick(sender, e);
 
 		if (sender.Cell.Editor != null &&
-		    (sender.Cell.Editor.EditableMode & EditableMode.SingleClick) == EditableMode.SingleClick &&
-		    sender.Grid.Selection.ActivePosition == sender.Position)
+			(sender.Cell.Editor.EditableMode & EditableMode.SingleClick) == EditableMode.SingleClick &&
+			sender.Grid.Selection.ActivePosition == sender.Position)
 			sender.StartEdit();
 	}
 
@@ -70,7 +71,7 @@ public class StandardBehavior : ControllerBase {
 		//MICK(2)
 		sender.Grid.ShowCell(sender.Position, false);
 
-		//Getsione dell'edit sul focus, non lo metto all'interno della cella perchè un utente potrebbe chiamare direttamente il metodo SetFocusCell senza passare dalla cella
+		//Getsione dell'edit sul focus, non lo metto all'interno della cella perchÃ¨ un utente potrebbe chiamare direttamente il metodo SetFocusCell senza passare dalla cella
 		if (sender.Cell.Editor != null && (sender.Cell.Editor.EditableMode & EditableMode.Focus) == EditableMode.Focus)
 			sender.StartEdit();
 
@@ -84,7 +85,6 @@ public class StandardBehavior : ControllerBase {
 		if (sender.Grid != null)
 			sender.Grid.InvalidateCell(sender.Position);
 	}
-
 
 	/// <summary>
 	/// Fired when the SetValue method is called.
@@ -123,4 +123,3 @@ public class StandardBehavior : ControllerBase {
 		return base.CanReceiveFocus(sender, e);
 	}
 }
-

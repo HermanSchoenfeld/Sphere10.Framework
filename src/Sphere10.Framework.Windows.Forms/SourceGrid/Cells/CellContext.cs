@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -19,40 +20,83 @@ public struct CellContext {
 	/// An empty CellContext instance.
 	/// </summary>
 	public static readonly CellContext Empty;
+	public Position Position;
+	public Cells.ICellVirtual Cell;
+	public GridVirtual Grid;
 
 	static CellContext() {
 		Empty = new CellContext(null, Position.Empty, null);
 	}
 
-	public Position Position;
-	public Cells.ICellVirtual Cell;
-	public GridVirtual Grid;
-
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	/// <param name="pGridVirtual"></param>
-	/// <param name="pPosition"></param>
-	/// <param name="pCell"></param>
-	public CellContext(GridVirtual pGridVirtual, Position pPosition, Cells.ICellVirtual pCell) {
-		Position = pPosition;
-		Cell = pCell;
-		Grid = pGridVirtual;
+	/// <param name="gridVirtual"></param>
+	/// <param name="position"></param>
+	/// <param name="cell"></param>
+	public CellContext(GridVirtual gridVirtual, Position position, Cells.ICellVirtual cell) {
+		Position = position;
+		Cell = cell;
+		Grid = gridVirtual;
 	}
 
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	/// <param name="pGridVirtual"></param>
-	/// <param name="pPosition"></param>
-	public CellContext(GridVirtual pGridVirtual, Position pPosition) {
-		Position = pPosition;
-		Grid = pGridVirtual;
+	/// <param name="gridVirtual"></param>
+	/// <param name="position"></param>
+	public CellContext(GridVirtual gridVirtual, Position position) {
+		Position = position;
+		Grid = gridVirtual;
 		Cell = Grid.GetCell(Position);
 	}
 
-	#region Methods
+	/// <summary>
+	/// Gets the string representation of the Model.ValueModel.GetValue method (default ToString())
+	/// </summary>
+	/// <returns></returns>
+	public string DisplayText {
+		get {
+			if (Cell == null)
+				return null;
 
+			try {
+				var val = Cell.Model.ValueModel.GetValue(this);
+				if (Cell.Editor == null) {
+					if (val == null)
+						return string.Empty;
+					return val.ToString();
+				}
+				return Cell.Editor.ValueToDisplayString(val);
+			} catch (Exception exception) {
+				return "Error:" + exception.Message;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Gets or sets the cell value.
+	/// </summary>
+	public object Value {
+		get {
+			return Cell.Model.ValueModel.GetValue(this);
+		}
+		set {
+			Cell.Model.ValueModel.SetValue(this, value);
+		}
+	}
+
+	/// <summary>
+	/// Calculate the Range occupied by the current cell. Usually it is simply the Position property, only if RowSpan or ColumnSpan is used this property returns a larger range.
+	/// Internally use the Grid.PositionToCellRange method.
+	/// </summary>
+	public CellRange CellRange {
+		get {
+			return Grid.PositionToCellRange(Position);
+		}
+	}
+
+	// Methods
 	/// <summary>
 	/// If the cell is not linked to a grid the result is not accurate (Font can be null). Call InternalGetRequiredSize with RowSpan and ColSpan = 1.
 	/// </summary>
@@ -64,8 +108,8 @@ public struct CellContext {
 		if (Grid == null)
 			throw new SourceGridException("Grid is null");
 
-		System.Drawing.Size requiredSize = Cell.View.Measure(this, maxLayoutArea);
-		CellRange range = Grid.PositionToCellRange(Position);
+		var requiredSize = Cell.View.Measure(this, maxLayoutArea);
+		var range = Grid.PositionToCellRange(Position);
 
 		//Approximate the width and Height value if ColSpan or RowSpan are grater than 1
 		// round to the greater value
@@ -97,7 +141,7 @@ public struct CellContext {
 		// then edit is not possible as well
 		if (Grid.Selection.Focus(Position, true) == false)
 			return;
-		System.ComponentModel.CancelEventArgs cancelEventArgs = new System.ComponentModel.CancelEventArgs();
+		var cancelEventArgs = new System.ComponentModel.CancelEventArgs();
 		Grid.Controller.OnEditStarting(this, cancelEventArgs);
 		if (cancelEventArgs.Cancel == false) {
 			Cell.Editor.InternalStartEdit(this);
@@ -117,14 +161,25 @@ public struct CellContext {
 			return true;
 
 		if (Cell.Editor != null && Cell.Editor.IsEditing) {
-			CellContext editCellContext = Cell.Editor.EditCellContext;
-			bool success = Cell.Editor.InternalEndEdit(cancel);
-			if (success) {
+			var editCellContext = Cell.Editor.EditCellContext;
+			var success = Cell.Editor.InternalEndEdit(cancel);
+			if (success)
 				Grid.Controller.OnEditEnded(editCellContext, EventArgs.Empty);
-			}
+
 			return success;
-		} else
-			return true;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// True is the cell can be drawn (usually if the cell is in editing state the drawing code is disabled)
+	/// </summary>
+	/// <returns></returns>
+	public bool CanBeDrawn() {
+		return Cell != null &&
+				(Cell.Editor == null ||
+				Cell.Editor.EnableCellDrawOnEdit ||
+				IsEditing() == false);
 	}
 
 	/// <summary>
@@ -139,19 +194,7 @@ public struct CellContext {
 
 		if (Cell.Editor != null)
 			return (Cell.Editor.IsEditing && Cell.Editor.EditCellContext == this);
-		else
-			return false;
-	}
-
-	/// <summary>
-	/// True is the cell can be drawn (usually if the cell is in editing state the drawing code is disabled)
-	/// </summary>
-	/// <returns></returns>
-	public bool CanBeDrawn() {
-		return Cell != null &&
-		       (Cell.Editor == null ||
-		        Cell.Editor.EnableCellDrawOnEdit ||
-		        IsEditing() == false);
+		return false;
 	}
 
 	/// <summary>
@@ -166,51 +209,7 @@ public struct CellContext {
 		Grid.InvalidateCell(Position);
 	}
 
-	/// <summary>
-	/// Gets the string representation of the Model.ValueModel.GetValue method (default ToString())
-	/// </summary>
-	/// <returns></returns>
-	public string DisplayText {
-		get {
-			if (Cell == null)
-				return null;
-
-			try {
-				object val = Cell.Model.ValueModel.GetValue(this);
-				if (Cell.Editor == null) {
-					if (val == null)
-						return string.Empty;
-					else
-						return val.ToString();
-				} else {
-					return Cell.Editor.ValueToDisplayString(val);
-				}
-			} catch (Exception err) {
-				return "Error:" + err.Message;
-			}
-		}
-	}
-
-	/// <summary>
-	/// Gets or sets the cell value.
-	/// </summary>
-	public object Value {
-		get { return Cell.Model.ValueModel.GetValue(this); }
-		set { Cell.Model.ValueModel.SetValue(this, value); }
-	}
-
-	/// <summary>
-	/// Calculate the Range occupied by the current cell. Usually it is simply the Position property, only if RowSpan or ColumnSpan is used this property returns a larger range.
-	/// Internally use the Grid.PositionToCellRange method.
-	/// </summary>
-	public CellRange CellRange {
-		get { return Grid.PositionToCellRange(Position); }
-	}
-
-	#endregion
-
-	#region Standard methods for equality and comparison
-
+	// Standard methods for equality and comparison
 	/// <summary>
 	/// Returns true if the current struct is empty
 	/// </summary>
@@ -228,7 +227,7 @@ public struct CellContext {
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="other"></param>
 	/// <returns></returns>
@@ -237,7 +236,7 @@ public struct CellContext {
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
@@ -246,34 +245,30 @@ public struct CellContext {
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
-	/// <param name="Left"></param>
-	/// <param name="Right"></param>
+	/// <param name="left"></param>
+	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator ==(CellContext Left, CellContext Right) {
-		return Left.Equals(Right);
+	public static bool operator ==(CellContext left, CellContext right) {
+		return left.Equals(right);
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
-	/// <param name="Left"></param>
-	/// <param name="Right"></param>
+	/// <param name="left"></param>
+	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator !=(CellContext Left, CellContext Right) {
-		return !Left.Equals(Right);
+	public static bool operator !=(CellContext left, CellContext right) {
+		return !left.Equals(right);
 	}
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <returns></returns>
 	public override string ToString() {
 		return Position.ToString();
 	}
-
-	#endregion
-
 }
-

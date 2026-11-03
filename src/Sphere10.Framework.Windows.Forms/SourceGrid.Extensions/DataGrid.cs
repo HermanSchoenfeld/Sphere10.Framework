@@ -1,17 +1,18 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 using System;
-using System.Threading.Tasks;
 using System.ComponentModel;
-using Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel;
+using System.Threading.Tasks;
+using Sphere10.Framework.ComponentModel;
 using Sphere10.Framework.Windows.Forms;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 
@@ -20,44 +21,25 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 [System.ComponentModel.ToolboxItem(true)]
 public class DataGrid : GridVirtual {
+	private Sphere10.Framework.ComponentModel.IBoundList _boundList;
+
+	private bool _endEditingRowOnValidate = true;
+
+	private bool _deleteRowsWithDeleteKey = true;
+
+	private bool _cancelEditingWithEscapeKey = true;
+
+	private string _deleteQuestionMessage = "Are you sure to delete all the selected rows?";
+
+	private int? _editingRow;
+
 	public DataGrid() {
+		// Configure row binding, editing and selection for the data source.
 		FixedRows = 1;
 		FixedColumns = 0;
-
 		Controller.AddController(new DataGridCellController());
-
 		SelectionMode = GridSelectionMode.Row;
 	}
-
-	protected override void Dispose(bool disposing) {
-		base.Dispose(disposing);
-	}
-
-	/// <summary>
-	/// Method used to create the rows object, in this class of type DataGridRows.
-	/// </summary>
-	protected override RowsBase CreateRowsObject() {
-		return new DataGridRows(this);
-	}
-
-	/// <summary>
-	/// Method used to create the columns object, in this class of type DataGridColumns.
-	/// </summary>
-	protected override ColumnsBase CreateColumnsObject() {
-		return new DataGridColumns(this);
-	}
-
-	protected override SelectionBase CreateSelectionObject() {
-		SourceGrid.Selection.SelectionBase selObj = base.CreateSelectionObject();
-
-		selObj.EnableMultiSelection = false;
-		selObj.FocusStyle = SourceGrid.FocusStyle.RemoveFocusCellOnLeave;
-		selObj.FocusRowLeaving += new RowCancelEventHandler(Selection_FocusRowLeaving);
-
-		return selObj;
-	}
-
-	private Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.IBoundList mBoundList;
 
 	public override bool EnableSort {
 		get {
@@ -78,49 +60,15 @@ public class DataGrid : GridVirtual {
 	///  (that can be used to bind to a generic List) or BoundDataView (that can be used to bind to a DataView).
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.IBoundList DataSource {
-		get { return mBoundList; }
+	public Sphere10.Framework.ComponentModel.IBoundList DataSource {
+		get {
+			return _boundList;
+		}
 		set {
 			Unbind();
-			mBoundList = value;
-			if (mBoundList != null)
+			_boundList = value;
+			if (_boundList != null)
 				Bind();
-		}
-	}
-
-	protected virtual void Unbind() {
-		if (mBoundList != null) {
-			mBoundList.ListChanged -= new ListChangedEventHandler(mBoundList_ListChanged);
-			mBoundList.ItemDeleted -= new ItemDeletedEventHandler(mBoundList_ItemDeleted);
-			mBoundList.ListCleared -= new EventHandler(mBoundList_ListCleared);
-		}
-
-		Rows.RowsChanged();
-	}
-
-	protected virtual void Bind() {
-		if (Columns.Count == 0)
-			CreateColumns();
-		InvalidateDataGridColumns();
-
-		mBoundList.ListChanged += new ListChangedEventHandler(mBoundList_ListChanged);
-		mBoundList.ItemDeleted += new ItemDeletedEventHandler(mBoundList_ItemDeleted);
-		mBoundList.ListCleared += new EventHandler(mBoundList_ListCleared);
-		Rows.RowsChanged();
-		Rows.ResetRowHeigth();
-	}
-
-	void mBoundList_ListCleared(object sender, EventArgs e) {
-		Rows.ResetRowHeigth();
-	}
-
-	void mBoundList_ItemDeleted(object sender, Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.ItemDeletedEventArgs e) {
-		Rows.RowDeleted(e.Item);
-	}
-
-	private void InvalidateDataGridColumns() {
-		foreach (DataGridColumn column in Columns) {
-			column.Invalidate();
 		}
 	}
 
@@ -128,81 +76,17 @@ public class DataGrid : GridVirtual {
 	/// Gets the rows information as a DataGridRows object.
 	/// </summary>
 	public new DataGridRows Rows {
-		get { return (DataGridRows)base.Rows; }
+		get {
+			return (DataGridRows)base.Rows;
+		}
 	}
 
 	/// <summary>
 	/// Gets the columns informations as a DataGridColumns object.
 	/// </summary>
 	public new DataGridColumns Columns {
-		get { return (DataGridColumns)base.Columns; }
-	}
-
-	protected virtual void mBoundList_ListChanged(object sender, ListChangedEventArgs e) {
-		if (base.IsSuspended() == true)
-			return;
-		Rows.RowsChanged();
-		Invalidate(true);
-	}
-
-	/// <summary>
-	/// Gets a specified Cell by its row and column.
-	/// </summary>
-	/// <param name="p_iRow"></param>
-	/// <param name="p_iCol"></param>
-	/// <returns></returns>
-	public override Cells.ICellVirtual GetCell(int p_iRow, int p_iCol) {
-		if (mBoundList == null)
-			return null;
-		if (p_iCol >= Columns.Count)
-			return null;
-
-		if (p_iRow < FixedRows)
-			return Columns[p_iCol].HeaderCell;
-		else
-			return Columns[p_iCol].GetDataCell(p_iRow);
-	}
-
-	protected override void OnSortingRangeRows(SortRangeRowsEventArgs e) {
-		base.OnSortingRangeRows(e);
-
-		if (DataSource == null || DataSource.AllowSort == false)
-			return;
-
-		System.ComponentModel.PropertyDescriptor propertyCol = Columns[e.KeyColumn].PropertyColumn;
-
-		if (propertyCol != null) {
-			ListSortDirection direction;
-			if (e.Ascending)
-				direction = ListSortDirection.Ascending;
-			else
-				direction = ListSortDirection.Descending;
-			ListSortDescription[] sortsArray = new ListSortDescription[1];
-			sortsArray[0] = new ListSortDescription(propertyCol, direction);
-
-			DataSource.ApplySort(new ListSortDescriptionCollection(sortsArray));
-		} else
-			DataSource.ApplySort(null);
-	}
-
-	/// <summary>
-	/// Automatic create the columns classes based on the specified DataSource.
-	/// </summary>
-	public void CreateColumns() {
-		Columns.Clear();
-		if (DataSource != null) {
-			int i = 0;
-
-			if (FixedColumns > 0) {
-				Columns.Insert(i, DataGridColumn.CreateRowHeader(this));
-				i++;
-			}
-
-			foreach (System.ComponentModel.PropertyDescriptor prop in DataSource.GetItemProperties()) {
-				Columns.Add(prop.Name,
-					prop.DisplayName,
-					SourceGrid.Cells.DataGrid.Cell.Create(prop.PropertyType, !prop.IsReadOnly));
-			}
+		get {
+			return (DataGridColumns)base.Columns;
 		}
 	}
 
@@ -212,25 +96,26 @@ public class DataGrid : GridVirtual {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object[] SelectedDataRows {
 		get {
-			if (mBoundList == null)
+			if (_boundList == null)
 				return new System.Data.DataRowView[0];
 
-			int[] rowsSel = Selection.GetSelectionRegion().GetRowsIndex();
-
-			int count = 0;
-			for (int i = 0; i < rowsSel.Length; i++) {
-				object objRow = Rows.IndexToDataSourceRow(rowsSel[i]);
-				if (objRow != null)
+			// Count only selected rows that map to source items.
+			var selectedRows = Selection.GetSelectionRegion().GetRowsIndex();
+			var count = 0;
+			for (var index = 0; index < selectedRows.Length; index++) {
+				var row = Rows.IndexToDataSourceRow(selectedRows[index]);
+				if (row != null)
 					count++;
 			}
 
-			object[] dataRows = new object[count];
-			int indexRows = 0;
-			for (int i = 0; i < rowsSel.Length; i++) {
-				object objRow = Rows.IndexToDataSourceRow(rowsSel[i]);
-				if (objRow != null) {
-					dataRows[indexRows] = objRow;
-					indexRows++;
+			// Materialize the selected items without a trailing placeholder row.
+			var dataRows = new object[count];
+			var rowIndex = 0;
+			for (var i = 0; i < selectedRows.Length; i++) {
+				var row = Rows.IndexToDataSourceRow(selectedRows[i]);
+				if (row != null) {
+					dataRows[rowIndex] = row;
+					rowIndex++;
 				}
 			}
 			return dataRows;
@@ -238,12 +123,12 @@ public class DataGrid : GridVirtual {
 		set {
 			Selection.ResetSelection(false);
 
-			if (mBoundList != null && value != null) {
-				for (int i = 0; i < value.Length; i++) {
-					for (int r = FixedRows; r < Rows.Count; r++) {
-						object objRow = Rows.IndexToDataSourceRow(r);
+			if (_boundList != null && value != null) {
+				for (var index = 0; index < value.Length; index++) {
+					for (var r = FixedRows; r < Rows.Count; r++) {
+						var row = Rows.IndexToDataSourceRow(r);
 
-						if (object.ReferenceEquals(objRow, value[i])) {
+						if (object.ReferenceEquals(row, value[index])) {
 							Selection.SelectRow(r, true);
 							break;
 						}
@@ -253,86 +138,139 @@ public class DataGrid : GridVirtual {
 		}
 	}
 
-	protected override async void OnKeyDown(System.Windows.Forms.KeyEventArgs e) {
-		base.OnKeyDown(e);
-
-		if (e.KeyCode == System.Windows.Forms.Keys.Delete &&
-		    mBoundList != null &&
-		    mBoundList.AllowDelete &&
-		    e.Handled == false &&
-		    mDeleteRowsWithDeleteKey) {
-			e.Handled = true;
-			object[] rows = SelectedDataRows;
-			if (rows != null && rows.Length > 0) {
-				try {
-					await DeleteSelectedRowsAsync();
-				} catch (Exception Error) {
-					OnUserException(new ExceptionEventArgs(Error));
-				}
-			}
-		} else if (e.KeyCode == System.Windows.Forms.Keys.Escape &&
-		           e.Handled == false &&
-		           mCancelEditingWithEscapeKey) {
-			EndEditingRow(true);
-
-			e.Handled = true;
-		}
-	}
-
-
-	protected override void OnValidating(CancelEventArgs e) {
-		base.OnValidating(e);
-
-		try {
-			if (EndEditingRowOnValidate) {
-				EndEditingRow(false);
-			}
-		} catch (Exception ex) {
-			OnUserException(new ExceptionEventArgs(ex));
-		}
-	}
-
-	private bool mEndEditingRowOnValidate = true;
-
 	/// <summary>
 	/// Gets or sets a property to force an End Editing when the control loose the focus
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool EndEditingRowOnValidate {
-		get { return mEndEditingRowOnValidate; }
-		set { mEndEditingRowOnValidate = value; }
+		get {
+			return _endEditingRowOnValidate;
+		}
+		set {
+			_endEditingRowOnValidate = value;
+		}
 	}
-
-	private bool mDeleteRowsWithDeleteKey = true;
 
 	/// <summary>
 	/// Gets or sets if enable the delete of the selected rows when pressing Delete key.
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool DeleteRowsWithDeleteKey {
-		get { return mDeleteRowsWithDeleteKey; }
-		set { mDeleteRowsWithDeleteKey = value; }
+		get {
+			return _deleteRowsWithDeleteKey;
+		}
+		set {
+			_deleteRowsWithDeleteKey = value;
+		}
 	}
-
-	private bool mCancelEditingWithEscapeKey = true;
 
 	/// <summary>
 	/// Gets or sets if enable the Cancel Editing feature when pressing escape key
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool CancelEditingWithEscapeKey {
-		get { return mCancelEditingWithEscapeKey; }
-		set { mCancelEditingWithEscapeKey = value; }
+		get {
+			return _cancelEditingWithEscapeKey;
+		}
+		set {
+			_cancelEditingWithEscapeKey = value;
+		}
 	}
-
-	private string mDeleteQuestionMessage = "Are you sure to delete all the selected rows?";
 
 	/// <summary>
 	/// Message showed with the DeleteSelectedRowsAsync method. Set to null to not show any message.
 	/// </summary>
 	public string DeleteQuestionMessage {
-		get { return mDeleteQuestionMessage; }
-		set { mDeleteQuestionMessage = value; }
+		get {
+			return _deleteQuestionMessage;
+		}
+		set {
+			_deleteQuestionMessage = value;
+		}
+	}
+
+	/// <summary>
+	/// Gets a specified Cell by its row and column.
+	/// </summary>
+	/// <param name="row"></param>
+	/// <param name="column"></param>
+	/// <returns></returns>
+	public override Cells.ICellVirtual GetCell(int row, int column) {
+		if (_boundList == null)
+			return null;
+		if (column >= Columns.Count)
+			return null;
+
+		if (row < FixedRows)
+			return Columns[column].HeaderCell;
+		return Columns[column].GetDataCell(row);
+	}
+
+	/// <summary>
+	/// AutoSize the columns based on the visible range and autosize the rows based on it's contents.
+	/// </summary>
+	public override void AutoSizeCells() {
+		Columns.AutoSizeView();
+		for (var index = 0; index < Rows.Count; index++)
+			Rows.AutoSizeRow(index);
+	}
+
+	/// <summary>
+	/// Automatic create the columns classes based on the specified DataSource.
+	/// </summary>
+	public void CreateColumns() {
+		Columns.Clear();
+		if (DataSource != null) {
+			var index = 0;
+
+			if (FixedColumns > 0) {
+				Columns.Insert(index, DataGridColumn.CreateRowHeader(this));
+				index++;
+			}
+
+			foreach (System.ComponentModel.PropertyDescriptor property in DataSource.GetItemProperties())
+				Columns.Add(property.Name, property.DisplayName, SourceGrid.Cells.DataGrid.Cell.Create(property.PropertyType, !property.IsReadOnly));
+		}
+	}
+
+	/// <summary>
+	/// Check if the specified row is the active row (focused), return false if it is not the active row. Then call the BeginEdit on the associated DataRowView. Add a row to the DataView if required. Returns true if the method sucesfully call the BeginEdit and set the EditingRow property.
+	/// </summary>
+	/// <param name="gridRow"></param>
+	/// <returns></returns>
+	public bool BeginEditRow(int gridRow) {
+		if (_editingRow != null && _editingRow.Value == gridRow)
+			return true;
+
+		EndEditingRow(false); //Terminate the old edit if present
+
+		if (DataSource != null) {
+			var dataIndex = Rows.IndexToDataSourceIndex(gridRow);
+
+			// add this here to check if we have permission for edition
+			if (!DataSource.AllowEdit)
+				return false;
+
+			if (dataIndex == DataSource.Count && DataSource.AllowNew) //Last Row
+				DataSource.BeginAddNew();
+			else if (dataIndex < DataSource.Count)
+				DataSource.BeginEdit(dataIndex);
+		}
+
+		_editingRow = gridRow;
+
+		return true;
+	}
+
+	/// <summary>
+	/// Calls the CancelEdit or the EndEdit on the editing Row and set to null the editing row.
+	/// </summary>
+	/// <param name="cancel"></param>
+	public void EndEditingRow(bool cancel) {
+		if (_boundList != null)
+			_boundList.EndEdit(cancel);
+
+		_editingRow = null;
 	}
 
 	/// <summary>
@@ -340,11 +278,19 @@ public class DataGrid : GridVirtual {
 	/// </summary>
 	/// <returns>Returns true if one or more row is deleted otherwise false.</returns>
 	public virtual async Task<bool> DeleteSelectedRowsAsync() {
-		if (string.IsNullOrEmpty(mDeleteQuestionMessage) ||
-		    await DialogEx.ShowAsync(this, SystemIconType.Question, mDeleteQuestionMessage, System.Windows.Forms.Application.ProductName, System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question) ==
-		    System.Windows.Forms.DialogResult.Yes) {
-			foreach (int gridRow in Selection.GetSelectionRegion().GetRowsIndex()) {
-				int dataIndex = Rows.IndexToDataSourceIndex(gridRow);
+		// Ask once before applying the deletion to the selected source rows.
+		if (string.IsNullOrEmpty(_deleteQuestionMessage) ||
+			await DialogEx.ShowAsync(
+				this,
+				SystemIconType.Question,
+				_deleteQuestionMessage,
+				System.Windows.Forms.Application.ProductName,
+				System.Windows.Forms.MessageBoxButtons.YesNo,
+				System.Windows.Forms.MessageBoxIcon.Question
+			) == System.Windows.Forms.DialogResult.Yes
+		) {
+			foreach (var gridRow in Selection.GetSelectionRegion().GetRowsIndex()) {
+				var dataIndex = Rows.IndexToDataSourceIndex(gridRow);
 				if (dataIndex < DataSource.Count)
 					DataSource.RemoveAt(dataIndex);
 			}
@@ -356,180 +302,135 @@ public class DataGrid : GridVirtual {
 	}
 
 	/// <summary>
-	/// AutoSize the columns based on the visible range and autosize the rows based on it's contents.
+	/// Method used to create the rows object, in this class of type DataGridRows.
 	/// </summary>
-	public override void AutoSizeCells() {
-		Columns.AutoSizeView();
-		for (int i = 0; i < Rows.Count; i++)
-			Rows.AutoSizeRow(i);
+	protected override RowsBase CreateRowsObject() {
+		return new DataGridRows(this);
 	}
 
-	private void Selection_FocusRowLeaving(object sender, RowCancelEventArgs e) {
+	/// <summary>
+	/// Method used to create the columns object, in this class of type DataGridColumns.
+	/// </summary>
+	protected override ColumnsBase CreateColumnsObject() {
+		return new DataGridColumns(this);
+	}
+
+	protected override SelectionBase CreateSelectionObject() {
+		var selection = base.CreateSelectionObject();
+
+		selection.EnableMultiSelection = false;
+		selection.FocusStyle = SourceGrid.FocusStyle.RemoveFocusCellOnLeave;
+		selection.FocusRowLeaving += new RowCancelEventHandler(SelectionFocusRowLeaving);
+
+		return selection;
+	}
+
+	protected override void OnSortingRangeRows(SortRangeRowsEventArgs args) {
+		base.OnSortingRangeRows(args);
+
+		if (DataSource == null || DataSource.AllowSort == false)
+			return;
+
+		var propertyCol = Columns[args.KeyColumn].PropertyColumn;
+
+		if (propertyCol != null) {
+			var direction = args.Ascending ? ListSortDirection.Ascending : ListSortDirection.Descending;
+			var sortsArray = new ListSortDescription[1];
+			sortsArray[0] = new ListSortDescription(propertyCol, direction);
+
+			DataSource.ApplySort(new ListSortDescriptionCollection(sortsArray));
+		} else
+			DataSource.ApplySort(null);
+	}
+
+	protected override async void OnKeyDown(System.Windows.Forms.KeyEventArgs args) {
+		base.OnKeyDown(args);
+
+		if (args.KeyCode == System.Windows.Forms.Keys.Delete &&
+			_boundList != null &&
+			_boundList.AllowDelete &&
+			args.Handled == false &&
+			_deleteRowsWithDeleteKey) {
+			args.Handled = true;
+			var rows = SelectedDataRows;
+			if (rows != null && rows.Length > 0) {
+				try {
+					await DeleteSelectedRowsAsync();
+				} catch (Exception error) {
+					OnUserException(new ExceptionEventArgs(error));
+				}
+			}
+		} else if (args.KeyCode == System.Windows.Forms.Keys.Escape && args.Handled == false && _cancelEditingWithEscapeKey) {
+			EndEditingRow(true);
+
+			args.Handled = true;
+		}
+	}
+
+	protected override void OnValidating(CancelEventArgs args) {
+		base.OnValidating(args);
+
+		try {
+			if (EndEditingRowOnValidate)
+				EndEditingRow(false);
+		} catch (Exception exception) {
+			OnUserException(new ExceptionEventArgs(exception));
+		}
+	}
+
+	protected override void Dispose(bool disposing) {
+		base.Dispose(disposing);
+	}
+
+	protected virtual void Bind() {
+		if (Columns.Count == 0)
+			CreateColumns();
+		InvalidateDataGridColumns();
+
+		_boundList.ListChanged += new ListChangedEventHandler(BoundListChanged);
+		_boundList.ItemDeleted += BoundListItemDeleted;
+		_boundList.ListCleared += new EventHandler(BoundListCleared);
+		Rows.RowsChanged();
+		Rows.ResetRowHeigth();
+	}
+
+	protected virtual void Unbind() {
+		if (_boundList != null) {
+			_boundList.ListChanged -= new ListChangedEventHandler(BoundListChanged);
+			_boundList.ItemDeleted -= BoundListItemDeleted;
+			_boundList.ListCleared -= new EventHandler(BoundListCleared);
+		}
+
+		Rows.RowsChanged();
+	}
+
+	protected virtual void BoundListChanged(object sender, ListChangedEventArgs args) {
+		if (base.IsSuspended() == true)
+			return;
+		Rows.RowsChanged();
+		Invalidate(true);
+	}
+
+	private void BoundListCleared(object sender, EventArgs args) {
+		Rows.ResetRowHeigth();
+	}
+
+	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) {
+		Rows.RowDeleted(args.Item);
+	}
+
+	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
 		try {
 			EndEditingRow(false);
-		} catch (Exception exc) {
-			OnUserException(new ExceptionEventArgs(new EndEditingException(exc)));
+		} catch (Exception exception) {
+			OnUserException(new ExceptionEventArgs(new EndEditingException(exception)));
 
-			e.Cancel = true;
+			args.Cancel = true;
 		}
 	}
 
-	private int? mEditingRow;
-	/// <summary>
-	/// Check if the specified row is the active row (focused), return false if it is not the active row. Then call the BeginEdit on the associated DataRowView. Add a row to the DataView if required. Returns true if the method sucesfully call the BeginEdit and set the EditingRow property.
-	/// </summary>
-	/// <param name="gridRow"></param>
-	/// <returns></returns>
-	public bool BeginEditRow(int gridRow) {
-		if (mEditingRow != null && mEditingRow.Value == gridRow)
-			return true;
-
-		EndEditingRow(false); //Terminate the old edit if present
-
-		if (DataSource != null) {
-			int dataIndex = Rows.IndexToDataSourceIndex(gridRow);
-
-			// add this here to check if we have permission for edition
-			if (!DataSource.AllowEdit)
-				return false;
-
-			if (dataIndex == DataSource.Count && DataSource.AllowNew) //Last Row
-			{
-				DataSource.BeginAddNew();
-			} else if (dataIndex < DataSource.Count) {
-				DataSource.BeginEdit(dataIndex);
-			}
-		}
-
-		mEditingRow = gridRow;
-
-		return true;
-	}
-
-	/// <summary>
-	/// Calls the CancelEdit or the EndEdit on the editing Row and set to null the editing row.
-	/// </summary>
-	/// <param name="cancel"></param>
-	public void EndEditingRow(bool cancel) {
-		if (mBoundList != null)
-			mBoundList.EndEdit(cancel);
-
-		mEditingRow = null;
+	private void InvalidateDataGridColumns() {
+		foreach (DataGridColumn column in Columns)
+			column.Invalidate();
 	}
 }
-
-
-#region Models
-
-/// <summary>
-/// A Model of type IValueModel used for binding the value to a specified property of the bound object.
-/// Used for the DataGrid control.
-/// </summary>
-public class DataGridValueModel : Cells.Models.IValueModel {
-	/// <summary>
-	/// Constructor
-	/// </summary>
-	public DataGridValueModel() {
-	}
-
-	#region IValueModel Members
-
-	public object GetValue(CellContext cellContext) {
-		DataGrid grid = (DataGrid)cellContext.Grid;
-
-		PropertyDescriptor prop = grid.Columns[cellContext.Position.Column].PropertyColumn;
-
-		int dataIndex = grid.Rows.IndexToDataSourceIndex(cellContext.Position.Row);
-
-		//Check if the row is not outside the valid range (for example to handle the new row)
-		if (dataIndex >= grid.DataSource.Count)
-			return null;
-		else
-			return grid.DataSource.GetItemValue(dataIndex, prop);
-	}
-
-	public void SetValue(CellContext cellContext, object value) {
-		DataGrid grid = (DataGrid)cellContext.Grid;
-		PropertyDescriptor prop = grid.Columns[cellContext.Position.Column].PropertyColumn;
-		object oldValue = GetValue(cellContext);
-
-		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(oldValue, value);
-		if (cellContext.Grid != null)
-			cellContext.Grid.Controller.OnValueChanging(cellContext, valArgs);
-
-
-
-
-
-		grid.DataSource.SetEditValue(prop, valArgs.NewValue);
-
-		if (cellContext.Grid != null)
-			cellContext.Grid.Controller.OnValueChanged(cellContext, EventArgs.Empty);
-	}
-
-	#endregion
-
-}
-
-
-public class DataGridRowHeaderModel : Cells.Models.IValueModel {
-	public DataGridRowHeaderModel() {
-	}
-
-	#region IValueModel Members
-
-	public object GetValue(CellContext cellContext) {
-		DataGrid dataGrid = (DataGrid)cellContext.Grid;
-		if (dataGrid.DataSource != null &&
-		    dataGrid.DataSource.AllowNew &&
-		    cellContext.Position.Row == (dataGrid.Rows.Count - 1))
-			return "*";
-		else
-			return null;
-	}
-
-	public void SetValue(CellContext cellContext, object p_Value) {
-		throw new ApplicationException("Not supported");
-	}
-
-	#endregion
-
-}
-
-#endregion
-
-#region Controller
-
-public class DataGridCellController : Cells.Controllers.ControllerBase {
-	public override void OnValueChanging(CellContext sender, ValueChangeEventArgs e) {
-		base.OnValueChanging(sender, e);
-
-		//BeginEdit on the row, set the Cancel = true if failed to start editing.
-		bool success = ((DataGrid)sender.Grid).BeginEditRow(sender.Position.Row);
-		if (success == false)
-			throw new SourceGridException("Failed to editing row " + sender.Position.Row.ToString());
-	}
-
-	public override void OnEditStarting(CellContext sender, CancelEventArgs e) {
-		base.OnEditStarting(sender, e);
-
-		//BeginEdit on the row, set the Cancel = true if failed to start editing.
-		bool success = ((DataGrid)sender.Grid).BeginEditRow(sender.Position.Row);
-		e.Cancel = !success;
-	}
-}
-
-#endregion
-
-
-[Serializable]
-public class EndEditingException : SourceGridException {
-	public EndEditingException(Exception innerException) :
-		base(innerException.Message, innerException) {
-	}
-	[Obsolete("Formatter-based serialization is obsolete.", DiagnosticId = "SYSLIB0051")]
-	protected EndEditingException(System.Runtime.Serialization.SerializationInfo p_Info, System.Runtime.Serialization.StreamingContext p_StreamingContext) :
-		base(p_Info, p_StreamingContext) {
-	}
-}
-

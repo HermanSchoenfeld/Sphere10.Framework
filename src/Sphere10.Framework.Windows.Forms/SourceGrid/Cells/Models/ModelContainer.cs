@@ -1,12 +1,15 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 
@@ -14,21 +17,23 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 /// A objectStream for the model classes. THe only required model is the Value model, that you can assign using the ValueModel property.
 /// </summary>
 public class ModelContainer {
+	private ModelList _modelList = null;
+	private IValueModel _valueModel;
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	public ModelContainer() {
 	}
 
-	private ModelList m_ModelList = null;
-
-
-	/// <summary>
-	/// A collection of elements of type IModel
-	/// </summary>
-	public class ModelList : Sphere10.Framework.Windows.Forms.SourceGrid.Collections.ListByType<IModel> {
+	public virtual IValueModel ValueModel {
+		get {
+			return _valueModel;
+		}
+		set {
+			_valueModel = value;
+		}
 	}
-
 
 	/// <summary>
 	/// Returns null if not exist
@@ -36,46 +41,45 @@ public class ModelContainer {
 	/// <param name="modelType"></param>
 	/// <returns></returns>
 	public virtual IModel FindModel(Type modelType) {
-		if (m_ValueModel != null && modelType.IsAssignableFrom(m_ValueModel.GetType()))
-			return m_ValueModel;
-		else {
-			if (m_ModelList == null)
-				m_ModelList = new ModelList();
+		if (_valueModel != null && modelType.IsAssignableFrom(_valueModel.GetType()))
+			return _valueModel;
+		if (_modelList == null)
+			_modelList = new ModelList();
 
-			return m_ModelList.GetByType(modelType);
-		}
+		return _modelList.GetByType(modelType);
 	}
-
 
 	public virtual ModelContainer AddModel(IModel model) {
 		if (model == null)
 			throw new ArgumentNullException();
-		Type type = model.GetType();
+		var type = model.GetType();
 
 		if (typeof(IValueModel).IsAssignableFrom(type))
-			m_ValueModel = (IValueModel)model;
+			_valueModel = (IValueModel)model;
 		else {
-			if (m_ModelList == null)
-				m_ModelList = new ModelList();
+			if (_modelList == null)
+				_modelList = new ModelList();
 
-			m_ModelList.Add(model);
+			_modelList.Add(model);
 		}
 		return this;
 	}
 
 	public virtual ModelContainer RemoveModel(IModel model) {
-		if (object.ReferenceEquals(model, m_ValueModel))
-			m_ValueModel = null;
-		else if (m_ModelList != null)
-			m_ModelList.Remove(model);
+		if (object.ReferenceEquals(model, _valueModel))
+			_valueModel = null;
+		else if (_modelList != null)
+			_modelList.Remove(model);
 		return this;
 	}
 
-	private IValueModel m_ValueModel;
-
-	public virtual IValueModel ValueModel {
-		get { return m_ValueModel; }
-		set { m_ValueModel = value; }
+	/// <summary>
+	/// A collection of elements of type IModel
+	/// </summary>
+	public class ModelList : List<IModel> {
+		/// <summary>Returns the first model assignable to the requested type.</summary>
+		public IModel GetByType(Type searchType) {
+			return this.FirstOrDefault(model => searchType.IsAssignableFrom(model.GetType()));
+		}
 	}
 }
-

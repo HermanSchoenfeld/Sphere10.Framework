@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -16,56 +17,56 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// </summary>
 public interface IController {
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnMouseDown(CellContext sender, MouseEventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnMouseUp(CellContext sender, MouseEventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnMouseMove(CellContext sender, MouseEventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnMouseEnter(CellContext sender, EventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnMouseLeave(CellContext sender, EventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnKeyUp(CellContext sender, KeyEventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnKeyDown(CellContext sender, KeyEventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
@@ -93,18 +94,21 @@ public interface IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnFocusLeaving(CellContext sender, System.ComponentModel.CancelEventArgs e);
+
 	/// <summary>
 	/// Fired when the cell has left the focus.
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnFocusLeft(CellContext sender, EventArgs e);
+
 	/// <summary>
 	/// Fired when the focus is entering in the specified cell. You can put the e.Cancel = true to cancel the focus operation.
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnFocusEntering(CellContext sender, System.ComponentModel.CancelEventArgs e);
+
 	/// <summary>
 	/// Fired when the focus enter in the specified cell.
 	/// </summary>
@@ -132,12 +136,14 @@ public interface IController {
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnEditStarting(CellContext sender, System.ComponentModel.CancelEventArgs e);
+
 	/// <summary>
 	/// Fired when the StartEdit is sucesfully called.
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnEditStarted(CellContext sender, EventArgs e);
+
 	/// <summary>
 	/// Fired when the EndEdit is called. You can read the Cancel property to determine if the edit is completed. If you change the cancel property there is no effect.
 	/// </summary>
@@ -153,34 +159,37 @@ public interface IController {
 	bool CanReceiveFocus(CellContext sender, EventArgs e);
 
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnDragDrop(CellContext sender, DragEventArgs e);
+
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnDragEnter(CellContext sender, DragEventArgs e);
+
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnDragLeave(CellContext sender, EventArgs e);
+
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnDragOver(CellContext sender, DragEventArgs e);
+
 	/// <summary>
-	/// 
+	///
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
 	void OnGiveFeedback(CellContext sender, GiveFeedbackEventArgs e);
 }
-

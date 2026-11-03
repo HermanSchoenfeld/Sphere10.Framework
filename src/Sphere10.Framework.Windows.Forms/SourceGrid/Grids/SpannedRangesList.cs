@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -17,7 +18,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// </summary>
 public class SpannedRangesList : List<CellRange>, ISpannedRangesCollection {
 	public void Update(CellRange oldRange, CellRange newRange) {
-		int index = base.IndexOf(oldRange);
+		var index = base.IndexOf(oldRange);
 		if (index < 0)
 			throw new RangeNotFoundException();
 		this[index] = newRange;
@@ -28,20 +29,19 @@ public class SpannedRangesList : List<CellRange>, ISpannedRangesCollection {
 	}
 
 	public new void Remove(CellRange range) {
-		int index = base.IndexOf(range);
+		var index = base.IndexOf(range);
 		if (index < 0)
 			throw new RangeNotFoundException();
 		base.RemoveAt(index);
 	}
-
 
 	/// <summary>
 	/// Returns first intersecting region
 	/// </summary>
 	/// <param name="pos"></param>
 	public CellRange? GetFirstIntersectedRange(Position pos) {
-		for (int i = 0; i < this.Count; i++) {
-			var range = this[i];
+		for (var index = 0; index < this.Count; index++) {
+			var range = this[index];
 			if (range.Contains(pos))
 				return range;
 		}
@@ -50,8 +50,8 @@ public class SpannedRangesList : List<CellRange>, ISpannedRangesCollection {
 
 	public List<CellRange> GetRanges(CellRange range) {
 		var result = new List<CellRange>();
-		for (int i = 0; i < this.Count; i++) {
-			var r = this[i];
+		for (var index = 0; index < this.Count; index++) {
+			var r = this[index];
 			if (r.Contains(range))
 				result.Add(r);
 		}
@@ -59,12 +59,11 @@ public class SpannedRangesList : List<CellRange>, ISpannedRangesCollection {
 	}
 
 	public CellRange? FindRangeWithStart(Position start) {
-		for (int i = 0; i < this.Count; i++) {
-			var range = this[i];
+		for (var index = 0; index < this.Count; index++) {
+			var range = this[index];
 			if (range.Start.Equals(start))
 				return range;
 		}
 		return null;
 	}
 }
-

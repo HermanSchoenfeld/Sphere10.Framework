@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -22,13 +23,12 @@ public class RichTextBox : IRichTextBox {
 		GetRichTextBoxControl(cellContext).SelectedText = s;
 	}
 
-	#region IRichTextBox Members
-
+	// IRichTextBox Members
 	/// <summary>
 	/// Sets the effect of the selected text.
 	/// </summary>
-	public void SetSelectionEffect(CellContext cellContext, Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType effect) {
-		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(null, effect);
+	public void SetSelectionEffect(CellContext cellContext, Sphere10.Framework.Windows.Forms.EffectType effect) {
+		var valArgs = new ValueChangeEventArgs(null, effect);
 
 		if (cellContext.Grid != null)
 			cellContext.Grid.Controller.OnValueChanging(cellContext, valArgs);
@@ -42,7 +42,7 @@ public class RichTextBox : IRichTextBox {
 	/// <param name="cellContext"></param>
 	/// <param name="font"></param>
 	public void SetSelectionFont(CellContext cellContext, Font font) {
-		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(null, font);
+		var valArgs = new ValueChangeEventArgs(null, font);
 
 		if (cellContext.Grid != null)
 			cellContext.Grid.Controller.OnValueChanging(cellContext, valArgs);
@@ -65,7 +65,7 @@ public class RichTextBox : IRichTextBox {
 	/// <param name="cellContext"></param>
 	/// <param name="color"></param>
 	public void SetSelectionColor(CellContext cellContext, Color color) {
-		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(null, color);
+		var valArgs = new ValueChangeEventArgs(null, color);
 
 		if (cellContext.Grid != null)
 			cellContext.Grid.Controller.OnValueChanging(cellContext, valArgs);
@@ -97,7 +97,7 @@ public class RichTextBox : IRichTextBox {
 	/// <param name="cellContext"></param>
 	/// <param name="charoffset"></param>
 	public void SetSelectionCharOffset(CellContext cellContext, int charoffset) {
-		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(null, charoffset);
+		var valArgs = new ValueChangeEventArgs(null, charoffset);
 
 		if (cellContext.Grid != null)
 			cellContext.Grid.Controller.OnValueChanging(cellContext, valArgs);
@@ -111,7 +111,7 @@ public class RichTextBox : IRichTextBox {
 	/// <param name="cellContext"></param>
 	/// <param name="horAlignment"></param>
 	public void SetSelectionAlignment(CellContext cellContext, HorizontalAlignment horAlignment) {
-		ValueChangeEventArgs valArgs = new ValueChangeEventArgs(null, horAlignment);
+		var valArgs = new ValueChangeEventArgs(null, horAlignment);
 
 		if (cellContext.Grid != null)
 			cellContext.Grid.Controller.OnValueChanging(cellContext, valArgs);
@@ -133,24 +133,19 @@ public class RichTextBox : IRichTextBox {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	private Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox GetRichTextBoxControl(CellContext cellContext) {
+	private Sphere10.Framework.Windows.Forms.RichTextBoxEx GetRichTextBoxControl(CellContext cellContext) {
 		if (cellContext.Cell != null) {
-			Editors.RichTextBox editorRichTextBox = cellContext.Cell.Editor as Editors.RichTextBox;
+			var editorRichTextBox = cellContext.Cell.Editor as Editors.RichTextBox;
 
 			// if editor is not active, value needs to be assigned to prevent
 			// using an old editor of another cell
 			// as an editor can be used for more than one cell
-			if (editorRichTextBox.EditCell == null) {
-				editorRichTextBox.Control.Value = cellContext.Value as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
-			}
+			if (editorRichTextBox.EditCell == null)
+				editorRichTextBox.Control.Value = cellContext.Value as Sphere10.Framework.Windows.Forms.RichText;
 
 			return editorRichTextBox.Control;
 		}
 
 		return null;
 	}
-
-	#endregion
-
 }
-

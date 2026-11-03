@@ -1,5 +1,6 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
 // Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
 // LICENSE or visit https://opensource.org/license/mit.
@@ -8,8 +9,8 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 
 // ReSharper disable CheckNamespace
 namespace Sphere10.Framework;
@@ -19,13 +20,68 @@ namespace Sphere10.Framework;
 // - unify IV/salt prepending
 // - not backwards compatible
 public static class Encryptor {
+	/// <summary>Encodes text in the original DES format used by the extracted Dev Age helpers.</summary>
+	public static string EncryptStringDES(string plainText, string key) {
+		// Buffer the text without closing the stream needed by the DES operation.
+		using var input = new MemoryStream();
+		using (var writer = new StreamWriter(new NonClosingStream(input))) {
+			writer.Write(plainText);
+		}
+		input.Position = 0;
+
+		// Encode the ciphertext using the existing Base64 text format.
+		using var output = new MemoryStream();
+		EncryptStreamDES(input, output, key);
+		return Convert.ToBase64String(output.ToArray());
+	}
+
+	/// <summary>Decodes text from the original DES format without closing its intermediate buffer.</summary>
+	public static string DecryptStringDES(string cipherText, string key) {
+		using var input = new MemoryStream(Convert.FromBase64String(cipherText));
+		using var output = new MemoryStream();
+		using var borrowedOutput = new NonClosingStream(output);
+		DecryptStreamDES(input, borrowedOutput, key);
+		using var reader = new StreamReader(output);
+		return reader.ReadToEnd();
+	}
+
+	/// <summary>Writes the original DES ciphertext and closes output; input remains caller-owned.</summary>
+	/// <remarks>Preserves the original full-Length allocation, including the zero tail of positioned input.</remarks>
+	public static void EncryptStreamDES(Stream input, Stream output, string key) {
+		// Adapted from Dev Age's MIT-licensed DES helper; retain its key/IV and byte framing.
+		using var algorithm = DES.Create();
+		algorithm.Key = Encoding.ASCII.GetBytes(key);
+		algorithm.IV = Encoding.ASCII.GetBytes(key);
+		using var transform = algorithm.CreateEncryptor();
+		using var destination = new CryptoStream(output, transform, CryptoStreamMode.Write);
+		var bytes = new byte[input.Length];
+		_ = input.ReadAtLeast(bytes, bytes.Length, throwOnEndOfStream: false);
+		destination.Write(bytes, 0, bytes.Length);
+		destination.FlushFinalBlock();
+	}
+
+	/// <summary>Reads original DES ciphertext, closes output and rewinds a nonclosing output wrapper.</summary>
+	public static void DecryptStreamDES(Stream input, Stream output, string key) {
+		// Adapted from Dev Age's MIT-licensed helper; callers can retain output through NonClosingStream.
+		using var algorithm = DES.Create();
+		algorithm.Key = Encoding.ASCII.GetBytes(key);
+		algorithm.IV = Encoding.ASCII.GetBytes(key);
+		using var transform = algorithm.CreateDecryptor();
+		using (var destination = new CryptoStream(output, transform, CryptoStreamMode.Write)) {
+			var bytes = new byte[input.Length];
+			_ = input.ReadAtLeast(bytes, bytes.Length, throwOnEndOfStream: false);
+			destination.Write(bytes, 0, bytes.Length);
+			destination.FlushFinalBlock();
+		}
+		output.Seek(0, SeekOrigin.Begin);
+	}
 
 	public static string EncryptStringAES(string plainText, string sharedSecret, string salt) {
 		return EncryptStringAES(plainText, sharedSecret, Encoding.UTF8.GetBytes(salt));
 	}
 
 	/// <summary>
-	/// Encrypt the given string using AES.  The string can be decrypted using 
+	/// Encrypt the given string using AES.  The string can be decrypted using
 	/// DecryptStringAES().  The sharedSecret parameters must match.
 	/// </summary>
 	/// <param name="plainText">The text to encrypt.</param>
@@ -37,41 +93,40 @@ public static class Encryptor {
 		if (String.IsNullOrEmpty(sharedSecret))
 			throw new ArgumentNullException(nameof(sharedSecret));
 
-		string outStr = null; // Encrypted string to return
-		Aes aesAlg = null; // RijndaelManaged object used to encrypt the data.
+		string cipherText = null; // Encrypted string to return
+		Aes algorithm = null; // RijndaelManaged object used to encrypt the data.
 
 		try {
 			// generate the key from the shared secret and the salt
 			// Keep the original 1000 iterations and SHA-1 PRF for ciphertext compatibility.
-
 			// Create a RijndaelManaged object
-			aesAlg = Aes.Create();
-			aesAlg.Key = PBKDF2.DeriveKey(sharedSecret, salt, 1000, aesAlg.KeySize / 8);
+			algorithm = Aes.Create();
+			algorithm.Key = PBKDF2.DeriveKey(sharedSecret, salt, 1000, algorithm.KeySize / 8);
 
 			// Create a decryptor to perform the stream transform.
-			var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+			var encryptor = algorithm.CreateEncryptor(algorithm.Key, algorithm.IV);
 
 			// Create the streams used for encryption.
-			using (var memStream = new MemoryStream()) {
+			using (var output = new MemoryStream()) {
 				// prepend the IV (length + bytes)
-				memStream.Write(EndianBitConverter.Little.GetBytes(aesAlg.IV.Length), 0, sizeof(int));
-				memStream.Write(aesAlg.IV, 0, aesAlg.IV.Length);
+				output.Write(EndianBitConverter.Little.GetBytes(algorithm.IV.Length), 0, sizeof(int));
+				output.Write(algorithm.IV, 0, algorithm.IV.Length);
 
-				using (CryptoStream encryptedStream = new CryptoStream(memStream, encryptor, CryptoStreamMode.Write)) {
-					using (StreamWriter encryptedWriter = new StreamWriter(encryptedStream)) {
+				using (var encryptedStream = new CryptoStream(output, encryptor, CryptoStreamMode.Write)) {
+					using (var encryptedWriter = new StreamWriter(encryptedStream)) {
 						//Write all data to the stream.
 						encryptedWriter.Write(plainText);
 					}
 				}
-				outStr = Convert.ToBase64String(memStream.ToArray());
+				cipherText = Convert.ToBase64String(output.ToArray());
 			}
 		} finally {
 			// Clear the RijndaelManaged object.
-			aesAlg?.Clear();
+			algorithm?.Clear();
 		}
 
 		// Return the encrypted bytes from the memory stream.
-		return outStr;
+		return cipherText;
 	}
 
 	public static string DecryptStringAES(string cipherText, string sharedSecret, string salt) {
@@ -79,7 +134,7 @@ public static class Encryptor {
 	}
 
 	/// <summary>
-	/// Decrypt the given string.  Assumes the string was encrypted using 
+	/// Decrypt the given string.  Assumes the string was encrypted using
 	/// EncryptStringAES(), using an identical sharedSecret.
 	/// </summary>
 	/// <param name="cipherText">The text to decrypt.</param>
@@ -92,7 +147,7 @@ public static class Encryptor {
 
 		// Declare the RijndaelManaged object
 		// used to decrypt the data.
-		Aes aesAlg = null;
+		Aes algorithm = null;
 
 		// Declare the string used to hold
 		// the decrypted text.
@@ -101,46 +156,30 @@ public static class Encryptor {
 		try {
 			// generate the key from the shared secret and the salt
 			// Keep the original 1000 iterations and SHA-1 PRF for ciphertext compatibility.
-
-			// Create the streams used for decryption.                
-			byte[] bytes = Convert.FromBase64String(cipherText);
-			using (MemoryStream msDecrypt = new MemoryStream(bytes)) {
+			// Create the streams used for decryption.
+			var bytes = Convert.FromBase64String(cipherText);
+			using (var input = new MemoryStream(bytes)) {
 				// Create a RijndaelManaged object
 				// with the specified key and IV.
-				aesAlg = Aes.Create();
-				aesAlg.Key = PBKDF2.DeriveKey(sharedSecret, salt, 1000, aesAlg.KeySize / 8);
+				algorithm = Aes.Create();
+				algorithm.Key = PBKDF2.DeriveKey(sharedSecret, salt, 1000, algorithm.KeySize / 8);
 				// Get the initialization vector from the encrypted stream
-				aesAlg.IV = ReadByteArray(msDecrypt);
+				algorithm.IV = ReadByteArray(input);
 				// Create a decrytor to perform the stream transform.
-				ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-				using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read)) {
-					using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-
-						// Read the decrypted bytes from the decrypting stream
-						// and place them in a string.
-						plaintext = srDecrypt.ReadToEnd();
+				var decryptor = algorithm.CreateDecryptor(algorithm.Key, algorithm.IV);
+				using (var decryptingStream = new CryptoStream(input, decryptor, CryptoStreamMode.Read)) {
+					// Read the decrypted bytes from the decrypting stream
+					// and place them in a string.
+					using (var reader = new StreamReader(decryptingStream))
+						plaintext = reader.ReadToEnd();
 				}
 			}
 		} finally {
 			// Clear the RijndaelManaged object.
-			aesAlg?.Clear();
+			algorithm?.Clear();
 		}
 
 		return plaintext;
-	}
-
-	private static byte[] ReadByteArray(Stream s) {
-		byte[] rawLength = new byte[sizeof(int)];
-		if (s.Read(rawLength, 0, rawLength.Length) != rawLength.Length) {
-			throw new SystemException("Stream did not contain properly formatted byte array");
-		}
-
-		byte[] buffer = new byte[BitConverter.ToInt32(rawLength, 0)];
-		if (s.Read(buffer, 0, buffer.Length) != buffer.Length) {
-			throw new SystemException("Did not read byte array properly");
-		}
-
-		return buffer;
 	}
 
 	public static void EncryptStream(Stream input, Stream output, SymmetricAlgorithm symmetricAlgorithm) {
@@ -164,22 +203,37 @@ public static class Encryptor {
 			Tools.Streams.RouteStream(decryptor, output);
 	}
 
-	public static SymmetricAlgorithm PrepareSymmetricAlgorithm(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
-		=> PrepareSymmetricAlgorithm(Aes.Create(), password, salt, paddingMode, cipherMode);
+	public static SymmetricAlgorithm PrepareSymmetricAlgorithm(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) {
+		return PrepareSymmetricAlgorithm(Aes.Create(), password, salt, paddingMode, cipherMode);
+	}
 
 	public static SymmetricAlgorithm PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
-		where TSymmetricAlgorithm : SymmetricAlgorithm, new()
-		=> PrepareSymmetricAlgorithm(new TSymmetricAlgorithm(), password, salt, paddingMode, cipherMode);
+		where TSymmetricAlgorithm : SymmetricAlgorithm, new() {
+		return PrepareSymmetricAlgorithm(new TSymmetricAlgorithm(), password, salt, paddingMode, cipherMode);
+	}
 
+	// Reads the length-prefixed initialization vector used by the existing AES string format.
+	private static byte[] ReadByteArray(Stream stream) {
+		var rawLength = new byte[sizeof(int)];
+		if (stream.Read(rawLength, 0, rawLength.Length) != rawLength.Length)
+			throw new SystemException("Stream did not contain properly formatted byte array");
+
+		var buffer = new byte[BitConverter.ToInt32(rawLength, 0)];
+		if (stream.Read(buffer, 0, buffer.Length) != buffer.Length)
+			throw new SystemException("Did not read byte array properly");
+
+		return buffer;
+	}
+
+	// Applies the existing password-derived key, padding, mode and generated IV to an owned algorithm.
 	private static SymmetricAlgorithm PrepareSymmetricAlgorithm(SymmetricAlgorithm algorithm, string password, byte[] salt, PaddingMode paddingMode, CipherMode cipherMode) {
 		salt ??= Array.Empty<byte>();
 		algorithm.Padding = paddingMode;
 		algorithm.Mode = cipherMode;
+
 		// Preserve the existing key derivation and raw-IV stream format for stored ciphertext.
 		algorithm.Key = PBKDF2.DeriveKey(password, salt, 100, algorithm.KeySize / 8);
 		algorithm.IV = Tools.Crypto.GenerateCryptographicallyRandomBytes(algorithm.BlockSize / 8);
 		return algorithm;
 	}
-
 }
-

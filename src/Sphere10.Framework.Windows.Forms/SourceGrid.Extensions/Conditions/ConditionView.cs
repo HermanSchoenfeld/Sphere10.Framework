@@ -1,35 +1,33 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
+using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Conditions;
 
 public class ConditionView : ICondition {
-	public ConditionView(IView view) {
-		mView = view;
-	}
-
-
-	public delegate bool EvaluateFunctionDelegate(DataGridColumn column, int gridRow, object itemRow);
-
+	private IView _view;
 
 	public EvaluateFunctionDelegate EvaluateFunction;
 
-	private IView mView;
-
-	public IView View {
-		get { return mView; }
+	public ConditionView(IView view) {
+		_view = view;
 	}
 
-	#region ICondition Members
+	public IView View {
+		get {
+			return _view;
+		}
+	}
 
+	// ICondition Members
 	public bool Evaluate(DataGridColumn column, int gridRow, object itemRow) {
 		if (EvaluateFunction == null)
 			return false;
@@ -38,13 +36,11 @@ public class ConditionView : ICondition {
 	}
 
 	public ICellVirtual ApplyCondition(ICellVirtual cell) {
-		SourceGrid.Cells.ICellVirtual copied = cell.Copy();
+		var copied = cell.Copy();
 		copied.View = View;
 
 		return copied;
 	}
 
-	#endregion
-
+	public delegate bool EvaluateFunctionDelegate(DataGridColumn column, int gridRow, object itemRow);
 }
-

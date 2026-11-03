@@ -451,20 +451,20 @@ public static class FileSystem {
 		}
 	}
 
+	/// <summary>Creates or replaces a file with the supplied bytes.</summary>
 	public static void WriteAllBytes(string path, byte[] bytes) {
 		Guard.ArgumentNotNull(path, nameof(path));
 		Guard.ArgumentNotNull(bytes, nameof(bytes));
-		using (var stream = new FileStream(path, FileMode.Truncate)) {
+		using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
 			stream.Write(bytes, 0, bytes.Length);
-		}
 	}
 
+	/// <summary>Creates or replaces a file, borrowing the source and preserving its position when it is seekable.</summary>
 	public static void WriteAllBytes(string path, Stream bytes) {
 		Guard.ArgumentNotNull(path, nameof(path));
 		Guard.ArgumentNotNull(bytes, nameof(bytes));
-		using (var stream = new FileStream(path, FileMode.Truncate)) {
+		using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write))
 			bytes.RouteTo(stream);
-		}
 	}
 
 	public static byte[] GetFilePart(string filePath, long offset, int fetchSize) {

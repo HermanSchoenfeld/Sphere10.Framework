@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -20,17 +21,15 @@ public class RowSelector : ControllerBase {
 	/// Default controller to select all the column
 	/// </summary>
 	public readonly static RowSelector Default = new RowSelector();
-
 	public readonly static RowSelector SelectOnMouseDown = new RowSelector(true);
 
-	public RowSelector() : this(false) {
-
+	public RowSelector()
+		: this(false) {
 	}
 
 	public RowSelector(bool raiseOnMouseDown) {
 		_raiseOnMouseDown = raiseOnMouseDown;
 	}
-
 
 	public override void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
 		if (_raiseOnMouseDown)
@@ -49,4 +48,3 @@ public class RowSelector : ControllerBase {
 		sender.Grid.Selection.SelectRow(sender.Position.Row, true);
 	}
 }
-

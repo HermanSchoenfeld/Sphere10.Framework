@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,16 +15,16 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// This is a QuadTree implementation for cell ranges.
 /// Performance is definetely not O(n*n) as in simple
 /// list of ranges
-/// 
+///
 /// Have a look at these numbers to see the difference:
-/// 
+///
 /// with simple List of Ranges
 /// Total 30000 spanned ranges
 /// Total result count 90000
 /// Total time 98541 ms
 /// Average time 0,98541
 /// Total queries 100000
-/// 
+///
 /// testing quad tree
 /// Total 30000 spanned ranges
 /// Total result count 90000
@@ -31,20 +32,15 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// Average time 0,01495
 /// Total queries 100000
 /// max tree depth: 11
-/// 
+///
 /// </summary>
 public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection {
-	public QuadTreeRangesList(CellRange bounds) : base(bounds) {
-
+	public QuadTreeRangesList(CellRange bounds)
+		: base(bounds) {
 	}
 
 	public CellRange[] ToArray() {
 		return base.Contents.ToArray();
-	}
-
-
-	public new void Remove(CellRange range) {
-		base.Remove(range);
 	}
 
 	public void Redim(int rowCount, int colCount) {
@@ -55,11 +51,15 @@ public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection 
 	}
 
 	public void Update(CellRange oldRange, CellRange newRange) {
-		var Range = base.QueryFirst(oldRange.Start.Row, oldRange.Start.Column);
-		if (Range == null)
+		var range = base.QueryFirst(oldRange.Start.Row, oldRange.Start.Column);
+		if (range == null)
 			throw new RangeNotFoundException();
 		Remove(oldRange);
 		Insert(newRange);
+	}
+
+	public new void Remove(CellRange range) {
+		base.Remove(range);
 	}
 
 	public void Add(CellRange range) {
@@ -70,7 +70,6 @@ public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection 
 		return base.Query(range);
 	}
 
-
 	public CellRange? GetFirstIntersectedRange(Position pos) {
 		return base.QueryFirst(pos.Row, pos.Column);
 	}
@@ -79,4 +78,3 @@ public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection 
 		return base.QueryFirst(start.Row, start.Column);
 	}
 }
-

@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -20,8 +21,7 @@ public class RowHeader : Header {
 	/// </summary>
 	public new readonly static RowHeader Default;
 
-	#region Constructors
-
+	// Constructors
 	static RowHeader() {
 		Default = new RowHeader();
 	}
@@ -30,20 +30,28 @@ public class RowHeader : Header {
 	/// Use default setting
 	/// </summary>
 	public RowHeader() {
-		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.RowHeaderThemed();
+		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.RowHeaderThemed();
 	}
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
-	/// <param name="p_Source"></param>
-	public RowHeader(RowHeader p_Source) : base(p_Source) {
+	/// <param name="source"></param>
+	public RowHeader(RowHeader source)
+		: base(source) {
 	}
 
-	#endregion
+	// Visual Elements
+	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader Background {
+		get {
+			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader)base.Background;
+		}
+		set {
+			base.Background = value;
+		}
+	}
 
-	#region Clone
-
+	// Clone
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
@@ -52,20 +60,7 @@ public class RowHeader : Header {
 		return new RowHeader(this);
 	}
 
-	#endregion
-
-	#region Visual Elements
-
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRowHeader Background {
-		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IRowHeader)base.Background; }
-		set { base.Background = value; }
-	}
-
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
 	}
-
-	#endregion
-
 }
-

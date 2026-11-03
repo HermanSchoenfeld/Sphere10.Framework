@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -11,24 +12,21 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Conditions;
 
 public class ConditionCell : ICondition {
-	public ConditionCell(ICellVirtual cell) {
-		mCell = cell;
-	}
-
-
-	public delegate bool EvaluateFunctionDelegate(DataGridColumn column, int gridRow, object itemRow);
-
+	private ICellVirtual _cell;
 
 	public EvaluateFunctionDelegate EvaluateFunction;
 
-	private ICellVirtual mCell;
-
-	public ICellVirtual Cell {
-		get { return mCell; }
+	public ConditionCell(ICellVirtual cell) {
+		_cell = cell;
 	}
 
-	#region ICondition Members
+	public ICellVirtual Cell {
+		get {
+			return _cell;
+		}
+	}
 
+	// ICondition Members
 	public bool Evaluate(DataGridColumn column, int gridRow, object itemRow) {
 		if (EvaluateFunction == null)
 			return false;
@@ -40,7 +38,5 @@ public class ConditionCell : ICondition {
 		return Cell;
 	}
 
-	#endregion
-
+	public delegate bool EvaluateFunctionDelegate(DataGridColumn column, int gridRow, object itemRow);
 }
-

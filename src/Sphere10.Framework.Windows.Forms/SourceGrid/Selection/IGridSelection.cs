@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,6 +15,59 @@ public interface IGridSelection {
 	/// If you need more control over the selection I suggest to create a custom Selection class.
 	/// </summary>
 	event RangeRegionChangedEventHandler SelectionChanged;
+
+	// Focus Events
+	/// <summary>
+	/// Fired before a cell receive the focus (FocusCell is populated after this event, use e.Cell to read the cell that will receive the focus)
+	/// </summary>
+	event ChangeActivePositionEventHandler CellGotFocus;
+
+	/// <summary>
+	/// Fired before a cell lost the focus
+	/// </summary>
+	event ChangeActivePositionEventHandler CellLostFocus;
+
+	/// <summary>
+	/// Fired before a row lost the focus
+	/// </summary>
+	event RowCancelEventHandler FocusRowLeaving;
+
+	/// <summary>
+	/// Fired after a row receive the focus
+	/// </summary>
+	event RowEventHandler FocusRowEntered;
+
+	/// <summary>
+	/// Fired before a column lost the focus
+	/// </summary>
+	event ColumnCancelEventHandler FocusColumnLeaving;
+
+	/// <summary>
+	/// Fired after a column receive the focus
+	/// </summary>
+	event ColumnEventHandler FocusColumnEntered;
+
+	/// <summary>
+	/// Gets or sets if enable multi selection using Ctrl key or Shift Key or with mouse. Default is true.
+	/// </summary>
+	bool EnableMultiSelection {
+		get; set;
+	}
+
+	/// <summary>
+	/// Gets the active cell position. The cell with the focus.
+	/// Returns Position.Empty if there isn't an active cell.
+	/// </summary>
+	Position ActivePosition {
+		get;
+	}
+
+	/// <summary>
+	/// Gets or sets the behavior of the focus and selection. Default is FocusStyle.Default.
+	/// </summary>
+	FocusStyle FocusStyle {
+		get; set;
+	}
 
 	/// <summary>
 	/// Returns the selected region.
@@ -36,23 +90,22 @@ public interface IGridSelection {
 	/// Set the focus on the first available cells starting from the not fixed cells.
 	/// If there is an active selection set the focus on the first selected cells.
 	/// </summary>
-	/// <param name="pResetSelection"></param>
+	/// <param name="resetSelection"></param>
 	/// <returns></returns>
-	bool FocusFirstCell(bool pResetSelection);
+	bool FocusFirstCell(bool resetSelection);
 
 	/// <summary>
 	/// Link the cell at the specified grid.
 	/// For internal use only.
 	/// </summary>
-	/// <param name="p_grid"></param>
-	void BindToGrid(GridVirtual p_grid);
+	/// <param name="grid"></param>
+	void BindToGrid(GridVirtual grid);
 
 	/// <summary>
 	/// Remove the link of the cell from the grid.
 	/// For internal use only.
 	/// </summary>
 	void UnBindToGrid();
-
 
 	/// <summary>
 	/// Move the active cell (focus), moving the row and column as specified.
@@ -101,7 +154,6 @@ public interface IGridSelection {
 	/// <param name="select"></param>
 	void SelectRange(CellRange range, bool select);
 
-
 	/// <summary>
 	/// Select or unselect the specified cell
 	/// </summary>
@@ -113,11 +165,6 @@ public interface IGridSelection {
 	/// Check if the cell is selected.
 	/// </summary>
 	bool IsSelectedCell(Position position);
-
-	/// <summary>
-	/// Gets or sets if enable multi selection using Ctrl key or Shift Key or with mouse. Default is true.
-	/// </summary>
-	bool EnableMultiSelection { get; set; }
 
 	/// <summary>
 	/// Reset the selection
@@ -136,7 +183,6 @@ public interface IGridSelection {
 	/// <param name="select"></param>
 	void SelectColumn(int column, bool select);
 
-
 	/// <summary>
 	/// Move the Focus to the first cell that can receive the focus of the current row otherwise put the focus to null.
 	/// </summary>
@@ -152,56 +198,8 @@ public interface IGridSelection {
 	/// <summary>
 	/// Change the ActivePosition (focus) of the grid.
 	/// </summary>
-	/// <param name="pCellToActivate"></param>
-	/// <param name="pResetSelection">True to deselect the previous selected cells</param>
+	/// <param name="cellToActivate"></param>
+	/// <param name="resetSelection">True to deselect the previous selected cells</param>
 	/// <returns></returns>
-	bool Focus(Position pCellToActivate, bool pResetSelection);
-
-	/// <summary>
-	/// Gets the active cell position. The cell with the focus.
-	/// Returns Position.Empty if there isn't an active cell.
-	/// </summary>
-	Position ActivePosition { get; }
-
-	/// <summary>
-	/// Gets or sets the behavior of the focus and selection. Default is FocusStyle.Default.
-	/// </summary>
-	FocusStyle FocusStyle { get; set; }
-
-
-	#region Focus Events
-
-	/// <summary>
-	/// Fired before a cell receive the focus (FocusCell is populated after this event, use e.Cell to read the cell that will receive the focus)
-	/// </summary>
-	event ChangeActivePositionEventHandler CellGotFocus;
-
-	/// <summary>
-	/// Fired before a cell lost the focus
-	/// </summary>
-	event ChangeActivePositionEventHandler CellLostFocus;
-
-	/// <summary>
-	/// Fired before a row lost the focus
-	/// </summary>
-	event RowCancelEventHandler FocusRowLeaving;
-
-	/// <summary>
-	/// Fired after a row receive the focus
-	/// </summary>
-	event RowEventHandler FocusRowEntered;
-
-	/// <summary>
-	/// Fired before a column lost the focus
-	/// </summary>
-	event ColumnCancelEventHandler FocusColumnLeaving;
-
-	/// <summary>
-	/// Fired after a column receive the focus
-	/// </summary>
-	event ColumnEventHandler FocusColumnEntered;
-
-	#endregion
-
+	bool Focus(Position cellToActivate, bool resetSelection);
 }
-

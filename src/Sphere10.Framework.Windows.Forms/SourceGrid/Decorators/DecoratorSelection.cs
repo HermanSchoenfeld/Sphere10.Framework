@@ -1,55 +1,54 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Decorators;
 
 public class DecoratorSelection : DecoratorBase {
+	private Selection.SelectionBase _selection;
+
 	public DecoratorSelection(Selection.SelectionBase selection) {
-		mSelection = selection;
+		_selection = selection;
 	}
 
-	private Selection.SelectionBase mSelection;
-
 	public override bool IntersectWith(CellRange range) {
-		return mSelection.IntersectsWith(range);
+		return _selection.IntersectsWith(range);
 	}
 
 	public override void Draw(RangePaintEventArgs e) {
-		RangeRegion region = mSelection.GetSelectionRegion();
+		var region = _selection.GetSelectionRegion();
 
 		if (region.IsEmpty())
 			return;
 
 		// get visible range for scrollable area
-		CellRange visibleScrollabeRange = mSelection.Grid.RangeAtAreaExpanded(CellPositionType.Scrollable);
+		var visibleScrollabeRange = _selection.Grid.RangeAtAreaExpanded(CellPositionType.Scrollable);
 
+		var brush = e.GraphicsCache.BrushCache.GetBrush(_selection.BackColor);
 
-		System.Drawing.Brush brush = e.GraphicsCache.BrushsCache.GetBrush(mSelection.BackColor);
-
-		CellContext focusContext = new CellContext(e.Grid, mSelection.ActivePosition);
+		var focusContext = new CellContext(e.Grid, _selection.ActivePosition);
 		// get focus rectangle
 		// clipped to visible range
-		CellRange focusClippedRange = visibleScrollabeRange.Intersect(new CellRange(mSelection.ActivePosition, mSelection.ActivePosition));
-		System.Drawing.Rectangle focusRect = e.Grid.PositionToRectangle(focusClippedRange.Start);
+		var focusClippedRange = visibleScrollabeRange.Intersect(new CellRange(_selection.ActivePosition, _selection.ActivePosition));
+		var focusRect = e.Grid.PositionToRectangle(focusClippedRange.Start);
 
 		//Draw each selection range
-		foreach (CellRange rangeToLoop in region) {
+		foreach (var rangeToLoop in region) {
 			// intersect given range with visible range
 			// this way we ensure we don't loop through thousands
 			// of rows to calculate rectToDraw
-			CellRange rng = visibleScrollabeRange.Intersect(rangeToLoop);
+			var rng = visibleScrollabeRange.Intersect(rangeToLoop);
 
-
-			System.Drawing.Rectangle rectToDraw = e.Grid.RangeToRectangle(rng);
+			var rectToDraw = e.Grid.RangeToRectangle(rng);
 			if (rectToDraw == System.Drawing.Rectangle.Empty)
 				continue;
 
-			System.Drawing.Region regionToDraw = new System.Drawing.Region(rectToDraw);
+			var regionToDraw = new System.Drawing.Region(rectToDraw);
 
 			if (rectToDraw.IntersectsWith(focusRect))
 				regionToDraw.Exclude(focusRect);
@@ -58,15 +57,14 @@ public class DecoratorSelection : DecoratorBase {
 
 			//Draw the border only if there isn't a editing cell
 			// and is the range that contains the focus or there is a single range
-			if (rng.Contains(mSelection.ActivePosition) || region.Count == 1) {
+			if (rng.Contains(_selection.ActivePosition) || region.Count == 1) {
 				if (focusContext.IsEditing() == false)
-					mSelection.Border.Draw(e.GraphicsCache, rectToDraw);
+					_selection.Border.Draw(e.GraphicsCache, rectToDraw);
 			}
 		}
 
 		//Draw Focus
-		System.Drawing.Brush brushFocus = e.GraphicsCache.BrushsCache.GetBrush(mSelection.FocusBackColor);
+		var brushFocus = e.GraphicsCache.BrushCache.GetBrush(_selection.FocusBackColor);
 		e.GraphicsCache.Graphics.FillRectangle(brushFocus, focusRect);
 	}
 }
-

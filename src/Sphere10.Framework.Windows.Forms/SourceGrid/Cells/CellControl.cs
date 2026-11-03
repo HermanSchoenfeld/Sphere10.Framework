@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -20,13 +21,17 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// </summary>
 [Obsolete("I will soon remove this class. If you need to add a user control to the grid I suggest to manually add or remove it using the Grid.LinkedControls collection.")]
 public class CellControl : Cell {
-	private Control mControl;
+	private Control _control;
+	private LinkedControlScrollMode _scrollMode = LinkedControlScrollMode.BasedOnPosition;
+	private bool _useCellBorder = true;
+
 	/// <summary>
 	/// Constructor.
 	/// </summary>
 	/// <param name="control">Control to insert inside the grid</param>
-	public CellControl(Control control) : base(null) {
-		mControl = control;
+	public CellControl(Control control)
+		: base(null) {
+		_control = control;
 	}
 
 	/// <summary>
@@ -35,38 +40,37 @@ public class CellControl : Cell {
 	/// <param name="control">Control to insert inside the grid</param>
 	/// <param name="scrollMode"></param>
 	/// <param name="useCellBorder"></param>
-	public CellControl(Control control, LinkedControlScrollMode scrollMode, bool useCellBorder) : this(control) {
-		mControl = control;
-		mScrollMode = scrollMode;
-		mUseCellBorder = useCellBorder;
+	public CellControl(Control control, LinkedControlScrollMode scrollMode, bool useCellBorder)
+		: this(control) {
+		_control = control;
+		_scrollMode = scrollMode;
+		_useCellBorder = useCellBorder;
 	}
 
 	/// <summary>
 	/// Gets the control associated with this cell.
 	/// </summary>
 	public Control Control {
-		get { return mControl; }
+		get {
+			return _control;
+		}
 	}
 
-	private LinkedControlScrollMode mScrollMode = LinkedControlScrollMode.BasedOnPosition;
-	private bool mUseCellBorder = true;
+	public override void BindToGrid(Grid grid, Position position) {
+		base.BindToGrid(grid, position);
 
-	public override void BindToGrid(Grid p_grid, Position p_Position) {
-		base.BindToGrid(p_grid, p_Position);
-
-		LinkedControlValue linkedValue = new LinkedControlValue(mControl, Range.Start);
-		linkedValue.ScrollMode = mScrollMode;
-		linkedValue.UseCellBorder = mUseCellBorder;
+		var linkedValue = new LinkedControlValue(_control, Range.Start);
+		linkedValue.ScrollMode = _scrollMode;
+		linkedValue.UseCellBorder = _useCellBorder;
 		Grid.LinkedControls.Add(linkedValue);
 
 		Grid.ArrangeLinkedControls();
 	}
 
 	public override void UnBindToGrid() {
-		if (Grid.LinkedControls.GetByControl(mControl) != null)
-			Grid.LinkedControls.Remove(Grid.LinkedControls.GetByControl(mControl));
+		if (Grid.LinkedControls.GetByControl(_control) != null)
+			Grid.LinkedControls.Remove(Grid.LinkedControls.GetByControl(_control));
 
 		base.UnBindToGrid();
 	}
 }
-

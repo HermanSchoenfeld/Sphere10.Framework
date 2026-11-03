@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -11,76 +12,45 @@ using System.Collections;
 using System.Windows.Forms;
 using Sphere10.Framework.FastReflection;
 
-
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 /// <summary>
-/// Editor for a ComboBox (using DevAgeComboBox control)
+/// Editor for a ComboBox (using ComboBoxEx control)
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class DropDownList : EditorControlBase {
 	private readonly string _displayMember;
 
-	#region Constructor
-
+	// Constructor
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
-	/// <param name="p_Type">The type of this model</param>
-	public DropDownList(Type p_Type, string displayMember = null) : base(p_Type) {
+	/// <param name="type">The type of this model</param>
+	public DropDownList(Type type, string displayMember = null)
+		: base(type) {
 		_displayMember = displayMember;
 	}
 
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
-	/// <param name="p_Type">The type of this model</param>
-	/// <param name="p_StandardValues"></param>
-	/// <param name="p_StandardValueExclusive">True to not allow custom value, only the values specified in the standardvalues collection are allowed.</param>
-	public DropDownList(Type p_Type, ICollection p_StandardValues, bool p_StandardValueExclusive)
-		: base(p_Type) {
-		StandardValues = p_StandardValues;
-		StandardValuesExclusive = p_StandardValueExclusive;
-	}
-
-	#endregion
-
-	#region Edit Control
-
-	internal override void InternalStartEdit(CellContext cellContext) {
-		base.InternalStartEdit(cellContext);
-		SendKeys.Flush();
-		SendKeys.Send("{F4}");
-	}
-
-
-	/// <summary>
-	/// Create the editor control
-	/// </summary>
-	/// <returns></returns>
-	protected override Control CreateControl() {
-		Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox editor = new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox();
-		editor.DropDownStyle = ComboBoxStyle.DropDownList;
-		//editor.FlatStyle = FlatStyle.System;
-		editor.Validator = this;
-
-		//NOTE: I have changed a little the ArrangeLinkedControls to support ComboBox control
-		editor.SelectedIndexChanged += (o, e) => {
-			// Lose the focus
-			Control.Enabled = false;
-			Control.Enabled = true;
-		};
-		return editor;
+	/// <param name="type">The type of this model</param>
+	/// <param name="standardValues"></param>
+	/// <param name="standardValueExclusive">True to not allow custom value, only the values specified in the standardvalues collection are allowed.</param>
+	public DropDownList(Type type, ICollection standardValues, bool standardValueExclusive)
+		: base(type) {
+		StandardValues = standardValues;
+		StandardValuesExclusive = standardValueExclusive;
 	}
 
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox Control {
-		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeComboBox)base.Control; }
+	public new Sphere10.Framework.Windows.Forms.ComboBoxEx Control {
+		get {
+			return (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
+		}
 	}
-
-	#endregion
 
 	/// <summary>
 	/// Set the specified value in the current editor control.
@@ -88,7 +58,7 @@ public class DropDownList : EditorControlBase {
 	/// <param name="editValue"></param>
 	public override void SetEditValue(object editValue) {
 		if (editValue is string && IsStringConversionSupported() &&
-		    Control.DropDownStyle == ComboBoxStyle.DropDown) {
+			Control.DropDownStyle == ComboBoxStyle.DropDown) {
 			Control.SelectedIndex = -1;
 			Control.Text = (string)editValue;
 			Control.SelectionLength = 0;
@@ -103,22 +73,49 @@ public class DropDownList : EditorControlBase {
 		}
 	}
 
-
-	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.ConvertingObjectEventArgs e) {
-		if (!string.IsNullOrEmpty(_displayMember) && e.Value != null) {
-			e.Value = e.Value.GetType().GetProperty(_displayMember).FastGetValue(e.Value);
-		} else {
-			base.OnConvertingValueToDisplayString(e);
-		}
-	}
-
-
 	/// <summary>
 	/// Returns the value inserted with the current editor control
 	/// </summary>
 	/// <returns></returns>
 	public override object GetEditedValue() {
 		return Control.Value;
+	}
+
+	public override bool IsStringConversionSupported() {
+		return false;
+	}
+
+	// Edit Control
+	internal override void InternalStartEdit(CellContext cellContext) {
+		base.InternalStartEdit(cellContext);
+		SendKeys.Flush();
+		SendKeys.Send("{F4}");
+	}
+
+	/// <summary>
+	/// Create the editor control
+	/// </summary>
+	/// <returns></returns>
+	protected override Control CreateControl() {
+		var editor = new Sphere10.Framework.Windows.Forms.ComboBoxEx();
+		editor.DropDownStyle = ComboBoxStyle.DropDownList;
+		//editor.FlatStyle = FlatStyle.System;
+		editor.Validator = this;
+
+		//NOTE: I have changed a little the ArrangeLinkedControls to support ComboBox control
+		editor.SelectedIndexChanged += (o, args) => {
+			// Lose the focus
+			Control.Enabled = false;
+			Control.Enabled = true;
+		};
+		return editor;
+	}
+
+	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ComponentModel.ConvertingObjectEventArgs e) {
+		if (!string.IsNullOrEmpty(_displayMember) && e.Value != null)
+			e.Value = e.Value.GetType().GetProperty(_displayMember).FastGetValue(e.Value);
+		else
+			base.OnConvertingValueToDisplayString(e);
 	}
 
 	protected override void OnSendCharToEditor(char key) {
@@ -128,11 +125,4 @@ public class DropDownList : EditorControlBase {
 				Control.SelectionStart = Control.Text.Length;
 		}
 	}
-
-	public override bool IsStringConversionSupported() {
-		return false;
-	}
-
-
 }
-

@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -27,8 +28,7 @@ public class RichTextBox : ControllerBase {
 	public RichTextBox() {
 	}
 
-	#region Controller Events
-
+	// Controller Events
 	/// <summary>
 	/// If ValueEventArgs is a font, use it to change SelectionFont
 	/// If String, assign it as rtf
@@ -41,36 +41,30 @@ public class RichTextBox : ControllerBase {
 		base.OnValueChanging(sender, e);
 
 		// only check if event args is of known type if event is not of type rich text
-		if (!(e.NewValue is Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText)) {
-			Editors.RichTextBox richEditor = (Editors.RichTextBox)sender.Cell.Editor;
-			Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.DevAgeRichTextBox richTextBox = richEditor.Control;
+		if (!(e.NewValue is Sphere10.Framework.Windows.Forms.RichText)) {
+			var richEditor = (Editors.RichTextBox)sender.Cell.Editor;
+			var richTextBox = richEditor.Control;
 
 			// if editor is not open, assign value and select all text
 			if (sender.Cell.Editor.EditCell == null) {
-				richTextBox.Value = sender.Value as Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.RichText;
+				richTextBox.Value = sender.Value as Sphere10.Framework.Windows.Forms.RichText;
 				richTextBox.SelectAll();
 			}
 
-			if (e.NewValue is Font) {
+			if (e.NewValue is Font)
 				richTextBox.SelectionFont = (Font)e.NewValue;
-			} else if (e.NewValue is Color) {
+			else if (e.NewValue is Color)
 				richTextBox.SelectionColor = (Color)e.NewValue;
-			} else if (e.NewValue is Int32) {
+			else if (e.NewValue is Int32)
 				richTextBox.SelectionCharOffset = (int)e.NewValue;
-			} else if (e.NewValue is HorizontalAlignment) {
+			else if (e.NewValue is HorizontalAlignment)
 				richTextBox.SelectionAlignment = (HorizontalAlignment)e.NewValue;
-			} else if (e.NewValue is Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType) {
-				richTextBox.SelectionEffect = (Sphere10.Framework.Windows.Forms.SourceGrid.DevAgeControls.EffectType)e.NewValue;
-			}
+			else if (e.NewValue is Sphere10.Framework.Windows.Forms.EffectType)
+				richTextBox.SelectionEffect = (Sphere10.Framework.Windows.Forms.EffectType)e.NewValue;
 
 			// if editor is not open, use changed value for cell
-			if (sender.Cell.Editor.EditCell == null) {
+			if (sender.Cell.Editor.EditCell == null)
 				sender.Value = richTextBox.Value;
-			}
 		}
 	}
-
-	#endregion
-
 }
-

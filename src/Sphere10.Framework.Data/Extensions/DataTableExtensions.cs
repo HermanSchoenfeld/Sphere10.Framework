@@ -8,9 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data;
+using System.IO;
+using System.Linq;
 
 namespace Sphere10.Framework.Data;
 
@@ -137,27 +137,19 @@ public static class DataTableExtensions {
 	/// false - do not include header column</param>
 	/// <returns>Resulting CSV-style string</returns>
 	public static string ToCSV(this DataTable table, string delimiter = ",", bool includeHeader = true) {
-		var result = new StringBuilder();
+		using var result = new StringWriter();
 
-		if (includeHeader) {
-			table.Columns.Cast<DataColumn>().ForEach(column => { result.AppendFormat("{0}{1}", column.ColumnName.EscapeCSV(delimiter), delimiter); });
-			result.Remove(--result.Length, 0);
-			result.Append(Environment.NewLine);
-		}
-
-		table.Rows.Cast<DataRow>().ForEach(row => {
-			row.ItemArray.ForEach(item => {
-				if (!(item is System.DBNull)) {
-					result.Append(item.ToString().EscapeCSV(delimiter));
-				}
-				result.Append(delimiter);
-			});
-			result.Remove(--result.Length, 0);
-			result.Append(Environment.NewLine);
-		});
+		// Header and data rows share the same CSV framing and raw-field escaping.
+		if (includeHeader)
+			Tools.Data.WriteCsvRow(result, table.Columns.Cast<DataColumn>(),
+				(column, destination) => Tools.Data.WriteCsvField(destination, column.ColumnName, delimiter), delimiter, Environment.NewLine);
+		foreach (var row in table.Rows.Cast<DataRow>())
+			Tools.Data.WriteCsvRow(result, row.ItemArray,
+				(item, destination) => Tools.Data.WriteCsvField(destination, item is DBNull ? string.Empty : item?.ToString(), delimiter), delimiter, Environment.NewLine);
 
 		return result.ToString();
 	}
+
 	public static string ToPrintableString() {
 		throw new NotImplementedException();
 	}

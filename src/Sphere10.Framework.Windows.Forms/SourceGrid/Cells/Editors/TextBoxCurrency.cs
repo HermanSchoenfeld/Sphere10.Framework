@@ -1,13 +1,13 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
@@ -16,18 +16,13 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBoxCurrency : TextBoxNumeric {
-
-	#region Constructor
-
+	// Constructor
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
-	/// <param name="p_Type">The type of this model</param>
-	public TextBoxCurrency(Type p_Type) : base(p_Type) {
-		TypeConverter = new Sphere10.Framework.Windows.Forms.SourceGrid.ComponentModel.Converter.CurrencyTypeConverter(p_Type);
+	/// <param name="type">The type of this model</param>
+	public TextBoxCurrency(Type type)
+		: base(type) {
+		TypeConverter = new Sphere10.Framework.ComponentModel.CurrencyTypeConverter(type);
 	}
-
-	#endregion
-
 }
-

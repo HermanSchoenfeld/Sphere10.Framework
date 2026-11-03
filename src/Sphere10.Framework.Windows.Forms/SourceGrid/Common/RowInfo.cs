@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -14,29 +15,34 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// Row Information
 /// </summary>
 public class RowInfo {
+	private int _height;
+	private GridVirtual _grid;
+	private object _tag;
+	private AutoSizeMode _autoSizeMode = AutoSizeMode.Default;
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	/// <param name="p_Grid"></param>
-	public RowInfo(GridVirtual p_Grid) {
-		m_Grid = p_Grid;
-		m_Height = Grid.DefaultHeight;
+	/// <param name="grid"></param>
+	public RowInfo(GridVirtual grid) {
+		_grid = grid;
+		_height = Grid.DefaultHeight;
 	}
-
-	private int m_Height;
 
 	/// <summary>
 	/// Height of the current row
 	/// </summary>
 	public int Height {
-		get { return m_Height; }
+		get {
+			return _height;
+		}
 		set {
 			if (value < 0)
 				value = 0;
 
-			if (m_Height != value) {
-				m_Height = value;
-				((RowInfoCollection)m_Grid.Rows).OnRowHeightChanged(new RowInfoEventArgs(this));
+			if (_height != value) {
+				_height = value;
+				((RowInfoCollection)_grid.Rows).OnRowHeightChanged(new RowInfoEventArgs(this));
 			}
 		}
 	}
@@ -46,47 +52,53 @@ public class RowInfo {
 	/// Index of the current row
 	/// </summary>
 	public int Index {
-		get { return ((RowInfoCollection)Grid.Rows).IndexOf(this); }
+		get {
+			return ((RowInfoCollection)Grid.Rows).IndexOf(this);
+		}
 	}
-
-	private GridVirtual m_Grid;
 
 	/// <summary>
 	/// Attached Grid
 	/// </summary>
 	[Browsable(false)]
 	public GridVirtual Grid {
-		get { return m_Grid; }
+		get {
+			return _grid;
+		}
 	}
 
 	public CellRange Range {
 		get {
-			if (m_Grid == null)
+			if (_grid == null)
 				throw new SourceGridException("Invalid Grid object");
 
 			return new CellRange(Index, 0, Index, Grid.Columns.Count - 1);
 		}
 	}
 
-	private object m_Tag;
-
 	/// <summary>
 	/// A property that the user can use to insert custom informations associated to a specific row
 	/// </summary>
 	[Browsable(false)]
 	public object Tag {
-		get { return m_Tag; }
-		set { m_Tag = value; }
+		get {
+			return _tag;
+		}
+		set {
+			_tag = value;
+		}
 	}
-
-	private AutoSizeMode m_AutoSizeMode = AutoSizeMode.Default;
 
 	/// <summary>
 	/// Flags for autosize and stretch
 	/// </summary>
 	public AutoSizeMode AutoSizeMode {
-		get { return m_AutoSizeMode; }
-		set { m_AutoSizeMode = value; }
+		get {
+			return _autoSizeMode;
+		}
+		set {
+			_autoSizeMode = value;
+		}
 	}
 
 	/// <summary>
@@ -94,8 +106,11 @@ public class RowInfo {
 	/// Internally set the height to 0 to hide a row.
 	/// </summary>
 	public bool Visible {
-		get { return Grid.Rows.IsRowVisible(this.Index); }
-		set { Grid.Rows.ShowRow(this.Index, value); }
+		get {
+			return Grid.Rows.IsRowVisible(this.Index);
+		}
+		set {
+			Grid.Rows.ShowRow(this.Index, value);
+		}
 	}
 }
-

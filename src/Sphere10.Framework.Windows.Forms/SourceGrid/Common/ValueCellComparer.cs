@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -36,8 +37,8 @@ public class ValueCellComparer : IComparer {
 		}
 
 		//Cell.Value object
-		object vx = ((Cells.ICell)x).Value;
-		object vy = ((Cells.ICell)y).Value;
+		var vx = ((Cells.ICell)x).Value;
+		var vy = ((Cells.ICell)y).Value;
 		if (vx == null && vy == null)
 			return 0;
 		if (vx == null)
@@ -59,4 +60,3 @@ public class ValueCellComparer : IComparer {
 		throw new ArgumentException("Invalid cell object, no IComparable interface found");
 	}
 }
-

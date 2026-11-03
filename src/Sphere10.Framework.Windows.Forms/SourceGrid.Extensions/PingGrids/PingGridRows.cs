@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -15,13 +16,21 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 /// This class implements a RowsSimpleBase class using a DataView bound mode for row count.
 /// </summary>
 public class PingGridRows : RowsSimpleBase {
+	private AutoSizeMode _autoSizeMode = AutoSizeMode.Default;
+
+	private int _headerHeight;
+
+	[Obsolete] private Dictionary<int, int> _rowHeights = new Dictionary<int, int>();
+
 	public PingGridRows(PingGrid grid)
 		: base(grid) {
-		mHeaderHeight = grid.DefaultHeight;
+		_headerHeight = grid.DefaultHeight;
 	}
 
 	public new PingGrid Grid {
-		get { return (PingGrid)base.Grid; }
+		get {
+			return (PingGrid)base.Grid;
+		}
 	}
 
 	/// <summary>
@@ -35,14 +44,28 @@ public class PingGridRows : RowsSimpleBase {
 		}
 	}
 
+	public AutoSizeMode AutoSizeMode {
+		get {
+			return _autoSizeMode;
+		}
+		set {
+			_autoSizeMode = value;
+		}
+	}
+
 	/// <summary>
-	/// Returns the DataSource index for the specified grid row index.
+	/// Gets or sets the header height (row 0)
 	/// </summary>
-	/// <param name="gridRowIndex"></param>
-	/// <returns></returns>
-	public int IndexToDataSourceIndex(int gridRowIndex) {
-		int dataIndex = gridRowIndex - Grid.FixedRows;
-		return dataIndex;
+	public int HeaderHeight {
+		get {
+			return _headerHeight;
+		}
+		set {
+			if (_headerHeight != value) {
+				_headerHeight = value;
+				PerformLayout();
+			}
+		}
 	}
 
 	/// <summary>
@@ -54,7 +77,6 @@ public class PingGridRows : RowsSimpleBase {
 		return dataSourceIndex + Grid.FixedRows;
 	}
 
-
 	/// <summary>
 	/// Returns the DataRowView object for a given grid row index. Return null if not applicable, for example if the DataSource is null or if the row index requested is a FixedRows
 	/// </summary>
@@ -62,14 +84,24 @@ public class PingGridRows : RowsSimpleBase {
 	/// <returns></returns>
 	[Obsolete]
 	public object IndexToDataSourceRow(int gridRowIndex) {
-		int dataIndex = IndexToDataSourceIndex(gridRowIndex);
+		var dataIndex = IndexToDataSourceIndex(gridRowIndex);
 
-		//Verifico che l'indice sia valido, perchè potrei essere in un caso in cui le righe non combaciano (magari a seguito di un refresh non ancora completo)
+		//Verifico che l'indice sia valido, perchÃ¨ potrei essere in un caso in cui le righe non combaciano (magari a seguito di un refresh non ancora completo)
 		//if (Grid.DataSource != null &&
 		//    dataIndex >= 0 && dataIndex < Grid.DataSource.Count)
 		//	return Grid.DataSource[dataIndex];
 		//else
 		return null;
+	}
+
+	/// <summary>
+	/// Returns the DataSource index for the specified grid row index.
+	/// </summary>
+	/// <param name="gridRowIndex"></param>
+	/// <returns></returns>
+	public int IndexToDataSourceIndex(int gridRowIndex) {
+		var dataIndex = gridRowIndex - Grid.FixedRows;
+		return dataIndex;
 	}
 
 	/// <summary>
@@ -86,43 +118,19 @@ public class PingGridRows : RowsSimpleBase {
 		return -1;
 	}
 
-	private AutoSizeMode mAutoSizeMode = AutoSizeMode.Default;
-
-	public AutoSizeMode AutoSizeMode {
-		get { return mAutoSizeMode; }
-		set { mAutoSizeMode = value; }
-	}
-
 	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return mAutoSizeMode;
+		return _autoSizeMode;
 	}
-
-	private int mHeaderHeight;
-
-	/// <summary>
-	/// Gets or sets the header height (row 0)
-	/// </summary>
-	public int HeaderHeight {
-		get { return mHeaderHeight; }
-		set {
-			if (mHeaderHeight != value) {
-				mHeaderHeight = value;
-				PerformLayout();
-			}
-		}
-	}
-
-	[Obsolete] private Dictionary<int, int> mRowHeights = new Dictionary<int, int>();
 
 	[Obsolete]
 	public void ResetRowHeigth() {
-		mRowHeights.Clear();
+		_rowHeights.Clear();
 	}
 
 	[Obsolete]
 	public void RowDeleted(object row) {
-		if (row != null && mRowHeights.ContainsKey(row.GetHashCode()))
-			mRowHeights.Remove(row.GetHashCode());
+		if (row != null && _rowHeights.ContainsKey(row.GetHashCode()))
+			_rowHeights.Remove(row.GetHashCode());
 	}
 
 	public override int GetHeight(int row) {
@@ -137,4 +145,3 @@ public class PingGridRows : RowsSimpleBase {
 		base.SetHeight(row, height);
 	}
 }
-

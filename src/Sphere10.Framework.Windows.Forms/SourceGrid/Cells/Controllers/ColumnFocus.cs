@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -21,12 +22,12 @@ public class ColumnFocus : ControllerBase {
 	}
 
 	//Non uso questo evento altrimenti non verrebbero applicate le regole di selezione del tasto Shift
-//		public override void OnClick(PositionEventArgs e)
-//		{
-//			base.OnClick (e);
-//
-//			sender.Grid.Columns[sender.Position.Column].Focus();
-//		}
+	//		public override void OnClick(PositionEventArgs e)
+	//		{
+	//			base.OnClick (e);
+	//
+	//			sender.Grid.Columns[sender.Position.Column].Focus();
+	//		}
 
 	public override void OnFocusEntering(CellContext sender, System.ComponentModel.CancelEventArgs e) {
 		base.OnFocusEntering(sender, e);
@@ -34,4 +35,3 @@ public class ColumnFocus : ControllerBase {
 		sender.Grid.Selection.FocusColumn(sender.Position.Column);
 	}
 }
-

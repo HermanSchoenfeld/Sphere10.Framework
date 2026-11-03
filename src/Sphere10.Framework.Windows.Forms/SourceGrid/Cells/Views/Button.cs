@@ -1,8 +1,9 @@
 // Copyright (c) Herman Schoenfeld 2018 - Present. All rights reserved. (https://sphere10.com)
-// Author: Dev Age
+// Author: Herman Schoenfeld
+// Original SourceGrid / DevAge code: Copyright (c) 2005-2012 Davide Icardi, Darius Damalakas.
 //
 // Distributed under the MIT software license, see the accompanying file
-// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+// LICENSE or visit https://opensource.org/license/mit.
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
@@ -20,8 +21,7 @@ public class Button : Cell {
 	/// </summary>
 	public new readonly static Button Default;
 
-	#region Constructors
-
+	// Constructors
 	static Button() {
 		Default = new Button();
 	}
@@ -30,21 +30,29 @@ public class Button : Cell {
 	/// Use default setting
 	/// </summary>
 	public Button() {
-		Background = new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.ButtonThemed();
+		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ButtonThemed();
 	}
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
-	/// <param name="p_Source"></param>
-	public Button(Button p_Source) : base(p_Source) {
-		Background = (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IButton)p_Source.Background.Clone();
+	/// <param name="source"></param>
+	public Button(Button source)
+		: base(source) {
+		Background = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)source.Background.Clone();
 	}
 
-	#endregion
+	// Visual Elements
+	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton Background {
+		get {
+			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)base.Background;
+		}
+		set {
+			base.Background = value;
+		}
+	}
 
-	#region Clone
-
+	// Clone
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
@@ -53,29 +61,16 @@ public class Button : Cell {
 		return new Button(this);
 	}
 
-	#endregion
-
-	#region Visual Elements
-
-	public new Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IButton Background {
-		get { return (Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.VisualElements.IButton)base.Background; }
-		set { base.Background = value; }
-	}
-
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
 
 		if (context.CellRange.Contains(context.Grid.MouseDownPosition))
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Pressed;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ButtonStyle.Pressed;
 		else if (context.CellRange.Contains(context.Grid.MouseCellPosition))
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Hot;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ButtonStyle.Hot;
 		else if (context.CellRange.Contains(context.Grid.Selection.ActivePosition))
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Focus;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ButtonStyle.Focus;
 		else
-			Background.Style = Sphere10.Framework.Windows.Forms.SourceGrid.Drawing.ButtonStyle.Normal;
+			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ButtonStyle.Normal;
 	}
-
-	#endregion
-
 }
-
