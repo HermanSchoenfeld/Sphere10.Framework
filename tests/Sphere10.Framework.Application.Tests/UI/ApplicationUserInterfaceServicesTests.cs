@@ -207,9 +207,9 @@ public class ApplicationUserInterfaceServicesTests {
 
 	private sealed class TrackingUiServices(IApplicationScreenHost host, IServiceProvider provider) : ApplicationUserInterfaceServices(host, provider) {
 		public int Disposals { get; private set; }
-		protected override void FreeManagedResources() {
+		protected override void DisposeInternal() {
 			Disposals++;
-			base.FreeManagedResources();
+			base.DisposeInternal();
 		}
 	}
 

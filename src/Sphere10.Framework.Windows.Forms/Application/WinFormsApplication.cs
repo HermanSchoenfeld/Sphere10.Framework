@@ -173,12 +173,12 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 		base.SetToolBarItems(definitions);
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		EnsureCanDisposeSynchronously();
-		WaitOnUIThread(FreeManagedResourcesAsync().AsTask());
+		WaitOnUIThread(DisposeInternalAsync().AsTask());
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync() =>
+	protected override ValueTask DisposeInternalAsync() =>
 		new(Environment.CurrentManagedThreadId == _uiThread || IsDisposed || _mainForm.IsDisposed && HasExited ? DisposeOnUIThreadAsync() : DisposeFromWorkerAsync());
 
 	protected override async Task<bool> OnInitializeAsync(CancellationToken cancellationToken) {
@@ -256,7 +256,7 @@ public class WinFormsApplication : AsyncApplicationBase, IWinFormsApplication {
 			if (IsDisposed)
 				DetachMainForm();
 		});
-		await base.FreeManagedResourcesAsync();
+		await base.DisposeInternalAsync();
 	}
 
 	private void WaitOnUIThread(Task operation) {

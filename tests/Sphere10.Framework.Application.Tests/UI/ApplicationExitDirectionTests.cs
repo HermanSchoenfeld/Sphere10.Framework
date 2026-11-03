@@ -377,8 +377,8 @@ public class ApplicationExitDirectionTests {
 
 		protected override GuardScreen CreateScreen(GuardBlock block, ApplicationScreenDefinition definition) => new();
 
-		protected override void FreeManagedResources() {
-			base.FreeManagedResources();
+		protected override void DisposeInternal() {
+			base.DisposeInternal();
 			UI.Dispose();
 		}
 	}

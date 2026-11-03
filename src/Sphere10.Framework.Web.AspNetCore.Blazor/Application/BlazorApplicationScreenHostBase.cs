@@ -270,10 +270,10 @@ public abstract class BlazorApplicationScreenHostBase : ApplicationScreenHost<IB
 		return screen;
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		_ownedUserInterface?.Dispose();
 		foreach (var screen in Screens)
 			screen.SetScreen(null);
-		base.FreeManagedResources();
+		base.DisposeInternal();
 	}
 }

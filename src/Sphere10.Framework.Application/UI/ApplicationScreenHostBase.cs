@@ -143,7 +143,7 @@ public abstract class ApplicationScreenHostBase<TBlock, TScreen> : Disposable, I
 
 	protected virtual void OnScreenSelected(IApplicationScreen screen) => ScreenSelected?.Invoke(screen);
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		Changed = null;
 		ScreenSelected = null;
 	}

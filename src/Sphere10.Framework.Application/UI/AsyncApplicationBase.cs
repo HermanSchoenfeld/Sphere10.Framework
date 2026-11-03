@@ -109,12 +109,12 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 	protected override void OnFinalize()
 		=> Task.Run(() => OnFinalizeAsync(CancellationToken.None)).GetAwaiter().GetResult();
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		EnsureCanDisposeSynchronously();
 		// Sync-over-async pattern
-		Task.Run(() => FreeManagedResourcesAsync().AsTask()).GetAwaiter().GetResult();
+		Task.Run(() => DisposeInternalAsync().AsTask()).GetAwaiter().GetResult();
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync()
+	protected override ValueTask DisposeInternalAsync()
 		=> new(DisposeCore(() => FinalizeAsync()));
 }

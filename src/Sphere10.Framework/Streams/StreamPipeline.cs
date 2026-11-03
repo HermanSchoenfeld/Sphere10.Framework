@@ -21,7 +21,6 @@ namespace Sphere10.Framework;
 /// Filters must finish their writes and finalize any buffering wrappers before returning.
 /// </remarks>
 public class StreamPipeline : IDisposable {
-	private readonly ManualResetEvent _lastStagedFinished;
 	private readonly Action<Stream, Stream>[] _filters;
 	private List<BlockingStream> _blockingStreams;
 
@@ -42,7 +41,6 @@ public class StreamPipeline : IDisposable {
 		for (var i = 0; i < filters.Length - 1; i++) {
 			_blockingStreams.Add(new BlockingStream());
 		}
-		_lastStagedFinished = new ManualResetEvent(false);
 	}
 
 	/// <summary>Starts the preceding filters and invokes the final filter on the calling thread.</summary>

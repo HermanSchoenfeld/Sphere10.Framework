@@ -403,7 +403,7 @@ public class Scheduler<TJob, TJobSchedule> : SyncDisposable where TJob : class, 
 		}
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		_timer.Stop();
 		_timer.Elapsed -= _timerHandler;
 		_timeLine.Clear();

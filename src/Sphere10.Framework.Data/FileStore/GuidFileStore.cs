@@ -85,7 +85,7 @@ public class GuidFileStore : FileStoreBase<Guid> {
 		Tools.FileSystem.DeleteAllFiles(BaseDirectory, true);
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (PersistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {
 			Clear();
 		}

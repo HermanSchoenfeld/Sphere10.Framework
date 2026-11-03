@@ -185,15 +185,16 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 			if (dimension.Container.ObjectStream.IsReaped(index))
 				return false;
 
-			// Deserialize from stream
-			item = dimension.Container.ObjectStream.LoadItem(index);
+			// Retain one boxed instance for value types across all identity maps.
+			var loadedItem = (object)dimension.Container.ObjectStream.LoadItem(index);
 
 			// Track item instance
-			_instanceTracker.Track(item, index);
-			dimension.Definition.ChangeTracker.SetChanged(item, false);
+			_instanceTracker.Track(loadedItem, index);
+			dimension.Definition.ChangeTracker.SetChanged(loadedItem, false);
 
 			// Eagerly assign the ObjectSpaceObjectReference (Task 6) so it is known before any serialization
-			_instanceTracker.TrackRef(item, new ObjectSpaceObjectReference(dimIdx, index));
+			_instanceTracker.TrackRef(loadedItem, new ObjectSpaceObjectReference(dimIdx, index));
+			item = (TItem)loadedItem;
 
 			return true;
 		}

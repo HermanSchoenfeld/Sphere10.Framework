@@ -283,7 +283,9 @@ public class SerializationContext : SyncDisposable, IScope {
 
 	}
 
-	protected override void FreeManagedResources() => OnScopeEnd();
+	protected override void DisposeInternal() {
+		OnScopeEnd();
+	}
 
 	// --- External reference support (virtual methods for subclass override) ---
 

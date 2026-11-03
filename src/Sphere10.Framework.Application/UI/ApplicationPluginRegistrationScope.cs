@@ -38,7 +38,7 @@ internal sealed class ApplicationPluginRegistrationScope : SyncDisposable, IScop
 
 	public void Commit() => _committed = true;
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		using var reservation = Tools.Scope.ExecuteOnDispose(() => {
 			using var access = _reservation.EnterAccessScope();
 			if (_loadingNames.TryGetValue(_services, out var names)) {

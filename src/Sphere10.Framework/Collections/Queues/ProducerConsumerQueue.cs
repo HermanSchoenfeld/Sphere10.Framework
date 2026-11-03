@@ -282,7 +282,7 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 	/// <summary>
 	/// Releases managed resources and marks the queue as finished.
 	/// </summary>
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		lock (_threadLock) {
 			_sharedAccess.Dispose();
 			// NOTE: when debugging SemaphoreSlim bug, disable below 2 lines to prevent threads doing stuff after this is disposed by unit test

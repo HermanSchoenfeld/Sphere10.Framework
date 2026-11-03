@@ -11,17 +11,19 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
+/// <summary>Awaits a supplied asynchronous action when disposed.</summary>
 public sealed class TaskDisposable : AsyncDisposable {
 	private readonly Func<Task> _scopeFinalizer;
 
+	/// <summary>Retains the asynchronous action to run during managed cleanup.</summary>
 	public TaskDisposable(Func<Task> scopeFinalizer) {
 		_scopeFinalizer = scopeFinalizer;
 	}
 
-	protected override async ValueTask FreeManagedResourcesAsync() {
+	/// <summary>Awaits the retained action when one was supplied.</summary>
+	protected override async ValueTask DisposeInternalAsync() {
 		if (_scopeFinalizer != null)
 			await _scopeFinalizer();
-
 	}
 }
 

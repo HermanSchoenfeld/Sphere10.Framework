@@ -90,9 +90,9 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 		}
 	}
 
-	protected virtual ValueTask OnScopeEndAsync() => base.FreeManagedResourcesAsync();
+	protected virtual ValueTask OnScopeEndAsync() => base.DisposeInternalAsync();
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		// Native controls must remain on their creating UI thread, including asynchronous disposal.
 		OnScopeEnd();
 	}

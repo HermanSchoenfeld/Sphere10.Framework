@@ -21,12 +21,12 @@ public abstract class WinFormsSyncDisposableBase : SyncDisposable {
 		_synchronizationContext = SynchronizationContext.Current as WindowsFormsSynchronizationContext ?? new WindowsFormsSynchronizationContext();
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync() {
+	protected override ValueTask DisposeInternalAsync() {
 		// The thread's dispatcher outlives an owned modal dialog; synchronous disposal never pumps its queued callbacks.
 		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		_synchronizationContext.Post(static state => {
 			var (owner, completion) = ((WinFormsSyncDisposableBase, TaskCompletionSource))state;
-			if (Tools.Exceptions.Execute(owner.FreeManagedResources, completion.SetException))
+			if (Tools.Exceptions.Execute(owner.DisposeInternal, completion.SetException))
 				completion.SetResult();
 		}, (this, completion));
 		return new ValueTask(completion.Task);

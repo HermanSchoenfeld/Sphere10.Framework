@@ -114,10 +114,10 @@ public class BlazorUserInterfaceServices : ApplicationUserInterfaceServices, IBl
 		}
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		_controller = null;
 		_dispatcher = null;
 		_controllerBinding = null;
-		base.FreeManagedResources();
+		base.DisposeInternal();
 	}
 }

@@ -477,7 +477,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		return deleted;
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (_disposed)
 			return;
 		_disposed = true;
@@ -491,8 +491,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		// Outstanding source calls cannot be cancelled; their completions release the gate and are ignored.
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync() {
-		FreeManagedResources();
+	protected override ValueTask DisposeInternalAsync() {
+		DisposeInternal();
 		return ValueTask.CompletedTask;
 	}
 

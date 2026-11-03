@@ -50,7 +50,7 @@ public sealed class WindowHighlightScope : WinFormsSyncDisposableBase, IScope {
 		}
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		VerifyThread();
 		using var dpi = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
 		_frame.Dispose();

@@ -84,7 +84,7 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 
 	protected void EnsureUsable() => ObjectDisposedException.ThrowIf(_disposed, this);
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (_disposed)
 			return;
 		_disposed = true;
@@ -93,8 +93,8 @@ public class ApplicationUserInterfaceServices : Disposable, IUserInterfaceServic
 		Changed = null;
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync() {
-		FreeManagedResources();
+	protected override ValueTask DisposeInternalAsync() {
+		DisposeInternal();
 		return ValueTask.CompletedTask;
 	}
 

@@ -634,7 +634,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		base.OnChanged();
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (_disposed)
 			return;
 		_disposed = true;
@@ -655,7 +655,7 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 		_blockDefinitions.Clear();
 		_lifetime.Dispose();
 		_ownedUserInterface?.Dispose();
-		base.FreeManagedResources();
+		base.DisposeInternal();
 	}
 
 	private void DetachScreenOwnership(TScreen screen, IApplicationMenu[] ownedMenus) {
@@ -694,8 +694,8 @@ public class ApplicationScreenHost<TBlock, TScreen> : ApplicationScreenHostBase<
 			owners.Add(block, block);
 	}
 
-	protected override ValueTask FreeManagedResourcesAsync() {
-		FreeManagedResources();
+	protected override ValueTask DisposeInternalAsync() {
+		DisposeInternal();
 		return ValueTask.CompletedTask;
 	}
 

@@ -1002,7 +1002,7 @@ public class WinFormsApplicationScreenHost : WinFormsApplicationScreenHostBase {
 			entered = true;
 		}
 
-		protected override void FreeManagedResources() {
+		protected override void DisposeInternal() {
 			if (--_owner._updateDepth > 0)
 				return;
 			using var rendering = _rendering;

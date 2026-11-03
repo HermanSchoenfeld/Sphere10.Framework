@@ -10,14 +10,17 @@ using System;
 
 namespace Sphere10.Framework;
 
+/// <summary>Invokes a supplied action when disposed.</summary>
 public sealed class ActionDisposable : SyncDisposable {
 	private readonly Action _endAction;
 
+	/// <summary>Retains the action to invoke during managed cleanup.</summary>
 	public ActionDisposable(Action endAction) {
 		_endAction = endAction;
 	}
 
-	protected override void FreeManagedResources() {
+	/// <summary>Invokes the retained action when one was supplied.</summary>
+	protected override void DisposeInternal() {
 		_endAction?.Invoke();
 	}
 }

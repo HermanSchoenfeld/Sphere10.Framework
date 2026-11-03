@@ -13,7 +13,9 @@ namespace Sphere10.Framework;
 public abstract class AsyncRepositoryBase<TEntity, TIdentity> : RepositoryBase<TEntity, TIdentity> {
 
 	// Sync-over-async pattern
-	protected sealed override void FreeManagedResources() => Task.Run(() => FreeManagedResourcesAsync().AsTask()).GetAwaiter().GetResult();
+	protected sealed override void DisposeInternal() {
+		Task.Run(() => DisposeInternalAsync().AsTask()).GetAwaiter().GetResult();
+	}
 
 	// Sync-over-async pattern
 	public override bool Contains(TIdentity identity)

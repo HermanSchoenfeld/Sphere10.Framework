@@ -84,7 +84,7 @@ public class UDPServer : AsyncDisposable {
 	protected virtual bool IsEndpointAccepted(IPEndPoint channel) => true;
 
 
-	protected override async ValueTask FreeManagedResourcesAsync() {
+	protected override async ValueTask DisposeInternalAsync() {
 		if (Running)
 			Stop();
 	}

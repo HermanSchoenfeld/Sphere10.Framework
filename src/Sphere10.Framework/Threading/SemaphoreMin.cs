@@ -42,7 +42,7 @@ internal class SemaphoreMin : SyncDisposable {
 		Monitor.Exit(_lock);
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (_currentCount != 0)
 			throw new InvalidOperationException("SemaphoreMin has an active waiter");
 		if (Monitor.IsEntered(_lock))

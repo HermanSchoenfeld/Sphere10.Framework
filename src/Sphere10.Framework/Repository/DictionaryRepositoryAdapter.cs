@@ -50,7 +50,7 @@ public class DictionaryRepositoryAdapter<TEntity, TIdentity, TDict> : SyncReposi
 	public override void Clear()
 		=> _dictionary.Clear();
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (_dictionary is IDisposable disposableDictionary)
 			disposableDictionary.Dispose();
 	}

@@ -135,7 +135,7 @@ public class SimpleFileStore : FileStoreBase<string> {
 		return Guid.NewGuid().ToStrictAlphaString().ToLowerInvariant() + ".file";
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (PersistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {
 			Clear();
 		}

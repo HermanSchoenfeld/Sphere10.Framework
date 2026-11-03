@@ -144,7 +144,7 @@ directional bases instead of repeating them in concrete owners or composing a
 base through a property. Small resource-cleanup structs continue to implement
 `IScope` directly; see [resource scopes](resource-scopes.md#class-owners).
 
-`SyncDisposable` leaves `FreeManagedResources()` abstract. Its default
+`SyncDisposable` leaves `DisposeInternal()` abstract. Its default
 virtual async adapter schedules that work with `Task.Run` and returns its
 completion and failure. Platform bases can specialize the execution location
 while retaining the same cleanup primitive. `SyncRepositoryBase` and
@@ -153,7 +153,7 @@ cleanup inline and returning a completed
 `ValueTask`, including an `async` method without an await, still blocks the
 caller and is not this adapter.
 
-`AsyncDisposable` leaves `FreeManagedResourcesAsync()` abstract. Its sealed
+`AsyncDisposable` leaves `DisposeInternalAsync()` abstract. Its sealed
 synchronous adapter invokes that factory inside `Task.Run`, outside the
 caller's synchronization context, then joins the complete operation and
 propagates its failure. Convert the returned `ValueTask` with `AsTask()` once

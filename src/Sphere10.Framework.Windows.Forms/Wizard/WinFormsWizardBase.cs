@@ -271,7 +271,7 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 		return result;
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		// Screens removed by branching still belong to this native wizard.
 		if (_workflow == null && _ownedScreens.Count == 0)
 			_ownedScreens.UnionWith(ConstructScreens());

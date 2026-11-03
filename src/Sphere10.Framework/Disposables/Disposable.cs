@@ -22,19 +22,22 @@ namespace Sphere10.Framework;
 // or memory in the unmanaged heap.
 
 
+/// <summary>Coordinates synchronous or asynchronous managed cleanup with once-only unmanaged cleanup.</summary>
 public abstract class Disposable : IAsyncDisposable, IDisposable {
 	private bool _disposed;
 
+	/// <summary>Releases managed and unmanaged resources, then suppresses finalization.</summary>
 	public virtual void Dispose() {
 		Dispose(true);
 		GC.SuppressFinalize(this); // Use SupressFinalize in case a subclass of this type implements a finalizer.
 	}
 
+	/// <summary>Awaits managed cleanup before releasing unmanaged resources and suppressing finalization.</summary>
 	public virtual async ValueTask DisposeAsync() {
 		if (_disposed)
 			return;
 
-		await FreeManagedResourcesAsync().ConfigureAwait(false);
+		await DisposeInternalAsync().ConfigureAwait(false);
 
 		Dispose(disposing: false);
 
@@ -43,24 +46,29 @@ public abstract class Disposable : IAsyncDisposable, IDisposable {
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 	}
 
+	/// <summary>Performs the remaining cleanup and marks disposal complete only after cleanup succeeds.</summary>
 	protected virtual void Dispose(bool disposing) {
-		if (_disposed) return;
+		if (_disposed)
+			return;
 
 		// If you need thread safety, use a lock around these 
 		// operations, as well as in your methods that use the resource.
 
 		if (disposing)
-			FreeManagedResources();
+			DisposeInternal();
 
 		FreeUnmanagedResources();
 
 		_disposed = true;
 	}
 
-	protected abstract ValueTask FreeManagedResourcesAsync();
+	/// <summary>Releases managed resources asynchronously; direction-specific bases provide the opposite adapter.</summary>
+	protected abstract ValueTask DisposeInternalAsync();
 
-	protected abstract void FreeManagedResources();
+	/// <summary>Releases managed resources synchronously; direction-specific bases provide the opposite adapter.</summary>
+	protected abstract void DisposeInternal();
 
+	/// <summary>Releases native resources after managed cleanup has completed.</summary>
 	protected virtual void FreeUnmanagedResources() {
 	}
 

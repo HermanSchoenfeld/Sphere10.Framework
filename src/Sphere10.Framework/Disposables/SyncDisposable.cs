@@ -13,7 +13,10 @@ namespace Sphere10.Framework;
 /// <summary>Adapts synchronous managed cleanup to asynchronous disposal through a worker.</summary>
 public abstract class SyncDisposable : Disposable {
 
-	protected override ValueTask FreeManagedResourcesAsync() => new(Task.Run(FreeManagedResources));
+	/// <summary>Runs the synchronous cleanup hook on a worker and returns its completion.</summary>
+	protected override ValueTask DisposeInternalAsync() {
+		return new(Task.Run(DisposeInternal));
+	}
 
 }
 

@@ -45,6 +45,36 @@ public class FlatStorageObjectSpaceTests {
 		}
 	}
 
+	/// <summary>Verifies that hydrated value types retain separate slots and remain readable from the identity cache.</summary>
+	[Test]
+	public void RawOpenReadsEqualValueTypeItemsFromDistinctSlots([Values] Endianness endianness, [Values] bool garbageCollection) {
+		using var raw = new MemoryStream();
+		var builder = new ObjectSpaceBuilder()
+			.StoreMetaData()
+			.WithEndianness(endianness)
+			.UseMemoryStream(raw)
+			.AddDimension<long>(true)
+				.AsRoot()
+				.Done();
+		if (garbageCollection)
+			builder.WithGarbageCollection();
+		using (var created = builder.Build()) {
+			created.Save(17L);
+			created.Save(17L);
+			created.Save(18L);
+		}
+
+		raw.Position = 0;
+		Assert.That(ObjectSpace.TryOpenFromStream(raw, endianness, out var opened), Is.True);
+		using (opened) {
+			Assert.That(opened.GetAll<long>(), Is.EqualTo(new long[] { 17, 17, 18 }));
+			Assert.That(opened.Get<long>(2), Is.EqualTo(18L));
+			Assert.That(opened.Get<long>(1), Is.EqualTo(17L));
+			Assert.That(opened.Get<long>(0), Is.EqualTo(17L));
+			Assert.That(opened.Count<long>(), Is.EqualTo(3));
+		}
+	}
+
 	/// <summary>Verifies reconstructed dimensions, tracked identity, indexes and Merkle roots across further writes.</summary>
 	[Test]
 	public void RawOpenReconstructsDimensionsIndexesAndFurtherWrites(

@@ -66,13 +66,13 @@ public abstract class ContextScope : Disposable, IContextScope {
 		return base.DisposeAsync();
 	}
 
-	protected sealed override void FreeManagedResources() {
+	protected sealed override void DisposeInternal() {
 		OnScopeEndInternal();
 		if (IsRootScope)
 			OnContextEnd();
 	}
 
-	protected sealed override async ValueTask FreeManagedResourcesAsync() {
+	protected sealed override async ValueTask DisposeInternalAsync() {
 		await OnScopeEndInternalAsync();
 		if (IsRootScope)
 			await OnContextEndAsync();

@@ -10,13 +10,19 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
+/// <summary>Owns a collection of resources disposed through the caller's chosen direction.</summary>
 public class DisposableResource : Disposable {
 
+	/// <summary>Resources owned by this instance and its derived implementations.</summary>
 	protected Disposables Disposables = new Disposables();
 
-	protected override ValueTask FreeManagedResourcesAsync() => Disposables.DisposeAsync();
+	/// <summary>Awaits asynchronous cleanup of the owned resources.</summary>
+	protected override ValueTask DisposeInternalAsync() {
+		return Disposables.DisposeAsync();
+	}
 
-	protected override void FreeManagedResources() {
+	/// <summary>Disposes the owned resources synchronously.</summary>
+	protected override void DisposeInternal() {
 		Disposables.Dispose();
 	}
 }

@@ -82,7 +82,7 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 		_registeredShortcut = Keys.None;
 	}
 
-	protected override void FreeManagedResources() {
+	protected override void DisposeInternal() {
 		if (_disposed)
 			return;
 		EnsureUsable();
