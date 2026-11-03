@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,6 +46,56 @@ public class ScreenSettingsOwnershipTests {
 		Assert.That(typeof(Test1Settings).FullName, Is.EqualTo("Sphere10.Framework.Utils.WinFormsTester.Test1Settings"));
 		Assert.That(typeof(EmailTestScreen.EmailerSettings).FullName, Is.EqualTo("Sphere10.Framework.Utils.WinFormsTester.Screens.EmailTestScreen+EmailerSettings"));
 		Assert.That(typeof(ObjectSpaceScreen.ScreenSettings).FullName, Is.EqualTo("Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+ScreenSettings"));
+	}
+
+	[TestCase(typeof(VisualGridTestScreen.VisualGridShowcaseSettings), false)]
+	[TestCase(typeof(VisualGridTestScreen.VisualGridShowcaseSettings), true)]
+	[TestCase(typeof(ScreenHostingDesignTestScreen.ScreenHostingPreferences), false)]
+	[TestCase(typeof(ScreenHostingDesignTestScreen.ScreenHostingPreferences), true)]
+	public void TesterGridSettingsResetTheirDeclaredSchemasWithoutActivationOrProviderAccess(Type settingsType, bool clearGrids) {
+		// Defaults are ordinary values; a prohibited provider detects any accidental storage access.
+		var settings = (SettingsObject)Tools.Object.Create(settingsType);
+		var provider = new ProhibitedSettingsProvider();
+		settings.ID = "TesterGridDefaults";
+		settings.Provider = provider;
+		using var expected = new StringWriter();
+		new SettingsObjectJsonSerializer().Serialize(expected, settings);
+
+		// Column membership/order, geometry and query edits must all return to the original declaration.
+		var properties = TypeDescriptor.GetProperties(settings).Cast<PropertyDescriptor>().Where(property => property.PropertyType == typeof(VisualGridSettings)).ToArray();
+		Assert.That(properties, Has.Length.EqualTo(2));
+		foreach (var property in properties) {
+			var grid = (VisualGridSettings)property.GetValue(settings);
+			grid.Columns = grid.Columns.Reverse().Skip(1).ToArray();
+			foreach (var column in grid.Columns) {
+				column.Width = 237;
+				column.ExpandsToFit = true;
+			}
+			grid.PageMode = VisualGridPageMode.Single;
+			grid.PageSize = 19;
+			grid.PageNumber = 2;
+			grid.SortColumnName = "Name";
+			grid.SortDirection = SortDirection.Descending;
+			if (clearGrids)
+				property.SetValue(settings, null);
+		}
+
+		// Reset preserves the actual root identity/provider and restores valid values without creating controls.
+		settings.RestoreDefaultValues();
+		using var actual = new StringWriter();
+		new SettingsObjectJsonSerializer().Serialize(actual, settings);
+		Assert.That(actual.ToString(), Is.EqualTo(expected.ToString()));
+		Assert.That(settings.ID, Is.EqualTo("TesterGridDefaults"));
+		Assert.That(settings.Provider, Is.SameAs(provider));
+		Assert.That(settings.Validate().IsSuccess, Is.True);
+		var failures = new List<ValidationResult>();
+		Assert.That(Validator.TryValidateObject(settings, new ValidationContext(settings), failures, true), Is.True);
+		foreach (var property in properties) {
+			var grid = (VisualGridSettings)property.GetValue(settings);
+			var mode = property.Name == nameof(VisualGridTestScreen.VisualGridShowcaseSettings.LiveGrid) ? VisualGridPageMode.Auto : VisualGridPageMode.Paged;
+			Assert.That(grid.PageMode, Is.EqualTo(mode), property.Name);
+			Assert.That(grid.Validate().IsSuccess, Is.True, property.Name);
+		}
 	}
 
 	[Test]

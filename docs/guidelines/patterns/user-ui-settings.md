@@ -58,6 +58,13 @@ persistence-specific `ShouldSerialize` policies, so Cancel and Reset remain usef
 An explicitly requested Options owner takes precedence; otherwise prefer the
 active screen's settings and retain the existing owner/first-page fallback.
 
+Native Options Reset confirms the affected branch/count, then resets the selected
+owner and descendants by default, including settings without an editor. All
+resets remain provisional; default Apply commits pending resets across navigation,
+and OK always commits every pending reset. Configure the native dialog's `Policy`
+with `ApplicationSettingsScreenPolicy` flags as described in
+[Screen Options](../../usage/screen-options.md#native-reset-policies).
+
 ## Standalone settings
 
 Give settings types feature-specific names: the default file provider uses short

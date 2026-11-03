@@ -51,7 +51,7 @@ public class ApplicationSettingsEditorSelectionTests {
 			Assert.That(unmarked.Settings, Is.Not.Null);
 			Assert.That(Find<Panel>(dialog, "_editorHost").Controls.OfType<DefaultCrudEntityEditor>(), Is.Empty);
 			Assert.That(Find<Button>(dialog, "_apply").Enabled, Is.False);
-			Assert.That(Find<Button>(dialog, "_reset").Enabled, Is.False);
+			Assert.That(Find<Button>(dialog, "_reset").Enabled, Is.True, "Reset targets are configured independently of editor availability.");
 			Assert.That(await dialog.ApplySelectedAsync(), Is.True);
 			Assert.That(store.Saves, Is.Zero);
 

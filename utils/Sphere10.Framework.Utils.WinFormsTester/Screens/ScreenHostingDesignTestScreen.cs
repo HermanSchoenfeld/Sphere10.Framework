@@ -81,12 +81,12 @@ public partial class ScreenHostingDesignTestScreen : ScreenHostingTestScreen {
 		/// <summary>The primary table's independent preference role.</summary>
 		[Category("Grids")]
 		[DisplayName("Records grid")]
-		public VisualGridSettings Grid { get; set; } = CreateGrid(5);
+		public VisualGridSettings Grid { get; set; }
 
 		/// <summary>The second table's independent preference role.</summary>
 		[Category("Grids")]
 		[DisplayName("Details grid")]
-		public VisualGridSettings DetailsGrid { get; set; } = CreateGrid(3);
+		public VisualGridSettings DetailsGrid { get; set; }
 
 		/// <summary>The optional output's plain remembered preferences.</summary>
 		[Category("Logging")]
@@ -99,18 +99,8 @@ public partial class ScreenHostingDesignTestScreen : ScreenHostingTestScreen {
 			if (Appearance != null)
 				Tools.Object.SetDefaultValues(Appearance);
 			SavedViews = new[] { new SavedView() };
-			Grid?.RestoreDefaultValues();
-			if (Grid != null) {
-				Grid.PageMode = VisualGridPageMode.Paged;
-				Grid.PageSize = 5;
-				Grid.SortDirection = SortDirection.None;
-			}
-			DetailsGrid?.RestoreDefaultValues();
-			if (DetailsGrid != null) {
-				DetailsGrid.PageMode = VisualGridPageMode.Paged;
-				DetailsGrid.PageSize = 3;
-				DetailsGrid.SortDirection = SortDirection.None;
-			}
+			Grid = CreateGrid(5);
+			DetailsGrid = CreateGrid(3);
 			LogOutput?.RestoreDefaultValues();
 		}
 

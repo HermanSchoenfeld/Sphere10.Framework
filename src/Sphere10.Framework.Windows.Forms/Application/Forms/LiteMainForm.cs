@@ -76,8 +76,13 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	// Keep the existing dialog's actual owner graph and provider while choosing the calling native window.
 	private async Task<DialogResult> ShowScreenOptionsAsync(object selectedOwner, IWin32Window owner, CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
-		using var dialog = new WinFormsApplicationSettingsDialog(Application as IWinFormsApplication, ApplicationServices, selectedOwner);
+		using var dialog = CreateScreenOptionsDialog(selectedOwner);
 		return await dialog.ShowDialogAsync(owner);
+	}
+
+	/// <summary>Lets an application configure the Options dialog's policies before the existing host shows it.</summary>
+	protected virtual WinFormsApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
+		return new WinFormsApplicationSettingsDialog(Application as IWinFormsApplication, ApplicationServices, selectedOwner);
 	}
 
 	#region Form Methods

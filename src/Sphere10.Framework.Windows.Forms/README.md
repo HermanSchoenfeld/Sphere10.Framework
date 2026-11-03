@@ -1271,8 +1271,15 @@ meaning.
 
 Apply validates the actual object and awaits `SaveAsync()`. Cancel restores local
 dialog backups for unapplied edits while retaining earlier successful Apply
-operations. Reset calls the actual object's `RestoreDefaultValues()`; saving those
-defaults remains an explicit Apply or OK operation. See the complete
+operations. Reset confirms its impact and calls `RestoreDefaultValues()` on the
+selected owner's settings and descendants by default, including settings without
+editors. Defaults remain provisional until Apply/OK. The native dialog's `Policy`
+uses the `ApplicationSettingsScreenPolicy` flags `ResetDescendants`,
+`IncludeNonEditableSettings` and `ApplyPendingResetScope`; `Default` combines all
+three. `None` limits Reset to the selected editable page and Apply to the selected
+page. Default Apply saves pending resets across navigation; OK always saves all
+pending reset pages. Unrelated manually edited pages retain their existing rules.
+See the [native reset policy table](../../docs/usage/screen-options.md#native-reset-policies) and the complete
 [native pattern](../../docs/guidelines/patterns/winforms-screen-settings.md) and
 [Screen Options](../../docs/usage/screen-options.md).
 

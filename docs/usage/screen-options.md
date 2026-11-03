@@ -171,6 +171,49 @@ component explicitly. It receives `Value` and an awaited `Changed` callback.
 The selected page stays fixed while asynchronous validation or storage runs.
 Editor metadata is not serialized.
 
+### Native reset policies
+
+WinForms **Reset Defaults** asks for confirmation with the selected branch,
+affected settings-page count and impact. By default it restores the selected
+owner and all descendants, including settings objects without an editor. The
+application node is a container; its descendants supply the actual settings
+objects. Reset stays provisional until Apply or OK, and Cancel restores all
+unapplied resets.
+
+`WinFormsApplicationSettingsDialog.Policy` uses the flags enum
+`ApplicationSettingsScreenPolicy`. The independent flags can be combined:
+
+| Flag | Effect |
+|---|---|
+| `None` | Reset only the selected owner, target editable settings only, and Apply only the selected page. |
+| `ResetDescendants` | Include settings-bearing descendants in Reset. |
+| `IncludeNonEditableSettings` | Include settings objects without a user editor. |
+| `ApplyPendingResetScope` | Apply all pending reset pages as well as the selected page. |
+| `Default` | Combine all three flags; this is the dialog's default policy. |
+
+With `ApplyPendingResetScope`, Apply saves the selected page and all pending reset
+pages, including resets made before navigating to another branch. Without it,
+Apply saves only the selected page. OK always saves all pending reset pages and
+the selected manual page; unrelated manually edited pages retain their existing
+Apply/Cancel rules.
+The UI Reset action confirms first; the imperative `ResetSelectedDefaults()`
+method performs the reset without showing that prompt. These policies apply to
+the native dialog; the web editor retains its existing behavior.
+
+Override `LiteMainForm.CreateScreenOptionsDialog` in the application's main form
+to configure the normal Options window. The existing show route retains modal
+presentation and disposal ownership:
+
+```csharp
+public partial class MainForm : BlockMainForm {
+	protected override WinFormsApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
+		var dialog = base.CreateScreenOptionsDialog(selectedOwner);
+		dialog.Policy = ApplicationSettingsScreenPolicy.None;
+		return dialog;
+	}
+}
+```
+
 ## Grids and logging
 
 Each logical grid uses its own existing `VisualGridSettings` or

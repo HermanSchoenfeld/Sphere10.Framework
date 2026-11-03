@@ -206,8 +206,14 @@ The supplied object is retained; it is not a captured defaults template.
 
 Defaults are declared by `[DefaultValue]` on the settings class's members.
 `SettingsObject` activation already applies them. Options Reset calls the actual
-object's `RestoreDefaultValues()`. For nested values that attributes cannot
-express, override that existing method, call base and restore the domain's nested
+object's `RestoreDefaultValues()`. The native dialog confirms the selected
+branch's impact and defaults to resetting that owner plus descendants, including
+settings without editors. Defaults stay provisional; Apply normally saves the
+pending reset scope across navigation, and OK always saves all pending resets.
+See the [native reset policies](../../usage/screen-options.md#native-reset-policies)
+for the reusable dialog's `Policy` property and `ApplicationSettingsScreenPolicy`
+flags. For nested values that attributes cannot express, override that existing
+method, call base and restore the domain's nested
 defaults there. This keeps activation and Reset consistent. Do not add factories
 or constructor cloning to registrations or editors.
 
@@ -234,7 +240,9 @@ access with and without screen settings; first-query restoration; and accepted
 versus rejected closure. Include a scalar-only edit, accepted close and fresh-provider
 reopen so a grid edit cannot mask a missing dirty notification. Verify transient
 grid changes do not enter that save, explicit Save captures only the selected grid,
-and the default RestoreOnly policy stays temporary until saved. Verify
+and the default RestoreOnly policy stays temporary until saved. Verify cascade
+Reset includes noneditable settings, Cancel restores unapplied descendants, and
+Apply/OK honor their configured scope. Verify
 `ScreenSettings` is non-browsable and hidden from
 designer serialization on each concrete screen. Stop queued owner refreshes
 after removal. `[Transient]` members must not appear in either native or

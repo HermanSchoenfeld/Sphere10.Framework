@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,12 +26,14 @@ namespace Sphere10.Framework.Windows.Forms;
 public partial class WinFormsApplicationSettingsDialog : Form {
 	private readonly Dictionary<SettingsObject, string> _backups = new(ReferenceEqualityComparer.Instance);
 	private readonly HashSet<SettingsObject> _dirty = new(ReferenceEqualityComparer.Instance);
+	private readonly HashSet<SettingsObject> _resetPending = new(ReferenceEqualityComparer.Instance);
 	private readonly IWinFormsApplication _application;
 	private readonly IServiceProvider _services;
 	private object _selectedOwner;
 	private ICrudEntityEditor<object> _editor;
 	private Control _editorControl;
 	private bool _applying;
+	private ApplicationSettingsScreenPolicy _policy = ApplicationSettingsScreenPolicy.Default;
 
 	/// <summary>Creates the native designer surface without resolving application services or settings.</summary>
 	public WinFormsApplicationSettingsDialog() {
@@ -59,11 +62,27 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		}
 	}
 
-	/// <summary>The selected existing plugin, block or screen definition.</summary>
+	/// <summary>The selected existing application, plugin, block or screen definition.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object SelectedOwner {
 		get {
 			return _selectedOwner;
+		}
+	}
+
+	/// <summary>Controls reset descendants, non-editable reset targets and whether Apply saves pending resets beyond the selected page.</summary>
+	[Category("Behavior")]
+	[DefaultValue(ApplicationSettingsScreenPolicy.Default)]
+	[Description("Controls the reset scope and targets, and whether Apply includes pending resets. OK always saves pending resets.")]
+	public ApplicationSettingsScreenPolicy Policy {
+		get {
+			return _policy;
+		}
+		set {
+			Guard.Argument((value & ~(ApplicationSettingsScreenPolicy.ResetDescendants | ApplicationSettingsScreenPolicy.IncludeNonEditableSettings
+				| ApplicationSettingsScreenPolicy.ApplyPendingResetScope)) == ApplicationSettingsScreenPolicy.None, nameof(value), "Select supported settings policy flags.");
+			_policy = value;
+			UpdateButtons();
 		}
 	}
 
@@ -84,33 +103,42 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		node.EnsureVisible();
 	}
 
-	/// <summary>Validates and saves the selected actual settings object, which then notifies its listeners.</summary>
-	public async Task<bool> ApplySelectedAsync(CancellationToken cancellationToken = default) {
-		var settings = GetSettings(_selectedOwner);
-		if (!CanEdit(_selectedOwner))
-			return true;
+	/// <summary>Validates and saves the selected page and any pending resets included by the apply policy.</summary>
+	public Task<bool> ApplySelectedAsync(CancellationToken cancellationToken = default) {
+		return ApplyAsync(Policy.HasFlag(ApplicationSettingsScreenPolicy.ApplyPendingResetScope), cancellationToken);
+	}
+
+	// Each accepted record updates its own backup; a later failure leaves only the remaining changes pending.
+	private async Task<bool> ApplyAsync(bool includePendingReset, CancellationToken cancellationToken = default) {
 		Guard.Ensure(!_applying, "Settings are already being saved.");
 		CaptureEditorChanges();
+		var targets = GetApplyTargets(includePendingReset);
+		if (targets.Length == 0)
+			return true;
 		_applying = true;
 		UpdateButtons();
 		_status.ForeColor = SystemColors.ControlText;
 		_status.Text = "Saving settings...";
 		try {
-			// Use the settings object's existing validation and ordinary data annotations.
-			var result = settings.Validate();
-			var annotations = new List<ValidationResult>();
-			Validator.TryValidateObject(settings, new ValidationContext(settings), annotations, true);
-			if (result.IsFailure || annotations.Count > 0) {
-				ShowError(string.Join(Environment.NewLine, result.ErrorMessages.Concat(annotations.Select(error => error.ErrorMessage))));
-				return false;
-			}
+			foreach (var settings in targets) {
+				// Unopened and unmarked reset pages use the same validation and persistence lifecycle.
+				var result = settings.Validate();
+				var annotations = new List<ValidationResult>();
+				Validator.TryValidateObject(settings, new ValidationContext(settings), annotations, true);
+				if (result.IsFailure || annotations.Count > 0) {
+					ShowError(string.Join(Environment.NewLine, result.ErrorMessages.Concat(annotations.Select(error => error.ErrorMessage))));
+					return false;
+				}
 
-			// A successful explicit save is the only boundary that publishes OnChanged.
-			await settings.SaveAsync(cancellationToken);
-			_backups[settings] = SettingsObjectJsonSerializer.SerializeValues(settings);
-			_dirty.Remove(settings);
-			RefreshPageCaption(_selectedOwner);
-			CreateEditor();
+				// Only successful saves publish OnChanged and leave the pending reset scope.
+				await settings.SaveAsync(cancellationToken);
+				_backups[settings] = SettingsObjectJsonSerializer.SerializeValues(settings);
+				_dirty.Remove(settings);
+				_resetPending.Remove(settings);
+				RefreshPageCaptions(settings);
+				if (ReferenceEquals(GetSettings(_selectedOwner), settings))
+					CreateEditor();
+			}
 			_status.ForeColor = SystemColors.ControlText;
 			_status.Text = "Settings saved.";
 			return true;
@@ -123,18 +151,32 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		}
 	}
 
-	/// <summary>Restores the selected object's declared defaults without saving them.</summary>
+	/// <summary>Restores declared defaults for the selected reset scope without prompting or saving.</summary>
 	public void ResetSelectedDefaults() {
+		ResetDefaults(GetResetTargets(_navigation.SelectedNode));
+	}
+
+	// Back up unvisited targets before changing any values so Cancel can restore the whole reset scope.
+	private void ResetDefaults(SettingsObject[] targets) {
 		Guard.Ensure(!_applying, "Wait for the current settings save to complete.");
-		if (!CanEdit(_selectedOwner))
+		if (targets.Length == 0)
 			return;
-		var settings = GetSettings(_selectedOwner);
-		settings.RestoreDefaultValues();
-		_dirty.Add(settings);
-		CreateEditor();
-		RefreshPageCaption(_selectedOwner);
+		CaptureEditorChanges();
+		foreach (var settings in targets)
+			_backups.TryAdd(settings, SettingsObjectJsonSerializer.SerializeValues(settings));
+		ClearEditor();
+
+		foreach (var settings in targets) {
+			_dirty.Add(settings);
+			_resetPending.Add(settings);
+			settings.RestoreDefaultValues();
+			RefreshPageCaptions(settings);
+		}
+		if (GetSettings(_selectedOwner) != null)
+			CreateEditor();
 		_status.ForeColor = SystemColors.ControlText;
 		_status.Text = "Defaults are provisional until Apply or OK succeeds.";
+		UpdateButtons();
 	}
 
 	/// <summary>Restores local backups for unapplied edits while retaining earlier successful Apply operations.</summary>
@@ -142,8 +184,13 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		CaptureEditorChanges();
 		foreach (var settings in _dirty)
 			SettingsObjectJsonSerializer.PopulateValues(_backups[settings], settings);
+		var restored = _dirty.ToArray();
 		_dirty.Clear();
+		_resetPending.Clear();
+		foreach (var settings in restored)
+			RefreshPageCaptions(settings);
 		ClearEditor();
+		UpdateButtons();
 	}
 
 	// Do not dispose an editor while its explicitly accepted save is still running.
@@ -167,7 +214,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		_emptyPage.Visible = true;
 		var settings = GetSettings(_selectedOwner);
 		if (settings == null) {
-			_emptyPage.Text = "This item has no configurable settings.";
+			_emptyPage.Text = "This item has no settings of its own. Reset Defaults can include its descendant settings.";
 			UpdateButtons();
 			return;
 		}
@@ -234,7 +281,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		Guard.Ensure(ReferenceEquals(_editor.GetEntityWithChanges(), settings), "A settings editor must edit the actual settings object supplied by SetEntity.");
 		if (_editor.HasChanges) {
 			_dirty.Add(settings);
-			RefreshPageCaption(_selectedOwner);
+			RefreshPageCaptions(settings);
 		}
 	}
 
@@ -244,7 +291,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		if (settings == null)
 			return;
 		_dirty.Add(settings);
-		RefreshPageCaption(_selectedOwner);
+		RefreshPageCaptions(settings);
 	}
 
 	// Release only the native editor and its removable event subscription.
@@ -263,6 +310,7 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 	private void PopulateNavigation() {
 		var productName = _services?.GetService<IProductInformationProvider>()?.ProductInformation?.ProductName;
 		var root = _navigation.Nodes.Add(string.IsNullOrWhiteSpace(productName) ? "Application" : productName);
+		root.Tag = _application;
 		if (_application == null)
 			return;
 		foreach (var plugin in _application.LoadedPlugins.Cast<IApplicationPlugin>().Concat(_application.Blocks.Select(block => block.Source).Where(plugin => plugin != null))
@@ -322,23 +370,22 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		return null;
 	}
 
-	// Dirty markers affect presentation only, preserving each owner's registration identity.
-	private void RefreshPageCaption(object owner) {
-		var node = FindOwnerNode(_navigation.Nodes, owner);
-		if (node == null)
-			return;
-		node.Name = string.IsNullOrEmpty(node.Name) ? node.Text : node.Name;
-		node.Text = node.Name + (_dirty.Contains(GetSettings(owner)) ? " *" : string.Empty);
-		if (ReferenceEquals(owner, _selectedOwner))
-			_title.Text = node.Text;
+	// Every alias of a shared settings instance reflects its dialog-local dirty state.
+	private void RefreshPageCaptions(SettingsObject settings) {
+		foreach (var node in EnumerateNodes(_navigation.Nodes).Where(node => ReferenceEquals(GetSettings(node.Tag), settings))) {
+			node.Name = string.IsNullOrEmpty(node.Name) ? node.Text : node.Name;
+			node.Text = node.Name + (_dirty.Contains(settings) ? " *" : string.Empty);
+			if (ReferenceEquals(node, _navigation.SelectedNode))
+				_title.Text = node.Text;
+		}
 	}
 
 	// Keep the existing native layout responsive while an explicit settings save is pending.
 	private void UpdateButtons() {
 		_navigation.Enabled = !_applying;
 		_editorHost.Enabled = !_applying;
-		_apply.Enabled = !_applying && CanEdit(_selectedOwner);
-		_reset.Enabled = _apply.Enabled;
+		_apply.Enabled = !_applying && GetApplyTargets(Policy.HasFlag(ApplicationSettingsScreenPolicy.ApplyPendingResetScope)).Length > 0;
+		_reset.Enabled = !_applying && GetResetTargets(_navigation.SelectedNode).Length > 0;
 		_ok.Enabled = !_applying;
 		_cancel.Enabled = !_applying;
 	}
@@ -363,14 +410,14 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		_status.Text = message;
 	}
 
-	// Apply only the selected actual owner while retaining other dialog-local edits.
+	// Apply the configured reset scope while retaining unrelated manual edits on other pages.
 	private async void ApplyClick(object sender, EventArgs e) {
 		await ApplySelectedAsync();
 	}
 
 	// Close only after the selected save succeeds and other visited pages have been resolved.
 	private async void OkClick(object sender, EventArgs e) {
-		if (!await ApplySelectedAsync())
+		if (!await ApplyAsync(true))
 			return;
 		if (HasUnappliedChanges) {
 			ShowError("Other pages have unapplied changes. Apply them or Cancel to discard the remaining edits.");
@@ -380,9 +427,20 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		Close();
 	}
 
-	// Use the settings object's existing declared-default lifecycle.
-	private void ResetClick(object sender, EventArgs e) {
-		ResetSelectedDefaults();
+	// Confirm the exact pending reset scope through the existing owned native question dialog.
+	private async void ResetClick(object sender, EventArgs e) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+			var node = _navigation.SelectedNode;
+			var targets = GetResetTargets(node);
+			if (targets.Length == 0)
+				return;
+			var message = GetResetQuestion(node, targets.Length);
+			var answer = await DialogEx.ShowAsync(this, SystemIconType.Question, "Reset defaults", message, "Cancel", "Reset defaults");
+			if (answer == DialogExResult.Button2 && !IsDisposed && !Disposing)
+				ResetDefaults(targets);
+		});
+		if (error != null && !IsDisposed)
+			ShowError(error.Message);
 	}
 
 	// Discard only unapplied local edits; previously accepted saves remain authoritative.
@@ -391,4 +449,50 @@ public partial class WinFormsApplicationSettingsDialog : Form {
 		DialogResult = DialogResult.Cancel;
 		Close();
 	}
+
+	// Pending reset records survive navigation; unrelated manual pages are saved only while selected.
+	private SettingsObject[] GetApplyTargets(bool includePendingReset) {
+		var targets = includePendingReset ? _resetPending.ToList() : new List<SettingsObject>();
+		var selected = GetSettings(_selectedOwner);
+		if (selected != null && (CanEdit(_selectedOwner) || _resetPending.Contains(selected))
+			&& (!includePendingReset || _resetPending.Count == 0 || _dirty.Contains(selected)))
+			targets.Add(selected);
+		return targets.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();
+	}
+
+	// Scope and editability are independent policies; an empty grouping node can still have reset targets.
+	private SettingsObject[] GetResetTargets(TreeNode node) {
+		if (node == null)
+			return Array.Empty<SettingsObject>();
+		var nodes = Policy.HasFlag(ApplicationSettingsScreenPolicy.ResetDescendants) ? EnumerateNodes(new[] { node }) : new[] { node };
+		return nodes.Where(entry => Policy.HasFlag(ApplicationSettingsScreenPolicy.IncludeNonEditableSettings) || CanEdit(entry.Tag))
+			.Select(entry => GetSettings(entry.Tag)).Where(settings => settings != null)
+			.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();
+	}
+
+	// Describe the selected level, descendant policy and actual settings count before any defaults change.
+	private string GetResetQuestion(TreeNode node, int count) {
+		var level = node.Tag switch {
+			IApplicationPlugin => "plugin",
+			IApplicationBlock => "block",
+			ApplicationScreenDefinition => "screen",
+			_ => "application"
+		};
+		var name = string.IsNullOrEmpty(node.Name) ? node.Text : node.Name;
+		var descendants = Policy.HasFlag(ApplicationSettingsScreenPolicy.ResetDescendants) && node.Nodes.Count > 0
+			? " and all settings below it" : string.Empty;
+		var pages = count == 1 ? "page" : "pages";
+		var editable = Policy.HasFlag(ApplicationSettingsScreenPolicy.IncludeNonEditableSettings) ? string.Empty : "editable ";
+		return $"Reset defaults for {level} “{name}”{descendants}? This affects {count} {editable}settings {pages}. Changes remain pending until Apply or OK.";
+	}
+
+	// Walk the existing tree directly rather than retaining a second owner hierarchy.
+	private static IEnumerable<TreeNode> EnumerateNodes(IEnumerable nodes) {
+		foreach (TreeNode node in nodes) {
+			yield return node;
+			foreach (var child in EnumerateNodes(node.Nodes))
+				yield return child;
+		}
+	}
+
 }

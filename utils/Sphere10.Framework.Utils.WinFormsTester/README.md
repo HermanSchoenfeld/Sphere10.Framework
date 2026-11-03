@@ -365,6 +365,14 @@ Options lists only screens that have settings. **Plain Screen (No Bars)**,
 
 Open **Workspace > CPU Inspector** and **GPU Inspector**, then **Options > Screen Options...**. Both commands create the existing `ScreenHostingDesignTestScreen` with their original constructor labels and separate stable registrations. `ScreenHostingDesignTestScreen.ScreenHostingPreferences` is a nested `SettingsObject` subclass with standard .NET validation. CPU uses the shared default editor; GPU adds a custom provisional preview while retaining the same nested, collection and grid editor. Each registration supplies its own initial heading; the settings class declares Reset defaults for its detail enum, nested presentation, saved views, two named grid roles and logging section. Options metadata and defaults are available before either inspector opens.
 
+In Screen Options, select a plugin or block and choose **Reset Defaults**. The
+confirmation names the branch, its descendant scope and affected settings-page
+count. Confirm, navigate elsewhere, then Apply: the default policy saves every
+pending reset, including owners without editors. Repeat and Cancel to discard
+unapplied resets. OK always commits all pending reset pages. The reusable native
+dialog exposes one `Policy` property using `ApplicationSettingsScreenPolicy`
+flags for descendant resets, noneditable targets and pending-reset Apply scope.
+
 The **Preferences and grids** tab contains two screen-owned grids and a transient unbound comparison. Drag a column edge, change page mode/size or sort, then close and reopen: those ordinary operations do not replace accepted configuration.
 
 The comparison grid has no saved record. The inspector demonstrates Screen Options ownership; use the [Visual Grid walkthrough](#visual-grid-walkthrough) for the separate header Save/Restore commands.

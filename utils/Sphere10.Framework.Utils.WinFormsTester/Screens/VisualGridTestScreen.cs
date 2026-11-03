@@ -623,55 +623,56 @@ public partial class VisualGridTestScreen : WinFormsApplicationScreen {
 	public class VisualGridShowcaseSettings : SettingsObject {
 		/// <summary>The editable employee table's ordinary VisualGrid settings.</summary>
 		[DisplayName("Editable records grid")]
-		public VisualGridSettings RecordsGrid {
-			get; set;
-		} = new() {
-			PageSize = 25,
-			Columns = new[] {
-				new ApplicationGridColumnPreferences { Key = "ID", Title = "ID" },
-				new ApplicationGridColumnPreferences { Key = "Name", Title = "Name" },
-				new ApplicationGridColumnPreferences { Key = "DateOfBirth", Title = "DOB" },
-				new ApplicationGridColumnPreferences { Key = "Salary", Title = "Salary" },
-				new ApplicationGridColumnPreferences { Key = "UIntField", Title = "Unsigned Int Field" },
-				new ApplicationGridColumnPreferences { Key = "Supervisor", Title = "Supervisor" },
-				new ApplicationGridColumnPreferences { Key = "StartWorkTime", Title = "Start Work Time" },
-				new ApplicationGridColumnPreferences { Key = "Address", Title = "Address (Street)" },
-				new ApplicationGridColumnPreferences { Key = "Location", Title = "Location" },
-				new ApplicationGridColumnPreferences { Key = "Notes", Title = "Notes" },
-				new ApplicationGridColumnPreferences { Key = "Manager", Title = "Manager" },
-				new ApplicationGridColumnPreferences { Key = "EditCommand", Title = "Edit" }
-			}
-		};
+		public VisualGridSettings RecordsGrid { get; set; }
 
 		/// <summary>The live read-only snapshot table's separate ordinary settings.</summary>
 		[DisplayName("Live snapshot grid")]
-		public VisualGridSettings LiveGrid {
-			get; set;
-		} = new() {
-			PageMode = VisualGridPageMode.Auto,
-			PageSize = 25,
-			Columns = new[] {
-				new ApplicationGridColumnPreferences { Key = "Icon", Title = "Image" },
-				new ApplicationGridColumnPreferences { Key = "Id", Title = "ID" },
-				new ApplicationGridColumnPreferences { Key = "Name", Title = "Name" },
-				new ApplicationGridColumnPreferences { Key = "Load", Title = "Load (%)" },
-				new ApplicationGridColumnPreferences { Key = "Bytes", Title = "Bytes" },
-				new ApplicationGridColumnPreferences { Key = "Generation", Title = "Generation" },
-				new ApplicationGridColumnPreferences { Key = "CapturedUtc", Title = "Captured (UTC)" }
-			}
-		};
+		public VisualGridSettings LiveGrid { get; set; }
 
-		/// <summary>Restores each existing grid's layout and the page defaults chosen by this screen.</summary>
+		/// <summary>Restores both grids' complete declared schemas and page defaults.</summary>
 		public override void RestoreDefaultValues() {
 			base.RestoreDefaultValues();
-			RecordsGrid?.RestoreDefaultValues();
-			if (RecordsGrid != null)
-				RecordsGrid.PageSize = 25;
-			LiveGrid?.RestoreDefaultValues();
-			if (LiveGrid != null) {
-				LiveGrid.PageMode = VisualGridPageMode.Auto;
-				LiveGrid.PageSize = 25;
-			}
+			RecordsGrid = CreateRecordsGrid();
+			LiveGrid = CreateLiveGrid();
+		}
+
+		// The editable laboratory uses the same value-only declaration for activation and Reset.
+		private static VisualGridSettings CreateRecordsGrid() {
+			return new VisualGridSettings {
+				PageMode = VisualGridPageMode.Paged,
+				PageSize = 25,
+				Columns = new[] {
+					new ApplicationGridColumnPreferences { Key = "ID", Title = "ID" },
+					new ApplicationGridColumnPreferences { Key = "Name", Title = "Name" },
+					new ApplicationGridColumnPreferences { Key = "DateOfBirth", Title = "DOB" },
+					new ApplicationGridColumnPreferences { Key = "Salary", Title = "Salary" },
+					new ApplicationGridColumnPreferences { Key = "UIntField", Title = "Unsigned Int Field" },
+					new ApplicationGridColumnPreferences { Key = "Supervisor", Title = "Supervisor" },
+					new ApplicationGridColumnPreferences { Key = "StartWorkTime", Title = "Start Work Time" },
+					new ApplicationGridColumnPreferences { Key = "Address", Title = "Address (Street)" },
+					new ApplicationGridColumnPreferences { Key = "Location", Title = "Location" },
+					new ApplicationGridColumnPreferences { Key = "Notes", Title = "Notes" },
+					new ApplicationGridColumnPreferences { Key = "Manager", Title = "Manager" },
+					new ApplicationGridColumnPreferences { Key = "EditCommand", Title = "Edit" }
+				}
+			};
+		}
+
+		// The independent live snapshot table retains its original schema and Auto mode.
+		private static VisualGridSettings CreateLiveGrid() {
+			return new VisualGridSettings {
+				PageMode = VisualGridPageMode.Auto,
+				PageSize = 25,
+				Columns = new[] {
+					new ApplicationGridColumnPreferences { Key = "Icon", Title = "Image" },
+					new ApplicationGridColumnPreferences { Key = "Id", Title = "ID" },
+					new ApplicationGridColumnPreferences { Key = "Name", Title = "Name" },
+					new ApplicationGridColumnPreferences { Key = "Load", Title = "Load (%)" },
+					new ApplicationGridColumnPreferences { Key = "Bytes", Title = "Bytes" },
+					new ApplicationGridColumnPreferences { Key = "Generation", Title = "Generation" },
+					new ApplicationGridColumnPreferences { Key = "CapturedUtc", Title = "Captured (UTC)" }
+				}
+			};
 		}
 	}
 }
