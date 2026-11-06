@@ -260,6 +260,29 @@ Size thumb = original.CreateThumbnailSize(150);
 Console.WriteLine($"Thumbnail: {thumb}");
 ```
 
+### Colour Matrices
+
+`ColorMatrices` builds and combines 5x5 GDI+ `ColorMatrix` values using the
+row-vector convention shared by `ImageAttributes.SetColorMatrix` and the Windows
+Magnification API, so one matrix drives both an image preview and a desktop effect.
+
+```csharp
+using Sphere10.Framework;
+using Sphere10.Framework.Drawing;
+
+var negative = ColorMatrices.FromArray(new[,] {
+	{ -1f, 0f, 0f, 0f, 0f }, { 0f, -1f, 0f, 0f, 0f }, { 0f, 0f, -1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 1f, 1f, 1f, 0f, 1f }
+});
+var adjusted = negative.WithBrightnessContrast(brightness: 0.1f, contrast: 1.2f);   // negative, then contrast, then brightness
+var frames = ColorMatrices.Interpolate(ColorMatrices.Identity, adjusted, steps: 10);  // fade frames ending exactly at the target
+var same = adjusted.ApproximatelyEquals(negative.Then(ColorMatrices.CreateContrast(1.2f)).Then(ColorMatrices.CreateBrightness(0.1f)));
+```
+
+`Multiply`/`Then` apply the first matrix before the second; `CreateBrightness`
+offsets every channel and `CreateContrast` scales around mid-gray. `ToArray`,
+`ToJaggedArray` and `Clone` give independent copies. Matrices are Windows-only
+GDI+ types, so the helpers carry `SupportedOSPlatform("windows6.1")`.
+
 ## 🏗️ Architecture & Modules
 
 **Color Module**: Color conversion, gradients, and color space operations
