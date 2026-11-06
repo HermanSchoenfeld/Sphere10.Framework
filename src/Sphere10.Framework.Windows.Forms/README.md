@@ -1496,7 +1496,35 @@ registration. Modifier-only keys, F12 and unsupported combinations are rejected.
 Disposal unregisters the shortcut and destroys the owned window. The consuming
 application owns its activation policy, settings, user feedback and subscription
 lifetime; keep registration alive when temporarily disabling the operation it
-controls. AutoMouse uses this component for its configurable toggle shortcut.
+controls. AutoMouse and Lumina use this component for their configurable shortcuts.
+
+[HotKeyEditor](HotKeys/Controls/HotKeyEditor.cs) is the matching designer-editable
+`UserControlEx`: Ctrl, Alt and Shift check boxes plus an `EnumComboBox` of the keys
+`GlobalHotKey` accepts (`HotKeyEditor.IsEditableKey`). Read or assign `Shortcut`
+(`Keys.None` for no shortcut) and observe `ShortcutChanged` or the inherited
+`StateChanged`; `HotKeyEditor.Describe(shortcut)` formats "Ctrl+Alt+L" captions.
+
+## On-screen notifications
+
+[OnScreenNotificationForm](Notifications/Forms/OnScreenNotificationForm.cs) is a
+passive, topmost, click-through popup that confirms a state change without taking
+focus, in the style of "AUTOMOUSE ON". `ShowMessage(text)` places it centered
+near the bottom of the screen under the pointer (`ShowMessage(text, screen)`
+selects a screen), replaces any current text and restarts the dismissal timer
+(`DisplayDurationMilliseconds`, default 1500; `BottomMargin` in logical pixels).
+The form autosizes to its text; wording, triggers and whether labels are shown at
+all remain application policy.
+
+## Monitor layout
+
+[MonitorLayoutControl](Display/Controls/MonitorLayoutControl.cs) draws the desktop's
+display arrangement as proportional, selectable tiles in the style of Windows
+display settings. Supply `Items` as [MonitorLayoutItem](Display/MonitorLayoutItem.cs)
+values (key, large label, caption, physical `Bounds`, primary flag, enabled flag
+and accent color); the control owns scaling, hover, the selection ring and
+`SelectedItemChanged`/`SelectedKey`, and `HitTest` resolves a client point. The
+application decides what a tile's caption and accent mean, such as the effect
+applied to that display.
 
 ## 📦 Dependencies
 

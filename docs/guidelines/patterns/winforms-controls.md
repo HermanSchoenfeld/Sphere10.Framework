@@ -43,6 +43,9 @@ worker.
 | Plot captured metric history with gaps, units and hover readings | `TelemetryChart` |
 | Plot generic numeric series or category bars | `GraphChart`, `BarChart` |
 | Use specialized chart types and the absorbed charting API | `Sphere10.Framework.Windows.Forms.DataVisualization.Chart` |
+| Edit a global Ctrl/Alt/Shift shortcut | `HotKeyEditor`, paired with `GlobalHotKey` |
+| Confirm a state change with a passive on-screen label | `OnScreenNotificationForm` |
+| Show the display arrangement as selectable tiles | `MonitorLayoutControl` with `MonitorLayoutItem` values |
 
 ## File, image and logging selectors
 
@@ -223,6 +226,9 @@ behind a concrete nongeneric designer surface.
 | [TelemetryChart](../../../src/Sphere10.Framework.Windows.Forms/Charts/Controls/TelemetryChart.cs) | Captured-history adapter over `GraphChart` with copied `TelemetryChartPoint[]`, percent/byte/rate/Celsius scales, missing-value gaps and nearest-timestamp hover. `SetSamples` accepts captured data; the control has no sampler, timer or application service dependency. All System Expert history views, including the embedded Core Temperatures history, consume this control. See the [chart guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#telemetry-history-charts) for presentation options and UI-thread ownership. |
 | [PanelEx](../../../src/Sphere10.Framework.Windows.Forms/Controls/PanelEx.cs) | UserControlEx surface with no extra domain behavior. |
 | [ExpandingCircle](../../../src/Sphere10.Framework.Windows.Forms/Drawing/Forms/ExpandingCircle.cs), [PerPixelAlphaForm](../../../src/Sphere10.Framework.Windows.Forms/Drawing/Forms/PerPixelAlphaForm.cs) | Specialized overlay animation and alpha-layered bitmap forms; use only when that presentation is required. |
+| [OnScreenNotificationForm](../../../src/Sphere10.Framework.Windows.Forms/Notifications/Forms/OnScreenNotificationForm.cs) | Passive topmost status popup near the bottom of a screen: `ShowMessage(text[, screen])`, `DisplayDurationMilliseconds`, `BottomMargin`. Autosizes to its text, never takes focus and dismisses itself. The application owns wording and triggers; Lumina shows "Lumina Mode: ..." and "Lumina Off". |
+| [MonitorLayoutControl](../../../src/Sphere10.Framework.Windows.Forms/Display/Controls/MonitorLayoutControl.cs), [MonitorLayoutItem](../../../src/Sphere10.Framework.Windows.Forms/Display/MonitorLayoutItem.cs) | Proportional display tiles with label, caption, accent, primary star, hover and selection ring; `Items`, `SelectedKey`, `SelectedItemChanged`, `HitTest`. Supply physical display bounds; captions and accents are application meaning. |
+| [HotKeyEditor](../../../src/Sphere10.Framework.Windows.Forms/HotKeys/Controls/HotKeyEditor.cs) | Ctrl/Alt/Shift check boxes plus a key list limited to what `GlobalHotKey` accepts; `Shortcut`, `ShortcutChanged`, static `IsEditableKey` and `Describe`. |
 | [ToolStripChoiceSelector](../../../src/Sphere10.Framework.Windows.Forms/ToolStrips/Controls/ToolStripChoiceSelector.cs) | `ToolStripDropDownButton` with checked menu choices. Use `SetItems(IEnumerable<object>)`, `SelectedItem`, `SelectedIndex` and `SelectedIndexChanged`; `Items` returns copied array membership retaining original object identity. `ItemTextProvider` formats captions and `EmptyText` labels no selection. Native click/keyboard paths share selection, and disposal releases menu references while borrowing the data objects. Use for fixed toolbar choices; retain editable path fields and complex CRUD pickers for their separate contracts. |
 | [SplitButton](../../../src/Sphere10.Framework.Windows.Forms/Controls/SplitButton.cs) | Primary button plus `SplitMenuStrip`, with `ShowSplit`. |
 | [PadLockButton](../../../src/Sphere10.Framework.Windows.Forms/Controls/PadLockButton.cs) | `LockState`, `ToggleLockState` and `PadLockStateChanged` for a visual locked/unlocked choice. The icon alone does not enforce a permission. |
@@ -301,7 +307,15 @@ without a keyboard hook, supports modifier combinations and disabling, suppresse
 auto-repeat, and preserves an existing registration if a replacement conflicts.
 Keep product preferences and status notifications in the application. See the
 [component guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#global-keyboard-shortcuts)
-for registration and cleanup.
+for registration and cleanup. Edit the shortcut with `HotKeyEditor`; it offers
+only the key and modifier combinations `GlobalHotKey` can register (no Windows
+key, no F12).
+
+For desktop color effects, capture-based overlays and display inventories, use
+[Framework.Windows' magnification and layering APIs](../../../src/Sphere10.Framework.Windows/README.md#magnification-and-overlay-layering)
+(`MagnificationSession`, `MagnifierWindow`, `WindowsWindowLayering`) with the
+Drawing library's `ColorMatrices`; the same `ColorMatrix` previews an effect through
+`ImageAttributes.SetColorMatrix` and applies it to the desktop.
 
 ## Appointment/resource scheduling
 
