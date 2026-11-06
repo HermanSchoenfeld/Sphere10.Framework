@@ -756,6 +756,37 @@ notification per press is required. WinForms consumers can use the owned
 instead of maintaining native window registration themselves. Product settings
 and toggle behavior remain in the consuming application.
 
+## Magnification and overlay layering
+
+[WinAPI.MAGNIFICATION](WinAPI/MAGNIFICATION.cs) declares the Windows Magnification
+API: initialization, the `WC_MAGNIFIER` control, window source/transform/filter
+lists, per-window and full-screen color effects. [MagnificationSession](Magnification/MagnificationSession.cs)
+owns the one process-level `MagInitialize`/`MagUninitialize` lifetime and applies the
+full-screen color effect (`SetFullscreenColorEffect`, `ResetFullscreenColorEffect`);
+disposal uninitializes, which also removes the effect. [MagnifierWindow](Magnification/MagnifierWindow.cs)
+hosts a magnifier control in a passive, topmost, click-through layered popup that
+re-renders `Bounds` (physical pixels) through a GDI+ `ColorMatrix` at 1:1, optionally
+clipped to `SourceBounds`, with `ExcludedWindows` left out of the capture. Windows
+captures a frame each time the source is set, so callers `Refresh()` on a timer.
+Use both on the UI thread that created the session, and keep the session alive
+longer than its windows.
+
+```csharp
+using var session = new MagnificationSession();
+var window = new MagnifierWindow(session, screenBounds, "Inverter") { ColorEffect = negative };
+window.Show();
+timer.Tick += (_, _) => window.Refresh();
+```
+
+[WindowsWindowLayering](Windowing/WindowsWindowLayering.cs) answers z-order
+questions: `GetPassiveOverlaysAbove(referenceWindows)` returns the visible layered,
+click-through windows (pointer sprites, annotation overlays) that sit above every
+reference window, walking from the top of the z-order and stopping at the first
+reference. A capture surface excludes those so they render once, live, while an
+overlay the surface already covers stays captured rather than disappearing.
+Effect catalogues, per-display policy and refresh intervals belong to the
+consuming application; Lumina composes these for its per-display rendering.
+
 ## Cached WAV feedback
 
 `IWaveSoundPlayer` and `WaveSoundPlayer` in `Audio/` provide synchronous WAV
