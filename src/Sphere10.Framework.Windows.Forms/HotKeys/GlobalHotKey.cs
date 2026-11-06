@@ -16,6 +16,10 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Receives global shortcut messages on a private message-only window without installing a keyboard hook.</summary>
 public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
+	/// <summary>A modifier flag for the Windows key, which <see cref="Keys"/> lacks; combine it like <see cref="Keys.Control"/> (for example WindowsKey | Keys.Alt | Keys.L).</summary>
+	/// <remarks>The value occupies the unused modifier bit above <see cref="Keys.Alt"/>, so it stays inside <see cref="Keys.Modifiers"/> and outside <see cref="Keys.KeyCode"/>.</remarks>
+	public const Keys WindowsKey = (Keys)0x00080000;
+
 	public event EventHandler Pressed;
 
 	private readonly int _ownerThreadId;
@@ -40,9 +44,9 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 
 		// Reject modifier-only and reserved keys before changing an existing registration.
 		var key = shortcut & Keys.KeyCode;
-		if ((int)key <= 0 || (int)key > 0xFE || !Enum.IsDefined(key) || (shortcut & ~(Keys.KeyCode | Keys.Control | Keys.Alt | Keys.Shift)) != 0 ||
+		if ((int)key <= 0 || (int)key > 0xFE || !Enum.IsDefined(key) || (shortcut & ~(Keys.KeyCode | Keys.Control | Keys.Alt | Keys.Shift | WindowsKey)) != 0 ||
 			key.IsIn(Keys.ShiftKey, Keys.ControlKey, Keys.Menu, Keys.LShiftKey, Keys.RShiftKey, Keys.LControlKey, Keys.RControlKey, Keys.LMenu, Keys.RMenu, Keys.LWin, Keys.RWin, Keys.F12)) {
-			error = "Choose a regular key with optional Ctrl, Alt or Shift modifiers. F12 is reserved by Windows.";
+			error = "Choose a regular key with optional Win, Ctrl, Alt or Shift modifiers. F12 is reserved by Windows.";
 			return false;
 		}
 		var modifiers = WinAPI.USER32.MOD_NOREPEAT;
@@ -52,6 +56,8 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 			modifiers |= WinAPI.USER32.MOD_ALT;
 		if ((shortcut & Keys.Shift) != 0)
 			modifiers |= WinAPI.USER32.MOD_SHIFT;
+		if ((shortcut & WindowsKey) != 0)
+			modifiers |= WinAPI.USER32.MOD_WIN;
 		_window ??= new HotKeyWindow(this);
 
 		// Each instance owns a distinct HWND. Alternate its local IDs to bind the replacement before releasing the old shortcut.

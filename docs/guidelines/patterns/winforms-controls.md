@@ -43,7 +43,7 @@ worker.
 | Plot captured metric history with gaps, units and hover readings | `TelemetryChart` |
 | Plot generic numeric series or category bars | `GraphChart`, `BarChart` |
 | Use specialized chart types and the absorbed charting API | `Sphere10.Framework.Windows.Forms.DataVisualization.Chart` |
-| Edit a global Ctrl/Alt/Shift shortcut | `HotKeyEditor`, paired with `GlobalHotKey` |
+| Edit a global Win/Ctrl/Alt/Shift shortcut | `HotKeyEditor`, paired with `GlobalHotKey` |
 | Confirm a state change with a passive on-screen label | `OnScreenNotificationForm` |
 | Show the display arrangement as selectable tiles | `MonitorLayoutControl` with `MonitorLayoutItem` values |
 
@@ -228,7 +228,7 @@ behind a concrete nongeneric designer surface.
 | [ExpandingCircle](../../../src/Sphere10.Framework.Windows.Forms/Drawing/Forms/ExpandingCircle.cs), [PerPixelAlphaForm](../../../src/Sphere10.Framework.Windows.Forms/Drawing/Forms/PerPixelAlphaForm.cs) | Specialized overlay animation and alpha-layered bitmap forms; use only when that presentation is required. |
 | [OnScreenNotificationForm](../../../src/Sphere10.Framework.Windows.Forms/Notifications/Forms/OnScreenNotificationForm.cs) | Passive topmost status popup near the bottom of a screen: `ShowMessage(text[, screen])`, `DisplayDurationMilliseconds`, `BottomMargin`. Autosizes to its text, never takes focus and dismisses itself. The application owns wording and triggers; Lumina shows "Lumina Mode: ..." and "Lumina Off". |
 | [MonitorLayoutControl](../../../src/Sphere10.Framework.Windows.Forms/Display/Controls/MonitorLayoutControl.cs), [MonitorLayoutItem](../../../src/Sphere10.Framework.Windows.Forms/Display/MonitorLayoutItem.cs) | Proportional display tiles with label, caption, accent, primary star, hover and selection ring; `Items`, `SelectedKey`, `SelectedItemChanged`, `HitTest`. Supply physical display bounds; captions and accents are application meaning. |
-| [HotKeyEditor](../../../src/Sphere10.Framework.Windows.Forms/HotKeys/Controls/HotKeyEditor.cs) | Ctrl/Alt/Shift check boxes plus a key list limited to what `GlobalHotKey` accepts; `Shortcut`, `ShortcutChanged`, static `IsEditableKey` and `Describe`. |
+| [HotKeyEditor](../../../src/Sphere10.Framework.Windows.Forms/HotKeys/Controls/HotKeyEditor.cs) | Win/Ctrl/Alt/Shift check boxes plus a key list limited to what `GlobalHotKey` accepts; `Shortcut`, `ShortcutChanged`, static `IsEditableKey` and `Describe`. |
 | [ToolStripChoiceSelector](../../../src/Sphere10.Framework.Windows.Forms/ToolStrips/Controls/ToolStripChoiceSelector.cs) | `ToolStripDropDownButton` with checked menu choices. Use `SetItems(IEnumerable<object>)`, `SelectedItem`, `SelectedIndex` and `SelectedIndexChanged`; `Items` returns copied array membership retaining original object identity. `ItemTextProvider` formats captions and `EmptyText` labels no selection. Native click/keyboard paths share selection, and disposal releases menu references while borrowing the data objects. Use for fixed toolbar choices; retain editable path fields and complex CRUD pickers for their separate contracts. |
 | [SplitButton](../../../src/Sphere10.Framework.Windows.Forms/Controls/SplitButton.cs) | Primary button plus `SplitMenuStrip`, with `ShowSplit`. |
 | [PadLockButton](../../../src/Sphere10.Framework.Windows.Forms/Controls/PadLockButton.cs) | `LockState`, `ToggleLockState` and `PadLockStateChanged` for a visual locked/unlocked choice. The icon alone does not enforce a permission. |
@@ -308,8 +308,9 @@ auto-repeat, and preserves an existing registration if a replacement conflicts.
 Keep product preferences and status notifications in the application. See the
 [component guide](../../../src/Sphere10.Framework.Windows.Forms/README.md#global-keyboard-shortcuts)
 for registration and cleanup. Edit the shortcut with `HotKeyEditor`; it offers
-only the key and modifier combinations `GlobalHotKey` can register (no Windows
-key, no F12).
+only the key and modifier combinations `GlobalHotKey` can register: Win, Ctrl,
+Alt and Shift modifiers (the Windows key travels as `GlobalHotKey.WindowsKey`,
+bit `0x80000` of `Keys`), no F12 and no modifier-only shortcuts.
 
 For desktop color effects, capture-based overlays and display inventories, use
 [Framework.Windows' magnification and layering APIs](../../../src/Sphere10.Framework.Windows/README.md#magnification-and-overlay-layering)

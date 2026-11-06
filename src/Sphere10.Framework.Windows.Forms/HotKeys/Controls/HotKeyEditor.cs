@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-/// <summary>Edits a global shortcut as a regular key plus optional Ctrl, Alt and Shift modifiers, matching <see cref="GlobalHotKey"/>'s accepted combinations.</summary>
+/// <summary>Edits a global shortcut as a regular key plus optional Win, Ctrl, Alt and Shift modifiers, matching <see cref="GlobalHotKey"/>'s accepted combinations.</summary>
 public partial class HotKeyEditor : UserControlEx {
 	/// <summary>Raised after the user changes the shortcut.</summary>
 	public event EventHandler ShortcutChanged;
@@ -53,11 +53,13 @@ public partial class HotKeyEditor : UserControlEx {
 			Keys.OemMinus, Keys.Oemplus, Keys.Oemcomma, Keys.OemPeriod, Keys.OemQuestion, Keys.Oemtilde, Keys.OemOpenBrackets, Keys.OemCloseBrackets, Keys.OemPipe, Keys.OemSemicolon, Keys.OemQuotes);
 	}
 
-	/// <summary>Formats a shortcut as "Ctrl+Alt+Key" text for captions.</summary>
+	/// <summary>Formats a shortcut as "Win+Ctrl+Alt+Key" text for captions.</summary>
 	public static string Describe(Keys shortcut) {
 		if (shortcut == Keys.None)
 			return "None";
 		var text = string.Empty;
+		if ((shortcut & GlobalHotKey.WindowsKey) != 0)
+			text += "Win+";
 		if ((shortcut & Keys.Control) != 0)
 			text += "Ctrl+";
 		if ((shortcut & Keys.Alt) != 0)
@@ -68,6 +70,7 @@ public partial class HotKeyEditor : UserControlEx {
 	}
 
 	protected override void CopyModelToUI() {
+		_windowsCheckBox.Checked = (_shortcut & GlobalHotKey.WindowsKey) != 0;
 		_controlCheckBox.Checked = (_shortcut & Keys.Control) != 0;
 		_altCheckBox.Checked = (_shortcut & Keys.Alt) != 0;
 		_shiftCheckBox.Checked = (_shortcut & Keys.Shift) != 0;
@@ -81,6 +84,8 @@ public partial class HotKeyEditor : UserControlEx {
 			_shortcut = Keys.None;
 			return;
 		}
+		if (_windowsCheckBox.Checked)
+			shortcut |= GlobalHotKey.WindowsKey;
 		if (_controlCheckBox.Checked)
 			shortcut |= Keys.Control;
 		if (_altCheckBox.Checked)

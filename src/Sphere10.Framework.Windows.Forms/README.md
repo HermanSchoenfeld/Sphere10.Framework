@@ -1493,13 +1493,16 @@ toggle repeatedly.
 
 An unavailable shortcut returns an error while retaining its previous active
 registration. Modifier-only keys, F12 and unsupported combinations are rejected.
+`Keys` has no Windows-key modifier, so combine `GlobalHotKey.WindowsKey` with the
+key and the ordinary `Keys` modifiers (`GlobalHotKey.WindowsKey | Keys.Alt | Keys.L`);
+it maps to `MOD_WIN` on registration.
 Disposal unregisters the shortcut and destroys the owned window. The consuming
 application owns its activation policy, settings, user feedback and subscription
 lifetime; keep registration alive when temporarily disabling the operation it
 controls. AutoMouse and Lumina use this component for their configurable shortcuts.
 
 [HotKeyEditor](HotKeys/Controls/HotKeyEditor.cs) is the matching designer-editable
-`UserControlEx`: Ctrl, Alt and Shift check boxes plus an `EnumComboBox` of the keys
+`UserControlEx`: Win, Ctrl, Alt and Shift check boxes plus an `EnumComboBox` of the keys
 `GlobalHotKey` accepts (`HotKeyEditor.IsEditableKey`). Read or assign `Shortcut`
 (`Keys.None` for no shortcut) and observe `ShortcutChanged` or the inherited
 `StateChanged`; `HotKeyEditor.Describe(shortcut)` formats "Ctrl+Alt+L" captions.
