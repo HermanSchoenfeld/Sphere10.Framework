@@ -111,12 +111,7 @@ The WinForms tester needs Windows. The Blazor tester listens on `http://localhos
 
 The libraries are organized under `src/`, with tests under `tests/` and runnable demonstrations and profiling tools under `utils/`. `recipes/` holds console samples of the protocol API over UDP and anonymous pipes, and only the UDP sample currently has active code. `blackhole/` keeps archived experimental DApp projects for reference. They are not maintained, and neither solution builds or packs them.
 
-Select the packages that fit your application, and read each project guide for its API and platform requirements. A packable project's NuGet package ID is its project name. `Sphere10.Framework.Runtime` and the legacy iOS, Android and macOS projects are not packed.
-
-<details>
-<summary><strong>Library and test project catalog</strong></summary>
-
-Projects are grouped by their role.
+Select the packages that fit your application, and read each project guide for its API and platform requirements. A packable project's NuGet package ID is its project name. `Sphere10.Framework.Runtime` and the legacy iOS, Android and macOS projects are not packed. The tables below link to every project's README, grouped by role.
 
 ### :gear: Core Framework & Utilities
 
@@ -199,8 +194,6 @@ The [Build workflow](.github/workflows/main.yml) compiles the cross-platform sol
 | [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
 | [**Sphere10.Framework.Utils.Profiler.Tests**](tests/Sphere10.Framework.Utils.Profiler.Tests/README.md) | Profiler command, ObjectSpace, B-tree, cache and parameter-study tests |
 | [**Sphere10.Framework.NET.Tests**](tests/Sphere10.Framework.NET.Tests) | Math-expression scanner and parser tests for `Sphere10.Framework.Runtime`, outside both solutions |
-
-</details>
 
 ## Documentation and learning
 
