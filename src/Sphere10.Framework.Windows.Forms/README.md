@@ -748,8 +748,11 @@ public class MainForm : Form {
             MessageBox.Show("Connection successful!");
             
             // Get the DAC for database operations
-            using var dac = _connectionPanel.GetDAC();
-            // Use dac...
+            // The DAC is not disposable; a scope owns the connection
+            var dac = _connectionPanel.GetDAC();
+            using (dac.EnterScope()) {
+                // Use dac...
+            }
         } else {
             MessageBox.Show($"Connection failed: {result.ErrorMessages.First()}");
         }
@@ -1528,6 +1531,40 @@ and accent color); the control owns scaling, hover, the selection ring and
 `SelectedItemChanged`/`SelectedKey`, and `HitTest` resolves a client point. The
 application decides what a tile's caption and accent mean, such as the effect
 applied to that display.
+
+The layout can also host controls. With `HostedControlMode = PerTile`, each control
+given to `SetTileControl(key, control)` sits centred beneath its tile; a display that
+lies below another is moved down so no hosted control covers a tile. With `Shared`,
+`SharedControl` sits centred beneath the whole arrangement, sized within its
+`MinimumSize` and `MaximumSize`. `None` keeps the plain layout. The layout owns the
+hosted controls' bounds, visibility (only the current mode's controls, and only for
+keys still in `Items`) and tab order; `SetTileControl(key, null)` hands a control back
+without disposing it, and `GetTileBounds` returns a tile's rectangle. An application can, for example,
+put a picker beneath each display in one mode and one shared picker in another.
+
+## Switches and image choices
+
+[ToggleSwitch](Controls/ToggleSwitch.cs) is a `CheckBox` drawn as a thumb sliding in
+a rounded track, so `Checked`, `CheckedChanged`, `AutoCheck`, Space toggling, data
+binding and accessibility behave as for a check box. `OnText` and `OffText` are drawn
+inside the track, `OnBackColor`, `OffBackColor`, `ThumbColor` and `TrackForeColor`
+colour it, and `AnimateToggle` slides the thumb. A transparent `BackColor` shows the
+parent (for example a `GradientPanel` banner), and a switch sized explicitly larger
+than its preferred size grows its track to the height. Set `AutoCheck` to false when
+the application's state, not the click, decides the position, and set `Checked` from
+that state.
+
+[ImageComboBox](ComboBoxes/Controls/ImageComboBox.cs) is a `CustomComboBox` of
+[ImageComboBoxItem](ComboBoxes/ImageComboBoxItem.cs) choices (text, image, value, tool
+tip, optional group). The closed box draws the selected choice's image at `ImageSize`
+and its text; the drop-down is an owned tile picker showing every choice at
+`TileImageSize`, grouped by `Group`, sized for `TileColumns` by `VisibleTileRows`. A
+click or Enter on a tile picks it, closes the drop-down and raises
+`SelectedChoiceCommitted`, as do keyboard changes in the closed box; `SelectedChoice`
+and `SetChoices` in code raise nothing. Images are borrowed: render them at
+`DeviceTileImageSize`, dispose them after replacing the choices, and keep one set for
+several combos. The picker always uses the combo's font, because the popup rescales
+its content again when it opens on a display with another DPI.
 
 ## 📦 Dependencies
 

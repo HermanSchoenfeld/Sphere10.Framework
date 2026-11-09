@@ -102,7 +102,8 @@ The single [Workspace.razor](Application/Workspace.razor) route component handle
 | [Pages](Pages) | Component content reused by hosted screens. |
 | [Modern/UI/Index.razor](Modern/UI/Index.razor) | Grid content and related-demo links, hosted by ComponentScreen. |
 | [Demos/GridDemo.razor](Demos/GridDemo.razor) | Editable CRUD/reference grid plus an independent live-snapshot workspace for paging, retained column layout, no-indicator refresh, row refresh/removal and filtered export. |
-| [Modern/UI/Controls/GridDemoSnapshotDataSource.cs](Modern/UI/Controls/GridDemoSnapshotDataSource.cs) | Local immutable sample rows over core's refreshable snapshot source; replaces identities without native collection or external services. |
+| [Modern/UI/Controls/GridDemoDataSource.cs](Modern/UI/Controls/GridDemoDataSource.cs) | Local immutable sample rows in a `ListDataSource`, with no native collection or external services. |
+| [Modern/UI/Controls/GridDemoRefreshableDataSource.cs](Modern/UI/Controls/GridDemoRefreshableDataSource.cs) | `RefreshableDataSourceBase` over the sample rows. It publishes the next revision of every row with stable IDs, and a polling decorator supplies the live cadence. |
 | [Demos/TablesDemo.razor](Demos/TablesDemo.razor), [Demos/DialogsDemo.razor](Demos/DialogsDemo.razor), [Demos/WizardsDemo.razor](Demos/WizardsDemo.razor) | Reusable examples rendered inside registered application screens. |
 | [Modern/UI/Controls/TestClass.cs](Modern/UI/Controls/TestClass.cs) | Grid entity with enum, date, decimal, boolean, note and optional related record. |
 | [Modern/UI/Controls/TestClassDataSource.cs](Modern/UI/Controls/TestClassDataSource.cs) | Local CRUD source, search, typed sorting, paging and validation. |

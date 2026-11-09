@@ -2,7 +2,9 @@
 
 # 💾 Sphere10.Framework.Data.MySQL
 
-MySQL data access through the shared Sphere10 `IDAC` abstraction. The package supplies a MySqlConnector-backed DAC, connection-string and database administration helpers, and a database manager. SQL generation comes from `MySQLBuilder` in the shared data package.
+`Sphere10.Framework.Data.MySQL` connects the shared `IDAC` data-access abstraction of [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) to MySQL through MySqlConnector. Use it when an application built on the shared DAC, scope and SQL-builder APIs needs to read, write or administer MySQL databases.
+
+The package supplies `MySQLDAC`, the `Tools.MySQL` connection and administration helpers and `MySQLDatabaseManager`, and SQL text comes from `MySQLBuilder` in the shared package.
 
 ## 📦 Installation
 
@@ -10,7 +12,9 @@ MySQL data access through the shared Sphere10 `IDAC` abstraction. The package su
 dotnet add package Sphere10.Framework.Data.MySQL
 ```
 
-Targets **.NET 10** (`net10.0`). The package brings in `MySqlConnector`, `Sphere10.Framework.Data` and the core framework. An existing database and credentials are required to execute the examples; server features depend on the server and provider versions in use.
+The package depends on `MySqlConnector`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.MySQL/Sphere10.Framework.Data.MySQL.csproj` with a `ProjectReference`.
+
+The examples need an existing database and credentials, and server features depend on the server and driver versions in use.
 
 ## ⚡ Open a scope and query
 
@@ -32,29 +36,31 @@ using (dac.EnterScope()) {
 }
 ```
 
-Constructing a DAC, including through `Tools.MySQL.Open(...)`, only prepares its configuration. `EnterScope()` opens the connection by default. The scope owns the connection; the DAC itself is not disposable.
+Constructing a DAC, directly or through `Tools.MySQL.Open(...)`, only stores its configuration. `EnterScope()` opens the connection by default, and the outermost scope owns that connection until it is disposed. The DAC itself is not disposable.
 
 ## 🧩 Public API
 
-Types are in `Sphere10.Framework.Data`; the static facade is in the global `Tools` namespace.
+`Tools.MySQL` is in the global `Tools` namespace, and the other types are in `Sphere10.Framework.Data`.
 
 | API | Purpose |
 |---|---|
-| `MySQLDAC(connectionString, logger)` | Provider implementation of `DACBase` / `IDAC`. |
-| `Tools.MySQL.Open(...)` | Builds a connection string and returns a configured DAC. |
+| `MySQLDAC(connectionString, logger)` | The provider's `DACBase` implementation of `IDAC`. |
+| `Tools.MySQL.Open(server, database, ...)` | Builds a connection string from separate settings and returns a `MySQLDAC`. |
 | `Tools.MySQL.CreateConnectionString(...)` | Returns a provider connection string without opening a connection. |
-| `CreateConnection()` / `CreateOpenConnection()` | Creates a caller-owned `MySqlConnection`, closed or opened respectively. |
-| `EnterScope()` | Opens a managed connection scope, optionally with a transaction. |
-| `ExecuteScalar<T>(sql)` / `ExecuteQuery(sql)` | Returns a converted scalar or a materialized `DataTable`. |
-| `ExecuteNonQuery(sql)` / `ExecuteReader(sql)` | Executes a statement or returns a disposable reader. |
-| `Insert`, `Update`, `Delete` | Shared SQL-builder helpers; return affected-row counts. |
-| `CreateSQLBuilder()` | Returns `MySQLBuilder` through `ISQLBuilder`. |
-| `GetSchema()` | Reads the provider-specific metadata described below. |
-| `MySQLDatabaseManager` | Implements the supported subset of the common database-management contract. |
+| `EnterScope()` | Returns a `DACScope`. The outermost scope owns the connection, and nested scopes share it. Call `BeginTransaction` on the scope for a local transaction. |
+| `ExecuteScalar<T>(sql)`, `ExecuteQuery(sql)` | Return a converted scalar value or a materialized `DataTable`. |
+| `ExecuteNonQuery(sql)`, `ExecuteReader(sql)` | Execute a statement, or return a reader to consume inside an outer scope. |
+| `ExecuteBatch(builder)` | Sends the builder's whole script as one command and returns its result sets as `DataTable` objects. |
+| `Insert`, `Update`, `Delete` | Build SQL with `MySQLBuilder` and return the affected-row count. |
+| `CreateConnection()`, `CreateOpenConnection()` | Create a caller-owned `MySqlConnection`, closed or opened. |
+| `CreateSQLBuilder()` | Returns a new `MySQLBuilder` as `ISQLBuilder`. |
+| `GetSchema()` | Reads table, column, key and trigger metadata, as described below. |
+| `MySQLDatabaseManager` | Implements the shared `DatabaseManagerBase` contract for MySQL. |
+| `DACFactory.CreateDAC(DBMSType.MySQL, connectionString)` | Creates a `MySQLDAC` by type name, so that an application can choose the provider at run time. |
 
 ## 🔧 Connection configuration
 
-For separate configuration fields, use the facade:
+For separate configuration fields, use the helper:
 
 ```csharp
 var configuredDac = Tools.MySQL.Open(
@@ -65,24 +71,25 @@ var configuredDac = Tools.MySQL.Open(
 );
 ```
 
-`CreateConnectionString` accepts the same connection options. Omitted options retain provider defaults.
+`CreateConnectionString` takes the same settings except `logger`. Omitted settings keep the provider defaults.
 
 | Option | Mapping |
 |---|---|
-| `server`, `database`, `username`, `password`, `port` | MySqlConnector server, database and credentials. |
-| `pooling`, `minPoolSize`, `maxPoolSize` | Connection pool settings. |
-| `connectionTimeout`, `commandTimeout` | Time spans rounded to whole seconds; the latter sets `DefaultCommandTimeout`. |
-| `characterSet`, `applicationName` | Provider connection-string settings. |
-| `sslMode` | `true` selects `MySqlSslMode.Required`; `false` selects `None`; omitted leaves the provider default. |
-| `logger` | Optional framework `ILogger` for the DAC; accepted by `Open`, not `CreateConnectionString`. |
+| `server`, `database`, `username`, `password`, `port` | The MySqlConnector server, database, credentials and port. |
+| `pooling`, `minPoolSize`, `maxPoolSize` | Connection-pool settings. |
+| `connectionTimeout` | `ConnectionTimeout`, rounded to whole seconds. |
+| `commandTimeout` | `DefaultCommandTimeout`, rounded to whole seconds. |
+| `characterSet`, `applicationName` | `CharacterSet` and `ApplicationName`. |
+| `sslMode` | `true` selects `MySqlSslMode.Required` and `false` selects `None`. Omitting it keeps the provider default. |
+| `logger` | An optional framework `ILogger` for the DAC. Only `Open` accepts it. |
 
-For certificate-verification modes and other provider options, build a full connection string with `MySqlConnectionStringBuilder` and pass it to `new MySQLDAC(connectionString)`. The Boolean TLS option exposes only the two modes listed above.
+For certificate-verification modes and other provider settings, build the connection string with `MySqlConnectionStringBuilder` and pass it to `new MySQLDAC(connectionString)`. The Boolean `sslMode` option exposes only the two modes listed above.
 
-The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` and `ExecuteBatch`. `ExecuteScalar` keeps the provider command default. To enforce a per-command timeout, create a command explicitly as below.
+The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` and `ExecuteBatch`, so `commandTimeout` affects only `ExecuteScalar` and the commands you create yourself. To enforce a per-command timeout, create a command explicitly as below.
 
 ## 🔎 Bound parameters
 
-The DAC's string-based execution methods execute SQL text. `ExecuteQuery(sql, params object[] args)` formats SQL through the builder; it does not bind ADO.NET parameters. Create a command for bound values:
+The DAC's string-based methods execute SQL text. `ExecuteQuery(sql, params object[] args)` formats its arguments into the SQL through the builder, so it does not bind ADO.NET parameters. Create a command for bound values:
 
 ```csharp
 using (var scope = dac.EnterScope()) {
@@ -103,7 +110,7 @@ using (var scope = dac.EnterScope()) {
 }
 ```
 
-The transaction assignment connects a manually created command to any local transaction inherited by the scope. DAC execution methods perform this assignment internally. Dispose commands and readers before their scope ends; do not close or dispose `scope.Connection` directly. Keep an outer scope alive while consuming `ExecuteReader` results, or use `ExecuteQuery` to materialize the result before returning.
+The `Transaction` assignment attaches the command to any local transaction that the scope inherited, as the DAC's own methods do. Dispose commands and readers before their scope ends. `scope.Connection` belongs to the scope, so its `Close` and `Dispose` methods throw. A reader from `ExecuteReader` needs an outer scope that stays open while the reader is consumed, whereas `ExecuteQuery` returns a materialized `DataTable`.
 
 ## 🔄 Transactions and lifecycle
 
@@ -118,15 +125,15 @@ using (var scope = dac.EnterScope()) {
 }
 ```
 
-`DefaultIsolationLevel` is `ReadCommitted`. Call `scope.Rollback()` when explicitly abandoning a transaction. Disposal releases an owned transaction and connection; it does not commit them.
-
-With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share the connection and current transaction. Setting it to `false` separates different DAC instances; scopes on the same instance can still nest. A nested `Commit` does not commit the database transaction independently. An explicit nested `Rollback` votes for rollback when the owning scope commits. These are shared transactions, not savepoints.
-
-Scopes also enlist newly owned connections in an ambient `System.Transactions.TransactionScope` through the provider. In that case, let the ambient scope control completion; mixing its transaction with `DACScope.BeginTransaction`, `Commit` or `Rollback` is prohibited. Provider and platform support govern ambient/distributed transaction availability.
+- `DefaultIsolationLevel` is `ReadCommitted`, which `scope.BeginTransaction()` uses when no level is given.
+- Commit explicitly. Disposing the scope that began a transaction releases the transaction without committing it, and `scope.Rollback()` abandons it explicitly. The outermost scope closes the connection when it is disposed.
+- With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share one connection and transaction. A nested `Commit` does not commit on its own, and a nested `Rollback` turns the owning scope's `Commit` into a rollback. These are shared transactions, not savepoints.
+- Setting `UseScopeOsmosis = false` keeps different DAC instances apart, while scopes on the same instance still nest.
+- A scope that opens its connection inside an ambient `System.Transactions.TransactionScope` enlists the connection through the provider. Let the ambient scope complete the work, because `DACScope.BeginTransaction`, `Commit` and `Rollback` throw inside it. Ambient and distributed transaction support depends on the provider and platform.
 
 ## 🗂️ Schema and SQL dialect
 
-`GetSchema()` queries `information_schema` for the currently selected `DATABASE()`. It produces the shared `DBSchema` representation of tables, columns, keys and trigger names. It does not enumerate every database on the server. Auto-increment detection uses the column's `EXTRA` metadata; sequence fields are not populated.
+`GetSchema()` queries `information_schema` for the database that `DATABASE()` selects and returns the shared `DBSchema` model of tables, columns, keys and trigger names. It does not enumerate the other databases on the server. Auto-increment columns are detected from the column's `EXTRA` metadata, and sequence fields are not populated.
 
 ```csharp
 var schema = dac.GetSchema();
@@ -138,46 +145,45 @@ foreach (var table in schema.Tables)
 
 | Builder behavior | Implementation |
 |---|---|
-| Identifier quoting | Backticks. |
-| Paging | `LIMIT` / `OFFSET`. |
+| Identifier quoting | Backticks, unless the name already starts with one. |
+| Paging fragment | `LIMIT n OFFSET m`, emitted after `ORDER BY`, so `Select(limit: ...)` and the `dac.Select` extension page the query. |
 | Generated identity expression | `LAST_INSERT_ID()`. |
-| Transaction SQL | `START TRANSACTION`, `COMMIT`, `ROLLBACK`. |
-| Session variables | `@name` and `SET @name = ...`; declaring a variable emits nothing. |
+| Transaction SQL | `START TRANSACTION`, `COMMIT` and `ROLLBACK`. |
+| Variables | `VariableName` emits `@name` and `AssignVariable` emits `SET @name = ...`. `DeclareVariable` emits nothing. |
 | Sequence expression | `NextSequenceValue` throws `NotSupportedException`. |
 | Auto-increment toggles | `EnableAutoIncrementID` and `DisableAutoIncrementID` emit nothing. |
+| Statement terminator | `;` |
 
-The paging row describes the emitted SQL fragment. The inherited `SQLBuilderBase.Select` currently inserts that fragment before the selected columns, so `Select(limit: ...)` does not produce valid paging SQL for this provider. Use an explicit SQL query with the paging clause in its correct position.
-
-`Insert` returns the affected-row count, not a generated identity. Builder methods generate SQL text; they do not create connections or bind command parameters.
+`Insert`, `Update` and `Delete` render `ColumnValue` values as SQL literals rather than parameters, and `Insert` returns the affected-row count rather than a generated key.
 
 ## 🛠️ Database administration
 
-`MySQLDatabaseManager` implements the common `DatabaseManagerBase` contract. Its `GenerateConnectionString` delegates to `Tools.MySQL`; `DatabaseExists`, `CreateEmptyDatabase` and `DropDatabase` delegate to the corresponding administration helpers.
+`MySQLDatabaseManager` implements the shared `DatabaseManagerBase` contract. `GenerateConnectionString` calls `Tools.MySQL.CreateConnectionString`, and `DatabaseExists`, `CreateEmptyDatabase` and `DropDatabase` call the helpers below.
 
 | Helper | Behavior |
 |---|---|
-| `Tools.MySQL.TestConnectionString(connectionString)` | Attempts to open a scope; returns `false` on an opening failure. |
+| `Tools.MySQL.TestConnectionString(connectionString)` | Opens and closes a scope, and returns `false` instead of throwing when that fails. |
 | `Tools.MySQL.Exists(server, databaseName, ...)` | Connects to `information_schema` and checks `SCHEMATA`. |
-| `Tools.MySQL.CreateDatabase(server, databaseName, ...)` | Creates a database using `utf8mb4` and `utf8mb4_unicode_ci`. |
-| `Tools.MySQL.DropDatabase(server, databaseName, ...)` | Drops the database; `throwIfNotExists` defaults to `true`. |
+| `Tools.MySQL.CreateDatabase(server, databaseName, ...)` | Creates the database with the `utf8mb4` character set and the `utf8mb4_unicode_ci` collation. |
+| `Tools.MySQL.DropDatabase(server, databaseName, ...)` | Drops the database. It throws when the database is missing unless `throwIfNotExists` is `false`. |
 
-Creation defaults to `AlreadyExistsPolicy.Error`; `Skip` preserves an existing database and `Overwrite` drops it before recreation. These calls require appropriate database administration privileges. Database names are interpolated into administration SQL, so supply trusted, validated configuration identifiers.
+`CreateDatabase` takes an `existsPolicy` that defaults to `AlreadyExistsPolicy.Error`. `Skip` keeps an existing database, and `Overwrite` drops and recreates it. These calls need administration privileges. Database names are formatted into the SQL text, so pass only trusted, validated names.
 
-The manager reconstructs maintenance connections from server, database, username, password and port; additional settings in its input connection string are not forwarded. `CreateApplicationDatabase` throws `NotSupportedException`: application tables, migrations and seed data are the application's responsibility.
+The manager rebuilds its maintenance connection from the server, database, user name, password and port, so other settings in its connection string are not forwarded. `CreateApplicationDatabase` throws `NotSupportedException`, so create application tables, migrations and seed data in the application.
 
 ## 🚧 Implementation boundaries
 
-- `BulkInsert` throws `NotImplementedException`; the shared `BulkInsertAsync` wrapper reaches the same unimplemented method.
-- Shared `IDACAsyncExtensions` use `Task.Run` around synchronous DAC methods. They do not expose the provider's native asynchronous I/O API.
-- SQL dialect and metadata support are limited to the implementations described above. This package does not supply an ORM, an application schema generator or a migration system.
+- `BulkInsert` throws `NotImplementedException`, and the shared `BulkInsertAsync` wrapper reaches the same method.
+- The shared `IDACAsyncExtensions` run the synchronous DAC methods through `Task.Run`, so they do not use the driver's asynchronous I/O.
+- The package supplies no ORM, schema generator or migration system.
 
 ## 🔗 Related projects and source
 
 - [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) — shared DAC contracts, scopes, SQL builders and schema types.
-- [Sphere10.Framework](../Sphere10.Framework/README.md) — common utilities, guards, logging and transaction scopes.
-- [Sphere10.Framework.Windows.Forms.MySQL](../Sphere10.Framework.Windows.Forms.MySQL/README.md) — Windows Forms connection UI for this provider.
-- [MySQLDAC](MySQLDAC.cs), [Tools.MySQL](MySQLTool.cs), [MySQLDatabaseManager](MySQLDatabaseManager.cs) — provider implementation.
-- [MySQLBuilder](../Sphere10.Framework.Data/SQLBuilder/MySQLBuilder.cs) — dialect implementation.
+- [Sphere10.Framework](../Sphere10.Framework/README.md) — guards, logging and the transactional scope base classes.
+- [Sphere10.Framework.Windows.Forms.MySQL](../Sphere10.Framework.Windows.Forms.MySQL/README.md) — Windows Forms connection editors for MySQL.
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate/README.md) — NHibernate integration for the shared data layer.
+- [MySQLDAC](MySQLDAC.cs), [Tools.MySQL](MySQLTool.cs), [MySQLDatabaseManager](MySQLDatabaseManager.cs) and the shared [MySQLBuilder](../Sphere10.Framework.Data/SQLBuilder/MySQLBuilder.cs) — provider and dialect implementation.
 
 From the repository root:
 

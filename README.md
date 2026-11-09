@@ -13,9 +13,9 @@
 
 Copyright © Herman Schoenfeld 2005 - Present
 
-**Build rich applications, powerful storage engines and cryptographic systems with one modular .NET toolkit.**
+**Build desktop and web applications, embedded storage engines and cryptographic systems with one modular .NET toolkit.**
 
-Sphere10 Framework brings application shells, data access, embedded object storage, advanced collections, binary serialization and cryptography into a consistent set of C# libraries. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
+Sphere10 Framework brings application shells, data access, embedded object storage, collections, binary serialization and cryptography together in one consistent set of C# libraries for .NET 10. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
 
 [Explore the features](#what-you-can-build) · [Try the demos](#see-it-in-action) · [Read the docs](docs/README.md) · [Install](#installation)
 
@@ -23,35 +23,35 @@ Sphere10 Framework brings application shells, data access, embedded object stora
 
 ### Complete desktop and web applications
 
-Compose modular applications from **plugins, application blocks, menus, toolbars, screens and wizards**. WinForms and Blazor adapters share the application model, dependency injection and lifecycle conventions, with platform-specific screen rendering and hosting.
+Compose modular applications from **plugins, application blocks, menus, toolbars, screens and wizards**. The Windows Forms and Blazor adapters share one application model, dependency injection and lifecycle conventions, while each platform renders and hosts its own screens.
 
 - **Windows Forms:** native application shells, detachable tabs, CRUD grids, data-bound editors, validation, splash screens and chart controls.
 - **Blazor:** Interactive Server workspaces with tabbed navigation, typed CRUD columns, buffered editing, reference pickers, custom commands, dialogs, wizards and theme switching.
 - **Application infrastructure:** startup and shutdown tasks, persisted settings, command-line parsing, logging, screen lifetime policies and unsaved-change handling.
 
-[Application framework](src/Sphere10.Framework.Application/README.md) · [Windows Forms](src/Sphere10.Framework.Windows.Forms/README.md) · [Blazor](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md)
+[Application framework](src/Sphere10.Framework.Application/README.md) · [Windows Forms](src/Sphere10.Framework.Windows.Forms/README.md) · [Blazor](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) · [Screen Options](docs/usage/screen-options.md)
 
 ### Embedded object databases in ordinary streams
 
 **ObjectSpaces persist typed C# objects directly**, with declared identifier, unique and nonunique member indexes, tracked object identity, recyclable storage slots and optional dirty tracking. Choose memory-backed storage or file-backed transactions with explicit commit and rollback.
 
-Enable self-describing ObjectSpaces and ObjectStreams to carry their construction metadata, including serializer registrations and index settings, so supported stores can be reconstructed from their raw stream. Merkle attachments add cryptographic integrity roots to object stores.
+An ObjectSpace built with `StoreMetaData()`, or an ObjectStream created with `storeMetaData: true`, also stores its construction metadata, including serializer registrations and index settings. A supported store can then rebuild its configuration from the raw stream without a supplied definition. Merkle attachments add cryptographic integrity roots to object stores.
 
 [ObjectSpace guide](src/Sphere10.Framework/ObjectSpaces/README.md) · [Self-describing storage](docs/usage/self-describing-storage.md)
 
 ### Collections that fit your data and your storage
 
-Work with **memory, paged and stream-backed lists, dictionaries and sets**, managed and persisted B-trees and B+ trees, grouped lookups, recyclable collections, synchronized wrappers and projected views. Extended collection contracts support long-indexed range operations for batch processing.
+Work with **memory, paged and stream-backed lists, dictionaries and sets**, in-memory and stream-mapped B-trees and B+ trees, grouped lookups, recyclable collections, synchronized wrappers and projected views. Extended collection contracts support long-indexed range operations for batch processing.
 
 Clustered streams multiplex independent logical streams into a single backing stream, with dynamic allocation and pluggable attachments. Page sizes, cache budgets, cluster sizes and index layouts give you direct control over memory and I/O policy.
 
-[Core library](src/Sphere10.Framework/README.md) · [Collections and storage](docs/guidelines/patterns/collections-and-storage.md)
+[Core library](src/Sphere10.Framework/README.md) · [Collection selection](docs/guidelines/patterns/collections.md) · [Collections and storage](docs/guidelines/patterns/collections-and-storage.md)
 
 ### Binary serialization for complex object graphs
 
 Compose serializers with **explicit member layouts, polymorphic types, shared references, cyclic graphs, size calculation and byte-order control**. Serializer factories and fluent builders connect the same serialization contracts to object stores, collections and typed message protocols.
 
-Use fixed-size records where predictable offsets matter, compact integer encodings where size matters, and stream-based readers and writers throughout.
+Use constant-size serializers where predictable offsets matter, `VarInt` and `CVarInt` encodings where size matters, and `EndianBinaryReader` and `EndianBinaryWriter` for stream I/O.
 
 [Serialization guide](docs/guidelines/patterns/serialization.md)
 
@@ -59,31 +59,31 @@ Use fixed-size records where predictable offsets matter, compact integer encodin
 
 Build with **pluggable hashing, digital-signature abstractions, verifiable random functions and dynamic Merkle trees**. Merkle-aware lists, dictionaries, sets and object stores bring integrity roots and proofs into the storage layer.
 
-CryptoEx adds elliptic-curve signing and encryption, Schnorr and MuSig implementations, and additional cryptographic integrations. The core also contains reference implementations of the AMS and Winternitz signature families, alongside the project's published technical papers.
+CryptoEx adds ECDSA over the secp256k1, secp384r1, secp521r1 and sect283k1 curves, ECIES encryption, Schnorr and MuSig signatures, and Bitcoin and PascalCoin encodings. The core library implements the AMS signature schemes, including WAMS, and the WOTS and W-OTS# Winternitz one-time signatures, which the project's technical papers describe.
 
-For blockchain applications, compose reversible chain state, chain and branch management, and proof-of-work target and difficulty primitives.
+For blockchain applications, `Sphere10.Framework.Consensus` provides reversible chain state, chain and branch management, and proof-of-work target and difficulty algorithms.
 
 [Core cryptography and Merkle trees](src/Sphere10.Framework/README.md) · [CryptoEx](src/Sphere10.Framework.CryptoEx/README.md) · [Blockchain primitives](src/Sphere10.Framework.Consensus/README.md) · [Research papers](#technical-papers)
 
 ### Relational data access across database engines
 
-Use a common **data-access contract, scoped connections and transactions, SQL builders and schema metadata** across SQLite, SQL Server, Firebird, MySQL, PostgreSQL and Oracle. NHibernate integration supports ORM-based applications, while platform-specific controls connect database access to native desktop workflows.
+Use a common **data-access contract, scoped connections and transactions, SQL builders and schema metadata** across SQLite, SQL Server, Firebird, MySQL, PostgreSQL and Oracle. NHibernate integration supports ORM-based applications, and the Windows Forms provider packages add connection editors for desktop applications.
 
-The shared abstractions keep application code consistent; provider guides document their supported SQL and capabilities.
+Application code uses the same abstractions on every engine, and each provider README documents what its engine supports.
 
 [Data access](src/Sphere10.Framework.Data/README.md) · [NHibernate](src/Sphere10.Framework.Data.NHibernate/README.md)
 
 ### Connected services and reusable application infrastructure
 
-Define typed protocols and request/response flows, expose JSON-RPC services, and connect processes through TCP/UDP channels, anonymous pipes and WebSocket implementations. ASP.NET Core and MVC libraries supply web hosting, middleware, controller and form integrations.
+Define typed protocols and request/response flows, expose JSON-RPC services, and connect processes through TCP, UDP, anonymous-pipe and WebSocket channels. ASP.NET Core and MVC libraries supply web hosting, middleware, controller and form integrations.
 
-Round out your application with scheduled jobs, composable caches and loggers, synchronization scopes, reflection and mapping helpers, source generators, and NUnit utilities for application and database testing.
+The libraries also provide scheduled jobs, composable caches and loggers, synchronization scopes, reflection and mapping helpers, the `AutoDirty` source generator, and NUnit utilities for application and database testing.
 
 [Communications](src/Sphere10.Framework.Communications/README.md) · [ASP.NET Core](src/Sphere10.Framework.Web.AspNetCore/README.md) · [Job scheduling](docs/guidelines/patterns/scheduling.md)
 
 ## Discover the toolkit with `Tools.*`
 
-Type **`Tools.`** in your IDE to explore utilities grouped by domain: `Tools.Text`, `Tools.Collection`, `Tools.FileSystem`, `Tools.Reflection`, `Tools.Streams`, `Tools.Crypto` and more. The same discovery pattern extends into database, drawing, web and Windows libraries through their owning packages.
+Type **`Tools.`** in your IDE to explore utilities grouped by domain, such as `Tools.Text`, `Tools.Collection`, `Tools.FileSystem`, `Tools.Reflection`, `Tools.Streams` and `Tools.Crypto`. The database, drawing, web and Windows libraries add their own classes to the same namespace, for example `Tools.Data`, `Tools.Sqlite`, `Tools.Drawing`, `Tools.Html` and `Tools.Windows`.
 
 [Browse the Tools reference](docs/tools-reference.md).
 
@@ -95,21 +95,28 @@ Type **`Tools.`** in your IDE to explore utilities grouped by domain: `Tools.Tex
 | [Blazor tester](utils/Sphere10.Framework.Utils.BlazorTester/README.md) | A modular workspace with tabs, editable grids, menus, toolbars, themes, dialogs and wizards |
 | [Blazor CRUD quick start](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) | Build an editable grid with typed columns and validation |
 | [Custom editors and reference pickers](src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) | Connect related records and add application-specific actions |
-| [MVC tester](utils/Sphere10.Framework.Utils.MvcTester/README.md) | A runnable ASP.NET Core MVC application |
-| [ObjectSpace profiler](utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) | Exercise storage workloads, allocation policies, indexes and file transactions with reproducible measurements |
+| [MVC tester](utils/Sphere10.Framework.Utils.MvcTester/README.md) | A minimal ASP.NET Core MVC host for the MVC library |
+| [Profiler](utils/Sphere10.Framework.Utils.Profiler/README.md) | BenchmarkDotNet studies of ObjectSpace, B-tree and cache workloads. The [ObjectSpace suite](utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) compares index orders, cluster sizes, integrity hashes and memory or file storage. |
+
+Run a tester from the repository root:
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0
+```
+
+The WinForms tester needs Windows. The Blazor tester listens on `http://localhost:5187` through its default launch profile. Each tester README describes its screens and other launch options.
 
 ## Browse the libraries
 
-The libraries are organized under `src/`, with tests under `tests/` and runnable demonstrations and profiling tools under `utils/`. Select the packages that fit your application; the project guides cover their APIs and platform requirements.
+The libraries are organized under `src/`, with tests under `tests/` and runnable demonstrations and profiling tools under `utils/`. `recipes/` holds console samples of the protocol API over UDP and anonymous pipes, and only the UDP sample currently has active code. `blackhole/` keeps archived experimental DApp projects for reference. They are not maintained, and neither solution builds or packs them.
+
+Select the packages that fit your application, and read each project guide for its API and platform requirements. A packable project's NuGet package ID is its project name. `Sphere10.Framework.Runtime` and the legacy iOS, Android and macOS projects are not packed.
 
 <details>
 <summary><strong>Library and test project catalog</strong></summary>
 
-## :open_file_folder: Project Structure
-
-> **Note**: The `blackhole/` directory contains archived/experimental projects (DApp framework) that are not part of the active framework. These are retained for reference but are not maintained or included in NuGet packages.
-
-Projects are grouped by their role:
+Projects are grouped by their role.
 
 ### :gear: Core Framework & Utilities
 
@@ -117,9 +124,9 @@ Projects are grouped by their role:
 |---------|---------|-------|
 | [**Sphere10.Framework**](src/Sphere10.Framework/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework) |
 | [**Sphere10.Framework.Application**](src/Sphere10.Framework.Application/README.md) | Application lifecycle, dependency injection, shared application/block hierarchy, startup plugins and wizard orchestration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Application.svg)](https://www.nuget.org/packages/Sphere10.Framework.Application) |
-| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
-| [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators for compile-time code generation | |
-| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Internal runtime/compiler support assembly | |
+| [**Sphere10.Framework.Communications**](src/Sphere10.Framework.Communications/README.md) | Networking over TCP, UDP, WebSockets and anonymous pipes, with JSON-RPC services | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Communications.svg)](https://www.nuget.org/packages/Sphere10.Framework.Communications) |
+| [**Sphere10.Framework.Generators**](src/Sphere10.Framework.Generators/README.md) | C# source generators delivered as a compiler analyzer, currently the `AutoDirty` property generator | |
+| [**Sphere10.Framework.Runtime**](src/Sphere10.Framework.Runtime/) | Internal C# code builder and math-expression compiler, not packed | |
 | [**Sphere10.HashLib4CSharp**](src/Sphere10.HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more | [![NuGet](https://img.shields.io/nuget/v/Sphere10.HashLib4CSharp.svg)](https://www.nuget.org/packages/Sphere10.HashLib4CSharp) |
 
 ### :lock: Cryptography & Security
@@ -155,7 +162,7 @@ Projects are grouped by their role:
 | [**Sphere10.Framework.Windows.Forms.MySQL**](src/Sphere10.Framework.Windows.Forms.MySQL/README.md) | MySQL connection editors for Windows Forms | |
 | [**Sphere10.Framework.Windows.Forms.PostgreSQL**](src/Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) | PostgreSQL connection editors for Windows Forms | |
 | [**Sphere10.Framework.Windows.Forms.Oracle**](src/Sphere10.Framework.Windows.Forms.Oracle/README.md) | Oracle connection editors for Windows Forms | |
-| [**Sphere10.Framework.Windows.LevelDB**](src/Sphere10.Framework.Windows.LevelDB/README.md) | LevelDB integration for fast key-value storage | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.LevelDB.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB) |
+| [**Sphere10.Framework.Windows.LevelDB**](src/Sphere10.Framework.Windows.LevelDB/README.md) | LevelDB key-value storage integration | [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.Windows.LevelDB.svg)](https://www.nuget.org/packages/Sphere10.Framework.Windows.LevelDB) |
 
 ### :globe_with_meridians: Web & Cross-Platform
 
@@ -172,24 +179,26 @@ Projects are grouped by their role:
 | [**Sphere10.Framework.Android**](src/Sphere10.Framework.Android/README.md) | Legacy Xamarin.Android integration, outside the active .NET 10 solutions | |
 | [**Sphere10.Framework.macOS**](src/Sphere10.Framework.macOS/README.md) | Legacy macOS integration source, outside the active .NET 10 solutions | |
 
-## :test_tube: Test Projects
+### :test_tube: Test Projects
 
-The `tests/` directory contains unit and integration tests across framework subsystems:
-
-GitHub Actions builds the cross-platform solution and runs the configured NUnit test assemblies, including the restored Blazor tests. Console output and TRX artifacts include test results and failures. See the [CI test guide](.github/ci.md) for adding tests and reproducing failures locally.
+The [Build workflow](.github/workflows/main.yml) compiles the cross-platform solution and runs the core, Application, CryptoEx, Data, Communications, ASP.NET Core and Blazor test assemblies. A separate job runs the Blazor wizard browser tests through [test-blazor-browser.ps1](scripts/test-blazor-browser.ps1). Run the remaining test projects locally. The Windows, WinForms, LevelDB, HashLib4CSharp and Consensus tests are only in the Windows solution. See the [CI test guide](.github/ci.md) for adding tests, reading failures and reproducing a CI run locally.
 
 | Test Project | Purpose |
 |--------------|---------|
 | [**Sphere10.HashLib4CSharp.Tests**](tests/Sphere10.HashLib4CSharp.Tests) | Tests for hashing algorithms |
-| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Networking and RPC tests |
+| [**Sphere10.Framework.Communications.Tests**](tests/Sphere10.Framework.Communications.Tests) | Channel disposal, pipe, TCP endpoint, UDP server and RPC dispatch tests. The networked JSON-RPC fixtures are commented out |
+| [**Sphere10.Framework.Consensus.Tests**](tests/Sphere10.Framework.Consensus.Tests) | Blockchain state, finalization, block-graph and consensus primitive tests |
 | [**Sphere10.Framework.CryptoEx.Tests**](tests/Sphere10.Framework.CryptoEx.Tests) | Cryptography implementation tests |
 | [**Sphere10.Framework.Data.Tests**](tests/Sphere10.Framework.Data.Tests) | Database access layer tests |
 | [**Sphere10.Framework.Tests**](tests/Sphere10.Framework.Tests) | Core framework tests |
-| [**Sphere10.Framework.Application.Tests**](tests/Sphere10.Framework.Application.Tests/README.md) | Shared presentation behavior and UI-independent dependency tests |
+| [**Sphere10.Framework.Application.Tests**](tests/Sphere10.Framework.Application.Tests/README.md) | Shared application model, plugin, block, menu, screen-host and lifecycle tests without UI dependencies |
 | [**Sphere10.Framework.Web.AspNetCore.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Tests) | Shared web and MVC integration regressions |
-| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests) | CRUD grid, table, wizard, plugin, ApplicationBlock and lifecycle regression tests |
+| [**Sphere10.Framework.Web.AspNetCore.Blazor.Tests**](tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/README.md) | CRUD grid, table, wizard, plugin, ApplicationBlock and lifecycle regression tests |
+| [**Sphere10.Framework.Windows.Forms.Tests**](tests/Sphere10.Framework.Windows.Forms.Tests/README.md) | WinForms application framework, screen hosts, grids, charts, controls and wizards on a Windows desktop |
 | [**Sphere10.Framework.Windows.LevelDB.Tests**](tests/Sphere10.Framework.Windows.LevelDB.Tests) | LevelDB integration tests |
 | [**Sphere10.Framework.Windows.Tests**](tests/Sphere10.Framework.Windows.Tests) | Windows platform tests |
+| [**Sphere10.Framework.Utils.Profiler.Tests**](tests/Sphere10.Framework.Utils.Profiler.Tests/README.md) | Profiler command, ObjectSpace, B-tree, cache and parameter-study tests |
+| [**Sphere10.Framework.NET.Tests**](tests/Sphere10.Framework.NET.Tests) | Math-expression scanner and parser tests for `Sphere10.Framework.Runtime`, outside both solutions |
 
 </details>
 
@@ -197,21 +206,22 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 
 ### Getting started
 
-- [**Documentation Home**](docs/README.md) — Complete documentation index
-- [**Framework To-do**](src/TODO.md) — Running engineering backlog across all Framework subsystems
-- [**Getting Started Guide**](docs/start-here.md) — Quick orientation for new developers
-- [**Tools Reference**](docs/tools-reference.md) — Complete Tools.* namespace catalog
-- [**Real-World Examples**](docs/real-world-usage-examples.md) — Practical patterns from test suite
+- [**Documentation Home**](docs/README.md) — Documentation index
+- [**Getting Started Guide**](docs/start-here.md) — Orientation for new developers
+- [**Tools Reference**](docs/tools-reference.md) — Catalog of the `Tools.*` namespace
+- [**Real-World Examples**](docs/real-world-usage-examples.md) — Usage patterns drawn from the test suites
 
 ### Architecture
 
 - [Framework Architecture](docs/architecture/sphere10-framework.md) — Design philosophy, layers, subsystems
-- [Framework Domains](docs/architecture/domains.md) — Catalog of 40+ specialized domains
+- [Framework Domains](docs/architecture/domains.md) — Domain catalog by architectural tier
 
 ### Engineering guides
 
 - [3-Tier Architecture](docs/guidelines/3-tier-architecture.md) — Architectural patterns
 - [Code Styling](docs/guidelines/code-styling.md) — Coding standards and conventions
+- [Patterns and Practices](docs/guidelines/patterns-and-practices.md) — Task index for the focused pattern guides
+- [Framework To-do](src/TODO.md) — Running engineering backlog across all Framework subsystems
 
 ### Technical papers
 
@@ -222,7 +232,7 @@ GitHub Actions builds the cross-platform solution and runs the configured NUnit 
 
 ## Contributing
 
-Contributions are welcome!
+Contributions are welcome.
 
 To submit a change:
 
@@ -232,13 +242,13 @@ To submit a change:
 4. Push to your branch
 5. Open a Pull Request
 
-Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md).
+Please follow the [Code Styling Guidelines](docs/guidelines/code-styling.md), and run the tests that cover your change before you open the pull request.
 
 ## License
 
-Sphere10 Framework is distributed under the **MIT License**.
+Sphere10 Framework is distributed under the **MIT License**. See [LICENSE](LICENSE) for the terms.
 
-More information: [MIT License](https://opensource.org/license/mit)
+Some projects keep third-party code under its original license, such as the [command-line parser](src/Sphere10.Framework.Application/CommandLine/License.md) and [Sphere10.Framework.Windows.Forms.DataVisualization](src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md).
 
 ## Installation
 
@@ -246,13 +256,8 @@ More information: [MIT License](https://opensource.org/license/mit)
 
 - **.NET 10 SDK**
 - An IDE that supports the **.NET 10 SDK**, such as Visual Studio or JetBrains Rider
-- Optionally the **.NET 11 SDK**. When the building SDK is 11 or later, source and test projects also target `net11.0` (`net11.0-windows` for Windows Forms) and compile those targets with runtime async (`<Features>runtime-async=on</Features>`). A .NET 10 SDK builds `net10.0` only. The shared lists are `FrameworkTargetFrameworks` and `FrameworkWindowsTargetFrameworks` in `Directory.Build.props`.
-- **Windows** required for `Sphere10.Framework.Windows.*` projects
-- Two solution files available:
-  - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
-  - `src/Sphere10.Framework (Win).sln` — All projects including Windows-specific
-
-Both solutions expose architecture guides, engineering practices and reference documents under **Developer Documentation**. The root README appears once in **Misc**, with packaging scripts under **Misc → Scripts**. Project, test and demo READMEs remain in their real projects. Solution items open the original files in Visual Studio.
+- **Windows** for the `Sphere10.Framework.Windows*` projects, the Windows solution and the WinForms tester
+- Optionally the **.NET 11 SDK**. When the building SDK is version 11 or later, the projects that use the `FrameworkTargetFrameworks` or `FrameworkWindowsTargetFrameworks` list from `Directory.Build.props` also target `net11.0` or `net11.0-windows`. `Directory.Build.targets` compiles those targets with runtime async (`runtime-async=on` in `Features`). With only the .NET 10 SDK, these projects build `net10.0` and `net10.0-windows`.
 
 ### NuGet packages
 
@@ -270,13 +275,46 @@ dotnet add package Sphere10.Framework.CryptoEx
 dotnet add package Sphere10.Framework.Communications
 ```
 
-### Building and publishing packages
+Each package ID matches a project in the [library catalog](#browse-the-libraries). `Sphere10.Framework.Generators` ships only a compiler analyzer, so reference it with `PrivateAssets="all"`.
 
-Use Windows with the .NET 10 SDK to build the full package set. Set the numeric release version in `VersionPrefix` in [Directory.Build.props](Directory.Build.props); the package and assembly versions derive from it. CI supplies `BuildRevision` from its workflow run number, producing file versions such as `3.1.3.114`. Local builds allocate the next number from `LOCAL-BUILD-NUMBER` in the solution folder (gitignored); override with `-p:BuildRevision=1` for `3.1.3.1`. The NuGet version remains `3.1.3`, and assembly identity remains `3.1.3.0` across builds. For prerelease packages, pass `-p:Version=3.1.3-preview.1` while keeping `VersionPrefix` numeric. Use a new package version for each release; published versions cannot be overwritten.
+To switch an application between Framework project references and packages, follow [Interchangeable source and NuGet references](docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references). For unreleased changes, publish a prerelease package set to a folder feed with the [private feed](#private-feed) script.
 
-Before release packaging, run [validate-packages.ps1](scripts/validate-packages.ps1). It packs every active public library under a unique local validation version, checks package metadata and internal dependencies, and restores external consumers from an isolated feed and package cache. It builds core, Application-only, database/testing/generator and Windows consumers, publishes a Blazor ApplicationBlock host, and verifies Razor assets. Files and logs remain in the reported temporary directory; nothing is published. See [package consumer validation](scripts/package-consumers/README.md) for details. `Sphere10.Framework.NUnit`, `Sphere10.Framework.NUnit.DB` and `Sphere10.Framework.Generators` are distributable packages; the runtime/compiler support project remains internal.
+### Build from source
 
-From the Framework repository root, run [pack.ps1](scripts/pack.ps1) to clean and pack the Windows solution in Release configuration. It builds into a staging directory, verifies matching package and symbol files, then replaces the framework packages in `nuget-packages`. Failed builds leave the previous packages intact; unrelated files and packages are preserved. Packing does not run tests. Use `-OutputDirectory` to select a different destination.
+Run these commands from the repository root:
+
+```powershell
+dotnet build "src/Sphere10.Framework (CrossPlatform).sln" -c Release -p:BuildRevision=0
+dotnet build "src/Sphere10.Framework (Win).sln" -c Release -p:BuildRevision=0
+dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0
+```
+
+| Solution | Contents |
+|---|---|
+| `src/Sphere10.Framework (CrossPlatform).sln` | The cross-platform libraries, most of their test projects, the Blazor and MVC testers, the profiler and the protocol recipes |
+| `src/Sphere10.Framework (Win).sln` | Every active library, including the Windows, WinForms and DataVisualization projects, with their test projects, the WinForms, Blazor and MVC testers, the profiler and the protocol recipes |
+
+`-p:BuildRevision=0` stamps the file version `3.1.3.0` and leaves the local build counter unchanged. Test projects with a README list their filters and environment needs, such as a Windows desktop session or a browser. In Visual Studio, both solutions list the documentation under **Developer Documentation**, and the root README and packaging scripts under **Misc**.
+
+## Building and publishing packages
+
+Build the full package set on Windows with the .NET 10 SDK.
+
+### Versions
+
+`VersionPrefix` in [Directory.Build.props](Directory.Build.props) holds the numeric release version, and the package and assembly versions derive from it. Across the builds of one release, the NuGet version stays `3.1.3` and the assembly version stays `3.1.3.0`. Only the file version carries a build number, `BuildRevision`, as its fourth component.
+
+| Build | `BuildRevision` | File version |
+|---|---|---|
+| GitHub Actions | The workflow run number | `3.1.3.114`, for example |
+| Local build without `BuildRevision` | The next number from `LOCAL-BUILD-NUMBER` at the repository root (gitignored), shared by the projects of one build session | `3.1.3.N` |
+| Local build with `-p:BuildRevision=1` | The supplied number | `3.1.3.1` |
+
+For a prerelease package, pass `-p:Version=3.1.3-preview.1` and keep `VersionPrefix` numeric. Use a new package version for each release, because published versions cannot be overwritten.
+
+### Validate, pack and publish
+
+Run the release scripts from the repository root:
 
 ```powershell
 ./scripts/validate-packages.ps1
@@ -285,23 +323,27 @@ From the Framework repository root, run [pack.ps1](scripts/pack.ps1) to clean an
 ./scripts/publish.ps1 -IncludeSymbols
 ```
 
-[publish.ps1](scripts/publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
+1. [validate-packages.ps1](scripts/validate-packages.ps1) packs every packable library under a unique `0.0.0-validation.*` version and builds isolated consumer projects against those packages alone. It publishes nothing. [NuGet consumer validation](scripts/package-consumers/README.md) describes its checks.
+2. [pack.ps1](scripts/pack.ps1) cleans the Windows solution and packs it in Release configuration into a staging folder under `publish/.staging`. After it confirms that every package has matching symbols, it replaces the Framework packages in `nuget-packages`. A failed build leaves the previous packages in place, and other files in the folder are preserved. Packing does not run tests, and `-OutputDirectory` selects another destination.
+3. [publish.ps1](scripts/publish.ps1) with `-WhatIf` validates the batch and lists the packages without asking for credentials or pushing anything. Without `-WhatIf`, it pushes the packages to nuget.org.
 
-The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and keep their default paths rooted in the Framework repository.
+`publish.ps1` validates the whole batch before it pushes the first package. Each file name must match its package ID and version, a second version of the same package is rejected, and with `-IncludeSymbols` every package needs a matching `.snupkg`. The script selects only `Sphere10.Framework*` and `Sphere10.HashLib4CSharp` packages and ignores other files in the folder. Symbols are pushed only with `-IncludeSymbols`.
 
-#### Private feed
+The API key comes from `-ApiKey`, then the `NUGET_API_KEY` environment variable, then a hidden prompt. Publishing asks for PowerShell confirmation, so an automated run that supplies the key passes `-Confirm:$false`. `-Source`, `-SymbolSource` and `-PackagesDirectory` override the default feeds and package folder. The packing and publishing scripts support Windows PowerShell 5.1 and PowerShell 7, and their default paths resolve from the Framework repository root.
 
-[publish-private.ps1](scripts/publish-private.ps1) is the sibling of `publish.ps1` for a private or workstation feed: a folder that NuGet restores from, instead of nuget.org. It packs the same libraries under one prerelease version and adds them to the folder. It needs no API key and publishes nothing online.
+### Private feed
+
+[publish-private.ps1](scripts/publish-private.ps1) is the counterpart of `publish.ps1` for a local folder feed that NuGet restores from, instead of nuget.org. It packs every packable library in the Windows solution under one prerelease version and adds the packages to that folder. It needs no API key and publishes nothing online.
 
 ```powershell
 ./scripts/publish-private.ps1 -WhatIf
 ./scripts/publish-private.ps1
-./scripts/publish-private.ps1 -Feed D:/Packages/sphere10 -Label preview
+./scripts/publish-private.ps1 -Feed C:/Packages/sphere10 -Label preview
 ```
 
-- **Version.** The default is `<VersionPrefix>-private.<yyyyMMdd>.<n>`, for example `3.1.3-private.20261108.1`, numbered after the versions the feed already holds. `-Label` replaces `private`, and `-Version` sets an exact version. An existing version is never replaced.
-- **Feed.** The default is the `SPHERE10_PRIVATE_FEED` environment variable, then a `nuget-private` folder beside the repository. `-Feed` selects any folder. Packages are written in NuGet's hierarchical folder layout (`<id>/<version>/<id>.<version>.nupkg` with its `.sha512`, `.nuspec` and `.snupkg`), which restore reads directly; `dotnet nuget push` into a folder would write a flat layout instead.
-- **Safety.** Nothing is added unless every package builds, every Sphere10 dependency resolves to the new set or the feed, and the checkout did not change while packing. Builds use their own artifacts folder under `publish/.staging`, so the checkout's `bin` and `obj` folders are untouched; that default staging is removed after a successful publish.
-- **Composition.** `-WhatIf` shows the version and package list without packing. `-PackOnly` leaves the packages in `-OutputDirectory` for a caller that adds its own packages built against them before publishing the set. The script returns an object with the version and package paths.
+- **Version.** The default is `<VersionPrefix>-private.<yyyyMMdd>.<n>`, for example `3.1.3-private.20261108.1`, where `<n>` is one more than the highest number that the feed already holds for that label and day. `-Label` replaces `private`, and `-Version` sets an exact version. An existing version is never replaced.
+- **Feed.** The default is the `SPHERE10_PRIVATE_FEED` environment variable, then a `nuget-private` folder beside the repository. `-Feed` selects any folder. Packages are written in NuGet's hierarchical folder layout (`<id>/<version>/<id>.<version>.nupkg` in lower case, with its `.sha512`, `.nuspec` and `.snupkg` files), which restore reads directly. The script refuses a folder that has packages at its root, because NuGet would read that folder as a flat feed.
+- **Safety.** Nothing is added unless every package builds, every `Sphere10.*` dependency resolves to the new set or to the feed, and the Git checkout did not change while packing. By default, the builds use their own artifacts folder under `publish/.staging`, so the checkout's `bin` and `obj` folders stay untouched, and that staging is removed after a successful publish.
+- **Preview and staging.** `-WhatIf` shows the version and package list without packing. `-PackOnly` leaves the packages in `-OutputDirectory`, which defaults to `publish/.staging/private-<version>`, for a caller that adds its own packages built against them before publishing the set. The script returns an object with the `Version`, `OutputDirectory` and `Packages` paths.
 
-A consumer adds the folder to its `NuGet.Config` and references an exact version, such as `Version="[3.1.3-private.20261108.1]"`. The script supports Windows PowerShell 5.1 and PowerShell 7.
+A consumer adds the folder to its `NuGet.Config` and references an exact version, such as `Version="[3.1.3-private.20261108.1]"`.

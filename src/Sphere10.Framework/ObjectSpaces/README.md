@@ -1,14 +1,56 @@
 # Object Spaces
 
-`Sphere10.Framework.ObjectSpaces.ObjectSpace` is a typed embedded object store over clustered streams. Each registered CLR type has a dimension with recyclable object slots, serializers and member indexes. Use [ObjectSpaceBuilder](Builder/ObjectSpaceBuilder.cs) to build a [MemoryObjectSpace](MemoryObjectSpace.cs) or transactional [FileObjectSpace](FileObjectSpace.cs).
+`Sphere10.Framework.ObjectSpaces` is an embedded object store for typed CLR objects, built on clustered streams. Each registered type has a dimension with recyclable object slots, a serializer and member indexes, and the space tracks loaded objects so that each saved slot maps to one live instance. Use it when an application needs indexed, persistent objects without an external database. [ObjectSpaceBuilder](Builder/ObjectSpaceBuilder.cs) builds a [MemoryObjectSpace](MemoryObjectSpace.cs) or a transactional [FileObjectSpace](FileObjectSpace.cs), and both derive from `ObjectSpace`. The subsystem ships in the `Sphere10.Framework` package.
 
-The [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) contains its original ObjectSpace demonstration under **Data and collections > Data editing > ObjectSpace**. Repeatable performance measurements belong to the [ObjectSpace suite](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) in the general profiling project. Its [ObjectSpaces/Lab](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md) folder contains configuration, factory and models used for profiling and correctness fixtures.
+The [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) demonstrates a self-describing store on its **ObjectSpace** screen, which is in the **Data And Collections** block and under **Data Editing > ObjectSpace**. The screen creates, edits and deletes accounts and reloads the store through `ObjectSpace.TryOpenFromStream`. The general profiler's [ObjectSpace suite](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) holds repeatable measurements, and its [lab](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md) supplies the models, configuration and factory used for profiling and correctness fixtures.
+
+## Quick start
+
+```csharp
+using Sphere10.Framework;
+using Sphere10.Framework.ObjectSpaces;
+
+using var space = new ObjectSpaceBuilder()
+	.UseMemoryStream()
+	.AddDimension<Customer>()
+		.Done()
+	.Build();
+
+var customer = space.New<Customer>();
+customer.Id = 1;
+customer.Email = "ana@example.com";
+customer.Region = 7;
+space.Save(customer);
+
+var found = space.Get((Customer item) => item.Email, "ana@example.com");
+
+public class Customer {
+	[Identity]
+	public long Id { get; set; }
+
+	[UniqueIndex]
+	public string Email { get; set; }
+
+	[Index]
+	public int Region { get; set; }
+}
+```
+
+`AddDimension<T>()` reads the index annotations, and `Done()` registers an automatic serializer for the type. A memory space loads during `Build()`. `found` is the same instance as `customer`, because the space tracks object identity.
 
 ## Schema and construction
 
-Declare dimensions, their indexes and serializers before loading. `AddDimension<T>()` reads `[Identity]`, `[UniqueIndex]`, `[Index]` and related annotations. Pass `ignoreAnnotations: true` when configuring the complete index definition explicitly. Each dimension already receives its recyclable-index store; do not add a second one. `Done()` registers an automatic serializer when the type has none.
+Declare dimensions, their indexes and serializers before loading:
 
-This complete example uses explicit identifiers and a dirty flag for autosave:
+- `AddDimension<T>()` reads the member annotations `[Identity]`, `[UniqueIndex]` and `[Index]`, and the class annotations `[Root]` and `[EqualityComparer]`. Pass `ignoreAnnotations: true` when `WithIdentifier`, `WithUniqueIndexOn` and `WithIndexOn` declare the complete index set.
+- Every dimension already has its recyclable-slot store, so do not add a second one with `WithRecyclableIndexes()`.
+- `Done()` registers an automatic serializer when the type has none. Automatic layouts follow the CLR members, `[Transient]` excludes a member, and the layouts are not a schema-migration facility.
+- The builder registers serializers and comparers in its own copies of `SerializerFactory.Default` and `ComparerFactory.Default`, so application registrations stay local. `UsingSerializerFactory` and `UsingComparerFactory` install supplied factories instead. The builder rejects mixing a supplied factory with its own registrations, so call them before adding dimensions. Do not supply `SerializerFactory.Default` itself, because `Done()` registers missing automatic serializers in the supplied factory.
+- `AutoSave()` requires every dimension to name its dirty flag with `WithChangeTrackingVia`.
+- `Merkleized()` adds a Merkle attachment only to the dimensions that already exist, so call it after adding them.
+- `WithGarbageCollection()` requires at least one root dimension, marked with `[Root]` or `AsRoot()`.
+
+This file-backed example declares its indexes explicitly and uses a dirty flag for autosave:
 
 ```csharp
 using System;
@@ -72,17 +114,55 @@ public static class PurchaseExample {
 }
 ```
 
-The example expects caller-selected storage paths and a fresh compatible store. Repeating the insertion against existing data rejects the duplicate identifier/reference. Autosave does not infer every property mutation: the model must mark its configured dirty member when any persisted field changes. Here only `Total` supports later automatic edits; other field edits require explicit `Save` or setting `Dirty`.
+A file space loads on `Load()` unless the builder called `AutoLoad()`. The example expects caller-selected paths and a fresh store, so repeating the insertion against existing data rejects the duplicate identifier and reference. Autosave does not detect property changes by itself. The model must set its configured dirty member whenever a persisted field changes, and here only `Total` does that, so edits to other fields need an explicit `Save` or `Dirty = true`.
 
-`UsingSerializerFactory` and `UsingComparerFactory` install supplied factories. Keep application registrations local rather than modifying the global defaults. Automatic serializer layouts follow CLR members; they are not an automatic schema-migration facility. Preserve dimension order, member layouts/type registrations, indexes, endianness and allocation settings when reopening existing bytes.
+## Object identity, CRUD and enumeration
+
+- `New<T>()` creates and tracks a provisional instance, and `AcceptNew(item)` tracks an existing new instance. Assign application identifiers before saving, because the identifier index does not generate them.
+- `Save(item)` inserts a new or untracked instance, or updates a tracked one, and returns its physical slot. It updates the member indexes and clears the configured dirty flag.
+- `Get<T>(slot)` and `TryGet<T>(slot, out item)` resolve through the identity tracker, so repeated retrieval within one loaded space returns the same instance.
+- `Get` and `TryGet` with a member expression use the unique or identifier index named after that member, and they also match unsaved provisional instances. They do not run arbitrary predicate queries.
+- `Delete(item)` recycles a saved slot or discards a provisional instance, so the live object count and the physical slot count differ.
+- `GetAll<T>()` returns a materialized snapshot of the saved live objects in slot order. It skips recycled slots, excludes provisional instances and returns the tracked instances rather than copies.
+
+`Count<T>()` includes tracked provisional objects, while `GetAll<T>()` includes only saved ones, so do not enumerate `0..Count-1` as storage positions. A dimension's `Container` exposes the physical `ListCount`, `RecycledCount` and live `Count` for diagnostics. Reading raw objects from the container bypasses identity tracking, so retrieve records through the space before saving or deleting them.
+
+For a nonunique index, resolve the matching slots under the space's access scope and retrieve each record through the space:
+
+```csharp
+using System.Linq;
+using Sphere10.Framework.ObjectSpaces;
+
+public static class PurchaseQueries {
+	public static Purchase[] InRegion(ObjectSpace space, int region) {
+		using (space.EnterAccessScope()) {
+			var dimension = (ObjectSpace.Dimension<Purchase>)space.Dimensions.Single(item => item.Definition.ObjectType == typeof(Purchase));
+			var positions = dimension.Container.ObjectStream.GetIndexFor(item => item.Region).Values[region].ToArray();
+			return positions.Select(space.Get<Purchase>).ToArray();
+		}
+	}
+}
+```
+
+Select the typed dimension with generic enumeration, as the example does. `Dimensions` is backed by a `DictionaryList` whose non-generic enumerator yields key/value pairs, so `Dimensions.OfType<ObjectSpace.Dimension<T>>()` returns nothing. The member-expression index methods look an index up by member name, so an index with an explicit name needs `ObjectStream<T>.TryGetIndex<TMember>(name, out index)` or `TryGetUniqueIndex<TMember>(name, out index)`.
+
+Bind UI grids to detached editable rows. Keep slot or generation checks so that a row retained across rollback, reopen or slot reuse cannot update a different record. Validate unique fields before changing a tracked instance, and `Delete` a failed provisional instance so that a later autosave cannot publish it.
+
+## Durability, scopes and ownership
+
+A memory space flushes into its backing `MemoryStream` and has no file transaction. A supplied `MemoryStream` remains caller-owned, while a space built without one owns the stream it creates. Flush before taking a byte snapshot. Disposal flushes a memory space unless an exception is in flight.
+
+A file space writes through a `TransactionalStream` that stages pages in the folder set by `KeepUncommittedPagesAt`, which defaults to `.txn` in the file's directory. `Save` and `Flush` update pending pages, and `Commit()` publishes them. `Rollback()` unloads and reloads the space, which invalidates every tracked instance and any UI or query snapshot derived from them. Disposing a file space neither flushes nor commits, so commit or roll back pending work before replacement or shutdown. `FileObjectSpace.CommitAsync()` and `RollbackAsync()` throw `NotSupportedException`.
+
+Dimension streams hold their access locks on the creating thread for the store's lifetime. Create, operate and dispose a store on one owner thread. A UI session dispatches commands to a dedicated storage worker, because separate `Task.Run` calls on an existing store can deadlock. An access scope must stay on its thread and never cross `await`. Serialize session operations and check cancellation between records rather than interrupting a mutation.
+
+Autosave saves tracked dirty objects during `Flush` and during a file commit. A change visible through the identity cache does not prove that bytes were persisted, so verify durability by reopening. `Merkleized()` installs a Merkle attachment for each dimension and a root tree over them, so flush or commit before reading a settled root.
 
 ## New-store defaults and existing storage
 
-Call `.StoreMetaData()` to set `ObjectSpaceTraits.MetaData` and create a self-describing ObjectSpace whose dimension ObjectStreams also carry metadata. The clustered header stays at version 1. Its `ClusteredStreamsPolicy.MetaData` flag selects a metadata allocation whose Int32 size is stored in the final DWORD of the existing 256-byte header. The opaque owner record and zero padding follow that header, then clusters. Metadata stores retain 211 extension bytes; these owners place magic and traits in the eight bytes immediately before the size field. Stores without metadata retain all 215 extension bytes. ClusteredStreams does not interpret their meaning. The ObjectSpace record contains its used-length prefix, CHF and one serialized factory shared by all dimensions; each child describes its own item/type code and index settings without repeating the factory. Declaratively configured factories retain their registrations and serializer layouts. `.StoreMetaData(int capacity = 0)` uses the exact record size for zero and reserves an explicit budget for a positive value; negative values are rejected. See [self-describing storage](../../../docs/usage/self-describing-storage.md) for the header fields, capacity/used-length distinction and Mermaid packet diagrams. `ObjectSpace.TryOpenFromStream(rawStream, endianness, out objectSpace)` scans metadata, rebuilds the normal builder configuration, resets to the selected origin, then uses the existing loading path. The caller supplies the original endianness; opening does not detect it. It returns `false` for unavailable or explicitly invalid metadata or a mismatching byte order; I/O and deserializer exceptions propagate. Supplied-definition opening continues to support legacy storage without inserting metadata or migrating existing bytes.
+New stores take the ObjectSpace-specific constants in [Sphere10FrameworkDefaults](../Sphere10Defaults.cs), which were selected for Balanced throughput. The generic collection and index defaults are separate.
 
-The ObjectSpace-specific constants in [Sphere10FrameworkDefaults](../Sphere10Defaults.cs) select **Balanced throughput** for new stores. Generic collection/index defaults remain separate.
-
-| Setting | Memory | File | Constant owner |
+| Setting | Memory | File | Constant |
 |---|---|---|---|
 | Member-index B-tree order | 256 | 256 | `ObjectSpaceIndexBTreeOrder` |
 | Outer cluster bytes | 1024 | 4096 | `MemoryObjectSpaceClusterSize` / `FileObjectSpaceClusterSize` |
@@ -91,15 +171,20 @@ The ObjectSpace-specific constants in [Sphere10FrameworkDefaults](../Sphere10Def
 | File page bytes | N/A | 262144 (256 KiB) | `ObjectSpacePageSize` |
 | File page-cache ceiling | N/A | 16777216 (16 MiB) | `ObjectSpaceMaxMemory` |
 
-The shared order is a power of two. The historical 128/256 comparison favors 256 for Memory with nonoverlapping reported intervals. File's lower point mean at 128 overlaps 256, which allocates slightly less; the shared default follows the resolved Memory result. File workloads can explicitly select 128 with `WithIndexBTreeOrder(128)`; neither candidate is a uniquely established File optimum.
+The default member-index specification combines `BTreeSpec.Default.Type` (`BTreeType.BTree`) with `ObjectSpaceIndexBTreeOrder`. Autosave, Merkle trees and graph garbage collection remain opt-in, and index membership remains part of the caller's schema.
 
-Autosave, Merkle and graph GC remain opt-in. Index membership remains part of the caller's schema. The Memory choice favors the measured mixed throughput and lower cumulative allocations while accepting roughly **2.8 times the encoded store bytes** in the historical small-payload size check; this is not a reduction in resident-memory usage. File 256KiB/16MiB is a practical measured budget in the fast interval of the historical large-payload cache-pressure study, with overlap among other candidates. It is not a uniquely resolved optimum. Read-heavy, write-heavy, larger payloads and different key shapes can justify explicit overrides; see the [study workflow](../../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md). Original captures are stored outside the repository; measurement conclusions describe those runs rather than current-machine guarantees.
+### Reopening existing stores
 
-These defaults do not migrate existing stores. A builder or definition always has a complete shared `BTreeSpec`; `BTreeSpec.Default` supplies the framework's BTree type and generic order, and ObjectSpace initialization replaces its order with `ObjectSpaceIndexBTreeOrder` (256). Configuration changes replace the immutable specification without recording whether a value was explicitly supplied. Existing stores still require their **original** type and order. Historical layouts used order 64 and mixed BTree/BTreePlus indexes; preserve those per-index specifications when reopening. An index header does not authenticate type/order, so a mismatched default can reinterpret old node offsets. Each BTreeSpec value is immutable; changing the definition replaces a value and does not migrate persisted index bytes.
+The defaults apply when a store is created and never migrate an existing one. Index storage records neither the B-tree type nor its order, so a mismatched value can reinterpret old node bytes. Structural checks can reject some incompatible node layouts, but they do not authenticate the supplied type. Reopen a store with its original configuration:
 
-Retain the original schema/member/index definitions, endianness, Merkle traits and transaction-page configuration. File opening requires the original outer cluster size in its descriptor/builder. For supplied MemoryStreams, an omitted outer cluster size reads its existing header. Dimensions with omitted size hints read their stored cluster sizes; explicit hints must match after sanitization. Direct opening scans metadata from the selected stream origin, rebuilds the builder configuration, resets to that origin, then uses the normal loading path. Dimension opening validates the reserved stream count against the actual registered attachments, including composite indexes' child stores, instead of adopting a changed schema.
+- The same dimension order, serialized members and type registrations, index names, kinds and row order, endianness, Merkle traits and hash function.
+- The original B-tree type and order of every member index. Use `WithIndexBTreeSpec(originalSpec)` for one shared layout. For indexes with different layouts, replace the dimension's index rows through `IObjectSpaceDimensionBuilder.WithIndexes` and give each row its original `BTreeSpec`. Recyclable-slot and Merkle attachments have no B-tree specification. Stores written with the historical defaults used order 64, with B-trees for fixed-size unique and identifier indexes and B+ trees for the other member indexes.
+- The original outer cluster size and page size of a file store. A memory store reads its outer cluster size from the stored header when `WithClusterSize` is omitted.
+- Dimensions without `OptimizeAssumingAverageItemSize` read their stored cluster sizes, and an explicit value must match the stored size after clipping.
 
-For example, reopening the same Purchase schema and autosave mode from the construction example uses caller-retained original settings:
+The builder records no difference between explicit and default settings, so supply every original value. Opening rejects a dimension whose stored attachment count differs from the supplied schema instead of adopting the changed schema. Changing a stored index's type or order requires rebuilding the data into new storage.
+
+This example reopens the Purchase store from the construction example with caller-retained original settings:
 
 ```csharp
 public static class ExistingPurchaseStore {
@@ -129,89 +214,55 @@ public static class ExistingPurchaseStore {
 }
 ```
 
-For a historical default file, the original order/outer/dimension values are 64/4096/256; preserve its original page size and mixed per-index tree types as well. The example above assumes a shared original tree type; supply original per-index specifications through the dimension indexes when reopening a mixed layout. The original generic cache ceiling was `int.MaxValue`, populated lazily; page-cache budget can be chosen separately from persisted node/cluster layout. For an existing MemoryStream, declare `.WithIndexBTreeOrder(originalOrder)` on the same schema builder and call `.UseMemoryStream(stream)`; omitted root/dimension sizes use the stored headers. Explicit sizes remain authoritative and must match.
+For a store written with the historical defaults, pass 64, 4096 and 256 as the order, outer cluster size and dimension cluster size, keep the original page size, and supply per-index specifications for its mixed tree types. The example assumes one shared tree type. The page-cache budget is not part of the stored layout, so it can differ from the original.
 
-Use an expandable stream when reopened data will grow. `new MemoryStream(bytes)` has fixed capacity; copy the existing bytes into a new empty `MemoryStream` and reset its position before supplying it to the builder. Spare space in an existing cluster does not guarantee that the next write fits within a fixed buffer.
+To reopen a `MemoryStream`, declare the same schema with `.WithIndexBTreeOrder(originalOrder)` and call `.UseMemoryStream(stream)`. Omitted root and dimension sizes come from the stored headers, and explicit sizes must match them. Supply an expandable stream when the data will grow. `new MemoryStream(bytes)` has a fixed capacity, so copy the bytes into a new empty `MemoryStream` and reset its position first, because spare space in a cluster does not guarantee that the next write fits.
 
-Every `Build()` constructs a new ObjectSpace and a new definition from the configured values. The builder keeps no earlier result, target history, inferred settings or load callbacks. Repeated file paths and supplied streams are the caller's responsibility; normal storage access and validation still apply. Supply the target store's original specification explicitly when reopening it. Maintain application-owned versioned manifests when persisted data must outlive application/schema versions.
+Every `Build()` constructs a new ObjectSpace and definition from the configured values. The builder keeps no earlier result, target history or load callbacks, so opening the same file or stream twice is the caller's responsibility. Keep application-owned, versioned manifests when stored data must outlive application or schema versions.
 
-## Object identity, CRUD and enumeration
+### Self-describing stores
 
-- `New<T>()` creates and tracks a provisional instance. `AcceptNew(item)` tracks an existing new instance. Set application identifiers before saving; the identifier index does not generate business IDs.
-- `Save(item)` inserts or updates a tracked instance and returns its physical slot. It updates member indexes and clears the configured dirty flag.
-- `Get<T>(slot)` and `TryGet<T>(slot, out item)` resolve through the identity tracker. Repeated retrieval within one loaded space returns the same object instance.
-- Member-expression `Get`/`TryGet` use a configured unique or identifier index. They do not perform arbitrary predicate queries.
-- `Delete(item)` recycles the saved slot. Live object count and physical slot count therefore differ.
-- `GetAll<T>()` materializes saved live objects under an access scope, skips recycled holes and retains identity-tracked objects. It excludes unsaved provisional instances. Its snapshot contains borrowed object references, not deep clones.
+`.StoreMetaData()` sets `ObjectSpaceTraits.MetaData`, which makes the space and each dimension's ObjectStream self-describing. The ObjectSpace record holds the hash function and one serializer factory for all dimensions, and each dimension record holds its item type, indexes and change tracking. `.StoreMetaData(capacity)` reserves a metadata budget in bytes, zero allocates exactly the record size, and a negative value is rejected. Metadata cannot record custom comparer registrations or delegate-based change tracking, so creation rejects them.
 
-`Count<T>()` includes tracked provisional objects; `GetAll<T>()` includes only saved objects. Do not enumerate `0..Count-1` as storage positions. The dimension's container exposes physical `ListCount`, `RecycledCount` and live `Count` for diagnostics. Reading its raw objects directly bypasses ObjectSpace identity tracking; use ObjectSpace retrieval for records that will be saved or deleted.
+`ObjectSpace.TryOpenFromStream(rawStream, endianness, out objectSpace)` opens such a store without a supplied definition. It scans the metadata from the stream's current position, rebuilds the builder configuration, returns to that position and loads through the normal path. The caller supplies the original byte order, because opening does not detect it. The method returns `false` for unavailable or invalid metadata and for a mismatched byte order, while I/O and deserializer exceptions propagate. It borrows the stream, so dispose the returned space before reopening the stream.
 
-For a nonunique index, obtain the typed dimension and materialize its matching positions while holding the space's access scope:
+Stores without metadata still open with a supplied definition, which neither adds metadata nor migrates their bytes. Reopening a metadata store with a supplied definition checks that definition against the stored records, including each index's `BTreeSpec` and row order, before any object loads. [Self-describing storage](../../../docs/usage/self-describing-storage.md) documents the header fields, the record formats and the difference between metadata capacity and used length.
 
-```csharp
-using System.Linq;
-using Sphere10.Framework.ObjectSpaces;
+### Default selection evidence
 
-public static class PurchaseQueries {
-	public static Purchase[] InRegion(ObjectSpace space, int region) {
-		using (space.EnterAccessScope()) {
-			var dimension = (ObjectSpace.Dimension<Purchase>)space.Dimensions.Single(item => item.Definition.ObjectType == typeof(Purchase));
-			var positions = dimension.Container.ObjectStream.GetIndexFor(item => item.Region).Values[region].ToArray();
-			return positions.Select(space.Get<Purchase>).ToArray();
-		}
-	}
-}
-```
-
-Use generic enumeration of `Dimensions` as above. Its current backing dictionary-list has a different non-generic enumerator; `Dimensions.OfType<Dimension<T>>()` can therefore yield no matching dimensions. Explicitly named indexes use `ObjectStream.GetIndex<TMember>(name)` / `GetUniqueIndex<TMember>(name)` rather than member-name convenience methods.
-
-Bind UI grids to detached editable rows. Keep generation/slot checks so rows retained before rollback, reopen or slot reuse cannot update a different live record. Validate unique fields before changing a tracked instance, and remove a failed provisional create so a later autosave cannot publish it.
-
-## Durability, scopes and ownership
-
-Memory spaces flush into their backing memory stream. A supplied `MemoryStream` is caller-owned; the default constructor owns the stream it creates. Flush before taking a byte snapshot. Memory storage has no file transaction.
-
-File spaces use a transactional stream with a page staging directory. `Save` and `Flush` update pending pages; `Commit()` publishes them. `Rollback()` unloads and reloads the space, invalidating previous tracked instances and their derived UI/query snapshots. Explicitly commit or roll back pending work before replacement or shutdown. File-space disposal does not flush dirty objects as a durability decision.
-
-Transactional byte pages allocate owned `MemoryBuffer` arrays when loaded. Flush still purges the page cache; unloading clears each buffer and releases its reference to the backing array. Public spans keep their original array alive across unloads, without rental tracking or pool reuse. `WithMaxMemory` remains a cache estimate rather than a process-memory ceiling.
-
-`FileObjectSpace.CommitAsync()` and `RollbackAsync()` currently throw `NotSupportedException`. Current dimension streams also retain access locks on the store's creation thread for their lifetime. Create, operate and dispose the store on one owner thread. A UI session dispatches commands to a dedicated worker; separate arbitrary `Task.Run` calls on an existing store can deadlock. BDN fixtures likewise create/use/dispose on their synchronous benchmark thread. An operation's access scope must remain on that thread and never cross `await`. Serialize session operations and honor cancellation between records, rather than interrupting an in-progress mutation.
-
-Autosave saves tracked dirty objects during `Flush` and file commit. Changes visible through the identity cache are not proof of persisted bytes; verify durability by reopening. Merkle configuration installs per-dimension and root integrity attachments; flush/commit before reading a settled root.
+The defaults follow the Balanced mixed workload of the profiler's retained [study workflow](../../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md), whose original captures are not in the repository. In those runs, order 256 beat 128 for Memory with nonoverlapping intervals but overlapped it for File, and the Memory settings accepted about 2.8 times the encoded store bytes of a small-payload check in return for mixed throughput and lower allocations. The File page and cache sizes are a practical choice among overlapping candidates, so a File workload can reasonably choose `WithIndexBTreeOrder(128)` or other explicit settings.
 
 ## Configuration and performance
 
 | Setting | Effect and comparison boundary |
 |---|---|
-| `WithIndexBTreeSpec(new BTreeSpec(type, order))` | Replaces the complete immutable shared specification for member indexes without an explicit per-index specification. Its get-only type is always `BTreeType.BTree` or `BTreeType.BTreePlus`; construction rejects an undefined type or order below 3. `WithIndexBTreeOrder(order)` retains the shared tree type. Legacy opening requires the original type and order. Each ObjectStream's self-describing metadata records its complete per-index specifications for raw-stream reconstruction. |
-| `WithIndexBTreeType(type)` | Replaces the shared specification with the selected concrete type and current order. |
-| `WithIndexBTreeOrder(order)` | Maximum child count in index B-trees/B+ trees; minimum 3, new-store ObjectSpace default 256. Steady nodes hold at most `order - 1` keys; total leaf count depends on occupancy/data. Larger nodes trade tree depth against node search, serialization and write amplification. This is an order, not a byte length or requested leaf count. |
-| `WithClusterSize(bytes)` | Outer clustered-stream allocation size. Compare small/large payload and fragmentation workloads. |
-| `OptimizeAssumingAverageItemSize(bytes)` | Actually chooses each dimension's inner cluster size, clipped to recommended bounds (currently 256–8192 bytes). New dimensions use their backend default when omitted; existing dimensions retain their stored size. Record the effective size. |
-| `WithPageSize(bytes)` | File transactional-page granularity; affects I/O and commit amplification. Not a memory-backend tuning axis. |
-| `WithMaxMemory(bytes)` | File page-cache budget. It does not cap the identity tracker or total process memory. |
-| `WithClusteredStreamsPolicy(policy)` | Outer descriptor/header caching, allocation and integrity checks. Dimension containers currently use their own `FastAllocate` policy. |
-| Index membership/key shape | Identifier, fixed-size unique/nonunique and checksum-based variable-key indexes incur different costs. Compare writes as well as lookups. |
-| `AutoSave`, `Merkleized`, hash/endianness | Change write/flush/integrity work and persisted format. Compare supported variants independently before combining them. |
+| `WithIndexBTreeSpec(new BTreeSpec(type, order))` | Replaces the shared immutable specification used by member indexes that have no per-index specification. `BTreeSpec` rejects an undefined `BTreeType` and an order below 3. Metadata stores record every index's complete specification. |
+| `WithIndexBTreeType(type)` | Replaces the shared specification with `type` and the current order. |
+| `WithIndexBTreeOrder(order)` | Replaces the shared specification with the current type and `order`, the maximum child count of index B-trees and B+ trees. The minimum is 3 and the new-store default is 256. A steady node holds at most `order - 1` keys, and larger nodes trade tree depth against node search, serialization and write amplification. The order is not a byte length or a leaf count. |
+| `WithClusterSize(bytes)` | Outer clustered-stream allocation size. Compare small and large payloads and fragmentation workloads. |
+| `OptimizeAssumingAverageItemSize(bytes)` | Sets the dimension's inner cluster size, clipped to `SmallestRecommendedClusterSize` and `LargestRecommendedClusterSize` (currently 256 to 8192 bytes). Without it, a new dimension uses its backend default and an existing dimension keeps its stored size. Record the effective size. |
+| `WithPageSize(bytes)` | File transaction page size, which affects I/O and commit amplification. It has no effect on memory stores. |
+| `WithMaxMemory(bytes)` | File page-cache budget. Unloaded pages release their buffers, but the budget caps neither the identity tracker nor process memory. |
+| `WithClusteredStreamsPolicy(policy)` | Outer container caching, allocation and integrity checks. Dimension containers use `FastAllocate` regardless of this setting. |
+| Index membership and key shape | Identifier, fixed-size and checksum-based variable-size indexes cost differently. Compare writes as well as lookups. |
+| `AutoSave()`, `Merkleized()`, `UsingHashFunction`, `WithEndianness` | Change flush, integrity and encoding work. Merkle settings, the hash function and the byte order are part of the stored format. Compare each supported variant on its own before combining them. |
 
-`UsingHashFunction` selects the Merkle digest. Current member-checksum indexes create their own default digest independently; changing this setting is not a checksum-index algorithm sweep.
+`UsingHashFunction` selects the Merkle digest. Member-checksum indexes use their own default checksum, so changing the hash does not change checksum-index hashing.
 
-Keep the original complete B-tree specifications when reopening. The builder uses its configured values, and legacy index headers do not authenticate an explicitly supplied wrong value. Existing index headers do not record/validate order; changing it can reinterpret node bytes. The profiling factory records a versioned configuration sidecar and rejects mismatched or unknown file layouts before opening them. That lab sidecar is not a new general ObjectSpace file-format guarantee.
-
-The profiling lab's version 4 manifest records an optional complete `IndexBTreeSpec` alongside the bare `IndexBTreeOrder`. Matching duplicate orders are accepted; conflicting orders are rejected. An omitted specification uses order-only APIs. It explicitly reads earlier manifests, including version 3's separate order/type properties and version 1's PayloadOnly schema. The current benchmark workloads support PayloadOnly and reject DeveloperLab configurations; the latter remains factory/manifest test coverage. These suites measure isolated synthetic records and do not benchmark the original WinForms screen's application scenarios.
-
-Start with independent parameter sweeps, then compare shortlisted combinations using representative data and insertion order. Separate warm identity-cache hits, first-touch hydration, indexed misses, scans, indexed/nonindexed updates, slot recycling, flush, durable commit, rollback and reopen. Capture allocations, file size, machine/runtime and full effective configuration. Prefer workload-specific results; a small benchmark does not establish a universal best configuration. See the [profiler guide](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) for reproducible commands and measurement boundaries.
-
-The general profiler also provides a retained [parameter-study workflow](../../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md). It measures actual Balanced, ReadHeavy and WriteHeavy persistence batches separately for Memory/File, keeps raw verified samples and exact replayable plans, and exposes recorded evidence through NUnit. Lookup locality, variable/resized payloads and category selectivity/skew are explicit dataset controls. Warm member lookups still traverse their index; a separate direct-slot workload isolates tracker hits. Follow [profiling practices](../../../docs/guidelines/patterns/object-spaces.md#profile-real-work) when screening, confirming and reporting candidates; selected defaults follow the documented Balanced objective and retained evidence; future changes still require an explicit decision and compatible existing-store opening.
+Start with independent parameter sweeps, then compare shortlisted combinations with representative data and insertion order. Measure warm identity-cache hits, first-touch hydration, indexed misses, scans, indexed and nonindexed updates, slot recycling, flush, durable commit, rollback and reopen separately. Record allocations, file size, machine, runtime and the full effective configuration, because a small benchmark does not establish a universal best configuration. The [profiler guide](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) gives reproducible commands, the [study workflow](../../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md) screens and confirms candidates, and the [profiling practices](../../../docs/guidelines/patterns/object-spaces.md#profile-real-work) describe how to report them. The [lab guide](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md) owns the versioned configuration sidecar that its factory checks before it opens a lab file, which is not an ObjectSpace file-format feature.
 
 ## Current boundaries
 
-Reference-aware serializers support shared/cyclic inline components. Cross-dimension external-reference garbage collection remains experimental: reference maps are not durably persisted/rehydrated, collection has physical-slot edge cases, and reopened external cycles need stronger coverage. The profiling lab and configuration-ranking suites keep GC disabled; do not present them as tests of persistent graph collection.
+Reference-aware serializers support shared and cyclic inline components. Cross-dimension external-reference garbage collection (`WithGarbageCollection()`) is experimental, because its reference maps are neither persisted nor rehydrated, collection has physical-slot edge cases, and reopened external cycles need stronger coverage. The profiling lab and configuration-ranking suites keep it disabled, so they do not test persistent graph collection.
 
-Custom comparer behavior also needs dedicated index tests: the current ordering registry lookup has known limitations documented in [collections and storage](../../../docs/guidelines/patterns/collections-and-storage.md#comparers--equality). Verify key equality, ordering and reopen behavior before relying on a domain-specific comparer.
+Custom comparers need their own index tests, because `ComparerFactory.GetComparer` currently looks up the equality-comparer registry, as [collections and storage](../../../docs/guidelines/patterns/collections-and-storage.md#comparers--equality) describes. Verify key equality, ordering and reopen behavior before relying on a domain-specific comparer.
 
-Relevant NUnit coverage is in [ObjectSpaces](../../../tests/Sphere10.Framework.Tests/ObjectSpaces), [B-tree collections](../../../tests/Sphere10.Framework.Tests/Collections/BTree), and [profiling lab tests](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md). Read the [ObjectSpace practices](../../../docs/guidelines/patterns/object-spaces.md) when extending this subsystem.
+## Tests
 
-The ObjectSpace builder resolves a complete immutable `BTreeSpec` for each member index before constructing storage. Its type and order are never nullable. Shared type/order settings remain convenient input preferences; explicit per-index specifications can select different layouts within one dimension. The default uses `BTreeSpec.Default.Type` and `Sphere10FrameworkDefaults.ObjectSpaceIndexBTreeOrder`. Legacy stores that used different tree types for different indexes need those original per-index specifications. Merkle and recyclable-slot attachments have no B-tree specification. The lower-level order-based constructors remain available independently of ObjectSpace configuration.
+NUnit coverage is in [ObjectSpaces](../../../tests/Sphere10.Framework.Tests/ObjectSpaces), [B-tree collections](../../../tests/Sphere10.Framework.Tests/Collections/BTree) and the [profiling lab tests](../../../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md). This command runs the fixtures in the `Sphere10.Framework.Tests.ObjectSpaces` namespace from the Framework root:
 
-No type marker is written or read from the B-tree's own storage. Self-describing ObjectStream metadata records each complete specification separately; the root ObjectSpace metadata does not duplicate it. For legacy storage, reopen with the original configuration and serializers; omission does not discover an existing store's selection. Structural checks can reject incompatible node layouts but do not authenticate the supplied type. Changing an existing store's type requires rebuilding into new storage. Reopening a metadata store validates each index specification and its physical order before loading its objects. Each builder call constructs a fresh ObjectSpace from its configured values; callers supply the original configuration when reopening legacy storage.
+```powershell
+dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Release -p:BuildRevision=0 --filter FullyQualifiedName~Sphere10.Framework.Tests.ObjectSpaces
+```
+
+Read the [ObjectSpace practices](../../../docs/guidelines/patterns/object-spaces.md) before extending this subsystem.

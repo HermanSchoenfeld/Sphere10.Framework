@@ -2,11 +2,11 @@
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-**Blockchain state transitions, chain management, and proof-of-work primitives** for building a ledger with your own block format, state model, and consensus rules.
+Sphere10.Framework.Consensus provides **blockchain state transitions, chain management, and proof-of-work primitives** for building a ledger with your own block format, state model, and consensus rules.
 
-The project combines reversible operations, an in-memory linear chain, a graph of competing branches, finalization/reorganization helpers, compact target encoding, and ASERT-style difficulty adjustment. These components can be used independently: a target calculator does not need a blockchain, and a blockchain does not have to use proof of work.
+The project combines reversible operations, an in-memory linear chain, a graph of competing branches, finalization/reorganization helpers, compact target encoding, and ASERT-style difficulty adjustment. These components can be used independently, so a target calculator does not need a blockchain, and a blockchain does not have to use proof of work.
 
-Your application supplies block validation, identity rules, fork selection, persistence, and networking. The examples below demonstrate the current APIs and describe the integration boundaries of the implementation.
+Your application supplies block validation, identity rules, fork selection, persistence, and networking.
 
 ## 📦 Installation
 
@@ -14,7 +14,9 @@ Your application supplies block validation, identity rules, fork selection, pers
 dotnet add package Sphere10.Framework.Consensus
 ```
 
-The package targets **.NET 10** and references [Sphere10.Framework](../Sphere10.Framework/README.md). Public types in this project use the `Sphere10.Framework.Consensus` namespace, including types in the `Blockchain/` directory.
+The package references [Sphere10.Framework](../Sphere10.Framework/README.md). It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Consensus/Sphere10.Framework.Consensus.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
+
+Public types in this project use the `Sphere10.Framework.Consensus` namespace, including types in the `Blockchain/` directory.
 
 ## 🏗️ Core Architecture
 
@@ -46,7 +48,7 @@ FinalizedBlockchain<TBlock, TState, TBlockID, TWeight, TOperationID>
 
 ## ⚡ Quick Start: Calculate a Target
 
-This example calculates a target from two block timestamps and compares a candidate digest with the expanded numeric threshold:
+This example calculates the next target after a block that arrived in half the 60-second block time, then compares a candidate digest with the expanded numeric threshold:
 
 ```csharp
 using System;
@@ -61,7 +63,7 @@ var configuration = new ASERTConfiguration {
 };
 var difficulty = new ASERT2(targetAlgorithm, configuration);
 var headTime = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
-var timestamps = new[] { headTime, headTime.AddSeconds(-60) };
+var timestamps = new[] { headTime, headTime.AddSeconds(-30) }; // newest first
 var previousCompactTarget = 0x10000000u;
 
 var nextCompactTarget = difficulty.CalculateNextBlockTarget(timestamps, previousCompactTarget, 100);
@@ -69,7 +71,7 @@ var threshold = targetAlgorithm.ToTarget(nextCompactTarget);
 var digest = Hashers.Hash(CHF.SHA2_256, "candidate block header"u8);
 var hashValue = new BigInteger(digest, isUnsigned: true, isBigEndian: true);
 
-Console.WriteLine(nextCompactTarget == previousCompactTarget); // True: exactly the desired interval.
+Console.WriteLine(nextCompactTarget > previousCompactTarget); // True: a 30-second block raises the difficulty.
 Console.WriteLine(hashValue <= threshold); // Whether this candidate satisfies this numeric target.
 ```
 
@@ -79,7 +81,7 @@ A protocol must specify the actual header bytes, hash function, byte order, time
 
 [MolinaTargetAlgorithm](MolinaTargetAlgorithm.cs) implements Albert Molina's PascalCoin-style target representation. It encodes the leading-zero count in the high eight bits and an inverted mantissa in the remaining 24 bits.
 
-**Higher compact values mean harder difficulty; lower full numeric thresholds mean harder difficulty.** This compact format differs from Bitcoin's `nBits` encoding.
+**A higher compact value means a harder target, and so does a lower full numeric threshold.** Bitcoin's `nBits` encoding does not preserve this ordering.
 
 | Member | Behavior |
 |---|---|
@@ -87,7 +89,7 @@ A protocol must specify the actual header bytes, hash function, byte order, time
 | `MaxCompactTarget` | `3892314111` / `0xE7FFFFFF`, the hardest advertised target |
 | `FromTarget(BigInteger)` | Compress a numeric target, losing lower-bit precision |
 | `ToTarget(uint)` | Expand a compact target to a `BigInteger` |
-| `FromDigest(ReadOnlySpan<byte>)` | Interpret up to 32 bytes as an unsigned big-endian value; shorter inputs are left-padded with zeros |
+| `FromDigest(ReadOnlySpan<byte>)` | Interpret up to 32 bytes as an unsigned big-endian value, left-padding shorter inputs with zeros |
 | `ToDigest(uint, Span<byte>)` | Write an expanded target into an exactly 32-byte destination |
 | `ToDigest(BigInteger, Span<byte>)` | Write an unsigned numeric target into an exactly 32-byte destination |
 | `ToDigest(...)` extensions | Allocate and return the 32-byte destination |
@@ -111,7 +113,7 @@ Console.WriteLine(compactFromBytes == compactTarget); // True
 Console.WriteLine(expandedTarget <= fullTarget); // True: compaction discards precision.
 ```
 
-Use the **expanded target** for exact digest comparisons. Comparing compacted digests alone discards information near the threshold. Supply valid nonnegative targets within 256 bits; these conversion methods do not constitute protocol validation.
+Use the **expanded target** for exact digest comparisons. Comparing compacted digests alone discards information near the threshold. Supply nonnegative targets of at most 256 bits. These conversion methods do not validate a target against protocol rules.
 
 `AggregateWork` specifically computes `FromTarget(ToTarget(a) + ToTarget(b))`. It does not calculate inverse-target proof-of-work totals. Define the meaning of `TWeight` and `IWeightAggregator<TWeight>` for your chain rather than treating compact target values as directly additive chain work.
 
@@ -132,7 +134,7 @@ nextFullTarget = previousFullTarget × exp((observedSeconds - blockTimeSeconds) 
 nextCompactTarget = targetAlgorithm.FromTarget(nextFullTarget)
 ```
 
-A shorter interval decreases the full target and increases difficulty; a longer interval increases the full target and decreases difficulty. `RelaxationTime` is the exponential time constant in this formula, **not a base-2 half-life**. The implementation uses `FixedPoint.Exp` and truncates the multiplier to six decimal places before scaling the integer target.
+A shorter interval decreases the full target and increases difficulty. A longer interval increases the full target and decreases difficulty. `RelaxationTime` is the exponential time constant in this formula, **not a base-2 half-life**. The implementation uses `FixedPoint.Exp` and truncates the multiplier to six decimal places before scaling the integer target.
 
 ```csharp
 using System;
@@ -157,9 +159,9 @@ var slowerBlockTarget = calculator.CalculateNextBlockTarget(
 Console.WriteLine(slowerBlockTarget < previousCompactTarget); // True: an easier target.
 ```
 
-For calculations during mining, the timestamp overload on `ASERT_RTT` uses the current UTC time. `ASERT2` uses only the two supplied timestamps. Both currently report `RealTime == true` because `ASERT2` inherits the base property; choose the implementation explicitly instead of using that flag to distinguish them.
+For calculations during mining, the timestamp overload on `ASERT_RTT` uses the current UTC time. `ASERT2` uses only the two supplied timestamps. `ASERT_RTT` reports `RealTime == true`, and `ASERT2` reports `RealTime == false`.
 
-Set both configuration values: their defaults are zero. Use a positive relaxation time of at least one whole second and protocol-appropriate timestamp bounds. The timestamp overloads truncate `TimeSpan.TotalSeconds` to `int`, and the current implementations do not use `blockNumber` or validate a network's timestamp policy.
+Set both configuration values, because both default to zero. Use a positive relaxation time of at least one whole second and protocol-appropriate timestamp bounds. The timestamp overloads truncate `TimeSpan.TotalSeconds` to `int`, and the current implementations do not use `blockNumber` or validate a network's timestamp policy.
 
 ## 🧱 Define a Ledger
 
@@ -214,9 +216,9 @@ The integer IDs and unit weights here are demonstration choices. A real ledger s
 
 ### State Update Scopes
 
-`IBlockchainState.EnterUpdateScope()` returns `IDisposable`. The linear chain opens this scope around each apply or undo operation. `BlockchainStateBase` supplies a **no-op scope**.
+`IBlockchainState.EnterUpdateScope()` returns an `ActionScope`, a disposable struct that runs its action when the scope is disposed. The linear chain opens this scope around each apply or undo operation. `BlockchainStateBase` supplies a **no-op scope**, and a derived state can override the virtual `EnterUpdateScope` to supply its own action.
 
-The interface has no `Commit` method, and `BlockchainBlock.Apply` does not automatically undo earlier operations when a later operation throws. Persistence, synchronization, and recovery from partially applied blocks therefore need an application-defined design; deriving from `BlockchainStateBase` alone does not provide transactions. Direct `block.Apply(state)` calls also do not open a state update scope.
+The interface has no `Commit` method, and `BlockchainBlock.Apply` does not automatically undo earlier operations when a later operation throws. Persistence, synchronization, and recovery from partially applied blocks therefore need an application-defined design, because deriving from `BlockchainStateBase` alone does not provide transactions. Direct `block.Apply(state)` calls also do not open a state update scope.
 
 ## 🔗 Apply and Undo Blocks
 
@@ -246,16 +248,16 @@ Console.WriteLine(chain.Head.Block.ID); // 1
 |---|---|
 | `State` | The state instance supplied to the constructor |
 | `Blocks` | Ordered, read-only view of the in-memory linked-block list |
-| `Head` | Most recently applied linked block; `null` for an empty chain |
+| `Head` | Most recently applied linked block, or `null` for an empty chain |
 | `Height` | Applied block count, starting at zero |
-| `AggregatedWeight` | Head's aggregated weight; `default(TWeight)` for an empty chain |
+| `AggregatedWeight` | Head's aggregated weight, or `default(TWeight)` for an empty chain |
 | `ApplyBlock(block)` | Aggregate weight, apply operations in an update scope, append the linked block |
-| `UndoBlock()` | Undo the head in an update scope, remove and return it; rejects an empty chain |
+| `UndoBlock()` | Undo the head in an update scope, then remove and return it. An empty chain is rejected |
 | `BlockApplied` / `BlockUndone` | Single-argument events raised after the corresponding mutation and scope disposal |
 
 The first block's aggregated weight is its own weight. Later blocks use `WeightAggregator.Aggregate(parentAggregatedWeight, block.Weight)`. The constructor overload accepting an initial block sequence applies those blocks to the supplied state immediately.
 
-A `LinkedBlock` contains `Block`, `ParentID`, `HasParent`, `IsRoot`, and `AggregatedWeight`. The linear chain derives parent links from insertion order; it does not independently check a serialized header's parent hash, reject duplicate IDs, or select a winning branch.
+A `LinkedBlock` contains `Block`, `ParentID`, `HasParent`, `IsRoot`, and `AggregatedWeight`. The linear chain derives parent links from insertion order. It does not independently check a serialized header's parent hash, reject duplicate IDs, or select a winning branch.
 
 ## 🌿 Track Competing Branches
 
@@ -292,22 +294,22 @@ A real fork-choice rule also needs a defined tie-breaker. The graph itself does 
 | Operation | Current behavior |
 |---|---|
 | `SetFinalizedBlock(block)` | Clear all nodes/heads and insert a root whose aggregated weight is its own weight |
-| `Add(block, previousBlockID)` | Require an existing parent; add the child and replace the parent in `PotentialHeads` if present |
+| `Add(block, previousBlockID)` | Require an existing parent, then add the child and replace the parent in `PotentialHeads` if present |
 | `GetPathToRoot(headID)` / `GetAncestorPath(headID)` | Return root-to-head order, **including the root** |
 | `GetPathFromAncestor(ancestorID, descendantID)` | Return ancestor-to-descendant order, **excluding the ancestor** |
 | `FindCommonAncestor(xID, yID)` | Return a shared linked ancestor, or `null` when none is found |
-| `IsDescendantOf(descendantID, ancestorID)` | Test strict ancestry; a node is not its own descendant |
-| `RemoveHead(headID)` | Remove only the candidate-head entry; retain its node |
-| `PruneToPath(retainedIDs)` | Remove unlisted nodes and heads; the caller must retain coherent ancestry |
+| `IsDescendantOf(descendantID, ancestorID)` | Test strict ancestry, so a node is not its own descendant |
+| `RemoveHead(headID)` | Remove only the candidate-head entry and retain its node |
+| `PruneToPath(retainedIDs)` | Remove unlisted nodes and heads. The caller must retain coherent ancestry |
 | `Clear()` | Remove all nodes and heads |
 
 Constructors accept block-ID and operation-ID equality comparers. Use an appropriate block-ID comparer for your identity representation. The operation-ID comparer is currently stored but not used for deduplication.
 
-Require unique block IDs before calling `Add`: it assigns into the node dictionary and does not reject replacement of an existing ID. Root weight is local to the graph; re-rooting does not import the full accumulated weight of the finalized chain.
+Ensure that block IDs are unique before calling `Add`, because it assigns into the node dictionary and does not reject replacement of an existing ID. Root weight is local to the graph, so re-rooting does not import the full accumulated weight of the finalized chain.
 
 ## ✅ Finalize a Candidate Path
 
-`FinalizedBlockchain` decorates the concrete linear `Blockchain` and exposes `UnfinalizedSector`. The following example starts with an **empty linear chain and an unapplied graph root**, because `FinalizePath` applies the entire root-to-head path.
+`FinalizedBlockchain` decorates the concrete linear `Blockchain` and exposes `UnfinalizedSector`. The following example starts with an **empty linear chain and an unapplied graph root**, so `FinalizePath` applies the entire root-to-head path. When the root is already the linear head, `FinalizePath` skips it.
 
 ```csharp
 using System;
@@ -334,9 +336,12 @@ Console.WriteLine(chain.UnfinalizedSector.Nodes.Count); // 1: the new root
 Console.WriteLine(chain.UnfinalizedSector.PotentialHeads.Count); // 0
 ```
 
-**Current finalization boundaries:** the constructor and direct `ApplyBlock`/`UndoBlock` calls do not synchronize the graph with the linear head. `AddUnfinalizedRoot` resets the graph and does not apply the block. `FinalizePath` includes the root, so passing a graph rooted at an already-applied block would apply that block again. After finalization, re-rooting clears all other candidates.
+Keep these finalization boundaries in mind when a node finalizes repeatedly:
 
-These details matter when integrating repeated finalization into a node. Do not assume that a root synchronized to the current linear head will automatically be skipped by a later `FinalizePath` call.
+- The constructor and direct `ApplyBlock`/`UndoBlock` calls do not synchronize the graph with the linear head.
+- `AddUnfinalizedRoot` resets the graph and does not apply the block.
+- `FinalizePath` applies the root only while it is not the linear head, compared with the graph's `BlockIDComparer`, and returns only the blocks it applied. After a `FinalizePath` or `ExecuteReorg`, the graph root is the already-applied linear head, so a later `FinalizePath` applies only the blocks above it.
+- After finalization, re-rooting clears all other candidates.
 
 ## 🔄 Plan and Execute a Reorganization
 
@@ -399,7 +404,7 @@ var root = MerkleHelper.ComputeOperationsMerkleRoot(operationDigests);
 Console.WriteLine(root.Length); // 32 with SHA2-256
 ```
 
-The literal strings above are example bytes; an actual protocol must define complete operation serialization. SHA2-256 is the default, and overloads accept another `CHF`. Empty input returns `null`; a single digest returns that digest as the root.
+The literal strings above are example bytes, and an actual protocol must define complete operation serialization. SHA2-256 is the default, and overloads accept another `CHF`. Empty input returns `null`, and a single digest is returned as the root.
 
 `ComputeBlockMerkleRoot(block)` currently passes each operation's `GetHashCode()` to the underlying Merkle helper. It does **not** hash canonical operation serialization or `operation.ID`. Use the pre-hashed digest overload for protocol commitments rather than relying on object hash codes.
 
@@ -427,7 +432,7 @@ Console.WriteLine(secondChild.Length); // 32
 Console.WriteLine(checksum); // A 32-bit lookup checksum
 ```
 
-The checksum's method name does not make its 32-bit output an authentication tag or a unique identity. Preserve the current byte selection when interoperating with existing values. Child digest derivation defines a particular byte-level scheme; it does not implement a complete wallet/key-management protocol.
+The checksum's method name does not make its 32-bit output an authentication tag or a unique identity. Preserve the current byte selection when interoperating with existing values. Child digest derivation defines a particular byte-level scheme and does not implement a complete wallet/key-management protocol.
 
 ## 📊 Periodic Statistics
 
@@ -444,9 +449,9 @@ statistics.RegisterEvent(5.0);
 Console.WriteLine(statistics.StartedOn.Kind); // Utc
 ```
 
-The constructor requires a positive period and a non-null backing store when supplied. `Start` may be called once; registering events or reading `StartedOn`/`PeriodsAvailable` before starting throws. `PeriodsAvailable` is derived from elapsed UTC time.
+The constructor requires a positive period and a non-null backing store when supplied. `Start` may be called once, and registering events or reading `StartedOn`/`PeriodsAvailable` before starting throws. `PeriodsAvailable` is derived from elapsed UTC time.
 
-**History aggregation is incomplete:** `historyLength` and the `occurances` argument are not used, period rollover is unfinished, and no public statistics/history accessor is exposed. This class should not be described as a complete rolling hash-rate monitor.
+**History aggregation is incomplete.** `historyLength` and the `occurances` argument are not used, period rollover is unfinished, and no public statistics/history accessor is exposed. Do not use the class as a complete rolling hash-rate monitor.
 
 ## 🧩 Extending the Project
 
@@ -456,7 +461,7 @@ The constructor requires a positive period and a non-null backing store when sup
 | Custom block IDs and weights | Implement `IBlockchainBlock<...>` or override `BlockchainBlock<...>.ID` and `Weight` |
 | Different cumulative scoring | Implement `IWeightAggregator<TWeight>` |
 | A different chain store | Derive from `BlockchainBase<...>` or implement `IBlockchain<...>` |
-| Additional chain behavior | Derive from `BlockchainDecorator<...>`; the six-parameter form exposes a typed inner chain |
+| Additional chain behavior | Derive from `BlockchainDecorator<...>`, whose six-parameter form exposes a typed inner chain |
 | Another target representation | Implement `ICompactTargetAlgorithm` |
 | Another difficulty rule | Implement `IDAAlgorithm` |
 
@@ -473,9 +478,9 @@ dotnet build ./src/Sphere10.Framework.Consensus/Sphere10.Framework.Consensus.csp
 dotnet test ./tests/Sphere10.Framework.Consensus.Tests/Sphere10.Framework.Consensus.Tests.csproj --configuration Release
 ```
 
-The [test project](../../tests/Sphere10.Framework.Consensus.Tests/) covers operation/block apply and undo, linear chain behavior, graph ancestry and heads, finalization/reorganization helpers, Merkle/digest helpers, and statistics lifecycle guards.
+The [test project](../../tests/Sphere10.Framework.Consensus.Tests/) covers operation/block apply and undo, linear chain behavior, graph ancestry and heads, finalization/reorganization helpers, Merkle/digest helpers, statistics lifecycle guards, and the basic behavior of the Molina compact target and the two ASERT difficulty algorithms.
 
-The library is included in both main solutions. Its test project is currently included in the Windows solution; it is not among the assemblies run by the default cross-platform GitHub test job. Run the explicit test-project command above when working on Consensus.
+The library is included in both main solutions, but its test project is only in the Windows solution. The GitHub Actions test job does not run it, so run the test command above when working on Consensus.
 
 ## 📁 Project Structure
 

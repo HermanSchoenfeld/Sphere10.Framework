@@ -2,30 +2,30 @@
 
 # Sphere10.Framework.Web.AspNetCore
 
-Shared ASP.NET Core integration for Sphere10 Framework on .NET 10. Use this layer for hosting, dependency injection, logging, HTTP/session utilities and middleware. Add the separate MVC or Blazor library when you need its controller or component APIs.
+This library is the shared ASP.NET Core integration for Sphere10 Framework. Use it to start and stop the Framework with an ASP.NET Core host and to connect logging, sessions, requests and middleware. The [MVC](../Sphere10.Framework.Web.AspNetCore.MVC/README.md) and [Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) libraries build on this layer and add their controller and component APIs.
 
 ## Features
 
 | Area | APIs |
 | --- | --- |
-| Framework startup and shutdown | `AddSphere10Framework`, `StartSphere10Framework`, `UseSphere10Framework`, host lifecycle initializer. |
-| Logging | `AddSphere10FrameworkLogger`, `Sphere10LoggerProvider`, `MicrosoftExtensionsLoggerAdapter`. |
-| Session values | `SetJsonObject`, `TryGetJsonObject`, `GetOrCreateJsonObject`, `GetJsonObjectOrDefault`. |
-| Request/context helpers | `HttpRequestExtensions`, `GetUserMessages`, `PageParameterProcessor`. |
+| Framework startup and shutdown | `AddSphere10Framework`, `UseSphere10Framework` and `StartSphere10Framework`, the `ModuleConfiguration` that ends the Framework when the host stops, and `GetAspNetCoreHost`. |
+| Logging | `AddSphere10FrameworkLogger`, `Sphere10LoggerProvider` and `MicrosoftExtensionsLoggerAdapter`. |
+| Session values | `SetJsonObject`, `TryGetJsonObject`, `GetJsonObject`, `GetOrCreateJsonObject` and `GetJsonObjectOrDefault`. |
+| Requests and context | `GetUserMessages`, `GetParameter<T>(Enum)`, `PageParameterProcessor`, `GetUri`, `ToStringAsync` and `HttpContextEx`. |
 | HTML content | `IHtmlContentBuilder.ToHtmlContent(HtmlEncoder)`. |
-| Networking | `Tools.Web.AspNetCore.ParseNetwork` and optional `CloudflareConnectingIPMiddleware`. |
+| Networking | `Tools.Web.AspNetCore.ParseNetwork` and the opt-in `CloudflareConnectingIPMiddleware`. |
 
 ## Installation
 
-Use the .NET 10 SDK and an ASP.NET Core host, normally a `Microsoft.NET.Sdk.Web` project. Install a version available from your package feed:
+Reference the package from an ASP.NET Core project that targets .NET 10 or later:
 
 ```powershell
-dotnet add package Sphere10.Framework.Web.AspNetCore --version <version> --source <feed>
+dotnet add package Sphere10.Framework.Web.AspNetCore
 ```
 
-Replace the placeholders with your feed and exact version. New packages in this checkout may require a local feed; publication is not assumed. [Package validation](../../scripts/package-consumers/README.md) produces a complete local feed and reports a unique validation version.
+Pass `--version` to match the other Sphere10.Framework packages in the application, and `--source` to restore from a local folder feed. The root README explains how to [build and publish the packages](../../README.md#building-and-publishing-packages), including to a [private folder feed](../../README.md#private-feed).
 
-For a runnable source-reference example, execute from the repository root:
+To build against the source instead, reference the project. From the repository root, these commands create the host for the examples below, beside the repository:
 
 ```powershell
 dotnet new web --name SharedWebDemo --output ../SharedWebDemo --framework net10.0
@@ -43,7 +43,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSphere10Framework(_ => { });
+builder.Services.AddSphere10Framework(framework => framework
+	.AddModule<Sphere10.Framework.Web.AspNetCore.ModuleConfiguration>());
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
@@ -64,19 +65,27 @@ public sealed class VisitCounter {
 }
 ```
 
+Run the host from the repository root:
+
 ```powershell
 dotnet run --project ../SharedWebDemo -p:BuildRevision=0
 ```
 
-Open the address printed by the host, then visit `/visits` repeatedly in the same browser. The example stores session data in process memory and loses it when the process restarts. A JSON session read returns a deserialized value; call `SetJsonObject` again after modifying it.
+Open the address that the host prints, then visit `/visits` repeatedly in the same browser. The count lives in the session, which this example keeps in process memory, so it resets when the process restarts. A session read returns a deserialized copy, so call `SetJsonObject` again after you change the value. The session extensions serialize with `Tools.Json`, which uses Newtonsoft.Json.
 
-`AddSphere10Framework` invokes the `Sphere10FrameworkBuilder` callback and registers modules in the host's service collection. `StartSphere10Framework` must follow `builder.Build()` and consume that pending configuration once. The library's initializer links host shutdown to framework finalization. See the [Application guide](../Sphere10.Framework.Application/README.md) for modules and framework services. `UseSphere10Framework(configure)` is the registration alternative for `IHostBuilder`; it does not replace the subsequent start call.
+### How startup and shutdown work
 
-These methods manage the process-level framework lifetime. A [Blazor application](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) built with `BuildBlazorApplication` has a separate scoped `IApplication` lifetime: its circuit handler awaits initialization and finalization, including tasks registered by named plugins. Static prerendering and temporary disconnects do not execute those tasks. Application exit shuts down that circuit's application; it does not stop the ASP.NET Core host. Use `IApplication.Logger` for application and screen diagnostics.
+`AddSphere10Framework` runs the `Sphere10FrameworkBuilder` callback and registers the modules that the callback adds in the host's service collection. Modules are never discovered automatically. `Sphere10.Framework.Web.AspNetCore.ModuleConfiguration` registers the initializer that calls `Sphere10Framework.Instance.EndFramework()` when the host raises `ApplicationStopped`, so without that module nothing ends the Framework when the host stops. Add `Sphere10.Framework.Application.ModuleConfiguration` as well when the host needs the product information and settings services. The [Application guide](../Sphere10.Framework.Application/README.md) describes modules and process tasks.
+
+`StartSphere10Framework` must follow `builder.Build()` and precede `app.Run()`. It starts the pending configuration once, on the host's service provider, and the host keeps ownership of that provider. `Sphere10Framework.Instance.GetAspNetCoreHost()` then returns the host. For an `IHostBuilder`, `UseSphere10Framework(configure)` performs the same registration, and the start call is still required. `Sphere10Framework.Instance` is a process-wide singleton, so only one host in a process can run the Framework at a time.
+
+Set `Sphere10FrameworkOptions` with `WithOptions` inside the `AddSphere10Framework` callback, because modules read them during registration. For example, `Sphere10.Framework.Application.ModuleConfiguration` reads `EnsureSystemDataDirGloballyAccessible` then. `StartSphere10Framework` takes no options and keeps the ones the callback set.
+
+These calls manage the process-wide Framework. A [Blazor application](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) built with `BuildBlazorApplication` also has a scoped `IApplication` for each interactive circuit. That application initializes when its circuit opens and finalizes when the circuit closes. Both steps run the application's own tasks and the tasks registered under each loaded plugin's name. Prerendering and temporary disconnects run neither. Exiting the application ends only that circuit's application and does not stop the host. Use `IApplication.Logger` for application and screen diagnostics.
 
 ## Send host logging to a Sphere10 logger
 
-Add these imports and registration statements before `builder.Build()` in the example above:
+Add these imports at the top of the quick start's `Program.cs` and the two statements before `builder.Build()`:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -87,11 +96,22 @@ builder.Logging.ClearProviders();
 builder.Services.AddSphere10FrameworkLogger(new ConsoleLogger());
 ```
 
-The provider adapts `Microsoft.Extensions.Logging.ILogger` calls to the supplied `Sphere10.Framework.ILogger`. Keep other providers when you want multiple destinations; omit `ClearProviders` in that case. The extension is on `IServiceCollection`, not `ILoggingBuilder`.
+`AddSphere10FrameworkLogger` extends `IServiceCollection`, not `ILoggingBuilder`. It registers a `Sphere10LoggerProvider`, which gives each logging category a `MicrosoftExtensionsLoggerAdapter` over the supplied `Sphere10.Framework.ILogger`. Omit `ClearProviders` to keep the host's other providers as additional destinations.
 
-## Network parsing and request messages
+| Host level | Sphere10 method | Enabled by |
+| --- | --- | --- |
+| `Trace`, `Debug` | `Debug` | `LogOptions.DebugEnabled` |
+| `Information` | `Info` | `LogOptions.InfoEnabled` |
+| `Warning` | `Warning` | `LogOptions.WarningEnabled` |
+| `Error`, `Critical` | `Error` | `LogOptions.ErrorEnabled` |
 
-`ParseNetwork` normalizes host bits for IPv4 and IPv6 rather than requiring an already-normalized network address:
+The adapter writes the text that the host's formatter produces and drops the category name and scopes. An `Error` or `Critical` entry with an exception goes to `ILogger.Exception`, and at the other levels the exception's text is appended to the message, with its stack trace when `LogOptions.ExceptionDetailEnabled` is set.
+
+## Request and network helpers
+
+### Network parsing
+
+`ParseNetwork` parses IPv4 or IPv6 CIDR notation into a `System.Net.IPNetwork` and clears the host bits, so the address does not have to be normalized first:
 
 ```csharp
 using System.Net;
@@ -101,7 +121,11 @@ var baseAddress = network.BaseAddress; // 192.0.2.0
 var includesClient = network.Contains(IPAddress.Parse("192.0.2.45")); // true
 ```
 
-To attach messages to the current request, add this endpoint before `app.Run()` in the quick-start host, with the listed imports at the top of `Program.cs`:
+It throws `ArgumentException` for an invalid address and for a prefix length that is missing, not a number or outside the address's range.
+
+### Messages for the current request
+
+`GetUserMessages()` returns a `Collection<UserMessage>` that is stored in `HttpContext.Items`. The collection lives only for the current request, so it is neither session state nor a cross-request notification queue. To try it, add the imports at the top of the quick start's `Program.cs` and the endpoint before `app.Run()`:
 
 ```csharp
 using Microsoft.AspNetCore.Http;
@@ -114,36 +138,66 @@ app.MapGet("/messages", (HttpContext context) => {
 });
 ```
 
-The message collection lives in `HttpContext.Items` for that request. It is not session persistence or a cross-request notification queue.
+### Typed query parameters
 
-`PageParameterProcessor` and the `HttpRequest.GetParameter<T>(Enum)` extension retain the enum-based request API. Its optional name attribute lives in `Sphere10.Framework.Web.Processing`. Applications should validate query presence and input values before relying on this legacy conversion API. `HttpRequest.ToStringAsync` includes headers and reads the current body stream; it leaves the stream open but does not rewind it.
+`HttpRequest.GetParameter<T>(Enum)` and `PageParameterProcessor` read a query-string value named by an enum member and parse it with `Tools.Parser`. The member's name is the parameter name unless a [`ParameterAttribute`](../Sphere10.Framework.Web/README.md#request-parameter-names) overrides it. `ContainsParameter` reports whether the query string carries the parameter, so call it before you read an optional parameter. `GetParameter<T>` throws `SoftwareException` when the query string lacks the value, and it throws `FormatException` when the value does not parse as `T`.
 
-`CloudflareConnectingIPMiddleware` replaces `Connection.RemoteIpAddress` from the `cf-connecting-ip` header. It does not verify the sender or configure proxy trust. Use it only where the host accepts the header from trusted infrastructure; registering the library alone does not enable it.
+### Cloudflare client addresses
+
+`CloudflareConnectingIPMiddleware` replaces `HttpContext.Connection.RemoteIpAddress` with the address in the `cf-connecting-ip` request header. The library does not register it, so add it early in the pipeline, before any middleware that reads the client address:
+
+```csharp
+using Sphere10.Framework.Web.AspNetCore;
+
+app.UseMiddleware<CloudflareConnectingIPMiddleware>();
+```
+
+The middleware trusts the header without checking the sender. Enable it only when the host accepts requests from Cloudflare alone. A header value that is not an IP address is ignored, and the connection keeps its own address.
+
+### Other helpers
+
+| API | Behavior |
+| --- | --- |
+| `HttpRequest.GetUri()` | Builds a `Uri` from the request's scheme, host, port, path and query. When the host carries no port, the `Uri` uses the scheme's default port, such as 443 for HTTPS. |
+| `HttpRequest.ToStringAsync()` | Formats the request line, headers and body as text. It reads the body to the end and leaves the stream open. It restores the position of a seekable body, so call `EnableBuffering()` first when another reader needs the body afterwards. |
+| `HttpContextEx.Current` | Returns the current `HttpContext` from a static accessor. Register the accessor with `AddHttpContextAccessor()` and pass it to `HttpContextEx.Configure` at startup first. |
+| `IHtmlContentBuilder.ToHtmlContent(HtmlEncoder)` | Renders the builder's content into one `HtmlString`. |
+
+## Namespaces
+
+The hosting, service and session extensions live in the Microsoft namespaces of the types they extend, so importing `Sphere10.Framework.Web.AspNetCore` alone does not bring them into scope.
+
+| Namespace | APIs |
+| --- | --- |
+| `Microsoft.Extensions.DependencyInjection` | `AddSphere10Framework` and `AddSphere10FrameworkLogger` |
+| `Microsoft.Extensions.Hosting` | `UseSphere10Framework`, `StartSphere10Framework` and `ToHtmlContent` |
+| `Microsoft.AspNetCore.Http` | The session JSON extensions |
+| `Sphere10.Framework.Web.AspNetCore` | `GetUserMessages`, `GetParameter<T>`, `GetUri`, `ToStringAsync`, `GetAspNetCoreHost`, `PageParameterProcessor`, `HttpContextEx`, `CloudflareConnectingIPMiddleware`, `Sphere10LoggerProvider`, `MicrosoftExtensionsLoggerAdapter` and `ModuleConfiguration` |
+| `Tools.Web` | `Tools.Web.AspNetCore.ParseNetwork` |
 
 ## Structure and dependencies
 
-| Folder/file | Contents |
+| Folder or file | Contents |
 | --- | --- |
-| `Extensions/` | Host/service registration, request/context/session and HTML-content helpers. |
-| `Lifecycle/` and `ModuleConfiguration.cs` | Framework finalization when the host stops. |
-| `Logging/` | Microsoft logging adapter and provider. |
-| `Processing/` | Legacy request parameter processor and context accessor. |
-| `Middleware/` | Connecting-IP middleware. |
+| `Extensions/` | Service, host, session, request, context and HTML-content extensions. |
+| `Lifecycle/` and `ModuleConfiguration.cs` | The initializer that ends the Framework when the host stops. |
+| `Logging/` | The Microsoft logging adapter and provider. |
+| `Processing/` | `PageParameterProcessor` and `HttpContextEx`. |
+| `Middleware/` | `CloudflareConnectingIPMiddleware`. |
 | `AspNetCoreTool.cs` | `Tools.Web.AspNetCore`. |
 
-This project targets `net10.0`, references `Microsoft.AspNetCore.App`, and depends on [Application](../Sphere10.Framework.Application/README.md) and the pure [Web](../Sphere10.Framework.Web/README.md) library. It has no project dependency on MVC, Blazor, WinForms or Drawing. A non-web SDK project consuming these APIs also needs an appropriate ASP.NET Core framework reference.
+The project targets `net10.0`, and also `net11.0` when a .NET 11 SDK builds it. It has a `Microsoft.AspNetCore.App` framework reference and project references to [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) and the host-independent [Sphere10.Framework.Web](../Sphere10.Framework.Web/README.md). It does not reference MVC, Blazor, Windows Forms or Drawing. The framework reference flows to referencing projects, so a plain `Microsoft.NET.Sdk` project such as the web test project can use these APIs.
 
-## Migration from the combined library
+## Upgrading from the combined library
 
-| Previous API | Current location |
+Releases up to 3.1.2 shipped the web models and the MVC helpers inside this package. They now live in two other packages, and this package keeps the hosting, HTTP, logging and middleware APIs under their existing namespaces.
+
+| Previous API | Current package and namespace |
 | --- | --- |
-| Sitemap, navigation, messages, HTML formatting and DataTables models | `Sphere10.Framework.Web` (`.AnimateCss` for animation enums). |
-| Request `ParameterAttribute` | `Sphere10.Framework.Web.Processing`. |
-| Controllers, Razor helpers, forms, filters, routes, `XmlResult`, `ImageResult` | `Sphere10.Framework.Web.AspNetCore.MVC`. |
-| Enum select lists | `Tools.Web.Mvc.ToSelectList` in the MVC project. |
-| Hosting, HTTP, logging, middleware and DI | This shared project, with their existing namespaces. |
-
-Hosting extensions use the standard `Microsoft.Extensions.DependencyInjection` and `Microsoft.Extensions.Hosting` namespaces; session extensions use `Microsoft.AspNetCore.Http`. Importing only `Sphere10.Framework.Web.AspNetCore` does not bring those extension methods into scope.
+| Sitemap, navigation, message, HTML formatting and DataTables models | `Sphere10.Framework.Web`, with the animation enums in `Sphere10.Framework.Web.AnimateCss` |
+| `ParameterAttribute` | `Sphere10.Framework.Web`, in the `Sphere10.Framework.Web.Processing` namespace |
+| Controller and Razor helpers, forms, filters, routing, `XmlResult` and `ImageResult` | `Sphere10.Framework.Web.AspNetCore.MVC` |
+| `Tools.Web.AspNetCore.ToSelectList` | `Tools.Web.Mvc.ToSelectList` in `Sphere10.Framework.Web.AspNetCore.MVC` |
 
 ## Build and verification
 
@@ -154,11 +208,11 @@ dotnet build src/Sphere10.Framework.Web.AspNetCore/Sphere10.Framework.Web.AspNet
 dotnet test tests/Sphere10.Framework.Web.AspNetCore.Tests -p:BuildRevision=0
 ```
 
-The [web regression suite](../../tests/Sphere10.Framework.Web.AspNetCore.Tests) covers IPv4/IPv6 network normalization and shared/MVC integration. [Package validation](../../scripts/package-consumers/README.md) builds external consumers against generated packages. `BuildRevision=0` preserves the local build counter.
+The [shared web tests](../../tests/Sphere10.Framework.Web.AspNetCore.Tests) cover `ParseNetwork` normalization and rejection for IPv4 and IPv6, `GetUri` default ports, `ToStringAsync`, query parameters, the Cloudflare middleware and the logging adapter's exception forwarding, together with the MVC results and form scope. They do not cover the hosting or session extensions. [Package validation](../../scripts/package-consumers/README.md) builds and publishes an external host against the packed libraries and checks its responses over HTTP. `-p:BuildRevision=0` stops a local build from allocating the next build number.
 
 ## Related projects
 
 - [Web models without ASP.NET Core](../Sphere10.Framework.Web/README.md)
-- [MVC forms, controllers and results](../Sphere10.Framework.Web.AspNetCore.MVC/README.md)
+- [MVC results, Razor helpers and forms](../Sphere10.Framework.Web.AspNetCore.MVC/README.md)
 - [Blazor application framework and CRUD grid](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md)
 - [Minimal MVC tester](../../utils/Sphere10.Framework.Utils.MvcTester/README.md)

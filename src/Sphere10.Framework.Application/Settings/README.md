@@ -1,10 +1,52 @@
 # Settings
 
-`SettingsObject`, `UserSettings` and `GlobalSettings` provide standalone persistent configuration through `ISettingsProvider`. These types are UI-independent. The [application module](../ModuleConfiguration.cs) registers cached directory providers and assigns the static settings facades during process initialization. Read settings after that initialization. Screens declare their nested `SettingsObject` type with `[Settings(typeof(...))]`, equivalent to the builder's `UseSettings` declaration. Conflicting declarations throw; see [Screen Options](../../../docs/usage/screen-options.md).
+The settings library stores typed preferences for the current user, or for every user of a machine, and restores them in later sessions. Use it for remembered choices and small configuration values in any Sphere10 application, with or without a user interface. Keep business data in the application's own storage.
+
+Each set of preferences is a `SettingsObject` subclass. The static `UserSettings` and `GlobalSettings` facades load and create these objects through an `ISettingsProvider`, which the [Application module](../ModuleConfiguration.cs) installs when the framework starts. The settings types live in the `Sphere10.Framework.Application` package and namespace.
+
+## Quick start
+
+Declare a settings class and its defaults:
+
+```csharp
+using System.ComponentModel;
+using Sphere10.Framework.Application;
+
+public class WorkspacePreferences : SettingsObject {
+	[DefaultValue(100)]
+	public int PageSize { get; set; }
+
+	[DefaultValue("")]
+	public string SearchText { get; set; }
+}
+```
+
+Once the framework has [started](#start-up-and-custom-providers), load the record, change it and save it:
+
+```csharp
+var customers = UserSettings.Get<WorkspacePreferences>("Customers");
+customers.PageSize = 150;
+customers.Save();
+```
+
+`Get<T>()` returns the stored record, or a new object with its defaults when nothing is stored yet. The optional ID keeps several records of one type apart, such as `"Customers"` and `"ArchivedCustomers"`.
+
+## Main types
+
+| Type | Role |
+|---|---|
+| `SettingsObject` | Base class of every settings record. It carries `ID` and `Provider` and offers `Save()`, `SaveAsync()`, `Load()`, `Delete()`, `Validate()` and the `OnChanged` event. |
+| `UserSettings` | Static facade over the current user's provider, with `Get`, `Has` and `Clear` and their asynchronous forms. `UseProvider` binds another provider to the current asynchronous flow. |
+| `GlobalSettings` | Static facade over the machine-wide provider, with synchronous `Get`, `Has` and `Clear`. |
+| `ISettingsServices` | Injectable service that exposes the registered user and machine-wide providers as its `UserSettings` and `SystemSettings` properties. |
+| `ISettingsProvider` | Storage contract that declares its create, exists, load, save, delete and clear operations in synchronous and asynchronous forms. |
+| `DirectoryFileSettingsProvider` | Default storage, which writes one JSON file per record into a directory. |
+| `CachedSettingsProvider` | Decorator that keeps one shared object for each settings type and ID. |
+| `ProhibitedSettingsProvider` | Provider that rejects every operation with `NotSupportedException`, for hosts that must not store settings. |
+| `SettingsObjectJsonSerializer` | JSON serializer for settings records. It skips runtime members and writes no CLR type names. |
+| `Local<T>`, `Global<T>` | Service-collection wrappers that register the user and machine-wide providers. |
 
 ## Declare settings
-
-Use a public `SettingsObject` subclass with a parameterless constructor and serializable properties. Declare scalar defaults with `DefaultValueAttribute`, so activation and Reset use the same values. A property initializer alone is not a Reset template. Restore complex defaults in `RestoreDefaultValues()`, calling base first. `AppSettingAttribute` obtains a default from `ConfigurationManager.AppSettings` when the host supplies configuration in that format.
 
 ```csharp
 using System.ComponentModel;
@@ -12,7 +54,8 @@ using Sphere10.Framework;
 using Sphere10.Framework.Application;
 
 public class DatabaseSettings : SettingsObject {
-	public string Server { get; set; } = "localhost";
+	[DefaultValue("localhost")]
+	public string Server { get; set; }
 
 	[AppSetting("DatabaseName")]
 	public string DatabaseName { get; set; }
@@ -20,86 +63,43 @@ public class DatabaseSettings : SettingsObject {
 	[EncryptedString]
 	public string Password { get; set; }
 }
-
-public class WorkspacePreferences : SettingsObject {
-	[DefaultValue(100)]
-	public int PageSize { get; set; }
-
-	public string SearchText { get; set; } = string.Empty;
-}
 ```
 
-Keep settings type names and optional IDs stable. Persist values and identifiers; controls, components, live screens and services remain runtime objects.
+- Derive a public class from `SettingsObject` with a public parameterless constructor, which the `new()` constraint of `Get<T>()` requires.
+- Declare scalar defaults with `[DefaultValue]`. The `SettingsObject` constructor applies them, and `RestoreDefaultValues()`, which the Options dialog's **Reset** calls, applies them again. `RestoreDefaultValues()` does not reapply property initializers.
+- Restore complex defaults, such as nested objects and collections, in an override of `RestoreDefaultValues()` that calls the base method first.
+- `[AppSetting("key")]` is a `[DefaultValue]` that reads its value from `ConfigurationManager.AppSettings`, for hosts that still ship an `app.config` or `web.config` file.
+- `[EncryptedString]` encrypts a string member in storage, as [Encryption](#encryption) describes.
+- Override `Validate()` to reject values that the current version cannot use. The Options dialog checks it, together with data annotations, before it saves. The application adapters check screen, block and plugin settings when they restore them, and they keep the defaults when a stored record is invalid. Standalone code should call `Validate()` after `Get<T>()`, because a stored record can predate the current ranges and choices.
+- Store plain values. The serializer skips members marked `[Transient]`, `[JsonIgnore]`, `[XmlIgnore]` or `[NonSerialized]`, and members that hold delegates, service providers, settings providers, applications, screens or screen hosts.
+- Keep type names and IDs stable, because together they form the storage key.
 
-## Retrieve and persist settings
+## Load, save and observe
 
-`UserSettings` stores per-user preferences; `GlobalSettings` stores values deliberately shared between system users. An optional ID distinguishes settings instances of one type:
+`UserSettings` holds per-user preferences, and `GlobalSettings` holds values meant for every user of the machine. Interactive code awaits the asynchronous forms:
 
 ```csharp
-var workspace = UserSettings.Get<WorkspacePreferences>("Customers");
-var archived = UserSettings.Get<WorkspacePreferences>("ArchivedCustomers");
+var archived = await UserSettings.GetAsync<WorkspacePreferences>("ArchivedCustomers", cancellationToken);
+archived.SearchText = "2025";
+await archived.SaveAsync(cancellationToken);
+
 var database = GlobalSettings.Get<DatabaseSettings>();
-
-workspace.PageSize = 150;
-workspace.Save();
 ```
 
-Call `Save()` on the provider-backed object returned by `Get<T>()`. A newly constructed settings object has no provider. The default provider creates defaults on first access but does not automatically save new settings. Its cache retains the same object. Options edits that actual object and keeps a dialog-local backup for cancelling unapplied changes. Use a fresh provider when verifying a subsequent-session disk read.
+- `Get<T>(id)` loads the record or creates one with defaults. The default provider does not store a new record until it is saved.
+- Call `Save()` or await `SaveAsync()` on the object that `Get<T>()` returned, because that object carries its provider. An object created with `new` has no provider, so its `Save()` throws.
+- `CachedSettingsProvider` returns the same object for a type and ID, so every consumer of a record shares one instance. For the same reason, `Has<T>(id)` also reports a record that this session created but has not saved.
+- `OnChanged` fires after `Save()` or `SaveAsync()` succeeds, and a failed or cancelled save does not raise it. The provider's `Changed` event is not a save acknowledgement, because `SyncSettingsProviderBase` raises it before writing.
+- `Delete()` removes the stored record through the object's own provider. A record that `CachedSettingsProvider` creates or loads carries the cache as its provider, so `Delete()` also evicts it and later `Has<T>()` and `Get<T>()` calls treat the record as missing.
+- `UserSettings.Clear()` and `GlobalSettings.Clear()` remove every record of their provider.
 
-The default directories are `{UserDataDir}/{ProductName}` and `{SystemDataDir}/{ProductName}`. `DirectoryFileSettingsProvider` writes JSON `.setting` files and reads legacy XML files. Validate persisted values against the current UI's supported ranges and selections when restoring them.
+Save ordinary preferences when the user accepts a change, such as on **Apply** or **OK**, rather than on every edit.
 
-For main-window placement, use the WinForms startup builder's `UseMainFormSettings()` integration. It captures accepted placement before application shutdown and saves during framework finalization while the window and providers remain alive. See the [WinForms guide](../../Sphere10.Framework.Windows.Forms/README.md) for other forms and navigation pane persistence. Save ordinary preferences on accepted Apply/Save actions instead of on every UI change.
+## Start-up and custom providers
 
-Blazor applications use the same `UserSettings` facade. Framework circuit initialization and inbound activities bind the circuit's `BlazorSettingsProvider` through the existing call context, keeping each browser or account separate without replacing the native process default. Await `UserSettings.HasAsync<T>()`, `GetAsync<T>()` and the returned object's `SaveAsync()` after interactive startup.
+During registration, the Application module adds a `CachedSettingsProvider` over a `DirectoryFileSettingsProvider` for each facade, unless the service collection already holds `Local<ISettingsProvider>` or `Global<ISettingsProvider>`. Its `OnInitialize` then assigns `UserSettings.Provider` and `GlobalSettings.Provider` and registers the token resolvers that the default directories use. The module's `Priority` is `int.MinValue`, so it initializes after the other modules. Read settings from process initializers and later code, because the facades throw `InvalidOperationException` until the module has initialized.
 
-For registration-owned preferences, declare the screen's nested `SettingsObject`
-class through `[Settings(typeof(...))]` and use `UseSettings` for optional supplied
-registration values. Blocks
-and plugins declare their own settings through the same builder method. Standard
-dialogs edit the actual owner object, retain local backups for Cancel and save accepted edits through its provider;
-see the [Application guide](../README.md#screen-block-and-plugin-preferences).
-The application captures the circuit provider while its scope is alive, so initialization, finalization and disposal retain the same `UserSettings` binding.
-
-`CachedSettingsProvider` retains the inner provider's existing `Changed` event
-forwarding and timing. A failed save restores its previous cache entry, or removes
-an unpersisted new entry, and rethrows. `Changed` is not a persistence acknowledgement;
-accept values only after the save call succeeds.
-
-## Encryption
-
-`EncryptedStringAttribute` marks string properties encrypted by providers with `EncryptSettings` enabled. The application module reads `AssemblyProductSecretAttribute` from the entry assembly during initialization and sets `EncryptedStringAttribute.ApplicationSharedSecret`:
-
-```csharp
-using Sphere10.Framework.Application;
-
-[assembly: AssemblyProductSecret("your-product-secret")]
-```
-
-Configure the product's actual secret before encrypted settings are read or saved.
-Encrypted saves transform a temporary shallow storage copy of the root string
-members, keeping the live settings instance in cleartext while IO is pending.
-Its provider, ID, cache identity and subsequent edits remain attached to that
-actual instance. This does not add a snapshot contract for nested mutable values.
-
-## Provider composition
-
-Use the existing directional provider hierarchy:
-
-- `SettingsProviderBase` shares policies, provider-bound creation and notifications without choosing an execution direction.
-- `SyncSettingsProviderBase` implements synchronous storage wrappers and schedules them for asynchronous calls. `DirectoryFileSettingsProvider` uses this base.
-- `AsyncSettingsProviderBase` implements awaited storage wrappers and starts/joins those operations outside the calling synchronization context for synchronous calls. `BlazorSettingsProvider` uses this base.
-
-`ISettingsProvider` declares both operation directions; it has no default async
-execution adapters. Implement protected load/save primitives and public
-contains/delete/clear operations in the chosen direction. Keep encryption and
-provider identity in the inherited wrappers. `SettingsProviderDecorator`
-forwards both APIs; `CachedSettingsProvider` adds identity caching by type and ID.
-`NewSettingAsync(type, id, cancellationToken)` awaits automatic persistence when
-enabled before returning or publishing a cached value. Browser UI uses awaited
-operations after interactive startup. See the
-[directional implementation guide](../../../docs/guidelines/patterns/sync-async.md#settings-providers).
-
-Override the default providers through `IServiceCollection` before the application module registers its defaults. The module uses `Local<ISettingsProvider>` and `Global<ISettingsProvider>` wrappers:
+Register replacement providers through `AddServices`, whose callbacks run before any module registers its components:
 
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
@@ -115,4 +115,75 @@ Sphere10Framework.Instance
 	.Start();
 ```
 
-The directories are examples; choose host-appropriate per-user and shared locations. Keep registration at process composition and let application initialization/finalization coordinate consuming tasks through the existing lifecycle. See the [application lifecycle guide](../README.md#application-initialization-and-shutdown).
+The directories are examples, and a real host chooses its own per-user and shared locations. `DirectoryFileSettingsProvider` also accepts an `IFuture<string>`, so that the directory can be resolved on first access, as the module's defaults are. [Application initialization and shutdown](../README.md#application-initialization-and-shutdown) describes the rest of the start-up sequence.
+
+## Storage location and format
+
+| Facade | Registered as | Default directory | Token resolves to |
+|---|---|---|---|
+| `UserSettings` | `Local<ISettingsProvider>` | `{UserDataDir}/{ProductName}` | `Environment.SpecialFolder.LocalApplicationData` |
+| `GlobalSettings` | `Global<ISettingsProvider>` | `{SystemDataDir}/{ProductName}` | `Environment.SpecialFolder.CommonApplicationData`, or `LocalApplicationData` on Unix |
+
+On Unix the two default directories are therefore the same. A user record and a global record of one type then share a file, and `Clear()` on either facade removes the records of both.
+
+`DirectoryFileSettingsProvider` writes each record as indented JSON through `SettingsObjectJsonSerializer`, and it still reads records stored as XML. It names the file `<type>.setting`, or `<type>_<id>.setting` when the record has an ID. `<type>` is the type name without its namespace, and a nested type keeps its declaring type, as in `UsersScreen+UsersPreferences`. Two settings types with the same name in different namespaces therefore share a file, unless the provider uses `DirectorySettingsProviderPolicy.UseFullyQualifiedTypeNameInFilename`. An empty file counts as missing and is deleted. A failed first save removes its partial file. A save creates a missing directory only when the policy includes `CreateDirectoryIfNotExists`, as `DirectorySettingsProviderPolicy.Default` does.
+
+## Encryption
+
+Mark sensitive strings with `[EncryptedString]`. A provider whose `EncryptSettings` is `true`, such as `DirectoryFileSettingsProvider`, encrypts these members with AES when it saves and decrypts them when it loads. `BlazorSettingsProvider` returns `false`, so browser storage holds them as plain text.
+
+The secret comes from the static `EncryptedStringAttribute.ApplicationSharedSecret` field. The Application module sets it from the entry assembly's `AssemblyProductSecret` attribute when it initializes:
+
+```csharp
+using Sphere10.Framework.Application;
+
+[assembly: AssemblyProductSecret("your-product-secret")]
+```
+
+- Without a secret, an encrypting provider throws `InvalidOperationException` when it loads or saves a type with encrypted members.
+- The attribute's `Policy` and `Pepper` properties select the salt. By default the salt comes only from the pepper, so any machine with the same secret can decrypt the values.
+- Only the settings object's own string members are encrypted, not the members of nested objects.
+- A save encrypts a shallow copy, so the live object keeps clear text while the write is in progress. Nested objects are shared with that copy, so edits made to them during the write can reach storage.
+
+## Application screens, blocks and plugins
+
+Screens, blocks and plugins of an application own `SettingsObject` instances too. A screen declares its settings type with `[Settings(typeof(...))]`, and its base attribute `[UseSettings(typeof(...))]` still works. A registration can supply an instance through its builder's `UseSettings<T>()` or `UseSettings(instance)`, and blocks and plugins declare their settings through the same builder methods. Conflicting declarations throw when the screen definition is built.
+
+The Options dialog edits the owner's actual object. It keeps a serialized backup, so that **Cancel** can restore unapplied edits, and its **Reset** calls `RestoreDefaultValues()`. [Screen, block and plugin preferences](../README.md#screen-block-and-plugin-preferences), [Screen Options](../../../docs/usage/screen-options.md) and [per-user form and control settings](../../../docs/guidelines/patterns/user-ui-settings.md) cover declarations, editors and screen lifecycles.
+
+## WinForms main window
+
+`UseMainFormSettings()` on the `BuildWinFormsApplication()` builder remembers the main window's size, monitor, position and maximized state. It saves once during framework shutdown, while the window and the settings providers are still available. [Remembering the main window](../../Sphere10.Framework.Windows.Forms/README.md#remembering-the-main-window) covers its options, the navigation pane width and other forms.
+
+## Blazor
+
+Blazor applications use the same `UserSettings` facade. Each circuit has its own `BlazorSettingsProvider`, which stores records as JSON in the browser's `localStorage`. Records belong to the signed-in user's subject, or to an anonymous browser profile when nobody is signed in. The adapter binds that provider with `UserSettings.UseProvider` while the circuit starts, handles browser events and closes, so one user's browser provider never replaces the process-wide default.
+
+Browser storage becomes available once the circuit is interactive. From then on, await `UserSettings.HasAsync<T>()`, `UserSettings.GetAsync<T>()` and the record's `SaveAsync()`. When the signed-in user changes within a circuit, the provider throws until the application is reloaded.
+
+## Implement a provider
+
+Derive a storage provider from the base class for its natural direction, and the base supplies the other direction.
+
+| Base | Members to implement | Other direction |
+|---|---|---|
+| `SyncSettingsProviderBase` | `LoadInternal`, `SaveInternal`, `ContainsSetting`, `DeleteSetting`, `ClearSettings` | Asynchronous members run the synchronous operation on a worker thread. |
+| `AsyncSettingsProviderBase` | `LoadInternalAsync`, `SaveInternalAsync`, `ContainsSettingAsync`, `DeleteSettingAsync`, `ClearSettingsAsync` | Synchronous members start the asynchronous operation on a worker thread and wait for it. |
+
+Both bases derive from `SettingsProviderBase`. Together they attach the provider to created and loaded objects, apply encryption and raise `Changed` on save, so the storage members only read and write. Override the `LoadInternal(SettingsObject defaults)` overload, or its asynchronous counterpart, when the format can fill an existing object so that values missing from storage keep their defaults. `DirectoryFileSettingsProvider` does this.
+
+Wrap an existing provider by deriving from `SettingsProviderDecorator`, which forwards every member in both directions and exposes the wrapped provider as `Inner`. `CachedSettingsProvider` is the standard decorator, and it attaches itself as the provider of the records it creates or loads. When the inner save fails, it restores its previous cache entry and rethrows. Its `NewSettingAsync` caches a new record only after any automatic save has completed. [Settings providers](../../../docs/guidelines/patterns/sync-async.md#settings-providers) explains the execution rules behind both bases.
+
+## Configuration files
+
+`Tools.Config.GetAppSetting` reads an `appSettings` value with a fallback default. `GenericSectionHandler` is an `IConfigurationSectionHandler` that deserializes a custom configuration section with `XmlSerializer`. Both read .NET configuration files through `System.Configuration.ConfigurationManager`.
+
+## Tests
+
+`SettingsProviderDirectionTests`, `SettingsProviderAsyncTests`, `SettingsProviderPublicationTests` and `SettingsObjectJsonSerializerTests` in the [Application test suite](../../../tests/Sphere10.Framework.Application.Tests/README.md) cover the providers and the serializer. Run them from the repository root:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Application.Tests/Sphere10.Framework.Application.Tests.csproj -c Release -p:BuildRevision=0 --filter "FullyQualifiedName~SettingsProvider|FullyQualifiedName~SettingsObjectJsonSerializerTests"
+```
+
+A persistence test should read the next session through a new provider instance, because a `CachedSettingsProvider` would return its cached object without reading the file.

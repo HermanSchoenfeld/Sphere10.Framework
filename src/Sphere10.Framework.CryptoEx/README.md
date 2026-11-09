@@ -1,12 +1,8 @@
-<!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
-
 # 🔐 Sphere10.Framework.CryptoEx
 
 <!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-**Extended cryptography library** providing specialized implementations for blockchain applications including post-quantum signature schemes, ECDSA, key derivation, and verifiable randomness (VRF).
-
-Sphere10.Framework.CryptoEx extends [Sphere10.Framework](../Sphere10.Framework)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
+Sphere10.Framework.CryptoEx adds elliptic-curve cryptography, PascalCoin compatibility and further hash functions to Sphere10 Framework. It provides ECDSA and ECIES on four curves and BIP-340 Schnorr and MuSig signatures on secp256k1, and it registers these schemes and its hash functions with the core `Signers` and `Hashers` registries. Use it when an application signs, verifies or encrypts with elliptic-curve keys, or needs a `CHF` hash function that the core library does not register.
 
 ## 📦 Installation
 
@@ -14,321 +10,255 @@ Sphere10.Framework.CryptoEx extends [Sphere10.Framework](../Sphere10.Framework)'
 dotnet add package Sphere10.Framework.CryptoEx
 ```
 
-## ⚡ 10-Second Example
+The package depends on Sphere10.Framework, Sphere10.HashLib4CSharp, BouncyCastle.Cryptography and SauceControl.Blake2Fast. It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.CryptoEx/Sphere10.Framework.CryptoEx.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
+
+### Register the module
+
+`ECDSA` and `Schnorr` work as soon as you construct them. The `DSS.ECDSA_*` and `DSS.SCHNORR_*` entries in `Signers`, and the extra `CHF` values in `Hashers`, exist only after `ModuleConfiguration` registers them. An application built on Sphere10.Framework.Application adds the module at startup:
 
 ```csharp
+using Sphere10.Framework.Application;
+
+Sphere10Framework.Instance.Build()
+	.AddModule<Sphere10.Framework.CryptoEx.ModuleConfiguration>()
+	.Start();
+```
+
+Code without that host, such as a test fixture, calls `Sphere10.Framework.CryptoEx.ModuleConfiguration.InitializeInternal()` directly. An unregistered scheme or hash function fails with a "No implementation" error.
+
+## ⚡ Quick Start
+
+```csharp
+using System;
+using System.Text;
+using Sphere10.Framework;
 using Sphere10.Framework.CryptoEx;
 using Sphere10.Framework.CryptoEx.EC;
-using System.Text;
 
-// ECDSA signing with Bitcoin curve
-var signer = new ECDSA(ECDSAKeyType.SECP256K1);
-var privateKey = signer.GeneratePrivateKey();  // Generates random key
-var publicKey = signer.DerivePublicKey(privateKey);
-
-// Sign a message
-var message = Encoding.ASCII.GetBytes("Hello Blockchain");
-var signature = signer.Sign(privateKey, message);
-
-// Verify signature
-bool isValid = signer.Verify(signature, message, publicKey);  // true
-
-// ECIES encryption (public key encryption)
-var encrypted = signer.IES.Encrypt(message, publicKey);
-if (signer.IES.TryDecrypt(encrypted, out var decrypted, privateKey)) {
-    Console.WriteLine(Encoding.ASCII.GetString(decrypted.ToArray()));  // "Hello Blockchain"
-}
-```
-
-## 🏗️ Core Concepts
-
-**Digital Signatures**: Sign with private key, verify with public key. ECDSA and post-quantum schemes available.
-
-**Public-Key Encryption (ECIES)**: Encrypt with public key, decrypt with private key for confidential data exchange.
-
-**Verifiable Random Functions (VRF)**: Deterministic random output with cryptographic proofs—used for leader election and consensus.
-
-**Multiple Signature Schemes**: ECDSA (SECP256k1, SECP384R1, SECP521R1, SECT283K1), Winternitz One-Time Signatures (W-OTS), and quantum-resistant schemes (W-AMS).
-
-**Key Derivation**: Deterministic key generation from seeds for reproducible key management.
-
-## 🔧 Core Examples
-
-### ECDSA Signatures with Deterministic Keys
-
-```csharp
-using Sphere10.Framework.CryptoEx.EC;
-using System.Text;
-
-// Initialize with Bitcoin curve (SECP256k1)
 var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
-
-// Deterministic key generation from seed (reproducible)
-var seed = new byte[] { 0, 1, 2, 3, 4 };
-var privateKey = ecdsa.GeneratePrivateKey(seed);
-var publicKey = ecdsa.DerivePublicKey(privateKey);
-
-// Sign message
-var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
-var signature = ecdsa.Sign(privateKey, message);
-
-// Verify signature
-bool isValid = ecdsa.Verify(signature, message, publicKey);  // true
-
-// Note: Same seed always produces same privateKey and signature for testing
-```
-
-### Random Key Generation
-
-```csharp
-var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
-
-// Random key generation (non-deterministic)
-var privateKey = ecdsa.GeneratePrivateKey();  // Generates random bytes
-var publicKey = ecdsa.DerivePublicKey(privateKey);
-
-// Each call produces different keys
-var anotherPrivateKey = ecdsa.GeneratePrivateKey();
-Console.WriteLine(privateKey.SequenceEqual(anotherPrivateKey));  // false
-```
-
-### ECIES: Public-Key Encryption
-
-```csharp
-using Sphere10.Framework.CryptoEx.EC;
-using System.Text;
-
-var ecdsa = new ECDSA(ECDSAKeyType.SECP384R1);
-
-// Generate keypair
 var privateKey = ecdsa.GeneratePrivateKey();
 var publicKey = ecdsa.DerivePublicKey(privateKey);
 
-// Encrypt with public key
-var plaintext = Encoding.ASCII.GetBytes("Confidential data");
-var ciphertext = ecdsa.IES.Encrypt(plaintext, publicKey);
+var message = Encoding.UTF8.GetBytes("Hello Blockchain");
+var signature = ecdsa.Sign(privateKey, message);
+Console.WriteLine(ecdsa.Verify(signature, message, publicKey)); // True
 
-// Decrypt with private key
-if (ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, privateKey)) {
-    string result = Encoding.ASCII.GetString(decrypted.ToArray());
-    Console.WriteLine(result);  // "Confidential data"
-}
-
-// Each encryption is different (randomized) even for same message
-var ciphertext2 = ecdsa.IES.Encrypt(plaintext, publicKey);
-Console.WriteLine(ciphertext.SequenceEqual(ciphertext2));  // false
+var ciphertext = ecdsa.IES.Encrypt(message, publicKey);
+if (ecdsa.IES.TryDecrypt(ciphertext, out var plaintext, privateKey))
+	Console.WriteLine(Encoding.UTF8.GetString(plaintext)); // Hello Blockchain
 ```
 
-### PascalCoin ECIES Compatibility
+`Verify` is an extension method from the `Sphere10.Framework` namespace. Encrypting the same message twice gives different ciphertexts, because each encryption uses a new ephemeral key.
 
-`ECDSA.IES` writes the original PascalCoin OpenSSL ECIES format for messages from 0 through 32,000 bytes; larger messages are rejected. It retains ECDH, SHA-512 key derivation, AES-256-CBC with a zero IV, HMAC-MD5 over the ciphertext, and the six-byte PascalCoin header. This is a compatibility correction to the existing scheme.
+## 🏗️ Core Concepts
 
-Encryption zero-fills a partial AES block and adds no extra block when the message length is already a multiple of 16. Decryption uses the recorded original length to preserve every byte, including trailing zeros and all-zero messages. The reader also accepts older managed ciphertexts that include an extra zero block for an aligned message. Historical managed messages exceeding 32,000 bytes remain readable, including records whose 16-bit header lengths wrapped.
+CryptoEx implements the core cryptography contracts rather than defining its own. `ECDSA` and `Schnorr` derive from `StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey>`, so they implement `IDigitalSignatureScheme`, and `ECDSA.IES` and `Schnorr.IES` return an `IIESAlgorithm`. The registries, the `DSS` and `CHF` enumerations, `VRF` and the hash-based `WAMS` and `WAMSSharp` schemes are part of the [core library](../Sphere10.Framework/README.md#-cryptography).
 
-**Reader migration:** upgrade managed readers before switching writers. Older readers infer the message length by stripping zero padding. When reading newly written native-format ciphertext, they can discard genuine trailing zeros from a message whose length is a multiple of 16.
+| Area | Types | Notes |
+|---|---|---|
+| ECDSA | `ECDSA`, `ECDSAKeyType`, and the fixed-curve subclasses `SECP256k1`, `SECP384R1`, `SECP521R1` and `SECT283K1` | RFC 6979 deterministic nonces, low-S DER signatures and compressed public keys |
+| ECIES | `ECDSA.IES`, `Schnorr.IES`, `ECIES`, `PascalCoinIesEngine` | PascalCoin-compatible public-key encryption |
+| Schnorr | `Schnorr` | BIP-340 signing, verification and batch verification on secp256k1 |
+| MuSig | `MuSigBuilder`, `MuSig`, `MuSigData` | Multi-party Schnorr signatures on secp256k1 |
+| Hash functions | `HashLibAdapter`, `Blake2bFastAdapter`, `Blake2sFastAdapter`, `RandomHash2`, `RandomHashFast`, `Murmur3_x86_32Digest` | Extra `CHF` implementations, RandomHash and MurmurHash3 |
+| Encodings | `BitcoinBase58Encoding`, `PascalBase58Encoding`, `Pascal64Encoding`, `PascalAsciiEncoding` | Bitcoin Base58 and PascalCoin text encodings |
+| Registration | `ModuleConfiguration` | Registers the signature schemes and hash functions |
 
-**Authentication limit:** the legacy ECIES MAC does not authenticate the original-length header. Successful decryption alone therefore does not establish the integrity of the exact returned message length. A verified PascalCoin transaction signature binds the complete encrypted payload, including this header; standalone `ECDSA.IES` calls do not verify an enclosing transaction or sender signature. Applications relying on exact message integrity must authenticate the complete encrypted envelope externally before trusting its plaintext.
+Most types are in `Sphere10.Framework.CryptoEx` and its `EC`, `EC.Schnorr`, `EC.IES`, `Bitcoin`, `PascalCoin` and `HF` namespaces.
 
-When constructing `PascalCoinIesEngine` directly, supply an unpadded `BufferedBlockCipher`, for example `new BufferedBlockCipher(new CbcBlockCipher(new AesEngine()))`. The engine now handles PascalCoin padding itself and rejects `PaddedBufferedBlockCipher`.
+### Curves
 
-See [PascalCoin ECIES issues and fixes](PascalCoin/ECIES-compatibility.md) for the compatibility defects and remaining native implementation issues.
+| `ECDSAKeyType` | Field | Approximate security | OpenSSL ID |
+|---|---|---|---|
+| `SECP256K1` | 256-bit prime | 128-bit | 714 |
+| `SECP384R1` | 384-bit prime | 192-bit | 715 |
+| `SECP521R1` | 521-bit prime | 256-bit | 716 |
+| `SECT283K1` | 283-bit binary | 128-bit | 729 |
 
-### Multiple Elliptic Curves
+`Schnorr` and MuSig accept only `SECP256K1`.
 
-```csharp
-using Sphere10.Framework.CryptoEx.EC;
+## 🔧 Examples
 
-// All curves support same interface
-var secp256k1 = new ECDSA(ECDSAKeyType.SECP256K1);    // 256-bit (Bitcoin)
-var secp384r1 = new ECDSA(ECDSAKeyType.SECP384R1);    // 384-bit
-var secp521r1 = new ECDSA(ECDSAKeyType.SECP521R1);    // 521-bit
-var sect283k1 = new ECDSA(ECDSAKeyType.SECT283K1);    // 283-bit (Binary)
-
-// Higher bit-length = more security but slower operations
-var message = Encoding.ASCII.GetBytes("Test");
-
-var key256 = secp256k1.GeneratePrivateKey();
-var sig256 = secp256k1.Sign(key256, message);  // ~256-bit security
-
-var key384 = secp384r1.GeneratePrivateKey();
-var sig384 = secp384r1.Sign(key384, message);  // ~384-bit security
-```
-
-### Verifiable Random Functions (VRF)
+### Deterministic keys
 
 ```csharp
+using System;
 using Sphere10.Framework.CryptoEx;
 using Sphere10.Framework.CryptoEx.EC;
 
-// VRF creates deterministic but unpredictable outputs with proofs
-var vrf = VRF.CreateCryptographicVRF(
-    CHF.SHA2_256,  // Hash function
-    DSS.ECDSA_SECP256k1);  // Signature scheme
+var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+var seed = Tools.Crypto.GenerateCryptographicallyRandomBytes(32);
 
-// Generate keypair
-var privateKey = Signers.GeneratePrivateKey(DSS.ECDSA_SECP256k1);
-var nonce = 0UL;
-var publicKey = Signers.DerivePublicKey(DSS.ECDSA_SECP256k1, privateKey, nonce);
-
-// Generate VRF output with proof
-var seed = new byte[] { 1, 2, 3, 4 };
-var output = vrf.Run(seed, privateKey, nonce, out var proof);
-
-// Verify VRF output independently
-bool isProofValid = vrf.TryVerify(seed, output, proof, publicKey);  // true
-
-// Output is deterministic for same seed
-var output2 = vrf.Run(seed, privateKey, nonce, out var proof2);
-Console.WriteLine(output.SequenceEqual(output2));  // true
-
-// Use case: Leader election in consensus - prove randomly selected leader without manipulation
+var key = ecdsa.GeneratePrivateKey(seed);
+var sameKey = ecdsa.GeneratePrivateKey(seed);
+Console.WriteLine(key.Equals(sameKey)); // True: the seed determines the key
 ```
 
-### Digital Signature Schemes (DSS)
+`GeneratePrivateKey(seed)` draws the key from a SHA-256 random generator that is seeded only with `seed`, so the seed is as secret as the key. Signing is deterministic too, because RFC 6979 derives each nonce from the key and the message digest.
+
+### Schnorr signatures
 
 ```csharp
-using Sphere10.Framework.CryptoEx;
+using System;
 using System.Text;
-
-// Available schemes with different security properties
-var schemes = new[] {
-    DSS.ECDSA_SECP256k1,      // Traditional: 256-bit ECC
-    DSS.ECDSA_SECP384R1,      // Traditional: 384-bit ECC
-    DSS.ECDSA_SECP521R1,      // Traditional: 521-bit ECC
-    DSS.ECDSA_SECT283K1,      // Traditional: 283-bit Binary curve
-    DSS.PQC_WAMS,             // Post-quantum: Winternitz AMS
-    DSS.PQC_WAMSSharp         // Post-quantum: Sharp variant
-};
-
-var message = Encoding.ASCII.GetBytes("Important message");
-
-foreach (var dss in schemes) {
-    var privateKey = Signers.GeneratePrivateKey(dss);
-    var publicKey = Signers.DerivePublicKey(dss, privateKey, 0UL);
-    
-    var signature = Signers.Sign(dss, privateKey, message);
-    bool isValid = Signers.Verify(dss, publicKey, message, signature);
-    
-    Console.WriteLine($"{dss}: {isValid}");  // All true
-}
-```
-
-## 📦 Cryptographic Primitives
-
-### Supported Elliptic Curves (ECDSA)
-
-| Curve | Bits | Type | Use Case |
-|-------|------|------|----------|
-| SECP256K1 | 256 | Prime | Bitcoin, Ethereum, blockchain |
-| SECP384R1 | 384 | Prime | Higher security threshold |
-| SECP521R1 | 521 | Prime | Maximum traditional security |
-| SECT283K1 | 283 | Binary | Specialized/legacy |
-
-### Supported Hash Functions
-
-- **SHA-2 Family**: SHA256, SHA512
-- **SHA-3 Family**: SHA3-256, SHA3-512
-- **BLAKE2**: BLAKE2b-256, BLAKE2b-512
-- **Specialized**: RIPEMD160, MurmurHash3
-
-### Supported Signature Schemes
-
-**Traditional (Vulnerable to Quantum)**:
-- ECDSA with multiple curves
-- Schnorr signatures (BIP-340 compatible, SECP256K1)
-- MuSig multi-signatures
-- One-time signatures (W-OTS)
-
-**Post-Quantum Resistant**:
-- Winternitz AMS (W-AMS) - quantum-resistant alternatives
-- W-AMS-Sharp - optimized variant
-
-### Schnorr Signatures
-
-BIP-340 compatible Schnorr signatures:
-
-```csharp
+using Sphere10.Framework.CryptoEx;
 using Sphere10.Framework.CryptoEx.EC.Schnorr;
 
 var schnorr = new Schnorr(ECDSAKeyType.SECP256K1);
-
 var privateKey = schnorr.GeneratePrivateKey();
-var publicKey = schnorr.DerivePublicKey(privateKey);
+var publicKey = schnorr.DerivePublicKey(privateKey); // 32-byte x-only key
 
-var message = Encoding.UTF8.GetBytes("Schnorr signature");
-var signature = schnorr.Sign(privateKey, message);
-bool isValid = schnorr.Verify(signature, message, publicKey);
+var digest = schnorr.CalculateMessageDigest(Encoding.UTF8.GetBytes("Schnorr signature"));
+var signature = schnorr.SignDigest(privateKey, digest);
+Console.WriteLine(schnorr.VerifyDigest(signature, digest, publicKey.RawBytes)); // True
 ```
 
-### MuSig Multi-Signatures
+`SignDigest` mixes 32 random bytes into each signature, as BIP-340 recommends, so repeated signatures of the same digest differ. `SignDigestWithAuxRandomData` takes those bytes from the caller, and `BatchVerifyDigest` checks several signatures together.
 
-Aggregate multiple signatures into one:
+### MuSig multi-signatures
+
+Each participant runs a `MuSigBuilder` for the same 32-byte digest and exchanges public keys, then public nonces, then partial signatures with the others. Every builder must receive the public keys in the same order, and `MuSigBuilder.SortPublicKeysInLexicographicOrder` gives the participants a canonical order. This example runs both participants in one process:
 
 ```csharp
+using System;
+using System.Text;
+using Sphere10.Framework.CryptoEx;
 using Sphere10.Framework.CryptoEx.EC.Schnorr;
 
-// Multiple signers create a combined signature
-var muSig = new MuSigBuilder();
-// ... configure signers
-var combinedSignature = muSig.Build();
+var schnorr = new Schnorr(ECDSAKeyType.SECP256K1);
+var digest = schnorr.CalculateMessageDigest(Encoding.UTF8.GetBytes("Joint statement"));
+var signers = new[] {
+	new MuSigBuilder(schnorr.GeneratePrivateKey(), digest),
+	new MuSigBuilder(schnorr.GeneratePrivateKey(), digest)
+};
+
+foreach (var builder in signers)
+	foreach (var signer in signers)
+		builder.AddPublicKey(signer.PublicKey);
+foreach (var builder in signers)
+	foreach (var signer in signers)
+		builder.AddPublicNonce(signer.PublicKey, signer.PublicNonce);
+foreach (var builder in signers)
+	foreach (var signer in signers)
+		builder.AddPartialSignature(signer.PublicKey, signer.PartialSignature);
+
+signers[0].VerifyPartialSignatures();
+var result = signers[0].BuildAggregatedSignature();
+Console.WriteLine(schnorr.VerifyDigest(result.AggregatedSignature, digest, result.AggregatedPublicKey)); // True
 ```
 
-## 🔧 Advanced Usage
+`VerifyPartialSignatures` throws when a participant's partial signature is invalid. A builder signs once, so create a new builder for every signing session. The optional third constructor argument is a 32-byte session ID, and the builder generates a random one when it is omitted.
 
-### Bitcoin & Blockchain Algorithms
+### Signature schemes through `Signers`
 
-Bitcoin-specific cryptography is available through `DSS.ECDSA_SECP256k1` with specialized tools in the `Bitcoin/` namespace for compatibility and integration.
+```csharp
+using System;
+using System.Text;
+using Sphere10.Framework;
+
+var message = Encoding.UTF8.GetBytes("Important message");
+foreach (var dss in new[] { DSS.ECDSA_SECP256k1, DSS.ECDSA_SECP384R1, DSS.SCHNORR_SECP256k1, DSS.PQC_WAMS }) {
+	var privateKey = Signers.GeneratePrivateKey(dss);
+	var publicKey = Signers.DerivePublicKey(dss, privateKey, 0UL);
+	var signature = Signers.Sign(dss, privateKey, message, 0UL);
+	Console.WriteLine($"{dss}: {Signers.Verify(dss, signature, message, publicKey)}"); // True
+}
+```
+
+The ECDSA and Schnorr entries need the registered module, whereas `DSS.PQC_WAMS` and `DSS.PQC_WAMSSharp` come from the core library. The last argument of `DerivePublicKey` and `Sign` is the signer nonce, which stateless schemes such as ECDSA and Schnorr ignore.
+
+### Verifiable random function
+
+```csharp
+using System;
+using Sphere10.Framework;
+
+var vrf = VRF.CreateCryptographicVRF(CHF.SHA2_256, DSS.ECDSA_SECP256k1);
+var privateKey = Signers.GeneratePrivateKey(DSS.ECDSA_SECP256k1);
+var publicKey = Signers.DerivePublicKey(DSS.ECDSA_SECP256k1, privateKey, 0UL);
+
+var seed = new byte[] { 1, 2, 3, 4 };
+var output = vrf.Run(seed, privateKey, 0UL, out var proof);
+Console.WriteLine(vrf.TryVerify(seed, output, proof, publicKey)); // True
+```
+
+`CryptographicVRF` signs the digest of the seed to form the proof, and it hashes the proof to form the output. A verifier accepts any valid signature, so a dishonest ECDSA or Schnorr signer can choose another nonce, produce a different valid proof and so obtain a different output. Do not rely on the output being the only one that a signer can produce.
+
+## 🔒 PascalCoin ECIES Compatibility
+
+`ECDSA.IES` returns an `ECIES` instance that writes PascalCoin's OpenSSL ECIES format. The format uses ECDH, SHA-512 key derivation, AES-256-CBC with a zero IV, HMAC-MD5 over the ciphertext, and a six-byte header that records the original message length.
+
+- Encryption accepts messages of up to 32,000 bytes and zero-fills only a partial final block.
+- Decryption returns exactly the recorded length, so trailing zero bytes survive. It also reads historical managed ciphertexts, including those with an extra block after an aligned message and those whose 16-bit lengths wrapped.
+- Upgrade every reader before switching writers, because older managed readers can strip genuine trailing zeros from aligned messages in the native format.
+- The MAC does not cover the header, so a successful decryption does not prove that the returned length is authentic. Authenticate the complete encrypted envelope before trusting the plaintext, as a verified PascalCoin transaction signature does.
+- When you construct `PascalCoinIesEngine` yourself, pass an unpadded cipher such as `new BufferedBlockCipher(new CbcBlockCipher(new AesEngine()))`. The engine pads the message itself and rejects a `PaddedBufferedBlockCipher`.
+
+[PascalCoin ECIES compatibility](PascalCoin/ECIES-compatibility.md) describes the compatibility defects, their fixes and the remaining native issues.
+
+## 🧮 Hash Functions
+
+The core library registers SHA-1, SHA2-256, SHA2-384, SHA2-512 and BLAKE2b with `Hashers`. `ModuleConfiguration` registers the other `CHF` values, mostly through HashLib4CSharp:
+
+- RIPEMD, RIPEMD-128, RIPEMD-160, RIPEMD-256 and RIPEMD-320.
+- BLAKE2b, replacing the core registrations, and BLAKE2s, plus the `_Fast` variants that Blake2Fast implements.
+- SHA-0, SHA2-224, SHA2-512/224 and SHA2-512/256, SHA3-224 to SHA3-512, and Keccak-224 to Keccak-512.
+- GOST, GOST 34.11-2012 (256 and 512 bits), Grindahl-256, Grindahl-512, HAS-160, Haval, MD2, MD4, MD5, Panama, RadioGatun32, Snefru, Tiger, Tiger2 and Whirlpool.
+
+In a WebAssembly executable, the module also registers HashLib4CSharp versions of SHA-1 and SHA-2, because the core library skips them there.
+
+`RandomHash2.Compute` and `RandomHashFast.Compute` hash a block header with the RandomHash algorithms. `RandomHash2` draws on many of the functions above, so it needs the module registration. `Murmur3_x86_32Digest` provides the non-cryptographic MurmurHash3 (x86, 32-bit) as a BouncyCastle `IDigest`.
+
+## 🔤 Encodings
+
+`BitcoinBase58Encoding` follows Bitcoin Core's Base58 implementation. `PascalBase58Encoding` encodes and decodes PascalCoin's Base58 strings. `Pascal64Encoding` and `PascalAsciiEncoding` validate, escape and unescape PascalCoin's Pascal64 and PascalAscii strings.
 
 ## ⚠️ Security Considerations
 
-- **Private Keys**: Must be kept secret. Never log, transmit unencrypted, or store in plain text.
-- **Seed-Based Keys**: Use cryptographically secure RNG for seeds in production.
-- **Post-Quantum Migration**: Current ECDSA is vulnerable to quantum computing. Use W-AMS family for long-term security.
-- **Signature Verification**: Always verify signatures independently before trusting data.
-- **ECIES Randomization**: Do NOT assume encrypted data is identical for same plaintext/key pair.
-- **Hash Collisions**: Use SHA-3 or BLAKE2 for cryptographic binding; MurmurHash only for non-security use.
+- Keep private keys and key seeds secret, and never log them. Generate seeds with a cryptographically secure source such as `Tools.Crypto.GenerateCryptographicallyRandomBytes`.
+- `ECDSA` accepts only compressed public keys, and its verification rejects high-S signatures.
+- `ECIES` accepts `ECDSA` and `Schnorr` keys, and its MAC does not authenticate the message header.
+- `ModuleConfiguration` registers Schnorr only as `DSS.SCHNORR_SECP256k1`. The `DSS.SCHNORR_SECP384R1`, `DSS.SCHNORR_SECP521R1` and `DSS.SCHNORR_SECT283K1` values have no registered scheme, because `Schnorr` implements BIP-340 on secp256k1 only.
+- The elliptic-curve schemes are not post-quantum. The core library's hash-based `DSS.PQC_WAMS` and `DSS.PQC_WAMSSharp` schemes are reference implementations, so review them before production use.
+- MD2, MD4, MD5, SHA-0 and SHA-1 are broken for collision resistance, and MurmurHash3 is not cryptographic. Use SHA-2, SHA-3 or BLAKE2 for commitments.
 
-## 🔌 Architecture Layers
+## 🧪 Tests
 
-- **EC (Elliptic Curve)**: `ECDSA` class for signature and encryption operations
-- **Bitcoin**: Bitcoin-specific algorithms and compatibility
-- **CHF (Cryptographic Hash Functions)**: Advanced hash implementations
-- **VRF**: Verifiable random functions for consensus and selection
-- **Signers**: Unified interface for all signature schemes (ECDSA, W-OTS, W-AMS)
-- **IES**: Integrated encryption scheme (ECIES) for public-key encryption
-- **PascalCoin**: PascalCoin-specific cryptographic operations
+The [CryptoEx tests](../../tests/Sphere10.Framework.CryptoEx.Tests/) cover ECDSA, ECIES and its PascalCoin compatibility fixtures, BIP-340 Schnorr vectors, MuSig, VRF, RandomHash, the encodings and digest consistency. Their `RegisterCryptoExModule` setup fixture registers the module before the tests run. Run the project from the repository root:
 
-## ✅ Status & Maturity
+```powershell
+dotnet test ./tests/Sphere10.Framework.CryptoEx.Tests/Sphere10.Framework.CryptoEx.Tests.csproj --configuration Release
+```
 
-- **ECDSA & Hash Functions**: Production-tested, stable
-- **Post-Quantum Schemes (W-AMS)**: Reference implementations; audit before production cryptographic use
-- **.NET Target**: .NET 10 (`net10.0`)
-- **Thread Safety**: Hash functions and signature verification are thread-safe; key generation typically single-threaded per instance
-- **Performance**: ECDSA faster than post-quantum schemes; post-quantum trades speed for quantum resistance
+GitHub Actions runs this test assembly in its test job.
 
-## 📖 Related Projects
+## 📁 Project Structure
 
-- [Sphere10.Framework](../Sphere10.Framework) - Core framework with basic cryptography
-- [Sphere10.Framework.Consensus](../Sphere10.Framework.Consensus) - Consensus mechanisms using VRF and signatures
-- [Sphere10.Framework.Communications](../Sphere10.Framework.Communications) - Network protocols with cryptographic authentication
+| Path | Contents |
+|---|---|
+| `EC/` | `ECDSA`, `ECDSAKeyType`, the fixed-curve subclasses, the low-S signer and the strict DER encoding |
+| `EC/IES/` | `ECIES` and its public-key parser |
+| `EC/Schnorr/` | `Schnorr`, `MuSig`, `MuSigBuilder` and the MuSig session types |
+| `IES/` | The IES cipher, engine and parameter types that `ECIES` builds on |
+| `PascalCoin/` | `PascalCoinIesEngine`, its key-derivation function, the PascalCoin encodings and the [ECIES compatibility notes](PascalCoin/ECIES-compatibility.md) |
+| `Bitcoin/` | `BitcoinBase58Encoding` |
+| `CHF/` | HashLib4CSharp and Blake2Fast adapters, Grindahl, Haval and RadioGatun digests, and RandomHash |
+| `HF/` | `Murmur3_x86_32Digest` |
+| `Attributes/` | Curve metadata attributes for `ECDSAKeyType` |
+| `Misc/` | `BigIntegerUtils` and `Pack` helpers |
+| `ModuleConfiguration.cs` | Registration of the signature schemes and hash functions |
 
-## 🏆 Advanced Topics
+## 📖 Related Documentation
 
-See **Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)** documentation for theoretical foundation of W-AMS scheme and proof of quantum resistance.
-
-## 📦 Dependencies
-
-- **Sphere10 Framework**: Core framework
-- **BouncyCastle.Cryptography**: Cryptographic primitives (EC, ECDSA, Hashing)
-- **.NET 10**: Modern cryptography APIs
+- [Core cryptography](../Sphere10.Framework/README.md#-cryptography), which owns `Signers`, `Hashers`, `VRF` and the WAMS schemes.
+- [Technical papers](../../README.md#technical-papers) on the AMS, WAMS and Winternitz signature schemes.
 
 ## ⚖️ License
 
 Distributed under the **MIT License**.
 
-See the LICENSE file for full details. More information: [MIT License](https://opensource.org/license/mit)
+See [LICENSE](../../LICENSE) for full details. More information: [MIT License](https://opensource.org/license/mit)
 
 ## 👤 Author
 
 **Herman Schoenfeld** - Software Engineer
-

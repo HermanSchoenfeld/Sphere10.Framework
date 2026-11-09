@@ -181,7 +181,7 @@ var count = dac.ExecuteScalar<int>("SELECT COUNT(*) FROM Users");
 
 ### Select with Filtering
 
-The paging example requires a provider whose `Select` implementation supports its limit syntax, such as SQLite or SQL Server. The current MySQL, PostgreSQL and Oracle builders inherit a `Select` implementation that places their paging clause before the selected columns; use explicit dialect SQL for paging with those providers.
+`limit` and `offset` produce each builder's paging syntax: `LIMIT` and `OFFSET` after `ORDER BY` for SQLite, MySQL and PostgreSQL, `OFFSET ... ROWS FETCH FIRST ... ROWS ONLY` after `ORDER BY` for Oracle 12c and later, `FIRST` and `SKIP` before `DISTINCT` for Firebird, and `TOP` after `DISTINCT` for SQL Server. With an offset, the SQL Server builder wraps the query in a `ROW_NUMBER()` query instead and requires a limit. Supply `orderByClause` so that pages are stable.
 
 ```csharp
 // Select with column matches
@@ -476,7 +476,7 @@ using var stream = store.Open(key, FileMode.Open, FileAccess.Read);
 |---------|-------------|
 | [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite/README.md) | SQLite with `Tools.Sqlite` |
 | [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL/README.md) | SQL Server with `Tools.MSSQL` |
-| [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird/README.md) | Firebird with `Tools.Firebird` |
+| [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird/README.md) | Firebird with `FirebirdDAC` |
 | [Sphere10.Framework.Data.MySQL](../Sphere10.Framework.Data.MySQL/README.md) | MySQL with `Tools.MySQL` |
 | [Sphere10.Framework.Data.PostgreSQL](../Sphere10.Framework.Data.PostgreSQL/README.md) | PostgreSQL with `Tools.PostgreSQL` |
 | [Sphere10.Framework.Data.Oracle](../Sphere10.Framework.Data.Oracle/README.md) | Oracle with `Tools.Oracle` |

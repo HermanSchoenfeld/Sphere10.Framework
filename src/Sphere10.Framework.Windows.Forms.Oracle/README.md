@@ -1,192 +1,178 @@
-# Sphere10.Framework.Windows.Forms.Oracle
-
 <!-- Copyright (c) 2018-Present Herman Schoenfeld. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-**Oracle connection editors for Windows Forms**, backed by `Oracle.ManagedDataAccess.Core` and the framework's `OracleDAC`. The package provides a compact connection bar and a larger panel for host/service connections or an existing Oracle data-source descriptor.
+# Sphere10.Framework.Windows.Forms.Oracle
 
-The controls implement `IDatabaseConnectionProvider` through the shared WinForms base classes. They can be hosted directly or registered for the framework's provider-selecting `DatabaseConnectionBar` and `DatabaseConnectionPanel`. The package contains working editors and registration code; database creation, querying, and schema management belong to the data-provider package.
+`Sphere10.Framework.Windows.Forms.Oracle` provides Windows Forms editors for Oracle connection settings in desktop applications that use Sphere10 Framework data access. Use `OracleConnectionBar` where a compact one-row editor fits, and `OracleConnectionPanel` on a settings page or in a dialog. Both build a connection string for Oracle's managed driver from a host and service or from an existing data source, test it on request and create an `OracleDAC` from it.
 
-## Installation and requirements
+## Reference the package
 
-```bash
+Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
+
+```powershell
 dotnet add package Sphere10.Framework.Windows.Forms.Oracle
 ```
 
-The package targets **`net10.0-windows`** and uses Windows Forms. A consuming desktop project needs the Windows .NET 10 desktop runtime and these project settings:
+The package depends on `Sphere10.Framework.Data.Oracle`, which supplies `OracleDAC`, `Tools.Oracle` and the `Oracle.ManagedDataAccess.Core` driver, and on `Sphere10.Framework.Windows.Forms`. To build against source instead, reference `src/Sphere10.Framework.Windows.Forms.Oracle/Sphere10.Framework.Windows.Forms.Oracle.csproj` with a `ProjectReference`.
+
+The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. A consuming project needs a Windows target framework with Windows Forms enabled:
 
 ```xml
 <PropertyGroup>
-  <OutputType>WinExe</OutputType>
   <TargetFramework>net10.0-windows</TargetFramework>
   <UseWindowsForms>true</UseWindowsForms>
 </PropertyGroup>
 ```
 
-Build with the .NET 10 SDK. Create and use controls on an STA UI thread. A reachable Oracle server and suitable credentials are required only when testing or opening a database connection; constructing and editing a control does not open one.
+Create and use the controls on the application's UI thread. Creating or editing a control never connects, so an Oracle server is needed only to test or open a connection.
 
-## Package architecture
+## Controls
 
-| Component | Responsibility |
+Both controls are in the `Sphere10.Framework.Windows.Forms.Oracle` namespace and edit the same five fields.
+
+| Control | Base class | Use |
+|---|---|---|
+| `OracleConnectionBar` | `ConnectionBarBase` | One-row editor for a toolbar or header area. Its options button can select an artificial-keys file. |
+| `OracleConnectionPanel` | `ConnectionPanelBase` | Larger editor for a settings page or a dialog. |
+
+| Member | Behavior |
 |---|---|
-| [`OracleConnectionBar`](OracleConnectionBar.cs) | Compact editor derived from `ConnectionBarBase`; includes its inherited artificial-key options |
-| [`OracleConnectionPanel`](OracleConnectionPanel.cs) | Larger table-layout editor derived from `ConnectionPanelBase` |
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | Registers both controls as named transient services under `nameof(DBMSType.Oracle)` |
-| `Sphere10.Framework.Windows.Forms` | Base controls, `IDatabaseConnectionProvider`, provider selectors, and WinForms lifecycle integration |
-| `Sphere10.Framework.Data.Oracle` | `OracleDAC`, SQL-building/database support, and the `Oracle.ManagedDataAccess.Core` driver dependency |
+| `Server` | Host name when `Database` holds a service, otherwise the complete Oracle data source. The UI labels this field **Host**. |
+| `Database`, `DatabaseName` | Oracle service name. The UI labels this field **Service**. `DatabaseName` returns the `Database` text and does not query the server. |
+| `Port` | Port as text, used only with a host and a service. A blank port means 1521. |
+| `Username`, `Password` | Account name and password. A blank value is left out of the string. The password box masks its text, but both properties return plain text. |
+| `ConnectionString` | Builds the string with `Tools.Oracle.CreateConnectionString`, or loads the data source and credentials of an assigned string through `OracleConnectionStringBuilder`. |
+| `GetDAC()` | Returns a new `OracleDAC` as `IDAC` without opening a connection. |
+| `TestConnection()` | Opens and closes a test connection, and returns `Task<Result>`. |
+| `ArtificialKeysFile` | Bar only. Path of an artificial-keys XML file. The options button sets it through `SelectArtificialKeysFile()` and can clear it again. `GetDAC()` loads the file into each new DAC, so that `GetSchema()` includes the keys it declares. |
 
-The UI classes are in `Sphere10.Framework.Windows.Forms.Oracle`. The returned `OracleDAC` is in `Sphere10.Framework.Data`. Install the data-provider package by itself for applications that do not need Windows Forms.
+`ConnectionString` is hidden from the Windows Forms designer, but the field properties are not. Assign credentials at runtime so that they never reach designer-generated code.
 
-## Control API
+## Edit and test a connection
 
-Both controls expose the same connection fields:
-
-| Member | Meaning |
-|---|---|
-| `Server` | Host name when a service is specified; otherwise the complete Oracle `DataSource` value |
-| `Database` / `DatabaseName` | Oracle **service name**; the UI labels this field `Service` |
-| `Username`, `Password` | Oracle account credentials |
-| `Port` | Text field; with a host and service, blank uses port 1521 |
-| `ConnectionString` | Generates a descriptor with `Tools.Oracle.CreateConnectionString`, or reads `DataSource` and credentials through `OracleConnectionStringBuilder` |
-| `GetDAC()` | Returns a new `OracleDAC` through `IDAC`, using the control's current connection string |
-| `TestConnection()` | Returns `Task<Result>`; attempts to open and dispose a connection scope without executing an application query |
-
-`ConnectionString` is hidden from designer serialization. Set credentials at runtime rather than placing them in designer-generated code. The password textbox masks its display, but `Password` and `ConnectionString` still expose the text to application code.
-
-### Oracle host/service and descriptor modes
-
-With `Server = "localhost"`, `Database = "FREEPDB1"`, and an empty `Port`, the getter creates a TCP descriptor using host `localhost`, port `1521`, and `SERVICE_NAME=FREEPDB1`. The `Database` property names a service, not an Oracle SID.
-
-For an existing TNS alias, Easy Connect value, or full descriptor, put the complete value in `Server` and leave `Database` empty. In this mode the helper preserves `Server` as `DataSource`; the separate `Port` field is not used.
-
-Assigning `ConnectionString` copies its `DataSource` verbatim into `Server`, then clears `Database` and `Port`. It does not parse a descriptor back into host/service fields. Consequently `DatabaseName` can be empty after loading a valid connection string. Do not fill in `Database` afterward unless `Server` has first been changed back to a plain host name.
-
-## Complete example: host and test a connection panel
-
-Use this as `Program.cs` in a Windows Forms application with the package installed. Enter valid credentials and click **Test connection** to contact the server. There is no automatic connection attempt on startup.
+Place the panel on a designer-authored dialog, form or screen like any other control, and host `OracleConnectionBar` the same way where space is limited. The code-behind below belongs to a dialog whose designer file declares `_connectionPanel` (an `OracleConnectionPanel`), `_testButton` and `_statusLabel`, wires `_testButton.Click`, and sets the `DialogResult` of its OK and Cancel buttons.
 
 ```csharp
 using System;
-using System.Drawing;
+using System.ComponentModel;
 using System.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.Oracle;
-using Application = System.Windows.Forms.Application;
 
-namespace ReadmeExamples.OracleDirect;
+public partial class DatabaseSettingsDialog : Form {
+	public DatabaseSettingsDialog() {
+		InitializeComponent();
+	}
 
-internal static class Program {
-	[STAThread]
-	private static void Main() {
-		Application.EnableVisualStyles();
-		Application.SetCompatibleTextRenderingDefault(false);
-		using var window = new Form { Text = "Oracle connection", ClientSize = new Size(640, 260) };
-		var editor = new OracleConnectionPanel {
-			Dock = DockStyle.Fill,
-			Server = "localhost",
-			Database = "FREEPDB1",
-			Username = "app_user",
-			Password = string.Empty,
-			Port = string.Empty
-		};
-		var status = new Label { Dock = DockStyle.Bottom, Height = 44, Text = "Enter your connection details." };
-		var testButton = new Button { Dock = DockStyle.Bottom, Height = 32, Text = "Test connection" };
-		testButton.Click += async (sender, args) => {
-			testButton.Enabled = false;
-			using var restoreButton = Tools.Scope.ExecuteOnDispose(() => {
-				if (!testButton.IsDisposed)
-					testButton.Enabled = true;
-			});
-			try {
-				var result = await editor.TestConnection();
-				if (!window.IsDisposed)
-					status.Text = result.IsSuccess ? "Connection succeeded." : result.ToString();
-			} catch (Exception error) {
-				if (!window.IsDisposed)
-					status.Text = error.Message;
-			}
-		};
-		window.Controls.Add(editor);
-		window.Controls.Add(status);
-		window.Controls.Add(testButton);
-		Application.Run(window);
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public string ConnectionString {
+		get => _connectionPanel.ConnectionString;
+		set => _connectionPanel.ConnectionString = value;
+	}
+
+	private async void _testButton_Click(object sender, EventArgs e) {
+		_testButton.Enabled = false;
+		try {
+			var result = await _connectionPanel.TestConnection();
+			if (!IsDisposed)
+				_statusLabel.Text = result.IsSuccess ? "Connection succeeded." : string.Join(Environment.NewLine, result.ErrorMessages);
+		} catch (Exception error) {
+			// Settings that cannot form a connection string throw instead of failing the result.
+			if (!IsDisposed)
+				_statusLabel.Text = error.Message;
+		} finally {
+			if (!IsDisposed)
+				_testButton.Enabled = true;
+		}
 	}
 }
 ```
 
-The form owns and disposes the child controls. `TestConnection()` reads their values on the UI thread and performs its connection-opening work through the base implementation's background task. It reports connection-opening exceptions in `Result`; invalid connection-string construction can throw before that internal catch, which is why the example also catches exceptions at the UI boundary. The API has no cancellation-token parameter.
-
-To use a bar instead, host `OracleConnectionBar` in your form and call the same `ConnectionString`, `GetDAC()`, and `TestConnection()` members. The bar additionally inherits `ArtificialKeysFile` and `SelectArtificialKeysFile()`; a configured artificial-key file is loaded when `GetDAC()` is called. The panel has no corresponding artificial-key file property.
-
-## Complete example: register the provider selector
-
-`DatabaseConnectionPanel` and `DatabaseConnectionBar` resolve providers through `Sphere10Framework.Instance.ServiceProvider`. Register this package's module and start the framework **before** constructing a selector. Installing the package alone does not perform these registrations.
-
-This separate `Program.cs` starts only the modules needed for the example, displays the registered provider, and ends the framework after the form closes:
+Show the dialog with the saved string, and keep the edited string only when the user accepts it:
 
 ```csharp
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-using Sphere10.Framework.Application;
-using Sphere10.Framework.Data;
-using Sphere10.Framework.Windows.Forms;
-using ProviderModule = Sphere10.Framework.Windows.Forms.Oracle.ModuleConfiguration;
-using WinFormsModule = Sphere10.Framework.Windows.Forms.ModuleConfiguration;
-using Application = System.Windows.Forms.Application;
-
-namespace ReadmeExamples.OracleSelector;
-
-internal static class Program {
-	[STAThread]
-	private static void Main() {
-		Application.EnableVisualStyles();
-		Application.SetCompatibleTextRenderingDefault(false);
-		var framework = Sphere10Framework.Instance;
-		framework.Build()
-			.AddModule<WinFormsModule>()
-			.AddModule<ProviderModule>()
-			.Start();
-		using var shutdown = Tools.Scope.ExecuteOnDispose(framework.EndFramework);
-		using var window = new Form { Text = "Database connection", ClientSize = new Size(660, 220) };
-		var selector = new DatabaseConnectionPanel {
-			Dock = DockStyle.Fill,
-			SelectedDBMSType = DBMSType.Oracle
-		};
-		window.Controls.Add(selector);
-		Application.Run(window);
-	}
-}
+using var dialog = new DatabaseSettingsDialog { ConnectionString = savedConnectionString };
+if (dialog.ShowDialog(owner) == DialogResult.OK)
+	savedConnectionString = dialog.ConnectionString;
 ```
 
-In an existing framework application, add `.AddModule<ProviderModule>()` to its startup builder instead of starting a second framework. Register other provider UI modules to add choices to the selector. The module supplies both the bar and the panel as transient controls; use separate instances for separate hosts and keep them on the UI thread.
+The editors only collect settings. They do not save profiles, discover servers or create databases, and they never hold a connection:
 
-## Connection and lifecycle limits
+- `TestConnection()` builds the connection string on the calling thread, then opens and disposes a DAC scope on a thread-pool task. A connection failure becomes an error in the returned `Result`, and no connection stays open afterwards. A successful test shows that a connection opened, not that the application's tables or permissions are in place. The method takes no cancellation token.
+- Building the string can throw before the test starts. The bar throws a `FormatException` for port text that is not a number, and loading its `ArtificialKeysFile` can also fail.
+- When the application needs the database, call `GetDAC()` on the editor or construct `new OracleDAC(connectionString)`, then call `EnterScope()` for each unit of work and dispose the scope. The DAC itself is not disposable, and the scope owns the connection.
+- `StateChanged`, inherited from `UserControlEx`, is a parameterless event that is raised when a field changes after the control has loaded. It reports edits, not connectivity.
 
-- The editor reconstructs connection strings from its displayed fields. Options such as pooling, timeouts, TLS settings, and provider-specific advanced keys are not retained through a `ConnectionString` setter/getter round trip. Apply required advanced settings with the provider's connection-string builder **after** reading the editor, and construct an `OracleDAC` from that final string. The editor's own `GetDAC()` and `TestConnection()` use only its reconstructed string.
-- A bar parses nonempty invalid port text with `Tools.Parser.Parse<int?>` and may throw. A panel uses `SafeParse<int?>`, so unparseable text becomes an omitted/default port. These are basic editors, not comprehensive connection validators; validate an application's required fields and port range before use.
-- Reading `DatabaseName` describes the current UI value; it does not query the server. A successful connection test confirms that opening a connection worked, not that application tables, permissions, or migrations are correct.
-- The controls do not save connection profiles, create databases, discover servers, or supply a query editor. They expose the current settings and a data-access object for the application to use. Obtain settings on the UI thread before starting database work, and dispose every connection/transaction scope you create.
-- The underlying `OracleDAC.BulkInsert` currently throws `NotImplementedException`. See the data-provider documentation for supported SQL, schema, and database-management operations; adding these UI controls does not add missing provider functionality.
+## Connection string behavior
+
+The editors build the data source in one of two ways, depending on whether `Database` holds a service name:
+
+- With a host in `Server` and a service in `Database`, the editor writes a TCP descriptor. For example, `Server = "localhost"`, `Database = "FREEPDB1"` and a blank `Port` produce the data source `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FREEPDB1)))`. `Database` names a service, not an Oracle SID.
+- With `Database` blank, the editor uses `Server` unchanged as the data source, so `Server` can hold a TNS alias, an Easy Connect string or a full descriptor. `Port` is ignored in this mode.
+
+Loading a string does not parse a descriptor back into these fields. Assigning `ConnectionString` copies the data source into `Server` and clears `Database` and `Port`, so `DatabaseName` is blank after loading. Enter a service in `Database` again only after replacing `Server` with a plain host name.
+
+- The editors rebuild the string from their fields, so other settings in an assigned string are dropped, such as pooling or timeouts. To keep such settings, read `ConnectionString`, add them with `OracleConnectionStringBuilder`, and construct `OracleDAC` from the result. `GetDAC()` and `TestConnection()` always use the rebuilt string.
+- The bar parses the port strictly. The panel leaves out port text that it cannot parse, which means port 1521 for a host and service. Validate the port in the application when invalid input must be rejected.
+- The setter does not catch errors from `OracleConnectionStringBuilder`, so assigning a string that it rejects throws.
+- Connection strings contain the password, so do not log or display them.
+
+## Use the generic provider selector
+
+`DatabaseConnectionPanel` and `DatabaseConnectionBar` in `Sphere10.Framework.Windows.Forms` let the user choose a database engine and then show that engine's editor. They resolve the editors as named framework services, so add this package's module to the application's startup code:
+
+```csharp
+Sphere10Framework.Instance
+	.BuildWinFormsApplication()
+	// ... the application's existing configuration and modules ...
+	.AddModule<Sphere10.Framework.Windows.Forms.Oracle.ModuleConfiguration>()
+	.StartWinFormsApplication();
+```
+
+`ModuleConfiguration` registers `OracleConnectionBar` and `OracleConnectionPanel` as transient services named `nameof(DBMSType.Oracle)`. Referencing the package does not register them, and a directly hosted Oracle editor needs no module.
+
+- A selector constructed before the framework has started, for example in the Windows Forms designer, finds no service provider and lists no engines, so construct it after startup. Switching engines disposes the previous editor.
+- The engine list contains only registered providers. Setting `SelectedDBMSType` to an unregistered engine leaves the current editor selected.
+- Set `SelectedDBMSType = DBMSType.Oracle` before assigning `ConnectionString`, because the selector passes the string to its current editor.
+- `Database` returns the engine and the string together as a `DBReference`, and the bar also accepts one. `DACFactory.CreateDAC(reference.DBMSType, reference.ConnectionString)` recreates the DAC from a saved reference.
+- `DatabaseConnectionPanel` raises `DBMSTypeChanged(panel, dbmsType)` when the selected engine changes. `DatabaseConnectionBar` has no such event.
+
+## Try the controls
+
+The [WinForms Tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) hosts both editors. Run it from the repository root on Windows:
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+```
+
+- **Controls > Input > All controls by class name** opens the control catalog. Search for `OracleConnection` to edit sample settings, which never connect on their own.
+- **Integration > Connections > Database Connection Panel** and **Database Connection Bar** show the generic selectors with every provider module registered. Choose **Oracle**, enter the settings of a reachable server and click **Test connection**.
 
 ## Build from source
 
-From the repository root:
+From the repository root on Windows:
 
-```bash
-dotnet build src/Sphere10.Framework.Windows.Forms.Oracle/Sphere10.Framework.Windows.Forms.Oracle.csproj -c Release
-dotnet pack src/Sphere10.Framework.Windows.Forms.Oracle/Sphere10.Framework.Windows.Forms.Oracle.csproj -c Release --no-build
+```powershell
+dotnet build src/Sphere10.Framework.Windows.Forms.Oracle/Sphere10.Framework.Windows.Forms.Oracle.csproj -c Release -p:BuildRevision=0
 ```
 
-The project references the shared WinForms library and matching data provider. Driver versions are managed centrally in [`Directory.Packages.props`](../../Directory.Packages.props). The project marks this README as the NuGet package README. Building or packing does not contact a database or run the UI.
+`-p:BuildRevision=0` keeps a development build from taking the next local build number. The [root README](../../README.md#building-and-publishing-packages) explains build numbering, and how `scripts/pack.ps1` packs the whole package set. The project packs this file as its NuGet readme, and [`Directory.Packages.props`](../../Directory.Packages.props) sets the driver version.
+
+- [`OracleConnectionBar.cs`](OracleConnectionBar.cs) and [`OracleConnectionPanel.cs`](OracleConnectionPanel.cs) build the string with `Tools.Oracle.CreateConnectionString` and load it with `OracleConnectionStringBuilder`.
+- [`ModuleConfiguration.cs`](ModuleConfiguration.cs) registers the named services.
+- [`ConnectionBarBase`](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs) and [`ConnectionPanelBase`](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs) implement [`IDatabaseConnectionProvider`](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), including the shared `GetDAC()` and `TestConnection()` logic.
 
 ## Related documentation
 
-- [Windows Forms framework](../Sphere10.Framework.Windows.Forms/README.md)
-- [Oracle data provider](../Sphere10.Framework.Data.Oracle/README.md)
-- [Data-access abstractions](../Sphere10.Framework.Data/README.md)
-- [Application startup and modules](../Sphere10.Framework.Application/README.md)
+- [Windows Forms library](../Sphere10.Framework.Windows.Forms/README.md) for the generic selectors and the base classes.
+- [Oracle data provider](../Sphere10.Framework.Data.Oracle/README.md) for `OracleDAC`, `Tools.Oracle` and the provider's limits.
+- [Data access](../Sphere10.Framework.Data/README.md) for DAC scopes, transactions and [artificial keys](../Sphere10.Framework.Data/README.md#artificial-keys).
+- [Application startup and modules](../Sphere10.Framework.Application/README.md).
+- [Database connection editors](../../docs/guidelines/patterns/winforms-controls.md#database-connection-editors), which compares the editors of every provider.
+- The other provider editors for [SQL Server](../Sphere10.Framework.Windows.Forms.MSSQL/README.md), [SQLite](../Sphere10.Framework.Windows.Forms.Sqlite/README.md), [Firebird](../Sphere10.Framework.Windows.Forms.Firebird/README.md), [MySQL](../Sphere10.Framework.Windows.Forms.MySQL/README.md) and [PostgreSQL](../Sphere10.Framework.Windows.Forms.PostgreSQL/README.md).
 
 ## License and author
 
-Distributed under the [MIT License](../../LICENSE).
+**License**: [MIT License](../../LICENSE)
 
-**Author:** Herman Schoenfeld (sphere10.com). Copyright © 2018-Present Herman Schoenfeld. All rights reserved.
+**Author**: Herman Schoenfeld (sphere10.com)
+
+**Copyright**: © 2018-Present Herman Schoenfeld. All rights reserved.

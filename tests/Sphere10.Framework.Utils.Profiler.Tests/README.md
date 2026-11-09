@@ -1,45 +1,244 @@
 # Profiler tests
 
-NUnit coverage for the general profiler command, ObjectSpace, B-tree and cache workloads,
-parameter-study contracts and optional external measurement evidence.
+`Sphere10.Framework.Utils.Profiler.Tests` is the NUnit project for the
+[Framework profiler](../../utils/Sphere10.Framework.Utils.Profiler/README.md).
+It checks the profiler commands, the ObjectSpace, B-tree, cache and
+stream-mapped dictionary workloads and the parameter-study analyzer. It can also
+verify recorded performance captures that you supply. Run it after you change a
+profiler workload or a Framework type that those workloads exercise.
+
+## Run the tests
+
+Run from the Framework root:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0
+```
+
+An ordinary run executes the correctness fixtures and needs no interactive
+desktop, browser or capture files. The project targets
+`$(FrameworkTargetFrameworks)`, which is `net10.0`, plus `net11.0` when the
+building SDK supports .NET 11. Add `-f net10.0` to run one target only.
+
+| Group | Selection | Needs |
+|---|---|---|
+| Correctness and synthetic-evidence tests | Run by default | Nothing else |
+| Timing, allocation, memory and trace diagnostics in the `Performance` category | `[Explicit]`, so a filter must select them | A serial session in a fresh test host. The sections below give each one's settings. |
+| Recorded-capture checks in the `RecordedPerformance` category | `[Explicit]`, so a filter must select them | The [`ProfilerResultsRoot` parameter](#external-historical-captures) |
+
+`IO/RestorePositionScopePerformanceTests` is the exception. It belongs to the
+`Performance` category but runs by default, because it asserts that static-page
+span writes in `StreamPagedList<T>` restore the caller's stream position without
+allocating.
+
+## Fixtures
+
+| Fixture | Covers |
+|---|---|
+| `ProfilerCommandTests` | Root and domain help, rejection of an unknown domain, `--show-config` inspection, and the `--filter` requirement before any output is created |
+| `BTrees/BTreeProfilerTests` | B-tree, B+ tree and multimap lookup behavior on the six storage backends (managed nodes, `MemoryStream`, `FileStream`, Framework paged files, OS memory-mapped files and transactional files), with key layouts, oracle-checked queries and mutations, recycled slots, rollback and reopen, leaf geometry, logical bytes against mapped capacity, and configuration rejection |
+| `BTrees/BTreeTypeProfileTests` | `BTreeType` selection through `--type` and `--implementation`, lookup trees of each type on every backend, current and legacy profile JSON, and rejection of null or conflicting tree fields |
+| `BTrees/BTreeFrameworkDefaultsProfileTests` | The `framework-defaults` and `wide-keys` suites against `Sphere10FrameworkDefaults` on every backend, and the unchanged `baseline` suite |
+| `Caches/CacheProfilerTests` | Typed, object and preboxed hot-key access and capacity pressure against an independent LRU/FIFO linked-list oracle, covering minimal, quarter and half reap levels, unit and weighted sizes, fetch and victim sequences, capacity accounting, deterministic resets, simulated fetch work, retained metrics and invalid controls |
+| `ObjectSpaces/ObjectSpaceWorkloadTests` | Workload controls, data distributions, read/write mixes, payload growth and shrink, prepared transactions, comparison groups and large index nodes in either byte order |
+| `ObjectSpaces/FrameworkDefaultsProfileTests` | The `framework-defaults` ObjectSpace suite against `Sphere10FrameworkDefaults` on Memory and File stores, and the unchanged `baseline` suite |
+| `ObjectSpaces/Lab/ObjectSpaceLabTests` | The lab store, as listed in [ObjectSpace lab store](#objectspace-lab-store) |
+| `ObjectSpaces/Lab/ObjectSpaceBTreeManifestTests` | Lab manifest versions 1 to 3 mapped to `IndexBTreeSpec`, the current version 4 manifest, mismatches rejected before opening, and incomplete, conflicting or unsupported manifests |
+| `ObjectSpaces/ObjectSpaceHotPathTests` | Hot-path workloads, described in [ObjectSpace hot paths and page memory](#objectspace-hot-paths-and-page-memory) |
+| `StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests` and `RecordedStreamMappedDictionaryResultsTests` | Dictionary integration workloads and their capture reader, described in [Stream-mapped dictionary workloads](#stream-mapped-dictionary-workloads) |
+| `Studies/PerformanceEvidenceTests` | The study analyzer on synthetic samples, covering rejection of incomplete, failed and malformed samples, capability and dataset separation, uncertainty ties, sample statistics, temporal-drift warnings and supported-workload preflight |
+| `Studies/StudySpecificationReadTests` | Replay of legacy study plans and results that store the tree order and type in older fields, without rewriting the files |
+| `Studies/RetainedPerformanceReportTests` | `RetainedPerformanceReports` output from synthetic reports, including corrupt inputs that fail without changing any file |
+
+These fixtures check correctness. They do not run BenchmarkDotNet, and their
+execution time is not a performance measurement. Several recorded-capture
+fixtures also contain synthetic tests of their own checks, which run by default
+unless the whole fixture is explicit.
+
+### ObjectSpace lab store
+
+`ObjectSpaces/Lab/ObjectSpaceLabTests` covers the `PayloadOnly` and
+`DeveloperLab` schema profiles and the configuration of the lab store:
+
+- Deterministic round trips and unique lookups at B-tree orders 3, 16 and 64.
+- Explicit save versus dirty-flag autosave across rehydration.
+- File commit, rollback with identity-cache invalidation, and reopen.
+- Rejection of incompatible or incompletely described file layouts before any
+  data changes.
+- Deletion and reuse, and cloned records that cannot change a tracked payload.
+- Configuration validation before storage is created.
+- Merkle rehydration with SHA2-256, Blake2b-256 and Blake2b-128.
+- Independent record, group and event dimensions with their declared secondary
+  indexes, with and without Merkle integrity.
+- Explicit mapping of a version 1 manifest to the unchanged `PayloadOnly` record
+  layout, and a version 2 manifest that must name its `SchemaProfile`.
 
 ## External historical captures
 
-Historical captures are not included in the repository, indexed as project items,
-or copied into test output. Recorded-capture checks are explicit tests in the
-`RecordedPerformance` category. Supply the external capture root through the
-`ProfilerResultsRoot` NUnit parameter and select the required fixture. Without
-that parameter, capture discovery is skipped; supplied malformed or incomplete
-evidence still fails its existing checks. Benchmark implementations and synthetic
-correctness/parser tests remain ordinary source files.
+Historical captures are not part of the repository. They are not project items,
+and builds do not copy them into the test output. The recorded-capture fixtures
+read them from an external root that you pass as the `ProfilerResultsRoot` NUnit
+parameter:
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~Recorded' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
 ```
 
-Paths described below are relative to that external root. Keep new captures
-outside the checkout; explicit diagnostics also accept their existing output-root
-parameters. A source checkout does not supply historical performance evidence.
+In Visual Studio, put the parameter in a run settings file and choose it with
+**Test > Configure Run Settings > Select Solution Wide runsettings File**. Then
+build the solution and run the fixtures from **Test Explorer**.
 
-## Local scope diagnostics
+```xml
+<RunSettings>
+  <TestRunParameters>
+    <Parameter name="ProfilerResultsRoot" value="E:\ProfilerEvidence" />
+  </TestRunParameters>
+</RunSettings>
+```
 
-The scope benchmark fixtures, captured campaign files and reproduction notes are retained locally and excluded from version control. Behavioral scope regression tests remain in the ordinary test projects. Historical workload definitions, measured results and their comparison limits are summarized in the [value-scope](../../docs/performance/value-scopes.md), [scope-abstraction](../../docs/performance/scope-abstraction.md) and [scope-composition](../../docs/performance/scope-composition.md) reports.
+Without the parameter, every recorded test reports as ignored. With it, each
+fixture reads its own part of the root:
 
-## Stream-mapped dictionary workload measurements
+| Fixture | Reads under the root |
+|---|---|
+| `RecordedStudyResults` and `RecordedRecommendations` | Every study folder, identified by its `run-plan.json`, with the `host.json`, `samples.jsonl`, `samples.csv`, `results.json`, `recommendations.json` and `report.md` beside it |
+| `RecordedBenchmarkDotNetConfirmations` | Every `*-report-full.json`, with the `run.json` of the run folder above its results folder |
+| `RecordedWorkerIdentityTests` | Every `worker-fingerprints.json` or `worker-binary-fingerprints.json`, with the `run.json`, `console.log` and `results` reports beside it, plus `execution-result.json` for a captured audit |
+| `RecordedDefaultSelectionTests` | `final-default-selection.json` at the root and the study or BenchmarkDotNet folders that it names |
+| `RecordedCacheMetricsTests` | Every cache run folder, identified by a `run.json` whose settings include `HotAccessPercent` and `FetchWork`, with its `execution-result.json`, `console.log`, `results/*-report-full.json` and `cache-metrics/<RunId>/*.json` |
+| `RetainedPerformanceReportTests` | The root itself and `20261013-objectspaces-bdn-confirmations` |
+| `RecordedObjectSpaceHotPathTests` | `20261022-objectspace-hotpaths`, `20261022-objectspace-page-btree` and `20261022-span-dispatch` |
+| `RecordedBTreeNodeIoTests` | `20261023-span-node-io` |
+| `RecordedStreamMappedDictionaryResults` | `StreamMappedDictionaries/<campaign>/campaign.json` and the TRX files that it lists |
 
-`StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests` registers the six
-`IntegrationTests_Heavy` cases: KVP and constant-length-key dictionaries on
-`MemoryStream`, 32-byte clusters, 250 maximum items, 250 iterations, and the
-Debug/Default/Performance policies. It reuses the canonical NUnit dictionary
-integration helper and links the core fixture's payload/serializer/comparer
-sources. The ordinary smoke cases use eight maximum items and three iterations.
-The full cases are explicit and run serially; they include the original
-correctness assertions and setup/cleanup rather than a BenchmarkDotNet kernel.
-The helper seeds operation/input generation with 31337, but its existing removal
-shuffles use the thread-local RNG without a public seed scope. Preserve that
-behavior and record this limitation when comparing runs.
+A capture that is present but malformed or incomplete fails its checks.
+`RecordedObjectSpaceHotPathTests`, `RecordedCacheMetricsTests` and
+`RecordedStreamMappedDictionaryResults` skip an absent campaign, whereas the
+other fixtures fail when their inputs are missing. Select only the fixtures whose
+captures the root contains. Keep new captures outside the checkout, and keep each
+capture's original reports, logs and worker identities together.
 
-Run the matching full workload or its short verification from the Framework root:
+## Reading recorded evidence
+
+Run a recorded fixture, select a result and open its **Output** and attachments.
+These fixtures read existing evidence. None of them starts a measurement,
+hard-codes a fastest configuration or asserts a timing threshold, so this
+machine's speed does not have to match the recorded timings.
+
+- `RecordedStudyResults` gives one result per study folder. Its output lists
+  each comparison group's candidate with its mean, approximate 95% half-width and
+  overlapping candidates, followed by the report. The attachments hold the plan,
+  host and clock information, sample journal, CSV, results and report. The
+  fixture reconciles clock ticks with nanoseconds, requires one checksum across
+  reset batches, verifies every CSV and journal field against `results.json`,
+  and recomputes `recommendations.json` and `report.md` from the samples.
+- `RecordedRecommendations` gives one result per comparison group, named after
+  its study, domain, backend, workload, mix and parameter factor. Its output
+  shows the lowest mean, the candidates whose intervals overlap it, every
+  eligible profile's timing and allocation, its raw samples and the exact case
+  settings. Its coverage test requires eligible mixed-workload results for
+  Memory and File ObjectSpaces under every mix, and for each B-tree backend and
+  family under the balanced, read-heavy and write-heavy mixes.
+- `RecordedBenchmarkDotNetConfirmations` gives one result per BenchmarkDotNet
+  Full JSON report, with each benchmark's sample count, mean, reported interval
+  and raw nanoseconds per invocation. It rejects Dry runs as confirmation
+  evidence. A run with two or more launches must also declare the controlled job
+  (`--strategy Monitoring`, at least five warmups and ten iterations,
+  `--outliers DontRemove`, one invocation, unroll factor 1 and `--noForcedGCs`)
+  and agree with any retained `command-arguments.json`. Its
+  `execution-result.json` must name its `Origin` and report a zero domain exit
+  code, and its `console.log` must show successful worker exits. Every warmup,
+  actual and result measurement must then reconcile with the reported
+  statistics. The coverage test requires two-launch, ten-iteration finalists for
+  Memory and File ObjectSpaces and for the six B+ tree backends across the three
+  mixes. It matches each benchmark to its run manifest by the full profile name,
+  so a profile that a configuration declares but never ran cannot satisfy
+  coverage.
+- `RecordedDefaultSelectionTests` gives one result per constant in
+  `final-default-selection.json`. It checks that the compiled
+  `Sphere10FrameworkDefaults` constant equals the setting used by its nominated
+  study case or BenchmarkDotNet profile, which must have run successfully under
+  the balanced mix. The nominated configuration must also keep the current
+  behavior, with the `PayloadOnly` schema, full indexes, little-endian storage,
+  integrity checks, and neither autosave nor Merkle integrity. Its output shows
+  the value, rationale, exact measured configuration and raw samples.
+  `FrameworkDefaultsProfileTests` and `BTreeFrameworkDefaultsProfileTests` run
+  the current presets without any capture.
+- `RecordedWorkerIdentityTests` reconciles each worker audit with the original
+  worker commands and build output paths in `console.log`, the measured profiles
+  and the launch count. A captured audit records each worker's SHA256, versions
+  and MVIDs, and the fixture compares it with a local DLL archive when one is
+  present. A historical audit may instead declare the original worker binaries
+  unavailable. Their identities then stay null rather than being inferred from
+  the launcher or a reused build folder. Every two-launch, ten-iteration run that
+  passed `--keepFiles` needs exactly one audit with captured workers, so record
+  worker identities before a later build reuses the folder. Checks in a fresh
+  clone need no ignored binaries and do not compare Git-normalized project text
+  with capture-time hashes.
+- `RecordedCacheMetricsTests` gives one result per cache run. It reconciles
+  every retained per-batch metrics file with the run settings, the exact
+  profile, the original worker process and the estimator-size accounting.
+  Counters and checksums must match across reset batches and independent
+  workers. Its output prints the fetches, reaps, victims and final occupancy of
+  each case. The metrics files include warmup and diagnostic batches and do not
+  identify BenchmarkDotNet sample stages, so read timings and allocations from
+  `RecordedBenchmarkDotNetConfirmations`. The
+  [cache profiling guide](../../utils/Sphere10.Framework.Utils.Profiler/Caches/README.md)
+  describes the measured batch and refill boundaries and the earlier cache
+  captures.
+- `RetainedPerformanceReportTests` renders the root and its
+  `20261013-objectspaces-bdn-confirmations` folder with
+  `RetainedPerformanceReports`. It checks that every measured benchmark appears
+  with its full name, exact profile and mean, and that rendering changes no file.
+
+A failed or unverified case must keep its error and its unverified status. The
+fixtures display it, check its captured samples and exclude it from
+recommendations and coverage. A passing check therefore validates the failure
+record and does not claim that the failed configuration works. After a fix,
+retain the new run separately and keep the original failure evidence.
+
+Direct study timings are screening evidence from one process, with reset batches
+and a shuffled profile order. A lowest mean is a candidate for that exact
+dataset, mix, feature set and backend, and overlapping intervals remain
+unresolved. The report and the recommendation outputs flag potential temporal
+drift when the medians of the first and last measured halves of a case differ by
+more than 1.5 times. The flag marks the mean as provisional and removes no
+samples, and the absence of a flag does not prove that timings are stationary.
+Neither a passing evidence fixture nor a Dry benchmark establishes a universal
+best configuration. The
+[study guide](../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md)
+explains how to rerun a study and how to confirm finalists in independent
+BenchmarkDotNet processes on the intended storage device.
+
+```powershell
+# Print retained candidates and raw finalist samples in the console.
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedStudyResults|FullyQualifiedName~RecordedRecommendations|FullyQualifiedName~RecordedBenchmarkDotNetConfirmations' --logger 'console;verbosity=detailed' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
+```
+
+## Stream-mapped dictionary workloads
+
+`StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests` runs the canonical
+`AssertEx.DictionaryIntegrationTest` helper from `Sphere10.Framework.NUnit`
+against KVP and constant-length-key (CLK) stream-mapped dictionaries. Each case
+uses a `MemoryStream`, 32-byte clusters and one of the `Debug`, `Default` and
+`Performance` policies. The project links the core fixture's `TestObject`,
+`TestObjectSerializer` and `TestObjectEqualityComparer` sources, so the payloads
+match `Sphere10.Framework.Tests`.
+
+| Cases | Items and iterations | Selection |
+|---|---|---|
+| Six `IntegrationTests_Smoke` cases | 8 items, 3 iterations | Run by default |
+| Six `IntegrationTests_Heavy` cases | 250 items, 250 iterations | Explicit, `Performance` category, serial |
+
+The heavy cases keep the helper's correctness assertions, setup and cleanup.
+Their duration is therefore the elapsed time of the whole correctness workload,
+not a BenchmarkDotNet kernel. The helper seeds its operation and input generator
+with 31337, but its removal shuffles use the thread-local `Tools.Maths.RNG`,
+which has no fixed seed. Preserve that behavior and record the limitation when
+you compare runs.
+
+Run the full workload, or its short verification, from the Framework root.
+`serial.runsettings` runs one test host at a time with no NUnit parallel workers.
 
 ```powershell
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevision=0 --settings tests/Sphere10.Framework.Utils.Profiler.Tests/StreamMappedDictionaries/serial.runsettings --filter 'FullyQualifiedName~StreamMappedDictionaryWorkloadTests.IntegrationTests_Heavy' --logger 'trx;LogFileName=heavy-six.trx'
@@ -47,228 +246,140 @@ dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevis
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Debug -p:BuildRevision=0 --filter 'FullyQualifiedName~StreamMappedDictionaryWorkloadTests.IntegrationTests_Smoke|FullyQualifiedName~HeavyRegistryContainsBothImplementationsAndAllThreePolicies|FullyQualifiedName~RecordedStreamMappedDictionaryResults'
 ```
 
-`StreamMappedDictionaries/RecordedStreamMappedDictionaryResults` reads
-`StreamMappedDictionaries/<campaign>/campaign.json` under the configured external root. It checks
-the workload/runtime controls, declared Core binary SHA256, hashed raw TRX files,
-and all six passed results by their actual test names and classes. Its output
-compares elapsed times without a performance threshold. A campaign records
-relative capture filenames, source provenance, and stages containing six case
-mappings (`Implementation`, `Policy`, `Trx`, `TestClass`, `TestName`,
-`SourceProvenance`). Each stage declares `Name`, `Configuration`, `CoreSha256`,
-`SourceProvenance`, and an optional `ComparisonBase`; later optimization passes
-can retain additional stages without replacing earlier captures. The manifest's
-`CaptureHashes` map identifies every raw TRX by SHA256. Original superseded runs
-remain retained, with any accepted clean reruns mapped explicitly per case.
-Missing campaigns skip this optional evidence fixture; malformed or incomplete
-present campaigns fail. Capture files remain external inputs.
-`RecordedStreamMappedDictionaryResultsTests` uses synthetic TRX records to check
-both exact capture shapes (original Core fixtures and the profiler fixture),
-including result/definition identity matching and rejection of changed workloads,
-duplicate results, failures and skipped cases. It does not run a workload.
+`StreamMappedDictionaries/RecordedStreamMappedDictionaryResults` reads each
+`StreamMappedDictionaries/<campaign>/campaign.json` under `ProfilerResultsRoot`.
+The manifest records these fields:
 
-`ProfilerCommandTests` verifies help/explicit domain selection, unknown-domain
-rejection, configuration inspection and the requirement for a benchmark filter
-before output artifacts are created.
+- `SchemaVersion` 1 and a `Workload` of `MemoryStream`, 32-byte clusters, 250
+  items, 250 iterations, operation seed 31337 and a `ShuffleSeedCaveat`.
+- `Runtime`, `Sdk` and `Host`, with `NUnitWorkers` 0 and `MaxCpuCount` 1.
+- `CaptureHashes`, which maps the relative path of every raw TRX file to its
+  SHA256.
+- Two or more `Stages`. Each stage declares `Name`, `Configuration` (`Debug`),
+  `CoreSha256`, `SourceProvenance`, an optional `ComparisonBase` and six `Cases`.
+  Each case maps `Implementation`, `Policy`, `Trx`, `TestClass`, `TestName` and
+  `SourceProvenance` to one passed result.
 
-`Caches/CacheProfilerTests` verifies typed/object/preboxed hot-key access and
-capacity pressure against an independent LRU/FIFO linked-list oracle. It covers
-minimal/quarter/half reap levels, unit/weighted estimator sizes, actual fetch and
-victim sequences, capacity accounting, deterministic resets, simulated fetch
-work, retained metrics and invalid controls. These are correctness fixtures;
-they do not run BenchmarkDotNet or assert a timing threshold. Read the
-[cache profiling guide](../../utils/Sphere10.Framework.Utils.Profiler/Caches/README.md)
-for the measured batch and refill boundaries.
+The fixture accepts both the core fixtures' result names and this project's. It
+prints each stage's elapsed times against its comparison base without a
+performance threshold. A later optimization pass adds a stage instead of
+replacing earlier captures. Keep superseded runs, and map any accepted clean
+rerun explicitly per case. `RecordedStreamMappedDictionaryResultsTests` checks
+both capture shapes with synthetic TRX records. It covers result and definition
+identity matching and the rejection of changed workloads, duplicate results,
+failures and skipped cases, without running a workload. The
+[stream-mapped dictionary report](../../docs/performance/stream-mapped-dictionary-hotpaths.md)
+describes the measured campaign.
 
-`Caches/RecordedCacheMetricsTests` reads retained cache measurements and prints
-verified fetches, reaps, victims and final occupancy in Test Explorer output.
-It checks the exact profile, estimator-size accounting and deterministic
-checksums across independent workers. Read its output alongside
-`RecordedBenchmarkDotNetConfirmations` for timings and allocation measurements;
-cache-metrics files do not assign batches to BenchmarkDotNet sample stages.
-The historical cache comparisons covered the canonical typed core, explicit
-object projection and the earlier implicit-object implementation. Their reports
-and worker evidence are no longer shipped with the source. The cache evidence
-fixture skips when no external cache captures are available; workload correctness
-tests run normally. Keep original reports and worker identities together when
-inspecting an external capture.
+## ObjectSpace hot paths and page memory
 
-`BTrees/BTreeProfilerTests` verifies B-tree, B+ tree and multimap lookup behavior
-across managed nodes, MemoryStream, FileStream, framework paged files, true OS
-memory-mapped files and transactional files. It covers supported key layouts,
-oracle-checked queries/mutations, recycled slots, rollback/reopen, reachable
-leaf geometry, logical bytes versus mapped capacity, and configuration rejection.
-
-`ObjectSpaces/ObjectSpaceWorkloadTests` verifies the ObjectSpace workload controls,
-deterministic data distributions, read/write mixtures, payload growth/shrink,
-effective parameter groups and persisted results. Its tests exercise storage
-behavior; their execution time is not a performance measurement.
-
-`ObjectSpaces/Lab/ObjectSpaceLabTests` preserves the PayloadOnly / DeveloperLab
-schema and configuration coverage:
-
-- Deterministic roundtrip and unique lookup at several real B-tree orders.
-- Explicit save versus dirty-flag autosave across rehydration.
-- File commit, rollback identity invalidation and reopen.
-- Rejection of incompatible or unknown file layouts before data changes.
-- Deletion/recycling and detached editor payload ownership.
-- Configuration validation before storage creation.
-- Independent Records/Groups/Events round trips and declared secondary indexes, with and without Merkle integrity.
-- Version 2 manifest completeness and explicit version 1 mapping to the unchanged PayloadOnly record layout.
-
-## Measurement evidence in Test Explorer
-
-Open **Test > Test Explorer** in Visual Studio and build the solution. Run these
-fixtures under `Sphere10.Framework.Utils.Profiler.Tests`:
-
-1. **PerformanceEvidenceTests** checks rejection of incomplete, failed and malformed
-   samples; capability/dataset separation; uncertainty ties; sample statistics;
-   temporal drift diagnostics; and supported-workload preflight. These are ordinary tests of the study runner
-   and analyzer, using synthetic data rather than timing assertions.
-2. **RecordedStudyResults** reads studies from `ProfilerResultsRoot`.
-   Select an individual result after running it and open its **Output** to see
-   each measured candidate, sample count, interval and exact comparison group.
-   The attached JSON, journal, CSV and Markdown files contain configurations,
-   host/clock information, raw rounds and the derived report. The fixture
-   reconciles clock ticks with nanoseconds, checks reset checksums, verifies every
-   CSV/journal field against the raw JSON, and reproduces the displayed decisions
-   from those samples.
-3. **RecordedRecommendations** provides an individual Test Explorer result for
-   each study, backend, B-tree family, read/write mix and parameter factor. Run the
-   result of interest and open its **Output** for the candidate, uncertainty ties,
-   every profile's timings/allocations, exact settings and raw samples. Its
-   coverage test also requires measured evidence for Memory/File ObjectSpaces
-   and all six B-tree backends, three tree families and three mixes.
-4. **RecordedBenchmarkDotNetConfirmations** displays separately retained finalist
-   measurements from independent BenchmarkDotNet worker processes. Its output
-   includes raw timing samples and reported confidence intervals. It rejects Dry
-   execution checks and incomplete reports as confirmation evidence. Controlled
-   finalist runs reconcile at least two worker launches and ten actual batches
-   per worker with every retained result sample and reported statistics. Their
-   attached run manifests declare Monitoring, five warmups, `DontRemove`, one
-   invocation and no forced GC; retained command files must agree. Retained
-   execution status and original console logs also require successful domain
-   and worker exits, including the oracle checks outside timed work. Any status
-   reconstructed after execution identifies that provenance explicitly. Full JSON
-   records launch indices and measurements but does not contain structured
-   outlier-policy settings, so the fixture verifies both sources. Earlier pilot
-   reports retain their original job controls and are identified by their output.
-   Its finalist coverage test requires actual 20-sample mixed-workload results
-   for Memory/File ObjectSpaces and all six B+ tree backends across three mixes.
-   It matches each benchmark's complete profile name to its run manifest;
-   an unused profile declared in a configuration cannot satisfy coverage.
-
-Original ObjectSpace confirmation hashes in `execution-host.json` identify the
-launcher before BenchmarkDotNet builds its separate workers. The additional
-`worker-binary-fingerprints.json` audits record that those original generated
-binaries are unavailable, so their hashes/versions/MVIDs cannot be inferred.
-`--outliers DontRemove` preserves samples; retaining worker binaries also needs
-`--keepFiles` and a phase-specific capture before later builds reuse the folder.
-Future worker fingerprints must be recorded separately from launcher identities.
-
-**RecordedDefaultSelectionTests** provides one result per final Core constant. Its Output identifies the chosen value, rationale, exact measured configuration and raw samples; it rejects an unexecuted or failed source. Constructor/default integration fixtures separately exercise current presets, reopening, rollback and refusal without mutation. **RecordedWorkerIdentityTests** checks original worker commands/build paths, actual profiles/launches, captured SHA256/versions/MVIDs and optional local DLL archives. Clone-side checks do not require ignored binaries or compare Git-normalized project text against capture-time raw-byte hashes.
-
-Controlled confirmation checks also reconcile the exact declared warmup count with every worker's retained warmup measurements. The managed Balanced refinement uses 30 warmups to address timing transitions seen in the original five-warmup results; both runs remain separately retained. All actual batches remain in the statistics.
-
-Running these fixtures reads existing evidence; it does not start a new
-performance campaign or require this machine's timing to match recorded timing.
-There are no hard-coded fastest orders or performance pass/fail thresholds.
-When external inputs are supplied, missing or unexplained incomplete evidence
-fails its fixture instead of silently
-showing a recommendation. A measured case that failed setup or verification must
-retain its error and unverified status. The fixture displays that failure and
-checks its captured samples; it excludes the case from recommendations and
-successful coverage. A passing evidence check validates the failure record and
-does not claim that the failed configuration works. After a fix, retain its new
-run separately and preserve the original raw failure evidence.
-Reports are read directly from the external root; builds do not copy them into
-the test output.
-
-Direct study timings are screening evidence from one process with reset batches
-and shuffled profile order. A lowest mean is a measured candidate for that exact
-dataset, mix, features and backend. Overlapping intervals remain unresolved;
-neither a passing evidence fixture nor a Dry benchmark establishes a universal
-best configuration. Use the [general profiler](../../utils/Sphere10.Framework.Utils.Profiler/README.md)
-to rerun a study or execute a new finalist comparison on the intended storage
-device, preserving its full plan and raw measurements.
-
-The report and individual recommendation outputs warn about potential temporal
-drift when the medians of the first and last measured halves differ by more than
-1.5 times. This detects sustained timing changes such as incomplete warmup; it
-does not prove their cause or remove samples. A flagged mean is provisional.
-Use sufficiently warmed independent-process confirmation before making a choice;
-the absence of a warning is not proof that timings are stationary.
-
-Run from the Framework root:
+`ObjectSpaces/ObjectSpaceHotPathTests` exercises warm identity lookups, clean
+Merkle flushes, reindexing and mixed autosave work on memory and file stores,
+with plain-lookup controls. Its 32 ordinary cases check persisted data, indexes
+and Merkle roots, including a non-256-bit digest and both `BTreeType` values.
+The explicit `TraceHotPath` (10 cases) and `TraceSelectedImplementationHotPath`
+(20 cases) run the same workloads on a larger dataset for profiler sessions.
+They repeat each workload `HotPathRepeats` times and write a
+`trace-workload.json` manifest under `HotPathArtifactRoot`, which defaults to
+`Results/ObjectSpaceHotPaths` in the test output folder. Profile the stacks
+beneath `RunMeasuredBatch`, because preparation, verification and reopening run
+outside that method. BenchmarkDotNet, not these traces, supplies the statistical
+timing and allocation measurements.
 
 ```powershell
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -p:BuildRevision=0
+# The 32 ordinary hot-path cases.
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~ObjectSpaces.ObjectSpaceHotPathTests&Name!~Trace'
 
-# Print retained candidates and raw finalist samples in the console.
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedStudyResults|FullyQualifiedName~RecordedRecommendations|FullyQualifiedName~RecordedBenchmarkDotNetConfirmations' --logger 'console;verbosity=detailed'
+# The ten TraceHotPath workloads, each repeated 100 times for a profiler session.
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~ObjectSpaceHotPathTests.TraceHotPath' -- 'TestRunParameters.Parameter(name="HotPathRepeats",value="100")'
 ```
 
-The [core ObjectSpace fixtures](../Sphere10.Framework.Tests/ObjectSpaces) cover core index/runtime changes. [Profiler execution checks](../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) use BenchmarkDotNet; they are not a replacement test harness.
+The profiler's `ObjectSpaceMerkleBenchmarks.CleanFlush` measures the same
+repeated clean flushes on a settled Merkle store with BenchmarkDotNet. It offers
+only Merkle-enabled profiles, and its preparation and final integrity and reopen
+checks run outside the benchmark method.
 
-`ObjectSpaceHotPathTests` exercises warm identity lookups, clean Merkle flushes,
-reindexing and mixed autosave work in memory and file stores, with plain lookup
-controls. Thirty-two ordinary cases check persisted data, indexes and Merkle
-roots, including a non-256-bit digest and both explicit `BTreeType`
-choices. Ten explicit `TraceHotPath` and twenty
-`TraceSelectedImplementationHotPath` cases reuse the same fixture with
-`HotPathRepeats` and `HotPathArtifactRoot` runsettings parameters.
-Profile stacks beneath `RunMeasuredBatch`; preparation, integrity verification
-and reopening are outside that marker. These cases provide trace workloads;
-BenchmarkDotNet supplies the statistical timing and allocation measurements.
+`ObjectSpaces/RecordedObjectSpaceHotPathTests` reads three retained
+BenchmarkDotNet campaigns under `ProfilerResultsRoot` and skips any campaign that
+is absent. Each case checks the original settings, the paired host and
+arguments, the successful worker logs and all 20 actual samples (two launches of
+ten), then prints the before and after measurements. It asserts no timing
+threshold, and its descriptive comparisons do not select a universal winning
+tree.
 
-```powershell
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~ObjectSpaces.ObjectSpaceHotPathTests&Name!~TraceHotPath'
-```
+| Campaign | Recorded cases |
+|---|---|
+| `20261022-objectspace-hotpaths` | 15 before/after pairs (five small workloads and two larger mutation batches per store, plus a large file-reindex confirmation) |
+| `20261022-objectspace-page-btree` | 7 page-only pairs on File storage, including two confirmations and a reverse-order reindex, and 4 explicit `BTreeType` captures on Memory and File stores |
+| `20261022-span-dispatch` | 2 File pairs (warm lookup and clean flush) for the later span-dispatch cleanup |
 
-`ObjectSpaceMerkleBenchmarks.CleanFlush` measures repeated clean flushes against
-an already settled Merkle store. Setup and final integrity/reopen checks remain
-outside the benchmark. Select a Merkle-enabled profile when running it.
+The [ObjectSpace hot-path](../../docs/performance/object-space-hotpaths.md),
+[page reuse and tree selection](../../docs/performance/object-space-page-btree.md)
+and [span inheritance](../../docs/performance/span-inheritance-review.md)
+reports hold the configurations, profiling findings and limitations. They also
+explain why the dispatch pairs do not isolate page pooling.
 
-`RecordedObjectSpaceHotPathTests` can inspect the fifteen historical paired cases in
-`20261022-objectspace-hotpaths`: the small workload matrix plus larger
-mutation batches and a separate file-reindex confirmation. It checks the original settings, successful worker logs and
-all twenty actual samples per case, and prints the before/after measurements.
-It validates retained evidence without requiring the current machine to meet
-a timing threshold. See the [ObjectSpace performance report](../../docs/performance/object-space-hotpaths.md)
-for configuration, profiling findings and limitations.
-
-The same fixture adds seven page-only before/after pairs and four explicit-tree
-cases from `20261022-objectspace-page-btree`. Two further paired cases
-in `20261022-span-dispatch` compare the subsequent inheritance cleanup,
-for twenty-eight recorded cases across the three campaigns. Both dispatch
-captures already contain page pooling, so their comparison does not isolate that
-change. The page campaign retains all repeated mutation
-captures, including the worse adjacent reindex result and the reverse-order
-confirmation. Explicit implementation measurements cover both Memory and File
-stores. These descriptive comparisons do not select a universal winning tree.
-See the [page reuse and tree selection report](../../docs/performance/object-space-page-btree.md).
-The [inheritance review](../../docs/performance/span-inheritance-review.md)
-records the retained/reverted optimizations and subclass extension points.
-
-`FilePageMemoryTests.FilePageStartupAndFlushFootprint` is a separate explicit
-fresh-process diagnostic. Run it once per test process, passing
-`FilePageArtifactRoot` for its JSON output; repeat with separate invocations
-to compare startup, post-workload and post-disposal process memory. Only its final
-labeled checkpoint forces collection. This diagnostic is separate from the
-BenchmarkDotNet timing/allocation jobs.
+`ObjectSpaces/FilePageMemoryTests.FilePageStartupAndFlushFootprint` is an
+explicit fresh-process diagnostic. It records process and GC memory at six
+checkpoints, from before construction through 2,000 clean flushes of a Merkle
+file store to disposal, and writes `file-page-memory.json` under
+`FilePageArtifactRoot`. Only its final labeled checkpoint follows a forced
+collection. Run it once per test host, and repeat it in separate invocations to
+compare startup, post-workload and post-disposal memory. It is separate from the
+BenchmarkDotNet timing and allocation jobs.
 
 ```powershell
-dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed'
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~RecordedObjectSpaceHotPathTests' --logger 'console;verbosity=detailed' -- 'TestRunParameters.Parameter(name="ProfilerResultsRoot",value="E:/ProfilerEvidence")'
 dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~FilePageMemoryTests.FilePageStartupAndFlushFootprint' -- 'TestRunParameters.Parameter(name="FilePageArtifactRoot",value="E:/PageMemoryRun")'
 ```
 
-`BTreeNodeIoPerformanceTests.StreamedNodeMutationSamples` is an explicit serial
-allocation diagnostic for both streamed tree types, both byte orders, and orders
-4, 64 and 256. It measures insert, update, deletion and node recycling, then
-checks the independent contents, reopening and complete stored-byte hashes.
-Pass `BTreeNodeIoArtifactRoot` through runsettings for its JSON output.
-`StreamTemporaryBufferPerformanceTests` measures temporary stream and serializer
-buffers separately; its output parameter is `StreamTemporaryBufferArtifactRoot`.
-Both diagnostics retain one warmup and five samples, with preparation and
-verification outside measurement. Compare the same fixture and inputs against
-the saved before/after Framework binaries; these diagnostics establish allocation
-changes, not a statistical latency result.
+## Allocation diagnostics
+
+The node I/O and temporary-buffer fixtures are explicit, serial allocation
+diagnostics. Each records owner-thread allocations for one unrecorded warmup and
+five recorded samples, with preparation and verification outside the measured
+region. Run the same fixture and inputs against the saved before and after
+Framework binaries. They establish allocation changes, not a statistical latency
+result.
+
+| Fixture | Workloads | Output parameter and default |
+|---|---|---|
+| `BTrees/BTreeNodeIoPerformanceTests.StreamedNodeMutationSamples` | Insert, update and delete-and-recycle of 512 keys on `StreamMappedBTree` and `StreamMappedBTreePlus`, in both byte orders and at orders 4, 64 and 256, with content and reopen checks and a hash of the stored bytes | `BTreeNodeIoArtifactRoot`, default `BTreeNodeIo` under the NUnit work directory |
+| `IO/StreamTemporaryBufferPerformanceTests` | Stream buffers (`EndianBinaryWriter` character writes and `StreamProfiler` reads with and without capture) and serializer buffers (strings, constant-size padding, null references and nullable padding) | `StreamTemporaryBufferArtifactRoot`, default `Results/StreamTemporaryBuffers` in the test output folder |
+
+```powershell
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~BTreeNodeIoPerformanceTests' -- 'TestRunParameters.Parameter(name="BTreeNodeIoArtifactRoot",value="E:/NodeIoRun")'
+dotnet test tests/Sphere10.Framework.Utils.Profiler.Tests -c Release -p:BuildRevision=0 --filter 'FullyQualifiedName~StreamTemporaryBufferPerformanceTests' -- 'TestRunParameters.Parameter(name="StreamTemporaryBufferArtifactRoot",value="E:/BufferRun")'
+```
+
+`BTrees/RecordedBTreeNodeIoTests` reads the retained `20261023-span-node-io`
+campaign under `ProfilerResultsRoot`. It checks that four captures used one test
+assembly and two Framework binaries, that every summary matches its raw samples,
+and that both binaries produced identical stored bytes. The
+[span node I/O report](../../docs/performance/btree-span-node-io.md) describes
+the campaign.
+
+## Local scope diagnostics
+
+The scope benchmark fixtures, their captured campaign files and reproduction
+notes are kept locally and excluded from version control. Behavioral scope
+regression tests remain in the ordinary test projects, such as
+[`Sphere10.Framework.Tests/Scopes`](../Sphere10.Framework.Tests/Scopes). The
+[value-scope](../../docs/performance/value-scopes.md),
+[scope-abstraction](../../docs/performance/scope-abstraction.md) and
+[scope-composition](../../docs/performance/scope-composition.md) reports
+summarize the historical workload definitions, measured results and their
+comparison limits.
+
+## Related documentation
+
+- The [Framework profiler](../../utils/Sphere10.Framework.Utils.Profiler/README.md)
+  lists the profiling domains and their commands.
+- The [study guide](../../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md)
+  covers screening, replay plans and finalist confirmation.
+- The [ObjectSpace](../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md)
+  and [B-tree](../../utils/Sphere10.Framework.Utils.Profiler/BTrees/README.md)
+  profiler guides describe the BenchmarkDotNet workloads. Those benchmarks do
+  not replace a test harness.
+- The [core ObjectSpace fixtures](../Sphere10.Framework.Tests/ObjectSpaces)
+  cover core index and runtime behavior.

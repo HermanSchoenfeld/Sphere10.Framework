@@ -2,7 +2,7 @@
 
 **Copyright © 2018-Present Herman Schoenfeld. All rights reserved.**
 
-Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET 10 framework for building high-performance applications across desktop, mobile, and web platforms.
+This index links every guide under `docs/` and the Framework project READMEs. Sphere10 Framework is a family of MIT-licensed .NET 10 libraries for application shells, data access, embedded object storage, collections, serialization and cryptography. Begin with the entry points below, or look up a task in [By Use Case](#-by-use-case).
 
 ---
 
@@ -10,15 +10,65 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 
 | Resource | Description |
 |----------|-------------|
-| [**Getting Started**](start-here.md) | Quick orientation for new developers |
-| [**Tools Reference**](tools-reference.md) | Complete catalog of `Tools.*` namespace utilities |
-| [**Real-World Examples**](real-world-usage-examples.md) | Practical patterns from the test suite |
-| [**Keys, graphs and mapped properties**](usage/keys-graphs-and-stream-properties.md) | Compound keys, graph construction/traversal, IBTree and optional property caching |
-| [**Self-describing storage**](usage/self-describing-storage.md) | Binary ObjectSpace/ObjectStream metadata, factory registrations and packet layouts |
-| [**Buffered streams**](usage/buffered-stream.md) | Bounded read-ahead, optional length caching, ownership and measured FileStream comparisons |
-| [**Builder API migration**](usage/builder-api-migration.md) | Add-style child composition, runtime callbacks and independent screen registrations |
-| [**Screen Options**](usage/screen-options.md) | Screen, block and plugin preferences, native/web editors and persistent grid layouts |
-| [**SourceGrid**](usage/sourcegrid.md) | Low-level engine gallery, extracted reusable components and resource ownership |
+| [**Getting Started**](start-here.md) | Orientation, installation and first examples |
+| [**Tools Reference**](tools-reference.md) | `Tools.*` facades with their declaring projects and representative members |
+| [**Real-World Examples**](real-world-usage-examples.md) | Usage examples drawn from the test suites |
+| [**Patterns and Practices**](guidelines/patterns-and-practices.md) | Task index that maps a change to the pattern topics it needs |
+
+---
+
+## 🎯 By Use Case
+
+| Goal | Start Here |
+|------|------------|
+| New to the framework | [Getting Started](start-here.md) |
+| Using `Tools.*` utilities | [Tools Reference](tools-reference.md) |
+| Working with collections | [Collection selection](guidelines/patterns/collections.md) / [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
+| Protecting shared state and collection operations | [Synchronization scopes](guidelines/patterns/synchronization.md) |
+| Cleanup, locking and pooled-array scopes | [Resource scopes](guidelines/patterns/resource-scopes.md) |
+| Deferred, lazy, reloadable or projected values | [Futures](guidelines/patterns/futures.md) |
+| Repository CRUD, loading/saving and transaction lifetimes | [Persistence and transactions](guidelines/patterns/persistence-and-transactions.md) |
+| ObjectSpace schemas, identity and file transactions | [ObjectSpace guide](../src/Sphere10.Framework/ObjectSpaces/README.md) / [Practices](guidelines/patterns/object-spaces.md) |
+| Reopening an ObjectSpace without supplying its schema | [Self-describing storage](usage/self-describing-storage.md) |
+| ObjectSpace demonstration and configuration performance | [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) / [ObjectSpace profiling suite](../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) |
+| Data sources for grids and inventories | [Data sources](guidelines/patterns/data-sources.md) |
+| Database access | [Sphere10.Framework.Data](../src/Sphere10.Framework.Data/README.md) |
+| Cryptography | [Cryptography practice](guidelines/patterns/framework-utilities.md#cryptography) / [Sphere10.Framework.CryptoEx](../src/Sphere10.Framework.CryptoEx/README.md) |
+| Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
+| Wrapping an external executable | [Process Sentries](guidelines/patterns/process-sentries.md) |
+| Shared application ownership, plugins and lifecycle | [Application framework](../src/Sphere10.Framework.Application/README.md#shared-ui-framework) / [Initialization and shutdown](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown) |
+| Moving from `Configure*` to `Add*` builder methods | [Builder API migration](usage/builder-api-migration.md) |
+| Screen, block and plugin preferences | [Screen Options](usage/screen-options.md) |
+| Windows desktop | [Sphere10.Framework.Windows.Forms](../src/Sphere10.Framework.Windows.Forms/README.md) |
+| WinForms lifecycle, splash and exit | [Native application lifecycle](../src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) / [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) |
+| Windows processes, raw counters, services, networking and storage | [Windows resource abstractions](../src/Sphere10.Framework.Windows/README.md#windows-resource-abstractions) / [Windows ownership layers](guidelines/patterns/framework-reuse.md#windows-abstraction-layers) |
+| ASP.NET Core web | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
+| Editable Blazor grids | [CRUD grid quick start](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) |
+| Custom grid editors and related records | [Editor, reference picker and action example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) |
+| Blazor navigation workspace | [ApplicationBlock setup](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#register-a-workspace) |
+| Blazor plugin startup and shutdown | [Blazor tester lifecycle](../utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown) |
+| Run the web demos | [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) / [MVC tester](../utils/Sphere10.Framework.Utils.MvcTester/README.md) |
+| Legacy Xamarin mobile source | [iOS](../src/Sphere10.Framework.iOS/README.md) / [Android](../src/Sphere10.Framework.Android/README.md) |
+
+---
+
+## 📘 Usage Guides
+
+These guides cover individual APIs and migrations in more depth than the project READMEs.
+
+| Guide | Covers |
+|---|---|
+| [Keys, graphs and mapped properties](usage/keys-graphs-and-stream-properties.md) | Compound keys, graph construction and traversal, the `IBTree` contract and stream-mapped properties with optional caching |
+| [Self-describing storage](usage/self-describing-storage.md) | ObjectSpace and ObjectStream metadata records, their clustered layout, and creating and reopening a store without a supplied schema |
+| [Serializing a serializer factory](usage/serializer-factory-serialization.md) | `SerializerFactorySerializer`, the registrations it preserves and its construction limits |
+| [Buffered streams](usage/buffered-stream.md) | `BufferedStream` read-ahead, optional length caching, stream ownership and measured file performance |
+| [Builder API migration](usage/builder-api-migration.md) | The `Add*`, `With*` and `On*` names that replace earlier builder methods such as `ConfigurePlugin` and `UseModule`, and screen registration with `AddScreen` |
+| [Screen Options](usage/screen-options.md) | Screen, block and plugin settings objects, the Options editors on WinForms and Blazor, and grid column layouts kept in screen settings |
+| [SourceGrid](usage/sourcegrid.md) | When to use SourceGrid directly instead of VisualGrid, component ownership and the raw engine gallery in the WinForms tester |
+| [Portable executable inspection](usage/portable-executable-inspection.md) | PE structure inspection without loading the target, and bounded process-memory reads |
+| [Managed diagnostics](usage/managed-diagnostics.md) | Assembly inspection, managed process and dump capture, native stacks and detached symbol resolution |
+| [Process inspection](usage/process-inspection.md) | `WindowsProcess` tokens and mitigations, module details, page state and the explicit working-set watch |
+| [Blazor theme sources](theming-template-sources.md) | Origin, palettes, font fallbacks and component treatments of each Blazor theme family |
 
 ---
 
@@ -26,38 +76,32 @@ Welcome to the documentation for **Sphere10 Framework** — a comprehensive .NET
 
 | Document | Description |
 |----------|-------------|
-| [**Framework Architecture**](architecture/sphere10-framework.md) | Design philosophy, layers, and core subsystems |
-| [**Framework Domains**](architecture/domains.md) | Catalog of 40+ specialized domains |
-| [**3-Tier Architecture**](guidelines/3-tier-architecture.md) | Architectural patterns and principles |
-| [**Code Styling**](guidelines/code-styling.md) | Coding standards and conventions |
-| [**Patterns and Practices**](guidelines/patterns-and-practices.md) | Task index for the focused pattern guides below |
-| [**Performance change review**](performance/comment-and-behavior-review.md) | Retained profiling evidence, restored comments and reverted behavior changes |
-| [**Value scope performance**](performance/value-scopes.md) | Complete before/after allocation, GC and consumer measurements, API ownership and compatibility limits |
-| [**Scope abstraction performance**](performance/scope-abstraction.md) | Full scope-family migration, context coverage and comparison against the first struct implementation |
-| [**Direct scope finalization**](performance/scope-composition.md) | Retained comparison after removing scope lifecycle machinery, with timing and allocation limits |
-| [**Async disposal corrections**](performance/async-disposal-corrections.md) | Awaited cleanup, thread affinity, typed factories and static platform extensions |
-| [**Callback scope consolidation**](performance/callback-scope-consolidation.md) | Direct callback scopes, factory allocation screening and consumer measurements |
-| [**Borrowed array scopes**](performance/borrow-array-scopes.md) | Pooled-buffer ownership, logical lengths and allocation evidence |
-| [**Disposable ownership review**](performance/disposable-template-review.md) | Class disposal templates, cleanup retries and final validation evidence |
+| [**Framework Architecture**](architecture/sphere10-framework.md) | Design philosophy, layers, core subsystems and platform strategy |
+| [**Framework Domains**](architecture/domains.md) | Domains grouped by tier, their dependencies and the domains each kind of application uses |
+| [**3-Tier Architecture**](guidelines/3-tier-architecture.md) | Domains, modules, the framework layer and project boundaries |
+| [**Code Styling**](guidelines/code-styling.md) | Formatting, naming, member order, namespaces and the `Tools` pattern |
+| [**Patterns and Practices**](guidelines/patterns-and-practices.md) | Task index for the pattern topics below |
 
 ### Pattern Topics
 
-Choose the pages that apply to the task. The [task index](guidelines/patterns-and-practices.md) maps common changes to these guides.
+Each topic records one implementation practice. The [task index](guidelines/patterns-and-practices.md) maps common changes to the topics they need.
 
 | Guide | Purpose |
 |---|---|
 | [Framework reuse](guidelines/patterns/framework-reuse.md) | Reuse existing layers and adopt changes in real consumers. |
-| [Type hierarchies](guidelines/patterns/type-hierarchies.md) | Contracts, abstract foundations, concrete products and decorators. |
+| [Type hierarchies](guidelines/patterns/type-hierarchies.md) | Contracts, abstract foundations, concrete products, decorators, events and template hooks. |
 | [Projection adapters](guidelines/patterns/projections.md) | Typed source implementations exposed through another representation. |
 | [Sync/async operations](guidelines/patterns/sync-async.md) | Directional bases, completion, cancellation and disposal. |
+| [Futures and deferred values](guidelines/patterns/futures.md) | The `IFuture` contract, its factories, ownership and concurrency. |
 | [Interface bridges](guidelines/patterns/interface-bridges.md) | Inline projections between specialized and base contracts. |
-| [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins and lifecycle ownership. |
+| [Application ownership](guidelines/patterns/application-ownership.md) | Runtime parents, definitions, plugins, and application and screen lifetimes. |
 | [WinForms designer](guidelines/patterns/winforms-designer.md) | Concrete visual bases, editable layouts and runtime composition. |
-| [WinForms screen settings](guidelines/patterns/winforms-screen-settings.md) | Typed screen, block and plugin settings through the existing model/UI lifecycle and provider. |
+| [WinForms screen settings](guidelines/patterns/winforms-screen-settings.md) | Screen, block and plugin settings declared with `[Settings]` and edited in Options. |
 | [Reusable WinForms controls](guidelines/patterns/winforms-controls.md) | Selectors, database provider controls, grids, editors and presentation components. |
 | [Grids and screen hosts](guidelines/patterns/grids-and-screen-hosts.md) | WinForms/Blazor feature mapping, paging, live refresh, retained layouts, tabs and startup choices. |
 | [Windows API facades](guidelines/patterns/windows-interop.md) | Native bindings, ownership and application consumption. |
-| [Framework utilities](guidelines/patterns/framework-utilities.md) | Existing Tools, validation, conversion, crypto and comparer infrastructure. |
+| [Process Sentries](guidelines/patterns/process-sentries.md) | `ProcessSentry` wrappers for external executables, with their cancellation and ownership. |
+| [Framework utilities](guidelines/patterns/framework-utilities.md) | `Tools.*` facades, guards, exception capture and cryptography. |
 | [Fluent builders](guidelines/patterns/fluent-builders.md) | Configuration composition, validation and product ownership. |
 | [Serialization](guidelines/patterns/serialization.md) | Serializer layers and endian-aware persistence contracts. |
 | [Collection selection and composition](guidelines/patterns/collections.md) | Extended lists, dictionary families, projections, paging and storage layers. |
@@ -66,13 +110,13 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 | [Repositories, persistence and transactions](guidelines/patterns/persistence-and-transactions.md) | CRUD, load/save lifecycle, transaction ownership and backend guarantees. |
 | [Collections and storage](guidelines/patterns/collections-and-storage.md) | Caches, graph identity, clustered streams and storage comparers. |
 | [Object spaces](guidelines/patterns/object-spaces.md) | Typed identity, indexed CRUD, durability and configuration profiling. |
-| [Data sources](guidelines/patterns/data-sources.md) | CRUD, paging, validation and item/range delegation. |
+| [Data sources](guidelines/patterns/data-sources.md) | Storage, decorators and compositions, the sync/async hierarchy, change notifications and refresh policy. |
 | [Per-user UI settings](guidelines/patterns/user-ui-settings.md) | Typed preferences, stable control identities and accepted save boundaries. |
 | [Independent projects](guidelines/patterns/new-projects.md) | Internal/client placement and source/package references. |
 | [Logging](guidelines/patterns/logging.md) | Logger selection, composition and sink lifetime. |
 | [Resource scopes](guidelines/patterns/resource-scopes.md) | Synchronization, transactions and owned cleanup. |
 | [Scheduling](guidelines/patterns/scheduling.md) | Job execution, scheduling policy and completion. |
-| [Testing](guidelines/patterns/testing.md) | NUnit runners, assertions and meaningful behavioral coverage. |
+| [Testing](guidelines/patterns/testing.md) | NUnit conventions, the runner contract, WinForms UI test contexts and startup memory regressions. |
 
 ---
 
@@ -82,199 +126,192 @@ Choose the pages that apply to the task. The [task index](guidelines/patterns-an
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework** | Collections, serialization, cryptography, streams, extensions | [View](../src/Sphere10.Framework/README.md) |
-| **Sphere10.Framework.Application** | DI, settings, lifecycle, CLI and shared presentation contracts/engines | [View](../src/Sphere10.Framework.Application/README.md) |
-| **Sphere10.Framework.Generators** | C# source generators for compile-time code generation | [View](../src/Sphere10.Framework.Generators/README.md) |
-| **Sphere10.Framework.Runtime** | Runtime environment detection and diagnostics | [View](../src/Sphere10.Framework.Runtime/) |
-| **Sphere10.HashLib4CSharp** | Hashing algorithms (MD5, SHA, BLAKE2, CRC) | [View](../src/Sphere10.HashLib4CSharp/README.md) |
+| **Sphere10.Framework** | Collections, serialization, streams, ObjectSpaces, caches, cryptography and extensions | [View](../src/Sphere10.Framework/README.md) |
+| **Sphere10.Framework.Application** | Application model, dependency injection, settings, lifecycle, command-line parsing and the UI contracts shared by WinForms and Blazor | [View](../src/Sphere10.Framework.Application/README.md) |
+| **Sphere10.Framework.Generators** | `AutoDirty` source generator, which sets a dirty flag when a partial property changes | [View](../src/Sphere10.Framework.Generators/README.md) |
+| **Sphere10.Framework.Runtime** | Internal math-expression compiler and C# code builders (not packed, no README) | [Source](../src/Sphere10.Framework.Runtime/) |
+| **Sphere10.HashLib4CSharp** | Hash and checksum algorithms, including MD5, SHA, BLAKE2 and CRC | [View](../src/Sphere10.HashLib4CSharp/README.md) |
+
+Folder guides inside these projects:
+
+- [ObjectSpaces](../src/Sphere10.Framework/ObjectSpaces/README.md), [caches](../src/Sphere10.Framework/Cache/README.md) and [BufferedStream](../src/Sphere10.Framework/Streams/README.md) in `Sphere10.Framework`
+- [Settings](../src/Sphere10.Framework.Application/Settings/README.md) and the bundled [command-line parser](../src/Sphere10.Framework.Application/CommandLine/README.md) in `Sphere10.Framework.Application`
 
 ### Data Access
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.Data** | Database abstraction, transactions, query building | [View](../src/Sphere10.Framework.Data/README.md) |
-| **Sphere10.Framework.Data.Sqlite** | SQLite provider implementation | [View](../src/Sphere10.Framework.Data.Sqlite/README.md) |
-| **Sphere10.Framework.Data.MSSQL** | SQL Server provider implementation | [View](../src/Sphere10.Framework.Data.MSSQL/README.md) |
-| **Sphere10.Framework.Data.Firebird** | Firebird provider implementation | [View](../src/Sphere10.Framework.Data.Firebird/README.md) |
+| **Sphere10.Framework.Data** | Database-agnostic `IDAC` contract, SQL builders, transaction scopes, schema metadata and CSV, JSON and XML utilities | [View](../src/Sphere10.Framework.Data/README.md) |
+| **Sphere10.Framework.Data.Sqlite** | SQLite provider for file and in-memory databases | [View](../src/Sphere10.Framework.Data.Sqlite/README.md) |
+| **Sphere10.Framework.Data.MSSQL** | SQL Server provider | [View](../src/Sphere10.Framework.Data.MSSQL/README.md) |
+| **Sphere10.Framework.Data.Firebird** | Firebird provider for server and embedded databases | [View](../src/Sphere10.Framework.Data.Firebird/README.md) |
+| **Sphere10.Framework.Data.MySQL** | MySQL provider backed by MySqlConnector | [View](../src/Sphere10.Framework.Data.MySQL/README.md) |
+| **Sphere10.Framework.Data.PostgreSQL** | PostgreSQL provider backed by Npgsql | [View](../src/Sphere10.Framework.Data.PostgreSQL/README.md) |
+| **Sphere10.Framework.Data.Oracle** | Oracle provider backed by Oracle.ManagedDataAccess.Core | [View](../src/Sphere10.Framework.Data.Oracle/README.md) |
 | **Sphere10.Framework.Data.NHibernate** | NHibernate ORM integration | [View](../src/Sphere10.Framework.Data.NHibernate/README.md) |
 
 ### Networking & Communications
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.Communications** | TCP, UDP, WebSockets, JSON-RPC | [View](../src/Sphere10.Framework.Communications/README.md) |
+| **Sphere10.Framework.Communications** | TCP, UDP, WebSocket and anonymous-pipe channels, and JSON-RPC clients and servers | [View](../src/Sphere10.Framework.Communications/README.md) |
 
-### Cryptography
+### Cryptography & Blockchain
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.CryptoEx** | ECDSA, post-quantum algorithms, signatures | [View](../src/Sphere10.Framework.CryptoEx/README.md) |
-| **Sphere10.Framework.Consensus** | Blockchain consensus mechanisms and validation | [View](../src/Sphere10.Framework.Consensus/README.md) |
+| **Sphere10.Framework.CryptoEx** | ECDSA, Schnorr and MuSig signatures, ECIES encryption and additional hash algorithms | [View](../src/Sphere10.Framework.CryptoEx/README.md) |
+| **Sphere10.Framework.Consensus** | Reversible chain state, chain and branch management, compact targets and ASERT difficulty adjustment | [View](../src/Sphere10.Framework.Consensus/README.md) |
+
+Further documents in these projects:
+
+- [Consensus design document](../src/Sphere10.Framework.Consensus/DESIGN.md)
+- [PascalCoin ECIES compatibility](../src/Sphere10.Framework.CryptoEx/PascalCoin/ECIES-compatibility.md) in `Sphere10.Framework.CryptoEx`
 
 ### Desktop & Windows
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.Windows** | Registry, services, event logging | [View](../src/Sphere10.Framework.Windows/README.md) |
-| **Sphere10.Framework.Windows.Forms** | UI components, data binding | [View](../src/Sphere10.Framework.Windows.Forms/README.md) |
-| **Sphere10.Framework.Windows.Forms.Sqlite** | WinForms with SQLite data binding | [View](../src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) |
-| **Sphere10.Framework.Windows.Forms.MSSQL** | WinForms with SQL Server data binding | [View](../src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) |
-| **Sphere10.Framework.Windows.Forms.Firebird** | WinForms with Firebird data binding | [View](../src/Sphere10.Framework.Windows.Forms.Firebird/README.md) |
+| **Sphere10.Framework.Windows** | Processes, services, registry, security, event logs, networking, storage and diagnostics through `Tools.Windows` | [View](../src/Sphere10.Framework.Windows/README.md) |
+| **Sphere10.Framework.Windows.Forms** | WinForms application shell, screen hosting, VisualGrid, charts, dialogs, wizards and reusable controls | [View](../src/Sphere10.Framework.Windows.Forms/README.md) |
+| **Sphere10.Framework.Windows.Forms.DataVisualization** | Legacy Microsoft DataVisualization chart control, absorbed with its original licenses | [View](../src/Sphere10.Framework.Windows.Forms.DataVisualization/README.md) |
+| **Sphere10.Framework.Windows.Forms.Sqlite** | SQLite connection editors | [View](../src/Sphere10.Framework.Windows.Forms.Sqlite/README.md) |
+| **Sphere10.Framework.Windows.Forms.MSSQL** | SQL Server connection editors | [View](../src/Sphere10.Framework.Windows.Forms.MSSQL/README.md) |
+| **Sphere10.Framework.Windows.Forms.Firebird** | Firebird server and embedded connection editors | [View](../src/Sphere10.Framework.Windows.Forms.Firebird/README.md) |
+| **Sphere10.Framework.Windows.Forms.MySQL** | MySQL connection editors | [View](../src/Sphere10.Framework.Windows.Forms.MySQL/README.md) |
+| **Sphere10.Framework.Windows.Forms.PostgreSQL** | PostgreSQL connection editors | [View](../src/Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) |
+| **Sphere10.Framework.Windows.Forms.Oracle** | Oracle connection editors | [View](../src/Sphere10.Framework.Windows.Forms.Oracle/README.md) |
 | **Sphere10.Framework.Windows.LevelDB** | LevelDB key-value storage | [View](../src/Sphere10.Framework.Windows.LevelDB/README.md) |
+
+`Sphere10.Framework.Windows` also documents its [power plan and power setting inventories](../src/Sphere10.Framework.Windows/System/Power/README.md).
 
 ### Web & Cross-Platform
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.Web** | ASP.NET-independent HTML and web models | [View](../src/Sphere10.Framework.Web/README.md) |
-| **Sphere10.Framework.Web.AspNetCore** | Shared HTTP, middleware, logging, and lifecycle | [View](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
-| **Sphere10.Framework.Web.AspNetCore.MVC** | MVC forms, filters, routing, and results | [View](../src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) |
-| **Sphere10.Framework.Web.AspNetCore.Blazor** | ApplicationBlock workspace, CRUD grid, custom editors, dialogs and wizards | [View](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) |
-| **Sphere10.Framework.Drawing** | Graphics and image manipulation | [View](../src/Sphere10.Framework.Drawing/README.md) |
-| **Sphere10.VisualRenderer** | Visual document model to HTML and plain text | Independent component at `Components/Sphere10.VisualRenderer` |
-| **Sphere10.Framework.iOS** | Xamarin.iOS integration | [View](../src/Sphere10.Framework.iOS/README.md) |
-| **Sphere10.Framework.Android** | Xamarin.Android integration | [View](../src/Sphere10.Framework.Android/README.md) |
-| **Sphere10.Framework.macOS** | Xamarin.macOS integration | [View](../src/Sphere10.Framework.macOS/README.md) |
+| **Sphere10.Framework.Web** | HTML, sitemap and menu models without an ASP.NET Core dependency | [View](../src/Sphere10.Framework.Web/README.md) |
+| **Sphere10.Framework.Web.AspNetCore** | Shared hosting, dependency injection, logging, HTTP/session utilities and middleware | [View](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
+| **Sphere10.Framework.Web.AspNetCore.MVC** | MVC results, Razor view helpers, forms, filters and routing attributes | [View](../src/Sphere10.Framework.Web.AspNetCore.MVC/README.md) |
+| **Sphere10.Framework.Web.AspNetCore.Blazor** | Interactive Server components for the ApplicationBlock workspace, CRUD grid, custom editors, dialogs and wizards | [View](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) |
+| **Sphere10.Framework.Drawing** | Color and geometry helpers, plus Windows-only image processing and GDI+ rendering | [View](../src/Sphere10.Framework.Drawing/README.md) |
 
-### Testing
+`Sphere10.VisualRenderer`, which renders visual documents to HTML and plain text, is maintained in its own repository and does not depend on Framework.
+
+### Legacy Platforms
+
+These Xamarin-era projects are not part of either solution, so the solution builds do not compile them. The macOS folder has no project file.
 
 | Project | Description | README |
 |---------|-------------|--------|
-| **Sphere10.Framework.NUnit** | NUnit utilities and test helpers | [View](../src/Sphere10.Framework.NUnit/README.md) |
-| **Sphere10.Framework.NUnit.DB** | Database-specific NUnit testing utilities | [View](../src/Sphere10.Framework.NUnit.DB/README.md) |
+| **Sphere10.Framework.iOS** | Legacy Xamarin.iOS integration | [View](../src/Sphere10.Framework.iOS/README.md) |
+| **Sphere10.Framework.Android** | Legacy Xamarin.Android integration | [View](../src/Sphere10.Framework.Android/README.md) |
+| **Sphere10.Framework.macOS** | Legacy macOS integration source | [View](../src/Sphere10.Framework.macOS/README.md) |
+
+### Testing Libraries
+
+| Project | Description | README |
+|---------|-------------|--------|
+| **Sphere10.Framework.NUnit** | NUnit assertion helpers and test infrastructure | [View](../src/Sphere10.Framework.NUnit/README.md) |
+| **Sphere10.Framework.NUnit.DB** | Database test fixtures for `Sphere10.Framework.Data` providers | [View](../src/Sphere10.Framework.NUnit.DB/README.md) |
+
+### Demos, Profilers and Tests
+
+| Project | Description | README |
+|---------|-------------|--------|
+| **Sphere10.Framework.Utils.WinFormsTester** | WinForms demonstrations of screens, ObjectSpaces, VisualGrid, charts, the hex editor and wizards | [View](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) |
+| **Sphere10.Framework.Utils.BlazorTester** | Blazor Web App that presents every component demo in one ApplicationBlock shell | [View](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) |
+| **Sphere10.Framework.Utils.MvcTester** | Minimal ASP.NET Core MVC host for the MVC library | [View](../utils/Sphere10.Framework.Utils.MvcTester/README.md) |
+| **Sphere10.Framework.Utils.Profiler** | Profiling console with [ObjectSpace](../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md), [B-tree](../utils/Sphere10.Framework.Utils.Profiler/BTrees/README.md) and [cache](../utils/Sphere10.Framework.Utils.Profiler/Caches/README.md) domains and [parameter studies](../utils/Sphere10.Framework.Utils.Profiler/Studies/README.md) | [View](../utils/Sphere10.Framework.Utils.Profiler/README.md) |
+| **Sphere10.Framework.Application.Tests** | UI-independent application, plugin, block and lifecycle contracts | [View](../tests/Sphere10.Framework.Application.Tests/README.md) |
+| **Sphere10.Framework.Windows.Forms.Tests** | Windows-only tests of the native application framework, screen hosting, controls and wizards | [View](../tests/Sphere10.Framework.Windows.Forms.Tests/README.md) |
+| **Sphere10.Framework.Web.AspNetCore.Blazor.Tests** | Blazor library, shell and gallery samples, plus explicitly selected Playwright browser fixtures | [View](../tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/README.md) |
+| **Sphere10.Framework.Utils.Profiler.Tests** | Profiler commands, workloads, study contracts and optional recorded evidence | [View](../tests/Sphere10.Framework.Utils.Profiler.Tests/README.md) |
 
 ---
 
-## 🎯 By Use Case
+## 📊 Performance Records
 
-| Goal | Start Here |
-|------|------------|
-| New to the framework | [Getting Started](start-here.md) |
-| Using Tools.* utilities | [Tools Reference](tools-reference.md) |
-| Deferred/lazy/reloadable values and projections | [Future contracts](guidelines/patterns/futures.md) |
-| Wrapping an external executable | [Process Sentries](guidelines/patterns/process-sentries.md) |
-| Working with collections | [Collection selection](guidelines/patterns/collections.md) / [Sphere10.Framework](../src/Sphere10.Framework/README.md) |
-| Protecting shared state and collection operations | [Synchronization scopes](guidelines/patterns/synchronization.md) |
-| Repository CRUD, loading/saving and transaction lifetimes | [Persistence and transactions](guidelines/patterns/persistence-and-transactions.md) |
-| ObjectSpace schemas, identity and file transactions | [ObjectSpace guide](../src/Sphere10.Framework/ObjectSpaces/README.md) / [Practices](guidelines/patterns/object-spaces.md) |
-| ObjectSpace demonstration and configuration performance | [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) / [ObjectSpace profiling suite](../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) |
-| Database access | [Sphere10.Framework.Data](../src/Sphere10.Framework.Data/README.md) |
-| Cryptography | [Sphere10.Framework.CryptoEx](../src/Sphere10.Framework.CryptoEx/README.md) |
-| Networking & RPC | [Sphere10.Framework.Communications](../src/Sphere10.Framework.Communications/README.md) |
-| Windows desktop | [Sphere10.Framework.Windows.Forms](../src/Sphere10.Framework.Windows.Forms/README.md) |
-| Windows processes, raw counters, services, networking and storage | [Windows resource abstractions](../src/Sphere10.Framework.Windows/README.md#windows-resource-abstractions) and [ownership layers](guidelines/patterns/framework-reuse.md#windows-abstraction-layers); application collectors compose these APIs. |
-| ASP.NET Core web | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
-| Editable Blazor grids | [Complete grid example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#crud-grid-quick-start) |
-| Custom grid editors and related records | [Editor, reference picker and action example](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#custom-editors-reference-pickers-and-actions) |
-| Blazor navigation workspace | [ApplicationBlock setup](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md#register-a-workspace) |
-| Shared application ownership, plugins and lifecycle | [Application framework](../src/Sphere10.Framework.Application/README.md#shared-ui-framework) / [Initialization and shutdown](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown) |
-| WinForms lifecycle, splash and exit | [Native application lifecycle](../src/Sphere10.Framework.Windows.Forms/README.md#application-lifecycle-and-splash) / [WinForms tester](../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) |
-| Blazor plugin startup and shutdown | [Demo lifecycle](../utils/Sphere10.Framework.Utils.BlazorTester/README.md#plugin-initialization-and-shutdown) |
-| Run the web demos | [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) / [MVC tester](../utils/Sphere10.Framework.Utils.MvcTester/README.md) |
-| Mobile development | [iOS](../src/Sphere10.Framework.iOS/README.md) / [Android](../src/Sphere10.Framework.Android/README.md) |
+These records document the October 2026 performance campaigns and the correctness reviews that followed them. Each record describes the source snapshot it examined, and later records revise or revert some earlier changes. Current APIs are documented in the project READMEs and pattern topics, not in these records.
+
+### Storage and I/O Allocations
+
+The [comment and behavior review](performance/comment-and-behavior-review.md) lists which of these changes were retained with their evidence and which were reverted.
+
+| Date | Record | Subject |
+|---|---|---|
+| 22 Oct | [Span and buffer allocation optimizations](performance/span-optimizations.md) | First allocation pass over extended lists, buffers, transactional files, fragmented streams and cryptography |
+| 22 Oct | [Stream-mapped dictionary hot paths](performance/stream-mapped-dictionary-hotpaths.md) | Profiling of the long-running stream-mapped dictionary integration tests |
+| 22 Oct | [ObjectSpace hot paths](performance/object-space-hotpaths.md) | ObjectSpace and Merkleized store profiling, covering selector compilation, Merkle-root publication and digest churn |
+| 22 Oct | [ObjectSpace page reuse and tree selection](performance/object-space-page-btree.md) | Pooled transactional page backing, span consolidation and B-tree implementation selection |
+| 23 Oct | [Span inheritance review](performance/span-inheritance-review.md) | Removal of the exact-type subclass checks added by the span pass |
+| 23 Oct | [Implementation complexity review](performance/optimization-complexity-review.md) | Removal of transport-mode helpers, with array operations delegating to span overloads |
+| 23 Oct | [Stream buffer allocation audit](performance/stream-buffer-allocation-audit.md) | Temporary buffers in paged collections, streams, I/O and transactions |
+| 23 Oct | [Streamed B-tree node I/O](performance/btree-span-node-io.md) | Span-based B-tree node and serializer buffers, with matched allocation captures |
+| 24 Oct | [Comment and behavior review](performance/comment-and-behavior-review.md) | Retained and reverted changes from the records above, with restored comments |
+
+### Scopes and Disposal
+
+Each record in this group builds on the one before it. [Resource scopes](guidelines/patterns/resource-scopes.md) documents the current scope API.
+
+| Date | Record | Subject |
+|---|---|---|
+| 24 Oct | [Value scope performance](performance/value-scopes.md) | Struct read, write, access and page scopes, with allocation, GC and consumer measurements |
+| 24 Oct | [Scope abstraction migration](performance/scope-abstraction.md) | Migration of the remaining scope families and screening of the `CallContext` registry |
+| 25 Oct | [Direct scope finalization](performance/scope-composition.md) | Removal of scope lifecycle machinery and the ownership corrections it exposed |
+| 25 Oct | [Async disposal corrections](performance/async-disposal-corrections.md) | Async disposal that awaits the actual cleanup, thread-affine scopes and typed scope factories |
+| 25 Oct | [Callback scope consolidation](performance/callback-scope-consolidation.md) | Consolidated callback scopes and their synchronous and asynchronous disposal contracts |
+| 25 Oct | [Borrowed array scopes](performance/borrow-array-scopes.md) | `BorrowArrayScope<T>` ownership of pooled arrays and the migration of production rental sites |
+| 25–26 Oct | [Disposable template review](performance/disposable-template-review.md) | Class-owner disposal templates, three cleanup failure fixes and clustered-stream close retry |
+
+The [evidence folder](performance/evidence/) archives captures, harness sources and validation logs for several of these records. The scope abstraction evidence includes [reproduction steps](performance/evidence/20261024-scope-abstraction/REPRODUCING.md), and the value scope evidence includes its [frozen measurement harness](performance/evidence/20261024-value-scopes/harness/README.md).
 
 ---
 
 ## 📂 Documentation Structure
 
-```
-docs/
-├── README.md                 ← You are here
-├── start-here.md             — Quick start guide
-├── tools-reference.md        — Tools.* namespace catalog
-├── real-world-usage-examples.md — Practical examples
-├── architecture/
-│   ├── sphere10-framework.md — Framework architecture
-│   └── domains.md            — Domain catalog
-└── guidelines/
-    ├── 3-tier-architecture.md — Architectural patterns
-    ├── code-styling.md       — Coding standards
-    ├── patterns-and-practices.md — Task index for focused pattern guides
-    └── patterns/
-        ├── framework-reuse.md
-        ├── type-hierarchies.md
-        ├── projections.md
-        ├── sync-async.md
-        ├── interface-bridges.md
-        ├── application-ownership.md
-        ├── framework-utilities.md
-        ├── fluent-builders.md
-        ├── serialization.md
-        ├── collections.md
-        ├── collections-and-storage.md
-        ├── synchronization.md
-        ├── persistence-and-transactions.md
-        ├── object-spaces.md
-        ├── data-sources.md
-        ├── logging.md
-        ├── resource-scopes.md
-        ├── scheduling.md
-        └── testing.md
-```
-
-### All Documentation Files
-
-| Document | Description |
-|----------|-------------|
-| [start-here.md](start-here.md) | Quick start guide |
-| [tools-reference.md](tools-reference.md) | Tools.* namespace catalog |
-| [real-world-usage-examples.md](real-world-usage-examples.md) | Practical patterns from tests |
-| [architecture/sphere10-framework.md](architecture/sphere10-framework.md) | Framework architecture |
-| [architecture/domains.md](architecture/domains.md) | Domain catalog |
-| [guidelines/3-tier-architecture.md](guidelines/3-tier-architecture.md) | Architectural patterns |
-| [guidelines/code-styling.md](guidelines/code-styling.md) | Coding standards |
-| [guidelines/patterns-and-practices.md](guidelines/patterns-and-practices.md) | Task index for focused pattern guides |
-| [guidelines/patterns/framework-reuse.md](guidelines/patterns/framework-reuse.md) | Reuse and adoption in real consumers |
-| [guidelines/patterns/type-hierarchies.md](guidelines/patterns/type-hierarchies.md) | Contract, inheritance, concrete and decorator responsibilities |
-| [guidelines/patterns/projections.md](guidelines/patterns/projections.md) | Conversion directions, typed cores and projected views |
-| [guidelines/patterns/sync-async.md](guidelines/patterns/sync-async.md) | Directional execution, completion, cancellation and disposal |
-| [guidelines/patterns/interface-bridges.md](guidelines/patterns/interface-bridges.md) | Inline specialized interface projections |
-| [guidelines/patterns/application-ownership.md](guidelines/patterns/application-ownership.md) | Runtime structure, lifecycle and ownership |
-| [guidelines/patterns/framework-utilities.md](guidelines/patterns/framework-utilities.md) | Existing utility infrastructure |
-| [guidelines/patterns/fluent-builders.md](guidelines/patterns/fluent-builders.md) | Configuration composition and validation |
-| [guidelines/patterns/serialization.md](guidelines/patterns/serialization.md) | Serializer and endian-aware persistence contracts |
-| [guidelines/patterns/collections.md](guidelines/patterns/collections.md) | Collection selection, contracts and composition |
-| [guidelines/patterns/synchronization.md](guidelines/patterns/synchronization.md) | Read/write scopes, shared parents and borrowed results |
-| [guidelines/patterns/persistence-and-transactions.md](guidelines/patterns/persistence-and-transactions.md) | Repositories, loading/saving and transaction ownership |
-| [guidelines/patterns/collections-and-storage.md](guidelines/patterns/collections-and-storage.md) | Caches, graph identity and persistent storage layers |
-| [guidelines/patterns/object-spaces.md](guidelines/patterns/object-spaces.md) | Object identity, indexed CRUD, persistence and profiling |
-| [guidelines/patterns/data-sources.md](guidelines/patterns/data-sources.md) | CRUD, paging and delegation |
-| [guidelines/patterns/logging.md](guidelines/patterns/logging.md) | Logger composition and ownership |
-| [guidelines/patterns/resource-scopes.md](guidelines/patterns/resource-scopes.md) | Synchronization, transactions and scoped cleanup |
-| [guidelines/patterns/scheduling.md](guidelines/patterns/scheduling.md) | Job execution and lifetime |
-| [guidelines/patterns/testing.md](guidelines/patterns/testing.md) | Test runners, assertions and coverage |
+| Folder | Contents |
+|---|---|
+| `docs/` | This index, orientation, the Tools reference, usage examples and the Blazor theme sources |
+| [`architecture/`](architecture/) | Architecture overview and domain catalog, with draw.io and PlantUML diagram sources and their images in `resources/` |
+| [`guidelines/`](guidelines/) | Code styling, 3-tier architecture and the patterns-and-practices index, with diagram sources and images in `resources/` |
+| [`guidelines/patterns/`](guidelines/patterns/) | One implementation practice per file |
+| [`usage/`](usage/) | Focused guides to individual APIs |
+| [`performance/`](performance/) | Dated performance campaigns and reviews |
+| [`performance/evidence/`](performance/evidence/) | Archived captures, harness sources, validation logs and reproduction notes |
 
 ---
 
 ## 🛠️ Tools.* Namespace
 
-The **Tools namespace** provides IntelliSense-discoverable utilities across the entire framework:
+Utility facades live in the global `Tools` namespace, so typing `Tools.` lists the facades declared by the assemblies a project references. Some operations belong to domain types instead of a facade. Hashing, for example, goes through `Hashers`.
 
 ```csharp
+using System.Text;
 using Sphere10.Framework;
 
-// Cryptography
-byte[] hash = Tools.Crypto.SHA256(data);
+// Sphere10.Framework
+byte[] data = Encoding.UTF8.GetBytes("Hello");
+byte[] digest = Hashers.Hash(CHF.SHA2_256, data);
+byte[] salt = Tools.Crypto.GenerateCryptographicallyRandomBytes(16);
+string slug = Tools.Url.ToUrlSlug("Hello World");
 
-// Text processing
-string clean = Tools.Text.RemoveWhitespace(input);
-
-// Database access
+// Sphere10.Framework.Data.Sqlite
 var dac = Tools.Sqlite.Open("data.db");
 
-// Windows integration
-bool running = Tools.WinTool.IsServiceRunning("MyService");
+// Sphere10.Framework.Windows (Windows only)
+bool installed = Tools.Windows.Services.IsServiceInstalled("MyService");
 ```
 
-See [Tools Reference](tools-reference.md) for the complete catalog.
+See the [Tools Reference](tools-reference.md) for each facade, its declaring project and its representative members.
 
 ---
 
 ## 🔗 Quick Links
 
-- [Main README](../README.md) — Project overview and structure
-- [Framework Architecture](architecture/sphere10-framework.md) — Design and principles
-- [Test Projects](../tests/) — 2000+ unit and integration tests
+- [Main README](../README.md) — Project overview, installation and package publishing
+- [CI test guide](../.github/ci.md) — How GitHub Actions builds and runs the tests, and how to reproduce a run locally
+- [Package consumer validation](../scripts/package-consumers/README.md) — What `validate-packages.ps1` checks before a release
+- [Test projects](../tests/) — NUnit test projects for the libraries
 
 ---
 

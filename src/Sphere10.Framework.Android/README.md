@@ -2,401 +2,54 @@
 
 # 🤖 Sphere10.Framework.Android
 
-**Android platform abstraction** layer providing native Android APIs, Xamarin.Android integration, and Java interoperability for building native and hybrid mobile applications on Android platform.
-
-Sphere10.Framework.Android enables **cross-platform mobile development** with seamless integration to Android native capabilities including camera, sensors, location, notifications, background services, and hardware features while maintaining compatibility with Sphere10 Framework abstractions.
-
-## ⚡ 10-Second Example
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.App;
-using Android.Content;
-
-// Access device information
-var deviceInfo = AndroidDeviceInfo.Current;
-Console.WriteLine($"Device: {deviceInfo.Model}");
-Console.WriteLine($"Android Version: {deviceInfo.AndroidVersion}");
-
-// Request camera permission
-var cameraAccess = await AndroidPermissions.RequestCameraAccessAsync();
-
-// Send local notification
-var notification = new AndroidNotification {
-    Title = "Hello Android",
-    Message = "From Sphere10 Framework",
-    DelaySeconds = 5
-};
-await notification.ShowAsync();
-```
-
-## 🏗️ Core Concepts
-
-**Native API Wrappers**: Safe wrappers around Android Framework APIs for Activities, Services, Intents, etc.
-
-**Permission Management**: Declarative permission handling with runtime permission requests and manifests.
-
-**Sensor Integration**: Access to accelerometer, gyroscope, magnetometer, proximity, light sensors.
-
-**Background Services**: Long-running background tasks, foreground services, job scheduling.
-
-**Hardware Features**: Vibration, LED, camera, microphone, GPS access with proper lifecycle management.
-
-## 🔧 Core Examples
-
-### Device Information & Sensors
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.Hardware;
-
-// Get device information
-var deviceInfo = AndroidDeviceInfo.Current;
-Console.WriteLine($"Model: {deviceInfo.Model}");                    // "Pixel 6"
-Console.WriteLine($"Manufacturer: {deviceInfo.Manufacturer}");      // "Google"
-Console.WriteLine($"Android Version: {deviceInfo.AndroidVersion}"); // "12"
-Console.WriteLine($"Device ID: {deviceInfo.UniqueDeviceId}");      // Unique identifier
-
-// Check device capabilities
-bool hasGPS = AndroidDeviceCapabilities.HasGPS;
-bool hasCamera = AndroidDeviceCapabilities.HasCamera;
-bool hasAccelerometer = AndroidDeviceCapabilities.HasAccelerometer;
-bool hasNFC = AndroidDeviceCapabilities.HasNFC;
-bool hasBluetooth = AndroidDeviceCapabilities.HasBluetooth;
-
-// Get battery information
-var batteryInfo = await AndroidBattery.GetBatteryInfoAsync();
-Console.WriteLine($"Battery Level: {batteryInfo.Level}%");
-Console.WriteLine($"Is Charging: {batteryInfo.IsCharging}");
-Console.WriteLine($"Charge Status: {batteryInfo.ChargingStatus}");
-
-// Get storage information
-var storageInfo = AndroidStorage.GetStorageInfo();
-Console.WriteLine($"Total Storage: {storageInfo.TotalBytes} bytes");
-Console.WriteLine($"Available: {storageInfo.AvailableBytes} bytes");
-
-// Access accelerometer
-var accelerometer = new AndroidSensor(SensorType.Accelerometer);
-accelerometer.SensorValueChanged += (x, y, z, accuracy) => {
-    Console.WriteLine($"Acceleration: X={x}, Y={y}, Z={z}");
-};
-accelerometer.Start(SensorDelay.Normal);
-```
-
-### Runtime Permission Handling
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.Manifest;
-
-// Camera permission
-var cameraStatus = await AndroidPermissions.RequestPermissionAsync(
-    Permission.Camera);
-
-switch (cameraStatus) {
-    case PermissionStatus.Granted:
-        Console.WriteLine("Camera permission granted");
-        break;
-    case PermissionStatus.Denied:
-        Console.WriteLine("User denied camera permission");
-        break;
-    case PermissionStatus.Restricted:
-        Console.WriteLine("Permission restricted by policy");
-        break;
-}
-
-// Multiple permissions at once
-var statuses = await AndroidPermissions.RequestPermissionsAsync(new[] {
-    Permission.Camera,
-    Permission.RecordAudio,
-    Permission.AccessFineLocation
-});
-
-foreach (var status in statuses) {
-    Console.WriteLine($"{status.Key}: {status.Value}");
-}
-
-// Location permission with optional justification
-var locationRationale = await AndroidPermissions.RequestPermissionAsync(
-    Permission.AccessFineLocation,
-    rationale: "Location is needed to show nearby services");
-
-// Check permission without requesting
-var photoStatus = AndroidPermissions.GetPermissionStatus(Permission.ReadExternalStorage);
-if (photoStatus != PermissionStatus.Granted) {
-    Console.WriteLine("Photo access not granted");
-}
-
-// Storage permission (varies by Android version)
-var storageStatus = await AndroidPermissions.RequestStoragePermissionAsync();
-```
-
-### Local Notifications
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.App;
-
-// Simple notification
-var notification = new AndroidNotification {
-    Title = "Reminder",
-    Message = "You have a meeting in 15 minutes",
-    ChannelId = "reminders",
-    DelaySeconds = 60,
-    Priority = NotificationPriority.High
-};
-
-var notificationId = await notification.ShowAsync();
-Console.WriteLine($"Notification shown: {notificationId}");
-
-// Notification with action buttons
-var actionNotification = new AndroidNotification {
-    Title = "Message",
-    Message = "New message received",
-    ChannelId = "messages",
-    Priority = NotificationPriority.High,
-    Actions = new[] {
-        new NotificationAction { Id = "reply", Title = "Reply" },
-        new NotificationAction { Id = "mark_read", Title = "Mark as Read" }
-    },
-    OnActionClicked = async (actionId) => {
-        Console.WriteLine($"User clicked: {actionId}");
-        await HandleNotificationActionAsync(actionId);
-    }
-};
-
-await actionNotification.ShowAsync();
-
-// Scheduled notification (repeating)
-var scheduledNotification = new AndroidNotification {
-    Title = "Daily Task",
-    Message = "Complete your daily task",
-    ChannelId = "daily_tasks",
-    ScheduledTime = DateTime.Today.AddHours(9),  // 9 AM
-    Repeats = true,
-    RepeatInterval = NotificationRepeatInterval.Daily
-};
-
-await scheduledNotification.ScheduleAsync();
-
-// Create notification channel (Android 8.0+)
-var channel = new NotificationChannel {
-    Id = "important",
-    Name = "Important Notifications",
-    Description = "Notifications that require immediate attention",
-    Importance = NotificationImportance.High,
-    EnableVibration = true,
-    EnableLights = true
-};
-
-AndroidNotification.CreateChannel(channel);
-
-// Cancel notification
-await AndroidNotification.CancelNotificationAsync(notificationId);
-```
-
-### Camera & Media Capture
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.Provider;
-
-// Initialize camera
-var camera = new AndroidCamera();
-
-// Check camera availability
-int cameraCount = camera.CameraCount;
-Console.WriteLine($"Available cameras: {cameraCount}");
-
-// Capture photo
-var photo = await camera.TakePictureAsync(new PhotoCaptureOptions {
-    Quality = PhotoQuality.High,
-    SaveToGallery = true,
-    FlashMode = FlashMode.Auto
-});
-
-if (photo != null) {
-    Console.WriteLine($"Photo saved to: {photo.FilePath}");
-    Console.WriteLine($"Size: {photo.Width}x{photo.Height}");
-}
-
-// Record video
-var recording = camera.StartVideoRecording(new VideoRecordingOptions {
-    Quality = VideoQuality.High,
-    MaxDuration = TimeSpan.FromMinutes(5),
-    EnableAudio = true,
-    SaveToGallery = true
-});
-
-await Task.Delay(TimeSpan.FromSeconds(10));  // Record 10 seconds
-var videoPath = await camera.StopVideoRecordingAsync();
-Console.WriteLine($"Video saved to: {videoPath}");
-
-// Pick media from gallery
-var mediaPicker = new AndroidMediaPicker();
-var media = await mediaPicker.PickMediaAsync(new MediaPickerOptions {
-    AllowMultiple = true,
-    MediaTypes = new[] { MediaType.Photo, MediaType.Video }
-});
-
-foreach (var item in media) {
-    Console.WriteLine($"Selected: {item.Filename}");
-}
-```
-
-### Location Services
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.Locations;
-
-// Request location permission first
-var status = await AndroidPermissions.RequestPermissionAsync(
-    Permission.AccessFineLocation);
-
-if (status == PermissionStatus.Granted) {
-    var locationManager = new AndroidLocationManager();
-    
-    // Get current location
-    var location = await locationManager.GetCurrentLocationAsync();
-    Console.WriteLine($"Latitude: {location.Latitude}");
-    Console.WriteLine($"Longitude: {location.Longitude}");
-    Console.WriteLine($"Accuracy: {location.Accuracy}");
-    
-    // Start location updates
-    locationManager.LocationUpdated += (sender, e) => {
-        Console.WriteLine($"Location: {e.Latitude}, {e.Longitude}");
-    };
-    
-    locationManager.StartLocationUpdates(
-        provider: LocationManager.GpsProvider,
-        minTimeMs: 5000,           // Update every 5 seconds
-        minDistanceM: 10);         // Or every 10 meters
-    
-    // Reverse geocode
-    var address = await locationManager.GetAddressAsync(
-        location.Latitude, location.Longitude);
-    
-    Console.WriteLine($"Address: {address.GetAddressLine(0)}");
-    Console.WriteLine($"City: {address.Locality}");
-    
-    // Cleanup
-    locationManager.StopLocationUpdates();
-}
-```
-
-### Background Services & Job Scheduling
-
-```csharp
-using Sphere10.Framework.Android;
-using Android.App;
-using AndroidX.Work;
-
-// Create background service
-public class SyncService : AndroidForegroundService {
-    public override void OnStartCommand(Intent intent, int flags, int startId) {
-        Console.WriteLine("Sync service started");
-        
-        // Create foreground notification
-        var notification = new Notification.Builder(this)
-            .SetContentTitle("Syncing Data")
-            .SetContentText("Background sync in progress")
-            .SetSmallIcon(Resource.Drawable.ic_launcher)
-            .Build();
-        
-        StartForeground(1, notification);
-        
-        // Do background work
-        Task.Run(() => PerformSync());
-    }
-    
-    private async Task PerformSync() {
-        try {
-            Console.WriteLine("Syncing user data...");
-            await Task.Delay(5000);  // Simulate sync
-            Console.WriteLine("Sync complete");
-        } catch (Exception ex) {
-            Console.WriteLine($"Sync error: {ex}");
-        }
-    }
-}
-
-// Schedule background job
-var workRequest = new PeriodicWorkRequest.Builder(
-    typeof(SyncWorker),
-    interval: TimeSpan.FromHours(24))
-    .AddTag("data-sync")
-    .SetBackoffCriteria(
-        policy: BackoffPolicy.Exponential,
-        initialDelay: TimeSpan.FromMinutes(1))
-    .Build();
-
-WorkManager.GetInstance(context).EnqueueUniquePeriodicWork(
-    "daily-sync",
-    ExistingPeriodicWorkPolicy.KeepExistingWork,
-    workRequest);
-
-// Define the worker
-public class SyncWorker : Worker {
-    public SyncWorker(Context context, WorkerParameters parameters)
-        : base(context, parameters) { }
-    
-    public override Result DoWork() {
-        try {
-            Console.WriteLine("Worker: Starting sync");
-            // Perform sync
-            return Result.Success();
-        } catch {
-            return Result.Retry();
-        }
-    }
-}
-```
-
-## 🏗️ Architecture
-
-**Native API Wrappers**: Thin wrappers around Android Framework and AndroidX components.
-
-**Permission Abstraction**: Unified permission request interface across Android versions (API 21+).
-
-**Sensor Integration**: Standardized access to device sensors with lifecycle management.
-
-**Service Management**: Background services, foreground services, and job scheduling.
-
-**Notification Framework**: Channels, actions, and delivery across Android versions.
-
-## 📋 Best Practices
-
-- **Runtime permissions**: Request permissions when needed, not at startup
-- **Manifest requirements**: Declare all required permissions in AndroidManifest.xml
-- **Sensor lifecycle**: Stop sensors when app pauses to conserve battery
-- **Background limits**: Respect Doze mode and Background Execution Limits (Android 6.0+)
-- **Notification channels**: Create appropriate channels for different notification types (Android 8.0+)
-- **Memory management**: Clean up resources in OnDestroy and OnStop
-- **API levels**: Use version checks for features available in newer Android versions
-- **Battery awareness**: Use battery optimization APIs to minimize impact
-
-## 📊 Status & Compatibility
-
-- **Framework**: Xamarin.Android / .NET for Android
-- **Android Versions**: API 21 (Android 5.0) - API 34 (Android 14)
-- **Target Devices**: Phones, tablets, wearables
-- **Performance**: Native performance via Xamarin.Android bridge
+Sphere10.Framework.Android is a legacy Xamarin.Android class library whose only hand-written type is `AndroidSettingsProvider`, a settings provider rooted at the app's `Environment.SpecialFolder.ApplicationData` folder. No solution, CI job or packaging script builds it. Use it only as reference source, for example when porting the provider to a current .NET Android project.
+
+## 📊 Status
+
+| Area | State |
+|---|---|
+| Solutions | Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes the project. |
+| CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
+| Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
+| Project format | `Sphere10.Framework.Android.csproj` is a legacy (non-SDK) Xamarin.Android project. It imports `$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets` and targets Android 8.1 (`TargetFrameworkVersion` `v8.1`). |
+| Framework references | Its project references point at `Sphere10.Framework` and `Sphere10.Framework.Application`, which now target `net10.0`. |
+| Source | `AndroidSettingsProvider` derives from `DirectoryFileSettingsProvider` in `Sphere10.Framework.Application`. No build verifies the source against the current Framework. |
+| Tests | No test project covers it. |
+
+## 🏗️ Contents
+
+Types are declared in the `Sphere10.Framework.Android` namespace.
+
+| File | Contents |
+|---|---|
+| [`AndroidSettingsProvider.cs`](AndroidSettingsProvider.cs) | `AndroidSettingsProvider`, whose parameterless constructor passes the `ApplicationSettings` folder under `Environment.SpecialFolder.ApplicationData` to its base class. |
+| [`Resources/values/Strings.xml`](Resources/values/Strings.xml) | The project template's `hello` and `app_name` strings. |
+| [`Resources/Resource.designer.cs`](Resources/Resource.designer.cs) | Generated Android resource IDs, including those of the AppCompat support library. |
+| [`Resources/AboutResources.txt`](Resources/AboutResources.txt) | The project template's notes on Android resources. |
+| [`Properties/AssemblyInfo.cs`](Properties/AssemblyInfo.cs) | Template assembly attributes, with the title `Sphere10.Android` and version `1.0.0.0`. |
 
 ## 📦 Dependencies
 
-- **Xamarin.Android**: Android platform binding
-- **AndroidX**: Modern Android support libraries
-- **.NET 6.0+** or **Mono** runtime
-- **Android SDK 21+**
+| Dependency | Kind | Version |
+|---|---|---|
+| `Mono.Android` | Framework assembly | Android 8.1 (`v8.1`) |
+| `Xamarin.Android.Support.v7.AppCompat` | NuGet package | `27.0.2.1` |
+| [Sphere10.Framework](../Sphere10.Framework/README.md) | Project reference | Repository source |
+| [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) | Project reference | Repository source |
+
+`AndroidSettingsProvider.cs` does not use the AppCompat package.
+
+## 🔧 Porting notes
+
+- `AndroidSettingsProvider` builds on `DirectoryFileSettingsProvider`, whose constructor takes the settings directory and an optional `DirectorySettingsProviderPolicy`.
+- A current .NET Android build needs an SDK-style project, because this project uses the legacy Xamarin.Android format.
 
 ## 📚 Related Projects
 
-- [Sphere10.Framework.iOS](../Sphere10.Framework.iOS) - iOS platform implementation
-- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS) - macOS platform implementation
-- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows desktop implementation
-- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Cross-platform application abstraction
-- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) - settings objects and providers that `AndroidSettingsProvider` builds on
+- [Sphere10.Framework.iOS](../Sphere10.Framework.iOS/README.md) - legacy Xamarin.iOS library
+- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS/README.md) - legacy MonoMac source
+- [Sphere10 Framework](../../README.md) - catalogue of the maintained libraries
 
 ## 📄 License & Author
 

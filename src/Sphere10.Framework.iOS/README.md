@@ -2,361 +2,62 @@
 
 # 📱 Sphere10.Framework.iOS
 
-**iOS platform abstraction** layer providing native iOS APIs, Xamarin.iOS integration, and Swift interoperability for building native and hybrid mobile applications on Apple's iOS platform.
-
-Sphere10.Framework.iOS enables **cross-platform mobile development** with seamless integration to iOS native capabilities including camera, location, notifications, background tasks, and HomeKit support while maintaining compatibility with Sphere10 Framework abstractions.
-
-## ⚡ 10-Second Example
-
-```csharp
-using Sphere10.Framework.iOS;
-using UIKit;
-
-// Access device capabilities
-var deviceInfo = iOSDeviceInfo.Current;
-Console.WriteLine($"Device: {deviceInfo.Model}");
-Console.WriteLine($"OS Version: {deviceInfo.SystemVersion}");
-
-// Request camera permission
-var cameraAccess = await iOSPermissions.RequestCameraAccessAsync();
-
-// Send local notification
-var notification = new iOSLocalNotification {
-    Title = "Hello iOS",
-    Body = "From Sphere10 Framework",
-    DelaySeconds = 5
-};
-await notification.ScheduleAsync();
-```
-
-## 🏗️ Core Concepts
-
-**Native API Wrappers**: Safe wrappers around iOS native APIs for UIKit, CoreLocation, AVFoundation, etc.
-
-**Permission Management**: Declarative permission handling with user prompts and graceful fallbacks.
-
-**Device Capabilities**: Detection and access to device features (camera, GPS, microphone, etc.).
-
-**Notification Support**: Local and remote push notifications with scheduling and categorization.
-
-**Background Task Management**: iOS background modes, app refresh, and silent notifications.
-
-## 🔧 Core Examples
-
-### Device Information & Capabilities
-
-```csharp
-using Sphere10.Framework.iOS;
-using UIKit;
-
-// Get device information
-var deviceInfo = iOSDeviceInfo.Current;
-Console.WriteLine($"Model: {deviceInfo.Model}");                    // "iPhone14Pro"
-Console.WriteLine($"OS Version: {deviceInfo.SystemVersion}");       // "16.0"
-Console.WriteLine($"Device ID: {deviceInfo.UniqueIdentifier}");     // UDID
-Console.WriteLine($"Uptime: {deviceInfo.Uptime}");                 // TimeSpan
-
-// Check device capabilities
-bool hasFaceID = iOSDeviceCapabilities.HasFaceID;
-bool hasGPS = iOSDeviceCapabilities.HasGPS;
-bool hasCamera = iOSDeviceCapabilities.HasCamera;
-bool has5G = iOSDeviceCapabilities.Has5GConnectivity;
-
-// Get storage information
-var storage = await iOSStorageInfo.GetStorageStatsAsync();
-Console.WriteLine($"Total: {storage.TotalBytes} bytes");
-Console.WriteLine($"Available: {storage.AvailableBytes} bytes");
-Console.WriteLine($"Used: {storage.UsedBytes} bytes");
-```
-
-### Permission Request Patterns
-
-```csharp
-using Sphere10.Framework.iOS;
-using CoreLocation;
-using AVFoundation;
-
-// Camera permission
-var cameraStatus = await iOSPermissions.RequestCameraAccessAsync();
-switch (cameraStatus) {
-    case PermissionStatus.Granted:
-        Console.WriteLine("Camera access granted");
-        // Use camera
-        break;
-    case PermissionStatus.Denied:
-        Console.WriteLine("User denied camera access");
-        break;
-    case PermissionStatus.Restricted:
-        Console.WriteLine("Camera access restricted by policy");
-        break;
-}
-
-// Location permission (precise)
-var locationStatus = await iOSPermissions.RequestLocationAccessAsync(
-    LocationAccuracy.Full);
-
-// Location permission (approximate)
-var approxLocationStatus = await iOSPermissions.RequestLocationAccessAsync(
-    LocationAccuracy.Approximate);
-
-// Microphone permission
-var micStatus = await iOSPermissions.RequestMicrophoneAccessAsync();
-
-// Calendar/Contacts permission
-var calendarStatus = await iOSPermissions.RequestCalendarAccessAsync();
-var contactsStatus = await iOSPermissions.RequestContactsAccessAsync();
-
-// Health/HealthKit permission
-var healthStatus = await iOSPermissions.RequestHealthKitAccessAsync();
-
-// Check current permission status without requesting
-var photoLibStatus = iOSPermissions.GetPhotoLibraryPermissionStatus();
-Console.WriteLine($"Photo Library Permission: {photoLibStatus}");
-```
-
-### Local Notifications
-
-```csharp
-using Sphere10.Framework.iOS;
-using UserNotifications;
-
-// Simple notification
-var notification = new iOSLocalNotification {
-    Title = "Reminder",
-    Body = "You have a meeting in 15 minutes",
-    DelaySeconds = 60,
-    SoundName = UNNotificationSoundName.Default
-};
-
-// Schedule notification
-var notificationId = await notification.ScheduleAsync();
-Console.WriteLine($"Scheduled notification: {notificationId}");
-
-// Scheduled notification with repeat
-var dailyNotification = new iOSLocalNotification {
-    Title = "Daily Task",
-    Body = "Complete your daily task",
-    ScheduleTime = DateTime.Today.AddHours(9),  // 9 AM
-    Repeats = true,
-    RepeatInterval = NotificationRepeatInterval.Daily,
-    Badge = 1
-};
-
-await dailyNotification.ScheduleAsync();
-
-// Notification with custom sound and action buttons
-var interactiveNotification = new iOSLocalNotification {
-    Title = "Message Received",
-    Body = "You have a new message",
-    Badge = 1,
-    Sound = "notification.wav",
-    CustomData = new Dictionary<string, object> {
-        { "conversationId", "conv123" },
-        { "senderId", "user456" }
-    },
-    Actions = new[] {
-        new NotificationAction { Id = "reply", Title = "Reply", IsDestructive = false },
-        new NotificationAction { Id = "ignore", Title = "Ignore", IsDestructive = true }
-    }
-};
-
-var actionId = await interactiveNotification.ScheduleAsync();
-
-// Get pending notifications
-var pending = await iOSLocalNotification.GetPendingNotificationsAsync();
-Console.WriteLine($"Pending notifications: {pending.Count}");
-
-// Cancel notification
-await iOSLocalNotification.CancelNotificationAsync(notificationId);
-```
-
-### Camera & Photo Access
-
-```csharp
-using Sphere10.Framework.iOS;
-using AVFoundation;
-using Photos;
-
-// Initialize camera
-var camera = new iOSCamera();
-
-// Check camera availability
-if (!camera.IsFrontCameraAvailable) {
-    Console.WriteLine("Front camera not available");
-    return;
-}
-
-// Capture photo
-var photo = await camera.CapturePhotoAsync();
-if (photo != null) {
-    var imageData = photo.ToBytesArray();
-    Console.WriteLine($"Photo captured: {imageData.Length} bytes");
-}
-
-// Record video
-var recording = camera.StartVideoRecording(new iOSVideoRecordingOptions {
-    Quality = AVCaptureSessionPreset.High,
-    MaxDuration = TimeSpan.FromMinutes(5),
-    SoundEnabled = true
-});
-
-await Task.Delay(TimeSpan.FromSeconds(10));  // Record for 10 seconds
-var videoUrl = await camera.StopVideoRecordingAsync();
-Console.WriteLine($"Video saved to: {videoUrl}");
-
-// Access photo library
-var photoPicker = new iOSPhotoPicker();
-var selectedPhoto = await photoPicker.PickPhotoAsync();
-
-if (selectedPhoto != null) {
-    Console.WriteLine($"Selected photo: {selectedPhoto.Filename}");
-    var imageData = await selectedPhoto.LoadImageDataAsync();
-}
-
-// Save photo to gallery
-var image = new UIImage("photo.jpg");
-await iOSPhotos.SavePhotoAsync(image);
-```
-
-### Location Services
-
-```csharp
-using Sphere10.Framework.iOS;
-using CoreLocation;
-
-// Initialize location manager
-var locationManager = new iOSLocationManager();
-
-// Request permission first
-var status = await iOSPermissions.RequestLocationAccessAsync(
-    LocationAccuracy.Full);
-
-if (status == PermissionStatus.Granted) {
-    // Get current location
-    var location = await locationManager.GetCurrentLocationAsync();
-    Console.WriteLine($"Latitude: {location.Latitude}");
-    Console.WriteLine($"Longitude: {location.Longitude}");
-    Console.WriteLine($"Accuracy: {location.HorizontalAccuracy}");
-    
-    // Start continuous location tracking
-    locationManager.LocationUpdated += (sender, e) => {
-        Console.WriteLine($"New location: {e.Location.Latitude}, {e.Location.Longitude}");
-    };
-    
-    locationManager.StartUpdatingLocation(
-        desiredAccuracy: LocationAccuracy.Best,
-        distanceFilter: 10);  // Update every 10 meters
-    
-    // Reverse geocode (get address from coordinates)
-    var address = await locationManager.ReverseGeocodeAsync(
-        location.Latitude, location.Longitude);
-    Console.WriteLine($"Address: {address}");
-}
-```
-
-### Background Task Execution
-
-```csharp
-using Sphere10.Framework.iOS;
-using BackgroundTasks;
-
-// Register background task (in AppDelegate)
-BGTaskScheduler.Shared.Register(
-    forTaskWithIdentifier: "com.sphere10.Sphere10.Framework.refresh",
-    using: null,
-    launchHandler: ProcessBackgroundTask);
-
-// Schedule background refresh
-var request = new BGAppRefreshTaskRequest("com.sphere10.Sphere10.Framework.refresh");
-request.EarliestBeginDate = NSDate.FromTimeIntervalSinceNow(60);  // In 60 seconds
-
-try {
-    BGTaskScheduler.Shared.Submit(request, out NSError error);
-    if (error != null) {
-        Console.WriteLine($"Failed to schedule task: {error}");
-    }
-} catch (Exception ex) {
-    Console.WriteLine($"Error scheduling background task: {ex}");
-}
-
-// Process background task
-private void ProcessBackgroundTask(BGTask task) {
-    Console.WriteLine("Processing background task");
-    
-    // Set expiration handler
-    task.ExpirationHandler = () => {
-        Console.WriteLine("Background task expired");
-    };
-    
-    // Do background work
-    PerformBackgroundWork();
-    
-    // Mark complete
-    task.SetTaskCompleted(success: true);
-    
-    // Reschedule if needed
-    ScheduleNextBackgroundTask();
-}
-
-private void PerformBackgroundWork() {
-    // Sync data, update cache, etc.
-    Console.WriteLine("Syncing data in background");
-}
-
-private void ScheduleNextBackgroundTask() {
-    var nextRequest = new BGAppRefreshTaskRequest("com.sphere10.Sphere10.Framework.refresh");
-    nextRequest.EarliestBeginDate = NSDate.FromTimeIntervalSinceNow(900);  // 15 minutes
-    
-    try {
-        BGTaskScheduler.Shared.Submit(nextRequest, out NSError error);
-    } catch { }
-}
-```
-
-## 🏗️ Architecture
-
-**Native API Wrappers**: Thin wrappers around UIKit, CoreLocation, AVFoundation, etc.
-
-**Permission Abstraction**: Unified permission request interface across iOS versions.
-
-**Device Capability Detection**: Safe capability checks with graceful degradation.
-
-**Notification Management**: High-level notification scheduling and handling.
-
-**Background Task Integration**: Simplified background execution and app refresh scheduling.
-
-## 📋 Best Practices
-
-- **Permission hygiene**: Request permissions only when needed, with clear user explanation
-- **Capability checking**: Always check device capabilities before attempting to use them
-- **Background awareness**: Respect background task time limits and set expiration handlers
-- **Memory management**: Dispose of large resources when backgrounded
-- **iOS version support**: Use availability attributes for iOS version-specific APIs
-- **Location privacy**: Minimize location tracking scope; use approximate when possible
-- **Notification scheduling**: Use repeating notifications judiciously to avoid battery drain
-- **Camera resources**: Properly release camera and video recording resources
-
-## 📊 Status & Compatibility
-
-- **Framework**: Xamarin.iOS / .NET for iOS
-- **iOS Versions**: iOS 13.0+ (13.4+ recommended)
-- **Target Devices**: iPhone, iPad, iPod Touch
-- **Performance**: Native performance via Xamarin.iOS bridge
+Sphere10.Framework.iOS is a legacy Xamarin.iOS class library of UIKit views, view controllers, awaitable dialogs and extension methods, with StoreKit, network-reachability and address-book helpers. No solution, CI job or packaging script builds it. Use it only as reference source, for example when porting a control to a current .NET iOS project.
+
+## 📊 Status
+
+| Area | State |
+|---|---|
+| Solutions | Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes the project. |
+| CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
+| Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
+| Project format | `Sphere10.Framework.iOS.csproj` is a legacy (non-SDK) Xamarin.iOS project. It imports `$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets` and references the `Xamarin.iOS` and `OpenTK-1.0` assemblies. |
+| Framework references | Its project references point at `Sphere10.Framework`, `Sphere10.Framework.Application`, `Sphere10.Framework.Data` and `Sphere10.Framework.Drawing`, which now target `net10.0`. |
+| Source | The settings classes use `Guard.ArgumentNotNull` from `Sphere10.Framework` and `Tools.Xml` from `Sphere10.Framework.Data`. No build verifies the source against the current Framework. |
+| Tests | No test project covers it. |
+
+## 🏗️ Contents
+
+Most types are declared in the `Sphere10.Framework.iOS` namespace. `iOSTool` is declared in the `Tools` namespace, so callers reach it as `Tools.iOSTool`.
+
+| Location | Contents |
+|---|---|
+| [`iOSTool.cs`](iOSTool.cs) | `Tools.iOSTool` static helpers for keyboard height, animation waits, video thumbnails, labels, top-most view controller lookup, Objective-C associated objects, JPEG saving, and image cropping, resizing, zooming and tinting. |
+| [`UI/`](UI) | Awaitable dialogs (`MessageBox`, `ActionSheet`, `DropDownList`, `MenuPresenter`, `ModalHelper`), calendar views (`CalendarMonthView`, `MultidateCalendarViewController`), input controls (`UIComboBox`, `UIDecimalField`, `AmountEditorViewController`), table helpers (`GenericTableViewSource<T>`, `GenericTableViewCell`, `BadgeCell`), image views (`UIImageViewEx`, `UIWebImageView`, `FullScaleImageView`), `LoadingHUDView`, `UIPaintingView`, `AppRater` and gesture-recognizer subclasses. |
+| [`ViewControllers/`](ViewControllers) | `KeyboardAwareViewController` scrolls the focused field above the on-screen keyboard and requires its view to be a `UIScrollView`. `ActionViewController` hosts a supplied view, and `MenuCollectionViewController` shows `MenuOption` items in a horizontal collection. `ApplicationScreenViewController` is an unfinished screen base class marked `TODO needs work`. |
+| [`Extensions/`](Extensions) | Extension methods for UIKit, Foundation and CoreGraphics types such as `UIView`, `UIImage`, `UIColor`, `UITableView`, `NSDate` and `CGRect`, and conversions such as `ToNSString`, `ToNSDate` and `ToUIColor`. |
+| [`Settings/`](Settings) | `UserDefaultsSettingsProvider` is a `SyncSettingsProviderBase` that stores each `DefaultValue`-attributed member of a settings object in `NSUserDefaults`. `UserDefaultObject` is a `SettingsObject` that loads and saves itself there. Both files compile only when `__IOS__` or `MONOMAC` is defined. |
+| [`AppStore/`](AppStore) | `iTunesAppStoreManager` looks up StoreKit products and purchases them. A purchase returns a `PurchaseResult` that carries a `TransactionResult`. |
+| [`Network/`](Network) | `Reachability` reports remote-host, internet and local Wi-Fi reachability as a `NetworkStatus`. |
+| [`AddressBook/`](AddressBook) | `AddressBookTool.RequestAddressBookAuthorization` requests access to the address book. |
+| [`ObjC/`](ObjC) | `iOSAPI` declares P/Invoke entry points for `objc_setAssociatedObject`, `objc_getAssociatedObject` and `objc_msgSend`, and `AssociationPolicy` lists the association policies. |
+| [`Images/`](Images) | Calendar and placeholder PNGs that the project embeds as resources. |
+
+`UI/CalendarMonthView.cs` and `UI/LoadingHUDView.cs` carry an additional MIT permission notice below the Sphere10 header. Keep it when you copy either file.
 
 ## 📦 Dependencies
 
-- **Xamarin.iOS**: iOS platform binding
-- **.NET 6.0+** or **Mono** runtime
-- **iOS SDK 13.0+**
-- **Platform-specific frameworks**: UIKit, CoreLocation, AVFoundation, etc.
+| Dependency | Kind | Version |
+|---|---|---|
+| `Xamarin.iOS`, `OpenTK-1.0` | Framework assemblies | Not pinned |
+| `System.Drawing.Common` | `packages.config` entry | `4.5.1` |
+| [Sphere10.Framework](../Sphere10.Framework/README.md) | Project reference | Repository source |
+| [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) | Project reference | Repository source |
+| [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) | Project reference | Repository source |
+| [Sphere10.Framework.Drawing](../Sphere10.Framework.Drawing/README.md) | Project reference | Repository source |
+
+## 🔧 Porting notes
+
+- Members whose type has no native user-defaults representation are stored as XML through `Tools.Xml`, so their types must be serializable by `XmlSerializer`.
+- A current .NET iOS build needs an SDK-style project, because this project uses the legacy Xamarin.iOS format.
 
 ## 📚 Related Projects
 
-- [Sphere10.Framework.Android](../Sphere10.Framework.Android) - Android platform implementation
-- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS) - macOS platform implementation
-- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows desktop implementation
-- [Sphere10.Framework.Application](../Sphere10.Framework.Application) - Cross-platform application abstraction
-- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
+- [Sphere10.Framework.Application](../Sphere10.Framework.Application/README.md) - settings objects and providers that the `Settings` folder builds on
+- [Sphere10.Framework.Android](../Sphere10.Framework.Android/README.md) - legacy Xamarin.Android library
+- [Sphere10.Framework.macOS](../Sphere10.Framework.macOS/README.md) - legacy MonoMac source
+- [Tools reference](../../docs/tools-reference.md) - the `Tools.*` facades, including `Tools.iOSTool`
+- [Sphere10 Framework](../../README.md) - catalogue of the maintained libraries
 
 ## 📄 License & Author
 

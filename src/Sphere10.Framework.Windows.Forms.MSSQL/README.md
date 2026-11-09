@@ -2,15 +2,19 @@
 
 # Sphere10.Framework.Windows.Forms.MSSQL
 
-SQL Server connection editors for Windows Forms. `MSSQLConnectionBar` provides a compact connection bar; `MSSQLConnectionPanel` provides the same fields in a panel suitable for a settings page or dialog. Both produce `MSSQLDAC` instances through the shared `IDatabaseConnectionProvider` API.
+`Sphere10.Framework.Windows.Forms.MSSQL` provides Windows Forms editors for SQL Server connection settings in desktop applications that use Sphere10 Framework data access. Use `MSSQLConnectionBar` where a compact one-row editor fits, and `MSSQLConnectionPanel` on a settings page or in a dialog. Both build a `Microsoft.Data.SqlClient` connection string with SQL Server authentication, test it on request and create an `MSSQLDAC` from it.
 
-## Installation and requirements
+## Reference the package
+
+Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
 
 ```powershell
 dotnet add package Sphere10.Framework.Windows.Forms.MSSQL
 ```
 
-Use a Windows desktop application targeting `net10.0-windows`, with the .NET 10 SDK and Windows Forms enabled:
+The package depends on `Sphere10.Framework.Data.MSSQL`, which supplies `MSSQLDAC` and the `Microsoft.Data.SqlClient` driver, and on `Sphere10.Framework.Windows.Forms`. To build against source instead, reference `src/Sphere10.Framework.Windows.Forms.MSSQL/Sphere10.Framework.Windows.Forms.MSSQL.csproj` with a `ProjectReference`.
+
+The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. A consuming project needs a Windows target framework with Windows Forms enabled:
 
 ```xml
 <PropertyGroup>
@@ -19,111 +23,148 @@ Use a Windows desktop application targeting `net10.0-windows`, with the .NET 10 
 </PropertyGroup>
 ```
 
-Create and access the controls on your application's STA UI thread with a WinForms message loop. The package references its matching data provider and `Sphere10.Framework.Windows.Forms`; install the UI package into the desktop project that hosts the controls.
+Create and use the controls on the application's UI thread. Creating or editing a control never connects, so a SQL Server instance is needed only to test or open a connection.
 
-## Controls and connection settings
+## Controls
 
-The concrete controls are in `Sphere10.Framework.Windows.Forms.MSSQL`. Their common base types and provider interface are in `Sphere10.Framework.Windows.Forms`.
+Both controls are in the `Sphere10.Framework.Windows.Forms.MSSQL` namespace and edit the same five fields.
 
-| API | Behavior |
-| --- | --- |
-| `Server` | SQL Server host or named instance. |
-| `Port` | Optional port as text; emitted as `server,port` in `Data Source`. |
-| `Database` / `DatabaseName` | Editable initial catalog / read-only catalog name. |
-| `Username`, `Password` | SQL authentication fields. |
-| `ConnectionString` | Reads the current fields or populates them from a SQL connection string. |
-| `GetDAC()` | Returns a new `MSSQLDAC` as `IDAC`; it does not open a connection. |
-| `TestConnection()` | Returns `Task<Result>` after attempting to open and dispose a DAC scope. |
-| `ArtificialKeysFile` | Bar-only inherited setting; `GetDAC()` loads the selected artificial-key XML file into the DAC. |
+| Control | Base class | Use |
+|---|---|---|
+| `MSSQLConnectionBar` | `ConnectionBarBase` | One-row editor for a toolbar or header area. Its options button can select an artificial-keys file. |
+| `MSSQLConnectionPanel` | `ConnectionPanelBase` | Larger editor for a settings page or a dialog. |
 
-## Add a bar or show a connection dialog
+| Member | Behavior |
+|---|---|
+| `Server` | Server name, or `server\instance` for a named instance. |
+| `Port` | Port as text. A port is appended to the data source as `server,port`, and a blank port is left out. |
+| `Database`, `DatabaseName` | Initial catalog. `DatabaseName` returns the `Database` text and does not query the server. |
+| `Username`, `Password` | SQL Server login name and password. The password box masks its text, but both properties return plain text. |
+| `ConnectionString` | Builds a string from the five fields with `Integrated Security=False`, or fills the fields from an assigned string. Loading moves a trailing `,port` of the data source into `Port`. |
+| `GetDAC()` | Returns a new `MSSQLDAC` as `IDAC` without opening a connection. |
+| `TestConnection()` | Opens and closes a test connection, and returns `Task<Result>`. |
+| `ArtificialKeysFile` | Bar only. Path of an artificial-keys XML file. The options button sets it through `SelectArtificialKeysFile()` and can clear it again. `GetDAC()` loads the file into each new DAC, so that `GetSchema()` includes the keys it declares. |
 
-Call these methods from your existing WinForms application. Pass an initial SQL-authentication connection string, such as `Server=localhost;Database=Example;User ID=app_user`, and let the user enter the password. The package supplies the editor panel; the example composes the dialog using standard `Form.ShowDialog(owner)`.
+`ConnectionString` is hidden from the Windows Forms designer, but the field properties are not. Assign credentials at runtime so that they never reach designer-generated code.
+
+## Edit and test a connection
+
+Place the panel on a designer-authored dialog, form or screen like any other control, and host `MSSQLConnectionBar` the same way where space is limited. The code-behind below belongs to a dialog whose designer file declares `_connectionPanel` (an `MSSQLConnectionPanel`), `_testButton` and `_statusLabel`, wires `_testButton.Click`, and sets the `DialogResult` of its OK and Cancel buttons.
 
 ```csharp
+using System;
+using System.ComponentModel;
 using System.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.MSSQL;
 
-public static class SqlServerConnectionUi {
-	public static MSSQLConnectionBar AddBar(Control host, string connectionString) {
-		var bar = new MSSQLConnectionBar {
-			Dock = DockStyle.Top,
-			ConnectionString = connectionString
-		};
-		host.Controls.Add(bar);
-		return bar;
+public partial class DatabaseSettingsDialog : Form {
+	public DatabaseSettingsDialog() {
+		InitializeComponent();
 	}
 
-	public static bool TryEditConnection(IWin32Window owner, string initialConnectionString, out string connectionString) {
-		using var dialog = new Form {
-			Text = "SQL Server connection",
-			Width = 640,
-			Height = 230,
-			StartPosition = FormStartPosition.CenterParent
-		};
-		var panel = new MSSQLConnectionPanel { Dock = DockStyle.Fill, ConnectionString = initialConnectionString };
-		var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft };
-		var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel };
-		var accept = new Button { Text = "OK", DialogResult = DialogResult.OK };
-		buttons.Controls.Add(cancel);
-		buttons.Controls.Add(accept);
-		dialog.Controls.Add(panel);
-		dialog.Controls.Add(buttons);
-		dialog.AcceptButton = accept;
-		dialog.CancelButton = cancel;
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public string ConnectionString {
+		get => _connectionPanel.ConnectionString;
+		set => _connectionPanel.ConnectionString = value;
+	}
 
-		connectionString = initialConnectionString;
-		if (dialog.ShowDialog(owner) != DialogResult.OK)
-			return false;
-		connectionString = panel.ConnectionString;
-		return true;
+	private async void _testButton_Click(object sender, EventArgs e) {
+		_testButton.Enabled = false;
+		try {
+			var result = await _connectionPanel.TestConnection();
+			if (!IsDisposed)
+				_statusLabel.Text = result.IsSuccess ? "Connection succeeded." : string.Join(Environment.NewLine, result.ErrorMessages);
+		} catch (Exception error) {
+			// Settings that cannot form a connection string throw instead of failing the result.
+			if (!IsDisposed)
+				_statusLabel.Text = error.Message;
+		} finally {
+			if (!IsDisposed)
+				_testButton.Enabled = true;
+		}
 	}
 }
 ```
 
-`AddBar` transfers the control's lifetime to `host`; disposing the host disposes its child controls. `TryEditConnection` disposes its dialog and panel, preserves the original string on cancellation, and returns the edited string on OK. Acceptance only collects settings. Use `bar.GetDAC()` or `new Sphere10.Framework.Data.MSSQLDAC(connectionString)` when the application is ready to access the database.
+Show the dialog with the saved string, and keep the edited string only when the user accepts it:
 
-## Shared provider selection
+```csharp
+using var dialog = new DatabaseSettingsDialog { ConnectionString = savedConnectionString };
+if (dialog.ShowDialog(owner) == DialogResult.OK)
+	savedConnectionString = dialog.ConnectionString;
+```
 
-To use the generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`, add `Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration` with `AddModule<TModule>()` in the existing framework startup builder, before starting the application and creating those generic controls. This registers named transient bars and panels under `nameof(DBMSType.SQLServer)`.
+The editors only collect settings. They do not save profiles, discover servers or create databases, and they never hold a connection:
 
-After startup, set `SelectedDBMSType = DBMSType.SQLServer` before assigning the generic control's `ConnectionString`. Merely referencing the NuGet package does not register the services. A directly constructed `MSSQLConnectionBar` or `MSSQLConnectionPanel` does not need this provider lookup.
+- `TestConnection()` builds the connection string on the calling thread, then opens and disposes a DAC scope on a thread-pool task. A connection failure becomes an error in the returned `Result`, and no connection stays open afterwards. A successful test shows that a connection opened, not that the application's tables or permissions are in place. The method takes no cancellation token.
+- Building the string can throw before the test starts. The bar throws a `FormatException` for port text that is not a number, and loading its `ArtificialKeysFile` can also fail.
+- When the application needs the database, call `GetDAC()` on the editor or construct `new MSSQLDAC(connectionString)`, then call `EnterScope()` for each unit of work and dispose the scope. The DAC itself is not disposable, and the scope owns the connection.
+- `StateChanged`, inherited from `UserControlEx`, is a parameterless event that is raised when a field changes after the control has loaded. It reports edits, not connectivity.
 
-## Events and connection lifecycle
+## Connection string behavior
 
-- Both concrete editors inherit `StateChanged` from `UserControlEx`. Subscribe with a parameterless handler, for example `bar.StateChanged += () => ...`, to react to changes; it is not a connection-success event.
-- The generic `DatabaseConnectionPanel.DBMSTypeChanged` event receives the panel and selected `DBMSType`. It reports provider changes. The generic bar has no equivalent public provider-change event.
-- Call `await bar.TestConnection()` from a UI event handler and inspect the returned `Result.IsSuccess`. The control captures settings on the UI thread and opens the scope on a worker task. Connection failures become result errors; settings parsing and artificial-key loading run outside the connection-error handler and can throw separately, so handle those exceptions in the host.
-- No connection stays open after a successful test. Obtain a DAC for application operations and dispose the connection or DAC scope used by each operation. The controls do not create databases or manage application transactions.
+- The editors always write `Integrated Security=False`, so they edit SQL Server authentication only. A loaded string that used Windows or Microsoft Entra authentication comes back as SQL Server authentication.
+- The editors rebuild the string from their five fields, so other settings in an assigned string are dropped, such as `Encrypt`, `TrustServerCertificate`, pooling or `Authentication`. To keep such settings, read `ConnectionString`, add them with `SqlConnectionStringBuilder`, and construct `MSSQLDAC` from the result. `GetDAC()` and `TestConnection()` always use the rebuilt string.
+- A rebuilt string has no `Encrypt` setting, so `MSSQLDAC` connects with `SqlConnectionEncryptOption.Optional`. The [SQL Server data provider](../Sphere10.Framework.Data.MSSQL/README.md) describes encryption and certificate validation.
+- The bar parses the port strictly. The panel leaves out port text that it cannot parse, so validate the port in the application when invalid input must be rejected.
+- The setter does not catch errors from `SqlConnectionStringBuilder`, so assigning a string that it rejects throws.
+- Connection strings contain the password, so do not log or display them.
 
-## SQL Server behavior and limitations
+## Use the generic provider selector
 
-The editors use `Microsoft.Data.SqlClient.SqlConnectionStringBuilder`, and `MSSQLDAC` creates `Microsoft.Data.SqlClient.SqlConnection` instances. Both editors explicitly emit `Integrated Security=False`: these controls edit SQL username/password authentication, even when an assigned string originally used Windows or Microsoft Entra authentication.
+`DatabaseConnectionPanel` and `DatabaseConnectionBar` in `Sphere10.Framework.Windows.Forms` let the user choose a database engine and then show that engine's editor. They resolve the editors as named framework services, so add this package's module to the application's startup code:
 
-Only server, port, catalog, user and password survive editing. Options such as `Encrypt`, `TrustServerCertificate`, pooling and `Authentication` are not preserved by a `ConnectionString` round trip. If your application needs those options, apply them to the returned string with `SqlConnectionStringBuilder` and create the DAC from that final string, or use a custom editor. Do not feed that final string back through the limited editor expecting those settings to survive.
+```csharp
+Sphere10Framework.Instance
+	.BuildWinFormsApplication()
+	// ... the application's existing configuration and modules ...
+	.AddModule<Sphere10.Framework.Windows.Forms.MSSQL.ModuleConfiguration>()
+	.StartWinFormsApplication();
+```
 
-An omitted encryption option follows `MSSQLDAC`'s compatibility policy; see the [SQL Server provider guide](../Sphere10.Framework.Data.MSSQL/README.md) for encryption defaults and certificate validation. The bar parses its port strictly; the panel uses a safe parser and treats unparseable port text as unset. Validate port input in the host if acceptance must reject it. Connection strings can contain the entered password, so avoid displaying or logging them.
+`ModuleConfiguration` registers `MSSQLConnectionBar` and `MSSQLConnectionPanel` as transient services named `nameof(DBMSType.SQLServer)`. Referencing the package does not register them, and a directly hosted SQL Server editor needs no module.
 
-## Build and source
+- A selector constructed before the framework has started, for example in the Windows Forms designer, finds no service provider and lists no engines, so construct it after startup. Switching engines disposes the previous editor.
+- The engine list contains only registered providers. Setting `SelectedDBMSType` to an unregistered engine leaves the current editor selected.
+- Set `SelectedDBMSType = DBMSType.SQLServer` before assigning `ConnectionString`, because the selector passes the string to its current editor.
+- `Database` returns the engine and the string together as a `DBReference`, and the bar also accepts one. `DACFactory.CreateDAC(reference.DBMSType, reference.ConnectionString)` recreates the DAC from a saved reference.
+- `DatabaseConnectionPanel` raises `DBMSTypeChanged(panel, dbmsType)` when the selected engine changes. `DatabaseConnectionBar` has no such event.
+
+## Try the controls
+
+The [WinForms Tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) hosts both editors. Run it from the repository root on Windows:
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+```
+
+- **Controls > Input > All controls by class name** opens the control catalog. Search for `MSSQLConnection` to edit sample settings, which never connect on their own.
+- **Integration > Connections > Database Connection Panel** and **Database Connection Bar** show the generic selectors with every provider module registered. Choose **SQL Server**, enter the settings of a reachable server and click **Test connection**.
+
+## Build from source
 
 From the repository root on Windows:
 
 ```powershell
-dotnet build src/Sphere10.Framework.Windows.Forms.MSSQL/Sphere10.Framework.Windows.Forms.MSSQL.csproj -c Release
+dotnet build src/Sphere10.Framework.Windows.Forms.MSSQL/Sphere10.Framework.Windows.Forms.MSSQL.csproj -c Release -p:BuildRevision=0
 ```
 
-- [MSSQLConnectionBar](MSSQLConnectionBar.cs) and [MSSQLConnectionPanel](MSSQLConnectionPanel.cs): field mapping and DAC construction.
-- [ModuleConfiguration](ModuleConfiguration.cs): registration names.
-- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs): shared lifecycle.
+`-p:BuildRevision=0` keeps a development build from taking the next local build number. The [root README](../../README.md#building-and-publishing-packages) explains build numbering, and how `scripts/pack.ps1` packs the whole package set. The project packs this file as its NuGet readme, and [`Directory.Packages.props`](../../Directory.Packages.props) sets the driver version.
 
-## Related guides
+- [`MSSQLConnectionBar.cs`](MSSQLConnectionBar.cs) and [`MSSQLConnectionPanel.cs`](MSSQLConnectionPanel.cs) map the fields to `SqlConnectionStringBuilder` and split the port from the data source.
+- [`ModuleConfiguration.cs`](ModuleConfiguration.cs) registers the named services.
+- [`ConnectionBarBase`](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs) and [`ConnectionPanelBase`](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs) implement [`IDatabaseConnectionProvider`](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), including the shared `GetDAC()` and `TestConnection()` logic.
 
-- [Core WinForms](../Sphere10.Framework.Windows.Forms/README.md)
-- [SQL Server data provider](../Sphere10.Framework.Data.MSSQL/README.md)
-- [Application startup and modules](../Sphere10.Framework.Application/README.md)
-- [SQLite controls](../Sphere10.Framework.Windows.Forms.Sqlite/README.md) and [Firebird controls](../Sphere10.Framework.Windows.Forms.Firebird/README.md)
+## Related documentation
 
-## License & Author
+- [Windows Forms library](../Sphere10.Framework.Windows.Forms/README.md) for the generic selectors and the base classes.
+- [SQL Server data provider](../Sphere10.Framework.Data.MSSQL/README.md) for `MSSQLDAC`, `Tools.MSSQL`, encryption defaults and bulk insert.
+- [Data access](../Sphere10.Framework.Data/README.md) for DAC scopes, transactions and [artificial keys](../Sphere10.Framework.Data/README.md#artificial-keys).
+- [Application startup and modules](../Sphere10.Framework.Application/README.md).
+- [Database connection editors](../../docs/guidelines/patterns/winforms-controls.md#database-connection-editors), which compares the editors of every provider.
+- The other provider editors for [SQLite](../Sphere10.Framework.Windows.Forms.Sqlite/README.md), [Firebird](../Sphere10.Framework.Windows.Forms.Firebird/README.md), [MySQL](../Sphere10.Framework.Windows.Forms.MySQL/README.md), [PostgreSQL](../Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) and [Oracle](../Sphere10.Framework.Windows.Forms.Oracle/README.md).
+
+## License and author
 
 **License**: [MIT License](../../LICENSE)
 

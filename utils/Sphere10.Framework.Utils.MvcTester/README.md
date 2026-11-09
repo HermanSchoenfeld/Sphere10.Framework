@@ -30,7 +30,7 @@ The HTTPS profile needs a usable development certificate. The explicit HTTP comm
 
 | Location | Responsibility |
 | --- | --- |
-| [Program.cs](Program.cs) | Registers controllers/views and Sphere10 Framework, starts the framework, and maps conventional MVC routing. |
+| [Program.cs](Program.cs) | Registers controllers/views and Sphere10 Framework with the ASP.NET Core module that ends the framework when the host stops, starts the framework, and maps conventional MVC routing. |
 | [Controllers/HomeController.cs](Controllers/HomeController.cs) | Returns the landing view from `Index`. |
 | [Views/Home/Index.cshtml](Views/Home/Index.cshtml) | Complete HTML landing page with `Layout = null`. |
 | [Sphere10.Framework.Utils.MvcTester.csproj](Sphere10.Framework.Utils.MvcTester.csproj) | Web SDK host targeting `net10.0`, with a reference to the MVC library and packaging disabled. |
@@ -41,7 +41,8 @@ The framework registration and startup calls are already present:
 
 ```csharp
 builder.Services.AddControllersWithViews();
-builder.Services.AddSphere10Framework(_ => { });
+builder.Services.AddSphere10Framework(framework => framework
+	.AddModule<Sphere10.Framework.Web.AspNetCore.ModuleConfiguration>());
 
 var app = builder.Build();
 app.StartSphere10Framework();

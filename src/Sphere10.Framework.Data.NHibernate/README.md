@@ -2,9 +2,9 @@
 
 # 💾 Sphere10.Framework.Data.NHibernate
 
-**NHibernate ORM integration** for Sphere10.Framework.Data abstraction layer, providing object-relational mapping with support for multiple databases while maintaining LINQ query capabilities and advanced persistence patterns.
+`Sphere10.Framework.Data.NHibernate` adds NHibernate and FluentNHibernate helpers to [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md). Use it when an application maps its entities with FluentNHibernate and wants the shared database-manager contract to create its schema, seed data and open session factories.
 
-Sphere10.Framework.Data.NHibernate bridges **NHibernate's powerful ORM capabilities** with Sphere10.Framework.Data abstraction, enabling domain-driven design patterns, lazy loading, change tracking, and complex queries across SQLite, SQL Server, Firebird, and other supported databases.
+The package supplies a database-manager base class, a data-generator base class, FluentNHibernate conventions, JSON column types, an enum type-table pattern, an auditing listener and SQL Server dialect and driver extensions. It has no session-factory builder of its own: configure NHibernate with FluentNHibernate's `Fluently.Configure()`.
 
 ## 📦 Installation
 
@@ -12,354 +12,111 @@ Sphere10.Framework.Data.NHibernate bridges **NHibernate's powerful ORM capabilit
 dotnet add package Sphere10.Framework.Data.NHibernate
 ```
 
-## ⚡ 10-Second Example
+The package depends on `NHibernate`, `FluentNHibernate`, `Sphere10.Framework.Data`, `Sphere10.Framework.Data.MSSQL` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.NHibernate/Sphere10.Framework.Data.NHibernate.csproj` with a `ProjectReference`.
+
+## ⚡ Create a database and open sessions
+
+Derive a manager from `NHDatabaseManagerBase`. It decorates a provider's `IDatabaseManager`, which creates, tests and drops the empty database, and adds the NHibernate configuration that creates the schema:
 
 ```csharp
-using Sphere10.Framework.Data.NHibernate;
+using FluentNHibernate.Cfg;
+using FluentNHibernate.Cfg.Db;
 using NHibernate;
-
-// Configure NHibernate with Sphere10 Framework
-var sessionFactory = new NHibernateSessionFactory()
-    .UseSqlite("myapp.db")  // or UseSqlServer(), UseFirebird(), etc.
-    .AddMapping(typeof(User).Assembly)
-    .BuildSessionFactory();
-
-// Open session and query
-using (var session = sessionFactory.OpenSession()) {
-    // LINQ query
-    var users = session.Query<User>()
-        .Where(u => u.Name.StartsWith("A"))
-        .ToList();
-    
-    // HQL query
-    var count = session.CreateQuery("SELECT COUNT(*) FROM User")
-        .UniqueResult<int>();
-}
-```
-
-## 🏗️ Core Concepts
-
-**Object-Relational Mapping**: Automatic mapping between domain objects and database tables with type safety.
-
-**Lazy Loading**: Deferred loading of related entities reducing database queries and memory footprint.
-
-**Change Tracking**: Automatic detection of entity modifications and generation of appropriate UPDATE statements.
-
-**LINQ Query Support**: Type-safe LINQ-to-NHibernate queries with SQL translation.
-
-**Cascade Operations**: Automatic propagation of operations (insert, update, delete) across entity relationships.
-
-## 🔧 Core Examples
-
-### Configuration & Session Management
-
-```csharp
-using Sphere10.Framework.Data.NHibernate;
-using NHibernate;
-using NHibernate.Cfg;
-
-// SQLite database
-var sqliteFactory = new NHibernateSessionFactory()
-    .UseSqlite(":memory:")  // or "myapp.db" for file-based
-    .AddMapping(typeof(User).Assembly)
-    .BuildSessionFactory();
-
-// SQL Server database
-var sqlServerFactory = new NHibernateSessionFactory()
-    .UseSqlServer("Server=.;Database=myapp;Integrated Security=true;")
-    .AddMapping(typeof(User).Assembly)
-    .BuildSessionFactory();
-
-// Manual configuration
-var config = new Configuration();
-config.Configure();  // Reads from hibernate.cfg.xml
-var sessionFactory = config.BuildSessionFactory();
-
-// Open session and transaction
-using (var session = sessionFactory.OpenSession()) {
-    using (var transaction = session.BeginTransaction()) {
-        try {
-            var user = new User { Name = "Alice", Email = "alice@example.com" };
-            session.Save(user);
-            
-            transaction.Commit();
-        } catch {
-            transaction.Rollback();
-            throw;
-        }
-    }
-}
-```
-
-### Entity Mapping & Persistence
-
-```csharp
-using Sphere10.Framework.Data.NHibernate;
-using NHibernate;
-using NHibernate.Mapping.ByCode;
-
-// Define domain model
-public class User {
-    public virtual int Id { get; set; }
-    public virtual string Name { get; set; }
-    public virtual string Email { get; set; }
-    public virtual DateTime CreatedDate { get; set; }
-}
-
-public class Product {
-    public virtual int Id { get; set; }
-    public virtual string Name { get; set; }
-    public virtual decimal Price { get; set; }
-    public virtual ISet<Order> Orders { get; set; } = new HashSet<Order>();
-}
-
-public class Order {
-    public virtual int Id { get; set; }
-    public virtual User Customer { get; set; }
-    public virtual Product Product { get; set; }
-    public virtual int Quantity { get; set; }
-    public virtual DateTime OrderDate { get; set; }
-}
-
-// Mapping configuration
-var mapper = new ModelMapper();
-mapper.Class<User>(cm => {
-    cm.Id(u => u.Id, m => m.Generator(Generators.Native));
-    cm.Property(u => u.Name);
-    cm.Property(u => u.Email);
-    cm.Property(u => u.CreatedDate);
-});
-
-mapper.Class<Product>(cm => {
-    cm.Id(p => p.Id, m => m.Generator(Generators.Native));
-    cm.Property(p => p.Name);
-    cm.Property(p => p.Price);
-});
-
-mapper.Class<Order>(cm => {
-    cm.Id(o => o.Id, m => m.Generator(Generators.Native));
-    cm.ManyToOne(o => o.Customer, m => m.Column("UserID"));
-    cm.ManyToOne(o => o.Product, m => m.Column("ProductID"));
-    cm.Property(o => o.Quantity);
-    cm.Property(o => o.OrderDate);
-});
-```
-
-### LINQ Queries & HQL
-
-```csharp
+using Sphere10.Framework.Data;
 using Sphere10.Framework.Data.NHibernate;
 
-var sessionFactory = new NHibernateSessionFactory()
-    .UseSqlite(":memory:")
-    .AddMapping(typeof(User).Assembly)
-    .BuildSessionFactory();
+public class AppDatabaseManager : NHDatabaseManagerBase {
 
-using (var session = sessionFactory.OpenSession()) {
-    // LINQ queries (type-safe)
-    var usersNamedAlice = session.Query<User>()
-        .Where(u => u.Name == "Alice")
-        .ToList();
+	public AppDatabaseManager()
+		: base(new MSSQLDatabaseManager()) {
+	}
 
-    var recentUsers = session.Query<User>()
-        .Where(u => u.CreatedDate > DateTime.Now.AddDays(-7))
-        .OrderByDescending(u => u.CreatedDate)
-        .Take(10)
-        .ToList();
+	protected override FluentConfiguration GetFluentConfig(string connectionString)
+		=> Fluently
+			.Configure()
+			.Database(MsSqlConfiguration.MsSql2012.ConnectionString(connectionString))
+			.Mappings(m => m.FluentMappings
+				.AddFromAssemblyOf<AppDatabaseManager>()
+				.Conventions.Add(new CoreConventions(), new ForeignKeyConventions(), new EnumConvention(), new StringColumnLengthConvention()))
+			.AddBusinessObjectAuditor();
 
-    var expensiveProducts = session.Query<Product>()
-        .Where(p => p.Price > 100m)
-        .Select(p => new { p.Name, p.Price })
-        .ToList();
-
-    // HQL queries (Hibernate Query Language)
-    var hqlUsers = session.CreateQuery("SELECT u FROM User u WHERE u.Name LIKE :name")
-        .SetParameter("name", "A%")
-        .List<User>();
-
-    var hqlCount = session.CreateQuery("SELECT COUNT(u) FROM User u")
-        .UniqueResult<int>();
-
-    // Aggregation
-    var avgPrice = session.Query<Product>()
-        .Average(p => p.Price);
-
-    var maxPrice = session.Query<Product>()
-        .Max(p => p.Price);
-
-    var groupedOrders = session.Query<Order>()
-        .GroupBy(o => o.Customer)
-        .Select(g => new {
-            Customer = g.Key.Name,
-            OrderCount = g.Count(),
-            TotalAmount = g.Sum(o => o.Quantity * o.Product.Price)
-        })
-        .ToList();
+	protected override IDataGenerator CreateDataGenerator(ISessionFactory sessionFactory, string databaseName, DatabaseGenerationDataPolicy policy)
+		=> new AppDataGenerator(sessionFactory);
 }
 ```
 
-### Relationship Management & Cascading
+Use it through the shared contract:
 
 ```csharp
-using Sphere10.Framework.Data.NHibernate;
+var password = Environment.GetEnvironmentVariable("APPDB_PASSWORD");
+var manager = new AppDatabaseManager();
+var connectionString = manager.GenerateConnectionString("localhost", "AppDb", "appuser", password, null);
+manager.CreateEmptyDatabase(connectionString);
+manager.CreateApplicationDatabase(connectionString, DatabaseGenerationDataPolicy.PrimingData, "AppDb");
 
-var sessionFactory = new NHibernateSessionFactory()
-    .UseSqlite(":memory:")
-    .AddMapping(typeof(User).Assembly)
-    .BuildSessionFactory();
-
-using (var session = sessionFactory.OpenSession()) {
-    using (var transaction = session.BeginTransaction()) {
-        // Create user with orders
-        var user = new User { Name = "Bob", Email = "bob@example.com" };
-        
-        var laptop = new Product { Name = "Laptop", Price = 999.99m };
-        var mouse = new Product { Name = "Mouse", Price = 29.99m };
-        
-        var order1 = new Order { 
-            Customer = user, 
-            Product = laptop, 
-            Quantity = 1, 
-            OrderDate = DateTime.Now 
-        };
-        
-        var order2 = new Order { 
-            Customer = user, 
-            Product = mouse, 
-            Quantity = 2, 
-            OrderDate = DateTime.Now 
-        };
-        
-        // Save user (orders cascade-saved if configured)
-        session.Save(user);
-        session.Save(order1);
-        session.Save(order2);
-        
-        transaction.Commit();
-    }
-}
-
-using (var session = sessionFactory.OpenSession()) {
-    // Load user with lazy-loaded orders
-    var user = session.Get<User>(1);
-    
-    // Access related entity (triggers lazy load)
-    var orders = session.Query<Order>()
-        .Where(o => o.Customer.Id == user.Id)
-        .ToList();
-    
-    // Update scenario
-    var orderToDelete = orders.First();
-    session.Delete(orderToDelete);  // If cascade configured, may affect user
-    
-    session.Flush();  // Flush changes to database
+using var sessionFactory = manager.OpenDatabase(connectionString);
+using (var session = sessionFactory.OpenSession())
+using (var transaction = session.BeginTransaction()) {
+	session.Save(new Customer { Name = "Alice" });
+	transaction.Commit();
 }
 ```
 
-### Transactions & Batch Operations
+`Customer` and `AppDataGenerator` are application types. The session, transaction, query and mapping APIs are NHibernate's and FluentNHibernate's own.
 
-```csharp
-using Sphere10.Framework.Data.NHibernate;
+## 🧩 Public API
 
-var sessionFactory = new NHibernateSessionFactory()
-    .UseSqlite(":memory:")
-    .AddMapping(typeof(User).Assembly)
-    .BuildSessionFactory();
+The types are in `Sphere10.Framework.Data.NHibernate`, except `Tools.NHibernate`, which is in the global `Tools` namespace.
 
-using (var session = sessionFactory.OpenSession()) {
-    // Batch insert
-    using (var transaction = session.BeginTransaction()) {
-        for (int i = 1; i <= 1000; i++) {
-            var user = new User { 
-                Name = $"User{i}", 
-                Email = $"user{i}@example.com",
-                CreatedDate = DateTime.Now 
-            };
-            session.Save(user);
-            
-            // Flush every 100 records to manage memory
-            if (i % 100 == 0) {
-                session.Flush();
-                session.Clear();
-            }
-        }
-        transaction.Commit();
-    }
-    
-    // Bulk update using HQL
-    using (var transaction = session.BeginTransaction()) {
-        var updateCount = session.CreateQuery(
-            "UPDATE User u SET u.Email = :newEmail WHERE u.Name LIKE :pattern")
-            .SetParameter("newEmail", "updated@example.com")
-            .SetParameter("pattern", "User1%")
-            .ExecuteUpdate();
-        
-        Console.WriteLine($"Updated {updateCount} records");
-        transaction.Commit();
-    }
-    
-    // Bulk delete using HQL
-    using (var transaction = session.BeginTransaction()) {
-        var deleteCount = session.CreateQuery(
-            "DELETE FROM User u WHERE u.CreatedDate < :cutoffDate")
-            .SetParameter("cutoffDate", DateTime.Now.AddYears(-1))
-            .ExecuteUpdate();
-        
-        Console.WriteLine($"Deleted {deleteCount} records");
-        transaction.Commit();
-    }
-}
+| API | Purpose |
+|---|---|
+| `INHDatabaseManager` | An `IDatabaseManager` that also opens databases as `ISessionFactory` instances. |
+| `NHDatabaseManagerBase` | A `DatabaseManagerDecorator` implementing `INHDatabaseManager`. Subclasses supply `GetFluentConfig(connectionString)` and `CreateDataGenerator(...)`. |
+| `NHDataGeneratorBase` | An `IDataGenerator` whose `Populate()` saves the objects from `CreateData()` with `SaveOrUpdate` in one session and transaction. `CreateTypeTable<TEnum>()` and `CreateTypeTable(enumType)` create one type-table row per enum value. |
+| `TypeTable`, `TypeTable<TEnum>`, `TypeTableMap<TEnum>` | Entity and FluentNHibernate map for a lookup table of an enum's values, with an assigned `ID`, a unique `Name` and an optional `Description` from the enum value's description. The table is named after the enum unless a subclass overrides `TableName`, and `UniqueName` can turn off the unique constraint. |
+| `JsonColumnType<T>` | An `IUserType` that stores an object as a JSON string through `Sphere10FrameworkJsonSerializer`. An empty or blank value reads as a new `T`. |
+| `EncryptedJsonColumnTypeBase<T>` | The same column type with `EncryptedJsonSerializer`. Derive a type with a parameterless constructor that passes the password, because NHibernate constructs custom types itself. |
+| `JsonColumnTypeBase<T>` | The base for JSON column types that use another `IJsonSerializer`. |
+| `FluentConfiguration.AddBusinessObjectAuditor()` | Adds pre-insert and pre-update listeners. On insert they set `CreatedOnUtc` and `LastUpdatedOnUtc` to the current UTC time and `Active` to `true`, and on update they set `LastUpdatedOnUtc`. Each property is set only when the entity has a property with that name. |
+| `ISession.Attach(entity)` | Adds a detached entity to the session's persistence context as loaded, without reading it from the database. The `mode` argument is ignored. |
+| `ExtendedMssqlDialect`, `ExtendedSql2008ClientDriver` | SQL Server 2008 dialect and driver that store `byte`, `ushort`, `uint` and `ulong` values as `SMALLINT`, `INT`, `BIGINT` and `DECIMAL(28)`. |
+| `Tools.NHibernate.NVarCharMaxValue` | `4001`, a string length that NHibernate maps to an unbounded string column such as `NVARCHAR(MAX)`. The JSON column types use it. |
+
+## 🗂️ Schema creation and data policies
+
+`CreateApplicationDatabase(connectionString, dataPolicy, databaseName)` builds a session factory from `GetFluentConfig(connectionString)`. While it builds, `SetCreateDatabaseConfiguration` runs NHibernate's `SchemaExport.Create`, which drops and then creates the mapped tables. Override `SetCreateDatabaseConfiguration` to change that step. The database must already exist, so call `CreateEmptyDatabase` first.
+
+After the schema exists, the manager calls its `OnDatabaseSchemasCreated` hook. `DatabaseGenerationDataPolicy.NoData` then adds no rows, while `PrimingData` and `DemoData` call `CreateDataGenerator` and run the returned generator's `Populate()`. The session factory is disposed when the method returns, and `OpenDatabase(connectionString)` builds a new one from the same configuration.
+
+`GenerateConnectionString`, `DatabaseExists`, `CreateEmptyDatabase` and `DropDatabase` pass through to the decorated provider manager, such as `MSSQLDatabaseManager` or `SqliteDatabaseManager`.
+
+## 🔧 FluentNHibernate conventions
+
+Add the conventions that suit the application's schema to `FluentMappings.Conventions`:
+
+| Convention | Effect |
+|---|---|
+| `CoreConventions` | Names a many-to-many table after the owning entity and the plural of the other entity, such as `CustomerOrders`. |
+| `ForeignKeyConventions` | Names a foreign-key column after its property or type with an `ID` suffix, such as `CustomerID`. |
+| `EnumConvention` | Maps enum and nullable enum properties through their enum type, so NHibernate stores the numeric value. |
+| `StringColumnLengthConvention` | Gives string properties without an explicit length a length of 4000. |
+| `AnsiStringConvention` | Maps every string property as `AnsiString`, which is a non-Unicode column. |
+| `BinaryColumnLengthConvention` | Maps `byte[]` properties as SQL Server `varbinary(MAX)`. |
+
+## 🔗 Related projects and source
+
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) — shared DAC contracts, database managers and the `IDataGenerator` contract.
+- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL/README.md) and [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite/README.md) — provider database managers to decorate.
+- [NHDatabaseManagerBase](Database/NHDatabaseManagerBase.cs), [NHDataGeneratorBase](Database/NHDataGeneratorBase.cs), [conventions](Conventions), [JSON column types](Json) and [the auditing listener](Listeners/BusinessObjectAuditor.cs) — implementation.
+
+From the repository root:
+
+```bash
+dotnet build src/Sphere10.Framework.Data.NHibernate/Sphere10.Framework.Data.NHibernate.csproj -c Release
 ```
-
-## 🏗️ Architecture
-
-**NHibernateSessionFactory**: Factory for creating NHibernate sessions configured for Sphere10.Framework.Data.
-
-**Mapping Configuration**: Supports both fluent and attribute-based entity mappings.
-
-**Query Providers**: LINQ provider and HQL support for flexible querying.
-
-**Session Management**: Automatic session and transaction lifecycle management.
-
-**Provider Abstraction**: Support for multiple database backends through dialect configuration.
-
-## 📋 Best Practices
-
-- **Lazy loading**: Use lazy loading for one-to-many relationships to reduce query complexity
-- **N+1 queries**: Use `fetch` in LINQ or `join` in HQL to prevent N+1 query problems
-- **Session scope**: Keep sessions short-lived; dispose after work completes
-- **Flush strategically**: Call `Flush()` to sync changes; `Clear()` to free memory in batch operations
-- **Cache warmly**: Use NHibernate's query cache for frequently executed queries
-- **Stateless sessions**: Use stateless sessions for bulk operations without change tracking
-- **Mapping clarity**: Define clear cascade and relationship boundaries
-- **Performance monitoring**: Enable SQL logging to identify inefficient queries
-
-## 📊 Status & Compatibility
-
-- **Framework**: .NET 5.0+, .NET Framework 4.7+
-- **NHibernate Version**: 5.0+
-- **Supported Databases**: SQLite, SQL Server, Firebird, PostgreSQL, MySQL, Oracle (via dialect)
-- **Performance**: ORM-level optimization with lazy loading and query optimization
-
-## 📦 Dependencies
-
-- **Sphere10.Framework.Data**: Data abstraction layer
-- **NHibernate**: ORM framework
-- **Database provider**: SQLite, SQL Server, Firebird, etc.
-- **.NET 10**: Cross-platform runtime (`net10.0`)
-
-## 📚 Related Projects
-
-- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Core data abstraction layer
-- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite support for NHibernate
-- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server support for NHibernate
-- [Sphere10.Framework.Data.Firebird](../Sphere10.Framework.Data.Firebird) - Firebird support for NHibernate
-- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld. All rights reserved.
-
-

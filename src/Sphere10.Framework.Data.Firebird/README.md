@@ -2,9 +2,9 @@
 
 # 💾 Sphere10.Framework.Data.Firebird
 
-**Firebird database implementation** for Sphere10.Framework.Data abstraction layer, providing open-source relational database access with ACID compliance and advanced SQL features.
+`Sphere10.Framework.Data.Firebird` connects the shared `IDAC` data-access abstraction of [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) to Firebird through FirebirdSql.Data.FirebirdClient. Use it when an application built on the shared DAC, scope and SQL-builder APIs works with a Firebird server or an embedded Firebird database.
 
-Sphere10.Framework.Data.Firebird brings **powerful open-source database capabilities** to the Sphere10 Framework while maintaining database-agnostic abstraction. Supports both **embedded (single-file) and server architectures**, making it ideal for desktop applications, small-to-medium enterprises, and resource-constrained environments.
+The package supplies `FirebirdDAC` and `FirebirdCorrectingReader`, and SQL text comes from `FirebirdSQLBuilder` in the shared package. Unlike the other providers, it has no `Tools.Firebird` helper class and no database manager.
 
 ## 📦 Installation
 
@@ -12,294 +12,183 @@ Sphere10.Framework.Data.Firebird brings **powerful open-source database capabili
 dotnet add package Sphere10.Framework.Data.Firebird
 ```
 
-## ⚡ 10-Second Example
+The package depends on `FirebirdSql.Data.FirebirdClient`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.Firebird/Sphere10.Framework.Data.Firebird.csproj` with a `ProjectReference`.
+
+The examples need an existing database and credentials. The FirebirdClient package contains no native libraries, so an embedded database also needs Firebird's native client library on the machine.
+
+## ⚡ Open a scope and query
+
+Set `FIREBIRD_CONNECTION_STRING` to your application's connection string. The remaining examples reuse `dac` and these imports.
 
 ```csharp
+using System;
+using System.Data;
+using FirebirdSql.Data.FirebirdClient;
+using Sphere10.Framework;
 using Sphere10.Framework.Data;
 
-// Connect to Firebird database
-var dac = Tools.Firebird.Open(
-    "ServerType=1;DataSource=localhost;Database=myapp.fdb;User=sysdba;Password=masterkey");
+var connectionString = Environment.GetEnvironmentVariable("FIREBIRD_CONNECTION_STRING");
+Guard.ArgumentNotNullOrEmpty(connectionString, nameof(connectionString));
+var dac = new FirebirdDAC(connectionString);
 
-// Create table with Firebird dialect
-dac.ExecuteNonQuery(@"CREATE TABLE Users (
-    ID INTEGER PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    Email VARCHAR(100)
-)");
-
-// Insert record
-dac.Insert("Users", new[] {
-    new ColumnValue("ID", 1),
-    new ColumnValue("Name", "Alice"),
-    new ColumnValue("Email", "alice@example.com")
-});
-
-// Query with parameters
-var users = dac.ExecuteQuery(
-    "SELECT * FROM Users WHERE Name LIKE @search",
-    new ColumnValue("@search", "%Alice%"));
-```
-
-## 🏗️ Core Concepts
-
-**Embedded & Server Modes**: Single-file database for embedded scenarios or server deployment for multi-user access.
-
-**ACID Compliance**: Full transaction support with isolation levels for data consistency and reliability.
-
-**Stored Procedures & Triggers**: PL/SQL stored procedures and trigger support for complex business logic.
-
-**Multi-Generational Architecture**: Advanced transaction architecture enabling long-running queries without blocking writers.
-
-**SQL Dialect**: Firebird-specific SQL syntax with advanced features like EXECUTE BLOCK and stored procedure definitions.
-
-## 🔧 Core Examples
-
-### Connection Strings & Database Setup
-
-```csharp
-using Sphere10.Framework.Data;
-
-// Local server connection (server-based Firebird)
-var serverDac = Tools.Firebird.Open(
-    "ServerType=1;DataSource=localhost;Database=myapp.fdb;User=sysdba;Password=masterkey");
-
-// Embedded database (single-file, no server required)
-var embeddedDac = Tools.Firebird.Open(
-    "DataSource=C:\\data\\myapp.fdb;User=sysdba;Password=masterkey;ServerType=0");
-
-// Remote server
-var remoteDac = Tools.Firebird.Open(
-    "ServerType=1;DataSource=db.company.com;Database=/opt/firebird/myapp.fdb;User=admin;Password=P@ssw0rd");
-
-// Connection pooling
-var pooledDac = Tools.Firebird.Open(
-    "ServerType=1;DataSource=localhost;Database=myapp.fdb;User=sysdba;Password=masterkey;Pooling=true;MinPoolSize=5;MaxPoolSize=20");
-```
-
-### CRUD Operations with Generator Keys
-
-```csharp
-using Sphere10.Framework.Data;
-
-var dac = Tools.Firebird.Open(
-    "DataSource=shop.fdb;User=sysdba;Password=masterkey");
-
-// Create table with generator (sequence)
-dac.ExecuteNonQuery(@"
-    CREATE TABLE Products (
-        ID INTEGER PRIMARY KEY,
-        Name VARCHAR(100) NOT NULL,
-        Price DECIMAL(10,2),
-        StockQuantity INTEGER
-    )");
-
-// Create generator (sequence) for auto-incrementing IDs
-dac.ExecuteNonQuery("CREATE SEQUENCE GEN_PRODUCTS_ID");
-
-// Insert records with generator
-dac.ExecuteNonQuery(@"
-    INSERT INTO Products (ID, Name, Price, StockQuantity)
-    VALUES (NEXT VALUE FOR GEN_PRODUCTS_ID, 'Laptop', 999.99, 50)");
-
-dac.ExecuteNonQuery(@"
-    INSERT INTO Products (ID, Name, Price, StockQuantity)
-    VALUES (NEXT VALUE FOR GEN_PRODUCTS_ID, 'Mouse', 29.99, 200)");
-
-// Query all records
-var products = dac.ExecuteQuery("SELECT * FROM Products");
-
-// Parameterized query
-var expensiveProducts = dac.ExecuteQuery(
-    "SELECT * FROM Products WHERE Price > ? ORDER BY Price DESC",
-    new ColumnValue(null, 100.0));
-
-// Update product
-dac.Update("Products",
-    new[] {
-        new ColumnValue("StockQuantity", 45),
-        new ColumnValue("Price", 1099.99)
-    },
-    "WHERE Name = ?",
-    new ColumnValue(null, "Laptop"));
-
-// Delete low-stock items
-dac.ExecuteNonQuery(
-    "DELETE FROM Products WHERE StockQuantity < ?",
-    new ColumnValue(null, 10));
-```
-
-### Transactions & ACID Properties
-
-```csharp
-using Sphere10.Framework.Data;
-
-var dac = Tools.Firebird.Open(
-    "DataSource=bank.fdb;User=sysdba;Password=masterkey");
-
-// Create account table
-dac.ExecuteNonQuery(@"
-    CREATE TABLE Accounts (
-        ID INTEGER PRIMARY KEY,
-        AccountNumber VARCHAR(20) UNIQUE NOT NULL,
-        Balance DECIMAL(18,2) NOT NULL,
-        LastModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-
-// Initialize accounts
-dac.ExecuteNonQuery(@"
-    CREATE SEQUENCE GEN_ACCOUNTS_ID");
-
-dac.Insert("Accounts", new[] {
-    new ColumnValue("ID", 1),
-    new ColumnValue("AccountNumber", "ACC001"),
-    new ColumnValue("Balance", 10000.00)
-});
-
-dac.Insert("Accounts", new[] {
-    new ColumnValue("ID", 2),
-    new ColumnValue("AccountNumber", "ACC002"),
-    new ColumnValue("Balance", 5000.00)
-});
-
-// Transactional money transfer with Firebird's multi-generational architecture
-using (var scope = dac.BeginTransactionScope()) {
-    try {
-        // Withdraw from source account
-        dac.ExecuteNonQuery(
-            "UPDATE Accounts SET Balance = Balance - ? WHERE ID = 1",
-            new ColumnValue(null, 1000.00));
-
-        // Verify sufficient funds
-        var balance = dac.ExecuteScalar<decimal>(
-            "SELECT Balance FROM Accounts WHERE ID = 1");
-        
-        if (balance < 0) {
-            throw new Exception("Insufficient funds");
-        }
-
-        // Deposit to destination account
-        dac.ExecuteNonQuery(
-            "UPDATE Accounts SET Balance = Balance + ? WHERE ID = 2",
-            new ColumnValue(null, 1000.00));
-
-        scope.Commit();
-    } catch (Exception ex) {
-        Console.WriteLine($"Transfer failed: {ex.Message}");
-        // Auto-rollback
-    }
+using (dac.EnterScope()) {
+	var engineVersion = dac.ExecuteScalar<string>("SELECT rdb$get_context('SYSTEM', 'ENGINE_VERSION') FROM rdb$database");
+	Console.WriteLine(engineVersion);
 }
-
-// Verify final balances
-var acc1Balance = dac.ExecuteScalar<decimal>(
-    "SELECT Balance FROM Accounts WHERE ID = 1");
-var acc2Balance = dac.ExecuteScalar<decimal>(
-    "SELECT Balance FROM Accounts WHERE ID = 2");
-
-Console.WriteLine($"Account 1: {acc1Balance}");  // 9000.00
-Console.WriteLine($"Account 2: {acc2Balance}");  // 6000.00
 ```
 
-### Stored Procedures & Triggers
+Constructing a DAC only stores its configuration. `EnterScope()` opens the connection by default, and the outermost scope owns that connection until it is disposed. The DAC itself is not disposable.
+
+## 🧩 Public API
+
+`FirebirdCorrectingReader` is in `Sphere10.Framework.Data.Firebird`, and the other types are in `Sphere10.Framework.Data`.
+
+| API | Purpose |
+|---|---|
+| `FirebirdDAC(connectionString, logger)` | The provider's `DACBase` implementation of `IDAC`. |
+| `DBMSType` | `FirebirdFile` when the connection string's server type is `FbServerType.Embedded`, and `Firebird` otherwise. |
+| `EnterScope()` | Returns a `DACScope`. The outermost scope owns the connection, and nested scopes share it. Call `BeginTransaction` on the scope for a local transaction. |
+| `ExecuteScalar<T>(sql)`, `ExecuteQuery(sql)` | Return a converted scalar value or a materialized `DataTable`. |
+| `ExecuteNonQuery(sql)`, `ExecuteReader(sql)` | Execute a statement, or return a reader to consume inside an outer scope. |
+| `ExecuteBatch(builder)` | Runs the builder's `CREATE` statements in one transaction and its other DDL and DML statements in a second, one statement at a time. |
+| `Insert`, `Update`, `Delete` | Build SQL with `FirebirdSQLBuilder` and return the affected-row count. |
+| `CreateConnection()`, `CreateOpenConnection()` | Create a caller-owned `FbConnection`, closed or opened. |
+| `CreateSQLBuilder()` | Returns a new `FirebirdSQLBuilder` as `ISQLBuilder`. |
+| `GetSchema()` | Reads table, column, key and trigger metadata, as described below. |
+| `FirebirdCorrectingReader` | A reader decorator that converts `Guid` values, as described under bound parameters. |
+| `DACFactory.CreateDAC(DBMSType.Firebird, connectionString)` | Creates a `FirebirdDAC` by type name, so that an application can choose the provider at run time. `DBMSType.FirebirdFile` creates the same type. |
+
+## 🔧 Connection configuration
+
+The package has no `Tools.Firebird` helper, so build connection strings with FirebirdClient's `FbConnectionStringBuilder`:
 
 ```csharp
-using Sphere10.Framework.Data;
-
-var dac = Tools.Firebird.Open(
-    "DataSource=app.fdb;User=sysdba;Password=masterkey");
-
-// Create stored procedure using EXECUTE BLOCK
-dac.ExecuteNonQuery(@"
-    CREATE PROCEDURE GetProductsByPrice(MaxPrice DECIMAL(10,2))
-    RETURNS (
-        ProductID INTEGER,
-        ProductName VARCHAR(100),
-        ProductPrice DECIMAL(10,2)
-    )
-    AS
-    BEGIN
-        FOR SELECT ID, Name, Price FROM Products WHERE Price <= :MaxPrice
-        INTO :ProductID, :ProductName, :ProductPrice
-        DO SUSPEND;
-    END");
-
-// Execute stored procedure
-var cheapProducts = dac.ExecuteQuery(
-    "EXECUTE PROCEDURE GetProductsByPrice ?",
-    new ColumnValue(null, 50.00));
-
-// Create audit trigger
-dac.ExecuteNonQuery(@"
-    CREATE TABLE AuditLog (
-        AuditID INTEGER PRIMARY KEY,
-        TableName VARCHAR(50),
-        Action VARCHAR(10),
-        AuditTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
-
-dac.ExecuteNonQuery(@"
-    CREATE TRIGGER PRODUCTS_AUDIT AFTER UPDATE ON Products
-    AS
-    BEGIN
-        INSERT INTO AuditLog (TableName, Action)
-        VALUES ('Products', 'UPDATE');
-    END");
-
-// Update triggers audit log automatically
-dac.Update("Products",
-    new[] { new ColumnValue("Price", 99.99) },
-    "WHERE ID = 1");
+var serverConnectionString = new FbConnectionStringBuilder {
+	DataSource = "localhost",
+	Database = "/data/appdb.fdb",
+	UserID = "appuser",
+	Password = Environment.GetEnvironmentVariable("FIREBIRD_PASSWORD"),
+	ServerType = FbServerType.Default
+}.ToString();
+var serverDac = new FirebirdDAC(serverConnectionString);
 ```
 
-## 🏗️ Architecture
+| Property | Use |
+|---|---|
+| `DataSource`, `Port` | The server host and port. |
+| `Database` | The database path on the server, or the database file of an embedded connection. |
+| `UserID`, `Password` | Credentials. |
+| `ServerType` | `FbServerType.Default` for a server, or `FbServerType.Embedded` for an embedded database. |
 
-**FirebirdDatabaseManager**: Core implementation of IDataAccessContext for Firebird operations.
+`DBMSType` reads the server type through `FbConnectionStringBuilder`, so both `ServerType=1` and the `ServerType=Embedded` that the builder writes report `FirebirdFile`, whatever their case or spacing. A connection string that the builder cannot parse is reported as `Firebird` and fails when the connection opens.
 
-**Embedded vs Server**: Supports both embedded single-file databases and server-based deployments.
+The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery` and `ExecuteReader`, and the batch commands use `0` as well. `ExecuteScalar` keeps the provider's command default. To enforce a per-command timeout, create a command explicitly as below.
 
-**Generator Support**: Firebird generators (sequences) for auto-incrementing values using `NEXT VALUE FOR`.
+## 🔎 Bound parameters
 
-**PL/SQL Integration**: Full stored procedure and trigger support using Firebird PL/SQL dialect.
+The DAC's string-based methods execute SQL text. `ExecuteQuery(sql, params object[] args)` formats its arguments into the SQL through the builder, so it does not bind ADO.NET parameters. Create a command for bound values:
 
-**Multi-Generational Transactions**: Concurrent readers and writers with minimal blocking.
+```csharp
+using (var scope = dac.EnterScope()) {
+	using var command = scope.Connection.CreateCommand();
+	command.CommandText = "SELECT CAST(@value AS INTEGER) FROM rdb$database";
+	command.CommandTimeout = 30;
+	if (scope.Transaction is RestrictedTransaction transaction)
+		command.Transaction = transaction.DangerousInternalTransaction;
 
-## 📋 Best Practices
+	var parameter = command.CreateParameter();
+	parameter.ParameterName = "@value";
+	parameter.DbType = DbType.Int32;
+	parameter.Value = 42;
+	command.Parameters.Add(parameter);
 
-- Use **embedded mode** for desktop applications with single concurrent user
-- Deploy **server mode** for multi-user environments requiring higher throughput
-- Create **generators (sequences)** for auto-incrementing primary keys
-- Leverage **stored procedures** for complex business logic
-- Use **transaction isolation** levels appropriate for your consistency requirements
-- Monitor **database statistics** and maintain indexes for performance
-- Use **TIMESTAMP DEFAULT CURRENT_TIMESTAMP** for audit trails
-- Enable **archiving** for large transaction logs
+	var echoedValue = Tools.Object.ChangeType<int>(command.ExecuteScalar());
+	Console.WriteLine(echoedValue); // 42
+}
+```
 
-## 📊 Status & Compatibility
+The `CAST` gives Firebird a type for the parameter in the select list. The `Transaction` assignment attaches the command to any local transaction that the scope inherited, as the DAC's own methods do. Dispose commands and readers before their scope ends. `scope.Connection` belongs to the scope, so its `Close` and `Dispose` methods throw. A reader from `ExecuteReader` needs an outer scope that stays open while the reader is consumed, whereas `ExecuteQuery` returns a materialized `DataTable`.
 
-- **Framework**: .NET 5.0+, .NET Framework 4.7+
-- **Firebird Versions**: 2.5+, 3.0+, 4.0+
-- **Performance**: Good for small-to-medium databases, embedded and server deployments
-- **Concurrency**: Multi-generational architecture supports concurrent readers and writers
+`ExecuteScalar` and the readers from `ExecuteReader` pass `Guid` values through `FirebirdCorrectingReader.CorrectGuid`, which reverses the byte order of the first three GUID groups on little-endian machines. `ExecuteQuery` reads through `ExecuteReader`, so its results are converted too. A command you create yourself returns the provider's values unchanged, so wrap its reader in `new FirebirdCorrectingReader(reader)` to read GUIDs the same way. The builder writes `Guid` literals with `CHAR_TO_UUID('...')`.
 
-## 📦 Dependencies
+## 🔄 Transactions and lifecycle
 
-- **Sphere10.Framework.Data**: Data abstraction layer
-- **FirebirdSql.Data.FirebirdClient**: Firebird .NET provider
-- **.NET 10**: Cross-platform runtime (`net10.0`)
+The following example assumes an existing `app_counters` table with numeric `id` and `counter_value` columns and rows `1` and `2`:
 
-## 📚 Related Projects
+```csharp
+using (var scope = dac.EnterScope()) {
+	scope.BeginTransaction(IsolationLevel.ReadCommitted);
+	dac.ExecuteNonQuery("UPDATE app_counters SET counter_value = counter_value + 1 WHERE id = 1");
+	dac.ExecuteNonQuery("UPDATE app_counters SET counter_value = counter_value + 1 WHERE id = 2");
+	scope.Commit();
+}
+```
 
-- [Sphere10.Framework.Data](../Sphere10.Framework.Data) - Core data abstraction layer
-- [Sphere10.Framework.Data.Sqlite](../Sphere10.Framework.Data.Sqlite) - SQLite embedded implementation
-- [Sphere10.Framework.Data.MSSQL](../Sphere10.Framework.Data.MSSQL) - SQL Server implementation
-- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate) - NHibernate ORM integration
-- [Sphere10.Framework.Windows.Forms.Firebird](../Sphere10.Framework.Windows.Forms.Firebird) - WinForms data binding for Firebird
-- [Sphere10.Framework.Tests](../../tests/Sphere10.Framework.Tests) - Test patterns and examples
+- `DefaultIsolationLevel` is `ReadCommitted`, which `scope.BeginTransaction()` uses when no level is given.
+- Commit explicitly. Disposing the scope that began a transaction releases the transaction without committing it, and `scope.Rollback()` abandons it explicitly. The outermost scope closes the connection when it is disposed.
+- With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share one connection and transaction. A nested `Commit` does not commit on its own, and a nested `Rollback` turns the owning scope's `Commit` into a rollback. These are shared transactions, not savepoints.
+- Setting `UseScopeOsmosis = false` keeps different DAC instances apart, while scopes on the same instance still nest.
+- A scope that opens its connection inside an ambient `System.Transactions.TransactionScope` enlists the connection through the provider. Let the ambient scope complete the work, because `DACScope.BeginTransaction`, `Commit` and `Rollback` throw inside it. Ambient and distributed transaction support depends on the provider and platform.
+
+## 🗂️ Schema and SQL dialect
+
+`GetSchema()` reads Firebird's `RDB$` system tables for the relations and triggers whose `RDB$SYSTEM_FLAG` is `0`. The result uses the shared `DBSchema` model of tables, columns, keys and trigger names. Auto-increment columns are not detected, and sequence fields are not populated. Only the `CASCADE` foreign-key rule is reported as cascading. `RESTRICT`, `NO ACTION`, `SET NULL` and `SET DEFAULT` are not.
+
+```csharp
+var schema = dac.GetSchema();
+foreach (var table in schema.Tables)
+	Console.WriteLine(table.Name);
+```
+
+`FirebirdSQLBuilder` is implemented in the shared data project:
+
+| Builder behavior | Implementation |
+|---|---|
+| Identifier quoting | Double quotes, unless the name already starts with one. Quoted names are case-sensitive. |
+| Statement terminator | `^`. For more than one statement, `ToString()` returns a script that starts with `SET TERM ^;`. |
+| Paging fragment | `FIRST n SKIP m`, emitted directly after `SELECT` and before `DISTINCT`. |
+| Sequence expression | `NEXT VALUE FOR "sequence"`. |
+| Generated identity expression | `gen_id("sequence", 0)`. The hint must name the sequence, or `GetLastIdentity` throws `ArgumentNullException`. |
+| Transaction SQL | `SAVEPOINT TRANn`, `COMMIT` and `ROLLBACK TO TRANn`. `ExecuteBatch` skips these statements. |
+| Variables | `VariableName` emits `:name` and `AssignVariable` emits `name = value`. `DeclareVariable` records a declaration that `ToString()` emits as `DECLARE VARIABLE` inside an `EXECUTE BLOCK`. |
+| Scalar value selection | `SelectValues` adds `FROM RDB$DATABASE`. |
+| `Guid` literals | `CHAR_TO_UUID('...')`. |
+| `byte[]` literals | Binary string literals such as `X'0AFF'`. |
+| Temporary tables | `TableType.Temporary` creates a `GLOBAL TEMPORARY TABLE` with `ON COMMIT PRESERVE ROWS`, and `TableType.InMemory` throws. |
+| Auto-increment toggles | `EnableAutoIncrementID` and `DisableAutoIncrementID` emit nothing. |
+
+The builder quotes every name, and Firebird stores unquoted names in upper case. Pass builder table and column names in upper case for objects created without quotes.
+
+`SET TERM` is an isql command, so do not pass a multi-statement `ToString()` script to `ExecuteNonQuery`. Use `ExecuteBatch`, which sends each statement separately.
+
+`Insert`, `Update` and `Delete` render `ColumnValue` values as SQL literals rather than parameters, and `Insert` returns the affected-row count rather than a generated key.
+
+## 🛠️ Database administration
+
+The package has no `Tools.Firebird` helper and no `DatabaseManagerBase` implementation. Create and drop databases with FirebirdClient, for example through `FbConnection.CreateDatabase` and `FbConnection.DropDatabase`, or with Firebird's administration tools.
+
+## 🚧 Implementation boundaries
+
+- `BulkInsert` throws `NotImplementedException`, and the shared `BulkInsertAsync` wrapper reaches the same method.
+- The shared `IDACAsyncExtensions` run the synchronous DAC methods through `Task.Run`, so they do not use the driver's asynchronous I/O.
+- The package supplies no ORM, schema generator or migration system.
+
+## 🔗 Related projects and source
+
+- [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) — shared DAC contracts, scopes, SQL builders and schema types.
+- [Sphere10.Framework](../Sphere10.Framework/README.md) — guards, logging and the transactional scope base classes.
+- [Sphere10.Framework.Windows.Forms.Firebird](../Sphere10.Framework.Windows.Forms.Firebird/README.md) — Windows Forms connection editors for server and embedded Firebird databases.
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate/README.md) — NHibernate integration for the shared data layer.
+- [FirebirdDAC](FirebirdDAC.cs), [FirebirdCorrectingReader](FirebirdCorrectingReader.cs) and the shared [FirebirdSQLBuilder](../Sphere10.Framework.Data/SQLBuilder/FirebirdSQLBuilder.cs) — provider and dialect implementation.
+
+From the repository root:
+
+```bash
+dotnet build src/Sphere10.Framework.Data.Firebird/Sphere10.Framework.Data.Firebird.csproj -c Release
+```
 
 ## 📄 License & Author
 
 **License**: [Refer to repository LICENSE](../../LICENSE)  
 **Author**: Herman Schoenfeld (sphere10.com)  
 **Copyright**: © 2018-Present Herman Schoenfeld. All rights reserved.
-
-

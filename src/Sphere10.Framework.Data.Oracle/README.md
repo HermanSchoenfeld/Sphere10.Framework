@@ -2,7 +2,9 @@
 
 # 💾 Sphere10.Framework.Data.Oracle
 
-Oracle data access through the shared Sphere10 `IDAC` abstraction, backed by Oracle.ManagedDataAccess.Core. The package provides a DAC, connection-string helpers and an adapter for the common database-manager contract. SQL generation comes from `OracleSQLBuilder` in the shared data package.
+`Sphere10.Framework.Data.Oracle` connects the shared `IDAC` data-access abstraction of [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) to Oracle Database through Oracle.ManagedDataAccess.Core. Use it when an application built on the shared DAC, scope and SQL-builder APIs works with an existing Oracle service and schema.
+
+The package supplies `OracleDAC`, the `Tools.Oracle` connection helpers and `OracleDatabaseManager`, and SQL text comes from `OracleSQLBuilder` in the shared package.
 
 ## 📦 Installation
 
@@ -10,7 +12,9 @@ Oracle data access through the shared Sphere10 `IDAC` abstraction, backed by Ora
 dotnet add package Sphere10.Framework.Data.Oracle
 ```
 
-Targets **.NET 10** (`net10.0`). The package brings in `Oracle.ManagedDataAccess.Core`, `Sphere10.Framework.Data` and the core framework. An existing database and credentials are required to execute the examples; server features depend on the server and provider versions in use.
+The package depends on `Oracle.ManagedDataAccess.Core`, `Sphere10.Framework.Data` and `Sphere10.Framework`. The project targets `net10.0`, and a build with a .NET 11 SDK also targets `net11.0`. To build against source instead, reference `src/Sphere10.Framework.Data.Oracle/Sphere10.Framework.Data.Oracle.csproj` with a `ProjectReference`.
+
+The examples need an existing service, user and credentials, and server features depend on the server and driver versions in use.
 
 ## ⚡ Open a scope and query
 
@@ -32,29 +36,31 @@ using (dac.EnterScope()) {
 }
 ```
 
-Constructing a DAC, including through `Tools.Oracle.Open(...)`, only prepares its configuration. `EnterScope()` opens the connection by default. The scope owns the connection; the DAC itself is not disposable.
+Constructing a DAC, directly or through `Tools.Oracle.Open(...)`, only stores its configuration. `EnterScope()` opens the connection by default, and the outermost scope owns that connection until it is disposed. The DAC itself is not disposable.
 
 ## 🧩 Public API
 
-Types are in `Sphere10.Framework.Data`; the static facade is in the global `Tools` namespace.
+`Tools.Oracle` is in the global `Tools` namespace, and the other types are in `Sphere10.Framework.Data`.
 
 | API | Purpose |
 |---|---|
-| `OracleDAC(connectionString, logger)` | Provider implementation of `DACBase` / `IDAC`. |
-| `Tools.Oracle.Open(...)` | Builds a connection string and returns a configured DAC. |
+| `OracleDAC(connectionString, logger)` | The provider's `DACBase` implementation of `IDAC`. |
+| `Tools.Oracle.Open(dataSource, ...)` | Builds a connection string from separate settings and returns an `OracleDAC`. |
 | `Tools.Oracle.CreateConnectionString(...)` | Returns a provider connection string without opening a connection. |
-| `CreateConnection()` / `CreateOpenConnection()` | Creates a caller-owned `OracleConnection`, closed or opened respectively. |
-| `EnterScope()` | Opens a managed connection scope, optionally with a transaction. |
-| `ExecuteScalar<T>(sql)` / `ExecuteQuery(sql)` | Returns a converted scalar or a materialized `DataTable`. |
-| `ExecuteNonQuery(sql)` / `ExecuteReader(sql)` | Executes a statement or returns a disposable reader. |
-| `Insert`, `Update`, `Delete` | Shared SQL-builder helpers; return affected-row counts. |
-| `CreateSQLBuilder()` | Returns `OracleSQLBuilder` through `ISQLBuilder`. |
-| `GetSchema()` | Reads the provider-specific metadata described below. |
-| `OracleDatabaseManager` | Implements the supported subset of the common database-management contract. |
+| `EnterScope()` | Returns a `DACScope`. The outermost scope owns the connection, and nested scopes share it. Call `BeginTransaction` on the scope for a local transaction. |
+| `ExecuteScalar<T>(sql)`, `ExecuteQuery(sql)` | Return a converted scalar value or a materialized `DataTable`. |
+| `ExecuteNonQuery(sql)`, `ExecuteReader(sql)` | Execute a statement, or return a reader to consume inside an outer scope. |
+| `ExecuteBatch(builder)` | Sends the builder's statements one command at a time, skipping its `COMMIT` and `ROLLBACK` statements, and returns their result sets as `DataTable` objects. |
+| `Insert`, `Update`, `Delete` | Build SQL with `OracleSQLBuilder` and return the affected-row count. |
+| `CreateConnection()`, `CreateOpenConnection()` | Create a caller-owned `OracleConnection`, closed or opened. |
+| `CreateSQLBuilder()` | Returns a new `OracleSQLBuilder` as `ISQLBuilder`. |
+| `GetSchema()` | Reads table, column, key and trigger metadata, as described below. |
+| `OracleDatabaseManager` | Adapts the shared `DatabaseManagerBase` contract to an existing Oracle service. |
+| `DACFactory.CreateDAC(DBMSType.Oracle, connectionString)` | Creates an `OracleDAC` by type name, so that an application can choose the provider at run time. |
 
 ## 🔧 Connection configuration
 
-For separate configuration fields, use the facade:
+For separate configuration fields, use the helper:
 
 ```csharp
 var configuredDac = Tools.Oracle.Open(
@@ -65,25 +71,25 @@ var configuredDac = Tools.Oracle.Open(
 );
 ```
 
-`CreateConnectionString` accepts the same connection options. Omitted options retain provider defaults.
+`CreateConnectionString` takes the same settings except `logger`. Omitted settings keep the provider defaults.
 
 | Option | Mapping |
 |---|---|
-| `dataSource` with `serviceName` | Builds a TCP connect descriptor using `dataSource` as the host and `serviceName` as `SERVICE_NAME`. |
-| `dataSource` without `serviceName` | Passed unchanged to the provider: for example, a configured alias or a complete connect descriptor. |
-| `port` | Used when building the host/service descriptor; defaults there to `1521`. It has no effect when `serviceName` is omitted. |
+| `dataSource` with `serviceName` | Builds a TCP connect descriptor with `dataSource` as `HOST` and `serviceName` as `SERVICE_NAME`. |
+| `dataSource` without `serviceName` | Passed to the provider unchanged, for example as a configured alias or a complete connect descriptor. |
+| `port` | The descriptor's `PORT`, which defaults to `1521`. It has no effect without `serviceName`. |
 | `userId`, `password` | Provider credentials. |
-| `pooling`, `minPoolSize`, `maxPoolSize` | Connection pool settings. |
-| `connectionTimeout` | Time span rounded to whole seconds. |
-| `logger` | Optional framework `ILogger` for the DAC; accepted by `Open`, not `CreateConnectionString`. |
+| `pooling`, `minPoolSize`, `maxPoolSize` | Connection-pool settings. |
+| `connectionTimeout` | `ConnectionTimeout`, rounded to whole seconds. |
+| `logger` | An optional framework `ILogger` for the DAC. Only `Open` accepts it. |
 
-The convenience overload has no command-timeout or TLS option. For a different transport descriptor or additional provider settings, build the complete connection string with `OracleConnectionStringBuilder` and pass it to `new OracleDAC(connectionString)`.
+The helper has no command-timeout or TLS option. For another transport descriptor or other provider settings, build the connection string with `OracleConnectionStringBuilder` and pass it to `new OracleDAC(connectionString)`.
 
-The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` and `ExecuteBatch`. `ExecuteScalar` keeps the provider command default. To enforce a per-command timeout, create a command explicitly as below.
+The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` and `ExecuteBatch`. `ExecuteScalar` keeps the provider's command default. To enforce a per-command timeout, create a command explicitly as below.
 
 ## 🔎 Bound parameters
 
-The DAC's string-based execution methods execute SQL text. `ExecuteQuery(sql, params object[] args)` formats SQL through the builder; it does not bind ADO.NET parameters. Create a command for bound values:
+The DAC's string-based methods execute SQL text. `ExecuteQuery(sql, params object[] args)` formats its arguments into the SQL through the builder, so it does not bind ADO.NET parameters. Create a command for bound values:
 
 ```csharp
 using (var scope = dac.EnterScope()) {
@@ -104,7 +110,7 @@ using (var scope = dac.EnterScope()) {
 }
 ```
 
-The transaction assignment connects a manually created command to any local transaction inherited by the scope. DAC execution methods perform this assignment internally. Dispose commands and readers before their scope ends; do not close or dispose `scope.Connection` directly. Keep an outer scope alive while consuming `ExecuteReader` results, or use `ExecuteQuery` to materialize the result before returning.
+The `Transaction` assignment attaches the command to any local transaction that the scope inherited, as the DAC's own methods do. Dispose commands and readers before their scope ends. `scope.Connection` belongs to the scope, so its `Close` and `Dispose` methods throw. A reader from `ExecuteReader` needs an outer scope that stays open while the reader is consumed, whereas `ExecuteQuery` returns a materialized `DataTable`.
 
 ## 🔄 Transactions and lifecycle
 
@@ -119,17 +125,17 @@ using (var scope = dac.EnterScope()) {
 }
 ```
 
-`DefaultIsolationLevel` is `ReadCommitted`. Call `scope.Rollback()` when explicitly abandoning a transaction. Disposal releases an owned transaction and connection; it does not commit them.
-
-With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share the connection and current transaction. Setting it to `false` separates different DAC instances; scopes on the same instance can still nest. A nested `Commit` does not commit the database transaction independently. An explicit nested `Rollback` votes for rollback when the owning scope commits. These are shared transactions, not savepoints.
-
-Scopes also enlist newly owned connections in an ambient `System.Transactions.TransactionScope` through the provider. In that case, let the ambient scope control completion; mixing its transaction with `DACScope.BeginTransaction`, `Commit` or `Rollback` is prohibited. Provider and platform support govern ambient/distributed transaction availability.
+- `DefaultIsolationLevel` is `ReadCommitted`, which `scope.BeginTransaction()` uses when no level is given.
+- Commit explicitly. Disposing the scope that began a transaction releases the transaction without committing it, and `scope.Rollback()` abandons it explicitly. The outermost scope closes the connection when it is disposed.
+- With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share one connection and transaction. A nested `Commit` does not commit on its own, and a nested `Rollback` turns the owning scope's `Commit` into a rollback. These are shared transactions, not savepoints.
+- Setting `UseScopeOsmosis = false` keeps different DAC instances apart, while scopes on the same instance still nest.
+- A scope that opens its connection inside an ambient `System.Transactions.TransactionScope` enlists the connection through the provider. Let the ambient scope complete the work, because `DACScope.BeginTransaction`, `Commit` and `Rollback` throw inside it. Ambient and distributed transaction support depends on the provider and platform.
 
 ## 🗂️ Schema and SQL dialect
 
-`GetSchema()` reads `USER_TAB_COLUMNS`, `USER_CONS_COLUMNS`, `USER_CONSTRAINTS` and `USER_TRIGGERS`. It describes objects owned by the connected user, not all schemas or every object accessible through grants. Recycle-bin table names beginning with `BIN$` are excluded.
+`GetSchema()` reads `USER_TAB_COLUMNS`, `USER_CONS_COLUMNS`, `USER_CONSTRAINTS` and `USER_TRIGGERS`. It describes the objects that the connected user owns, not other schemas or objects reached through grants, and it skips recycle-bin tables whose names begin with `BIN$`.
 
-The shared `DBSchema` result contains tables, columns, keys and trigger names. Identity-column detection uses `IDENTITY_COLUMN`; sequence fields are not populated and cascading updates are reported as unsupported.
+The result uses the shared `DBSchema` model of tables, columns, keys and trigger names. Identity columns are detected from `IDENTITY_COLUMN`, sequence fields are not populated and cascading updates are always reported as false.
 
 ```csharp
 var schema = dac.GetSchema();
@@ -141,46 +147,49 @@ foreach (var table in schema.Tables)
 
 | Builder behavior | Implementation |
 |---|---|
-| Identifier quoting | Double quotes; quoted names preserve case. |
-| Paging | `OFFSET ... ROWS` / `FETCH FIRST ... ROWS ONLY`. |
+| Identifier quoting | Double quotes, unless the name already starts with one. Quoted names are case-sensitive. |
+| Paging fragment | `OFFSET m ROWS FETCH FIRST n ROWS ONLY`, emitted after `ORDER BY`. It needs Oracle Database 12c or later. |
 | Sequence expression | `sequence.NEXTVAL`. |
 | Scalar value selection | `SelectValues` adds `FROM DUAL`. |
-| Transaction SQL | `BeginTransaction` emits nothing; commit and rollback emit SQL. Use `DACScope.BeginTransaction()` to start an ADO.NET transaction. |
-| Generated identity expression | `GetLastIdentity` throws `NotSupportedException`; use an application-specific sequence or a provider command with `RETURNING ... INTO`. |
-| Variables | `VariableName` emits `:name`; declaration and assignment throw `NotSupportedException`. |
+| Transaction SQL | `BeginTransaction` emits nothing, while `CommitTransaction` and `RollbackTransaction` emit `COMMIT` and `ROLLBACK`. Use `DACScope.BeginTransaction()` to start an ADO.NET transaction. |
+| Generated identity expression | `GetLastIdentity` throws `NotSupportedException`. Use a sequence, or a provider command with `RETURNING ... INTO`. |
+| Variables | `VariableName` emits `:name`. `DeclareVariable` and `AssignVariable` throw `NotSupportedException`. |
 | Auto-increment toggles | `EnableAutoIncrementID` and `DisableAutoIncrementID` emit nothing. |
+| Statement terminator | None. Statements end with a line break, because ODP.NET runs one statement per command and rejects a trailing `;`. |
 
-The paging row describes the emitted SQL fragment. The inherited `SQLBuilderBase.Select` currently inserts that fragment before the selected columns, so `Select(limit: ...)` does not produce valid paging SQL for this provider. Use an explicit SQL query with the paging clause in its correct position.
+The builder quotes every name, and Oracle stores unquoted names in upper case. Pass builder table and column names in upper case for objects created without quotes.
 
-`Insert` returns the affected-row count, not a generated identity. Builder methods generate SQL text; they do not create connections or bind command parameters.
+A multi-statement `ToString()` script is therefore not one runnable command, so pass it to `ExecuteBatch`, which sends each statement separately. SQL that you pass to `ExecuteNonQuery`, `ExecuteScalar` and `ExecuteQuery` is sent as written, so leave out a trailing `;` there too, except at the end of a PL/SQL block.
+
+`Insert`, `Update` and `Delete` render `ColumnValue` values as SQL literals rather than parameters, and `Insert` returns the affected-row count rather than a generated key.
 
 ## 🛠️ Database administration
 
-`OracleDatabaseManager` adapts the shared manager interface to an existing Oracle service:
+`OracleDatabaseManager` adapts the shared manager contract to an existing Oracle service:
 
 | Member | Behavior |
 |---|---|
-| `GenerateConnectionString(server, database, username, password, port)` | Maps `server` to `dataSource`, `database` to `serviceName`, and `username` to `userId`. |
-| `DatabaseExists(connectionString)` | Calls `Tools.Oracle.TestConnectionString`: tests whether a connection opens, not whether an application schema has been created. |
+| `GenerateConnectionString(server, database, username, password, port)` | Maps `server` to `dataSource`, `database` to `serviceName` and `username` to `userId`. |
+| `DatabaseExists(connectionString)` | Calls `Tools.Oracle.TestConnectionString`, which tests whether a connection opens rather than whether an application schema exists. |
 | `CreateEmptyDatabase(connectionString)` | Throws `NotSupportedException`. |
 | `DropDatabase(connectionString)` | Throws `NotSupportedException`. |
 | `CreateApplicationDatabase(...)` | Throws `NotSupportedException`. |
 
-`Tools.Oracle.TestConnectionString` returns `false` on a connection-opening failure and does not return diagnostic details. Provision the service, database users and application schema separately using the appropriate Oracle administration or migration tools. There are no `Tools.Oracle.CreateDatabase`, `DropDatabase` or `Exists` helpers.
+`Tools.Oracle.TestConnectionString` returns `false` when the connection fails to open, and it gives no diagnostic detail. Provision the service, database users and application schema with Oracle's administration or migration tools. `Tools.Oracle` has no `CreateDatabase`, `DropDatabase` or `Exists` helpers.
 
 ## 🚧 Implementation boundaries
 
-- `BulkInsert` throws `NotImplementedException`; the shared `BulkInsertAsync` wrapper reaches the same unimplemented method.
-- Shared `IDACAsyncExtensions` use `Task.Run` around synchronous DAC methods. They do not expose the provider's native asynchronous I/O API.
-- SQL dialect and metadata support are limited to the implementations described above. This package does not supply an ORM, an application schema generator or a migration system.
+- `BulkInsert` throws `NotImplementedException`, and the shared `BulkInsertAsync` wrapper reaches the same method.
+- The shared `IDACAsyncExtensions` run the synchronous DAC methods through `Task.Run`, so they do not use the driver's asynchronous I/O.
+- The package supplies no ORM, schema generator or migration system.
 
 ## 🔗 Related projects and source
 
 - [Sphere10.Framework.Data](../Sphere10.Framework.Data/README.md) — shared DAC contracts, scopes, SQL builders and schema types.
-- [Sphere10.Framework](../Sphere10.Framework/README.md) — common utilities, guards, logging and transaction scopes.
-- [Sphere10.Framework.Windows.Forms.Oracle](../Sphere10.Framework.Windows.Forms.Oracle/README.md) — Windows Forms connection UI for this provider.
-- [OracleDAC](OracleDAC.cs), [Tools.Oracle](OracleTool.cs), [OracleDatabaseManager](OracleDatabaseManager.cs) — provider implementation.
-- [OracleSQLBuilder](../Sphere10.Framework.Data/SQLBuilder/OracleSQLBuilder.cs) — dialect implementation.
+- [Sphere10.Framework](../Sphere10.Framework/README.md) — guards, logging and the transactional scope base classes.
+- [Sphere10.Framework.Windows.Forms.Oracle](../Sphere10.Framework.Windows.Forms.Oracle/README.md) — Windows Forms connection editors for Oracle.
+- [Sphere10.Framework.Data.NHibernate](../Sphere10.Framework.Data.NHibernate/README.md) — NHibernate integration for the shared data layer.
+- [OracleDAC](OracleDAC.cs), [Tools.Oracle](OracleTool.cs), [OracleDatabaseManager](OracleDatabaseManager.cs) and the shared [OracleSQLBuilder](../Sphere10.Framework.Data/SQLBuilder/OracleSQLBuilder.cs) — provider and dialect implementation.
 
 From the repository root:
 

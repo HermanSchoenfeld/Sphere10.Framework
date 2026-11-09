@@ -2,15 +2,19 @@
 
 # Sphere10.Framework.Windows.Forms.Firebird
 
-Firebird connection editors for Windows Forms, covering both server connections and embedded database files. The package provides compact bars and dialog-sized panels that return `FirebirdDAC` instances through the shared `IDatabaseConnectionProvider` API.
+`Sphere10.Framework.Windows.Forms.Firebird` provides Windows Forms editors for Firebird connection settings in desktop applications that use Sphere10 Framework data access. It covers a Firebird server and an embedded database file, each with a compact one-row bar and a larger panel for a settings page or a dialog. All four editors build a `FirebirdSql.Data.FirebirdClient` connection string, test it on request and create a `FirebirdDAC` from it.
 
-## Installation and requirements
+## Reference the package
+
+Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
 
 ```powershell
 dotnet add package Sphere10.Framework.Windows.Forms.Firebird
 ```
 
-Use a Windows desktop application targeting `net10.0-windows`, with the .NET 10 SDK and Windows Forms enabled:
+The package depends on `Sphere10.Framework.Data.Firebird`, which supplies `FirebirdDAC` and the `FirebirdSql.Data.FirebirdClient` driver, and on `Sphere10.Framework.Windows.Forms`. To build against source instead, reference `src/Sphere10.Framework.Windows.Forms.Firebird/Sphere10.Framework.Windows.Forms.Firebird.csproj` with a `ProjectReference`.
+
+The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targets `net11.0-windows`. A consuming project needs a Windows target framework with Windows Forms enabled:
 
 ```xml
 <PropertyGroup>
@@ -19,117 +23,155 @@ Use a Windows desktop application targeting `net10.0-windows`, with the .NET 10 
 </PropertyGroup>
 ```
 
-Create and access the controls on your application's STA UI thread with a WinForms message loop. The package references its matching data provider and `Sphere10.Framework.Windows.Forms`; install the UI package into the desktop project that hosts the controls.
+Create and use the controls on the application's UI thread. Creating or editing a control never connects, so a Firebird server is needed only to test or open a server connection. Embedded mode runs the Firebird engine inside the application process, so the application must deploy Firebird's native client and engine files for its architecture. The managed driver package does not include them.
 
-The matching data package uses `FirebirdSql.Data.FirebirdClient`. Server mode requires a reachable Firebird server. Embedded mode requires the Firebird native engine/client components for the deployed process architecture; a connection editor and the managed provider alone do not provision an embedded server or create its database.
+## Controls
 
-## Choose the correct control
+All four controls are in the `Sphere10.Framework.Windows.Forms.Firebird` namespace. The bars derive from `ConnectionBarBase` and fit a toolbar or header area, and their options button can select an artificial-keys file. The panels derive from `ConnectionPanelBase`.
 
-All four concrete types are in `Sphere10.Framework.Windows.Forms.Firebird`.
+| Mode | Bar | Panel | Server type | Selector key |
+|---|---|---|---|---|
+| Server | `FirebirdConnectionBar` | `FirebirdConnectionPanel` | `FbServerType.Default` | `DBMSType.Firebird` |
+| Embedded file | `FirebirdEmbeddedConnectionBar` | `FirebirdEmbeddedConnectionPanel` | `FbServerType.Embedded` | `DBMSType.FirebirdFile` |
 
-| Mode | Bar | Panel | Generic selector key |
-| --- | --- | --- | --- |
-| Server | `FirebirdConnectionBar` | `FirebirdConnectionPanel` | `DBMSType.Firebird` |
-| Embedded file | `FirebirdEmbeddedConnectionBar` | `FirebirdEmbeddedConnectionPanel` | `DBMSType.FirebirdFile` |
+| Member | Editors | Behavior |
+|---|---|---|
+| `Server` | Server | Server host, mapped to `FbConnectionStringBuilder.DataSource`. |
+| `Port` | Server | Port as text. A blank port is left out of the string. Loading a string shows the builder's port, which is the driver default when the string has none. |
+| `Database`, `DatabaseName` | Server | Database path or alias, as the server resolves it. `DatabaseName` returns the `Database` text and does not query the server. |
+| `Username`, `Password` | Server | Account name and password, mapped to `UserID` and `Password`. The password box masks its text, but both properties return plain text. |
+| `Filename` | Embedded | Read-only path of the database file. Set it through `ConnectionString` or the file selector. |
+| `Mode` | Embedded | `PathSelectionMode` of the file selector, such as `OpenFile` for an existing file. |
+| `Password`, `HasPassword` | Embedded | Read-only password text, and whether it contains a non-whitespace character. |
+| `DatabaseName` | Embedded | File name without its extension, or `null` when no file is selected. |
+| `ConnectionString` | All | Builds a string from the editor's fields and server type, or fills the fields from an assigned string. |
+| `GetDAC()` | All | Returns a new `FirebirdDAC` as `IDAC` without opening a connection. |
+| `TestConnection()` | All | Opens and closes a test connection, and returns `Task<Result>`. |
+| `ArtificialKeysFile` | Bars | Path of an artificial-keys XML file. The options button sets it through `SelectArtificialKeysFile()` and can clear it again. `GetDAC()` loads the file into each new DAC, so that `GetSchema()` includes the keys it declares. |
 
-Server controls expose editable `Server`, `Port`, `Database`, `Username` and `Password` properties. `Port` is text and is parsed when generating the string. `DatabaseName` returns the `Database` value. The generated provider string uses `FbServerType.Default`; the database path or alias is interpreted by the Firebird server.
+The embedded editors also have a **Username** box but no public `Username` property, so set the user name through `ConnectionString` or the UI. `ConnectionString` is hidden from the Windows Forms designer, but the server editors' field properties are not. Assign credentials at runtime so that they never reach designer-generated code.
 
-Embedded controls expose read-only `Filename`, `Password` and `HasPassword`, plus an editable `Mode` for the file selector. Populate the filename, username and password through `ConnectionString` or the UI; there is no public embedded `Username` property. `DatabaseName` returns the filename without its extension, or null when no path is selected. These controls always emit `FbServerType.Embedded`.
+## Edit and test a connection
 
-All controls support `ConnectionString`, `GetDAC()` and `TestConnection()`. The bars also inherit `ArtificialKeysFile`; panels do not expose that setting.
-
-## Add a server bar or show an embedded connection dialog
-
-Pass a server connection string to `AddServerBar`, for example one produced by `FbConnectionStringBuilder` with the server, database alias and application credentials. For the embedded dialog, pass a string with `Database`, `User ID` and any required password. These methods belong in an existing WinForms application running on an STA UI thread.
+Place a panel on a designer-authored dialog, form or screen like any other control, and host a bar the same way where space is limited. The code-behind below belongs to a dialog whose designer file declares `_connectionPanel` (a `FirebirdConnectionPanel`), `_testButton` and `_statusLabel`, wires `_testButton.Click`, and sets the `DialogResult` of its OK and Cancel buttons.
 
 ```csharp
+using System;
+using System.ComponentModel;
 using System.Windows.Forms;
-using Sphere10.Framework.Windows.Forms;
-using Sphere10.Framework.Windows.Forms.Firebird;
 
-public static class FirebirdConnectionUi {
-	public static FirebirdConnectionBar AddServerBar(Control host, string connectionString) {
-		var bar = new FirebirdConnectionBar { Dock = DockStyle.Top, ConnectionString = connectionString };
-		host.Controls.Add(bar);
-		return bar;
+public partial class DatabaseSettingsDialog : Form {
+	public DatabaseSettingsDialog() {
+		InitializeComponent();
 	}
 
-	public static bool TryEditEmbeddedConnection(IWin32Window owner, string initialConnectionString, out string connectionString) {
-		using var dialog = new Form {
-			Text = "Embedded Firebird connection",
-			Width = 650,
-			Height = 210,
-			StartPosition = FormStartPosition.CenterParent
-		};
-		var panel = new FirebirdEmbeddedConnectionPanel {
-			Dock = DockStyle.Fill,
-			Mode = PathSelectionMode.OpenFile,
-			ConnectionString = initialConnectionString
-		};
-		var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft };
-		var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel };
-		var accept = new Button { Text = "OK", DialogResult = DialogResult.OK };
-		buttons.Controls.Add(cancel);
-		buttons.Controls.Add(accept);
-		dialog.Controls.Add(panel);
-		dialog.Controls.Add(buttons);
-		dialog.AcceptButton = accept;
-		dialog.CancelButton = cancel;
+	[Browsable(false)]
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public string ConnectionString {
+		get => _connectionPanel.ConnectionString;
+		set => _connectionPanel.ConnectionString = value;
+	}
 
-		connectionString = initialConnectionString;
-		if (dialog.ShowDialog(owner) != DialogResult.OK)
-			return false;
-		connectionString = panel.ConnectionString;
-		return true;
+	private async void _testButton_Click(object sender, EventArgs e) {
+		_testButton.Enabled = false;
+		try {
+			var result = await _connectionPanel.TestConnection();
+			if (!IsDisposed)
+				_statusLabel.Text = result.IsSuccess ? "Connection succeeded." : string.Join(Environment.NewLine, result.ErrorMessages);
+		} catch (Exception error) {
+			// Settings that cannot form a connection string throw instead of failing the result.
+			if (!IsDisposed)
+				_statusLabel.Text = error.Message;
+		} finally {
+			if (!IsDisposed)
+				_testButton.Enabled = true;
+		}
 	}
 }
 ```
 
-The package supplies the panels; the dialog is composed with the standard WinForms `Form.ShowDialog(owner)` API. Use `FirebirdConnectionPanel` in the same pattern for server settings, or `FirebirdEmbeddedConnectionBar` for a compact file editor.
+Show the dialog with the saved string, and keep the edited string only when the user accepts it:
 
-The host owns the added bar. The dialog and its child controls are disposed after closing, and cancellation leaves the original string unchanged. OK collects settings without connecting. Use `bar.GetDAC()` or `new Sphere10.Framework.Data.FirebirdDAC(connectionString)` afterwards; opening a connection is a separate application action.
+```csharp
+using var dialog = new DatabaseSettingsDialog { ConnectionString = savedConnectionString };
+if (dialog.ShowDialog(owner) == DialogResult.OK)
+	savedConnectionString = dialog.ConnectionString;
+```
 
-## Shared provider selection
+A `FirebirdEmbeddedConnectionPanel` works the same way. Set its `Mode` to `PathSelectionMode.OpenFile` in the designer when the user must choose an existing file.
 
-Register `Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration` with `AddModule<TModule>()` in the existing framework startup builder. It registers both bar/panel pairs as named transient services under `nameof(DBMSType.Firebird)` and `nameof(DBMSType.FirebirdFile)`.
+The editors only collect settings. They do not save profiles, discover servers or create databases, and they never hold a connection:
 
-Start the framework before constructing a generic `DatabaseConnectionBar` or `DatabaseConnectionPanel`. Set `SelectedDBMSType` to the required mode before assigning its `ConnectionString`. Package installation alone does not register the module; directly constructed Firebird controls do not use this lookup.
+- `TestConnection()` builds the connection string on the calling thread, then opens and disposes a DAC scope on a thread-pool task. A connection failure becomes an error in the returned `Result`, and no connection stays open afterwards. A successful test shows that a connection opened, not that the application's tables or permissions are in place. The method takes no cancellation token.
+- Building the string can throw before the test starts. Both server editors throw a `FormatException` for port text that is not a number, and loading a bar's `ArtificialKeysFile` can also fail.
+- When the application needs the database, call `GetDAC()` on the editor or construct `new FirebirdDAC(connectionString)`, then call `EnterScope()` for each unit of work and dispose the scope. The DAC itself is not disposable, and the scope owns the connection.
+- `StateChanged`, inherited from `UserControlEx`, is a parameterless event that is raised when a field changes after the control has loaded. It reports edits, not connectivity.
 
-## Events and connection lifecycle
+## Connection string behavior
 
-- The concrete controls inherit the parameterless `UserControlEx.StateChanged` event. It reports changes to UI state, not successful connections.
-- The generic `DatabaseConnectionPanel.DBMSTypeChanged` event supplies the panel and selected `DBMSType`; the generic bar has no corresponding public event.
-- `GetDAC()` creates a new DAC and, on a bar with `ArtificialKeysFile` configured, loads that XML file. It does not connect to Firebird.
-- `await control.TestConnection()` opens a temporary DAC scope on a worker task and disposes it before returning a `Result`. Check `Result.IsSuccess`. Connection exceptions become result errors, but connection-string parsing and artificial-key loading can throw before that handler runs.
-- Call control methods from the UI thread. Dispose the host when finished and use disposable DAC scopes or connections for subsequent database operations. These controls do not retain a connection after testing or manage transactions.
+- Each editor writes its own server type, whatever the assigned string contained. Choose the editor, or the selector key, that matches the deployment.
+- The editors rebuild the string from their fields, so other settings in an assigned string are dropped, such as the character set, role, pooling or client-library location. To keep such settings, read `ConnectionString`, add them with `FbConnectionStringBuilder`, and construct `FirebirdDAC` from the result. `GetDAC()` and `TestConnection()` always use the rebuilt string.
+- Both server editors parse the port strictly, so validate the port text before reading `ConnectionString` when the user should see a friendlier message than the `FormatException`.
+- Choosing a file does not create a database. Create the database separately before testing a connection to it.
+- The setters leave a field blank when `FbConnectionStringBuilder` cannot return its value. A string that the builder rejects outright still throws.
+- Connection strings contain the password, so do not log or display them.
 
-## Provider behavior and limitations
+## Use the generic provider selector
 
-The editors rebuild connection strings from their visible fields. Server controls retain server, port, database, username and password; embedded controls retain filename, username and password. Additional options such as character set, role, pooling and native client-library location are not preserved. Apply such options to the edited string with `FbConnectionStringBuilder` before constructing a DAC directly.
+`DatabaseConnectionPanel` and `DatabaseConnectionBar` in `Sphere10.Framework.Windows.Forms` let the user choose a database engine and then show that engine's editor. They resolve the editors as named framework services, so add this package's module to the application's startup code:
 
-Changing the server-type entry in an input string does not change the editor's mode: server controls output `Default` and embedded controls output `Embedded`. Select the matching control or `DBMSType` instead. Invalid port text can cause connection-string generation to throw. For embedded usage, selecting a filename does not create a database or install native dependencies. Use the [Firebird data provider guide](../Sphere10.Framework.Data.Firebird/README.md) for creation and provider setup. Connection strings may contain passwords and should not be logged.
+```csharp
+Sphere10Framework.Instance
+	.BuildWinFormsApplication()
+	// ... the application's existing configuration and modules ...
+	.AddModule<Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration>()
+	.StartWinFormsApplication();
+```
 
-## Build and source
+`ModuleConfiguration` registers the server editors under `nameof(DBMSType.Firebird)` and the embedded editors under `nameof(DBMSType.FirebirdFile)`, as transient services. The selectors list them as **Firebird** and **Firebird Embedded**, and `IgnoreDBMS = new[] { DBMSType.FirebirdFile }` hides the embedded entry. Referencing the package does not register the editors, and a directly hosted Firebird editor needs no module.
+
+- A selector constructed before the framework has started, for example in the Windows Forms designer, finds no service provider and lists no engines, so construct it after startup. Switching engines disposes the previous editor.
+- The engine list contains only registered providers. Setting `SelectedDBMSType` to an unregistered engine leaves the current editor selected.
+- Set `SelectedDBMSType` to `DBMSType.Firebird` or `DBMSType.FirebirdFile` before assigning `ConnectionString`, because the selector passes the string to its current editor.
+- `Database` returns the engine and the string together as a `DBReference`, and the bar also accepts one. `DACFactory.CreateDAC(reference.DBMSType, reference.ConnectionString)` recreates the DAC from a saved reference.
+- `DatabaseConnectionPanel` raises `DBMSTypeChanged(panel, dbmsType)` when the selected engine changes. `DatabaseConnectionBar` has no such event.
+
+## Try the controls
+
+The [WinForms Tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) hosts all four editors. Run it from the repository root on Windows:
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
+```
+
+- **Controls > Input > All controls by class name** opens the control catalog. Search for `Firebird` to edit sample settings in each editor, which never connect on their own.
+- **Integration > Connections > Database Connection Panel** and **Database Connection Bar** show the generic selectors with every provider module registered. Choose **Firebird** or **Firebird Embedded**, enter real settings and click **Test connection**.
+
+## Build from source
 
 From the repository root on Windows:
 
 ```powershell
-dotnet build src/Sphere10.Framework.Windows.Forms.Firebird/Sphere10.Framework.Windows.Forms.Firebird.csproj -c Release
+dotnet build src/Sphere10.Framework.Windows.Forms.Firebird/Sphere10.Framework.Windows.Forms.Firebird.csproj -c Release -p:BuildRevision=0
 ```
 
-- [Server bar](FirebirdConnectionBar.cs) and [server panel](FirebirdConnectionPanel.cs).
-- [Embedded bar](FirebirdEmbeddedConnectionBar.cs) and [embedded panel](FirebirdEmbeddedConnectionPanel.cs).
-- [ModuleConfiguration](ModuleConfiguration.cs): both provider-mode registrations.
-- [Connection provider interface](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), [bar base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs), and [panel base](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs).
+`-p:BuildRevision=0` keeps a development build from taking the next local build number. The [root README](../../README.md#building-and-publishing-packages) explains build numbering, and how `scripts/pack.ps1` packs the whole package set. The project packs this file as its NuGet readme, and [`Directory.Packages.props`](../../Directory.Packages.props) sets the driver version.
 
-## Related guides
+- [`FirebirdConnectionBar.cs`](FirebirdConnectionBar.cs) and [`FirebirdConnectionPanel.cs`](FirebirdConnectionPanel.cs) are the server editors.
+- [`FirebirdEmbeddedConnectionBar.cs`](FirebirdEmbeddedConnectionBar.cs) and [`FirebirdEmbeddedConnectionPanel.cs`](FirebirdEmbeddedConnectionPanel.cs) are the embedded editors.
+- [`ModuleConfiguration.cs`](ModuleConfiguration.cs) registers both modes.
+- [`ConnectionBarBase`](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionBarBase.cs) and [`ConnectionPanelBase`](../Sphere10.Framework.Windows.Forms/Database/Controls/ConnectionPanelBase.cs) implement [`IDatabaseConnectionProvider`](../Sphere10.Framework.Windows.Forms/Database/IDatabaseConnectionProvider.cs), including the shared `GetDAC()` and `TestConnection()` logic.
 
-- [Core WinForms](../Sphere10.Framework.Windows.Forms/README.md)
-- [Firebird data provider](../Sphere10.Framework.Data.Firebird/README.md)
-- [Application startup and modules](../Sphere10.Framework.Application/README.md)
-- [SQL Server controls](../Sphere10.Framework.Windows.Forms.MSSQL/README.md) and [SQLite controls](../Sphere10.Framework.Windows.Forms.Sqlite/README.md)
+## Related documentation
 
-## License & Author
+- [Windows Forms library](../Sphere10.Framework.Windows.Forms/README.md) for the generic selectors and the base classes.
+- [Firebird data provider](../Sphere10.Framework.Data.Firebird/README.md) for `FirebirdDAC`.
+- [Data access](../Sphere10.Framework.Data/README.md) for DAC scopes, transactions and [artificial keys](../Sphere10.Framework.Data/README.md#artificial-keys).
+- [Application startup and modules](../Sphere10.Framework.Application/README.md).
+- [Database connection editors](../../docs/guidelines/patterns/winforms-controls.md#database-connection-editors), which compares the editors of every provider.
+- The other provider editors for [SQL Server](../Sphere10.Framework.Windows.Forms.MSSQL/README.md), [SQLite](../Sphere10.Framework.Windows.Forms.Sqlite/README.md), [MySQL](../Sphere10.Framework.Windows.Forms.MySQL/README.md), [PostgreSQL](../Sphere10.Framework.Windows.Forms.PostgreSQL/README.md) and [Oracle](../Sphere10.Framework.Windows.Forms.Oracle/README.md).
+
+## License and author
 
 **License**: [MIT License](../../LICENSE)
 

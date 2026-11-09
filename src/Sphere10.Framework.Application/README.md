@@ -750,7 +750,7 @@ Built-in command-line parser with attribute-based configuration:
 ### Defining Options
 
 ```csharp
-using Sphere10.Framework.Application;
+using CommandLine;
 
 public class Options {
 	[Option('v', "verbose", HelpText = "Enable verbose output")]

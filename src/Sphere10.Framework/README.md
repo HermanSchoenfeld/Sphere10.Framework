@@ -386,8 +386,8 @@ These implementations integrate with collections, enabling `IMerkleList<T>`, `IM
 
 The library provides cryptographic primitives and utilities:
 
-- **Hashing**: Wrappers for standard hash functions (SHA-256, SHA-512, SHA-3, etc.) plus specialized implementations like BLAKE2b and MurMur3.
-- **Digital Signatures**: Abstractions for signature schemes, including stateless schemes (ECDSA, EdDSA, Schnorr) and post-quantum candidates (W-OTS, W-OTS#, AMS).
+- **Hashing**: The `Hashers` registry with SHA-1, SHA-2 (SHA-256, SHA-384, SHA-512), BLAKE2b and `ConcatBytes`, plus MurMur3 checksums. SHA-3 and the other hash functions come from [Sphere10.Framework.CryptoEx](../Sphere10.Framework.CryptoEx/README.md), which registers them.
+- **Digital Signatures**: Abstractions for signature schemes, including the stateless schemes base that CryptoEx's ECDSA and Schnorr implement, and post-quantum candidates (W-OTS, W-OTS#, AMS).
 - **Key Derivation**: PBKDF2 and custom key derivation functions.
 - **Verifiable Random Functions (VRF)**: Primitives for generating cryptographically verifiable random outputs.
 - **Data Protection**: Secure memory handling and encryption utilities for sensitive data.

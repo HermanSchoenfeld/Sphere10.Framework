@@ -1,4 +1,14 @@
-This file preserves the upstream CommandLineParser documentation for the bundled parser. In Sphere10, the parser and its attributes live in `Sphere10.Framework.Application` and are supplied by the .NET 10 `Sphere10.Framework.Application` package. Use the [Application guide](../README.md#-command-line-parsing) for that integration; the package names, supported targets and badges below describe the upstream distribution.
+This folder bundles the MIT-licensed [CommandLineParser](https://github.com/commandlineparser/commandline) library by Giacomo Stelluti Scala and contributors, under the licence in [License.md](License.md). The rest of this file is the upstream README, so its badges, NuGet commands, platform list and contribution notes describe the upstream project. The bundled copy differs as follows:
+
+- It is compiled into `Sphere10.Framework.Application` and ships in that package for `net10.0`, plus `net11.0` when a .NET 11 SDK builds it. Do not also reference the `CommandLineParser` package, because both define the same `CommandLine` types.
+- The types keep their upstream namespaces. Import `CommandLine` for `Parser`, `ParserSettings` and the `[Option]`, `[Value]` and `[Verb]` attributes, and `CommandLine.Text` for `HelpText`.
+- F# `option<'a>` support is compiled out, so `option` properties are not supported and the `CommandLineParser.FSharp` notes do not apply.
+- Enum arguments are parsed by `Tools.Enums.TryParseEnum`, which also accepts a member's `[EnumMember]` value. The help screen shows that value when one is declared.
+- The automatic help screen takes its heading from the `{ProductName}` and `{ProductVersion}` tokens and its copyright line from `{CopyrightNotice}`. The Application module registers resolvers for these tokens when the framework starts, so a help screen built before then shows the bare token names.
+
+The [Application guide](../README.md#-command-line-parsing) shows the parser in a Sphere10 application.
+
+---
 
 [![Build status](https://ci.appveyor.com/api/projects/status/p61dj8udxs2aocmo/branch/master?svg=true)](https://ci.appveyor.com/project/commandlineparser/commandline/branch/master)
 [![NuGet](https://img.shields.io/nuget/dt/commandlineparser.svg)](http://nuget.org/packages/commandlineparser)

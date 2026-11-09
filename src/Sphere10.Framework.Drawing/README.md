@@ -2,15 +2,11 @@
 
 # 🎨 Sphere10.Framework.Drawing
 
-**Unified 2D graphics abstraction layer** providing drawing utilities, color manipulation, image processing, and shape rendering for Windows desktop and cross-platform applications.
+Sphere10.Framework.Drawing adds color, geometry, image and GDI+ helpers on top of `System.Drawing`. Use it for color conversion and gradients, point and rectangle arithmetic, image resizing and encoding, rounded and bordered shapes, and GDI+ color matrices. Sphere10.Framework.Windows, Sphere10.Framework.Windows.Forms and Sphere10.Framework.Web.AspNetCore.MVC depend on it.
 
-Color and rectangle geometry helpers can be used across platforms. Image, icon, graphics-path, codec, and GDI+ drawing operations depend on Windows through System.Drawing.Common and declare that requirement with SupportedOSPlatform attributes. Image-header detection handles streams that return fewer bytes per read.
+The color helpers and the `Point`, `Size` and `Rectangle` extensions run on any platform. The image, icon, codec, graphics-path and GDI+ drawing members use System.Drawing.Common, which supports them only on Windows, so they carry `[SupportedOSPlatform("windows")]` or `[SupportedOSPlatform("windows6.1")]`.
 
-The pure `ResizeAlignment` and `ResizeMethod` enums are defined in Core in the
-existing `Sphere10.Framework` namespace. Drawing forwards their former assembly
-identity for existing consumers. Browser controls can therefore reuse the same
-layout vocabulary without referencing `System.Drawing`; bitmap resizing still
-uses Drawing's existing image APIs.
+The `ResizeMethod` and `ResizeAlignment` enums live in the core `Sphere10.Framework` package, in the `Sphere10.Framework` namespace, so that browser components such as the Blazor grid can use them without `System.Drawing`. This assembly forwards both types, so binaries compiled against their earlier home in Drawing keep working.
 
 ## 📦 Installation
 
@@ -18,253 +14,144 @@ uses Drawing's existing image APIs.
 dotnet add package Sphere10.Framework.Drawing
 ```
 
+The package targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. Projects inside this repository reference `src/Sphere10.Framework.Drawing/Sphere10.Framework.Drawing.csproj` instead.
+
 ## ⚡ 10-Second Example
 
 ```csharp
-using Sphere10.Framework;
 using System.Drawing;
+using System.Drawing.Imaging;
+using Sphere10.Framework;
 
-// Create color gradient
-Color[] gradient = Tools.Drawing.CalculateColorGradient(
-    Color.Red, 
-    Color.Blue, 
-    10);  // 10 colors from red to blue
+// Colors work on any platform.
+Color[] steps = Tools.Drawing.CalculateColorGradient(Color.Red, Color.Blue, 5);
+Color accent = Tools.Drawing.ConvertStringToColor("255:0:128");   // "R:G:B" or "A:R:G:B"
+Color caption = Tools.Drawing.GetContrastingTextColor(accent);     // Color.Black or Color.White
 
-foreach (var color in gradient) {
-    Console.WriteLine($"RGB({color.R}, {color.G}, {color.B})");
-}
-
-// Convert string to color
-Color myColor = Tools.Drawing.ConvertStringToColor("255:0:128");
-
-// Manipulate images
-Bitmap image = new Bitmap("photo.jpg");
-Bitmap rounded = Tools.Drawing.CreateRoundedImage(image, 20);  // 20px radius
-rounded.Save("rounded.jpg");
+// Images need Windows.
+using var photo = new Bitmap("photo.jpg");
+using var thumbnail = photo.Resize(new Size(256, 256), ResizeMethod.AspectFitPadded,
+	ResizeAlignment.CenterCenter, newPixelFormat: PixelFormat.Format32bppArgb);
+thumbnail.Save("thumbnail.png", ImageFormat.Png);
 ```
 
-## 🏗️ Core Concepts
+## 🏗️ What It Contains
 
-**Color Gradients**: Smooth color transitions between start and end colors with interpolation.
+The extension classes and the `RoundedCorners`, `GradientFillDirection` and `PointFP` types are in the `Sphere10.Framework` namespace. The other drawing types are in `Sphere10.Framework.Drawing`, and `Tools.Drawing` is in the global `Tools` namespace.
 
-**Color Conversions**: Parse and convert between string, ARGB, and Color representations.
-
-**Image Processing**: Bitmap manipulation including resizing, rounding corners, and visual effects.
-
-**Geometric Utilities**: Point, size, and rectangle extensions for calculations.
-
-**Rounded Corners**: Create images with smooth rounded corners and borders.
+| Area | Entry points | Platform |
+|---|---|---|
+| Color | `Tools.Drawing.CalculateColorGradient`, `CalculateMiddleColor`, `CalculateLightDarkColor`, `GetContrastingTextColor`, `ConvertStringToColor`, `ConvertColorToString` and `RandomColor`, and the `Color` extensions `ToARGBString`, `GetShade` and `GetTranslucentShade` | Any |
+| Geometry | Extensions for `Point`, `PointF`, `Size`, `SizeF`, `Rectangle` and `RectangleF`, such as `CenterCenter`, `Translate`, `ExpandBy`, `ShrinkBy`, `IntersectWith`, `DistanceTo`, `ScaleBy` and `Clip`, and the fixed-point `PointFP` | Any, except `GetRoundPath` |
+| Images | The `Image` extensions `Resize`, `Zoom`, `FocusZoom`, `Copy`, `ToByteArray` and `SaveJpegWithCompression`, `byte[].ToImage`, `Icon.ToBitmap(width, height)`, and the `Tools.Drawing` helpers for disabled images, image formats and codecs | Windows |
+| GDI+ drawing | `Graphics` extensions for gradient fills, rounded rectangles and borders, 3D gradient borders, circles, and justified or ellipsis-truncated text, with `RoundedRectangle`, `RoundedCorners` and `GraphicsCache` | Windows |
+| Borders and layout | `RectangleBorder`, `BorderLine`, `Padding`, `AnchorArea` and `IBorder`, which the Windows Forms visual elements use | Layout on any platform, `Draw` on Windows |
+| Color matrices | `ColorMatrices` and the `ColorMatrix` extensions | Windows |
 
 ## 🔧 Core Examples
 
-### Color Gradient Generation
+### Colors
 
 ```csharp
-using Sphere10.Framework;
 using System.Drawing;
+using Sphere10.Framework;
 
-// Generate gradient with interpolation between two colors
-Color startColor = Color.FromArgb(255, 0, 0);      // Red
-Color endColor = Color.FromArgb(0, 0, 255);        // Blue
-int gradientSteps = 20;
-
-Color[] gradient = Tools.Drawing.CalculateColorGradient(
-    startColor, 
-    endColor, 
-    gradientSteps);
-
-Console.WriteLine($"Generated {gradient.Length} colors:");
-for (int i = 0; i < gradient.Length; i++) {
-    Console.WriteLine($"  [{i}] ARGB({gradient[i].A}, {gradient[i].R}, {gradient[i].G}, {gradient[i].B})");
-}
-
-// Use gradient for visual effects
-// For example, painting a gradient fill:
-using (var brush = new LinearGradientBrush(
-    new Point(0, 0), 
-    new Point(256, 0), 
-    startColor, 
-    endColor)) {
-    
-    graphics.FillRectangle(brush, new Rectangle(0, 0, 256, 50));
-}
+Color[] gradient = Tools.Drawing.CalculateColorGradient(Color.White, Color.SteelBlue, 10);
+Color middle = Tools.Drawing.CalculateMiddleColor(Color.White, Color.SteelBlue);
+Color darker = Tools.Drawing.CalculateLightDarkColor(Color.SteelBlue, -0.3f);   // -1 is black, 1 is white
+string stored = Color.FromArgb(200, 100, 150, 50).ToARGBString();               // "200:100:150:50"
+Color restored = Tools.Drawing.ConvertStringToColor(stored);
 ```
 
-### String to Color Conversion
+`CalculateColorGradient` returns the requested number of colors, at least two, in equal steps from the first color to the second. `CalculateMiddleColor` returns the color halfway between them. `ConvertStringToColor` reads `R:G:B` or `A:R:G:B` decimal parts, and it returns `Color.Empty` for empty input or for any other number of parts.
+
+### Resizing Images
 
 ```csharp
-using Sphere10.Framework;
 using System.Drawing;
-
-// Convert string formats to Color
-string[] colorStrings = {
-    "255:0:0",              // Red (RGB)
-    "0:255:0",              // Green (RGB)
-    "0:0:255",              // Blue (RGB)
-    "255:128:64:200"        // With Alpha (ARGB)
-};
-
-foreach (var colorStr in colorStrings) {
-    Color color = Tools.Drawing.ConvertStringToColor(colorStr);
-    Console.WriteLine($"{colorStr} -> ARGB({color.A}, {color.R}, {color.G}, {color.B})");
-}
-
-// Round-trip conversion
-Color original = Color.FromArgb(200, 100, 150, 50);
-string colorString = $"{original.A}:{original.R}:{original.G}:{original.B}";
-Color converted = Tools.Drawing.ConvertStringToColor(colorString);
-Console.WriteLine($"Match: {original == converted}");  // true
-```
-
-### Image Rounding & Corner Effects
-
-```csharp
 using Sphere10.Framework;
-using System.Drawing;
-
-// Load and process image
-Bitmap originalImage = new Bitmap("photo.jpg");
-
-// Create rounded corners
-int cornerRadius = 30;
-Bitmap roundedImage = Tools.Drawing.CreateRoundedImage(originalImage, cornerRadius);
-roundedImage.Save("rounded_photo.jpg");
-
-// Create rounded image with border
-Bitmap borderedImage = Tools.Drawing.CreateRoundedImage(
-    originalImage, 
-    cornerRadius, 
-    5,              // Border width
-    Color.DarkGray);// Border color
-
-borderedImage.Save("rounded_with_border.jpg");
-
-// Create circular image (max corner radius)
-int maxRadius = Math.Min(originalImage.Width, originalImage.Height) / 2;
-Bitmap circularImage = Tools.Drawing.CreateRoundedImage(originalImage, maxRadius);
-circularImage.Save("circular_photo.jpg");
-```
-
-### Image Resizing & Scaling
-
-```csharp
-using Sphere10.Framework;
-using System.Drawing;
-using System.Drawing.Imaging;
 
 using var original = new Bitmap("large_image.jpg");
 
-// Resize to specific dimensions
-var newSize = new Size(400, 300);
-using var resized = original.Resize(newSize, ResizeMethod.Stretch);
-resized.Save("resized.jpg");
+using var stretched = original.Resize(new Size(400, 300));                        // ResizeMethod.Stretch
+using var fitted = original.Resize(new Size(800, 600), ResizeMethod.AspectFit);   // can be smaller than 800 x 600
+using var cropped = original.Resize(new Size(300, 300), ResizeMethod.AspectFill, ResizeAlignment.TopCenter);
+using var half = original.Zoom(0.5f);
 
-// Scale by percentage
-using var scaled = original.Zoom(0.5f);  // 50% of original
-scaled.Save("scaled_50percent.jpg");
-
-// Maintain aspect ratio while fitting in bounds
-var maxBounds = new Size(800, 600);
-using var fitted = original.Resize(maxBounds, ResizeMethod.AspectFit);
-fitted.Save("fitted.jpg");
-
-// Keep the requested canvas size with centered, transparent padding
-using var padded = original.Resize(maxBounds, ResizeMethod.AspectFitPadded,
-	ResizeAlignment.CenterCenter, newPixelFormat: PixelFormat.Format32bppArgb);
-padded.Save("padded.png");
+fitted.SaveJpegWithCompression("fitted.jpg", 85);                                 // JPEG quality from 0 to 100
 ```
 
-`ResizeMethod` selects `Stretch`, `AspectFit`, `AspectFitPadded` or `AspectFill`.
-`ResizeAlignment` controls placement of padded fits and the crop used by fills.
-The optional `interpolationMode` parameter uses `System.Drawing.Drawing2D.InterpolationMode`
-and defaults to `HighQualityBicubic`. Each operation returns a caller-owned bitmap;
-the source remains borrowed. `ResizeAndDispose` and `ZoomAndDispose` explicitly
-transfer source disposal to the operation. Native icons can use `icon.ToBitmap(width, height)`.
+| `ResizeMethod` | Result |
+|---|---|
+| `Stretch` (default) | Scales the width and height independently to the requested size. |
+| `AspectFit` | Keeps the aspect ratio and fits inside the requested size, so the result can be smaller. |
+| `AspectFitPadded` | Keeps the aspect ratio, returns the requested size and fills the margin with `paddingColor`. `ResizeAlignment` places the image. |
+| `AspectFill` | Keeps the aspect ratio, returns the requested size and crops the source. `ResizeAlignment` chooses the crop. |
 
-### Point & Rectangle Extensions
+- `paddingColor` defaults to `Color.Transparent`, and the result keeps the source pixel format unless `newPixelFormat` sets another. Pass `PixelFormat.Format32bppArgb` for transparent padding around a source without an alpha channel.
+- `interpolationMode` takes a `System.Drawing.Drawing2D.InterpolationMode` and defaults to `HighQualityBicubic`.
+- Each method returns a new bitmap that the caller owns, and it leaves the source open. `ResizeAndDispose`, `ZoomAndDispose` and `FocusZoomAndDispose` dispose the source after use.
+- A request that rounds to a zero width or height returns a 1 x 1 bitmap.
+- `FocusZoom(zoomFactor, focusX, focusY)` magnifies the area around a point and fits it to the source dimensions. Near an edge that area is clipped to the source, and `resizeMethod` and `resizeAlignment` choose how the clipped area fills the result, so `Stretch` distorts it and `AspectFitPadded` pads it. `icon.ToBitmap(width, height)` renders an `Icon` at the requested size with `AspectFitPadded`.
+
+### Disabled Images, Encoding and Formats
 
 ```csharp
-using Sphere10.Framework;
 using System.Drawing;
+using System.Drawing.Imaging;
+using Sphere10.Framework;
 
-// Point calculations
-Point p1 = new Point(10, 20);
-Point p2 = new Point(30, 40);
+using var icon = Image.FromFile("save.png");
+using var disabled = Tools.Drawing.CreateDisabledImage(icon, SystemColors.Control);   // grayed copy for disabled UI
 
-// Distance between points
-double distance = p1.DistanceTo(p2);
-Console.WriteLine($"Distance: {distance}");
+byte[] png = icon.ToByteArray();                     // PNG unless another ImageFormat is given
+byte[] jpeg = icon.ToByteArray(ImageFormat.Jpeg);
 
-// Offset point
-Point offset = p1.Offset(5, 10);
-Console.WriteLine($"Offset: {offset}");  // (15, 30)
-
-// Rectangle operations
-Rectangle rect = new Rectangle(10, 10, 100, 100);
-Point center = rect.GetCenter();
-Console.WriteLine($"Center: {center}");  // (60, 60)
-
-// Check containment with margin
-bool contains = rect.ContainsWithMargin(new Point(50, 50), 5);
-
-// Get area
-int area = rect.GetArea();
-Console.WriteLine($"Area: {area}");  // 10000
-
-// Expand rectangle
-Rectangle expanded = rect.Expand(20);  // Expand by 20px on all sides
-Console.WriteLine($"Expanded: {expanded}");
+bool recognized = Tools.Drawing.TryGetImageFormatFromHeader("upload.bin", out ImageFormat format);
 ```
 
-### Disabled/Grayed-Out Effects
+`CreateDisabledImage` returns a lightened grayscale copy, and its `background` argument does not change the result. `byte[].ToImage()` keeps its memory stream open for the image's lifetime, as GDI+ requires, and disposing the image is enough.
+
+`TryGetImageFormatFromHeader` reads the first 11 bytes and recognizes the JPEG (JFIF or Exif), PNG, GIF, BMP and TIFF signatures. Its path overload opens the file for reading only and shares it with other readers and writers. Its stream overload reads from the current position and needs a stream that reports its `Length`. It also handles streams that return fewer bytes per read. `TryGetImageFormatFromFilenameExtension`, `TryGetFileExtensionFromImageFormat`, `IsRecognisedImageFile` and `GetEncoderInfo` map between file names, image formats and the installed codecs.
+
+### Drawing with GDI+
 
 ```csharp
-using Sphere10.Framework;
 using System.Drawing;
+using Sphere10.Framework;
+using Sphere10.Framework.Drawing;
 
-Bitmap originalImage = new Bitmap("icon.png");
+using var bitmap = new Bitmap(200, 80);
+using var graphics = Graphics.FromImage(bitmap);
+graphics.GradientFill(new Rectangle(0, 0, 200, 80), Color.SteelBlue, Color.White, GradientFillDirection.Vertical);
 
-// Create disabled (grayed-out) version
-Bitmap disabledImage = Tools.Drawing.CreateDisabledImage(originalImage);
-disabledImage.Save("icon_disabled.png");
-
-// This is useful for UI states like:
-// - Inactive buttons
-// - Disabled menu items
-// - Inactive toolbar icons
+using var brush = new SolidBrush(Color.Orange);
+graphics.FillRoundedRectangle(new RoundedRectangle(new Rectangle(10, 10, 180, 60), 0.25), brush);
+graphics.DrawRoundedBorder(Color.DarkSlateGray, new Rectangle(0, 0, 200, 80), 8, 2, RoundedCorners.All);
 ```
 
-### Size & Scaling Extensions
+`RoundedRectangle.RoundValue` runs from 0 for square corners to 1 for a fully rounded shape. The constructor and the setter throw `ApplicationException` for any other value, and `ToGraphicsPath()` converts the shape for other GDI+ calls. The `RoundedCorners` flags choose which corners the integer-radius helpers round. `GraphicsCache` wraps a borrowed `Graphics` with a `PenCache` and a `BrushCache` that own the pens and brushes they return. Disposing the cache releases those pens and brushes and leaves the `Graphics` open.
+
+### Geometry
 
 ```csharp
-using Sphere10.Framework;
 using System.Drawing;
+using Sphere10.Framework;
 
-Size original = new Size(800, 600);
-
-// Scale size
-Size scaled = original.Scale(1.5);  // 1200 x 900
-Console.WriteLine($"Scaled: {scaled}");
-
-// Get aspect ratio
-float ratio = original.GetAspectRatio();  // 1.333...
-Console.WriteLine($"Aspect Ratio: {ratio}");
-
-// Fit within bounds maintaining aspect
-Size maxBounds = new Size(400, 400);
-Size fitted = original.FitWithinBounds(maxBounds);
-Console.WriteLine($"Fitted: {fitted}");
-
-// Create thumbnail
-Size thumb = original.CreateThumbnailSize(150);
-Console.WriteLine($"Thumbnail: {thumb}");
+var bounds = new Rectangle(10, 10, 100, 50);
+Point center = bounds.CenterCenter();                           // (60, 35)
+Rectangle moved = bounds.Translate(5, 5);                       // X = 15, Y = 15
+Rectangle larger = bounds.ExpandBy(20, 10);                     // 120 x 60 at the same location
+Rectangle visible = bounds.IntersectWith(0, 0, 50, 50);         // (10, 10, 40, 40)
+float distance = new Point(0, 0).DistanceTo(new Point(3, 4));   // 5
+Size half = new Size(800, 600).ScaleBy(0.5);                    // 400 x 300
 ```
 
-### Colour Matrices
+The rectangle helpers return modified copies, because `Rectangle` is a value type. `ExpandBy` and `ShrinkBy` change only the width and height. `PointF`, `SizeF` and `RectangleF` have matching extensions.
 
-`ColorMatrices` builds and combines 5x5 GDI+ `ColorMatrix` values using the
-row-vector convention shared by `ImageAttributes.SetColorMatrix` and the Windows
-Magnification API, so one matrix drives both an image preview and a desktop effect.
+### Color Matrices
+
+`ColorMatrices` builds and combines the 5x5 GDI+ `ColorMatrix`. It uses the row-vector convention of `ImageAttributes.SetColorMatrix`, which the Windows Magnification API shares, so one matrix can drive both an image preview and a desktop color effect.
 
 ```csharp
 using Sphere10.Framework;
@@ -278,71 +165,36 @@ var frames = ColorMatrices.Interpolate(ColorMatrices.Identity, adjusted, steps: 
 var same = adjusted.ApproximatelyEquals(negative.Then(ColorMatrices.CreateContrast(1.2f)).Then(ColorMatrices.CreateBrightness(0.1f)));
 ```
 
-`Multiply`/`Then` apply the first matrix before the second; `CreateBrightness`
-offsets every channel and `CreateContrast` scales around mid-gray. `ToArray`,
-`ToJaggedArray` and `Clone` give independent copies. Matrices are Windows-only
-GDI+ types, so the helpers carry `SupportedOSPlatform("windows6.1")`.
+`Multiply(first, second)` and `first.Then(second)` apply `first` before `second`. `CreateBrightness` adds an offset to the red, green and blue channels, and `CreateContrast` scales those channels around mid-gray. `Interpolate` returns `steps` frames that exclude the start matrix and end exactly at the target. `ToArray`, `ToJaggedArray` and `Clone` return independent copies. `ApproximatelyEquals`, `IsIdentity` and `ColorMatrices.AreEqual` compare matrices within a tolerance.
 
-## 🏗️ Architecture & Modules
+## ⚠️ Constraints
 
-**Color Module**: Color conversion, gradients, and color space operations
-- String parsing (ARGB format)
-- RGB ↔ HSL conversions
-- Color space transformations
-- Gradient interpolation
-
-**Image Processing Module**: Bitmap operations and effects
-- Resizing with quality control
-- Rounded corners and borders
-- Disabled/grayed-out effects
-- Aspect ratio preservation
-
-**Geometric Utilities**: Point, Size, Rectangle extensions
-- Distance calculations
-- Containment testing
-- Area and perimeter operations
-- Center point calculation
-- Alignment and positioning
-
-**Drawing Extensions**: System.Drawing extensions
-- Graphics primitives
-- Brush and pen utilities
-- Text rendering helpers
-- Bitmap manipulation
+- Dispose every `Bitmap`, `Image`, `Graphics`, `Pen` and `Brush` you create. Methods that return a bitmap or an image give it to the caller.
+- Windows-only members can fail at run time on other platforms. The .NET platform compatibility analyzer reports calls to them from cross-platform code at build time.
+- `CalculateColorGradient` throws `ArgumentException` for fewer than two colors, and `CalculateLightDarkColor` throws it for a value outside -1 to 1.
 
 ## 📦 Dependencies
 
-- **Sphere10 Framework**: Core framework
-- **System.Drawing.Common**: Windows image loading and GDI+ drawing APIs, supplied as a NuGet package
-- **System.Drawing.Primitives**: Primitive types (Point, Size, Rectangle)
-
-## ⚠️ Best Practices
-
-- **Dispose resources**: Always dispose Bitmap, Graphics, and Brush objects
-- **Quality vs performance**: Select `InterpolationMode` through `Image.Resize` when tuning quality; `ResizeMethod` describes sizing and aspect behavior
-- **Color validation**: Validate color strings before conversion
-- **Image size limits**: Check image dimensions before processing to avoid memory issues
-- **Use using statements**: Wrap Graphics operations in using blocks
-- **Cache gradients**: Pre-calculate gradients if used repeatedly
-
-## ✅ Status & Compatibility
-
-- **Maturity**: Production-tested, stable for desktop applications
-- **.NET Target**: .NET 10 (`net10.0`)
-- **Platform Support**: Color and geometry helpers are cross-platform; image loading and GDI+ drawing require Windows, including with System.Drawing.Common 11.
-- **Performance**: Resizing is CPU-intensive; cache results when possible
+- **Sphere10.Framework**: the core library, which also defines `ResizeMethod` and `ResizeAlignment`
+- **System.Drawing.Common**: GDI+ imaging and drawing, supported on Windows only
+- **System.Formats.Nrbf**: referenced directly, because the System.Drawing.Common 11 release candidate omits this serialization dependency on .NET 10
 
 ## 📖 Related Projects
 
-- [Sphere10.Framework](../Sphere10.Framework) - Core framework
-- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms) - WinForms integration with drawing support
-- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows) - Windows-specific graphics APIs
+- [Sphere10.Framework](../Sphere10.Framework/README.md) - Core framework
+- [Sphere10.Framework.Windows.Forms](../Sphere10.Framework.Windows.Forms/README.md) - Windows Forms controls and visual elements that draw with these types
+- [Sphere10.Framework.Windows](../Sphere10.Framework.Windows/README.md) - Windows integration, whose `FileIconCache` sizes icons with the image helpers
+- [Tools reference](../../docs/tools-reference.md) - The `Tools.*` catalog, including `Tools.Drawing`
+- [SourceGrid and reusable desktop components](../../docs/usage/sourcegrid.md) - The helpers that moved here from the grid engine
+- [Sphere10.Framework.Windows.Forms.Tests](../../tests/Sphere10.Framework.Windows.Forms.Tests/README.md) - `ColorMatricesTests`, `DrawingExtractionTests` and `DevAgeDrawingReuseTests` cover this library
 
 ## ⚖️ License
 
 Distributed under the **MIT License**.
 
-See the LICENSE file for full details. More information: [MIT License](https://opensource.org/license/mit)
+See the [LICENSE](../../LICENSE) file for full details. More information: [MIT License](https://opensource.org/license/mit)
+
+Parts of `Tools.Drawing`, `GraphicsExtensions`, `GraphicsCache`, `PenCache`, `BrushCache`, `RoundedRectangle`, `RectangleBorder`, `BorderLine`, `Padding`, `AnchorArea`, `IBorder`, `RectanglePartType` and `Gradient3DBorderStyle` derive from the SourceGrid and DevAge code of Davide Icardi and Darius Damalakas (copyright 2005-2012), as their file headers record.
 
 ## 👤 Author
 
