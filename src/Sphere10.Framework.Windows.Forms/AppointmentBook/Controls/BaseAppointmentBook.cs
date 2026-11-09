@@ -39,6 +39,12 @@ public partial class BaseAppointmentBook : UserControlEx {
 
 	public event EventHandlerEx<BaseAppointmentBook> SelectionCleared;
 
+	// Appointment fills reach the lightness of the planning grid's pastel cells; text keeps the hue at a readable depth.
+	private const float PastelLightness = 0.88f;
+	private const float InkLightness = 0.25f;
+	private const float OutlineShade = -0.2f;
+	private const int CellTextPadding = 8;
+	private readonly IDictionary<FontStyle, Font> _appointmentFonts;
 	private BaseAppointmentBookViewModel _viewModel;
 	private Tuple<int, int, DateTime, Point> _lastMouseDown;
 	private Tuple<int, int, DateTime, Point> _lastMouseUp;
@@ -54,20 +60,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 		CanResize = true;
 		HasRowHeaders = true;
 		HasColHeaders = true;
-		HorizontalBorderLine = new BorderLine {
-			Color = Color.Lavender,
-			DashStyle = System.Drawing.Drawing2D.DashStyle.Dash,
-			Padding = 0,
-			Width = 1
-		};
-
-		SelectedAppointmentBorderLine = new BorderLine {
-			Color = Color.Black,
-			DashStyle = System.Drawing.Drawing2D.DashStyle.Solid,
-			Padding = 0,
-			Width = 2
-		};
-
+		SoftenAppointmentColors = true;
 		AppointmentBorderLine = new BorderLine {
 			Color = Color.Black,
 			DashStyle = System.Drawing.Drawing2D.DashStyle.Solid,
@@ -77,10 +70,15 @@ public partial class BaseAppointmentBook : UserControlEx {
 
 		MaxColumnWidth = 400;
 		MinColumnWidth = 100;
-		RowHeaderColumnWidth = 32;
+		RowHeaderColumnWidth = 40;
 		DistanceMovedToInitiateDragging = 12;
+		_appointmentFonts = new Dictionary<FontStyle, Font>();
 		InitializeComponent();
 
+		// Grid lines and the selected outline reuse SourceGrid's own cell border and selection border.
+		HorizontalBorderLine = SourceGrid.Cells.Views.ViewBase.DefaultBorder.Bottom;
+		VerticalBorderLine = SourceGrid.Cells.Views.ViewBase.DefaultBorder.Right;
+		SelectedAppointmentBorderLine = _grid.Selection is SourceGrid.Selection.SelectionBase selection ? selection.Border.Top : new BorderLine(Color.Black, 2);
 		_grid.Cursor = null;
 		_viewModel = null;
 		_cellDisplays = new Dictionary<Tuple<int, int>, Tuple<SourceGrid.Cells.Cell, CellViewModel>>();
@@ -117,18 +115,36 @@ public partial class BaseAppointmentBook : UserControlEx {
 		get; set;
 	}
 
+	/// <summary>The line below each free time slot. Defaults to the SourceGrid cell grid line.</summary>
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
 	public BorderLine HorizontalBorderLine {
 		get; set;
 	}
 
+	/// <summary>The line between columns of free time slots. Defaults to the SourceGrid cell grid line.</summary>
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	public BorderLine VerticalBorderLine {
+		get; set;
+	}
+
+	/// <summary>The outline of the selected appointment. Defaults to the SourceGrid selection border.</summary>
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
 	public BorderLine SelectedAppointmentBorderLine {
 		get; set;
 	}
 
+	/// <summary>The outline of an appointment. Its colour is derived from the appointment colour while <see cref="SoftenAppointmentColors"/> is set.</summary>
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
 	public BorderLine AppointmentBorderLine {
+		get; set;
+	}
+
+	/// <summary>
+	/// Draws each appointment with a pastel fill, a text colour and an outline derived from its colour, as the SourceGrid planning grid does.
+	/// When false, the appointment colour fills the cells unchanged.
+	/// </summary>
+	[DefaultValue(true)]
+	public bool SoftenAppointmentColors {
 		get; set;
 	}
 
@@ -178,6 +194,16 @@ public partial class BaseAppointmentBook : UserControlEx {
 		var rowIndexOffset = HasColHeaders ? 1 : 0;
 
 		_grid.Redim(dataSourceRowCount + rowIndexOffset, dataSourceColCount + colIndexOffset);
+		_grid.FixedRows = rowIndexOffset;
+		_grid.FixedColumns = colIndexOffset;
+
+		// Rows follow the grid font so text has the planning grid's breathing room at every DPI; the header holds two lines.
+		var lineHeight = _grid.Font.Height;
+		for (var index = 0; index < _grid.RowsCount; index++)
+			_grid.Rows[index].Height = lineHeight + CellTextPadding;
+		if (HasColHeaders)
+			_grid.Rows[0].Height = 2 * lineHeight + CellTextPadding;
+
 		for (var index = 0; index < _grid.ColumnsCount; index++) {
 			if (this.MaxColumnWidth > 0)
 				_grid.Columns[index].MaximalWidth = this.MaxColumnWidth;
@@ -194,7 +220,7 @@ public partial class BaseAppointmentBook : UserControlEx {
 			for (var i = 0; i < _grid.RowsCount; i++)
 				_grid[i, 0] = _grid[i, 1] = null;
 
-			_grid[0, 0] = new SourceGrid.Cells.Header("Time");
+			_grid[0, 0] = new SourceGrid.Cells.Header(GetPeriodCaption());
 			_grid[0, 0].ColumnSpan = 2;
 
 			_grid.Columns[0].AutoSizeMode = SourceGrid.AutoSizeMode.None;
@@ -207,13 +233,18 @@ public partial class BaseAppointmentBook : UserControlEx {
 			_grid.Columns[1].MaximalWidth = RowHeaderColumnWidth;
 			_grid.Columns[1].Width = RowHeaderColumnWidth;
 
+			// Like the planning grid, an hour spans its slot rows beside their minutes; whole-hour slots read as one time.
+			var wholeHourSlots = ViewModel.TimeView != TimePeriodType.Monthly && rowHeaders.All(rowHeader => rowHeader.Count() == 1);
 			var rowIndex = rowIndexOffset;
 			foreach (var rowHeader in rowHeaders) {
+				if (wholeHourSlots) {
+					_grid[rowIndex, 0] = new SourceGrid.Cells.RowHeader($"{rowHeader.Key}:{rowHeader.Single()}") { ColumnSpan = 2 };
+					rowIndex++;
+					continue;
+				}
 				_grid[rowIndex, 0] = new SourceGrid.Cells.RowHeader(rowHeader.Key) { RowSpan = rowHeader.Count() };
 				foreach (var secondRowHeader in rowHeader) {
-					var secondRowHeaderCell = new SourceGrid.Cells.RowHeader(secondRowHeader);
-					secondRowHeaderCell.View = new SuperscriptRowHeaderCellView();
-					_grid[rowIndex, 1] = secondRowHeaderCell;
+					_grid[rowIndex, 1] = new SourceGrid.Cells.RowHeader(secondRowHeader);
 					rowIndex++;
 				}
 			}
@@ -253,6 +284,64 @@ public partial class BaseAppointmentBook : UserControlEx {
 
 	protected virtual void BindCellWithCellDisplay(SourceGrid.Cells.Cell cell, CellViewModel cellDisplay, int col, int row) {
 		cell.View = new CellView(this, cellDisplay);
+	}
+
+	/// <summary>The two-line caption above the time column: the date and weekday, or the month and year in the monthly view.</summary>
+	protected virtual string GetPeriodCaption() {
+		var start = ViewModel.TimePeriodStart;
+		return ViewModel.TimeView == TimePeriodType.Monthly
+			? $"{start:MMMM}{Environment.NewLine}{start:yyyy}"
+			: $"{start.ToShortDateString()}{Environment.NewLine}{start:dddd}";
+	}
+
+	/// <summary>The background of an appointment cell, lightened to a pastel tint of the appointment colour.</summary>
+	protected internal virtual Color GetAppointmentFillColor(CellViewModel cellDisplay) {
+		var color = cellDisplay.BackColor;
+		if (!SoftenAppointmentColors)
+			return color;
+		var lightness = color.GetBrightness();
+		return lightness >= PastelLightness ? color : color.GetShade((PastelLightness - lightness) / (1 - lightness));
+	}
+
+	/// <summary>The text of an appointment cell, darkened from the appointment colour so the hue stays recognisable.</summary>
+	protected internal virtual Color GetAppointmentTextColor(CellViewModel cellDisplay) {
+		if (!SoftenAppointmentColors)
+			return cellDisplay.TextColor;
+		var color = cellDisplay.BackColor;
+		var lightness = color.GetBrightness();
+		return lightness <= InkLightness ? color : color.GetShade(-(lightness - InkLightness) / lightness);
+	}
+
+	/// <summary>The outline of an unselected appointment, tinted from its fill.</summary>
+	protected internal virtual BorderLine GetAppointmentBorderLine(CellViewModel cellDisplay) {
+		var line = AppointmentBorderLine;
+		if (SoftenAppointmentColors)
+			line.Color = GetAppointmentFillColor(cellDisplay).GetShade(OutlineShade);
+		return line;
+	}
+
+	/// <summary>Returns the grid font in the requested style, or null for the grid font itself. The control owns the styled fonts.</summary>
+	internal Font GetAppointmentFont(FontStyle style) {
+		if (style == FontStyle.Regular)
+			return null;
+		if (!_appointmentFonts.TryGetValue(style, out var font)) {
+			font = new Font(_grid.Font, style);
+			_appointmentFonts.Add(style, font);
+		}
+		return font;
+	}
+
+	protected override void OnFontChanged(EventArgs args) {
+		base.OnFontChanged(args);
+		ReleaseAppointmentFonts();
+		if (ViewModel != null && !DesignMode)
+			BindToViewModel();
+	}
+
+	private void ReleaseAppointmentFonts() {
+		foreach (var font in _appointmentFonts.Values)
+			font.Dispose();
+		_appointmentFonts.Clear();
 	}
 
 	// Cell Methods

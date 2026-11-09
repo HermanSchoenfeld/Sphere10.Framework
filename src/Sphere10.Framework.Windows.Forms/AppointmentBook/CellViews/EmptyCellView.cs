@@ -12,16 +12,11 @@ using Sphere10.Framework.Windows.Forms.Drawing;
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
 /// <summary>
-/// Customized View to draw a rounded background
+/// Draws a free time slot with the grid lines of a SourceGrid cell.
 /// </summary>
 internal class EmptyCellView : SourceGrid.Cells.Views.Cell {
 	public EmptyCellView(BaseAppointmentBook parent) {
-		Border = new RectangleBorder {
-			Top = BorderLine.NoBorder,
-			Left = BorderLine.NoBorder,
-			Right = BorderLine.NoBorder,
-			Bottom = parent.HorizontalBorderLine
-		};
+		Border = new RectangleBorder(parent.VerticalBorderLine, parent.HorizontalBorderLine);
 	}
 }
 

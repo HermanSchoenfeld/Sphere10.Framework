@@ -12,7 +12,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 |---|---|---|
 | [`Address`](Address.cs) | class | Street, city, post code and state values of the sample `Employee`. |
 | [`ApplicationServicesTestScreen`](ApplicationServicesTestScreen.cs) | class | Lists the owning application, its logger and each block's screen registrations, and writes a message through the application logger. |
-| [`AppointmentBookScreen`](AppointmentBookScreen.cs) | class | Appointment book and unallocated-work controls over `MyAppointmentBookDataSource`, logging selection, drag and resize events. |
+| [`AppointmentBookScreen`](AppointmentBookScreen.cs) | class | Appointment book with an unallocated-work tray beside it over `MyAppointmentBookDataSource`, using a pastel category palette and logging selection, drag and resize events. |
 | [`BloomFilterAnalysisScreen`](BloomFilterAnalysisScreen.cs) | class | Compares `BloomFilterMath` length and error estimates for an item count, error rate and round count in bit and byte units. |
 | [`CBACSVConverterScreen`](CBACSVConverterScreen.cs) | class | Rewrites the dates of a bank CSV export through the Framework `CsvReader` without breaking quoted fields. |
 | [`ChartGalleryScreen`](ChartGalleryScreen.cs) | class | Browses the `ChartGallerySamples` data-visualization charts by family, with exploration, zoom, palettes, PNG export and C# example generation. |

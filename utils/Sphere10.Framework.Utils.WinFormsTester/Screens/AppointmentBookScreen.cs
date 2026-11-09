@@ -22,6 +22,8 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 	private static readonly string[] _streetTypes = new string[] { "St", "Rd", "Way", "Pde", "Ct" };
 	private static readonly string[] _states = new string[] { "ACT", "QLD", "NSW", "TAS", "VIC", "WA", "SA", "NT" };
 	private static readonly string[] _cities = new string[] { "Vega", "Pleides", "Ceres", "Hyades", "Celestial Sphere", "Taurus", "Gemeni", "Mars", "Mercury", "Woodridge" };
+	// Mid-tone category hues; the appointment book softens each into a pastel fill with matching text.
+	private static readonly Color[] _appointmentColors = new[] { Color.SteelBlue, Color.SeaGreen, Color.Goldenrod, Color.IndianRed, Color.MediumPurple, Color.Coral, Color.Teal, Color.Orchid };
 	private readonly TextBoxWriter _outputWriter;
 	private MyAppointmentBookDataSource _dataSource;
 
@@ -197,7 +199,7 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 					RandomLocation1(),
 					RandomLocation2(),
 					RandomNotes(),
-					Tools.Drawing.RandomColor(),
+					RandomAppointmentColor(),
 					null
 				);
 		}
@@ -218,7 +220,7 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 						RandomLocation1(),
 						RandomLocation2(),
 						RandomNotes(),
-						Tools.Drawing.RandomColor(),
+						RandomAppointmentColor(),
 						null
 					);
 			}
@@ -247,6 +249,10 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 		for (var i = 0; i < sortedValues.Count; i += 2) {
 			yield return Tuple.Create(sortedValues[i], sortedValues[i + 1]);
 		}
+	}
+
+	private Color RandomAppointmentColor() {
+		return _appointmentColors[Tools.Maths.RNG.Next(_appointmentColors.Length)];
 	}
 
 	private string RandomSubject() {

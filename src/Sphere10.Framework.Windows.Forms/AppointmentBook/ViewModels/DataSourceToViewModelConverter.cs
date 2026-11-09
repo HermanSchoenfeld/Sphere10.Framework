@@ -78,12 +78,12 @@ public class DataSourceToViewModelConverter {
 		var location2 = (viewModel.AppointmentDataObject.LocationPart2 ?? string.Empty).Replace(Environment.NewLine, string.Empty);
 		var notesString = (viewModel.AppointmentDataObject.Notes ?? string.Empty).Replace(Environment.NewLine, string.Empty);
 
-		bool underline = false;
+		bool bold = false;
 		var string1 = string.Empty;
 		var string2 = string.Empty;
 		if (!string.IsNullOrEmpty(subjectString)) {
 			string1 = subjectString;
-			underline = true;
+			bold = true;
 		} else if (!string.IsNullOrEmpty(location1)) {
 			string1 = location1;
 			string2 = location2;
@@ -92,8 +92,8 @@ public class DataSourceToViewModelConverter {
 		}
 
 		cells[0].Text = string1;
-		if (underline)
-			cells[0].FontStyle = FontStyle.Bold | FontStyle.Underline;
+		if (bold)
+			cells[0].FontStyle = FontStyle.Bold;
 
 		if (cells.Length > 1)
 			cells[1].Text = string2;
@@ -111,11 +111,11 @@ public class DataSourceToViewModelConverter {
 		var notesString = (viewModel.AppointmentDataObject.Notes ?? string.Empty).Replace(Environment.NewLine, string.Empty);
 
 		var stringStack = new List<string>();
-		bool underline = false;
+		bool bold = false;
 
 		if (!string.IsNullOrEmpty(subjectString)) {
 			stringStack.Add(subjectString);
-			underline = true;
+			bold = true;
 		}
 
 		if (!string.IsNullOrEmpty(location1)) {
@@ -132,8 +132,8 @@ public class DataSourceToViewModelConverter {
 
 		for (int i = 0; i < stringStack.Count; i++) {
 			cells[i].Text = stringStack[i];
-			if (i == 0 && underline)
-				cells[i].FontStyle = FontStyle.Bold | FontStyle.Underline;
+			if (i == 0 && bold)
+				cells[i].FontStyle = FontStyle.Bold;
 		}
 		ColorCells(cells, viewModel.Color);
 	}
@@ -147,16 +147,14 @@ public class DataSourceToViewModelConverter {
 		var location2 = (viewModel.AppointmentDataObject.LocationPart2 ?? string.Empty).Replace(Environment.NewLine, string.Empty);
 		var notesString = (viewModel.AppointmentDataObject.Notes ?? string.Empty).Replace(Environment.NewLine, string.Empty);
 
+		// Like the shorter layouts, the subject leads; notes sit apart from the location below a blank line.
 		var stringStack = new List<string>();
-		bool underline = false;
-		stringStack.Add(string.Empty);
+		bool bold = false;
 
 		if (!string.IsNullOrEmpty(subjectString)) {
 			stringStack.Add(subjectString);
-			underline = true;
+			bold = true;
 		}
-
-		stringStack.Add(string.Empty);
 
 		if (!string.IsNullOrEmpty(location1)) {
 			stringStack.Add(location1);
@@ -166,9 +164,8 @@ public class DataSourceToViewModelConverter {
 			stringStack.Add(location2);
 		}
 
-		stringStack.Add(string.Empty);
-
 		if (!string.IsNullOrEmpty(notesString)) {
+			stringStack.Add(string.Empty);
 			stringStack.Add(notesString);
 		}
 
@@ -176,14 +173,8 @@ public class DataSourceToViewModelConverter {
 			cells[i].Text = stringStack[i];
 		}
 
-		for (int i = 0; i < stringStack.Count; i++) {
-			if (cells.Length < i + 1)
-				break;
-
-			cells[i].Text = stringStack[i];
-			if (i == 2 && underline)
-				cells[1].FontStyle = FontStyle.Bold | FontStyle.Underline;
-		}
+		if (bold)
+			cells[0].FontStyle = FontStyle.Bold;
 		ColorCells(cells, viewModel.Color);
 	}
 

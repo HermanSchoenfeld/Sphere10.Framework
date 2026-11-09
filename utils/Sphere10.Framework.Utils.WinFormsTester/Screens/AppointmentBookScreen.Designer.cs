@@ -20,6 +20,7 @@ partial class AppointmentBookScreen {
 	private Button _populateButton;
 	private EnumComboBox _timeViewSelector;
 	private EnumComboBox _columnFilterComboBox;
+	private TableLayoutPanel _scheduleLayout;
 	private Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook _appointmentBook;
 	private Sphere10.Framework.Windows.Forms.AppointmentBook.UnallocatedBook _unallocatedBook;
 	private TextBox _outputTextBox;
@@ -38,17 +39,20 @@ partial class AppointmentBookScreen {
 		_populateButton.Name = "_populateButton";
 		_timeViewSelector = new EnumComboBox();
 		_columnFilterComboBox = new EnumComboBox();
+		_scheduleLayout = new TableLayoutPanel();
+		_scheduleLayout.Name = "_scheduleLayout";
 		_appointmentBook = new Sphere10.Framework.Windows.Forms.AppointmentBook.AppointmentBook();
 		_unallocatedBook = new Sphere10.Framework.Windows.Forms.AppointmentBook.UnallocatedBook();
 		_outputTextBox = new TextBox();
 		_layout.SuspendLayout();
+		_scheduleLayout.SuspendLayout();
 		SuspendLayout();
 
 		// The heading and instructions remain with this screen when it is detached.
 		_layout.Dock = DockStyle.Fill;
 		_layout.Padding = new Padding(20);
 		_layout.ColumnCount = 1;
-		_layout.RowCount = 6;
+		_layout.RowCount = 5;
 		_layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -80,10 +84,24 @@ partial class AppointmentBookScreen {
 		_actions.Dock = DockStyle.Fill;
 		_actions.Margin = Padding.Empty;
 		_actions.Controls.AddRange(new Control[] { _populateButton, _timeViewSelector, _columnFilterComboBox });
+		_actions.Margin = new Padding(0, 0, 0, 10);
 		_appointmentBook.Name = "AppointmentBook";
 		_appointmentBook.Dock = DockStyle.Fill;
+		_appointmentBook.Margin = new Padding(0, 0, 10, 0);
 		_unallocatedBook.Name = "UnallocatedBook";
 		_unallocatedBook.Dock = DockStyle.Fill;
+		_unallocatedBook.Margin = Padding.Empty;
+
+		// Unallocated work sits beside the schedule as a tray of the same row height, ready to drag into a resource column.
+		_scheduleLayout.Dock = DockStyle.Fill;
+		_scheduleLayout.Margin = new Padding(0, 0, 0, 10);
+		_scheduleLayout.ColumnCount = 2;
+		_scheduleLayout.RowCount = 1;
+		_scheduleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+		_scheduleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 240F));
+		_scheduleLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+		_scheduleLayout.Controls.Add(_appointmentBook, 0, 0);
+		_scheduleLayout.Controls.Add(_unallocatedBook, 1, 0);
 		_outputTextBox.Name = "_outputTextBox";
 		_outputTextBox.Dock = DockStyle.Fill;
 		_outputTextBox.Multiline = true;
@@ -115,12 +133,10 @@ partial class AppointmentBookScreen {
 		// Content-sized command rows keep their complete buttons visible at smaller widths.
 		_layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 		_layout.Controls.Add(_actions, 0, 2);
-		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 65F));
-		_layout.Controls.Add(_appointmentBook, 0, 3);
-		_layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 120F));
-		_layout.Controls.Add(_unallocatedBook, 0, 4);
-		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 35F));
-		_layout.Controls.Add(_outputTextBox, 0, 5);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 72F));
+		_layout.Controls.Add(_scheduleLayout, 0, 3);
+		_layout.RowStyles.Add(new RowStyle(SizeType.Percent, 28F));
+		_layout.Controls.Add(_outputTextBox, 0, 4);
 		Font = SystemFonts.MessageBoxFont;
 		AutoScaleDimensions = new SizeF(7F, 15F);
 		AutoScaleMode = AutoScaleMode.Font;
@@ -129,6 +145,7 @@ partial class AppointmentBookScreen {
 		Text = "Appointment Book";
 		Size = new Size(1000, 720);
 		Controls.Add(_layout);
+		_scheduleLayout.ResumeLayout(false);
 		_layout.ResumeLayout(false);
 		_layout.PerformLayout();
 		ResumeLayout(false);

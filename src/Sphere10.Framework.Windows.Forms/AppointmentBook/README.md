@@ -6,6 +6,8 @@ Scheduling grid control that shows appointments in named columns over a time per
 
 The control raises typed events for free-region selection, appointment selection, dragging, dropping and resizing. The `*Starting` and `ResizingFinished` events expose `Cancel` and a message so a handler can veto the change. `UnallocatedBook` is a single-column variant for appointments not yet assigned to a column.
 
+The book draws with the same SourceGrid cells, views and borders as the SourceGrid `PlanningGrid`. Free time slots use the standard cell grid lines (`ViewBase.DefaultBorder`), and the selected appointment uses the grid's selection border. The header row shows the date and weekday above the time column, or the month and year in the monthly view, and whole-hour rows read as `08:00`. Rows follow the grid font, and resource columns stretch to fill the control. While `SoftenAppointmentColors` is true, the default, each appointment colour becomes a pastel fill with bold text and an outline in darker shades of the same hue. Override `GetAppointmentFillColor`, `GetAppointmentTextColor` or `GetAppointmentBorderLine` to change that rule, or set the property to false to fill cells with the appointment colour unchanged.
+
 ## Contents
 
 | Type | Kind | Purpose |
@@ -22,7 +24,7 @@ The control raises typed events for free-region selection, appointment selection
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`SuperscriptRowHeaderCellView`](CellViews/SuperscriptRowHeaderCellView.cs) | class | SourceGrid row header view with a small top-centred font for time labels |
+| [`SuperscriptRowHeaderCellView`](CellViews/SuperscriptRowHeaderCellView.cs) | class | SourceGrid row header view with a small top-centred font for time labels. The book's own time column uses the standard row header |
 
 ### Controls
 

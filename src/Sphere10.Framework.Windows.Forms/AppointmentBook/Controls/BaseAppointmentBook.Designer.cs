@@ -20,9 +20,10 @@ partial class BaseAppointmentBook {
 	/// </summary>
 	/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 	protected override void Dispose(bool disposing) {
-		if (disposing && (_components != null))
-			_components.Dispose();
-
+		if (disposing) {
+			_components?.Dispose();
+			ReleaseAppointmentFonts();
+		}
 		base.Dispose(disposing);
 	}
 
@@ -37,6 +38,8 @@ partial class BaseAppointmentBook {
 		//
 		// _grid
 		//
+		this._grid.AutoStretchColumnsToFitWidth = true;
+		this._grid.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 		this._grid.ColumnsCount = 10;
 		this._grid.Dock = System.Windows.Forms.DockStyle.Fill;
 		this._grid.EnableSort = true;
