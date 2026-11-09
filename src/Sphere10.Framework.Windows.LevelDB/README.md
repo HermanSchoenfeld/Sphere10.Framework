@@ -58,6 +58,35 @@ using (var batch = new WriteBatch()) {
 }
 ```
 
+### Byte-Array Keys and Durable Writes
+
+```csharp
+using System.Buffers.Binary;
+using System.Text;
+using Sphere10.Framework.Windows.LevelDB;
+
+using var blocks = new DB(@"C:\Data\blocks", new Options { CreateIfMissing = true });
+
+var key = new byte[8];
+BinaryPrimitives.WriteInt64BigEndian(key, 42);   // big-endian numbers sort in numeric order
+byte[] payload = Encoding.UTF8.GetBytes("block 42");
+
+using (var durable = new WriteOptions { Sync = true }) {
+	blocks.Put(key, payload, durable);
+}
+
+byte[] stored = blocks.Get(key);   // null when the key is missing
+
+using (var iterator = blocks.CreateIterator()) {
+	for (iterator.SeekToLast(); iterator.IsValid(); iterator.Prev()) {
+		long height = BinaryPrimitives.ReadInt64BigEndian(iterator.GetKey());
+		byte[] value = iterator.GetValue();
+	}
+}
+```
+
+The default comparator orders keys byte by byte, so write non-negative numeric keys big-endian to keep them in numeric order. Keep keys of one layout in their own database, so that a decoder such as `ReadInt64BigEndian` never meets a key of another shape. `SeekToLast` and `Prev` walk the entries from the highest key down. Pass a `WriteOptions` with `Sync` set to `DB.Write` as well, when a whole batch must reach the disk before the call returns.
+
 ### Iterating Over Data
 
 ```csharp
@@ -92,6 +121,28 @@ using (var snapshot = db.CreateSnapshot()) {
 
 A snapshot is immutable, so several threads can read through it without locking. Pass it in `ReadOptions.Snapshot` to `Get` or to `CreateIterator`.
 
+New keys and deletes follow the same rule, and an iterator created with the snapshot's read options walks the contents as they were.
+
+```csharp
+db.Put("Tampa", "green");
+db.Put("London", "red");
+
+using (var snapshot = db.CreateSnapshot())
+using (var asOfSnapshot = new ReadOptions { Snapshot = snapshot }) {
+	db.Put("New York", "blue");
+	db.Delete("London");
+
+	string added = db.Get("New York", asOfSnapshot);   // null, because the key was added after the snapshot
+	string deleted = db.Get("London", asOfSnapshot);   // "red", because the snapshot still holds it
+
+	using var iterator = db.CreateIterator(asOfSnapshot);
+	for (iterator.SeekToFirst(); iterator.IsValid(); iterator.Next())
+		Console.WriteLine(iterator.GetStringKey());     // includes London, excludes New York
+}
+
+string current = db.Get("London");   // null, because the database itself has the delete
+```
+
 ### Options
 
 | Setting | Effect |
@@ -111,6 +162,29 @@ A snapshot is immutable, so several threads can read through it without locking.
 | `WriteOptions.Sync` | Flushes each write to disk before it completes, which is slower but keeps recent writes through a machine crash |
 
 These properties have setters only, except `Env`, `Cache` and `Comparator`. Do not change an `Options` object after a `DB` has opened with it.
+
+```csharp
+using Sphere10.Framework.Windows.LevelDB;
+
+using var cache = new Cache(64 * 1024 * 1024);   // 64 MB LRU block cache
+using var options = new Options {
+	CreateIfMissing = true,
+	Cache = cache,
+	WriteBufferSize = 16 * 1024 * 1024,
+	MaxOpenFiles = 500,
+	CompressionLevel = CompressionLevel.SnappyCompression
+};
+using var ledger = new DB(@"C:\Data\ledger", options);
+
+// A one-off scan over every entry should not push hot blocks out of the cache.
+using var bulkScan = new ReadOptions { FillCache = false, VerifyCheckSums = true };
+using var iterator = ledger.CreateIterator(bulkScan);
+for (iterator.SeekToFirst(); iterator.IsValid(); iterator.Next()) {
+	byte[] value = iterator.GetValue();
+}
+```
+
+`using var` disposes in reverse order, so the iterator closes before the database, and the database closes before its options and cache. Keep a `Cache` alive for as long as any database that uses it is open.
 
 ### Database Maintenance
 

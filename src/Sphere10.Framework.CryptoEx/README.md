@@ -121,6 +121,85 @@ Console.WriteLine(key.Equals(sameKey)); // True: the seed determines the key
 
 `GeneratePrivateKey(seed)` draws the key from a SHA-256 random generator that is seeded only with `seed`, so the seed is as secret as the key. Signing is deterministic too, because RFC 6979 derives each nonce from the key and the message digest.
 
+### Random keys
+
+```csharp
+using System;
+using System.Linq;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.CryptoEx.EC;
+
+var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+var privateKey = ecdsa.GeneratePrivateKey();
+var publicKey = ecdsa.DerivePublicKey(privateKey);
+Console.WriteLine(privateKey.RawBytes.Length); // 32
+Console.WriteLine(publicKey.RawBytes.Length); // 33: a compressed point
+
+var anotherPrivateKey = ecdsa.GeneratePrivateKey();
+Console.WriteLine(privateKey.RawBytes.SequenceEqual(anotherPrivateKey.RawBytes)); // False
+
+// Stored key bytes parse back into keys
+Console.WriteLine(ecdsa.TryParsePrivateKey(privateKey.RawBytes, out var restoredKey) && restoredKey.Equals(privateKey)); // True
+Console.WriteLine(ecdsa.TryParsePublicKey(publicKey.RawBytes, out var restoredPublicKey) && restoredPublicKey.Equals(publicKey)); // True
+```
+
+`GeneratePrivateKey()` seeds each key with 32 new bytes from `Tools.Crypto.GenerateCryptographicallyRandomBytes`, so every call gives a different key. `RawBytes` holds the big-endian private scalar or the compressed public point. `TryParsePrivateKey` rejects a scalar outside the curve order, and `TryParsePublicKey` rejects an uncompressed point.
+
+### Public-key encryption
+
+```csharp
+using System;
+using System.Linq;
+using System.Text;
+using Sphere10.Framework;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.CryptoEx.EC;
+
+var ecdsa = new ECDSA(ECDSAKeyType.SECP384R1);
+var privateKey = ecdsa.GeneratePrivateKey();
+var publicKey = ecdsa.DerivePublicKey(privateKey);
+
+var plaintext = Encoding.UTF8.GetBytes("Confidential data");
+var ciphertext = ecdsa.IES.Encrypt(plaintext, publicKey);
+var decrypted = ecdsa.IES.Decrypt(ciphertext, privateKey);
+Console.WriteLine(Encoding.UTF8.GetString(decrypted)); // Confidential data
+
+// Each encryption uses a new ephemeral key, so the ciphertexts differ
+var ciphertext2 = ecdsa.IES.Encrypt(plaintext, publicKey);
+Console.WriteLine(ciphertext.SequenceEqual(ciphertext2)); // False
+
+// Another private key cannot decrypt the message
+var otherKey = ecdsa.GeneratePrivateKey();
+Console.WriteLine(ecdsa.IES.TryDecrypt(ciphertext, out _, otherKey)); // False
+```
+
+`Decrypt` is an extension method from the `Sphere10.Framework` namespace that throws where `TryDecrypt` returns `false`. `Schnorr.IES` encrypts to Schnorr keys in the same way. [PascalCoin ECIES Compatibility](#-pascalcoin-ecies-compatibility) describes the ciphertext format and its limits.
+
+### Choosing a curve
+
+```csharp
+using System;
+using System.Text;
+using Sphere10.Framework;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.CryptoEx.EC;
+
+var message = Encoding.UTF8.GetBytes("Test");
+foreach (var keyType in new[] { ECDSAKeyType.SECP256K1, ECDSAKeyType.SECP384R1, ECDSAKeyType.SECP521R1, ECDSAKeyType.SECT283K1 }) {
+	var ecdsa = new ECDSA(keyType);
+	var privateKey = ecdsa.GeneratePrivateKey();
+	var signature = ecdsa.Sign(privateKey, message);
+	var valid = ecdsa.Verify(signature, message, ecdsa.DerivePublicKey(privateKey));
+	Console.WriteLine($"{keyType}: {ecdsa.KeySize}-byte private keys, {ecdsa.CompressedPublicKeySize}-byte public keys, {valid}");
+}
+
+// The fixed-curve subclasses need no key type, and the digest function can be changed
+var secp256k1 = new SECP256k1();
+var secp521r1 = new ECDSA(ECDSAKeyType.SECP521R1, CHF.SHA2_512);
+```
+
+Every curve has the same API. Larger curves give more security and slower operations, as the [curve table](#curves) shows. `ECDSA` hashes messages with SHA2-256 unless its constructor receives another `CHF`.
+
 ### Schnorr signatures
 
 ```csharp
@@ -181,8 +260,18 @@ using System;
 using System.Text;
 using Sphere10.Framework;
 
+var schemes = new[] {
+	DSS.ECDSA_SECP256k1,   // 256-bit prime curve
+	DSS.ECDSA_SECP384R1,   // 384-bit prime curve
+	DSS.ECDSA_SECP521R1,   // 521-bit prime curve
+	DSS.ECDSA_SECT283K1,   // 283-bit binary curve
+	DSS.SCHNORR_SECP256k1, // BIP-340 Schnorr
+	DSS.PQC_WAMS,          // hash-based Winternitz AMS from the core library
+	DSS.PQC_WAMSSharp      // its WAMS# variant
+};
+
 var message = Encoding.UTF8.GetBytes("Important message");
-foreach (var dss in new[] { DSS.ECDSA_SECP256k1, DSS.ECDSA_SECP384R1, DSS.SCHNORR_SECP256k1, DSS.PQC_WAMS }) {
+foreach (var dss in schemes) {
 	var privateKey = Signers.GeneratePrivateKey(dss);
 	var publicKey = Signers.DerivePublicKey(dss, privateKey, 0UL);
 	var signature = Signers.Sign(dss, privateKey, message, 0UL);
@@ -196,6 +285,7 @@ The ECDSA and Schnorr entries need the registered module, whereas `DSS.PQC_WAMS`
 
 ```csharp
 using System;
+using System.Linq;
 using Sphere10.Framework;
 
 var vrf = VRF.CreateCryptographicVRF(CHF.SHA2_256, DSS.ECDSA_SECP256k1);
@@ -205,9 +295,13 @@ var publicKey = Signers.DerivePublicKey(DSS.ECDSA_SECP256k1, privateKey, 0UL);
 var seed = new byte[] { 1, 2, 3, 4 };
 var output = vrf.Run(seed, privateKey, 0UL, out var proof);
 Console.WriteLine(vrf.TryVerify(seed, output, proof, publicKey)); // True
+
+// RFC 6979 makes the ECDSA proof, and so the output, repeatable
+var again = vrf.Run(seed, privateKey, 0UL, out _);
+Console.WriteLine(output.SequenceEqual(again)); // True
 ```
 
-`CryptographicVRF` signs the digest of the seed to form the proof, and it hashes the proof to form the output. A verifier accepts any valid signature, so a dishonest ECDSA or Schnorr signer can choose another nonce, produce a different valid proof and so obtain a different output. Do not rely on the output being the only one that a signer can produce.
+A VRF output is unpredictable to anyone without the private key, and the proof lets others check it, which suits tasks such as leader election in a consensus protocol. `CryptographicVRF` signs the digest of the seed to form the proof, and it hashes the proof to form the output. A verifier accepts any valid signature, so a dishonest ECDSA or Schnorr signer can choose another nonce, produce a different valid proof and so obtain a different output. Do not rely on the output being the only one that a signer can produce.
 
 ## 🔒 PascalCoin ECIES Compatibility
 
@@ -234,9 +328,55 @@ In a WebAssembly executable, the module also registers HashLib4CSharp versions o
 
 `RandomHash2.Compute` and `RandomHashFast.Compute` hash a block header with the RandomHash algorithms. `RandomHash2` draws on many of the functions above, so it needs the module registration. `Murmur3_x86_32Digest` provides the non-cryptographic MurmurHash3 (x86, 32-bit) as a BouncyCastle `IDigest`.
 
+```csharp
+using System;
+using System.Text;
+using Sphere10.Framework;
+using Sphere10.Framework.CryptoEx;
+using Sphere10.Framework.CryptoEx.HF;
+
+var data = Encoding.UTF8.GetBytes("block header");
+
+// CHF values that the module registers
+byte[] ripemd160 = Hashers.Hash(CHF.RIPEMD_160, data);
+byte[] keccak256 = Hashers.Hash(CHF.Keccak_256, data);
+byte[] blake2b = Hashers.Hash(CHF.Blake2b_256_Fast, data);
+Console.WriteLine(Hashers.GetDigestSizeBytes(CHF.SHA3_512)); // 64
+Console.WriteLine(ripemd160.ToHexString(true)); // 40 hexadecimal digits, without the 0x prefix
+
+// RandomHash proof-of-work over a block header
+byte[] powHash = RandomHash2.Compute(data);
+
+// Non-cryptographic MurmurHash3 with a seed
+var murmur = new Murmur3_x86_32Digest(seed: 42);
+murmur.BlockUpdate(data, 0, data.Length);
+uint bucket = murmur.DoFinal();
+```
+
+`ToHexString` is an extension method from the `Sphere10.Framework` namespace. Code that needs an algorithm or mode without a `CHF` value, such as an XOF or a keyed hash, uses [HashLib4CSharp](../Sphere10.HashLib4CSharp/README.md) directly.
+
 ## 🔤 Encodings
 
 `BitcoinBase58Encoding` follows Bitcoin Core's Base58 implementation. `PascalBase58Encoding` encodes and decodes PascalCoin's Base58 strings. `Pascal64Encoding` and `PascalAsciiEncoding` validate, escape and unescape PascalCoin's Pascal64 and PascalAscii strings.
+
+```csharp
+using System;
+using System.Linq;
+using Sphere10.Framework.CryptoEx.Bitcoin;
+using Sphere10.Framework.CryptoEx.PascalCoin;
+
+var bytes = new byte[] { 0, 0, 1, 2, 3 };
+var base58 = BitcoinBase58Encoding.Encode(bytes); // each leading zero byte becomes a '1'
+Console.WriteLine(BitcoinBase58Encoding.Decode(base58).SequenceEqual(bytes)); // True
+
+Console.WriteLine(Pascal64Encoding.IsValidUnescaped("my-account")); // True
+var escaped = Pascal64Encoding.Escape("name(1)"); // name\(1\)
+Console.WriteLine(Pascal64Encoding.Unescape(escaped)); // name(1)
+
+Console.WriteLine(PascalAsciiEncoding.IsValidUnescaped("Payment for invoice #42")); // True
+```
+
+`Pascal64Encoding.IsValidUnescaped` accepts PascalCoin account names of 3 to 64 characters that start with a lowercase letter or a symbol. `Escape` prefixes each reserved character with a backslash, and `Unescape` removes those backslashes.
 
 ## ⚠️ Security Considerations
 

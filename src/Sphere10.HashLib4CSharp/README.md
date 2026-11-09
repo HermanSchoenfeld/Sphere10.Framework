@@ -62,14 +62,50 @@ using System.Text;
 using HashLib4CSharp.Base;
 using HashLib4CSharp.Interfaces;
 
+// SHA family
+var sha1 = HashFactory.Crypto.CreateSHA1().ComputeString("data", Encoding.UTF8);
 var sha256 = HashFactory.Crypto.CreateSHA2_256().ComputeString("data", Encoding.UTF8);
-var sha3 = HashFactory.Crypto.CreateSHA3_512().ComputeString("data", Encoding.UTF8);
+var sha384 = HashFactory.Crypto.CreateSHA2_384().ComputeString("data", Encoding.UTF8);
+var sha512 = HashFactory.Crypto.CreateSHA2_512().ComputeString("data", Encoding.UTF8);
+
+// SHA-3 family
+var sha3_256 = HashFactory.Crypto.CreateSHA3_256().ComputeString("data", Encoding.UTF8);
+var sha3_512 = HashFactory.Crypto.CreateSHA3_512().ComputeString("data", Encoding.UTF8);
+
+// BLAKE family
+var blake2b = HashFactory.Crypto.CreateBlake2B_256().ComputeString("data", Encoding.UTF8);
+var blake2s = HashFactory.Crypto.CreateBlake2S_256().ComputeString("data", Encoding.UTF8);
 var blake3 = HashFactory.Crypto.CreateBlake3_256().ComputeString("data", Encoding.UTF8);
+
+// Keccak-256, the original Keccak padding that Ethereum uses
 var keccak = HashFactory.Crypto.CreateKeccak_256().ComputeString("data", Encoding.UTF8);
 
 // Legacy algorithms such as MD5 are not suitable for security purposes
 var md5 = HashFactory.Crypto.CreateMD5().ComputeString("data", Encoding.UTF8);
 ```
+
+### Keyed and Configured BLAKE2 and BLAKE3
+
+```csharp
+using System.Text;
+using HashLib4CSharp.Base;
+using HashLib4CSharp.Interfaces;
+using HashLib4CSharp.Params;
+
+byte[] key = new byte[32]; // use a secret key in practice
+
+// A keyed 20-byte BLAKE2b digest with a 16-byte personalization
+var config = new Blake2BConfig(20) {
+    Key = key,
+    Personalization = Encoding.UTF8.GetBytes("my-app-v1-16byte")
+};
+var blake2b160 = HashFactory.Crypto.CreateBlake2B(config).ComputeString("data", Encoding.UTF8);
+
+// Keyed BLAKE3 takes exactly 32 key bytes
+var keyedBlake3 = HashFactory.Crypto.CreateBlake3_256(key).ComputeString("data", Encoding.UTF8);
+```
+
+`Blake2BConfig` takes the digest size in bytes, from 1 to 64, a key of up to 64 bytes, and an optional 16-byte salt and personalization. `Blake2SConfig` sets the same values for BLAKE2s, with a digest and key of up to 32 bytes and an 8-byte salt and personalization.
 
 ### Checksums
 
@@ -93,14 +129,28 @@ using System.Text;
 using HashLib4CSharp.Base;
 using HashLib4CSharp.Interfaces;
 
+// xxHash
+var xxh32 = HashFactory.Hash32.CreateXXHash32().ComputeString("data", Encoding.UTF8);
 var xxh64 = HashFactory.Hash64.CreateXXHash64().ComputeString("data", Encoding.UTF8);
-var murmur128 = HashFactory.Hash128.CreateMurmurHash3_x64_128().ComputeString("data", Encoding.UTF8);
+
+// MurmurHash
+var murmur2 = HashFactory.Hash32.CreateMurmur2().ComputeString("data", Encoding.UTF8);
+var murmur3_32 = HashFactory.Hash32.CreateMurmurHash3_x86_32().ComputeString("data", Encoding.UTF8);
+var murmur3_128 = HashFactory.Hash128.CreateMurmurHash3_x64_128().ComputeString("data", Encoding.UTF8);
+
+// FNV
+var fnv = HashFactory.Hash32.CreateFNV().ComputeString("data", Encoding.UTF8);
 var fnv1a = HashFactory.Hash32.CreateFNV1a().ComputeString("data", Encoding.UTF8);
+var fnv64 = HashFactory.Hash64.CreateFNV64().ComputeString("data", Encoding.UTF8);
+
+// A 32-bit result as an integer, for example to choose one of 64 buckets
+uint bucket = xxh32.GetUInt32() % 64;
 
 // Keyed functions return IHashWithKey
 IHashWithKey sipHash = HashFactory.Hash64.CreateSipHash64_2_4();
 sipHash.Key = new byte[16];
-var sip = sipHash.ComputeString("data", Encoding.UTF8);
+var sip64 = sipHash.ComputeString("data", Encoding.UTF8);
+var sip128 = HashFactory.Hash128.CreateSipHash128_2_4().ComputeString("data", Encoding.UTF8);
 ```
 
 ### HMAC (Hash-Based Message Authentication)
@@ -113,13 +163,25 @@ using HashLib4CSharp.Interfaces;
 byte[] key = Encoding.UTF8.GetBytes("secret-key");
 var hmac = HashFactory.HMAC.CreateHMAC(HashFactory.Crypto.CreateSHA2_256(), key);
 var mac = hmac.ComputeString("message", Encoding.UTF8);
+
+// Equals compares the results in constant time
+bool authentic = mac.Equals(hmac.ComputeString("message", Encoding.UTF8)); // True
+
+// KMAC and keyed BLAKE2b take the output length in bits
+byte[] customization = Encoding.UTF8.GetBytes("my-app");
+var kmac = HashFactory.KMAC.CreateKMAC256(key, customization, 256).ComputeString("message", Encoding.UTF8);
+var blake2bMac = HashFactory.Blake2BMAC.CreateBlake2BMAC(key, new byte[0], new byte[0], 256).ComputeString("message", Encoding.UTF8);
 ```
+
+`CreateBlake2BMAC` takes the key, then an optional 16-byte salt and personalization, as empty arrays here. `HashFactory.Blake2SMAC.CreateBlake2SMAC` is the BLAKE2s equivalent.
 
 ### Key Derivation Functions (KDF)
 
 ```csharp
 using System.Text;
 using HashLib4CSharp.Base;
+using HashLib4CSharp.Enum;
+using HashLib4CSharp.KDF;
 
 byte[] password = Encoding.UTF8.GetBytes("password");
 byte[] salt = Encoding.UTF8.GetBytes("salt");
@@ -129,9 +191,26 @@ byte[] derivedKey = pbkdf2.GetBytes(32);
 
 var scrypt = HashFactory.KDF.PBKDFScrypt.CreatePBKDFScrypt(password, salt, cost: 16384, blockSize: 8, parallelism: 1);
 byte[] scryptKey = scrypt.GetBytes(32);
+
+// Argon2id with 64 MiB of memory, three passes and four lanes
+var argon2Parameters = Argon2ParametersBuilder.DefaultBuilder()
+    .WithType(Argon2Type.HybridAddressing)
+    .WithVersion(Argon2Version.Nineteen)
+    .WithSalt(salt)
+    .WithIterations(3)
+    .WithMemoryAsKiB(65536)
+    .WithParallelism(4)
+    .Build();
+var argon2 = HashFactory.KDF.PBKDFArgon2.CreatePBKDFArgon2(password, argon2Parameters);
+byte[] argon2Key = argon2.GetBytes(32);
+argon2.Clear();
+
+// BLAKE3 derives subkeys from existing key material and a context string
+var blake3 = HashFactory.KDF.PBKDFBlake3.CreatePBKDFBlake3(derivedKey, Encoding.UTF8.GetBytes("my-app 2026 session keys"));
+byte[] sessionKey = blake3.GetBytes(32);
 ```
 
-`HashFactory.KDF.PBKDFArgon2.CreatePBKDFArgon2(password, parameters)` takes an `Argon2Parameters` object, which `Argon2ParametersBuilder.Build()` creates. Every KDF also has `GetBytesAsync`, and `Clear()` wipes its sensitive state.
+`HashFactory.KDF.PBKDFArgon2.CreatePBKDFArgon2(password, parameters)` takes an `Argon2Parameters` object, which `Argon2ParametersBuilder.DefaultBuilder()` starts and `Build()` creates. Without other settings the builder gives Argon2i version 1.3 with three iterations, 4 MiB of memory and one lane. Every KDF also has `GetBytesAsync`, and `Clear()` wipes its sensitive state.
 
 ### Streaming Large Files
 
@@ -142,8 +221,11 @@ using HashLib4CSharp.Interfaces;
 
 var hasher = HashFactory.Crypto.CreateSHA2_256();
 
-// One call
+// One call per source
 IHashResult fromFile = hasher.ComputeFile("large_file.bin");
+using (var stream = File.OpenRead("large_file.bin")) {
+    IHashResult fromStream = hasher.ComputeStream(stream);
+}
 
 // Incremental, for example to report progress
 hasher.Initialize();
@@ -156,7 +238,33 @@ using (var stream = File.OpenRead("large_file.bin")) {
 IHashResult incremental = hasher.TransformFinal();
 ```
 
-`ComputeStream`, `ComputeFileAsync` and `ComputeStreamAsync` cover the other cases, and the file methods accept an offset and a length. An `IHash` keeps its state between `Initialize` and `TransformFinal`, so give each concurrent computation its own instance, for example through `Clone()`.
+`ComputeFileAsync` and `ComputeStreamAsync` are the asynchronous forms, and the file methods accept an offset and a length. An `IHash` keeps its state between `Initialize` and `TransformFinal`, so give each concurrent computation its own instance, for example through `Clone()`.
+
+### Extendable-Output Functions (XOF)
+
+```csharp
+using System.Text;
+using HashLib4CSharp.Base;
+using HashLib4CSharp.Interfaces;
+
+// SHAKE256 with 512 bits of output
+IXOF shake = HashFactory.XOF.CreateShake_256(512);
+byte[] output = shake.ComputeString("data", Encoding.UTF8).GetBytes(); // 64 bytes
+
+// The same output, read in two parts
+shake.Initialize();
+shake.TransformString("data", Encoding.UTF8);
+var first = new byte[32];
+var second = new byte[32];
+shake.DoOutput(first, 0, first.Length);
+shake.DoOutput(second, 0, second.Length);
+
+// cSHAKE takes a function name and a customization string, and BLAKE3 XOF an optional key
+IXOF cshake = HashFactory.XOF.CreateCShake_256(new byte[0], Encoding.UTF8.GetBytes("my-app"), 256);
+IXOF blake3Xof = HashFactory.XOF.CreateBlake3XOF(new byte[0], 1024);
+```
+
+`XofSizeInBits` sets the total output length, which must be a positive multiple of 8. `DoOutput` reads the output in pieces up to that length, and input written after the first read throws `InvalidOperationException`.
 
 ### System.Security.Cryptography Adapters
 
@@ -167,9 +275,17 @@ using HashLib4CSharp.Base;
 
 HashAlgorithm adapter = HashFactory.Adapter.CreateHashAlgorithmFromHash(HashFactory.Crypto.CreateSHA2_256());
 byte[] hash = adapter.ComputeHash(Encoding.UTF8.GetBytes("data"));
+
+byte[] key = Encoding.UTF8.GetBytes("secret-key");
+HMAC hmac = HashFactory.Adapter.CreateHMACFromHMACNotBuiltIn(HashFactory.HMAC.CreateHMAC(HashFactory.Crypto.CreateSHA3_256(), key));
+byte[] mac = hmac.ComputeHash(Encoding.UTF8.GetBytes("message"));
+
+DeriveBytes deriveBytes = HashFactory.Adapter.CreateDeriveBytesFromKDFNotBuiltIn(
+    HashFactory.KDF.PBKDF2HMAC.CreatePBKDF2HMAC(HashFactory.Crypto.CreateSHA2_256(), Encoding.UTF8.GetBytes("password"), Encoding.UTF8.GetBytes("salt"), 10000));
+byte[] derivedKey = deriveBytes.GetBytes(32);
 ```
 
-`CreateHMACFromHMACNotBuiltIn` and `CreateDeriveBytesFromKDFNotBuiltIn` adapt HMACs and KDFs in the same way.
+The adapters let HashLib4CSharp algorithms stand in for .NET's `HashAlgorithm`, `HMAC` and `DeriveBytes` in APIs that expect those types.
 
 ## 📋 Algorithm Reference
 

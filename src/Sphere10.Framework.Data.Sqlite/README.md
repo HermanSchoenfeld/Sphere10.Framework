@@ -102,6 +102,12 @@ Types declared in the project folder itself:
 
 ```csharp
 var walDac = Tools.Sqlite.Open(path, journalMode: SqliteJournalMode.Wal, syncMode: SqliteSyncMode.Normal);
+
+// Keep an existing file, or create one with a 32 KB page size.
+var cacheDac = Tools.Sqlite.Create(Path.Combine(Path.GetTempPath(), "cache.sqlite"), pageSize: 32768, existsPolicy: AlreadyExistsPolicy.Skip);
+
+// Open a file that must already exist.
+var existingDac = new SqliteDAC(Tools.Sqlite.ToConnectionString(path));
 ```
 
 | Option | Mapping |
@@ -118,6 +124,45 @@ var walDac = Tools.Sqlite.Open(path, journalMode: SqliteJournalMode.Wal, syncMod
 `Open` does not set `FailIfMissing`, so System.Data.SQLite creates a missing file when the connection opens. When a missing file must be an error, pass `Tools.Sqlite.ToConnectionString(path)` to `new SqliteDAC(...)`. `Create` uses the `Default` journal mode and the `Normal` synchronous mode unless you pass others.
 
 The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` and `ExecuteBatch`. `ExecuteScalar` keeps the provider's command default.
+
+## 📝 Insert, query, update and delete
+
+The DAC's `Insert`, `Update` and `Delete` methods and its `Select`, `Count` and `Any` extensions build the SQL for you. The example keeps its work in one scope, so every statement uses the same connection:
+
+```csharp
+using (dac.EnterScope()) {
+	dac.ExecuteNonQuery(@"CREATE TABLE IF NOT EXISTS products (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL,
+		price REAL NOT NULL,
+		stock INTEGER NOT NULL
+	)");
+
+	// Insert returns the affected-row count, so read the generated key on the same connection.
+	dac.Insert("products", new[] { new ColumnValue("name", "Widget"), new ColumnValue("price", 9.99), new ColumnValue("stock", 100) });
+	var widgetID = dac.ExecuteScalar<long>("SELECT last_insert_rowid()");
+	for (var i = 2; i <= 5; i++)
+		dac.Insert("products", new[] { new ColumnValue("name", $"Product {i}"), new ColumnValue("price", 10.0 + i), new ColumnValue("stock", 50 + i * 10) });
+
+	foreach (DataRow row in dac.ExecuteQuery("SELECT id, name, price FROM products ORDER BY price DESC").Rows)
+		Console.WriteLine($"{row["id"]}: {row["name"]} costs {row["price"]}");
+
+	var cheapest = dac.Select("products", columns: new[] { "name", "price" }, whereClause: "price < 15", orderByClause: "price", limit: 2);
+	var widgets = dac.ExecuteQuery("SELECT * FROM products WHERE name = {0}", SQLBuilderCommand.Literal("Widget"));
+	var totalStock = dac.ExecuteScalar<long>("SELECT SUM(stock) FROM products");
+	var expensiveCount = dac.Count("products", whereClause: "price > 12");
+	var hasWidget = dac.Any("products", columnMatches: new[] { new ColumnValue("name", "Widget") });
+
+	dac.Update("products", new[] { new ColumnValue("stock", 85) }, new[] { new ColumnValue("id", widgetID) });
+	var lowStockUpdate = dac.CreateSQLBuilder().Update("products", new[] { new ColumnValue("price", 11.5) }, whereClause: "stock < 75");
+	dac.ExecuteNonQuery(lowStockUpdate.ToString());
+
+	dac.Delete("products", new[] { new ColumnValue("id", widgetID) });
+	dac.Delete("products", new[] { new ColumnValue("id", new long[] { 2, 3 }) });
+}
+```
+
+`Update` and `Delete` match each `ColumnValue` condition with `=`, or with `IN` when its value is a list. For other conditions, pass a `whereClause` to the builder's `Update` or to `Select`, `Count` and `Any`. `ExecuteQuery(sql, args)` fills `{0}` placeholders with `string.Format`, so wrap values in `SQLBuilderCommand.Literal` to have the builder quote and escape them. The builder writes `double` and `decimal` literals in the current culture, so run under a culture whose decimal separator is a period, such as `CultureInfo.InvariantCulture`.
 
 ## 🔎 Bound parameters
 
@@ -162,6 +207,31 @@ using (var scope = dac.EnterScope()) {
 - With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share one connection and transaction. A nested `Commit` does not commit on its own, and a nested `Rollback` turns the owning scope's `Commit` into a rollback. These are shared transactions, not savepoints.
 - Setting `UseScopeOsmosis = false` keeps different DAC instances apart, while scopes on the same instance still nest.
 - A scope that opens its connection inside an ambient `System.Transactions.TransactionScope` enlists the connection through the provider. Let the ambient scope complete the work, because `DACScope.BeginTransaction`, `Commit` and `Rollback` throw inside it. Ambient and distributed transaction support depends on the provider and platform.
+
+The following money transfer leaves its scope without committing when the balance check fails, so neither update is kept:
+
+```csharp
+using (dac.EnterScope()) {
+	dac.ExecuteNonQuery("CREATE TABLE IF NOT EXISTS accounts (id INTEGER PRIMARY KEY, owner TEXT NOT NULL, balance REAL NOT NULL)");
+	dac.Insert("accounts", new[] { new ColumnValue("id", 1), new ColumnValue("owner", "Alice"), new ColumnValue("balance", 1000.0) });
+	dac.Insert("accounts", new[] { new ColumnValue("id", 2), new ColumnValue("owner", "Bob"), new ColumnValue("balance", 500.0) });
+}
+
+try {
+	using var scope = dac.EnterScope();
+	scope.BeginTransaction();
+	dac.ExecuteNonQuery("UPDATE accounts SET balance = balance - 100 WHERE id = 1");
+	if (dac.ExecuteScalar<double>("SELECT balance FROM accounts WHERE id = 1") < 0)
+		throw new InvalidOperationException("Insufficient funds");
+	dac.ExecuteNonQuery("UPDATE accounts SET balance = balance + 100 WHERE id = 2");
+	scope.Commit();
+} catch (InvalidOperationException error) {
+	Console.WriteLine($"Transfer abandoned: {error.Message}");
+}
+
+Console.WriteLine(dac.ExecuteScalar<double>("SELECT balance FROM accounts WHERE id = 1")); // 900
+Console.WriteLine(dac.ExecuteScalar<double>("SELECT balance FROM accounts WHERE id = 2")); // 600
+```
 
 ## 🗂️ Schema and SQL dialect
 
@@ -209,6 +279,19 @@ Administration works on database files rather than on a server:
 | `SqliteDatabaseManager.CreateEmptyDatabase(connectionString)` | Calls `Tools.Sqlite.Create` with a page size of 32768 bytes and `AlreadyExistsPolicy.Error`. |
 | `SqliteDatabaseManager.DropDatabase(connectionString)` | Calls `Tools.Sqlite.Drop`, which throws when the file is missing. |
 | `SqliteDatabaseManager.CreateApplicationDatabase(...)` | Throws `NotSupportedException`. |
+
+The manager creates, tests and drops database files through the shared `IDatabaseManager` contract:
+
+```csharp
+var manager = new SqliteDatabaseManager();
+var connectionString = manager.GenerateConnectionString(null, Path.Combine(Path.GetTempPath(), "managed.sqlite"), null, null, null);
+if (!manager.DatabaseExists(connectionString))
+	manager.CreateEmptyDatabase(connectionString);
+
+var managedDac = new SqliteDAC(connectionString);
+Console.WriteLine(managedDac.ExecuteScalar<long>("PRAGMA page_size")); // 32768
+manager.DropDatabase(connectionString);
+```
 
 ## 🚧 Implementation boundaries
 

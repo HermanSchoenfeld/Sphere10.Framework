@@ -128,6 +128,70 @@ The editors only collect settings. They do not save profiles, discover servers o
 - When the application needs the database, call `GetDAC()` on the editor or construct `new FirebirdDAC(connectionString)`, then call `EnterScope()` for each unit of work and dispose the scope. The DAC itself is not disposable, and the scope owns the connection.
 - `StateChanged`, inherited from `UserControlEx`, is a parameterless event that is raised when a field changes after the control has loaded. It reports edits, not connectivity.
 
+For example, this unit of work deletes the stored sessions in one transaction on the accepted string:
+
+```csharp
+using Sphere10.Framework.Data;
+
+var dac = new FirebirdDAC(savedConnectionString);
+using (var scope = dac.EnterScope()) {
+	scope.BeginTransaction();
+	dac.ExecuteNonQuery("DELETE FROM sessions");
+	scope.Commit();
+}
+```
+
+Disposing the scope does not commit, so call `Commit()` explicitly.
+
+## Host an editor in code
+
+The editors also work without the designer. The helper below adds a server bar to an existing form or container, and builds an embedded-file dialog around `FirebirdEmbeddedConnectionPanel` with the standard `Form.ShowDialog(owner)` API. Call it from the application's UI thread. Pass the bar a server string, for example one built with `FbConnectionStringBuilder` from the server, the database alias and the application's credentials. Pass the dialog a string with `Database`, `User ID` and any password the file needs.
+
+```csharp
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms;
+using Sphere10.Framework.Windows.Forms.Firebird;
+
+public static class FirebirdConnectionUi {
+	public static FirebirdConnectionBar AddServerBar(Control host, string connectionString) {
+		var bar = new FirebirdConnectionBar { Dock = DockStyle.Top, ConnectionString = connectionString };
+		host.Controls.Add(bar);
+		return bar;
+	}
+
+	public static bool TryEditEmbeddedConnection(IWin32Window owner, string initialConnectionString, out string connectionString) {
+		using var dialog = new Form {
+			Text = "Embedded Firebird connection",
+			Width = 650,
+			Height = 210,
+			StartPosition = FormStartPosition.CenterParent
+		};
+		var panel = new FirebirdEmbeddedConnectionPanel {
+			Dock = DockStyle.Fill,
+			Mode = PathSelectionMode.OpenFile,
+			ConnectionString = initialConnectionString
+		};
+		var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft };
+		var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel };
+		var accept = new Button { Text = "OK", DialogResult = DialogResult.OK };
+		buttons.Controls.Add(cancel);
+		buttons.Controls.Add(accept);
+		dialog.Controls.Add(panel);
+		dialog.Controls.Add(buttons);
+		dialog.AcceptButton = accept;
+		dialog.CancelButton = cancel;
+
+		connectionString = initialConnectionString;
+		if (dialog.ShowDialog(owner) != DialogResult.OK)
+			return false;
+		connectionString = panel.ConnectionString;
+		return true;
+	}
+}
+```
+
+The host owns the added bar. The dialog disposes its panel and buttons after it closes, and cancelling returns the original string unchanged. Pressing **OK** collects the settings without connecting. Use `FirebirdConnectionPanel` in the same dialog for server settings, or `FirebirdEmbeddedConnectionBar` for a compact file editor.
+
 ## Connection string behavior
 
 - Each editor writes its own server type, whatever the assigned string contained. Choose the editor, or the selector key, that matches the deployment.
@@ -156,6 +220,58 @@ Sphere10Framework.Instance
 - Set `SelectedDBMSType` to `DBMSType.Firebird` or `DBMSType.FirebirdFile` before assigning `ConnectionString`, because the selector passes the string to its current editor.
 - `Database` returns the engine and the string together as a `DBReference`, and the bar also accepts one. `DACFactory.CreateDAC(reference.DBMSType, reference.ConnectionString)` recreates the DAC from a saved reference.
 - `DatabaseConnectionPanel` raises `DBMSTypeChanged(panel, dbmsType)` when the selected engine changes. `DatabaseConnectionBar` has no such event.
+
+This complete `Program.cs` starts only the modules that the selector needs, shows it with the Firebird server editor selected and ends the framework after the window closes. Select `DBMSType.FirebirdFile` instead for the embedded editor.
+
+```csharp
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Data;
+using Sphere10.Framework.Windows.Forms;
+using ProviderModule = Sphere10.Framework.Windows.Forms.Firebird.ModuleConfiguration;
+using WinFormsModule = Sphere10.Framework.Windows.Forms.ModuleConfiguration;
+using Application = System.Windows.Forms.Application;
+
+namespace ReadmeExamples.FirebirdSelector;
+
+internal static class Program {
+	[STAThread]
+	private static void Main() {
+		Application.EnableVisualStyles();
+		Application.SetCompatibleTextRenderingDefault(false);
+		var framework = Sphere10Framework.Instance;
+		framework.Build()
+			.AddModule<WinFormsModule>()
+			.AddModule<ProviderModule>()
+			.Start();
+		using var shutdown = Tools.Scope.ExecuteOnDispose(framework.EndFramework);
+		using var window = new Form { Text = "Database connection", ClientSize = new Size(660, 220) };
+		var selector = new DatabaseConnectionPanel {
+			Dock = DockStyle.Fill,
+			SelectedDBMSType = DBMSType.Firebird
+		};
+		window.Controls.Add(selector);
+		Application.Run(window);
+	}
+}
+```
+
+In an existing framework application, add the module to its startup builder instead of starting a second framework. Register the modules of other providers to add their engines to the selector.
+
+Save the selector's `Database` to keep the engine with the string, and recreate the DAC from it later. `DACFactory` creates a `FirebirdDAC` for both Firebird keys.
+
+```csharp
+using Sphere10.Framework.Data;
+
+var saved = selector.Database;
+
+var dac = DACFactory.CreateDAC(saved.DBMSType, saved.ConnectionString);
+using (dac.EnterScope()) {
+	var customers = dac.ExecuteScalar<long>("SELECT COUNT(*) FROM customers");
+}
+```
 
 ## Try the controls
 

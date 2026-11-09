@@ -285,9 +285,69 @@ The `Bootstrap*For` helpers wrap the MVC `*For` helpers with Bootstrap 5 markup.
 
 `Controller.RenderViewAsync(viewName, model, partial)` renders an MVC view into a string, for example as the `content` of a `ReplaceForm` result. An empty `viewName` selects the current action's view, and `partial: true` renders it as a partial view. When the view engine finds no view, the method returns the text `A view with the name <viewName> could not be found` instead of throwing, so check for a missing view before you send the result.
 
+To replace the contact form with a thank-you fragment, save `Views/Contact/Thanks.cshtml`:
+
+```razor
+@model MvcDemo.Models.ContactForm
+<div class="alert alert-success">Thank you, @Model.Name.</div>
+```
+
+Then change the `Submit` action of `ContactController` to the version below, and add `using System.Threading.Tasks;` and `using Sphere10.Framework;` to the file:
+
+```csharp
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Submit(ContactForm model) {
+	var nameCheck = model.Name == "admin" ? Result.Error("Choose another name.") : Result.Success;
+	ModelState.AddModelError(nameof(ContactForm.Name), nameCheck);
+
+	var result = ModelState.IsValid
+		? new FormResult {
+			Result = true,
+			ResultType = FormResultType.ReplaceForm,
+			Content = await this.RenderViewAsync("Thanks", model, partial: true)
+		}
+		: new FormResult {
+			Result = false,
+			ResultType = FormResultType.ShowMessage,
+			Message = "Correct the highlighted fields."
+		};
+	return Content(JsonConvert.SerializeObject(result), "application/json");
+}
+```
+
+`RenderViewAsync` is an extension method, so a controller calls it through `this`. `AddModelError(key, Result)` adds each error message of a `Sphere10.Framework.Result` under the key, and a successful `Result` adds nothing. The other overloads add a `Result` or a formatted message under the empty key, and `Remove(params string[])` removes several keys at once.
+
 ## Images
 
 `ImageResult` writes a `System.Drawing.Image` to the response as JPEG, which is the default, or as PNG or GIF, and throws for any other `ImageFormat`. It is marked Windows-only and disposes the image after writing, so do not reuse the image. MVC executes it asynchronously: it encodes the image in memory, sets the content length and copies the bytes to the response body with asynchronous writes, so `AllowSynchronousIO` is not needed. Only a direct call to the synchronous `ExecuteResult` saves straight to the response body.
+
+This controller draws a small PNG badge on each request:
+
+```csharp
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.Versioning;
+using Microsoft.AspNetCore.Mvc;
+using Sphere10.Framework.Web.AspNetCore.MVC;
+
+namespace MvcDemo.Controllers;
+
+[SupportedOSPlatform("windows")]
+public class BadgeController : Controller {
+	[HttpGet("badge.png")]
+	public IActionResult Badge() {
+		var bitmap = new Bitmap(120, 24);
+		using (var graphics = Graphics.FromImage(bitmap)) {
+			graphics.Clear(Color.SteelBlue);
+			graphics.DrawString("Sphere10", SystemFonts.DefaultFont, Brushes.White, 4, 4);
+		}
+		return new ImageResult(bitmap, ImageFormat.Png);
+	}
+}
+```
+
+The result disposes the bitmap after writing it, so the action does not dispose it. The one-argument constructor writes JPEG.
 
 ## Filters, routing and URLs
 
@@ -299,6 +359,86 @@ The `Bootstrap*For` helpers wrap the MVC `*For` helpers with Bootstrap 5 markup.
 | `ModelStateDictionaryExtensions` | Adds the error messages of a `Result`, or a formatted message, as model errors, and removes several keys at once. |
 | `UrlExtensions.Content(path, toAbsolute)` | Extends `IUrlHelper`, so views call it as `Url.Content(path, true)`. It resolves a content path and, with `toAbsolute`, makes it absolute for the helper's current request. When the host carries no port, the absolute URL omits it. |
 | `CustomRouteAttribute` | Declares routes on a controller class. `CustomRouteAttribute.RegisterCustomRoutesFromAssembly(app, assembly)` maps each attribute of every controller in the assembly as a conventional controller route, ordered by `Priority`, with the controller and `DefaultAction` as defaults. A route may not contain `{controller}`. Attribute routing such as `[Route]` and `[HttpGet("...")]` remains the usual ASP.NET Core choice. |
+
+### Filters example
+
+This controller exports a temporary file, deletes it after the response is written and logs each call through a filter that the service provider creates. Save it as `Controllers/ReportsController.cs`:
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Logging;
+using Sphere10.Framework.Web.AspNetCore.MVC;
+
+namespace MvcDemo.Controllers;
+
+public sealed class AuditFilter : IActionFilter {
+	private readonly ILogger<AuditFilter> _logger;
+
+	public AuditFilter(ILogger<AuditFilter> logger) {
+		_logger = logger;
+	}
+
+	public void OnActionExecuting(ActionExecutingContext context)
+		=> _logger.LogInformation("Running {Action}", context.ActionDescriptor.DisplayName);
+
+	public void OnActionExecuted(ActionExecutedContext context) {
+	}
+}
+
+public sealed class AuditAttribute : FilterFactoryBase<AuditFilter> {
+}
+
+[Route("reports")]
+public class ReportsController : Controller {
+	[HttpGet("export")]
+	[Audit]
+	[Cleanup]
+	public IActionResult Export() {
+		var path = Path.GetTempFileName();
+		System.IO.File.WriteAllText(path, "Name,Visits\nAlice,3\n");
+		((List<Action>)ViewBag.Cleanup).Add(() => System.IO.File.Delete(path));
+		return PhysicalFile(path, "text/csv", "report.csv");
+	}
+}
+```
+
+Register the filter before `builder.Build()` in `Program.cs`, because `FilterFactoryBase` resolves it from the request services:
+
+```csharp
+builder.Services.AddScoped<MvcDemo.Controllers.AuditFilter>();
+```
+
+`ViewBag.Cleanup` is dynamic, so cast it to `List<Action>` before you add a lambda. `CleanupAttribute` runs the delegates after the file result has been sent, so `/reports/export` downloads the file before it is deleted.
+
+### Custom routes example
+
+`CustomRouteAttribute` maps conventional routes without attribute routing on the controller. Save `Controllers/HelpController.cs`:
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Sphere10.Framework.Web.AspNetCore.MVC;
+
+namespace MvcDemo.Controllers;
+
+[CustomRoute("help/{topic}", DefaultAction = "Topic", Defaults = "topic=index")]
+public class HelpController : Controller {
+	public IActionResult Topic(string topic) => Content($"Help topic: {topic}");
+}
+```
+
+Then register the routes of every controller in the assembly, before `app.Run()` in `Program.cs`:
+
+```csharp
+using Sphere10.Framework.Web.AspNetCore.MVC;
+
+CustomRouteAttribute.RegisterCustomRoutesFromAssembly(app, typeof(MvcDemo.Controllers.HelpController).Assembly);
+```
+
+`/help/paging` then returns `Help topic: paging`, and `/help` uses the default topic `index`. `Defaults` takes `key=value` pairs joined with `&`, and `DefaultAction` adds the `action` default.
 
 ## Structure and dependencies
 

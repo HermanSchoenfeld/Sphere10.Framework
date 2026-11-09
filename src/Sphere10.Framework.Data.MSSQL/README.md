@@ -94,6 +94,19 @@ var configuredDac = Tools.MSSQL.Open(
 	encrypt: true, trustServerCertificate: false,
 	connectTimeout: TimeSpan.FromSeconds(15), applicationName: "ExampleApp"
 );
+
+// A named instance with a SQL Server login and a larger connection pool.
+var expressDac = Tools.MSSQL.Open(
+	dataSource: @"localhost\SQLEXPRESS", initialCatalog: "appdb",
+	userID: "appuser", password: Environment.GetEnvironmentVariable("MSSQL_PASSWORD"),
+	pooling: true, minPoolSize: 10, maxPoolSize: 100
+);
+
+// A server on another port, as a connection string.
+var remoteConnectionString = Tools.MSSQL.CreateConnectionString(server: "db.example.com", initialCatalog: "appdb", integratedSecurity: true, encrypt: true, port: 14330);
+
+// Azure SQL Database with Microsoft Entra authentication.
+var azureDac = new MSSQLDAC("Server=tcp:example.database.windows.net,1433;Database=appdb;Authentication=Active Directory Default;Encrypt=True;");
 ```
 
 `CreateConnectionString` takes the same settings except `networkLibrary` and `logger`, and it names the first one `server`. It also takes a `port`, which `Open` lacks, and appends it to the server as `, port`. Omitted settings keep the provider defaults, except encryption.
@@ -114,6 +127,44 @@ var configuredDac = Tools.MSSQL.Open(
 `MSSQLDAC.CreateConnection()` also selects `Encrypt=Optional` when a connection string omits `Encrypt`, and it preserves an explicit `True`, `False` or `Strict` setting. For `Strict` and for settings that the helper lacks, pass a complete connection string to `new MSSQLDAC(connectionString)`. Certificate validation follows Microsoft.Data.SqlClient, so an omitted `Encrypt` option does not bypass certificate validation when the server forces encryption.
 
 The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery`, `ExecuteReader` and `ExecuteBatch`. `ExecuteScalar` keeps the provider's command default. To enforce a per-command timeout, create a command explicitly as below.
+
+## 📝 Insert, query, update and delete
+
+The DAC's `Insert`, `Update` and `Delete` methods and its `Select` and `Count` extensions build the SQL for you. The example keeps its work in one scope, so every statement uses the same connection:
+
+```csharp
+using (dac.EnterScope()) {
+	dac.ExecuteNonQuery(@"CREATE TABLE products (
+		product_id INT IDENTITY(1,1) PRIMARY KEY,
+		name NVARCHAR(100) NOT NULL,
+		price DECIMAL(10,2) NOT NULL,
+		stock INT NOT NULL
+	)");
+
+	// SQL Server assigns the IDENTITY key, so the insert omits it.
+	dac.Insert("products", new[] { new ColumnValue("name", "Laptop"), new ColumnValue("price", 999.99m), new ColumnValue("stock", 50) });
+
+	// Insert returns the affected-row count, so read a generated key through OUTPUT.
+	var mouseID = dac.ExecuteScalar<int>(dac.QuickString(
+		"INSERT INTO products (name, price, stock) OUTPUT INSERTED.product_id VALUES ({0}, {1}, {2})",
+		SQLBuilderCommand.Literal("Mouse"), SQLBuilderCommand.Literal(29.99m), SQLBuilderCommand.Literal(200)
+	));
+
+	foreach (DataRow row in dac.ExecuteQuery("SELECT name, price FROM products WHERE price > 100 ORDER BY price DESC").Rows)
+		Console.WriteLine($"{row["name"]} costs {row["price"]}");
+
+	var topTen = dac.Select("products", columns: new[] { "name", "price" }, orderByClause: "price DESC", limit: 10);
+	var laptops = dac.ExecuteQuery("SELECT * FROM products WHERE name = {0}", SQLBuilderCommand.Literal("Laptop"));
+	var totalStock = dac.ExecuteScalar<int>("SELECT SUM(stock) FROM products");
+	var productCount = dac.Count("products");
+
+	dac.Update("products", new[] { new ColumnValue("stock", 45), new ColumnValue("price", 1099.99m) }, new[] { new ColumnValue("name", "Laptop") });
+	dac.Delete("products", new[] { new ColumnValue("product_id", mouseID) });
+	dac.ExecuteNonQuery("DELETE FROM products WHERE stock < 10");
+}
+```
+
+`Update` and `Delete` match each `ColumnValue` condition with `=`, or with `IN` when its value is a list. `ExecuteQuery(sql, args)` and `QuickString(sql, args)` fill `{0}` placeholders with `string.Format`, so wrap values in `SQLBuilderCommand.Literal` to have the builder quote and escape them. String literals have no `N` prefix, so bind text outside the database's code page as a parameter. The builder writes `decimal` and `double` literals in the current culture, so run under a culture whose decimal separator is a period, such as `CultureInfo.InvariantCulture`.
 
 ## 🔎 Bound parameters
 
@@ -158,6 +209,64 @@ using (var scope = dac.EnterScope()) {
 - With the default `UseScopeOsmosis = true`, nested scopes with the same connection string share one connection and transaction. A nested `Commit` does not commit on its own, and a nested `Rollback` turns the owning scope's `Commit` into a rollback. These are shared transactions, not savepoints.
 - Setting `UseScopeOsmosis = false` keeps different DAC instances apart, while scopes on the same instance still nest.
 - A scope that opens its connection inside an ambient `System.Transactions.TransactionScope` enlists the connection through the provider. Let the ambient scope complete the work, because `DACScope.BeginTransaction`, `Commit` and `Rollback` throw inside it. Ambient and distributed transaction support depends on the provider and platform.
+
+The following money transfer assumes an `accounts` table with `account_id` and `balance` columns. It leaves its scope without committing when the balance check fails, so neither update is kept:
+
+```csharp
+try {
+	using var scope = dac.EnterScope();
+	scope.BeginTransaction();
+	dac.ExecuteNonQuery("UPDATE accounts SET balance = balance - 1000 WHERE account_id = 1");
+	if (dac.ExecuteScalar<decimal>("SELECT balance FROM accounts WHERE account_id = 1") < 0)
+		throw new InvalidOperationException("Insufficient funds");
+	dac.ExecuteNonQuery("UPDATE accounts SET balance = balance + 1000 WHERE account_id = 2");
+	scope.Commit();
+} catch (InvalidOperationException error) {
+	Console.WriteLine($"Transfer abandoned: {error.Message}");
+}
+```
+
+## 🧾 Stored procedures
+
+`ExecuteNonQuery` sends its text as one batch, so it can create a procedure. Call the procedure as SQL text, or bind its parameters through a stored-procedure command:
+
+```csharp
+dac.ExecuteNonQuery(@"CREATE OR ALTER PROCEDURE get_products_up_to @maxPrice DECIMAL(10,2) AS
+BEGIN
+	SELECT product_id, name, price FROM products WHERE price <= @maxPrice ORDER BY price
+END");
+
+// Format the argument into the call as a literal.
+var cheapProducts = dac.ExecuteQuery("EXEC get_products_up_to @maxPrice = {0}", SQLBuilderCommand.Literal(50m));
+
+// Or bind it as a parameter of a stored-procedure command.
+using (var scope = dac.EnterScope()) {
+	using var command = scope.Connection.CreateCommand();
+	command.CommandType = CommandType.StoredProcedure;
+	command.CommandText = "get_products_up_to";
+	if (scope.Transaction is RestrictedTransaction transaction)
+		command.Transaction = transaction.DangerousInternalTransaction;
+
+	var parameter = command.CreateParameter();
+	parameter.ParameterName = "@maxPrice";
+	parameter.DbType = DbType.Decimal;
+	parameter.Value = 50m;
+	command.Parameters.Add(parameter);
+
+	using var reader = command.ExecuteReader();
+	var products = reader.ToDataTable();
+	Console.WriteLine(products.Rows.Count);
+}
+
+// A procedure without a result set runs through ExecuteNonQuery.
+dac.ExecuteNonQuery(@"CREATE OR ALTER PROCEDURE restock_products @minimum INT AS
+BEGIN
+	UPDATE products SET stock = @minimum WHERE stock < @minimum
+END");
+dac.ExecuteNonQuery("EXEC restock_products @minimum = 20");
+```
+
+`CREATE OR ALTER` needs SQL Server 2016 SP1 or later, or Azure SQL Database. `ToDataTable()` is the shared `IDataReader` extension that `ExecuteQuery` also uses.
 
 ## 📥 Bulk insert
 
@@ -218,6 +327,24 @@ foreach (var table in schema.Tables)
 | `Tools.MSSQL.DropDatabase(server, databaseName, username, password, useIntegratedSecurity, throwIfNotExists)` | Drops the database. Outside Azure SQL Database, it first switches the database to `SINGLE_USER WITH ROLLBACK IMMEDIATE`, which disconnects other sessions. |
 | `Tools.MSSQL.GetDatabaseNameFromConnectionString(connectionString)` | Returns the connection string's `InitialCatalog`. |
 | `Tools.MSSQL.ClearAllPools()` | Calls `SqlConnection.ClearAllPools()`. |
+
+The helpers take the server and the credentials of a login that may create databases:
+
+```csharp
+var server = "localhost";
+var adminUser = Environment.GetEnvironmentVariable("MSSQL_ADMIN_USER");
+var adminPassword = Environment.GetEnvironmentVariable("MSSQL_ADMIN_PASSWORD");
+
+Tools.MSSQL.CreateDatabase(server, "appdb", adminUser, adminPassword, existsPolicy: AlreadyExistsPolicy.Skip);
+Console.WriteLine(Tools.MSSQL.Exists(server, "appdb", adminUser, adminPassword)); // True
+Tools.MSSQL.DropDatabase(server, "appdb", adminUser, adminPassword, throwIfNotExists: false);
+
+// The same operations through the shared database-manager contract.
+var manager = new MSSQLDatabaseManager();
+var connectionString = manager.GenerateConnectionString(server, "appdb", adminUser, adminPassword, null);
+if (!manager.DatabaseExists(connectionString))
+	manager.CreateEmptyDatabase(connectionString);
+```
 
 `CreateDatabase` takes an `existsPolicy` that defaults to `AlreadyExistsPolicy.Error`. `Skip` keeps an existing database, and `Overwrite` drops it the same way as `DropDatabase` before recreating it. `DropDatabase` throws when the database is missing unless `throwIfNotExists` is `false`. These calls need permission to create and drop databases. Database names are formatted into the SQL text, so pass only trusted, validated names.
 

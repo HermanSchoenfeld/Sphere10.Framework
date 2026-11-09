@@ -120,6 +120,73 @@ The editors only collect settings. They do not save profiles, discover servers o
 - When the application needs the database, call `GetDAC()` on the editor or construct `new MySQLDAC(connectionString)`, then call `EnterScope()` for each unit of work and dispose the scope. The DAC itself is not disposable, and the scope owns the connection.
 - `StateChanged`, inherited from `UserControlEx`, is a parameterless event that is raised when a field changes after the control has loaded. It reports edits, not connectivity.
 
+For example, this unit of work deletes the stored sessions in one transaction on the accepted string:
+
+```csharp
+using Sphere10.Framework.Data;
+
+var dac = new MySQLDAC(savedConnectionString);
+using (var scope = dac.EnterScope()) {
+	scope.BeginTransaction();
+	dac.ExecuteNonQuery("DELETE FROM sessions");
+	scope.Commit();
+}
+```
+
+Disposing the scope does not commit, so call `Commit()` explicitly.
+
+## Host an editor in code
+
+The editors also work without the designer. Use this as `Program.cs` in a Windows Forms application that references the package. Nothing connects on startup, and **Test connection** contacts the server with the entered settings.
+
+```csharp
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Windows.Forms.MySQL;
+using Application = System.Windows.Forms.Application;
+
+namespace ReadmeExamples.MySQLDirect;
+
+internal static class Program {
+	[STAThread]
+	private static void Main() {
+		Application.EnableVisualStyles();
+		Application.SetCompatibleTextRenderingDefault(false);
+		using var window = new Form { Text = "MySQL connection", ClientSize = new Size(640, 260) };
+		var editor = new MySQLConnectionPanel {
+			Dock = DockStyle.Fill,
+			Server = "localhost",
+			Database = "app_data",
+			Username = "app_user"
+		};
+		var status = new Label { Dock = DockStyle.Bottom, Height = 44, Text = "Enter your connection details." };
+		var testButton = new Button { Dock = DockStyle.Bottom, Height = 32, Text = "Test connection" };
+		testButton.Click += async (sender, args) => {
+			testButton.Enabled = false;
+			try {
+				var result = await editor.TestConnection();
+				if (!window.IsDisposed)
+					status.Text = result.IsSuccess ? "Connection succeeded." : string.Join(Environment.NewLine, result.ErrorMessages);
+			} catch (Exception error) {
+				// Settings that cannot form a connection string throw instead of failing the result.
+				if (!window.IsDisposed)
+					status.Text = error.Message;
+			} finally {
+				if (!testButton.IsDisposed)
+					testButton.Enabled = true;
+			}
+		};
+		window.Controls.Add(editor);
+		window.Controls.Add(status);
+		window.Controls.Add(testButton);
+		Application.Run(window);
+	}
+}
+```
+
+The form owns and disposes the child controls. To use the bar instead, host `MySQLConnectionBar` the same way and call the same `ConnectionString`, `GetDAC()` and `TestConnection()` members.
+
 ## Connection string behavior
 
 - The editors rebuild the string from their five fields, so other settings in an assigned string are dropped, such as pooling, timeouts or TLS options. To keep such settings, read `ConnectionString`, add them with `MySqlConnectionStringBuilder`, and construct `MySQLDAC` from the result. `GetDAC()` and `TestConnection()` always use the rebuilt string.
@@ -147,6 +214,58 @@ Sphere10Framework.Instance
 - `Database` returns the engine and the string together as a `DBReference`, and the bar also accepts one. `DACFactory.CreateDAC(reference.DBMSType, reference.ConnectionString)` recreates the DAC from a saved reference.
 - `DatabaseConnectionPanel` raises `DBMSTypeChanged(panel, dbmsType)` when the selected engine changes. `DatabaseConnectionBar` has no such event.
 
+This complete `Program.cs` starts only the modules that the selector needs, shows it with MySQL selected and ends the framework after the window closes:
+
+```csharp
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using Sphere10.Framework.Application;
+using Sphere10.Framework.Data;
+using Sphere10.Framework.Windows.Forms;
+using ProviderModule = Sphere10.Framework.Windows.Forms.MySQL.ModuleConfiguration;
+using WinFormsModule = Sphere10.Framework.Windows.Forms.ModuleConfiguration;
+using Application = System.Windows.Forms.Application;
+
+namespace ReadmeExamples.MySQLSelector;
+
+internal static class Program {
+	[STAThread]
+	private static void Main() {
+		Application.EnableVisualStyles();
+		Application.SetCompatibleTextRenderingDefault(false);
+		var framework = Sphere10Framework.Instance;
+		framework.Build()
+			.AddModule<WinFormsModule>()
+			.AddModule<ProviderModule>()
+			.Start();
+		using var shutdown = Tools.Scope.ExecuteOnDispose(framework.EndFramework);
+		using var window = new Form { Text = "Database connection", ClientSize = new Size(660, 220) };
+		var selector = new DatabaseConnectionPanel {
+			Dock = DockStyle.Fill,
+			SelectedDBMSType = DBMSType.MySQL
+		};
+		window.Controls.Add(selector);
+		Application.Run(window);
+	}
+}
+```
+
+In an existing framework application, add the module to its startup builder instead of starting a second framework. Register the modules of other providers to add their engines to the selector.
+
+Save the selector's `Database` to keep the engine with the string, and recreate the DAC from it later:
+
+```csharp
+using Sphere10.Framework.Data;
+
+var saved = selector.Database;
+
+var dac = DACFactory.CreateDAC(saved.DBMSType, saved.ConnectionString);
+using (dac.EnterScope()) {
+	var customers = dac.ExecuteScalar<long>("SELECT COUNT(*) FROM customers");
+}
+```
+
 ## Try the controls
 
 The [WinForms Tester](../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) hosts both editors. Run it from the repository root on Windows:
@@ -160,10 +279,11 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p
 
 ## Build from source
 
-From the repository root on Windows:
+Build the project and pack it on its own from the repository root on Windows:
 
 ```powershell
 dotnet build src/Sphere10.Framework.Windows.Forms.MySQL/Sphere10.Framework.Windows.Forms.MySQL.csproj -c Release -p:BuildRevision=0
+dotnet pack src/Sphere10.Framework.Windows.Forms.MySQL/Sphere10.Framework.Windows.Forms.MySQL.csproj -c Release --no-build -p:BuildRevision=0
 ```
 
 `-p:BuildRevision=0` keeps a development build from taking the next local build number. The [root README](../../README.md#building-and-publishing-packages) explains build numbering, and how `scripts/pack.ps1` packs the whole package set. The project packs this file as its NuGet readme, and [`Directory.Packages.props`](../../Directory.Packages.props) sets the driver version.

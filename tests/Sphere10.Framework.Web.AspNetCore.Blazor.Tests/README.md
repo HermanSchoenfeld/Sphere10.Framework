@@ -246,6 +246,16 @@ dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framew
 
 Run all browser fixtures with `--filter "FullyQualifiedName~BrowserTests"` and the same runsettings. Browser evidence, such as the showcase and shell screenshots, is attached to the NUnit results.
 
+Other fixtures use the same build, tester and runsettings. These commands run the showcase fixture with its own result file, the full-page shell, and the startup-screen and tab fixtures together:
+
+```powershell
+dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj -c Release -p:BuildRevision=0 --no-build --filter "FullyQualifiedName~ShowcaseBrowserTests" --settings obj/browser-tests/browser.runsettings --logger "trx;LogFileName=showcase-browser.trx" --results-directory obj/test-results/showcase-browser
+dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj -c Release -p:BuildRevision=0 --no-build --filter "FullyQualifiedName~DemoShellBrowserTests" --settings obj/browser-tests/browser.runsettings
+dotnet test tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj -c Release -p:BuildRevision=0 --no-build --filter "FullyQualifiedName~ApplicationStartupScreenBrowserTests|FullyQualifiedName~ApplicationTabsBrowserTests" --settings obj/browser-tests/browser.runsettings
+```
+
+`ShowcaseBrowserTests` also writes its screenshots to a `ShowcaseBrowserTests` folder in the test work directory. The startup-screen fixture saves its startup choice in an isolated browser context, so it changes no personal profile or server-wide setting.
+
 After source changes, stop the tester and repeat the build and start sequence. The fixtures do not start or stop the tester, download browsers, access an existing browser profile or persist sample changes. Default test runs skip them. A stopped tester, unavailable executable or missing Playwright browser is a setup failure when a fixture is explicitly selected.
 
 The centrally pinned [Microsoft.Playwright package](https://www.nuget.org/packages/Microsoft.Playwright) supplies the .NET browser library. See the [official library guide](https://playwright.dev/dotnet/docs/library) for browser setup. Geometry samples use CSS zoom and `DeviceScaleFactor` to exercise fractional layout, which is separate from manually testing native browser zoom controls.

@@ -23,6 +23,7 @@ Set `FIREBIRD_CONNECTION_STRING` to your application's connection string. The re
 ```csharp
 using System;
 using System.Data;
+using System.IO;
 using FirebirdSql.Data.FirebirdClient;
 using Sphere10.Framework;
 using Sphere10.Framework.Data;
@@ -89,6 +90,24 @@ var serverConnectionString = new FbConnectionStringBuilder {
 	ServerType = FbServerType.Default
 }.ToString();
 var serverDac = new FirebirdDAC(serverConnectionString);
+
+// An embedded database file, opened through Firebird's native client library.
+var embeddedConnectionString = new FbConnectionStringBuilder {
+	Database = Path.Combine(AppContext.BaseDirectory, "data", "appdb.fdb"),
+	UserID = "SYSDBA",
+	ServerType = FbServerType.Embedded,
+	ClientLibrary = "fbclient.dll"
+}.ToString();
+var embeddedDac = new FirebirdDAC(embeddedConnectionString);
+Console.WriteLine(embeddedDac.DBMSType); // FirebirdFile
+
+// The server connection with pool limits.
+var pooledConnectionString = new FbConnectionStringBuilder(serverConnectionString) {
+	Pooling = true,
+	MinPoolSize = 5,
+	MaxPoolSize = 20
+}.ToString();
+var pooledDac = new FirebirdDAC(pooledConnectionString);
 ```
 
 | Property | Use |
@@ -97,10 +116,48 @@ var serverDac = new FirebirdDAC(serverConnectionString);
 | `Database` | The database path on the server, or the database file of an embedded connection. |
 | `UserID`, `Password` | Credentials. |
 | `ServerType` | `FbServerType.Default` for a server, or `FbServerType.Embedded` for an embedded database. |
+| `ClientLibrary` | The native client library that an embedded connection loads, such as `fbclient.dll`. |
+| `Pooling`, `MinPoolSize`, `MaxPoolSize` | Connection-pool settings. |
 
 `DBMSType` reads the server type through `FbConnectionStringBuilder`, so both `ServerType=1` and the `ServerType=Embedded` that the builder writes report `FirebirdFile`, whatever their case or spacing. A connection string that the builder cannot parse is reported as `Firebird` and fails when the connection opens.
 
 The shared DAC sets `CommandTimeout = 0` for `ExecuteNonQuery` and `ExecuteReader`, and the batch commands use `0` as well. `ExecuteScalar` keeps the provider's command default. To enforce a per-command timeout, create a command explicitly as below.
+
+## 📝 Insert, query, update and delete
+
+The example creates a table and a sequence for its keys, and then works with the rows in one scope:
+
+```csharp
+dac.ExecuteNonQuery(@"CREATE TABLE products (
+	id INTEGER NOT NULL PRIMARY KEY,
+	name VARCHAR(100) NOT NULL,
+	price DECIMAL(10,2) NOT NULL,
+	stock INTEGER NOT NULL
+)");
+dac.ExecuteNonQuery("CREATE SEQUENCE gen_products_id");
+
+using (dac.EnterScope()) {
+	// Insert returns the affected-row count, so RETURNING hands back the generated key.
+	var laptopID = dac.ExecuteScalar<int>("INSERT INTO products (id, name, price, stock) VALUES (NEXT VALUE FOR gen_products_id, 'Laptop', 999.99, 50) RETURNING id");
+
+	// The builder quotes names, so pass the upper-case names of objects created without quotes.
+	var mouseID = dac.ExecuteScalar<int>("SELECT NEXT VALUE FOR gen_products_id FROM rdb$database");
+	dac.Insert("PRODUCTS", new[] { new ColumnValue("ID", mouseID), new ColumnValue("NAME", "Mouse"), new ColumnValue("PRICE", 29.99m), new ColumnValue("STOCK", 200) });
+
+	foreach (DataRow row in dac.ExecuteQuery("SELECT name, price FROM products WHERE price > 100 ORDER BY price DESC").Rows)
+		Console.WriteLine($"{row["NAME"]} costs {row["PRICE"]}");
+
+	var firstPage = dac.Select("PRODUCTS", columns: new[] { "NAME", "PRICE" }, orderByClause: "PRICE", limit: 10, offset: 0);
+	var mice = dac.ExecuteQuery("SELECT * FROM products WHERE name = {0}", SQLBuilderCommand.Literal("Mouse"));
+	var totalStock = dac.ExecuteScalar<long>("SELECT SUM(stock) FROM products");
+
+	dac.Update("PRODUCTS", new[] { new ColumnValue("STOCK", 45), new ColumnValue("PRICE", 1099.99m) }, new[] { new ColumnValue("ID", laptopID) });
+	dac.Delete("PRODUCTS", new[] { new ColumnValue("ID", mouseID) });
+	dac.ExecuteNonQuery("DELETE FROM products WHERE stock < 10");
+}
+```
+
+Each `ExecuteNonQuery` outside a scope transaction commits on its own, so the table and the sequence exist before the scope uses them. Firebird returns unquoted names in upper case, so the result columns are `NAME` and `PRICE`. `ExecuteQuery(sql, args)` fills `{0}` placeholders with `string.Format`, so wrap values in `SQLBuilderCommand.Literal` to have the builder quote and escape them. The builder writes `decimal` and `double` literals in the current culture, so run under a culture whose decimal separator is a period, such as `CultureInfo.InvariantCulture`.
 
 ## 🔎 Bound parameters
 
@@ -148,6 +205,57 @@ using (var scope = dac.EnterScope()) {
 - Setting `UseScopeOsmosis = false` keeps different DAC instances apart, while scopes on the same instance still nest.
 - A scope that opens its connection inside an ambient `System.Transactions.TransactionScope` enlists the connection through the provider. Let the ambient scope complete the work, because `DACScope.BeginTransaction`, `Commit` and `Rollback` throw inside it. Ambient and distributed transaction support depends on the provider and platform.
 
+The following money transfer assumes an `accounts` table with `id` and `balance` columns. It leaves its scope without committing when the balance check fails, so neither update is kept:
+
+```csharp
+try {
+	using var scope = dac.EnterScope();
+	scope.BeginTransaction();
+	dac.ExecuteNonQuery("UPDATE accounts SET balance = balance - 1000 WHERE id = 1");
+	if (dac.ExecuteScalar<decimal>("SELECT balance FROM accounts WHERE id = 1") < 0)
+		throw new InvalidOperationException("Insufficient funds");
+	dac.ExecuteNonQuery("UPDATE accounts SET balance = balance + 1000 WHERE id = 2");
+	scope.Commit();
+} catch (InvalidOperationException error) {
+	Console.WriteLine($"Transfer abandoned: {error.Message}");
+}
+```
+
+## 🧾 Stored procedures and triggers
+
+`ExecuteNonQuery` sends one statement, so a procedure or trigger body needs no `SET TERM`. A selectable procedure, which returns rows through `SUSPEND`, is queried like a table:
+
+```csharp
+dac.ExecuteNonQuery(@"CREATE OR ALTER PROCEDURE get_products_up_to (max_price DECIMAL(10,2))
+RETURNS (product_id INTEGER, product_name VARCHAR(100), product_price DECIMAL(10,2))
+AS
+BEGIN
+	FOR SELECT id, name, price FROM products WHERE price <= :max_price
+		INTO :product_id, :product_name, :product_price
+	DO SUSPEND;
+END");
+
+var cheapProducts = dac.ExecuteQuery("SELECT * FROM get_products_up_to({0})", SQLBuilderCommand.Literal(50m));
+
+dac.ExecuteNonQuery(@"CREATE TABLE audit_log (
+	id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+	table_name VARCHAR(50) NOT NULL,
+	action VARCHAR(10) NOT NULL,
+	audited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+dac.ExecuteNonQuery(@"CREATE OR ALTER TRIGGER products_audit FOR products AFTER UPDATE
+AS
+BEGIN
+	INSERT INTO audit_log (table_name, action) VALUES ('PRODUCTS', 'UPDATE');
+END");
+
+// The trigger writes an audit row for each updated product.
+dac.Update("PRODUCTS", new[] { new ColumnValue("PRICE", 99.99m) }, new[] { new ColumnValue("ID", 1) });
+Console.WriteLine(dac.ExecuteScalar<long>("SELECT COUNT(*) FROM audit_log"));
+```
+
+`GENERATED BY DEFAULT AS IDENTITY` needs Firebird 3 or later. On older servers, fill the key from a sequence in a `BEFORE INSERT` trigger.
+
 ## 🗂️ Schema and SQL dialect
 
 `GetSchema()` reads Firebird's `RDB$` system tables for the relations and triggers whose `RDB$SYSTEM_FLAG` is `0`. The result uses the shared `DBSchema` model of tables, columns, keys and trigger names. Auto-increment columns are not detected, and sequence fields are not populated. Only the `CASCADE` foreign-key rule is reported as cascading. `RESTRICT`, `NO ACTION`, `SET NULL` and `SET DEFAULT` are not.
@@ -184,6 +292,26 @@ The builder quotes every name, and Firebird stores unquoted names in upper case.
 ## 🛠️ Database administration
 
 The package has no `Tools.Firebird` helper and no `DatabaseManagerBase` implementation. Create and drop databases with FirebirdClient, for example through `FbConnection.CreateDatabase` and `FbConnection.DropDatabase`, or with Firebird's administration tools.
+
+```csharp
+var newDatabaseConnectionString = new FbConnectionStringBuilder {
+	DataSource = "localhost",
+	Database = "/data/newdb.fdb",
+	UserID = "appuser",
+	Password = Environment.GetEnvironmentVariable("FIREBIRD_PASSWORD")
+}.ToString();
+
+FbConnection.CreateDatabase(newDatabaseConnectionString, pageSize: 16384, forcedWrites: true, overwrite: false);
+var newDac = new FirebirdDAC(newDatabaseConnectionString);
+using (newDac.EnterScope())
+	Console.WriteLine(newDac.ExecuteScalar<string>("SELECT rdb$get_context('SYSTEM', 'DB_NAME') FROM rdb$database"));
+
+// Pooled connections keep the database open, so clear the pools before dropping it.
+FbConnection.ClearAllPools();
+FbConnection.DropDatabase(newDatabaseConnectionString);
+```
+
+The user needs permission to create databases on the server, and the path is resolved on the server.
 
 ## 🚧 Implementation boundaries
 

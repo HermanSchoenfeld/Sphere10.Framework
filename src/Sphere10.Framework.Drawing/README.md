@@ -98,6 +98,59 @@ Color restored = Tools.Drawing.ConvertStringToColor(stored);
 
 `CalculateColorGradient` returns the requested number of colors, at least two, in equal steps from the first color to the second. `CalculateMiddleColor` returns the color halfway between them. `ConvertStringToColor` reads `R:G:B` or `A:R:G:B` decimal parts, and it returns `Color.Empty` for empty input or for any other number of parts.
 
+### Color Strings
+
+```csharp
+using System;
+using System.Drawing;
+using Sphere10.Framework;
+
+string[] colorStrings = {
+	"255:0:0",          // red, as R:G:B
+	"0:255:0",          // green
+	"0:0:255",          // blue
+	"128:255:128:0"     // half-transparent orange, as A:R:G:B
+};
+
+foreach (var colorString in colorStrings) {
+	Color color = Tools.Drawing.ConvertStringToColor(colorString);
+	Console.WriteLine($"{colorString} -> ARGB({color.A}, {color.R}, {color.G}, {color.B})");
+}
+
+// Round trip through the A:R:G:B text form.
+Color original = Color.FromArgb(200, 100, 150, 50);
+string text = Tools.Drawing.ConvertColorToString(original);   // "200:100:150:50", the same as original.ToARGBString()
+Color converted = Tools.Drawing.ConvertStringToColor(text);
+Console.WriteLine($"Match: {original == converted}");       // True
+```
+
+Three parts give an opaque color. Each part is parsed with `Int32.Parse`, so a part that is not a number throws `FormatException`. A part outside 0 to 255 makes `Color.FromArgb` throw `ArgumentException`. `ConvertColorToString` and `ToARGBString` return `null` for `Color.Empty`.
+
+### Painting Gradients
+
+```csharp
+using System.Drawing;
+using System.Drawing.Imaging;
+using Sphere10.Framework;
+
+Color[] gradient = Tools.Drawing.CalculateColorGradient(Color.Red, Color.Blue, 8);
+
+using var swatches = new Bitmap(gradient.Length * 32, 80);
+using (var graphics = Graphics.FromImage(swatches)) {
+	// One solid swatch per gradient step across the top half.
+	for (var i = 0; i < gradient.Length; i++) {
+		using var brush = new SolidBrush(gradient[i]);
+		graphics.FillRectangle(brush, i * 32, 0, 32, 40);
+	}
+
+	// A continuous GDI+ gradient between the same colors across the bottom half.
+	graphics.GradientFill(new Rectangle(0, 40, swatches.Width, 40), Color.Red, Color.Blue, GradientFillDirection.Horizontal);
+}
+swatches.Save("gradient.png", ImageFormat.Png);
+```
+
+`GradientFill` paints with a horizontal or vertical `LinearGradientBrush`, and `GradientFillAtAngle` takes any angle in degrees. Both accept an optional `Blend`, and both fill with a solid brush when the two colors are equal.
+
 ### Resizing Images
 
 ```csharp
@@ -126,6 +179,54 @@ fitted.SaveJpegWithCompression("fitted.jpg", 85);                               
 - Each method returns a new bitmap that the caller owns, and it leaves the source open. `ResizeAndDispose`, `ZoomAndDispose` and `FocusZoomAndDispose` dispose the source after use.
 - A request that rounds to a zero width or height returns a 1 x 1 bitmap.
 - `FocusZoom(zoomFactor, focusX, focusY)` magnifies the area around a point and fits it to the source dimensions. Near an edge that area is clipped to the source, and `resizeMethod` and `resizeAlignment` choose how the clipped area fills the result, so `Stretch` distorts it and `AspectFitPadded` pads it. `icon.ToBitmap(width, height)` renders an `Icon` at the requested size with `AspectFitPadded`.
+
+### Rounded Images
+
+```csharp
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using Sphere10.Framework;
+
+using var photo = new Bitmap("photo.jpg");
+
+using var rounded = CreateRoundedImage(photo, 30);
+rounded.Save("rounded_photo.png", ImageFormat.Png);
+
+using var bordered = CreateRoundedImage(photo, 30, 5, Color.DarkGray);
+bordered.Save("rounded_with_border.png", ImageFormat.Png);
+
+// A radius of half the shorter side turns a square image into a circle.
+using var square = photo.Resize(new Size(256, 256), ResizeMethod.AspectFill);
+using var circular = CreateRoundedImage(square, 128);
+circular.Save("circular_photo.png", ImageFormat.Png);
+
+static Bitmap CreateRoundedImage(Image source, int radius, int borderWidth = 0, Color borderColor = default) {
+	var bounds = new Rectangle(0, 0, source.Width, source.Height);
+	var result = new Bitmap(source.Width, source.Height, PixelFormat.Format32bppArgb);
+	using var graphics = Graphics.FromImage(result);
+	graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+	// Draw the image through a rounded clip, which leaves the corners transparent.
+	using (var clip = Tools.Drawing.CreateRoundedRectanglePath(bounds, radius)) {
+		graphics.SetClip(clip);
+		graphics.DrawImage(source, bounds);
+		graphics.ResetClip();
+	}
+
+	// Inset the border path by half the pen width so the whole stroke stays inside the image.
+	if (borderWidth > 0) {
+		var inset = borderWidth / 2f;
+		using var borderPath = Tools.Drawing.CreateRoundedRectanglePath(RectangleF.Inflate(bounds, -inset, -inset), Math.Max(0, radius - inset));
+		using var pen = new Pen(borderColor, borderWidth);
+		graphics.DrawPath(pen, borderPath);
+	}
+	return result;
+}
+```
+
+The library has no single call that rounds an image. Clip to `Tools.Drawing.CreateRoundedRectanglePath` and draw the image through it, as `CreateRoundedImage` above does. The path limits the radius to half the shorter side, so a larger radius gives a pill or a circle. Pass `RoundedCorners` flags to round only some corners, for example `RoundedCorners.TopLeft | RoundedCorners.TopRight` for a tab. Save the result as PNG, because JPEG has no alpha channel and loses the transparent corners.
 
 ### Disabled Images, Encoding and Formats
 
@@ -181,6 +282,75 @@ Size half = new Size(800, 600).ScaleBy(0.5);                    // 400 x 300
 ```
 
 The rectangle helpers return modified copies, because `Rectangle` is a value type. `ExpandBy` and `ShrinkBy` change only the width and height. `PointF`, `SizeF` and `RectangleF` have matching extensions.
+
+### Points and Rectangles
+
+```csharp
+using System.Drawing;
+using Sphere10.Framework;
+
+var rect = new Rectangle(10, 10, 100, 100);
+Point topLeft = rect.TopLeft();                                  // (10, 10)
+Point bottomRight = rect.BottomRight();                          // (110, 110)
+Point rightMiddle = rect.CenterRight();                          // (110, 60)
+
+Point offset = new Point(10, 20).Add(new Size(5, 10));           // (15, 30)
+Point span = bottomRight.Subtract(topLeft);                      // (100, 100)
+
+Rectangle placed = rect.SetLocation(0, 0).SetSize(200, 50);      // (0, 0, 200, 50)
+Rectangle upright = placed.AsLongRectangle();                    // (0, 0, 50, 200)
+Rectangle grown = rect.TranslateAndExpandBy(-20, -20, 40, 40);   // 20 px more on every side: (-10, -10, 140, 140)
+bool inside = grown.Contains(new Point(-5, -5));                 // true
+int area = rect.Width * rect.Height;                             // 10000
+```
+
+`TopLeft`, `TopCenter`, `CenterLeft`, `CenterCenter`, `BottomRight` and the other position helpers return the edge and center points of a rectangle. `SetLocation`, `SetSize`, `SetWidth` and `SetHeight` return a copy with one part replaced. `TranslateAndExpandBy` moves and grows a rectangle in one call, and `TranslateNegativeAndShrinkBy` reverses it. `AsWideRectangle` and `AsLongRectangle` swap the width and height when needed, so that the longer side runs across or down. Containment and area come from `System.Drawing` itself.
+
+### Sizes
+
+```csharp
+using System;
+using System.Drawing;
+using Sphere10.Framework;
+
+var original = new Size(800, 600);
+Size larger = original.ScaleBy(1.5);                                     // 1200 x 900
+Size limited = larger.Clip(new Size(320, 240), new Size(1024, 768));     // 1024 x 768
+Size framed = original.ExpandBy(new Size(20, 20));                       // 820 x 620
+Size inner = original.ShrinkBy(new Point(16, 16));                       // 784 x 584
+
+// Fit inside 400 x 400 and keep the 4:3 aspect ratio.
+var bounds = new Size(400, 400);
+Size fitted = original.ScaleBy(Math.Min((double)bounds.Width / original.Width, (double)bounds.Height / original.Height));   // 400 x 300
+
+Size pixels = new SizeF(120.4f, 33.6f).ToSize();                         // 121 x 34, rounded up
+```
+
+`Clip(minSize, maxSize)` ignores a minimum or maximum dimension of zero. `ScaleBy` rounds to the nearest pixel, and `SizeF.ToSize()` rounds each dimension up. The size helpers do not keep an aspect ratio by themselves. Scale by the smaller of the two ratios as above, or let `Image.Resize` with `ResizeMethod.AspectFit` size a bitmap.
+
+### Borders and Layout
+
+```csharp
+using System.Drawing;
+using Sphere10.Framework.Drawing;
+
+var cell = new RectangleF(0, 0, 120, 40);
+var border = RectangleBorder.CreateRaisedBorder(2, Color.Gray, Color.White);
+RectangleF content = border.GetContentRectangle(cell);                    // (2, 2, 116, 36)
+SizeF required = border.GetExtent(new SizeF(80, 20));                     // 84 x 24
+RectanglePartType part = border.GetPointPartType(cell, new PointF(1, 20), out float fromEdge);   // LeftBorder, 1
+
+// Place 16 x 16 content 4 pixels from the right edge, centered vertically.
+var anchor = new AnchorArea { Right = 4, Middle = true };
+RectangleF icon = AnchorArea.CalculateArea(content, new SizeF(16, 16), anchor);   // (98, 12, 16, 16)
+
+using var bitmap = new Bitmap(120, 40);
+using var graphics = Graphics.FromImage(bitmap);
+using var cache = new GraphicsCache(graphics);
+border.Draw(cache, cell);
+```
+
+`RectangleBorder` holds one `BorderLine` per edge, and `CreateInsetBorder` and `CreateRaisedBorder` shade the edges for a 3D look. `GetContentRectangle` and `GetExtent` convert between the outer area and the content inside the border widths and paddings. `GetPointPartType` reports which part a point hits. Its `out` distance is measured from the outer edge, and it is -1 for a point in the content area or outside the area. `AnchorArea.CalculateArea` places content inside an area from its `Left`, `Top`, `Right` and `Bottom` distances, or centers it when `Center` or `Middle` is set. A distance of `float.NaN` is unset. The layout members run on any platform, and `Draw` needs Windows.
 
 ### Color Matrices
 

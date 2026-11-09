@@ -15,6 +15,28 @@ This index links every guide under `docs/` and the Framework project READMEs. Sp
 | [**Real-World Examples**](real-world-usage-examples.md) | Usage examples drawn from the test suites |
 | [**Patterns and Practices**](guidelines/patterns-and-practices.md) | Task index that maps a change to the pattern topics it needs |
 
+A console program that references `Sphere10.Framework.Application` starts the Framework, uses it and ends it:
+
+```csharp
+using System;
+using System.Text;
+using Sphere10.Framework;
+using Sphere10.Framework.Application;
+
+Sphere10Framework.Instance
+	.Build()
+	.AddModule<Sphere10.Framework.Application.ModuleConfiguration>()
+	.Start();
+try {
+	var digest = Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes("Hello"));
+	Console.WriteLine(Convert.ToHexString(digest));
+} finally {
+	Sphere10Framework.Instance.EndFramework();
+}
+```
+
+The Application module installs the settings and product information services. [Application initialization and shutdown](../src/Sphere10.Framework.Application/README.md#application-initialization-and-shutdown) describes the other modules and the start-up order.
+
 ---
 
 ## 🎯 By Use Case
@@ -294,6 +316,8 @@ byte[] data = Encoding.UTF8.GetBytes("Hello");
 byte[] digest = Hashers.Hash(CHF.SHA2_256, data);
 byte[] salt = Tools.Crypto.GenerateCryptographicallyRandomBytes(16);
 string slug = Tools.Url.ToUrlSlug("Hello World");
+string identifier = Tools.Text.ToCasing(TextCasing.PascalCase, "order line total");
+string compact = " a b c ".RemoveWhitespace(); // an extension method, not a Tools member
 
 // Sphere10.Framework.Data.Sqlite
 var dac = Tools.Sqlite.Open("data.db");

@@ -174,11 +174,92 @@ Derive a storage provider from the base class for its natural direction, and the
 
 Both bases derive from `SettingsProviderBase`. Together they attach the provider to created and loaded objects, apply encryption and raise `Changed` on save, so the storage members only read and write. Override the `LoadInternal(SettingsObject defaults)` overload, or its asynchronous counterpart, when the format can fill an existing object so that values missing from storage keep their defaults. `DirectoryFileSettingsProvider` does this.
 
+This provider keeps each record as a JSON string in memory, which suits tests and hosts that must not write files:
+
+```csharp
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using Sphere10.Framework.Application;
+
+public class MemorySettingsProvider : SyncSettingsProviderBase {
+	private readonly ConcurrentDictionary<string, string> _records = new();
+
+	public override bool ContainsSetting(Type settingsObjectType, object id = null)
+		=> _records.ContainsKey(KeyOf(settingsObjectType, id));
+
+	public override void DeleteSetting(SettingsObject settings) {
+		_records.TryRemove(KeyOf(settings.GetType(), settings.ID), out _);
+		FireChanged();
+	}
+
+	public override void ClearSettings() {
+		_records.Clear();
+		FireChanged();
+	}
+
+	protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
+		using var reader = new StringReader(_records[KeyOf(settingsObjectType, id)]);
+		return (SettingsObject)new SettingsObjectJsonSerializer().Deserialize(reader, settingsObjectType);
+	}
+
+	protected override void SaveInternal(SettingsObject settings) {
+		using var writer = new StringWriter();
+		new SettingsObjectJsonSerializer().Serialize(writer, settings);
+		_records[KeyOf(settings.GetType(), settings.ID)] = writer.ToString();
+	}
+
+	private static string KeyOf(Type settingsObjectType, object id)
+		=> id == null ? settingsObjectType.FullName : $"{settingsObjectType.FullName}_{id}";
+}
+```
+
+`UserSettings.Get<T>()` calls `ContainsSetting` first, so `LoadInternal` only runs for a stored record. `SaveInternal` receives a copy whose `[EncryptedString]` members the base has already encrypted. Delete and clear raise `Changed` themselves, as `DirectoryFileSettingsProvider` does. Register the provider as [Start-up and custom providers](#start-up-and-custom-providers) shows, for example as `new Local<ISettingsProvider>(new CachedSettingsProvider(new MemorySettingsProvider()))`.
+
 Wrap an existing provider by deriving from `SettingsProviderDecorator`, which forwards every member in both directions and exposes the wrapped provider as `Inner`. `CachedSettingsProvider` is the standard decorator, and it attaches itself as the provider of the records it creates or loads. When the inner save fails, it restores its previous cache entry and rethrows. Its `NewSettingAsync` caches a new record only after any automatic save has completed. [Settings providers](../../../docs/guidelines/patterns/sync-async.md#settings-providers) explains the execution rules behind both bases.
 
 ## Configuration files
 
 `Tools.Config.GetAppSetting` reads an `appSettings` value with a fallback default. `GenericSectionHandler` is an `IConfigurationSectionHandler` that deserializes a custom configuration section with `XmlSerializer`. Both read .NET configuration files through `System.Configuration.ConfigurationManager`.
+
+This `App.config` declares a custom section beside its `appSettings`:
+
+```xml
+<configuration>
+  <configSections>
+    <section name="reporting" type="Sphere10.Framework.Application.GenericSectionHandler, Sphere10.Framework.Application" />
+  </configSections>
+  <appSettings>
+    <add key="ReportTitle" value="Monthly report" />
+    <add key="PageSize" value="50" />
+  </appSettings>
+  <reporting type="MyApp.ReportingConfiguration, MyApp">
+    <OutputFolder>reports</OutputFolder>
+    <MaxRows>500</MaxRows>
+  </reporting>
+</configuration>
+```
+
+The application reads both parts:
+
+```csharp
+using System.Xml.Serialization;
+using Sphere10.Framework.Application;
+
+var title = Tools.Config.GetAppSetting("ReportTitle", "Untitled");
+var pageSize = Tools.Config.GetAppSetting<int>("PageSize", 100);
+var reporting = GenericSectionHandler.GetConfig<MyApp.ReportingConfiguration>("reporting");
+
+namespace MyApp {
+	[XmlRoot("reporting")]
+	public class ReportingConfiguration {
+		public string OutputFolder { get; set; }
+		public int MaxRows { get; set; }
+	}
+}
+```
+
+`GetAppSetting<T>` parses the value with `Tools.Parser` and returns the default when the key is missing. The section's `type` attribute names the class to deserialize as `<type>, <assembly>`, where `MyApp` stands for the application's assembly. `[XmlRoot]` matches the class to the section's element name. `GetConfig<T>` throws `SoftwareException` when the configuration file has no such section.
 
 ## Tests
 

@@ -81,6 +81,18 @@ ApiServiceManager.UnregisterService(service);
 
 `isLocal: true` binds the listener to the loopback address, and `false` binds it to every interface. `maxListener` is the listener's connection backlog. Each accepted connection gets a `JsonRpcClientHandler` that processes its calls on a separate task, so service methods must tolerate concurrent calls.
 
+A service method runs on the thread of the connection that called it. `JsonRpcClientHandler.ClientContext` returns that connection's endpoint UID, so a method can tell its callers apart:
+
+```csharp
+using Sphere10.Framework.Communications.RPC;
+
+[RpcAPIService("session")]
+public class SessionService {
+	[RpcAPIMethod]
+	public string Caller() => $"Connection {JsonRpcClientHandler.ClientContext}";
+}
+```
+
 ### Naming rules
 
 | Declaration | Registered name |
@@ -93,11 +105,87 @@ ApiServiceManager.UnregisterService(service);
 
 Service and method names are case-insensitive. Registering a second service under the same non-empty name throws, whereas anonymous services can be registered repeatedly to add methods. Public and non-public instance methods can be exposed.
 
+This service renames its arguments and registers one method under two aliases:
+
+```csharp
+using Sphere10.Framework.Communications.RPC;
+
+[RpcAPIService("strings")]
+public class StringService {
+	[RpcAPIMethod]
+	public string Concat([RpcAPIArgument("first")] string text1, [RpcAPIArgument("second")] string text2) => text1 + text2;
+
+	[RpcAPIMethod("explicit_args")]
+	[RpcAPIMethod("args")]
+	public void ExplicitArguments([RpcAPIArgument("arg1")] uint value) {
+		// Registered as strings.explicit_args and strings.args
+	}
+}
+```
+
+The argument names are stored in lower case in the method's descriptor. Callers still pass the values by position. Here `client` is a `JsonRpcClient` that is connected to the server, as [JSON-RPC Client](#-json-rpc-client) shows:
+
+```csharp
+using System;
+using Sphere10.Framework.Communications.RPC;
+
+ApiServiceManager.RegisterService(new StringService());
+
+var concat = ApiServiceManager.GetService("strings").GetMethod("strings.concat");
+foreach (var (name, type) in concat.Arguments)
+	Console.WriteLine($"{name}: {type.Name}"); // first: String, second: String
+
+var joined = client.RemoteCall<string>("strings.concat", "ab", "cd"); // "abcd"
+client.RemoteCall("strings.args", 7u);
+```
+
+### Service registry
+
+`ApiServiceManager` is the process-wide registry that `JsonRpcServer` dispatches through. Each registered service is an `ApiService` that binds method names to the instance's methods. The registry finds a service by name or by a full method name, and the service can describe and call its methods in process:
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+using Sphere10.Framework.Communications.RPC;
+
+var math = new MathService();
+ApiServiceManager.RegisterService(math);
+
+ApiService service = ApiServiceManager.GetServiceFromMethod("math.add"); // the "math" service
+Console.WriteLine(service.IsApi(math));                                 // True
+ApiMethodDescriptor add = service.GetMethod("math.add");
+Console.WriteLine($"{add.MethodName} returns {add.ReturnType.Name}");    // math.add returns Int32
+
+// Dispatch in process, as a client handler does with the parsed request arguments
+JsonResponse response = service.Call("math.add", new List<object> { new JValue(5), new JValue(3) });
+Console.WriteLine(response.Result);                                     // 8
+
+ApiServiceManager.UnregisterService("math");
+```
+
+`Call` expects every argument as a Newtonsoft.Json `JToken`, and it returns error -8 for any other argument. A method name without a dot resolves to the anonymous service.
+
+An `ApiService` can also hold bindings outside the registry. `JsonRpcServer` cannot reach such a service, but it can dispatch calls in process or check a service's bindings in a test:
+
+```csharp
+using Sphere10.Framework.Communications.RPC;
+
+var math = new MathService();
+var local = new ApiService();
+local.AddApi(math);                    // binds math.add and math.mul to this instance
+bool isBound = local.IsApi(math);      // true
+bool removed = local.RemoveApi(math);  // true when bindings were removed
+```
+
+`AddApi` throws when a method name is already bound, and it does not take ownership of the instance.
+
 ### Arguments and types
 
 Calls pass arguments by position in a JSON array. The server rejects named arguments in a JSON object with error -6, so `[RpcAPIArgument]` names do not affect dispatch. Arguments and results are converted with Newtonsoft.Json, and a `byte[]` argument travels as a hex string. Add `[JsonConverter(typeof(ByteArrayHexConverter))]` to the `byte[]` members of argument and result types so that both sides read them as hex:
 
 ```csharp
+using System.Linq;
 using Newtonsoft.Json;
 using Sphere10.Framework.Communications;
 using Sphere10.Framework.Communications.RPC;
@@ -114,7 +202,18 @@ public class Payload {
 public class ObjectService {
 	[RpcAPIMethod]
 	public Payload Echo(Payload input) => input;
+
+	[RpcAPIMethod]
+	public Payload[] Repeat(Payload input, int count) => Enumerable.Repeat(input, count).ToArray();
 }
+```
+
+The client passes and receives the same types. Objects arrive as JSON objects and arrays as JSON arrays, and `RemoteCall<T>` converts them back to `T`:
+
+```csharp
+var payload = new Payload { Count = 1, Name = "demo", Data = new byte[] { 0xDE, 0xAD } };
+Payload echoed = client.RemoteCall<Payload>("objects.echo", payload);
+Payload[] copies = client.RemoteCall<Payload[]>("objects.repeat", payload, 3);
 ```
 
 An exception thrown by a service method becomes an error response with code -9 that carries the exception's message. A missing method returns -2, or -7 when its service is unknown. A wrong argument count returns -3, and an argument of the wrong type returns -5.
@@ -159,6 +258,32 @@ object[] results = client.RemoteCall(batch);                  // 3 and 9
 
 The code spells the mode `Persistant`. A plain `JsonRpcClient` should use `Pulsed`, because only a `JsonRpcClientHandler` reads the results that `Persistant` mode waits for.
 
+A Stratum-style session uses `Persistant` mode on both sides of one connection. The server pushes calls through the `JsonRpcClientHandler` that `OnNewClient` passes to it. The client runs its own `JsonRpcClientHandler`, whose loop serves the server's calls and reads the results of the client's calls:
+
+```csharp
+using Sphere10.Framework;
+using Sphere10.Framework.Communications.RPC;
+
+var config = new JsonRpcConfig {
+	ConnectionMode = JsonRpcConfig.ConnectionModeEnum.Persistant,
+	IgnoreEmptyReturnValue = true,
+	Logger = new ConsoleLogger()
+};
+
+// Server process, with MathService registered
+var server = new JsonRpcServer(new TcpEndPointListener(isLocal: true, port: 27002, maxListener: 5), config);
+server.OnNewClient += handler => handler.RemoteCall("miner.notify", "job-1");
+server.Start();
+
+// Client process, with a "miner" service that has a Notify(string jobId) method registered
+var client = new JsonRpcClientHandler(new TcpEndPoint("127.0.0.1", 27002), config);
+client.Start();
+var sum = client.RemoteCall<int>("math.add", 5, 3); // the client's own loop reads the result
+client.Stop();
+```
+
+Each process dispatches the calls it receives through the `ApiServiceManager` registry of that process. Set `IgnoreEmptyReturnValue` in this mode when methods return nothing, because a response without a `result` member is not matched to its caller. A call whose result does not arrive within `MaxTimeWaitingForResult` throws a `JsonRpcException` with code -11.
+
 ## 🔗 TCP Message Endpoints
 
 The RPC layer moves whole messages through `IEndPoint`. `TcpEndPoint` connects to its remote address on first use, and `TcpEndPointListener.WaitForMessage` blocks until a client connects and then returns that client's endpoint:
@@ -186,6 +311,34 @@ endpoint.Stop();
 - Endpoints that `TcpEndPointListener` accepts take the listener's `MaxMessageSize`.
 - `TcpEndPoint.ReadMessage` rejects control characters other than tab, line feed and carriage return, so these endpoints carry text only. `EndpointMessage` converts strings with ASCII encoding.
 - The RPC layer has no authentication or encryption. Bind the listener with `isLocal: true` or protect the network path when callers are untrusted.
+
+### The IEndPoint contract
+
+`JsonRpcServer`, `JsonRpcClient` and `JsonRpcClientHandler` work through this interface, so another message transport can implement it:
+
+```csharp
+namespace Sphere10.Framework.Communications.RPC;
+
+public interface IEndPoint {
+	string GetDescription();
+	ulong GetUID();
+	IEndPoint WaitForMessage();
+	EndpointMessage ReadMessage();
+	void WriteMessage(EndpointMessage message);
+	bool IsOpened();
+	void Start();
+	void Stop();
+}
+```
+
+| Member | `TcpEndPoint` | `TcpEndPointListener` |
+|---|---|---|
+| `GetDescription` | The remote `address:port` once connected | The local `address:port` |
+| `GetUID` | A random identifier, which `JsonRpcClientHandler.ClientContext` reports | A random identifier |
+| `WaitForMessage` | Returns the endpoint itself | Accepts a connection and returns its endpoint |
+| `ReadMessage` and `WriteMessage` | Read or write one message, connecting first when needed | `ReadMessage` accepts a connection and reads from it. `WriteMessage` writes to the endpoint that the message's `Stream` names |
+| `IsOpened` | Whether the socket is still connected | Whether the listener is bound |
+| `Start` and `Stop` | Connect to the remote address when one was given, or close the socket | Start listening with the backlog, or stop |
 
 ## 🔗 Protocol Channels
 
@@ -233,6 +386,24 @@ await pipe.TrySendBytes(Encoding.UTF8.GetBytes("Hello from child"));
 - On Windows, each send first waits for the other process to drain the previous message. Other platforms write directly.
 - Closing the parent's pipe waits up to `DefaultTimeout` (five seconds) for the child to exit, and kills the child if it is still running.
 
+Either side can exchange raw text lines instead of bytes. `TryWaitForString` completes with `true` when the next line that arrives equals its value. It completes with `false` when its token is cancelled, so pass a token with a timeout:
+
+```csharp
+using System;
+using System.Threading;
+
+pipe.ReceivedString += line => Console.WriteLine($"Received: {line}");
+pipe.SentString += line => Console.WriteLine($"Sent: {line}");
+
+using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+var ready = pipe.TryWaitForString("ready", timeout.Token); // subscribes before the child can answer
+await pipe.TrySendString("start", timeout.Token);
+if (!await ready)
+	Console.WriteLine("The child did not answer with 'ready' in time");
+```
+
+When the next line has different text, `TryWaitForString` stops watching and completes only when its token is cancelled.
+
 ### UDP and typed protocols
 
 A `UDPChannel` exchanges datagrams with one peer, which creates its own channel with the two endpoints swapped:
@@ -257,12 +428,138 @@ For typed messages, pass any channel to the core `ProtocolOrchestrator` together
 dotnet run --project ./recipes/AbstractProtocol.UPDSimple/AbstractProtocol.UDPSimple.csproj
 ```
 
+### WebSockets
+
+A `ServerWebSocketsChannel` listens on its local endpoint, and its `Open` completes when one client has connected and finished the upgrade handshake. The server then sends the channel ID, which the client's `Open` reads into `Id`:
+
+```csharp
+using System;
+using System.Net;
+using System.Text;
+using Sphere10.Framework.Communications;
+
+var server = new ServerWebSocketsChannel(new IPEndPoint(IPAddress.Loopback, 8090), remoteEndpoint: null, secure: false);
+server.ReceivedBytes += bytes => Console.WriteLine($"Server received: {Encoding.UTF8.GetString(bytes.Span)}");
+var serverOpened = server.Open(); // completes when a client has connected
+
+var client = new ClientWebSocketsChannel("ws://127.0.0.1:8090", secure: false);
+await client.Open();
+await serverOpened;
+Console.WriteLine($"Channel ID: {client.Id}");
+await client.TrySendBytes(Encoding.UTF8.GetBytes("Hello"));
+await client.Close();
+```
+
+Both channels send every message as one WebSocket text frame. The `ReceivedWebSocketMessage` event reports each received frame, including the close frame that starts the closing handshake.
+
+### Custom channels
+
+A new transport derives from `ProtocolChannel` and implements its template methods. The base class runs the receive loop, which calls `ReceiveBytesInternal` until the channel closes, and it raises the events. This in-memory channel delivers each send to the receive loop of its peer:
+
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
+using Sphere10.Framework.Communications;
+
+public sealed class InMemoryChannel : ProtocolChannel {
+	private readonly Channel<byte[]> _inbox = Channel.CreateUnbounded<byte[]>();
+	private bool _connected;
+
+	public InMemoryChannel(CommunicationRole role) {
+		LocalRole = role;
+	}
+
+	public override CommunicationRole LocalRole { get; }
+
+	public InMemoryChannel Peer { get; set; }
+
+	public override bool IsConnectionAlive() => _connected;
+
+	protected override Task OpenInternal() {
+		_connected = true;
+		return Task.CompletedTask;
+	}
+
+	protected override Task CloseInternal() {
+		_connected = false;
+		return Task.CompletedTask;
+	}
+
+	protected override async Task<byte[]> ReceiveBytesInternal(CancellationToken cancellationToken)
+		=> await _inbox.Reader.ReadAsync(cancellationToken);
+
+	protected override Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+		=> Task.FromResult(Peer is { _connected: true } && Peer._inbox.Writer.TryWrite(bytes.ToArray()));
+}
+```
+
+Any channel is used through the same members and events:
+
+```csharp
+var a = new InMemoryChannel(CommunicationRole.Client);
+var b = new InMemoryChannel(CommunicationRole.Server) { Peer = a };
+a.Peer = b;
+a.Opened += () => Console.WriteLine("a opened");
+a.Closed += () => Console.WriteLine("a closed");
+b.ReceivedBytes += bytes => Console.WriteLine($"b received {bytes.Length} bytes");
+
+await a.Open();
+await b.Open();
+await a.TrySendBytes(new byte[] { 1, 2, 3 });
+await a.Close();
+await b.Close();
+```
+
+`TrySendBytes` returns `false` when `IsConnectionAlive` is `false` or the transport rejects the bytes. `Close` cancels a pending `ReceiveBytesInternal` after 150 milliseconds if the receive loop has not ended by then, and the channel raises `Closed` when the loop ends.
+
 ## 🛡️ Security Policies
 
 `TcpSecurityPolicies` holds process-wide settings for the JSON-RPC server, and two of its checks are active:
 
 - `ValidateConnectionCount` limits concurrent RPC connections to `MaxSimultanousConnecitons` (200 by default) and throws `TooManyConnectionsException` beyond it. A rejected connection does not count towards the limit, and `JsonRpcServer` closes its socket.
 - `ValidateJsonQuality` rejects received bytes that contain control characters other than tab, line feed and carriage return. `TcpEndPoint.ReadMessage` applies it to every read.
+
+A custom server on `TcpEndPointListener` can share the same connection limit. Every successful `ConnectionOpen` check needs a matching `ConnectionClose`:
+
+```csharp
+using Sphere10.Framework.Communications.RPC;
+
+TcpSecurityPolicies.MaxSimultanousConnecitons = 50; // shared by every server in the process
+
+var listener = new TcpEndPointListener(isLocal: true, port: 27003, maxListener: 5);
+listener.Start();
+IEndPoint client = listener.WaitForMessage();
+try {
+	TcpSecurityPolicies.ValidateConnectionCount(TcpSecurityPolicies.MaxConnecitonPolicy.ConnectionOpen);
+} catch (TooManyConnectionsException) {
+	client.Stop(); // a rejected connection holds no slot
+	return;
+}
+try {
+	var request = client.ReadMessage(); // ReadMessage has already applied ValidateJsonQuality
+	client.WriteMessage(new EndpointMessage("OK"));
+} finally {
+	client.Stop();
+	TcpSecurityPolicies.ValidateConnectionCount(TcpSecurityPolicies.MaxConnecitonPolicy.ConnectionClose);
+}
+```
+
+Bytes read from another source can be checked directly. `ValidateJsonQuality` throws `IllegalValueException` from the `Sphere10.Framework` namespace:
+
+```csharp
+using Sphere10.Framework;
+using Sphere10.Framework.Communications.RPC;
+
+var buffer = new byte[4096];
+var bytesRead = stream.Read(buffer, 0, buffer.Length);
+try {
+	TcpSecurityPolicies.ValidateJsonQuality(buffer, bytesRead);
+} catch (IllegalValueException) {
+	// The bytes contain a control character other than tab, line feed or carriage return
+}
+```
 
 `MonitorPotentialAttack` is a placeholder. The spoofing and connection-rate settings (`MaxSpoofStringPerClient`, `MaxClientConnectionPerSecond` and their ban thresholds) are not used yet.
 

@@ -165,6 +165,30 @@ app.MapGet("/messages", (HttpContext context) => {
 
 `HttpRequest.GetParameter<T>(Enum)` and `PageParameterProcessor` read a query-string value named by an enum member and parse it with `Tools.Parser`. The member's name is the parameter name unless a [`ParameterAttribute`](../Sphere10.Framework.Web/README.md#request-parameter-names) overrides it. `ContainsParameter` reports whether the query string carries the parameter, so call it before you read an optional parameter. `GetParameter<T>` throws `SoftwareException` when the query string lacks the value, and it throws `FormatException` when the value does not parse as `T`.
 
+To try it, add the imports at the top of the quick start's `Program.cs`, the endpoint before `app.Run()` and the enum at the end of the file:
+
+```csharp
+using Microsoft.AspNetCore.Http;
+using Sphere10.Framework.Web.AspNetCore;
+using Sphere10.Framework.Web.Processing;
+
+app.MapGet("/search", (HttpRequest request) => {
+	var page = request.ContainsParameter(SearchParameter.Page) ? request.GetParameter<int>(SearchParameter.Page) : 1;
+	var text = request.ContainsParameter(SearchParameter.Text) ? request.GetParameter(SearchParameter.Text) : string.Empty;
+	return Results.Ok(new { page, text });
+});
+
+public enum SearchParameter {
+	[Parameter(Name = "page")]
+	Page,
+
+	[Parameter(Name = "q")]
+	Text
+}
+```
+
+A request for `/search?page=2&q=reports` returns the page number 2 and the text `reports`. `GetParameter(Enum)` without a type argument returns the value as a string.
+
 ### Cloudflare client addresses
 
 `CloudflareConnectingIPMiddleware` replaces `HttpContext.Connection.RemoteIpAddress` with the address in the `cf-connecting-ip` request header. The library does not register it, so add it early in the pipeline, before any middleware that reads the client address:
@@ -185,6 +209,25 @@ The middleware trusts the header without checking the sender. Enable it only whe
 | `HttpRequest.ToStringAsync()` | Formats the request line, headers and body as text. It reads the body to the end and leaves the stream open. It restores the position of a seekable body, so call `EnableBuffering()` first when another reader needs the body afterwards. |
 | `HttpContextEx.Current` | Returns the current `HttpContext` from a static accessor. Register the accessor with `AddHttpContextAccessor()` and pass it to `HttpContextEx.Configure` at startup first. |
 | `IHtmlContentBuilder.ToHtmlContent(HtmlEncoder)` | Renders the builder's content into one `HtmlString`. |
+
+The next additions to the quick start echo a request and configure `HttpContextEx`. Add the imports at the top of `Program.cs`, the registration before `builder.Build()` and the other statements before `app.Run()`:
+
+```csharp
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Sphere10.Framework.Web.AspNetCore;
+
+builder.Services.AddHttpContextAccessor();
+
+HttpContextEx.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
+app.MapPost("/echo", async (HttpRequest request) => {
+	request.EnableBuffering();
+	var dump = await request.ToStringAsync();
+	return Results.Text($"{request.GetUri()}\n\n{dump}");
+});
+```
+
+A `POST` to `/echo` returns the request's absolute URI, followed by its request line, headers and body. Code that has no `HttpContext` parameter can then read `HttpContextEx.Current` while a request is in progress.
 
 ## Namespaces
 
