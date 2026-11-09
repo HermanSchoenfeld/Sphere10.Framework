@@ -246,6 +246,7 @@ More information: [MIT License](https://opensource.org/license/mit)
 
 - **.NET 10 SDK**
 - An IDE that supports the **.NET 10 SDK**, such as Visual Studio or JetBrains Rider
+- Optionally the **.NET 11 SDK**. When the building SDK is 11 or later, source and test projects also target `net11.0` (`net11.0-windows` for Windows Forms) and compile those targets with runtime async (`<Features>runtime-async=on</Features>`). A .NET 10 SDK builds `net10.0` only. The shared lists are `FrameworkTargetFrameworks` and `FrameworkWindowsTargetFrameworks` in `Directory.Build.props`.
 - **Windows** required for `Sphere10.Framework.Windows.*` projects
 - Two solution files available:
   - `src/Sphere10.Framework (CrossPlatform).sln` — Cross-platform projects only
@@ -287,3 +288,20 @@ From the Framework repository root, run [pack.ps1](scripts/pack.ps1) to clean an
 [publish.ps1](scripts/publish.ps1) validates the entire batch before publishing: each package must have a matching ID and version, duplicate versions are rejected, and requested symbols must match their packages. Only `Sphere10.Framework`, its subpackages, and `Sphere10.HashLib4CSharp` are selected. Independent packages such as `Sphere10.VisualRenderer` are packed separately. Symbols are sent only with `-IncludeSymbols`. `-WhatIf` validates and previews without requesting credentials or pushing anything.
 
 The publisher accepts `-ApiKey`, reads `NUGET_API_KEY`, or prompts with hidden input. Ordinary publication asks for PowerShell confirmation; use `-Confirm:$false` for an automated run with credentials supplied. `-Source`, `-SymbolSource`, and `-PackagesDirectory` override the default feeds and package directory. Both scripts support Windows PowerShell 5.1 and PowerShell 7 and keep their default paths rooted in the Framework repository.
+
+#### Private feed
+
+[publish-private.ps1](scripts/publish-private.ps1) is the sibling of `publish.ps1` for a private or workstation feed: a folder that NuGet restores from, instead of nuget.org. It packs the same libraries under one prerelease version and adds them to the folder. It needs no API key and publishes nothing online.
+
+```powershell
+./scripts/publish-private.ps1 -WhatIf
+./scripts/publish-private.ps1
+./scripts/publish-private.ps1 -Feed D:/Packages/sphere10 -Label preview
+```
+
+- **Version.** The default is `<VersionPrefix>-private.<yyyyMMdd>.<n>`, for example `3.1.3-private.20261108.1`, numbered after the versions the feed already holds. `-Label` replaces `private`, and `-Version` sets an exact version. An existing version is never replaced.
+- **Feed.** The default is the `SPHERE10_PRIVATE_FEED` environment variable, then a `nuget-private` folder beside the repository. `-Feed` selects any folder. Packages are written in NuGet's hierarchical folder layout (`<id>/<version>/<id>.<version>.nupkg` with its `.sha512`, `.nuspec` and `.snupkg`), which restore reads directly; `dotnet nuget push` into a folder would write a flat layout instead.
+- **Safety.** Nothing is added unless every package builds, every Sphere10 dependency resolves to the new set or the feed, and the checkout did not change while packing. Builds use their own artifacts folder under `publish/.staging`, so the checkout's `bin` and `obj` folders are untouched; that default staging is removed after a successful publish.
+- **Composition.** `-WhatIf` shows the version and package list without packing. `-PackOnly` leaves the packages in `-OutputDirectory` for a caller that adds its own packages built against them before publishing the set. The script returns an object with the version and package paths.
+
+A consumer adds the folder to its `NuGet.Config` and references an exact version, such as `Version="[3.1.3-private.20261108.1]"`. The script supports Windows PowerShell 5.1 and PowerShell 7.

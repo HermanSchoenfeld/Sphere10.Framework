@@ -181,6 +181,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{298B
 	ProjectSection(SolutionItems) = preProject
 		..\scripts\pack.ps1 = ..\scripts\pack.ps1
 		..\scripts\publish.ps1 = ..\scripts\publish.ps1
+		..\scripts\publish-private.ps1 = ..\scripts\publish-private.ps1
 		..\scripts\validate-packages.ps1 = ..\scripts\validate-packages.ps1
 	EndProjectSection
 EndProject
