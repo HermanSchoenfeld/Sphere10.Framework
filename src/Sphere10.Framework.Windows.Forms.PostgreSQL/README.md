@@ -4,25 +4,6 @@
 
 `Sphere10.Framework.Windows.Forms.PostgreSQL` provides Windows Forms editors for PostgreSQL connection settings in desktop applications that use Sphere10 Framework data access. Use `PostgreSQLConnectionBar` where a compact one-row editor fits, and `PostgreSQLConnectionPanel` on a settings page or in a dialog. Both build an Npgsql connection string, test it on request and create a `PostgreSQLDAC` from it.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Windows.Forms.PostgreSQL` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `PostgreSQLConnectionBar` and `PostgreSQLConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.PostgreSQL`. |
-| [`PostgreSQLConnectionBar`](PostgreSQLConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for the PostgreSQL host, port, database, user name and password that builds the connection string and creates a `PostgreSQLDAC`. |
-| [`PostgreSQLConnectionPanel`](PostgreSQLConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `PostgreSQLConnectionBar`, for a settings page or dialog. |
-<!-- domains:end -->
-
 ## Reference the package
 
 Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
@@ -43,6 +24,25 @@ The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targe
 ```
 
 Create and use the controls on the application's UI thread. Creating or editing a control never connects, so a PostgreSQL server is needed only to test or open a connection.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.Forms.PostgreSQL` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `PostgreSQLConnectionBar` and `PostgreSQLConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.PostgreSQL`. |
+| [`PostgreSQLConnectionBar`](PostgreSQLConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for the PostgreSQL host, port, database, user name and password that builds the connection string and creates a `PostgreSQLDAC`. |
+| [`PostgreSQLConnectionPanel`](PostgreSQLConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `PostgreSQLConnectionBar`, for a settings page or dialog. |
+<!-- domains:end -->
 
 ## Controls
 

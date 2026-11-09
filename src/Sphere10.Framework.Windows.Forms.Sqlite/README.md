@@ -4,25 +4,6 @@
 
 `Sphere10.Framework.Windows.Forms.Sqlite` provides Windows Forms editors that select a SQLite database file and its password, journal mode and synchronization mode, for desktop applications that use Sphere10 Framework data access. Use `SqliteConnectionBar` where a compact one-row editor fits, and `SqliteConnectionPanel` on a settings page or in a dialog. Both build a `System.Data.SQLite` connection string, test it on request and create a `SqliteDAC` from it.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Windows.Forms.Sqlite` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `SqliteConnectionBar` and `SqliteConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.Sqlite`. |
-| [`SqliteConnectionBar`](SqliteConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for a database file, password, journal mode and synchronous mode that builds a `FailIfMissing` connection string and creates a `SqliteDAC`. |
-| [`SqliteConnectionPanel`](SqliteConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `SqliteConnectionBar`, for a settings page or dialog. |
-<!-- domains:end -->
-
 ## Reference the package
 
 Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
@@ -43,6 +24,25 @@ The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targe
 ```
 
 Create and use the controls on the application's UI thread. Creating or editing a control never opens the database file. The application's output must include the native SQLite library for its runtime architecture, which `SourceGear.sqlite3` provides.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.Forms.Sqlite` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `SqliteConnectionBar` and `SqliteConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.Sqlite`. |
+| [`SqliteConnectionBar`](SqliteConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for a database file, password, journal mode and synchronous mode that builds a `FailIfMissing` connection string and creates a `SqliteDAC`. |
+| [`SqliteConnectionPanel`](SqliteConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `SqliteConnectionBar`, for a settings page or dialog. |
+<!-- domains:end -->
 
 ## Controls
 

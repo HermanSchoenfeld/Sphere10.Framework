@@ -4,6 +4,18 @@
 
 Sphere10.Framework.iOS is a legacy Xamarin.iOS class library of UIKit views, view controllers, awaitable dialogs and extension methods, with StoreKit, network-reachability and address-book helpers. No solution, CI job or packaging script builds it. Use it only as reference source, for example when porting a control to a current .NET iOS project.
 
+## 📊 Status
+
+| Area | State |
+|---|---|
+| Solutions | Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes the project. |
+| CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
+| Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
+| Project format | `Sphere10.Framework.iOS.csproj` is a legacy (non-SDK) Xamarin.iOS project. It imports `$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets` and references the `Xamarin.iOS` and `OpenTK-1.0` assemblies. |
+| Framework references | Its project references point at `Sphere10.Framework`, `Sphere10.Framework.Application`, `Sphere10.Framework.Data` and `Sphere10.Framework.Drawing`, which now target `net10.0`. |
+| Source | The settings classes use `Guard.ArgumentNotNull` from `Sphere10.Framework` and `Tools.Xml` from `Sphere10.Framework.Data`. No build verifies the source against the current Framework. |
+| Tests | No test project covers it. |
+
 <!-- domains:begin -->
 ## Domains
 
@@ -29,18 +41,6 @@ Types declared in the project folder itself:
 |---|---|---|
 | [`Tools.iOSTool`](iOSTool.cs) | tools | Static UIKit helpers for keyboard height, animation waits, video thumbnails, labels, top-most view controller lookup, Objective-C runtime properties, orientation, JPEG saving and image cropping, resizing, zooming and tinting. |
 <!-- domains:end -->
-
-## 📊 Status
-
-| Area | State |
-|---|---|
-| Solutions | Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes the project. |
-| CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
-| Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
-| Project format | `Sphere10.Framework.iOS.csproj` is a legacy (non-SDK) Xamarin.iOS project. It imports `$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets` and references the `Xamarin.iOS` and `OpenTK-1.0` assemblies. |
-| Framework references | Its project references point at `Sphere10.Framework`, `Sphere10.Framework.Application`, `Sphere10.Framework.Data` and `Sphere10.Framework.Drawing`, which now target `net10.0`. |
-| Source | The settings classes use `Guard.ArgumentNotNull` from `Sphere10.Framework` and `Tools.Xml` from `Sphere10.Framework.Data`. No build verifies the source against the current Framework. |
-| Tests | No test project covers it. |
 
 ## 🏗️ Contents
 

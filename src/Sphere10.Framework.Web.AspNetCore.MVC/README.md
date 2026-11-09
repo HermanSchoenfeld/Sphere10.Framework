@@ -4,29 +4,6 @@
 
 This library extends ASP.NET Core MVC applications that use Sphere10 Framework with action results, Razor HTML helpers, AJAX Bootstrap forms and action filters. It builds on the shared [ASP.NET Core integration](../Sphere10.Framework.Web.AspNetCore/README.md) and does not register controllers, routes or client scripts by itself.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Web.AspNetCore.MVC` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [Extensions](Extensions/README.md) | Extension methods for MVC controllers, Razor HTML helpers, URL helpers, select lists and model state. | [source](Extensions/) |
-| [Filters](Filters/README.md) | MVC action filter attributes for per-action cleanup, service-resolved filters and form-tag flags. | [source](Filters/) |
-| [Forms](Forms/README.md) | Bootstrap AJAX form models, rendering scope, options and JSON results for the embedded forms script. | [source](Forms/) |
-| [Processing](Processing/README.md) | A Windows-only action result that writes a `System.Drawing` image to the response. | [source](Processing/) |
-| [Routing](Routing/README.md) | A controller attribute that declares conventional routes and registers them from an assembly. | [source](Routing/) |
-| [XML](XML/README.md) | An action result that returns serialized objects or existing XML as `application/xml`. | [source](XML/) |
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`Tools.Web.Mvc`](MvcTool.cs) | tools | Builds an MVC `SelectList` from an enum type, labelled by each member's description, with an optional selected value and sort direction. |
-<!-- domains:end -->
-
 ## Features
 
 | Area | APIs |
@@ -104,6 +81,29 @@ dotnet run --project ../MvcDemo -p:BuildRevision=0
 | `XmlResult()`, `XmlResult(statusCode)` | Empty. |
 
 XML results do not need the Framework to be started. Add the registration and start calls from the [shared hosting quick start](../Sphere10.Framework.Web.AspNetCore/README.md#quick-start-framework-lifecycle-and-sessions) when the application needs Framework modules and lifecycle services.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Web.AspNetCore.MVC` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Extensions](Extensions/README.md) | Extension methods for MVC controllers, Razor HTML helpers, URL helpers, select lists and model state. | [source](Extensions/) |
+| [Filters](Filters/README.md) | MVC action filter attributes for per-action cleanup, service-resolved filters and form-tag flags. | [source](Filters/) |
+| [Forms](Forms/README.md) | Bootstrap AJAX form models, rendering scope, options and JSON results for the embedded forms script. | [source](Forms/) |
+| [Processing](Processing/README.md) | A Windows-only action result that writes a `System.Drawing` image to the response. | [source](Processing/) |
+| [Routing](Routing/README.md) | A controller attribute that declares conventional routes and registers them from an assembly. | [source](Routing/) |
+| [XML](XML/README.md) | An action result that returns serialized objects or existing XML as `application/xml`. | [source](XML/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Tools.Web.Mvc`](MvcTool.cs) | tools | Builds an MVC `SelectList` from an enum type, labelled by each member's description, with an optional selected value and sort direction. |
+<!-- domains:end -->
 
 ## Select lists
 

@@ -4,6 +4,16 @@
 
 Sphere10.Framework.Communications adds network transports and a JSON-RPC layer to Sphere10 Framework. It implements the core `ProtocolChannel` over anonymous pipes, UDP, TCP and WebSockets, and it provides an attribute-based JSON-RPC server and client over TCP. Use the channels as transports for typed protocols built with the core `ProtocolBuilder` and `ProtocolOrchestrator`, and use the RPC types to let remote callers invoke object methods by name.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Communications
+```
+
+The package depends on [Sphere10.Framework](../Sphere10.Framework/README.md) and Newtonsoft.Json. It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Communications/Sphere10.Framework.Communications.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
+
+The channel types use the `Sphere10.Framework.Communications` namespace. The JSON-RPC and TCP endpoint types use `Sphere10.Framework.Communications.RPC`.
+
 <!-- domains:begin -->
 ## Domains
 
@@ -21,16 +31,6 @@ Every folder of `Sphere10.Framework.Communications` is a domain with its own REA
 | [UDP](UDP/README.md) | Provides UDP `ProtocolChannel`s for one fixed peer and a UDP server that creates one channel per remote endpoint. | [source](UDP/) |
 | [WebSockets](WebSockets/README.md) | Provides client and server WebSocket `ProtocolChannel`s, a hub that tracks the server's connections, and an older combined channel. | [source](WebSockets/) |
 <!-- domains:end -->
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework.Communications
-```
-
-The package depends on [Sphere10.Framework](../Sphere10.Framework/README.md) and Newtonsoft.Json. It targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. To build against a Framework source checkout instead, reference `src/Sphere10.Framework.Communications/Sphere10.Framework.Communications.csproj` as [Independent Sphere10 applications](../../docs/guidelines/patterns/new-projects.md#interchangeable-source-and-nuget-references) describes.
-
-The channel types use the `Sphere10.Framework.Communications` namespace. The JSON-RPC and TCP endpoint types use `Sphere10.Framework.Communications.RPC`.
 
 ## 🏗️ Core Architecture
 

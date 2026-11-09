@@ -4,35 +4,6 @@
 
 Razor components for .NET 10 Blazor Web Apps using Interactive Server rendering. The library brings Sphere10's ApplicationBlock navigation and `IDataSource<T>` CRUD patterns to the browser.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Web.AspNetCore.Blazor` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [Application](Application/README.md) | The Blazor application workspace model of blocks, menus, screen registrations, the circuit-scoped screen host and the per-circuit application aggregate. | [source](Application/) |
-| [Components](Components/README.md) | The original view-model component generation with route search, a loading overlay, modal dialogs, display tables and a wizard host. | [source](Components/) |
-| [Events](Events/README.md) | A legacy event-arguments type carried over from the original Blazor presentation code. | [source](Events/) |
-| [Grids](Grids/README.md) | The controller, column model, settings and value conversions behind the `BlazorGrid<TItem>` CRUD grid. | [source](Grids/) |
-| [Modal](Modal/README.md) | The current dialog services that show modal components, confirmations, information messages and wizards through `UI.Dialogs.ModalHost`. | [source](Modal/) |
-| [Models](Models/README.md) | Small records and classes used by the original component generation for search results and paged table requests. | [source](Models/) |
-| [Plugins](Plugins/README.md) | Blazor plugin definitions and builders for the application workspace, and the older routed-plugin navigation model. | [source](Plugins/) |
-| [Services](Services/README.md) | Services of the original component generation for modal dialogs, wizard building, typed event publishing and example endpoint and node data. | [source](Services/) |
-| [Theming](Theming/README.md) | The scoped theme service and the catalogue of built-in theme presets with their stylesheet paths and dark or light classification. | [source](Theming/) |
-| [UI](UI/README.md) | The Razor components of the current generation, from the application shell and CRUD grid to dialogs, tables, layout pieces, theme controls and the wizard host. | [source](UI/) |
-| [ViewModels](ViewModels/README.md) | Base view models for the original component generation, including the modal view model that completes a dialog's result. | [source](ViewModels/) |
-| [Wizard](Wizard/README.md) | The current Blazor wizard model and fluent builder whose steps are Blazor component types rendered by `UI.Wizard.BlazorWizardHost`. | [source](Wizard/) |
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`IServiceCollectionExtensions`](IServiceCollectionExtensions.cs) | static class | `BuildBlazorApplication`, `AddSphere10Blazor`, `AddSphere10BlazorApplication`, `AddSphere10BlazorPlugin`, `AddSphere10BlazorPlugins<TPluginLocator>`, `AddApplicationBlock` and `AddViewModelsFromAssembly` register the Blazor application, plugins, blocks, screen host, dialog, wizard, theme and settings services. |
-<!-- domains:end -->
-
 ## Features
 
 - **CRUD grid:** typed columns, buffered editing, validation, confirmed deletion, search, sorting, paging and visible-row selection.
@@ -63,6 +34,35 @@ The examples use the framework's nullable-reference convention. In the generated
 ```xml
 <Nullable>annotations</Nullable>
 ```
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Web.AspNetCore.Blazor` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Application](Application/README.md) | The Blazor application workspace model of blocks, menus, screen registrations, the circuit-scoped screen host and the per-circuit application aggregate. | [source](Application/) |
+| [Components](Components/README.md) | The original view-model component generation with route search, a loading overlay, modal dialogs, display tables and a wizard host. | [source](Components/) |
+| [Events](Events/README.md) | A legacy event-arguments type carried over from the original Blazor presentation code. | [source](Events/) |
+| [Grids](Grids/README.md) | The controller, column model, settings and value conversions behind the `BlazorGrid<TItem>` CRUD grid. | [source](Grids/) |
+| [Modal](Modal/README.md) | The current dialog services that show modal components, confirmations, information messages and wizards through `UI.Dialogs.ModalHost`. | [source](Modal/) |
+| [Models](Models/README.md) | Small records and classes used by the original component generation for search results and paged table requests. | [source](Models/) |
+| [Plugins](Plugins/README.md) | Blazor plugin definitions and builders for the application workspace, and the older routed-plugin navigation model. | [source](Plugins/) |
+| [Services](Services/README.md) | Services of the original component generation for modal dialogs, wizard building, typed event publishing and example endpoint and node data. | [source](Services/) |
+| [Theming](Theming/README.md) | The scoped theme service and the catalogue of built-in theme presets with their stylesheet paths and dark or light classification. | [source](Theming/) |
+| [UI](UI/README.md) | The Razor components of the current generation, from the application shell and CRUD grid to dialogs, tables, layout pieces, theme controls and the wizard host. | [source](UI/) |
+| [ViewModels](ViewModels/README.md) | Base view models for the original component generation, including the modal view model that completes a dialog's result. | [source](ViewModels/) |
+| [Wizard](Wizard/README.md) | The current Blazor wizard model and fluent builder whose steps are Blazor component types rendered by `UI.Wizard.BlazorWizardHost`. | [source](Wizard/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`IServiceCollectionExtensions`](IServiceCollectionExtensions.cs) | static class | `BuildBlazorApplication`, `AddSphere10Blazor`, `AddSphere10BlazorApplication`, `AddSphere10BlazorPlugin`, `AddSphere10BlazorPlugins<TPluginLocator>`, `AddApplicationBlock` and `AddViewModelsFromAssembly` register the Blazor application, plugins, blocks, screen host, dialog, wizard, theme and settings services. |
+<!-- domains:end -->
 
 ## Current Blazor hosting and assets
 

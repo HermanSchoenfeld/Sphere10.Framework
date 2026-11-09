@@ -4,6 +4,18 @@
 
 Sphere10.Framework.Android is a legacy Xamarin.Android class library whose only hand-written type is `AndroidSettingsProvider`, a settings provider rooted at the app's `Environment.SpecialFolder.ApplicationData` folder. No solution, CI job or packaging script builds it. Use it only as reference source, for example when porting the provider to a current .NET Android project.
 
+## 📊 Status
+
+| Area | State |
+|---|---|
+| Solutions | Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes the project. |
+| CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
+| Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
+| Project format | `Sphere10.Framework.Android.csproj` is a legacy (non-SDK) Xamarin.Android project. It imports `$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets` and targets Android 8.1 (`TargetFrameworkVersion` `v8.1`). |
+| Framework references | Its project references point at `Sphere10.Framework` and `Sphere10.Framework.Application`, which now target `net10.0`. |
+| Source | `AndroidSettingsProvider` derives from `DirectoryFileSettingsProvider` in `Sphere10.Framework.Application`. No build verifies the source against the current Framework. |
+| Tests | No test project covers it. |
+
 <!-- domains:begin -->
 ## Domains
 
@@ -21,18 +33,6 @@ Types declared in the project folder itself:
 |---|---|---|
 | [`AndroidSettingsProvider`](AndroidSettingsProvider.cs) | class | `DirectoryFileSettingsProvider` that stores settings in the `ApplicationSettings` folder under `Environment.SpecialFolder.ApplicationData`. |
 <!-- domains:end -->
-
-## 📊 Status
-
-| Area | State |
-|---|---|
-| Solutions | Neither `src/Sphere10.Framework (Win).sln` nor `src/Sphere10.Framework (CrossPlatform).sln` includes the project. |
-| CI | The build job in `.github/workflows/main.yml` builds the cross-platform solution, so CI never compiles this project. |
-| Packages | `scripts/pack.ps1` packs the Windows solution, so no NuGet package is built from this project. |
-| Project format | `Sphere10.Framework.Android.csproj` is a legacy (non-SDK) Xamarin.Android project. It imports `$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets` and targets Android 8.1 (`TargetFrameworkVersion` `v8.1`). |
-| Framework references | Its project references point at `Sphere10.Framework` and `Sphere10.Framework.Application`, which now target `net10.0`. |
-| Source | `AndroidSettingsProvider` derives from `DirectoryFileSettingsProvider` in `Sphere10.Framework.Application`. No build verifies the source against the current Framework. |
-| Tests | No test project covers it. |
 
 ## 🏗️ Contents
 

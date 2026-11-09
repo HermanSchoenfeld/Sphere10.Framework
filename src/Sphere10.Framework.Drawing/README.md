@@ -8,6 +8,33 @@ The color helpers and the `Point`, `Size` and `Rectangle` extensions run on any 
 
 The `ResizeMethod` and `ResizeAlignment` enums live in the core `Sphere10.Framework` package, in the `Sphere10.Framework` namespace, so that browser components such as the Blazor grid can use them without `System.Drawing`. This assembly forwards both types, so binaries compiled against their earlier home in Drawing keep working.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Drawing
+```
+
+The package targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. Projects inside this repository reference `src/Sphere10.Framework.Drawing/Sphere10.Framework.Drawing.csproj` instead.
+
+## ⚡ 10-Second Example
+
+```csharp
+using System.Drawing;
+using System.Drawing.Imaging;
+using Sphere10.Framework;
+
+// Colors work on any platform.
+Color[] steps = Tools.Drawing.CalculateColorGradient(Color.Red, Color.Blue, 5);
+Color accent = Tools.Drawing.ConvertStringToColor("255:0:128");   // "R:G:B" or "A:R:G:B"
+Color caption = Tools.Drawing.GetContrastingTextColor(accent);     // Color.Black or Color.White
+
+// Images need Windows.
+using var photo = new Bitmap("photo.jpg");
+using var thumbnail = photo.Resize(new Size(256, 256), ResizeMethod.AspectFitPadded,
+	ResizeAlignment.CenterCenter, newPixelFormat: PixelFormat.Format32bppArgb);
+thumbnail.Save("thumbnail.png", ImageFormat.Png);
+```
+
 <!-- domains:begin -->
 ## Domains
 
@@ -40,33 +67,6 @@ Types declared in the project folder itself:
 | [`RoundedRectangle`](RoundedRectangle.cs) | struct | Rectangle with a 0 to 1 rounding value that converts to a `GraphicsPath` |
 | [`Tools.Drawing`](DrawingTool.cs) | tools | Color conversion, gradients and contrast, content-alignment and `StringFormat` mapping, image-format detection, JPEG compression, icon resizing, disabled images, and rounded-rectangle paths in `DrawingTool.Paths.cs` |
 <!-- domains:end -->
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework.Drawing
-```
-
-The package targets `net10.0`, and also `net11.0` when it is built with a .NET 11 SDK. Projects inside this repository reference `src/Sphere10.Framework.Drawing/Sphere10.Framework.Drawing.csproj` instead.
-
-## ⚡ 10-Second Example
-
-```csharp
-using System.Drawing;
-using System.Drawing.Imaging;
-using Sphere10.Framework;
-
-// Colors work on any platform.
-Color[] steps = Tools.Drawing.CalculateColorGradient(Color.Red, Color.Blue, 5);
-Color accent = Tools.Drawing.ConvertStringToColor("255:0:128");   // "R:G:B" or "A:R:G:B"
-Color caption = Tools.Drawing.GetContrastingTextColor(accent);     // Color.Black or Color.White
-
-// Images need Windows.
-using var photo = new Bitmap("photo.jpg");
-using var thumbnail = photo.Resize(new Size(256, 256), ResizeMethod.AspectFitPadded,
-	ResizeAlignment.CenterCenter, newPixelFormat: PixelFormat.Format32bppArgb);
-thumbnail.Save("thumbnail.png", ImageFormat.Png);
-```
 
 ## 🏗️ What It Contains
 

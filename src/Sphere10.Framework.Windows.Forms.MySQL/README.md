@@ -4,25 +4,6 @@
 
 `Sphere10.Framework.Windows.Forms.MySQL` provides Windows Forms editors for MySQL connection settings in desktop applications that use Sphere10 Framework data access. Use `MySQLConnectionBar` where a compact one-row editor fits, and `MySQLConnectionPanel` on a settings page or in a dialog. Both build a MySqlConnector connection string, test it on request and create a `MySQLDAC` from it.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Windows.Forms.MySQL` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `MySQLConnectionBar` and `MySQLConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.MySQL`. |
-| [`MySQLConnectionBar`](MySQLConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for the MySQL server, port, database, user name and password that builds the connection string and creates a `MySQLDAC`. |
-| [`MySQLConnectionPanel`](MySQLConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `MySQLConnectionBar`, for a settings page or dialog. |
-<!-- domains:end -->
-
 ## Reference the package
 
 Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
@@ -43,6 +24,25 @@ The project targets `net10.0-windows`, and a build with a .NET 11 SDK also targe
 ```
 
 Create and use the controls on the application's UI thread. Creating or editing a control never connects, so a MySQL server is needed only to test or open a connection.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.Forms.MySQL` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `MySQLConnectionBar` and `MySQLConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.MySQL`. |
+| [`MySQLConnectionBar`](MySQLConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for the MySQL server, port, database, user name and password that builds the connection string and creates a `MySQLDAC`. |
+| [`MySQLConnectionPanel`](MySQLConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `MySQLConnectionBar`, for a settings page or dialog. |
+<!-- domains:end -->
 
 ## Controls
 

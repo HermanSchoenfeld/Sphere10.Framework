@@ -6,25 +6,6 @@
 
 The package supplies `OracleDAC`, the `Tools.Oracle` connection helpers and `OracleDatabaseManager`, and SQL text comes from `OracleSQLBuilder` in the shared package.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Data.Oracle` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`OracleDAC`](OracleDAC.cs) | class | `DACBase` for Oracle over the ODP.NET managed driver that uses `OracleSQLBuilder` and sends each non-transaction statement as its own command. |
-| [`OracleDatabaseManager`](OracleDatabaseManager.cs) | class | `DatabaseManagerBase` whose existence check tests the connection, and whose create and drop operations throw `NotSupportedException`. |
-| [`Tools.Oracle`](OracleTool.cs) | tools | Opens an `OracleDAC`, builds connection strings from a data source and service name, and tests a connection string. |
-<!-- domains:end -->
-
 ## 📦 Installation
 
 ```bash
@@ -56,6 +37,25 @@ using (dac.EnterScope()) {
 ```
 
 Constructing a DAC, directly or through `Tools.Oracle.Open(...)`, only stores its configuration. `EnterScope()` opens the connection by default, and the outermost scope owns that connection until it is disposed. The DAC itself is not disposable.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.Oracle` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`OracleDAC`](OracleDAC.cs) | class | `DACBase` for Oracle over the ODP.NET managed driver that uses `OracleSQLBuilder` and sends each non-transaction statement as its own command. |
+| [`OracleDatabaseManager`](OracleDatabaseManager.cs) | class | `DatabaseManagerBase` whose existence check tests the connection, and whose create and drop operations throw `NotSupportedException`. |
+| [`Tools.Oracle`](OracleTool.cs) | tools | Opens an `OracleDAC`, builds connection strings from a data source and service name, and tests a connection string. |
+<!-- domains:end -->
 
 ## 🧩 Public API
 

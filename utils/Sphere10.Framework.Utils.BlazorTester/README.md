@@ -12,6 +12,26 @@ A .NET 10 Blazor Web App that presents every component demo through one full-pag
 
 Open `/` for the organized tour or `/components/grid` for the editable Visual grid. The **Application patterns** block adds complete card, menu, workflow and theme examples alongside the component reference and preserved legacy examples. Every entry uses the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
 
+## Run the tester
+
+Install the .NET 10 SDK and run these commands **from the repository root**. The first run restores the project references and NuGet dependencies.
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0
+```
+
+Wait for `Now listening on: http://localhost:5187`, then open [the grid demo](http://localhost:5187/components/grid) or [the ApplicationBlock workspace](http://localhost:5187/application). The command keeps the server running; stop it with **Ctrl+C**. `BuildRevision=0` supplies an explicit local build revision.
+
+`dotnet run` does not promise to open a browser. In Visual Studio, set `Sphere10.Framework.Utils.BlazorTester` as the startup project and select its named launch profile. [launchSettings.json](Properties/launchSettings.json) configures the IDE to open `/components/grid` on port `5187` with the Development environment. Use **F5** or **Ctrl+F5**.
+
+For an explicit HTTP address independent of the launch profile:
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0 --no-launch-profile -- --urls http://127.0.0.1:5188
+```
+
+Open `http://127.0.0.1:5188/components/grid`. To let the server choose an available port, replace `5188` with `0` and use the actual address printed in the terminal. Use `127.0.0.1` for dynamic port binding.
+
 <!-- domains:begin -->
 ## Domains
 
@@ -36,26 +56,6 @@ Types declared in the project folder itself:
 | [`App`](App.razor) | class | Razor HTML document that loads the styles and import map, sets the configured title and favicon and renders `Routes` interactively on the server |
 | [`Program`](Program.cs) | static class | Web host entry point, with `ConfigureServices` that registers the logger, theme service and the Blazor application with its four demo plugins and screen-policy options |
 <!-- domains:end -->
-
-## Run the tester
-
-Install the .NET 10 SDK and run these commands **from the repository root**. The first run restores the project references and NuGet dependencies.
-
-```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0
-```
-
-Wait for `Now listening on: http://localhost:5187`, then open [the grid demo](http://localhost:5187/components/grid) or [the ApplicationBlock workspace](http://localhost:5187/application). The command keeps the server running; stop it with **Ctrl+C**. `BuildRevision=0` supplies an explicit local build revision.
-
-`dotnet run` does not promise to open a browser. In Visual Studio, set `Sphere10.Framework.Utils.BlazorTester` as the startup project and select its named launch profile. [launchSettings.json](Properties/launchSettings.json) configures the IDE to open `/components/grid` on port `5187` with the Development environment. Use **F5** or **Ctrl+F5**.
-
-For an explicit HTTP address independent of the launch profile:
-
-```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0 --no-launch-profile -- --urls http://127.0.0.1:5188
-```
-
-Open `http://127.0.0.1:5188/components/grid`. To let the server choose an available port, replace `5188` with `0` and use the actual address printed in the terminal. Use `127.0.0.1` for dynamic port binding.
 
 ## Plugin initialization and shutdown
 

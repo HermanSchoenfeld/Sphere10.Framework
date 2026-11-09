@@ -6,6 +6,26 @@
 
 Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application development** with pre-built UI components for database connectivity, data display, user input validation, and common desktop patterns.
 
+## Source organization
+
+Domain folders such as `Application`, `AppointmentBook`, `Charts`, `Database`,
+`ExplorerBar`, `ListMerger`, `Logging`, `RichText`, `ToolStrips`, `VisualGrid` and
+`Wizard` own their related functionality.
+Their `Controls` folders contain reusable visual controls; their `Forms` folders
+contain forms, dialogs and hosted screens. Nonvisual contracts, settings, builders
+and helpers remain with the domain. A control or form with dedicated support
+classes receives its own domain; apply that rule to `Misc` and the general visual
+folders alike. Standalone general controls live in `Controls`, and general dialogs
+and forms in `Forms`. Cross-domain helpers belong in `Misc`; extension classes
+belong in `Extensions` or their owning domain's `Extensions`. Existing CLR
+namespaces and persisted control identities are independent of these locations.
+
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Windows.Forms
+```
+
 <!-- domains:begin -->
 ## Domains
 
@@ -59,26 +79,6 @@ Types declared in the project folder itself:
 |---|---|---|
 | [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Module registration that adds default About, Report Bug, Request Feature and Send Comments dialogs, `ApplicationBanner`, built-in control state event providers and `SessionEndingHandlerInitializer` unless the application registered its own |
 <!-- domains:end -->
-
-## Source organization
-
-Domain folders such as `Application`, `AppointmentBook`, `Charts`, `Database`,
-`ExplorerBar`, `ListMerger`, `Logging`, `RichText`, `ToolStrips`, `VisualGrid` and
-`Wizard` own their related functionality.
-Their `Controls` folders contain reusable visual controls; their `Forms` folders
-contain forms, dialogs and hosted screens. Nonvisual contracts, settings, builders
-and helpers remain with the domain. A control or form with dedicated support
-classes receives its own domain; apply that rule to `Misc` and the general visual
-folders alike. Standalone general controls live in `Controls`, and general dialogs
-and forms in `Forms`. Cross-domain helpers belong in `Misc`; extension classes
-belong in `Extensions` or their owning domain's `Extensions`. Existing CLR
-namespaces and persisted control identities are independent of these locations.
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework.Windows.Forms
-```
 
 ## Chart Library Dependency
 

@@ -9,6 +9,35 @@
 
 ---
 
+## 📋 Project Overview
+
+Sphere10 Framework is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
+
+Unlike general-purpose libraries, Sphere10 Framework doesn't provide application frameworks or abstractions. Instead, it offers:
+
+- **50+ collection types** (extended lists, stream-mapped, paged, recyclable, merkle-aware)
+- **Advanced serialization framework** (polymorphism, references, versioning, constant-size encoding)
+- **Transactional ACID primitives** (scopes, streams, collections with commit/rollback)
+- **Merkle-tree implementations** (flat, simple, long, partial) for integrity proofs
+- **Cryptographic utilities** (hashing, signatures, key derivation, VRF, post-quantum schemes)
+- **Clustered streams** (multi-stream storage, dynamic allocation, attachments)
+- **Thread-safe concurrent collections** and producer-consumer patterns
+- **50+ string, enumerable, task, stream, and type extension methods**
+
+**Key Attributes**
+- **Language**: C# targeting .NET 10
+- **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
+- **Platform Support**: Windows, Linux, macOS, iOS, Android
+- **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
+- **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
+- **Maturity**: Production-ready (v3.1.3) with battle-tested core subsystems
+
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework
+```
+
 <!-- domains:begin -->
 ## Domains
 
@@ -75,35 +104,6 @@ Types declared in the project folder itself:
 |---|---|---|
 | [`Sphere10FrameworkDefaults`](Sphere10Defaults.cs) | static class | Library-wide default constants for buffer and page sizes, cluster sizes, container policies, endianness, hash function, B-tree orders, ObjectSpace settings, cache reap level and attachment names. |
 <!-- domains:end -->
-
-## 📋 Project Overview
-
-Sphere10 Framework is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
-
-Unlike general-purpose libraries, Sphere10 Framework doesn't provide application frameworks or abstractions. Instead, it offers:
-
-- **50+ collection types** (extended lists, stream-mapped, paged, recyclable, merkle-aware)
-- **Advanced serialization framework** (polymorphism, references, versioning, constant-size encoding)
-- **Transactional ACID primitives** (scopes, streams, collections with commit/rollback)
-- **Merkle-tree implementations** (flat, simple, long, partial) for integrity proofs
-- **Cryptographic utilities** (hashing, signatures, key derivation, VRF, post-quantum schemes)
-- **Clustered streams** (multi-stream storage, dynamic allocation, attachments)
-- **Thread-safe concurrent collections** and producer-consumer patterns
-- **50+ string, enumerable, task, stream, and type extension methods**
-
-**Key Attributes**
-- **Language**: C# targeting .NET 10
-- **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
-- **Platform Support**: Windows, Linux, macOS, iOS, Android
-- **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
-- **Tests**: [Comprehensive test suite](../../tests/Sphere10.Framework.Tests/) with 25+ subsystems and 2000+ tests
-- **Maturity**: Production-ready (v3.1.3) with battle-tested core subsystems
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework
-```
 
 ## Typed interface adapters
 

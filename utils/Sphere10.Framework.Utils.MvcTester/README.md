@@ -4,17 +4,6 @@ A minimal .NET 10 ASP.NET Core MVC host referencing [Sphere10.Framework.Web.AspN
 
 This utility is not a NuGet package. It has no configured database, external service or application credentials.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Utils.MvcTester` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [Controllers](Controllers/README.md) | The MVC controllers of the tester host, currently a single landing-page controller. | [source](Controllers/) |
-| [Views](Views/README.md) | The Razor views of the tester host, currently the landing page of the home controller. | [source](Views/) |
-<!-- domains:end -->
-
 ## Run the tester
 
 Install the .NET 10 SDK. Run commands **from the repository root**; the first run restores the project references and NuGet dependencies.
@@ -36,6 +25,17 @@ dotnet run --project utils/Sphere10.Framework.Utils.MvcTester/Sphere10.Framework
 ```
 
 The HTTPS profile needs a usable development certificate. The explicit HTTP command above provides a straightforward local startup check without that requirement.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Utils.MvcTester` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Controllers](Controllers/README.md) | The MVC controllers of the tester host, currently a single landing-page controller. | [source](Controllers/) |
+| [Views](Views/README.md) | The Razor views of the tester host, currently the landing page of the home controller. | [source](Views/) |
+<!-- domains:end -->
 
 ## Routes and host setup
 

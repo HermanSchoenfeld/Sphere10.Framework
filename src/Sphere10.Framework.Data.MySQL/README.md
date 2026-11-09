@@ -6,25 +6,6 @@
 
 The package supplies `MySQLDAC`, the `Tools.MySQL` connection and administration helpers and `MySQLDatabaseManager`, and SQL text comes from `MySQLBuilder` in the shared package.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Data.MySQL` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`MySQLDAC`](MySQLDAC.cs) | class | `DACBase` for MySQL over `MySqlConnector` that uses `MySQLBuilder`, and whose `BulkInsert` throws `NotImplementedException`. |
-| [`MySQLDatabaseManager`](MySQLDatabaseManager.cs) | class | `DatabaseManagerBase` that tests, creates and drops MySQL databases through `Tools.MySQL`. |
-| [`Tools.MySQL`](MySQLTool.cs) | tools | Opens a `MySQLDAC`, builds connection strings, tests whether a schema exists and creates or drops databases. |
-<!-- domains:end -->
-
 ## 📦 Installation
 
 ```bash
@@ -56,6 +37,25 @@ using (dac.EnterScope()) {
 ```
 
 Constructing a DAC, directly or through `Tools.MySQL.Open(...)`, only stores its configuration. `EnterScope()` opens the connection by default, and the outermost scope owns that connection until it is disposed. The DAC itself is not disposable.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.MySQL` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`MySQLDAC`](MySQLDAC.cs) | class | `DACBase` for MySQL over `MySqlConnector` that uses `MySQLBuilder`, and whose `BulkInsert` throws `NotImplementedException`. |
+| [`MySQLDatabaseManager`](MySQLDatabaseManager.cs) | class | `DatabaseManagerBase` that tests, creates and drops MySQL databases through `Tools.MySQL`. |
+| [`Tools.MySQL`](MySQLTool.cs) | tools | Opens a `MySQLDAC`, builds connection strings, tests whether a schema exists and creates or drops databases. |
+<!-- domains:end -->
 
 ## 🧩 Public API
 

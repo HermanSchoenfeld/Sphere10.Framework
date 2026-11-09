@@ -8,32 +8,6 @@ The project combines reversible operations, an in-memory linear chain, a graph o
 
 Your application supplies block validation, identity rules, fork selection, persistence, and networking.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Consensus` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [Blockchain](Blockchain/README.md) | Generic contracts and implementations for reversible ledger operations, blocks, a linear chain, a graph of competing branches, finalization and reorganization. | [source](Blockchain/) |
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`ASERT2`](ASERT2.cs) | class | ASERT difficulty adjustment that measures the interval between the two newest block timestamps |
-| [`ASERTConfiguration`](ASERTConfiguration.cs) | class | Target block time and relaxation time of the ASERT algorithms, both defaulting to zero |
-| [`ASERT_RTT`](ASERT_RTT.cs) | class | ASERT difficulty adjustment that measures the interval from the newest block timestamp to the current UTC time |
-| [`CryptoTool`](CryptoTool.cs) | static class | Derives a 32-bit lookup checksum of a secret and indexed child digests with double SHA2-256 |
-| [`ICompactTargetAlgorithm`](ICompactTargetAlgorithm.cs) | interface | Converts proof-of-work targets between compact 32-bit, numeric and 32-byte digest forms and aggregates them |
-| [`ICompactTargetAlgorithmExtensions`](ICompactTargetAlgorithmExtensions.cs) | static class | `ToDigest` overloads that allocate and return the 32-byte target digest |
-| [`IDAAlgorithm`](IDAAlgorithm.cs) | interface | Difficulty adjustment contract that calculates the next compact target from newest-first block timestamps |
-| [`MolinaTargetAlgorithm`](MolinaTargetAlgorithm.cs) | class | PascalCoin-style compact target encoding in which a higher compact value means a harder target |
-| [`PeriodicStatistics`](HashStats.cs) | class | Start-once statistics collector for timed periods, whose period history is not yet implemented |
-<!-- domains:end -->
-
 ## 📦 Installation
 
 ```bash
@@ -102,6 +76,32 @@ Console.WriteLine(hashValue <= threshold); // Whether this candidate satisfies t
 ```
 
 A protocol must specify the actual header bytes, hash function, byte order, timestamp rules, and comparison rule. Calling `ApplyBlock` does not perform this proof-of-work check automatically.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Consensus` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Blockchain](Blockchain/README.md) | Generic contracts and implementations for reversible ledger operations, blocks, a linear chain, a graph of competing branches, finalization and reorganization. | [source](Blockchain/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ASERT2`](ASERT2.cs) | class | ASERT difficulty adjustment that measures the interval between the two newest block timestamps |
+| [`ASERTConfiguration`](ASERTConfiguration.cs) | class | Target block time and relaxation time of the ASERT algorithms, both defaulting to zero |
+| [`ASERT_RTT`](ASERT_RTT.cs) | class | ASERT difficulty adjustment that measures the interval from the newest block timestamp to the current UTC time |
+| [`CryptoTool`](CryptoTool.cs) | static class | Derives a 32-bit lookup checksum of a secret and indexed child digests with double SHA2-256 |
+| [`ICompactTargetAlgorithm`](ICompactTargetAlgorithm.cs) | interface | Converts proof-of-work targets between compact 32-bit, numeric and 32-byte digest forms and aggregates them |
+| [`ICompactTargetAlgorithmExtensions`](ICompactTargetAlgorithmExtensions.cs) | static class | `ToDigest` overloads that allocate and return the 32-byte target digest |
+| [`IDAAlgorithm`](IDAAlgorithm.cs) | interface | Difficulty adjustment contract that calculates the next compact target from newest-first block timestamps |
+| [`MolinaTargetAlgorithm`](MolinaTargetAlgorithm.cs) | class | PascalCoin-style compact target encoding in which a higher compact value means a harder target |
+| [`PeriodicStatistics`](HashStats.cs) | class | Start-once statistics collector for timed periods, whose period history is not yet implemented |
+<!-- domains:end -->
 
 ## 🎯 Compact Targets
 

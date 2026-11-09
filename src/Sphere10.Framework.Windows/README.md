@@ -6,6 +6,33 @@
 
 Sphere10.Framework.Windows enables **secure Windows system programming** through abstractions over Windows APIs, handling NT security objects, Windows services, event logging, and registry access while maintaining safety and compatibility.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Windows
+```
+
+## ⚡ 10-Second Example
+
+```csharp
+using Sphere10.Framework.Windows.Security;
+
+// Get current machine information
+var host = NTHost.CurrentMachine;
+Console.WriteLine($"Machine: {host.Name}");
+Console.WriteLine($"SID: {host.SID}");
+
+// Get local administrator user
+var admin = host.GetUserByName("Administrator");
+Console.WriteLine($"Admin: {admin.Name}");
+Console.WriteLine($"Admin SID: {admin.SID}");
+
+// Get group membership
+var adminGroup = host.GetGroupByName("Administrators");
+var isMember = adminGroup.Members.Contains(admin);
+Console.WriteLine($"Is member of Administrators: {isMember}");
+```
+
 <!-- domains:begin -->
 ## Domains
 
@@ -49,33 +76,6 @@ Types declared in the project folder itself:
 |---|---|---|
 | [`Tools.Windows`](WindowsTool.cs) | tools | Static facade in the `Tools` namespace whose properties return thread-static instances of each domain utility, such as `Files`, `Processes`, `Registry`, `Services`, `Shell` and `TraceSessions` |
 <!-- domains:end -->
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework.Windows
-```
-
-## ⚡ 10-Second Example
-
-```csharp
-using Sphere10.Framework.Windows.Security;
-
-// Get current machine information
-var host = NTHost.CurrentMachine;
-Console.WriteLine($"Machine: {host.Name}");
-Console.WriteLine($"SID: {host.SID}");
-
-// Get local administrator user
-var admin = host.GetUserByName("Administrator");
-Console.WriteLine($"Admin: {admin.Name}");
-Console.WriteLine($"Admin SID: {admin.SID}");
-
-// Get group membership
-var adminGroup = host.GetGroupByName("Administrators");
-var isMember = adminGroup.Members.Contains(admin);
-Console.WriteLine($"Is member of Administrators: {isMember}");
-```
 
 ## 🏗️ Core Concepts
 

@@ -4,24 +4,6 @@
 
 Sphere10.Framework.NUnit.DB provides `DACTestFixture`, an NUnit base fixture for testing data-access code built on Sphere10.Framework.Data. A test opens a database scope that creates a fresh SQLite or SQL Server database and drops it when the scope ends, and the fixture adds assertions that compare table contents.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.NUnit.DB` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`DACTestFixture`](DACTestFixture.cs) | abstract class | NUnit fixture base that creates and drops temporary SQLite or SQL Server databases, duplicates DACs and asserts table row counts and contents. Its `DBMS` case source lists only `DBMSType.Sqlite`. |
-| [`UnitTestDAC`](UnitTestDAC.cs) | class | `DACDecorator` that runs its end action, which drops the temporary database, when it is disposed. |
-<!-- domains:end -->
-
 ## NuGet usage
 
 Install `Sphere10.Framework.NUnit.DB` in a .NET 10 test project. The package depends on `Sphere10.Framework.NUnit`, `Sphere10.Framework.Data`, `Sphere10.Framework.Data.Sqlite`, `Sphere10.Framework.Data.MSSQL` and NUnit, which restore automatically. Test discovery still requires the NUnit test adapter and Microsoft.NET.Test.Sdk in the consuming test project.
@@ -59,6 +41,24 @@ public class CustomerTests : DACTestFixture {
 ```
 
 `DBMS` lists `DBMSType.Sqlite` only, so this test runs against a temporary SQLite file. The scope returns a `UnitTestDAC`, which is an `IDAC` decorator that drops the database when it is disposed. `DACTestFixture` and `UnitTestDAC` are in the `Sphere10.Framework.NUnit` namespace.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.NUnit.DB` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`DACTestFixture`](DACTestFixture.cs) | abstract class | NUnit fixture base that creates and drops temporary SQLite or SQL Server databases, duplicates DACs and asserts table row counts and contents. Its `DBMS` case source lists only `DBMSType.Sqlite`. |
+| [`UnitTestDAC`](UnitTestDAC.cs) | class | `DACDecorator` that runs its end action, which drops the temporary database, when it is disposed. |
+<!-- domains:end -->
 
 ## Testing against SQL Server
 

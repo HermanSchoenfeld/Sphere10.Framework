@@ -5,27 +5,6 @@ studies. Its root command selects a profiling domain; it never runs every
 benchmark implicitly. The project uses the repository's centrally versioned
 BenchmarkDotNet package and references Core directly, with no UI dependency.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Utils.Profiler` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [BTrees](BTrees/README.md) | Benchmarks the Framework's B-tree, B+ tree and grouped lookup implementations across six storage backends with BenchmarkDotNet. | [source](BTrees/) |
-| [Caches](Caches/README.md) | Benchmarks typed and object-keyed access and capacity-pressure eviction of the Framework's `ActionCache` with BenchmarkDotNet. | [source](Caches/) |
-| [ObjectSpaces](ObjectSpaces/README.md) | Benchmarks ObjectSpace storage, indexing, allocation, Merkle and transaction workloads over a deterministic lab schema with BenchmarkDotNet. | [source](ObjectSpaces/) |
-| [Studies](Studies/README.md) | Screens parameter configurations with retained, verifiable timing samples and reports the evidence and recommendations. | [source](Studies/) |
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`Program`](Program.cs) | static class | Console entry point that prints help or routes `object-spaces`, `btrees`, `caches` and `study` commands to their domain runners |
-<!-- domains:end -->
-
 ## Visual Studio
 
 Set `Sphere10.Framework.Utils.Profiler` as the startup project and use its default
@@ -91,3 +70,25 @@ parameter screening, test promising combinations and larger datasets, then
 confirm finalists in independent BenchmarkDotNet launches. Results stay grouped
 by backend, capabilities, data shape and workload. The domains preserve the
 machine's current power plan.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Utils.Profiler` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [BTrees](BTrees/README.md) | Benchmarks the Framework's B-tree, B+ tree and grouped lookup implementations across six storage backends with BenchmarkDotNet. | [source](BTrees/) |
+| [Caches](Caches/README.md) | Benchmarks typed and object-keyed access and capacity-pressure eviction of the Framework's `ActionCache` with BenchmarkDotNet. | [source](Caches/) |
+| [ObjectSpaces](ObjectSpaces/README.md) | Benchmarks ObjectSpace storage, indexing, allocation, Merkle and transaction workloads over a deterministic lab schema with BenchmarkDotNet. | [source](ObjectSpaces/) |
+| [Studies](Studies/README.md) | Screens parameter configurations with retained, verifiable timing samples and reports the evidence and recommendations. | [source](Studies/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Program`](Program.cs) | static class | Console entry point that prints help or routes `object-spaces`, `btrees`, `caches` and `study` commands to their domain runners |
+<!-- domains:end -->
+

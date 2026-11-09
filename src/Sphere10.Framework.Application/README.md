@@ -6,6 +6,12 @@
 
 Sphere10.Framework.Application enables **rapid application development** by providing a complete infrastructure for **service composition, settings persistence, initialization/finalization pipelines, and modular configuration**—all integrated with Microsoft.Extensions.DependencyInjection.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Application
+```
+
 <!-- domains:begin -->
 ## Domains
 
@@ -38,12 +44,6 @@ Types declared in the project folder itself:
 | [`Sphere10FrameworkBuilder`](Sphere10FrameworkBuilder.cs) | class | Fluent framework startup: `AddModule`, `AddServices`, `UseAssemblyInfo`, `WithProductInformation`, `WithOptions`, `RegisterModules` and `Start` with an owned or external service provider |
 | [`Sphere10FrameworkOptions`](Sphere10FrameworkOptions.cs) | enum | Framework option flags: `Default` or `EnsureSystemDataDirGloballyAccessible` |
 <!-- domains:end -->
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework.Application
-```
 
 ## Shared UI framework
 

@@ -4,6 +4,25 @@
 
 **Database-agnostic data access layer** providing the `IDAC` interface, SQL builders, transaction scopes, schema introspection, and data format utilities for CSV, JSON, and XML.
 
+## 📦 Installation
+
+```bash
+dotnet add package Sphere10.Framework.Data
+```
+
+Targets **.NET 10** (`net10.0`). For database-specific support, also install the appropriate provider package:
+
+```bash
+dotnet add package Sphere10.Framework.Data.Sqlite    # SQLite
+dotnet add package Sphere10.Framework.Data.MSSQL     # SQL Server
+dotnet add package Sphere10.Framework.Data.Firebird  # Firebird
+dotnet add package Sphere10.Framework.Data.MySQL     # MySQL
+dotnet add package Sphere10.Framework.Data.PostgreSQL # PostgreSQL
+dotnet add package Sphere10.Framework.Data.Oracle    # Oracle
+```
+
+Examples are independent snippets using a configured `IDAC dac` from a provider package. Query and CRUD examples assume the named tables and columns already exist; creation examples require unused names. `dataRow`, `myObject`, `MyEntity` and `MyClass` represent application data and model types.
+
 <!-- domains:begin -->
 ## Domains
 
@@ -36,25 +55,6 @@ Types declared in the project folder itself:
 | [`SequentialSqlGuidGenerator`](SequentialSqlGuidGenerator.cs) | class | `ISequentialGuidGenerator` that pre-generates a batch of GUIDs and returns them in SQL Server `uniqueidentifier` sort order, regenerating when empty if configured. |
 | [`Tools.Data`](DataTool.cs) | tools | Reads CSV into a `DataTable`, writes CSV rows and fields, creates tables for types, reads and writes `DataSet` streams, builds `DataView` filter expressions, samples rows and evaluates `DataTable` expressions. |
 <!-- domains:end -->
-
-## 📦 Installation
-
-```bash
-dotnet add package Sphere10.Framework.Data
-```
-
-Targets **.NET 10** (`net10.0`). For database-specific support, also install the appropriate provider package:
-
-```bash
-dotnet add package Sphere10.Framework.Data.Sqlite    # SQLite
-dotnet add package Sphere10.Framework.Data.MSSQL     # SQL Server
-dotnet add package Sphere10.Framework.Data.Firebird  # Firebird
-dotnet add package Sphere10.Framework.Data.MySQL     # MySQL
-dotnet add package Sphere10.Framework.Data.PostgreSQL # PostgreSQL
-dotnet add package Sphere10.Framework.Data.Oracle    # Oracle
-```
-
-Examples are independent snippets using a configured `IDAC dac` from a provider package. Query and CRUD examples assume the named tables and columns already exist; creation examples require unused names. `dataRow`, `myObject`, `MyEntity` and `MyClass` represent application data and model types.
 
 ## 🏗️ Core Architecture
 

@@ -4,29 +4,6 @@
 
 This library is the shared ASP.NET Core integration for Sphere10 Framework. Use it to start and stop the Framework with an ASP.NET Core host and to connect logging, sessions, requests and middleware. The [MVC](../Sphere10.Framework.Web.AspNetCore.MVC/README.md) and [Blazor](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) libraries build on this layer and add their controller and component APIs.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.Framework.Web.AspNetCore` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [Extensions](Extensions/README.md) | Extension methods that start the Sphere10 Framework inside an ASP.NET Core host and add JSON session values, request helpers and per-request user messages. | [source](Extensions/) |
-| [Lifecycle](Lifecycle/README.md) | The internal initializer that ends the Sphere10 Framework when the ASP.NET Core host stops. | [source](Lifecycle/) |
-| [Logging](Logging/README.md) | A Microsoft.Extensions.Logging provider and logger that forward ASP.NET Core log entries to a Sphere10 `ILogger`. | [source](Logging/) |
-| [Middleware](Middleware/README.md) | ASP.NET Core middleware that replaces the connection's remote address with the client address Cloudflare reports. | [source](Middleware/) |
-| [Processing](Processing/README.md) | Typed query-string parameter reading and a static accessor for the current `HttpContext`. | [source](Processing/) |
-
-### Project root
-
-Types declared in the project folder itself:
-
-| Type | Kind | Purpose |
-|---|---|---|
-| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Framework module that registers the initializer which calls `Sphere10Framework.Instance.EndFramework` when the host raises `ApplicationStopped`. |
-| [`Tools.Web.AspNetCore`](AspNetCoreTool.cs) | tools | `ParseNetwork` parses IPv4 or IPv6 CIDR notation into a `System.Net.IPNetwork` and clears the host bits. |
-<!-- domains:end -->
-
 ## Features
 
 | Area | APIs |
@@ -105,6 +82,29 @@ Open the address that the host prints, then visit `/visits` repeatedly in the sa
 Set `Sphere10FrameworkOptions` with `WithOptions` inside the `AddSphere10Framework` callback, because modules read them during registration. For example, `Sphere10.Framework.Application.ModuleConfiguration` reads `EnsureSystemDataDirGloballyAccessible` then. `StartSphere10Framework` takes no options and keeps the ones the callback set.
 
 These calls manage the process-wide Framework. A [Blazor application](../Sphere10.Framework.Web.AspNetCore.Blazor/README.md) built with `BuildBlazorApplication` also has a scoped `IApplication` for each interactive circuit. That application initializes when its circuit opens and finalizes when the circuit closes. Both steps run the application's own tasks and the tasks registered under each loaded plugin's name. Prerendering and temporary disconnects run neither. Exiting the application ends only that circuit's application and does not stop the host. Use `IApplication.Logger` for application and screen diagnostics.
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Web.AspNetCore` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Extensions](Extensions/README.md) | Extension methods that start the Sphere10 Framework inside an ASP.NET Core host and add JSON session values, request helpers and per-request user messages. | [source](Extensions/) |
+| [Lifecycle](Lifecycle/README.md) | The internal initializer that ends the Sphere10 Framework when the ASP.NET Core host stops. | [source](Lifecycle/) |
+| [Logging](Logging/README.md) | A Microsoft.Extensions.Logging provider and logger that forward ASP.NET Core log entries to a Sphere10 `ILogger`. | [source](Logging/) |
+| [Middleware](Middleware/README.md) | ASP.NET Core middleware that replaces the connection's remote address with the client address Cloudflare reports. | [source](Middleware/) |
+| [Processing](Processing/README.md) | Typed query-string parameter reading and a static accessor for the current `HttpContext`. | [source](Processing/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Framework module that registers the initializer which calls `Sphere10Framework.Instance.EndFramework` when the host raises `ApplicationStopped`. |
+| [`Tools.Web.AspNetCore`](AspNetCoreTool.cs) | tools | `ParseNetwork` parses IPv4 or IPv6 CIDR notation into a `System.Net.IPNetwork` and clears the host bits. |
+<!-- domains:end -->
 
 ## Send host logging to a Sphere10 logger
 

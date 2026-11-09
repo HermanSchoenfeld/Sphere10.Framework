@@ -6,6 +6,16 @@ The designer opens with a sample task pane of two expandos with two task items e
 
 **Export** serializes the current settings with `Tools.Xml.WriteToString` and shows the XML in a text window for copying. An application applies that theme by reading the XML with `Tools.Xml.Read<ExplorerBarInfoSurrogate>` and passing the result to `TaskPane.UseCustomTheme`. The explorer-bar controls and the surrogate types belong to [Sphere10.Framework.Windows.Forms](../../src/Sphere10.Framework.Windows.Forms/ExplorerBar/README.md).
 
+## Build and run
+
+The project targets `net10.0-windows` and references `Sphere10.Framework.Windows.Forms`. `src/Sphere10.Framework (Win).sln` builds it in its Utils folder in every configuration. `src/Sphere10.Framework (CrossPlatform).sln` does not include it.
+
+From the repository root:
+
+```powershell
+dotnet run --project utils/Sphere10.Framework.Utils.ExplorerBarDesigner -c Release -p:BuildRevision=0
+```
+
 <!-- domains:begin -->
 ## Domains
 
@@ -25,16 +35,6 @@ Types declared in the project folder itself:
 | [`ExplorerBarSettings`](DesignerForm.cs) | class | Flat property-grid model of every task pane, task item, expando and header setting, converted to and from `ExplorerBarInfoSurrogate` by `DesignerForm`. |
 | [`ExportForm`](ExportForm.cs) | class | Dialog whose static `ShowDialogAsync(parent, text)` shows the exported theme XML in a text box. |
 <!-- domains:end -->
-
-## Build and run
-
-The project targets `net10.0-windows` and references `Sphere10.Framework.Windows.Forms`. `src/Sphere10.Framework (Win).sln` builds it in its Utils folder in every configuration. `src/Sphere10.Framework (CrossPlatform).sln` does not include it.
-
-From the repository root:
-
-```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.ExplorerBarDesigner -c Release -p:BuildRevision=0
-```
 
 ## Contents
 

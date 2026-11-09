@@ -4,16 +4,6 @@ Sphere10.HashLib4CSharp is Sphere 10 Software's fork of HashLib4CSharp, Ugochukw
 
 In Sphere10 Framework applications, Sphere10.Framework.CryptoEx registers many of these algorithms with the core `Hashers` registry through its `HashLibAdapter`, so Framework code can select them by `CHF` value.
 
-<!-- domains:begin -->
-## Domains
-
-Every folder of `Sphere10.HashLib4CSharp` is a domain with its own README, which lists all of its public types.
-
-| Domain | What it provides | Source |
-|---|---|---|
-| [src](src/README.md) | Holds the hashing library's source: the `HashFactory` entry point, the `IHash` family of interfaces, CRC models, Argon2 and BLAKE2 parameters, and the internal algorithm implementations. | [source](src/) |
-<!-- domains:end -->
-
 ## 📦 Installation
 
 ```bash
@@ -52,6 +42,16 @@ An `IHashResult` returns the digest through `GetBytes()`, `ToString()`, `ToBase6
 - **One interface**: every algorithm is an `IHash` with `Initialize`, `TransformByteSpan`, `TransformFinal` and `Clone`
 - **Inputs**: strings with an explicit `Encoding`, byte arrays, spans, streams, files and unmanaged memory, with asynchronous stream and file overloads
 - **Adapters**: wrappers that expose a hash as a `HashAlgorithm`, an HMAC as a `System.Security.Cryptography.HMAC` and a KDF as `DeriveBytes`
+
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.HashLib4CSharp` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [src](src/README.md) | Holds the hashing library's source: the `HashFactory` entry point, the `IHash` family of interfaces, CRC models, Argon2 and BLAKE2 parameters, and the internal algorithm implementations. | [source](src/) |
+<!-- domains:end -->
 
 ## 🔧 Core Examples
 
