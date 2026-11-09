@@ -31,31 +31,95 @@ building SDK supports .NET 11. Add `-f net10.0` to run one target only.
 span writes in `StreamPagedList<T>` restore the caller's stream position without
 allocating.
 
-## Fixtures
+## Contents
 
-| Fixture | Covers |
-|---|---|
-| `ProfilerCommandTests` | Root and domain help, rejection of an unknown domain, `--show-config` inspection, and the `--filter` requirement before any output is created |
-| `BTrees/BTreeProfilerTests` | B-tree, B+ tree and multimap lookup behavior on the six storage backends (managed nodes, `MemoryStream`, `FileStream`, Framework paged files, OS memory-mapped files and transactional files), with key layouts, oracle-checked queries and mutations, recycled slots, rollback and reopen, leaf geometry, logical bytes against mapped capacity, and configuration rejection |
-| `BTrees/BTreeTypeProfileTests` | `BTreeType` selection through `--type` and `--implementation`, lookup trees of each type on every backend, current and legacy profile JSON, and rejection of null or conflicting tree fields |
-| `BTrees/BTreeFrameworkDefaultsProfileTests` | The `framework-defaults` and `wide-keys` suites against `Sphere10FrameworkDefaults` on every backend, and the unchanged `baseline` suite |
-| `Caches/CacheProfilerTests` | Typed, object and preboxed hot-key access and capacity pressure against an independent LRU/FIFO linked-list oracle, covering minimal, quarter and half reap levels, unit and weighted sizes, fetch and victim sequences, capacity accounting, deterministic resets, simulated fetch work, retained metrics and invalid controls |
-| `ObjectSpaces/ObjectSpaceWorkloadTests` | Workload controls, data distributions, read/write mixes, payload growth and shrink, prepared transactions, comparison groups and large index nodes in either byte order |
-| `ObjectSpaces/FrameworkDefaultsProfileTests` | The `framework-defaults` ObjectSpace suite against `Sphere10FrameworkDefaults` on Memory and File stores, and the unchanged `baseline` suite |
-| `ObjectSpaces/Lab/ObjectSpaceLabTests` | The lab store, as listed in [ObjectSpace lab store](#objectspace-lab-store) |
-| `ObjectSpaces/Lab/ObjectSpaceBTreeManifestTests` | Lab manifest versions 1 to 3 mapped to `IndexBTreeSpec`, the current version 4 manifest, mismatches rejected before opening, and incomplete, conflicting or unsupported manifests |
-| `ObjectSpaces/ObjectSpaceHotPathTests` | Hot-path workloads, described in [ObjectSpace hot paths and page memory](#objectspace-hot-paths-and-page-memory) |
-| `StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests` and `RecordedStreamMappedDictionaryResultsTests` | Dictionary integration workloads and their capture reader, described in [Stream-mapped dictionary workloads](#stream-mapped-dictionary-workloads) |
-| `Studies/PerformanceEvidenceTests` | The study analyzer on synthetic samples, covering rejection of incomplete, failed and malformed samples, capability and dataset separation, uncertainty ties, sample statistics, temporal-drift warnings and supported-workload preflight |
-| `Studies/StudySpecificationReadTests` | Replay of legacy study plans and results that store the tree order and type in older fields, without rewriting the files |
-| `Studies/RetainedPerformanceReportTests` | `RetainedPerformanceReports` output from synthetic reports, including corrupt inputs that fail without changing any file |
-
-These fixtures check correctness. They do not run BenchmarkDotNet, and their
+The correctness fixtures check behavior. They do not run BenchmarkDotNet, and their
 execution time is not a performance measurement. Several recorded-capture
 fixtures also contain synthetic tests of their own checks, which run by default
 unless the whole fixture is explicit.
 
-### ObjectSpace lab store
+### Project root
+
+The profiler command line. [ProfilerEvidence.cs](ProfilerEvidence.cs) is an
+internal helper that reads the `ProfilerResultsRoot` parameter and ignores a
+recorded test when the parameter is absent.
+
+| Fixture | Purpose |
+|---|---|
+| [ProfilerCommandTests](ProfilerCommandTests.cs) | Root and domain help, rejection of an unknown domain, `--show-config` inspection, and the `--filter` requirement before any output is created |
+
+### BTrees
+
+B-tree profiling workloads, their default presets and node I/O allocation evidence.
+
+| Fixture | Purpose |
+|---|---|
+| [BTreeProfilerTests](BTrees/BTreeProfilerTests.cs) | B-tree, B+ tree and multimap lookup behavior on the six storage backends (managed nodes, `MemoryStream`, `FileStream`, Framework paged files, OS memory-mapped files and transactional files), with key layouts, oracle-checked queries and mutations, recycled slots, rollback and reopen, leaf geometry, logical bytes against mapped capacity, and configuration rejection |
+| [BTreeTypeProfileTests](BTrees/BTreeTypeProfileTests.cs) | `BTreeType` selection through `--type` and `--implementation`, lookup trees of each type on every backend, current and legacy profile JSON, and rejection of null or conflicting tree fields |
+| [BTreeFrameworkDefaultsProfileTests](BTrees/BTreeFrameworkDefaultsProfileTests.cs) | The `framework-defaults` and `wide-keys` suites against `Sphere10FrameworkDefaults` on every backend, and the unchanged `baseline` suite |
+| [BTreeNodeIoPerformanceTests](BTrees/BTreeNodeIoPerformanceTests.cs) | Explicit serial allocation samples for streamed node mutations, described in [Allocation diagnostics](#allocation-diagnostics) |
+| [RecordedBTreeNodeIoTests](BTrees/RecordedBTreeNodeIoTests.cs) | Explicit check of the retained `20261023-span-node-io` campaign, described in [Allocation diagnostics](#allocation-diagnostics) |
+
+### Caches
+
+Cache profiling workloads and their recorded metrics.
+
+| Fixture | Purpose |
+|---|---|
+| [CacheProfilerTests](Caches/CacheProfilerTests.cs) | Typed, object and preboxed hot-key access and capacity pressure against an independent LRU/FIFO linked-list oracle, covering minimal, quarter and half reap levels, unit and weighted sizes, fetch and victim sequences, capacity accounting, deterministic resets, simulated fetch work, retained metrics and invalid controls |
+| [RecordedCacheMetricsTests](Caches/RecordedCacheMetricsTests.cs) | Explicit reconciliation of retained cache runs, described in [Reading recorded evidence](#reading-recorded-evidence) |
+
+### IO
+
+Stream position and temporary-buffer allocation checks.
+
+| Fixture | Purpose |
+|---|---|
+| [RestorePositionScopePerformanceTests](IO/RestorePositionScopePerformanceTests.cs) | Static-page span writes in `StreamPagedList<T>` restoring the caller's stream position without allocating, in both byte orders. It runs by default. |
+| [StreamTemporaryBufferPerformanceTests](IO/StreamTemporaryBufferPerformanceTests.cs) | Explicit serial allocation samples for stream and serializer buffers, described in [Allocation diagnostics](#allocation-diagnostics) |
+
+### ObjectSpaces
+
+ObjectSpace workloads, default presets, hot paths, page memory and the lab store in `ObjectSpaces/Lab`.
+
+| Fixture | Purpose |
+|---|---|
+| [ObjectSpaceWorkloadTests](ObjectSpaces/ObjectSpaceWorkloadTests.cs) | Workload controls, data distributions, read/write mixes, payload growth and shrink, prepared transactions, comparison groups and large index nodes in either byte order |
+| [FrameworkDefaultsProfileTests](ObjectSpaces/FrameworkDefaultsProfileTests.cs) | The `framework-defaults` ObjectSpace suite against `Sphere10FrameworkDefaults` on Memory and File stores, and the unchanged `baseline` suite |
+| [ObjectSpaceHotPathTests](ObjectSpaces/ObjectSpaceHotPathTests.cs) | Hot-path workloads, described in [ObjectSpace hot paths and page memory](#objectspace-hot-paths-and-page-memory) |
+| [RecordedObjectSpaceHotPathTests](ObjectSpaces/RecordedObjectSpaceHotPathTests.cs) | Explicit check of three retained hot-path campaigns, described in [ObjectSpace hot paths and page memory](#objectspace-hot-paths-and-page-memory) |
+| [FilePageMemoryTests](ObjectSpaces/FilePageMemoryTests.cs) | Explicit fresh-process memory diagnostic for a Merkle file store, described in [ObjectSpace hot paths and page memory](#objectspace-hot-paths-and-page-memory) |
+| [ObjectSpaceLabTests](ObjectSpaces/Lab/ObjectSpaceLabTests.cs) | The lab store, as listed in [ObjectSpace lab store](#objectspace-lab-store) |
+| [ObjectSpaceBTreeManifestTests](ObjectSpaces/Lab/ObjectSpaceBTreeManifestTests.cs) | Lab manifest versions 1 to 3 mapped to `IndexBTreeSpec`, the current version 4 manifest, mismatches rejected before opening, and incomplete, conflicting or unsupported manifests |
+
+### StreamMappedDictionaries
+
+Stream-mapped dictionary integration workloads and their capture reader. `serial.runsettings` runs one test host with no NUnit parallel workers.
+
+| Fixture | Purpose |
+|---|---|
+| [StreamMappedDictionaryWorkloadTests](StreamMappedDictionaries/StreamMappedDictionaryWorkloadTests.cs) | Smoke and heavy dictionary integration workloads, described in [Stream-mapped dictionary workloads](#stream-mapped-dictionary-workloads) |
+| [RecordedStreamMappedDictionaryResults](StreamMappedDictionaries/RecordedStreamMappedDictionaryResults.cs) | Explicit reader of retained dictionary campaigns, described in [Stream-mapped dictionary workloads](#stream-mapped-dictionary-workloads) |
+| [RecordedStreamMappedDictionaryResultsTests](StreamMappedDictionaries/RecordedStreamMappedDictionaryResultsTests.cs) | Synthetic TRX checks of the campaign reader, described in [Stream-mapped dictionary workloads](#stream-mapped-dictionary-workloads) |
+
+### Studies
+
+The parameter-study analyzer, study replay, report rendering and recorded study evidence.
+
+| Fixture | Purpose |
+|---|---|
+| [PerformanceEvidenceTests](Studies/PerformanceEvidenceTests.cs) | The study analyzer on synthetic samples, covering rejection of incomplete, failed and malformed samples, capability and dataset separation, uncertainty ties, sample statistics, temporal-drift warnings and supported-workload preflight |
+| [StudySpecificationReadTests](Studies/StudySpecificationReadTests.cs) | Replay of legacy study plans and results that store the tree order and type in older fields, without rewriting the files |
+| [RetainedPerformanceReportTests](Studies/RetainedPerformanceReportTests.cs) | `RetainedPerformanceReports` output from synthetic reports, including corrupt inputs that fail without changing any file, and rendering of retained reports |
+| [RecordedStudyResults](Studies/RecordedStudyResults.cs) | Recorded study folders, described in [Reading recorded evidence](#reading-recorded-evidence) |
+| [RecordedRecommendations](Studies/RecordedStudyResults.cs) | Explicit per-group recommendations and coverage, described in [Reading recorded evidence](#reading-recorded-evidence) |
+| [RecordedBenchmarkDotNetConfirmations](Studies/RecordedStudyResults.cs) | Recorded BenchmarkDotNet Full JSON reports, described in [Reading recorded evidence](#reading-recorded-evidence) |
+| [RecordedDefaultSelectionTests](Studies/RecordedDefaultSelectionTests.cs) | Explicit check of `final-default-selection.json` against the compiled defaults, described in [Reading recorded evidence](#reading-recorded-evidence) |
+| [RecordedWorkerIdentityTests](Studies/RecordedWorkerIdentityTests.cs) | Worker audits reconciled with their runs, described in [Reading recorded evidence](#reading-recorded-evidence) |
+
+Scope benchmark fixtures are kept locally and are not part of the repository, as described in [Local scope diagnostics](#local-scope-diagnostics).
+
+## ObjectSpace lab store
 
 `ObjectSpaces/Lab/ObjectSpaceLabTests` covers the `PayloadOnly` and
 `DeveloperLab` schema profiles and the configuration of the lab store:

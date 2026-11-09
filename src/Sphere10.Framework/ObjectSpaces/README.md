@@ -1,5 +1,7 @@
 # Object Spaces
 
+An embedded, indexed store of typed CLR objects over clustered streams, in memory or in a transactional file.
+
 `Sphere10.Framework.ObjectSpaces` is an embedded object store for typed CLR objects, built on clustered streams. Each registered type has a dimension with recyclable object slots, a serializer and member indexes, and the space tracks loaded objects so that each saved slot maps to one live instance. Use it when an application needs indexed, persistent objects without an external database. [ObjectSpaceBuilder](Builder/ObjectSpaceBuilder.cs) builds a [MemoryObjectSpace](MemoryObjectSpace.cs) or a transactional [FileObjectSpace](FileObjectSpace.cs), and both derive from `ObjectSpace`. The subsystem ships in the `Sphere10.Framework` package.
 
 The [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) demonstrates a self-describing store on its **ObjectSpace** screen, which is in the **Data And Collections** block and under **Data Editing > ObjectSpace**. The screen creates, edits and deletes accounts and reloads the store through `ObjectSpace.TryOpenFromStream`. The general profiler's [ObjectSpace suite](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) holds repeatable measurements, and its [lab](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md) supplies the models, configuration and factory used for profiling and correctness fixtures.
@@ -266,3 +268,38 @@ dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Re
 ```
 
 Read the [ObjectSpace practices](../../../docs/guidelines/patterns/object-spaces.md) before extending this subsystem.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`FileObjectSpace`](FileObjectSpace.cs) | class | Object space over a transactional file whose `Commit` and `Rollback` publish or discard staged pages, with commit and rollback events. |
+| [`MemoryObjectSpace`](MemoryObjectSpace.cs) | class | Object space over a `MemoryStream` that it creates and owns, or borrows from the caller. |
+| [`ObjectSpace`](ObjectSpaceBase.cs) | class | Core store that loads dimensions, tracks object identity, saves, deletes and enumerates objects, runs index lookups and optional reference collection. |
+| [`ObjectSpaceDefinition`](ObjectSpaceDefinition.cs) | class | Schema of a space: traits, hash function, metadata capacity, shared index B-tree specification and dimension and index definitions, with `Validate`. |
+| [`ObjectSpaceMetaData`](ObjectSpaceMetaData.cs) | class | Sealed self-describing record of a space's hash function and shared serializer factory. |
+| [`ObjectSpaceMetaDataSerializer`](ObjectSpaceMetaDataSerializer.cs) | class | Sealed serializer for the length-prefixed `ObjectSpaceMetaData` record. |
+| [`ObjectSpaceObjectReference`](ObjectSpaceObjectReference.cs) | record | Readonly record struct of a dimension index and object slot that identifies one object across dimensions. |
+| [`ObjectSpaceObjectReferenceSerializer`](ObjectSpaceObjectReferenceSerializer.cs) | class | Sealed constant-size serializer that writes a reference as 10 bytes. |
+| [`ObjectSpaceTraits`](ObjectSpaceTraits.cs) | enum | Flags for Merkle trees, autosave, garbage collection, stored metadata and big-endian storage. |
+
+### Annotations
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`DimensionAttribute`](Annotations/DimensionAttribute.cs) | class | Class attribute that marks a type as a dimension. The builder does not read it. |
+| [`EqualityComparerAttribute`](Annotations/UseEqualityComparer.cs) | class | Class or struct attribute naming the equality comparer type that `AddDimension` registers for the type. |
+| [`IdentityAttribute`](Annotations/IdentityAttribute.cs) | class | Member attribute that declares the dimension's identifier index, with an optional index name. |
+| [`IndexAttribute`](Annotations/IndexAttribute.cs) | class | Member attribute that declares a nonunique index. |
+| [`IndexAttributeBase`](Annotations/IndexAttributeBase.cs) | abstract class | Base member attribute with an optional index name and an `IndexNullPolicy`, which defaults to ignoring null keys. |
+| [`RootAttribute`](Annotations/RootAttribute.cs) | class | Class attribute that marks a dimension as a garbage-collection root whose objects are never collected automatically. |
+| [`UniqueIndexAttribute`](Annotations/UniqueIndexAttribute.cs) | class | Member attribute that declares a unique index. |
+
+### Builder
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`IObjectSpaceDimensionBuilder`](Builder/IObjectSpaceDimensionBuilder.cs) | interface | Untyped dimension configuration: root flag, indexes, comparers, change tracking, cluster size, definition building and `Done`. |
+| [`IObjectSpaceDimensionBuilder<TBuilder>`](Builder/IObjectSpaceDimensionBuilderT.cs) | interface | Fluent dimension configuration that returns the concrete builder type and adapts it to the untyped interface. |
+| [`ObjectSpaceBuilder`](Builder/ObjectSpaceBuilder.cs) | class | Fluent configuration of backend, storage sizes, B-tree layout, traits, factories and dimensions, ending in `Build` or `BuildDefinition`. |
+| [`ObjectSpaceDimensionBuilder<T>`](Builder/ObjectSpaceDimensionBuilder.cs) | class | Fluent configuration of one typed dimension's serializer, comparers, identifier, indexes, Merkle and recyclable attachments, change tracking and item size. |

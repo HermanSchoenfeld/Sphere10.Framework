@@ -2,6 +2,23 @@
 
 Sphere10.Framework.Generators is a C# source generator package. Its `AutoDirty` generator implements the `partial` properties of a class marked `[AutoDirty]`, so that assigning a different value also sets the class's dirty flag. Use it for models whose persistence layer saves only changed objects, such as ObjectSpace dimensions that track changes through a dirty flag.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Generators` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`AutoDirtyGenerator`](AutoDirtyGenerator.cs) | class | Incremental source generator that adds an internal `[AutoDirty(dirtyPropertyName)]` attribute and implements each `partial` property of a marked class with a backing field that sets the named dirty flag when the value changes. |
+<!-- domains:end -->
+
 ## Reference the package
 
 Reference the package as a development dependency, with the same version as your other Sphere10 Framework packages:

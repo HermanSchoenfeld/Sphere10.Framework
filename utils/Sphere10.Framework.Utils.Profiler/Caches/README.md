@@ -1,10 +1,24 @@
-# Cache profiling
+# Cache Profiling
 
-The `caches` domain measures the typed cache path and the cost of admission under
-capacity pressure. It uses the real `ActionCache<int,TValue>` engine with its
-explicit `ObjectCacheProjection` adapter, `ReapLevel` and deterministic LRU/FIFO policies.
-Expiration, invalidation, pinned entries, pools, concurrent callers and callback
-refills are deliberately separate correctness scenarios, not simulated here.
+Benchmarks typed and object-keyed access and capacity-pressure eviction of the Framework's `ActionCache` with BenchmarkDotNet.
+
+The `caches` domain measures the typed cache path and the cost of admission under capacity pressure. It uses the real `ActionCache<int,TValue>` engine with its explicit `ObjectCacheProjection` adapter, `ReapLevel` and deterministic LRU/FIFO policies. Expiration, invalidation, pinned entries, pools, concurrent callers and callback refills are deliberately separate correctness scenarios, not simulated here.
+
+`CacheProfiler.Run` parses `CacheProfilerSettings` and its `CacheProfile` list, and the benchmark classes drive a `CacheBenchmarkFixture`. The fixture checks every batch against an independent reference model and writes a `CacheWorkloadMetrics` file per iteration. The [general profiler](../README.md) describes the shared command line, and the [parameter studies](../Studies/README.md) explain how to read retained reports.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`CacheAccessBenchmarks`](CacheBenchmarks.cs) | class | Measures typed, boxed-object and preboxed-object hot-key access |
+| [`CacheBenchmarkBase`](CacheBenchmarks.cs) | abstract class | BenchmarkDotNet base that creates a `CacheBenchmarkFixture` per profile, resets it before each iteration and verifies and records metrics after it |
+| [`CacheBenchmarkFixture`](CacheBenchmarkFixture.cs) | class | Creates and preseeds the cache, runs each workload, replays it against a linked-list reference model and writes the verified metrics |
+| [`CachePressureBenchmarks`](CacheBenchmarks.cs) | class | Measures sequential and hot-set pressure that forces fetches and eviction |
+| [`CacheProfile`](CacheProfile.cs) | class | One named configuration: reap policy, capacity, reap level and size pattern, with the minimum batch release and named suites |
+| [`CacheProfiler`](CacheProfiler.cs) | static class | Entry point of the `caches` command that parses settings, prints help or configuration, and runs BenchmarkDotNet |
+| [`CacheProfilerSettings`](CacheProfilerSettings.cs) | class | Operation count, hot-set and hot-access percentages, fetch work, output directory and profiles, parsed from the command line and published to benchmark workers |
+| [`CacheSizePattern`](CacheProfile.cs) | enum | Size estimate per value: `Unit` (one unit) or `Weighted` (one to four units) |
+| [`CacheWorkloadMetrics`](CacheBenchmarkFixture.cs) | class | Per-iteration record of capacity, fetches, victims, reaps, final occupancy, checksums and verification outcome |
 
 ## Workloads
 

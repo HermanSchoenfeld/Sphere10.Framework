@@ -4,6 +4,32 @@
 
 Sphere10.Framework.iOS is a legacy Xamarin.iOS class library of UIKit views, view controllers, awaitable dialogs and extension methods, with StoreKit, network-reachability and address-book helpers. No solution, CI job or packaging script builds it. Use it only as reference source, for example when porting a control to a current .NET iOS project.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.iOS` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [AddressBook](AddressBook/README.md) | A legacy Xamarin.iOS helper that asks the user for address-book access. | [source](AddressBook/) |
+| [AppStore](AppStore/README.md) | A legacy Xamarin.iOS StoreKit wrapper that fetches App Store product data and purchases products asynchronously. | [source](AppStore/) |
+| [Extensions](Extensions/README.md) | Legacy Xamarin.iOS extension methods for UIKit, Foundation and CoreGraphics types, with conversions to and from .NET and System.Drawing types. | [source](Extensions/) |
+| [Images](Images/README.md) | PNG images that the legacy iOS project embeds as resources for its calendar view, combo box and placeholder images. | [source](Images/) |
+| [Network](Network/README.md) | A legacy Xamarin.iOS network-reachability helper that reports remote-host, internet and local Wi-Fi status. | [source](Network/) |
+| [ObjC](ObjC/README.md) | Legacy P/Invoke declarations for the Objective-C runtime's associated-object and message-send functions. | [source](ObjC/) |
+| [Settings](Settings/README.md) | Legacy settings persistence in `NSUserDefaults`, as a Sphere10 settings provider and as a self-loading settings object. | [source](Settings/) |
+| [UI](UI/README.md) | Legacy Xamarin.iOS views, view controllers, awaitable dialogs, calendar controls, table helpers and gesture-recognizer subclasses. | [source](UI/) |
+| [ViewControllers](ViewControllers/README.md) | Legacy Xamarin.iOS view-controller bases for keyboard-aware forms, hosted views, menu grids and application screens. | [source](ViewControllers/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Tools.iOSTool`](iOSTool.cs) | tools | Static UIKit helpers for keyboard height, animation waits, video thumbnails, labels, top-most view controller lookup, Objective-C runtime properties, orientation, JPEG saving and image cropping, resizing, zooming and tinting. |
+<!-- domains:end -->
+
 ## 📊 Status
 
 | Area | State |

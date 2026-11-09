@@ -4,6 +4,24 @@
 
 Sphere10.Framework.Communications adds network transports and a JSON-RPC layer to Sphere10 Framework. It implements the core `ProtocolChannel` over anonymous pipes, UDP, TCP and WebSockets, and it provides an attribute-based JSON-RPC server and client over TCP. Use the channels as transports for typed protocols built with the core `ProtocolBuilder` and `ProtocolOrchestrator`, and use the RPC types to let remote callers invoke object methods by name.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Communications` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [DataSource](DataSource/README.md) | Provides experimental CRUD data sources that exchange items with a remote peer over a `ProtocolChannel`. | [source](DataSource/) |
+| [EndPoint](EndPoint/README.md) | Provides the whole-message TCP endpoints and connection policies that the JSON-RPC layer runs on. | [source](EndPoint/) |
+| [JSON](JSON/README.md) | Provides Newtonsoft.Json converters for hexadecimal byte arrays and for integers written in decimal or `0x` hexadecimal. | [source](JSON/) |
+| [Pipes](Pipes/README.md) | Provides a `ProtocolChannel` over a pair of anonymous pipes between a parent process and a child process it starts. | [source](Pipes/) |
+| [Protocols](Protocols/README.md) | Provides `WebSocketsPacket`, the JSON envelope that the WebSocket channel hub and data sources exchange. | [source](Protocols/) |
+| [RPC](RPC/README.md) | Provides an attribute-driven JSON-RPC 2.0 server, client and service registry that run over the TCP message endpoints. | [source](RPC/) |
+| [TCP](TCP/README.md) | Provides `TCPChannel`, a `ProtocolChannel` that sends over a new TCP connection per message and receives from connections accepted on a local listener. | [source](TCP/) |
+| [UDP](UDP/README.md) | Provides UDP `ProtocolChannel`s for one fixed peer and a UDP server that creates one channel per remote endpoint. | [source](UDP/) |
+| [WebSockets](WebSockets/README.md) | Provides client and server WebSocket `ProtocolChannel`s, a hub that tracks the server's connections, and an older combined channel. | [source](WebSockets/) |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

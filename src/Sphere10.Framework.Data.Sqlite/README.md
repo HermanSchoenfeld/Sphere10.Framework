@@ -6,6 +6,25 @@
 
 The package supplies `SqliteDAC`, the `Tools.Sqlite` file and connection helpers and `SqliteDatabaseManager`, and SQL text comes from `SqliteSQLBuilder` in the shared package.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.Sqlite` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [DAC](DAC/README.md) | The SQLite data-access class and the journal-mode and synchronous-mode settings that its connection strings use. | [source](DAC/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`SqliteDatabaseManager`](SqliteDatabaseManager.cs) | class | `DatabaseManagerBase` for database files that rejects a server, user name or port, creates files with a 32768-byte page size and drops them by deleting the file. |
+| [`Tools.Sqlite`](SqliteTool.cs) | tools | Opens, creates and drops database files, tests whether a file exists, builds connection strings and reads the file path or password back from them. |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

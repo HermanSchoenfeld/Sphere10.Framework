@@ -6,6 +6,32 @@
 
 The package supplies a database-manager base class, a data-generator base class, FluentNHibernate conventions, JSON column types, an enum type-table pattern, an auditing listener and SQL Server dialect and driver extensions. It has no session-factory builder of its own: configure NHibernate with FluentNHibernate's `Fluently.Configure()`.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.NHibernate` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [ClientDrivers](ClientDrivers/README.md) | Provides an NHibernate SQL Server client driver that widens unsigned and byte parameter types to types SQL Server can store. | [source](ClientDrivers/) |
+| [Conventions](Conventions/README.md) | Provides FluentNHibernate conventions for table naming, foreign-key naming, enum mapping and string and binary column sizes. | [source](Conventions/) |
+| [DataPatterns](DataPatterns/README.md) | Provides the enum type-table pattern, an entity and FluentNHibernate map that store one row per enum value. | [source](DataPatterns/) |
+| [Database](Database/README.md) | Provides the NHibernate database-manager contract and base classes that create a schema, seed it and open session factories. | [source](Database/) |
+| [Dialects](Dialects/README.md) | Provides an NHibernate SQL Server dialect that maps unsigned and byte CLR types to wider signed column types. | [source](Dialects/) |
+| [Extensions](Extensions/README.md) | Provides extension methods that add the auditing listener to a FluentNHibernate configuration and attach detached entities to a session. | [source](Extensions/) |
+| [Json](Json/README.md) | Provides NHibernate `IUserType` implementations that store an object as a JSON string column, optionally encrypted. | [source](Json/) |
+| [Listeners](Listeners/README.md) | Holds the NHibernate event listener behind the auditing extension and a checksum helper for business-object buffers. | [source](Listeners/) |
+| [Scopes](Scopes/README.md) | Provides `DataAccessScope`, a nestable transactional scope that shares one NHibernate session and transaction across nested scopes. | [source](Scopes/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Tools.NHibernate`](NHibernate.cs) | tools | Holds `NVarCharMaxValue` (4001), a string length that NHibernate maps to an unbounded string column, used by the JSON column types |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

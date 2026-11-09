@@ -8,6 +8,39 @@ The color helpers and the `Point`, `Size` and `Rectangle` extensions run on any 
 
 The `ResizeMethod` and `ResizeAlignment` enums live in the core `Sphere10.Framework` package, in the `Sphere10.Framework` namespace, so that browser components such as the Blazor grid can use them without `System.Drawing`. This assembly forwards both types, so binaries compiled against their earlier home in Drawing keep working.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Drawing` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Extensions](Extensions/README.md) | Provides extension methods for `System.Drawing` colors, color matrices, graphics, icons, images, byte arrays, points, sizes and rectangles. | [source](Extensions/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`AnchorArea`](AnchorArea.cs) | class | Left, top, right and bottom anchor distances with center and middle flags, and `CalculateArea` that places content of a given size inside an area |
+| [`BorderLine`](BorderLine.cs) | struct | One border edge: color, width, dash style and padding, with `NoBorder` and `Black1Width` presets |
+| [`BrushCache`](BrushCache.cs) | class | Disposable cache of `SolidBrush`es by color with a fixed number of reusable slots, which owns every brush it returns until disposed |
+| [`ColorMatrices`](ColorMatrices.cs) | static class | Builds and multiplies 5x5 GDI+ `ColorMatrix` values for brightness, contrast, inversion, monochrome, sepia, saturation, hue rotation, threshold and colour-vision-deficiency simulation, and interpolates between matrices |
+| [`Gradient3DBorderStyle`](Gradient3DBorderStyle.cs) | enum | Raised or sunken style for `GraphicsExtensions.DrawGradient3DBorder` |
+| [`GradientFillDirection`](GradientFillDirection.cs) | enum | Horizontal or vertical direction for `GraphicsExtensions.GradientFill` |
+| [`GraphicsCache`](GraphicsCache.cs) | class | Borrows a `Graphics` and a clip rectangle and owns a `PenCache` and `BrushCache` for one drawing pass, disposing the caches but not the graphics |
+| [`IBorder`](IBorder.cs) | interface | Border contract: content rectangle, extent, `Draw` into a `GraphicsCache` and hit-testing of a point against the border parts |
+| [`Padding`](Padding.cs) | struct | Left, right, top and bottom float padding with content-rectangle and extent calculations |
+| [`PenCache`](PenCache.cs) | class | Disposable cache of `Pen`s by color, width and dash style with a fixed number of reusable slots, which owns every pen it returns until disposed |
+| [`PointFP`](FPoint.cs) | struct | Point with `FixedPoint` coordinates and conversion and vector add, subtract and divide helpers |
+| [`RectangleBorder`](RectangleBorder.cs) | struct | `IBorder` with separate top, bottom, left and right `BorderLine`s, copy-on-set modifiers and inset and raised factory methods |
+| [`RectanglePartType`](RectanglePartType.cs) | enum | Part of a bordered rectangle hit by a point: none, content area or one of the four borders |
+| [`RoundedCorners`](RoundedCorners.cs) | enum | Flags that select which corners of a rectangle are rounded |
+| [`RoundedRectangle`](RoundedRectangle.cs) | struct | Rectangle with a 0 to 1 rounding value that converts to a `GraphicsPath` |
+| [`Tools.Drawing`](DrawingTool.cs) | tools | Color conversion, gradients and contrast, content-alignment and `StringFormat` mapping, image-format detection, JPEG compression, icon resizing, disabled images, and rounded-rectangle paths in `DrawingTool.Paths.cs` |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

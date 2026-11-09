@@ -4,6 +4,24 @@
 
 Sphere10.Framework.Android is a legacy Xamarin.Android class library whose only hand-written type is `AndroidSettingsProvider`, a settings provider rooted at the app's `Environment.SpecialFolder.ApplicationData` folder. No solution, CI job or packaging script builds it. Use it only as reference source, for example when porting the provider to a current .NET Android project.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Android` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Resources](Resources/README.md) | The Android resource files of this legacy Xamarin.Android library and the resource-ID class generated from them. | [source](Resources/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`AndroidSettingsProvider`](AndroidSettingsProvider.cs) | class | `DirectoryFileSettingsProvider` that stores settings in the `ApplicationSettings` folder under `Environment.SpecialFolder.ApplicationData`. |
+<!-- domains:end -->
+
 ## 📊 Status
 
 | Area | State |
@@ -24,9 +42,7 @@ Types are declared in the `Sphere10.Framework.Android` namespace.
 |---|---|
 | [`AndroidSettingsProvider.cs`](AndroidSettingsProvider.cs) | `AndroidSettingsProvider`, whose parameterless constructor passes the `ApplicationSettings` folder under `Environment.SpecialFolder.ApplicationData` to its base class. |
 | [`Resources/values/Strings.xml`](Resources/values/Strings.xml) | The project template's `hello` and `app_name` strings. |
-| [`Resources/Resource.designer.cs`](Resources/Resource.designer.cs) | Generated Android resource IDs, including those of the AppCompat support library. |
 | [`Resources/AboutResources.txt`](Resources/AboutResources.txt) | The project template's notes on Android resources. |
-| [`Properties/AssemblyInfo.cs`](Properties/AssemblyInfo.cs) | Template assembly attributes, with the title `Sphere10.Android` and version `1.0.0.0`. |
 
 ## 📦 Dependencies
 

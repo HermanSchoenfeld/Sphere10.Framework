@@ -1,5 +1,7 @@
 # Caches
 
+Synchronized in-memory caches that fetch values on a miss and evict them under expiration, staleness and capacity policies.
+
 This folder holds the core library's synchronized in-memory caches. A cache fetches a value on a miss, keeps it under expiration and capacity policies, and raises notifications as entries are fetched and removed. The types belong to the `Sphere10.Framework` namespace in the `Sphere10.Framework` package.
 
 ## Choose a cache
@@ -114,3 +116,33 @@ The page cache reserves a page's capacity before it loads the page, including du
 ## Tests and profiling
 
 The [cache fixtures](../../../tests/Sphere10.Framework.Tests/Cache) cover typed and object dispatch, event subscription identity, size replacement, expiration, fractional batches, pinned entries, callbacks, concurrency and pooled budgets. The [page-cache regressions](../../../tests/Sphere10.Framework.Tests/Collections/Paged/MemoryPagedListCacheTests.cs) exercise the dirty-page save, unload and reload path with large logical budgets. The [cache profiler](../../../utils/Sphere10.Framework.Utils.Profiler/Caches/README.md) compares typed and object access and the cost of LRU and FIFO admission, with verified fetch and eviction counts. A larger `ReapLevel` can reduce victim selection while it increases refetches, so evaluate it against the application's locality, entry weights and policy rather than assuming that one fraction is fastest.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ActionCache<TKey, TValue>`](ActionCache.cs) | class | Cache that fetches each missing value through a delegate, with optional size-estimator and staleness-check delegates. |
+| [`BulkFetchActionCache<TKey, TValue>`](BulkFetchActionCache.cs) | class | Bulk cache whose delegate returns the whole key/value set, reloaded when a requested key is missing, expired or invalidated. |
+| [`BulkFetchCacheBase<TKey, TValue>`](BulkFetchCacheBase.cs) | abstract class | Base for caches that populate every entry in one bulk fetch, hold zero-sized entries and reject `Remove`. |
+| [`CacheBase`](CacheBase.cs) | abstract class | Object-key and object-value specialization of `CacheBase<TKey, TValue>` that implements `ICache`. |
+| [`CacheBase<TKey, TValue>`](CacheBaseT.cs) | abstract class | Typed cache engine with synchronized admission, expiration, capacity accounting, victim selection and fetch and removal notifications. |
+| [`CachedItem`](CachedItem.cs) | class | Object-valued specialization of `CachedItem<T>`. |
+| [`CachedItem<T>`](CachedItem.cs) | class | A cached value with its fetch and access times, access count, size, traits and `CanPurge` pin. |
+| [`CachedItemTraits`](CachedItemTraits.cs) | enum | Flags marking an entry as invalidated, purgeable or purged. |
+| [`CacheReaperBase`](CacheReaperBase.cs) | abstract class | Synchronized base for reapers that register caches and release capacity on request. |
+| [`CacheReapPolicy`](CacheReapPolicy.cs) | enum | Eviction order for live entries: least used, largest, smallest, longest idle, oldest, ASAP or none. |
+| [`ExpirationPolicy`](ExpirationPolicy.cs) | enum | Measures an entry's expiry window from its fetch time or its last access, or disables expiry. |
+| [`ICache`](ICache.cs) | interface | Object-key and object-value cache contract, reached from a typed cache only through an explicit projection. |
+| [`ICache<TKey, TValue>`](ICache.cs) | interface | Typed cache contract with an indexer that fetches on a miss, `Get`, `Set`, `BulkLoad`, `Invalidate`, `Remove` and fetch and removal events. |
+| [`ICacheBase`](ICacheBase.cs) | interface | Synchronization, size and access diagnostics, `Reap` and `Purge` shared by caches regardless of their key and value types. |
+| [`ICacheExtensions`](ICacheExtensions.cs) | static class | `AsObjectCache`, `AsProjection` and `GetAllCachedValues` extensions for `ICache<TKey, TValue>`. |
+| [`ICacheReaper`](ICacheReaper.cs) | interface | Registers caches, reports free estimator units and releases a requested amount of capacity. |
+| [`IsolatedCacheReaper`](IsolatedCacheReaper.cs) | class | Default reaper that manages the capacity of a single cache. |
+| [`NullValuePolicy`](NullValuePolicy.cs) | enum | Stores fetched `null` values, returns them without caching, or throws. |
+| [`ObjectCacheProjection<TKey, TValue>`](ObjectCacheProjection.cs) | class | Borrowed `ICache` view of a typed cache that shares its live entry metadata. |
+| [`PooledCacheReaper`](PooledCacheReaper.cs) | class | Reaper that places differently typed caches under one shared capacity budget in common estimator units. |
+| [`PreloadedCache<TKey, TValue>`](PreloadedCache.cs) | class | Bulk cache seeded from a dictionary supplied at construction, with an optional key comparer. |
+| [`ProjectedCache<TKey, TValue, TProjectedKey, TProjectedValue>`](ProjectedCache.cs) | class | Borrowed cache view that converts keys and values through forward and inverse projections. |
+| [`ProjectedCachedItem<TFrom, TTo>`](ProjectedCachedItem.cs) | class | Converted value view over a source entry that keeps the source entry's live metadata. |
+| [`SessionCache<K, T>`](SessionCache.cs) | class | Cache of caller-added sessions refreshed by `KeepAlive` and removed by a background cleanup after the idle timeout. |
+| [`StaleValuePolicy`](StaleValuePolicy.cs) | enum | Skips staleness checks or runs `CheckStaleness` on demand when a stored entry is read. |

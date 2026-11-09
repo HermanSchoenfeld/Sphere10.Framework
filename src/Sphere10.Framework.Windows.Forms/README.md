@@ -6,6 +6,60 @@
 
 Sphere10.Framework.Windows.Forms enables **rapid Windows desktop application development** with pre-built UI components for database connectivity, data display, user input validation, and common desktop patterns.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.Forms` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Application](Application/README.md) | Native WinForms application shell with plugins, blocks, menus, hosted screens, main forms, Options dialogs and startup integration. | [source](Application/) |
+| [AppointmentBook](AppointmentBook/README.md) | Scheduling grid control that shows appointments in named columns over a time period, with selection, drag-and-drop rescheduling and resizing. | [source](AppointmentBook/) |
+| [Authentication](Authentication/README.md) | Modal logon and password-entry dialogs that delegate credential checks and password policy to caller-supplied callbacks. | [source](Authentication/) |
+| [Charts](Charts/README.md) | Designer-editable numeric and telemetry chart controls over captured data, with a shared Log Output workflow for chart observations. | [source](Charts/) |
+| [ComboBoxes](ComboBoxes/README.md) | Combo box controls with placeholders and validation, custom drop-down content, enum binding and image tile choices. | [source](ComboBoxes/) |
+| [Controls](Controls/README.md) | Standalone general-purpose WinForms controls for text, numeric, color, image, button, group box and panel input and presentation. | [source](Controls/) |
+| [Database](Database/README.md) | Database connection bars and panels that switch their editor by DBMS type and produce an `IDAC`, plus a form that runs a SQL script. | [source](Database/) |
+| [Dialogs](Dialogs/README.md) | Awaitable message, question and exception dialogs with up to five custom buttons and a remembered "always" answer. | [source](Dialogs/) |
+| [Display](Display/README.md) | Monitor arrangement control that draws the desktop's displays as selectable tiles, in the style of Windows display settings. | [source](Display/) |
+| [Drawing](Drawing/README.md) | Measurable, cloneable visual elements for owner-drawn cells and controls, with draw-style enums, graphics measurement and layered transparent forms. | [source](Drawing/) |
+| [DropDown](DropDown/README.md) | Popup and drop-down hosting for custom editor content, with working-area placement, resize grips and a themed drop-down button. | [source](DropDown/) |
+| [ExplorerBar](ExplorerBar/README.md) | Windows XP style explorer bar with collapsible, animated task groups and link-style task items, plus its theme settings and serialization surrogates. | [source](ExplorerBar/) |
+| [Extensions](Extensions/README.md) | Extension methods for WinForms controls, forms and tool strip items, service registration helpers for native applications, and the `Tools.Windows.Forms` and scope entry points. | [source](Extensions/) |
+| [Forms](Forms/README.md) | General-purpose dialogs and forms for entering text, reviewing text before saving, editing an object in a property grid and viewing text. | [source](Forms/) |
+| [HexEditor](HexEditor/README.md) | A hex editor control, window and dialogs over any seekable stream, with bounded caching, pending edits, streaming search and a data inspector. | [source](HexEditor/) |
+| [HotKeys](HotKeys/README.md) | System-wide keyboard shortcuts registered through `RegisterHotKey`, with user-assignable commands and editor controls. | [source](HotKeys/) |
+| [ListMerger](ListMerger/README.md) | A two-list control whose buttons move or copy the selected items between a left and a right list. | [source](ListMerger/) |
+| [LoadingCircle](LoadingCircle/README.md) | A DPI-aware animated activity indicator for forms, tool strips and temporary overlays. | [source](LoadingCircle/) |
+| [Logging](Logging/README.md) | Windows Forms log views, text box loggers and an optional log output selector with a configuration wizard and remembered preferences. | [source](Logging/) |
+| [Misc](Misc/README.md) | Cross-domain Windows Forms helpers, including the `Tools.Windows.Forms` facade, rendering deferral scopes, UI-thread disposal, placeholder text, system icon kinds and XML signatures. | [source](Misc/) |
+| [MultiSelection](MultiSelection/README.md) | A split button that offers a default action and a menu of alternative actions. | [source](MultiSelection/) |
+| [Notifications](Notifications/README.md) | A passive on-screen popup that confirms a state change without taking focus. | [source](Notifications/) |
+| [PathSelector](PathSelector/README.md) | A text box with a browse button for choosing a file or folder path. | [source](PathSelector/) |
+| [ProgressBar](ProgressBar/README.md) | A progress bar that draws a percentage or custom text over the bar. | [source](ProgressBar/) |
+| [Resources](Resources/README.md) | Icon, image, cursor and theme files that the library embeds through its `Resources` class. | [source](Resources/) |
+| [RichText](RichText/README.md) | An RTF value type, its conversions and an extended rich text box with underline styles, subscript, superscript and typed values. | [source](RichText/) |
+| [Separator](Separator/README.md) | A two-tone horizontal or vertical separator line control. | [source](Separator/) |
+| [Services](Services/README.md) | A status indicator and start/stop button for one Windows service. | [source](Services/) |
+| [SourceGrid](SourceGrid/README.md) | A cell-based grid control for Windows Forms, with static and virtual grids, pluggable cell views, models, controllers and editors, selection, export and printing. | [source](SourceGrid/) |
+| [SourceGrid.Extensions](SourceGrid.Extensions/README.md) | Ready-made grids built on SourceGrid for two-dimensional arrays, `IBoundList` data binding, read-only property sources, list editing and appointment planning. | [source](SourceGrid.Extensions/) |
+| [StateEvent](StateEvent/README.md) | Model-aware `FormEx` and `UserControlEx` base classes and the per-control observers that turn native edits into one `StateChanged` notification. | [source](StateEvent/) |
+| [Text](Text/README.md) | Fixed-length text record parsing and writing driven by field definitions or by attributes on a record class. | [source](Text/) |
+| [ToolStrips](ToolStrips/README.md) | Tool strip, menu strip and status strip helpers for merging items into an inherited form's strips, keeping toolbar height stable, and choosing a value from a toolbar button. | [source](ToolStrips/) |
+| [ValidationIndicator](ValidationIndicator/README.md) | A small status icon control that runs asynchronous validation handlers and shows valid, error, validating or disabled state with a message tooltip. | [source](ValidationIndicator/) |
+| [VisualGrid](VisualGrid/README.md) | The data-source-driven CRUD grid control with paging, search, sorting, entity editors, reference pickers, row details and per-user grid preferences. | [source](VisualGrid/) |
+| [WindowHighlight](WindowHighlight/README.md) | A click-through outline drawn over another window's physical desktop bounds, and a one-use picker that lets the user select a desktop window with the mouse. | [source](WindowHighlight/) |
+| [Wizard](Wizard/README.md) | Windows Forms presentation of the shared application wizard, with screen base classes, a modal wizard dialog and a fluent builder. | [source](Wizard/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Module registration that adds default About, Report Bug, Request Feature and Send Comments dialogs, `ApplicationBanner`, built-in control state event providers and `SessionEndingHandlerInitializer` unless the application registered its own |
+<!-- domains:end -->
+
 ## Source organization
 
 Domain folders such as `Application`, `AppointmentBook`, `Charts`, `Database`,
@@ -1544,7 +1598,7 @@ put a picker beneath each display in one mode and one shared picker in another.
 
 ## Switches and image choices
 
-[ToggleSwitch](Controls/ToggleSwitch.cs) is a `CheckBox` drawn as a thumb sliding in
+ToggleSwitch is a `CheckBox` drawn as a thumb sliding in
 a rounded track, so `Checked`, `CheckedChanged`, `AutoCheck`, Space toggling, data
 binding and accessibility behave as for a check box. `OnText` and `OffText` are drawn
 inside the track, `OnBackColor`, `OffBackColor`, `ThumbColor` and `TrackForeColor`
@@ -1554,8 +1608,8 @@ than its preferred size grows its track to the height. Set `AutoCheck` to false 
 the application's state, not the click, decides the position, and set `Checked` from
 that state.
 
-[ImageComboBox](ComboBoxes/Controls/ImageComboBox.cs) is a `CustomComboBox` of
-[ImageComboBoxItem](ComboBoxes/ImageComboBoxItem.cs) choices (text, image, value, tool
+ImageComboBox is a `CustomComboBox` of
+ImageComboBoxItem choices (text, image, value, tool
 tip, optional group). The closed box draws the selected choice's image at `ImageSize`
 and its text; the drop-down is an owned tile picker showing every choice at
 `TileImageSize`, grouped by `Group`, sized for `TileColumns` by `VisibleTileRows`. A

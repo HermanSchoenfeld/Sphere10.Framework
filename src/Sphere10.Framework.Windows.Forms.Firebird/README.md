@@ -4,6 +4,27 @@
 
 `Sphere10.Framework.Windows.Forms.Firebird` provides Windows Forms editors for Firebird connection settings in desktop applications that use Sphere10 Framework data access. It covers a Firebird server and an embedded database file, each with a compact one-row bar and a larger panel for a settings page or a dialog. All four editors build a `FirebirdSql.Data.FirebirdClient` connection string, test it on request and create a `FirebirdDAC` from it.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.Forms.Firebird` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`FirebirdConnectionBar`](FirebirdConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for a Firebird server, port, database, user name and password that builds an `FbConnectionStringBuilder` connection string and creates a `FirebirdDAC`. |
+| [`FirebirdConnectionPanel`](FirebirdConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `FirebirdConnectionBar`, for a settings page or dialog. |
+| [`FirebirdEmbeddedConnectionBar`](FirebirdEmbeddedConnectionBar.cs) | class | One-row editor for an embedded Firebird database file, user name and password that builds an embedded-server connection string and exposes `Filename`, `Password` and the file selector's `Mode`. |
+| [`FirebirdEmbeddedConnectionPanel`](FirebirdEmbeddedConnectionPanel.cs) | class | Larger editor with the same fields as `FirebirdEmbeddedConnectionBar`, for a settings page or dialog. |
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers the server editors under `DBMSType.Firebird` and the embedded editors under `DBMSType.FirebirdFile` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services. |
+<!-- domains:end -->
+
 ## Reference the package
 
 Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:

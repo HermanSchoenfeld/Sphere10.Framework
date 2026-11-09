@@ -6,6 +6,25 @@
 
 The package supplies `MSSQLDAC`, the `Tools.MSSQL` connection and administration helpers and `MSSQLDatabaseManager`, and SQL text comes from `MSSQLBuilder` in the shared package.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.MSSQL` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`MSSQLDAC`](MSSQLDAC.cs) | class | `DACBase` for SQL Server over `Microsoft.Data.SqlClient`, with `SqlBulkCopy` bulk inserts, an `IsAzure()` check and batches wrapped in `SET XACT_ABORT ON` and one transaction. |
+| [`MSSQLDatabaseManager`](MSSQLDatabaseManager.cs) | class | `DatabaseManagerBase` that tests, creates and drops SQL Server databases through `Tools.MSSQL`. |
+| [`Tools.MSSQL`](MSSQLTool.cs) | tools | Opens an `MSSQLDAC`, builds connection strings, tests whether a database exists, creates and drops databases through `master` and clears connection pools. |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

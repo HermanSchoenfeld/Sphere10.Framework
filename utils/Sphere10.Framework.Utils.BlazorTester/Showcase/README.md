@@ -1,6 +1,42 @@
-# Application patterns
+# Application Patterns
 
-This block demonstrates complete, generic application interactions composed from the public Sphere10 Blazor APIs. It sits beside the component reference; the original grid, tables, dialogs, wallet wizard and legacy examples remain available. All sample data belongs to the current service scope and resets on browser refresh.
+Demonstrates complete application interactions (card catalogues, keyed editors, native commands, guided wizards and theme presets) composed from the public Sphere10 Blazor APIs.
+
+This block demonstrates complete, generic application interactions composed from the public Sphere10 Blazor APIs. It sits beside the component reference, and the original grid, tables, dialogs, wallet wizard and legacy examples remain available. All sample data belongs to the current service scope and resets on browser refresh.
+
+`ShowcasePlugin.Configure` registers the block, its menus, its five screens and the scoped `CollectionCatalogue`. The screens derive from `ApplicationScreen`, and the wizard steps derive from `BlazorWizardStep<WorkspaceSetupDraft>`. Razor components compile to public partial classes named after their files. The block is hosted by the tester's [Application](../Application/README.md) workspace, and `WizardsPage` in [Pages](../Pages/README.md) reuses `GuidedWorkspaceDemo`.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ShowcasePlugin`](ShowcasePlugin.cs) | static class | Configures the Application patterns plugin: its block, menus, screen definitions, scoped services and lifecycle tasks |
+
+### Cards
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`CollectionCatalogue`](Cards/CollectionCatalogue.cs) | class | Scoped, synchronized sample catalogue that returns detached copies, saves edits and raises `Changed` |
+| [`CollectionDataSource`](Cards/CollectionDataSource.cs) | class | Read-only, notifying `ListDataSource` over one fetched catalogue capture, with text, status and category filters |
+| [`CollectionStatus`](Cards/CreativeCollection.cs) | enum | Sample collection status: `Draft`, `Active` or `Archived` |
+| [`CreativeCollection`](Cards/CreativeCollection.cs) | class | Circuit-local sample collection entity with copy and edit comparison |
+
+### Commands
+
+| Type | Kind | Purpose |
+|---|---|---|
+
+### Themes
+
+| Type | Kind | Purpose |
+|---|---|---|
+
+### Wizards
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`WorkspaceSetupDraft`](Wizards/WorkspaceSetupDraft.cs) | class | Draft model owned by one wizard run, with name, mode, capacity, access, digest, reviewers, preset and acknowledgement |
+| [`WorkspaceSetupFlow`](Wizards/WorkspaceSetupFlow.cs) | static class | Replaces the steps after settings with review, or reviewers and review for team mode,, opens and returns from the preset chooser and supplies step titles |
 
 ## Suggested tour
 
@@ -15,12 +51,6 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 
 | Example | Source | Library foundations |
 | --- | --- | --- |
-| Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | AddPlugin, AddBlock, AddMenu, canonical screen definitions, scoped services and named initializer/finalizer registration |
-| Card/table catalogue | [CardsScreen.razor](Cards/CardsScreen.razor), [CollectionDataSource.cs](Cards/CollectionDataSource.cs) | BulkFetchDataSource, BlazorGridController, BlazorGrid, PageSizeSelector, ExpandsToFit |
-| Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | ApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
-| Native commands | [CommandsScreen.razor](Commands/CommandsScreen.razor) | Menus/ToolBarItems, merge by ID, WithChildren, EnabledWhen, WithVisibility and ViewService |
-| Guided wizard | [GuidedWorkspaceDemo.razor](Wizards/GuidedWorkspaceDemo.razor), [WorkspaceSetupFlow.cs](Wizards/WorkspaceSetupFlow.cs) | BlazorWizardBuilder, conditional UpdateSteps, BlazorWizardStep, embedded BlazorWizardHost and ViewService.WizardDialogAsync |
-| Theme studio | [ThemeStudioScreen.razor](Themes/ThemeStudioScreen.razor) | ThemeCatalog, scoped IThemeService, ThemeProvider, semantic CSS tokens and themed dialogs |
 
 The cards are an application-specific view over the existing data-source/controller APIs; no parallel card data framework is introduced. SVG artwork is deterministic and theme-aware. Collection IDs are passed into retained screens rather than copying mutable catalogue entities into registration metadata. Catalogue read and write scopes return detached copies.
 

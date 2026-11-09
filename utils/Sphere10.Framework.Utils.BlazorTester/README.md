@@ -12,6 +12,31 @@ A .NET 10 Blazor Web App that presents every component demo through one full-pag
 
 Open `/` for the organized tour or `/components/grid` for the editable Visual grid. The **Application patterns** block adds complete card, menu, workflow and theme examples alongside the component reference and preserved legacy examples. Every entry uses the same application shell; compatibility URLs select registered screens and become canonical `/application?block=...&screen=...&instance=...` URLs. See [the Blazor library guide](../../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) for the reusable APIs and host integration.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Utils.BlazorTester` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Application](Application/README.md) | Holds the tester's single routable workspace, the retained application screens it hosts, the shared commands and the scoped demo state. | [source](Application/) |
+| [Demos](Demos/README.md) | Holds reusable Razor examples of the Blazor grid, tables, dialogs, wizards and themes that the tester's screens render. | [source](Demos/) |
+| [Layouts](Layouts/README.md) | Provides the tester's layout component and the compatibility routes and header search over its registered screens. | [source](Layouts/) |
+| [Lifecycle](Lifecycle/README.md) | Demonstrates plugin-owned startup and shutdown tasks that run once per browser circuit's application. | [source](Lifecycle/) |
+| [Modern](Modern/README.md) | Holds the grid content, sample entities and data sources, grid cell components and the branching new-wallet wizard used by the tester's component gallery. | [source](Modern/) |
+| [Pages](Pages/README.md) | Holds the Razor content components that the tester's overview, tables, dialogs and wizards screens render. | [source](Pages/) |
+| [Showcase](Showcase/README.md) | Demonstrates complete application interactions (card catalogues, keyed editors, native commands, guided wizards and theme presets) composed from the public Sphere10 Blazor APIs. | [source](Showcase/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`App`](App.razor) | class | Razor HTML document that loads the styles and import map, sets the configured title and favicon and renders `Routes` interactively on the server |
+| [`Program`](Program.cs) | static class | Web host entry point, with `ConfigureServices` that registers the logger, theme service and the Blazor application with its four demo plugins and screen-policy options |
+<!-- domains:end -->
+
 ## Run the tester
 
 Install the .NET 10 SDK and run these commands **from the repository root**. The first run restores the project references and NuGet dependencies.
@@ -95,19 +120,7 @@ The single [Workspace.razor](Application/Workspace.razor) route component handle
 
 | Location | Responsibility |
 | --- | --- |
-| [Program.cs](Program.cs) | Interactive Server registration, Sphere10 services, workspace registration, plugin samples and endpoint mapping. |
-| [App.razor](App.razor), [Routes.razor](Routes.razor) | HTML document, styles/import map, render mode and page routing. |
-| [Layouts/DemoLayout.razor](Layouts/DemoLayout.razor) | Theme provider and the two modal hosts; presentation is owned by the library ApplicationShell. |
-| [Layouts/DemoNavigation.cs](Layouts/DemoNavigation.cs) | Compatibility URL mappings and header search over the actual registered application screens. |
 | [Pages](Pages) | Component content reused by hosted screens. |
-| [Modern/UI/Index.razor](Modern/UI/Index.razor) | Grid content and related-demo links, hosted by ComponentScreen. |
-| [Demos/GridDemo.razor](Demos/GridDemo.razor) | Editable CRUD/reference grid plus an independent live-snapshot workspace for paging, retained column layout, no-indicator refresh, row refresh/removal and filtered export. |
-| [Modern/UI/Controls/GridDemoDataSource.cs](Modern/UI/Controls/GridDemoDataSource.cs) | Local immutable sample rows in a `ListDataSource`, with no native collection or external services. |
-| [Modern/UI/Controls/GridDemoRefreshableDataSource.cs](Modern/UI/Controls/GridDemoRefreshableDataSource.cs) | `RefreshableDataSourceBase` over the sample rows. It publishes the next revision of every row with stable IDs, and a polling decorator supplies the live cadence. |
-| [Demos/TablesDemo.razor](Demos/TablesDemo.razor), [Demos/DialogsDemo.razor](Demos/DialogsDemo.razor), [Demos/WizardsDemo.razor](Demos/WizardsDemo.razor) | Reusable examples rendered inside registered application screens. |
-| [Modern/UI/Controls/TestClass.cs](Modern/UI/Controls/TestClass.cs) | Grid entity with enum, date, decimal, boolean, note and optional related record. |
-| [Modern/UI/Controls/TestClassDataSource.cs](Modern/UI/Controls/TestClassDataSource.cs) | Local CRUD source, search, typed sorting, paging and validation. |
-| [Loader/Sphere10Plugin.cs](Loader/Sphere10Plugin.cs), [WidgetGallery/WidgetGalleryPlugin.cs](WidgetGallery/WidgetGalleryPlugin.cs) | Fluent plugin definitions: service registrations, application blocks, menus and screens. |
 | [Lifecycle](Lifecycle) | Plugin-owned startup and shutdown tasks, registered by all four plugin definitions and executed by the circuit's application. |
 | [Application](Application) | Sole routable workspace, retained screen wrappers, command definitions and scoped state. |
 | [Showcase](Showcase/README.md) | Composed application patterns, their plugin registration, isolated sample data and public-API recipes. |

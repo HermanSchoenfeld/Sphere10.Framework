@@ -1,9 +1,44 @@
-# ObjectSpace profiling
+# ObjectSpace Profiling
 
-The `object-spaces` domain in the [general profiler](../README.md) benchmarks
-the deterministic **PayloadOnly** record schema from its local ObjectSpace lab
-factory. No UI assembly is required. Read the [lab guide](Lab/README.md)
-for the model and configuration ownership.
+Benchmarks ObjectSpace storage, indexing, allocation, Merkle and transaction workloads over a deterministic lab schema with BenchmarkDotNet.
+
+The `object-spaces` domain in the [general profiler](../README.md) benchmarks the deterministic **PayloadOnly** record schema from its local ObjectSpace lab factory. No UI assembly is required. Read the [lab guide](Lab/README.md) for the model and configuration ownership.
+
+`ObjectSpaceProfiler.Run` parses `ProfilerSettings` and its `ObjectSpaceProfile` list, each wrapping an `ObjectSpaceLabConfiguration`. Each benchmark class derives from `ObjectSpaceBenchmarkBase` and drives an `ObjectSpaceBenchmarkFixture`, which opens the store through `ObjectSpaceLabFactory`, prepares data outside timing and verifies results. `ProfilerResults` writes the run manifest and rankings. The [parameter studies](../Studies/README.md) reuse the fixture, and the [B-tree domain](../BTrees/README.md) profiles the index trees on their own.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ObjectSpaceBenchmarkBase`](ObjectSpaceBenchmarks.cs) | abstract class | BenchmarkDotNet base that creates an `ObjectSpaceBenchmarkFixture` for the selected profile and runs per-class preparation and verification |
+| [`ObjectSpaceBenchmarkFixture`](ObjectSpaceBenchmarkFixture.cs) | class | Opens and seeds a lab ObjectSpace for one profile, prepares read, mutation, transaction and reopen states, runs each workload and verifies the results |
+| [`ObjectSpaceFirstTouchBenchmarks`](ObjectSpaceBenchmarks.cs) | class | Measures identity lookups and scans on a freshly opened store |
+| [`ObjectSpaceLookupPattern`](ObjectSpaceLookupPattern.cs) | enum | Order of looked-up identifiers: `Shuffled`, `Sequential` or `HotSet` |
+| [`ObjectSpaceMerkleBenchmarks`](ObjectSpaceMerkleBenchmarks.cs) | class | Measures flushing a clean store with Merkle trees enabled |
+| [`ObjectSpaceMutationBenchmarks`](ObjectSpaceBenchmarks.cs) | class | Measures inserts, updates, reindexing, payload resizing, deletes, recycling and mixed read-write batches with persistence |
+| [`ObjectSpacePayloadPattern`](ObjectSpacePayloadPattern.cs) | enum | Record payload sizes: `Fixed` or `Variable` |
+| [`ObjectSpaceProfile`](ObjectSpaceProfile.cs) | class | One named lab configuration with its comparison group and named suites |
+| [`ObjectSpaceProfiler`](ObjectSpaceProfiler.cs) | static class | Entry point of the `object-spaces` command that parses settings, prints help or configuration, and runs BenchmarkDotNet |
+| [`ObjectSpaceReopenBenchmarks`](ObjectSpaceBenchmarks.cs) | class | Measures reopening and hydrating a file store |
+| [`ObjectSpaceSecondaryIndexBenchmarks`](ObjectSpaceBenchmarks.cs) | class | Measures unique-code and category lookups on profiles with full secondary indexes |
+| [`ObjectSpaceTransactionBenchmarks`](ObjectSpaceBenchmarks.cs) | class | Measures committing and rolling back prepared changes on file stores |
+| [`ObjectSpaceWarmReadBenchmarks`](ObjectSpaceBenchmarks.cs) | class | Measures warm identity, physical-slot and missing lookups and scans |
+| [`ObjectSpaceWorkloadMix`](ObjectSpaceWorkloadMix.cs) | enum | Read and write ratio of mixed batches: `Balanced`, `ReadHeavy` or `WriteHeavy` |
+| [`ProfilerResults`](ProfilerResults.cs) | static class | Writes the run manifest and per-group rankings from BenchmarkDotNet summaries |
+| [`ProfilerSettings`](ProfilerSettings.cs) | class | Record, operation, payload and category settings, lookup and payload patterns, mix and profiles, parsed from the command line and published to benchmark workers |
+
+### Lab
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ObjectSpaceLabConfiguration`](Lab/ObjectSpaceLabConfiguration.cs) | class | Storage, schema and index profiles, B-tree specification or order, cluster, page and cache sizes, policy, endianness, autosave and Merkle settings, with `Validate` and `Clone` |
+| [`ObjectSpaceLabEvent`](Lab/ObjectSpaceLabEvent.cs) | class | DeveloperLab event entity with identifier, record id, kind, timestamp ticks and message |
+| [`ObjectSpaceLabFactory`](Lab/ObjectSpaceLabFactory.cs) | static class | Opens memory or file lab spaces with a configuration sidecar, creates deterministic records, groups and events, seeds records and completes a space |
+| [`ObjectSpaceLabGroup`](Lab/ObjectSpaceLabGroup.cs) | class | DeveloperLab group entity with identifier, unique code and name |
+| [`ObjectSpaceLabIndexProfile`](Lab/ObjectSpaceLabIndexProfile.cs) | enum | `IdentifierOnly` or `Full` secondary indexes |
+| [`ObjectSpaceLabRecord`](Lab/ObjectSpaceLabRecord.cs) | class | Benchmark record with identifier, unique code, category, balance, payload, notes and a transient dirty flag, cloned with a payload copy |
+| [`ObjectSpaceLabSchemaProfile`](Lab/ObjectSpaceLabSchemaProfile.cs) | enum | `PayloadOnly` records or the three-dimension `DeveloperLab` schema |
+| [`ObjectSpaceLabStorage`](Lab/ObjectSpaceLabStorage.cs) | enum | `Memory` or `File` backend |
 
 The factory retains the versioned DeveloperLab schema with Records, Groups and
 Events for compatibility and independent model tests. Those three-dimension

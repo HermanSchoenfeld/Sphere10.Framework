@@ -6,6 +6,24 @@
 
 The package supplies `FirebirdDAC` and `FirebirdCorrectingReader`, and SQL text comes from `FirebirdSQLBuilder` in the shared package. Unlike the other providers, it has no `Tools.Firebird` helper class and no database manager.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.Firebird` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`FirebirdCorrectingReader`](FirebirdCorrectingReader.cs) | class | `DataReaderDecorator` that reorders the bytes of `Guid` values read from Firebird into RFC 4122 order, with a static `CorrectGuid` for single values. |
+| [`FirebirdDAC`](FirebirdDAC.cs) | class | `DACBase` for Firebird server and embedded databases that reports `Firebird` or `FirebirdFile`, corrects `Guid` values and runs `CREATE` statements in a transaction before the other statements of a batch. |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

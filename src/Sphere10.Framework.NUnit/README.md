@@ -4,6 +4,26 @@
 
 Sphere10.Framework.NUnit provides reusable NUnit assertions and randomized integration tests for Sphere10 Framework lists, buffers, dictionaries, streams and Merkle trees. Reference it from a test project when you implement a Framework collection or stream contract and want to check the implementation against a reference implementation.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.NUnit` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`AssertEx`](AssertEx.cs) | static class | Randomized integration tests that compare an `IExtendedList<T>`, buffer, dictionary or `Stream` against a reference implementation, plus assertions for streams, Merkle trees, enum flags, regular expressions, 2D arrays, approximate values and paged-list page state. |
+| [`TestItem<TInput, TExpected>`](TestItem.cs) | class | Test case that pairs one `Input` with its `Expected` result. |
+| [`TestItem<TInput1, TInput2, TExpected>`](TestItem.cs) | class | Test case that pairs two inputs, `Input1` and `Input2`, with their `Expected` result. |
+| [`Tools.NUnit`](NUnitTool.cs) | tools | Detects a GitHub Actions run, asserts that a sequence is empty or not empty, formats a 2D array as text and prints a sequence to the console. |
+<!-- domains:end -->
+
 ## NuGet usage
 
 Install `Sphere10.Framework.NUnit` in a .NET 10 test project. Its `Sphere10.Framework` and NUnit dependencies restore automatically, and the package is built against NUnit 5.0.0. Test discovery still requires the NUnit test adapter and Microsoft.NET.Test.Sdk in the consuming test project.

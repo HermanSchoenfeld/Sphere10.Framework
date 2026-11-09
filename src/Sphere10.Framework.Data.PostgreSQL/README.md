@@ -6,6 +6,25 @@
 
 The package supplies `PostgreSQLDAC`, the `Tools.PostgreSQL` connection and administration helpers and `PostgreSQLDatabaseManager`, and SQL text comes from `PostgreSQLBuilder` in the shared package.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data.PostgreSQL` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`PostgreSQLDAC`](PostgreSQLDAC.cs) | class | `DACBase` for PostgreSQL over Npgsql that uses `PostgreSQLBuilder`, and whose `BulkInsert` throws `NotImplementedException`. |
+| [`PostgreSQLDatabaseManager`](PostgreSQLDatabaseManager.cs) | class | `DatabaseManagerBase` that tests, creates and drops PostgreSQL databases through `Tools.PostgreSQL`. |
+| [`Tools.PostgreSQL`](PostgreSQLTool.cs) | tools | Opens a `PostgreSQLDAC`, builds connection strings, tests whether a database exists and creates or drops databases. |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

@@ -1,9 +1,31 @@
-# B-tree performance profiling
+# B-tree Profiling
 
-The `btrees` domain profiles the framework's B-tree, B+ tree and grouped lookup
-implementations independently of ObjectSpace. Run the general profiler in
-Release, without a debugger. The [root profiler](../README.md) explains its
-Visual Studio launch profile and output layout.
+Benchmarks the Framework's B-tree, B+ tree and grouped lookup implementations across six storage backends with BenchmarkDotNet.
+
+The `btrees` domain profiles the framework's B-tree, B+ tree and grouped lookup implementations independently of ObjectSpace. Run the general profiler in Release, without a debugger. The [root profiler](../README.md) explains its Visual Studio launch profile and output layout.
+
+`BTreeProfiler.Run` parses the command line into `BTreeProfilerSettings`, which carry the `BTreeProfile` list of a suite or a custom JSON file. Each benchmark class derives from `BTreeBenchmarkBase` and drives a `BTreeBenchmarkFixture`, which builds the tree over the profile's `BTreeStorage`, prepares data outside timing and verifies the tree after each batch. The [parameter studies](../Studies/README.md) reuse the same fixture, and the [ObjectSpace domain](../ObjectSpaces/README.md) uses the same mixed read and write ratios.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`BTreeBenchmarkBase`](BTreeBenchmarks.cs) | abstract class | BenchmarkDotNet base that creates a `BTreeBenchmarkFixture` for the selected profile and runs per-class preparation and verification |
+| [`BTreeBenchmarkFixture`](BTreeBenchmarkFixture.cs) | class | Builds a tree for one profile, prepares baseline or empty datasets, runs each workload, verifies invariants and contents, and writes storage metadata |
+| [`BTreeFamily`](BTreeProfile.cs) | enum | Tree family under test: `BTree`, `BTreePlus` or `Lookup` |
+| [`BTreeInsertBenchmarks`](BTreeBenchmarks.cs) | class | Measures inserting every record into an empty tree and persisting it |
+| [`BTreeKeyShape`](BTreeProfile.cs) | enum | Key layout: `Int32`, `Int64` or the 32-byte `Digest32` |
+| [`BTreeLookupMutationBenchmarks`](BTreeBenchmarks.cs) | class | Runs the mutation workloads on grouped lookup profiles only |
+| [`BTreeLookupReadBenchmarks`](BTreeBenchmarks.cs) | class | Measures group lookups and scans on grouped lookup profiles |
+| [`BTreeLookupTransactionBenchmarks`](BTreeBenchmarks.cs) | class | Runs the commit and rollback workloads on transactional grouped lookup profiles |
+| [`BTreeMutationBenchmarks`](BTreeBenchmarks.cs) | class | Measures updates, delete-and-recycle and mixed operations with persistence, resetting the dataset before each iteration |
+| [`BTreeProfile`](BTreeProfile.cs) | class | One named configuration: storage, family, tree specification or order, key shape, page, cache and buffer sizes and endianness, with node-size calculation and named suites |
+| [`BTreeProfiler`](BTreeProfiler.cs) | static class | Entry point of the `btrees` command that parses settings, prints help or configuration, and runs BenchmarkDotNet |
+| [`BTreeProfilerSettings`](BTreeProfilerSettings.cs) | class | Record, operation and group counts, mix, insertion order, output and data directories and profiles, parsed from the command line and published to benchmark workers |
+| [`BTreeReadBenchmarks`](BTreeBenchmarks.cs) | class | Measures warm and missing lookups, full scans and range lookups |
+| [`BTreeReopenBenchmarks`](BTreeBenchmarks.cs) | class | Measures closing, reopening and querying file-backed trees |
+| [`BTreeStorage`](BTreeProfile.cs) | enum | Storage backend: managed nodes, memory stream, file stream, framework paged file, OS memory-mapped file or transactional file |
+| [`BTreeTransactionBenchmarks`](BTreeBenchmarks.cs) | class | Measures committing and rolling back prepared changes on transactional profiles |
 
 ## Implementations and storage
 

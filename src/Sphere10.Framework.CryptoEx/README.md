@@ -4,6 +4,31 @@
 
 Sphere10.Framework.CryptoEx adds elliptic-curve cryptography, PascalCoin compatibility and further hash functions to Sphere10 Framework. It provides ECDSA and ECIES on four curves and BIP-340 Schnorr and MuSig signatures on secp256k1, and it registers these schemes and its hash functions with the core `Signers` and `Hashers` registries. Use it when an application signs, verifies or encrypts with elliptic-curve keys, or needs a `CHF` hash function that the core library does not register.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.CryptoEx` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Attributes](Attributes/README.md) | Attributes that attach a BouncyCastle curve name, an OpenSSL curve identifier, the group order and the prime field to each `ECDSAKeyType` value. | [source](Attributes/) |
+| [Bitcoin](Bitcoin/README.md) | Base58 encoding and decoding of byte arrays that follows Bitcoin Core's implementation. | [source](Bitcoin/) |
+| [CHF](CHF/README.md) | Hash-function adapters over HashLib4CSharp and Blake2Fast, BouncyCastle digests for Grindahl-512, Haval and RadioGatun32, and the RandomHash proof-of-work algorithms. | [source](CHF/) |
+| [EC](EC/README.md) | ECDSA on four named curves, BIP-340 Schnorr and MuSig multi-signatures on secp256k1, and the PascalCoin-compatible ECIES that both signature schemes expose. | [source](EC/) |
+| [HF](HF/README.md) | MurmurHash3 in its x86 32-bit form, implemented as a BouncyCastle digest. | [source](HF/) |
+| [IES](IES/README.md) | The integrated encryption scheme cipher, engine, parameter and ephemeral-key types on which the elliptic-curve `ECIES` is built. | [source](IES/) |
+| [Misc](Misc/README.md) | Conversions between BouncyCastle `BigInteger` values and fixed-length unsigned big-endian byte arrays. | [source](Misc/) |
+| [PascalCoin](PascalCoin/README.md) | PascalCoin's ECIES engine and key-derivation function, and its Base58, Pascal64 and PascalAscii string encodings. | [source](PascalCoin/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers ECDSA on four curves and secp256k1 Schnorr with `Signers` and the HashLib4CSharp and Blake2Fast hash functions with `Hashers`, with static `InitializeInternal` for hosts without the framework builder |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

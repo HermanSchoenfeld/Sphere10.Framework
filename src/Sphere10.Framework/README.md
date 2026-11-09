@@ -9,6 +9,73 @@
 
 ---
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Attributes](Attributes/README.md) | Declarative attributes for default dates, encrypted string members, enum error messages and metadata, and file extensions. | [source](Attributes/) |
+| [Cache](Cache/README.md) | Synchronized in-memory caches that fetch values on a miss and evict them under expiration, staleness and capacity policies. | [source](Cache/) |
+| [ClusteredStreams](ClusteredStreams/README.md) | Multiplexes any number of resizable logical streams onto one root `Stream` through linked chains of fixed-size clusters, with pluggable attachments for indexes and other reserved data. | [source](ClusteredStreams/) |
+| [Collections](Collections/README.md) | Provides long-indexed extended lists and collections, B-trees, paged, file-mapped and stream-mapped storage, and observable, synchronized and projected wrappers over lists, dictionaries, sets, queues and stacks. | [source](Collections/) |
+| [Comparers](Comparers/README.md) | Reusable `IComparer<T>` and `IEqualityComparer<T>` implementations for sequences, byte arrays, tuples, projections and composed orderings. | [source](Comparers/) |
+| [ComponentModel](ComponentModel/README.md) | Data-binding lists, type converters and value validators for editors that convert between display strings and typed values. | [source](ComponentModel/) |
+| [Conversion](Conversion/README.md) | Endian-aware conversion between primitive values and bytes, and exact decimal text for `double` values. | [source](Conversion/) |
+| [Crypto](Crypto/README.md) | Hash functions, digital signature schemes, post-quantum one-time signatures, random number generators, key derivation, encryption and verifiable random functions. | [source](Crypto/) |
+| [DataSource](DataSource/README.md) | The `IDataSource<TItem>` CRUD, paging and change-notification contract, its synchronous and asynchronous base classes, list and array storage, and the refreshable and polling decorators. | [source](DataSource/) |
+| [Disposables](Disposables/README.md) | Base classes and small adapters that implement `IDisposable` and `IAsyncDisposable` together, with a single cleanup hook in the direction the resource needs. | [source](Disposables/) |
+| [Drawing](Drawing/README.md) | Platform-neutral enumerations that describe how an image is resized into a requested size. | [source](Drawing/) |
+| [Encoding](Encoding/README.md) | Text encodings of binary data in hexadecimal, Base32 and Base62. | [source](Encoding/) |
+| [Environment](Environment/README.md) | Runtime and process facilities: external command execution, single-instance enforcement, running-process data, runtime queries and debugging scratch state. | [source](Environment/) |
+| [Events](Events/README.md) | Sender-free event delegates, call-argument payloads and before and after event arguments for intercepted operations. | [source](Events/) |
+| [Exceptions](Exceptions/README.md) | Argument and invariant guards, the `SoftwareException` hierarchy and helpers that run actions while capturing or ignoring their exceptions. | [source](Exceptions/) |
+| [Extensions](Extensions/README.md) | Extension methods over BCL and Framework types, from strings, dates, sequences and streams to the decorator activators that wrap collections, comparers and serializers. | [source](Extensions/) |
+| [Filter](Filter/README.md) | A serializable filter and sort model that compiles into LINQ expressions for in-memory sequences and `IQueryable` sources. | [source](Filter/) |
+| [Framework](Framework/README.md) | The module configuration contract through which a package initializes and finalizes its Framework services. | [source](Framework/) |
+| [Functional](Functional/README.md) | Generic arithmetic and comparison operators compiled from expression trees, and helpers that build and wrap delegates. | [source](Functional/) |
+| [IO](IO/README.md) | File-system utilities, endian-aware binary readers and writers, file content caches, file descriptors for paged and transactional storage, and multi-file transactions. | [source](IO/) |
+| [Introspection](Introspection/README.md) | Compiled-expression reflection accessors with process-wide caches, and the `Tools.Reflection` helpers built on them. | [source](Introspection/) |
+| [Keys](Keys/README.md) | Value-type compound keys of two, three or four ordered components for dictionaries and B-tree indexes. | [source](Keys/) |
+| [Loadable](Loadable/README.md) | The `ILoadable` contract for objects that load their state on demand, with base classes that pair synchronous and asynchronous loading. | [source](Loadable/) |
+| [Logging](Logging/README.md) | The `ILogger` abstraction with console, debug, file, rolling-file, text-writer and delegate sinks, prefixing and threading decorators, and the application-wide `SystemLog`. | [source](Logging/) |
+| [Mapping](Mapping/README.md) | Member models resolved from lambda expressions, with accessors that read and write a single member or a chain of members. | [source](Mapping/) |
+| [Maths](Maths/README.md) | A Q31.32 fixed-point type, running statistics, numerical integration and arc length, fast approximations, pseudo-random generators and power-of-two partitions. | [source](Maths/) |
+| [Memory](Memory/README.md) | Memory-size units and conversions, readable byte counts, primitive sizes and a union that reinterprets one array reference as another element type. | [source](Memory/) |
+| [Merkle](Merkle/README.md) | Dynamic merkle trees that hash leaf digests into a root and generate and verify existence, consistency, contains, update, append and delete proofs, with merkleized lists, sets, dictionaries and paged buffers. | [source](Merkle/) |
+| [Misc](Misc/README.md) | Small shared policies, sort options, authentication results, a cycle detector, a decaying gauge, recursive data, UI target references and obfuscated URL identifiers. | [source](Misc/) |
+| [Network](Network/README.md) | URL parsing and building, MIME types, SMTP mail, file download, host diagnostics such as DNS, ping, traceroute and WHOIS, passive DNS and TLS ClientHello decoding, and a polling data source for probe sessions. | [source](Network/) |
+| [ObjectSpaces](ObjectSpaces/README.md) | An embedded, indexed store of typed CLR objects over clustered streams, in memory or in a transactional file. | [source](ObjectSpaces/) |
+| [ObjectStream](ObjectStream/README.md) | A list-like store of serialized objects over clustered streams, with observer hooks and projection indexes kept in attachments of the same storage. | [source](ObjectStream/) |
+| [Objects](Objects/README.md) | Reflection-based object cloning, deep comparison, attribute-driven defaults and encryption, and the `Tools.Object` helpers that front them. | [source](Objects/) |
+| [Peripherals](Peripherals/README.md) | Platform-neutral keyboard and mouse event models, key and scan codes, and the device-hook contracts that native hooks implement. | [source](Peripherals/) |
+| [Persistable](Persistable/README.md) | The `IPersistable` contract for objects that both load and save their state, with sync, async and decorator bases. | [source](Persistable/) |
+| [Protocol](Protocol/README.md) | Message protocols of typed commands, request and response exchanges, two- and three-way handshakes and numbered modes, run by a `ProtocolOrchestrator` over a `ProtocolChannel` byte transport. | [source](Protocol/) |
+| [Repository](Repository/README.md) | The `IRepository<TEntity, TIdentity>` CRUD contract with paired synchronous and asynchronous members, base classes, a dictionary adapter and decorators. | [source](Repository/) |
+| [Saveable](Saveable/README.md) | The `ISaveable` contract for objects that write their state on demand, with base classes that pair synchronous and asynchronous saving. | [source](Saveable/) |
+| [Scheduler](Scheduler/README.md) | Timer-driven scheduling of one-shot and recurring jobs, with fluent job builders and XML-serializable job surrogates. | [source](Scheduler/) |
+| [Scopes](Scopes/README.md) | Disposable scope values that release a lock, rental, page, stream position or custom finalizer, plus call-context scopes that share one root across nested calls. | [source](Scopes/) |
+| [Serialization](Serialization/README.md) | Binary item serializers for values, collections, tuples, references and polymorphic object graphs, with a type-code registry, a member-by-member builder and item hashers and checksummers. | [source](Serialization/) |
+| [Sizing](Sizing/README.md) | Item sizers that compute the serialized byte size of values, the sizing half of every item serializer. | [source](Sizing/) |
+| [Spans](Spans/README.md) | Endian-aware sequential reading of primitive values from byte spans, and span helpers in `Tools.Spans`. | [source](Spans/) |
+| [Streams](Streams/README.md) | `Stream` implementations, stream decorators and `Tools.Streams` helpers for bounded, buffered, encrypted, hashed, concurrent, fragmented and blocking streams. | [source](Streams/) |
+| [Text](Text/README.md) | String formatting with named tokens, type-converter parsing, casing and inflection, tokenizing, keyword extraction, Unicode block ranges and a fluent regular-expression builder. | [source](Text/) |
+| [TextWriters](TextWriters/README.md) | `TextWriter` sinks for the console, debug output, files, string builders and delegates, plus multicast, time-stamping and transforming decorators. | [source](TextWriters/) |
+| [Threading](Threading/README.md) | Lock owners that hand out disposable scopes, serial and producer-consumer execution primitives, throttles and `Tools.Threads` helpers. | [source](Threading/) |
+| [Transactions](Transactions/README.md) | Commit and rollback contracts, nested call-context transactional scopes, and file-backed transactional buffers, streams, lists, dictionaries and hash sets. | [source](Transactions/) |
+| [Types](Types/README.md) | Runtime type helpers for resolving types by name, constructing instances, converting values, setting properties, switching on a value's type and supplying component-model type converters. | [source](Types/) |
+| [Values](Values/README.md) | Value types and helpers for deferred values, operation results, variable-length integers, GUID generation, bit manipulation, value ranges and the `Tools.Time`, `Tools.Enums` and `Tools.Values` utilities. | [source](Values/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Sphere10FrameworkDefaults`](Sphere10Defaults.cs) | static class | Library-wide default constants for buffer and page sizes, cluster sizes, container policies, endianness, hash function, B-tree orders, ObjectSpace settings, cache reap level and attachment names. |
+<!-- domains:end -->
+
 ## 📋 Project Overview
 
 Sphere10 Framework is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.

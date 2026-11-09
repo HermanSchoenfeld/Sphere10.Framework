@@ -1,10 +1,23 @@
-# Parameter studies and verifiable evidence
+# Parameter Studies
 
-The `study` command screens actual parameter configurations using the same
-ObjectSpace and B-tree fixtures as the BenchmarkDotNet domains. It retains every
-measured batch, exact settings and correctness outcome. Recommendations are
-computed from those outputs. Tests verify the recorded evidence and show the
-tables in Visual Studio Test Explorer; unit tests never silently run benchmarks.
+Screens parameter configurations with retained, verifiable timing samples and reports the evidence and recommendations.
+
+The `study` command screens actual parameter configurations using the same ObjectSpace and B-tree fixtures as the BenchmarkDotNet domains. It retains every measured batch, exact settings and correctness outcome. Recommendations are computed from those outputs. Tests verify the recorded evidence and show the tables in Visual Studio Test Explorer, and unit tests never silently run benchmarks.
+
+`PerformanceStudy.Run` creates or reads a `StudyPlan` of `StudyCase`s, measures each case and writes `StudyResult`s with their `StudySample`s. `StudyEvidence` reads, formats and writes that evidence and computes `StudyRecommendation`s. `RetainedPerformanceReports.Write` prints the tables for `study --report`. The cases reuse the [B-tree](../BTrees/README.md) and [ObjectSpace](../ObjectSpaces/README.md) settings and fixtures.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`PerformanceStudy`](PerformanceStudy.cs) | static class | Entry point of the `study` command that creates or replays a plan, runs warmup and sample rounds in randomized order and writes the evidence |
+| [`RetainedPerformanceReports`](RetainedPerformanceReports.cs) | static class | Prints a retained evidence directory: the default-selection manifest, recomputed screening tables and BenchmarkDotNet Full JSON reports |
+| [`StudyCase`](StudyEvidence.cs) | class | One measured case: domain, workload and the single-profile ObjectSpace or B-tree settings it runs, with its comparison group |
+| [`StudyEvidence`](StudyEvidence.cs) | static class | Reads and writes plans and results, formats result tables and recommends a winner and its statistically indistinguishable rivals per comparison group |
+| [`StudyPlan`](StudyEvidence.cs) | class | Replayable screening plan with warmup and sample counts, random seed, output and data directories and cases |
+| [`StudyRecommendation`](StudyEvidence.cs) | class | Winning case id of a comparison group and the ids whose intervals overlap it |
+| [`StudyResult`](StudyEvidence.cs) | class | Samples and outcome of one case, with mean, standard deviation, confidence half-width, allocations, drift check and eligibility |
+| [`StudySample`](StudyEvidence.cs) | class | One measured batch: round, elapsed ticks, nanoseconds, allocated bytes, GC collections and checksum |
 
 ## View results in Visual Studio
 

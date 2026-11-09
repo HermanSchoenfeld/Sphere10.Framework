@@ -1,5 +1,7 @@
 # Settings
 
+Typed per-user and machine-wide settings objects with their storage providers, caching and encryption, plus helpers that read .NET configuration files.
+
 The settings library stores typed preferences for the current user, or for every user of a machine, and restores them in later sessions. Use it for remembered choices and small configuration values in any Sphere10 application, with or without a user interface. Keep business data in the application's own storage.
 
 Each set of preferences is a `SettingsObject` subclass. The static `UserSettings` and `GlobalSettings` facades load and create these objects through an `ISettingsProvider`, which the [Application module](../ModuleConfiguration.cs) installs when the framework starts. The settings types live in the `Sphere10.Framework.Application` package and namespace.
@@ -187,3 +189,29 @@ dotnet test tests/Sphere10.Framework.Application.Tests/Sphere10.Framework.Applic
 ```
 
 A persistence test should read the next session through a new provider instance, because a `CachedSettingsProvider` would return its cached object without reading the file.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`AppSettingAttribute`](AppSettingAttribute.cs) | class | `DefaultValueAttribute` whose value is read from `ConfigurationManager.AppSettings` under a key |
+| [`AsyncSettingsProviderBase`](AsyncSettingsProviderBase.cs) | abstract class | Provider base for asynchronous storage, whose synchronous members wait for the asynchronous operation on a worker |
+| [`BaseSettingsServices`](BaseSettingsServices.cs) | abstract class | `ISettingsServices` base with abstract user and system providers and the `ConfigurationChanged` notification |
+| [`CachedSettingsProvider`](CachedSettingsProvider.cs) | class | Decorator that keeps one shared settings object per type and ID and attaches itself to the records it creates or loads |
+| [`DirectoryFileSettingsProvider`](DirectoryFileSettingsProvider.cs) | class | Synchronous provider that stores each record as an indented JSON `.setting` file in a directory and still reads XML records |
+| [`DirectorySettingsProviderPolicy`](DirectorySettingsProviderPolicy.cs) | enum | Directory provider options: `CreateDirectoryIfNotExists`, `UseFullyQualifiedTypeNameInFilename` and `Default` |
+| [`GenericSectionHandler`](GenericSectionHandler.cs) | class | `IConfigurationSectionHandler` that deserializes a configuration section with `XmlSerializer`, with static `GetConfig<T>` |
+| [`Global<T>`](Global.cs) | class | Service-collection wrapper that marks its `Item` as the machine-wide instance, such as the global `ISettingsProvider` |
+| [`GlobalSettings`](GlobalSettings.cs) | static class | Facade over the machine-wide provider with `Get`, `Has` and `Clear` |
+| [`ISettingsProvider`](ISettingsProvider.cs) | interface | Storage contract for creating, checking, loading, saving, deleting and clearing settings in synchronous and asynchronous forms |
+| [`ISettingsServices`](ISettingsServices.cs) | interface | Injectable access to the `UserSettings` and `SystemSettings` providers with a `ConfigurationChanged` event |
+| [`Local<T>`](Local.cs) | class | Service-collection wrapper that marks its `Item` as the per-user instance, such as the user `ISettingsProvider` |
+| [`ProhibitedSettingsProvider`](ProhibitedSettingsProvider.cs) | class | Provider that rejects every operation with `NotSupportedException`, for hosts that must not store settings |
+| [`SettingsObject`](SettingsObject.cs) | abstract class | Base of every settings record, with `ID`, `Provider`, `Load`, `Save`, `SaveAsync`, `Delete`, `Validate` and `OnChanged` |
+| [`SettingsObjectJsonSerializer`](SettingsObjectJsonSerializer.cs) | class | JSON serializer for settings records that skips transient and runtime members and writes no CLR type names |
+| [`SettingsProviderBase`](SettingsProviderBase.cs) | abstract class | Shared provider identity, provider attachment, encryption and `Changed` notification for both storage directions |
+| [`SettingsProviderDecorator`](SettingsProviderDecorator.cs) | class | Forwards every provider member and notification to an `Inner` provider in both directions |
+| [`StandardSettingsServices`](StandardSettingsServices.cs) | class | `ISettingsServices` built from the registered `Global<ISettingsProvider>` and `Local<ISettingsProvider>` |
+| [`SyncSettingsProviderBase`](SyncSettingsProviderBase.cs) | abstract class | Provider base for synchronous storage, whose asynchronous members run the synchronous operation on a worker |
+| [`Tools.Config`](ConfigTool.cs) | tools | `GetAppSetting` reads an `appSettings` value as a string or a parsed struct with a fallback default |
+| [`UserSettings`](UserSettings.cs) | static class | Facade over the current user's provider with synchronous and asynchronous `Get`, `Has` and `Clear`, and `UseProvider` for an asynchronous flow |

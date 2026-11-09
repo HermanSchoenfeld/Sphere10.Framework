@@ -8,6 +8,32 @@ The project combines reversible operations, an in-memory linear chain, a graph o
 
 Your application supplies block validation, identity rules, fork selection, persistence, and networking.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Consensus` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Blockchain](Blockchain/README.md) | Generic contracts and implementations for reversible ledger operations, blocks, a linear chain, a graph of competing branches, finalization and reorganization. | [source](Blockchain/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ASERT2`](ASERT2.cs) | class | ASERT difficulty adjustment that measures the interval between the two newest block timestamps |
+| [`ASERTConfiguration`](ASERTConfiguration.cs) | class | Target block time and relaxation time of the ASERT algorithms, both defaulting to zero |
+| [`ASERT_RTT`](ASERT_RTT.cs) | class | ASERT difficulty adjustment that measures the interval from the newest block timestamp to the current UTC time |
+| [`CryptoTool`](CryptoTool.cs) | static class | Derives a 32-bit lookup checksum of a secret and indexed child digests with double SHA2-256 |
+| [`ICompactTargetAlgorithm`](ICompactTargetAlgorithm.cs) | interface | Converts proof-of-work targets between compact 32-bit, numeric and 32-byte digest forms and aggregates them |
+| [`ICompactTargetAlgorithmExtensions`](ICompactTargetAlgorithmExtensions.cs) | static class | `ToDigest` overloads that allocate and return the 32-byte target digest |
+| [`IDAAlgorithm`](IDAAlgorithm.cs) | interface | Difficulty adjustment contract that calculates the next compact target from newest-first block timestamps |
+| [`MolinaTargetAlgorithm`](MolinaTargetAlgorithm.cs) | class | PascalCoin-style compact target encoding in which a higher compact value means a harder target |
+| [`PeriodicStatistics`](HashStats.cs) | class | Start-once statistics collector for timed periods, whose period history is not yet implemented |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash
@@ -489,10 +515,7 @@ The library is included in both main solutions, but its test project is only in 
 | [Blockchain/](Blockchain/) | State/operation/block contracts, base classes, linear chain, candidate graph, finalization, weights, and Merkle helpers |
 | [MolinaTargetAlgorithm.cs](MolinaTargetAlgorithm.cs) | PascalCoin-style compact targets and digest conversion |
 | [ICompactTargetAlgorithm.cs](ICompactTargetAlgorithm.cs) / [extensions](ICompactTargetAlgorithmExtensions.cs) | Target representation contract and allocating digest helpers |
-| [IDAAlgorithm.cs](IDAAlgorithm.cs) | Difficulty adjustment contract |
 | [ASERT_RTT.cs](ASERT_RTT.cs) / [ASERT2.cs](ASERT2.cs) | Wall-clock and block-to-block adjustment variants |
-| [ASERTConfiguration.cs](ASERTConfiguration.cs) | Block interval and relaxation configuration |
-| [CryptoTool.cs](CryptoTool.cs) | Checksum and indexed child-digest derivation |
 | [HashStats.cs](HashStats.cs) | `PeriodicStatistics` lifecycle and unfinished history support |
 | [DESIGN.md](DESIGN.md) | Broader design background and intended architecture |
 | [Consensus tests](../../tests/Sphere10.Framework.Consensus.Tests/) | NUnit fixtures and the reference account ledger |

@@ -4,6 +4,17 @@ A minimal .NET 10 ASP.NET Core MVC host referencing [Sphere10.Framework.Web.AspN
 
 This utility is not a NuGet package. It has no configured database, external service or application credentials.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Utils.MvcTester` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Controllers](Controllers/README.md) | The MVC controllers of the tester host, currently a single landing-page controller. | [source](Controllers/) |
+| [Views](Views/README.md) | The Razor views of the tester host, currently the landing page of the home controller. | [source](Views/) |
+<!-- domains:end -->
+
 ## Run the tester
 
 Install the .NET 10 SDK. Run commands **from the repository root**; the first run restores the project references and NuGet dependencies.
@@ -30,8 +41,6 @@ The HTTPS profile needs a usable development certificate. The explicit HTTP comm
 
 | Location | Responsibility |
 | --- | --- |
-| [Program.cs](Program.cs) | Registers controllers/views and Sphere10 Framework with the ASP.NET Core module that ends the framework when the host stops, starts the framework, and maps conventional MVC routing. |
-| [Controllers/HomeController.cs](Controllers/HomeController.cs) | Returns the landing view from `Index`. |
 | [Views/Home/Index.cshtml](Views/Home/Index.cshtml) | Complete HTML landing page with `Layout = null`. |
 | [Sphere10.Framework.Utils.MvcTester.csproj](Sphere10.Framework.Utils.MvcTester.csproj) | Web SDK host targeting `net10.0`, with a reference to the MVC library and packaging disabled. |
 

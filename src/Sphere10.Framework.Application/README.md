@@ -6,6 +6,39 @@
 
 Sphere10.Framework.Application enables **rapid application development** by providing a complete infrastructure for **service composition, settings persistence, initialization/finalization pipelines, and modular configuration**—all integrated with Microsoft.Extensions.DependencyInjection.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Application` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Attributes](Attributes/README.md) | Assembly attributes that declare a product's identity, links, distribution, help resources and settings secret, and class attributes that declare screen settings and user-editable values. | [source](Attributes/) |
+| [CommandLine](CommandLine/README.md) | A bundled copy of the CommandLineParser library, which maps command-line arguments onto attributed option classes, reports parse errors and builds help screens. | [source](CommandLine/) |
+| [Core](Core/README.md) | Running-instance detection, the automatic-start scope enumeration and the default product-services aggregate. | [source](Core/) |
+| [Extensions](Extensions/README.md) | Extension methods for service collections and service providers, JSON HTTP responses and configuration connection strings. | [source](Extensions/) |
+| [Framework](Framework/README.md) | The module contract that lets a library register its services before the framework builds the service provider. | [source](Framework/) |
+| [IoC](IoC/README.md) | Registration and lookup of several implementations of one service type by name, on top of Microsoft.Extensions.DependencyInjection. | [source](IoC/) |
+| [Lifecycle](Lifecycle/README.md) | Startup and shutdown task contracts with synchronous and asynchronous bases, the `Tools.Application` task runners, progress reporting, automatic-start helpers and the application version type. | [source](Lifecycle/) |
+| [Logging](Logging/README.md) | A rolling-file logger configured from a `LoggingConfiguration` section of an `app.config` or `web.config` file. | [source](Logging/) |
+| [Product](Product/README.md) | Product identity read from assembly attributes or supplied in code, usage counters, running-instance counts, string-token resolvers and the records of support requests. | [source](Product/) |
+| [Rest](Rest/README.md) | A JSON-over-HTTP client with typed GET, POST, PATCH and DELETE calls relative to a base URL. | [source](Rest/) |
+| [Settings](Settings/README.md) | Typed per-user and machine-wide settings objects with their storage providers, caching and encryption, plus helpers that read .NET configuration files. | [source](Settings/) |
+| [Support](Support/README.md) | The optional transport contract for feature requests, comments, bug reports and crash reports, and the feature-request record. | [source](Support/) |
+| [UI](UI/README.md) | UI-independent contracts, bases, fluent builders, decorators and the screen-host engine for applications made of plugins, blocks, menus, screens and wizards, which the WinForms and Blazor adapters implement. | [source](UI/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Application module with priority `int.MinValue` that registers default settings, product, help, website and duplicate-process services, token resolvers and the usage initializer, then installs the settings providers and the settings secret |
+| [`Sphere10Framework`](Sphere10Framework.cs) | class | Process framework singleton `Instance` that starts and ends the modules and process tasks, owns its `Disposables`, raises lifecycle events and creates rolling-file application loggers |
+| [`Sphere10FrameworkBuilder`](Sphere10FrameworkBuilder.cs) | class | Fluent framework startup: `AddModule`, `AddServices`, `UseAssemblyInfo`, `WithProductInformation`, `WithOptions`, `RegisterModules` and `Start` with an owned or external service provider |
+| [`Sphere10FrameworkOptions`](Sphere10FrameworkOptions.cs) | enum | Framework option flags: `Default` or `EnsureSystemDataDirGloballyAccessible` |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

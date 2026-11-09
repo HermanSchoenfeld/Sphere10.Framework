@@ -4,6 +4,27 @@
 
 This library provides web models and formatting helpers that need no ASP.NET Core host. Use it for sitemaps, navigation trees, user messages and display formatting in any .NET application. It is the lowest of the Framework's web layers and references only `Sphere10.Framework`. Hosting, HTTP and session integration live in [Sphere10.Framework.Web.AspNetCore](../Sphere10.Framework.Web.AspNetCore/README.md).
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Web` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [ExternalLibs](ExternalLibs/README.md) | Typed models for two client-side libraries, the Animate.css class names and the obsolete jQuery DataTables server-side protocol. | [source](ExternalLibs/) |
+| [Presentation](Presentation/README.md) | Host-independent web models for navigation menus and messages shown to a user. | [source](Presentation/) |
+| [Processing](Processing/README.md) | An attribute that names the request parameter an enum member stands for. | [source](Processing/) |
+| [Sitemap](Sitemap/README.md) | An XML sitemap model that serializes to the standard sitemaps.org `urlset` document. | [source](Sitemap/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Tools.Web.Html`](HtmlTool.cs) | tools | Display formatting through `Percent` and `Beautify`, and Animate.css class strings through `AnimationClass`, `RandomEntryAnimationClass` and `RandomExitAnimationClass`. |
+<!-- domains:end -->
+
 ## Features
 
 | API | Purpose |

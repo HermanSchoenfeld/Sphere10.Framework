@@ -4,6 +4,37 @@
 
 Sphere10.Framework.Windows.LevelDB is a .NET wrapper for Google's LevelDB, an embedded key-value store that keeps its keys in sorted order. Use it on Windows when an application needs a local, persistent map from string or byte-array keys to values, with atomic batches, ordered iteration and consistent snapshots.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.LevelDB` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Resources](Resources/README.md) | Holds the 32-bit and 64-bit native `LevelDB.dll` builds that the project embeds as resources. | [source](Resources/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`Cache`](Cache.cs) | class | Native LRU block cache of a fixed byte capacity, assigned through `Options.Cache` |
+| [`Comparator`](Comparator.cs) | class | Named custom key order built from an `IComparer<NativeArray>` or `Comparison<NativeArray>`, assigned through `Options.Comparator` |
+| [`CompressionLevel`](CompressionLevel.cs) | enum | Block compression choice: `NoCompression` or `SnappyCompression` |
+| [`DB`](DB.cs) | class | Open LevelDB database with string and byte-array `Put`, `Get`, `Delete`, batch `Write`, iterators, snapshots, properties and static `Repair` and `Destroy` |
+| [`Env`](Env.cs) | class | Handle to LevelDB's default operating-system environment for file and background work, assigned through `Options.Env` |
+| [`Iterator`](Iterator.cs) | class | Cursor over entries in key order with `Seek`, `SeekToFirst`, `SeekToLast`, `Next`, `Prev` and key and value accessors |
+| [`LevelDBException`](LevelDBException.cs) | class | Error reported by the native library, raised by `Check` when a call returns an error pointer |
+| [`LevelDBHandle`](LevelDBHandle.cs) | abstract class | Disposable base for every wrapper that owns a native handle and frees it in `FreeUnManagedObjects` |
+| [`LevelDBInterop`](LevelDBInterop.cs) | static class | P/Invoke declarations for the LevelDB C API, with a static constructor that extracts and loads the embedded x86 or x64 `LevelDB.dll` |
+| [`Options`](Options.cs) | class | Database open settings such as `CreateIfMissing`, buffer and block sizes, compression, cache, comparator and environment |
+| [`ReadOptions`](ReadOptions.cs) | class | Read settings for checksum verification, cache filling and reading from a `SnapShot` |
+| [`SnapShot`](SnapShot.cs) | class | Immutable point-in-time view of a `DB`, released through its parent database when disposed |
+| [`WriteBatch`](WriteBatch.cs) | class | Chainable list of puts and deletes that `DB.Write` applies atomically in order, with an `Iterate` callback walk |
+| [`WriteOptions`](WriteOptions.cs) | class | Write settings, currently `Sync`, which flushes each write to disk before it completes |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

@@ -4,6 +4,29 @@ Build and run `Sphere10.Framework.Utils.WinFormsTester.csproj` on Windows. The a
 
 `Program.cs` loads two application plugins through `AddWinFormsApplicationPlugin`. **Workspace demonstrations**, configured by `WinFormsDemoPlugin.Configure`, contributes Workspace and Notes. **Component demonstrations**, configured by `WinFormsComponentDemoPlugin.Configure`, contributes Controls, Data And Collections, Integration, and Utilities. Both appear in `IApplication.LoadedPlugins`; each block's `Source` identifies its contributing plugin. The application's live `Blocks` array supplies six independent bottom-left navigation buttons in the same order. Startup selects Settings from the Workspace block.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Utils.WinFormsTester` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [Lifecycle](Lifecycle/README.md) | Plugin initializers and finalizers that log startup and shutdown progress, and the lifetime that completes demonstration output before shutdown. | [source](Lifecycle/) |
+| [Resources](Resources/README.md) | Images and sounds embedded through `Properties/Resources.resx` for the tester's block buttons, menus, toolbars and sound demonstrations. | [source](Resources/) |
+| [Screens](Screens/README.md) | The tester's demonstration screens, with the sample entities, data sources, helper controls and streams they use. | [source](Screens/) |
+| [Wizard](Wizard/README.md) | The pages and model of the demonstration wizard opened from **Workspace > Wizard > Demo Wizard**. | [source](Wizard/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Module configuration that registers the usage-count initializer and installs the application's Views menu through `WinFormsDemoPlugin.ConfigureApplicationCommands` during initialization. |
+| [`WinFormsComponentDemoPlugin`](WinFormsComponentDemoPlugin.cs) | static class | Configures the Component demonstrations plugin with its Controls, Data And Collections, Integration and Utilities blocks, lifecycle tasks and output lifetime. |
+| [`WinFormsDemoPlugin`](WinFormsDemoPlugin.cs) | static class | Configures the Workspace demonstrations plugin with its Workspace and optional Notes blocks, the demo wizard and the screen-mode commands. |
+<!-- domains:end -->
+
 ## Plugin lifecycle and splash
 
 Each plugin calls `WithName(...)` before registering two initializers and two finalizers from the [Lifecycle folder](Lifecycle) through `AddInitializer<T>()` and `AddFinalizer<T>()`. Calling either helper, including its factory overload, before declaring a name throws `InvalidOperationException` immediately. Registrations use the built plugin's name as their service key; duplicate plugin names are rejected during loading.

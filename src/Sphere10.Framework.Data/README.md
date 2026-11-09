@@ -4,6 +4,39 @@
 
 **Database-agnostic data access layer** providing the `IDAC` interface, SQL builders, transaction scopes, schema introspection, and data format utilities for CSV, JSON, and XML.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Data` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+| [ADO.NET](ADO.NET/README.md) | Decorators and helpers over `System.Data` connections, transactions, readers and file-backed `DataSet` persistence. | [source](ADO.NET/) |
+| [Binding](Binding/README.md) | A list-binding adapter that exposes a `System.Data.DataView` through the Framework `IBoundList` contract. | [source](Binding/) |
+| [CSV](CSV/README.md) | Fast CSV parsing with a forward-only reader, a cached random-access reader, and configurable error handling. | [source](CSV/) |
+| [DAC](DAC/README.md) | The `IDAC` data access component contract, its base class and decorators, a provider factory, and the query extension methods built on it. | [source](DAC/) |
+| [Database](Database/README.md) | Database lifecycle contracts for creating, checking, populating and dropping application databases, plus the `DBMSType` provider enumeration. | [source](Database/) |
+| [Exceptions](Exceptions/README.md) | Data-layer exceptions for lookups that expect exactly one record. | [source](Exceptions/) |
+| [Extensions](Extensions/README.md) | Extension methods for `DataRow`, `DataTable`, `DataSet`, `IDataReader`, schema objects and LINQ queries. | [source](Extensions/) |
+| [FileStore](FileStore/README.md) | Keyed file stores that map application keys to files under a base directory and open them as streams. | [source](FileStore/) |
+| [JSON](JSON/README.md) | JSON serialization through `Tools.Json` and a small `IJsonSerializer` abstraction with decorator and encryption support. | [source](JSON/) |
+| [SQLBuilder](SQLBuilder/README.md) | A fluent, dialect-aware SQL script builder with provider dialects, decorators for batching, paging and table-based variables, and command and specification objects. | [source](SQLBuilder/) |
+| [Schema](Schema/README.md) | An in-memory model of a relational database schema with tables, columns, keys, constraints, triggers and dependency analysis. | [source](Schema/) |
+| [Scopes](Scopes/README.md) | `DACScope`, the ambient connection and transaction scope that every [DAC](DAC/README.md) command runs inside. | [source](Scopes/) |
+| [XML](XML/README.md) | XML serialization through `Tools.Xml`, a deep object-graph serializer, an XML-file-backed dictionary and supporting XML value types. | [source](XML/) |
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`BulkInsertOptions`](BulkInsertOptions.cs) | enum | Flags for `IDAC.BulkInsert` that keep source identity values or maintain foreign keys. |
+| [`DataTableCellInfo`](DataTableCellInfo.cs) | class | Column name, cell value and visibility used by `Tools.Data.CreateDataTable` and `DataTableExtensions.ToDataTable` to build rows. |
+| [`SequentialSqlGuidGenerator`](SequentialSqlGuidGenerator.cs) | class | `ISequentialGuidGenerator` that pre-generates a batch of GUIDs and returns them in SQL Server `uniqueidentifier` sort order, regenerating when empty if configured. |
+| [`Tools.Data`](DataTool.cs) | tools | Reads CSV into a `DataTable`, writes CSV rows and fields, creates tables for types, reads and writes `DataSet` streams, builds `DataView` filter expressions, samples rows and evaluates `DataTable` expressions. |
+<!-- domains:end -->
+
 ## 📦 Installation
 
 ```bash

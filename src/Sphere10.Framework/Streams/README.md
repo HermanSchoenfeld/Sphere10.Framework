@@ -1,38 +1,61 @@
 # Streams
 
+`Stream` implementations, stream decorators and `Tools.Streams` helpers for bounded, buffered, encrypted, hashed, concurrent, fragmented and blocking streams.
+
 This folder holds the core library's `Stream` implementations, stream
 decorators and stream helpers. They belong to the `Sphere10.Framework`
 namespace in the `Sphere10.Framework` package, except the static
 `Tools.Streams` helpers.
 
-## Types
-
-| Type | Purpose |
-|---|---|
-| `StreamDecorator<TStream>`, `StreamDecorator` | Abstract base that forwards every member to an inner stream, so a subclass overrides only what it changes. |
-| `BufferedStream` | Bounded read-ahead and optional length caching, described [below](#bufferedstream). |
-| `BoundedStream<TStream>`, `BoundedStream` | Confines reads and writes to a segment of the inner stream, with absolute or relative addressing. |
-| `ReadOnlyStream`, `WriteOnlyStream` | Reject writes or reads with `NotSupportedException`. |
-| `NonClosingStream` | Leaves the inner stream open when it is closed or disposed. |
-| `ConcurrentStream` | Throws `InvalidOperationException` from every member unless the calling thread holds the scope from `EnterAccessScope()`. |
-| `EncryptedStream` | Length-preserving AES-CTR encryption with random access. It stores no header, padding or authentication tag, so authenticate the ciphertext separately. |
-| `HashingStream` | Write-only stream that hashes the written bytes and returns the digest from `GetDigest()`. |
-| `StreamProfiler` | Records the bytes read between `StartListening()` and `StopListening()`. |
-| `ExtendedMemoryStream` | Memory stream over an `IBuffer` rather than one contiguous array. |
-| `FragmentedStream` | One logical stream over the fragments of an `IStreamFragmentProvider`, such as `ByteArrayStreamFragmentProvider`. |
-| `BitStream` | Reads and writes bits in a byte array. |
-| `BlockingStream` | In-memory channel whose reads block until a writer adds data or calls `SetEndOfStream()`. |
-| `BackgroundOutputStream` | Queues writes and copies them to another stream on a thread-pool thread. |
-| `StreamPipeline` | Connects synchronous stream filters through `BlockingStream` channels. |
-| `StreamMappedProperty<T>` | Reads and writes one serialized value at a fixed stream offset, as [mapped properties](../../../docs/usage/keys-graphs-and-stream-properties.md) describes. |
-| `IStreamProvider` | Opens read and write streams for one resource. |
-
-`StreamDecoratorExtensions` provides fluent wrappers such as `AsBounded`,
-`AsReadOnly`, `AsWriteOnly`, `AsNonClosing`, `AsConcurrent` and
-`AsTransactional`. `Tools.Streams` provides helpers such as `RouteStream`,
-`ReadByteArray`, `ShiftBytes`, `CompareStreams` and `GZipCompress`. The NUnit
+Most types here are decorators. `StreamDecorator<TStream>` forwards every
+member to an inner stream, and each decorator overrides only what it changes.
+A decorator usually comes in a generic form that keeps the inner stream's
+type and a non-generic form over `Stream`. `StreamDecoratorExtensions`
+provides fluent wrappers such as `AsBounded`, `AsReadOnly`, `AsWriteOnly`,
+`AsNonClosing`, `AsConcurrent`, `AsTransactional` and `OnDispose`.
+`Tools.Streams` provides helpers such as `RouteStream`, `ReadByteArray`,
+`ShiftBytes`, `CompareStreams` and `GZipCompress`. The serializers in
+[Serialization](../Serialization/README.md) read and write through these
+streams, and `TransactionalStream` in
+[Transactions](../Transactions/README.md) adds commit and rollback. The NUnit
 fixtures for these types are in
 [tests/Sphere10.Framework.Tests/Streams](../../../tests/Sphere10.Framework.Tests/Streams).
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`BackgroundOutputStream`](BackgroundOutputStream.cs) | class | Queues writes and copies them to another stream on a thread-pool thread. |
+| [`BitStream`](BitStream.cs) | class | Reads and writes bits in a byte array. |
+| [`BlockingStream`](BlockingStream.cs) | class | In-memory channel whose reads block until a writer adds data or calls `SetEndOfStream()`. |
+| [`BoundedStream`](BoundedStream.cs) | class | `BoundedStream<Stream>` over any stream. |
+| [`BoundedStream<TStream>`](BoundedStream.cs) | class | Confines reads and writes to a segment of the inner stream, with absolute or relative addressing. |
+| [`BufferedStream`](BufferedStream.cs) | class | Bounded read-ahead and optional length caching, described [below](#bufferedstream). |
+| [`ByteArrayStreamFragmentProvider`](ByteArrayStreamFragmentProvider.cs) | class | `IStreamFragmentProvider` over a list of byte arrays that creates new fragments with a size or generator you choose. |
+| [`ConcurrentStream`](ConcurrentStream.cs) | class | Throws `InvalidOperationException` from every member unless the calling thread holds the scope from `EnterAccessScope()`. |
+| [`EncryptedStream`](EncryptedStream.cs) | class | `EncryptedStream<Stream>` over any stream. |
+| [`EncryptedStream<TStream>`](EncryptedStream.cs) | class | Length-preserving AES-CTR encryption with random access. It stores no header, padding or authentication tag, so authenticate the ciphertext separately. |
+| [`ExtendedMemoryStream`](ExtendedMemoryStream.cs) | class | Memory stream over an `IBuffer` rather than one contiguous array. |
+| [`FragmentedStream`](FragmentedStream.cs) | class | One logical stream over the fragments of an `IStreamFragmentProvider`, such as `ByteArrayStreamFragmentProvider`. |
+| [`HashingStream`](HashingStream.cs) | class | Write-only stream that hashes the written bytes and returns the digest from `GetDigest()`. |
+| [`IStreamFragmentProvider`](IStreamFragmentProvider.cs) | interface | Maps non-contiguous byte fragments into one logically contiguous byte range for `FragmentedStream`. |
+| [`IStreamProvider`](IStreamProvider.cs) | interface | Opens read and write streams for one resource. |
+| [`NonClosingStream`](NonClosingStream.cs) | class | `NonClosingStream<Stream>` over any stream. |
+| [`NonClosingStream<TInner>`](NonClosingStream.cs) | class | Leaves the inner stream open when it is closed or disposed. |
+| [`OnDisposeStream`](OnDisposeStream.cs) | class | `OnDisposeStream<Stream>` over any stream. |
+| [`OnDisposeStream<TInner>`](OnDisposeStream.cs) | class | Runs an action with the inner stream when the decorator is disposed, then disposes as usual. |
+| [`ReadOnlyStream`](ReadOnlyStream.cs) | class | `ReadOnlyStream<Stream>` over any stream. |
+| [`ReadOnlyStream<TStream>`](ReadOnlyStream.cs) | class | Rejects writes with `NotSupportedException`. |
+| [`StreamDecorator`](StreamDecorator.cs) | abstract class | `StreamDecorator<Stream>` for decorators that do not need the inner stream's type. |
+| [`StreamDecorator<TStream>`](StreamDecorator.cs) | abstract class | Abstract base that forwards every member to an inner stream, so a subclass overrides only what it changes. |
+| [`StreamDecoratorExtensions`](DecoratorExtensions.cs) | static class | Fluent `OnDispose`, `AsBounded`, `AsTransactional`, `AsNonClosing`, `ToNonClosing`, `AsReadOnly`, `AsWriteOnly` and `AsConcurrent` wrappers. |
+| [`StreamMappedProperty`](StreamMappedProperty.cs) | static class | `From` and `At` factories that map a property onto a caller-owned stream. |
+| [`StreamMappedProperty<T>`](StreamMappedProperty.cs) | class | Reads and writes one serialized value at a fixed stream offset, as [mapped properties](../../../docs/usage/keys-graphs-and-stream-properties.md) describes. |
+| [`StreamPipeline`](StreamPipeline.cs) | class | Connects synchronous stream filters through `BlockingStream` channels. |
+| [`StreamProfiler`](StreamProfiler.cs) | class | Records the bytes read between `StartListening()` and `StopListening()`. |
+| [`Tools.Streams`](StreamTool.cs) | tools | Stream routing, byte-array reading, byte shifting, comparison, file writing, GZip and symmetric encryption helpers. |
+| [`WriteOnlyStream`](WriteOnlyStream.cs) | class | `WriteOnlyStream<Stream>` over any stream. |
+| [`WriteOnlyStream<TStream>`](WriteOnlyStream.cs) | class | Rejects reads with `NotSupportedException`. |
 
 ## BufferedStream
 

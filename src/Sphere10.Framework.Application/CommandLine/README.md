@@ -1,4 +1,8 @@
-This folder bundles the MIT-licensed [CommandLineParser](https://github.com/commandlineparser/commandline) library by Giacomo Stelluti Scala and contributors, under the licence in [License.md](License.md). The rest of this file is the upstream README, so its badges, NuGet commands, platform list and contribution notes describe the upstream project. The bundled copy differs as follows:
+# Command-line parsing
+
+A bundled copy of the CommandLineParser library, which maps command-line arguments onto attributed option classes, reports parse errors and builds help screens.
+
+This folder bundles the MIT-licensed [CommandLineParser](https://github.com/commandlineparser/commandline) library by Giacomo Stelluti Scala and contributors, under the licence in [License.md](License.md). The [upstream README](#upstream-readme) section below reproduces the upstream project's README, so its badges, NuGet commands, platform list and contribution notes describe the upstream project. The bundled copy differs as follows:
 
 - It is compiled into `Sphere10.Framework.Application` and ships in that package for `net10.0`, plus `net11.0` when a .NET 11 SDK builds it. Do not also reference the `CommandLineParser` package, because both define the same `CommandLine` types.
 - The types keep their upstream namespaces. Import `CommandLine` for `Parser`, `ParserSettings` and the `[Option]`, `[Value]` and `[Verb]` attributes, and `CommandLine.Text` for `HelpText`.
@@ -7,6 +11,72 @@ This folder bundles the MIT-licensed [CommandLineParser](https://github.com/comm
 - The automatic help screen takes its heading from the `{ProductName}` and `{ProductVersion}` tokens and its copyright line from `{CopyrightNotice}`. The Application module registers resolvers for these tokens when the framework starts, so a help screen built before then shows the bare token names.
 
 The [Application guide](../README.md#-command-line-parsing) shows the parser in a Sphere10 application.
+
+## Contents
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`BadFormatConversionError`](Error.cs) | class | Error for a value that cannot be converted to its option's type |
+| [`BadFormatTokenError`](Error.cs) | class | Error for an invalid token |
+| [`BadVerbSelectedError`](Error.cs) | class | Error for an unknown verb |
+| [`BaseAttribute`](BaseAttribute.cs) | abstract class | Shared option and value syntax: required, minimum and maximum counts, default, help text, meta value, hidden and localization resource type |
+| [`CastExtensions`](CastExtensions.cs) | static class | `CanCast<T>` and `Cast<T>` that also use a type's implicit and explicit conversion operators |
+| [`Error`](Error.cs) | abstract class | Base of all parse errors, with an `ErrorType` tag and a stop-processing flag |
+| [`ErrorType`](Error.cs) | enum | Discriminator of the `Error` subclasses |
+| [`GroupOptionAmbiguityError`](Error.cs) | class | Error for an option that declares both an option group and a mutually exclusive set |
+| [`HelpRequestedError`](Error.cs) | class | Error raised when the user asks for help |
+| [`HelpTextExtensions`](HelpTextExtensions.cs) | static class | `IsHelp`, `IsVersion` and `Output` on a sequence of errors, which choose standard output or standard error |
+| [`HelpVerbRequestedError`](Error.cs) | class | Error raised when the user asks for help on a verb |
+| [`InvalidAttributeConfigurationError`](Error.cs) | class | Error for `Option` or `Value` attributes that are set incorrectly for their type |
+| [`MissingGroupOptionError`](Error.cs) | class | Error raised when no option of a required option group has a value |
+| [`MissingRequiredOptionError`](Error.cs) | class | Error raised when a required option is missing |
+| [`MissingValueOptionError`](Error.cs) | class | Error raised when an option lacks its value |
+| [`MultipleDefaultVerbsError`](Error.cs) | class | Error raised when more than one verb is marked as the default |
+| [`MutuallyExclusiveSetError`](Error.cs) | class | Error raised when options from different mutually exclusive sets are combined |
+| [`NameInfo`](NameInfo.cs) | class | Short and long option names carried by named errors |
+| [`NamedError`](Error.cs) | abstract class | Base of the errors that refer to an option by name |
+| [`NoVerbSelectedError`](Error.cs) | class | Error raised when no verb is given |
+| [`NotParsed<T>`](ParserResult.cs) | class | Failed `ParserResult<T>` that carries the parse errors |
+| [`NullInstance`](NullInstance.cs) | class | Placeholder result type when verb parsing fails |
+| [`OptionAttribute`](OptionAttribute.cs) | class | Declares a property as a named option with a short and long name, set name, group and separator |
+| [`Parsed<T>`](ParserResult.cs) | class | Successful `ParserResult<T>` that carries the populated options instance |
+| [`Parser`](Parser.cs) | class | Disposable parser with a static `Default` instance and `ParseArguments` for one options type, a factory or several verb types |
+| [`ParserExtensions`](ParserExtensions.cs) | static class | Generic `ParseArguments<T1, T2>` to `ParseArguments<T1, ..., T16>` overloads for verb types |
+| [`ParserResult<T>`](ParserResult.cs) | abstract class | Base parse result with its `Tag` and `TypeInfo` |
+| [`ParserResultExtensions`](ParserResultExtensions.cs) | static class | `WithParsed`, `WithNotParsed`, `MapResult` and their asynchronous forms in [ParserResultExtensionsAsync.cs](ParserResultExtensionsAsync.cs) |
+| [`ParserResultType`](ParserResult.cs) | enum | `Parsed` or `NotParsed` |
+| [`ParserSettings`](ParserSettings.cs) | class | Parser options such as case sensitivity, help writer, width, enum handling and unknown-argument handling |
+| [`RepeatedOptionError`](Error.cs) | class | Error raised when an option is repeated |
+| [`SequenceOutOfRangeError`](Error.cs) | class | Error raised when a sequence value has too few or too many elements |
+| [`SetValueExceptionError`](Error.cs) | class | Error raised when setting a property throws |
+| [`TokenError`](Error.cs) | abstract class | Base of the errors about a bad token |
+| [`TypeInfo`](ParserResult.cs) | class | The parsed type and the candidate verb types of a result |
+| [`UnknownOptionError`](Error.cs) | class | Error raised for an unknown option |
+| [`UnParserExtensions`](UnParserExtensions.cs) | static class | `FormatCommandLine`, `FormatCommandLineArgs` and `SplitArgs`, which turn an options instance back into arguments |
+| [`UnParserSettings`](UnParserExtensions.cs) | class | Formatting options for unparsing: short names, grouped switches, equal-sign tokens, hidden options and skipped defaults |
+| [`ValueAttribute`](ValueAttribute.cs) | class | Declares a property as a positional value at an index with a meta name |
+| [`VerbAttribute`](VerbAttribute.cs) | class | Declares an options class as a verb with a name, aliases, help text and an optional default flag |
+| [`VersionRequestedError`](Error.cs) | class | Error raised when the user asks for the version |
+
+### Text
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`AssemblyLicenseAttribute`](Text/AssemblyLicenseAttribute.cs) | class | Multiline license text shown on the help screen |
+| [`AssemblyUsageAttribute`](Text/AssemblyUsageAttribute.cs) | class | Multiline usage text shown on the help screen |
+| [`ComparableOption`](Text/HelpText.cs) | struct | Option description that `HelpText.OptionComparison` uses to order the help screen |
+| [`CopyrightInfo`](Text/CopyrightInfo.cs) | class | Copyright line of the help screen |
+| [`Example`](Text/Example.cs) | class | Command-line usage example with help text and sample options |
+| [`HeadingInfo`](Text/HeadingInfo.cs) | class | Program name and version heading of the help screen |
+| [`HelpText`](Text/HelpText.cs) | class | Builds help screens, including `AutoBuild` from a parse result |
+| [`MultilineTextAttribute`](Text/MultiLineTextAttribute.cs) | abstract class | Base of attributes that hold up to five lines of text |
+| [`SentenceBuilder`](Text/SentenceBuilder.cs) | abstract class | Replaceable sentences and error messages used to build the help screen |
+| [`TextWrapper`](Text/TextWrapper.cs) | class | Word-wraps and indents blocks of text |
+| [`UsageAttribute`](Text/UsageAttribute.cs) | class | Marks a static property that yields `Example` instances for the usage section |
+
+The `Core` folder holds the tokenizer, specification, mapping and instance-building code, and all of its types are internal.
+
+## Upstream README
 
 ---
 

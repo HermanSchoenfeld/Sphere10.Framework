@@ -4,6 +4,25 @@
 
 `Sphere10.Framework.Windows.Forms.Oracle` provides Windows Forms editors for Oracle connection settings in desktop applications that use Sphere10 Framework data access. Use `OracleConnectionBar` where a compact one-row editor fits, and `OracleConnectionPanel` on a settings page or in a dialog. Both build a connection string for Oracle's managed driver from a host and service or from an existing data source, test it on request and create an `OracleDAC` from it.
 
+<!-- domains:begin -->
+## Domains
+
+Every folder of `Sphere10.Framework.Windows.Forms.Oracle` is a domain with its own README, which lists all of its public types.
+
+| Domain | What it provides | Source |
+|---|---|---|
+
+### Project root
+
+Types declared in the project folder itself:
+
+| Type | Kind | Purpose |
+|---|---|---|
+| [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Registers `OracleConnectionBar` and `OracleConnectionPanel` as named transient `ConnectionBarBase` and `ConnectionPanelBase` services under `DBMSType.Oracle`. |
+| [`OracleConnectionBar`](OracleConnectionBar.cs) | class | One-row `ConnectionBarBase` editor for the Oracle host, port, service name, user name and password that builds the connection string through `Tools.Oracle` and creates an `OracleDAC`. Assigning a connection string shows only its data source, user name and password. |
+| [`OracleConnectionPanel`](OracleConnectionPanel.cs) | class | Larger `ConnectionPanelBase` editor with the same fields as `OracleConnectionBar`, for a settings page or dialog. |
+<!-- domains:end -->
+
 ## Reference the package
 
 Add the package from your configured feed, and keep its version in step with your other Sphere10 Framework packages:
