@@ -1548,6 +1548,8 @@ public static partial class WinAPI {
 		public const int CBN_DROPDOWN = 7;
 		public const int CBN_CLOSEUP = 8;
 		public const int GWL_STYLE = -16;
+		public const int GWL_EXSTYLE = -20;
+		public const uint WS_CHILD = 0x40000000;
 		public const int WS_MINIMIZE = 0x20000000;
 		public const int WS_MAXIMIZE = 0x01000000;
 		public const int WS_EX_LAYOUTRTL = 0x400000;
