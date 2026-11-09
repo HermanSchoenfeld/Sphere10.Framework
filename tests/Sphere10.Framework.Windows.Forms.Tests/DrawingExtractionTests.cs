@@ -117,6 +117,63 @@ public class DrawingExtractionTests {
 		Assert.That(rectangle.RoundValue, Is.EqualTo(0.25));
 	}
 
+	[TestCase(-0.001d)]
+	[TestCase(1.001d)]
+	[TestCase(double.NaN)]
+	public void RoundedRectangleConstructorRejectsAnInvalidRoundValue(double value) {
+		Assert.That(() => new RoundedRectangle(new Rectangle(0, 0, 20, 10), value), Throws.TypeOf<ApplicationException>());
+	}
+
+	[Test]
+	public void ColorGradientStepsEvenlyToTheEndColor() {
+		var gradient = Tools.Drawing.CalculateColorGradient(Color.FromArgb(255, 0, 0), Color.FromArgb(0, 0, 255), 5);
+
+		Assert.That(gradient.Select(color => (int)color.R), Is.EqualTo(new[] { 255, 191, 127, 63, 0 }));
+		Assert.That(gradient.Select(color => (int)color.B), Is.EqualTo(new[] { 0, 63, 127, 191, 255 }));
+		Assert.That(Tools.Drawing.CalculateMiddleColor(Color.FromArgb(0, 0, 0), Color.FromArgb(200, 100, 50)), Is.EqualTo(Color.FromArgb(100, 50, 25)));
+	}
+
+	[Test]
+	public void CopyRegionCopiesTheRequestedSection() {
+		using var source = new Bitmap(20, 20);
+		using (var graphics = Graphics.FromImage(source)) {
+			graphics.Clear(Color.White);
+			graphics.FillRectangle(Brushes.Red, 10, 10, 5, 5);
+		}
+
+		using var copy = GraphicsExtensions.CopyRegion(source, new Rectangle(10, 10, 5, 5));
+
+		Assert.That(copy.Size, Is.EqualTo(new Size(5, 5)));
+		Assert.That(Pixels(copy), Is.All.EqualTo(Color.Red.ToArgb()));
+	}
+
+	[Test]
+	public void ByteArrayImageRemainsUsableAfterConversion() {
+		using var source = new Bitmap(4, 3);
+		source.SetPixel(1, 1, Color.Red);
+
+		using var image = source.ToByteArray().ToImage();
+		using var copy = new Bitmap(image);
+
+		Assert.That(copy.Size, Is.EqualTo(new Size(4, 3)));
+		Assert.That(copy.GetPixel(1, 1).ToArgb(), Is.EqualTo(Color.Red.ToArgb()));
+	}
+
+	[Test]
+	public void FocusZoomAppliesTheRequestedResizeMethodToAClippedArea() {
+		using var source = new Bitmap(20, 10, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+		using (var graphics = Graphics.FromImage(source))
+			graphics.Clear(Color.Red);
+
+		// Focusing on the left edge clips the 10 x 5 area to 5 x 5, which padded fitting centers.
+		using var zoomed = source.FocusZoom(2, 0, 5, ResizeMethod.AspectFitPadded, ResizeAlignment.CenterCenter, InterpolationMode.NearestNeighbor, Color.Blue);
+
+		Assert.That(zoomed.Size, Is.EqualTo(source.Size));
+		Assert.That(zoomed.GetPixel(0, 5).ToArgb(), Is.EqualTo(Color.Blue.ToArgb()));
+		Assert.That(zoomed.GetPixel(10, 5).ToArgb(), Is.EqualTo(Color.Red.ToArgb()));
+		Assert.That(zoomed.GetPixel(19, 5).ToArgb(), Is.EqualTo(Color.Blue.ToArgb()));
+	}
+
 	[TestCase(FontStyle.Bold)]
 	[TestCase(FontStyle.Italic | FontStyle.Underline)]
 	public void RichTextAppendRetainsNativeFormattingAfterItsTemporaryFontIsDisposed(FontStyle style) {

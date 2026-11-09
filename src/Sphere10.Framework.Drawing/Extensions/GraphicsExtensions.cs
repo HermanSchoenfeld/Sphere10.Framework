@@ -20,6 +20,8 @@ namespace Sphere10.Framework;
 [SupportedOSPlatform("windows")]
 public static class GraphicsExtensions {
 	// Auxillary Fields & Methods
+	// GDI+ objects are not thread-safe, so every use of the shared measurement bitmap holds this lock.
+	private static readonly object _measurementLock = new object();
 	private static readonly Bitmap _measurementBitmap = new Bitmap(1, 1);
 
 	/// <summary>Fills a fractional rounded rectangle within its inclusive pixel boundary.</summary>
@@ -85,10 +87,7 @@ public static class GraphicsExtensions {
 		var bitmap = new Bitmap(section.Width, section.Height);
 		using (var graphics = Graphics.FromImage(bitmap)) {
 			// Draw the specified section of the source bitmap to the new one
-			graphics.DrawImage(sourceBitmap, section.X, section.Y);
-
-			// Clean up
-			graphics.Dispose();
+			graphics.DrawImage(sourceBitmap, new Rectangle(0, 0, section.Width, section.Height), section, GraphicsUnit.Pixel);
 		}
 		// Return the bitmap
 		return bitmap;
@@ -131,6 +130,7 @@ public static class GraphicsExtensions {
 	public static int GetSizedStringHeight(string text, Font textFont) {
 		int height;
 
+		lock (_measurementLock)
 		using (var measurementGraphics = Graphics.FromImage(_measurementBitmap))
 			height = (int)measurementGraphics.MeasureString(text, textFont).Height + 5;
 
@@ -138,6 +138,7 @@ public static class GraphicsExtensions {
 	}
 
 	public static SizeF GetEllipsisStringMeasure(int width, string text, Font textFont) {
+		lock (_measurementLock)
 		using (var measurementGraphics = Graphics.FromImage(_measurementBitmap)) {
 			text = EllipsisWord(width, text, textFont);
 			var result = measurementGraphics.MeasureString(text, textFont);
@@ -150,6 +151,7 @@ public static class GraphicsExtensions {
 		var resultBuilder = new StringBuilder();
 		var lineBuilder = new StringBuilder();
 
+		lock (_measurementLock)
 		using (var measurementGraphics = Graphics.FromImage(_measurementBitmap)) {
 			if (measurementGraphics.MeasureString(text, textFont).Width < width)
 				return text;
@@ -180,6 +182,7 @@ public static class GraphicsExtensions {
 		var formattedText = "";
 
 		// Fit words to each measured line, splitting oversized words when needed.
+		lock (_measurementLock)
 		using (var measurementGraphics = Graphics.FromImage(_measurementBitmap)) {
 			var words = text.Split(' ');
 			foreach (var word in words) {

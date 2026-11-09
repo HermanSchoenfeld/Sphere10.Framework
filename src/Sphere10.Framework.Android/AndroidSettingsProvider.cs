@@ -19,7 +19,7 @@ using Sphere10.Framework.Application;
 
 namespace Sphere10.Framework.Android {
 
-	public class AndroidSettingsProvider : DirectorySettingsProvider {
+	public class AndroidSettingsProvider : DirectoryFileSettingsProvider {
 		private const string AppSettingsFolderName = "ApplicationSettings";
 		public AndroidSettingsProvider()
 			: base(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppSettingsFolderName)) {

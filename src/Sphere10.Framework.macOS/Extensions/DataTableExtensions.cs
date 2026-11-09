@@ -16,7 +16,7 @@ using System.Collections.Specialized;
 using System.Data;
 using Sphere10.Framework;
 
-namespace BW.Cranewatch.Data {
+namespace Sphere10.Framework.Data {
 	public static class DataTableExtensions {
 
 		/// <summary>

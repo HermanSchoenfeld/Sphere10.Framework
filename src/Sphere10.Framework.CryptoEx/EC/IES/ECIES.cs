@@ -11,9 +11,11 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Agreement;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using Sphere10.Framework.CryptoEx.IES;
 using Sphere10.Framework.CryptoEx.PascalCoin;
+using SchnorrScheme = Sphere10.Framework.CryptoEx.EC.Schnorr.Schnorr;
 
 namespace Sphere10.Framework.CryptoEx.EC.IES;
 
@@ -25,7 +27,7 @@ public sealed class ECIES : IIESAlgorithm {
 		Guard.ArgumentLTE(message.Length, PascalCoinIesEngine.MaxPlaintextLength, nameof(message), "PascalCoin supports messages of at most 32,000 bytes.");
 		// Encryption
 		var cipherEncrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-		cipherEncrypt.Init(true, ((ECDSA.PublicKey)publicKey).Parameters, GetPascalCoinIesParameterSpec(), SecureRandom);
+		cipherEncrypt.Init(true, GetParameters(publicKey), GetPascalCoinIesParameterSpec(), SecureRandom);
 		return cipherEncrypt.DoFinal(message.ToArray());
 	}
 
@@ -33,7 +35,7 @@ public sealed class ECIES : IIESAlgorithm {
 		try {
 			// Decryption
 			var cipherDecrypt = new IesCipher(GetEciesPascalCoinCompatibilityEngine());
-			cipherDecrypt.Init(false, ((ECDSA.PrivateKey)privateKey).Parameters, GetPascalCoinIesParameterSpec(), SecureRandom);
+			cipherDecrypt.Init(false, GetParameters(privateKey), GetPascalCoinIesParameterSpec(), SecureRandom);
 			decryptedMessage = cipherDecrypt.DoFinal(encryptedMessage.ToArray());
 			return true;
 		} catch (Exception) {
@@ -42,6 +44,19 @@ public sealed class ECIES : IIESAlgorithm {
 			return false;
 		}
 	}
+
+	// A BIP-340 public key is the even-Y point of its private key, and ECDH uses only the X coordinate, so Schnorr keys agree like ECDSA keys
+	private static ECPublicKeyParameters GetParameters(IPublicKey publicKey) => publicKey switch {
+		ECDSA.PublicKey ecdsaKey => ecdsaKey.Parameters,
+		SchnorrScheme.PublicKey schnorrKey => schnorrKey.Parameters,
+		_ => throw new ArgumentException($"ECIES does not support {publicKey?.GetType().Name ?? "null"} keys", nameof(publicKey))
+	};
+
+	private static ECPrivateKeyParameters GetParameters(IPrivateKey privateKey) => privateKey switch {
+		ECDSA.PrivateKey ecdsaKey => ecdsaKey.Parameters,
+		SchnorrScheme.PrivateKey schnorrKey => schnorrKey.Parameters,
+		_ => throw new ArgumentException($"ECIES does not support {privateKey?.GetType().Name ?? "null"} keys", nameof(privateKey))
+	};
 
 	private static PascalCoinIesEngine GetEciesPascalCoinCompatibilityEngine() {
 		// Set up IES Cipher Engine For Compatibility With PascalCoin

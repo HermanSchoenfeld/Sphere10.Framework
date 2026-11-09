@@ -25,7 +25,7 @@ public class ASERT_RTT : IDAAlgorithm {
 
 	public ASERTConfiguration Config { get; }
 
-	public bool RealTime => true;
+	public virtual bool RealTime => true;
 
 	//ASERT Head time to current time
 	public virtual uint CalculateNextBlockTarget(IEnumerable<DateTime> previousBlockTimestamps, uint previousCompactTarget, uint blockNumber) {

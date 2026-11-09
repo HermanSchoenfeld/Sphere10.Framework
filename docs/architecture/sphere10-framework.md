@@ -16,7 +16,7 @@
 
 ## Introduction
 
-Sphere10 Framework is a **mature, production-ready .NET 8.0+ framework** designed for building high-performance applications across desktop, mobile, and web platforms. It provides low-level primitives and high-level abstractions that work together to solve common development challenges.
+Sphere10 Framework is a **.NET framework** for building high-performance desktop, web and service applications. Its libraries target `net10.0`, plus `net11.0` when built with a .NET 11 SDK. It provides low-level primitives and high-level abstractions that work together to solve common development challenges.
 
 ### What Makes It Different
 
@@ -27,7 +27,7 @@ Unlike application frameworks that impose structure on your code, Sphere10 Frame
 - **ACID transactional primitives** — scopes, streams, and collections with commit/rollback semantics
 - **Multi-database abstraction** — unified API across SQLite, SQL Server, Firebird, and NHibernate
 - **Cryptographic toolkit** — hashing, signatures, key derivation, and post-quantum algorithms
-- **Cross-platform support** — Windows, macOS, Linux, iOS, Android from a single codebase
+- **Cross-platform support** — Windows, macOS and Linux from a single codebase; the legacy iOS and Android sources are not built
 
 ### Target Use Cases
 
@@ -35,7 +35,7 @@ Unlike application frameworks that impose structure on your code, Sphere10 Frame
 - **High-volume data processing** — streaming, paging, and memory-efficient operations
 - **Distributed systems** — merkle proofs, integrity verification, P2P networking
 - **Enterprise applications** — multi-database support, transactional consistency
-- **Cross-platform applications** — desktop, mobile, and web from shared code
+- **Cross-platform applications** — desktop and web from shared code
 
 ---
 
@@ -338,9 +338,9 @@ Each provider implements the interface while exposing provider-specific features
 |---------|----------|---------|
 | Sphere10.Framework.Windows | Windows | Registry, services, events, LevelDB |
 | Sphere10.Framework.Windows.Forms | Windows | Desktop UI components |
-| Sphere10.Framework.iOS | iOS | Xamarin.iOS integration |
-| Sphere10.Framework.Android | Android | Xamarin.Android integration |
-| Sphere10.Framework.macOS | macOS | Xamarin.macOS integration |
+| Sphere10.Framework.iOS | iOS | Legacy Xamarin.iOS source, not built by either solution |
+| Sphere10.Framework.Android | Android | Legacy Xamarin.Android source, not built by either solution |
+| Sphere10.Framework.macOS | macOS | Legacy MonoMac source with no project file |
 
 ### Conditional Compilation
 

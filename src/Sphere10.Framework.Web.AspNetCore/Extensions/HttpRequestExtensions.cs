@@ -20,7 +20,8 @@ public static class HttpRequestExtensions {
 		var uriBuilder = new UriBuilder {
 			Scheme = request.Scheme,
 			Host = request.Host.Host,
-			Port = request.Host.Port.GetValueOrDefault(80),
+			// -1 selects the scheme's default port when the host carries none
+			Port = request.Host.Port ?? -1,
 			Path = request.Path.ToString(),
 			Query = request.QueryString.ToString()
 		};
@@ -43,16 +44,19 @@ public static class HttpRequestExtensions {
 
 	public static async Task<string> ToStringAsync(this HttpRequest request) {
 		var requestString = new StringBuilder();
-		requestString.Append($"{request.Method} {request.Path}{request.QueryString} HTTP/{request.Protocol}\n");
+		requestString.Append($"{request.Method} {request.Path}{request.QueryString} {request.Protocol}\n");
 		foreach (var header in request.Headers)
 			requestString.Append($"{header.Key}: {header.Value}\n");
 		requestString.Append("\n");
 		if (!request.Body.CanRead)
 			return requestString.ToString();
+		var startPosition = request.Body.CanSeek ? request.Body.Position : -1;
 		// Leave the body stream open so it's still available for further processing.
 		using var reader = new StreamReader(request.Body, leaveOpen: true);
 		var body = await reader.ReadToEndAsync();
-		// Reset the request body stream position so the next middleware can read it.
+		// Restore a seekable (buffered) body's position so the next reader can read it.
+		if (startPosition >= 0)
+			request.Body.Position = startPosition;
 		requestString.Append(body);
 		return requestString.ToString();
 	}

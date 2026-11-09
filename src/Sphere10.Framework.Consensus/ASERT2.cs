@@ -18,6 +18,9 @@ public class ASERT2 : ASERT_RTT {
 		: base(targetAlgorithm, configuration) {
 	}
 
+	// Uses only block timestamps, never the current time
+	public override bool RealTime => false;
+
 	//ASERT Head-1 time to Head time
 	public override uint CalculateNextBlockTarget(IEnumerable<DateTime> previousBlockTimestamps, uint previousCompactTarget, uint blockNumber) {
 		if (previousBlockTimestamps.Count() < 2)

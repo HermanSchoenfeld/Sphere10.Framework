@@ -304,7 +304,8 @@ public class HelpText {
 			auto.Heading = StringFormatter.FormatEx("{ProductName} v{ProductVersion}");
 			auto.Copyright = StringFormatter.FormatEx("{CopyrightNotice}");
 		} catch (Exception) {
-			auto = onError(auto);
+			if (onError != null)
+				auto = onError(auto);
 		}
 
 		var errors = Enumerable.Empty<Error>();

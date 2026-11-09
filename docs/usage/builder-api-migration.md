@@ -71,11 +71,8 @@ each graph, rather than changing a source reference to point at the last graph.
 ## Consumer inventory
 
 The coordinated migration includes Framework source, tests, demonstrations,
-recipes and package-consumer samples; System Expert and File Server Migrator;
-AutoMouse; Dewatering Pipeline Designer; Enterprise's native and Blazor hosts;
-the legacy sphere10.com desktop blocks; and Local Notion's module registration.
-Lumina has no Framework reference and uses none of these APIs. The registered
-historical AutoMouse QA checkout is not an independently active product.
+recipes and package-consumer samples. Applications built on Framework adopt
+the new names when they move to a Framework version that contains them.
 
 Source builds and package builds are distinct checks. Consumers must use mutually
 compatible candidate Framework packages when verifying the new source API in

@@ -31,10 +31,8 @@ public class ModuleConfiguration : CoreModuleConfigurationBase {
 		Signers.Register(DSS.ECDSA_SECP384R1, () => new ECDSA(ECDSAKeyType.SECP384R1));
 		Signers.Register(DSS.ECDSA_SECP521R1, () => new ECDSA(ECDSAKeyType.SECP521R1));
 		Signers.Register(DSS.ECDSA_SECT283K1, () => new ECDSA(ECDSAKeyType.SECT283K1));
+		// Schnorr implements BIP-340, which is defined only over secp256k1
 		Signers.Register(DSS.SCHNORR_SECP256k1, () => new Schnorr(ECDSAKeyType.SECP256K1));
-		Signers.Register(DSS.SCHNORR_SECP384R1, () => new Schnorr(ECDSAKeyType.SECP384R1));
-		Signers.Register(DSS.SCHNORR_SECP521R1, () => new Schnorr(ECDSAKeyType.SECP521R1));
-		Signers.Register(DSS.SCHNORR_SECT283K1, () => new Schnorr(ECDSAKeyType.SECT283K1));
 
 		if (Tools.Runtime.IsWasmExecutable()) {
 			Hashers.Register(CHF.SHA2_512, () => new HashLibAdapter(CreateSHA2_512()));

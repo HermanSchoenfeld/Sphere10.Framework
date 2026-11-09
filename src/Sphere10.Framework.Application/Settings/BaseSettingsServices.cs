@@ -11,21 +11,18 @@ using System;
 namespace Sphere10.Framework.Application;
 
 public abstract class BaseSettingsServices : ISettingsServices {
-	public event EventHandler ConfigurationChanged {
-		add => throw new NotImplementedException();
-		remove => throw new NotImplementedException();
-	}
-
-	protected virtual void OnConfigurationChanged() => throw new NotImplementedException();
-
-	public void NotifyConfigurationChangedEvent() {
-		throw new NotImplementedException();
-		//OnConfigurationChanged();
-		//ConfigurationChanged(this, EventArgs.Empty);
-	}
+	public event EventHandler ConfigurationChanged;
 
 	public abstract ISettingsProvider UserSettings { get; }
 
 	public abstract ISettingsProvider SystemSettings { get; }
+
+	public void NotifyConfigurationChangedEvent() {
+		OnConfigurationChanged();
+		ConfigurationChanged?.Invoke(this, EventArgs.Empty);
+	}
+
+	protected virtual void OnConfigurationChanged() {
+	}
 }
 

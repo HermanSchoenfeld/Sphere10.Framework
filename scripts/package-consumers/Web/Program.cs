@@ -25,16 +25,15 @@ builder.Services
 		.AddBlock(block => block
 			.WithId("package")
 			.WithName("Package block")
-			.WithDefaultScreen<WelcomeScreen>("Package screen")
+			.AddScreen<WelcomeScreen>(screen => screen
+				.WithTitle("Package screen")
+				.AsPermanentSingleton()
+			)
+			.WithDefaultScreen<WelcomeScreen>()
 			.AddMenu(menu => menu
 				.WithId("records")
 				.WithText("Records")
-				.AddItem(item => item
-					.WithId("grid")
-					.WithText("Package grid")
-					.WithScreen<WelcomeScreen>()
-					.AsPermanentSingleton()
-				)
+				.AddShowScreenItem<WelcomeScreen>("Package grid", id: "grid")
 			)
 		)
 	)

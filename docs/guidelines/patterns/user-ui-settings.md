@@ -67,8 +67,9 @@ with `ApplicationSettingsScreenPolicy` flags as described in
 
 ## Standalone settings
 
-Give settings types feature-specific names: the default file provider uses short
-type names, so unrelated nested types named `FormSettings` can collide. Supply a
+Give settings types feature-specific names: the default file provider names files
+by the type name without its namespace (a nested type keeps its declaring type, as
+in `Outer+FormSettings`), so same-named types in different namespaces collide. Supply a
 stable ID to distinguish records of one type. `Get<T>()` returns stored settings
 or provider-bound defaults; new objects are not saved automatically by the default
 provider. Cached values can be shared by type/ID.
@@ -219,10 +220,9 @@ Restoration, layout and provisional/cancelled wizard edits do not save.
 Optional preference errors appear in `LastSettingsError` while output remains usable.
 
 Turning Remember off deletes only this selector's record. Delete through its
-captured owning provider so `CachedSettingsProvider` also evicts the cache entry:
-the inner settings object's `Provider` can be the underlying file provider, whose
-`Delete()` alone would leave the decorator's cached copy discoverable in this
-session. Keep accepted models separate from the shared cached object until save.
+captured owning provider so `CachedSettingsProvider` also evicts the cache entry;
+records the cache creates or loads carry the cache as their `Provider`, so their
+own `Delete()` evicts it too. Keep accepted models separate from the shared cached object until save.
 Verify next-session behavior with a fresh provider, including remembered On/Off,
 consumer preflight, invalid options, cache eviction and unchanged-instance disposal.
 

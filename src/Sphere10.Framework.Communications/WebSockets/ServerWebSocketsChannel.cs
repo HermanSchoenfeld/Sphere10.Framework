@@ -33,7 +33,7 @@ public class ServerWebSocketsChannel : ProtocolChannel, IDisposable {
 	public string InternalId { get; init; }
 
 	public ServerWebSocketsChannel(IPEndPoint localEndpoint, IPEndPoint remoteEndpoint, bool secure, bool hub = false) {
-		if (Secure) {
+		if (secure) {
 			throw new NotImplementedException("Secure Websockets is not available yet");
 		}
 
@@ -134,7 +134,7 @@ public class ServerWebSocketsChannel : ProtocolChannel, IDisposable {
 		NetworkStream = TcpClient.GetStream();
 		// "ws" probably does nothing and should be ignored
 		WebSocket = WebSocket.CreateFromStream(NetworkStream, true, "ws", new TimeSpan(0, 30, 0)); // 30 Minute timeout, this seems to do nothing and is default at about 30 secs
-		DoHandshake(NetworkStream);
+		await DoHandshake(NetworkStream);
 
 		// send back the Id for this channel to the client
 		// if this could be done in the handshake, that would be even better
@@ -203,7 +203,7 @@ public class ServerWebSocketsChannel : ProtocolChannel, IDisposable {
 		ReceivedWebSocketMessage?.Invoke(result);
 	}
 
-	async static void DoHandshake(NetworkStream stream) {
+	async static Task DoHandshake(NetworkStream stream) {
 		using (var memoryStream = new MemoryStream()) {
 			var size = 0;
 			var buffer = new byte[1024];

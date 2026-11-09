@@ -43,7 +43,7 @@ public static class HtmlHelperExtensions {
 		attributes ??= new AttributeDictionary();
 		if (!attributes.ContainsKey("class"))
 			attributes["class"] = string.Empty;
-		attributes["class"] += $" label label-warning{"float-end".AsAmendmentIf(floatEnd)}";
+		attributes["class"] += $" badge bg-warning text-dark{"float-end".AsAmendmentIf(floatEnd)}";
 		return helper.ValidationMessageFor(expression, null, attributes?.ToDictionary(x => x.Key, x => x.Value as object));
 	}
 

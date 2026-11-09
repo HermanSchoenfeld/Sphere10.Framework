@@ -52,6 +52,8 @@ public class UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperation
 
 	public IReadOnlyDictionary<TBlockID, LinkedBlock<TBlock, TState, TBlockID, TWeight, TOperationID>> Nodes => _allNodes;
 
+	public IEqualityComparer<TBlockID> BlockIDComparer => _blockIDComparer;
+
 	/// <summary>
 	/// Sets the finalized (root) block. Clears all existing potential blocks.
 	/// The root's aggregated weight is set to the block's own weight (no parent to aggregate with).

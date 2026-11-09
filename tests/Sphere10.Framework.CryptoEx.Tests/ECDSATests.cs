@@ -97,6 +97,12 @@ public class ECDSATests {
 	}
 
 	[Test]
+	public void Traits_AreStatelessECDSAWithIES() {
+		var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+		Assert.That(ecdsa.Traits, Is.EqualTo(DigitalSignatureSchemeTraits.Stateless | DigitalSignatureSchemeTraits.ECDSA | DigitalSignatureSchemeTraits.SupportsIES));
+	}
+
+	[Test]
 	[TestCase(ECDSAKeyType.SECP256K1)]
 	[TestCase(ECDSAKeyType.SECP384R1)]
 	[TestCase(ECDSAKeyType.SECP521R1)]

@@ -8,6 +8,7 @@
 
 using System;
 using System.Data;
+using System.Linq;
 using NUnit.Framework;
 using System.IO;
 using Sphere10.Framework.Data.Tests.Properties;
@@ -116,6 +117,30 @@ public class SqliteDACTests {
 				File.Delete(dbFile);
 		}
 
+	}
+
+	[Test]
+	public void GetSchema_LowerCaseTextTypes_ReportUnboundedLength() {
+		const string tableDDL = @"CREATE TABLE [Table] (
+	ID INTEGER PRIMARY KEY AUTOINCREMENT,
+	Data1 varchar(20) NOT NULL,
+	Data2 text NULL
+)";
+		var dbFile = Tools.FileSystem.GenerateTempFilename();
+		try {
+			var dac = Tools.Sqlite.Create(dbFile);
+			dac.ExecuteNonQuery(tableDDL);
+
+			var columns = dac.GetSchema().Tables.Single(t => t.Name == "Table").Columns;
+
+			Assert.That(columns.Single(c => c.Name == "Data1").DataTypeLength, Is.EqualTo(int.MaxValue));
+			Assert.That(columns.Single(c => c.Name == "Data2").DataTypeLength, Is.EqualTo(int.MaxValue));
+			Assert.That(columns.Single(c => c.Name == "ID").DataTypeLength, Is.EqualTo(0));
+		} finally {
+			Tools.Sqlite.ClearAllPools();
+			if (File.Exists(dbFile))
+				File.Delete(dbFile);
+		}
 	}
 
 

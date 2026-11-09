@@ -37,6 +37,41 @@ public class FinalizedBlockchainTests {
 	}
 
 	[Test]
+	public void FinalizePath_DoesNotReapplySyncedRoot() {
+		var state = new AccountState();
+		var chain = new Blockchain<AccountBlock, AccountState, int, long, int>(state, new LongWeightAggregator());
+		var manager = new FinalizedBlockchain<AccountBlock, AccountState, int, long, int>(chain);
+
+		var root = manager.AddUnfinalizedRoot(new AccountBlock(new AccountOperation("alice", 100)));
+		var head1 = manager.AddUnfinalizedBlock(new AccountBlock(new AccountOperation("alice", 50)), root.Block.ID);
+		manager.FinalizePath(head1.Block.ID);
+
+		// The root is now the finalized head, so only the new block is applied
+		var head2 = manager.AddUnfinalizedBlock(new AccountBlock(new AccountOperation("alice", 25)), chain.Head.Block.ID);
+		var finalizedBlocks = manager.FinalizePath(head2.Block.ID);
+
+		Assert.That(chain.Height, Is.EqualTo(3L));
+		Assert.That(state.GetBalance("alice"), Is.EqualTo(175L));
+		Assert.That(finalizedBlocks, Has.Count.EqualTo(1));
+		Assert.That(finalizedBlocks[0], Is.SameAs(head2.Block));
+	}
+
+	[Test]
+	public void FinalizePath_DoesNotReapplyRootSetToAppliedHead() {
+		var state = new AccountState();
+		var chain = new Blockchain<AccountBlock, AccountState, int, long, int>(state, new LongWeightAggregator());
+		var manager = new FinalizedBlockchain<AccountBlock, AccountState, int, long, int>(chain);
+
+		manager.ApplyBlock(new AccountBlock(new AccountOperation("alice", 100)));
+		var root = manager.AddUnfinalizedRoot(chain.Head.Block);
+		var head = manager.AddUnfinalizedBlock(new AccountBlock(new AccountOperation("alice", 50)), root.Block.ID);
+		manager.FinalizePath(head.Block.ID);
+
+		Assert.That(chain.Height, Is.EqualTo(2L));
+		Assert.That(state.GetBalance("alice"), Is.EqualTo(150L));
+	}
+
+	[Test]
 	public void CreateReorgPlan_IdentifiesCorrectPaths() {
 		var state = new AccountState();
 		var chain = new Blockchain<AccountBlock, AccountState, int, long, int>(state, new LongWeightAggregator());

@@ -65,7 +65,7 @@ public class DirectoryFileSettingsProvider : SyncSettingsProviderBase {
 
 	/// <inheritdoc />
 	protected override void SaveInternal(SettingsObject settings) {
-		if (!Directory.Exists(BaseDirectory))
+		if (Policy.HasFlag(DirectorySettingsProviderPolicy.CreateDirectoryIfNotExists) && !Directory.Exists(BaseDirectory))
 			Directory.CreateDirectory(BaseDirectory);
 
 		var filePath = DetermineFilepath(settings);

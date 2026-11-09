@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Sphere10.Framework.Windows.LevelDB;
 // ReSharper disable CheckNamespace
 
@@ -19,16 +20,23 @@ namespace Sphere10.Framework.UnitTests;
 [TestFixture]
 public class LevelDBTests {
 	static string testPath;
+
+	// Each test gets its own directory, so destroying a database never touches files outside it.
 	static string CleanTestDB() {
-		testPath = Path.GetTempPath();
-		DB.Destroy(testPath, new Options { CreateIfMissing = true });
+		testPath = Path.Combine(Path.GetTempPath(), "Sphere10.Framework.Windows.LevelDB.Tests", Guid.NewGuid().ToString("N"));
 		return testPath;
 	}
 
+	[TearDown]
+	public void DeleteTestDB() {
+		if (testPath != null && Directory.Exists(testPath))
+			Directory.Delete(testPath, true);
+		testPath = null;
+	}
 
 	[Test]
 	public void Intro() {
-		using (var database = new DB("mytestdb", new Options() { CreateIfMissing = true })) {
+		using (var database = new DB(CleanTestDB(), new Options() { CreateIfMissing = true })) {
 			database.Put("key1", "value1");
 			Assert.That(database.Get("key1"), Is.EqualTo("value1"));
 			Assert.That(database.Get("key1") != null, Is.True);
@@ -192,6 +200,35 @@ public class LevelDBTests {
 
 			Assert.That(actual.ToArray(), Is.EqualTo(expected));
 		}
+	}
+
+	[Test]
+	public void TestWriteBatchIterate() {
+		var puts = new List<string>();
+		var deletes = new List<string>();
+		using (var batch = new WriteBatch()) {
+			batch.Put("Tampa", "Green")
+				.Delete("London")
+				.Put("Paris", "blue");
+
+			batch.Iterate(IntPtr.Zero,
+				(state, key, keyLength, value, valueLength) => puts.Add($"{Marshal.PtrToStringUTF8(key, (int)keyLength)}={Marshal.PtrToStringUTF8(value, (int)valueLength)}"),
+				(state, key, keyLength) => deletes.Add(Marshal.PtrToStringUTF8(key, (int)keyLength)));
+		}
+
+		Assert.That(puts, Is.EqualTo(new[] { "Tampa=Green", "Paris=blue" }));
+		Assert.That(deletes, Is.EqualTo(new[] { "London" }));
+	}
+
+	[Test]
+	public void TestSnapshotDisposedAfterItsDB() {
+		var path = CleanTestDB();
+		var db = new DB(path, new Options { CreateIfMissing = true });
+		var snapShot = db.CreateSnapshot();
+		db.Dispose();
+
+		Assert.That(() => snapShot.Dispose(), Throws.Nothing);
+		GC.KeepAlive(db);
 	}
 }
 

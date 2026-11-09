@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>true</IsPackable>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<Description>MySQL implementation for Sphere10.Framework.Data abstraction layer. Provides DAC, SQLBuilder, and DatabaseManager for MySQL database access using MySqlConnector.</Description>
+	<Description>MySQL implementation for Sphere10.Framework.Data abstraction layer. Provides the DAC and DatabaseManager for MySQL database access using MySqlConnector, with SQL text from the MySQLBuilder in Sphere10.Framework.Data.</Description>
     <PackageTags>sphere10 framework mysql mariadb database</PackageTags>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>

@@ -165,7 +165,7 @@ public class SqliteDAC : DACBase {
 		if (String.IsNullOrWhiteSpace(type))
 			return 0;
 		var typeUpper = type.ToUpperInvariant().Trim();
-		if (type.StartsWith("VAR") || type.StartsWith("TEXT"))
+		if (typeUpper.StartsWith("VAR") || typeUpper.StartsWith("TEXT"))
 			return int.MaxValue;
 
 		return 0;
@@ -219,9 +219,10 @@ public class SqliteDAC : DACBase {
 						cid = r.Get<int>("cid"),
 						name = r.Get<string>("name"),
 						type = r.Get<string>("type"),
-						notnull = r.Get<bool>("notnull"),
+						// SQLite returns these flags as integers, and pk is the column's 1-based position in the primary key.
+						notnull = r.Get<long>("notnull") != 0,
 						dflt_value = r.Get<string>("dflt_value"),
-						pk = r.Get<bool>("pk")
+						pk = r.Get<long>("pk") != 0
 					}
 				);
 
@@ -236,7 +237,7 @@ public class SqliteDAC : DACBase {
 					new index_list_result {
 						seq = r.Get<int>("seq"),
 						name = r.Get<string>("name"),
-						unique = r.Get<bool>("unique")
+						unique = r.Get<long>("unique") != 0
 					}
 				);
 	}

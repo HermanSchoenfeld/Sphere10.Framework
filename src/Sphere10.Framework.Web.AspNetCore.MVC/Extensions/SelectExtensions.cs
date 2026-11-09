@@ -37,7 +37,7 @@ public static class SelectExtensions {
 		return expression.Object.ToString();
 	}
 
-	public static IHtmlContent EnumDropDownListFor<TModel, TProperty>(this HtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression) where TModel : class {
+	public static IHtmlContent EnumDropDownListFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression) where TModel : class {
 		string inputName = GetInputName(expression);
 		var value = htmlHelper.ViewData.Model == null
 			? default(TProperty)

@@ -14,6 +14,8 @@ namespace Sphere10.Framework.Data;
 
 public class OracleSQLBuilder : SQLBuilderBase {
 
+	protected override SQLQueryResultLimitPosition QueryResultLimitPosition => SQLQueryResultLimitPosition.EndOfQuery;
+
 	public override ISQLBuilder BeginTransaction() {
 		// Oracle implicitly begins transactions; no explicit BEGIN needed
 		return this;
@@ -72,7 +74,8 @@ public class OracleSQLBuilder : SQLBuilderBase {
 	}
 
 	public override ISQLBuilder EndOfStatement(SQLStatementType statementType = SQLStatementType.DML) {
-		Emit(";").NewLine();
+		// ODP.NET executes one statement per command and rejects a trailing ';', so statements are only separated by line breaks.
+		NewLine();
 		return base.EndOfStatement(statementType);
 	}
 

@@ -44,7 +44,7 @@ public class AutoDirtyGenerator : IIncrementalGenerator {
 			.CreateSyntaxProvider(
 				predicate: static (node, _) => node is PropertyDeclarationSyntax pds
 					&& pds.Modifiers.Any(SyntaxKind.PartialKeyword)
-					&& pds.Parent is ClassDeclarationSyntax,
+					&& pds.Parent is ClassDeclarationSyntax or RecordDeclarationSyntax,
 				transform: static (ctx, _) => ExtractPropertyInfo(ctx))
 			.Where(static info => info is not null);
 
@@ -94,8 +94,13 @@ public class AutoDirtyGenerator : IIncrementalGenerator {
 			return null;
 
 		// Only process declaring declarations (not implementing ones).
-		if (propDecl.AccessorList is not null &&
+		if (propDecl.AccessorList is null ||
 			propDecl.AccessorList.Accessors.Any(a => a.Body is not null || a.ExpressionBody is not null))
+			return null;
+
+		var getter = propDecl.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
+		var setter = propDecl.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration) || a.IsKind(SyntaxKind.InitAccessorDeclaration));
+		if (getter is null || setter is null)
 			return null;
 
 		var containingType = propSymbol.ContainingType;
@@ -103,16 +108,39 @@ public class AutoDirtyGenerator : IIncrementalGenerator {
 			? null
 			: containingType.ContainingNamespace?.ToDisplayString();
 
+		// The implementing declaration repeats the declaring modifiers and accessors, such as internal, virtual or init.
 		return new PropertyInfo(
 			ns,
-			containingType.Name,
+			GetTypeDeclarations(containingType),
 			containingType.ToDisplayString(),
 			propSymbol.Name,
 			propSymbol.Type.ToDisplayString(),
 			dirtyPropName,
-			AccessibilityToString(propSymbol.GetMethod.DeclaredAccessibility),
-			AccessibilityToString(propSymbol.SetMethod.DeclaredAccessibility)
+			propDecl.Modifiers.ToString(),
+			AccessorPrefix(getter),
+			AccessorPrefix(setter) + setter.Keyword.Text
 		);
+	}
+
+	/// <summary>
+	/// Returns the partial declaration headers from the outermost containing type to the given type.
+	/// </summary>
+	private static ImmutableArray<string> GetTypeDeclarations(INamedTypeSymbol type) {
+		var declarations = new List<string>();
+		for (var current = type; current is not null; current = current.ContainingType) {
+			var keyword = current switch {
+				{ IsRecord: true, TypeKind: TypeKind.Struct } => "record struct",
+				{ IsRecord: true } => "record",
+				{ TypeKind: TypeKind.Struct } => "struct",
+				{ TypeKind: TypeKind.Interface } => "interface",
+				_ => "class"
+			};
+			var typeParameters = current.TypeParameters.Length > 0
+				? $"<{string.Join(", ", current.TypeParameters.Select(parameter => parameter.Name))}>"
+				: string.Empty;
+			declarations.Insert(0, $"partial {keyword} {current.Name}{typeParameters}");
+		}
+		return declarations.ToImmutableArray();
 	}
 
 	/// <summary>
@@ -146,50 +174,45 @@ public class AutoDirtyGenerator : IIncrementalGenerator {
 			sb.AppendLine();
 		}
 
-		sb.AppendLine($"partial class {first.ClassName} {{");
+		// Reopen every containing type, so nested and generic types receive their implementations.
+		var indent = "";
+		foreach (var declaration in first.TypeDeclarations) {
+			sb.AppendLine($"{indent}{declaration} {{");
+			indent += "\t";
+		}
 
 		foreach (var prop in group.Properties) {
 			if (prop is null) continue;
 			var backingField = $"_autoDirty_{char.ToLowerInvariant(prop.PropertyName[0])}{prop.PropertyName.Substring(1)}";
 
-			sb.AppendLine($"\tprivate {prop.PropertyType} {backingField};");
+			sb.AppendLine($"{indent}private {prop.PropertyType} {backingField};");
 			sb.AppendLine();
 
-			// Getter
-			var getAccess = prop.GetterAccessibility == "public" ? "" : prop.GetterAccessibility + " ";
-			// Setter
-			var setAccess = prop.SetterAccessibility == "public" ? "" : prop.SetterAccessibility + " ";
-
-			sb.AppendLine($"\tpublic partial {prop.PropertyType} {prop.PropertyName} {{");
-			sb.AppendLine($"\t\t{getAccess}get => {backingField};");
-			sb.AppendLine($"\t\t{setAccess}set {{");
-			sb.AppendLine($"\t\t\tif (!System.Collections.Generic.EqualityComparer<{prop.PropertyType}>.Default.Equals({backingField}, value)) {{");
-			sb.AppendLine($"\t\t\t\t{backingField} = value;");
-			sb.AppendLine($"\t\t\t\t{prop.DirtyPropertyName} = true;");
-			sb.AppendLine("\t\t\t}");
-			sb.AppendLine("\t\t}");
-			sb.AppendLine("\t}");
+			sb.AppendLine($"{indent}{prop.Modifiers} {prop.PropertyType} {prop.PropertyName} {{");
+			sb.AppendLine($"{indent}\t{prop.GetterPrefix}get => {backingField};");
+			sb.AppendLine($"{indent}\t{prop.SetterDeclaration} {{");
+			sb.AppendLine($"{indent}\t\tif (!System.Collections.Generic.EqualityComparer<{prop.PropertyType}>.Default.Equals({backingField}, value)) {{");
+			sb.AppendLine($"{indent}\t\t\t{backingField} = value;");
+			sb.AppendLine($"{indent}\t\t\t{prop.DirtyPropertyName} = true;");
+			sb.AppendLine($"{indent}\t\t}}");
+			sb.AppendLine($"{indent}\t}}");
+			sb.AppendLine($"{indent}}}");
 			sb.AppendLine();
 		}
 
-		sb.AppendLine("}");
+		for (var level = first.TypeDeclarations.Length - 1; level >= 0; level--)
+			sb.AppendLine($"{new string('\t', level)}}}");
 		return sb.ToString();
 	}
 
 	// ── Helpers ──────────────────────────────────────────────────────────
 
-	private static string AccessibilityToString(Accessibility accessibility) => accessibility switch {
-		Accessibility.Public => "public",
-		Accessibility.Internal => "internal",
-		Accessibility.Protected => "protected",
-		Accessibility.ProtectedOrInternal => "protected internal",
-		Accessibility.ProtectedAndInternal => "private protected",
-		Accessibility.Private => "private",
-		_ => "public"
-	};
+	// Returns an accessor's own modifiers, such as "private ", or an empty string.
+	private static string AccessorPrefix(AccessorDeclarationSyntax accessor) =>
+		accessor.Modifiers.Count > 0 ? accessor.Modifiers.ToString() + " " : string.Empty;
 
 	private static string SanitizeFileName(string name) =>
-		name.Replace('.', '_').Replace('<', '_').Replace('>', '_').Replace(',', '_');
+		name.Replace('.', '_').Replace('<', '_').Replace('>', '_').Replace(',', '_').Replace(' ', '_');
 
 	// ── Attribute Source ─────────────────────────────────────────────────
 
@@ -215,7 +238,7 @@ namespace Sphere10.Framework.Generators;
 /// </code>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
-public sealed class AutoDirtyAttribute : Attribute {
+internal sealed class AutoDirtyAttribute : Attribute {
     /// <summary>
     /// Initializes a new instance of the <see cref=""AutoDirtyAttribute""/> class.
     /// </summary>
@@ -237,31 +260,34 @@ public sealed class AutoDirtyAttribute : Attribute {
 	private sealed class PropertyInfo {
 		public PropertyInfo(
 			string? ns,
-			string className,
+			ImmutableArray<string> typeDeclarations,
 			string classFullName,
 			string propertyName,
 			string propertyType,
 			string dirtyPropertyName,
-			string getterAccessibility,
-			string setterAccessibility) {
+			string modifiers,
+			string getterPrefix,
+			string setterDeclaration) {
 			Namespace = ns;
-			ClassName = className;
+			TypeDeclarations = typeDeclarations;
 			ClassFullName = classFullName;
 			PropertyName = propertyName;
 			PropertyType = propertyType;
 			DirtyPropertyName = dirtyPropertyName;
-			GetterAccessibility = getterAccessibility;
-			SetterAccessibility = setterAccessibility;
+			Modifiers = modifiers;
+			GetterPrefix = getterPrefix;
+			SetterDeclaration = setterDeclaration;
 		}
 
 		public string? Namespace { get; }
-		public string ClassName { get; }
+		public ImmutableArray<string> TypeDeclarations { get; }
 		public string ClassFullName { get; }
 		public string PropertyName { get; }
 		public string PropertyType { get; }
 		public string DirtyPropertyName { get; }
-		public string GetterAccessibility { get; }
-		public string SetterAccessibility { get; }
+		public string Modifiers { get; }
+		public string GetterPrefix { get; }
+		public string SetterDeclaration { get; }
 	}
 
 	private sealed class ClassGroup {

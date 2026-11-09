@@ -22,7 +22,7 @@
  *
  *  3. Append the below HTML after your form (replacing {formId})
  *  
- *      <div id="{formId}_result_marker" class="invisible"></div>
+ *      <div id="{formId}_message_marker" class="invisible"></div>
  *      <script language="javascript">
  *          F_Init('{formId}');
  *      </script>
@@ -58,8 +58,9 @@ function F_BeforeSubmit(formId, o) {
     // clear the results
     $('#' + formId + '_result').replaceWith(' <div id = "' + formId + '_result' + '"></div>');
 
-    // set the overlay (blocks input)
-    form.find(".form-blocker-overlay").removeClass("invisible");
+    // set the overlay (blocks input) unless the options disable it
+    if (form[0].options.useLoadingOverlay !== false)
+        form.find(".form-blocker-overlay").removeClass("invisible");
 }
 
 function F_Success(formId, result) {
@@ -111,8 +112,12 @@ function F_ShowError(formId, alertType, alertIcon, title, message) {
     var resultDiv = $('#' + formId + '_result');
     if (resultDiv.length > 0)
         resultDiv.replaceWith(htmlToInject);
-    else
-        $('#' + formId + '_result_marker').after(htmlToInject);
+    else {
+        var marker = $('#' + formId + '_message_marker');
+        if (marker.length == 0)
+            marker = $('#' + formId + '_result_marker');
+        marker.after(htmlToInject);
+    }
 }
 
 function F_Completed(formId) {
@@ -200,7 +205,7 @@ function F_Init(formId, options) {
 
             $.ajax({
                 url: action,
-                type: "POST",
+                type: form[0].options.httpMethod || "POST",
                 data: formValues,
                 cache: false,
                 async: true,

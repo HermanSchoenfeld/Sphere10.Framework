@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Sphere10.Framework.Windows.LevelDB;
@@ -68,14 +69,27 @@ public class WriteBatch : LevelDBHandle {
 	}
 
 	/// <summary>
-	/// Support for iterating over a batch.
+	/// Support for iterating over a batch. The callbacks receive the state, then each key pointer and length, and for puts the value pointer and length.
 	/// </summary>
-	public void Iterate(IntPtr state, Action<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> put, Action<IntPtr, IntPtr, IntPtr> deleted) {
+	public void Iterate(IntPtr state, PutCallback put, DeleteCallback deleted) {
 		LevelDBInterop.leveldb_writebatch_iterate(Handle, state, put, deleted);
+		GC.KeepAlive(this);
 	}
 
 	protected override void FreeUnManagedObjects() {
 		LevelDBInterop.leveldb_writebatch_destroy(Handle);
 	}
+
+	/// <summary>
+	/// Receives a buffered put. The pointers are valid only during the callback.
+	/// </summary>
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void PutCallback(IntPtr state, IntPtr key, IntPtr keyLength, IntPtr value, IntPtr valueLength);
+
+	/// <summary>
+	/// Receives a buffered delete. The key pointer is valid only during the callback.
+	/// </summary>
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void DeleteCallback(IntPtr state, IntPtr key, IntPtr keyLength);
 }
 

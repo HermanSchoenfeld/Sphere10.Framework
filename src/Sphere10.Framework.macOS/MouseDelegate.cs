@@ -25,7 +25,7 @@ namespace Sphere10.Framework {
 		public virtual void MouseEntered (NSEvent theEvent)	{
 		}
 		
-		[Export("cursorUpdate::")]
+		[Export("cursorUpdate:")]
 		public virtual void CursorUpdate (NSEvent theEvent)	{
 		}
 		

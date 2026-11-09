@@ -18,7 +18,7 @@ namespace Sphere10.Framework.Web.AspNetCore.MVC;
 /// <typeparam name="TFilter"></typeparam>
 public abstract class FilterFactoryBase<TFilter> : Attribute, IFilterFactory where TFilter : IFilterMetadata {
 	public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-		=> serviceProvider.GetService<TFilter>();
+		=> serviceProvider.GetRequiredService<TFilter>();
 	public bool IsReusable => false;
 }
 

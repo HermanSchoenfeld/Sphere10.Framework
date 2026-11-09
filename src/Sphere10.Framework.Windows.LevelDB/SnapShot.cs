@@ -29,8 +29,9 @@ public class SnapShot : LevelDBHandle {
 	}
 
 	protected override void FreeUnManagedObjects() {
+		// Releasing needs the open DB handle, which a disposed DB has already closed.
 		var parent = Parent.Target as DB;
-		if (parent != null)
+		if (parent != null && parent.Handle != IntPtr.Zero)
 			LevelDBInterop.leveldb_release_snapshot(parent.Handle, Handle);
 	}
 }

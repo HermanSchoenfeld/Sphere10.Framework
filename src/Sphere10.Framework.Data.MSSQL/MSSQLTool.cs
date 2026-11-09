@@ -26,7 +26,7 @@ public static class MSSQL {
 	                            ILogger logger = null) {
 #pragma warning restore CS0618
 		return new MSSQLDAC(
-			CreateConnectionString(dataSource,
+			CreateConnectionString(ApplyNetworkLibrary(dataSource, networkLibrary),
 				initialCatalog,
 				userID,
 				password,
@@ -273,6 +273,20 @@ public static class MSSQL {
 
 	public static void ClearAllPools() {
 		SqlConnection.ClearAllPools();
+	}
+
+	private static string ApplyNetworkLibrary(string dataSource, string networkLibrary) {
+		// Microsoft.Data.SqlClient has no Network Library keyword, so the library becomes the equivalent Data Source protocol prefix.
+		if (string.IsNullOrWhiteSpace(networkLibrary))
+			return dataSource;
+
+		var protocol = networkLibrary.Trim().ToLowerInvariant() switch {
+			"dbmssocn" => "tcp:",
+			"dbnmpntw" => "np:",
+			"dbmslpcn" => "lpc:",
+			_ => throw new NotSupportedException($"Network library '{networkLibrary}' is not supported by Microsoft.Data.SqlClient. Use dbmssocn (TCP), dbnmpntw (named pipes) or dbmslpcn (shared memory).")
+		};
+		return dataSource != null && dataSource.StartsWith(protocol, StringComparison.OrdinalIgnoreCase) ? dataSource : protocol + dataSource;
 	}
 }
 

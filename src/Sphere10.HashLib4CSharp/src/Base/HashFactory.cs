@@ -96,7 +96,10 @@ namespace HashLib4CSharp.Base
         {
             public static IHash CreateFNV64() => new FNV64();
 
-            public static IHash CreateFV1a64() => new FNV1a64();
+            public static IHash CreateFNV1a64() => new FNV1a64();
+
+            [System.Obsolete("Use CreateFNV1a64.")]
+            public static IHash CreateFV1a64() => CreateFNV1a64();
 
             public static IHashWithKey CreateMurmur2_64() => new Murmur2_64();
 

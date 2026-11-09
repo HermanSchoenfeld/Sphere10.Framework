@@ -70,6 +70,25 @@ public class SettingsProviderAsyncTests {
 	}
 
 	[Test]
+	public async Task RecordsLoadedThroughTheCacheDeleteThroughIt() {
+		var storage = new AsyncProvider();
+		await storage.SaveSettingAsync(new Preferences { ID = "stored", Name = "saved" });
+		ISettingsProvider cache = new CachedSettingsProvider(storage);
+		var loaded = cache.Get<Preferences>("stored");
+		var created = cache.Get<Preferences>("created");
+
+		Assert.That(loaded.Provider, Is.SameAs(cache));
+		Assert.That(created.Provider, Is.SameAs(cache));
+
+		// A record's own Delete() must evict the cached identity, not only the stored value.
+		loaded.Delete();
+		Assert.That(cache.Has<Preferences>("stored"), Is.False);
+		Assert.That(storage.Values, Does.Not.ContainKey((typeof(Preferences), (object)"stored")));
+		created.Delete();
+		Assert.That(cache.Has<Preferences>("created"), Is.False);
+	}
+
+	[Test]
 	public async Task CancelledSaveDoesNotPublishAnUnstoredCacheEntry() {
 		var storage = new AsyncProvider();
 		var cache = new CachedSettingsProvider(storage);

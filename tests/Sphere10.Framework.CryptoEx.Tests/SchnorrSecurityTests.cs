@@ -45,6 +45,29 @@ public class SchnorrSecurityTests {
         Assert.That(schnorr.Traits.HasFlag(DigitalSignatureSchemeTraits.SupportsIES), Is.True, "SupportsIES trait flag must be set");
     }
 
+    [Test]
+    public void Traits_HasStatelessFlag() {
+        var schnorr = CreateSchnorr();
+        Assert.That(schnorr.Traits.HasFlag(DigitalSignatureSchemeTraits.Stateless), Is.True, "Stateless trait flag must be set");
+    }
+
+    [Test]
+    public void IES_EncryptDecrypt_RoundTrips() {
+        var schnorr = CreateSchnorr();
+        var message = RandomBytes(100);
+        // Several keys cover private keys whose point has an odd Y, which BIP-340 public key bytes lift to the even-Y point
+        for (var i = 0; i < 8; i++) {
+            var sk = schnorr.GeneratePrivateKey();
+            var derivedKey = schnorr.DerivePublicKey(sk);
+            Assert.That(schnorr.TryParsePublicKey(derivedKey.RawBytes, out var parsedKey), Is.True);
+            foreach (var pk in new[] { derivedKey, parsedKey }) {
+                var encrypted = schnorr.IES.Encrypt(message, pk);
+                Assert.That(schnorr.IES.TryDecrypt(encrypted, out var decrypted, sk), Is.True);
+                Assert.That(decrypted, Is.EqualTo(message));
+            }
+        }
+    }
+
     #endregion
 
     #region Signature Length Validation

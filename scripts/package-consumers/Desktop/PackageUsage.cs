@@ -18,7 +18,8 @@ public sealed class PackageUsage : ApplicationScreen {
 		.WithName("Desktop plugin")
 		.AddBlock(block => block
 			.WithName("Desktop block")
-			.WithDefaultScreen<PackageUsage>(activationMode: ScreenActivationMode.PermanentSingleton)
+			.AddScreen<PackageUsage>(screen => screen.AsPermanentSingleton())
+			.WithDefaultScreen<PackageUsage>()
 		)
 		.Build();
 }

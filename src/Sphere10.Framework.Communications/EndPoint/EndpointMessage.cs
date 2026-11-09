@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Text;
 
 namespace Sphere10.Framework.Communications.RPC;
@@ -25,8 +26,9 @@ public class EndpointMessage {
 	}
 	public string ToSafeString() {
 		ASCIIEncoding encoder = new ASCIIEncoding();
-		var safeArray = TcpSecurityPolicies.RemoveControlCharacters(MessageData, MessageData.Length);
-		var trimed = encoder.GetString(MessageData, 0, MessageData.Length).Trim();
+		// Keep tab, line feed and carriage return, which separate requests, and drop every other control character
+		var safeArray = Array.FindAll(MessageData, c => c >= 32 || c == 9 || c == 10 || c == 13);
+		var trimed = encoder.GetString(safeArray, 0, safeArray.Length).Trim();
 		return trimed;
 	}
 	public override string ToString() {

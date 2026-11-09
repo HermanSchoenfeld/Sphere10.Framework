@@ -71,12 +71,12 @@ FROM
 	LEFT JOIN information_schema.referential_constraints rc ON tc_fk.constraint_name = rc.constraint_name AND tc_fk.table_schema = rc.constraint_schema
 	LEFT JOIN information_schema.constraint_column_usage ccu_fk ON rc.unique_constraint_name = ccu_fk.constraint_name AND rc.unique_constraint_schema = ccu_fk.constraint_schema
 WHERE 
-	c.table_schema = 'public'
+	c.table_schema = current_schema()
 ORDER BY c.table_name, c.ordinal_position"
 		);
 	}
 
 	protected override DataTable GetDenormalizedTriggerDescriptions() {
-		return this.ExecuteQuery(@"SELECT trigger_name AS ""Name"" FROM information_schema.triggers WHERE trigger_schema = 'public'");
+		return this.ExecuteQuery(@"SELECT trigger_name AS ""Name"" FROM information_schema.triggers WHERE trigger_schema = current_schema()");
 	}
 }

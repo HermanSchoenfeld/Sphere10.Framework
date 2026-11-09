@@ -15,16 +15,22 @@ namespace Sphere10.Framework.Windows.LevelDB;
 
 public static class LevelDBInterop {
 	static LevelDBInterop() {
+		// Only x86 and x64 builds are embedded, so other process architectures cannot load LevelDB.
+		var is32Bit = RuntimeInformation.ProcessArchitecture switch {
+			Architecture.X86 => true,
+			Architecture.X64 => false,
+			var architecture => throw new PlatformNotSupportedException($"LevelDB is available only to x86 and x64 processes, not {architecture}")
+		};
 		var assembly = Assembly.GetAssembly(typeof(LevelDBInterop)).GetName();
 		var directory = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create),
-			$"Sphere10.Framework Framework{Path.DirectorySeparatorChar}{assembly.Name}-{assembly.Version}{Path.DirectorySeparatorChar}{(IntPtr.Size == 4 ? "x32" : "x64")}"
+			$"Sphere10.Framework{Path.DirectorySeparatorChar}{assembly.Name}-{assembly.Version}{Path.DirectorySeparatorChar}{(is32Bit ? "x32" : "x64")}"
 		);
 		if (!Directory.Exists(directory))
 			Directory.CreateDirectory(directory);
 		var nativeLib = Path.Combine(directory, "LevelDB.dll");
 		if (!File.Exists(nativeLib)) {
-			File.WriteAllBytes(nativeLib, IntPtr.Size == 4 ? Resources.LevelDB32_DLL : Resources.LevelDB64_DLL);
+			File.WriteAllBytes(nativeLib, is32Bit ? Resources.LevelDB32_DLL : Resources.LevelDB64_DLL);
 		}
 		LoadLibrary(nativeLib);
 	}
@@ -222,7 +228,7 @@ public static class LevelDBInterop {
 	public static extern void leveldb_writebatch_delete(IntPtr /* WriteBatch */ batch, byte[] key, IntPtr keylen);
 
 	[DllImport("LevelDB.dll", CallingConvention = CallingConvention.Cdecl)]
-	public static extern void leveldb_writebatch_iterate(IntPtr /* WriteBatch */ batch, IntPtr state, Action<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr> put, Action<IntPtr, IntPtr, IntPtr> deleted);
+	public static extern void leveldb_writebatch_iterate(IntPtr /* WriteBatch */ batch, IntPtr state, WriteBatch.PutCallback put, WriteBatch.DeleteCallback deleted);
 
 	#endregion
 

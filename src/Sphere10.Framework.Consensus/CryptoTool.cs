@@ -23,7 +23,8 @@ public static class CryptoTool {
 
 		// Checksum's are public and used for fast lookups of secret, yet do not reveal any
 		// information about secret.
-		// Checksum = CastToUInt32( Last4BytesLE( SHA2-256( SHA2-256( secret || secret ) ) ) )
+		// Checksum = CastToUInt32( BytesLE[27..30]( SHA2-256( SHA2-256( secret || secret ) ) ) )
+		// The read starts at offset 27, one byte before the last four, and existing checksums depend on that selection.
 		var concatenated = Tools.Array.Concat(secret, secret);
 		var firstHash = Hashers.Hash(CHF.SHA2_256, concatenated);
 		var secondHash = Hashers.Hash(CHF.SHA2_256, firstHash);

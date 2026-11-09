@@ -1,11 +1,11 @@
 # Borrowed array scopes, 25 October 2026
 
-`BorrowArrayScope<T>` centralizes array-pool acquisition and return in a concrete readonly `IScope<T[]>`. `Tools.Scope.BorrowArray(length)` supplies a byte rental; `BorrowArray<T>(length)` supplies other element types. Both support an explicit originating pool and an optional `clearArray` return policy. Required pools and nonnegative lengths are validated before renting.
+`BorrowArrayScope<T>` centralizes array-pool acquisition and return in a concrete readonly `IScope<T[]>`. `Tools.Scope.EnterBorrowArrayScope(length)` supplies a byte rental; `EnterBorrowArrayScope<T>(length)` supplies other element types. The measured sources and the evidence below name these factories `BorrowArray`. Both support an explicit originating pool and an optional `clearArray` return policy. Required pools and nonnegative lengths are validated before renting.
 
 `Item` is the actual rented array, which may exceed the requested size. `Length` and `Span` expose the requested logical range. Synchronous disposal directly returns the same array to its originating pool. Async disposal schedules that return on a worker and represents its completion and failure. Keep one owner and one normal disposal per rental; there are no lifecycle flags, shared state, automatic idempotence or adopted-array constructors. Default required-resource scopes are invalid.
 
 ```csharp
-using var rental = Tools.Scope.BorrowArray(byteCount, clearArray: true);
+using var rental = Tools.Scope.EnterBorrowArrayScope(byteCount, clearArray: true);
 stream.ReadExactly(rental.Span);
 Consume(rental.Span);
 ```

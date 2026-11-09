@@ -45,9 +45,9 @@ public static class ObjectEncryptor {
 			var encryptionAttribute = encryptionAttributes.Single();
 
 #if USE_FAST_REFLECTION
-			field.SetValue(obj, func(encryptionAttribute, field.FastGetValue(obj).ToString())); // using FastReflection
+			field.SetValue(obj, func(encryptionAttribute, field.FastGetValue(obj)?.ToString())); // using FastReflection
 #else
-                field.SetValue(obj, func(encryptionAttribute, field.GetValue(obj).ToString())); // using standard reflection
+                field.SetValue(obj, func(encryptionAttribute, field.GetValue(obj)?.ToString())); // using standard reflection
 #endif
 		}
 

@@ -373,20 +373,6 @@ public static class AssertEx {
 
 	}
 
-	public static void RecyclableListIntegrationTest<T>(
-		IRecyclableList<T> list,
-		int maxCapacity,
-		Func<Random, long, T[]> randomItemGenerator,
-		bool mutateFromEndOnly = false,
-		int iterations = 100,
-		IRecyclableList<T> expected = null,
-		Action endOfIterTest = null,
-		IEqualityComparer<T> itemComparer = null
-	) {
-		throw new NotImplementedException("Recyclable list integration testing has not been implemented.");
-	}
-
-
 	public static void DictionaryIntegrationTest<TKey, TValue>(
 		IDictionary<TKey, TValue> dictionary, 
 		int maxCapacity, 
@@ -405,27 +391,22 @@ public static class AssertEx {
 
 
 		// Add half capacity
-		var newItems = Enumerable.Repeat(randomItemGenerator(rng), maxCapacity / 2).Select(x => x.ToKeyValuePair()).ToArray();
+		var newItems = Enumerable.Range(0, maxCapacity / 2).Select(_ => randomItemGenerator(rng).ToKeyValuePair()).ToArray();
 		expected.AddRange(newItems);
 		dictionary.AddRange(newItems);
 
-		// Enumerable comparer
-		Assert.That(expected, Is.EqualTo(dictionary).Using(kvpComparer));
+		// Enumerable comparer (a dictionary need not enumerate in insertion order, e.g. a sorted B-tree)
+		// Materialize the pairs, because a dictionary that is also a list of values enumerates those values non-generically.
+		Assert.That(dictionary.ToArray(), Is.EquivalentTo(expected.ToArray()).Using(kvpComparer));
 
 		// Enumerator consistency
-		using (var expectedEnumerator = expected.GetEnumerator())
+		var enumerated = new List<KeyValuePair<TKey, TValue>>();
 		using (var enumerator = dictionary.GetEnumerator()) {
-
-			Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(kvpComparer));
-			bool expectedMoveNext;
-			do {
-				expectedMoveNext = expectedEnumerator.MoveNext();
-				var moveNext = enumerator.MoveNext();
-				Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(kvpComparer));
-				if (expectedMoveNext)
-					Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(kvpComparer));
-			} while (expectedMoveNext);
+			while (enumerator.MoveNext())
+				enumerated.Add(enumerator.Current);
+			Assert.That(enumerator.MoveNext(), Is.False);
 		}
+		Assert.That(enumerated, Is.EquivalentTo(expected.ToArray()).Using(kvpComparer));
 
 		// Ensure adding duplicate kvp fails
 		if (newItems.Length > 0) {
@@ -516,7 +497,6 @@ public static class AssertEx {
 		}
 	}
 
-	[Test]
 	public static void StreamIntegrationTests(int maxSize, Stream actualStream, Stream expectedStream = null, int iterations = 100, Random RNG = null, bool runAsserts = true, Action extraTest = null) {
 		Guard.ArgumentInRange(maxSize, 0, int.MaxValue, nameof(maxSize));
 		Guard.ArgumentNotNull(actualStream, nameof(actualStream));
@@ -679,7 +659,7 @@ public static class AssertEx {
 		Assert.That(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were open");
 	}
 
-	public static void HasDirtyPages<TItem, TPage>(PagedListBase<TItem> list, params long[] pageNos) {
+	public static void HasDirtyPages<TItem>(PagedListBase<TItem> list, params long[] pageNos) {
 		Assert.That(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were dirty");
 	}
 

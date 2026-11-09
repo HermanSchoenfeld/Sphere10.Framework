@@ -33,7 +33,7 @@ public class UserDefaultsSettingsProvider : SyncSettingsProviderBase {
 
 	/// <inheritdoc />
 	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-		Preconditions.CheckNotNull(settingsObjectType, "settingsObjectType");
+		Guard.ArgumentNotNull(settingsObjectType, nameof(settingsObjectType));
 		var key = new NSString(PropertyNameToKey(settingsObjectType, id, "ID"));
 		var result = NSUserDefaults.StandardUserDefaults.ToDictionary().ContainsKey(key);
 		return result;
@@ -133,7 +133,7 @@ public class UserDefaultsSettingsProvider : SyncSettingsProviderBase {
 				storedValue = Enum.Parse(expectedValueType, NSUserDefaults.StandardUserDefaults.StringForKey(key));
 				break;
 			case StorageClass.XMLSerialized:
-				storedValue = XmlProvider.ReadFromString(expectedValueType, NSUserDefaults.StandardUserDefaults.StringForKey(key));
+				storedValue = Tools.Xml.ReadFromString(expectedValueType, NSUserDefaults.StandardUserDefaults.StringForKey(key));
 				break;
 			default:
 				throw new Exception("Internal Error F1C3E9A8-BAD2-48AF-9533-E78DE234B353");
@@ -173,7 +173,7 @@ public class UserDefaultsSettingsProvider : SyncSettingsProviderBase {
 					NSUserDefaults.StandardUserDefaults.SetString(value.ToString(), PropertyNameToKey(settingObjectType, settingId, propertyName));
 					break;
 				case StorageClass.XMLSerialized:
-					NSUserDefaults.StandardUserDefaults.SetString(XmlProvider.WriteToString(key), PropertyNameToKey(settingObjectType, settingId, propertyName));
+					NSUserDefaults.StandardUserDefaults.SetString(Tools.Xml.WriteToString(value),PropertyNameToKey(settingObjectType, settingId, propertyName));
 					break;
 				default:
 					throw new Exception("Internal Error 01B66BCD-FDEB-4FCF-B32F-44B2C8A2A81C");

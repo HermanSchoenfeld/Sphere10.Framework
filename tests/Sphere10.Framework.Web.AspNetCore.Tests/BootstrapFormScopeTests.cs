@@ -74,6 +74,29 @@ public class BootstrapFormScopeTests {
 		Assert.That(writer.ToString(), Does.Contain("async-form_message_marker").And.Contain("F_Init('async-form',"));
 	}
 
+	[TestCase(FormScopeOptions.UseLoadingOverlay | FormScopeOptions.UseGet, FormMethod.Get, true)]
+	[TestCase((FormScopeOptions)0, FormMethod.Post, false)]
+	public void FormTagFollowsTheMethodAndOverlayOptions(FormScopeOptions options, FormMethod expectedMethod, bool expectOverlay) {
+		using var writer = new StringWriter();
+		var helper = CreateHelper(writer);
+		var scope = helper.BeginBootstrapForm("/submit", new TestFormModel { ID = "options-form" }, options: options);
+		scope.Dispose();
+
+		Assert.That(((HtmlHelperProxy)(object)helper).Method, Is.EqualTo(expectedMethod));
+		Assert.That(writer.ToString().Contains("form-blocker-overlay"), Is.EqualTo(expectOverlay));
+	}
+
+	[Test]
+	public void EmbeddedScriptShowsResultsAfterTheScopeMessageMarker() {
+		using var stream = typeof(FormModelBase).Assembly.GetManifestResourceStream("Sphere10.Framework.Web.AspNetCore.MVC.Forms.hydrogen-bootstrap-forms-1.0.0.js");
+		using var reader = new StreamReader(stream);
+		var script = reader.ReadToEnd();
+
+		Assert.That(script, Does.Contain("'_message_marker'"));
+		Assert.That(script, Does.Contain("options.httpMethod"));
+		Assert.That(script, Does.Contain("options.useLoadingOverlay"));
+	}
+
 	private static IHtmlHelper<TestFormModel> CreateHelper(TextWriter writer) {
 		var helper = DispatchProxy.Create<IHtmlHelper<TestFormModel>, HtmlHelperProxy>();
 		((HtmlHelperProxy)(object)helper).Context = new ViewContext { Writer = writer, FormContext = new FormContext() };
@@ -105,11 +128,14 @@ public class BootstrapFormScopeTests {
 	public class HtmlHelperProxy : DispatchProxy {
 		public ViewContext Context { get; set; }
 
+		public FormMethod? Method { get; private set; }
+
 		protected override object Invoke(MethodInfo targetMethod, object[] args) {
 			switch (targetMethod.Name) {
 				case "get_ViewContext":
 					return Context;
 				case "BeginForm":
+					Method = Array.Find(args, x => x is FormMethod) as FormMethod?;
 					Context.Writer.Write("<form>");
 					return new MvcForm(Context, HtmlEncoder.Default);
 				case "HiddenFor":

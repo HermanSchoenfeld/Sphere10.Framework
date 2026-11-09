@@ -37,6 +37,8 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 
 	public ISQLBuilder LeafBuilder { get; set; }
 
+	protected virtual SQLQueryResultLimitPosition QueryResultLimitPosition => SQLQueryResultLimitPosition.BeforeDistinct;
+
 	public virtual ISQLBuilder Clear() {
 		if (PreviousStatements != null) {
 			PreviousStatements.Clear();
@@ -146,12 +148,16 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 
 
 		Emit("SELECT ");
-		if (limit.HasValue)
+		if (limit.HasValue && QueryResultLimitPosition == SQLQueryResultLimitPosition.BeforeDistinct)
 			EmitQueryResultLimit(limit.Value, offset)
 				.Emit(" ");
 
 		if (distinct)
 			EmitDistinct()
+				.Emit(" ");
+
+		if (limit.HasValue && QueryResultLimitPosition == SQLQueryResultLimitPosition.AfterDistinct)
+			EmitQueryResultLimit(limit.Value, offset)
 				.Emit(" ");
 
 		if (columns != null && columns.Any())
@@ -202,6 +208,10 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 
 		if (!string.IsNullOrEmpty(orderByClause))
 			Emit(" ORDER BY {0}", orderByClause);
+
+		if (limit.HasValue && QueryResultLimitPosition == SQLQueryResultLimitPosition.EndOfQuery)
+			Emit(" ")
+				.EmitQueryResultLimit(limit.Value, offset);
 
 		if (endStatement)
 			EndOfStatement();

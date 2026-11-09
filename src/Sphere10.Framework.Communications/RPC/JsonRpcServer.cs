@@ -32,9 +32,6 @@ public class JsonRpcServer {
 		Config = config;
 		EndPoint = endPoint;
 		ServerThread = new Thread(() => { this.Run(); });
-#if DEBUG
-		Config.Logger = new TimestampLogger(new ActionLogger(s => Debug.WriteLine(s)));
-#endif
 	}
 
 	public void SetLogger(ILogger logger) => Config.Logger = logger;
@@ -63,7 +60,13 @@ public class JsonRpcServer {
 				Config.Logger?.Info($"Client {clientEP.GetDescription()} connected");
 				if (CancelThread == false) {
 					//handle security before queuing the client handler
-					TcpSecurityPolicies.ValidateConnectionCount(TcpSecurityPolicies.MaxConnecitonPolicy.ConnectionOpen);
+					try {
+						TcpSecurityPolicies.ValidateConnectionCount(TcpSecurityPolicies.MaxConnecitonPolicy.ConnectionOpen);
+					} catch (TooManyConnectionsException) {
+						// The rejected client never gets a handler, so close its socket here
+						clientEP.Stop();
+						throw;
+					}
 					TcpSecurityPolicies.MonitorPotentialAttack(TcpSecurityPolicies.AttackType.ConnectionFlod, clientEP);
 
 					var newClientHandler = new JsonRpcClientHandler(clientEP, Config);

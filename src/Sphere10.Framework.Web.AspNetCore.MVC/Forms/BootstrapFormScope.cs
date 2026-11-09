@@ -64,7 +64,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 		Guard.ArgumentNotNull(formModel, nameof(formModel));
 		if (options.HasFlag(FormScopeOptions.BotProtect))
 			Guard.ArgumentNotNullOrWhitespace(url, nameof(url), "Must be provided when using BotProtect option");
-		Guard.Against((!string.IsNullOrEmpty(action) || !string.IsNullOrEmpty(action)) && options.HasFlag(FormScopeOptions.BotProtect),
+		Guard.Against((!string.IsNullOrEmpty(action) || !string.IsNullOrEmpty(controller)) && options.HasFlag(FormScopeOptions.BotProtect),
 			"Cannot use controller/action when BotProtect option is enabled, instead use overload method and pass explicit form action url");
 
 		_formID = formModel.ID;
@@ -84,7 +84,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 			htmlHelper.BeginForm(
 				action,
 				controller,
-				FormMethod.Post,
+				options.HasFlag(FormScopeOptions.UseGet) ? FormMethod.Get : FormMethod.Post,
 				attributes?.ToDictionary(x => x.Key, x => x.Value as object)
 			);
 
@@ -93,10 +93,12 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 
 			Write(htmlHelper.HiddenFor(m => m.ID, _formID));
 			Write(htmlHelper.HiddenFor(m => m.SubmitCount));
-			if (options.HasFlag(FormScopeOptions.SmallerBlockerOverlay))
-				Write(SmallerFormBlockerOverlaySnippet);
-			else
-				Write(FormBlockerOverlaySnippet);
+			if (options.HasFlag(FormScopeOptions.UseLoadingOverlay)) {
+				if (options.HasFlag(FormScopeOptions.SmallerBlockerOverlay))
+					Write(SmallerFormBlockerOverlaySnippet);
+				else
+					Write(FormBlockerOverlaySnippet);
+			}
 		}
 	}
 

@@ -46,7 +46,7 @@ public class WebSocketsChannel : ProtocolChannel, IDisposable {
 		}
 	}
 
-	public override CommunicationRole LocalRole => throw new NotImplementedException();
+	public override CommunicationRole LocalRole => Role;
 
 	protected override async Task CloseInternal() {
 		if (Role == CommunicationRole.Server) {
@@ -56,19 +56,7 @@ public class WebSocketsChannel : ProtocolChannel, IDisposable {
 		}
 	}
 
-	public override bool IsConnectionAlive() {
-		throw new NotImplementedException();
-		// HS 2022-01-30: disable due to porting issues .NET 5 -> .NET Standard 2.1
-		//if (Role == CommunicationRole.Server) {
-
-		//	return NetWorkStream.Socket.Connected;
-
-		//	//return Server.Server.Connected;
-		//} else {
-		//	// finish code
-		//	return true;
-		//}
-	}
+	public override bool IsConnectionAlive() => WebSocket is { State: WebSocketState.Open };
 
 	protected override async Task OpenInternal() {
 

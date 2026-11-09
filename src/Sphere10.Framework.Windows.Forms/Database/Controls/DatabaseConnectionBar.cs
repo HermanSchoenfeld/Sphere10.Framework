@@ -24,7 +24,8 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 
 	public DatabaseConnectionBar() {
 		InitializeComponent();
-		_dbmsCombo.Filter = x => Sphere10Framework.Instance.ServiceProvider.HasNamedService<ConnectionBarBase>(x.ToString());
+		// The service provider is null before the framework starts, for example in the designer, so no engine is offered then.
+		_dbmsCombo.Filter = x => Sphere10Framework.Instance.ServiceProvider?.HasNamedService<ConnectionBarBase>(x.ToString()) ?? false;
 		_dbmsCombo.EnumType = typeof(DBMSType);
 		SelectDefaultBar();
 	}
@@ -101,8 +102,11 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 	}
 
 	protected void ChangeConnectionBar(ConnectionBarBase connectionBar) {
-		if (CurrentConnectionBar != null)
+		if (CurrentConnectionBar != null && CurrentConnectionBar != connectionBar) {
+			// The editor is a transient service that this selector owns once it is shown.
 			_connectionProviderPanel.Controls.Remove(CurrentConnectionBar);
+			CurrentConnectionBar.Dispose();
+		}
 		CurrentConnectionBar = connectionBar;
 		CurrentConnectionBar.Location = new Point(0, (_connectionProviderPanel.Height - CurrentConnectionBar.Height).ClipTo(0, int.MaxValue));
 		CurrentConnectionBar.Dock = DockStyle.Fill;

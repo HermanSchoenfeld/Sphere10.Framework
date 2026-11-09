@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 using Sphere10.Framework.Application.UI;
@@ -19,17 +20,17 @@ public static class PackageUsage {
 	public static IApplicationScreen CreateScreen() => new Screen();
 
 	public static IApplicationBlock CreateBlock() {
-		var block = new Block {
-			Name = "Portable application",
-			DefaultScreenDefinition = new ApplicationScreenDefinition(typeof(Screen), activationMode: ScreenActivationMode.PermanentSingleton)
-		};
+		var block = new Block { Name = "Portable application" };
+		var defaultScreen = new ApplicationScreenDefinition(typeof(Screen), activationMode: ScreenActivationMode.PermanentSingleton);
+		block.AddScreenDefinition(defaultScreen);
+		block.DefaultScreenDefinition = defaultScreen;
 		var menu = new Menu { Text = "Actions" };
 		menu.AddItem(new Command { Title = "Refresh" });
 		block.AddMenu(menu);
 		return block;
 	}
 
-	public static ApplicationScreenDefinition[] CreateScreenDefinitions() => Tools.UI.GetScreenDefinitions(new[] { CreateBlock() });
+	public static ApplicationScreenDefinition[] CreateScreenDefinitions() => CreateBlock().ScreenDefinitions;
 
 	public static IApplicationMenu[] CreateMenus() => CreateBlock().Menus;
 
@@ -50,13 +51,6 @@ public static class PackageUsage {
 		"Portable wizard", "draft", new[] { "Details", "Review" },
 		finish: _ => Task.FromResult<Result<bool>>(true));
 
-	public static IApplicationMenuItem[] MergeCommands(params IApplicationMenuItem[][] layers) => Tools.UI.MergeMenuItems(layers);
-
-	public static ApplicationCommandLayer[] GetCommandLayers(IApplication application) => Tools.UI.GetCommandLayers(application);
-
-	public static IApplicationMenuItem[] MergeApplicationCommands(params ApplicationCommandLayer[] layers) =>
-		Tools.UI.MergeApplicationToolBarItems<IApplicationMenuItem>(layers);
-
 	public static Task<bool> CloseCurrentScreen(ISingleApplicationScreenHost host) => host.CloseActiveScreenAsync();
 
 	public static IApplicationScreen[] GetOpenScreens(IMultiApplicationScreenHost host) => host.OpenScreens;
@@ -71,7 +65,12 @@ public static class PackageUsage {
 		public IApplicationBlock Block { get; set; }
 	}
 
-	private sealed class Block : ApplicationBlockBase {
+	private sealed class Block : ApplicationBlockBase, IApplicationCommandProvider {
+		private readonly List<IApplicationMenu> _menus = new();
+
+		public IApplicationMenu[] Menus => _menus.ToArray();
+
+		public void AddMenu(IApplicationMenu menu) => _menus.Add(menu);
 	}
 
 	private sealed class Menu : ApplicationMenuBase<Command> {

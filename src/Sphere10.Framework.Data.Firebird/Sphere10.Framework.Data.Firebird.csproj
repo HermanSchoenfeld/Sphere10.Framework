@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Description>Firebird provider for Sphere10.Framework.Data enabling vendor-independent access through the shared DAC abstractions. Includes Firebird-specific helpers and Tools.Firebird utilities for opening connections and working with the provider.</Description>
+		<Description>Firebird provider for Sphere10.Framework.Data enabling vendor-independent access through the shared DAC abstractions. Provides FirebirdDAC and the GUID-correcting FirebirdCorrectingReader, with SQL text from the FirebirdSQLBuilder in Sphere10.Framework.Data.</Description>
 		<PackageTags>sphere10 framework data database firebird ado.net</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

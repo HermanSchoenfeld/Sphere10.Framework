@@ -12,7 +12,8 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
-builder.Services.AddSphere10Framework(_ => { });
+builder.Services.AddSphere10Framework(framework => framework
+	.AddModule<Sphere10.Framework.Web.AspNetCore.ModuleConfiguration>());
 
 var app = builder.Build();
 app.StartSphere10Framework();

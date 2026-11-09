@@ -18,14 +18,13 @@ Core utilities usable across any .NET application (desktop, web, mobile, server,
 |--------|---------|-------|
 | **Collections** | Advanced collection types: B-trees, merkle trees, paged collections, transactional, observable | Tools.Collection |
 | **Cryptography** | Hashing, signatures, encryption, key derivation, post-quantum algorithms | Tools.Crypto |
-| **Encoding** | Hex, Base64, endian conversion | Tools.Encoding |
-| **Extensions** | 200+ extension methods for .NET core types | Tools.Extensions |
+| **Encoding** | Hex, Base32, Base62, endian conversion | HexEncoding, Base32Encoding, Base62Encoding, EndianBitConverter |
+| **Extensions** | 200+ extension methods for .NET core types | Extension methods (no facade) |
 | **Exceptions** | Custom exception types and exception handling utilities | Tools.Exceptions |
-| **Functional** | Functional programming support: expressions, lambdas, operators | Tools.Functional |
+| **Functional** | Functional programming support: expressions, lambdas, operators | Tools.Expressions, Tools.Lambda, Tools.OperatorTool |
 | **Introspection** | Fast reflection library, type discovery, member inspection | Tools.Reflection |
-| **IO** | Endian-aware file I/O, stream tools, temporary file management | Tools.FileSystem, Tools.IO |
-| **IoC** | Dependency injection container (TinyIoC-based), service registration | Tools.IoC |
-| **Logging** | Multi-target logging framework with filtering and formatting | Tools.Logging |
+| **IO** | Endian-aware file I/O, stream tools, temporary file management | Tools.FileSystem |
+| **Logging** | Multi-target logging framework with filtering and formatting | SystemLog, ILogger |
 | **Math** | Mathematical utilities: RNG, bloom filters, fixed-point math | Tools.Maths |
 | **Memory** | Buffer operations, memory allocation, unit conversion | Tools.Memory |
 | **Networking** | URL parsing, MIME types, socket utilities, P2P abstractions | Tools.Network |
@@ -141,7 +140,7 @@ Consensus Tier (Sphere10.Framework.Consensus)
 
 | Concern | Implemented Via | Tools |
 |---------|-----------------|-------|
-| **Logging** | System.Logging domain | Tools.Logging |
+| **Logging** | System.Logging domain | SystemLog, ILogger |
 | **Caching** | System.Cache domain | Tools.Cache |
 | **Configuration** | Application.Configuration domain | Tools.Config / SettingsObject |
 | **Dependency Injection** | Service registration and application scopes | Microsoft.Extensions.DependencyInjection |

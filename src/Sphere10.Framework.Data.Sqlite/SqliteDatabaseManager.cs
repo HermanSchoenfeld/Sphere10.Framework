@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Sphere10.Framework.Data.Sqlite;
+namespace Sphere10.Framework.Data;
 
 public class SqliteDatabaseManager : DatabaseManagerBase {
 
@@ -16,7 +16,8 @@ public class SqliteDatabaseManager : DatabaseManagerBase {
 		Guard.Argument(string.IsNullOrEmpty(server), nameof(server), "Cannot specify server in Sqlite Connection");
 		Guard.Argument(string.IsNullOrEmpty(username), nameof(username), "Cannot specify username in Sqlite Connection");
 		Guard.Argument(port == null, nameof(port), "Cannot specify port in Sqlite Connection");
-		Guard.FileExists(database);
+		// The database file need not exist yet, since CreateEmptyDatabase creates it from this connection string.
+		Guard.ArgumentNotNullOrEmpty(database, nameof(database));
 		return Tools.Sqlite.CreateConnectionString(database, password);
 	}
 

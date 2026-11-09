@@ -4,7 +4,7 @@ This is the Framework-wide running engineering backlog. Keep follow-ups across s
 
 ## Current follow-ups
 
-- [ ] **Reusable Windows device I/O and processor-group affinity.** Add Framework.Windows abstractions for device handles/control requests and processor-group affinity so SystemExpert's hardware collectors can consume them while retaining the PawnIO protocol and Intel decoding in the application. Preserve resource ownership and verify source/package consumers before migrating the nine existing native-call boundary violations. See the [disposal review and validation findings](../docs/performance/disposable-template-review.md).
+- [ ] **Reusable Windows device I/O and processor-group affinity.** Add Framework.Windows abstractions for device handles/control requests and processor-group affinity so application hardware collectors can consume them while retaining their driver protocols and processor-specific decoding in the application. Preserve resource ownership and verify source/package consumers before migrating the nine existing native-call boundary violations. See the [disposal review and validation findings](../docs/performance/disposable-template-review.md).
 
 - [ ] **Scope consumer throughput confirmation.** Independently confirm dictionary, enumeration and storage timing after the direct-finalization refactor with longer BenchmarkDotNet runs. The paired short-batch captures preserve allocation reductions but show substantial host variation and mixed timing, so their pooled percentages are not an overall throughput claim. See [scope measurements](../docs/performance/scope-composition.md).
 

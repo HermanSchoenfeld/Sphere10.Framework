@@ -75,14 +75,8 @@ public class JsonRpcClientHandler : JsonRpcClient {
 				jresult.Error = new JsonRpcException(-8, callException.ToString());
 		}
 
-		//Hardcode the ID from the caller.
-		if (jsonReq.Id is UInt64 ||
-		    jsonReq.Id is Int64 ||
-		    jsonReq.Id is UInt32 ||
-		    jsonReq.Id is Int32)
-			jresult.Id = Convert.ToInt32(jsonReq.Id);
-		else
-			jresult.Id = -1;
+		//Echo the ID from the caller.
+		jresult.Id = jsonReq.Id;
 
 		return jresult;
 	}

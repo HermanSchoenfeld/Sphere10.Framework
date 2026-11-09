@@ -1,12 +1,12 @@
 # Blazor theme sources
 
-The framework contains original CSS adapters for the locally owned templates reviewed under `D:/Development/Sphere10/resources/common/WebTemplates`. The adapters translate colors, typography preferences, chrome, spacing, corner treatments and shadows into Sphere10 semantic theme variables. They use the existing Blazor application shell, menus, tabs, grid, dialogs and controls. They do not embed a template's HTML, JavaScript, Bootstrap distribution, icons, photographs or compiled stylesheet.
+The framework contains original CSS adapters for locally owned templates reviewed in a private template collection that this repository does not distribute. The adapters translate colors, typography preferences, chrome, spacing, corner treatments and shadows into Sphere10 semantic theme variables. They use the existing Blazor application shell, menus, tabs, grid, dialogs and controls. They do not embed a template's HTML, JavaScript, Bootstrap distribution, icons, photographs or compiled stylesheet.
 
 Each template family has one stylesheet under `src/Sphere10.Framework.Web.AspNetCore.Blazor/wwwroot/css/themes`. Related color or light/dark variants live in that family's file. Each file imports the common `themes.css` control rules. A host can include the family it uses without including the others. The existing Light, Dark, Blue and Classic blue themes remain available separately.
 
 ## Reviewed collections
 
-Paths in this table are relative to `D:/Development/Sphere10/resources/common/WebTemplates`.
+Paths in this table are relative to the root of that template collection.
 
 | Theme family and available variants | Source evidence | Source design and adaptation |
 |---|---|---|

@@ -41,7 +41,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		: base(algorithm.Config.HashFunction) {
 		Config = config;
 		_ots = algorithm;
-		Traits = Traits & DigitalSignatureSchemeTraits.PQC;
+		Traits = Traits | DigitalSignatureSchemeTraits.PQC;
 	}
 
 	public Configuration Config { get; }

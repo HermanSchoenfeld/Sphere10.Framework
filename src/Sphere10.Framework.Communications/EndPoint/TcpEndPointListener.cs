@@ -35,7 +35,7 @@ public class TcpEndPointListener : IEndPoint {
 	public IEndPoint WaitForMessage() {
 		TcpEndPoint newClient = null;
 		TcpClient client = TcpListener.AcceptTcpClient();
-		newClient = new TcpEndPoint(client);
+		newClient = new TcpEndPoint(client) { MaxMessageSize = MaxMessageSize };
 		return newClient;
 	}
 

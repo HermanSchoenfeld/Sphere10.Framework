@@ -83,7 +83,11 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 		var str = await ReceiveString(cancellationToken);
 		if (string.IsNullOrEmpty(str))
 			return Array.Empty<byte>();
-		return Convert.FromBase64String(str);
+		// Lines sent by TrySendString are plain text, already raised through ReceivedString, and carry no message bytes
+		var buffer = new byte[str.Length * 3 / 4];
+		if (!Convert.TryFromBase64String(str, buffer, out var bytesWritten))
+			return Array.Empty<byte>();
+		return buffer.AsSpan(0, bytesWritten).ToArray();
 	}
 
 	protected virtual void OnReceivedString(string @string) {

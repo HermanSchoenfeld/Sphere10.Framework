@@ -24,9 +24,7 @@ public class PageParameterProcessor {
 	}
 
 	public bool ContainsParameter(Enum parameter) {
-		return !string.IsNullOrEmpty(
-			DeterminePageParameterName(parameter)
-		);
+		return Request.Query.TryGetValue(DeterminePageParameterName(parameter), out var values) && values.Count > 0;
 	}
 
 	public T GetParameter<T>(Enum parameter) {

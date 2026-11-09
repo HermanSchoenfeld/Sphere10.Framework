@@ -45,8 +45,12 @@ public class TcpSecurityPolicies {
 		else
 			count = Interlocked.Decrement(ref _connectionCount);
 
-		if (count > MaxSimultanousConnecitons)
+		if (count > MaxSimultanousConnecitons) {
+			// A rejected connection is never opened, so it must not hold a slot
+			if (policyAction == MaxConnecitonPolicy.ConnectionOpen)
+				Interlocked.Decrement(ref _connectionCount);
 			throw new TooManyConnectionsException($"Maximum of {MaxSimultanousConnecitons} peer reached");
+		}
 	}
 
 

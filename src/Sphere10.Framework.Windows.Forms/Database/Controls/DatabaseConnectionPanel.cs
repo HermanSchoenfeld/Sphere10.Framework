@@ -24,7 +24,8 @@ public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseCon
 
 	public DatabaseConnectionPanel() {
 		InitializeComponent();
-		_dbmsCombo.Filter = _dbmsCombo.Filter = x => Sphere10Framework.Instance.ServiceProvider.HasNamedService<ConnectionPanelBase>(x.ToString());
+		// The service provider is null before the framework starts, for example in the designer, so no engine is offered then.
+		_dbmsCombo.Filter = x => Sphere10Framework.Instance.ServiceProvider?.HasNamedService<ConnectionPanelBase>(x.ToString()) ?? false;
 		_dbmsCombo.EnumType = typeof(DBMSType);
 		SelectDefaultPanel();
 	}
@@ -92,8 +93,11 @@ public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseCon
 	}
 
 	protected void ChangeConnectionPanel(ConnectionPanelBase connectionPanel) {
-		if (CurrentConnectionPanel != null)
+		if (CurrentConnectionPanel != null && CurrentConnectionPanel != connectionPanel) {
+			// The editor is a transient service that this selector owns once it is shown.
 			_connectionProviderPanel.Controls.Remove(CurrentConnectionPanel);
+			CurrentConnectionPanel.Dispose();
+		}
 		CurrentConnectionPanel = connectionPanel;
 		CurrentConnectionPanel.Dock = DockStyle.Fill;
 		CurrentConnectionPanel.DockPadding.All = 0;

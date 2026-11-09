@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using Microsoft.Data.SqlClient;
 using NUnit.Framework;
 
@@ -76,5 +77,25 @@ public class MSSQLProviderCompatibilityTests {
 		var connectionString = Tools.MSSQL.CreateConnectionString(server: "localhost", applicationIntent: legacyIntent);
 		var expected = readOnly ? ApplicationIntent.ReadOnly : ApplicationIntent.ReadWrite;
 		Assert.That(new SqlConnectionStringBuilder(connectionString).ApplicationIntent, Is.EqualTo(expected));
+	}
+
+	[TestCase("dbmssocn", "tcp:localhost")]
+	[TestCase("DBNMPNTW", "np:localhost")]
+	[TestCase("dbmslpcn", "lpc:localhost")]
+	[TestCase(null, "localhost")]
+	public void Open_NetworkLibrary_AppliesProtocolPrefix(string networkLibrary, string expectedDataSource) {
+		var dac = Tools.MSSQL.Open("localhost", "Example", networkLibrary: networkLibrary);
+		Assert.That(new SqlConnectionStringBuilder(dac.ConnectionString).DataSource, Is.EqualTo(expectedDataSource));
+	}
+
+	[Test]
+	public void Open_NetworkLibraryWithExistingPrefix_KeepsDataSource() {
+		var dac = Tools.MSSQL.Open("tcp:localhost", "Example", networkLibrary: "dbmssocn");
+		Assert.That(new SqlConnectionStringBuilder(dac.ConnectionString).DataSource, Is.EqualTo("tcp:localhost"));
+	}
+
+	[Test]
+	public void Open_UnsupportedNetworkLibrary_Throws() {
+		Assert.That(() => Tools.MSSQL.Open("localhost", "Example", networkLibrary: "dbmsrpcn"), Throws.TypeOf<NotSupportedException>());
 	}
 }

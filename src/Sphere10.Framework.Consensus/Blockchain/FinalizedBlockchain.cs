@@ -16,7 +16,8 @@ namespace Sphere10.Framework.Consensus;
 /// <summary>
 /// A decorator over <see cref="Blockchain{TBlock, TState, TBlockID, TWeight, TOperationID}"/> that tracks
 /// finalization. Maintains an <see cref="UnfinalizedBlockGraph{TBlock, TState, TBlockID, TWeight, TOperationID}"/>
-/// whose root is always synced to the finalized head.
+/// whose root is set by <see cref="AddUnfinalizedRoot"/> and moved to the finalized head by
+/// <see cref="FinalizePath"/> and <see cref="ExecuteReorg"/>. The constructor does not sync the root.
 /// </summary>
 public class FinalizedBlockchain<TBlock, TState, TBlockID, TWeight, TOperationID> : BlockchainDecorator<TBlock, TState, TBlockID, TWeight, TOperationID, Blockchain<TBlock, TState, TBlockID, TWeight, TOperationID>>
 	where TBlock : IBlockchainBlock<TState, TBlockID, TWeight, TOperationID>
@@ -52,19 +53,21 @@ public class FinalizedBlockchain<TBlock, TState, TBlockID, TWeight, TOperationID
 
 	/// <summary>
 	/// Finalizes a path from the unfinalized sector into the finalized chain.
-	/// Applies each block in order, then syncs the unfinalized root to the new head.
+	/// Applies each block in order, skipping the root when it is already the finalized head, then syncs the unfinalized root to the new head.
 	/// </summary>
+	/// <returns>The blocks that were applied, in order.</returns>
 	public IReadOnlyList<TBlock> FinalizePath(TBlockID winningHeadID) {
 		Guard.ArgumentNotNull(winningHeadID, nameof(winningHeadID));
 
 		var path = UnfinalizedSector.GetPathToRoot(winningHeadID);
-		foreach (var node in path)
+		var applyPath = IsFinalizedHead(path[0].Block) ? path.Skip(1).ToArray() : path;
+		foreach (var node in applyPath)
 			ApplyBlock(node.Block);
 
 		// Sync unfinalized sector root with the new finalized head
 		var head = Head;
 		UnfinalizedSector.SetFinalizedBlock(head.Block);
-		return path.Select(x => x.Block).ToArray();
+		return applyPath.Select(x => x.Block).ToArray();
 	}
 
 	/// <summary>
@@ -100,6 +103,9 @@ public class FinalizedBlockchain<TBlock, TState, TBlockID, TWeight, TOperationID
 		var head = Head;
 		UnfinalizedSector.SetFinalizedBlock(head.Block);
 	}
+
+	private bool IsFinalizedHead(TBlock block)
+		=> Height > 0 && UnfinalizedSector.BlockIDComparer.Equals(Head.Block.ID, block.ID);
 
 	public sealed class ReorgPlan<TReorgBlock, TReorgState, TReorgBlockID, TReorgWeight, TReorgOperationID>
 		where TReorgBlock : IBlockchainBlock<TReorgState, TReorgBlockID, TReorgWeight, TReorgOperationID>

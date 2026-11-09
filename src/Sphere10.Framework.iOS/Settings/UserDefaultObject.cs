@@ -116,7 +116,7 @@ namespace Sphere10.Framework.iOS {
 					storedValue = NSUserDefaults.StandardUserDefaults.DoubleForKey(key);
 					break;
 				case StorageClass.XMLSerialized:
-					storedValue = XmlProvider.ReadFromString(expectedValueType, NSUserDefaults.StandardUserDefaults.StringForKey(key));
+					storedValue = Tools.Xml.ReadFromString(expectedValueType, NSUserDefaults.StandardUserDefaults.StringForKey(key));
 					break;
 				default:
 					throw new Exception("Internal Error F1C3E9A8-BAD2-48AF-9533-E78DE234B353");
@@ -151,7 +151,7 @@ namespace Sphere10.Framework.iOS {
 				NSUserDefaults.StandardUserDefaults.SetDouble(ConvertExChangeType<double>(value), PropertyNameToKey(propertyName));
 				break;
 			case StorageClass.XMLSerialized:
-				NSUserDefaults.StandardUserDefaults.SetString(XmlProvider.WriteToString(key), PropertyNameToKey(propertyName));
+				NSUserDefaults.StandardUserDefaults.SetString(Tools.Xml.WriteToString(value),PropertyNameToKey(propertyName));
 				break;
 			default:
 				throw new Exception("Internal Error 01B66BCD-FDEB-4FCF-B32F-44B2C8A2A81C");

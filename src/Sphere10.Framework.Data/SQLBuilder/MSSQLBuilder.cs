@@ -15,6 +15,8 @@ namespace Sphere10.Framework.Data;
 
 public class MSSQLBuilder : SQLBuilderBase {
 
+	protected override SQLQueryResultLimitPosition QueryResultLimitPosition => SQLQueryResultLimitPosition.AfterDistinct;
+
 	public override ISQLBuilder BeginTransaction() {
 		return
 			Emit("SET XACT_ABORT ON").EndOfStatement(SQLStatementType.TCL)
@@ -51,11 +53,11 @@ public class MSSQLBuilder : SQLBuilderBase {
 	}
 
 	public override ISQLBuilder DisableAutoIncrementID(string table) {
-		return Emit("IF (SELECT count(is_identity) FROM sys.columns WHERE [object_id] = object_id('EW_Asset')) = 0 SET IDENTITY_INSERT ").TableName(table).Emit(" ON").EndOfStatement();
+		return SetIdentityInsert(table, "ON");
 	}
 
 	public override ISQLBuilder EnableAutoIncrementID(string table) {
-		return Emit("IF (SELECT count(is_identity) FROM sys.columns WHERE [object_id] = object_id('EW_Asset')) = 0 SET IDENTITY_INSERT ").TableName(table).Emit(" OFF").EndOfStatement();
+		return SetIdentityInsert(table, "OFF");
 	}
 
 	public override ISQLBuilder Select(string tableName, IEnumerable<object> columns = null, bool distinct = false, int? limit = null, int? offset = null, IEnumerable<ColumnValue> columnMatches = null, string whereClause = null,
@@ -307,6 +309,17 @@ SELECT * FROM __PAGED_RESULT WHERE __ROWNUM > {2} AND __ROWNUM <= ({2} + {1})";
 
 		}
 		return stringBuilder.ToString();
+	}
+
+	private ISQLBuilder SetIdentityInsert(string table, string setting) {
+		// SQL Server rejects IDENTITY_INSERT for a table without an identity column, so the setting is conditional on one.
+		return
+			Emit("IF EXISTS (SELECT 1 FROM sys.columns WHERE [object_id] = object_id(")
+				.Literal(FormatTableName(table, TableType.Persistent))
+				.Emit(") AND is_identity = 1) SET IDENTITY_INSERT ")
+				.TableName(table)
+				.Emit(" " + setting)
+				.EndOfStatement();
 	}
 
 }

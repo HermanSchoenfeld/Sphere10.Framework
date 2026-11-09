@@ -6,16 +6,16 @@ Welcome! This guide gets you oriented with Sphere10 Framework quickly.
 
 ## What is Sphere10 Framework?
 
-**Sphere10 Framework** is a comprehensive, production-ready .NET 10 framework providing:
+**Sphere10 Framework** is a .NET 10 framework providing:
 
-- **50+ collection types** — Lists, sets, dictionaries with advanced features (stream-backed, paged, merkle-aware)
+- **Collection types** — Lists, sets, dictionaries with advanced features (stream-backed, paged, merkle-aware)
 - **Advanced serialization** — Binary, JSON, XML with polymorphism and versioning support
 - **Data access abstraction** — Multi-database support (SQL Server, SQLite, Firebird, NHibernate)
 - **Cryptography** — Hashing, signatures, key derivation, post-quantum algorithms
 - **Networking** — TCP, UDP, WebSockets, JSON-RPC frameworks
 - **Cross-platform** — .NET 10 libraries with platform-specific adapters
 - **Tools.* utilities** — Global IntelliSense-discoverable helpers
-- **Comprehensive testing** — 2000+ tests, NUnit utilities
+- **Testing** — NUnit test suites and NUnit utilities
 
 ---
 
@@ -33,7 +33,7 @@ dotnet add package Sphere10.Framework.CryptoEx
 dotnet add package Sphere10.Framework.Communications
 ```
 
-See the [main README](../README.md#package-installation) for the complete list of available packages.
+See the [main README](../README.md#nuget-packages) for the complete list of available packages.
 
 ---
 
@@ -59,7 +59,7 @@ src/                              # 45+ framework projects
 ├── Sphere10.Framework.Drawing/   # Graphics utilities
 └── ... (more platforms)
 
-tests/                            # 2000+ unit & integration tests
+tests/                            # NUnit unit & integration tests
 docs/                             # This documentation
 ```
 
@@ -107,8 +107,7 @@ string json = Tools.Json.Serialize(obj);
 | Blazor application and component demos | [Blazor guide](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) / [Blazor tester](../utils/Sphere10.Framework.Utils.BlazorTester/README.md) |
 | Web (ASP.NET Core) | [Sphere10.Framework.Web.AspNetCore](../src/Sphere10.Framework.Web.AspNetCore/README.md) |
 | Graphics & Drawing | [Sphere10.Framework.Drawing](../src/Sphere10.Framework.Drawing/README.md) |
-| iOS Development | [Sphere10.Framework.iOS](../src/Sphere10.Framework.iOS/README.md) |
-| Android Development | [Sphere10.Framework.Android](../src/Sphere10.Framework.Android/README.md) |
+| Legacy Xamarin mobile source (not built) | [Sphere10.Framework.iOS](../src/Sphere10.Framework.iOS/README.md) / [Sphere10.Framework.Android](../src/Sphere10.Framework.Android/README.md) |
 
 ---
 

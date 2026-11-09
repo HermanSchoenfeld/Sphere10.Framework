@@ -23,7 +23,7 @@ namespace HashLib4CSharp.Tests
         [OneTimeSetUp]
         public void Setup()
         {
-            HashInstance = HashFactory.Hash64.CreateFV1a64();
+            HashInstance = HashFactory.Hash64.CreateFNV1a64();
             HashOfEmptyData = "CBF29CE484222325";
             HashOfDefaultData = "5997E22BF92B0598";
             HashOfOneToNine = "06D5573923C6CDFC";

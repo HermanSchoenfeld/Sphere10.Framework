@@ -2,6 +2,8 @@
 
 A later feature adds typed pooled-array ownership and migrates production rental sites; see [borrowed array scopes](borrow-array-scopes.md). This report's source, allocation capture and validation artifacts remain the earlier callback snapshot.
 
+The dual-direction `Scope` / `Scope<T>` structs this report measured have since been split by callback type: `ActionScope` / `ActionScope<T>` take an `Action` and `TaskScope` / `TaskScope<T>` take a `Func<ValueTask>`, with the disposal behavior the table below describes. The report keeps the names of its measured sources.
+
 Callback cleanup now uses `Scope` / `Scope<T>` with either an `Action` or a `Func<ValueTask>`. `SyncScope` / `SyncScope<T>` permit synchronous disposal only; `AsyncScope` / `AsyncScope<T>` permit asynchronous disposal only. `NoOpScope` / `NoOpScope<T>` explicitly perform no cleanup and can retain a borrowed item. These names replace the earlier `SyncActionScope`, `AsyncActionScope` and `SyncOnlyActionScope` families. Binary consumers must rebuild.
 
 The readonly structs contain their callback and optional item, with no lifecycle flags, disposal-state classes, reentry suppression or cached pending cleanup. Required callbacks and resource dependencies are guarded at construction. Default required-resource scopes are invalid; use the no-op family for intentional empty cleanup. Keep one owner and one normal disposal per acquisition. Copying or boxing a scope does not create another acquisition or coordinate finalization.

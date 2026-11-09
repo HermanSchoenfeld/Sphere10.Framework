@@ -8,16 +8,15 @@ when selecting layers and references.
 
 ## Location and ownership
 
-The Sphere10 workspace contains the `Framework` checkout and independent
-applications:
+A workspace contains the `Framework` checkout and independent applications:
 
 | Application | Location from the workspace root | Default Framework root from the application |
 |---|---|---|
 | Internal product/tool | `<Name>/` | `../Framework` |
 | Client project | `Clients/<Name>/` | `../../Framework` |
 
-For example, `SystemExpert` is an internal sibling of `Framework`, while
-`DewateringPipelineDesigner` lives under `Clients`. Resolve these paths from the
+For example, an internal tool is a sibling of `Framework`, while a client
+project lives under `Clients`. Resolve these paths from the
 chosen workspace rather than hardcoding a developer's drive or home directory.
 Honor an explicit user location and preserve established project names.
 

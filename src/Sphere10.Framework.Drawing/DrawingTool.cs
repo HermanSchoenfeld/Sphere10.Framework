@@ -20,8 +20,6 @@ using Sphere10.Framework;
 namespace Tools;
 
 public partial class Drawing {
-	private static ImageAttributes _disabledImageAttributes;
-
 	/// <summary>Returns the content alignment represented by a string format.</summary>
 	[SupportedOSPlatform("windows")]
 	public static ContentAlignment StringFormatToContentAlignment(StringFormat format) {
@@ -186,10 +184,12 @@ public partial class Drawing {
 		colors[0] = startColor;
 		colors[colors.Length - 1] = endColor;
 
-		var incrementA = ((float)(endColor.A - startColor.A)) / (float)numberOfGradients;
-		var incrementR = ((float)(endColor.R - startColor.R)) / (float)numberOfGradients;
-		var incrementG = ((float)(endColor.G - startColor.G)) / (float)numberOfGradients;
-		var incrementB = ((float)(endColor.B - startColor.B)) / (float)numberOfGradients;
+		// The colors span numberOfGradients - 1 equal steps from the start color to the end color.
+		var steps = (float)(numberOfGradients - 1);
+		var incrementA = ((float)(endColor.A - startColor.A)) / steps;
+		var incrementR = ((float)(endColor.R - startColor.R)) / steps;
+		var incrementG = ((float)(endColor.G - startColor.G)) / steps;
+		var incrementB = ((float)(endColor.B - startColor.B)) / steps;
 
 		for (var index = 1; index < (colors.Length - 1); index++)
 			colors[index] = Color.FromArgb((int)(startColor.A + incrementA * (float)index),
@@ -272,7 +272,7 @@ public partial class Drawing {
 
 	[SupportedOSPlatform("windows")]
 	public static bool TryGetImageFormatFromHeader(string filePath, out ImageFormat imageFormat) {
-		using (var fileStream = new FileStream(filePath, FileMode.Open)) {
+		using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
 			return TryGetImageFormatFromHeader(fileStream, out imageFormat);
 		}
 	}
@@ -413,33 +413,31 @@ public partial class Drawing {
 	/// Create a disabled version of the image.
 	/// </summary>
 	/// <param name="image">The image to convert</param>
-	/// <param name="background">The Color of the background behind the image. The background parameter is used to calculate the fill color of the disabled image so that it is always visible against the background.</param>
+	/// <param name="background">The Color of the background behind the image. It is accepted for parity with ControlPaint.DrawImageDisabled and does not change the result, which is always a lightened grayscale copy.</param>
 	/// <returns></returns>
 	[SupportedOSPlatform("windows")]
 	public static Image CreateDisabledImage(Image image, Color background) {
 		if (image == null)
 			return null;
 
+		// GDI+ objects are not thread-safe, so each call uses its own image attributes.
 		var imgSize = image.Size;
-		if (_disabledImageAttributes == null) {
-			var arrayJagged = new float[5][];
-			arrayJagged[0] = new float[5] { 0.2125f, 0.2125f, 0.2125f, 0f, 0f };
-			arrayJagged[1] = new float[5] { 0.2577f, 0.2577f, 0.2577f, 0f, 0f };
-			arrayJagged[2] = new float[5] { 0.0361f, 0.0361f, 0.0361f, 0f, 0f };
-			var arraySingle = new float[5];
-			arraySingle[3] = 1f;
-			arrayJagged[3] = arraySingle;
-			arrayJagged[4] = new float[5] { 0.38f, 0.38f, 0.38f, 0f, 1f };
-			var matrix = new System.Drawing.Imaging.ColorMatrix(arrayJagged);
-			_disabledImageAttributes = new System.Drawing.Imaging.ImageAttributes();
-			_disabledImageAttributes.ClearColorKey();
-
-			_disabledImageAttributes.SetColorMatrix(matrix);
-		}
+		var arrayJagged = new float[5][];
+		arrayJagged[0] = new float[5] { 0.2125f, 0.2125f, 0.2125f, 0f, 0f };
+		arrayJagged[1] = new float[5] { 0.2577f, 0.2577f, 0.2577f, 0f, 0f };
+		arrayJagged[2] = new float[5] { 0.0361f, 0.0361f, 0.0361f, 0f, 0f };
+		var arraySingle = new float[5];
+		arraySingle[3] = 1f;
+		arrayJagged[3] = arraySingle;
+		arrayJagged[4] = new float[5] { 0.38f, 0.38f, 0.38f, 0f, 1f };
+		var matrix = new System.Drawing.Imaging.ColorMatrix(arrayJagged);
 
 		var bitmap = new Bitmap(image.Width, image.Height);
+		using (var disabledImageAttributes = new System.Drawing.Imaging.ImageAttributes())
 		using (var graphics = Graphics.FromImage(bitmap)) {
-			graphics.DrawImage(image, new Rectangle(0, 0, imgSize.Width, imgSize.Height), 0, 0, imgSize.Width, imgSize.Height, GraphicsUnit.Pixel, _disabledImageAttributes);
+			disabledImageAttributes.ClearColorKey();
+			disabledImageAttributes.SetColorMatrix(matrix);
+			graphics.DrawImage(image, new Rectangle(0, 0, imgSize.Width, imgSize.Height), 0, 0, imgSize.Width, imgSize.Height, GraphicsUnit.Pixel, disabledImageAttributes);
 		}
 
 		return bitmap;

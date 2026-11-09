@@ -4,7 +4,7 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Description>Microsoft SQL Server provider for Sphere10.Framework.Data enabling vendor-independent access through the shared DAC abstractions. Includes SQL Server-specific helpers and Tools.MSSql utilities for opening connections and working with the provider.</Description>
+		<Description>Microsoft SQL Server provider for Sphere10.Framework.Data enabling vendor-independent access through the shared DAC abstractions. Includes SQL Server-specific helpers and Tools.MSSQL utilities for opening connections and working with the provider.</Description>
 		<PackageTags>sphere10 framework data database mssql sqlserver ado.net</PackageTags>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>

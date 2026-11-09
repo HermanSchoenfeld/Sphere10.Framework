@@ -128,7 +128,7 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 	public override ISQLBuilder EmitQueryResultLimit(int limit, int? offset = null) {
 		Emit("FIRST ").Emit(limit.ToString());
 		if (offset != null)
-			Emit("SKIP ").Emit(offset.Value.ToString());
+			Emit(" SKIP ").Emit(offset.Value.ToString());
 
 		return this;
 	}
@@ -146,11 +146,7 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 		TypeSwitch.For(
 			value,
 			TypeSwitch.Case<Guid>(g => Emit("CHAR_TO_UUID('{0}')", g.ToString().ToUpper())),
-			TypeSwitch.Case<byte[]>(x => {
-				Emit("CONVERT(varbinary(max), ");
-				base.Literal(value);
-				Emit(" , 1)");
-			}),
+			TypeSwitch.Case<byte[]>(x => Emit("X'").Emit(x.ToHexString(true)).Emit("'")),
 			TypeSwitch.Default(() => base.Literal(value))
 		);
 		return this;

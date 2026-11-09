@@ -9,7 +9,9 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,19 +38,35 @@ public class ImageResult : ActionResult {
 	public override void ExecuteResult(ActionContext context) {
 		try {
 			HttpResponse response = context.HttpContext.Response;
-			if (Equals(Format, ImageFormat.Jpeg)) {
-				response.ContentType = "image/jpeg";
-			} else if (Equals(Format, ImageFormat.Png)) {
-				response.ContentType = "image/png";
-			} else if (Equals(Format, ImageFormat.Gif)) {
-				response.ContentType = "image/gif";
-			} else {
-				throw (new Exception("Unsupported Image Format."));
-			}
+			response.ContentType = GetContentType();
 			Image.Save(response.Body, Format);
 		} finally {
 			Image.Dispose();
 		}
+	}
+
+	public override async Task ExecuteResultAsync(ActionContext context) {
+		// Encode into memory first, because Image.Save writes synchronously and servers reject synchronous response writes by default.
+		using var buffer = new MemoryStream();
+		try {
+			HttpResponse response = context.HttpContext.Response;
+			response.ContentType = GetContentType();
+			Image.Save(buffer, Format);
+			response.ContentLength = buffer.Length;
+			await response.Body.WriteAsync(buffer.GetBuffer().AsMemory(0, (int)buffer.Length), context.HttpContext.RequestAborted).ConfigureAwait(false);
+		} finally {
+			Image.Dispose();
+		}
+	}
+
+	private string GetContentType() {
+		if (Equals(Format, ImageFormat.Jpeg))
+			return "image/jpeg";
+		if (Equals(Format, ImageFormat.Png))
+			return "image/png";
+		if (Equals(Format, ImageFormat.Gif))
+			return "image/gif";
+		throw (new Exception("Unsupported Image Format."));
 	}
 
 }

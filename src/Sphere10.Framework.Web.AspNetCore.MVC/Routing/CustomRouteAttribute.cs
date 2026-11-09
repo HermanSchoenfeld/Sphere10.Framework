@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
@@ -16,24 +17,14 @@ namespace Sphere10.Framework.Web.AspNetCore.MVC;
 
 /// <summary>
 /// Set up a custom route for a controller. This attribute can be used
-/// multiple times on the same class. It is NOT inherited.
-/// 
+/// multiple times on the same class. It is NOT inherited. Register the routes with
+/// <see cref="RegisterCustomRoutesFromAssembly"/>, which maps each attribute as a conventional controller route.
+///
 /// <example>
-///     [CustomRoute("admin/advertorialcontent/mixtape/{action}")]
-///     [CustomRoute("my/mogsubscribe", DefaultAction = "Index")]
-///     [CustomRoute("my/ChangeSubscription/{planType}", DefaultAction = "ChangeSubscription")]
-///     [CustomRoute("my/Register", DefaultAction = "Register")]
-///     [CustomRoute("RAA/SAML2SignOn", DefaultAction = "SAML2SignOn", RaaRelayState = RaaAction.SubscriptionModify)]
-///     [CustomRoute("RAA/SAML2SignOn", DefaultAction = "SAML2SignOn", RaaRelayState = RaaAction.Subscription)]
-///     [CustomRoute("RAA/gotoOnFail", DefaultAction = "SAML2FailSubscriptionModify", RaaRelayState = RaaAction.SubscriptionModify)]
-///     [CustomRoute("RAA/gotoOnFail", DefaultAction = "SAML2FailSubscription", RaaRelayState = RaaAction.Subscription)]
-///     [CustomRoute("my/mogsubscribe/freetrial", DefaultAction = "SubscribeToPlanType", Defaults = "planType=Trial")]
-///     [CustomRoute("my/mogsubscribe/basic", DefaultAction = "SubscribeToPlanType", Defaults = "planType=Basic")]
-///     [CustomRoute("my/mogsubscribe/premium", DefaultAction = "SubscribeToPlanType", Defaults = "planType=Premium")]
-///     [CustomRoute("my/mogsubscribe/promotion", DefaultAction = "SubscribeToPromotion")]
-///     [CustomRoute("my/mogsubscribe/success", DefaultAction = "SubscribeConfirm")]
-///     [CustomRoute("my/mogsubscribe/CheckScreenName", DefaultAction = "CheckScreenName")]
-///     [CustomRoute("my/mogsubscribe/ChangePaymentMethod", DefaultAction = "ChangePaymentMethod")]
+///     [CustomRoute("admin/content/{action}")]
+///     [CustomRoute("account/register", DefaultAction = "Register")]
+///     [CustomRoute("account/plan/{planType}", DefaultAction = "ChangePlan")]
+///     [CustomRoute("account/plan/trial", DefaultAction = "SelectPlan", Defaults = "planType=Trial")]
 /// </example>
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
@@ -82,29 +73,32 @@ public sealed class CustomRouteAttribute : Attribute {
 	}
 
 
-	public static void RegisterCustomRoutesFromAssembly(Assembly assembly) {
-		assembly.GetDerivedTypes<Controller>().ForEach(ProcessType);
+	public static void RegisterCustomRoutesFromAssembly(IEndpointRouteBuilder endpoints, Assembly assembly) {
+		Guard.ArgumentNotNull(endpoints, nameof(endpoints));
+		Guard.ArgumentNotNull(assembly, nameof(assembly));
+		assembly.GetDerivedTypes<Controller>().ForEach(type => ProcessType(endpoints, type));
 	}
 
-	public static void ProcessType(Type type) {
-		(from customRouteAttribute in type.GetCustomAttributesOfType<CustomRouteAttribute>()
-		 orderby customRouteAttribute.Priority descending
-		 select customRouteAttribute)
-			.ForEach(customRouteAttribute => ProcessCustomRouteAttribute(type, customRouteAttribute));
-
+	public static void ProcessType(IEndpointRouteBuilder endpoints, Type type) {
+		Guard.ArgumentNotNull(endpoints, nameof(endpoints));
+		Guard.ArgumentNotNull(type, nameof(type));
+		var index = 0;
+		foreach (var customRouteAttribute in type.GetCustomAttributesOfType<CustomRouteAttribute>().OrderByDescending(x => x.Priority))
+			ProcessCustomRouteAttribute(endpoints, type, customRouteAttribute, $"{type.FullName}[{index++}]");
 	}
 
-	public static void ProcessCustomRouteAttribute(Type sourceType, CustomRouteAttribute attribute) {
+	public static void ProcessCustomRouteAttribute(IEndpointRouteBuilder endpoints, Type sourceType, CustomRouteAttribute attribute, string routeName) {
+		Guard.ArgumentNotNull(endpoints, nameof(endpoints));
+		Guard.ArgumentNotNull(sourceType, nameof(sourceType));
+		Guard.ArgumentNotNull(attribute, nameof(attribute));
+		Guard.ArgumentNotNullOrWhitespace(routeName, nameof(routeName));
 		var defaults = new RouteValueDictionary();
 		var defaultDict = StringExtensions.ParseQueryString(attribute.Defaults);
 		foreach (string key in defaultDict.Keys) {
 			defaults.Add(key, defaultDict[key]);
 		}
 		defaults.Add("controller", sourceType.Name.Substring(0, sourceType.Name.LastIndexOf("Controller")));
-		RouteValueDictionary constraints = new RouteValueDictionary();
-		//constraints.Add("RaaRelayState", new RaaRelayStateConstraint(attribute.RaaRelayState));
-		throw new NotImplementedException();
-		//RouteTable.Routes.Add(new Route(attribute.Url, defaults, constraints, new MvcRouteHandler()));
+		endpoints.MapControllerRoute(routeName, attribute.Url, defaults);
 	}
 
 }

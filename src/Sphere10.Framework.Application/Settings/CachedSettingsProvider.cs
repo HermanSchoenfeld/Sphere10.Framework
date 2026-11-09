@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Application;
 
-/// <summary>Caches settings identities by type and ID while borrowing the wrapped provider.</summary>
+/// <summary>Caches settings identities by type and ID while borrowing the wrapped provider, and attaches itself to the records it creates or loads.</summary>
 public class CachedSettingsProvider : SettingsProviderDecorator {
 
 	// A record identity combines its declared settings type with the provider-specific ID.
@@ -29,7 +29,7 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 	/// <inheritdoc />
 	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) {
 		var key = new SettingsKey(settingsObjectType, id);
-		var setting = base.NewSetting(settingsObjectType, id);
+		var setting = Attach(base.NewSetting(settingsObjectType, id));
 		_cache[key] = setting;
 		return setting;
 	}
@@ -39,7 +39,7 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 		cancellationToken.ThrowIfCancellationRequested();
 
 		var key = new SettingsKey(settingsObjectType, id);
-		var setting = await base.NewSettingAsync(settingsObjectType, id, cancellationToken).ConfigureAwait(false);
+		var setting = Attach(await base.NewSettingAsync(settingsObjectType, id, cancellationToken).ConfigureAwait(false));
 		_cache[key] = setting;
 		return setting;
 	}
@@ -49,7 +49,7 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 		var key = new SettingsKey(settingsObjectType, id);
 
 		if (!_cache.TryGetValue(key, out var setting)) {
-			setting = base.LoadSetting(settingsObjectType, id);
+			setting = Attach(base.LoadSetting(settingsObjectType, id));
 			_cache[key] = setting;
 		}
 
@@ -63,7 +63,7 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 		var key = new SettingsKey(settingsObjectType, id);
 
 		if (!_cache.TryGetValue(key, out var setting)) {
-			setting = await base.LoadSettingAsync(settingsObjectType, id, cancellationToken).ConfigureAwait(false);
+			setting = Attach(await base.LoadSettingAsync(settingsObjectType, id, cancellationToken).ConfigureAwait(false));
 			_cache[key] = setting;
 		}
 
@@ -75,7 +75,7 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 		var key = new SettingsKey(defaults.GetType(), defaults.ID);
 
 		if (!_cache.TryGetValue(key, out var setting)) {
-			setting = base.LoadSetting(defaults);
+			setting = Attach(base.LoadSetting(defaults));
 			_cache[key] = setting;
 		}
 
@@ -89,7 +89,7 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 		var key = new SettingsKey(defaults.GetType(), defaults.ID);
 
 		if (!_cache.TryGetValue(key, out var setting)) {
-			setting = await base.LoadSettingAsync(defaults, cancellationToken).ConfigureAwait(false);
+			setting = Attach(await base.LoadSettingAsync(defaults, cancellationToken).ConfigureAwait(false));
 			_cache[key] = setting;
 		}
 
@@ -174,5 +174,11 @@ public class CachedSettingsProvider : SettingsProviderDecorator {
 	public override async Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
 		await base.ClearSettingsAsync(cancellationToken).ConfigureAwait(false);
 		_cache.Clear();
+	}
+
+	// Records published by this cache save and delete through it, so their own Save() and Delete() keep the cache coherent.
+	private SettingsObject Attach(SettingsObject setting) {
+		setting.Provider = this;
+		return setting;
 	}
 }

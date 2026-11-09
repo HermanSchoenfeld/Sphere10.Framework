@@ -155,6 +155,25 @@ public class SqliteToolTest {
 		Assert.DoesNotThrow(() => Tools.Sqlite.Drop(GenerateTempFilename(), false));
 	}
 
+	[Test]
+	public void DatabaseManager_GenerateConnectionString_ForNewFile_CreatesDatabase() {
+		var path = GenerateTempFilename();
+		try {
+			var manager = new SqliteDatabaseManager();
+			var connectionString = manager.GenerateConnectionString(null, path, null, null, null);
+			Assert.That(Tools.Sqlite.GetFilePathFromConnectionString(connectionString), Is.EqualTo(path));
+			Assert.That(manager.DatabaseExists(connectionString), Is.False);
+
+			manager.CreateEmptyDatabase(connectionString);
+
+			Assert.That(manager.DatabaseExists(connectionString), Is.True);
+		} finally {
+			Tools.Sqlite.ClearAllPools();
+			if (File.Exists(path))
+				File.Delete(path);
+		}
+	}
+
 	protected string GenerateTempFilename() {
 		string path = Path.GetTempFileName();
 		File.Delete(path);

@@ -8,6 +8,7 @@
 
 using System;
 using System.Reflection;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
@@ -16,8 +17,8 @@ namespace Sphere10.Framework.Communications.RPC;
 //Provide host/Local api calls and binding support.
 //Can be used as a singleton, a property or an object service
 public class ApiService {
-	//All suported apis by this service		TODO: make this threadsafe
-	protected Dictionary<string, ApiMethodDescriptor> ApiBindings = new Dictionary<string, ApiMethodDescriptor>();
+	//All suported apis by this service. Client handlers read it concurrently while services are registered and removed.
+	protected ConcurrentDictionary<string, ApiMethodDescriptor> ApiBindings = new ConcurrentDictionary<string, ApiMethodDescriptor>();
 
 	//Add an entire api using RpcAPI* meta properties in the given object. Note: It does not take the ownership of the instance
 	public void AddApi(object instance) {
@@ -68,7 +69,8 @@ public class ApiService {
 					delegatArgType.Add(method.ReturnType);
 					apiMethodDescr.CallPoint = Delegate.CreateDelegate(System.Linq.Expressions.Expression.GetDelegateType(delegatArgType.ToArray()), instance, method);
 
-					ApiBindings.Add(rpcMethodName, apiMethodDescr);
+					if (!ApiBindings.TryAdd(rpcMethodName, apiMethodDescr))
+						throw new Exception($"RPC method '{rpcMethodName}' is allready registered");
 				}
 			}
 		}
@@ -84,7 +86,7 @@ public class ApiService {
 			empty = true;
 			foreach (var binding in ApiBindings) {
 				if (Object.ReferenceEquals(binding.Value.CallPoint.Target, instance)) {
-					ApiBindings.Remove(binding.Key);
+					ApiBindings.TryRemove(binding.Key, out _);
 					empty = false;
 					count++;
 					continue;
@@ -151,7 +153,9 @@ public class ApiService {
 			else
 				return new JsonResponse { Result = ret, Error = null };
 		} catch (Exception ex) {
-			return new JsonResponse { Result = null, Error = new JsonRpcException(-9, $"Call exception cought : {ex.Message}") };
+			// DynamicInvoke wraps the service method's exception, so report the service's own message
+			var callException = ex is TargetInvocationException { InnerException: not null } ? ex.InnerException : ex;
+			return new JsonResponse { Result = null, Error = new JsonRpcException(-9, $"Call exception cought : {callException.Message}") };
 		}
 	}
 }

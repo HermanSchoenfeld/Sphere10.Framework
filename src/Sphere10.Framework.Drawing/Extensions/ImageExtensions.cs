@@ -56,31 +56,35 @@ public static class ImageExtensions {
 		var actualPaddingColor = paddingColor.GetValueOrDefault(Color.Transparent);
 		var pixelFormat = newPixelFormat.GetValueOrDefault(image.PixelFormat);
 
-		var bitmap = new Bitmap(image.Width, image.Height, pixelFormat);
-		bitmap.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+		// Select the magnified area around the focus point, limited to the source image.
+		var sourceHeight = image.Height / zoomFactor;
+		var sourceWidth = image.Width / zoomFactor;
+		var startX = focusX - sourceWidth / 2;
+		var startY = focusY - sourceHeight / 2;
 
-		using (Graphics graphics = Graphics.FromImage(bitmap)) {
-			graphics.Clear(actualPaddingColor);
-			graphics.InterpolationMode = interpolationMode;
+		var sourceRectangle = new Rectangle(
+				(int)Math.Round(startX),
+				(int)Math.Round(startY),
+				(int)Math.Round(sourceWidth),
+				(int)Math.Round(sourceHeight)
+			)
+			.IntersectWith(0, 0, image.Width, image.Height);
 
-			var sourceHeight = image.Height / zoomFactor;
-			var sourceWidth = image.Width / zoomFactor;
-			var startX = focusX - sourceWidth / 2;
-			var startY = focusY - sourceHeight / 2;
-
-			var sourceRectangle = new Rectangle(
-					(int)Math.Round(startX),
-					(int)Math.Round(startY),
-					(int)Math.Round(sourceWidth),
-					(int)Math.Round(sourceHeight)
-				)
-				.IntersectWith(0, 0, image.Width, image.Height);
-
-			var destRectangle = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
-
-			graphics.DrawImage(image, sourceRectangle, destRectangle, GraphicsUnit.Pixel);
+		if (sourceRectangle.Width <= 0 || sourceRectangle.Height <= 0) {
+			var emptyBitmap = new Bitmap(image.Width, image.Height, pixelFormat);
+			emptyBitmap.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+			using (var graphics = Graphics.FromImage(emptyBitmap))
+				graphics.Clear(actualPaddingColor);
+			return emptyBitmap;
 		}
-		return bitmap;
+
+		// Copy the area at its own size, then fit it to the source dimensions with the requested resize method.
+		using var focusArea = new Bitmap(sourceRectangle.Width, sourceRectangle.Height);
+		focusArea.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+		using (var graphics = Graphics.FromImage(focusArea))
+			graphics.DrawImage(image, new Rectangle(0, 0, sourceRectangle.Width, sourceRectangle.Height), sourceRectangle, GraphicsUnit.Pixel);
+
+		return focusArea.Resize(image.Size, resizeMethod, resizeAlignment, interpolationMode, actualPaddingColor, pixelFormat);
 	}
 
 
@@ -281,12 +285,6 @@ public static class ImageExtensions {
 			return mem.ToArray();
 		}
 	}
-
-	public static void SaveToJpeg(int quality) {
-		quality = quality.ClipTo(0, 100);
-
-	}
-
 
 	/// <summary>
 	/// Save an Image as a JPeg with a given compression

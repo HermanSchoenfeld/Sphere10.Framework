@@ -66,9 +66,35 @@ public class SettingsProviderPublicationTests {
 		Assert.That(original.Secret, Is.EqualTo("remembered"));
 	}
 
+	[Test]
+	public void NullEncryptedFieldPassesThroughEncryptionAndDecryption() {
+		var options = new SecretFieldOptions();
+
+		Assert.That(() => Tools.Object.EncryptMembers(options), Throws.Nothing);
+		Assert.That(options.Secret, Is.Null);
+		Assert.That(() => Tools.Object.DecryptMembers(options), Throws.Nothing);
+		Assert.That(options.Secret, Is.Null);
+	}
+
 	public sealed class SecretOptions : SettingsObject {
 		[ProbeEncryption]
 		public string Secret { get; set; } = string.Empty;
+	}
+
+	public sealed class SecretFieldOptions : SettingsObject {
+		[NullPreservingProbeEncryption]
+		public string Secret;
+	}
+
+	// Keeps null values unchanged, as EncryptedStringAttribute does, without depending on the application's static secret.
+	public sealed class NullPreservingProbeEncryptionAttribute : EncryptedStringAttribute {
+		public override string Encrypt(string value) {
+			return value == null ? null : "cipher:" + value;
+		}
+
+		public override string Decrypt(string value) {
+			return value?.Substring("cipher:".Length);
+		}
 	}
 
 	// A deterministic attribute isolates provider encryption/decryption order without changing the application's static secret.

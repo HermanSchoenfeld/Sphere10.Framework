@@ -9,7 +9,7 @@
 namespace Sphere10.Framework.Web;
 
 /// <summary>
-/// Describes a message to a user. Currently used within the MVC pipeline (BPM) to pass warning messages in TransferResults.
+/// Describes a message to show a user, with its <see cref="UserMessageType"/>. The ASP.NET Core integration collects these per request through <c>HttpContext.GetUserMessages()</c>.
 /// </summary>
 public sealed class UserMessage {
 	public string Message { get; set; }

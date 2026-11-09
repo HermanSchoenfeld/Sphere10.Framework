@@ -8,6 +8,7 @@
 
 using System;
 
+namespace Sphere10.Framework.Web.AspNetCore;
 
 public class MicrosoftExtensionsLoggerAdapter : Sphere10.Framework.LoggerDecorator, Microsoft.Extensions.Logging.ILogger {
 	public MicrosoftExtensionsLoggerAdapter(Sphere10.Framework.ILogger decoratedLogger)
@@ -34,17 +35,20 @@ public class MicrosoftExtensionsLoggerAdapter : Sphere10.Framework.LoggerDecorat
 				break;
 			case Microsoft.Extensions.Logging.LogLevel.Trace:
 			case Microsoft.Extensions.Logging.LogLevel.Debug:
-				base.Debug(formatter(state, exception));
+				base.Debug(AppendException(formatter(state, exception), exception));
 				break;
 			case Microsoft.Extensions.Logging.LogLevel.Information:
-				base.Info(formatter(state, exception));
+				base.Info(AppendException(formatter(state, exception), exception));
 				break;
 			case Microsoft.Extensions.Logging.LogLevel.Warning:
-				base.Warning(formatter(state, exception));
+				base.Warning(AppendException(formatter(state, exception), exception));
 				break;
 			case Microsoft.Extensions.Logging.LogLevel.Error:
 			case Microsoft.Extensions.Logging.LogLevel.Critical:
-				base.Error(formatter(state, exception));
+				if (exception != null)
+					base.Exception(exception, formatter(state, exception));
+				else
+					base.Error(formatter(state, exception));
 				break;
 			default:
 				throw new NotSupportedException($"{logLevel}");
@@ -53,6 +57,12 @@ public class MicrosoftExtensionsLoggerAdapter : Sphere10.Framework.LoggerDecorat
 
 	}
 
+	private string AppendException(string message, Exception exception) {
+		if (exception == null)
+			return message;
+		var exceptionText = Options.HasFlag(Sphere10.Framework.LogOptions.ExceptionDetailEnabled) ? exception.ToDiagnosticString() : exception.ToDisplayString();
+		return string.IsNullOrWhiteSpace(message) ? exceptionText : $"{message}. {exceptionText}";
+	}
 
 }
 

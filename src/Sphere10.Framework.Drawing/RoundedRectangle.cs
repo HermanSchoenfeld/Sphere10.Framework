@@ -29,7 +29,8 @@ public struct RoundedRectangle {
 	/// <param name="roundValue">The amount to round the rectangle, from 0 to 1. Set to 0 for square corners, or 1 for a fully rounded rectangle.</param>
 	public RoundedRectangle(Rectangle rect, double roundValue) {
 		_rectangle = rect;
-		_roundValue = roundValue;
+		_roundValue = 0;
+		RoundValue = roundValue;
 	}
 
 	public Rectangle Rectangle {

@@ -21,6 +21,7 @@ public class JsonResponse {
 	[JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "error")]
 	public JsonRpcException Error { get; set; }
 
-	[JsonProperty(PropertyName = "id")] public int Id { get; set; }
+	// JSON-RPC 2.0 answers with the request's own id, which may be a number, a string or null
+	[JsonProperty(PropertyName = "id")] public object Id { get; set; }
 }
 

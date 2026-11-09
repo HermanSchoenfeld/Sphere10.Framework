@@ -7,14 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Sphere10.Framework.Web.AspNetCore.MVC;
 
 public static class UrlExtensions {
-	public static string Content(this UrlHelper urlHelper, string contentPath, bool toAbsolute = false) {
+	public static string Content(this IUrlHelper urlHelper, string contentPath, bool toAbsolute = false) {
 		var path = urlHelper.Content(contentPath);
-		var url = new Uri(HttpContextEx.Current.Request.GetUri(), path);
+		var url = new Uri(urlHelper.ActionContext.HttpContext.Request.GetUri(), path);
 
 		return toAbsolute ? url.AbsoluteUri : path;
 	}

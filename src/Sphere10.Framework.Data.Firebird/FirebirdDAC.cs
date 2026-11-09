@@ -25,9 +25,15 @@ public class FirebirdDAC : DACBase {
 
 	public override DBMSType DBMSType {
 		get {
-			if (ConnectionString != null && ConnectionString.RemoveNonAlphaNumeric().ToUpper().Contains("SERVERTYPE1"))
-				return DBMSType.FirebirdFile;
-			return DBMSType.Firebird;
+			if (string.IsNullOrWhiteSpace(ConnectionString))
+				return DBMSType.Firebird;
+			try {
+				// The provider's parser accepts every spelling of the server type, including the "Embedded" that FbConnectionStringBuilder writes.
+				return new FbConnectionStringBuilder(ConnectionString).ServerType == FbServerType.Embedded ? DBMSType.FirebirdFile : DBMSType.Firebird;
+			} catch (Exception error) when (error is ArgumentException or InvalidCastException) {
+				// A malformed connection string or server type fails when the connection opens, not here.
+				return DBMSType.Firebird;
+			}
 		}
 	}
 
@@ -156,21 +162,13 @@ public class FirebirdDAC : DACBase {
 	H.ForeignKeyName ""ForeignKeyName"",
 	H.ReferenceTable ""ReferenceTableName"",
 	H.ReferenceColumn  ""ReferenceColumnName"",
-	CASE H.update_rule 
-        WHEN 'RESTRICT' THEN 0
-        WHEN 'NO ACTION' THEN 1
+	CASE H.update_rule
         WHEN 'CASCADE' THEN 1
-        WHEN 'SET NULL' THEN 1
-        WHEN 'SET DEFAULT' THEN 1
-        ELSE 0 
+        ELSE 0
     END ""CascadeUpdate"",
-	CASE H.delete_rule 
-        WHEN 'RESTRICT' THEN 0
-        WHEN 'NO ACTION' THEN 1
+	CASE H.delete_rule
         WHEN 'CASCADE' THEN 1
-        WHEN 'SET NULL' THEN 1
-        WHEN 'SET DEFAULT' THEN 1
-        ELSE 0 
+        ELSE 0
     END ""CascadeDelete""
 FROM 
 	RDB$RELATIONS A LEFT JOIN 

@@ -43,7 +43,7 @@ public class ECDSA : StatelessDigitalSignatureScheme<ECDSA.PrivateKey, ECDSA.Pub
 			_curveParams.H,
 			_curveParams.GetSeed());
 		_secureRandom = new SecureRandom();
-		Traits = Traits & DigitalSignatureSchemeTraits.ECDSA & DigitalSignatureSchemeTraits.SupportsIES;
+		Traits = Traits | DigitalSignatureSchemeTraits.ECDSA | DigitalSignatureSchemeTraits.SupportsIES;
 	}
 
 	public override IIESAlgorithm IES => new ECIES(); // defaults to a pascalcoin style ECIES

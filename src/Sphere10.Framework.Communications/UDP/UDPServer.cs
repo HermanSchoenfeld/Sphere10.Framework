@@ -24,6 +24,7 @@ public class UDPServer : AsyncDisposable {
 	private CancellationTokenSource _stopServerTrigger;
 
 	public UDPServer(int port) {
+		Port = port;
 		_channels = new SynchronizedDictionary<IPEndPoint, UDPServerChannel>();
 		_stopServerTrigger = new CancellationTokenSource();
 	}
@@ -36,12 +37,15 @@ public class UDPServer : AsyncDisposable {
 
 	public async Task Run() {
 		Guard.Ensure(!Running, "Already running");
-		var client = new UdpClient(new IPEndPoint(IPAddress.Any, Port));
+		Running = true;
+		// Stop replaces the trigger, so this run keeps the token it was started with
+		var stopToken = _stopServerTrigger.Token;
+		using var client = new UdpClient(new IPEndPoint(IPAddress.Any, Port));
 		while (true) {
 			// TODO: refactor this loop with a thread. The task async/await overhead for a single packet is disgustingly unacceptable
 			// and evidence that the whole async/await paradigm is broken in .NET! :(
-			var result = await client.ReceiveAsync().WithCancellationToken(_stopServerTrigger.Token).IgnoringCancellationException();
-			if (_stopServerTrigger.IsCancellationRequested)
+			var result = await client.ReceiveAsync().WithCancellationToken(stopToken).IgnoringCancellationException();
+			if (stopToken.IsCancellationRequested)
 				break;
 			var endpointAccepted = IsEndpointAccepted(result.RemoteEndPoint);
 			using (_channels.EnterWriteScope()) {
@@ -72,6 +76,7 @@ public class UDPServer : AsyncDisposable {
 		// close up all the channels
 		await _channels.Values.ForEachAsync(c => DisposeChannel(c).WithExceptionHandler(error => SystemLog.Exception(error)));
 		_channels.Clear();
+		Running = false;
 	}
 
 
@@ -93,7 +98,7 @@ public class UDPServer : AsyncDisposable {
 		var channel = new UDPServerChannel(endpoint, this);
 		await channel.Close();
 		_channels.Add(endpoint, channel);
-		ChannelDestroyed?.InvokeAsync(channel);
+		ChannelCreated?.InvokeAsync(channel);
 		return channel;
 	}
 

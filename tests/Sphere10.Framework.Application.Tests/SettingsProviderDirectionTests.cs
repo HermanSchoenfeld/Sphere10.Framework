@@ -316,7 +316,7 @@ public class SettingsProviderDirectionTests {
 
 		// Verify the cache publishes the successfully persisted instance.
 		Assert.That(created.ID, Is.EqualTo("created"));
-		Assert.That(created.Provider, Is.SameAs(provider));
+		Assert.That(created.Provider, Is.SameAs(cache));
 		Assert.That(created.Secret, Is.EqualTo("initial"));
 		Assert.That(provider.SaveCalls, Is.EqualTo(1));
 		Assert.That(await cache.LoadSettingAsync(typeof(Preferences), "created"), Is.SameAs(created));

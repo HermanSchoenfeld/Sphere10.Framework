@@ -3,7 +3,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Description>C# source generators for Sphere10 Framework that generate boilerplate at compile time. Includes the AutoDirty generator that intercepts property setters and sets a dirty flag when values change.</Description>
+		<Description>C# source generators for Sphere10 Framework that generate boilerplate at compile time. Includes the AutoDirty generator that implements partial properties whose setters set a dirty flag when values change.</Description>
 		<PackageTags>sphere10 framework code-generation source-generator</PackageTags>
 		<IncludeBuildOutput>false</IncludeBuildOutput>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>

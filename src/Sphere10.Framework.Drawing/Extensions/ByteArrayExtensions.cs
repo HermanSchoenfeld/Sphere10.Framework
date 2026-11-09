@@ -24,9 +24,8 @@ public static class DrawingByteArrayExtensions {
 		if (bytes == null || bytes.Length == 0)
 			return null;
 
-		using (var mem = new MemoryStream(bytes)) {
-			return Image.FromStream(mem);
-		}
+		// GDI+ reads from the stream for the image's lifetime, so the stream stays open with the image.
+		return Image.FromStream(new MemoryStream(bytes));
 	}
 
 }

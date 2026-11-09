@@ -42,6 +42,15 @@ public class OracleDAC : DACBase {
 		throw new NotImplementedException();
 	}
 
+	protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
+		// ODP.NET runs one statement per command, and transactions belong to the DAC scope.
+		return
+			sqlBuilder
+				.Statements
+				.Where(s => s.Type != SQLStatementType.TCL && !string.IsNullOrWhiteSpace(s.SQL))
+				.Select(s => s.SQL.Trim());
+	}
+
 	protected override DataTable GetDenormalizedTableDescriptions() {
 		return this.ExecuteQuery(
 			@"SELECT 

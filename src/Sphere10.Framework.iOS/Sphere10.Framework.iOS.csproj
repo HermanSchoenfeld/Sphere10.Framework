@@ -50,8 +50,6 @@
   <ItemGroup>
     <Compile Include="AddressBook\AddressBookTool.cs" />
     <Compile Include="AppStore\iTunesAppStoreManager.cs" />
-    <Compile Include="AppStore\ProductDataRequestor.cs" />
-    <Compile Include="AppStore\ProductPurchaser.cs" />
     <Compile Include="AppStore\PurchaseResult.cs" />
     <Compile Include="AppStore\TransactionResult.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />

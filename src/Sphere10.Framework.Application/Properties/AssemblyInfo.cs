@@ -19,7 +19,6 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Sphere10.Framework.Web.AspNetCore")]
 [assembly: InternalsVisibleTo("Sphere10.Framework.Web.AspNetCore.Blazor")]
 [assembly: InternalsVisibleTo("Sphere10.Framework.Windows.Forms")]
-[assembly: InternalsVisibleTo("Sphere10.Company.Website")]
 
 // Framework regression suites exercise internal application coordination directly.
 [assembly: InternalsVisibleTo("Sphere10.Framework.Application.Tests")]

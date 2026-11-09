@@ -185,15 +185,17 @@ namespace Sphere10.Framework.NUnit {
 				if (primaryKeysNotInSource.Any()) {
 					Console.WriteLine("Primary key missing from source:");
 					foreach (var key in primaryKeysNotInSource.Select(k => k.ToArray())) {
-						Console.WriteLine("\tPK:({0}) Data:{1}".FormatWith(key.ToDelimittedString(", "), sourceDataDict[key].ToDelimittedString(", ")));
+						Console.WriteLine("\tPK:({0}) Data:{1}".FormatWith(key.ToDelimittedString(", "), destDataDict[key].ToDelimittedString(", ")));
 					}
 				}
 				Console.WriteLine();
 			}
 
-			var primaryKeyColCount = sourceTableSchema.PrimaryKeyColumns.Length;
-			var sourceDataToCompare = primaryKeyMustMatch ? sourceData : sourceData.Select(rowArr => rowArr.Skip(primaryKeyColCount).ToArray()).ToArray();
-			var destDataToCompare = primaryKeyMustMatch ? destData : destData.Select(rowArr => rowArr.Skip(primaryKeyColCount).ToArray()).ToArray();
+			// Remove the primary-key values by their column positions (1-based), wherever those columns are in the table.
+			var sourcePrimaryKeyIndexes = new HashSet<int>(sourceTableSchema.PrimaryKeyColumns.Select(col => col.Position - 1));
+			var destPrimaryKeyIndexes = new HashSet<int>(destTableSchema.PrimaryKeyColumns.Select(col => col.Position - 1));
+			var sourceDataToCompare = primaryKeyMustMatch ? sourceData : sourceData.Select(rowArr => rowArr.Where((_, index) => !sourcePrimaryKeyIndexes.Contains(index)).ToArray()).ToArray();
+			var destDataToCompare = primaryKeyMustMatch ? destData : destData.Select(rowArr => rowArr.Where((_, index) => !destPrimaryKeyIndexes.Contains(index)).ToArray()).ToArray();
 
 			// print missing data
 			var rowsNotInDestByValue = sourceDataToCompare.Except(destDataToCompare, new EnumerableEqualityComparer<object>()).ToArray();

@@ -13,6 +13,8 @@ namespace Sphere10.Framework.Data;
 
 public class MySQLBuilder : SQLBuilderBase {
 
+	protected override SQLQueryResultLimitPosition QueryResultLimitPosition => SQLQueryResultLimitPosition.EndOfQuery;
+
 	public override ISQLBuilder BeginTransaction() {
 		return Emit("START TRANSACTION").EndOfStatement(SQLStatementType.TCL);
 	}

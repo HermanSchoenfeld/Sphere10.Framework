@@ -25,10 +25,16 @@ public abstract class ProtocolChannelDataSource<TItem> : AsyncBatchDataSourceBas
 	protected ProtocolChannelDataSource(ProtocolChannel protocolChannel) {
 		ProtocolChannel = protocolChannel;
 		//ProtocolChannel.ReceivedBytes += ProtocolChannel_ReceivedBytes;
-		ProtocolChannel.Open();
+		// A constructor cannot await, and a server channel's open waits for its first client, so the open runs in the background and stays observable
+		OpenTask = ProtocolChannel.Open();
 	}
 
 	protected ProtocolChannel ProtocolChannel { get; set; }
+
+	/// <summary>
+	/// Completes when the channel has opened, and faults with the channel's error when it cannot open.
+	/// </summary>
+	public Task OpenTask { get; }
 
 	public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 

@@ -24,7 +24,7 @@ public class SaltedSignatureScheme<TPrivateKey, TPublicKey, TScheme> : DigitalSi
 	}
 	public CHF SaltingCHF { get; }
 
-	public override DigitalSignatureSchemeTraits Traits => Internal.Traits & DigitalSignatureSchemeTraits.Salted;
+	public override DigitalSignatureSchemeTraits Traits => Internal.Traits | DigitalSignatureSchemeTraits.Salted;
 
 	public virtual byte[] GenerateSalt(ReadOnlySpan<byte> message)
 		=> Tools.Crypto.GenerateCryptographicallyRandomBytes(_saltSizeBytes);

@@ -16,7 +16,7 @@ namespace Sphere10.Framework.Communications.RPC;
 public class JsonRpcException : System.Exception {
 	[JsonProperty] public int code { get; set; }
 
-	[JsonProperty("Message")] public string text { get; set; }
+	[JsonProperty("message")] public string text { get; set; }
 
 	public override string ToString() {
 		return $"RPC error {code}: {text}";

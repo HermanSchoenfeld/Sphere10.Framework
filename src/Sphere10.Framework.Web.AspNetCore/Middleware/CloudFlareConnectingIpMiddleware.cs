@@ -15,9 +15,9 @@ public class CloudflareConnectingIPMiddleware {
 
 	public async Task Invoke(HttpContext context) {
 		if (context.Request.Headers.TryGetValue("cf-connecting-ip", out var values)) {
-			var ipAddress = values.FirstOrDefault();
-			if (!string.IsNullOrEmpty(ipAddress)) {
-				context.Connection.RemoteIpAddress = IPAddress.Parse(ipAddress);
+			// A value that is not an IP address is ignored, so the connection keeps its own address.
+			if (IPAddress.TryParse(values.FirstOrDefault(), out var ipAddress)) {
+				context.Connection.RemoteIpAddress = ipAddress;
 			}
 		}
 
