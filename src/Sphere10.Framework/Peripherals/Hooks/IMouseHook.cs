@@ -27,6 +27,9 @@ public interface IMouseHook : IDeviceHook {
 
 	TimeSpan MovingStoppedInterval { get; set; }
 
+	/// <summary>Decides on the native callback whether a button event is consumed. Null passes every event through. Keep it immediate and pair a consumed press with its release.</summary>
+	Func<MouseButton, MouseButtonState, bool> ShouldIntercept { get; set; }
+
 	void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY);
 
 }
