@@ -108,9 +108,7 @@ public class BTreeLookup<K, V> : IExtendedBTreeLookup<K, V> {
 	/// <summary>
 	/// Returns whether the lookup contains any entries for the given key.
 	/// </summary>
-	public bool ContainsKey(K key) {
-		return _btree.ContainsKey(CompoundKey.From(key, 0));
-	}
+	public bool ContainsKey(K key) => _btree.ContainsKey(CompoundKey.From(key, 0));
 
 	/// <summary>
 	/// Returns all values associated with the given key.

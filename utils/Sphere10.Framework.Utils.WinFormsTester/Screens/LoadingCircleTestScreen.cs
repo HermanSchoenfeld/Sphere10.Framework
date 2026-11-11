@@ -33,11 +33,7 @@ public partial class LoadingCircleTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override LoadingCircleScreenSettings ScreenSettings {
-		get {
-			return (LoadingCircleScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override LoadingCircleScreenSettings ScreenSettings => (LoadingCircleScreenSettings)base.ScreenSettings;
 
 	/// <summary>Primes demonstration rows and starts the visible reference animations.</summary>
 	protected override void InitializeUIPrimingData() {
@@ -68,9 +64,7 @@ public partial class LoadingCircleTestScreen : ApplicationScreen {
 	}
 
 	// Bind the native appearance inputs to the same preview control immediately.
-	private void PreviewChanged(object sender, EventArgs args) {
-		ApplyPreview();
-	}
+	private void PreviewChanged(object sender, EventArgs args) => ApplyPreview();
 
 	// Pause the preview while the reference cards continue demonstrating their styles.
 	private void PausePreviewClicked(object sender, EventArgs args) {
@@ -94,19 +88,13 @@ public partial class LoadingCircleTestScreen : ApplicationScreen {
 	}
 
 	// Native event adapters await the demonstration and report failures on the screen.
-	private async void RunOverlayClicked(object sender, EventArgs args) {
-		await RunOperationAsync(true);
-	}
+	private async void RunOverlayClicked(object sender, EventArgs args) => await RunOperationAsync(true);
 
 	// The inline example uses the indicator placed on the design surface.
-	private async void RunInlineClicked(object sender, EventArgs args) {
-		await RunOperationAsync(false);
-	}
+	private async void RunInlineClicked(object sender, EventArgs args) => await RunOperationAsync(false);
 
 	// Cancellation ends the same operation; it never starts a competing animation.
-	private void CancelOperationClicked(object sender, EventArgs args) {
-		_operationCancellation?.Cancel();
-	}
+	private void CancelOperationClicked(object sender, EventArgs args) => _operationCancellation?.Cancel();
 
 	// Keep the operation, cancellation source and animation scope on the owning UI dispatcher.
 	private async Task RunOperationAsync(bool overlay) {

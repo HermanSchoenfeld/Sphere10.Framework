@@ -38,7 +38,5 @@ public readonly struct UpdateScope : IScope {
 	}
 
 	/// <summary>Completes the owned update inline on its calling thread.</summary>
-	public void Dispose() {
-		_updateable?.FinishUpdate(_behaviour);
-	}
+	public void Dispose() => _updateable?.FinishUpdate(_behaviour);
 }

@@ -45,18 +45,10 @@ public class RangeRegionChangedEventArgs : EventArgs {
 	/// <summary>
 	/// Null if the added range is empty
 	/// </summary>
-	public RangeRegion AddedRange {
-		get {
-			return _addedRange;
-		}
-	}
+	public RangeRegion AddedRange => _addedRange;
 
 	/// <summary>
 	/// Null if the removed range is empty
 	/// </summary>
-	public RangeRegion RemovedRange {
-		get {
-			return _removedRange;
-		}
-	}
+	public RangeRegion RemovedRange => _removedRange;
 }

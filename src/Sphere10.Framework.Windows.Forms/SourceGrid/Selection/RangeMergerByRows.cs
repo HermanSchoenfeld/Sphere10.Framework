@@ -109,9 +109,7 @@ public class RangeMergerByRows {
 		return rowIndex;
 	}
 
-	public bool IsEmpty() {
-		return _ranges.Count == 0;
-	}
+	public bool IsEmpty() => _ranges.Count == 0;
 
 	public bool IsSelectedRow(int rowIndex) {
 		var p = new Position(rowIndex, 0);
@@ -183,9 +181,7 @@ public class RangeMergerByRows {
 		return false;
 	}
 
-	private void SortList() {
-		_ranges.Sort(new RangeComparerByRows());
-	}
+	private void SortList() => _ranges.Sort(new RangeComparerByRows());
 
 	/// <summary>
 	/// Returns new range witch is the max of both ranges in row axis
@@ -224,7 +220,5 @@ public class RangeMergerByRows {
 			_ranges.Add(range);
 	}
 
-	private CellRange NormalizeRange(CellRange rangeToNormalize) {
-		return new CellRange(rangeToNormalize.Start.Row, _columnStart, rangeToNormalize.End.Row, _columnEnd);
-	}
+	private CellRange NormalizeRange(CellRange rangeToNormalize) => new CellRange(rangeToNormalize.Start.Row, _columnStart, rangeToNormalize.End.Row, _columnEnd);
 }

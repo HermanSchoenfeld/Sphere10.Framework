@@ -17,16 +17,12 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Windows;
 
 /// <summary>A native process inventory IDataSource with cached, searchable, sortable pages and explicit reload.</summary>
-public sealed class WindowsProcessDataSource : ReloadableSnapshotDataSource<WindowsProcessInventoryEntry> {
-	public WindowsProcessDataSource()
-		: this(CaptureProcessesAsync) { }
+public sealed class WindowsProcessDataSource : AsyncListDataSource<WindowsProcessInventoryEntry> {
+	public WindowsProcessDataSource() => DefaultSortProperty = nameof(WindowsProcessInventoryEntry.ExecutableName);
 
-	public WindowsProcessDataSource(Func<CancellationToken, Task<WindowsProcessInventoryEntry[]>> capture)
-		: base(capture) {
-		DefaultSortProperty = nameof(WindowsProcessInventoryEntry.ExecutableName);
-	}
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
 
-	private static async Task<WindowsProcessInventoryEntry[]> CaptureProcessesAsync(CancellationToken cancellationToken) {
+	protected override async Task<IEnumerable<WindowsProcessInventoryEntry>> FetchAsync(CancellationToken cancellationToken) {
 		var startedUtc = DateTime.UtcNow;
 		var entries = await Tools.Windows.Processes.GetProcessesAsync(cancellationToken).ConfigureAwait(false);
 		var rows = new List<WindowsProcessInventoryEntry>(entries.Length);

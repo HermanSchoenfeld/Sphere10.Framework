@@ -13,17 +13,11 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Observes the padlock's retained choice without treating ordinary button commands as edits.</summary>
 public sealed class PadLockButtonControlStateEventProvider : ControlStateEventProviderBase<PadLockButton> {
 	/// <summary>Attaches to the completed lock-state notification.</summary>
-	protected override void RegisterStateChangedListener(PadLockButton control, EventHandlerEx eventHandler) {
-		control.PadLockStateChanged += LockStateChanged;
-	}
+	protected override void RegisterStateChangedListener(PadLockButton control, EventHandlerEx eventHandler) => control.PadLockStateChanged += LockStateChanged;
 
 	/// <summary>Releases the same lock-state listener.</summary>
-	protected override void DeregisterStateChangedListener(PadLockButton control, EventHandlerEx eventHandler) {
-		control.PadLockStateChanged -= LockStateChanged;
-	}
+	protected override void DeregisterStateChangedListener(PadLockButton control, EventHandlerEx eventHandler) => control.PadLockStateChanged -= LockStateChanged;
 
 	// The control has already stored the new state before notifying observers.
-	private void LockStateChanged(PadLockButton control, PadLockButton.PadLockState state) {
-		NotifyStateChanged();
-	}
+	private void LockStateChanged(PadLockButton control, PadLockButton.PadLockState state) => NotifyStateChanged();
 }

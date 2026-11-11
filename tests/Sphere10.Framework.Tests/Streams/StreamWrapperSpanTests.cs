@@ -245,9 +245,7 @@ public class StreamWrapperSpanTests {
 	private sealed class ArrayTransportStream : Stream {
 		private readonly MemoryStream _stream;
 
-		public ArrayTransportStream(byte[] bytes) {
-			_stream = new MemoryStream(bytes);
-		}
+		public ArrayTransportStream(byte[] bytes) => _stream = new MemoryStream(bytes);
 
 		public int MaximumRead { get; set; } = int.MaxValue;
 		public int ArrayReads { get; private set; }

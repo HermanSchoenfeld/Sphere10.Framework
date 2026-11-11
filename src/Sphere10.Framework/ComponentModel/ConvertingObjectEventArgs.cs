@@ -22,29 +22,17 @@ public class ConvertingObjectEventArgs : System.EventArgs {
 	}
 
 	public object Value {
-		get {
-			return _value;
-		}
-		set {
-			_value = value;
-		}
+		get => _value;
+		set => _value = value;
 	}
 
 	/// <summary>
 	/// Destination type to convert the Value. Can be null if no destination type is required.
 	/// </summary>
-	public Type DestinationType {
-		get {
-			return _destinationType;
-		}
-	}
+	public Type DestinationType => _destinationType;
 
 	public ConvertingStatus ConvertingStatus {
-		get {
-			return _convertingStatus;
-		}
-		set {
-			_convertingStatus = value;
-		}
+		get => _convertingStatus;
+		set => _convertingStatus = value;
 	}
 }

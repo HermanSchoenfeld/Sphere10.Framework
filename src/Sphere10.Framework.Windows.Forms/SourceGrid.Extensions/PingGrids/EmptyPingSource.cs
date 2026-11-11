@@ -14,25 +14,17 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 /// <summary>Provides the empty data source used before a PingGrid receives items.</summary>
 public class EmptyPingSource : IPingData {
 	/// <summary>Gets the number of items in this empty source.</summary>
-	public int Count {
-		get {
-			return 0;
-		}
-	}
+	public int Count => 0;
 
 	/// <summary>Empty sources do not offer sorting.</summary>
 	public bool AllowSort {
-		get {
-			return false;
-		}
+		get => false;
 		set {
 		}
 	}
 
 	/// <summary>Rejects reads because this source has no valid item index.</summary>
-	public object GetItemValue(int index, string propertyName) {
-		throw new ArgumentOutOfRangeException(nameof(index));
-	}
+	public object GetItemValue(int index, string propertyName) => throw new ArgumentOutOfRangeException(nameof(index));
 
 	/// <summary>Sorting an empty source leaves it empty.</summary>
 	public void ApplySort(string propertyName, bool ascending) {

@@ -46,9 +46,7 @@ public class ObjectSpaceIntegrationTests {
 		}
 		using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 		Validate(hydratedOS);
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.Identity>(), Is.EqualTo(1));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.Identity>(), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -109,9 +107,7 @@ public class ObjectSpaceIntegrationTests {
 			using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 			Validate(hydratedOS);
 		}
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.Identity>(), Is.EqualTo(0));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.Identity>(), Is.EqualTo(0));
 	}
 
 	[Test]
@@ -157,9 +153,7 @@ public class ObjectSpaceIntegrationTests {
 		}
 		using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 		Validate(hydratedOS);
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.User>(), Is.EqualTo(1));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.User>(), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -352,9 +346,7 @@ public class ObjectSpaceIntegrationTests {
 		}
 		using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 		Validate(hydratedOS);
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.Account>(), Is.EqualTo(1));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.Account>(), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -440,9 +432,7 @@ public class ObjectSpaceIntegrationTests {
 		}
 		using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 		Validate(hydratedOS);
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.Account>(), Is.EqualTo(0));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.Account>(), Is.EqualTo(0));
 	}
 
 	#endregion
@@ -476,9 +466,7 @@ public class ObjectSpaceIntegrationTests {
 		}
 		using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 		Validate(hydratedOS);
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.Permission>(), Is.EqualTo(1));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.Permission>(), Is.EqualTo(1));
 	}
 
 	[Test]
@@ -512,9 +500,7 @@ public class ObjectSpaceIntegrationTests {
 		}
 		using var hydratedOS = SafeBoxTestHelper.CreateSafeBoxObjectSpace(traits, new System.IO.MemoryStream(objectSpaceBytes));
 		Validate(hydratedOS);
-		void Validate(ObjectSpace objectSpace) {
-			Assert.That(objectSpace.Count<SB.Permission>(), Is.EqualTo(1));
-		}
+		void Validate(ObjectSpace objectSpace) => Assert.That(objectSpace.Count<SB.Permission>(), Is.EqualTo(1));
 	}
 
 	#endregion

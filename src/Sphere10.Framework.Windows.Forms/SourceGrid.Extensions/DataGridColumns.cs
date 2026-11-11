@@ -21,15 +21,11 @@ public class DataGridColumns : ColumnInfoCollection {
 	}
 
 	public new DataGrid Grid {
-		get {
-			return (DataGrid)base.Grid;
-		}
+		get => (DataGrid)base.Grid;
 	}
 
 	public new DataGridColumn this[int index] {
-		get {
-			return base[index] as DataGridColumn;
-		}
+		get => base[index] as DataGridColumn;
 	}
 
 	/// <summary>
@@ -37,9 +33,7 @@ public class DataGridColumns : ColumnInfoCollection {
 	/// </summary>
 	/// <param name="gridColumnIndex"></param>
 	/// <returns></returns>
-	public System.ComponentModel.PropertyDescriptor IndexToPropertyColumn(int gridColumnIndex) {
-		return Grid.Columns[gridColumnIndex].PropertyColumn;
-	}
+	public System.ComponentModel.PropertyDescriptor IndexToPropertyColumn(int gridColumnIndex) => Grid.Columns[gridColumnIndex].PropertyColumn;
 
 	/// <summary>
 	/// Returns the index for a given DataColumn. -1 if not valid.

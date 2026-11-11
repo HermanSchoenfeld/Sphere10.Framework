@@ -26,9 +26,7 @@ public class ModalViewModel : ComponentViewModelBase {
 	/// Show the modal, returning a task that once finished signals modal completion with result.
 	/// </summary>
 	/// <returns> result of modal interaction</returns>
-	public Task<ModalResult> ShowAsync() {
-		return ModalTaskCompletionSource.Task;
-	}
+	public Task<ModalResult> ShowAsync() => ModalTaskCompletionSource.Task;
 
 	/// <summary>
 	/// Modal interactions completed with OK result.
@@ -51,9 +49,7 @@ public class ModalViewModel : ComponentViewModelBase {
 	/// <summary>
 	/// Cancel result.
 	/// </summary>
-	public void Cancel() {
-		ModalTaskCompletionSource.TrySetResult(ModalResult.Cancel);
-	}
+	public void Cancel() => ModalTaskCompletionSource.TrySetResult(ModalResult.Cancel);
 
 	/// <summary>
 	/// Modal closed result.

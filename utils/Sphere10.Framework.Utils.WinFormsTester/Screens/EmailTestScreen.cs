@@ -28,11 +28,7 @@ public partial class EmailTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override EmailScreenSettings ScreenSettings {
-		get {
-			return (EmailScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override EmailScreenSettings ScreenSettings => (EmailScreenSettings)base.ScreenSettings;
 
 	// Restoring transport choices does not replace message or password drafts.
 	protected override void CopyModelToUI() {
@@ -69,17 +65,11 @@ public partial class EmailTestScreen : ApplicationScreen {
 		MarkSettingsChanged();
 	}
 
-	private void PreferencesChanged(object sender, EventArgs e) {
-		CopyUIToModel();
-	}
+	private void PreferencesChanged(object sender, EventArgs e) => CopyUIToModel();
 
-	private async void _sendButtonAsync_Click(object sender, EventArgs e) {
-		await SendMessageAsync(false);
-	}
+	private async void _sendButtonAsync_Click(object sender, EventArgs e) => await SendMessageAsync(false);
 
-	private async void _sendButton_Click(object sender, EventArgs e) {
-		await SendMessageAsync(true);
-	}
+	private async void _sendButton_Click(object sender, EventArgs e) => await SendMessageAsync(true);
 
 	// Capture all native input before either mail API runs; the synchronous API runs away from the dispatcher.
 	private async Task SendMessageAsync(bool synchronous) {

@@ -55,9 +55,7 @@ public class HashLibAdapter : IHashFunction {
 	public void Dispose() {
 	}
 
-	public object Clone() {
-		return _hashAlgorithm.Clone();
-	}
+	public object Clone() => _hashAlgorithm.Clone();
 
 
 }

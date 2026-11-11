@@ -175,9 +175,7 @@ public class TesterIntegrationShowcaseTests {
 	}
 
 	// Ownership assertions inspect private resources only where no public testing seam is appropriate.
-	private static T Field<T>(object owner, string name) {
-		return (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
-	}
+	private static T Field<T>(object owner, string name) => (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
 
 	// Await a semantic native result while keeping the owning dispatcher responsive.
 	private static async Task WaitUntilAsync(Func<bool> predicate) {

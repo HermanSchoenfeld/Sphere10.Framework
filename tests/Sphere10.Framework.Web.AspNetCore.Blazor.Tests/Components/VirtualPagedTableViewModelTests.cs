@@ -23,16 +23,13 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 public class VirtualPagedTableViewModelTests {
 
 	internal class TestDataService<T> {
-		public TestDataService(int items) {
-			Data = new Fixture().CreateMany<T>(items).ToList();
-		}
+		public TestDataService(int items) => Data = new Fixture().CreateMany<T>(items).ToList();
 
 		private List<T> Data { get; }
 
 		public int TotalItems => Data.Count;
-		internal Task<ItemsResponse<T>> GetAsync(ItemRequest request) {
-			return Task.FromResult(new ItemsResponse<T>(Data.Skip(request.Index).Take(request.Count).ToArray(), Data.Count));
-		}
+		internal Task<ItemsResponse<T>> GetAsync(ItemRequest request)
+			=> Task.FromResult(new ItemsResponse<T>(Data.Skip(request.Index).Take(request.Count).ToArray(), Data.Count));
 	}
 
 

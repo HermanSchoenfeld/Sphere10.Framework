@@ -27,11 +27,7 @@ public partial class UrlIDTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override UrlIdScreenSettings ScreenSettings {
-		get {
-			return (UrlIdScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override UrlIdScreenSettings ScreenSettings => (UrlIdScreenSettings)base.ScreenSettings;
 
 	// Options changes affect choices, never an already generated result.
 	protected override void CopyModelToUI() {
@@ -63,9 +59,7 @@ public partial class UrlIDTestScreen : ApplicationScreen {
 		MarkSettingsChanged();
 	}
 
-	private void PreferencesChanged(object sender, EventArgs e) {
-		CopyUIToModel();
-	}
+	private void PreferencesChanged(object sender, EventArgs e) => CopyUIToModel();
 
 	// Validate overflow before generating the complete bounded range locally.
 	private void _generateButton_Click(object sender, EventArgs e) {

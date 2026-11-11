@@ -39,47 +39,29 @@ public class ProhibitedSettingsProvider : SyncSettingsProviderBase {
 	}
 
 	/// <inheritdoc />
-	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override bool ContainsSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override SettingsObject LoadSetting(SettingsObject defaults) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override SettingsObject LoadSetting(SettingsObject defaults) => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override void SaveSetting(SettingsObject settings) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override void SaveSetting(SettingsObject settings) => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override void DeleteSetting(SettingsObject settings) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override void DeleteSetting(SettingsObject settings) => throw new NotSupportedException(_exceptionMessage);
 
 	/// <inheritdoc />
-	public override void ClearSettings() {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	public override void ClearSettings() => throw new NotSupportedException(_exceptionMessage);
 
 	// No persistence primitive is available when the host prohibits settings.
-	protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) => throw new NotSupportedException(_exceptionMessage);
 
 	// Reject writes through the primitive contract as well as the public operation.
-	protected override void SaveInternal(SettingsObject settings) {
-		throw new NotSupportedException(_exceptionMessage);
-	}
+	protected override void SaveInternal(SettingsObject settings) => throw new NotSupportedException(_exceptionMessage);
 }

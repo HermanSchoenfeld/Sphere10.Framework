@@ -20,9 +20,8 @@ namespace Sphere10.Framework.Windows.Tests;
 [NonParallelizable]
 public class MigrationSecurityScopeTests {
 	[Test]
-	public void NullPrivilegesAreRejectedBeforeNativeAcquisition() {
-		Assert.That(() => new TokenPrivilegeScope(null), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("privileges"));
-	}
+	public void NullPrivilegesAreRejectedBeforeNativeAcquisition()
+		=> Assert.That(() => new TokenPrivilegeScope(null), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("privileges"));
 
 	[Test]
 	public void TokenPrivilegeLayoutMatchesSingleNativePrivilege() {

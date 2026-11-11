@@ -129,9 +129,8 @@ public class ApplicationScreenIdentityTests {
 	[TestCase(typeof(IApplicationBlock))]
 	[TestCase(typeof(IApplicationMenu))]
 	[TestCase(typeof(IApplicationMenuItem))]
-	public void SharedMetadataContractsDoNotRequireNamedIdentifiers(Type contract) {
-		Assert.That(contract.GetProperties().Select(property => property.Name), Has.None.EqualTo("Id"));
-	}
+	public void SharedMetadataContractsDoNotRequireNamedIdentifiers(Type contract)
+		=> Assert.That(contract.GetProperties().Select(property => property.Name), Has.None.EqualTo("Id"));
 
 	/// <summary>Verifies screen commands reference definitions and shared navigation does not use identifier lookup.</summary>
 	[Test]
@@ -186,19 +185,13 @@ public class ApplicationScreenIdentityTests {
 		public int Disposals { get; private set; }
 
 		/// <inheritdoc />
-		public override bool Equals(object other) {
-			return other is EqualScreen;
-		}
+		public override bool Equals(object other) => other is EqualScreen;
 
 		/// <inheritdoc />
-		public override int GetHashCode() {
-			return 1;
-		}
+		public override int GetHashCode() => 1;
 
 		/// <summary>Disposes the wrapped host through its existing ownership contract.</summary>
-		public void Dispose() {
-			Disposals++;
-		}
+		public void Dispose() => Disposals++;
 	}
 
 	#endregion

@@ -203,17 +203,13 @@ public class DisposableBaseTests {
 		}, unmanagedCleanup) : new SyncOwner(managedCleanup, unmanagedCleanup);
 
 	private sealed class SyncOwner(Action managedCleanup, Action unmanagedCleanup) : SyncDisposable {
-		protected override void DisposeInternal() {
-			managedCleanup();
-		}
+		protected override void DisposeInternal() => managedCleanup();
 
 		protected override void FreeUnmanagedResources() => unmanagedCleanup();
 	}
 
 	private sealed class AsyncOwner(Func<ValueTask> managedCleanup, Action unmanagedCleanup) : AsyncDisposable {
-		protected override ValueTask DisposeInternalAsync() {
-			return managedCleanup();
-		}
+		protected override ValueTask DisposeInternalAsync() => managedCleanup();
 
 		protected override void FreeUnmanagedResources() => unmanagedCleanup();
 	}

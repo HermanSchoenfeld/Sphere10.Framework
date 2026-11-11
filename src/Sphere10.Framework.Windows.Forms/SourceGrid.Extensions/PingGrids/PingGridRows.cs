@@ -28,9 +28,7 @@ public class PingGridRows : RowsSimpleBase {
 	}
 
 	public new PingGrid Grid {
-		get {
-			return (PingGrid)base.Grid;
-		}
+		get => (PingGrid)base.Grid;
 	}
 
 	/// <summary>
@@ -45,21 +43,15 @@ public class PingGridRows : RowsSimpleBase {
 	}
 
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the header height (row 0)
 	/// </summary>
 	public int HeaderHeight {
-		get {
-			return _headerHeight;
-		}
+		get => _headerHeight;
 		set {
 			if (_headerHeight != value) {
 				_headerHeight = value;
@@ -73,9 +65,7 @@ public class PingGridRows : RowsSimpleBase {
 	/// </summary>
 	/// <returns></returns>
 	[Obsolete]
-	public int DataSourceIndexToGridRowIndex(int dataSourceIndex) {
-		return dataSourceIndex + Grid.FixedRows;
-	}
+	public int DataSourceIndexToGridRowIndex(int dataSourceIndex) => dataSourceIndex + Grid.FixedRows;
 
 	/// <summary>
 	/// Returns the DataRowView object for a given grid row index. Return null if not applicable, for example if the DataSource is null or if the row index requested is a FixedRows
@@ -118,14 +108,10 @@ public class PingGridRows : RowsSimpleBase {
 		return -1;
 	}
 
-	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return _autoSizeMode;
-	}
+	public override AutoSizeMode GetAutoSizeMode(int row) => _autoSizeMode;
 
 	[Obsolete]
-	public void ResetRowHeigth() {
-		_rowHeights.Clear();
-	}
+	public void ResetRowHeigth() => _rowHeights.Clear();
 
 	[Obsolete]
 	public void RowDeleted(object row) {

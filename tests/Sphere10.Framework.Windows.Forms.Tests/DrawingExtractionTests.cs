@@ -29,9 +29,8 @@ public class DrawingExtractionTests {
 	[TestCase(KnownColor.White, KnownColor.Black)]
 	[TestCase(KnownColor.MidnightBlue, KnownColor.White)]
 	[TestCase(KnownColor.LightSkyBlue, KnownColor.Black)]
-	public void ContrastingTextColorSupportsDarkAndLightBackgrounds(KnownColor background, KnownColor expected) {
-		Assert.That(Tools.Drawing.GetContrastingTextColor(Color.FromKnownColor(background)), Is.EqualTo(Color.FromKnownColor(expected)));
-	}
+	public void ContrastingTextColorSupportsDarkAndLightBackgrounds(KnownColor background, KnownColor expected)
+		=> Assert.That(Tools.Drawing.GetContrastingTextColor(Color.FromKnownColor(background)), Is.EqualTo(Color.FromKnownColor(expected)));
 
 	[TestCase(ContentAlignment.TopLeft)]
 	[TestCase(ContentAlignment.TopCenter)]
@@ -120,9 +119,8 @@ public class DrawingExtractionTests {
 	[TestCase(-0.001d)]
 	[TestCase(1.001d)]
 	[TestCase(double.NaN)]
-	public void RoundedRectangleConstructorRejectsAnInvalidRoundValue(double value) {
-		Assert.That(() => new RoundedRectangle(new Rectangle(0, 0, 20, 10), value), Throws.TypeOf<ApplicationException>());
-	}
+	public void RoundedRectangleConstructorRejectsAnInvalidRoundValue(double value)
+		=> Assert.That(() => new RoundedRectangle(new Rectangle(0, 0, 20, 10), value), Throws.TypeOf<ApplicationException>());
 
 	[Test]
 	public void ColorGradientStepsEvenlyToTheEndColor() {
@@ -278,29 +276,13 @@ public class DrawingExtractionTests {
 		private readonly List<Color> _renderedColors = new();
 		private readonly List<bool> _renderedBold = new();
 
-		public RichTextBoxEx[] Editors {
-			get {
-				return _editors.ToArray();
-			}
-		}
+		public RichTextBoxEx[] Editors => _editors.ToArray();
 
-		public string[] RenderedText {
-			get {
-				return _renderedText.ToArray();
-			}
-		}
+		public string[] RenderedText => _renderedText.ToArray();
 
-		public Color[] RenderedColors {
-			get {
-				return _renderedColors.ToArray();
-			}
-		}
+		public Color[] RenderedColors => _renderedColors.ToArray();
 
-		public bool[] RenderedBold {
-			get {
-				return _renderedBold.ToArray();
-			}
-		}
+		public bool[] RenderedBold => _renderedBold.ToArray();
 
 		protected override RichTextBoxEx CreateRenderControl() {
 			var editor = base.CreateRenderControl();

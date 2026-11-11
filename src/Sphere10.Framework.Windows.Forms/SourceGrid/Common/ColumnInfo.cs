@@ -36,9 +36,7 @@ public class ColumnInfo {
 	/// Maximal width of the current Column, -1 if unlimited
 	/// </summary>
 	public int MaximalWidth {
-		get {
-			return _maximalWidth;
-		}
+		get => _maximalWidth;
 		set {
 			// Maximal width can not be smaller than minimal width
 			if (value < _minimalWidth)
@@ -55,9 +53,7 @@ public class ColumnInfo {
 	/// Minimal width of the current Column
 	/// </summary>
 	public int MinimalWidth {
-		get {
-			return _minimalWidth;
-		}
+		get => _minimalWidth;
 		set {
 			if (value < 0)
 				value = 0;
@@ -76,9 +72,7 @@ public class ColumnInfo {
 	/// Width of the current Column
 	/// </summary>
 	public int Width {
-		get {
-			return _width;
-		}
+		get => _width;
 		set {
 			if (value < _minimalWidth)
 				value = _minimalWidth;
@@ -96,21 +90,13 @@ public class ColumnInfo {
 	/// <summary>
 	/// Index of the current Column
 	/// </summary>
-	public int Index {
-		get {
-			return ((ColumnInfoCollection)Grid.Columns).IndexOf(this);
-		}
-	}
+	public int Index => ((ColumnInfoCollection)Grid.Columns).IndexOf(this);
 
 	/// <summary>
 	/// Attached Grid
 	/// </summary>
 	[Browsable(false)]
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	public CellRange Range {
 		get {
@@ -126,24 +112,16 @@ public class ColumnInfo {
 	/// </summary>
 	[Browsable(false)]
 	public object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
+		get => _tag;
+		set => _tag = value;
 	}
 
 	/// <summary>
 	/// Flags for autosize and stretch
 	/// </summary>
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
 	/// <summary>
@@ -151,9 +129,7 @@ public class ColumnInfo {
 	/// Internally set the width to 0 to hide a column.
 	/// </summary>
 	public bool Visible {
-		get {
-			return _visible;
-		}
+		get => _visible;
 		set {
 			if (value != _visible) {
 				_visible = value;

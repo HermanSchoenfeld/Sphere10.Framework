@@ -34,9 +34,7 @@ public class DateTimeTypeConverter : TypeConverter {
 	}
 
 	/// <summary>Creates a converter with the selected parsing and display configuration.</summary>
-	public DateTimeTypeConverter(string toStringFormat) {
-		_format = toStringFormat;
-	}
+	public DateTimeTypeConverter(string toStringFormat) => _format = toStringFormat;
 
 	/// <summary>Creates a converter with the selected parsing and display configuration.</summary>
 	public DateTimeTypeConverter(string toStringFormat, string[] parseFormats) {
@@ -53,48 +51,32 @@ public class DateTimeTypeConverter : TypeConverter {
 
 	/// <summary>Gets or sets the fallback converter used for operations outside the custom string conversion.</summary>
 	public TypeConverter BaseTypeConverter {
-		get {
-			return _baseTypeConverter;
-		}
-		set {
-			_baseTypeConverter = value;
-		}
+		get => _baseTypeConverter;
+		set => _baseTypeConverter = value;
 	}
 
 	/// <summary>
 	/// DateTimeStyle for Parse operations. DefaultValue: AllowInnerWhite|AllowLeadingWhite|AllowTrailingWhite|AllowWhiteSpaces
 	/// </summary>
 	public DateTimeStyles DateTimeStyles {
-		get {
-			return _dateTimeStyles;
-		}
-		set {
-			_dateTimeStyles = value;
-		}
+		get => _dateTimeStyles;
+		set => _dateTimeStyles = value;
 	}
 
 	/// <summary>
 	/// Format of the Date. Example: G, g, d, D. Default value : G
 	/// </summary>
 	public string Format {
-		get {
-			return _format;
-		}
-		set {
-			_format = value;
-		}
+		get => _format;
+		set => _format = value;
 	}
 
 	/// <summary>
 	/// Formats to check when parse the string. If null call with no format the parse method. Default value: null
 	/// </summary>
 	public string[] ParseFormats {
-		get {
-			return _parseFormats;
-		}
-		set {
-			_parseFormats = value;
-		}
+		get => _parseFormats;
+		set => _parseFormats = value;
 	}
 
 	/// <summary>Converts configured string values and delegates other inputs to the fallback converter.</summary>
@@ -139,39 +121,26 @@ public class DateTimeTypeConverter : TypeConverter {
 	}
 
 	/// <summary>Delegates instance creation from property values to the fallback converter.</summary>
-	public override object CreateInstance(ITypeDescriptorContext context, IDictionary propertyValues) {
-		return _baseTypeConverter.CreateInstance(context, propertyValues);
-	}
+	public override object CreateInstance(ITypeDescriptorContext context, IDictionary propertyValues) => _baseTypeConverter.CreateInstance(context, propertyValues);
 
 	/// <summary>Reports whether the fallback converter supports instance creation.</summary>
-	public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetCreateInstanceSupported(context);
-	}
+	public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) => _baseTypeConverter.GetCreateInstanceSupported(context);
 
 	/// <summary>Returns the properties supplied by the fallback converter.</summary>
-	public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
-		return _baseTypeConverter.GetProperties(context, value, attributes);
-	}
+	public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes)
+		=> _baseTypeConverter.GetProperties(context, value, attributes);
 
 	/// <summary>Reports whether the fallback converter supplies editable properties.</summary>
-	public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetPropertiesSupported(context);
-	}
+	public override bool GetPropertiesSupported(ITypeDescriptorContext context) => _baseTypeConverter.GetPropertiesSupported(context);
 
 	/// <summary>Returns the fallback converter's standard values.</summary>
-	public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValues(context);
-	}
+	public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) => _baseTypeConverter.GetStandardValues(context);
 
 	/// <summary>Reports whether the fallback converter restricts values to its standard list.</summary>
-	public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValuesExclusive(context);
-	}
+	public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => _baseTypeConverter.GetStandardValuesExclusive(context);
 
 	/// <summary>Reports whether the fallback converter supplies standard values.</summary>
-	public override bool GetStandardValuesSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValuesSupported(context);
-	}
+	public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => _baseTypeConverter.GetStandardValuesSupported(context);
 
 	// Resolve the caller's culture before using the current culture fallback.
 	private CultureInfo GetCulture(CultureInfo requestedCulture) {

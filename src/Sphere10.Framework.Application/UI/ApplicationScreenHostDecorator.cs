@@ -46,143 +46,89 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : IApplicationSc
 	}
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock[] AvailableBlocks {
-		get {
-			return InternalHost.AvailableBlocks;
-		}
-	}
+	public virtual IApplicationBlock[] AvailableBlocks => InternalHost.AvailableBlocks;
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock[] Blocks {
-		get {
-			return InternalHost.Blocks;
-		}
-	}
+	public virtual IApplicationBlock[] Blocks => InternalHost.Blocks;
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock ActiveBlock {
-		get {
-			return InternalHost.ActiveBlock;
-		}
-	}
+	public virtual IApplicationBlock ActiveBlock => InternalHost.ActiveBlock;
 
 	/// <inheritdoc />
-	public virtual IApplicationBlock SelectedBlock {
-		get {
-			return InternalHost.SelectedBlock;
-		}
-	}
+	public virtual IApplicationBlock SelectedBlock => InternalHost.SelectedBlock;
 
 	/// <inheritdoc />
-	public virtual IApplicationScreen ActiveScreen {
-		get {
-			return InternalHost.ActiveScreen;
-		}
-	}
+	public virtual IApplicationScreen ActiveScreen => InternalHost.ActiveScreen;
 
 	/// <inheritdoc />
-	public virtual IUserInterfaceServices UserInterfaceServices {
-		get {
-			return InternalHost.UserInterfaceServices;
-		}
-	}
+	public virtual IUserInterfaceServices UserInterfaceServices => InternalHost.UserInterfaceServices;
 
 	/// <inheritdoc />
 	public virtual ScreenMode ScreenMode {
-		get {
-			return InternalHost.ScreenMode;
-		}
-		set {
-			InternalHost.ScreenMode = value;
-		}
+		get => InternalHost.ScreenMode;
+		set => InternalHost.ScreenMode = value;
 	}
 
 	/// <inheritdoc />
-	public virtual bool HasUnsavedChanges {
-		get {
-			return InternalHost.HasUnsavedChanges;
-		}
-	}
+	public virtual bool HasUnsavedChanges => InternalHost.HasUnsavedChanges;
 
 	/// <summary>Initializes registered screen policies and the initial selection through the guarded transition owner.</summary>
-	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) {
-		return InternalHost.InitializeAsync(cancellationToken);
-	}
+	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) => InternalHost.InitializeAsync(cancellationToken);
 
 	/// <summary>Changes the browsed navigation block independently of the visible screen.</summary>
-	public virtual Task SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.SelectBlockAsync(block, cancellationToken);
-	}
+	public virtual Task SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default)
+		=> InternalHost.SelectBlockAsync(block, cancellationToken);
 
 	/// <summary>Activates the block's registered default or selects the block when no default is declared.</summary>
-	public virtual Task<IApplicationScreen> ActivateBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.ActivateBlockAsync(block, cancellationToken);
-	}
+	public virtual Task<IApplicationScreen> ActivateBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default)
+		=> InternalHost.ActivateBlockAsync(block, cancellationToken);
 
 	/// <summary>Resolves a registered screen and activates it through the host's existing lifetime policy.</summary>
-	public virtual Task<IApplicationScreen> ActivateScreenAsync(IApplicationBlock block, Type screenType, string title = null, CancellationToken cancellationToken = default) {
-		return InternalHost.ActivateScreenAsync(block, screenType, title, cancellationToken);
-	}
+	public virtual Task<IApplicationScreen> ActivateScreenAsync(IApplicationBlock block, Type screenType, string title = null, CancellationToken cancellationToken = default)
+		=> InternalHost.ActivateScreenAsync(block, screenType, title, cancellationToken);
 
 	/// <summary>Resolves a registered screen and activates it through the host's existing lifetime policy.</summary>
-	public virtual Task<IApplicationScreen> ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken = default) {
-		return InternalHost.ActivateScreenAsync(block, item, cancellationToken);
-	}
+	public virtual Task<IApplicationScreen> ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken = default)
+		=> InternalHost.ActivateScreenAsync(block, item, cancellationToken);
 
 	/// <summary>Opens the exact registration owned by the supplied block.</summary>
-	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
-		return InternalHost.OpenScreenAsync(block, definition, cancellationToken);
-	}
+	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default)
+		=> InternalHost.OpenScreenAsync(block, definition, cancellationToken);
 
 	/// <summary>Opens the exact registration owned by the supplied block.</summary>
-	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
-		return InternalHost.OpenScreenAsync(block, registration, cancellationToken);
-	}
+	public virtual Task<IApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default)
+		=> InternalHost.OpenScreenAsync(block, registration, cancellationToken);
 
 	/// <summary>Shows a retained screen through the platform's detached presentation support.</summary>
-	public virtual Task<bool> ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken = default) {
-		return InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
-	}
+	public virtual Task<bool> ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken = default)
+		=> InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
 
 	/// <summary>Registers an available block and its canonical screen definitions.</summary>
-	public virtual Task RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.RegisterBlockAsync(block, cancellationToken);
-	}
+	public virtual Task RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default)
+		=> InternalHost.RegisterBlockAsync(block, cancellationToken);
 
 	/// <summary>Closes a registered block's screens through their guards before removing the registration.</summary>
-	public virtual Task<bool> UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.UnregisterBlockAsync(block, cancellationToken);
-	}
+	public virtual Task<bool> UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default)
+		=> InternalHost.UnregisterBlockAsync(block, cancellationToken);
 
 	/// <summary>Clears the current presentation after its navigation guard accepts.</summary>
-	public virtual Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) {
-		return InternalHost.ClearSelectionAsync(cancellationToken);
-	}
+	public virtual Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) => InternalHost.ClearSelectionAsync(cancellationToken);
 
 	/// <summary>Changes presentation mode after any required screen closures are accepted.</summary>
-	public virtual Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default) {
-		return InternalHost.TrySetScreenModeAsync(mode, cancellationToken);
-	}
+	public virtual Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default)
+		=> InternalHost.TrySetScreenModeAsync(mode, cancellationToken);
 
 	/// <summary>Checks whether the current presentation permits navigation.</summary>
-	public virtual Task<bool> CanNavigateAsync(CancellationToken cancellationToken = default) {
-		return InternalHost.CanNavigateAsync(cancellationToken);
-	}
+	public virtual Task<bool> CanNavigateAsync(CancellationToken cancellationToken = default) => InternalHost.CanNavigateAsync(cancellationToken);
 
 	/// <summary>Publishes presentation changes for a retained screen.</summary>
-	public virtual void NotifyScreenChanged(IApplicationScreen screen) {
-		InternalHost.NotifyScreenChanged(screen);
-	}
+	public virtual void NotifyScreenChanged(IApplicationScreen screen) => InternalHost.NotifyScreenChanged(screen);
 
 	/// <summary>Disposes the wrapped host through its existing ownership contract.</summary>
-	public virtual void Dispose() {
-		InternalHost.Dispose();
-	}
+	public virtual void Dispose() => InternalHost.Dispose();
 
 	/// <summary>Awaits disposal of the wrapped host.</summary>
-	public virtual ValueTask DisposeAsync() {
-		return InternalHost.DisposeAsync();
-	}
+	public virtual ValueTask DisposeAsync() => InternalHost.DisposeAsync();
 }
 
 /// <summary>Forwards typed host operations while retaining neutral interface dispatch.</summary>
@@ -220,229 +166,143 @@ public abstract class ApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>
 	}
 
 	/// <inheritdoc />
-	public virtual TBlock[] AvailableBlocks {
-		get {
-			return InternalHost.AvailableBlocks;
-		}
-	}
+	public virtual TBlock[] AvailableBlocks => InternalHost.AvailableBlocks;
 
 	/// <inheritdoc />
-	public virtual TBlock[] Blocks {
-		get {
-			return InternalHost.Blocks;
-		}
-	}
+	public virtual TBlock[] Blocks => InternalHost.Blocks;
 
 	/// <inheritdoc />
-	public virtual TBlock ActiveBlock {
-		get {
-			return InternalHost.ActiveBlock;
-		}
-	}
+	public virtual TBlock ActiveBlock => InternalHost.ActiveBlock;
 
 	/// <inheritdoc />
-	public virtual TBlock SelectedBlock {
-		get {
-			return InternalHost.SelectedBlock;
-		}
-	}
+	public virtual TBlock SelectedBlock => InternalHost.SelectedBlock;
 
 	/// <inheritdoc />
-	public virtual TScreen ActiveScreen {
-		get {
-			return InternalHost.ActiveScreen;
-		}
-	}
+	public virtual TScreen ActiveScreen => InternalHost.ActiveScreen;
 
 	/// <inheritdoc />
-	public virtual IUserInterfaceServices UserInterfaceServices {
-		get {
-			return InternalHost.UserInterfaceServices;
-		}
-	}
+	public virtual IUserInterfaceServices UserInterfaceServices => InternalHost.UserInterfaceServices;
 
 	/// <inheritdoc />
 	public virtual ScreenMode ScreenMode {
-		get {
-			return InternalHost.ScreenMode;
-		}
-		set {
-			InternalHost.ScreenMode = value;
-		}
+		get => InternalHost.ScreenMode;
+		set => InternalHost.ScreenMode = value;
 	}
 
 	/// <inheritdoc />
-	public virtual bool HasUnsavedChanges {
-		get {
-			return InternalHost.HasUnsavedChanges;
-		}
-	}
+	public virtual bool HasUnsavedChanges => InternalHost.HasUnsavedChanges;
 
 	/// <summary>Initializes registered screen policies and the initial selection through the guarded transition owner.</summary>
-	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) {
-		return InternalHost.InitializeAsync(cancellationToken);
-	}
+	public virtual Task InitializeAsync(CancellationToken cancellationToken = default) => InternalHost.InitializeAsync(cancellationToken);
 
 	/// <summary>Changes the browsed navigation block independently of the visible screen.</summary>
-	public virtual Task SelectBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.SelectBlockAsync(block, cancellationToken);
-	}
+	public virtual Task SelectBlockAsync(TBlock block, CancellationToken cancellationToken = default) => InternalHost.SelectBlockAsync(block, cancellationToken);
 
 	/// <summary>Activates the block's registered default or selects the block when no default is declared.</summary>
-	public virtual Task<TScreen> ActivateBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.ActivateBlockAsync(block, cancellationToken);
-	}
+	public virtual Task<TScreen> ActivateBlockAsync(TBlock block, CancellationToken cancellationToken = default)
+		=> InternalHost.ActivateBlockAsync(block, cancellationToken);
 
 	/// <summary>Resolves a registered screen and activates it through the host's existing lifetime policy.</summary>
-	public virtual Task<TScreen> ActivateScreenAsync(TBlock block, Type screenType, string title = null, CancellationToken cancellationToken = default) {
-		return InternalHost.ActivateScreenAsync(block, screenType, title, cancellationToken);
-	}
+	public virtual Task<TScreen> ActivateScreenAsync(TBlock block, Type screenType, string title = null, CancellationToken cancellationToken = default)
+		=> InternalHost.ActivateScreenAsync(block, screenType, title, cancellationToken);
 
 	/// <summary>Resolves a registered screen and activates it through the host's existing lifetime policy.</summary>
-	public virtual Task<TScreen> ActivateScreenAsync(TBlock block, IScreenMenuItem item, CancellationToken cancellationToken = default) {
-		return InternalHost.ActivateScreenAsync(block, item, cancellationToken);
-	}
+	public virtual Task<TScreen> ActivateScreenAsync(TBlock block, IScreenMenuItem item, CancellationToken cancellationToken = default)
+		=> InternalHost.ActivateScreenAsync(block, item, cancellationToken);
 
 	/// <summary>Opens the exact registration owned by the supplied block.</summary>
-	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default) {
-		return InternalHost.OpenScreenAsync(block, definition, cancellationToken);
-	}
+	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken = default)
+		=> InternalHost.OpenScreenAsync(block, definition, cancellationToken);
 
 	/// <summary>Opens the exact registration owned by the supplied block.</summary>
-	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
-		return InternalHost.OpenScreenAsync(block, registration, cancellationToken);
-	}
+	public virtual Task<TScreen> OpenScreenAsync(TBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default)
+		=> InternalHost.OpenScreenAsync(block, registration, cancellationToken);
 
 	/// <summary>Shows a retained screen through the platform's detached presentation support.</summary>
-	public virtual Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default) {
-		return InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
-	}
+	public virtual Task<bool> ShowScreenUndockedAsync(TScreen screen, CancellationToken cancellationToken = default)
+		=> InternalHost.ShowScreenUndockedAsync(screen, cancellationToken);
 
 	/// <summary>Registers an available block and its canonical screen definitions.</summary>
-	public virtual Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.RegisterBlockAsync(block, cancellationToken);
-	}
+	public virtual Task RegisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) => InternalHost.RegisterBlockAsync(block, cancellationToken);
 
 	/// <summary>Closes a registered block's screens through their guards before removing the registration.</summary>
-	public virtual Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default) {
-		return InternalHost.UnregisterBlockAsync(block, cancellationToken);
-	}
+	public virtual Task<bool> UnregisterBlockAsync(TBlock block, CancellationToken cancellationToken = default)
+		=> InternalHost.UnregisterBlockAsync(block, cancellationToken);
 
 	/// <summary>Clears the current presentation after its navigation guard accepts.</summary>
-	public virtual Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) {
-		return InternalHost.ClearSelectionAsync(cancellationToken);
-	}
+	public virtual Task<bool> ClearSelectionAsync(CancellationToken cancellationToken = default) => InternalHost.ClearSelectionAsync(cancellationToken);
 
 	/// <summary>Changes presentation mode after any required screen closures are accepted.</summary>
-	public virtual Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default) {
-		return InternalHost.TrySetScreenModeAsync(mode, cancellationToken);
-	}
+	public virtual Task<bool> TrySetScreenModeAsync(ScreenMode mode, CancellationToken cancellationToken = default)
+		=> InternalHost.TrySetScreenModeAsync(mode, cancellationToken);
 
 	/// <summary>Checks whether the current presentation permits navigation.</summary>
-	public virtual Task<bool> CanNavigateAsync(CancellationToken cancellationToken = default) {
-		return InternalHost.CanNavigateAsync(cancellationToken);
-	}
+	public virtual Task<bool> CanNavigateAsync(CancellationToken cancellationToken = default) => InternalHost.CanNavigateAsync(cancellationToken);
 
 	/// <summary>Publishes presentation changes for a retained screen.</summary>
-	public virtual void NotifyScreenChanged(TScreen screen) {
-		InternalHost.NotifyScreenChanged(screen);
-	}
+	public virtual void NotifyScreenChanged(TScreen screen) => InternalHost.NotifyScreenChanged(screen);
 
 	/// <summary>Disposes the wrapped host through its existing ownership contract.</summary>
-	public virtual void Dispose() {
-		InternalHost.Dispose();
-	}
+	public virtual void Dispose() => InternalHost.Dispose();
 
 	/// <summary>Awaits disposal of the wrapped host.</summary>
-	public virtual ValueTask DisposeAsync() {
-		return InternalHost.DisposeAsync();
-	}
+	public virtual ValueTask DisposeAsync() => InternalHost.DisposeAsync();
 
 	#region Base Interface Bridges
 	// Preserve neutral calls to virtual class members when a subclass explicitly remaps the typed interface.
-	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks {
-		get {
-			return AvailableBlocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.Blocks {
-		get {
-			return Blocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.Blocks => Blocks;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.ActiveBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.ActiveBlock => ActiveBlock;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.SelectedBlock {
-		get {
-			return SelectedBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.SelectedBlock => SelectedBlock;
 
 	/// <inheritdoc />
-	IApplicationScreen IApplicationScreenHost.ActiveScreen {
-		get {
-			return ActiveScreen;
-		}
-	}
+	IApplicationScreen IApplicationScreenHost.ActiveScreen => ActiveScreen;
 
 	/// <inheritdoc />
-	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return SelectBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> SelectBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.ActivateBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return await ActivateBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.ActivateBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> await ActivateBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, Type screenType, string title, CancellationToken cancellationToken) {
-		return await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), screenType, title, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, Type screenType, string title, CancellationToken cancellationToken)
+		=> await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), screenType, title, cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken) {
-		return await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken)
+		=> await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) {
-		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken)
+		=> await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken) {
-		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken)
+		=> await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
 
 	/// <inheritdoc />
-	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) {
-		return ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
-	}
+	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken)
+		=> ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 
 	/// <inheritdoc />
-	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	Task<bool> IApplicationScreenHost.UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return UnregisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	Task<bool> IApplicationScreenHost.UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> UnregisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	void IApplicationScreenHost.NotifyScreenChanged(IApplicationScreen screen) {
-		NotifyScreenChanged(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
-	}
+	void IApplicationScreenHost.NotifyScreenChanged(IApplicationScreen screen)
+		=> NotifyScreenChanged(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
 	#endregion
 }
 

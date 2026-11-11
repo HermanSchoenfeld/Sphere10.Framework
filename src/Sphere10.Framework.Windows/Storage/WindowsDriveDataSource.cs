@@ -6,19 +6,23 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Storage;
 
 /// <summary>A logical-drive inventory IDataSource. Network capacity is probed only when explicitly requested.</summary>
-public sealed class WindowsDriveDataSource : ReloadableSnapshotDataSource<WindowsDriveInfo> {
-	public WindowsDriveDataSource(bool probeNetworkDrives = false)
-		: this(token => Tools.Windows.Drives.GetDrivesAsync(probeNetworkDrives, token)) { }
+public sealed class WindowsDriveDataSource : AsyncListDataSource<WindowsDriveInfo> {
+	private readonly bool _probeNetworkDrives;
 
-	public WindowsDriveDataSource(Func<CancellationToken, Task<WindowsDriveInfo[]>> capture)
-		: base(capture) {
+	public WindowsDriveDataSource(bool probeNetworkDrives = false) {
+		_probeNetworkDrives = probeNetworkDrives;
 		DefaultSortProperty = nameof(WindowsDriveInfo.Name);
 	}
+
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsDriveInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Drives.GetDrivesAsync(_probeNetworkDrives, cancellationToken).ConfigureAwait(false);
 }

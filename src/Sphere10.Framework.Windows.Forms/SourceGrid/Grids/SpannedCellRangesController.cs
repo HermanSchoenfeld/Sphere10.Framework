@@ -28,11 +28,7 @@ public class SpannedCellRangesController : ISpannedCellRangesController {
 		get; private set;
 	}
 
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid => _grid;
 
 	/// <summary>
 	/// Adds or updates given range.

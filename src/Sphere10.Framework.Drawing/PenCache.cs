@@ -95,19 +95,13 @@ public class PenCache : SyncDisposable {
 		public DashStyle Style { get; }
 
 		// Preserve the exact color and floating-point comparisons used by the original drawing cache.
-		public bool Equals(PenKey other) {
-			return other.Color == Color && other.Style == Style && other.Width == Width;
-		}
+		public bool Equals(PenKey other) => other.Color == Color && other.Style == Style && other.Width == Width;
 
 		// Keep object-based equality consistent with typed cache keys.
-		public override bool Equals(object obj) {
-			return obj is PenKey other && Equals(other);
-		}
+		public override bool Equals(object obj) => obj is PenKey other && Equals(other);
 
 		// Hash the same fields that define equality for the typed cache lookup.
-		public override int GetHashCode() {
-			return HashCode.Combine(Color, Width, Style);
-		}
+		public override int GetHashCode() => HashCode.Combine(Color, Width, Style);
 	}
 
 	#endregion

@@ -22,15 +22,7 @@ public class IndexRangeEventArgs : EventArgs {
 		_count = count;
 	}
 
-	public int StartIndex {
-		get {
-			return _startIndex;
-		}
-	}
+	public int StartIndex => _startIndex;
 
-	public int Count {
-		get {
-			return _count;
-		}
-	}
+	public int Count => _count;
 }

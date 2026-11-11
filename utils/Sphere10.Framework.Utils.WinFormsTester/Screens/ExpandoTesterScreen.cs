@@ -21,27 +21,17 @@ public partial class ExpandoTesterScreen : ApplicationScreen {
 	}
 
 	// Task commands share one visible event log rather than being inert sample captions.
-	private void TaskClicked(object sender, EventArgs args) {
-		_outputTextBox.AppendText(((Control)sender).Text + Environment.NewLine);
-	}
+	private void TaskClicked(object sender, EventArgs args) => _outputTextBox.AppendText(((Control)sender).Text + Environment.NewLine);
 
 	// A contained native checkbox remains an ordinary independently editable input.
-	private void FilterChanged(object sender, EventArgs args) {
-		_outputTextBox.AppendText("Include archived categories: " + _checkBox1.Checked + Environment.NewLine);
-	}
+	private void FilterChanged(object sender, EventArgs args) => _outputTextBox.AppendText("Include archived categories: " + _checkBox1.Checked + Environment.NewLine);
 
 	// The tree retains its own native selection behavior inside the expando.
-	private void CategorySelected(object sender, TreeViewEventArgs args) {
-		_outputTextBox.AppendText("Category selected: " + args.Node.FullPath + Environment.NewLine);
-	}
+	private void CategorySelected(object sender, TreeViewEventArgs args) => _outputTextBox.AppendText("Category selected: " + args.Node.FullPath + Environment.NewLine);
 
 	// Whole-pane actions use the same actual group state as an individual caption click.
-	private void ExpandAllClicked(object sender, EventArgs args) {
-		_expando1.Collapsed = _expando2.Collapsed = _expando3.Collapsed = false;
-	}
+	private void ExpandAllClicked(object sender, EventArgs args) => _expando1.Collapsed = _expando2.Collapsed = _expando3.Collapsed = false;
 
 	// The empty/reference group also participates in repeated collapse and expansion.
-	private void CollapseAllClicked(object sender, EventArgs args) {
-		_expando1.Collapsed = _expando2.Collapsed = _expando3.Collapsed = true;
-	}
+	private void CollapseAllClicked(object sender, EventArgs args) => _expando1.Collapsed = _expando2.Collapsed = _expando3.Collapsed = true;
 }

@@ -53,12 +53,8 @@ public partial class ExceptionDialog : DialogEx {
 	}
 
 	/// <summary>Awaitably shows the exception dialog (titled "Error") without blocking the calling context.</summary>
-	public static Task ShowAsync(IWin32Window owner, Exception error) {
-		return ShowAsync(owner, "Error", error);
-	}
+	public static Task ShowAsync(IWin32Window owner, Exception error) => ShowAsync(owner, "Error", error);
 
 	/// <summary>Shows the exception using an available live window when no owner is supplied.</summary>
-	public static Task ShowAsync(Exception Error) {
-		return ShowAsync(null, Error);
-	}
+	public static Task ShowAsync(Exception Error) => ShowAsync(null, Error);
 }

@@ -147,9 +147,8 @@ public class BTreeProfilerTests {
 	[TestCase("pages", BTreeStorage.FileStream)]
 	[TestCase("cache", BTreeStorage.OSMemoryMapped)]
 	[TestCase("buffers", BTreeStorage.ManagedNodes)]
-	public void RejectsMeaninglessStorageParameters(string suite, BTreeStorage storage) {
-		Assert.That(() => BTreeProfile.CreateSuite(suite, storage, BTreeFamily.BTreePlus, BTreeKeyShape.Int32), Throws.ArgumentException);
-	}
+	public void RejectsMeaninglessStorageParameters(string suite, BTreeStorage storage)
+		=> Assert.That(() => BTreeProfile.CreateSuite(suite, storage, BTreeFamily.BTreePlus, BTreeKeyShape.Int32), Throws.ArgumentException);
 
 	[TestCase(3, true)]
 	[TestCase(16384, true)]
@@ -164,9 +163,8 @@ public class BTreeProfilerTests {
 	}
 
 	[Test]
-	public void RunnerRequiresExplicitWorkloadSelection() {
-		Assert.That(() => BTreeProfiler.Run(new[] { "--suite", "baseline" }, TextWriter.Null), Throws.ArgumentException);
-	}
+	public void RunnerRequiresExplicitWorkloadSelection()
+		=> Assert.That(() => BTreeProfiler.Run(new[] { "--suite", "baseline" }, TextWriter.Null), Throws.ArgumentException);
 
 	private static BTreeProfilerSettings Settings(BTreeProfile profile) {
 		var path = Path.Combine(Path.GetTempPath(), "Sphere10-BTreeProfilerTests", Guid.NewGuid().ToString("N"));

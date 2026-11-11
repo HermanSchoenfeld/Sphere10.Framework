@@ -107,38 +107,28 @@ internal sealed class ProjectionChecksumIndex<TItem, TProjection> : ProjectionIn
 		Store.Insert(index, checksum);
 	}
 
-	protected override void OnRemoved(long index) {
-		Store.Remove(index);
-	}
+	protected override void OnRemoved(long index) => Store.Remove(index);
 
-	protected override void OnReaped(long index) {
-		Store.Reap(index);
-	}
+	protected override void OnReaped(long index) => Store.Reap(index);
 
 	protected override void OnContainerClearing() {
 		Store.Clear();
 		Store.Detach();
 	}
 
-	protected override void OnContainerCleared() {
-		Store.Attach();
-	}
+	protected override void OnContainerCleared() => Store.Attach();
 
 	protected override bool IsNullValue((TProjection, int) projection) => projection.Item1 is null;
 
 	private class ChecksumBasedLookup : ILookup<TProjection, long> {
 		private readonly ProjectionChecksumIndex<TItem, TProjection> _parent;
 
-		public ChecksumBasedLookup(ProjectionChecksumIndex<TItem, TProjection> parent) {
-			_parent = parent;
-		}
+		public ChecksumBasedLookup(ProjectionChecksumIndex<TItem, TProjection> parent) => _parent = parent;
 
 		public IEnumerator<IGrouping<TProjection, long>> GetEnumerator()
 			=> throw new NotSupportedException("Enumerating checksum stored indices is not supported");
 
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		public bool Contains(TProjection key) {
 			using var _ = _parent.Streams.EnterAccessScope();

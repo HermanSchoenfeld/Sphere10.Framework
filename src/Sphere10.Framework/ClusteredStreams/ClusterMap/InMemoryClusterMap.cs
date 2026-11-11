@@ -28,15 +28,11 @@ public sealed class InMemoryClusterMap : ClusterMap {
 
 	internal override long ClusterCount => _clusters.Count;
 
-	internal override void AddCluster(Cluster cluster) {
-		_clusters.Add(cluster);
-	}
+	internal override void AddCluster(Cluster cluster) => _clusters.Add(cluster);
 
 	internal override Cluster GetCluster(long index) => _clusters[index];
 
-	internal override void UpdateCluster(long index, Cluster cluster) {
-		_clusters.Update(index, cluster);
-	}
+	internal override void UpdateCluster(long index, Cluster cluster) => _clusters.Update(index, cluster);
 
 	internal override void RemoveEndClusters(long quantity) {
 		_clusters.RemoveRange(_clusters.Count - quantity, quantity);  // Migrate included removals in @event

@@ -50,11 +50,7 @@ public class CellControl : Cell {
 	/// <summary>
 	/// Gets the control associated with this cell.
 	/// </summary>
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control => _control;
 
 	public override void BindToGrid(Grid grid, Position position) {
 		base.BindToGrid(grid, position);

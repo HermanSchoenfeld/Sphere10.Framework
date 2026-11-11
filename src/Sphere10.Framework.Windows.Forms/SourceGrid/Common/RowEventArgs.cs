@@ -23,19 +23,13 @@ public class RowEventArgs : EventArgs {
 	/// Constructor
 	/// </summary>
 	/// <param name="row"></param>
-	public RowEventArgs(int row) {
-		_row = row;
-	}
+	public RowEventArgs(int row) => _row = row;
 
 	/// <summary>
 	/// Row
 	/// </summary>
 	public int Row {
-		get {
-			return _row;
-		}
-		set {
-			_row = value;
-		}
+		get => _row;
+		set => _row = value;
 	}
 }

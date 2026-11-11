@@ -36,9 +36,7 @@ public partial class VisualGridConfigurationContextMenu : ContextMenuStrip {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public new ToolStripItemCollection Items {
-		get {
-			return base.Items;
-		}
+		get => base.Items;
 	}
 
 	// Only already configured screen-owned grids can execute these commands; opening never reads storage.

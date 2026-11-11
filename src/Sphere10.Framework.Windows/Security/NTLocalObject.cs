@@ -20,8 +20,8 @@ public abstract class NTLocalObject : NTObject {
 	public Action Checkpoint { get; set; } = () => { };
 
 	public string Description {
-		get { return _description; }
-		set { _description = value; }
+		get => _description;
+		set => _description = value;
 	}
 
 	/// <summary>

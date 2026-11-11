@@ -90,30 +90,26 @@ public static class ILoggerExtensions {
 	/// <summary>
 	/// Logs a debug message with a component and method prefix.
 	/// </summary>
-	public static void Debug(this ILogger logger, string componentName, string methodName, string message) {
-		logger.Debug($"{ComponentPrefix(componentName, methodName)} {message}");
-	}
+	public static void Debug(this ILogger logger, string componentName, string methodName, string message)
+		=> logger.Debug($"{ComponentPrefix(componentName, methodName)} {message}");
 
 	/// <summary>
 	/// Logs an informational message with a component and method prefix.
 	/// </summary>
-	public static void Info(this ILogger logger, string componentName, string methodName, string message) {
-		logger.Info($"{ComponentPrefix(componentName, methodName)} {message}");
-	}
+	public static void Info(this ILogger logger, string componentName, string methodName, string message)
+		=> logger.Info($"{ComponentPrefix(componentName, methodName)} {message}");
 
 	/// <summary>
 	/// Logs a warning message with a component and method prefix.
 	/// </summary>
-	public static void Warning(this ILogger logger, string componentName, string methodName, string message) {
-		logger.Warning($"{ComponentPrefix(componentName, methodName)} {message}");
-	}
+	public static void Warning(this ILogger logger, string componentName, string methodName, string message)
+		=> logger.Warning($"{ComponentPrefix(componentName, methodName)} {message}");
 
 	/// <summary>
 	/// Logs an error message with a component and method prefix.
 	/// </summary>
-	public static void Error(this ILogger logger, string componentName, string methodName, string message) {
-		logger.Error($"{ComponentPrefix(componentName, methodName)} {message}");
-	}
+	public static void Error(this ILogger logger, string componentName, string methodName, string message)
+		=> logger.Error($"{ComponentPrefix(componentName, methodName)} {message}");
 
 	/// <summary>
 	/// Emits every error in a <see cref="Result"/> to the logger using component and method prefixes.
@@ -126,9 +122,8 @@ public static class ILoggerExtensions {
 	/// <summary>
 	/// Logs an exception with component and method prefixes, preserving the optional message.
 	/// </summary>
-	public static void Exception(this ILogger logger, Exception exception,  string componentName, string methodName, string message = null) {
-		logger.Exception(exception, $"{ComponentPrefix(componentName, methodName)} {message}");
-	}
+	public static void Exception(this ILogger logger, Exception exception,  string componentName, string methodName, string message = null)
+		=> logger.Exception(exception, $"{ComponentPrefix(componentName, methodName)} {message}");
 
 	/// <summary>
 	/// Measures and logs the duration of a scoped operation using <see cref="ILogger.Debug(string)"/>.

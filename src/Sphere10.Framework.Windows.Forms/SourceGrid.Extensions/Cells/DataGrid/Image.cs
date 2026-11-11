@@ -12,7 +12,5 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.DataGrid;
 
 public class Image : Cells.Virtual.Image {
-	public Image() {
-		Model.AddModel(new DataGridValueModel());
-	}
+	public Image() => Model.AddModel(new DataGridValueModel());
 }

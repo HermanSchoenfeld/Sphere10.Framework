@@ -96,41 +96,17 @@ public class AnchorArea : ICloneable, IComparable {
 			Middle = true;
 	}
 
-	public static AnchorArea Empty {
-		get {
-			return new AnchorArea();
-		}
-	}
+	public static AnchorArea Empty => new AnchorArea();
 
-	public bool IsEmpty {
-		get {
-			return HasRight == false && HasLeft == false && HasTop == false && HasBottom == false && Middle == false && Center == false;
-		}
-	}
+	public bool IsEmpty => HasRight == false && HasLeft == false && HasTop == false && HasBottom == false && Middle == false && Center == false;
 
-	public bool HasRight {
-		get {
-			return float.IsNaN(Right) == false;
-		}
-	}
+	public bool HasRight => float.IsNaN(Right) == false;
 
-	public bool HasLeft {
-		get {
-			return float.IsNaN(Left) == false;
-		}
-	}
+	public bool HasLeft => float.IsNaN(Left) == false;
 
-	public bool HasTop {
-		get {
-			return float.IsNaN(Top) == false;
-		}
-	}
+	public bool HasTop => float.IsNaN(Top) == false;
 
-	public bool HasBottom {
-		get {
-			return float.IsNaN(Bottom) == false;
-		}
-	}
+	public bool HasBottom => float.IsNaN(Bottom) == false;
 
 	/// <summary>
 	/// Calculate the destination area of
@@ -185,21 +161,14 @@ public class AnchorArea : ICloneable, IComparable {
 		return destination;
 	}
 
-	public override string ToString() {
-		return "Top " + Top.ToString() + ", " + "Bottom " + Bottom.ToString() + ", " + "Right " + Right.ToString() + ", " + "Left " + Left.ToString();
-	}
+	public override string ToString()
+		=> "Top " + Top.ToString() + ", " + "Bottom " + Bottom.ToString() + ", " + "Right " + Right.ToString() + ", " + "Left " + Left.ToString();
 
-	public override int GetHashCode() {
-		return (int)(Top + Bottom + Left + Right);
-	}
+	public override int GetHashCode() => (int)(Top + Bottom + Left + Right);
 
-	public override bool Equals(object obj) {
-		return CompareTo(obj) == 0;
-	}
+	public override bool Equals(object obj) => CompareTo(obj) == 0;
 
-	public object Clone() {
-		return new AnchorArea(this);
-	}
+	public object Clone() => new AnchorArea(this);
 
 	public int CompareTo(object obj) {
 		if (obj == null)
@@ -253,9 +222,7 @@ public class AnchorArea : ICloneable, IComparable {
 		return a.Equals(b);
 	}
 
-	public static bool operator !=(AnchorArea a, AnchorArea b) {
-		return !(a == b);
-	}
+	public static bool operator !=(AnchorArea a, AnchorArea b) => !(a == b);
 } ///// <summary>
 
 ///// TypeConverter for the Border structure. Use the ODL definition language for string conversion.

@@ -32,9 +32,7 @@ public partial class ConnectionPanelTestScreen : ApplicationScreen {
 	}
 
 	// The component performs its own provider-specific asynchronous test.
-	private async void _testConnectionButton_Click(object sender, EventArgs e) {
-		await TestConnectionAsync();
-	}
+	private async void _testConnectionButton_Click(object sender, EventArgs e) => await TestConnectionAsync();
 
 	// Test only on an explicit command, and keep connection testing off the native dispatcher.
 	private async Task TestConnectionAsync() {
@@ -55,9 +53,7 @@ public partial class ConnectionPanelTestScreen : ApplicationScreen {
 		}
 	}
 
-	private void AcceptClicked(object sender, EventArgs e) {
-		AcceptDraft();
-	}
+	private void AcceptClicked(object sender, EventArgs e) => AcceptDraft();
 
 	// Retain only this editor's draft; accepting does not write credentials or change a database.
 	private void AcceptDraft() {

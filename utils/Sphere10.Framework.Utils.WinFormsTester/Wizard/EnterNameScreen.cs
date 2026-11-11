@@ -35,9 +35,7 @@ public partial class EnterNameScreen : DemoWizardScreenBase {
 	}
 
 	// Copy validated input into this wizard session.
-	protected override void CopyUIToModel() {
-		Model.Name = _textBox1.Text.Trim();
-	}
+	protected override void CopyUIToModel() => Model.Name = _textBox1.Text.Trim();
 
 	// Restore the retained model when this page is presented again.
 	protected override void CopyModelToUI() {

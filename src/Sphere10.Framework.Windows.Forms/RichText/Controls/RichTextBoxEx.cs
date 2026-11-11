@@ -12,7 +12,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using static Sphere10.Framework.Windows.WinAPI.RICHEDIT;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -39,10 +38,10 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 			var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
 
 			// Get the underline style.
-			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_GETCHARFORMAT, SCF_SELECTION, ref characterFormat);
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_GETCHARFORMAT, WinAPI.RICHEDIT.SCF_SELECTION, ref characterFormat);
 
 			// Default to no underline.
-			if ((characterFormat.dwMask & CFM_UNDERLINETYPE) == 0)
+			if ((characterFormat.dwMask & WinAPI.RICHEDIT.CFM_UNDERLINETYPE) == 0)
 				return UnderlineStyle.None;
 
 			var type = (byte)(characterFormat.bUnderlineType & 0x0F);
@@ -59,11 +58,11 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 				color = UnderlineColor.Black;
 
 			var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
-			characterFormat.dwMask = CFM_UNDERLINETYPE;
+			characterFormat.dwMask = WinAPI.RICHEDIT.CFM_UNDERLINETYPE;
 			characterFormat.bUnderlineType = (byte)((byte)value | (byte)color);
 
 			// Set the underline type.
-			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_SETCHARFORMAT, SCF_SELECTION, ref characterFormat);
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_SETCHARFORMAT, WinAPI.RICHEDIT.SCF_SELECTION, ref characterFormat);
 		}
 	}
 
@@ -80,10 +79,10 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 			var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
 
 			// Get the underline color.
-			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_GETCHARFORMAT, SCF_SELECTION, ref characterFormat);
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_GETCHARFORMAT, WinAPI.RICHEDIT.SCF_SELECTION, ref characterFormat);
 
 			// Default to black.
-			if ((characterFormat.dwMask & CFM_UNDERLINETYPE) == 0)
+			if ((characterFormat.dwMask & WinAPI.RICHEDIT.CFM_UNDERLINETYPE) == 0)
 				return UnderlineColor.Black;
 
 			var style = (byte)(characterFormat.bUnderlineType & 0xF0);
@@ -100,11 +99,11 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 				value = UnderlineColor.Black;
 
 			var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
-			characterFormat.dwMask = CFM_UNDERLINETYPE;
+			characterFormat.dwMask = WinAPI.RICHEDIT.CFM_UNDERLINETYPE;
 			characterFormat.bUnderlineType = (byte)((byte)style | (byte)value);
 
 			// Set the underline color.
-			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_SETCHARFORMAT, SCF_SELECTION, ref characterFormat);
+			Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_SETCHARFORMAT, WinAPI.RICHEDIT.SCF_SELECTION, ref characterFormat);
 		}
 	}
 
@@ -137,9 +136,7 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 	/// </summary>
 	[DefaultValue(null)]
 	public Sphere10.Framework.ComponentModel.IValidator Validator {
-		get {
-			return _validator;
-		}
+		get => _validator;
 		set {
 			if (_validator != value) {
 				if (_validator != null)
@@ -187,11 +184,7 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 	/// Returns true when the control is performing some
 	/// internal updates
 	/// </summary>
-	public bool InternalUpdating {
-		get {
-			return (_updating != 0);
-		}
-	}
+	public bool InternalUpdating => (_updating != 0);
 
 	/// <summary>
 	/// Maintains performance while updating.
@@ -217,10 +210,10 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 			return;
 
 		// Prevent the control from raising any events.
-		_oldEventMask = Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_SETEVENTMASK, 0, 0);
+		_oldEventMask = Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_SETEVENTMASK, 0, 0);
 
 		// Prevent the control from redrawing itself.
-		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WM_SETREDRAW, 0, 0);
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.WM_SETREDRAW, 0, 0);
 	}
 
 	/// <summary>
@@ -239,10 +232,10 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 			return;
 
 		// Allow the control to redraw itself.
-		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WM_SETREDRAW, 1, 0);
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.WM_SETREDRAW, 1, 0);
 
 		// Allow the control to raise event messages.
-		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_SETEVENTMASK, 0, _oldEventMask);
+		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_SETEVENTMASK, 0, _oldEventMask);
 
 		// is needed, as otherwise last action has not been performed
 		Refresh();
@@ -338,17 +331,16 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 
 	// Win32 API
 	// Applies the selected character format to the native editor.
-	protected void SetCharFormatMessage(ref CHARFORMAT characterFormat) {
-		Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), EM_SETCHARFORMAT, SCF_SELECTION, ref characterFormat);
-	}
+	protected void SetCharFormatMessage(ref WinAPI.RICHEDIT.CHARFORMAT characterFormat)
+		=> Tools.Windows.Win32.SendMessage(new HandleRef(this, Handle), WinAPI.RICHEDIT.EM_SETCHARFORMAT, WinAPI.RICHEDIT.SCF_SELECTION, ref characterFormat);
 
 	/// <summary>
 	/// Set the selection to superscript
 	/// </summary>
 	private void SetSelectionSuper() {
 		var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
-		characterFormat.dwMask = CFM_SUPERSCRIPT;
-		characterFormat.dwEffects |= CFE_SUPERSCRIPT;
+		characterFormat.dwMask = WinAPI.RICHEDIT.CFM_SUPERSCRIPT;
+		characterFormat.dwEffects |= WinAPI.RICHEDIT.CFE_SUPERSCRIPT;
 		SetCharFormatMessage(ref characterFormat);
 	}
 
@@ -357,8 +349,8 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 	/// </summary>
 	private void SetSelectionSub() {
 		var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
-		characterFormat.dwMask = CFM_SUBSCRIPT;
-		characterFormat.dwEffects |= CFE_SUBSCRIPT;
+		characterFormat.dwMask = WinAPI.RICHEDIT.CFM_SUBSCRIPT;
+		characterFormat.dwEffects |= WinAPI.RICHEDIT.CFE_SUBSCRIPT;
 		SetCharFormatMessage(ref characterFormat);
 	}
 
@@ -367,13 +359,11 @@ public class RichTextBoxEx : System.Windows.Forms.RichTextBox {
 	/// </summary>
 	private void SetSelectionNormal() {
 		var characterFormat = Tools.Windows.Win32.CreateCharacterFormat();
-		characterFormat.dwMask = CFM_SUBSCRIPT | CFM_SUPERSCRIPT;
-		characterFormat.dwEffects &= ~CFE_SUPERSCRIPT;
-		characterFormat.dwEffects &= ~CFE_SUBSCRIPT;
+		characterFormat.dwMask = WinAPI.RICHEDIT.CFM_SUBSCRIPT | WinAPI.RICHEDIT.CFM_SUPERSCRIPT;
+		characterFormat.dwEffects &= ~WinAPI.RICHEDIT.CFE_SUPERSCRIPT;
+		characterFormat.dwEffects &= ~WinAPI.RICHEDIT.CFE_SUBSCRIPT;
 		SetCharFormatMessage(ref characterFormat);
 	}
 
-	void ValidatorChanged(object sender, EventArgs args) {
-		ApplyValidatorRules();
-	}
+	void ValidatorChanged(object sender, EventArgs args) => ApplyValidatorRules();
 }

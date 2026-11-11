@@ -805,9 +805,7 @@ public class BlazorGridControllerTests {
 	private sealed record Query(string SearchTerm, int PageSize, int Page, string SortProperty, SortDirection Direction);
 
 	private sealed class ProbeSource : AsyncBatchDataSourceBase<Row>, IDisposable {
-		public ProbeSource(params Row[] rows) {
-			Rows.AddRange(rows);
-		}
+		public ProbeSource(params Row[] rows) => Rows.AddRange(rows);
 
 		public List<Row> Rows { get; } = new();
 

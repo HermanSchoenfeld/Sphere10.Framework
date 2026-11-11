@@ -12,11 +12,13 @@ using System.Linq;
 
 namespace Sphere10.Framework.Utils.BlazorTester.Showcase.Cards;
 
-/// <summary>The same lazy, invalidatable IDataSource feeds a custom card presentation and the native BlazorGrid.</summary>
-public sealed class CollectionDataSource : BulkFetchDataSource<CreativeCollection> {
-	public CollectionDataSource(CollectionCatalogue catalogue)
-		: base(() => new ExtendedList<CreativeCollection>(catalogue.ReadAll())) {
+/// <summary>One lazily loaded capture of the catalogue which feeds a custom card presentation and the native BlazorGrid; a refreshable decorator replaces it on demand.</summary>
+public sealed class CollectionDataSource : ListDataSource<CreativeCollection> {
+	private readonly CollectionCatalogue _catalogue;
+
+	public CollectionDataSource(CollectionCatalogue catalogue) {
 		Guard.ArgumentNotNull(catalogue, nameof(catalogue));
+		_catalogue = catalogue;
 	}
 
 	public string FilterText { get; set; } = string.Empty;
@@ -25,12 +27,11 @@ public sealed class CollectionDataSource : BulkFetchDataSource<CreativeCollectio
 
 	public string CategoryFilter { get; set; } = string.Empty;
 
-	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.CanRead | DataSourceCapabilities.CanSearch
-		| DataSourceCapabilities.CanSort | DataSourceCapabilities.CanPage;
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
 
 	public override DataSourceItems<CreativeCollection> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 		Guard.ArgumentGT(pageLength, 0, nameof(pageLength));
-		IEnumerable<CreativeCollection> query = Future.Value;
+		IEnumerable<CreativeCollection> query = List;
 		foreach (var term in new[] { FilterText, searchTerm }.Where(term => !string.IsNullOrWhiteSpace(term))) {
 			var trimmed = term.Trim();
 			query = query.Where(item => item.Name.Contains(trimmed, StringComparison.OrdinalIgnoreCase)
@@ -56,4 +57,6 @@ public sealed class CollectionDataSource : BulkFetchDataSource<CreativeCollectio
 		page = Math.Clamp(page, 0, Math.Max(0, (items.Length - 1) / pageLength));
 		return new DataSourceItems<CreativeCollection> { Items = items.Skip(page * pageLength).Take(pageLength).ToArray(), Page = page, TotalCount = items.Length };
 	}
+
+	protected override IEnumerable<CreativeCollection> Fetch() => _catalogue.ReadAll().ToArray();
 }

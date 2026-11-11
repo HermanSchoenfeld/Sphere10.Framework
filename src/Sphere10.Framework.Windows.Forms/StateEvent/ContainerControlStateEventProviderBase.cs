@@ -20,9 +20,7 @@ public class ContainerControlStateEventProviderBase<TControl> : ControlStateEven
 	private EventHandlerEx _childStateChanged;
 
 	/// <summary>Creates an empty observer; child subscriptions begin with SetControl.</summary>
-	public ContainerControlStateEventProviderBase() {
-		_childEventProviders = new Dictionary<Control, IControlStateEventProvider>();
-	}
+	public ContainerControlStateEventProviderBase() => _childEventProviders = new Dictionary<Control, IControlStateEventProvider>();
 
 	/// <summary>Observes existing children and follows subsequent additions and removals.</summary>
 	protected override void RegisterStateChangedListener(TControl control, EventHandlerEx eventHandler) {
@@ -43,14 +41,10 @@ public class ContainerControlStateEventProviderBase<TControl> : ControlStateEven
 	}
 
 	/// <summary>Returns the container's state-bearing child candidates.</summary>
-	protected virtual IEnumerable<Control> GetChildControls(TControl control) {
-		return control.Controls.Cast<Control>();
-	}
+	protected virtual IEnumerable<Control> GetChildControls(TControl control) => control.Controls.Cast<Control>();
 
 	// Follow runtime parenting without retaining anonymous delegates on former owners.
-	private void ChildAdded(object sender, ControlEventArgs args) {
-		TryObserveChild(args.Control);
-	}
+	private void ChildAdded(object sender, ControlEventArgs args) => TryObserveChild(args.Control);
 
 	// A child's provider is unique to this attachment; controls remain borrowed.
 	private bool TryObserveChild(Control control) {
@@ -66,14 +60,10 @@ public class ContainerControlStateEventProviderBase<TControl> : ControlStateEven
 	}
 
 	/// <summary>Lets an owning composite replace broad child observation with its own semantic events.</summary>
-	protected virtual bool ShouldObserveChildControl(Control control) {
-		return true;
-	}
+	protected virtual bool ShouldObserveChildControl(Control control) => true;
 
 	// Reparented children stop contributing to their previous container immediately.
-	private void ChildRemoved(object sender, ControlEventArgs args) {
-		TryUnobserveChild(args.Control);
-	}
+	private void ChildRemoved(object sender, ControlEventArgs args) => TryUnobserveChild(args.Control);
 
 	// Remove the exact child, including listeners retained by nested containers.
 	private void TryUnobserveChild(Control control) {
@@ -86,7 +76,5 @@ public class ContainerControlStateEventProviderBase<TControl> : ControlStateEven
 	}
 
 	// Also release disposed children whose specialized parent does not raise ControlRemoved.
-	private void ChildDisposed(object sender, EventArgs args) {
-		TryUnobserveChild((Control)sender);
-	}
+	private void ChildDisposed(object sender, EventArgs args) => TryUnobserveChild((Control)sender);
 }

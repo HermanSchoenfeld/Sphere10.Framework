@@ -23,13 +23,9 @@ public class MSSQLBuilder : SQLBuilderBase {
 				.Emit("BEGIN TRANSACTION").EndOfStatement(SQLStatementType.TCL);
 	}
 
-	public override ISQLBuilder CommitTransaction() {
-		return Emit("COMMIT TRANSACTION").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder CommitTransaction() => Emit("COMMIT TRANSACTION").EndOfStatement(SQLStatementType.TCL);
 
-	public override ISQLBuilder RollbackTransaction() {
-		return Emit("ROLLBACK TRANSACTION").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder RollbackTransaction() => Emit("ROLLBACK TRANSACTION").EndOfStatement(SQLStatementType.TCL);
 
 	public override ISQLBuilder TableName(string tableName, TableType tableType) {
 		if (tableName.StartsWith("[")) {
@@ -52,13 +48,9 @@ public class MSSQLBuilder : SQLBuilderBase {
 		return Emit(objectName);
 	}
 
-	public override ISQLBuilder DisableAutoIncrementID(string table) {
-		return SetIdentityInsert(table, "ON");
-	}
+	public override ISQLBuilder DisableAutoIncrementID(string table) => SetIdentityInsert(table, "ON");
 
-	public override ISQLBuilder EnableAutoIncrementID(string table) {
-		return SetIdentityInsert(table, "OFF");
-	}
+	public override ISQLBuilder EnableAutoIncrementID(string table) => SetIdentityInsert(table, "OFF");
 
 	public override ISQLBuilder Select(string tableName, IEnumerable<object> columns = null, bool distinct = false, int? limit = null, int? offset = null, IEnumerable<ColumnValue> columnMatches = null, string whereClause = null,
 	                                   string orderByClause = null, bool endStatement = false) {
@@ -119,17 +111,11 @@ SELECT * FROM __PAGED_RESULT WHERE __ROWNUM > {2} AND __ROWNUM <= ({2} + {1})";
 		return this;
 	}
 
-	public override ISQLBuilder NextSequenceValue(string sequenceName) {
-		throw new NotSupportedException();
-	}
+	public override ISQLBuilder NextSequenceValue(string sequenceName) => throw new NotSupportedException();
 
-	public override ISQLBuilder GetLastIdentity(string hint = null) {
-		return Emit("SCOPE_IDENTITY()");
-	}
+	public override ISQLBuilder GetLastIdentity(string hint = null) => Emit("SCOPE_IDENTITY()");
 
-	public override ISQLBuilder VariableName(string variableName) {
-		return Emit("@{0} ", variableName);
-	}
+	public override ISQLBuilder VariableName(string variableName) => Emit("@{0} ", variableName);
 
 	public override ISQLBuilder EmitQueryResultLimit(int limit, int? offset = null) {
 		if (offset.HasValue)
@@ -177,13 +163,10 @@ SELECT * FROM __PAGED_RESULT WHERE __ROWNUM > {2} AND __ROWNUM <= ({2} + {1})";
 				.EndOfStatement();
 	}
 
-	public override ISQLBuilder CreateBuilder() {
-		return new MSSQLBuilder();
-	}
+	public override ISQLBuilder CreateBuilder() => new MSSQLBuilder();
 
-	public override ISequentialGuidGenerator CreateSequentialGuidGenerator(long capacity, bool regenerateOnEmpty = false) {
-		return new SequentialSqlGuidGenerator(capacity, regenerateOnEmpty);
-	}
+	public override ISequentialGuidGenerator CreateSequentialGuidGenerator(long capacity, bool regenerateOnEmpty = false)
+		=> new SequentialSqlGuidGenerator(capacity, regenerateOnEmpty);
 
 	public override Type ConvertSQLTypeToType(string sqlType, int? length) {
 

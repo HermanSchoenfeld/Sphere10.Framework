@@ -6,13 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
-public sealed class WindowsPowerDiagnosticDataSource : ReloadableSnapshotDataSource<WindowsPowerDiagnosticInfo> {
-	public WindowsPowerDiagnosticDataSource() : this(token => Tools.Windows.Computer.GetPowerDiagnosticsAsync(token)) { }
-	public WindowsPowerDiagnosticDataSource(Func<CancellationToken, Task<WindowsPowerDiagnosticInfo[]>> capture) : base(capture) { }
+/// <summary>A power diagnostics inventory IDataSource.</summary>
+public sealed class WindowsPowerDiagnosticDataSource : AsyncListDataSource<WindowsPowerDiagnosticInfo> {
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsPowerDiagnosticInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Computer.GetPowerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
 }

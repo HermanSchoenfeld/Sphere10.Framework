@@ -15,17 +15,11 @@ public class PostgreSQLBuilder : SQLBuilderBase {
 
 	protected override SQLQueryResultLimitPosition QueryResultLimitPosition => SQLQueryResultLimitPosition.EndOfQuery;
 
-	public override ISQLBuilder BeginTransaction() {
-		return Emit("BEGIN").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder BeginTransaction() => Emit("BEGIN").EndOfStatement(SQLStatementType.TCL);
 
-	public override ISQLBuilder CommitTransaction() {
-		return Emit("COMMIT").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder CommitTransaction() => Emit("COMMIT").EndOfStatement(SQLStatementType.TCL);
 
-	public override ISQLBuilder RollbackTransaction() {
-		return Emit("ROLLBACK").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder RollbackTransaction() => Emit("ROLLBACK").EndOfStatement(SQLStatementType.TCL);
 
 	public override ISQLBuilder ObjectName(string objectName) {
 		if (objectName.StartsWith("\""))
@@ -43,25 +37,17 @@ public class PostgreSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public override ISQLBuilder NextSequenceValue(string sequenceName) {
-		return Emit("nextval('").Emit(sequenceName).Emit("')");
-	}
+	public override ISQLBuilder NextSequenceValue(string sequenceName) => Emit("nextval('").Emit(sequenceName).Emit("')");
 
-	public override ISQLBuilder GetLastIdentity(string hint = null) {
-		return Emit("lastval()");
-	}
+	public override ISQLBuilder GetLastIdentity(string hint = null) => Emit("lastval()");
 
-	public override ISQLBuilder VariableName(string variableName) {
-		throw new NotSupportedException("PostgreSQL does not support variables in plain SQL");
-	}
+	public override ISQLBuilder VariableName(string variableName) => throw new NotSupportedException("PostgreSQL does not support variables in plain SQL");
 
-	public override ISQLBuilder DeclareVariable(string variableName, Type type) {
-		throw new NotSupportedException("PostgreSQL does not support variable declarations in plain SQL");
-	}
+	public override ISQLBuilder DeclareVariable(string variableName, Type type)
+		=> throw new NotSupportedException("PostgreSQL does not support variable declarations in plain SQL");
 
-	public override ISQLBuilder AssignVariable(string variableName, object value) {
-		throw new NotSupportedException("PostgreSQL does not support variable assignment in plain SQL");
-	}
+	public override ISQLBuilder AssignVariable(string variableName, object value)
+		=> throw new NotSupportedException("PostgreSQL does not support variable assignment in plain SQL");
 
 	public override ISQLBuilder EmitQueryResultLimit(int limit, int? offset = null) {
 		Emit("LIMIT ").Emit(limit.ToString());
@@ -75,7 +61,5 @@ public class PostgreSQLBuilder : SQLBuilderBase {
 		return base.EndOfStatement(statementType);
 	}
 
-	public override ISQLBuilder CreateBuilder() {
-		return new PostgreSQLBuilder();
-	}
+	public override ISQLBuilder CreateBuilder() => new PostgreSQLBuilder();
 }

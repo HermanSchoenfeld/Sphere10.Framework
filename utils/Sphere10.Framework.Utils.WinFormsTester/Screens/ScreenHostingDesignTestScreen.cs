@@ -41,11 +41,7 @@ public partial class ScreenHostingDesignTestScreen : ScreenHostingTestScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ScreenHostingPreferences ScreenSettings {
-		get {
-			return (ScreenHostingPreferences)base.ScreenSettings;
-		}
-	}
+	public override ScreenHostingPreferences ScreenSettings => (ScreenHostingPreferences)base.ScreenSettings;
 
 	#region Inner Types
 

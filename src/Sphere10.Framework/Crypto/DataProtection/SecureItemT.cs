@@ -36,9 +36,7 @@ public sealed class SecureItem<T> : ISecureItem<T> {
 
 	public ActionScope EnterUnprotectedScope() => _secureBytes.EnterUnprotectedScope();
 
-	public void Dispose() {
-		_secureBytes.Dispose();
-	}
+	public void Dispose() => _secureBytes.Dispose();
 
 
 }

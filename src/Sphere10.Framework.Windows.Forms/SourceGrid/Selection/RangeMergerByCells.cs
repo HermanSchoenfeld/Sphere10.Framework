@@ -30,9 +30,7 @@ public class RangeMergerByCells {
 		return this;
 	}
 
-	public List<CellRange> GetSelectedRowRegions() {
-		return _ranges;
-	}
+	public List<CellRange> GetSelectedRowRegions() => _ranges;
 
 	private RangeRegion IntersectWithCurrentRanges(RangeRegion rangeRegionToIntersect) {
 		while (IntersectWithCurrentRangesRecursive(rangeRegionToIntersect)) {

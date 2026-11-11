@@ -26,7 +26,5 @@ public class TestClass2 : IColumnDefinition {
 		Locked = locked;
 	}
 
-	public Type GetComponentType() {
-		return typeof(ComponentForTestClass2);
-	}
+	public Type GetComponentType() => typeof(ComponentForTestClass2);
 }

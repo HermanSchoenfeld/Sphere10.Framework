@@ -30,11 +30,7 @@ public partial class SettingsTest : ApplicationScreen {
 	}
 
 	// The class attribute declares the schema; this accessor only reads the existing typed owner value.
-	private SettingsDemoScreenSettings Preferences {
-		get {
-			return (SettingsDemoScreenSettings)base.ScreenSettings;
-		}
-	}
+	private SettingsDemoScreenSettings Preferences => (SettingsDemoScreenSettings)base.ScreenSettings;
 
 	protected override void CopyModelToUI() {
 		base.CopyModelToUI();
@@ -52,9 +48,7 @@ public partial class SettingsTest : ApplicationScreen {
 		_status.Text = "Selected " + (_globalScope.Checked ? "global" : "user") + " scope. Load to inspect its isolated record.";
 	}
 
-	private async void LoadClicked(object sender, EventArgs e) {
-		await LoadDemoAsync();
-	}
+	private async void LoadClicked(object sender, EventArgs e) => await LoadDemoAsync();
 
 	// The selected standalone provider owns this record; loading never starts during screen activation.
 	private async Task LoadDemoAsync() {
@@ -84,9 +78,7 @@ public partial class SettingsTest : ApplicationScreen {
 	}
 
 	// Save is deliberate and never exposes the encrypted value in a log or diagnostic pane.
-	private async void SaveClicked(object sender, EventArgs e) {
-		await SaveDemoAsync();
-	}
+	private async void SaveClicked(object sender, EventArgs e) => await SaveDemoAsync();
 
 	// Persist a detached snapshot so provider encryption never mutates a value still bound to the editor.
 	private async Task SaveDemoAsync() {

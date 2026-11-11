@@ -10,7 +10,5 @@
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells;
 
 public class Image : SourceGrid.Cells.Virtual.Image {
-	public Image() {
-		Model.AddModel(new PingGridValueModel());
-	}
+	public Image() => Model.AddModel(new PingGridValueModel());
 }

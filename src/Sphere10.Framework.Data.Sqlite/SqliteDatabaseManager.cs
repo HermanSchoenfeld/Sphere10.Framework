@@ -24,13 +24,10 @@ public class SqliteDatabaseManager : DatabaseManagerBase {
 	public override bool DatabaseExists(string connectionString)
 		=> Tools.Sqlite.ExistsByPath(Tools.Sqlite.GetFilePathFromConnectionString(connectionString));
 
-	public override void CreateApplicationDatabase(string connectionString, DatabaseGenerationDataPolicy dataPolicy, string databaseName) {
-		throw new NotSupportedException();
-	}
+	public override void CreateApplicationDatabase(string connectionString, DatabaseGenerationDataPolicy dataPolicy, string databaseName)
+		=> throw new NotSupportedException();
 
-	protected override void DropDatabaseInternal(string connectionString) {
-		Tools.Sqlite.Drop(Tools.Sqlite.GetFilePathFromConnectionString(connectionString));
-	}
+	protected override void DropDatabaseInternal(string connectionString) => Tools.Sqlite.Drop(Tools.Sqlite.GetFilePathFromConnectionString(connectionString));
 
 	protected override void CreateEmptyDatabaseInternal(string connectionString) {
 		var sqliteSB = new System.Data.SQLite.SQLiteConnectionStringBuilder(connectionString);

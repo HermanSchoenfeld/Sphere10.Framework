@@ -85,7 +85,6 @@ public class BTreeFrameworkDefaultsProfileTests {
 	[TestCase(BTreeStorage.ManagedNodes, BTreeFamily.BTreePlus, BTreeKeyShape.Digest32)]
 	[TestCase(BTreeStorage.FileStream, BTreeFamily.BTree, BTreeKeyShape.Digest32)]
 	[TestCase(BTreeStorage.FileStream, BTreeFamily.BTreePlus, BTreeKeyShape.Int64)]
-	public void WideKeyPresetRejectsUnsupportedShapes(BTreeStorage storage, BTreeFamily family, BTreeKeyShape keyShape) {
-		Assert.That(() => BTreeProfile.CreateSuite("wide-keys", storage, family, keyShape), Throws.ArgumentException);
-	}
+	public void WideKeyPresetRejectsUnsupportedShapes(BTreeStorage storage, BTreeFamily family, BTreeKeyShape keyShape)
+		=> Assert.That(() => BTreeProfile.CreateSuite("wide-keys", storage, family, keyShape), Throws.ArgumentException);
 }

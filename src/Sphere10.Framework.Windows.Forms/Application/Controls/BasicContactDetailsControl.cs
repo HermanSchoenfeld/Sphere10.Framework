@@ -19,12 +19,8 @@ public partial class BasicContactDetailsControl : UserControlEx {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool ContactIsAnonymous {
-		get {
-			return _anonymousButton.Checked;
-		}
-		set {
-			_anonymousButton.Checked = value;
-		}
+		get => _anonymousButton.Checked;
+		set => _anonymousButton.Checked = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -34,16 +30,10 @@ public partial class BasicContactDetailsControl : UserControlEx {
 				return "Anonymous";
 			return _emailTextBox.Text;
 		}
-		set {
-			_emailTextBox.Text = value;
-		}
+		set => _emailTextBox.Text = value;
 	}
 
-	private void EmailButton_CheckedChanged(object sender, EventArgs args) {
-		EnableDisableControls();
-	}
+	private void EmailButton_CheckedChanged(object sender, EventArgs args) => EnableDisableControls();
 
-	private void EnableDisableControls() {
-		_emailTextBox.Enabled = _emailButton.Checked;
-	}
+	private void EnableDisableControls() => _emailTextBox.Enabled = _emailButton.Checked;
 }

@@ -44,9 +44,7 @@ public sealed class WindowsUninstallRegistration {
 		=> _registry.ReadTreeAsync(address, maximumDepth, maximumEntries, timeLimit, cancellationToken);
 
 	/// <summary>Removes only the supplied registration key; verification/approval of that registration belongs to the caller.</summary>
-	public void RemoveRegistration(RegistryAddress address) {
-		_registry.DeleteKey(address);
-	}
+	public void RemoveRegistration(RegistryAddress address) => _registry.DeleteKey(address);
 
 	/// <summary>Starts a caller-selected executable using the Windows shell. The returned process handle belongs to the caller.</summary>
 	public Process Launch(string executable, string arguments) {

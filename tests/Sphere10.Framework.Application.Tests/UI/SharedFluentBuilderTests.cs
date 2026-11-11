@@ -279,9 +279,8 @@ public class SharedFluentBuilderTests {
 	// Creates ordinary plugin products through the shared fluent builder contract.
 	private sealed class PluginBuilder : ApplicationPluginBuilderBase<PluginBuilder, IApplicationBlock, BlockBuilder, ApplicationPlugin> {
 		/// <inheritdoc />
-		protected override ApplicationPlugin CreatePlugin(IApplicationBlock[] blocks, Action<IServiceCollection> configureServices) {
-			return new(Name, blocks, configureServices);
-		}
+		protected override ApplicationPlugin CreatePlugin(IApplicationBlock[] blocks, Action<IServiceCollection> configureServices)
+			=> new(Name, blocks, configureServices);
 	}
 
 	// This shared fixture supplies ordinary products; platform graph-copy behavior is covered by the Blazor host tests.
@@ -328,19 +327,13 @@ public class SharedFluentBuilderTests {
 
 		/// <summary>Gets or sets the test command's exact registration reference.</summary>
 		public ApplicationScreenRegistration Registration {
-			get {
-				return _registration ?? _definition?.Registration;
-			}
-			set {
-				_registration = value;
-			}
+			get => _registration ?? _definition?.Registration;
+			set => _registration = value;
 		}
 
 		/// <summary>Gets or sets the test command's canonical definition and reverse membership.</summary>
 		public ApplicationScreenDefinition ScreenDefinition {
-			get {
-				return _definition;
-			}
+			get => _definition;
 			set {
 				if (Parent != null)
 					_definition?.RemoveActivator(this);
@@ -402,9 +395,8 @@ public class SharedFluentBuilderTests {
 		}
 
 		/// <inheritdoc />
-		protected override Wizard<object, string> CreateWizard(string[] steps) {
-			return new(Title, Model, steps, FinishCallback, CancelCallback) { IsCancellable = IsCancellable };
-		}
+		protected override Wizard<object, string> CreateWizard(string[] steps)
+			=> new(Title, Model, steps, FinishCallback, CancelCallback) { IsCancellable = IsCancellable };
 	}
 
 	#endregion

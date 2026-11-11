@@ -6,16 +6,21 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework;
 
 /// <summary>
-/// A <see cref="LoadableBase"/> abstraction that implements it's synchronous members using sync-over-async pattern.
+/// A <see cref="LoadableBase"/> abstraction that implements its synchronous members using the sync-over-async pattern: each starts its
+/// asynchronous counterpart on a worker and waits for it to complete.
 /// </summary>
 public abstract class AsyncLoadableBase : LoadableBase {
-	protected override void LoadInternal() => LoadInternalAsync().WaitSafe();
 
-	protected sealed override void OnLoading() => OnLoadingAsync().WaitSafe();
+	protected override void LoadInternal() => Task.ExecuteSyncOverAsync(() => LoadInternalAsync(CancellationToken.None));
 
-	protected sealed override void OnLoaded() => OnLoadedAsync().WaitSafe();
+	protected sealed override void OnLoading() => Task.ExecuteSyncOverAsync(OnLoadingAsync);
+
+	protected sealed override void OnLoaded() => Task.ExecuteSyncOverAsync(OnLoadedAsync);
 }
-

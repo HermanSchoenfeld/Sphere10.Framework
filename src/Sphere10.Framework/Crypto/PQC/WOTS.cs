@@ -28,15 +28,11 @@ public class WOTS : IOTSAlgorithm<WOTS.Configuration> {
 		: this(new Configuration(w, hashFunction, usePublicKeyHashOptimization)) {
 	}
 
-	public WOTS(Configuration config) {
-		Config = (Configuration)config.Clone();
-	}
+	public WOTS(Configuration config) => Config = (Configuration)config.Clone();
 
 	public Configuration Config { get; }
 
-	public void SerializeParameters(Span<byte> buffer) {
-		buffer[0] = (byte)Config.W;
-	}
+	public void SerializeParameters(Span<byte> buffer) => buffer[0] = (byte)Config.W;
 
 	public byte[,] GeneratePrivateKey()
 		=> GenerateKeys().PrivateKey;
@@ -140,14 +136,10 @@ public class WOTS : IOTSAlgorithm<WOTS.Configuration> {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void ComputeKeyHash(byte[,] key, Span<byte> result) {
-		ComputeKeyHash(key.AsFlatSpan(), result);
-	}
+	public void ComputeKeyHash(byte[,] key, Span<byte> result) => ComputeKeyHash(key.AsFlatSpan(), result);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> result) {
-		Hashers.Hash(Config.HashFunction, key, result);
-	}
+	public void ComputeKeyHash(ReadOnlySpan<byte> key, Span<byte> result) => Hashers.Hash(Config.HashFunction, key, result);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected byte[,] ToOptimizedPublicKey(byte[,] publicKey) {
@@ -164,9 +156,7 @@ public class WOTS : IOTSAlgorithm<WOTS.Configuration> {
 	public class Configuration : OTSConfig {
 		public static readonly Configuration Default;
 
-		static Configuration() {
-			Default = new Configuration(8, CHF.SHA2_256, false);
-		}
+		static Configuration() => Default = new Configuration(8, CHF.SHA2_256, false);
 
 		public Configuration() : this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {
 		}

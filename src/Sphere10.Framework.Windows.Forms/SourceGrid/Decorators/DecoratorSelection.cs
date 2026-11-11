@@ -12,13 +12,9 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Decorators;
 public class DecoratorSelection : DecoratorBase {
 	private Selection.SelectionBase _selection;
 
-	public DecoratorSelection(Selection.SelectionBase selection) {
-		_selection = selection;
-	}
+	public DecoratorSelection(Selection.SelectionBase selection) => _selection = selection;
 
-	public override bool IntersectWith(CellRange range) {
-		return _selection.IntersectsWith(range);
-	}
+	public override bool IntersectWith(CellRange range) => _selection.IntersectsWith(range);
 
 	public override void Draw(RangePaintEventArgs e) {
 		var region = _selection.GetSelectionRegion();

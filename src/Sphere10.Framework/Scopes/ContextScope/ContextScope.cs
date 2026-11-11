@@ -93,9 +93,7 @@ public abstract class ContextScope : Disposable, IContextScope {
 
 	protected abstract ValueTask OnContextEndAsync();
 
-	protected static IContextScope GetCurrent(string contextID) {
-		return CallContext.LogicalGetData(contextID) as IContextScope;
-	}
+	protected static IContextScope GetCurrent(string contextID) => CallContext.LogicalGetData(contextID) as IContextScope;
 
 	private void RestoreContext() {
 		if (IsRootScope && ReferenceEquals(CallContext.LogicalGetData(ContextID), this))

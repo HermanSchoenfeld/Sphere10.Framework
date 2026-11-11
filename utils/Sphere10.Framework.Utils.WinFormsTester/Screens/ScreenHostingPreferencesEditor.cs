@@ -37,7 +37,5 @@ public partial class ScreenHostingPreferencesEditor : DefaultCrudEntityEditor {
 	}
 
 	// The custom surface retains the same nested/collection/grid editing and validation as the default editor.
-	private void UpdatePreview() {
-		_preview.Text = $"GPU preferences preview: {_values.Heading} ({_values.Details})";
-	}
+	private void UpdatePreview() => _preview.Text = $"GPU preferences preview: {_values.Heading} ({_values.Details})";
 }

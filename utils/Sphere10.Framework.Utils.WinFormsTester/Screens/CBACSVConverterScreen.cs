@@ -50,9 +50,7 @@ public partial class CBACSVConverterScreen : ApplicationScreen {
 	}
 
 	// Provide quoted and empty fields as immediately usable boundary examples.
-	private void LoadSampleClicked(object sender, EventArgs e) {
-		LoadSample();
-	}
+	private void LoadSampleClicked(object sender, EventArgs e) => LoadSample();
 
 	private void LoadSample() {
 		_CBACSVTextBox.Text = "01/11/2026,-25.50,\"Coffee, lunch\",1200.00" + Environment.NewLine + "02/11/2026,100.00,,1300.00";

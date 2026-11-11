@@ -10,7 +10,5 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 public class RowData {
 	public int Height { get; set; }
 
-	public RowData(int height) {
-		Height = height;
-	}
+	public RowData(int height) => Height = height;
 }

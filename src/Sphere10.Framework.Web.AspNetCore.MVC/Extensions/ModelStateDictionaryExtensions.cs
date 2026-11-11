@@ -12,21 +12,15 @@ namespace Sphere10.Framework.Web.AspNetCore.MVC;
 
 public static class ModelStateDictionaryExtensions {
 
-	public static void AddModelError(this ModelStateDictionary modelState, Result result) {
-		result.ErrorMessages.ForEach(modelState.AddModelError);
-	}
+	public static void AddModelError(this ModelStateDictionary modelState, Result result) => result.ErrorMessages.ForEach(modelState.AddModelError);
 
-	public static void AddModelError(this ModelStateDictionary modelState, string key, Result result) {
-		result.ErrorMessages.ForEach(r => modelState.AddModelError(key, r));
-	}
+	public static void AddModelError(this ModelStateDictionary modelState, string key, Result result)
+		=> result.ErrorMessages.ForEach(r => modelState.AddModelError(key, r));
 
-	public static void AddModelError(this ModelStateDictionary modelState, string error) {
-		modelState.AddModelError(string.Empty, error);
-	}
+	public static void AddModelError(this ModelStateDictionary modelState, string error) => modelState.AddModelError(string.Empty, error);
 
-	public static void AddModelError(this ModelStateDictionary modelState, string error, params object[] formatArgs) {
-		modelState.AddModelError(string.Empty, error.FormatWith(formatArgs));
-	}
+	public static void AddModelError(this ModelStateDictionary modelState, string error, params object[] formatArgs)
+		=> modelState.AddModelError(string.Empty, error.FormatWith(formatArgs));
 
 	/// <summary>
 	/// Excludes the list of model properties from model validation.

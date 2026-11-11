@@ -17,13 +17,9 @@ namespace Sphere10.Framework;
 
 public static class ObjectEncryptor {
 
-	public static void DecryptMembers(object obj) {
-		ApplyInternal(obj, (attr, val) => attr.Decrypt(val));
-	}
+	public static void DecryptMembers(object obj) => ApplyInternal(obj, (attr, val) => attr.Decrypt(val));
 
-	public static void EncryptMembers(object obj) {
-		ApplyInternal(obj, (attr, val) => attr.Encrypt(val));
-	}
+	public static void EncryptMembers(object obj) => ApplyInternal(obj, (attr, val) => attr.Encrypt(val));
 
 	private static void ApplyInternal(object obj, Func<EncryptedStringAttribute, string, string> func) {
 		var bindingFlags = BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.SetField;

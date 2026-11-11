@@ -78,8 +78,6 @@ public static class TypeChanger {
 	}
 
 	/// <summary>Converts a value through the same conversion rules and returns the requested type.</summary>
-	public static T ChangeType<T>(object value) {
-		return (T)ChangeType(value, typeof(T));
-	}
+	public static T ChangeType<T>(object value) => (T)ChangeType(value, typeof(T));
 
 }

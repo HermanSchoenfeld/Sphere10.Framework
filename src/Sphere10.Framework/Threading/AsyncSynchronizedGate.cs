@@ -62,9 +62,7 @@ public sealed class AsyncSynchronizedGate : SynchronizedObject {
 	}
 
 	private sealed class Waiter {
-		public Waiter(CancellationToken cancellationToken) {
-			CancellationToken = cancellationToken;
-		}
+		public Waiter(CancellationToken cancellationToken) => CancellationToken = cancellationToken;
 
 		public CancellationToken CancellationToken { get; }
 		public TaskCompletionSource<ActionScope<AsyncSynchronizedGate>> Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

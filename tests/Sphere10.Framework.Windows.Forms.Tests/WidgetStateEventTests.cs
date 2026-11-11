@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Design;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -125,25 +126,28 @@ public class WidgetStateEventTests {
 	}
 
 	[Test]
-	public void HexBufferAndSelectionPublishOnceAfterCommitAndRespectUpdateScopes() {
+	public void HexDocumentEditsPublishOncePerChangeAndRespectUpdateScopes() {
 		RunWithMessageLoop(async owner => {
-			using var editor = new HexEditorControl { Bytes = new byte[] { 1, 2, 3 }, Dock = DockStyle.Fill };
+			using var editor = new HexEditorControl { Dock = DockStyle.Fill };
+			editor.OpenStream(new MemoryStream(new byte[] { 1, 2, 3 }));
 			owner.Controls.Add(editor);
 			await Task.Yield();
-			var observations = new List<(byte Value, int Start, int Length)>();
-			editor.StateChanged += () => observations.Add((editor.Bytes[0], editor.SelectionStart, editor.SelectionLength));
+			var observations = new List<(bool HasChanges, long Caret)>();
+			editor.StateChanged += () => observations.Add((editor.HasChanges, editor.Viewport.CaretOffset));
 
-			editor.SetByte(0, 9);
-			Assert.That(observations, Is.EqualTo(new[] { ((byte)9, 0, 0) }));
-			editor.SelectRange(1, 1);
-			editor.SelectRange(1, 1);
-			Assert.That(observations, Is.EqualTo(new[] { ((byte)9, 0, 0), ((byte)9, 1, 1) }));
+			editor.Document.WriteByte(0, 9);
+			Assert.That(observations, Is.EqualTo(new[] { (true, 0L) }));
+			editor.Viewport.MoveCaretTo(1, false);
+			editor.Viewport.Select(1, 1);
+			Assert.That(observations, Has.Count.EqualTo(1), "Caret and selection changes are not edits.");
 			using (editor.EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
-				editor.SetByte(0, 7);
+				editor.Document.WriteByte(1, 7);
 			}
 			await Task.Yield();
-			Assert.That(editor.Bytes[0], Is.EqualTo(7));
-			Assert.That(observations, Has.Count.EqualTo(2));
+			Assert.That(editor.Document.TryReadByte(1, out var value) && value == 7, Is.True);
+			Assert.That(observations, Has.Count.EqualTo(1));
+			editor.Document.Revert();
+			Assert.That(observations, Is.EqualTo(new[] { (true, 0L), (false, 1L) }));
 		});
 	}
 
@@ -198,8 +202,8 @@ public class WidgetStateEventTests {
 	public void ReferencePickerPublishesAcceptanceWithoutRelayingItsNestedGridQuery() {
 		RunWithMessageLoop(async owner => {
 			var rows = Rows("Choice");
-			var source = new SnapshotDataSource<Row>();
-			source.ReplaceSnapshot(rows);
+			var source = new ArrayDataSource<Row>();
+			source.ReplaceData(rows);
 			var binding = new CrudReferenceBinding<Row>(source, new[] {
 				new VisualGridColumn<Row> { ColumnName = "Name", DataType = typeof(string), PropertyValue = row => row.Name }
 			}, row => row.Name);
@@ -222,7 +226,7 @@ public class WidgetStateEventTests {
 		RunWithMessageLoop(async owner => {
 			using var grid = CreateGrid(owner);
 			var rows = Rows("Original");
-			var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
+			var controller = new VisualGridArrayController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
 			await controller.RefreshAsync();
 			grid.SelectedEntity = rows[0];
 			var changes = 0;
@@ -247,7 +251,7 @@ public class WidgetStateEventTests {
 			var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			var block = false;
-			var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, async _ => {
+			var controller = new VisualGridArrayController<Row>(grid, row => row.Id, async _ => {
 				if (block) {
 					started.TrySetResult();
 					await release.Task;
@@ -309,7 +313,7 @@ public class WidgetStateEventTests {
 			grid.LeftClickToDeselect = leftClickToDeselect;
 			grid.SelectOnMouseUp = selectOnMouseUp;
 			var rows = Rows("Original");
-			var controller = new VisualGridSnapshotController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
+			var controller = new VisualGridArrayController<Row>(grid, row => row.Id, _ => Task.FromResult(rows));
 			await controller.RefreshAsync();
 			grid.SelectedEntity = rows[0];
 			var choices = new List<object>();
@@ -368,9 +372,7 @@ public class WidgetStateEventTests {
 	}
 
 	// Real row data keeps snapshot identity separate from replacement-instance publication.
-	private static Row[] Rows(string caption) {
-		return new[] { new Row { Id = 1, Name = caption + " First" }, new Row { Id = 2, Name = caption + " Second" } };
-	}
+	private static Row[] Rows(string caption) => new[] { new Row { Id = 1, Name = caption + " First" }, new Row { Id = 2, Name = caption + " Second" } };
 
 	// The real grid retains its nested layout and native input routing.
 	private static VisualGrid CreateGrid(Form owner) {
@@ -422,9 +424,7 @@ public class WidgetStateEventTests {
 	private sealed class ReplacementValueEditor : UITypeEditor {
 		private readonly object _value;
 
-		public ReplacementValueEditor(object value) {
-			_value = value;
-		}
+		public ReplacementValueEditor(object value) => _value = value;
 
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) => UITypeEditorEditStyle.Modal;
 
@@ -433,12 +433,8 @@ public class WidgetStateEventTests {
 
 	// Exposes existing protected actions without adding production test seams.
 	private sealed class MergerProbe : ListMerger {
-		public void MoveRight() {
-			MoveToRight();
-		}
+		public void MoveRight() => MoveToRight();
 
-		public void RemoveLeft() {
-			RemoveFromLeft();
-		}
+		public void RemoveLeft() => RemoveFromLeft();
 	}
 }

@@ -24,14 +24,11 @@ public class CryptoSpanTests {
 	[TestCase("FF", "255")]
 	[TestCase("0080", "128")]
 	[TestCase("FF0001", "16711681")]
-	public void SchnorrArrayIntegerConversionRetainsUnsignedBigEndianValues(string hexadecimal, string expected) {
-		Assert.That(Schnorr.BytesToBigIntPositive(hexadecimal.ToHexByteArray()).ToString(), Is.EqualTo(expected));
-	}
+	public void SchnorrArrayIntegerConversionRetainsUnsignedBigEndianValues(string hexadecimal, string expected)
+		=> Assert.That(Schnorr.BytesToBigIntPositive(hexadecimal.ToHexByteArray()).ToString(), Is.EqualTo(expected));
 
 	[Test]
-	public void SchnorrArrayIntegerConversionRetainsNull() {
-		Assert.That(Schnorr.BytesToBigIntPositive((byte[])null), Is.Null);
-	}
+	public void SchnorrArrayIntegerConversionRetainsNull() => Assert.That(Schnorr.BytesToBigIntPositive((byte[])null), Is.Null);
 
 	[Test]
 	public void HashLibHashesSlicesWithoutCopyingPreimages() {

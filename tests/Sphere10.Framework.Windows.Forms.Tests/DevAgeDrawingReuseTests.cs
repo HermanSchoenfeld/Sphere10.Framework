@@ -166,18 +166,12 @@ public class DevAgeDrawingReuseTests {
 
 	private sealed class TaskItemProbe : TaskItem {
 		// Configure an existing vertical layout decision before the public text-alignment update.
-		public void SetLineAlignment(StringAlignment alignment) {
-			StringFormat.LineAlignment = alignment;
-		}
+		public void SetLineAlignment(StringAlignment alignment) => StringFormat.LineAlignment = alignment;
 
 		// Observe the native string format consumed by the task item's paint path.
-		public StringAlignment ReadHorizontalAlignment() {
-			return StringFormat.Alignment;
-		}
+		public StringAlignment ReadHorizontalAlignment() => StringFormat.Alignment;
 
 		// Verify horizontal classification does not replace the independent vertical setting.
-		public StringAlignment ReadLineAlignment() {
-			return StringFormat.LineAlignment;
-		}
+		public StringAlignment ReadLineAlignment() => StringFormat.LineAlignment;
 	}
 }

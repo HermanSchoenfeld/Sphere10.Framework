@@ -23,24 +23,16 @@ public partial class ValidationIndicatorTestScreen : ApplicationScreen {
 	}
 
 	// Manual state buttons expose the same real control state machine independently of validation.
-	private void ValidButton_Click(object sender, EventArgs args) {
-		_validationIndicator1.State = ValidationState.Valid;
-	}
+	private void ValidButton_Click(object sender, EventArgs args) => _validationIndicator1.State = ValidationState.Valid;
 
 	// An error has its own visible state and tooltip semantics.
-	private void ErrorButton_Click(object sender, EventArgs args) {
-		_validationIndicator1.State = ValidationState.Error;
-	}
+	private void ErrorButton_Click(object sender, EventArgs args) => _validationIndicator1.State = ValidationState.Error;
 
 	// The pending state uses the control's actual loading indicator.
-	private void ValidatingButton_Click(object sender, EventArgs args) {
-		_validationIndicator1.State = ValidationState.Validating;
-	}
+	private void ValidatingButton_Click(object sender, EventArgs args) => _validationIndicator1.State = ValidationState.Validating;
 
 	// Disabled state clears the current validation presentation.
-	private void DisabledButton_Click(object sender, EventArgs args) {
-		_validationIndicator1.State = ValidationState.Disabled;
-	}
+	private void DisabledButton_Click(object sender, EventArgs args) => _validationIndicator1.State = ValidationState.Disabled;
 
 	// Capture text on its native owner before the control invokes PerformValidation on a worker.
 	private void TextBox_TextChanged(object sender, EventArgs args) {
@@ -57,14 +49,12 @@ public partial class ValidationIndicatorTestScreen : ApplicationScreen {
 	}
 
 	// State completion returns to the native dispatcher before touching the output.
-	private void ValidationIndicator1_ValidationStateChanged(ValidationIndicator control, ValidationState previous, ValidationState current) {
-		RecordState(control, previous, current);
-	}
+	private void ValidationIndicator1_ValidationStateChanged(ValidationIndicator control, ValidationState previous, ValidationState current)
+		=> RecordState(control, previous, current);
 
 	// The input example shares the same completed-state reporting path.
-	private void ValidationIndicator2_ValidationStateChanged(ValidationIndicator control, ValidationState previous, ValidationState current) {
-		RecordState(control, previous, current);
-	}
+	private void ValidationIndicator2_ValidationStateChanged(ValidationIndicator control, ValidationState previous, ValidationState current)
+		=> RecordState(control, previous, current);
 
 	// Ignore delivery to a screen whose native lifetime has ended.
 	private void RecordState(ValidationIndicator control, ValidationState previous, ValidationState current) {

@@ -22,7 +22,7 @@ public class SplitButton : Button {
 	PushButtonState _state;
 
 
-	const int SplitSectionWidth = 18;
+	private const int LogicalSplitSectionWidth = 18;
 
 	static int BorderSize = SystemInformation.Border3DSize.Width * 2;
 	bool skipNextOpen;
@@ -37,16 +37,14 @@ public class SplitButton : Button {
 
 	TextFormatFlags textFormatFlags = TextFormatFlags.Default;
 
-	public SplitButton() {
-		AutoSize = true;
-	}
+	public SplitButton() => AutoSize = true;
 
 	#region Properties
 
 	[Browsable(false)]
 	public override ContextMenuStrip ContextMenuStrip {
-		get { return SplitMenuStrip; }
-		set { SplitMenuStrip = value; }
+		get => SplitMenuStrip;
+		set => SplitMenuStrip = value;
 	}
 
 	//[DefaultValue(null)]
@@ -76,7 +74,7 @@ public class SplitButton : Button {
 
 	[DefaultValue(null)]
 	public ContextMenuStrip SplitMenuStrip {
-		get { return m_SplitMenuStrip; }
+		get => m_SplitMenuStrip;
 		set {
 			//remove the event handlers for the old SplitMenuStrip
 			if (m_SplitMenuStrip != null) {
@@ -110,8 +108,11 @@ public class SplitButton : Button {
 		}
 	}
 
+	// The drop-down section follows the control's own DPI, so the arrow keeps its size on every display.
+	private int SplitSectionWidth => LogicalToDeviceUnits(LogicalSplitSectionWidth);
+
 	private PushButtonState State {
-		get { return _state; }
+		get => _state;
 		set {
 			if (!_state.Equals(value)) {
 				_state = value;
@@ -278,7 +279,8 @@ public class SplitButton : Button {
 				bounds.Width - dropDownRectangle.Width - internalBorder,
 				bounds.Height - (internalBorder * 2) + 2);
 
-		bool drawSplitLine = (State == PushButtonState.Hot || State == PushButtonState.Pressed || !System.Windows.Forms.Application.RenderWithVisualStyles);
+		// Like a native Windows split button, the divider is always shown, so the drop-down reads as a separate part before hovering.
+		const bool drawSplitLine = true;
 
 
 		if (RightToLeft == RightToLeft.Yes) {
@@ -340,13 +342,12 @@ public class SplitButton : Button {
 		}
 	}
 
+	// A downward triangle scaled to the control's DPI (5 by 3 logical pixels), centred in the drop-down section.
 	private void PaintArrow(Graphics g, Rectangle dropDownRect) {
-		Point middle = new Point(Convert.ToInt32(dropDownRect.Left + dropDownRect.Width / 2), Convert.ToInt32(dropDownRect.Top + dropDownRect.Height / 2));
-
-		//if the width is odd - favor pushing it over one pixel right.
-		middle.X += (dropDownRect.Width % 2);
-
-		Point[] arrow = new[] { new Point(middle.X - 2, middle.Y - 1), new Point(middle.X + 3, middle.Y - 1), new Point(middle.X, middle.Y + 2) };
+		var middle = new Point(dropDownRect.Left + dropDownRect.Width / 2 + dropDownRect.Width % 2, dropDownRect.Top + dropDownRect.Height / 2);
+		var halfWidth = LogicalToDeviceUnits(3);
+		var height = LogicalToDeviceUnits(3);
+		var arrow = new[] { new Point(middle.X - halfWidth + 1, middle.Y - 1), new Point(middle.X + halfWidth, middle.Y - 1), new Point(middle.X, middle.Y - 1 + height) };
 
 		if (Enabled)
 			g.FillPolygon(SystemBrushes.ControlText, arrow);
@@ -622,9 +623,7 @@ public class SplitButton : Button {
 		}
 	}
 
-	void SplitMenuStrip_Opening(object sender, CancelEventArgs e) {
-		isSplitMenuVisible = true;
-	}
+	void SplitMenuStrip_Opening(object sender, CancelEventArgs e) => isSplitMenuVisible = true;
 
 	void SplitMenuStrip_Closing(object sender, ToolStripDropDownClosingEventArgs e) {
 		isSplitMenuVisible = false;
@@ -637,9 +636,7 @@ public class SplitButton : Button {
 	}
 
 
-	void SplitMenu_Popup(object sender, EventArgs e) {
-		isSplitMenuVisible = true;
-	}
+	void SplitMenu_Popup(object sender, EventArgs e) => isSplitMenuVisible = true;
 
 	protected override void WndProc(ref Message m) {
 		//0x0212 == WM_EXITMENULOOP

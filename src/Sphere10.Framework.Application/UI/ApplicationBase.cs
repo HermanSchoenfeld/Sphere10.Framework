@@ -97,11 +97,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	public abstract IApplicationScreenHost ScreenHost { get; }
 
 	/// <summary>The existing user settings provider, resolved once for this application.</summary>
-	public virtual ISettingsProvider Settings {
-		get {
-			return _settings.Value;
-		}
-	}
+	public virtual ISettingsProvider Settings => _settings.Value;
 
 	public virtual bool HasUnsavedChanges => ScreenHost?.HasUnsavedChanges ?? false;
 
@@ -226,9 +222,7 @@ public abstract class ApplicationBase : Disposable, IApplication {
 	}
 
 	// Resolve the application's configured user provider without creating another settings owner.
-	protected virtual ISettingsProvider GetSettingsProvider() {
-		return Services?.GetService<ISettingsServices>()?.UserSettings;
-	}
+	protected virtual ISettingsProvider GetSettingsProvider() => Services?.GetService<ISettingsServices>()?.UserSettings;
 
 	/// <summary>Replaces local startup tasks before initialization. Task instances retain their existing ownership.</summary>
 	protected void SetInitializers(IEnumerable<IApplicationInitializer> initializers) {

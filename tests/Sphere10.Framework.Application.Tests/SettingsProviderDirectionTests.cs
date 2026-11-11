@@ -373,16 +373,10 @@ public class SettingsProviderDirectionTests {
 		private readonly bool _autoSave;
 
 		// Configure the fixture provider without performing storage work.
-		public SyncStorageProvider(bool autoSave = false) {
-			_autoSave = autoSave;
-		}
+		public SyncStorageProvider(bool autoSave = false) => _autoSave = autoSave;
 
 		// Selects whether creation must persist before returning.
-		public override bool AutoSaveNewSettings {
-			get {
-				return _autoSave;
-			}
-		}
+		public override bool AutoSaveNewSettings => _autoSave;
 
 		// Releases a pending synchronous storage write.
 		public ManualResetEventSlim ReleaseSave { get; } = new(true);
@@ -403,29 +397,20 @@ public class SettingsProviderDirectionTests {
 		public int SaveCalls { get; private set; }
 
 		// Check whether this fixture has a persisted record.
-		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-			return _records.ContainsKey((settingsObjectType, id));
-		}
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) => _records.ContainsKey((settingsObjectType, id));
 
 		// Remove this fixture record.
-		public override void DeleteSetting(SettingsObject settings) {
-			_records.Remove((settings.GetType(), settings.ID));
-		}
+		public override void DeleteSetting(SettingsObject settings) => _records.Remove((settings.GetType(), settings.ID));
 
 		// Clear this fixture storage.
-		public override void ClearSettings() {
-			_records.Clear();
-		}
+		public override void ClearSettings() => _records.Clear();
 
 		// Release the synchronization gate owned by this fixture.
-		public void Dispose() {
-			ReleaseSave.Dispose();
-		}
+		public void Dispose() => ReleaseSave.Dispose();
 
 		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
-			return (SettingsObject)Tools.Json.ReadFromString(settingsObjectType, _records[(settingsObjectType, id)]);
-		}
+		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null)
+			=> (SettingsObject)Tools.Json.ReadFromString(settingsObjectType, _records[(settingsObjectType, id)]);
 
 		// Persist fixture values after the base provider prepares them.
 		protected override void SaveInternal(SettingsObject settings) {
@@ -450,16 +435,10 @@ public class SettingsProviderDirectionTests {
 		private readonly bool _autoSave;
 
 		// Configure the fixture provider without performing storage work.
-		public AsyncStorageProvider(bool autoSave = false) {
-			_autoSave = autoSave;
-		}
+		public AsyncStorageProvider(bool autoSave = false) => _autoSave = autoSave;
 
 		// Selects whether creation must persist before returning.
-		public override bool AutoSaveNewSettings {
-			get {
-				return _autoSave;
-			}
-		}
+		public override bool AutoSaveNewSettings => _autoSave;
 
 		// Delays asynchronous storage completion until the test releases it.
 		public Task SaveRelease { get; set; } = Task.CompletedTask;
@@ -480,11 +459,7 @@ public class SettingsProviderDirectionTests {
 		public int SaveCalls { get; private set; }
 
 		// Returns the contexts observed by the asynchronous primitives.
-		public SynchronizationContext[] PrimitiveContexts {
-			get {
-				return _primitiveContexts.ToArray();
-			}
-		}
+		public SynchronizationContext[] PrimitiveContexts => _primitiveContexts.ToArray();
 
 		// Check record presence through the asynchronous fixture contract.
 		public override async Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
@@ -541,11 +516,7 @@ public class SettingsProviderDirectionTests {
 		private int _posts;
 
 		// Counts continuations sent to the caller context.
-		public int Posts {
-			get {
-				return Volatile.Read(ref _posts);
-			}
-		}
+		public int Posts => Volatile.Read(ref _posts);
 
 		// Count captured continuations and dispatch them without blocking the test.
 		public override void Post(SendOrPostCallback callback, object state) {

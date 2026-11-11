@@ -10,28 +10,18 @@
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Selection;
 
 public class DisabledSelection : SelectionBase {
-	public override bool IsSelectedColumn(int column) {
-		return false;
-	}
+	public override bool IsSelectedColumn(int column) => false;
 
 	public override void SelectRow(int row, bool @select) {
 	}
 
-	public override bool IsSelectedCell(Position position) {
-		return false;
-	}
+	public override bool IsSelectedCell(Position position) => false;
 
-	public override bool IsEmpty() {
-		return true;
-	}
+	public override bool IsEmpty() => true;
 
-	public override RangeRegion GetSelectionRegion() {
-		return new RangeRegion();
-	}
+	public override RangeRegion GetSelectionRegion() => new RangeRegion();
 
-	public override bool IntersectsWith(CellRange rng) {
-		return false;
-	}
+	public override bool IntersectsWith(CellRange rng) => false;
 
 	public override void SelectRange(CellRange range, bool @select) {
 	}
@@ -39,16 +29,12 @@ public class DisabledSelection : SelectionBase {
 	public override void SelectCell(Position position, bool @select) {
 	}
 
-	public override bool IsSelectedRange(CellRange range) {
-		return false;
-	}
+	public override bool IsSelectedRange(CellRange range) => false;
 
 	public override void SelectColumn(int column, bool @select) {
 	}
 
-	public override bool IsSelectedRow(int row) {
-		return false;
-	}
+	public override bool IsSelectedRow(int row) => false;
 
 	protected override void OnResetSelection() {
 	}

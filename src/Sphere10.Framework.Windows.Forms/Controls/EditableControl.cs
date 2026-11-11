@@ -40,9 +40,7 @@ public partial class EditableControl : UserControlEx {
 
 	[DefaultValue(typeof(Color), "Window")]
 	public new Color BackColor {
-		get {
-			return base.BackColor;
-		}
+		get => base.BackColor;
 		set {
 			_background.BackColor = value;
 			base.BackColor = value;
@@ -51,9 +49,7 @@ public partial class EditableControl : UserControlEx {
 
 	[DefaultValue(Sphere10.Framework.Windows.Forms.Drawing.BorderStyle.System)]
 	public new Sphere10.Framework.Windows.Forms.Drawing.BorderStyle BorderStyle {
-		get {
-			return _editablePanel.BorderStyle;
-		}
+		get => _editablePanel.BorderStyle;
 		set {
 			_editablePanel.BorderStyle = value;
 			OnBorderStyleChanged(EventArgs.Empty);
@@ -87,9 +83,7 @@ public partial class EditableControl : UserControlEx {
 		}
 	}
 
-	protected virtual void OnBorderStyleChanged(EventArgs args) {
-		Invalidate();
-	}
+	protected virtual void OnBorderStyleChanged(EventArgs args) => Invalidate();
 
 	protected void SetContentAndButtonLocation(System.Windows.Forms.Control content, System.Windows.Forms.Control rightButton) {
 		var displayRectangle = DisplayRectangle;

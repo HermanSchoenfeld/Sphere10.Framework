@@ -38,17 +38,13 @@ public class HotKeyEditorTests {
 	[TestCase(Keys.LWin, false)]
 	[TestCase(Keys.Control | Keys.A, false)]
 	[TestCase(Keys.None, false)]
-	public void AcceptsOnlyRegularKeys(Keys key, bool expected) {
-		Assert.That(HotKeyEditor.IsEditableKey(key), Is.EqualTo(expected));
-	}
+	public void AcceptsOnlyRegularKeys(Keys key, bool expected) => Assert.That(HotKeyEditor.IsEditableKey(key), Is.EqualTo(expected));
 
 	[TestCase(Keys.Control | Keys.Alt | Keys.L, "Ctrl+Alt+L")]
 	[TestCase(GlobalHotKey.WindowsKey | Keys.Alt | Keys.L, "Win+Alt+L")]
 	[TestCase(Keys.Shift | Keys.F5, "Shift+F5")]
 	[TestCase(Keys.None, "None")]
-	public void DescribesShortcuts(Keys shortcut, string expected) {
-		Assert.That(HotKeyEditor.Describe(shortcut), Is.EqualTo(expected));
-	}
+	public void DescribesShortcuts(Keys shortcut, string expected) => Assert.That(HotKeyEditor.Describe(shortcut), Is.EqualTo(expected));
 
 	[Test]
 	public void WindowsKeyRoundTripsThroughTheEditor() {

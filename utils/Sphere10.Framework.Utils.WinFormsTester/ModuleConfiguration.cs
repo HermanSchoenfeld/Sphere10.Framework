@@ -15,9 +15,7 @@ using FormsUI = global::Sphere10.Framework.Windows.Forms;
 namespace Sphere10.Framework.Utils.WinFormsTester;
 
 public class ModuleConfiguration : ModuleConfigurationBase {
-	public override void RegisterComponents(IServiceCollection serviceCollection) {
-		serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
-	}
+	public override void RegisterComponents(IServiceCollection serviceCollection) => serviceCollection.AddInitializer<IncrementUsageByOneInitializer>();
 
 	// Configure application-owned commands before application startup activates its fixed command collections.
 	public override void OnInitialize(IServiceProvider serviceProvider) {

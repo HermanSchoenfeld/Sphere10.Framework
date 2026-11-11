@@ -185,9 +185,8 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 	}
 
 	// The same converter formats scalar values for both editable and read-only fields.
-	private static string FormatValue(object value, Type type) {
-		return value == null ? string.Empty : TypeDescriptor.GetConverter(type).ConvertToString(null, CultureInfo.CurrentCulture, value);
-	}
+	private static string FormatValue(object value, Type type)
+		=> value == null ? string.Empty : TypeDescriptor.GetConverter(type).ConvertToString(null, CultureInfo.CurrentCulture, value);
 
 	// Scalar converters include nullable primitives, enums, dates and other standard value types.
 	private static bool IsScalar(Type type) {
@@ -196,9 +195,7 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 	}
 
 	// A schema fixes the set of known grid columns; only their nullable manual widths are editable.
-	private static bool IsColumnSchema(Type type) {
-		return GetElementType(type) == typeof(ApplicationGridColumnPreferences);
-	}
+	private static bool IsColumnSchema(Type type) => GetElementType(type) == typeof(ApplicationGridColumnPreferences);
 
 	// Collection element type comes from the declared schema, including an empty array.
 	private static Type GetElementType(Type type) {
@@ -224,14 +221,10 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 	}
 
 	// Role paths follow the catalog's migration marker syntax, separate from displayed captions.
-	private static string GetDictionaryPath(string path, string key) {
-		return path + "[" + key.Replace("\\", "\\\\").Replace("]", "\\]") + "]";
-	}
+	private static string GetDictionaryPath(string path, string key) => path + "[" + key.Replace("\\", "\\\\").Replace("]", "\\]") + "]";
 
 	// New-key text is provisional editor state and never enters the settings payload until Add succeeds.
-	private string GetDictionaryKey(string path) {
-		return _dictionaryKeys.GetValueOrDefault(path, string.Empty);
-	}
+	private string GetDictionaryKey(string path) => _dictionaryKeys.GetValueOrDefault(path, string.Empty);
 
 	// Correcting an attempted key clears its local validation message without creating a preference record.
 	private void SetDictionaryKey(string path, string key) {
@@ -240,32 +233,22 @@ public partial class ApplicationSettingsValueEditor : ComponentBase {
 	}
 
 	// Readable grid-column titles make an unopened page's width entries recognizable.
-	private static string GetItemTitle(object item, int index) {
-		return item is ApplicationGridColumnPreferences column ? column.Title ?? column.Key : "Item " + (index + 1);
-	}
+	private static string GetItemTitle(object item, int index) => item is ApplicationGridColumnPreferences column ? column.Title ?? column.Key : "Item " + (index + 1);
 
 	// Enum descriptions are presentation metadata; the stored value remains the declared enum.
-	private static string GetEnumTitle(object value) {
-		return value.GetType().GetField(value.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? value.ToString();
-	}
+	private static string GetEnumTitle(object value)
+		=> value.GetType().GetField(value.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? value.ToString();
 
 	// Only value schemas with an ordinary construction path offer Add/Set controls.
-	private static bool CanCreate(Type type) {
-		return type == typeof(string) || type.IsValueType || !type.IsAbstract && !type.IsInterface && type.GetConstructor(Type.EmptyTypes) != null;
-	}
+	private static bool CanCreate(Type type)
+		=> type == typeof(string) || type.IsValueType || !type.IsAbstract && !type.IsInterface && type.GetConstructor(Type.EmptyTypes) != null;
 
 	// Constructors provide nested draft defaults; they never activate operational screens.
-	private static object CreateValue(Type type) {
-		return type == typeof(string) ? string.Empty : Tools.Object.Create(type);
-	}
+	private static object CreateValue(Type type) => type == typeof(string) ? string.Empty : Tools.Object.Create(type);
 
 	// Paths are local editor coordinates, separate from stable persistence keys.
-	private string GetPath(PropertyDescriptor property) {
-		return Prefix.Length == 0 ? property.Name : Prefix + "." + property.Name;
-	}
+	private string GetPath(PropertyDescriptor property) => Prefix.Length == 0 ? property.Name : Prefix + "." + property.Name;
 
 	// Each recursive component owns its input IDs, avoiding duplicate labels across options pages.
-	private string GetInputId(string path) {
-		return _inputPrefix + "-" + path;
-	}
+	private string GetInputId(string path) => _inputPrefix + "-" + path;
 }

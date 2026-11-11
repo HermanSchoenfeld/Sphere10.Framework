@@ -30,9 +30,7 @@ public partial class SeparatorLine : UserControlEx {
 	}
 
 	public System.Drawing.Drawing2D.DashStyle DashStyle {
-		get {
-			return _dashStyle;
-		}
+		get => _dashStyle;
 		set {
 			_dashStyle = value;
 			Invalidate();
@@ -40,9 +38,7 @@ public partial class SeparatorLine : UserControlEx {
 	}
 
 	public Color FirstColor {
-		get {
-			return _firstColor;
-		}
+		get => _firstColor;
 		set {
 			_firstColor = value;
 			Invalidate();
@@ -50,9 +46,7 @@ public partial class SeparatorLine : UserControlEx {
 	}
 
 	public Color SecondColor {
-		get {
-			return _secondColor;
-		}
+		get => _secondColor;
 		set {
 			_secondColor = value;
 			Invalidate();
@@ -60,9 +54,7 @@ public partial class SeparatorLine : UserControlEx {
 	}
 
 	public LineStyle LineStyle {
-		get {
-			return _lineStyle;
-		}
+		get => _lineStyle;
 		set {
 			_lineStyle = value;
 			Size = new Size(Height, Width);

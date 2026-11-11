@@ -33,7 +33,6 @@ public class ApplicationScreenDefinition : SharedUI.ApplicationScreenDefinition 
 	public Func<ApplicationSettingsEditorContext, ICrudEntityEditor<object>> SettingsEditor { get; }
 
 	/// <summary>Preserves activation and identity while leaving command membership owned by the copied graph.</summary>
-	public override SharedUI.ApplicationScreenDefinition Clone() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Activator, Settings, SettingsEditor);
-	}
+	public override SharedUI.ApplicationScreenDefinition Clone()
+		=> new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Activator, Settings, SettingsEditor);
 }

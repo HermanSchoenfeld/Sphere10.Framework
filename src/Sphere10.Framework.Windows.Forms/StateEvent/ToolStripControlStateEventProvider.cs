@@ -20,9 +20,7 @@ public sealed class ToolStripControlStateEventProvider : ControlStateEventProvid
 	private bool _reconciling;
 
 	/// <summary>Follows the owning strip and already-created dropdowns without creating native windows.</summary>
-	protected override void RegisterStateChangedListener(ToolStrip control, EventHandlerEx eventHandler) {
-		ObserveStrip(control);
-	}
+	protected override void RegisterStateChangedListener(ToolStrip control, EventHandlerEx eventHandler) => ObserveStrip(control);
 
 	/// <summary>Releases every input and dropdown listener while leaving all borrowed components alive.</summary>
 	protected override void DeregisterStateChangedListener(ToolStrip control, EventHandlerEx eventHandler) {
@@ -155,19 +153,13 @@ public sealed class ToolStripControlStateEventProvider : ControlStateEventProvid
 	}
 
 	// Collection changes install the same observers used for initial items.
-	private void ItemAdded(object sender, ToolStripItemEventArgs args) {
-		ObserveItem(args.Item);
-	}
+	private void ItemAdded(object sender, ToolStripItemEventArgs args) => ObserveItem(args.Item);
 
 	// Removing an item detaches its complete nested observer graph.
-	private void ItemRemoved(object sender, ToolStripItemEventArgs args) {
-		UnobserveItem(args.Item);
-	}
+	private void ItemRemoved(object sender, ToolStripItemEventArgs args) => UnobserveItem(args.Item);
 
 	// Component disposal also covers items removed by specialized native collections.
-	private void ItemDisposed(object sender, EventArgs args) {
-		UnobserveItem((ToolStripItem)sender);
-	}
+	private void ItemDisposed(object sender, EventArgs args) => UnobserveItem((ToolStripItem)sender);
 
 	// Only checked/selected input values use this handler; ordinary item clicks have no subscription.
 	private void ItemStateChanged(object sender, EventArgs args) {
@@ -184,19 +176,13 @@ public sealed class ToolStripControlStateEventProvider : ControlStateEventProvid
 	}
 
 	// A dropdown first populated after attachment is reconciled before a user can edit its inputs.
-	private void DropDownOpening(object sender, EventArgs args) {
-		ReconcileDropDowns();
-	}
+	private void DropDownOpening(object sender, EventArgs args) => ReconcileDropDowns();
 
 	// Layout follows dynamic dropdown creation without forcing lazy command menus into existence.
-	private void StripLayout(object sender, LayoutEventArgs args) {
-		ReconcileDropDowns();
-	}
+	private void StripLayout(object sender, LayoutEventArgs args) => ReconcileDropDowns();
 
 	// An externally disposed borrowed dropdown ends all of its input observation.
-	private void StripDisposed(object sender, EventArgs args) {
-		UnobserveStrip((ToolStrip)sender);
-	}
+	private void StripDisposed(object sender, EventArgs args) => UnobserveStrip((ToolStrip)sender);
 
 	// Holds only subscriptions owned by this provider, never ownership of the item or its hosted control.
 	private sealed class ItemObservation {

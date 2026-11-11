@@ -54,9 +54,7 @@ public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuff
 
 	public void ExpandBy(long newBytes) => PagedBufferImplementationHelper.ExpandBy(_friend, newBytes);
 
-	protected override IPage<byte> NewPageInstance(long pageNumber) {
-		return new PageImpl(Stream, pageNumber, PageSize);
-	}
+	protected override IPage<byte> NewPageInstance(long pageNumber) => new PageImpl(Stream, pageNumber, PageSize);
 
 	protected override IPage<byte>[] LoadPages() {
 		var fileLength = (int)Stream.Length;

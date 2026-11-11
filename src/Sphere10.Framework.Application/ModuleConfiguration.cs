@@ -98,7 +98,7 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 
 	public override void OnInitialize(IServiceProvider serviceProvider) {
 		base.OnInitialize(serviceProvider);
-		if (Tools.Runtime.GetEntryAssembly().TryGetCustomAttributeOfType<AssemblyProductSecretAttribute>(false, out var attribute)) {
+		if (Tools.Runtime.GetEntryAssembly().TryGetCustomAttributeOfType<AssemblyApplicationSecretAttribute>(false, out var attribute)) {
 			EncryptedStringAttribute.ApplicationSharedSecret = attribute.Secret;
 		}
 		GlobalSettings.Provider = serviceProvider.GetService<Global<ISettingsProvider>>()?.Item;
@@ -106,9 +106,7 @@ public class ModuleConfiguration : ModuleConfigurationBase {
 		StringFormatter.RegisterResolvers(serviceProvider.GetServices<ITokenResolver>()); // this should be after provider
 	}
 
-	public override void OnFinalize(IServiceProvider serviceProvider) {
-		base.OnFinalize(serviceProvider);
-	}
+	public override void OnFinalize(IServiceProvider serviceProvider) => base.OnFinalize(serviceProvider);
 
 }
 

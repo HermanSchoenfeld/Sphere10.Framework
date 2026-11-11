@@ -90,13 +90,9 @@ public class SynchronizedList<TItem, TList> : ListDecorator<TItem, TList>, ISync
 
 	public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
-	public ReadScope EnterReadScope() {
-		return _lock.EnterReadScope();
-	}
+	public ReadScope EnterReadScope() => _lock.EnterReadScope();
 
-	public WriteScope EnterWriteScope() {
-		return _lock.EnterWriteScope();
-	}
+	public WriteScope EnterWriteScope() => _lock.EnterWriteScope();
 }
 
 

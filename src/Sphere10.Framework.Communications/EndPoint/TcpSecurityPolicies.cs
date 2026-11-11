@@ -66,9 +66,7 @@ public class TcpSecurityPolicies {
 	}
 
 	//Remove all control characters
-	static public byte[] RemoveControlCharacters(byte[] bytes, int bytesRead) {
-		return Array.FindAll(bytes, c => c >= 32);
-	}
+	static public byte[] RemoveControlCharacters(byte[] bytes, int bytesRead) => Array.FindAll(bytes, c => c >= 32);
 
 	//Detect spoofed buffer attack.
 	static public void ValidateJsonQuality(byte[] bytes, int bytesRead) {

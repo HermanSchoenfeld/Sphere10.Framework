@@ -7,16 +7,20 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Storage;
 
 /// <summary>A physical-disk inventory IDataSource using the existing bounded Windows storage query.</summary>
-public sealed class WindowsPhysicalDiskDataSource : ReloadableSnapshotDataSource<WindowsPhysicalDiskInfo> {
-	public WindowsPhysicalDiskDataSource(TimeSpan? timeout = null)
-		: this(token => Tools.Windows.Drives.GetPhysicalDisksAsync(token, timeout)) { }
+public sealed class WindowsPhysicalDiskDataSource : AsyncListDataSource<WindowsPhysicalDiskInfo> {
+	private readonly TimeSpan? _timeout;
 
-	public WindowsPhysicalDiskDataSource(Func<CancellationToken, Task<WindowsPhysicalDiskInfo[]>> capture)
-		: base(capture) { }
+	public WindowsPhysicalDiskDataSource(TimeSpan? timeout = null) => _timeout = timeout;
+
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsPhysicalDiskInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Drives.GetPhysicalDisksAsync(cancellationToken, _timeout).ConfigureAwait(false);
 }

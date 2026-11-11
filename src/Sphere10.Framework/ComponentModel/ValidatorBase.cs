@@ -116,26 +116,20 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// <summary>
 	/// Constructor. Initialize the class using a null type.
 	/// </summary>
-	protected ValidatorBase() {
-		ValueType = null;
-	}
+	protected ValidatorBase() => ValueType = null;
 
 	/// <summary>
 	/// Constructor.
 	/// </summary>
 	/// <param name="type">The type used to validate the values. If null no validation is made.</param>
-	protected ValidatorBase(Type type) {
-		ValueType = type;
-	}
+	protected ValidatorBase(Type type) => ValueType = type;
 
 	/// <summary>
 	/// True to allow null object value or NullString string Value
 	/// </summary>
 	[DefaultValue(true), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool AllowNull {
-		get {
-			return _allowNull;
-		}
+		get => _allowNull;
 		set {
 			if (_allowNull != value) {
 				_allowNull = value;
@@ -150,9 +144,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(""), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public string NullString {
-		get {
-			return _nullString;
-		}
+		get => _nullString;
 		set {
 			if (_nullString != value) {
 				_nullString = value;
@@ -167,9 +159,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(""), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public string NullDisplayString {
-		get {
-			return _nullDisplayString;
-		}
+		get => _nullDisplayString;
 		set {
 			if (_nullDisplayString != value) {
 				_nullDisplayString = value;
@@ -183,9 +173,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(true), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool AllowStringConversion {
-		get {
-			return _allowStringConversion;
-		}
+		get => _allowStringConversion;
 		set {
 			if (_allowStringConversion != value) {
 				_allowStringConversion = value;
@@ -199,9 +187,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object MinimumValue {
-		get {
-			return _minimumValue;
-		}
+		get => _minimumValue;
 		set {
 			if (_minimumValue != value) {
 				_minimumValue = value;
@@ -215,9 +201,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object MaximumValue {
-		get {
-			return _maximumValue;
-		}
+		get => _maximumValue;
 		set {
 			if (_maximumValue != value) {
 				_maximumValue = value;
@@ -231,9 +215,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Type ValueType {
-		get {
-			return _valueType;
-		}
+		get => _valueType;
 		set {
 			if (_valueType != value) {
 				_valueType = value;
@@ -267,9 +249,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object DefaultValue {
-		get {
-			return _defaultValue;
-		}
+		get => _defaultValue;
 		set {
 			if (_defaultValue != value) {
 				_defaultValue = value;
@@ -283,9 +263,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ICollection StandardValues {
-		get {
-			return _standardValues;
-		}
+		get => _standardValues;
 		set {
 			if (_standardValues != value) {
 				_standardValues = value;
@@ -299,9 +277,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(false), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool StandardValuesExclusive {
-		get {
-			return _standardValuesExclusive;
-		}
+		get => _standardValuesExclusive;
 		set {
 			if (_standardValuesExclusive != value) {
 				_standardValuesExclusive = value;
@@ -315,9 +291,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public CultureInfo CultureInfo {
-		get {
-			return _cultureInfo;
-		}
+		get => _cultureInfo;
 		set {
 			if (_cultureInfo != value) {
 				_cultureInfo = value;
@@ -354,9 +328,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	/// <param name="str"></param>
 	/// <returns></returns>
-	public object StringToValue(string str) {
-		return ObjectToValue(str);
-	}
+	public object StringToValue(string str) => ObjectToValue(str);
 
 	/// <summary>
 	/// Convert a value according to the current ValueType to an object with the Type specified. Throw an exception on error.
@@ -419,9 +391,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	/// <param name="input"></param>
 	/// <returns></returns>
-	public bool IsValidObject(object input) {
-		return IsValidObject(input, out _);
-	}
+	public bool IsValidObject(object input) => IsValidObject(input, out _);
 
 	/// <summary>
 	/// Returns true if the object is valid for this type of validator, using conversion functions. Returns as parameter the value converted.
@@ -445,9 +415,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	/// <param name="strValue"></param>
 	/// <returns></returns>
-	public bool IsValidString(string strValue) {
-		return IsValidString(strValue, out _);
-	}
+	public bool IsValidString(string strValue) => IsValidString(strValue, out _);
 
 	/// <summary>
 	/// Returns true if the string is valid for this type of editor, using string conversion function. Returns as out parameter the object converted.
@@ -455,9 +423,7 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// <param name="strValue"></param>
 	/// <param name="valueConverted"></param>
 	/// <returns></returns>
-	public bool IsValidString(string strValue, out object valueConverted) {
-		return IsValidObject(strValue, out valueConverted);
-	}
+	public bool IsValidString(string strValue, out object valueConverted) => IsValidObject(strValue, out valueConverted);
 
 	// Validating
 	/// <summary>
@@ -575,31 +541,23 @@ public abstract class ValidatorBase : Component, IValidator {
 	/// </summary>
 	/// <param name="str"></param>
 	/// <returns></returns>
-	public virtual bool IsNullString(string str) {
-		return str == null || str == _nullString;
-	}
+	public virtual bool IsNullString(string str) => str == null || str == _nullString;
 
 	/// <summary>
 	/// Returns true if string conversion is suported. AllowStringConversion must be true and the current Validator must support string conversion.
 	/// </summary>
-	public virtual bool IsStringConversionSupported() {
-		return (AllowStringConversion && typeof(string) == ValueType) || ValueType == null;
-	}
+	public virtual bool IsStringConversionSupported() => (AllowStringConversion && typeof(string) == ValueType) || ValueType == null;
 
 	// Error string
 	/// <summary>
 	/// Returns a string used for error description for a specified object. Usually used when printing the object for the error message when there is a conversion error.
 	/// </summary>
 	/// <param name="val"></param>
-	public virtual string ObjectToStringForError(object val) {
-		return val == null ? "<null>" : Tools.Exceptions.TryOrDefault(val.ToString, "<object>");
-	}
+	public virtual string ObjectToStringForError(object val) => val == null ? "<null>" : Tools.Exceptions.TryOrDefault(val.ToString, "<object>");
 
 	// Component methods
 	/// <summary>Delegates component resource cleanup to the base implementation.</summary>
-	protected override void Dispose(bool disposing) {
-		base.Dispose(disposing);
-	}
+	protected override void Dispose(bool disposing) => base.Dispose(disposing);
 
 	/// <summary>Restores validation defaults for the selected type without changing enum declaration order.</summary>
 	protected virtual void OnLoadingValueType() {

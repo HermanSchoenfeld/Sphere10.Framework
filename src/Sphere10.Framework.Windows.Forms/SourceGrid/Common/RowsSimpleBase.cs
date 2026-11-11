@@ -21,9 +21,7 @@ public abstract class RowsSimpleBase : RowsBase {
 	}
 
 	public int RowHeight {
-		get {
-			return _rowHeight;
-		}
+		get => _rowHeight;
 		set {
 			if (_rowHeight != value) {
 				_rowHeight = value;
@@ -32,11 +30,7 @@ public abstract class RowsSimpleBase : RowsBase {
 		}
 	}
 
-	public override int GetHeight(int row) {
-		return RowHeight;
-	}
+	public override int GetHeight(int row) => RowHeight;
 
-	public override void SetHeight(int row, int height) {
-		RowHeight = height;
-	}
+	public override void SetHeight(int row, int height) => RowHeight = height;
 }

@@ -23,13 +23,9 @@ public class OracleDAC : DACBase {
 
 	public override DBMSType DBMSType => DBMSType.Oracle;
 
-	public override IDbConnection CreateConnection() {
-		return new OracleConnection(ConnectionString);
-	}
+	public override IDbConnection CreateConnection() => new OracleConnection(ConnectionString);
 
-	public override ISQLBuilder CreateSQLBuilder() {
-		return new OracleSQLBuilder();
-	}
+	public override ISQLBuilder CreateSQLBuilder() => new OracleSQLBuilder();
 
 	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
 		var oracleConnection = connection as OracleConnection;
@@ -38,9 +34,7 @@ public class OracleDAC : DACBase {
 		oracleConnection.EnlistTransaction(transaction);
 	}
 
-	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-		throw new NotImplementedException();
-	}
+	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) => throw new NotImplementedException();
 
 	protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
 		// ODP.NET runs one statement per command, and transactions belong to the DAC scope.
@@ -84,7 +78,5 @@ ORDER BY tc.TABLE_NAME, tc.COLUMN_ID"
 		);
 	}
 
-	protected override DataTable GetDenormalizedTriggerDescriptions() {
-		return this.ExecuteQuery(@"SELECT TRIGGER_NAME AS ""Name"" FROM USER_TRIGGERS");
-	}
+	protected override DataTable GetDenormalizedTriggerDescriptions() => this.ExecuteQuery(@"SELECT TRIGGER_NAME AS ""Name"" FROM USER_TRIGGERS");
 }

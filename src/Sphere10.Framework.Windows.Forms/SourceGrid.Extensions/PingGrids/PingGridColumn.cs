@@ -52,15 +52,11 @@ public class PingGridColumn : ColumnInfo {
 	}
 
 	public new PingGrid Grid {
-		get {
-			return (PingGrid)base.Grid;
-		}
+		get => (PingGrid)base.Grid;
 	}
 
 	public string PropertyName {
-		get {
-			return _propertyName;
-		}
+		get => _propertyName;
 		set {
 			_propertyName = value;
 			//mPropertyColumn = null;
@@ -86,12 +82,8 @@ public class PingGridColumn : ColumnInfo {
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.ColumnHeader
 	/// </summary>
 	public ICellVirtual HeaderCell {
-		get {
-			return _headerCell;
-		}
-		set {
-			_headerCell = value;
-		}
+		get => _headerCell;
+		set => _headerCell = value;
 	}
 
 	/// <summary>
@@ -99,23 +91,15 @@ public class PingGridColumn : ColumnInfo {
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.Cell or other classes of the same namespace
 	/// </summary>
 	public ICellVirtual DataCell {
-		get {
-			return _dataCell;
-		}
-		set {
-			_dataCell = value;
-		}
+		get => _dataCell;
+		set => _dataCell = value;
 	}
 
 	/// <summary>
 	/// Gets the conditions used to returns different cell based on the data of the row.
 	/// </summary>
 	[Obsolete]
-	public List<Conditions.ICondition> Conditions {
-		get {
-			return _conditions;
-		}
-	}
+	public List<Conditions.ICondition> Conditions => _conditions;
 
 	/// <summary>
 	/// Gets the ICellVirtual for the current column and the specified row.
@@ -143,9 +127,8 @@ public class PingGridColumn : ColumnInfo {
 	/// </summary>
 	/// <param name="grid"></param>
 	/// <returns></returns>
-	public static PingGridColumn CreateRowHeader(PingGrid grid) {
-		return new PingGridColumn(grid, new SourceGrid.Extensions.PingGrids.Cells.Header(), new SourceGrid.Extensions.PingGrids.Cells.RowHeader(), null);
-	}
+	public static PingGridColumn CreateRowHeader(PingGrid grid)
+		=> new PingGridColumn(grid, new SourceGrid.Extensions.PingGrids.Cells.Header(), new SourceGrid.Extensions.PingGrids.Cells.RowHeader(), null);
 
 	/// <summary>
 	/// Clears any associated data with DataGridView.

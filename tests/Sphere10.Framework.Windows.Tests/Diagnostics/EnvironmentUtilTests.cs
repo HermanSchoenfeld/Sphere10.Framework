@@ -33,9 +33,8 @@ public class EnvironmentUtilTests {
 	[TestCase("A=B")]
 	[TestCase("A\0B")]
 	[TestCase("A\r\nB")]
-	public void InvalidNamesAreRejectedWithoutChangingAnyEnvironment(string name) {
-		Assert.That(Tools.Windows.Environment.Validate(name, "value", EnvironmentVariableTarget.Process).IsFailure, Is.True);
-	}
+	public void InvalidNamesAreRejectedWithoutChangingAnyEnvironment(string name)
+		=> Assert.That(Tools.Windows.Environment.Validate(name, "value", EnvironmentVariableTarget.Process).IsFailure, Is.True);
 
 	[Test]
 	public void ValidationAcceptsEmptyValuesAndRejectsTruncatedOrUnsupportedInputs() {

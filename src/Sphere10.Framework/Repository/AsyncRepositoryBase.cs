@@ -6,39 +6,32 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
+/// <summary>
+/// A <see cref="RepositoryBase{TEntity, TIdentity}"/> abstraction that implements its synchronous members using the sync-over-async pattern: each
+/// starts its asynchronous counterpart on a worker and waits for it to complete.
+/// </summary>
 public abstract class AsyncRepositoryBase<TEntity, TIdentity> : RepositoryBase<TEntity, TIdentity> {
 
-	// Sync-over-async pattern
-	protected sealed override void DisposeInternal() {
-		Task.Run(() => DisposeInternalAsync().AsTask()).GetAwaiter().GetResult();
-	}
-
-	// Sync-over-async pattern
-	public override bool Contains(TIdentity identity)
-		=> ContainsAsync(identity).ResultSafe();
+	public override bool Contains(TIdentity identity) => Task.ExecuteSyncOverAsync(() => ContainsAsync(identity));
 
 	public override bool TryGet(TIdentity identity, out TEntity entity) {
-		// Sync-over-async pattern
-		var result = TryGetAsync(identity).ResultSafe();
+		var result = Task.ExecuteSyncOverAsync(() => TryGetAsync(identity));
 		entity = result.Item2;
 		return result.Item1;
 	}
 
-	public override void Create(TEntity entity)
-		=> CreateAsync(entity).WaitSafe();
+	public override void Create(TEntity entity) => Task.ExecuteSyncOverAsync(() => CreateAsync(entity));
 
-	public override void Update(TEntity entity)
-		=> UpdateAsync(entity).WaitSafe();
+	public override void Update(TEntity entity) => Task.ExecuteSyncOverAsync(() => UpdateAsync(entity));
 
-	public override void Delete(TIdentity identity)
-		=> DeleteAsync(identity).WaitSafe();
+	public override void Delete(TIdentity identity) => Task.ExecuteSyncOverAsync(() => DeleteAsync(identity));
 
-	public override void Clear()
-		=> ClearAsync().WaitSafe();
+	public override void Clear() => Task.ExecuteSyncOverAsync(ClearAsync);
 
+	protected sealed override void DisposeInternal() => Task.ExecuteSyncOverAsync(() => DisposeInternalAsync().AsTask());
 }
-

@@ -100,17 +100,13 @@ public class CHMHelpProviderTests {
 	}
 
 	private sealed class TestProductInformationProvider : IProductInformationProvider {
-		public TestProductInformationProvider(string file) {
-			ProductInformation = new ProductInformation { HelpResources = new[] { Tuple.Create(HelpType.CHM, file) } };
-		}
+		public TestProductInformationProvider(string file) => ProductInformation = new ProductInformation { HelpResources = new[] { Tuple.Create(HelpType.CHM, file) } };
 
 		public ProductInformation ProductInformation { get; }
 	}
 
 	private sealed class TemporaryHelpFile : IDisposable {
-		public TemporaryHelpFile() {
-			Path = System.IO.Path.GetTempFileName();
-		}
+		public TemporaryHelpFile() => Path = System.IO.Path.GetTempFileName();
 
 		public string Path { get; }
 

@@ -176,9 +176,7 @@ public class ControlStateEventProviderManagerTests {
 			control.TextChanged += _changed;
 		}
 
-		protected override void DeregisterStateChangedListener(TextBox control, EventHandlerEx eventHandler) {
-			control.TextChanged -= _changed;
-		}
+		protected override void DeregisterStateChangedListener(TextBox control, EventHandlerEx eventHandler) => control.TextChanged -= _changed;
 	}
 
 	private sealed class UnusedProvider : ControlStateEventProviderBase<Control> {

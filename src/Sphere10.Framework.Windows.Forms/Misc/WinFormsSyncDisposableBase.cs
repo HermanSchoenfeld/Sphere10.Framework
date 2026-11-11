@@ -17,9 +17,8 @@ namespace Sphere10.Framework.Windows.Forms;
 public abstract class WinFormsSyncDisposableBase : SyncDisposable {
 	private readonly WindowsFormsSynchronizationContext _synchronizationContext;
 
-	protected WinFormsSyncDisposableBase() {
-		_synchronizationContext = SynchronizationContext.Current as WindowsFormsSynchronizationContext ?? new WindowsFormsSynchronizationContext();
-	}
+	protected WinFormsSyncDisposableBase()
+		=> _synchronizationContext = SynchronizationContext.Current as WindowsFormsSynchronizationContext ?? new WindowsFormsSynchronizationContext();
 
 	protected override ValueTask DisposeInternalAsync() {
 		// The thread's dispatcher outlives an owned modal dialog; synchronous disposal never pumps its queued callbacks.

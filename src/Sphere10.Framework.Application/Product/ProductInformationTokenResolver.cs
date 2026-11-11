@@ -12,9 +12,7 @@ namespace Sphere10.Framework.Application;
 
 public class ProductInformationTokenResolver : ITokenResolver {
 
-	public ProductInformationTokenResolver(IProductInformationProvider productInformationProvider) {
-		ProductInformationProvider = productInformationProvider;
-	}
+	public ProductInformationTokenResolver(IProductInformationProvider productInformationProvider) => ProductInformationProvider = productInformationProvider;
 
 	protected IProductInformationProvider ProductInformationProvider { get; }
 

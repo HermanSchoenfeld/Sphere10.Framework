@@ -25,15 +25,7 @@ public class CellEmpty : Cells.Cell {
 		_end = end;
 	}
 
-	public DateTime Start {
-		get {
-			return _start;
-		}
-	}
+	public DateTime Start => _start;
 
-	public DateTime End {
-		get {
-			return _end;
-		}
-	}
+	public DateTime End => _end;
 }

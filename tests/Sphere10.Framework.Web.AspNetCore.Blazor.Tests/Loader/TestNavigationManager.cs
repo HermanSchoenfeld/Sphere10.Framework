@@ -19,9 +19,7 @@ public class TestNavigationManager : NavigationManager {
 		Initialize(baseUri ?? "http://localhost/", uri ?? baseUri ?? "http://localhost/");
 	}
 
-	public new void Initialize(string baseUri, string uri) {
-		base.Initialize(baseUri, uri);
-	}
+	public new void Initialize(string baseUri, string uri) => base.Initialize(baseUri, uri);
 
 	protected override void NavigateToCore(string uri, bool forceLoad) {
 		Uri = BaseUri + uri.TrimStart('/');

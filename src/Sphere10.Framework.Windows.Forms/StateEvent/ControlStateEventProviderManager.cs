@@ -50,9 +50,7 @@ public class ControlStateEventProviderManager {
 	};
 	private readonly HashSet<string> _controlStateEventProviders;
 
-	static ControlStateEventProviderManager() {
-		Instance = new ControlStateEventProviderManager();
-	}
+	static ControlStateEventProviderManager() => Instance = new ControlStateEventProviderManager();
 
 	/// <summary>Captures registration names without constructing providers or inspecting unrelated assemblies.</summary>
 	public ControlStateEventProviderManager() {
@@ -106,14 +104,10 @@ public class ControlStateEventProviderManager {
 	}
 
 	/// <summary>Checks whether the exact control type has a registered or built-in observer.</summary>
-	public bool HasControlStateProvider<TControl>() {
-		return HasControlStateEventProvider(typeof(TControl));
-	}
+	public bool HasControlStateProvider<TControl>() => HasControlStateEventProvider(typeof(TControl));
 
 	/// <summary>Checks exact support without constructing a provider.</summary>
-	public bool HasControlStateEventProvider(Type type) {
-		return FindControlStateEventProvider(type, false, out _);
-	}
+	public bool HasControlStateEventProvider(Type type) => FindControlStateEventProvider(type, false, out _);
 
 	/// <summary>Finds the exact supported control type, optionally walking nearest ancestors first.</summary>
 	public bool FindControlStateEventProvider(Type controlType, bool searchSubClasses, out Type implementationForBaseType) {

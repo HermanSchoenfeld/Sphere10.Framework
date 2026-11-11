@@ -73,13 +73,9 @@ public partial class DatabaseConnectionBar : ConnectionBarBase, IDatabaseConnect
 			_dbmsCombo.SelectedIndex = 0;
 	}
 
-	protected override IDAC GetDACInternal() {
-		return CurrentConnectionBar.GetDAC();
-	}
+	protected override IDAC GetDACInternal() => CurrentConnectionBar.GetDAC();
 
-	public override Task<Result> TestConnection() {
-		return CurrentConnectionBar.TestConnection();
-	}
+	public override Task<Result> TestConnection() => CurrentConnectionBar.TestConnection();
 
 	protected ConnectionBarBase CurrentConnectionBar { get; set; }
 

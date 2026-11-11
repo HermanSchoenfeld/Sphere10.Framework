@@ -13,9 +13,7 @@ namespace Sphere10.Framework;
 public sealed class FastLock {
 	private readonly ReaderWriterLockSlim _lock;
 
-	public FastLock() {
-		_lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-	}
+	public FastLock() => _lock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
 	/// <summary>Acquires a recursive lock whose scope must be disposed synchronously on this thread.</summary>
 	public SyncScope<ReaderWriterLockSlim> EnterLockScope() {

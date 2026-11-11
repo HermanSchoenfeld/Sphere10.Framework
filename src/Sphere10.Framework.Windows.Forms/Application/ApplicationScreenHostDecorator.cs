@@ -59,9 +59,8 @@ public abstract class ApplicationScreenHostDecorator<TConcrete> : MultiApplicati
 
 	public virtual bool ShowScreen(ApplicationScreen Screen) => InternalHost.ShowScreen(Screen);
 
-	public virtual Task<bool> ShowScreenAsync(ApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
-		return InternalHost.ShowScreenAsync(screen, registration, cancellationToken);
-	}
+	public virtual Task<bool> ShowScreenAsync(ApplicationScreen screen, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default)
+		=> InternalHost.ShowScreenAsync(screen, registration, cancellationToken);
 
 	public virtual bool ShowScreenUndocked(ApplicationScreen screen) => InternalHost.ShowScreenUndocked(screen);
 

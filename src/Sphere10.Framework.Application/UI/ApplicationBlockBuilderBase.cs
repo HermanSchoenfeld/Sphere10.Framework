@@ -40,11 +40,7 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 
 	protected ScreenKind DefaultScreenKind => DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
 
-	protected ApplicationScreenDefinition[] ScreenDefinitions {
-		get {
-			return _screenDefinitions.ToArray();
-		}
-	}
+	protected ApplicationScreenDefinition[] ScreenDefinitions => _screenDefinitions.ToArray();
 
 	public virtual TBlock Build() {
 		ValidateConfiguration();
@@ -70,9 +66,7 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 	}
 
 	/// <summary>Completes pending navigation bindings against this product's canonical registrations.</summary>
-	protected virtual void ResolveScreenReferences(TBlock block) {
-		ApplicationHelper.ResolveScreenReferences(block, block);
-	}
+	protected virtual void ResolveScreenReferences(TBlock block) => ApplicationHelper.ResolveScreenReferences(block, block);
 
 	protected void SetBlockSettings(SettingsObject settings) {
 		Guard.ArgumentNotNull(settings, nameof(settings));
@@ -141,18 +135,15 @@ public abstract class ApplicationBlockBuilderBase<TMenu, TBlock> : IApplicationU
 	protected virtual void ValidateName(string name) => Guard.ArgumentNotNull(name, nameof(name));
 
 	/// <summary>Validates the effective product configuration before publishing or updating its registrations.</summary>
-	protected virtual void ValidateConfiguration() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
-	}
+	protected virtual void ValidateConfiguration() => Guard.Ensure(!string.IsNullOrWhiteSpace(Name), "Block name is required.");
 
 	protected virtual void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType);
 
 	protected abstract TBlock CreateBlock(IReadOnlyList<TMenu> menus);
 
 	/// <summary>Resolves a default reference without creating or changing registration metadata.</summary>
-	protected virtual void ResolveDefaultScreen() {
-		DefaultScreenDefinition = _defaultScreenRegistration == null ? null : ApplicationHelper.ResolveScreenRegistration(ScreenDefinitions, _defaultScreenRegistration);
-	}
+	protected virtual void ResolveDefaultScreen()
+		=> DefaultScreenDefinition = _defaultScreenRegistration == null ? null : ApplicationHelper.ResolveScreenRegistration(ScreenDefinitions, _defaultScreenRegistration);
 }
 
 /// <summary>Shared block metadata, screen policy and typed menu composition.</summary>
@@ -202,9 +193,7 @@ public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TB
 	}
 
 	/// <summary>Adds an existing compatible screen definition independently of commands.</summary>
-	public TSelf AddScreen(ApplicationScreenDefinition definition) {
-		return AddScreen(definition, out _);
-	}
+	public TSelf AddScreen(ApplicationScreenDefinition definition) => AddScreen(definition, out _);
 
 	/// <summary>Adds a definition and captures its immutable screen registration reference.</summary>
 	public TSelf AddScreen(ApplicationScreenDefinition definition, out ApplicationScreenRegistration registration) {
@@ -213,9 +202,7 @@ public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TB
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddMenu(TMenu menu) {
-		return AddMenu(menu, out _);
-	}
+	public TSelf AddMenu(TMenu menu) => AddMenu(menu, out _);
 
 	/// <summary>Adds an existing menu definition and returns its configuration reference.</summary>
 	public TSelf AddMenu(TMenu menu, out TMenu registration) {
@@ -224,9 +211,7 @@ public abstract class ApplicationBlockBuilderBase<TSelf, TMenu, TMenuBuilder, TB
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddMenu(Action<TMenuBuilder> configure) {
-		return AddMenu(configure, out _);
-	}
+	public TSelf AddMenu(Action<TMenuBuilder> configure) => AddMenu(configure, out _);
 
 	/// <summary>Configures one child menu, captures its definition and returns this parent.</summary>
 	public TSelf AddMenu(Action<TMenuBuilder> configure, out TMenu registration) {

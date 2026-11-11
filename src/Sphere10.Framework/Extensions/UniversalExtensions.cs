@@ -75,13 +75,9 @@ public static class UniversalExtensions {
 		fromY = temp;
 	}
 
-	public static bool IsIn<T>(this T @object, params T[] collection) {
-		return collection.Contains(@object);
-	}
+	public static bool IsIn<T>(this T @object, params T[] collection) => collection.Contains(@object);
 
-	public static bool IsIn<T>(this T @object, IEnumerable<T> collection) {
-		return collection.Contains(@object);
-	}
+	public static bool IsIn<T>(this T @object, IEnumerable<T> collection) => collection.Contains(@object);
 
 	//public static string ToStringSafe<T>(this T @object) => @object?.ToString() ?? "<null>";
 

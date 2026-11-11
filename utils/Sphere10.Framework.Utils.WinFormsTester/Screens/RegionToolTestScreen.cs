@@ -29,14 +29,10 @@ public partial class RegionToolTestScreen : ApplicationScreen {
 	}
 
 	// Refresh and filtering share one deterministic catalog projection.
-	private void Button1_Click(object sender, EventArgs args) {
-		ShowCultures();
-	}
+	private void Button1_Click(object sender, EventArgs args) => ShowCultures();
 
 	// Local filtering neither persists input nor changes a system preference.
-	private void FilterChanged(object sender, EventArgs args) {
-		ShowCultures();
-	}
+	private void FilterChanged(object sender, EventArgs args) => ShowCultures();
 
 	// RegionInfo supports specific cultures; neutral languages intentionally have no region.
 	private void ShowCultures() {

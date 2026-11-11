@@ -20,7 +20,5 @@ public sealed class SafeFindHandle : SafeHandleZeroOrMinusOneIsInvalid {
 	public SafeFindHandle() : base(true) {
 	}
 
-	override protected bool ReleaseHandle() {
-		return WinAPI.KERNEL32.FindClose(handle);
-	}
+	override protected bool ReleaseHandle() => WinAPI.KERNEL32.FindClose(handle);
 }

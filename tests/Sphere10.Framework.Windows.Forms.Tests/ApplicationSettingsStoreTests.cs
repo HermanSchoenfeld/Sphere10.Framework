@@ -141,11 +141,7 @@ public class ApplicationSettingsStoreTests {
 
 	// The operational screen is never constructed by these record-level checks.
 	public class PreferenceScreen : ApplicationScreen {
-		public override Preferences ScreenSettings {
-			get {
-				return (Preferences)base.ScreenSettings;
-			}
-		}
+		public override Preferences ScreenSettings => (Preferences)base.ScreenSettings;
 
 		#region Inner Types
 

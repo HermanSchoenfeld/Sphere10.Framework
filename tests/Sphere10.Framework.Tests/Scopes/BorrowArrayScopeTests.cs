@@ -196,9 +196,7 @@ public class BorrowArrayScopeTests {
 	private sealed class TrackingPool<T> : ArrayPool<T> {
 		private readonly T[] _array;
 
-		public TrackingPool(T[] array) {
-			_array = array;
-		}
+		public TrackingPool(T[] array) => _array = array;
 
 		public int RentCalls { get; private set; }
 		public int ReturnCalls { get; private set; }

@@ -211,14 +211,10 @@ public class ConcurrentStream : StreamDecorator, ICriticalObject {
 	}
 
 	[Obsolete]
-	protected override WaitHandle CreateWaitHandle() {
-		throw new NotSupportedException();
-	}
+	protected override WaitHandle CreateWaitHandle() => throw new NotSupportedException();
 
 	[Obsolete]
-	protected override void ObjectInvariant() {
-		throw new NotSupportedException();
-	}
+	protected override void ObjectInvariant() => throw new NotSupportedException();
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckLocked() {

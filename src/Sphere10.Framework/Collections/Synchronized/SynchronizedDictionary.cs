@@ -121,13 +121,9 @@ public class SynchronizedDictionary<TKey, TValue, TInner> : DictionaryDecorator<
 		}
 	}
 
-	public ReadScope EnterReadScope() {
-		return _lock.EnterReadScope();
-	}
+	public ReadScope EnterReadScope() => _lock.EnterReadScope();
 
-	public WriteScope EnterWriteScope() {
-		return _lock.EnterWriteScope();
-	}
+	public WriteScope EnterWriteScope() => _lock.EnterWriteScope();
 }
 
 public class SynchronizedDictionary<TKey, TValue> : SynchronizedDictionary<TKey, TValue, IDictionary<TKey, TValue>> {

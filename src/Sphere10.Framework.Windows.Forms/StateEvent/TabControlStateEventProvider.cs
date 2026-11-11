@@ -32,12 +32,8 @@ public class TabControlStateEventProvider : ContainerControlStateEventProviderBa
 	}
 
 	/// <summary>Includes the native pages without observing a page twice.</summary>
-	protected override IEnumerable<Control> GetChildControls(TabControl control) {
-		return base.GetChildControls(control).Union(control.TabPages.Cast<TabPage>());
-	}
+	protected override IEnumerable<Control> GetChildControls(TabControl control) => base.GetChildControls(control).Union(control.TabPages.Cast<TabPage>());
 
 	// Native selection is already committed when this event runs.
-	private void SelectedIndexChanged(object sender, EventArgs args) {
-		_selectionChanged?.Invoke();
-	}
+	private void SelectedIndexChanged(object sender, EventArgs args) => _selectionChanged?.Invoke();
 }

@@ -20,14 +20,10 @@ public partial class TabControlTestControl : UserControl {
 	}
 
 	// Both native radio choices update only this composite editor's draft mode.
-	private void DraftModeChanged(object sender, EventArgs args) {
-		UpdateDraftState();
-	}
+	private void DraftModeChanged(object sender, EventArgs args) => UpdateDraftState();
 
 	// Draft edits report local state without persisting demonstration data as user preferences.
-	private void DraftChanged(object sender, EventArgs args) {
-		UpdateDraftState();
-	}
+	private void DraftChanged(object sender, EventArgs args) => UpdateDraftState();
 
 	// Returning to the tab preserves the same controls and their current draft.
 	private void UpdateDraftState() {

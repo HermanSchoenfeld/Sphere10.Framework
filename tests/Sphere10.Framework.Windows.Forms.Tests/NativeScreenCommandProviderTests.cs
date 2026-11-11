@@ -145,22 +145,35 @@ public class NativeScreenCommandProviderTests {
 		});
 	}
 
-	/// <summary>Copies application commands into each detached presentation without moving the designer's original views.</summary>
+	/// <summary>A detached window shows its screen's own strips and its plugin's and block's commands, never the application's.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
-	public void DetachedWindowsProjectApplicationDesignerCommandsAndKeepTheirOriginalOwner(bool hideLocalStrips) {
+	public void DetachedWindowsShowOnlyTheirScreenPluginAndBlockCommands(bool hideLocalStrips) {
 		RunWithMessageLoop(async owner => {
 			using var image = new Bitmap(2, 2);
 			using var form = new DesignerCommandMainForm { ScreenMode = ScreenMode.MultiView };
 			form.DesignerAction.Image = image;
 			form.DesignerRefresh.Image = image;
-			using var detachedBlock = new CommandBlock { Name = "Detached owner" };
+			using var detachedBlock = new CommandBlock { Name = "Detached owner", ShowInMenuStrip = true, ShowInToolStrip = true };
 			using var rootBlock = new CommandBlock { Name = "Root owner" };
+			var blockMenu = new ApplicationMenu("Block tools") { ShowInMenuStrip = true };
+			blockMenu.AddItem(new WinFormsActionMenuItem("Block action", () => {
+			}));
+			detachedBlock.AddMenu(blockMenu);
+			using var pluginMenu = new ApplicationMenu("Plugin tools") { ShowInMenuStrip = true };
+			pluginMenu.AddItem(new WinFormsActionMenuItem("Plugin action", () => {
+			}));
+			using var pluginTool = new WinFormsActionMenuItem("Plugin refresh", () => {
+			});
+			var plugin = new CommandPlugin(detachedBlock, pluginMenu, pluginTool);
 			using var detached = new NativeCommandScreen("Detached tools") { Block = detachedBlock };
-			using var docked = new NativeCommandScreen("Application designer") { Block = rootBlock };
+			using var docked = new NativeCommandScreen("Docked tools") { Block = rootBlock };
 			detached.ScreenMenuStrip.Visible = !hideLocalStrips;
 			detached.ScreenToolBar.Visible = !hideLocalStrips;
-			await using var application = new FormsUI.Application(form, new[] { detachedBlock, rootBlock });
+			// The main form's own entries before any screen merges into it are the application's commands.
+			var applicationNames = form.MenuEntries.Concat(form.ToolEntries).Select(item => item.Name).Where(name => !string.IsNullOrEmpty(name))
+				.Append(form.DesignerHeader.Name).Append(form.DesignerRefresh.Name).Append(form.DesignerSplit.Name).Append("_contextHelpToolStripButton").ToHashSet();
+			await using var application = new FormsUI.Application(form, new[] { rootBlock }, new[] { plugin });
 			await application.InitializeAsync();
 			form.Show(owner);
 			form.ShowScreen(detached);
@@ -170,288 +183,23 @@ public class NativeScreenCommandProviderTests {
 			form.ShowScreen(docked);
 			await Task.Yield();
 
-			// The root header currently contains a borrowed docked-screen action; it is not an application command.
-			Assert.That(form.DesignerHeader.DropDownItems, Does.Contain(docked.Action));
-			var header = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerHeader.Name);
-			Assert.That(header, Is.Not.SameAs(form.DesignerHeader));
-			Assert.That(header.DropDownItems.Cast<ToolStripItem>().Select(item => item.Text), Is.EqualTo(new[] { "Nested actions" }));
-			var nested = (ToolStripMenuItem)header.DropDownItems[0];
-			var action = nested.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerAction.Name);
-			Assert.That(action.Checked, Is.True);
-			Assert.That(nested.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == form.DisabledAction.Name).Enabled, Is.False);
-			Assert.That(nested.DropDownItems.OfType<ToolStripSeparator>().Count(), Is.EqualTo(1));
+			var items = WindowItems(window).ToArray();
+			Assert.That(items.Select(item => item.Name).Where(applicationNames.Contains), Is.Empty, "Application menus and toolbar items stay with the main window.");
+			var captions = items.OfType<ToolStripMenuItem>().Select(item => Caption(item.Text)).ToArray();
+			Assert.That(captions, Does.Contain("Plugin tools").And.Contain("Block tools"));
+			Assert.That(Descendants(items).Select(item => item.Text), Does.Contain("Plugin action").And.Contain("Block action"));
+			Assert.That(items.Select(item => item.ToolTipText ?? item.Text), Does.Contain("Plugin refresh"));
+			if (!hideLocalStrips) {
+				Assert.That(captions, Does.Contain("Detached tools"));
+				Assert.That(items, Does.Contain(detached.RefreshButton));
+			}
+
+			// The application's own commands remain on the main window, unchanged by the detached presentation.
 			Assert.That(form.MenuEntries, Does.Contain(form.DesignerHeader));
 			Assert.That(form.ToolEntries, Does.Contain(form.DesignerRefresh));
-
-			// All original handlers run once, and a nested invocation restores the outer explicit context.
-			var extraClicks = 0;
-			SharedUI.IApplicationScreenHost beforeNested = null;
-			SharedUI.IApplicationScreenHost afterNested = null;
-			var toolbarDefinition = (IWinFormsLinkMenuItem)application.ToolBarItems.Single(item => item.Title == "Designer refresh");
-			form.DesignerAction.Click += (_, _) => {
-				extraClicks++;
-				beforeNested = form.InvocationHost;
-				toolbarDefinition.OnSelect(form);
-				afterNested = form.InvocationHost;
-			};
-			action.PerformClick();
-			Assert.That(form.DesignerClicks, Is.EqualTo(1));
-			Assert.That(extraClicks, Is.EqualTo(1));
-			Assert.That(form.DesignerAction.Checked, Is.False);
-			Assert.That(action.Checked, Is.False);
-			Assert.That(beforeNested, Is.SameAs(window.ScreenHost));
-			Assert.That(afterNested, Is.SameAs(window.ScreenHost));
-			Assert.That(form.InvocationHost, Is.SameAs(form.ScreenHost));
-			Assert.That(form.LastToolbarHost, Is.SameAs(form.ScreenHost));
-			var refresh = WindowItems(window).Single(item => item.Name == form.DesignerRefresh.Name);
-			Assert.That(refresh, Is.Not.SameAs(form.DesignerRefresh));
-			refresh.PerformClick();
-			Assert.That(form.ToolbarClicks, Is.EqualTo(2));
-			Assert.That(form.LastToolbarHost, Is.SameAs(window.ScreenHost));
-			var extraSplitClicks = 0;
-			form.DesignerSplit.ButtonClick += (_, _) => extraSplitClicks++;
-			form.DesignerSplit.PerformButtonClick();
-			var originalSplitClicks = form.SplitClicks;
-			var originalSplitItemClicks = form.SplitItemClicks;
-			var split = (ToolStripSplitButton)WindowItems(window).Single(item => item.Name == form.DesignerSplit.Name);
-			split.PerformButtonClick();
-			Assert.That(form.SplitClicks, Is.EqualTo(originalSplitClicks * 2));
-			Assert.That(form.SplitItemClicks, Is.EqualTo(originalSplitItemClicks * 2));
-			Assert.That(extraSplitClicks, Is.EqualTo(2));
-			Assert.That(form.LastSplitHost, Is.SameAs(window.ScreenHost));
-			Assert.That(form.InvocationHost, Is.SameAs(form.ScreenHost));
-			WindowItems(window).Single(item => item.Name == "_contextHelpToolStripButton").PerformClick();
-			Assert.That(form.HelpScreen, Is.SameAs(detached));
-			Assert.That(form.ActiveScreen, Is.SameAs(docked));
-
-			form.DesignerAction.Text = "Changed designer action";
-			form.DesignerAction.Enabled = false;
-			form.DesignerAction.Available = false;
-			Assert.That(action.Text, Is.EqualTo("Changed designer action"));
-			Assert.That(action.Enabled || action.Available, Is.False);
 			Assert.That(form.ScreenHost.DockScreen(detached), Is.True);
 			Assert.That(form.DesignerHeader.IsDisposed || form.DesignerAction.IsDisposed || form.DesignerRefresh.IsDisposed, Is.False);
 			Assert.That(image.Width, Is.EqualTo(2));
-		});
-	}
-
-	/// <summary>An inactive screen's detached window never adopts children borrowed by a nested root submenu.</summary>
-	[TestCase(false, MergeAction.Remove)]
-	[TestCase(true, MergeAction.Remove)]
-	[TestCase(false, MergeAction.Replace)]
-	[TestCase(true, MergeAction.Replace)]
-	public void DetachingAnInactiveScreenKeepsRecursiveApplicationCommandMembership(bool matchScreenNavigationCaption, MergeAction activeMergeAction) {
-		RunWithMessageLoop(async owner => {
-			using var form = new DesignerCommandMainForm { ScreenMode = ScreenMode.MultiView };
-			using var detachedBlock = new CommandBlock { Name = "Detached owner" };
-			using var activeBlock = new CommandBlock { Name = "Active owner" };
-			using var detached = new NativeCommandScreen(matchScreenNavigationCaption ? "Screens" : "Detached tools") { Block = detachedBlock };
-			using var active = new NativeCommandScreen("Application designer") { Block = activeBlock };
-			var matchingSubmenu = new ToolStripMenuItem("Nested actions") { MergeAction = MergeAction.MatchOnly };
-			matchingSubmenu.DropDownItems.Add(active.Action);
-			active.Header.DropDownItems.Add(matchingSubmenu);
-			var screenNavigation = new ToolStripMenuItem("Screens");
-			var activeNavigationOpenings = 0;
-			screenNavigation.DropDownOpening += (_, _) => activeNavigationOpenings++;
-			var activeNavigationAction = new ToolStripMenuItem("Active screen navigation command");
-			screenNavigation.DropDownItems.Add(activeNavigationAction);
-			screenNavigation.DropDownItems.Add(new ToolStripMenuItem("Close All") { Name = "activeScreenCloseAll", MergeAction = activeMergeAction });
-			active.ScreenMenuStrip.Items.Add(screenNavigation);
-			await using var application = new FormsUI.Application(form, new[] { detachedBlock, activeBlock });
-			await application.InitializeAsync();
-			form.Show(owner);
-			form.ShowScreen(detached);
-			form.ShowScreen(active);
-			await Task.Yield();
-
-			var originalSubmenu = (ToolStripMenuItem)form.DesignerHeader.DropDownItems[0];
-			Assert.That(originalSubmenu.DropDownItems, Does.Contain(active.Action));
-			var rootNavigation = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screensMenuItem");
-			Assert.That(rootNavigation.DropDownItems, Does.Contain(activeNavigationAction));
-			Assert.That(rootNavigation.DropDownItems.Cast<ToolStripItem>().Any(item => item.Name == "_closeAllScreensMenuItem"), Is.False);
-			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (ApplicationScreenForm)detached.FindForm();
-			window.Location = owner.Location;
-			var header = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerHeader.Name);
-			var projectedSubmenu = header.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Text == "Nested actions");
-			Assert.That(projectedSubmenu.DropDownItems.Cast<ToolStripItem>().Select(item => item.Text),
-				Is.EqualTo(new[] { "Designer action", string.Empty, "Disabled action" }));
-			Assert.That(originalSubmenu.DropDownItems, Does.Contain(active.Action));
-			Assert.That(form.ActiveScreen, Is.SameAs(active));
-
-			// Dynamic navigation adds real open screens without copying an active screen's unrelated commands.
-			var projectedNavigation = matchScreenNavigationCaption ? detached.Header
-				: WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == "_screensMenuItem");
-			Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Select(item => item.Text), Does.Not.Contain(activeNavigationAction.Text));
-			Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Count(item => item.Name == "_closeAllScreensMenuItem"), Is.EqualTo(1));
-			Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Any(item => item.Name == "activeScreenCloseAll"), Is.False);
-			projectedNavigation.ShowDropDown();
-			try {
-				Assert.That(activeNavigationOpenings, Is.Zero, "A detached popup must not prepare the root's unrelated active screen.");
-				Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Select(item => item.Text), Does.Not.Contain(activeNavigationAction.Text));
-				Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Count(item => item.Name == "_closeAllScreensMenuItem"), Is.EqualTo(1));
-				Assert.That(projectedNavigation.DropDownItems.Cast<ToolStripItem>().Any(item => item.Name == "activeScreenCloseAll"), Is.False);
-				Assert.That(projectedNavigation.DropDownItems.OfType<ToolStripMenuItem>().Where(item => item.Tag is ApplicationScreen)
-					.Select(item => item.Tag), Is.EquivalentTo(new[] { detached, active }));
-				Assert.That(rootNavigation.DropDownItems, Does.Contain(activeNavigationAction));
-			} finally {
-				projectedNavigation.HideDropDown();
-			}
-
-			// A real root popup still prepares its own active contribution and retains inspected-window navigation.
-			rootNavigation.ShowDropDown();
-			try {
-				Assert.That(activeNavigationOpenings, Is.EqualTo(1));
-				rootNavigation.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, detached)).PerformClick();
-			} finally {
-				rootNavigation.HideDropDown();
-			}
-			await WaitUntilAsync(() => rootNavigation.DropDownItems.OfType<ToolStripMenuItem>()
-				.Any(item => ReferenceEquals(item.Tag, detached) && item.Checked));
-			activeNavigationOpenings = 0;
-			projectedNavigation.ShowDropDown();
-			try {
-				Assert.That(activeNavigationOpenings, Is.Zero, "Retained root navigation must not attach its active popup preparation to another window.");
-				Assert.That(form.ActiveScreen, Is.SameAs(active));
-				Assert.That(projectedNavigation.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, detached)).Checked, Is.True);
-			} finally {
-				projectedNavigation.HideDropDown();
-			}
-		});
-	}
-
-	/// <summary>Projected popup preparation runs the original designer handlers without opening the root's popup.</summary>
-	[TestCase(false)]
-	[TestCase(true)]
-	public void DetachedPopupOpeningPreservesOriginalHandlersAndExplicitHostContext(bool matchScreenCaption) {
-		RunWithMessageLoop(async owner => {
-			using var form = new DesignerCommandMainForm { ScreenMode = ScreenMode.MultiView };
-			using var block = new CommandBlock { Name = "Popup owner" };
-			using var detached = new NativeCommandScreen(matchScreenCaption ? "Application designer" : "Detached tools") { Block = block };
-			using var docked = new NativeCommandScreen("Docked tools") { Block = block };
-			await using var application = new FormsUI.Application(form, new[] { block });
-			await application.InitializeAsync();
-			form.Show(owner);
-			form.ShowScreen(detached);
-			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (ApplicationScreenForm)detached.FindForm();
-			window.Location = owner.Location;
-			form.ShowScreen(docked);
-			var originalSubmenu = (ToolStripMenuItem)form.DesignerHeader.DropDownItems[0];
-			var headerOpenings = 0;
-			var nestedOpenings = 0;
-			SharedUI.IApplicationScreenHost headerHost = null;
-			SharedUI.IApplicationScreenHost nestedHost = null;
-			form.DesignerHeader.DropDownOpening += (_, _) => {
-				headerOpenings++;
-				headerHost = form.InvocationHost;
-			};
-			originalSubmenu.DropDownOpening += (_, _) => {
-				nestedOpenings++;
-				nestedHost = form.InvocationHost;
-				form.DesignerAction.Checked = false;
-				form.DisabledAction.Enabled = true;
-			};
-
-			var header = matchScreenCaption ? detached.Header
-				: WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerHeader.Name);
-			if (matchScreenCaption) {
-				// Live source state must not overwrite the merger's temporary heading configuration.
-				var projectedHeader = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerHeader.Name);
-				form.DesignerHeader.Enabled = false;
-				Assert.That(projectedHeader.Enabled, Is.False);
-				Assert.That(projectedHeader.MergeAction, Is.EqualTo(MergeAction.MatchOnly));
-				form.DesignerHeader.Enabled = true;
-				form.DesignerHeader.Text = "Updated application commands";
-				Assert.That(projectedHeader.Text, Is.EqualTo("Updated application commands"));
-				Assert.That(projectedHeader.MergeAction, Is.EqualTo(MergeAction.MatchOnly));
-				form.DesignerHeader.Text = "Application designer";
-				projectedHeader.Owner.PerformLayout();
-				Assert.That(header.Owner.Items.OfType<ToolStripMenuItem>().Count(item => item.Text == "Application designer"), Is.EqualTo(1));
-			}
-			header.ShowDropDown();
-			var nested = header.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Text == "Nested actions");
-			nested.ShowDropDown();
-			try {
-				Assert.That(headerOpenings, Is.EqualTo(1));
-				Assert.That(nestedOpenings, Is.EqualTo(1));
-				Assert.That(headerHost, Is.SameAs(window.ScreenHost));
-				Assert.That(nestedHost, Is.SameAs(window.ScreenHost));
-				Assert.That(nested.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == form.DesignerAction.Name).Checked, Is.False);
-				Assert.That(nested.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == form.DisabledAction.Name).Enabled, Is.True);
-				Assert.That(form.DesignerHeader.DropDown.Visible || originalSubmenu.DropDown.Visible, Is.False);
-				Assert.That(form.ActiveScreen, Is.SameAs(docked));
-				Assert.That(form.InvocationHost, Is.SameAs(form.ScreenHost));
-			} finally {
-				nested.HideDropDown();
-				header.HideDropDown();
-			}
-		});
-	}
-
-	/// <summary>Native Options and close-other commands use their invoking detached host, retaining all designer Click handlers.</summary>
-	[Test]
-	public void DetachedApplicationOptionsAndCloseOtherUseTheDetachedScreen() {
-		RunWithMessageLoop(async owner => {
-			using var form = new DesignerCommandMainForm { ScreenMode = ScreenMode.MultiView };
-			var provider = new NoWriteSettingsProvider();
-			using var detachedBlock = PreferencesBlock("Detached", provider);
-			using var rootBlock = PreferencesBlock("Root", provider);
-			await using var application = new FormsUI.Application(form, new[] { rootBlock, detachedBlock });
-			await application.InitializeAsync();
-			form.Show(owner);
-			var detached = (PreferencesScreen)await form.ScreenHost.OpenScreenAsync(detachedBlock, detachedBlock.ScreenDefinitions.Single());
-			Assert.That(form.ScreenHost.UndockScreen(detached), Is.True);
-			var window = (ApplicationScreenForm)detached.FindForm();
-			window.Location = owner.Location;
-			var docked = await form.ScreenHost.OpenScreenAsync(rootBlock, rootBlock.ScreenDefinitions.Single());
-			var extraOptionsClicks = 0;
-			SharedUI.IApplicationScreenHost optionsHost = null;
-			form.OptionsCommand.Click += (_, _) => {
-				extraOptionsClicks++;
-				optionsHost = form.InvocationHost;
-			};
-
-			var options = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == "_optionsMenuItem");
-			options.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screenOptionsMenuItem").PerformClick();
-			await WaitUntilAsync(() => System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Any());
-			var dialog = System.Windows.Forms.Application.OpenForms.OfType<ApplicationSettingsDialog>().Single();
-			try {
-				Assert.That(dialog.SelectedOwner, Is.SameAs(detachedBlock.ScreenDefinitions.Single()));
-				Assert.That(dialog.Owner, Is.SameAs(window));
-				Assert.That(extraOptionsClicks, Is.EqualTo(1));
-				Assert.That(optionsHost, Is.SameAs(window.ScreenHost));
-				Assert.That(form.ActiveScreen, Is.SameAs(docked));
-				Assert.That(form.InvocationHost, Is.SameAs(form.ScreenHost));
-			} finally {
-				dialog.DialogResult = DialogResult.Cancel;
-				dialog.Close();
-			}
-
-			// Root navigation retains its inspected undocked selection without changing the docked active screen.
-			var rootScreens = form.MenuEntries.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screensMenuItem");
-			rootScreens.ShowDropDown();
-			rootScreens.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, detached)).PerformClick();
-			rootScreens.HideDropDown();
-			await WaitUntilAsync(() => rootScreens.DropDownItems.OfType<ToolStripMenuItem>()
-				.Any(item => ReferenceEquals(item.Tag, detached) && item.Checked));
-			rootScreens.ShowDropDown();
-			try {
-				Assert.That(rootScreens.DropDownItems.OfType<ToolStripMenuItem>().Single(item => ReferenceEquals(item.Tag, detached)).Checked, Is.True);
-				Assert.That(form.ActiveScreen, Is.SameAs(docked));
-			} finally {
-				rootScreens.HideDropDown();
-			}
-
-			var screens = WindowItems(window).OfType<ToolStripMenuItem>().Single(item => item.Name == "_screensMenuItem");
-			screens.ShowDropDown();
-			var closeOthers = screens.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_closeOtherScreensMenuItem");
-			closeOthers.PerformClick();
-			screens.HideDropDown();
-			await WaitUntilAsync(() => form.ScreenHost.OpenScreens.Length == 1);
-			Assert.That(form.ScreenHost.OpenScreens.Single(), Is.SameAs(detached));
-			Assert.That(detached.IsDisposed, Is.False);
-			Assert.That(docked.IsDisposed, Is.True);
 		});
 	}
 
@@ -802,9 +550,7 @@ public class NativeScreenCommandProviderTests {
 	}
 
 	// Native mnemonic markers do not change the semantic caption used when merging top-level menus.
-	private static string Caption(string text) {
-		return text.Replace("&", string.Empty);
-	}
+	private static string Caption(string text) => text.Replace("&", string.Empty);
 
 	// Each case owns a real dispatcher; all native reads and retained-view transitions stay on its creating thread.
 	private static void RunWithMessageLoop(Func<Form, Task> test) {
@@ -844,6 +590,16 @@ public class NativeScreenCommandProviderTests {
 		Assert.That(completed, Is.True, "The case must complete before its dispatcher is released.");
 	}
 
+	// Walks the generated drop-down items of displayed strips without opening their popups.
+	private static System.Collections.Generic.IEnumerable<ToolStripItem> Descendants(System.Collections.Generic.IEnumerable<ToolStripItem> items) {
+		foreach (var item in items) {
+			yield return item;
+			if (item is ToolStripDropDownItem dropDown)
+				foreach (var child in Descendants(dropDown.DropDownItems.Cast<ToolStripItem>()))
+					yield return child;
+		}
+	}
+
 	// Enumerate the displayed strips without traversing their separate popup windows or retaining view bindings.
 	private static System.Collections.Generic.IEnumerable<ToolStripItem> WindowItems(Control parent) {
 		foreach (Control control in parent.Controls) {
@@ -853,26 +609,6 @@ public class NativeScreenCommandProviderTests {
 			foreach (var item in WindowItems(control))
 				yield return item;
 		}
-	}
-
-	// Wait on the existing live dispatcher for a modal presentation or an awaited screen close.
-	private static async Task WaitUntilAsync(Func<bool> condition) {
-		var limit = DateTime.UtcNow.AddSeconds(5);
-		while (!condition()) {
-			if (DateTime.UtcNow >= limit)
-				throw new AssertionException("The native command did not complete before the deadline.");
-			await Task.Delay(10);
-		}
-	}
-
-	// Configure exact owner values without touching workstation settings files.
-	private static ApplicationBlock PreferencesBlock(string name, ISettingsProvider provider) {
-		var block = new ApplicationBlock { Name = name };
-		var definition = new FormsUI.ApplicationScreenDefinition(typeof(PreferencesScreen), name, stableKey: name,
-			settings: new PreferencesScreen.Preferences { Name = name, Provider = provider });
-		block.AddScreenDefinition(definition);
-		block.DefaultScreenDefinition = definition;
-		return block;
 	}
 
 	#region Inner Types
@@ -886,21 +622,11 @@ public class NativeScreenCommandProviderTests {
 			ClientSize = new Size(1000, 700);
 		}
 
-		public ToolStripItem[] MenuEntries {
-			get {
-				return MenuStrip.Items.Cast<ToolStripItem>().ToArray();
-			}
-		}
+		public ToolStripItem[] MenuEntries => MenuStrip.Items.Cast<ToolStripItem>().ToArray();
 
-		public ToolStripItem[] ToolEntries {
-			get {
-				return ToolStrip.Items.Cast<ToolStripItem>().ToArray();
-			}
-		}
+		public ToolStripItem[] ToolEntries => ToolStrip.Items.Cast<ToolStripItem>().ToArray();
 
-		public void RebuildCommands() {
-			RebuildApplicationCommands();
-		}
+		public void RebuildCommands() => RebuildApplicationCommands();
 	}
 
 	// Designer-native commands stay on the main form while detached windows invoke those same callbacks.
@@ -940,11 +666,8 @@ public class NativeScreenCommandProviderTests {
 
 		public ToolStripSplitButton DesignerSplit { get; }
 
-		public ToolStripMenuItem OptionsCommand {
-			get {
-				return OptionsToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screenOptionsMenuItem");
-			}
-		}
+		public ToolStripMenuItem OptionsCommand
+			=> OptionsToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Single(item => item.Name == "_screenOptionsMenuItem");
 
 		public int DesignerClicks { get; private set; }
 
@@ -960,57 +683,10 @@ public class NativeScreenCommandProviderTests {
 
 		public SharedUI.IApplicationScreen HelpScreen { get; private set; }
 
-		public SharedUI.IApplicationScreenHost InvocationHost {
-			get {
-				return CommandUserInterfaceServices.ScreenHost;
-			}
-		}
+		public SharedUI.IApplicationScreenHost InvocationHost => CommandUserInterfaceServices.ScreenHost;
 
 		// Observe the actual native event's explicit host without starting a browser or help process.
-		protected override void ContextHelp_Click(object sender, EventArgs args) {
-			HelpScreen = CommandUserInterfaceServices.ScreenHost?.ActiveScreen;
-		}
-	}
-
-	/// <summary>A minimal hosted settings owner for real native Options selection.</summary>
-	[Settings(typeof(PreferencesScreen.Preferences))]
-	public sealed class PreferencesScreen : ApplicationScreen {
-		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public override Preferences ScreenSettings {
-			get {
-				return (Preferences)base.ScreenSettings;
-			}
-		}
-
-		#region Inner Types
-
-		[UserEditable]
-		public sealed class Preferences : SettingsObject {
-			public string Name { get; set; }
-		}
-
-		#endregion
-	}
-
-	// Displaying and cancelling Options never writes the fixture's supplied defaults.
-	private sealed class NoWriteSettingsProvider : SyncSettingsProviderBase {
-		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-			return false;
-		}
-
-		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
-			throw new InvalidOperationException("The fixture has no stored settings.");
-		}
-
-		protected override void SaveInternal(SettingsObject settings) {
-			throw new InvalidOperationException("Inspecting Options must not save settings.");
-		}
-
-		public override void DeleteSetting(SettingsObject settings) {
-		}
-
-		public override void ClearSettings() {
-		}
+		protected override void ContextHelp_Click(object sender, EventArgs args) => HelpScreen = CommandUserInterfaceServices.ScreenHost?.ActiveScreen;
 	}
 
 	// Both owners expose their definitions once, while each displaying window owns its generated views.

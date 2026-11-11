@@ -54,9 +54,8 @@ public class RestClient : IRestClient, IDisposable {
 
 	public async Task<T> PostAsync<T>(string urlPostfix, object body, IDictionary<string, string> queryParams = null, IDictionary<string, string> headers = null, JsonSerializerSettings responseSerializerSettings = null,
 	                                  CancellationToken cancellationToken = default) {
-		void AttachContent(HttpRequestMessage httpRequest) {
-			httpRequest.Content = new StringContent(JsonConvert.SerializeObject(body, _defaultSerializerSettings), Encoding.UTF8, "application/json");
-		}
+		void AttachContent(HttpRequestMessage httpRequest)
+			=> httpRequest.Content = new StringContent(JsonConvert.SerializeObject(body, _defaultSerializerSettings), Encoding.UTF8, "application/json");
 
 		using var response = await SendAsync(Tools.Url.Combine(BaseUrl, urlPostfix), HttpMethod.Post, queryParams, headers, AttachContent, cancellationToken: cancellationToken);
 
@@ -127,10 +126,8 @@ public class RestClient : IRestClient, IDisposable {
 		//httpRequest.Headers.Add("Notion-Version", _options.NotionVersion);
 	}
 
-	protected virtual Exception BuildException(HttpResponseMessage response) {
-		// Sync-over-async pattern
-		throw new InvalidOperationException($"Error: {response.StatusCode}{Environment.NewLine}{response.Content.ReadAsStringAsync().ResultSafe()}");
-	}
+	protected virtual Exception BuildException(HttpResponseMessage response)
+		=> throw new InvalidOperationException($"Error: {response.StatusCode}{Environment.NewLine}{Task.ExecuteSyncOverAsync(() => response.Content.ReadAsStringAsync())}");
 
 	private HttpClient EnsureHttpClient() {
 		using var scope = Tools.Threads.EnterLockScope(_synchronization);

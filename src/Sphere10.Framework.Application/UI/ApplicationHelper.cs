@@ -21,6 +21,13 @@ namespace Sphere10.Framework.Application.UI;
 /// <summary>Supports internal application composition, registration validation and settings inspection.</summary>
 internal static class ApplicationHelper {
 
+	/// <summary>Selects the next surviving presentation, then the previous one, using the supplied visual order and reference identity.</summary>
+	internal static TScreen GetScreenAfterClosing<TScreen>(IEnumerable<TScreen> order, int activeIndex, IEnumerable<TScreen> closing) where TScreen : class {
+		var closingSet = new HashSet<TScreen>(closing, ReferenceEqualityComparer.Instance);
+		return order.Skip(activeIndex + 1).FirstOrDefault(screen => !closingSet.Contains(screen))
+			?? order.Take(activeIndex).LastOrDefault(screen => !closingSet.Contains(screen));
+	}
+
 	/// <summary>Validates unique plugin names and block ownership, preserving definition identity in a new membership array.</summary>
 	internal static IApplicationPlugin[] ValidatePlugins(IEnumerable<IApplicationPlugin> plugins) {
 		Guard.ArgumentNotNull(plugins, nameof(plugins));
@@ -467,9 +474,8 @@ internal static class ApplicationHelper {
 	}
 
 	/// <summary>Rejects unknown screen hosting roles.</summary>
-	internal static void ValidateScreenKind(ScreenKind screenKind) {
-		Guard.Argument(screenKind is ScreenKind.Normal or ScreenKind.Empty, nameof(screenKind), "Unknown screen kind.");
-	}
+	internal static void ValidateScreenKind(ScreenKind screenKind)
+		=> Guard.Argument(screenKind is ScreenKind.Normal or ScreenKind.Empty, nameof(screenKind), "Unknown screen kind.");
 
 	/// <summary>Checks activation and hosting roles without changing the registration.</summary>
 	internal static void ValidateScreenPolicy(ScreenActivationMode? activationMode, ScreenKind screenKind) {
@@ -490,7 +496,6 @@ internal static class ApplicationHelper {
 	}
 
 	/// <summary>Rejects unknown screen activation policies.</summary>
-	internal static void ValidateActivationMode(ScreenActivationMode activationMode) {
-		Guard.Argument(activationMode is ScreenActivationMode.SingleInstance or ScreenActivationMode.MultiInstance or ScreenActivationMode.PermanentSingleton, nameof(activationMode), "Unknown activation mode.");
-	}
+	internal static void ValidateActivationMode(ScreenActivationMode activationMode)
+		=> Guard.Argument(activationMode is ScreenActivationMode.SingleInstance or ScreenActivationMode.MultiInstance or ScreenActivationMode.PermanentSingleton, nameof(activationMode), "Unknown activation mode.");
 }

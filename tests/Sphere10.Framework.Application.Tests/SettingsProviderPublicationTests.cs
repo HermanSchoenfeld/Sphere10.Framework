@@ -88,32 +88,22 @@ public class SettingsProviderPublicationTests {
 
 	// Keeps null values unchanged, as EncryptedStringAttribute does, without depending on the application's static secret.
 	public sealed class NullPreservingProbeEncryptionAttribute : EncryptedStringAttribute {
-		public override string Encrypt(string value) {
-			return value == null ? null : "cipher:" + value;
-		}
+		public override string Encrypt(string value) => value == null ? null : "cipher:" + value;
 
-		public override string Decrypt(string value) {
-			return value?.Substring("cipher:".Length);
-		}
+		public override string Decrypt(string value) => value?.Substring("cipher:".Length);
 	}
 
 	// A deterministic attribute isolates provider encryption/decryption order without changing the application's static secret.
 	public sealed class ProbeEncryptionAttribute : EncryptedStringAttribute {
-		public override string Encrypt(string value) {
-			return "cipher:" + value;
-		}
+		public override string Encrypt(string value) => "cipher:" + value;
 
-		public override string Decrypt(string value) {
-			return value.Substring("cipher:".Length);
-		}
+		public override string Decrypt(string value) => value.Substring("cipher:".Length);
 	}
 
 	// Supplies isolated provider storage for this fixture without changing its lifecycle contract.
 	private sealed class MemoryProvider : SyncSettingsProviderBase {
 		// Configure the fixture provider without performing storage work.
-		public MemoryProvider(ConcurrentDictionary<(Type, object), string> records = null) {
-			Records = records ?? new ConcurrentDictionary<(Type, object), string>();
-		}
+		public MemoryProvider(ConcurrentDictionary<(Type, object), string> records = null) => Records = records ?? new ConcurrentDictionary<(Type, object), string>();
 
 		// Shares serialized fixture records between provider instances.
 		public ConcurrentDictionary<(Type, object), string> Records { get; }
@@ -122,24 +112,16 @@ public class SettingsProviderPublicationTests {
 		public bool FailSave { get; set; }
 
 		// Check whether this fixture has a persisted record.
-		public override bool ContainsSetting(Type type, object id = null) {
-			return Records.ContainsKey((type, id));
-		}
+		public override bool ContainsSetting(Type type, object id = null) => Records.ContainsKey((type, id));
 
 		// Remove this fixture record.
-		public override void DeleteSetting(SettingsObject settings) {
-			Records.TryRemove((settings.GetType(), settings.ID), out _);
-		}
+		public override void DeleteSetting(SettingsObject settings) => Records.TryRemove((settings.GetType(), settings.ID), out _);
 
 		// Clear this fixture storage.
-		public override void ClearSettings() {
-			Records.Clear();
-		}
+		public override void ClearSettings() => Records.Clear();
 
 		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type type, object id = null) {
-			return (SettingsObject)Tools.Json.ReadFromString(type, Records[(type, id)]);
-		}
+		protected override SettingsObject LoadInternal(Type type, object id = null) => (SettingsObject)Tools.Json.ReadFromString(type, Records[(type, id)]);
 
 		// Persist fixture values after the base provider prepares them.
 		protected override void SaveInternal(SettingsObject settings) {

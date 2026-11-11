@@ -22,9 +22,7 @@ public class BufferAdapter : ExtendedListAdapter<byte>, IBuffer {
 		: base(endpoint) {
 	}
 
-	public ReadOnlySpan<byte> ReadSpan(long index, long count) {
-		return base.ReadRange(index, count).ToArray();
-	}
+	public ReadOnlySpan<byte> ReadSpan(long index, long count) => base.ReadRange(index, count).ToArray();
 
 	public void ReadRange(long index, Span<byte> destination)
 		=> ((IBuffer)this).ReadSpan(index, destination.Length).CopyTo(destination);
@@ -32,17 +30,11 @@ public class BufferAdapter : ExtendedListAdapter<byte>, IBuffer {
 	public void AddRange(ReadOnlySpan<byte> span)
 		=> base.AddRange((IEnumerable<byte>)span.ToArray());
 
-	public void UpdateRange(long index, ReadOnlySpan<byte> items) {
-		base.UpdateRange(index, (IEnumerable<byte>)items.ToArray());
-	}
+	public void UpdateRange(long index, ReadOnlySpan<byte> items) => base.UpdateRange(index, (IEnumerable<byte>)items.ToArray());
 
-	public void InsertRange(long index, ReadOnlySpan<byte> items) {
-		base.InsertRange(index, (IEnumerable<byte>)items.ToArray());
-	}
+	public void InsertRange(long index, ReadOnlySpan<byte> items) => base.InsertRange(index, (IEnumerable<byte>)items.ToArray());
 
-	public Span<byte> AsSpan(long index, long count) {
-		throw new NotSupportedException();
-	}
+	public Span<byte> AsSpan(long index, long count) => throw new NotSupportedException();
 
 	public void ExpandTo(long totalBytes) {
 		var newBytes = totalBytes - base.Count;

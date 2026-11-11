@@ -31,21 +31,13 @@ public class RowSelection : SelectionBase {
 		base.UnBindToGrid();
 	}
 
-	public override bool IsSelectedColumn(int column) {
-		return false;
-	}
+	public override bool IsSelectedColumn(int column) => false;
 
-	public override void SelectColumn(int column, bool select) {
-		throw new Exception("The method or operation is not implemented.");
-	}
+	public override void SelectColumn(int column, bool select) => throw new Exception("The method or operation is not implemented.");
 
-	public override bool IsSelectedCell(Position position) {
-		return IsSelectedRow(position.Row);
-	}
+	public override bool IsSelectedCell(Position position) => IsSelectedRow(position.Row);
 
-	public override void SelectCell(Position position, bool select) {
-		SelectRow(position.Row, select);
-	}
+	public override void SelectCell(Position position, bool select) => SelectRow(position.Row, select);
 
 	public override void SelectRow(int row, bool select) {
 		var rowRange = Grid.Rows.GetRange(row);
@@ -82,9 +74,7 @@ public class RowSelection : SelectionBase {
 		OnSelectionChanged(new RangeRegionChangedEventArgs(normalizedRange, CellRange.Empty));
 	}
 
-	public override bool IsEmpty() {
-		return _list.IsEmpty();
-	}
+	public override bool IsEmpty() => _list.IsEmpty();
 
 	public override bool IntersectsWith(CellRange rng) {
 		for (var r = rng.Start.Row; r <= rng.End.Row; r++) {
@@ -95,9 +85,7 @@ public class RowSelection : SelectionBase {
 		return false;
 	}
 
-	public override bool IsSelectedRow(int row) {
-		return _list.IsSelectedRow(row);
-	}
+	public override bool IsSelectedRow(int row) => _list.IsSelectedRow(row);
 
 	protected override void OnResetSelection() {
 		var prevRange = GetSelectionRegion();
@@ -118,7 +106,5 @@ public class RowSelection : SelectionBase {
 		return region;
 	}
 
-	private CellRange NormalizeRange(CellRange range) {
-		return new CellRange(range.Start.Row, 0, range.End.Row, Grid.Columns.Count - 1);
-	}
+	private CellRange NormalizeRange(CellRange range) => new CellRange(range.Start.Row, 0, range.End.Row, Grid.Columns.Count - 1);
 }

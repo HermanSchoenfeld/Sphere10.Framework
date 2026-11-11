@@ -34,11 +34,7 @@ public partial class MerkleTreeTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override MerkleTreeScreenSettings ScreenSettings {
-		get {
-			return (MerkleTreeScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override MerkleTreeScreenSettings ScreenSettings => (MerkleTreeScreenSettings)base.ScreenSettings;
 
 	// Apply restored calculation choices after profile attachment.
 
@@ -55,14 +51,11 @@ public partial class MerkleTreeTestScreen : ApplicationScreen {
 	}
 
 	// Readable concatenation makes the alphabet's parent/child structure visible.
-	private void AlphabetClicked(object sender, EventArgs args) {
-		ShowReadableTree(Enumerable.Range('A', 26).Select(value => ((char)value).ToString()).ToArray(), "Alphabet");
-	}
+	private void AlphabetClicked(object sender, EventArgs args)
+		=> ShowReadableTree(Enumerable.Range('A', 26).Select(value => ((char)value).ToString()).ToArray(), "Alphabet");
 
 	// Keep the integer example useful without printing every previous complete tree.
-	private void IntegersClicked(object sender, EventArgs args) {
-		ShowReadableTree(Enumerable.Range(1, 32).Select(value => value.ToString()).ToArray(), "Integers 1–32");
-	}
+	private void IntegersClicked(object sender, EventArgs args) => ShowReadableTree(Enumerable.Range(1, 32).Select(value => value.ToString()).ToArray(), "Integers 1–32");
 
 	// Exercise the original partition multiplication with explicit expected-result verification.
 	private void PartitionsClicked(object sender, EventArgs args) {
@@ -91,19 +84,13 @@ public partial class MerkleTreeTestScreen : ApplicationScreen {
 	}
 
 	// Native command adapters keep the owned task and its error reporting on the UI dispatcher.
-	private async void CompareClicked(object sender, EventArgs args) {
-		await CompareAsync(false);
-	}
+	private async void CompareClicked(object sender, EventArgs args) => await CompareAsync(false);
 
 	// Append comparison preserves the original batch/root recalculation scenario.
-	private async void AppendClicked(object sender, EventArgs args) {
-		await CompareAsync(true);
-	}
+	private async void AppendClicked(object sender, EventArgs args) => await CompareAsync(true);
 
 	// Cancel the existing operation without starting a second worker.
-	private void CancelClicked(object sender, EventArgs args) {
-		_comparisonCancellation?.Cancel();
-	}
+	private void CancelClicked(object sender, EventArgs args) => _comparisonCancellation?.Cancel();
 
 	// Clear only output, leaving the comparison choices intact.
 	private void ClearClicked(object sender, EventArgs args) {

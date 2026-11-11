@@ -16,19 +16,15 @@ namespace Sphere10.Framework.Application;
 public abstract class SyncSettingsProviderBase : SettingsProviderBase {
 
 	/// <inheritdoc />
-	public override Task<SettingsObject> NewSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-		return Task.Run(() => NewSetting(settingsObjectType, id), cancellationToken);
-	}
+	public override Task<SettingsObject> NewSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+		=> Task.Run(() => NewSetting(settingsObjectType, id), cancellationToken);
 
 	/// <inheritdoc />
-	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) {
-		return InitializeLoadedSetting(LoadInternal(settingsObjectType, id));
-	}
+	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) => InitializeLoadedSetting(LoadInternal(settingsObjectType, id));
 
 	/// <inheritdoc />
-	public override Task<SettingsObject> LoadSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-		return Task.Run(() => LoadSetting(settingsObjectType, id), cancellationToken);
-	}
+	public override Task<SettingsObject> LoadSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+		=> Task.Run(() => LoadSetting(settingsObjectType, id), cancellationToken);
 
 	/// <inheritdoc />
 	public override SettingsObject LoadSetting(SettingsObject defaults) {
@@ -52,9 +48,8 @@ public abstract class SyncSettingsProviderBase : SettingsProviderBase {
 	}
 
 	/// <inheritdoc />
-	public override Task<SettingsObject> LoadSettingAsync(SettingsObject defaults, CancellationToken cancellationToken = default) {
-		return Task.Run(() => LoadSetting(defaults), cancellationToken);
-	}
+	public override Task<SettingsObject> LoadSettingAsync(SettingsObject defaults, CancellationToken cancellationToken = default)
+		=> Task.Run(() => LoadSetting(defaults), cancellationToken);
 
 	/// <inheritdoc />
 	public override void SaveSetting(SettingsObject settings) {
@@ -75,32 +70,25 @@ public abstract class SyncSettingsProviderBase : SettingsProviderBase {
 	}
 
 	/// <inheritdoc />
-	public override Task SaveSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
-		return Task.Run(() => SaveSetting(settings), cancellationToken);
-	}
+	public override Task SaveSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default)
+		=> Task.Run(() => SaveSetting(settings), cancellationToken);
 
 	/// <inheritdoc />
-	public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-		return Task.Run(() => ContainsSetting(settingsObjectType, id), cancellationToken);
-	}
+	public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+		=> Task.Run(() => ContainsSetting(settingsObjectType, id), cancellationToken);
 
 	/// <inheritdoc />
-	public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
-		return Task.Run(() => DeleteSetting(settings), cancellationToken);
-	}
+	public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default)
+		=> Task.Run(() => DeleteSetting(settings), cancellationToken);
 
 	/// <inheritdoc />
-	public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
-		return Task.Run(ClearSettings, cancellationToken);
-	}
+	public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) => Task.Run(ClearSettings, cancellationToken);
 
 	/// <summary>Reads the serialized settings through the concrete synchronous store.</summary>
 	protected abstract SettingsObject LoadInternal(Type settingsObjectType, object id = null);
 
 	// Providers that can read individual stored members may preserve supplied constructor defaults.
-	protected virtual SettingsObject LoadInternal(SettingsObject defaults) {
-		return LoadInternal(defaults.GetType(), defaults.ID);
-	}
+	protected virtual SettingsObject LoadInternal(SettingsObject defaults) => LoadInternal(defaults.GetType(), defaults.ID);
 
 	/// <summary>Persists an already-encrypted settings value through the concrete synchronous store.</summary>
 	protected abstract void SaveInternal(SettingsObject settings);

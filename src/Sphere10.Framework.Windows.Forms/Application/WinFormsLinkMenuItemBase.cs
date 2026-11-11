@@ -39,9 +39,7 @@ public abstract class WinFormsLinkMenuItemBase : ApplicationMenuItemBase, IWinFo
 
 	public virtual void OnSelect() => NotifySelect();
 
-	public override void Dispose() {
-		base.Dispose();
-	}
+	public override void Dispose() => base.Dispose();
 
 }
 

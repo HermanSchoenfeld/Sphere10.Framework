@@ -22,9 +22,7 @@ public class ArrayRows : RowsSimpleBase {
 	}
 
 	public new ArrayGrid Grid {
-		get {
-			return (ArrayGrid)base.Grid;
-		}
+		get => (ArrayGrid)base.Grid;
 	}
 
 	public override int Count {
@@ -36,15 +34,9 @@ public class ArrayRows : RowsSimpleBase {
 	}
 
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
-	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return _autoSizeMode;
-	}
+	public override AutoSizeMode GetAutoSizeMode(int row) => _autoSizeMode;
 }

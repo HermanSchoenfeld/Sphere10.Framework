@@ -19,9 +19,7 @@ namespace Sphere10.Framework.Tests.Cache;
 public class PooledCacheReaperTests {
 
 	[Test]
-	public void Constructor_RejectsNegativeCapacity() {
-		Assert.That(() => new PooledCacheReaper(-1), Throws.ArgumentException);
-	}
+	public void Constructor_RejectsNegativeCapacity() => Assert.That(() => new PooledCacheReaper(-1), Throws.ArgumentException);
 
 	[Test]
 	public void IsolatedReaper_RawReleaseDoesNotApplyTheAdmissionFractionAgain() {
@@ -360,9 +358,7 @@ public class PooledCacheReaperTests {
 
 		private long _currentSize;
 
-		public MetadataCache(long maxCapacity) {
-			MaxCapacity = maxCapacity;
-		}
+		public MetadataCache(long maxCapacity) => MaxCapacity = maxCapacity;
 
 		public int ItemCount => CurrentSize == 0 ? 0 : 1;
 
@@ -416,9 +412,7 @@ public class PooledCacheReaperTests {
 		private readonly IsolatedCacheReaper _inner = new();
 		private readonly Exception _deregistrationFailure;
 
-		public FailingDeregistrationReaper(Exception deregistrationFailure) {
-			_deregistrationFailure = deregistrationFailure;
-		}
+		public FailingDeregistrationReaper(Exception deregistrationFailure) => _deregistrationFailure = deregistrationFailure;
 
 		public int Deregistrations { get; private set; }
 

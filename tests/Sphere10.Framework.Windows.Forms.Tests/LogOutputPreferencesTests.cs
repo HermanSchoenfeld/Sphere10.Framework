@@ -268,9 +268,7 @@ public class LogOutputPreferencesTests {
 			return base.ContainsSetting(type, id);
 		}
 
-		public override SettingsObject LoadSetting(Type type, object id = null) {
-			return CachedValue ?? base.LoadSetting(type, id);
-		}
+		public override SettingsObject LoadSetting(Type type, object id = null) => CachedValue ?? base.LoadSetting(type, id);
 
 		public override SettingsObject NewSetting(Type type, object id = null) {
 			Created++;

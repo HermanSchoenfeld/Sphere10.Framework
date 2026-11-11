@@ -246,9 +246,7 @@ public class ApplicationCommandMergeTests {
 	}
 
 	// Expose the same immutable descriptors through menus and toolbar for composition checks.
-	private static Commands Provider(params KeyedAction[] items) {
-		return new Commands { Menus = new[] { ActionMenu("File", items) }, ToolBarItems = items };
-	}
+	private static Commands Provider(params KeyedAction[] items) => new Commands { Menus = new[] { ActionMenu("File", items) }, ToolBarItems = items };
 
 	private sealed class Commands : IApplicationCommandProvider {
 		public IApplicationMenu[] Menus { get; init; } = Array.Empty<IApplicationMenu>();

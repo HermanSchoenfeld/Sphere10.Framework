@@ -21,9 +21,7 @@ public class ComparerFactory {
 		_comparers = new Dictionary<Type, object>();
 	}
 
-	public ComparerFactory(ComparerFactory comparerFactory) : this() {
-		CopyRegistrations(comparerFactory);
-	}
+	public ComparerFactory(ComparerFactory comparerFactory) : this() => CopyRegistrations(comparerFactory);
 
 	public void CopyRegistrations(ComparerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));

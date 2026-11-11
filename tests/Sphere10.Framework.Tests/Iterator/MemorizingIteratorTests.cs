@@ -18,9 +18,7 @@ namespace Sphere10.Framework.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class MemorizingIteratorTests {
 	[Test]
-	public void ConstructorRejectsNullSource() {
-		Assert.That(() => new MemorizingIterator<int>(null), Throws.ArgumentNullException);
-	}
+	public void ConstructorRejectsNullSource() => Assert.That(() => new MemorizingIterator<int>(null), Throws.ArgumentNullException);
 
 	[Test]
 	public void DefaultInstanceReportsMissingSource() {
@@ -322,9 +320,7 @@ public class MemorizingIteratorTests {
 	private sealed class FactoryEnumerable<T> : IEnumerable<T> {
 		private readonly Func<IEnumerator<T>> _factory;
 
-		public FactoryEnumerable(Func<IEnumerator<T>> factory) {
-			_factory = factory;
-		}
+		public FactoryEnumerable(Func<IEnumerator<T>> factory) => _factory = factory;
 
 		public IEnumerator<T> GetEnumerator() => _factory();
 
@@ -334,9 +330,7 @@ public class MemorizingIteratorTests {
 	private sealed class ProbeEnumerable<T> : IEnumerable<T> {
 		private readonly IEnumerable<T> _items;
 
-		public ProbeEnumerable(IEnumerable<T> items) {
-			_items = items;
-		}
+		public ProbeEnumerable(IEnumerable<T> items) => _items = items;
 
 		public int EnumeratorCount { get; private set; }
 

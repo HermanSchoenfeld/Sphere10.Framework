@@ -36,9 +36,7 @@ public class RowHeader : Cell {
 	/// Gets or sets if enable the resize of the height, using a Resizable controller. Default is true.
 	/// </summary>
 	public bool ResizeEnabled {
-		get {
-			return FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeHeight;
-		}
+		get => FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeHeight;
 		set {
 			if (value == ResizeEnabled)
 				return;

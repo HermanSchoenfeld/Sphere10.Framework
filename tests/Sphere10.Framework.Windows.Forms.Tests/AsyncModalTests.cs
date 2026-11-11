@@ -712,14 +712,10 @@ public class AsyncModalTests {
 
 	public class ProbeDialog : Form, IApplicationDialog {
 		// Reproduce a manually loaded, handle-free form's normal OpenForms registration.
-		public void InitializeWithoutHandle() {
-			OnLoad(EventArgs.Empty);
-		}
+		public void InitializeWithoutHandle() => OnLoad(EventArgs.Empty);
 
 		// Finish the native registration lifecycle even after handle-free disposal.
-		public void CompleteClosing() {
-			OnFormClosed(new FormClosedEventArgs(CloseReason.None));
-		}
+		public void CompleteClosing() => OnFormClosed(new FormClosedEventArgs(CloseReason.None));
 	}
 
 	private sealed class TextFitDialog : DialogEx {

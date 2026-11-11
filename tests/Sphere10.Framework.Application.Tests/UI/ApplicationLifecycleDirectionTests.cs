@@ -24,9 +24,7 @@ public class ApplicationLifecycleDirectionTests {
 	[TestCase("FinalizeAsync")]
 	[TestCase("Exit")]
 	[TestCase("ExitAsync")]
-	public void NeutralApplicationBaseLeavesLifecycleDirectionToDerivedBases(string method) {
-		Assert.That(typeof(ApplicationBase).GetMethod(method).IsAbstract, Is.True);
-	}
+	public void NeutralApplicationBaseLeavesLifecycleDirectionToDerivedBases(string method) => Assert.That(typeof(ApplicationBase).GetMethod(method).IsAbstract, Is.True);
 
 	[TestCase("ConfirmExit")]
 	[TestCase("ConfirmExitAsync")]
@@ -34,9 +32,8 @@ public class ApplicationLifecycleDirectionTests {
 	[TestCase("CanExitAsync")]
 	[TestCase("OnExit")]
 	[TestCase("OnExitAsync")]
-	public void NeutralApplicationBaseLeavesExitHookDirectionToDerivedBases(string method) {
-		Assert.That(typeof(ApplicationBase).GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).IsAbstract, Is.True);
-	}
+	public void NeutralApplicationBaseLeavesExitHookDirectionToDerivedBases(string method)
+		=> Assert.That(typeof(ApplicationBase).GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).IsAbstract, Is.True);
 
 	[Test]
 	public async Task SyncApplicationAdaptersDispatchSyncPrimitivesAndDisposeResourcesSynchronously() {

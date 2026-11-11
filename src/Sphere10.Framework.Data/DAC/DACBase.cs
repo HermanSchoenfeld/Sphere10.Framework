@@ -41,7 +41,7 @@ public abstract class DACBase : IDAC {
 	public string ConnectionString { get; private set; }
 
 	public ArtificialKeys ArtificialKeys {
-		get { return _artificialKeys; }
+		get => _artificialKeys;
 		set {
 			_artificialKeys = value;
 			SchemaCache.InvalidateSchema(ConnectionString);
@@ -209,9 +209,7 @@ public abstract class DACBase : IDAC {
 
 	protected abstract DataTable GetDenormalizedTriggerDescriptions();
 
-	protected virtual IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
-		return new[] { sqlBuilder.ToString() };
-	}
+	protected virtual IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) => new[] { sqlBuilder.ToString() };
 
 	private DBTableSchema[] NormalizeTables(DataTable denormalizedTableDescriptions) {
 

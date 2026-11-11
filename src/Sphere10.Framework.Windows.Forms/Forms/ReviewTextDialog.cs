@@ -208,9 +208,8 @@ public partial class ReviewTextDialog : Form {
 		_statusLabel.Text = _saving ? "Saving..." : string.Empty;
 	}
 
-	private static void LogSaveFailure(ILogger logger, Exception error) {
-		Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(error, "Could not save reviewed text."));
-	}
+	private static void LogSaveFailure(ILogger logger, Exception error)
+		=> Tools.Exceptions.ExecuteIgnoringException(() => logger.Exception(error, "Could not save reviewed text."));
 
 	private async void CopyButtonClick(object sender, EventArgs e) {
 		Tools.Exceptions.ExecuteCapturingException<Exception>(() => {

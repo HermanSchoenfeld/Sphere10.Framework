@@ -17,15 +17,11 @@ public class GridRows : RowInfoCollection {
 	}
 
 	public new Grid Grid {
-		get {
-			return base.Grid as Grid;
-		}
+		get => base.Grid as Grid;
 	}
 
 	public new GridRow this[int index] {
-		get {
-			return (GridRow)base[index];
-		}
+		get => (GridRow)base[index];
 	}
 
 	public override void Swap(int rowIndex1, int rowIndex2) {
@@ -37,9 +33,7 @@ public class GridRows : RowInfoCollection {
 	/// Insert a row at the specified position
 	/// </summary>
 	/// <param name="index"></param>
-	public void Insert(int index) {
-		InsertRange(index, 1);
-	}
+	public void Insert(int index) => InsertRange(index, 1);
 
 	public void SetCount(int value) {
 		this.Grid.GrowGrid();
@@ -72,7 +66,5 @@ public class GridRows : RowInfoCollection {
 		this.Grid.SpannedCellReferences.MoveUpSpannedRanges(startIndex, count);
 	}
 
-	protected GridRow CreateRow() {
-		return new GridRow((Grid)Grid);
-	}
+	protected GridRow CreateRow() => new GridRow((Grid)Grid);
 }

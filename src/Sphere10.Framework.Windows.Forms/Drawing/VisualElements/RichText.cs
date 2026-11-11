@@ -44,9 +44,7 @@ public class RichText : VisualElementBase, IRichText {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public RichText(Sphere10.Framework.Windows.Forms.RichText value) {
-		Value = value;
-	}
+	public RichText(Sphere10.Framework.Windows.Forms.RichText value) => Value = value;
 
 	/// <summary>
 	/// Copy constructor.
@@ -65,65 +63,43 @@ public class RichText : VisualElementBase, IRichText {
 	/// </summary>
 	[DefaultValue(null)]
 	public virtual Sphere10.Framework.Windows.Forms.RichText Value {
-		get {
-			return _value;
-		}
+		get => _value;
 
-		set {
-			_value = value;
-		}
+		set => _value = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the fore color of the content. System.Windows.Forms.Control.DefaultForeColor
 	/// </summary>
 	public virtual Color ForeColor {
-		get {
-			return _foreColor;
-		}
+		get => _foreColor;
 
-		set {
-			_foreColor = value;
-		}
+		set => _foreColor = value;
 	}
 
 	public System.Drawing.ContentAlignment TextAlignment {
-		get {
-			return _textAlignment;
-		}
+		get => _textAlignment;
 
-		set {
-			_textAlignment = value;
-		}
+		set => _textAlignment = value;
 	}
 
 	public virtual Font Font {
-		get {
-			return _font;
-		}
+		get => _font;
 
-		set {
-			_font = value;
-		}
+		set => _font = value;
 	}
 
 	public RotateFlipType RotateFlipType {
-		get {
-			return _rotateFlipType;
-		}
+		get => _rotateFlipType;
 
-		set {
-			_rotateFlipType = value;
-		}
+		set => _rotateFlipType = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new RichText(this);
-	}
+	public override object Clone() => new RichText(this);
 
 	/// <summary>
 	/// Measure the current content of the VisualElement.

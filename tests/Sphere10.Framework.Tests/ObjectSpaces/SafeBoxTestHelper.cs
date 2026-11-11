@@ -116,9 +116,8 @@ public static class SafeBoxTestHelper {
 	/// Creates an ObjectSpace from an existing stream (e.g. for freshly-hydrated round-trip tests).
 	/// Only applicable for memory-mapped traits.
 	/// </summary>
-	public static ObjectSpace CreateSafeBoxObjectSpace(TestTraits traits, Stream existingStream) {
-		return CreateSafeBoxObjectSpace(traits, new Dictionary<string, object> { ["stream"] = existingStream });
-	}
+	public static ObjectSpace CreateSafeBoxObjectSpace(TestTraits traits, Stream existingStream)
+		=> CreateSafeBoxObjectSpace(traits, new Dictionary<string, object> { ["stream"] = existingStream });
 
 	/// <summary>Memory-mapped test case subsets (fastest for integration loops).</summary>
 	public static readonly IEnumerable<TestTraits> MemoryMappedTestCases = [

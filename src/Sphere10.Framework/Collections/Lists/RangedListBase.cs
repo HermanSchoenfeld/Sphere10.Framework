@@ -17,45 +17,27 @@ namespace Sphere10.Framework;
 /// </summary>
 public abstract class RangedListBase<T> : ExtendedListBase<T> {
 
-	protected RangedListBase() {
-		Version = 0;
-	}
+	protected RangedListBase() => Version = 0;
 
 	public override bool IsReadOnly => false;
 
-	public sealed override long IndexOfL(T item) {
-		return IndexOfRange(new[] { item }).Single();
-	}
+	public sealed override long IndexOfL(T item) => IndexOfRange(new[] { item }).Single();
 
-	public sealed override bool Contains(T item) {
-		return ContainsRange(new[] { item }).First();
-	}
+	public sealed override bool Contains(T item) => ContainsRange(new[] { item }).First();
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<T> items) => IndexOfRange(items).Select(ix => ix >= 0);
 
-	public override T Read(long index) {
-		return ReadRange(index, 1).Single();
-	}
+	public override T Read(long index) => ReadRange(index, 1).Single();
 
-	public override void Add(T item) {
-		AddRange(new[] { item });
-	}
+	public override void Add(T item) => AddRange(new[] { item });
 
-	public override void Update(long index, T item) {
-		UpdateRange(index, new[] { item });
-	}
+	public override void Update(long index, T item) => UpdateRange(index, new[] { item });
 
-	public override void Insert(long index, T item) {
-		InsertRange(index, new[] { item });
-	}
+	public override void Insert(long index, T item) => InsertRange(index, new[] { item });
 
-	public sealed override void RemoveAt(long index) {
-		RemoveRange(index, 1);
-	}
+	public sealed override void RemoveAt(long index) => RemoveRange(index, 1);
 
-	public sealed override bool Remove(T item) {
-		return RemoveRange(new[] { item }).First();
-	}
+	public sealed override bool Remove(T item) => RemoveRange(new[] { item }).First();
 
 	public override bool[] RemoveRange(IEnumerable<T> items) {
 		var itemsArr = items as T[] ?? items.ToArray();
@@ -80,9 +62,7 @@ public abstract class RangedListBase<T> : ExtendedListBase<T> {
 		//itemIndexes.OrderByDescending(x => x.Item2).RemoveRange(
 	}
 
-	public override void Clear() {
-		RemoveRange(0, Count);
-	}
+	public override void Clear() => RemoveRange(0, Count);
 
 	public override void CopyTo(T[] array, int arrayIndex) {
 		// This needs to be batch optimized

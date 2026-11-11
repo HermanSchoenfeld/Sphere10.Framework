@@ -213,9 +213,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 
 	public abstract class Key : IKey {
 
-		protected Key(byte[] immutableRawBytes) {
-			RawBytes = immutableRawBytes;
-		}
+		protected Key(byte[] immutableRawBytes) => RawBytes = immutableRawBytes;
 
 		public readonly byte[] RawBytes;
 
@@ -227,13 +225,9 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		protected bool Equals(Key other) {
-			return Equals(RawBytes, other.RawBytes);
-		}
+		protected bool Equals(Key other) => Equals(RawBytes, other.RawBytes);
 
-		public override int GetHashCode() {
-			return (RawBytes != null ? RawBytes.GetHashCode() : 0);
-		}
+		public override int GetHashCode() => (RawBytes != null ? RawBytes.GetHashCode() : 0);
 
 		#region IKey
 

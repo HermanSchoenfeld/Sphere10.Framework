@@ -36,13 +36,7 @@ public sealed class ControlCatalogEntry {
 
 	public Func<Control, Task> ShowWindow { get; }
 
-	public string ClassName {
-		get {
-			return ControlType.FullName;
-		}
-	}
+	public string ClassName => ControlType.FullName;
 
-	public override string ToString() {
-		return ControlType.Name + " — " + Category;
-	}
+	public override string ToString() => ControlType.Name + " — " + Category;
 }

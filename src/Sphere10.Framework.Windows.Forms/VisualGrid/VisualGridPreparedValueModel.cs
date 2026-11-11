@@ -17,9 +17,7 @@ internal sealed class VisualGridPreparedValueModel : IValueModel {
 	private object _value;
 
 	/// <summary>Returns the accepted raw value without display conversion.</summary>
-	public object GetValue(CellContext cellContext) {
-		return _value;
-	}
+	public object GetValue(CellContext cellContext) => _value;
 
 	/// <summary>Applies an edit through SourceGrid's ordinary value-change callbacks.</summary>
 	public void SetValue(CellContext cellContext, object value) {
@@ -35,7 +33,5 @@ internal sealed class VisualGridPreparedValueModel : IValueModel {
 	}
 
 	/// <summary>Replaces an accepted snapshot value without raising edit notifications.</summary>
-	public void ReplaceValue(object value) {
-		_value = value;
-	}
+	public void ReplaceValue(object value) => _value = value;
 }

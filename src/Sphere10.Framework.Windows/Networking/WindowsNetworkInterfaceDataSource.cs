@@ -6,19 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Networking;
 
 /// <summary>A native network-interface inventory IDataSource, without traffic-rate sampling.</summary>
-public sealed class WindowsNetworkInterfaceDataSource : ReloadableSnapshotDataSource<WindowsNetworkInterface> {
-	public WindowsNetworkInterfaceDataSource()
-		: this(token => Tools.Windows.Network.GetInterfacesAsync(token)) { }
+public sealed class WindowsNetworkInterfaceDataSource : AsyncListDataSource<WindowsNetworkInterface> {
+	public WindowsNetworkInterfaceDataSource() => DefaultSortProperty = nameof(WindowsNetworkInterface.Name);
 
-	public WindowsNetworkInterfaceDataSource(Func<CancellationToken, Task<WindowsNetworkInterface[]>> capture)
-		: base(capture) {
-		DefaultSortProperty = nameof(WindowsNetworkInterface.Name);
-	}
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsNetworkInterface>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Network.GetInterfacesAsync(cancellationToken).ConfigureAwait(false);
 }

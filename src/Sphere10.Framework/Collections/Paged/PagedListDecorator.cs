@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -111,7 +112,7 @@ public abstract class PagedListDecorator<TItem, TPagedList> : ExtendedListDecora
 
 	public void Load() => InternalCollection.Load();
 
-	public Task LoadAsync() => Task.Run(Load);
+	public Task LoadAsync(CancellationToken cancellationToken = default) => Task.Run(Load, cancellationToken);
 
 	public PageScope<TItem> EnterOpenPageScope(IPage<TItem> page) => InternalCollection.EnterOpenPageScope(page);
 

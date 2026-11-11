@@ -21,12 +21,8 @@ public class HeaderGroupBox : System.Windows.Forms.GroupBox {
 	}
 
 	public Image Image {
-		get {
-			return _image;
-		}
-		set {
-			_image = value;
-		}
+		get => _image;
+		set => _image = value;
 	}
 
 	protected override void OnPaint(PaintEventArgs args) {

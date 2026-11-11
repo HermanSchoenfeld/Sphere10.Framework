@@ -80,13 +80,9 @@ public class ProducerConsumerLock : IDisposable {
 
 		return new ProducerConsumerScope(_sharedLock, semaphore, threadID);
 	}
-	public async Task<ProducerConsumerScope> ProducerDelayUntil(Func<bool> condition) {
-		return await Task.Run(() => ProducerBlockUntil(condition));
-	}
+	public async Task<ProducerConsumerScope> ProducerDelayUntil(Func<bool> condition) => await Task.Run(() => ProducerBlockUntil(condition));
 
-	public async Task<ProducerConsumerScope> ConsumerDelayUntil(Func<bool> condition) {
-		return await Task.Run(() => ConsumerBlockUntil(condition));
-	}
+	public async Task<ProducerConsumerScope> ConsumerDelayUntil(Func<bool> condition) => await Task.Run(() => ConsumerBlockUntil(condition));
 
 	public void Pulse() {
 		lock (_sharedLock)

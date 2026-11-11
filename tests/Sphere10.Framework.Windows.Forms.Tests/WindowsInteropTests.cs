@@ -183,9 +183,7 @@ public class WindowsInteropTests {
 	private sealed class TestDeviceHook : BaseDeviceHook {
 		private readonly HookDisposalProbe _probe;
 
-		public TestDeviceHook(HookDisposalProbe probe = null) {
-			_probe = probe ?? new HookDisposalProbe();
-		}
+		public TestDeviceHook(HookDisposalProbe probe = null) => _probe = probe ?? new HookDisposalProbe();
 
 		public int PublicDisposeCalls => _probe.PublicDisposeCalls;
 

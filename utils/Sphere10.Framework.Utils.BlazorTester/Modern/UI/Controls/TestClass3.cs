@@ -18,10 +18,6 @@ public class TestClass3 : IColumnDefinition {
 	public TestClass3() {
 	}
 
-	public TestClass3(string text) {
-		HashCode = text.GetHashCode();
-	}
-	public Type GetComponentType() {
-		return typeof(ComponentForTestClass3);
-	}
+	public TestClass3(string text) => HashCode = text.GetHashCode();
+	public Type GetComponentType() => typeof(ComponentForTestClass3);
 }

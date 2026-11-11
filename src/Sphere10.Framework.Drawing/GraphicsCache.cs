@@ -48,32 +48,16 @@ public class GraphicsCache : IDisposable {
 	}
 
 	/// <summary>Gets the caller-supplied clipping rectangle.</summary>
-	public Rectangle ClipRectangle {
-		get {
-			return _clipRectangle;
-		}
-	}
+	public Rectangle ClipRectangle => _clipRectangle;
 
 	/// <summary>Gets the borrowed graphics without transferring ownership.</summary>
-	public Graphics Graphics {
-		get {
-			return _graphics;
-		}
-	}
+	public Graphics Graphics => _graphics;
 
 	/// <summary>Gets the pen cache owned by this drawing operation.</summary>
-	public PenCache PenCache {
-		get {
-			return _penCache;
-		}
-	}
+	public PenCache PenCache => _penCache;
 
 	/// <summary>Gets the brush cache owned by this drawing operation.</summary>
-	public BrushCache BrushCache {
-		get {
-			return _brushCache;
-		}
-	}
+	public BrushCache BrushCache => _brushCache;
 
 	/// <summary>Disposes cached drawing resources while leaving the borrowed graphics open.</summary>
 	public void Dispose() {

@@ -12,7 +12,5 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.DataGrid;
 
 public class CheckBox : Cells.Virtual.CheckBox {
-	public CheckBox() {
-		Model.AddModel(new DataGridValueModel());
-	}
+	public CheckBox() => Model.AddModel(new DataGridValueModel());
 }

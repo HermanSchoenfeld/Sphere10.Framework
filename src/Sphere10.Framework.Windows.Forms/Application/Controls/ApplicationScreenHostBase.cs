@@ -55,11 +55,7 @@ public abstract class ApplicationScreenHostBase : UserControlEx, IApplicationScr
 
 	/// <summary>The block currently browsed in navigation, independently of the active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationBlock SelectedBlock {
-		get {
-			return ApplicationHost.SelectedBlock;
-		}
-	}
+	public virtual IApplicationBlock SelectedBlock => ApplicationHost.SelectedBlock;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public abstract IUserInterfaceServices UserInterfaceServices { get; }
@@ -88,9 +84,8 @@ public abstract class ApplicationScreenHostBase : UserControlEx, IApplicationScr
 		=> ApplicationHost.OpenScreenAsync(block, definition, cancellationToken);
 
 	/// <summary>Opens the graph-local definition identified by the retained registration reference.</summary>
-	public virtual Task<ApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default) {
-		return ApplicationHost.OpenScreenAsync(block, registration, cancellationToken);
-	}
+	public virtual Task<ApplicationScreen> OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken = default)
+		=> ApplicationHost.OpenScreenAsync(block, registration, cancellationToken);
 
 	public virtual Task RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken = default) => ApplicationHost.RegisterBlockAsync(block, cancellationToken);
 

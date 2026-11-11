@@ -143,9 +143,7 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 			}
 		);
 
-	public override IEnumerator<TItem> GetEnumerator() {
-		return new ObservableEnumerator(this, base.GetEnumerator());
-	}
+	public override IEnumerator<TItem> GetEnumerator() => new ObservableEnumerator(this, base.GetEnumerator());
 
 	protected virtual void OnAccessing(EventTraits eventType) {
 	}
@@ -217,29 +215,17 @@ public class ObservableCollection<TItem, TConcrete> : CollectionDecorator<TItem,
 		Counted?.Invoke(this, args);
 	}
 
-	protected void NotifySearchingMembership(SearchingMembershipEventArgs<TItem> args) {
-		SearchingMembership?.Invoke(this, args);
-	}
+	protected void NotifySearchingMembership(SearchingMembershipEventArgs<TItem> args) => SearchingMembership?.Invoke(this, args);
 
-	protected void NotifySearchedMembership(SearchedMembershipEventArgs<TItem> args) {
-		SearchedMembership?.Invoke(this, args);
-	}
+	protected void NotifySearchedMembership(SearchedMembershipEventArgs<TItem> args) => SearchedMembership?.Invoke(this, args);
 
-	protected void NotifyAdding(AddingEventArgs<TItem> args) {
-		Adding?.Invoke(this, args);
-	}
+	protected void NotifyAdding(AddingEventArgs<TItem> args) => Adding?.Invoke(this, args);
 
-	protected void NotifyAdded(AddedEventArgs<TItem> args) {
-		Added?.Invoke(this, args);
-	}
+	protected void NotifyAdded(AddedEventArgs<TItem> args) => Added?.Invoke(this, args);
 
-	protected void NotifyRemovingItems(RemovingItemsEventArgs<TItem> args) {
-		RemovingItems?.Invoke(this, args);
-	}
+	protected void NotifyRemovingItems(RemovingItemsEventArgs<TItem> args) => RemovingItems?.Invoke(this, args);
 
-	protected void NotifyRemovedItems(RemovedItemsEventArgs<TItem> args) {
-		RemovedItems?.Invoke(this, args);
-	}
+	protected void NotifyRemovedItems(RemovedItemsEventArgs<TItem> args) => RemovedItems?.Invoke(this, args);
 
 	protected TOpResult DoOperation<TOpResult, TPre, TPost>(
 		EventTraits operationTrait,

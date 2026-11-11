@@ -111,26 +111,18 @@ public class VisualGridColumnsEditorTests {
 			_fail = fail;
 		}
 
-		public IContainer Container {
-			get {
-				return null;
-			}
-		}
+		public IContainer Container => null;
 
 		public object Instance { get; }
 
 		public PropertyDescriptor PropertyDescriptor { get; }
 
-		public bool OnComponentChanging() {
-			return true;
-		}
+		public bool OnComponentChanging() => true;
 
 		public void OnComponentChanged() {
 		}
 
-		public object GetService(Type serviceType) {
-			return serviceType == typeof(IWindowsFormsEditorService) ? this : null;
-		}
+		public object GetService(Type serviceType) => serviceType == typeof(IWindowsFormsEditorService) ? this : null;
 
 		public DialogResult ShowDialog(Form dialog) {
 			dialog.StartPosition = FormStartPosition.Manual;
@@ -152,9 +144,7 @@ public class VisualGridColumnsEditorTests {
 			return dialog.ShowDialog(_owner);
 		}
 
-		public void DropDownControl(Control control) {
-			throw new NotSupportedException("The columns editor uses a modal collection form.");
-		}
+		public void DropDownControl(Control control) => throw new NotSupportedException("The columns editor uses a modal collection form.");
 
 		public void CloseDropDown() {
 		}

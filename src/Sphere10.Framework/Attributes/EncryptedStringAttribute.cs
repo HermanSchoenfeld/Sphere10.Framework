@@ -81,33 +81,20 @@ public class EncryptedStringAttribute : Attribute {
 		return salt.ToString();
 	}
 
-	protected virtual string GetMacAddress() {
-		return Tools.Network.GetMacAddressOrDefault();
-	}
+	protected virtual string GetMacAddress() => Tools.Network.GetMacAddressOrDefault();
 
-	protected virtual string GetExecutableFileCreationTime() {
-		return string.Format("{0:yyyy-MM-dd HH:mm:ss fff}", File.GetCreationTimeUtc(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
-	}
+	protected virtual string GetExecutableFileCreationTime()
+		=> string.Format("{0:yyyy-MM-dd HH:mm:ss fff}", File.GetCreationTimeUtc(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
 
-	protected virtual string GetMachineName() {
-		return Environment.MachineName;
-	}
+	protected virtual string GetMachineName() => Environment.MachineName;
 
-	protected virtual string GetUserName() {
-		return Environment.UserName;
-	}
+	protected virtual string GetUserName() => Environment.UserName;
 
-	protected virtual string GetOperatingSystemVersion() {
-		return Environment.OSVersion.ToString();
-	}
+	protected virtual string GetOperatingSystemVersion() => Environment.OSVersion.ToString();
 
-	protected virtual string GetProcessorCount() {
-		return Environment.ProcessorCount.ToString();
-	}
+	protected virtual string GetProcessorCount() => Environment.ProcessorCount.ToString();
 
-	protected virtual string GetCustomSaltValue() {
-		return Pepper;
-	}
+	protected virtual string GetCustomSaltValue() => Pepper;
 
 	private void CheckSecret() {
 		if (string.IsNullOrEmpty(ApplicationSharedSecret))

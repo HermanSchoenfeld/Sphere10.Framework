@@ -68,24 +68,18 @@ public class BufferedStreamPerformanceTests {
 	[TestCase(4 * 1024)]
 	[TestCase(64 * 1024)]
 	[TestCase(1024 * 1024)]
-	public void SequentialChunkReads(int readSize) {
-		CompareVariants(new Workload("Chunk reads", readSize, FileSize, FileSize / readSize));
-	}
+	public void SequentialChunkReads(int readSize) => CompareVariants(new Workload("Chunk reads", readSize, FileSize, FileSize / readSize));
 
 	/// <summary>Bounds small-read workloads so raw one-byte file operations remain practical to reproduce.</summary>
 	[TestCase(1)]
 	[TestCase(8)]
 	[TestCase(64)]
 	[TestCase(256)]
-	public void SmallReads(int readSize) {
-		CompareVariants(new Workload("Small reads", readSize, SmallReadSize, SmallReadSize / readSize));
-	}
+	public void SmallReads(int readSize) => CompareVariants(new Workload("Small reads", readSize, SmallReadSize, SmallReadSize / readSize));
 
 	/// <summary>Compares repeated length queries after one untimed query initializes lazy caches.</summary>
 	[Test]
-	public void RepeatedLengthQueries() {
-		CompareVariants(new Workload("Length queries", 0, FileSize, LengthIterations));
-	}
+	public void RepeatedLengthQueries() => CompareVariants(new Workload("Length queries", 0, FileSize, LengthIterations));
 
 	/// <summary>Creates one stable file in the operating system's temporary directory before any timed work.</summary>
 	[OneTimeSetUp]
@@ -189,9 +183,7 @@ public class BufferedStreamPerformanceTests {
 	}
 
 	// Open synchronously so the timed methods compare the same synchronous operating-system file API.
-	private FileStream OpenFile(int bufferSize) {
-		return new FileStream(_dataPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.SequentialScan);
-	}
+	private FileStream OpenFile(int bufferSize) => new FileStream(_dataPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.SequentialScan);
 
 	// Keep only the operation loop and lightweight counters between timestamps; consume results after timing.
 	private static Sample Measure(Stream stream, byte[] destination, Workload workload, StreamVariant variant, int round, int order) {
@@ -253,7 +245,7 @@ public class BufferedStreamPerformanceTests {
 				WrapperBufferSize,
 				Sphere64K = "Read buffering and length caching enabled",
 				Sphere64KNoLengthCache = "Read buffering enabled; length caching disabled",
-				Sphere64KReadBufferingDisabled = "Read buffering disabled; length-cache flag enabled but bypassed"
+				Sphere64KReadBufferingDisabled = "Read buffering disabled; independent length caching enabled"
 			},
 			ConstructorAllocations = _activationAllocations.Select(sample => new {
 				sample.Workload,
@@ -300,9 +292,8 @@ public class BufferedStreamPerformanceTests {
 	}
 
 	// Use the existing shared CSV writer so diagnostic output follows Framework escaping conventions.
-	private static void WriteCsvRow(TextWriter writer, string[] fields) {
-		Tools.Data.WriteCsvRow(writer, fields, (field, destination) => Tools.Data.WriteCsvField(destination, field), ",", Environment.NewLine);
-	}
+	private static void WriteCsvRow(TextWriter writer, string[] fields)
+		=> Tools.Data.WriteCsvRow(writer, fields, (field, destination) => Tools.Data.WriteCsvField(destination, field), ",", Environment.NewLine);
 
 	// Five measured values give a middle sample without making a distributional assumption.
 	private static double Median(IEnumerable<long> values) {
@@ -311,9 +302,7 @@ public class BufferedStreamPerformanceTests {
 	}
 
 	// Retain raw ticks in artifacts and convert only after the timed operation has finished.
-	private static double ToMilliseconds(double ticks) {
-		return ticks * 1000 / Stopwatch.Frequency;
-	}
+	private static double ToMilliseconds(double ticks) => ticks * 1000 / Stopwatch.Frequency;
 
 	#region Inner Types
 

@@ -376,9 +376,7 @@ public class EncryptedStreamTests {
 		private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
 		private readonly bool _failWrite;
 
-		public GatedWriteStream(bool failWrite) {
-			_failWrite = failWrite;
-		}
+		public GatedWriteStream(bool failWrite) => _failWrite = failWrite;
 
 		public Task Entered => _entered.Task;
 

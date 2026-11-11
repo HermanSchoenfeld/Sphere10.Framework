@@ -35,19 +35,11 @@ public partial class ChartTestScreen : ApplicationScreen {
 		InitializeComponent();
 	}
 
-	public string SelectedScenario {
-		get {
-			return _scenario.SelectedItem as string;
-		}
-	}
+	public string SelectedScenario => _scenario.SelectedItem as string;
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ChartTestScreenSettings ScreenSettings {
-		get {
-			return (ChartTestScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ChartTestScreenSettings ScreenSettings => (ChartTestScreenSettings)base.ScreenSettings;
 
 	public void SelectScenario(string scenario) {
 		Guard.Argument(_scenario.Items.Contains(scenario), nameof(scenario), "Choose a scenario from the demonstration catalog.");
@@ -103,21 +95,13 @@ public partial class ChartTestScreen : ApplicationScreen {
 			_timer.Tick -= TimerTick;
 	}
 
-	private void TimerTick(object sender, EventArgs args) {
-		AddSample();
-	}
+	private void TimerTick(object sender, EventArgs args) => AddSample();
 
-	private void AddSampleClicked(object sender, EventArgs args) {
-		AddSample();
-	}
+	private void AddSampleClicked(object sender, EventArgs args) => AddSample();
 
-	private void ResetClicked(object sender, EventArgs args) {
-		ResetSamples();
-	}
+	private void ResetClicked(object sender, EventArgs args) => ResetSamples();
 
-	private void LiveChanged(object sender, EventArgs args) {
-		UpdateTimer();
-	}
+	private void LiveChanged(object sender, EventArgs args) => UpdateTimer();
 
 	private void UpdateTimer() {
 		if (!_finalized && _timer != null)

@@ -38,9 +38,7 @@ public abstract class ProtocolChannelDataSource<TItem> : AsyncBatchDataSourceBas
 
 	public event EventHandlerEx<DataSourceMutatedItems<TItem>> MutatedItems;
 
-	protected void SendBytes(System.ReadOnlyMemory<byte> bytes) {
-		ProtocolChannel.TrySendBytes(bytes.ToArray());
-	}
+	protected void SendBytes(System.ReadOnlyMemory<byte> bytes) => ProtocolChannel.TrySendBytes(bytes.ToArray());
 
 	protected void RaiseMutatedItems(DataSourceMutatedItems<TItem> items) => MutatedItems?.Invoke(items);
 

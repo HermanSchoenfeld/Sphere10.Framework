@@ -22,7 +22,7 @@ public class JsonRpcServer {
 	protected SynchronizedList<JsonRpcClientHandler> ActiveClients = new SynchronizedList<JsonRpcClientHandler>();
 
 	public int ActiveClientsCount {
-		get { return ActiveClients.Count; }
+		get => ActiveClients.Count;
 		private set { }
 	}
 

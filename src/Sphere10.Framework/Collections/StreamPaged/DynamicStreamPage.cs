@@ -237,9 +237,7 @@ internal class DynamicStreamPage<TItem> : StreamPageBase<TItem> {
 		Interlocked.Increment(ref _version);
 	}
 
-	private long GetItem0DataOffset() {
-		return StartPosition + Object0SizeFieldOffset + MaxItems * ObjectSizeFieldSize;
-	}
+	private long GetItem0DataOffset() => StartPosition + Object0SizeFieldOffset + MaxItems * ObjectSizeFieldSize;
 
 	private void SetItemSizes(long index, long[] sizes, out long oldItemsSize) {
 		Guard.ArgumentInRange(index, 0, MaxItems - 1, nameof(index));

@@ -47,30 +47,18 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	}
 
 	public Control ParentControl {
-		get {
-			return _parentControl;
-		}
-		set {
-			_parentControl = value;
-		}
+		get => _parentControl;
+		set => _parentControl = value;
 	}
 
 	public Control InnerControl {
-		get {
-			return _innerControl;
-		}
-		set {
-			_innerControl = value;
-		}
+		get => _innerControl;
+		set => _innerControl = value;
 	}
 
 	public DropDownFlags DropDownFlags {
-		get {
-			return _flags;
-		}
-		set {
-			_flags = value;
-		}
+		get => _flags;
+		set => _flags = value;
 	}
 
 	public void ShowDropDown() {
@@ -167,9 +155,7 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	}
 
 	// Repositions the popup after its hosted control changes size.
-	private void InnerControlSizeChanged(object sender, EventArgs args) {
-		CalcLocation();
-	}
+	private void InnerControlSizeChanged(object sender, EventArgs args) => CalcLocation();
 
 	// Fits the hosted content and popup to the available monitor work area.
 	private void CalcLocation() {
@@ -203,7 +189,5 @@ public partial class DropDownForm : System.Windows.Forms.Form {
 	}
 
 	// Ends the active popup session when its native window loses activation.
-	private void DropDownDeactivate(object sender, System.EventArgs args) {
-		CloseDropDown();
-	}
+	private void DropDownDeactivate(object sender, System.EventArgs args) => CloseDropDown();
 }

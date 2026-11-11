@@ -51,9 +51,7 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 		return this;
 	}
 
-	public virtual ICollection<SQLStatement> CreateContainerForStatements() {
-		return new List<SQLStatement>();
-	}
+	public virtual ICollection<SQLStatement> CreateContainerForStatements() => new List<SQLStatement>();
 
 	public virtual ISQLBuilder NewLine() {
 		Emit(Environment.NewLine);
@@ -66,9 +64,7 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 		return this;
 	}
 
-	public virtual ISQLBuilder End() {
-		return this;
-	}
+	public virtual ISQLBuilder End() => this;
 
 	public abstract ISQLBuilder BeginTransaction();
 
@@ -359,13 +355,9 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 		return EndOfStatement();
 	}
 
-	public virtual ISQLBuilder TableName(string tableName, TableType tableType) {
-		return ObjectName(tableName);
-	}
+	public virtual ISQLBuilder TableName(string tableName, TableType tableType) => ObjectName(tableName);
 
-	public virtual ISQLBuilder ObjectName(string objectName) {
-		return Emit("\"").Emit(objectName).Emit("\"");
-	}
+	public virtual ISQLBuilder ObjectName(string objectName) => Emit("\"").Emit(objectName).Emit("\"");
 
 	public virtual ISQLBuilder Literal(object value) {
 		if (value == null || value == DBNull.Value)
@@ -382,9 +374,7 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 
 	public abstract ISQLBuilder GetLastIdentity(string hint = null);
 
-	public virtual ISQLBuilder DefaultValues() {
-		return Emit("DEFAULT VALUES");
-	}
+	public virtual ISQLBuilder DefaultValues() => Emit("DEFAULT VALUES");
 
 	public abstract ISQLBuilder VariableName(string variableName);
 
@@ -394,9 +384,7 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 
 	public abstract ISQLBuilder EmitQueryResultLimit(int limit, int? offset = null);
 
-	public virtual ISQLBuilder EmitDistinct() {
-		return Emit("DISTINCT");
-	}
+	public virtual ISQLBuilder EmitDistinct() => Emit("DISTINCT");
 
 	public virtual ISQLBuilder Emit(string statement, params object[] formatArgs) {
 		if (formatArgs.Length > 0) {
@@ -425,9 +413,7 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 		return this;
 	}
 
-	public virtual ISQLBuilder TypeToSqlType(Type type, bool preferUnicode = true) {
-		return Emit(ConvertTypeToSQLType(type, preferUnicode));
-	}
+	public virtual ISQLBuilder TypeToSqlType(Type type, bool preferUnicode = true) => Emit(ConvertTypeToSQLType(type, preferUnicode));
 
 	public virtual ISQLBuilder Cast(SQLBuilderStringValueKind valueKind, object value, Type type) {
 		Emit("CAST(");
@@ -475,9 +461,8 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 
 	public abstract ISQLBuilder CreateBuilder();
 
-	public virtual ISequentialGuidGenerator CreateSequentialGuidGenerator(long capacity, bool regenerateOnEmpty = false) {
-		return new PreGenSequentialGuidGenerator(capacity, regenerateOnEmpty);
-	}
+	public virtual ISequentialGuidGenerator CreateSequentialGuidGenerator(long capacity, bool regenerateOnEmpty = false)
+		=> new PreGenSequentialGuidGenerator(capacity, regenerateOnEmpty);
 
 	public virtual string ConvertTypeToSQLType(Type type, bool preferUnicode = true, string maxLen = "4000") {
 		string retval = null;
@@ -539,17 +524,11 @@ public abstract class SQLBuilderBase : ISQLBuilder {
 		throw new SoftwareException("Unable to convert '{0}{1}' to .NET type", sqlType, length.HasValue ? "- " + length.Value : String.Empty);
 	}
 
-	public virtual string FormatCreateTable(TableType tableType) {
-		return "CREATE TABLE";
-	}
+	public virtual string FormatCreateTable(TableType tableType) => "CREATE TABLE";
 
-	public virtual string FormatTableName(string tableName, TableType tableType) {
-		return this.QuickString("{0}", SQLBuilderCommand.TableName(tableName));
-	}
+	public virtual string FormatTableName(string tableName, TableType tableType) => this.QuickString("{0}", SQLBuilderCommand.TableName(tableName));
 
-	public virtual string FormatCreateTableEnd(TableType type) {
-		return string.Empty;
-	}
+	public virtual string FormatCreateTableEnd(TableType type) => string.Empty;
 
 	#region Auxillary methods
 

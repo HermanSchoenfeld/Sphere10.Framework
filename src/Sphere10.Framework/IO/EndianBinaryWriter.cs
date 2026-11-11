@@ -101,27 +101,21 @@ public class EndianBinaryWriter : IDisposable {
 	/// <summary>
 	/// The bit converter used to write values to the stream
 	/// </summary>
-	public EndianBitConverter BitConverter {
-		get { return bitConverter; }
-	}
+	public EndianBitConverter BitConverter => bitConverter;
 
 	private Encoding encoding;
 
 	/// <summary>
 	/// The encoding used to write strings
 	/// </summary>
-	public Encoding Encoding {
-		get { return encoding; }
-	}
+	public Encoding Encoding => encoding;
 
 	private Stream stream;
 
 	/// <summary>
 	/// Gets the underlying stream of the EndianBinaryWriter.
 	/// </summary>
-	public Stream BaseStream {
-		get { return stream; }
-	}
+	public Stream BaseStream => stream;
 
 	#endregion
 
@@ -130,9 +124,7 @@ public class EndianBinaryWriter : IDisposable {
 	/// <summary>
 	/// Closes the writer and, unless <c>leaveOpen</c> is true, its underlying stream.
 	/// </summary>
-	public void Close() {
-		Dispose();
-	}
+	public void Close() => Dispose();
 
 	/// <summary>
 	/// Flushes the underlying stream.
@@ -275,9 +267,7 @@ public class EndianBinaryWriter : IDisposable {
 	/// Writes an array of bytes to the stream.
 	/// </summary>
 	/// <param name="value">The values to write</param>
-	public void Write(ReadOnlySpan<byte> value) {
-		WriteInternal(value, value.Length);
-	}
+	public void Write(ReadOnlySpan<byte> value) => WriteInternal(value, value.Length);
 
 	/// <summary>
 	/// Writes a portion of an array of bytes to the stream.
@@ -358,9 +348,7 @@ public class EndianBinaryWriter : IDisposable {
 	/// <summary>
 	/// Checks whether or not the writer has been disposed, throwing an exception if so.
 	/// </summary>
-	private void CheckDisposed() {
-		ObjectDisposedException.ThrowIf(disposed, nameof(EndianBinaryWriter));
-	}
+	private void CheckDisposed() => ObjectDisposedException.ThrowIf(disposed, nameof(EndianBinaryWriter));
 
 	/// <summary>
 	/// Writes the specified number of bytes from the start of the given byte array,

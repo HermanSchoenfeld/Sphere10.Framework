@@ -127,9 +127,7 @@ public class MyAppointmentBookDataSource : IAppointmentBookDataSource {
 		}
 	}
 
-	public virtual IEnumerable<AppointmentColumn> GetColumns() {
-		return _appointmentBook.Keys;
-	}
+	public virtual IEnumerable<AppointmentColumn> GetColumns() => _appointmentBook.Keys;
 
 	public IEnumerable<Appointment> GetAppointments(AppointmentColumn column) {
 		if (column == null)

@@ -46,9 +46,7 @@ public class ProtocolBuilder {
 	}
 
 	/// <summary>Immediately configures and registers one request/response handler pair.</summary>
-	public ProtocolBuilder AddRequest<TRequest>(Action<ProtocolRequestBuilder<TRequest>> requestBuild) {
-		return AddRequest(requestBuild, out _);
-	}
+	public ProtocolBuilder AddRequest<TRequest>(Action<ProtocolRequestBuilder<TRequest>> requestBuild) => AddRequest(requestBuild, out _);
 
 	/// <summary>Adds one configured request/response pair and returns its exact registered handlers.</summary>
 	public ProtocolBuilder AddRequest<TRequest>(Action<ProtocolRequestBuilder<TRequest>> requestBuild,
@@ -60,14 +58,12 @@ public class ProtocolBuilder {
 	}
 
 	/// <summary>Registers runtime request and response callbacks that do not require message arguments.</summary>
-	public ProtocolBuilder OnRequestResponse<TRequest, TResponse>(Func<TResponse> requestHandler, Action responseHandler) {
-		return OnRequestResponse<TRequest, TResponse>((_, _) => requestHandler(), (_, _, _) => responseHandler());
-	}
+	public ProtocolBuilder OnRequestResponse<TRequest, TResponse>(Func<TResponse> requestHandler, Action responseHandler)
+		=> OnRequestResponse<TRequest, TResponse>((_, _) => requestHandler(), (_, _, _) => responseHandler());
 
 	/// <summary>Registers runtime request and response callbacks over their typed messages.</summary>
-	public ProtocolBuilder OnRequestResponse<TRequest, TResponse>(Func<TRequest, TResponse> requestHandler, Action<TRequest, TResponse> responseHandler) {
-		return OnRequestResponse<TRequest, TResponse>((_, request) => requestHandler(request), (_, request, response) => responseHandler(request, response));
-	}
+	public ProtocolBuilder OnRequestResponse<TRequest, TResponse>(Func<TRequest, TResponse> requestHandler, Action<TRequest, TResponse> responseHandler)
+		=> OnRequestResponse<TRequest, TResponse>((_, request) => requestHandler(request), (_, request, response) => responseHandler(request, response));
 
 	/// <summary>Registers runtime request and response callbacks with their executing orchestrator.</summary>
 	public ProtocolBuilder OnRequestResponse<TRequest, TResponse>(Func<ProtocolOrchestrator, TRequest, TResponse> requestHandler, Action<ProtocolOrchestrator, TRequest, TResponse> responseHandler) {
@@ -77,9 +73,8 @@ public class ProtocolBuilder {
 		);
 	}
 
-	public ProtocolBuilder AddRequestResponse(IRequestHandler requestHandler, IResponseHandler responseHandler) {
-		return AddRequestResponse(requestHandler, responseHandler, out _);
-	}
+	public ProtocolBuilder AddRequestResponse(IRequestHandler requestHandler, IResponseHandler responseHandler)
+		=> AddRequestResponse(requestHandler, responseHandler, out _);
 
 	/// <summary>Adds existing compatible exchange handlers and retains their registration identity.</summary>
 	public ProtocolBuilder AddRequestResponse(IRequestHandler requestHandler, IResponseHandler responseHandler,
@@ -95,9 +90,7 @@ public class ProtocolBuilder {
 	}
 
 	/// <summary>Immediately configures and registers one command handler through its child builder.</summary>
-	public ProtocolBuilder AddCommand<TMessage>(Action<ProtocolCommandBuilder<TMessage>> commandBuild) {
-		return AddCommand(commandBuild, out _);
-	}
+	public ProtocolBuilder AddCommand<TMessage>(Action<ProtocolCommandBuilder<TMessage>> commandBuild) => AddCommand(commandBuild, out _);
 
 	/// <summary>Adds one configured command and returns its exact registered handler.</summary>
 	public ProtocolBuilder AddCommand<TMessage>(Action<ProtocolCommandBuilder<TMessage>> commandBuild, out ICommandHandler registration) {
@@ -108,23 +101,15 @@ public class ProtocolBuilder {
 	}
 
 	/// <summary>Registers a runtime command callback that does not require the message.</summary>
-	public ProtocolBuilder OnCommand<TMessage>(Action commandHandler) {
-		return OnCommand<TMessage>(_ => commandHandler());
-	}
+	public ProtocolBuilder OnCommand<TMessage>(Action commandHandler) => OnCommand<TMessage>(_ => commandHandler());
 
 	/// <summary>Registers a runtime command callback over its typed message.</summary>
-	public ProtocolBuilder OnCommand<TMessage>(Action<TMessage> commandHandler) {
-		return OnCommand<TMessage>((_, m) => commandHandler(m));
-	}
+	public ProtocolBuilder OnCommand<TMessage>(Action<TMessage> commandHandler) => OnCommand<TMessage>((_, m) => commandHandler(m));
 
 	/// <summary>Registers a runtime command callback with its executing orchestrator.</summary>
-	public ProtocolBuilder OnCommand<TMessage>(Action<ProtocolOrchestrator, TMessage> commandHandler) {
-		return AddCommand(new ActionCommandHandler<TMessage>(commandHandler));
-	}
+	public ProtocolBuilder OnCommand<TMessage>(Action<ProtocolOrchestrator, TMessage> commandHandler) => AddCommand(new ActionCommandHandler<TMessage>(commandHandler));
 
-	public ProtocolBuilder AddCommand(ICommandHandler commandHandler) {
-		return AddCommand(commandHandler, out _);
-	}
+	public ProtocolBuilder AddCommand(ICommandHandler commandHandler) => AddCommand(commandHandler, out _);
 
 	/// <summary>Adds an existing command handler and returns that same registered product.</summary>
 	public ProtocolBuilder AddCommand(ICommandHandler commandHandler, out ICommandHandler registration) {

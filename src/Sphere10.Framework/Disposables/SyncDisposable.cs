@@ -14,9 +14,7 @@ namespace Sphere10.Framework;
 public abstract class SyncDisposable : Disposable {
 
 	/// <summary>Runs the synchronous cleanup hook on a worker and returns its completion.</summary>
-	protected override ValueTask DisposeInternalAsync() {
-		return new(Task.Run(DisposeInternal));
-	}
+	protected override ValueTask DisposeInternalAsync() => new(Task.Run(DisposeInternal));
 
 }
 

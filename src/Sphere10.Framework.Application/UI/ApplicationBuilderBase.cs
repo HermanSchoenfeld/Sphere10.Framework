@@ -24,9 +24,7 @@ public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPlug
 	private Action<TApplication> _configureApplication;
 	private bool _built;
 
-	protected ApplicationBuilderBase(string defaultTitle) {
-		SetTitle(defaultTitle);
-	}
+	protected ApplicationBuilderBase(string defaultTitle) => SetTitle(defaultTitle);
 
 	protected string Title { get; private set; }
 
@@ -81,9 +79,7 @@ public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPlug
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddPlugin(TPlugin plugin) {
-		return AddPlugin(plugin, out _);
-	}
+	public TSelf AddPlugin(TPlugin plugin) => AddPlugin(plugin, out _);
 
 	/// <summary>Adds an existing plugin definition and captures that startup contribution.</summary>
 	public TSelf AddPlugin(TPlugin plugin, out TPlugin registration) {
@@ -94,9 +90,7 @@ public abstract class ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPlug
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddPlugin(Action<TPluginBuilder> configure) {
-		return AddPlugin(configure, out _);
-	}
+	public TSelf AddPlugin(Action<TPluginBuilder> configure) => AddPlugin(configure, out _);
 
 	/// <summary>Configures one child plugin, captures its definition and returns this parent.</summary>
 	public TSelf AddPlugin(Action<TPluginBuilder> configure, out TPlugin registration) {

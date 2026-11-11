@@ -11,9 +11,7 @@ using System.Text.RegularExpressions;
 namespace Sphere10.Framework.Web.AspNetCore.Blazor.UI.Controls.BlazorGrid;
 public static class Utility {
 
-	public static bool IsNullOrEmpty(this string text) {
-		return string.IsNullOrEmpty(text);
-	}
+	public static bool IsNullOrEmpty(this string text) => string.IsNullOrEmpty(text);
 	public static string AddSpacesForCamelCase(string text) {
 		if (text.IsNullOrEmpty()) return string.Empty;
 

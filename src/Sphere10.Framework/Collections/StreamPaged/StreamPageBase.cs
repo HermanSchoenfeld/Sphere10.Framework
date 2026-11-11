@@ -12,9 +12,7 @@ using System.IO;
 namespace Sphere10.Framework;
 
 internal abstract class StreamPageBase<TItem> : PageBase<TItem> {
-	protected StreamPageBase(StreamPagedList<TItem> parent) {
-		Parent = parent;
-	}
+	protected StreamPageBase(StreamPagedList<TItem> parent) => Parent = parent;
 
 	public long StartPosition { get; protected set; }
 

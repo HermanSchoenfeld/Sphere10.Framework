@@ -22,9 +22,7 @@ public class CHMHelpProvider : IHelpServices {
 	private static readonly object SyncObject;
 	private string _chmFile;
 
-	static CHMHelpProvider() {
-		SyncObject = new object();
-	}
+	static CHMHelpProvider() => SyncObject = new object();
 
 	public CHMHelpProvider(IUserInterfaceServices userInterfaceServices, IProductInformationProvider productInformationProvider) {
 

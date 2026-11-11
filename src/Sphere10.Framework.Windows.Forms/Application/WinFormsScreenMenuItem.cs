@@ -51,11 +51,7 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 		ScreenDefinition = definition;
 	}
 
-	public ApplicationScreenRegistration Registration {
-		get {
-			return _registration;
-		}
-	}
+	public ApplicationScreenRegistration Registration => _registration;
 
 	public virtual SharedUI.ApplicationScreenDefinition ScreenDefinition {
 		get => _screenDefinition;
@@ -81,8 +77,6 @@ public class WinFormsScreenMenuItem : WinFormsLinkMenuItemBase, IWinFormsScreenM
 			Text = definition.Title;
 	}
 
-	public override void Dispose() {
-		base.Dispose();
-	}
+	public override void Dispose() => base.Dispose();
 }
 

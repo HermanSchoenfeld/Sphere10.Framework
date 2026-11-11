@@ -44,14 +44,10 @@ public class VisualGridPreferencesTests {
 	}
 
 	[TearDown]
-	public void TearDown() {
-		UserSettings.Provider = _previousProvider;
-	}
+	public void TearDown() => UserSettings.Provider = _previousProvider;
 
 	[Test]
-	public void ExistingGridSettingsValidatePagingSortingAndColumnValues() {
-		Assert.That(Preferences(20, width: 145).Validate().IsSuccess, Is.True);
-	}
+	public void ExistingGridSettingsValidatePagingSortingAndColumnValues() => Assert.That(Preferences(20, width: 145).Validate().IsSuccess, Is.True);
 
 	[TestCase(0)]
 	[TestCase(1)]
@@ -445,11 +441,7 @@ public class VisualGridPreferencesTests {
 
 		public Row[] Rows { get; }
 
-		public QueryRequest[] Requests {
-			get {
-				return _requests.ToArray();
-			}
-		}
+		public QueryRequest[] Requests => _requests.ToArray();
 
 		public override Task<DataSourceItems<Row>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
 			_requests.Add(new QueryRequest(pageLength, page, sortProperty, sortDirection));

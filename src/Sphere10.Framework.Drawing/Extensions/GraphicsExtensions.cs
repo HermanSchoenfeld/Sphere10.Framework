@@ -63,9 +63,8 @@ public static class GraphicsExtensions {
 		}
 	}
 
-	public static void DrawCircle(this Graphics graphics, Pen pen, int x, int y, int radius) {
-		graphics.DrawEllipse(pen, new Rectangle(x - radius, y - radius, radius * 2, radius * 2));
-	}
+	public static void DrawCircle(this Graphics graphics, Pen pen, int x, int y, int radius)
+		=> graphics.DrawEllipse(pen, new Rectangle(x - radius, y - radius, radius * 2, radius * 2));
 
 	public static void DrawAlphaColor(this Graphics graphics, Bitmap image, Color color, int x, int y) {
 		var imageAttributes = new ImageAttributes();
@@ -93,9 +92,8 @@ public static class GraphicsExtensions {
 		return bitmap;
 	}
 
-	public static void DrawJustifiedString(this Graphics graphics, int x, int y, int width, string text, Font textFont, Color color) {
-		DrawJustifiedString(graphics, x, y, width, text, textFont, color, false);
-	}
+	public static void DrawJustifiedString(this Graphics graphics, int x, int y, int width, string text, Font textFont, Color color)
+		=> DrawJustifiedString(graphics, x, y, width, text, textFont, color, false);
 
 	public static void DrawJustifiedString(this Graphics graphics, int x, int y, int width, string text, Font textFont, Color color, bool format) {
 		// Prepare the wrapped text and initial drawing position.
@@ -238,13 +236,11 @@ public static class GraphicsExtensions {
 		}
 	}
 
-	public static void DrawRoundedRectangleGradiantFill(this Graphics graphics, Color start, Color end, Rectangle rectangle, int radius, RoundedCorners corners) {
-		DrawRoundedRectangleBorderGradiantFill(graphics, start, end, Color.White, rectangle, radius, 0, corners);
-	}
+	public static void DrawRoundedRectangleGradiantFill(this Graphics graphics, Color start, Color end, Rectangle rectangle, int radius, RoundedCorners corners)
+		=> DrawRoundedRectangleBorderGradiantFill(graphics, start, end, Color.White, rectangle, radius, 0, corners);
 
-	public static void DrawRoundedRectangleGradiantFill(this Graphics graphics, Color start, Color end, Rectangle rectangle, int radius) {
-		DrawRoundedRectangleBorderGradiantFill(graphics, start, end, Color.White, rectangle, radius, 0);
-	}
+	public static void DrawRoundedRectangleGradiantFill(this Graphics graphics, Color start, Color end, Rectangle rectangle, int radius)
+		=> DrawRoundedRectangleBorderGradiantFill(graphics, start, end, Color.White, rectangle, radius, 0);
 
 	public static void DrawRoundedRectangleBorderGradiantFill(this Graphics graphics, Color start, Color end, Color borderColor,
 		Rectangle rectangle, int radius, int borderWidth, RoundedCorners corners) {
@@ -351,9 +347,8 @@ public static class GraphicsExtensions {
 		}
 	}
 
-	public static void DrawRoundedRectangleBorder(this Graphics graphics, Color color, Color borderColor, Rectangle rectangle, int radius, int borderWidth) {
-		DrawRoundedRectangleBorder(graphics, color, borderColor, rectangle, radius, borderWidth, RoundedCorners.All);
-	}
+	public static void DrawRoundedRectangleBorder(this Graphics graphics, Color color, Color borderColor, Rectangle rectangle, int radius, int borderWidth)
+		=> DrawRoundedRectangleBorder(graphics, color, borderColor, rectangle, radius, borderWidth, RoundedCorners.All);
 
 	public static void GradientFill(this Graphics graphics, Rectangle rectangle, Color fromColor, Color toColor, GradientFillDirection direction, Blend blend = null) {
 		var angle = 0;
@@ -385,14 +380,11 @@ public static class GraphicsExtensions {
 		}
 	}
 
-	public static void DrawRoundedRectangleBorderGradiantFill(this Graphics graphics, Color start, Color end, Color borderColor, Rectangle rectangle, int radius, int borderWidth) {
-		DrawRoundedRectangleBorderGradiantFill(graphics, start, end, borderColor, rectangle, radius, borderWidth, RoundedCorners.All);
-	}
+	public static void DrawRoundedRectangleBorderGradiantFill(this Graphics graphics, Color start, Color end, Color borderColor, Rectangle rectangle, int radius, int borderWidth)
+		=> DrawRoundedRectangleBorderGradiantFill(graphics, start, end, borderColor, rectangle, radius, borderWidth, RoundedCorners.All);
 
 	// Uses the top-left image pixel as the existing transparency key.
-	private static Color GetTransparentColor(Bitmap image) {
-		return image.GetPixel(0, 0);
-	}
+	private static Color GetTransparentColor(Bitmap image) => image.GetPixel(0, 0);
 
 	// Breaks an oversized word into measured fragments without changing its characters.
 	private static string SplitWord(int width, string text, Font textFont) {

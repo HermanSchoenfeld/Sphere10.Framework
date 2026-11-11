@@ -43,6 +43,7 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 	}
 
 	public TimeSpan MovingStoppedInterval { get; set; }
+	public Func<MouseButton, MouseButtonState, bool> ShouldIntercept { get; set; }
 	public int CurrentMouseX { get; protected set; }
 	public int CurrentMouseY { get; protected set; }
 	public int LastClickX { get; protected set; }
@@ -104,9 +105,8 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 		Activity?.Invoke(this, mouseEvent);
 	}
 
-	protected virtual void ProcessMouseActivity(int currentX, int currentY, MouseButton buttonClicked, MouseButtonState buttonState, MouseClickType clickType, int wheelDelta) {
-		ProcessMouseActivity(currentX, currentY, buttonClicked, buttonState, clickType, wheelDelta, null);
-	}
+	protected virtual void ProcessMouseActivity(int currentX, int currentY, MouseButton buttonClicked, MouseButtonState buttonState, MouseClickType clickType, int wheelDelta)
+		=> ProcessMouseActivity(currentX, currentY, buttonClicked, buttonState, clickType, wheelDelta, null);
 
 	protected virtual void ProcessMouseActivity(int currentX, int currentY, MouseButton buttonClicked, MouseButtonState buttonState, MouseClickType clickType, int wheelDelta, long? monotonicTimestampMilliseconds) {
 		lock (this) {

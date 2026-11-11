@@ -166,9 +166,7 @@ public class ConstantSizeCompoundKeySerializerTests {
 	private sealed class DeclaredSizeSerializer : ItemSerializerDecorator<int> {
 		private readonly long _size;
 
-		public DeclaredSizeSerializer(long size) : base(PrimitiveSerializer<int>.Instance) {
-			_size = size;
-		}
+		public DeclaredSizeSerializer(long size) : base(PrimitiveSerializer<int>.Instance) => _size = size;
 
 		public override long ConstantSize => _size;
 	}

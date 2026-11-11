@@ -95,29 +95,20 @@ public abstract class ApplicationScreenBuilderBase<TSelf> : IApplicationUIBuilde
 	}
 
 	/// <summary>Retains one instance for this registration in its owning block.</summary>
-	public TSelf AsSingleInstance() {
-		return WithActivationMode(ScreenActivationMode.SingleInstance);
-	}
+	public TSelf AsSingleInstance() => WithActivationMode(ScreenActivationMode.SingleInstance);
 
 	/// <summary>Creates independent instances when this registration is opened.</summary>
-	public TSelf AsMultiInstance() {
-		return WithActivationMode(ScreenActivationMode.MultiInstance);
-	}
+	public TSelf AsMultiInstance() => WithActivationMode(ScreenActivationMode.MultiInstance);
 
 	/// <summary>Creates a retained instance during host initialization.</summary>
-	public TSelf AsPermanentSingleton() {
-		return WithActivationMode(ScreenActivationMode.PermanentSingleton);
-	}
+	public TSelf AsPermanentSingleton() => WithActivationMode(ScreenActivationMode.PermanentSingleton);
 
 	/// <summary>Copies only declared values; building never activates an operational screen.</summary>
-	protected virtual ApplicationScreenDefinition CreateDefinition() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings);
-	}
+	protected virtual ApplicationScreenDefinition CreateDefinition()
+		=> new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings);
 
 	// Platform builders additionally validate their supported screen contract.
-	protected virtual void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType);
-	}
+	protected virtual void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType);
 
 	// Keep one token and one immutable type throughout this child's configuration.
 	private void SetScreenType(Type screenType, ApplicationScreenRegistration registration) {

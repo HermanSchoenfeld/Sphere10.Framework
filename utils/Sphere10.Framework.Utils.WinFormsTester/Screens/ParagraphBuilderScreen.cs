@@ -28,11 +28,7 @@ public partial class ParagraphBuilderScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ParagraphBuilderScreenSettings ScreenSettings {
-		get {
-			return (ParagraphBuilderScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ParagraphBuilderScreenSettings ScreenSettings => (ParagraphBuilderScreenSettings)base.ScreenSettings;
 
 	protected override void CopyModelToUI() {
 		base.CopyModelToUI();
@@ -54,9 +50,7 @@ public partial class ParagraphBuilderScreen : ApplicationScreen {
 		MarkSettingsChanged();
 	}
 
-	private void PreferencesChanged(object sender, EventArgs e) {
-		CopyUIToModel();
-	}
+	private void PreferencesChanged(object sender, EventArgs e) => CopyUIToModel();
 
 	// Empty drafts do not silently alter or replace an existing paragraph.
 	private void _appendSentenceButton_Click(object sender, EventArgs e) {

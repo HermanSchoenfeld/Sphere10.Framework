@@ -14,7 +14,5 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 /// <summary>Provides a concrete nongeneric bridge so native Designer can edit all demonstration wizard pages.</summary>
 public class DemoWizardScreenBase : WinFormsWizardScreen<DemoWizardModel> {
 	/// <summary>Keeps model publication explicit through each validated page's navigation callback.</summary>
-	public DemoWizardScreenBase() {
-		UpdateModelOnStateChanged = false;
-	}
+	public DemoWizardScreenBase() => UpdateModelOnStateChanged = false;
 }

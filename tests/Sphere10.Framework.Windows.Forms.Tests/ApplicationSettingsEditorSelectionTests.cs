@@ -103,10 +103,58 @@ public class ApplicationSettingsEditorSelectionTests {
 		});
 	}
 
+	/// <summary>Screen Options opens the settings root's own nested values, while deeper values and ordinary entity editors stay collapsed.</summary>
+	[Test]
+	public void OptionsEditorsExpandOnlyTheSettingsFirstLevel() {
+		RunWithMessageLoop(async owner => {
+			var marked = new FormsUI.ApplicationScreenDefinition(typeof(EditableSettingsScreen), "Marked", stableKey: "marked");
+			var block = new ApplicationBlock { Name = "Options" };
+			block.AddScreenDefinition(marked);
+			using var main = new BlockMainForm();
+			await using var application = new FormsUI.Application(main, new[] { block });
+			marked.Settings.Provider = new MemoryStore();
+			main.RegisterBlock(block);
+
+			// The initial page is bound before the dialog's native controls exist.
+			using (var dialog = new ApplicationSettingsDialog(application, selectedOwner: marked)) {
+				dialog.Show(owner);
+				var details = FindFirstLevelItem(Find<Panel>(dialog, "_editorHost").Controls.OfType<ApplicationSettingsEditor>().Single(), nameof(EditableSettings.Details));
+				var origin = details.GridItems.Cast<GridItem>().Single(item => item.PropertyDescriptor?.Name == nameof(EditorDetails.Origin));
+				Assert.That(details.Expanded, Is.True);
+				Assert.That(origin.Expandable, Is.True);
+				Assert.That(origin.Expanded, Is.False);
+				dialog.Close();
+			}
+
+			// An editor that is already shown expands a newly bound entity.
+			var settings = new EditableSettings { Provider = new MemoryStore() };
+			using var shown = new ApplicationSettingsEditor { Dock = DockStyle.Left };
+			owner.Controls.Add(shown);
+			shown.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, settings, false);
+			Assert.That(FindFirstLevelItem(shown, nameof(EditableSettings.Details)).Expanded, Is.True);
+
+			// Other entity editors keep the native collapsed default.
+			using var ordinary = new DefaultCrudEntityEditor { Dock = DockStyle.Right };
+			owner.Controls.Add(ordinary);
+			ordinary.SetEntity(DataSourceCapabilities.CanRead | DataSourceCapabilities.CanUpdate, settings, false);
+			Assert.That(FindFirstLevelItem(ordinary, nameof(EditableSettings.Details)).Expanded, Is.False);
+		});
+	}
+
 	// Native controls retain designer names while the public grid family uses its new VisualGrid name.
 	private static T Find<T>(Control owner, string name)
 		where T : Control {
 		return (T)owner.Controls.Find(name, true).Single();
+	}
+
+	// Read a property row directly below the native grid's root, looking through category groups.
+	private static GridItem FindFirstLevelItem(DefaultCrudEntityEditor editor, string name) {
+		var root = editor.Controls.OfType<PropertyGrid>().Single().SelectedGridItem;
+		while (root.Parent != null)
+			root = root.Parent;
+		return root.GridItems.Cast<GridItem>()
+			.SelectMany(item => item.GridItemType == GridItemType.Category ? item.GridItems.Cast<GridItem>() : new[] { item })
+			.Single(item => item.PropertyDescriptor?.Name == name);
 	}
 
 	// All controls, asynchronous dialogs and cleanup execute on one live Forms message loop.
@@ -149,21 +197,13 @@ public class ApplicationSettingsEditorSelectionTests {
 	/// <summary>Declares settings without opting into the automatic editor.</summary>
 	public sealed class OrdinarySettingsScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public override OrdinarySettings ScreenSettings {
-			get {
-				return (OrdinarySettings)base.ScreenSettings;
-			}
-		}
+		public override OrdinarySettings ScreenSettings => (OrdinarySettings)base.ScreenSettings;
 	}
 
 	/// <summary>Declares settings that opt into the automatic editor.</summary>
 	public sealed class EditableSettingsScreen : ApplicationScreen {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public override EditableSettings ScreenSettings {
-			get {
-				return (EditableSettings)base.ScreenSettings;
-			}
-		}
+		public override EditableSettings ScreenSettings => (EditableSettings)base.ScreenSettings;
 	}
 
 	/// <summary>Enables the ordinary property editor through its class marker.</summary>
@@ -187,6 +227,9 @@ public class ApplicationSettingsEditorSelectionTests {
 		/// <summary>A user value rather than a settings persistence provider.</summary>
 		public string Provider { get; set; } = "Sample";
 
+		/// <summary>A second-level expandable value that Screen Options leaves collapsed.</summary>
+		public Point Origin { get; set; } = new(3, 4);
+
 		/// <summary>A nested runtime value excluded by the same settings visibility rules.</summary>
 		[Transient]
 		public string TransientValue { get; set; }
@@ -198,9 +241,7 @@ public class ApplicationSettingsEditorSelectionTests {
 		public int Saves { get; private set; }
 
 		// Check whether this fixture has a persisted record.
-		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-			return false;
-		}
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) => false;
 
 		// Remove this fixture record.
 		public override void DeleteSetting(SettingsObject settings) {
@@ -211,14 +252,11 @@ public class ApplicationSettingsEditorSelectionTests {
 		}
 
 		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
-			throw new InvalidOperationException("This provider has no saved settings.");
-		}
+		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null)
+			=> throw new InvalidOperationException("This provider has no saved settings.");
 
 		// Persist fixture values after the base provider prepares them.
-		protected override void SaveInternal(SettingsObject settings) {
-			Saves++;
-		}
+		protected override void SaveInternal(SettingsObject settings) => Saves++;
 	}
 	#endregion
 }

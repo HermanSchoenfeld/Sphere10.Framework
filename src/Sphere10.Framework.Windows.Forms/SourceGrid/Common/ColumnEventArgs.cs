@@ -23,19 +23,13 @@ public class ColumnEventArgs : EventArgs {
 	/// Constructor
 	/// </summary>
 	/// <param name="column"></param>
-	public ColumnEventArgs(int column) {
-		_column = column;
-	}
+	public ColumnEventArgs(int column) => _column = column;
 
 	/// <summary>
 	/// Column
 	/// </summary>
 	public int Column {
-		get {
-			return _column;
-		}
-		set {
-			_column = value;
-		}
+		get => _column;
+		set => _column = value;
 	}
 }

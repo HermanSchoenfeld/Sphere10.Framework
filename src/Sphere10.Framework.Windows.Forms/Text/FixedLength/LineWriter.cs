@@ -20,27 +20,15 @@ public class LineWriter {
 	private char _separator = '\0';
 	private object[] _lineValues;
 
-	public LineWriter(FieldList fields) {
-		_fields = fields;
-	}
+	public LineWriter(FieldList fields) => _fields = fields;
 
-	public LineWriter(Type lineClassType) {
-		_fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
-	}
+	public LineWriter(Type lineClassType) => _fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
 
-	public FieldList Fields {
-		get {
-			return _fields;
-		}
-	}
+	public FieldList Fields => _fields;
 
 	public char Separator {
-		get {
-			return _separator;
-		}
-		set {
-			_separator = value;
-		}
+		get => _separator;
+		set => _separator = value;
 	}
 
 	public string CreateLineFromClass(object schemaClass) {
@@ -85,7 +73,5 @@ public class LineWriter {
 		_lineValues[_fields[fieldName].Index] = val;
 	}
 
-	public void Reset() {
-		_lineValues = null;
-	}
+	public void Reset() => _lineValues = null;
 }

@@ -15,9 +15,7 @@ namespace Sphere10.Framework.Windows.Security;
 public readonly struct NetApiBufferScope : IScope<IntPtr> {
 	private readonly IntPtr _pointer;
 
-	public NetApiBufferScope(IntPtr pointer) {
-		_pointer = pointer;
-	}
+	public NetApiBufferScope(IntPtr pointer) => _pointer = pointer;
 
 	public IntPtr Item => _pointer;
 

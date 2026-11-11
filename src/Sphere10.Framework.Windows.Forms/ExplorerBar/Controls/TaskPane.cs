@@ -41,6 +41,11 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// </summary>
 	public event EventHandler CustomSettingsChanged;
 
+	/// <summary>
+	/// Occurs when the TaskPane applies a different system theme, such as through UseCustomTheme
+	/// </summary>
+	public event EventHandler SystemSettingsChanged;
+
 	#endregion
 
 
@@ -355,9 +360,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// <summary>
 	/// Signals the TaskPane that initialization is starting
 	/// </summary>
-	public void BeginInit() {
-		this.initialising = true;
-	}
+	public void BeginInit() => this.initialising = true;
 
 
 	/// <summary>
@@ -374,9 +377,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Gets whether the TaskPane is currently initialising
 	/// </summary>
 	[Browsable(false)]
-	public bool Initialising {
-		get { return this.initialising; }
-	}
+	public bool Initialising => this.initialising;
 
 	#endregion
 
@@ -391,9 +392,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// <summary>
 	/// Prevents the TaskPane from drawing until the EndUpdate method is called
 	/// </summary>
-	public void BeginUpdate() {
-		this.beginUpdateCount++;
-	}
+	public void BeginUpdate() => this.beginUpdateCount++;
 
 
 	/// <summary>
@@ -413,9 +412,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Forces the TaskPane to apply layout logic to child Expandos, 
 	/// and adjusts the Size and Location of the Expandos if necessary
 	/// </summary>
-	public void DoLayout() {
-		this.DoLayout(false);
-	}
+	public void DoLayout() => this.DoLayout(false);
 
 
 	// fix: Added DoLayout(bool performRealLayout) to improve 
@@ -643,9 +640,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	 Description("The Expandos contained in the TaskPane"),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 Editor(typeof(ExpandoCollectionEditor), typeof(UITypeEditor))]
-	public TaskPane.ExpandoCollection Expandos {
-		get { return this.expandoCollection; }
-	}
+	public TaskPane.ExpandoCollection Expandos => this.expandoCollection;
 
 
 	/// <summary>
@@ -654,7 +649,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// </summary>
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public new Control.ControlCollection Controls {
-		get { return base.Controls; }
+		get => base.Controls;
 	}
 
 
@@ -665,9 +660,9 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	 DefaultValue(false),
 	 Description("Indicates whether Expandos can be dragged around the TaskPane")]
 	public bool AllowExpandoDragging {
-		get { return this.allowExpandoDragging; }
+		get => this.allowExpandoDragging;
 
-		set { this.allowExpandoDragging = value; }
+		set => this.allowExpandoDragging = value;
 	}
 
 
@@ -677,9 +672,9 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	[Browsable(false),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Color ExpandoDropIndicatorColor {
-		get { return this.dropIndicatorColor; }
+		get => this.dropIndicatorColor;
 
-		set { this.dropIndicatorColor = value; }
+		set => this.dropIndicatorColor = value;
 	}
 
 	#endregion
@@ -773,7 +768,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// Gets or sets the system defined settings for the TaskPane
 	/// </summary>
 	protected internal ExplorerBarInfo SystemSettings {
-		get { return this.systemSettings; }
+		get => this.systemSettings;
 
 		set {
 			// ignore null values
@@ -805,6 +800,8 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 				this.ResumeLayout(true);
 
 				this.Invalidate(true);
+
+				this.OnSystemSettingsChanged(EventArgs.Empty);
 			}
 		}
 	}
@@ -818,9 +815,9 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 TypeConverter(typeof(TaskPaneInfoConverter))]
 	public TaskPaneInfo CustomSettings {
-		get { return this.customSettings; }
+		get => this.customSettings;
 
-		set { this.customSettings = value; }
+		set => this.customSettings = value;
 	}
 
 
@@ -911,6 +908,13 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		}
 	}
 
+
+	/// <summary>
+	/// Raises the SystemSettingsChanged event
+	/// </summary>
+	/// <param name="e">An EventArgs that contains the event data</param>
+	protected virtual void OnSystemSettingsChanged(EventArgs e) => SystemSettingsChanged?.Invoke(this, e);
+
 	#endregion
 
 	#region Expandos
@@ -920,18 +924,14 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 	/// </summary>
 	/// <param name="sender">The object that fired the event</param>
 	/// <param name="e">An ExpandoEventArgs that contains the event data</param>
-	private void expando_StateChanged(object sender, ExpandoEventArgs e) {
-		this.OnExpandoStateChanged(e);
-	}
+	private void expando_StateChanged(object sender, ExpandoEventArgs e) => this.OnExpandoStateChanged(e);
 
 
 	/// <summary>
 	/// Occurs when the value of an Expandos Collapsed property changes
 	/// </summary>
 	/// <param name="e">An ExpandoEventArgs that contains the event data</param>
-	protected virtual void OnExpandoStateChanged(ExpandoEventArgs e) {
-		this.DoLayout(true);
-	}
+	protected virtual void OnExpandoStateChanged(ExpandoEventArgs e) => this.DoLayout(true);
 
 
 	/// <summary>
@@ -1354,9 +1354,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		/// </summary>
 		/// <param name="index">The index value of the Expando to 
 		/// remove</param>
-		public new void RemoveAt(int index) {
-			this.Remove(this[index]);
-		}
+		public new void RemoveAt(int index) => this.Remove(this[index]);
 
 
 		/// <summary>
@@ -1405,18 +1403,14 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		/// Moves the specified expando to the top of the expando collection
 		/// </summary>
 		/// <param name="value">The expando to be moved</param>
-		public void MoveToTop(Expando value) {
-			this.Move(value, 0);
-		}
+		public void MoveToTop(Expando value) => this.Move(value, 0);
 
 
 		/// <summary>
 		/// Moves the specified expando to the bottom of the expando collection
 		/// </summary>
 		/// <param name="value">The expando to be moved</param>
-		public void MoveToBottom(Expando value) {
-			this.Move(value, this.Count);
-		}
+		public void MoveToBottom(Expando value) => this.Move(value, this.Count);
 
 		#endregion
 
@@ -1429,9 +1423,7 @@ public class TaskPane : ScrollableControl, ISupportInitialize {
 		/// </summary>
 		/// <param name="index">The index of the expando to retrieve 
 		/// from the expando collection</param>
-		public virtual Expando this[int index] {
-			get { return this.List[index] as Expando; }
-		}
+		public virtual Expando this[int index] => this.List[index] as Expando;
 
 		#endregion
 

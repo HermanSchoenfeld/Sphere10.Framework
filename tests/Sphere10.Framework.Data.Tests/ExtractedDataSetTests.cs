@@ -207,23 +207,15 @@ public class ExtractedDataSetTests {
 		}
 
 		/// <summary>Persists test values through the production file boundary.</summary>
-		public void Save(DataSet dataSet) {
-			SaveToFile(dataSet);
-		}
+		public void Save(DataSet dataSet) => SaveToFile(dataSet);
 
 		/// <summary>Loads test values through the production file boundary.</summary>
-		public DataSet Load() {
-			return LoadFromFile();
-		}
+		public DataSet Load() => LoadFromFile();
 
 		/// <inheritdoc />
-		protected override int GetDataVersion() {
-			return 1;
-		}
+		protected override int GetDataVersion() => 1;
 
 		/// <inheritdoc />
-		protected override DataSet CreateData(int version) {
-			return new DataSet("Source");
-		}
+		protected override DataSet CreateData(int version) => new DataSet("Source");
 	}
 }

@@ -13,14 +13,10 @@ namespace Sphere10.Framework.Web.AspNetCore;
 
 internal class AspNetCoreLifecycleMonitorInitializer : SyncApplicationInitializerBase {
 
-	public AspNetCoreLifecycleMonitorInitializer(IHostApplicationLifetime hostApplicationLifetime) {
-		HostApplicationLifetime = hostApplicationLifetime;
-	}
+	public AspNetCoreLifecycleMonitorInitializer(IHostApplicationLifetime hostApplicationLifetime) => HostApplicationLifetime = hostApplicationLifetime;
 	protected IHostApplicationLifetime HostApplicationLifetime { get; }
 
-	public override void Initialize() {
-		HostApplicationLifetime.ApplicationStopped.Register(Sphere10Framework.Instance.EndFramework);
-	}
+	public override void Initialize() => HostApplicationLifetime.ApplicationStopped.Register(Sphere10Framework.Instance.EndFramework);
 
 }
 

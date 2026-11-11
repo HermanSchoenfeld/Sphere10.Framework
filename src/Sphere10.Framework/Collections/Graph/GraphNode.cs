@@ -17,9 +17,7 @@ namespace Sphere10.Framework;
 /// Connections may contain shared nodes, repeated edges and cycles.
 /// </summary>
 public class GraphNode<TEntity> : ISimpleGraph<TEntity, GraphNode<TEntity>> {
-	public GraphNode(TEntity entity) {
-		Entity = entity;
-	}
+	public GraphNode(TEntity entity) => Entity = entity;
 
 	public TEntity Entity { get; set; }
 

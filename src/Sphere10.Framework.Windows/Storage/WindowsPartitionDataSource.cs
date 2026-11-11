@@ -7,16 +7,20 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows.Storage;
 
 /// <summary>A partition inventory IDataSource using the existing bounded Windows storage query.</summary>
-public sealed class WindowsPartitionDataSource : ReloadableSnapshotDataSource<WindowsPartitionInfo> {
-	public WindowsPartitionDataSource(TimeSpan? timeout = null)
-		: this(token => Tools.Windows.Drives.GetPartitionsAsync(token, timeout)) { }
+public sealed class WindowsPartitionDataSource : AsyncListDataSource<WindowsPartitionInfo> {
+	private readonly TimeSpan? _timeout;
 
-	public WindowsPartitionDataSource(Func<CancellationToken, Task<WindowsPartitionInfo[]>> capture)
-		: base(capture) { }
+	public WindowsPartitionDataSource(TimeSpan? timeout = null) => _timeout = timeout;
+
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsPartitionInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Drives.GetPartitionsAsync(cancellationToken, _timeout).ConfigureAwait(false);
 }

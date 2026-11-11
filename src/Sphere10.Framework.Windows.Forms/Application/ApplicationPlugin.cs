@@ -27,27 +27,15 @@ public class ApplicationPlugin : ApplicationPluginBase<IApplicationBlock>, IAppl
 	}
 
 	/// <summary>Activates this plugin's menu definitions once, independently of the windows displaying them.</summary>
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_menus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= GetMenus());
 
 	/// <summary>Activates this plugin's toolbar definitions once, preserving command identity across windows.</summary>
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 
 	/// <summary>Supplies this plugin's own menu definitions on first access.</summary>
-	protected virtual IApplicationMenu[] GetMenus() {
-		return Array.Empty<IApplicationMenu>();
-	}
+	protected virtual IApplicationMenu[] GetMenus() => Array.Empty<IApplicationMenu>();
 
 	/// <summary>Supplies this plugin's own toolbar definitions on first access.</summary>
-	protected virtual IApplicationMenuItem[] GetToolBarItems() {
-		return Array.Empty<IApplicationMenuItem>();
-	}
+	protected virtual IApplicationMenuItem[] GetToolBarItems() => Array.Empty<IApplicationMenuItem>();
 
 }

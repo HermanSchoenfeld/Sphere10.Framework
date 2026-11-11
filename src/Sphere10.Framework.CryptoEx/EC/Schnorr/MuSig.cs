@@ -23,9 +23,7 @@ public class MuSig {
 	private BigInteger N => Schnorr.N;
 	public int KeySize => Schnorr.KeySize;
 
-	public MuSig(Schnorr schnorr) {
-		Schnorr = schnorr;
-	}
+	public MuSig(Schnorr schnorr) => Schnorr = schnorr;
 
 	// Computes ell = SHA256(publicKeys[0], ..., publicKeys[publicKeys.Length-1]) with
 	// publicKeys serialized in compressed form.
@@ -377,9 +375,7 @@ public class MuSig {
 		return PartialSigVerify(sessionCache, signerSession.KeyCoefficient, publicKey, signerSession.PublicNonce, partialSignature);
 	}
 
-	public BigInteger ComputeChallenge(byte[] finalNonce, byte[] combinedPublicKey, byte[] messageDigest) {
-		return Schnorr.GetE(finalNonce, combinedPublicKey, messageDigest);
-	}
+	public BigInteger ComputeChallenge(byte[] finalNonce, byte[] combinedPublicKey, byte[] messageDigest) => Schnorr.GetE(finalNonce, combinedPublicKey, messageDigest);
 
 	public byte[] AggregatePartialSignatures(byte[] finalNonce, BigInteger[] partialSignatures) {
 		Schnorr.ValidateArray(finalNonce);

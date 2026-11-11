@@ -29,15 +29,7 @@ public class FieldAttribute : System.Attribute {
 		_length = length;
 	}
 
-	public int FieldIndex {
-		get {
-			return _fieldIndex;
-		}
-	}
+	public int FieldIndex => _fieldIndex;
 
-	public int Length {
-		get {
-			return _length;
-		}
-	}
+	public int Length => _length;
 }

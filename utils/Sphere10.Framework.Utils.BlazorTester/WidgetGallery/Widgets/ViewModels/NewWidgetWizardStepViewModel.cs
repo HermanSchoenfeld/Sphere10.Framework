@@ -40,9 +40,7 @@ public class NewWidgetWizardStepViewModel : BlazorWizardStepViewModelBase<NewWid
 	}
 
 	/// <inheritdoc />
-	public override Task<Result> OnPreviousAsync() {
-		return Task.FromResult(Result.Success);
-	}
+	public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 }
 
 

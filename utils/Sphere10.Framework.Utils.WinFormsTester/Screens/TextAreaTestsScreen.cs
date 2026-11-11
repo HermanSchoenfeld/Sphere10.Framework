@@ -34,14 +34,10 @@ public partial class TextAreaTestsScreen : ApplicationScreen {
 	}
 
 	// The normal path intentionally appends line by line to expose native rendering cost.
-	private void FillStandardButton_Click(object sender, EventArgs args) {
-		FillText(false);
-	}
+	private void FillStandardButton_Click(object sender, EventArgs args) => FillText(false);
 
 	// The former locked stub now uses the Framework's existing rendering scope.
-	private void FillLockedButton_Click(object sender, EventArgs args) {
-		FillText(true);
-	}
+	private void FillLockedButton_Click(object sender, EventArgs args) => FillText(true);
 
 	// Both modes use identical generated text; only their rendering boundary differs.
 	private void FillText(bool deferRendering) {
@@ -152,14 +148,10 @@ public partial class TextAreaTestsScreen : ApplicationScreen {
 	}
 
 	// Generation-only timing does not include native editor updates.
-	private async void GenOnlyButton_Click(object sender, EventArgs args) {
-		await GenerateAsync(false);
-	}
+	private async void GenOnlyButton_Click(object sender, EventArgs args) => await GenerateAsync(false);
 
 	// Background generation returns a detached string before touching the native editor.
-	private async void FillLockedAsyncButton_Click(object sender, EventArgs args) {
-		await GenerateAsync(true);
-	}
+	private async void FillLockedAsyncButton_Click(object sender, EventArgs args) => await GenerateAsync(true);
 
 	// Contain native-event failures and reject delivery after screen disposal.
 	private async Task GenerateAsync(bool display) {

@@ -175,32 +175,16 @@ public class ApplicationBuilderTests {
 		public IApplicationPlugin Source { get; set; }
 
 		/// <inheritdoc />
-		public int Position {
-			get {
-				return 0;
-			}
-		}
+		public int Position => 0;
 
 		/// <inheritdoc />
-		public ApplicationScreenDefinition[] ScreenDefinitions {
-			get {
-				return Array.Empty<ApplicationScreenDefinition>();
-			}
-		}
+		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
 
 		/// <inheritdoc />
-		public ApplicationScreenDefinition DefaultScreenDefinition {
-			get {
-				return null;
-			}
-		}
+		public ApplicationScreenDefinition DefaultScreenDefinition => null;
 
 		/// <inheritdoc />
-		public IApplicationMenu[] Menus {
-			get {
-				return MenuDefinitions;
-			}
-		}
+		public IApplicationMenu[] Menus => MenuDefinitions;
 	}
 
 	/// <summary>Supplies menu definition for the fixture's existing contract checks.</summary>
@@ -209,11 +193,7 @@ public class ApplicationBuilderTests {
 		public IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public IApplicationMenuItem[] Items {
-			get {
-				return ItemDefinitions;
-			}
-		}
+		public IApplicationMenuItem[] Items => ItemDefinitions;
 	}
 
 	/// <summary>Supplies item definition for the fixture's existing contract checks.</summary>
@@ -241,9 +221,7 @@ public class ApplicationBuilderTests {
 		}
 
 		/// <inheritdoc />
-		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) {
-			return new(Name, menus.ToArray());
-		}
+		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) => new(Name, menus.ToArray());
 	}
 
 	/// <summary>Supplies menu builder for the fixture's existing contract checks.</summary>
@@ -261,9 +239,7 @@ public class ApplicationBuilderTests {
 		}
 
 		/// <inheritdoc />
-		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) {
-			return new(Text, items.ToArray());
-		}
+		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) => new(Text, items.ToArray());
 	}
 
 	/// <summary>Supplies item builder for the fixture's existing contract checks.</summary>

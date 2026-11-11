@@ -61,9 +61,7 @@ public struct BorderLine {
 		Padding = padding;
 	}
 
-	public override string ToString() {
-		return Color.ToString() + ", Width= " + Width.ToString() + ", DashStyle= " + DashStyle.ToString();
-	}
+	public override string ToString() => Color.ToString() + ", Width= " + Width.ToString() + ", DashStyle= " + DashStyle.ToString();
 
 	/// <summary>
 	/// Compare to current border with another border.
@@ -81,19 +79,11 @@ public struct BorderLine {
 		return false;
 	}
 
-	public override int GetHashCode() {
-		return Color.GetHashCode();
-	}
+	public override int GetHashCode() => Color.GetHashCode();
 
-	public static bool operator ==(BorderLine a, BorderLine b) {
-		return a.Equals(b);
-	}
+	public static bool operator ==(BorderLine a, BorderLine b) => a.Equals(b);
 
-	public static bool operator !=(BorderLine a, BorderLine b) {
-		return a.Equals(b) == false;
-	}
+	public static bool operator !=(BorderLine a, BorderLine b) => a.Equals(b) == false;
 
-	private bool ShouldSerializeColor() {
-		return Color.IsEmpty == false;
-	}
+	private bool ShouldSerializeColor() => Color.IsEmpty == false;
 }

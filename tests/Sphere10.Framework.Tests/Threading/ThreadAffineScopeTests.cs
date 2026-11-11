@@ -214,9 +214,7 @@ public class ThreadAffineScopeTests {
 	private readonly struct ObservedScope : IScope {
 		private readonly InnerFinalization _observation;
 
-		public ObservedScope(InnerFinalization observation) {
-			_observation = observation;
-		}
+		public ObservedScope(InnerFinalization observation) => _observation = observation;
 
 		public void Dispose() {
 			_observation.SyncCalls++;

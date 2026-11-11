@@ -14,9 +14,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Utils;
 public class PerformanceCounter : IDisposable, IPerformanceCounter {
 	private DateTime _start = DateTime.MinValue;
 
-	public PerformanceCounter() {
-		_start = DateTime.Now;
-	}
+	public PerformanceCounter() => _start = DateTime.Now;
 
 	public double GetSeconds() {
 		var span = DateTime.Now - _start;

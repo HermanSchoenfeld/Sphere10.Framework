@@ -37,7 +37,5 @@ public sealed class ApplicationGridColumnPreferences {
 	public bool? ExpandsToFit { get; set; }
 
 	/// <summary>Shows the readable schema name in ordinary collection editors without using it as persistent identity.</summary>
-	public override string ToString() {
-		return Title ?? Key ?? string.Empty;
-	}
+	public override string ToString() => Title ?? Key ?? string.Empty;
 }

@@ -39,11 +39,7 @@ public partial class DecayGaugeScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override DecayGaugeScreenSettings ScreenSettings {
-		get {
-			return (DecayGaugeScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override DecayGaugeScreenSettings ScreenSettings => (DecayGaugeScreenSettings)base.ScreenSettings;
 
 	/// <summary>Applies restored configuration before starting visible UI refresh.</summary>
 	protected override void InitializeUIPrimingData() {
@@ -101,9 +97,7 @@ public partial class DecayGaugeScreen : ApplicationScreen {
 	}
 
 	// Reset is the acceptance point for a new starting level.
-	private void ResetButton_Click(object sender, EventArgs args) {
-		Reset();
-	}
+	private void ResetButton_Click(object sender, EventArgs args) => Reset();
 
 	// Curve edits apply immediately and become ordinary screen preferences.
 	private void CurveChanged(object sender, EventArgs args) {
@@ -120,9 +114,7 @@ public partial class DecayGaugeScreen : ApplicationScreen {
 	}
 
 	// Only an explicit checked choice can create global hooks.
-	private void MouseKeyboardEventTriggers_CheckedChanged(object sender, EventArgs args) {
-		UpdateActivity();
-	}
+	private void MouseKeyboardEventTriggers_CheckedChanged(object sender, EventArgs args) => UpdateActivity();
 
 	// Hidden retained screens hold neither active timers nor global hooks.
 	private void UpdateActivity() {
@@ -177,14 +169,10 @@ public partial class DecayGaugeScreen : ApplicationScreen {
 	}
 
 	// Hook callbacks use a bounded, nonblocking handoff to the native timer.
-	private void MouseActivity(object sender, MouseEvent e) {
-		Interlocked.Increment(ref _pendingMouseEvents);
-	}
+	private void MouseActivity(object sender, MouseEvent e) => Interlocked.Increment(ref _pendingMouseEvents);
 
 	// Keyboard activity follows the same owner-thread handoff.
-	private void KeyboardActivity(object sender, KeyEvent e) {
-		Interlocked.Increment(ref _pendingKeyboardEvents);
-	}
+	private void KeyboardActivity(object sender, KeyEvent e) => Interlocked.Increment(ref _pendingKeyboardEvents);
 
 	// Preferences never persist permission to observe desktop input.
 	private void ApplySettings() {

@@ -201,9 +201,8 @@ public class ApplicationSettingsBrowserTests {
 		await input.PressAsync("Tab");
 	}
 
-	private static async Task WaitCaptionAsync(IPage page, string caption) {
-		await page.WaitForFunctionAsync("caption => document.querySelector('.sphere10-screen:not([hidden]) [data-inspector-caption]')?.textContent.trim() === caption", caption);
-	}
+	private static async Task WaitCaptionAsync(IPage page, string caption)
+		=> await page.WaitForFunctionAsync("caption => document.querySelector('.sphere10-screen:not([hidden]) [data-inspector-caption]')?.textContent.trim() === caption", caption);
 
 	private static async Task CaptureAsync(IPage page, string name) {
 		var directory = Path.Combine(TestContext.CurrentContext.WorkDirectory, nameof(ApplicationSettingsBrowserTests));

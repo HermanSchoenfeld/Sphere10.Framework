@@ -77,9 +77,7 @@ public class WinFormsActionMenuItem : ApplicationMenuItemBase, IWinFormsLinkMenu
 		NotifySelect();
 	}
 
-	public override void Dispose() {
-		base.Dispose();
-	}
+	public override void Dispose() => base.Dispose();
 
 }
 

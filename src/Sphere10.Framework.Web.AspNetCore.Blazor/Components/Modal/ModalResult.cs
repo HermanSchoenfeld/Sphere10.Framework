@@ -45,9 +45,7 @@ public class ModalResult {
 	/// Initializes a new instance of the <see cref="ModalResult"/> class.
 	/// </summary>
 	/// <param name="resultType"> result type</param>
-	public ModalResult(ModalResultType resultType) {
-		ResultType = resultType;
-	}
+	public ModalResult(ModalResultType resultType) => ResultType = resultType;
 
 	/// <summary>
 	/// Modal result

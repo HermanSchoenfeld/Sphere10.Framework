@@ -21,9 +21,7 @@ public class TablesViewModel : ExtendedComponentViewModel {
 		NodeService = nodeService;
 	}
 
-	protected override async Task InitCoreAsync() {
-		await Task.CompletedTask;
-	}
+	protected override async Task InitCoreAsync() => await Task.CompletedTask;
 }
 
 

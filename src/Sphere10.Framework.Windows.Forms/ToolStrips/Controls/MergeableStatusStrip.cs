@@ -31,36 +31,22 @@ public class MergeableStatusStrip : StatusStrip {
 	[Description("Set this to the base forms StatusStrip. If you can't find it, make sure it's modifer is set to to 'protected' or greater.")]
 	[Category("Behavior")]
 	public StatusStrip InheritedToolStrip {
-		get {
-			return _fixer.InheritedToolStrip as StatusStrip;
-		}
-		set {
-			_fixer.InheritedToolStrip = value;
-		}
+		get => _fixer.InheritedToolStrip as StatusStrip;
+		set => _fixer.InheritedToolStrip = value;
 	}
 
 	// Incoming mergers use the fixer's disposal notification before the target disposes borrowed items.
-	internal ToolStripVisualInheritanceFixer MergeFixer {
-		get {
-			return _fixer;
-		}
-	}
+	internal ToolStripVisualInheritanceFixer MergeFixer => _fixer;
 
 	/// <summary>Merges the original status items into the target while retaining their handlers and resources.</summary>
 	/// <remarks>Unmerge before disposing a plain StatusStrip target; mergeable targets return borrowed items automatically.</remarks>
-	public bool MergeInto(StatusStrip target) {
-		return _fixer.MergeInto(target);
-	}
+	public bool MergeInto(StatusStrip target) => _fixer.MergeInto(target);
 
 	/// <summary>Merges newly added items into the configured inherited status strip.</summary>
-	public bool Merge() {
-		return _fixer.Merge();
-	}
+	public bool Merge() => _fixer.Merge();
 
 	/// <summary>Returns this status strip's merged items before it is hidden, detached or disposed.</summary>
-	public bool Unmerge() {
-		return _fixer.Unmerge();
-	}
+	public bool Unmerge() => _fixer.Unmerge();
 
 	// Visual inheritance source strips stay hidden on the derived form's designer surface.
 	protected override void InitLayout() {

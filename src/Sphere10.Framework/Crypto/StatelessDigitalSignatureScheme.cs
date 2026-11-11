@@ -22,9 +22,7 @@ public abstract class StatelessDigitalSignatureScheme<TPrivateKey, TPublicKey> :
 
 	protected const int DefaultNonce = 0;
 
-	protected StatelessDigitalSignatureScheme(CHF messageDigestCHF) : base(messageDigestCHF) {
-		Traits = Traits | DigitalSignatureSchemeTraits.Stateless;
-	}
+	protected StatelessDigitalSignatureScheme(CHF messageDigestCHF) : base(messageDigestCHF) => Traits = Traits | DigitalSignatureSchemeTraits.Stateless;
 
 	public sealed override TPublicKey DerivePublicKey(TPrivateKey privateKey, ulong signerNonce)
 		=> DerivePublicKey(privateKey);

@@ -14,9 +14,7 @@ namespace Sphere10.Framework;
 public abstract class SynchronizedObjectBase : IReaderWriterLock {
 	internal readonly ReaderWriterLockSlim _threadLock;
 
-	protected SynchronizedObjectBase(LockRecursionPolicy policy) {
-		_threadLock = new ReaderWriterLockSlim(policy);
-	}
+	protected SynchronizedObjectBase(LockRecursionPolicy policy) => _threadLock = new ReaderWriterLockSlim(policy);
 
 	public ReaderWriterLockSlim ThreadLock => ParentSyncObjectCore?.ThreadLock ?? _threadLock;
 

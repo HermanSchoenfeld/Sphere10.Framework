@@ -120,9 +120,7 @@ public class NTLocalGroup : NTLocalObject {
 	/// </summary>
 	/// <param name="username">The username referenced by 'domain\name'.</param>
 	/// <remarks>The domain could be the name of an accessible domain or hostmachine.</remarks>
-	public void AddLocalMember(string username) {
-		AddMember(string.Format("{0}\\{1}", Host, username));
-	}
+	public void AddLocalMember(string username) => AddMember(string.Format("{0}\\{1}", Host, username));
 
 	public void AddLocalMember(NTLocalUser localUser) {
 		if (localUser.Host.ToUpper() != Host.ToUpper()) {
@@ -185,9 +183,7 @@ public class NTLocalGroup : NTLocalObject {
 		}
 	}
 
-	public void DeleteLocalMember(string name) {
-		DeleteMember(string.Format("{0}\\{1}", Host, name));
-	}
+	public void DeleteLocalMember(string name) => DeleteMember(string.Format("{0}\\{1}", Host, name));
 
 	public void DeleteMember(string domainAndName) {
 		Checkpoint();

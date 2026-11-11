@@ -26,9 +26,7 @@ public static class UserSettings {
 			Guard.Ensure(TryGetProvider(out var provider), "User settings provider has not been set");
 			return provider;
 		}
-		set {
-			_provider = value;
-		}
+		set => _provider = value;
 	}
 
 	/// <summary>Loads existing settings or creates the declared settings type through the current provider.</summary>
@@ -56,14 +54,10 @@ public static class UserSettings {
 	}
 
 	/// <summary>Clears stored user settings through the current provider.</summary>
-	public static void Clear() {
-		Provider.ClearSettings();
-	}
+	public static void Clear() => Provider.ClearSettings();
 
 	/// <summary>Awaits clearing the current user's stored settings.</summary>
-	public static Task ClearAsync(CancellationToken cancellationToken = default) {
-		return Provider.ClearSettingsAsync(cancellationToken);
-	}
+	public static Task ClearAsync(CancellationToken cancellationToken = default) => Provider.ClearSettingsAsync(cancellationToken);
 
 	/// <summary>Temporarily binds a user provider to the current asynchronous call flow without changing the process default.</summary>
 	/// <remarks>Use synchronous disposal so the previous provider is restored in the caller's context.</remarks>

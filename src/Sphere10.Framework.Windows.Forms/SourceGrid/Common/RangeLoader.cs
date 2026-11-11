@@ -21,20 +21,14 @@ public class RangeLoader : IRangeLoader {
 	/// <summary>
 	/// Constructor
 	/// </summary>
-	public RangeLoader(CellRange range) {
-		_range = range;
-	}
+	public RangeLoader(CellRange range) => _range = range;
 
 	/// <summary>
 	/// Gets or sets the Range loaded in the class.
 	/// </summary>
 	public CellRange Range {
-		get {
-			return _range;
-		}
-		set {
-			_range = value;
-		}
+		get => _range;
+		set => _range = value;
 	}
 
 	/// <summary>
@@ -42,7 +36,5 @@ public class RangeLoader : IRangeLoader {
 	/// </summary>
 	/// <param name="grid"></param>
 	/// <returns></returns>
-	public virtual CellRange GetRange(GridVirtual grid) {
-		return _range;
-	}
+	public virtual CellRange GetRange(GridVirtual grid) => _range;
 }

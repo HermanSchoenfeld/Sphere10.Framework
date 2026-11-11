@@ -30,9 +30,7 @@ public static class ImageExtensions {
 		return bmp;
 	}
 
-	public static Bitmap Zoom(this Image image, float zoomFactor) {
-		return image.Resize(new Size((int)(image.Width * zoomFactor), (int)(image.Height * zoomFactor)));
-	}
+	public static Bitmap Zoom(this Image image, float zoomFactor) => image.Resize(new Size((int)(image.Width * zoomFactor), (int)(image.Height * zoomFactor)));
 
 
 	public static Bitmap ZoomAndDispose(this Image image, float zoomFactor) {
@@ -272,9 +270,7 @@ public static class ImageExtensions {
 	/// <param name="imgFormat"></param>
 	/// <returns></returns>
 	/// 
-	public static byte[] ToByteArray(this Image image) {
-		return image.ToByteArray(ImageFormat.Png);
-	}
+	public static byte[] ToByteArray(this Image image) => image.ToByteArray(ImageFormat.Png);
 
 	public static byte[] ToByteArray(this Image image, ImageFormat imgFormat) {
 		if (image == null)
@@ -293,9 +289,7 @@ public static class ImageExtensions {
 	/// <param name="image">This image</param>
 	/// <param name="fileName">File name to save the image as. Note: suffix will not affect mime type which will be Jpeg.</param>
 	/// <param name="compression">Value between 0 and 100.</param>
-	public static void SaveJpegWithCompression(this Image image, string fileName, int compression) {
-		Tools.Drawing.SaveJpegWithCompression(image, fileName, compression);
-	}
+	public static void SaveJpegWithCompression(this Image image, string fileName, int compression) => Tools.Drawing.SaveJpegWithCompression(image, fileName, compression);
 
 	/// <summary>
 	/// Save an Image as a JPeg with a given compression
@@ -304,9 +298,7 @@ public static class ImageExtensions {
 	/// <param name="image">This image</param>
 	/// <param name="stream">The stream where the image will be saved.</param>
 	/// <param name="compression">Value between 0 and 100.</param>
-	public static void SaveJpegWithCompression(this Image image, Stream stream, int compression) {
-		Tools.Drawing.SaveJpegWithCompression(image, stream, compression);
-	}
+	public static void SaveJpegWithCompression(this Image image, Stream stream, int compression) => Tools.Drawing.SaveJpegWithCompression(image, stream, compression);
 
 }
 

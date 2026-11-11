@@ -24,12 +24,9 @@ public class TcpEndPointListener : IEndPoint {
 		MaxListeners = maxListener;
 	}
 
-	public string GetDescription() {
-		return TcpListener != null ? $"{((IPEndPoint)TcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)TcpListener.LocalEndpoint).Port}" : "";
-	}
-	public ulong GetUID() {
-		return _uid;
-	}
+	public string GetDescription()
+		=> TcpListener != null ? $"{((IPEndPoint)TcpListener.LocalEndpoint).Address.ToString()}:{((IPEndPoint)TcpListener.LocalEndpoint).Port}" : "";
+	public ulong GetUID() => _uid;
 
 	//wait for connection and return client's endpoint
 	public IEndPoint WaitForMessage() {
@@ -51,16 +48,10 @@ public class TcpEndPointListener : IEndPoint {
 		message.Stream.WriteMessage(message);
 	}
 
-	public bool IsOpened() {
-		return TcpListener.Server.IsBound;
-	}
+	public bool IsOpened() => TcpListener.Server.IsBound;
 
-	public void Start() {
-		TcpListener.Start(MaxListeners);
-	}
+	public void Start() => TcpListener.Start(MaxListeners);
 
-	public void Stop() {
-		TcpListener.Stop();
-	}
+	public void Stop() => TcpListener.Stop();
 }
 

@@ -35,37 +35,31 @@ public class NTLocalUser : NTLocalObject {
 	uint _acct_expires;
 	string _logon_server;
 
-	internal NTLocalUser() {
-		LogonHours = new byte[21];
-	}
+	internal NTLocalUser() => LogonHours = new byte[21];
 
 	/// <summary>
 	/// Users password. Can only set the value.
 	/// </summary>
 	public string Password {
-		set { _password = value; }
+		set => _password = value;
 	}
 
 	/// <summary>
 	/// The number of seconds that have elapsed since the Password was last changed.
 	/// </summary>
-	public TimeSpan PasswordAge {
-		get { return TimeSpan.FromSeconds(_password_age); }
-	}
+	public TimeSpan PasswordAge => TimeSpan.FromSeconds(_password_age);
 
 	/// <summary>
 	/// Specifies level of privilege assigned to the user.  
 	/// </summary>
-	public UserPrivilege Privilege {
-		get { return (UserPrivilege)_priv; }
-	}
+	public UserPrivilege Privilege => (UserPrivilege)_priv;
 
 	/// <summary>
 	/// Specifies the path of the home directory for the user. The string can be null.
 	/// </summary>
 	public string HomeDirectory {
-		get { return _home_dir; }
-		set { _home_dir = value; }
+		get => _home_dir;
+		set => _home_dir = value;
 	}
 
 	/// <summary>
@@ -73,71 +67,63 @@ public class NTLocalUser : NTLocalObject {
 	/// </summary>
 	/// <remarks>User.Description contains the general comment associated with this user.</remarks>
 	public string Comment {
-		get { return _comment; }
-		set { _comment = value; }
+		get => _comment;
+		set => _comment = value;
 	}
 
 	/// <summary>
 	/// These flags determine several features and restrictions applied to the user. 
 	/// </summary>
 	public UserFlags Flags {
-		get { return (UserFlags)_flags; }
-		set { _flags = (uint)value; }
+		get => (UserFlags)_flags;
+		set => _flags = (uint)value;
 	}
 
 	/// <summary>
 	/// Specifies the path for the user's logon script file. The script file can be a .CMD file, an .EXE file, or a .BAT file. The string can also be null.
 	/// </summary>
 	public string ScriptPath {
-		get { return _script_path; }
-		set { _script_path = value; }
+		get => _script_path;
+		set => _script_path = value;
 	}
 
 	/// <summary>
 	/// The user's operator privileges. 
 	/// </summary>
-	public UserOperatorPriviliges OperatorPrivileges {
-		get { return (UserOperatorPriviliges)_auth_flags; }
-	}
+	public UserOperatorPriviliges OperatorPrivileges => (UserOperatorPriviliges)_auth_flags;
 
 	/// <summary>
 	/// The full name of the user. This string can be a null string, or it can have any number of characters before the terminating null character.
 	/// </summary>
 	public override string FullName {
-		get { return _full_name; }
-		set { _full_name = value; }
+		get => _full_name;
+		set => _full_name = value;
 	}
 
 	/// <summary>
 	/// Reserved for use by applications. This string can be a null string, or it can have any number of characters before the terminating null character. Microsoft products use this member to store user configuration information. Do not modify this information.
 	/// </summary>
-	public string Reserved {
-		get { return _parms; }
-	}
+	public string Reserved => _parms;
 
 	/// <summary>
 	/// List of workstations the user can log on from. To disable logons from all workstations to this account, set the 'UserFlags.AccountDisable' value in the User.Flags member.
 	/// </summary>
 	public string[] Workstations {
-		get { return (usri2_workstations ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).TrimMany().ToArray(); }
-		set { usri2_workstations = (value ?? Array.Empty<string>()).ToDelimittedString(","); }
+		get => (usri2_workstations ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).TrimMany().ToArray();
+		set => usri2_workstations = (value ?? Array.Empty<string>()).ToDelimittedString(",");
 	}
 
 	/// <summary>
 	/// Specifies when the last logon occurred. A value of DateTime.MinValue indicates that the last logon time is unknown.
 	/// This member is maintained separately on each backup domain controller (BDC) in the domain. To obtain an accurate value, you must query each BDC in the domain. The last logon occurred at the time indicated by the largest retrieved value.
 	/// </summary>
-	public DateTime LastLogon {
-		get { return (_last_logon == 0) ? DateTime.MinValue : DateTimeOffset.FromUnixTimeSeconds(_last_logon).UtcDateTime; }
-	}
+	public DateTime LastLogon => (_last_logon == 0) ? DateTime.MinValue : DateTimeOffset.FromUnixTimeSeconds(_last_logon).UtcDateTime;
 
 	/// <summary>
 	/// Specifies when the last logoff occurred. A value of DateTime.MinValue indicates that the last logoff time is unknown.
 	/// This member is maintained separately on each backup domain controller (BDC) in the domain. To obtain an accurate value, you must query each BDC in the domain. The last logoff occurred at the time indicated by the largest retrieved value. This member is currently not used. 
 	/// </summary>
-	public DateTime LastLogoff {
-		get { return (_last_logoff == 0) ? DateTime.MinValue : DateTimeOffset.FromUnixTimeSeconds(_last_logoff).UtcDateTime; }
-	}
+	public DateTime LastLogoff => (_last_logoff == 0) ? DateTime.MinValue : DateTimeOffset.FromUnixTimeSeconds(_last_logoff).UtcDateTime;
 
 	/// <summary>
 	/// Specifies when the account expires. This value is stored as the number of seconds elapsed since 00:00:00, January 1, 1970, GMT. 
@@ -193,8 +179,8 @@ public class NTLocalUser : NTLocalObject {
 	/// For Windows servers, this value starts with '\\'.
 	/// </summary>
 	public string LogonServer {
-		get { return _logon_server; }
-		set { _logon_server = value; }
+		get => _logon_server;
+		set => _logon_server = value;
 	}
 
 	/// <summary>

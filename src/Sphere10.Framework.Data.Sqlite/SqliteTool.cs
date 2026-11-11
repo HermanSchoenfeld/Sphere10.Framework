@@ -76,13 +76,9 @@ public static class Sqlite {
 		}
 		File.Delete(path);
 	}
-	public static bool ExistsByPath(string path) {
-		return File.Exists(path);
-	}
+	public static bool ExistsByPath(string path) => File.Exists(path);
 
-	public static bool ExistsByConnectionString(string connectionString) {
-		return ExistsByPath(GetFilePathFromConnectionString(connectionString));
-	}
+	public static bool ExistsByConnectionString(string connectionString) => ExistsByPath(GetFilePathFromConnectionString(connectionString));
 	public static string ToConnectionString(string path, string password = null) {
 		var sqliteConnectionString = new SQLiteConnectionStringBuilder {
 			FailIfMissing = true,
@@ -134,8 +130,6 @@ public static class Sqlite {
 		return builder.DataSource;
 	}
 
-	public static void ClearAllPools() {
-		SQLiteConnection.ClearAllPools();
-	}
+	public static void ClearAllPools() => SQLiteConnection.ClearAllPools();
 }
 

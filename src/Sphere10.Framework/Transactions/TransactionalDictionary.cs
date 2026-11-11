@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -128,7 +129,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 
 	public void Load() => InternalDictionary.Load();
 
-	public Task LoadAsync() => InternalDictionary.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) => InternalDictionary.LoadAsync(cancellationToken);
 
 	public TKey ReadKey(long index) => InternalDictionary.ReadKey(index);
 

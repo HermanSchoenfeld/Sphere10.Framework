@@ -10,7 +10,5 @@
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells;
 
 public class Link : SourceGrid.Cells.Virtual.Link {
-	public Link() {
-		Model.AddModel(new PingGridValueModel());
-	}
+	public Link() => Model.AddModel(new PingGridValueModel());
 }

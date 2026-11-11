@@ -43,13 +43,9 @@ public class SynchronizedExtendedList<TItem, TInternalList> : ExtendedListDecora
 		}
 	}
 
-	public ReadScope EnterReadScope() {
-		return _lock.EnterReadScope();
-	}
+	public ReadScope EnterReadScope() => _lock.EnterReadScope();
 
-	public WriteScope EnterWriteScope() {
-		return _lock.EnterWriteScope();
-	}
+	public WriteScope EnterWriteScope() => _lock.EnterWriteScope();
 
 	public override long IndexOfL(TItem item) {
 		using (EnterReadScope())

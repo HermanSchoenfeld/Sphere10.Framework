@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -129,7 +130,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 
 	public void Load() => InternalCollection.Load();
 
-	public Task LoadAsync() => InternalCollection.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) => InternalCollection.LoadAsync(cancellationToken);
 
 	public virtual void Commit() => _transactionalObject.Commit();
 

@@ -16,13 +16,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 public class ColumnInfoEventArgs : EventArgs {
 	private ColumnInfo _columnInfo;
 
-	public ColumnInfoEventArgs(ColumnInfo columnInfo) {
-		_columnInfo = columnInfo;
-	}
+	public ColumnInfoEventArgs(ColumnInfo columnInfo) => _columnInfo = columnInfo;
 
-	public ColumnInfo Column {
-		get {
-			return _columnInfo;
-		}
-	}
+	public ColumnInfo Column => _columnInfo;
 }

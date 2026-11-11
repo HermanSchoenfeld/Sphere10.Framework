@@ -21,11 +21,7 @@ public class RangeCancelEventArgs : RangeEventArgs {
 	}
 
 	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
+		get => _cancel;
+		set => _cancel = value;
 	}
 }

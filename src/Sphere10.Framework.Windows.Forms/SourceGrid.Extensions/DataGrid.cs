@@ -61,9 +61,7 @@ public class DataGrid : GridVirtual {
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Sphere10.Framework.ComponentModel.IBoundList DataSource {
-		get {
-			return _boundList;
-		}
+		get => _boundList;
 		set {
 			Unbind();
 			_boundList = value;
@@ -76,18 +74,14 @@ public class DataGrid : GridVirtual {
 	/// Gets the rows information as a DataGridRows object.
 	/// </summary>
 	public new DataGridRows Rows {
-		get {
-			return (DataGridRows)base.Rows;
-		}
+		get => (DataGridRows)base.Rows;
 	}
 
 	/// <summary>
 	/// Gets the columns informations as a DataGridColumns object.
 	/// </summary>
 	public new DataGridColumns Columns {
-		get {
-			return (DataGridColumns)base.Columns;
-		}
+		get => (DataGridColumns)base.Columns;
 	}
 
 	/// <summary>
@@ -143,12 +137,8 @@ public class DataGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool EndEditingRowOnValidate {
-		get {
-			return _endEditingRowOnValidate;
-		}
-		set {
-			_endEditingRowOnValidate = value;
-		}
+		get => _endEditingRowOnValidate;
+		set => _endEditingRowOnValidate = value;
 	}
 
 	/// <summary>
@@ -156,12 +146,8 @@ public class DataGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool DeleteRowsWithDeleteKey {
-		get {
-			return _deleteRowsWithDeleteKey;
-		}
-		set {
-			_deleteRowsWithDeleteKey = value;
-		}
+		get => _deleteRowsWithDeleteKey;
+		set => _deleteRowsWithDeleteKey = value;
 	}
 
 	/// <summary>
@@ -169,24 +155,16 @@ public class DataGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool CancelEditingWithEscapeKey {
-		get {
-			return _cancelEditingWithEscapeKey;
-		}
-		set {
-			_cancelEditingWithEscapeKey = value;
-		}
+		get => _cancelEditingWithEscapeKey;
+		set => _cancelEditingWithEscapeKey = value;
 	}
 
 	/// <summary>
 	/// Message showed with the DeleteSelectedRowsAsync method. Set to null to not show any message.
 	/// </summary>
 	public string DeleteQuestionMessage {
-		get {
-			return _deleteQuestionMessage;
-		}
-		set {
-			_deleteQuestionMessage = value;
-		}
+		get => _deleteQuestionMessage;
+		set => _deleteQuestionMessage = value;
 	}
 
 	/// <summary>
@@ -304,16 +282,12 @@ public class DataGrid : GridVirtual {
 	/// <summary>
 	/// Method used to create the rows object, in this class of type DataGridRows.
 	/// </summary>
-	protected override RowsBase CreateRowsObject() {
-		return new DataGridRows(this);
-	}
+	protected override RowsBase CreateRowsObject() => new DataGridRows(this);
 
 	/// <summary>
 	/// Method used to create the columns object, in this class of type DataGridColumns.
 	/// </summary>
-	protected override ColumnsBase CreateColumnsObject() {
-		return new DataGridColumns(this);
-	}
+	protected override ColumnsBase CreateColumnsObject() => new DataGridColumns(this);
 
 	protected override SelectionBase CreateSelectionObject() {
 		var selection = base.CreateSelectionObject();
@@ -378,9 +352,7 @@ public class DataGrid : GridVirtual {
 		}
 	}
 
-	protected override void Dispose(bool disposing) {
-		base.Dispose(disposing);
-	}
+	protected override void Dispose(bool disposing) => base.Dispose(disposing);
 
 	protected virtual void Bind() {
 		if (Columns.Count == 0)
@@ -411,13 +383,9 @@ public class DataGrid : GridVirtual {
 		Invalidate(true);
 	}
 
-	private void BoundListCleared(object sender, EventArgs args) {
-		Rows.ResetRowHeigth();
-	}
+	private void BoundListCleared(object sender, EventArgs args) => Rows.ResetRowHeigth();
 
-	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) {
-		Rows.RowDeleted(args.Item);
-	}
+	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) => Rows.RowDeleted(args.Item);
 
 	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
 		try {

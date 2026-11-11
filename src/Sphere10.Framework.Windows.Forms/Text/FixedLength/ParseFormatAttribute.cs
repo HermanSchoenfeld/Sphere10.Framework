@@ -35,38 +35,22 @@ public class ParseFormatAttribute : System.Attribute {
 	}
 
 	public System.Globalization.CultureInfo CultureInfo {
-		get {
-			return _cultureInfo;
-		}
-		set {
-			_cultureInfo = value;
-		}
+		get => _cultureInfo;
+		set => _cultureInfo = value;
 	}
 
 	public string DateTimeFormat {
-		get {
-			return _dateTimeFormat;
-		}
-		set {
-			_dateTimeFormat = value;
-		}
+		get => _dateTimeFormat;
+		set => _dateTimeFormat = value;
 	}
 
 	public string NumberFormat {
-		get {
-			return _numberFormat;
-		}
-		set {
-			_numberFormat = value;
-		}
+		get => _numberFormat;
+		set => _numberFormat = value;
 	}
 
 	public bool TrimBeforeParse {
-		get {
-			return _trimBeforeParse;
-		}
-		set {
-			_trimBeforeParse = value;
-		}
+		get => _trimBeforeParse;
+		set => _trimBeforeParse = value;
 	}
 }

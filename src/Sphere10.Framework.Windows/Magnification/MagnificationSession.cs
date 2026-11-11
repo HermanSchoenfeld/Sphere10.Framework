@@ -46,9 +46,7 @@ public sealed class MagnificationSession : SyncDisposable {
 		return MagnificationColorEffects.ToColorMatrix(effect);
 	}
 
-	public void ResetFullscreenColorEffect() {
-		SetFullscreenColorEffect(new ColorMatrix());
-	}
+	public void ResetFullscreenColorEffect() => SetFullscreenColorEffect(new ColorMatrix());
 
 	internal void EnsureUsable() {
 		ObjectDisposedException.ThrowIf(_disposed, this);

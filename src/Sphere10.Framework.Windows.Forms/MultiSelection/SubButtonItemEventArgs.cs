@@ -14,9 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// <summary>Identifies the alternative action selected on a composite selection button.</summary>
 public class SubButtonItemEventArgs : EventArgs {
 	/// <summary>Creates the notification for the selected alternative action.</summary>
-	public SubButtonItemEventArgs(SubButtonItem item) {
-		ButtonItem = item;
-	}
+	public SubButtonItemEventArgs(SubButtonItem item) => ButtonItem = item;
 
 	/// <summary>Gets or sets the selected item, or null when the button has no alternative items.</summary>
 	public SubButtonItem ButtonItem {

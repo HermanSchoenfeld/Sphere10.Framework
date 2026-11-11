@@ -60,14 +60,11 @@ public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<Application
 	}
 
 	/// <inheritdoc />
-	protected override SharedUI.ApplicationScreenDefinition CreateDefinition() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _parameters, _activator, Settings, _settingsEditor);
-	}
+	protected override SharedUI.ApplicationScreenDefinition CreateDefinition()
+		=> new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _parameters, _activator, Settings, _settingsEditor);
 
 	/// <inheritdoc />
-	protected override void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
-	}
+	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 }
 
 /// <summary>Configures a component registration with a compile-time screen type.</summary>

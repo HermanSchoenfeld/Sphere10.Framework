@@ -405,9 +405,7 @@ public class CacheProjectionTests {
 	}
 
 	[Test]
-	public void ObjectProjectionRejectsAMissingSource() {
-		Assert.That(() => new ObjectCacheProjection<int, int>(null), Throws.TypeOf<ArgumentNullException>());
-	}
+	public void ObjectProjectionRejectsAMissingSource() => Assert.That(() => new ObjectCacheProjection<int, int>(null), Throws.TypeOf<ArgumentNullException>());
 
 	[TestCase(0)]
 	[TestCase(1)]

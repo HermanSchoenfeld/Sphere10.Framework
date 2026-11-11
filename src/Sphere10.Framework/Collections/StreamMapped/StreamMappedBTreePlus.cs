@@ -193,13 +193,9 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 
 	protected override long Root => _rootIndexProperty.Value;
 
-	protected override void SetRoot(long node) {
-		_rootIndexProperty.Value = node;
-	}
+	protected override void SetRoot(long node) => _rootIndexProperty.Value = node;
 
-	protected override void ClearRoot() {
-		_rootIndexProperty.Value = NoNode;
-	}
+	protected override void ClearRoot() => _rootIndexProperty.Value = NoNode;
 
 	#endregion
 
@@ -233,9 +229,7 @@ public class StreamMappedBTreePlus<K, V> : BTreePlus<K, V, long>, IDisposable {
 		return AllocateNode(record);
 	}
 
-	protected override void DeleteNode(long node) {
-		_freeList.Push(node);
-	}
+	protected override void DeleteNode(long node) => _freeList.Push(node);
 
 	#endregion
 

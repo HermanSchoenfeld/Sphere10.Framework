@@ -17,22 +17,12 @@ public class ExceptionEventArgs : EventArgs {
 	private Exception _exception;
 	private bool _handled = false;
 
-	public ExceptionEventArgs(Exception exception) {
-		_exception = exception;
-	}
+	public ExceptionEventArgs(Exception exception) => _exception = exception;
 
-	public Exception Exception {
-		get {
-			return _exception;
-		}
-	}
+	public Exception Exception => _exception;
 
 	public bool Handled {
-		get {
-			return _handled;
-		}
-		set {
-			_handled = value;
-		}
+		get => _handled;
+		set => _handled = value;
 	}
 }

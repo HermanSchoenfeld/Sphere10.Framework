@@ -112,9 +112,7 @@ public static class Scope {
 
 	public static SyncScope EnterSyncScope(Action action) => new(action);
 
-	public static SyncScope<T> EnterSyncScope<T>(Action<T> action, T usingThesePrefetchedValues) {
-		return new SyncScope<T>(usingThesePrefetchedValues, action);
-	}
+	public static SyncScope<T> EnterSyncScope<T>(Action<T> action, T usingThesePrefetchedValues) => new SyncScope<T>(usingThesePrefetchedValues, action);
 
 	public static AsyncScope EnterAsyncScope(Func<ValueTask> action) => new(action);
 

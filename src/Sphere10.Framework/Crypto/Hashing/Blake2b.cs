@@ -159,9 +159,7 @@ public class Blake2b : HashFunctionBase {
 		}
 	}
 
-	public override object Clone() {
-		throw new NotImplementedException();
-	}
+	public override object Clone() => throw new NotImplementedException();
 
 	protected override void Finalize(Span<byte> digest) {
 
@@ -400,9 +398,7 @@ public class Blake2b : HashFunctionBase {
 			: this(64) {
 		}
 
-		public Config(int digestSize) {
-			OutputSizeInBytes = digestSize;
-		}
+		public Config(int digestSize) => OutputSizeInBytes = digestSize;
 
 		public Config Clone() {
 			return new Config {
@@ -478,9 +474,7 @@ public class Blake2b : HashFunctionBase {
 		public long LeafSize { get; set; }
 		public int FanOut { get; set; }
 
-		public TreeConfig() {
-			IntermediateHashSize = 64;
-		}
+		public TreeConfig() => IntermediateHashSize = 64;
 
 		public TreeConfig Clone() {
 			var result = new TreeConfig();

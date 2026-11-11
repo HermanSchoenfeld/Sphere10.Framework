@@ -45,12 +45,8 @@ public sealed class VisualGridColumnsEditor : ArrayEditor {
 	}
 
 	/// <summary>Column membership belongs to the screen's schema.</summary>
-	protected override bool CanRemoveInstance(object value) {
-		return false;
-	}
+	protected override bool CanRemoveInstance(object value) => false;
 
 	/// <summary>The native editor's Insert shortcut cannot create columns outside the screen's schema.</summary>
-	protected override object CreateInstance(Type itemType) {
-		return null;
-	}
+	protected override object CreateInstance(Type itemType) => null;
 }

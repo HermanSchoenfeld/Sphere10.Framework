@@ -38,9 +38,8 @@ public class DataSourceToViewModelConverter {
 	}
 
 
-	protected virtual ColumnViewModel Convert(AppointmentColumn column, IEnumerable<AppointmentViewModel> appointmentViewModels) {
-		return new ColumnViewModel(column.Name, appointmentViewModels.ToArray(), column);
-	}
+	protected virtual ColumnViewModel Convert(AppointmentColumn column, IEnumerable<AppointmentViewModel> appointmentViewModels)
+		=> new ColumnViewModel(column.Name, appointmentViewModels.ToArray(), column);
 
 	protected virtual AppointmentViewModel Convert(Appointment appointment) {
 		return new AppointmentViewModel(

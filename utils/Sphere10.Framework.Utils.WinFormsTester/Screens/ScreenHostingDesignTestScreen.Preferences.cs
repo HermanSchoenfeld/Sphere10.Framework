@@ -120,9 +120,7 @@ public partial class ScreenHostingDesignTestScreen {
 	}
 
 	// The named Designer handler wraps labels when the optional inspector viewport changes.
-	private void PreferenceViewportChanged(object sender, EventArgs args) {
-		UpdatePreferenceLayout(_preferencePage, _preferenceContent);
-	}
+	private void PreferenceViewportChanged(object sender, EventArgs args) => UpdatePreferenceLayout(_preferencePage, _preferenceContent);
 
 	// Wrap explanatory labels inside the available native viewport while allowing vertical scrolling through the grids.
 	private static void UpdatePreferenceLayout(TabPage page, TableLayoutPanel content) {
@@ -206,7 +204,7 @@ public partial class ScreenHostingDesignTestScreen {
 		}
 
 		public override DataSourceItems<PreferenceRow> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-			var rows = Future.Value.Where(row => string.IsNullOrWhiteSpace(searchTerm) || row.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToArray();
+			var rows = List.Where(row => string.IsNullOrWhiteSpace(searchTerm) || row.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToArray();
 			if (sortDirection != SortDirection.None && sortProperty is nameof(PreferenceRow.Name) or nameof(PreferenceRow.Id)) {
 				Func<PreferenceRow, IComparable> key = row => sortProperty == nameof(PreferenceRow.Id) ? row.Id : row.Name;
 				rows = (sortDirection == SortDirection.Ascending ? rows.OrderBy(key) : rows.OrderByDescending(key)).ToArray();

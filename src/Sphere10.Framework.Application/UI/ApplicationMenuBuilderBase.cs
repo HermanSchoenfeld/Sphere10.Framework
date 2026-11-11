@@ -64,9 +64,7 @@ public abstract class ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMe
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddItem(TItem item) {
-		return AddItem(item, out _);
-	}
+	public TSelf AddItem(TItem item) => AddItem(item, out _);
 
 	/// <summary>Adds an existing command definition and captures its configuration reference.</summary>
 	public TSelf AddItem(TItem item, out TItem registration) {
@@ -75,9 +73,7 @@ public abstract class ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMe
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddItem(Action<TItemBuilder> configure) {
-		return AddItem(configure, out _);
-	}
+	public TSelf AddItem(Action<TItemBuilder> configure) => AddItem(configure, out _);
 
 	/// <summary>Configures one child command, captures its definition and returns this parent.</summary>
 	public TSelf AddItem(Action<TItemBuilder> configure, out TItem registration) {

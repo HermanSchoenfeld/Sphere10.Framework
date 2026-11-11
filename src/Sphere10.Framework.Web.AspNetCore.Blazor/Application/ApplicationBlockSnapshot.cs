@@ -104,15 +104,15 @@ internal static class ApplicationBlockSnapshot {
 	/// <summary>Staged menu builders clone commands while retaining prototype definitions until their block graph is copied.</summary>
 	internal static ApplicationMenu CreateBuilderMenu(IApplicationMenu menu) {
 		var definitions = new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance);
-		foreach (var definition in menu.Items.OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition).Where(definition => definition != null))
-			definitions.TryAdd(definition, definition);
+		// Several menu items may open the same screen; each definition is retained once.
+		foreach (var definition in menu.Items.OfType<IScreenMenuItem>().Select(item => item.ScreenDefinition).Where(definition => definition != null).Distinct<SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance))
+			definitions.Add(definition, definition);
 		return CreateMenu(menu, definitions);
 	}
 
 	/// <summary>Copies a standalone command with its own definition graph.</summary>
-	internal static IApplicationMenuItem CreateItem(IApplicationMenuItem item) {
-		return CreateItem(item, new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance));
-	}
+	internal static IApplicationMenuItem CreateItem(IApplicationMenuItem item)
+		=> CreateItem(item, new Dictionary<SharedUI.ApplicationScreenDefinition, SharedUI.ApplicationScreenDefinition>(ReferenceEqualityComparer.Instance));
 
 	/// <summary>Retains owned commands and freezes ordinary application action definitions.</summary>
 	internal static IApplicationMenuItem CreateApplicationItem(IApplicationMenuItem item) {
@@ -139,9 +139,7 @@ internal static class ApplicationBlockSnapshot {
 	}
 
 	/// <summary>Rejects screen types that cannot be hosted as Blazor application screens.</summary>
-	internal static void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
-	}
+	internal static void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 
 	/// <summary>Maps successful startup contribution order to the host's immutable browser snapshots using platform-local IDs.</summary>
 	internal static IApplicationBlock[] OrderBlocks(
@@ -181,9 +179,8 @@ internal static class ApplicationBlockSnapshot {
 	}
 
 	/// <summary>Creates a caption-independent URL identity for menu-free registrations.</summary>
-	internal static string GetDefinitionScreenId(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
-		return DefinitionScreenItemPrefix + Uri.EscapeDataString(ApplicationHelper.GetScreenRegistrationKey(block, definition));
-	}
+	internal static string GetDefinitionScreenId(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition)
+		=> DefinitionScreenItemPrefix + Uri.EscapeDataString(ApplicationHelper.GetScreenRegistrationKey(block, definition));
 
 	/// <summary>Checks whether a browser ID identifies an owned menu-free registration.</summary>
 	internal static bool IsDefinitionScreenId(IApplicationBlock block, string id) {
@@ -295,14 +292,11 @@ internal static class ApplicationBlockSnapshot {
 		private readonly Func<SharedUI.IApplication, CancellationToken, Task<bool>> _exitGuard;
 
 		/// <summary>Retains the source block's exit policy while the copy owns its graph.</summary>
-		public BlockSnapshot(IApplicationBlock source) {
-			_exitGuard = source.CanExitAsync;
-		}
+		public BlockSnapshot(IApplicationBlock source) => _exitGuard = source.CanExitAsync;
 
 		/// <inheritdoc />
-		public override Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default) {
-			return _exitGuard(application, cancellationToken);
-		}
+		public override Task<bool> CanExitAsync(SharedUI.IApplication application, CancellationToken cancellationToken = default)
+			=> _exitGuard(application, cancellationToken);
 	}
 
 	#endregion

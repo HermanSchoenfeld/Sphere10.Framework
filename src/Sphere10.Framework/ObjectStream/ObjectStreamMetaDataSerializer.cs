@@ -98,14 +98,12 @@ public sealed class ObjectStreamMetaDataSerializer : ItemSerializerBase<ObjectSt
 	}
 
 	// Identifies attachment kinds whose rows include a concrete B-tree specification.
-	private static bool IsTreeIndex(ObjectSpaceDefinition.IndexType kind) {
-		return kind is ObjectSpaceDefinition.IndexType.Identifier or ObjectSpaceDefinition.IndexType.UniqueKey or ObjectSpaceDefinition.IndexType.Index;
-	}
+	private static bool IsTreeIndex(ObjectSpaceDefinition.IndexType kind)
+		=> kind is ObjectSpaceDefinition.IndexType.Identifier or ObjectSpaceDefinition.IndexType.UniqueKey or ObjectSpaceDefinition.IndexType.Index;
 
 	// Includes the null-presence byte in the encoded size of an optional name.
-	private static long StringSize(SerializationContext context, string value) {
-		return PrimitiveSerializer<bool>.Instance.CalculateSize(context, value != null) + (value == null ? 0 : StringSerializer.UTF8.CalculateSize(context, value));
-	}
+	private static long StringSize(SerializationContext context, string value)
+		=> PrimitiveSerializer<bool>.Instance.CalculateSize(context, value != null) + (value == null ? 0 : StringSerializer.UTF8.CalculateSize(context, value));
 
 	// Writes an optional name through the primitive and UTF-8 component serializers.
 	private static void WriteString(string value, EndianBinaryWriter writer, SerializationContext context) {
@@ -116,9 +114,8 @@ public sealed class ObjectStreamMetaDataSerializer : ItemSerializerBase<ObjectSt
 	}
 
 	// Reads the matching presence byte and optional name.
-	private static string ReadString(EndianBinaryReader reader, SerializationContext context) {
-		return PrimitiveSerializer<bool>.Instance.Deserialize(reader, context) ? StringSerializer.UTF8.Deserialize(reader, context) : null;
-	}
+	private static string ReadString(EndianBinaryReader reader, SerializationContext context)
+		=> PrimitiveSerializer<bool>.Instance.Deserialize(reader, context) ? StringSerializer.UTF8.Deserialize(reader, context) : null;
 
 	/// <summary>Encodes one ordered attachment row and its kind-specific tree settings.</summary>
 	private sealed class IndexSerializer : ItemSerializerBase<ObjectStreamMetaData.Index> {

@@ -255,9 +255,7 @@ public class ApplicationScreenRegistrationTests {
 
 		public string Configuration { get; }
 
-		public override ApplicationScreenDefinition Clone() {
-			return new ExtendedDefinition(Configuration, Registration, Title, ActivationMode);
-		}
+		public override ApplicationScreenDefinition Clone() => new ExtendedDefinition(Configuration, Registration, Title, ActivationMode);
 	}
 
 	public class Screen : IApplicationScreen {

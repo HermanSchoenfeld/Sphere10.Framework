@@ -77,9 +77,7 @@ public class SimpleFileStore : FileStoreBase<string> {
 		}
 	}
 
-	public override bool ContainsFile(string alias) {
-		return _synchronizedFileDictionary.ContainsKey(alias);
-	}
+	public override bool ContainsFile(string alias) => _synchronizedFileDictionary.ContainsKey(alias);
 
 	public override string NewFile() {
 		var fileKey = Guid.NewGuid().ToStrictAlphaString();
@@ -131,9 +129,7 @@ public class SimpleFileStore : FileStoreBase<string> {
 		}
 	}
 
-	protected virtual string GenerateInternalRelFilePath(string fileKey) {
-		return Guid.NewGuid().ToStrictAlphaString().ToLowerInvariant() + ".file";
-	}
+	protected virtual string GenerateInternalRelFilePath(string fileKey) => Guid.NewGuid().ToStrictAlphaString().ToLowerInvariant() + ".file";
 
 	protected override void DisposeInternal() {
 		if (PersistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {

@@ -29,9 +29,7 @@ public class ColumnHeader : CellVirtual {
 	/// Gets or sets if enable the resize of the width of the column. This property internally use the Controllers.Resizable.ResizeWidth.
 	/// </summary>
 	public bool ResizeEnabled {
-		get {
-			return FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeWidth;
-		}
+		get => FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeWidth;
 		set {
 			if (value == ResizeEnabled)
 				return;
@@ -47,9 +45,7 @@ public class ColumnHeader : CellVirtual {
 	/// Gets or sets if enable the automatic sort features of the column. This property internally use the Controllers.SortableHeader.Default.
 	/// </summary>
 	public bool AutomaticSortEnabled {
-		get {
-			return FindController(typeof(Controllers.SortableHeader)) == Controllers.SortableHeader.Default;
-		}
+		get => FindController(typeof(Controllers.SortableHeader)) == Controllers.SortableHeader.Default;
 		set {
 			if (value == AutomaticSortEnabled)
 				return;

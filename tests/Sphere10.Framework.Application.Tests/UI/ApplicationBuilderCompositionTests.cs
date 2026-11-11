@@ -218,9 +218,7 @@ public class ApplicationBuilderCompositionTests {
 		ChildBuilderProbe Probe, object Existing, object Configured, Action<object> Add, Action<Action> Configure, Func<object[]> Build
 	) : IDisposable {
 		/// <inheritdoc />
-		public void Dispose() {
-			_currentProbe.Value = null;
-		}
+		public void Dispose() => _currentProbe.Value = null;
 	}
 
 	/// <summary>Supplies child builder probe for the fixture's existing contract checks.</summary>
@@ -272,11 +270,7 @@ public class ApplicationBuilderCompositionTests {
 		public IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public IApplicationMenuItem[] Items {
-			get {
-				return ItemDefinitions;
-			}
-		}
+		public IApplicationMenuItem[] Items => ItemDefinitions;
 	}
 
 	/// <summary>Supplies block definition for the fixture's existing contract checks.</summary>
@@ -291,56 +285,34 @@ public class ApplicationBuilderCompositionTests {
 		public IApplicationPlugin Source { get; set; }
 
 		/// <inheritdoc />
-		public int Position {
-			get {
-				return 0;
-			}
-		}
+		public int Position => 0;
 
 		/// <inheritdoc />
-		public ApplicationScreenDefinition[] ScreenDefinitions {
-			get {
-				return Array.Empty<ApplicationScreenDefinition>();
-			}
-		}
+		public ApplicationScreenDefinition[] ScreenDefinitions => Array.Empty<ApplicationScreenDefinition>();
 
 		/// <inheritdoc />
-		public ApplicationScreenDefinition DefaultScreenDefinition {
-			get {
-				return null;
-			}
-		}
+		public ApplicationScreenDefinition DefaultScreenDefinition => null;
 
 		/// <inheritdoc />
-		public IApplicationMenu[] Menus {
-			get {
-				return MenuDefinitions;
-			}
-		}
+		public IApplicationMenu[] Menus => MenuDefinitions;
 	}
 
 	/// <summary>Supplies menu builder for the fixture's existing contract checks.</summary>
 	private sealed class MenuBuilder : ApplicationMenuBuilderBase<MenuBuilder, ItemDefinition, ChildBuilder<ItemDefinition>, MenuDefinition> {
 		/// <inheritdoc />
-		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) {
-			return new(Text, items.ToArray());
-		}
+		protected override MenuDefinition CreateMenu(IReadOnlyList<ItemDefinition> items) => new(Text, items.ToArray());
 	}
 
 	/// <summary>Supplies block builder for the fixture's existing contract checks.</summary>
 	private sealed class BlockBuilder : ApplicationBlockBuilderBase<BlockBuilder, MenuDefinition, ChildBuilder<MenuDefinition>, BlockDefinition> {
 		/// <inheritdoc />
-		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) {
-			return new(Name, menus.ToArray());
-		}
+		protected override BlockDefinition CreateBlock(IReadOnlyList<MenuDefinition> menus) => new(Name, menus.ToArray());
 	}
 
 	/// <summary>Supplies plugin builder for the fixture's existing contract checks.</summary>
 	private sealed class PluginBuilder : ApplicationPluginBuilderBase<PluginBuilder, BlockDefinition, ChildBuilder<BlockDefinition>, ApplicationPlugin> {
 		/// <inheritdoc />
-		protected override ApplicationPlugin CreatePlugin(BlockDefinition[] blocks, Action<IServiceCollection> configureServices) {
-			return new(Name, blocks, configureServices);
-		}
+		protected override ApplicationPlugin CreatePlugin(BlockDefinition[] blocks, Action<IServiceCollection> configureServices) => new(Name, blocks, configureServices);
 	}
 
 	/// <summary>Supplies registration builder for the fixture's existing contract checks.</summary>
@@ -352,9 +324,7 @@ public class ApplicationBuilderCompositionTests {
 		}
 
 		/// <inheritdoc />
-		protected override ApplicationPlugin[] CreateApplication(ApplicationPlugin[] plugins, Action<IApplication> configureApplication) {
-			return plugins;
-		}
+		protected override ApplicationPlugin[] CreateApplication(ApplicationPlugin[] plugins, Action<IApplication> configureApplication) => plugins;
 	}
 
 	#endregion

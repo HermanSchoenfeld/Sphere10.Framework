@@ -40,23 +40,23 @@ public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase
 	}
 
 	public Image Image16x16 {
-		get { return _image16x16; }
-		set { _image16x16 = value; }
+		get => _image16x16;
+		set => _image16x16 = value;
 	}
 
 	public bool ShowOnExplorerBar {
-		get { return _showOnExplorerBar; }
-		set { _showOnExplorerBar = value; }
+		get => _showOnExplorerBar;
+		set => _showOnExplorerBar = value;
 	}
 
 	public bool ShowOnToolStrip {
-		get { return _showOnToolBar; }
-		set { _showOnToolBar = value; }
+		get => _showOnToolBar;
+		set => _showOnToolBar = value;
 	}
 
 	public bool ExecuteOnLoad {
-		get { return _executeOnLoad; }
-		set { _executeOnLoad = value; }
+		get => _executeOnLoad;
+		set => _executeOnLoad = value;
 	}
 
 	public virtual void Dispose() {

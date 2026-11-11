@@ -15,9 +15,7 @@ public class ThemeService : ThemeServiceBase {
 		: this(ThemeMode.Light) {
 	}
 
-	public ThemeService(ThemeMode initialTheme) {
-		_currentTheme = ThemeCatalog.Get(initialTheme).Mode;
-	}
+	public ThemeService(ThemeMode initialTheme) => _currentTheme = ThemeCatalog.Get(initialTheme).Mode;
 
 	public override ThemeMode CurrentTheme => _currentTheme;
 

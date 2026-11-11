@@ -21,11 +21,7 @@ public class CellCancelEventArgs : CellContextEventArgs {
 	}
 
 	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
+		get => _cancel;
+		set => _cancel = value;
 	}
 }

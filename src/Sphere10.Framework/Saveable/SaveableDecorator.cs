@@ -6,11 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
-public class SaveableDecorator<TSaveableImpl> : ISaveable where TSaveableImpl : ISaveable {
+public class SaveableDecorator<TSaveableImpl> : ISaveable
+	where TSaveableImpl : ISaveable {
 	public event EventHandlerEx<object> Saving {
 		add => Internal.Saving += value;
 		remove => Internal.Saving -= value;
@@ -32,12 +34,12 @@ public class SaveableDecorator<TSaveableImpl> : ISaveable where TSaveableImpl : 
 
 	public virtual void Save() => Internal.Save();
 
-	public virtual Task SaveAsync() => Internal.SaveAsync();
+	public virtual Task SaveAsync(CancellationToken cancellationToken = default) => Internal.SaveAsync(cancellationToken);
 }
 
 
 public class SaveableDecorator : SaveableDecorator<ISaveable> {
-	public SaveableDecorator(ISaveable @internal) : base(@internal) {
+	public SaveableDecorator(ISaveable @internal)
+		: base(@internal) {
 	}
 }
-

@@ -20,9 +20,7 @@ public abstract class CheckBoxBase : VisualElementBase, ICheckBox {
 	/// <summary>
 	/// Default constructor
 	/// </summary>
-	public CheckBoxBase() {
-		AnchorArea = new AnchorArea(float.NaN, float.NaN, float.NaN, float.NaN, true, true);
-	}
+	public CheckBoxBase() => AnchorArea = new AnchorArea(float.NaN, float.NaN, float.NaN, float.NaN, true, true);
 
 	/// <summary>
 	/// Copy constructor
@@ -35,30 +33,18 @@ public abstract class CheckBoxBase : VisualElementBase, ICheckBox {
 	}
 
 	public virtual ControlDrawStyle Style {
-		get {
-			return _controlDrawStyle;
-		}
+		get => _controlDrawStyle;
 
-		set {
-			_controlDrawStyle = value;
-		}
+		set => _controlDrawStyle = value;
 	}
 
 	public virtual CheckBoxState CheckBoxState {
-		get {
-			return _checkBoxState;
-		}
+		get => _checkBoxState;
 
-		set {
-			_checkBoxState = value;
-		}
+		set => _checkBoxState = value;
 	}
 
-	protected virtual bool ShouldSerializeStyle() {
-		return Style != ControlDrawStyle.Normal;
-	}
+	protected virtual bool ShouldSerializeStyle() => Style != ControlDrawStyle.Normal;
 
-	protected virtual bool ShouldSerializeCheckBoxState() {
-		return CheckBoxState != CheckBoxState.Undefined;
-	}
+	protected virtual bool ShouldSerializeCheckBoxState() => CheckBoxState != CheckBoxState.Undefined;
 }

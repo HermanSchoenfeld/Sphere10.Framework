@@ -28,9 +28,7 @@ public sealed class GlobalHotKey : WinFormsSyncDisposableBase, IGlobalHotKey {
 	private Keys _registeredShortcut;
 	private bool _disposed;
 
-	public GlobalHotKey() {
-		_ownerThreadId = Environment.CurrentManagedThreadId;
-	}
+	public GlobalHotKey() => _ownerThreadId = Environment.CurrentManagedThreadId;
 
 	public bool TryRegister(Keys shortcut, out string error) {
 		EnsureUsable();

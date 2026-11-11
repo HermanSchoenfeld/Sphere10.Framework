@@ -81,9 +81,7 @@ public class ScopeAsyncAdapterTests {
 	private sealed class FinalizationStream : MemoryStream {
 		private readonly Action _finalize;
 
-		public FinalizationStream(Action finalize) : base(new byte[16]) {
-			_finalize = finalize;
-		}
+		public FinalizationStream(Action finalize) : base(new byte[16]) => _finalize = finalize;
 
 		public override long Position {
 			get => base.Position;

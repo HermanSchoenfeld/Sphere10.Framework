@@ -17,22 +17,16 @@ internal sealed class CrudReferenceConverter : TypeConverter {
 	private readonly CrudReferenceBinding _binding;
 
 	// Retain the same reference binding used by the dropdown editor.
-	public CrudReferenceConverter(CrudReferenceBinding Binding) {
-		_binding = Binding;
-	}
+	public CrudReferenceConverter(CrudReferenceBinding Binding) => _binding = Binding;
 
 	// String presentation uses the binding's display projection.
-	public override bool CanConvertTo(ITypeDescriptorContext? Context, Type? DestinationType) {
-		return DestinationType == typeof(string) || base.CanConvertTo(Context, DestinationType);
-	}
+	public override bool CanConvertTo(ITypeDescriptorContext? Context, Type? DestinationType)
+		=> DestinationType == typeof(string) || base.CanConvertTo(Context, DestinationType);
 
 	// Preserve the existing conversion fallback for every other destination type.
-	public override object? ConvertTo(ITypeDescriptorContext? Context, CultureInfo? Culture, object? Value, Type DestinationType) {
-		return DestinationType == typeof(string) ? _binding.GetDisplayText(Value) : base.ConvertTo(Context, Culture, Value, DestinationType);
-	}
+	public override object? ConvertTo(ITypeDescriptorContext? Context, CultureInfo? Culture, object? Value, Type DestinationType)
+		=> DestinationType == typeof(string) ? _binding.GetDisplayText(Value) : base.ConvertTo(Context, Culture, Value, DestinationType);
 
 	// A reference is selected as one value rather than edited through child properties.
-	public override bool GetPropertiesSupported(ITypeDescriptorContext? Context) {
-		return false;
-	}
+	public override bool GetPropertiesSupported(ITypeDescriptorContext? Context) => false;
 }

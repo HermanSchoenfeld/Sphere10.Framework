@@ -95,7 +95,6 @@ public class MSSQLProviderCompatibilityTests {
 	}
 
 	[Test]
-	public void Open_UnsupportedNetworkLibrary_Throws() {
-		Assert.That(() => Tools.MSSQL.Open("localhost", "Example", networkLibrary: "dbmsrpcn"), Throws.TypeOf<NotSupportedException>());
-	}
+	public void Open_UnsupportedNetworkLibrary_Throws()
+		=> Assert.That(() => Tools.MSSQL.Open("localhost", "Example", networkLibrary: "dbmsrpcn"), Throws.TypeOf<NotSupportedException>());
 }

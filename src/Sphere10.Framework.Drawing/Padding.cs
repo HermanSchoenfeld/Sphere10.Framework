@@ -34,11 +34,7 @@ public struct Padding {
 		Bottom = bottom;
 	}
 
-	public bool IsEmpty {
-		get {
-			return Left == 0 && Right == 0 && Top == 0 && Bottom == 0;
-		}
-	}
+	public bool IsEmpty => Left == 0 && Right == 0 && Top == 0 && Bottom == 0;
 
 	public RectangleF GetContentRectangle(RectangleF backGroundArea) {
 		if (IsEmpty)
@@ -52,9 +48,7 @@ public struct Padding {
 		return new SizeF(contentSize.Width + (Left + Right), contentSize.Height + (Top + Bottom));
 	}
 
-	public override string ToString() {
-		return "Left:" + Left.ToString() + ",Right:" + Right.ToString() + ",Top:" + Top.ToString() + ",Bottom:" + Bottom.ToString();
-	}
+	public override string ToString() => "Left:" + Left.ToString() + ",Right:" + Right.ToString() + ",Top:" + Top.ToString() + ",Bottom:" + Bottom.ToString();
 
 	/// <summary>
 	/// Compare to current padding with another padding.
@@ -72,15 +66,9 @@ public struct Padding {
 		return false;
 	}
 
-	public override int GetHashCode() {
-		return Top.GetHashCode();
-	}
+	public override int GetHashCode() => Top.GetHashCode();
 
-	public static bool operator ==(Padding a, Padding b) {
-		return a.Equals(b);
-	}
+	public static bool operator ==(Padding a, Padding b) => a.Equals(b);
 
-	public static bool operator !=(Padding a, Padding b) {
-		return a.Equals(b) == false;
-	}
+	public static bool operator !=(Padding a, Padding b) => a.Equals(b) == false;
 }

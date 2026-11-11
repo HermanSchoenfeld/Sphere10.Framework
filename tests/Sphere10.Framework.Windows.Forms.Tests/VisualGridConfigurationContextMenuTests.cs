@@ -170,9 +170,7 @@ public class VisualGridConfigurationContextMenuTests {
 	}
 
 	// The public control owns one embedded SourceGrid input surface.
-	private static Grid FindNativeGrid(VisualGrid grid) {
-		return grid.Controls.Find("_grid", true).OfType<Grid>().Single();
-	}
+	private static Grid FindNativeGrid(VisualGrid grid) => grid.Controls.Find("_grid", true).OfType<Grid>().Single();
 
 	// Keep all menu opening, input, asynchronous binding and cleanup on one bounded native message loop.
 	private static void RunWithMessageLoop(Func<Form, Task> test) {

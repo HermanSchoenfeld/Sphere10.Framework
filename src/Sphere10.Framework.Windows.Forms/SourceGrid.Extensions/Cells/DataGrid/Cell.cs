@@ -12,9 +12,7 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.DataGrid;
 
 public class Cell : Cells.Virtual.CellVirtual {
-	public Cell() {
-		Model.AddModel(new DataGridValueModel());
-	}
+	public Cell() => Model.AddModel(new DataGridValueModel());
 
 	public static Cells.ICellVirtual Create(Type type, bool editable) {
 		Cells.ICellVirtual cell;

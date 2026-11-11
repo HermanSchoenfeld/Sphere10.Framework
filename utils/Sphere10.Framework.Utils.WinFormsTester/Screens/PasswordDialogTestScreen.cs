@@ -23,14 +23,10 @@ public partial class PasswordDialogTestScreen : ApplicationScreen {
 	}
 
 	// Both password paths report outcomes without retaining or printing the entered secret.
-	private async void StandardButton_Click(object sender, EventArgs args) {
-		await ShowPasswordAsync(false);
-	}
+	private async void StandardButton_Click(object sender, EventArgs args) => await ShowPasswordAsync(false);
 
 	// The policy callback validates the provisional value inside the existing dialog.
-	private async void CustomButton_Click(object sender, EventArgs args) {
-		await ShowPasswordAsync(true);
-	}
+	private async void CustomButton_Click(object sender, EventArgs args) => await ShowPasswordAsync(true);
 
 	// Native event adapters contain asynchronous failures and keep the output on this screen.
 	private async Task ShowPasswordAsync(bool validate) {

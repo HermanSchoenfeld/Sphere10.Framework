@@ -6,11 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
-public class LoadableDecorator<TLoadableImpl> : ILoadable where TLoadableImpl : ILoadable {
+public class LoadableDecorator<TLoadableImpl> : ILoadable
+	where TLoadableImpl : ILoadable {
 	public event EventHandlerEx<object> Loading {
 		add => Internal.Loading += value;
 		remove => Internal.Loading -= value;
@@ -32,12 +34,12 @@ public class LoadableDecorator<TLoadableImpl> : ILoadable where TLoadableImpl : 
 
 	public virtual void Load() => Internal.Load();
 
-	public virtual Task LoadAsync() => Internal.LoadAsync();
+	public virtual Task LoadAsync(CancellationToken cancellationToken = default) => Internal.LoadAsync(cancellationToken);
 }
 
 
 public class LoadableDecorator : LoadableDecorator<ILoadable> {
-	public LoadableDecorator(ILoadable @internal) : base(@internal) {
+	public LoadableDecorator(ILoadable @internal)
+		: base(@internal) {
 	}
 }
-

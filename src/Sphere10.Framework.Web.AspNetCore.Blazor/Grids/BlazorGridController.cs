@@ -47,6 +47,11 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	private string _sortProperty;
 	private SortDirection _sortDirection;
 	private string _errorMessage;
+	private SynchronizationContext _ownerContext;
+	private IDataSource<TItem> _notifyingSource;
+	private EventHandlerEx _sourceChangedHandler;
+	private int _sourceNotificationQueued;
+	private int _sourceChangePending;
 
 	public override TItem[] Items => Tools.Array.Clone(_items);
 
@@ -121,17 +126,18 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 
 	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize) => BindAsync(source, allowedCapabilities, pageSize, _pageMode);
 
-	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode) {
-		return BindAsync(source, allowedCapabilities, pageSize, pageMode, null);
-	}
+	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode)
+		=> BindAsync(source, allowedCapabilities, pageSize, pageMode, null);
 
 	/// <summary>Seeds restored query values before the first read while preserving the ordinary bind contract.</summary>
 	public override Task BindAsync(IDataSource<TItem> source, DataSourceCapabilities allowedCapabilities, int pageSize, BlazorGridPageMode pageMode, BlazorGridSettings initialSettings) {
 		EnsureUsable();
+		_ownerContext ??= SynchronizationContext.Current;
 		Guard.ArgumentInRange(pageSize, 1, 9999, nameof(pageSize));
 		ValidatePageMode(pageMode);
 		if (initialSettings == null && ReferenceEquals(_source, source) && _allowedCapabilities == allowedCapabilities && _manualPageSize == pageSize && _pageMode == pageMode)
 			return _pendingRead;
+		ReleaseSourceNotifications();
 		_source = source;
 		_allowedCapabilities = allowedCapabilities;
 		_manualPageSize = pageSize;
@@ -358,6 +364,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		_edit = null;
 		ClearProblems();
 		OnChanged();
+		QueueSourceNotification();
 	}
 
 	public override async Task<bool> SaveAsync() {
@@ -386,7 +393,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				var available = await source.CapabilitiesAsync;
 				if (!IsCurrentEdit(edit, configuration))
 					return;
-				_capabilities = available & _allowedCapabilities;
+				_capabilities = EffectiveCapabilities(available);
 				if (!RequireCapability(edit.IsNew ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate)) {
 					InvalidateEdit();
 					OnChanged();
@@ -406,7 +413,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				var currentCapabilities = await source.CapabilitiesAsync;
 				if (!IsCurrentEdit(edit, configuration))
 					return;
-				_capabilities = currentCapabilities & _allowedCapabilities;
+				_capabilities = EffectiveCapabilities(currentCapabilities);
 				if (!RequireCapability(edit.IsNew ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate)) {
 					_edit = null;
 					return;
@@ -428,6 +435,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		}
 		if (saved)
 			await QueueReadAsync();
+		else
+			QueueSourceNotification();
 		return saved;
 	}
 
@@ -449,7 +458,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				var available = await source.CapabilitiesAsync;
 				if (!IsCurrentConfiguration(configuration))
 					return;
-				_capabilities = available & _allowedCapabilities;
+				_capabilities = EffectiveCapabilities(available);
 				if (!RequireCapability(DataSourceCapabilities.CanDelete))
 					return;
 				var validation = await source.ValidateAsync(item, CrudAction.Delete);
@@ -458,7 +467,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 				var currentCapabilities = await source.CapabilitiesAsync;
 				if (!IsCurrentConfiguration(configuration))
 					return;
-				_capabilities = currentCapabilities & _allowedCapabilities;
+				_capabilities = EffectiveCapabilities(currentCapabilities);
 				if (!RequireCapability(DataSourceCapabilities.CanDelete))
 					return;
 				await source.DeleteAsync(item);
@@ -474,6 +483,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		}
 		if (deleted)
 			await QueueReadAsync();
+		else
+			QueueSourceNotification();
 		return deleted;
 	}
 
@@ -481,7 +492,9 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		if (_disposed)
 			return;
 		_disposed = true;
-		_queryVersion++;
+		ReleaseSourceNotifications();
+		_ownerContext = null;
+		Interlocked.Increment(ref _queryVersion);
 		InvalidateEdit();
 		_source = null;
 		_items = Array.Empty<TItem>();
@@ -510,7 +523,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 	}
 
 	private Task QueueReadAsync(bool showLoadingIndicator = true) {
-		_queryVersion++;
+		Interlocked.Increment(ref _queryVersion);
 		_isLoading |= showLoadingIndicator || !_hasLoaded;
 		_isRefreshing = true;
 		ClearProblems();
@@ -555,6 +568,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		if (!IsCurrentQuery(version))
 			return;
 		var source = _source;
+		var sourceChanged = Interlocked.Exchange(ref _sourceChangePending, 0) != 0;
 		var view = _viewVersion;
 		if (source == null)
 			return;
@@ -562,7 +576,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 			var capabilities = await source.CapabilitiesAsync;
 			if (!IsCurrentQuery(version))
 				return;
-			_capabilities = capabilities & _allowedCapabilities;
+			_capabilities = EffectiveCapabilities(capabilities);
+			ObserveSourceNotifications(source, capabilities);
 			if (!HasCapability(DataSourceCapabilities.CanRead)) {
 				ClearVisibleItems();
 				_totalCount = 0;
@@ -603,6 +618,8 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 			if (IsCurrentQuery(version))
 				_errorMessage = error.Message;
 		}
+		if (sourceChanged && !_disposed && ReferenceEquals(source, _source) && !IsCurrentQuery(version))
+			Interlocked.Exchange(ref _sourceChangePending, 1);
 	}
 
 	private async Task<bool> RefreshRowsCoreAsync(IEnumerable<TItem> entities) {
@@ -627,7 +644,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 			var available = await source.CapabilitiesAsync;
 			if (!IsCurrentQuery(version) || _edit != null || view != _viewVersion)
 				return;
-			_capabilities = available & _allowedCapabilities;
+			_capabilities = EffectiveCapabilities(available);
 			if (!RequireCapability(DataSourceCapabilities.CanRead))
 				return;
 			var refreshed = Tools.Array.Clone(rows);
@@ -669,7 +686,7 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 			var values = _columns.Where(column => column.CanEdit(item)).ToDictionary(column => column, column => column.PropertyValue(item));
 			_edit = new EditSession(item, isNew, values);
 			// A silent read must not publish a replacement over a newly started draft.
-			_queryVersion++;
+			Interlocked.Increment(ref _queryVersion);
 		}, out var error);
 		if (error != null) {
 			_errorMessage = error.Message;
@@ -726,6 +743,71 @@ public class BlazorGridController<TItem> : BlazorGridControllerBase<TItem> {
 		_writeVersion++;
 		_edit = null;
 		_isSaving = false;
+	}
+
+	private DataSourceCapabilities EffectiveCapabilities(DataSourceCapabilities available) => available & (_allowedCapabilities | DataSourceCapabilities.CanNotify);
+
+	private void ObserveSourceNotifications(IDataSource<TItem> source, DataSourceCapabilities available) {
+		if (ReferenceEquals(source, _notifyingSource) && available.HasFlag(DataSourceCapabilities.CanNotify))
+			return;
+		ReleaseSourceNotifications();
+		if (!available.HasFlag(DataSourceCapabilities.CanNotify))
+			return;
+		_notifyingSource = source;
+		_sourceChangedHandler = () => {
+			if (_disposed || !ReferenceEquals(source, Volatile.Read(ref _notifyingSource)))
+				return;
+			// A background publication rejects an old query before the renderer processes the notification.
+			Interlocked.Increment(ref _queryVersion);
+			Interlocked.Exchange(ref _sourceChangePending, 1);
+			QueueSourceNotification();
+		};
+		source.Changed += _sourceChangedHandler;
+	}
+
+	private void ReleaseSourceNotifications() {
+		var source = Interlocked.Exchange(ref _notifyingSource, null);
+		if (source != null && _sourceChangedHandler != null)
+			source.Changed -= _sourceChangedHandler;
+		_sourceChangedHandler = null;
+		Interlocked.Exchange(ref _sourceChangePending, 0);
+	}
+
+	private void QueueSourceNotification() {
+		if (_disposed || Volatile.Read(ref _sourceChangePending) == 0
+			|| Interlocked.CompareExchange(ref _sourceNotificationQueued, 1, 0) != 0)
+			return;
+		if (_ownerContext == null) {
+			_ = Task.Run(PresentSourceNotificationsAsync);
+			return;
+		}
+		Tools.Exceptions.ExecuteCapturingException(() => _ownerContext.Post(_ => { _ = PresentSourceNotificationsAsync(); }, null), out var error);
+		if (error != null) {
+			Interlocked.Exchange(ref _sourceNotificationQueued, 0);
+			Tools.Exceptions.ExecuteIgnoringException(() => SystemLog.Logger.Exception(error, "Could not dispatch changed grid data."));
+		}
+	}
+
+	private async Task PresentSourceNotificationsAsync() {
+		using var completed = Tools.Scope.ExecuteOnDispose(() => {
+			Interlocked.Exchange(ref _sourceNotificationQueued, 0);
+			if (!_disposed && _edit == null && !_isSaving)
+				QueueSourceNotification();
+		});
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+			while (!_disposed && _edit == null && !_isSaving
+				&& Volatile.Read(ref _sourceChangePending) != 0) {
+				if (_readCompletion != null)
+					await _pendingRead;
+				else
+					await QueueReadAsync(false);
+			}
+		});
+		if (error != null && !_disposed) {
+			Interlocked.Exchange(ref _sourceChangePending, 0);
+			_errorMessage = error.Message;
+			OnChanged();
+		}
 	}
 
 	private bool IsCurrentConfiguration(long version) => !_disposed && version == _configurationVersion;

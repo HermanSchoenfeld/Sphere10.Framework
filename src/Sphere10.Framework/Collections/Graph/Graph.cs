@@ -16,9 +16,7 @@ public class Graph<TNode, TEdge, TWeight> : IGraph<TNode, TEdge, TWeight>
 	where TEdge : IGraphEdge<TNode, TEdge, TWeight>, new() {
 	public virtual IEnumerable<TEdge> Edges { get; set; }
 
-	public ISimpleGraph ToSimpleGraph(Func<ISimpleGraph, TEdge> edgeCreator = null) {
-		return new SimpleGraphAdapter<TNode, TEdge, TWeight>((TNode)(object)this, edgeCreator);
-	}
+	public ISimpleGraph ToSimpleGraph(Func<ISimpleGraph, TEdge> edgeCreator = null) => new SimpleGraphAdapter<TNode, TEdge, TWeight>((TNode)(object)this, edgeCreator);
 }
 
 public class Graph<TNode> : Graph<TNode, GraphEdge<TNode>, int>, IGraph<TNode>

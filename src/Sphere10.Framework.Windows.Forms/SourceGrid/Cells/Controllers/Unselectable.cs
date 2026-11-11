@@ -23,7 +23,5 @@ public class Unselectable : ControllerBase {
 		e.Cancel = !CanReceiveFocus(sender, e);
 	}
 
-	public override bool CanReceiveFocus(CellContext sender, EventArgs e) {
-		return false;
-	}
+	public override bool CanReceiveFocus(CellContext sender, EventArgs e) => false;
 }

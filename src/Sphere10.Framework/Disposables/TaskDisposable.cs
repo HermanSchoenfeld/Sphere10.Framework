@@ -16,9 +16,7 @@ public sealed class TaskDisposable : AsyncDisposable {
 	private readonly Func<Task> _scopeFinalizer;
 
 	/// <summary>Retains the asynchronous action to run during managed cleanup.</summary>
-	public TaskDisposable(Func<Task> scopeFinalizer) {
-		_scopeFinalizer = scopeFinalizer;
-	}
+	public TaskDisposable(Func<Task> scopeFinalizer) => _scopeFinalizer = scopeFinalizer;
 
 	/// <summary>Awaits the retained action when one was supplied.</summary>
 	protected override async ValueTask DisposeInternalAsync() {

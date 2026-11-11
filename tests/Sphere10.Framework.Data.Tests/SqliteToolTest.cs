@@ -14,9 +14,7 @@ namespace Sphere10.Framework.Data.Tests;
 [TestFixture]
 public class SqliteToolTest {
 	[Test]
-	public void ExistsByFilePath_False() {
-		Assert.That(Tools.Sqlite.ExistsByPath(GenerateTempFilename()), Is.False);
-	}
+	public void ExistsByFilePath_False() => Assert.That(Tools.Sqlite.ExistsByPath(GenerateTempFilename()), Is.False);
 
 	[Test]
 	public void ExistsByFilePath_True() {
@@ -146,14 +144,10 @@ public class SqliteToolTest {
 	}
 
 	[Test]
-	public void Drop_Throws() {
-		Assert.Catch<Exception>(() => Tools.Sqlite.Drop(GenerateTempFilename()));
-	}
+	public void Drop_Throws() => Assert.Catch<Exception>(() => Tools.Sqlite.Drop(GenerateTempFilename()));
 
 	[Test]
-	public void Drop_NoThrows() {
-		Assert.DoesNotThrow(() => Tools.Sqlite.Drop(GenerateTempFilename(), false));
-	}
+	public void Drop_NoThrows() => Assert.DoesNotThrow(() => Tools.Sqlite.Drop(GenerateTempFilename(), false));
 
 	[Test]
 	public void DatabaseManager_GenerateConnectionString_ForNewFile_CreatesDatabase() {

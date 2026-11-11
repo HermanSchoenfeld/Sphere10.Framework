@@ -64,13 +64,9 @@ public partial class DatabaseConnectionPanel : ConnectionPanelBase, IDatabaseCon
 			_dbmsCombo.SelectedIndex = 0;
 	}
 
-	protected override IDAC GetDACInternal() {
-		return CurrentConnectionPanel.GetDAC();
-	}
+	protected override IDAC GetDACInternal() => CurrentConnectionPanel.GetDAC();
 
-	public override Task<Result> TestConnection() {
-		return CurrentConnectionPanel.TestConnection();
-	}
+	public override Task<Result> TestConnection() => CurrentConnectionPanel.TestConnection();
 
 	protected ConnectionPanelBase CurrentConnectionPanel { get; set; }
 

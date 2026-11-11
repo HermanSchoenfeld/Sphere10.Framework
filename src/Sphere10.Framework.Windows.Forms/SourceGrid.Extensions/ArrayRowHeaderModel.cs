@@ -18,11 +18,7 @@ public class ArrayRowHeaderModel : Cells.Models.IValueModel {
 	}
 
 	// IValueModel Members
-	public virtual object GetValue(CellContext cellContext) {
-		return cellContext.Position.Row - cellContext.Grid.FixedRows;
-	}
+	public virtual object GetValue(CellContext cellContext) => cellContext.Position.Row - cellContext.Grid.FixedRows;
 
-	public virtual void SetValue(CellContext cellContext, object value) {
-		throw new ApplicationException("Not supported");
-	}
+	public virtual void SetValue(CellContext cellContext, object value) => throw new ApplicationException("Not supported");
 }

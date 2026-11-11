@@ -15,9 +15,5 @@ namespace Sphere10.Framework.Utils.WinFormsTester;
 public class ObjectSpaceScreenBase : ApplicationScreen {
 	/// <summary>The typed preferences inherited by the concrete designer screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ObjectSpaceScreen.ObjectSpaceScreenSettings ScreenSettings {
-		get {
-			return (ObjectSpaceScreen.ObjectSpaceScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ObjectSpaceScreen.ObjectSpaceScreenSettings ScreenSettings => (ObjectSpaceScreen.ObjectSpaceScreenSettings)base.ScreenSettings;
 }

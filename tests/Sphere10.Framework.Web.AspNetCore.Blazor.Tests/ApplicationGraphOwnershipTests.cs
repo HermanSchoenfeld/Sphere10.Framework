@@ -701,9 +701,7 @@ public class ApplicationGraphOwnershipTests {
 		public IServiceProvider RuntimeServices { get; set; }
 
 		/// <summary>Storage intentionally omits this value even though a runtime owner must receive its configured value.</summary>
-		public bool ShouldSerializeConditionalValue() {
-			return false;
-		}
+		public bool ShouldSerializeConditionalValue() => false;
 
 		#region Inner Types
 
@@ -778,9 +776,7 @@ public class ApplicationGraphOwnershipTests {
 		}
 
 		/// <summary>Returns the test screen's configured deactivation decision.</summary>
-		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) {
-			return Task.FromResult(AllowDeactivate);
-		}
+		public Task<bool> CanDeactivateAsync(CancellationToken cancellationToken = default) => Task.FromResult(AllowDeactivate);
 
 		/// <summary>Captures activation ownership before invoking the optional test callback.</summary>
 		public Task OnActivatedAsync(CancellationToken cancellationToken = default) {
@@ -790,9 +786,7 @@ public class ApplicationGraphOwnershipTests {
 		}
 
 		/// <summary>Records disposal of the test component.</summary>
-		public void Dispose() {
-			Disposals++;
-		}
+		public void Dispose() => Disposals++;
 	}
 
 	// Supplies a typed menu implementation for bridge validation.
@@ -801,25 +795,13 @@ public class ApplicationGraphOwnershipTests {
 		public BlazorUI.IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public string Text {
-			get {
-				return "Typed";
-			}
-		}
+		public string Text => "Typed";
 
 		/// <inheritdoc />
-		public string Icon {
-			get {
-				return null;
-			}
-		}
+		public string Icon => null;
 
 		/// <inheritdoc />
-		public BlazorUI.IApplicationMenuItem[] Items {
-			get {
-				return Array.Empty<BlazorUI.IApplicationMenuItem>();
-			}
-		}
+		public BlazorUI.IApplicationMenuItem[] Items => Array.Empty<BlazorUI.IApplicationMenuItem>();
 	}
 
 	// Supplies a typed command implementation for bridge validation.
@@ -844,18 +826,10 @@ public class ApplicationGraphOwnershipTests {
 		public BlazorUI.IApplicationMenu Parent { get; set; }
 
 		/// <inheritdoc />
-		public string Title {
-			get {
-				return "Typed";
-			}
-		}
+		public string Title => "Typed";
 
 		/// <inheritdoc />
-		public string Icon {
-			get {
-				return null;
-			}
-		}
+		public string Icon => null;
 	}
 
 	// Supplies a shared menu that a typed web bridge must reject.
@@ -864,18 +838,10 @@ public class ApplicationGraphOwnershipTests {
 		public SharedUI.IApplicationBlock Parent { get; set; }
 
 		/// <inheritdoc />
-		public string Text {
-			get {
-				return "Neutral";
-			}
-		}
+		public string Text => "Neutral";
 
 		/// <inheritdoc />
-		public SharedUI.IApplicationMenuItem[] Items {
-			get {
-				return Array.Empty<SharedUI.IApplicationMenuItem>();
-			}
-		}
+		public SharedUI.IApplicationMenuItem[] Items => Array.Empty<SharedUI.IApplicationMenuItem>();
 	}
 
 	#endregion

@@ -16,9 +16,7 @@ namespace Sphere10.Framework.Windows;
 internal readonly struct ShellComObjectScope : IScope<object> {
 	private readonly object _item;
 
-	public ShellComObjectScope(object item) {
-		_item = item;
-	}
+	public ShellComObjectScope(object item) => _item = item;
 
 	public object Item => _item;
 

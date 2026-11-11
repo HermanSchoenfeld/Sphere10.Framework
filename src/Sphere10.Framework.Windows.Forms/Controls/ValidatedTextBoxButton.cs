@@ -50,9 +50,7 @@ public partial class ValidatedTextBoxButton : EditableControl {
 	/// </summary>
 	[DefaultValue(null)]
 	public Sphere10.Framework.ComponentModel.IValidator Validator {
-		get {
-			return _validator;
-		}
+		get => _validator;
 		set {
 			if (_validator != value) {
 				if (_validator != null)
@@ -69,17 +67,9 @@ public partial class ValidatedTextBoxButton : EditableControl {
 	/// <summary>
 	/// The button in the right of the editor
 	/// </summary>
-	public System.Windows.Forms.Button Button {
-		get {
-			return _browseButton;
-		}
-	}
+	public System.Windows.Forms.Button Button => _browseButton;
 
-	public System.Windows.Forms.TextBox TextBox {
-		get {
-			return _textBox;
-		}
-	}
+	public System.Windows.Forms.TextBox TextBox => _textBox;
 
 	/// <summary>
 	/// Gets or sets the typed value for the control, using the Validator class.
@@ -153,9 +143,7 @@ public partial class ValidatedTextBoxButton : EditableControl {
 	}
 
 	/// <summary>The typed value owns its notification after the text cache has been invalidated or replaced.</summary>
-	protected override bool ShouldObserveChildStateChanges(Control child) {
-		return false;
-	}
+	protected override bool ShouldObserveChildStateChanges(Control child) => false;
 
 	protected override void OnValidating(CancelEventArgs args) {
 		base.OnValidating(args);
@@ -221,13 +209,9 @@ public partial class ValidatedTextBoxButton : EditableControl {
 		base.Dispose(disposing);
 	}
 
-	private void DownClick(object sender, System.EventArgs args) {
-		ShowDialog();
-	}
+	private void DownClick(object sender, System.EventArgs args) => ShowDialog();
 
-	void ValidatorChanged(object sender, EventArgs args) {
-		ApplyValidatorRules();
-	}
+	void ValidatorChanged(object sender, EventArgs args) => ApplyValidatorRules();
 
 	// Invalidate the typed cache before observers read the new text through Value.
 	void TxtBoxTextChanged(object sender, EventArgs args) {

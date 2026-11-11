@@ -42,49 +42,29 @@ public class ApplicationBlock : IApplicationBlock {
 
 	/// <inheritdoc />
 	public string Id {
-		get {
-			return _id ?? Title;
-		}
-		init {
-			_id = value;
-		}
+		get => _id ?? Title;
+		init => _id = value;
 	}
 
 	/// <inheritdoc />
 	public int Position {
-		get {
-			return _definition.Position;
-		}
-		init {
-			_definition.Position = value;
-		}
+		get => _definition.Position;
+		init => _definition.Position = value;
 	}
 
 	/// <inheritdoc />
 	public string Title {
-		get {
-			return _definition.Name;
-		}
-		init {
-			_definition.Name = value;
-		}
+		get => _definition.Name;
+		init => _definition.Name = value;
 	}
 
 	/// <inheritdoc />
-	public string Name {
-		get {
-			return _definition.Name;
-		}
-	}
+	public string Name => _definition.Name;
 
 	/// <summary>The block's ordinary settings defaults, copied into each circuit's runtime profile.</summary>
 	public SettingsObject BlockSettings {
-		get {
-			return _definition.BlockSettings;
-		}
-		set {
-			_definition.BlockSettings = value;
-		}
+		get => _definition.BlockSettings;
+		set => _definition.BlockSettings = value;
 	}
 
 	/// <inheritdoc />
@@ -95,9 +75,7 @@ public class ApplicationBlock : IApplicationBlock {
 
 	/// <summary>The web menus owned by this block.</summary>
 	public IApplicationMenu[] Menus {
-		get {
-			return _menus.ToArray();
-		}
+		get => _menus.ToArray();
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			foreach (var menu in value) {
@@ -113,9 +91,7 @@ public class ApplicationBlock : IApplicationBlock {
 
 	/// <summary>The web toolbar commands owned by this block.</summary>
 	public IApplicationMenuItem[] ToolBarItems {
-		get {
-			return _toolBarItems.ToArray();
-		}
+		get => _toolBarItems.ToArray();
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_toolBarItems = value.ToArray();
@@ -126,40 +102,22 @@ public class ApplicationBlock : IApplicationBlock {
 
 	/// <inheritdoc />
 	public Type DefaultScreen {
-		get {
-			return _defaultScreen ?? _definition.DefaultScreenDefinition?.ScreenType;
-		}
-		init {
-			_defaultScreen = value;
-		}
+		get => _defaultScreen ?? _definition.DefaultScreenDefinition?.ScreenType;
+		init => _defaultScreen = value;
 	}
 
 	/// <inheritdoc />
-	public ScreenActivationMode? DefaultScreenActivationMode {
-		get {
-			return DefaultScreenDefinition?.ActivationMode;
-		}
-	}
+	public ScreenActivationMode? DefaultScreenActivationMode => DefaultScreenDefinition?.ActivationMode;
 
 	/// <inheritdoc />
-	public ScreenKind DefaultScreenKind {
-		get {
-			return DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
-		}
-	}
+	public ScreenKind DefaultScreenKind => DefaultScreenDefinition?.ScreenKind ?? ScreenKind.Normal;
 
 	/// <inheritdoc />
-	public string DefaultScreenTitle {
-		get {
-			return DefaultScreenDefinition?.Title;
-		}
-	}
+	public string DefaultScreenTitle => DefaultScreenDefinition?.Title;
 
 	/// <inheritdoc />
 	public SharedUI.ApplicationScreenDefinition[] ScreenDefinitions {
-		get {
-			return _definition.ScreenDefinitions;
-		}
+		get => _definition.ScreenDefinitions;
 		init {
 			Guard.ArgumentNotNull(value, nameof(value));
 			foreach (var screen in value)
@@ -174,9 +132,7 @@ public class ApplicationBlock : IApplicationBlock {
 				_definition.DefaultScreenDefinition = ApplicationHelper.ResolveScreenRegistration(_definition.ScreenDefinitions, ApplicationScreenRegistration.ForType(_defaultScreen));
 			return _definition.DefaultScreenDefinition;
 		}
-		init {
-			_definition.DefaultScreenDefinition = value;
-		}
+		init => _definition.DefaultScreenDefinition = value;
 	}
 
 	/// <summary>Allows a block to veto exit using the running application's circuit context.</summary>

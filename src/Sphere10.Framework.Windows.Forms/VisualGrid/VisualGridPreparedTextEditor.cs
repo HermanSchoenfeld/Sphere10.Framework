@@ -51,7 +51,6 @@ internal sealed class VisualGridPreparedTextEditor : EditorBase {
 	}
 
 	/// <summary>Returns cached text for the prepared value and delegates other conversions.</summary>
-	public override string ValueToDisplayString(object value) {
-		return _hasPreparedValue && ReferenceEquals(value, _value) ? _displayText : _converter != null ? _converter.ValueToDisplayString(value) : base.ValueToDisplayString(value);
-	}
+	public override string ValueToDisplayString(object value)
+		=> _hasPreparedValue && ReferenceEquals(value, _value) ? _displayText : _converter != null ? _converter.ValueToDisplayString(value) : base.ValueToDisplayString(value);
 }

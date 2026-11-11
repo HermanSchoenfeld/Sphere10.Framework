@@ -22,9 +22,7 @@ public static class RichTextConversion {
 	/// </summary>
 	/// <param name="text"></param>
 	/// <returns></returns>
-	public static Sphere10.Framework.Windows.Forms.RichText StringToRichText(string text) {
-		return StringToRichText(text, FontStyle.Regular);
-	}
+	public static Sphere10.Framework.Windows.Forms.RichText StringToRichText(string text) => StringToRichText(text, FontStyle.Regular);
 
 	/// <summary>
 	/// Convert plain text to rtf with font style
@@ -63,7 +61,6 @@ public static class RichTextConversion {
 		}
 	}
 
-	public static string RichTextToStringStripWhitespaces(Sphere10.Framework.Windows.Forms.RichText rtf) {
-		return System.Text.RegularExpressions.Regex.Replace(RichTextToString(rtf), @"[\t\n\r\f\v]", string.Empty);
-	}
+	public static string RichTextToStringStripWhitespaces(Sphere10.Framework.Windows.Forms.RichText rtf)
+		=> System.Text.RegularExpressions.Regex.Replace(RichTextToString(rtf), @"[\t\n\r\f\v]", string.Empty);
 }

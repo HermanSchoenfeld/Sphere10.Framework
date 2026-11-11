@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -64,7 +65,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public void Load() => ObjectStream.Load();
 
-	public Task LoadAsync() => ObjectStream.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) => ObjectStream.LoadAsync(cancellationToken);
 
 	public virtual void Dispose() {
 		if (OwnsContainer)

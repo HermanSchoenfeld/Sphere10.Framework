@@ -27,11 +27,7 @@ public partial class ObservableCollectionsTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ObservableCollectionsScreenSettings ScreenSettings {
-		get {
-			return (ObservableCollectionsScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ObservableCollectionsScreenSettings ScreenSettings => (ObservableCollectionsScreenSettings)base.ScreenSettings;
 
 	// Restore presentation choices once the host has attached its ordinary settings object.
 

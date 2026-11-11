@@ -59,9 +59,7 @@ public sealed class SecureBytes : ISecureItem<byte[]> {
 		}
 	}
 
-	public void Dispose() {
-		_holder.Dispose();
-	}
+	public void Dispose() => _holder.Dispose();
 
 	private void Encrypt() {
 		Tools.Crypto.SecureErase(_unencrypted);

@@ -33,9 +33,7 @@ public partial class CompressionTestScreen : ApplicationScreen {
 	}
 
 	// Capture native drafts before starting the bounded worker operation.
-	private async void _testButton_Click(object sender, EventArgs e) {
-		await RunRoundTripsAsync();
-	}
+	private async void _testButton_Click(object sender, EventArgs e) => await RunRoundTripsAsync();
 
 	// Capture file and comparison choices before entering worker code.
 	private async Task RunRoundTripsAsync() {

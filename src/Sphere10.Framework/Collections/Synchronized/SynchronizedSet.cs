@@ -28,13 +28,9 @@ public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, ISynchron
 
 	public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
-	public ReadScope EnterReadScope() {
-		return _lock.EnterReadScope();
-	}
+	public ReadScope EnterReadScope() => _lock.EnterReadScope();
 
-	public WriteScope EnterWriteScope() {
-		return _lock.EnterWriteScope();
-	}
+	public WriteScope EnterWriteScope() => _lock.EnterWriteScope();
 
 	public override IEnumerator<TItem> GetEnumerator() {
 		var readScope = EnterReadScope();
@@ -49,65 +45,35 @@ public class SynchronizedSet<TItem, TSet> : SetDecorator<TItem, TSet>, ISynchron
 		}
 	}
 
-	public override bool Add(TItem item) {
-		return InternalSet.Add(item);
-	}
+	public override bool Add(TItem item) => InternalSet.Add(item);
 
-	public override void ExceptWith(IEnumerable<TItem> other) {
-		InternalSet.ExceptWith(other);
-	}
+	public override void ExceptWith(IEnumerable<TItem> other) => InternalSet.ExceptWith(other);
 
-	public override void IntersectWith(IEnumerable<TItem> other) {
-		InternalSet.IntersectWith(other);
-	}
+	public override void IntersectWith(IEnumerable<TItem> other) => InternalSet.IntersectWith(other);
 
-	public override bool IsProperSubsetOf(IEnumerable<TItem> other) {
-		return InternalSet.IsProperSubsetOf(other);
-	}
+	public override bool IsProperSubsetOf(IEnumerable<TItem> other) => InternalSet.IsProperSubsetOf(other);
 
-	public override bool IsProperSupersetOf(IEnumerable<TItem> other) {
-		return InternalSet.IsProperSupersetOf(other);
-	}
+	public override bool IsProperSupersetOf(IEnumerable<TItem> other) => InternalSet.IsProperSupersetOf(other);
 
-	public override bool IsSubsetOf(IEnumerable<TItem> other) {
-		return InternalSet.IsSubsetOf(other);
-	}
+	public override bool IsSubsetOf(IEnumerable<TItem> other) => InternalSet.IsSubsetOf(other);
 
-	public override bool IsSupersetOf(IEnumerable<TItem> other) {
-		return InternalSet.IsSupersetOf(other);
-	}
+	public override bool IsSupersetOf(IEnumerable<TItem> other) => InternalSet.IsSupersetOf(other);
 
-	public override bool Overlaps(IEnumerable<TItem> other) {
-		return InternalSet.Overlaps(other);
-	}
+	public override bool Overlaps(IEnumerable<TItem> other) => InternalSet.Overlaps(other);
 
-	public override bool SetEquals(IEnumerable<TItem> other) {
-		return InternalSet.SetEquals(other);
-	}
+	public override bool SetEquals(IEnumerable<TItem> other) => InternalSet.SetEquals(other);
 
-	public override void SymmetricExceptWith(IEnumerable<TItem> other) {
-		InternalSet.SymmetricExceptWith(other);
-	}
+	public override void SymmetricExceptWith(IEnumerable<TItem> other) => InternalSet.SymmetricExceptWith(other);
 
-	public override void UnionWith(IEnumerable<TItem> other) {
-		InternalSet.UnionWith(other);
-	}
+	public override void UnionWith(IEnumerable<TItem> other) => InternalSet.UnionWith(other);
 
-	public override void Clear() {
-		InternalSet.Clear();
-	}
+	public override void Clear() => InternalSet.Clear();
 
-	public override bool Contains(TItem item) {
-		return InternalSet.Contains(item);
-	}
+	public override bool Contains(TItem item) => InternalSet.Contains(item);
 
-	public override void CopyTo(TItem[] array, int arrayIndex) {
-		InternalSet.CopyTo(array, arrayIndex);
-	}
+	public override void CopyTo(TItem[] array, int arrayIndex) => InternalSet.CopyTo(array, arrayIndex);
 
-	public override bool Remove(TItem item) {
-		return InternalSet.Remove(item);
-	}
+	public override bool Remove(TItem item) => InternalSet.Remove(item);
 
 	public override int Count => InternalSet.Count;
 

@@ -36,9 +36,7 @@ public class MemoryObjectSpace : ObjectSpace {
 		int clusterSize,
 		ClusteredStreamsPolicy clusteredStreamsPolicy = Sphere10FrameworkDefaults.MemoryObjectSpaceContainerPolicy,
 		Endianness endianness = Sphere10FrameworkDefaults.Endianness
-	) : this(new MemoryStream(), objectSpaceDefinition, serializerFactory, comparerFactory, clusterSize, clusteredStreamsPolicy, endianness) {
-		Streams.OwnsStream = true;
-	}
+	) : this(new MemoryStream(), objectSpaceDefinition, serializerFactory, comparerFactory, clusterSize, clusteredStreamsPolicy, endianness) => Streams.OwnsStream = true;
 
 	/// <summary>Creates or loads an ObjectSpace over a borrowed memory stream, retaining its recorded cluster size.</summary>
 	public MemoryObjectSpace(

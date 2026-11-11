@@ -22,9 +22,8 @@ internal sealed class VisualGridRowMeasurements {
 	private Geometry _geometry;
 
 	/// <summary>Checks an existing width capture without allocating another array.</summary>
-	internal bool Matches(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry, int[] columnWidths) {
-		return MatchesLayout(dataSource, bindings, geometry) && _columnWidths.AsSpan().SequenceEqual(columnWidths);
-	}
+	internal bool Matches(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry, int[] columnWidths)
+		=> MatchesLayout(dataSource, bindings, geometry) && _columnWidths.AsSpan().SequenceEqual(columnWidths);
 
 	/// <summary>Checks live native widths without allocating a capture for synchronous sizing.</summary>
 	internal bool Matches(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry, SourceGrid.Grid grid) {
@@ -38,9 +37,7 @@ internal sealed class VisualGridRowMeasurements {
 	}
 
 	/// <summary>Requires real measurement for unsupported, new or changed row content.</summary>
-	internal bool RequiresMeasurement(int row, Signature signature) {
-		return signature.ImageHeight < 0 || row >= _signatures.Length || signature != _signatures[row];
-	}
+	internal bool RequiresMeasurement(int row, Signature signature) => signature.ImageHeight < 0 || row >= _signatures.Length || signature != _signatures[row];
 
 	/// <summary>Retains completed captures from the owning grid without copying their arrays.</summary>
 	internal void Remember(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry, int[] columnWidths, Signature[] signatures) {
@@ -52,9 +49,7 @@ internal sealed class VisualGridRowMeasurements {
 	}
 
 	/// <summary>Updates row content while retaining the accepted native widths.</summary>
-	internal void UpdateSignatures(Signature[] signatures) {
-		UpdateSignatures(signatures, _columnWidths);
-	}
+	internal void UpdateSignatures(Signature[] signatures) => UpdateSignatures(signatures, _columnWidths);
 
 	/// <summary>Updates row content and its accepted width capture after successful asynchronous sizing.</summary>
 	internal void UpdateSignatures(Signature[] signatures, int[] columnWidths) {
@@ -72,9 +67,8 @@ internal sealed class VisualGridRowMeasurements {
 	}
 
 	/// <summary>Requires the same source and bindings together with equivalent native row geometry.</summary>
-	private bool MatchesLayout(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry) {
-		return ReferenceEquals(_dataSource, dataSource) && ReferenceEquals(_bindings, bindings) && _geometry.Equals(geometry);
-	}
+	private bool MatchesLayout(IDataSource<object> dataSource, IVisualGridColumn[] bindings, Geometry geometry)
+		=> ReferenceEquals(_dataSource, dataSource) && ReferenceEquals(_bindings, bindings) && _geometry.Equals(geometry);
 
 	/// <summary>Names the native metrics and borrowed visual elements that affect row height.</summary>
 	internal readonly record struct Geometry(

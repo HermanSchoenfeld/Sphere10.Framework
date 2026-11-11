@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -39,6 +40,7 @@ public static class ControlCatalogSamples {
 			Sample<ApplicationBanner>("Application", () => new ApplicationBanner { Title = "Control catalog", CompanyName = "Sphere10", Version = "Interactive example" }),
 			Sample<ApplicationBannerHost>("Application", () => new ApplicationBannerHost()),
 			Sample<ApplicationBar>("Application", CreateApplicationBar, "Select a section using the real application bar buttons."),
+			Sample<ApplicationBarButton>("Application", CreateApplicationBar, "Each section button is a themed block selector button; hover, press and select them."),
 			Sample<ApplicationControl>("Application", () => Composed(new ApplicationControl())),
 			Sample<ApplicationSettingsEditor>("Application", CreateSettingsEditor, "Edit private inspector preferences using the shared settings editor. These sample values are not saved."),
 			Window<ApplicationForm>(() => new ApplicationForm()),
@@ -93,9 +95,12 @@ public static class ControlCatalogSamples {
 			Sample<GradientPanel>("Layout", () => Composed(new GradientPanel(Color.AliceBlue, Color.SteelBlue, 90))),
 			Sample<GraphChart>("Charts", () => new ChartTestScreen(), "Select line or area, change the scenario and add values using the chart's actual actions."),
 			Sample<HeaderGroupBox>("Groups", () => Composed(new HeaderGroupBox { Text = "HeaderGroupBox" })),
-			Sample<HexEditorControl>("Editors", CreateHexEditor, "Edit the sample bytes using the actual hex and text views."),
-			Window<HexEditorDialog>(() => new HexEditorDialog { Bytes = new byte[] { 0x53, 0x70, 0x68, 0x65, 0x72, 0x65, 0x31, 0x30 } }),
-			Sample<ImageAttachmentSelectorControl>("Images", () => new ImageAttachmentSelectorControl(), "Choose None, a local file or the clipboard. Images are read only after your explicit selection."),
+			Sample<HexEditorControl>("Editors", CreateHexEditor, "Overwrite the sample bytes in the hex or text pane, use Go To and Find from the toolbar, and read the caret value in the data inspector."),
+			Window<HexEditorFindDialog>(() => new HexEditorFindDialog(), "Enter hexadecimal pairs or UTF-8 text and a direction. Find validates the pattern; this example does not search a document."),
+			Window<HexEditorForm>(CreateHexEditorForm, "A standalone editor window over the sample bytes with File, Edit and View menus. Close it to return to the catalog."),
+			Window<HexEditorGoToDialog>(() => new HexEditorGoToDialog { MaximumOffset = 4095 }, "Enter a hexadecimal or decimal offset up to 0xFFF. Go validates the input; this example does not move a caret."),
+			Sample<HexEditorView>("Editors", CreateHexEditorView, "The painted hex surface alone, bound to a sample viewport: click, drag, use the keyboard and type to overwrite. Commands belong to HexEditorControl."),
+			Sample<ImageAttachmentSelectorControl>("Images", () => new ImageAttachmentSelectorControl(), "Choose None, a file (or drop one on the control) or the clipboard image. Images are previewed and read only after your explicit selection."),
 			Sample<ImageLinkLabel>("Images", CreateImageLink),
 			Sample<ImageNavigator>("Images", CreateImageNavigator, "Use Previous and Next to navigate two owned sample images."),
 			Sample<IntBox>("Numbers", () => new IntBox { Text = "42" }),
@@ -190,9 +195,8 @@ public static class ControlCatalogSamples {
 		};
 	}
 
-	private static ControlCatalogEntry Sample<T>(string category, Func<Control> create, string instructions = "Interact with the actual control. The property panel edits this live sample only.") {
-		return new ControlCatalogEntry(typeof(T), category, instructions, create);
-	}
+	private static ControlCatalogEntry Sample<T>(string category, Func<Control> create, string instructions = "Interact with the actual control. The property panel edits this live sample only.")
+		=> new ControlCatalogEntry(typeof(T), category, instructions, create);
 
 	private static ControlCatalogEntry Window<T>(Func<Control> create, string instructions = "Open this real form in an owned window. Close it to return to the catalog.") {
 		return new ControlCatalogEntry(typeof(T), "Forms", instructions, () => {
@@ -203,9 +207,8 @@ public static class ControlCatalogSamples {
 		}, true);
 	}
 
-	private static ControlCatalogEntry WizardStep<T>(Func<WinFormsWizardScreen<LogOutputConfiguration>> create) {
-		return new ControlCatalogEntry(typeof(T), "Logging / wizards", "Open this step with its actual wizard model and native navigation. Finishing this sample does not open output or create a file.", null, true, owner => ShowLogWizardAsync(owner, create()));
-	}
+	private static ControlCatalogEntry WizardStep<T>(Func<WinFormsWizardScreen<LogOutputConfiguration>> create)
+		=> new ControlCatalogEntry(typeof(T), "Logging / wizards", "Open this step with its actual wizard model and native navigation. Finishing this sample does not open output or create a file.", null, true, owner => ShowLogWizardAsync(owner, create()));
 
 	private static T Composed<T>(T control)
 		where T : Control {
@@ -255,9 +258,7 @@ public static class ControlCatalogSamples {
 		return editor;
 	}
 
-	private static Employee CreateEmployee() {
-		return new Employee { ID = 1, FirstName = "Ada", LastName = "Lovelace" };
-	}
+	private static Employee CreateEmployee() => new Employee { ID = 1, FirstName = "Ada", LastName = "Lovelace" };
 
 	private static TestCrudDataSource CreateEmployees() {
 		var source = new TestCrudDataSource();
@@ -294,8 +295,22 @@ public static class ControlCatalogSamples {
 
 	private static Control CreateHexEditor() {
 		var editor = new HexEditorControl();
-		editor.Bytes = new byte[] { 0x53, 0x70, 0x68, 0x65, 0x72, 0x65, 0x31, 0x30 };
+		editor.OpenStream(new MemoryStream(HexEditorTestScreen.CreateSampleBytes()));
 		return editor;
+	}
+
+	// The bare view borrows a document that is released with the view.
+	private static Control CreateHexEditorView() {
+		var document = new HexEditorDocument(new MemoryStream(HexEditorTestScreen.CreateSampleBytes()));
+		var view = new HexEditorView { Viewport = new HexEditorViewport(document) };
+		view.Disposed += (_, _) => document.Dispose();
+		return view;
+	}
+
+	private static Form CreateHexEditorForm() {
+		var form = new HexEditorForm();
+		form.OpenStream(new MemoryStream(HexEditorTestScreen.CreateSampleBytes()), "Sample bytes");
+		return form;
 	}
 
 	private static Control CreateImageNavigator() {
@@ -422,9 +437,8 @@ public static class ControlCatalogSamples {
 		return screen;
 	}
 
-	private static VisualGridColumn<Employee> EmployeeColumn(string property, string caption, Func<Employee, object> value) {
-		return new VisualGridColumn<Employee> { PropertyName = property, ColumnName = caption, PropertyValue = value, DisplayType = CrudCellDisplayType.Text, DataType = typeof(string) };
-	}
+	private static VisualGridColumn<Employee> EmployeeColumn(string property, string caption, Func<Employee, object> value)
+		=> new VisualGridColumn<Employee> { PropertyName = property, ColumnName = caption, PropertyValue = value, DisplayType = CrudCellDisplayType.Text, DataType = typeof(string) };
 
 	private static Control CreateMultiSelectionButton() {
 		var button = new MultiSelectionButton { Text = "Choose an action", Height = 36 };

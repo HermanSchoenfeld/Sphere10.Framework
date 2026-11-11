@@ -90,13 +90,9 @@ public class ControlCatalogTests {
 	}
 
 	// Runtime samples are checked by the real application-host traversal, after their services and dispatcher exist.
-	internal static bool ContainsRepresentedType(Control sample, Type expected) {
-		return FindRepresentedObject(sample, expected) != null;
-	}
+	internal static bool ContainsRepresentedType(Control sample, Type expected) => FindRepresentedObject(sample, expected) != null;
 
-	internal static object FindRepresentedObject(Control sample, Type expected) {
-		return Subjects(sample).FirstOrDefault(subject => Represents(expected, subject.GetType()));
-	}
+	internal static object FindRepresentedObject(Control sample, Type expected) => Subjects(sample).FirstOrDefault(subject => Represents(expected, subject.GetType()));
 
 	private static IEnumerable<object> Subjects(Control control) {
 		yield return control;

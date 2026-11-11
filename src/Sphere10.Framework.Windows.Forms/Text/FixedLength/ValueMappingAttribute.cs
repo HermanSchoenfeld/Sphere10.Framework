@@ -30,20 +30,12 @@ public class ValueMappingAttribute : System.Attribute {
 	}
 
 	public string StringValue {
-		get {
-			return _stringValue;
-		}
-		set {
-			_stringValue = value;
-		}
+		get => _stringValue;
+		set => _stringValue = value;
 	}
 
 	public object FieldValue {
-		get {
-			return _fieldValue;
-		}
-		set {
-			_fieldValue = value;
-		}
+		get => _fieldValue;
+		set => _fieldValue = value;
 	}
 }

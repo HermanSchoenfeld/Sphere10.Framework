@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -25,15 +26,16 @@ public abstract class LoadableBase : ILoadable {
 		NotifyLoaded();
 	}
 
-	public async Task LoadAsync() {
+	public async Task LoadAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
 		await NotifyLoadingAsync();
-		await LoadInternalAsync();
+		await LoadInternalAsync(cancellationToken);
 		await NotifyLoadedAsync();
 	}
 
 	protected abstract void LoadInternal();
 
-	protected abstract Task LoadInternalAsync();
+	protected abstract Task LoadInternalAsync(CancellationToken cancellationToken);
 
 	protected virtual void OnLoading() {
 	}
@@ -69,7 +71,6 @@ public abstract class LoadableBase : ILoadable {
 			return;
 		OnLoaded();
 		Loaded?.Invoke(this);
-
 	}
 
 	protected async Task NotifyLoadedAsync() {
@@ -79,4 +80,3 @@ public abstract class LoadableBase : ILoadable {
 		await Task.Run(() => Loaded?.Invoke(this));
 	}
 }
-

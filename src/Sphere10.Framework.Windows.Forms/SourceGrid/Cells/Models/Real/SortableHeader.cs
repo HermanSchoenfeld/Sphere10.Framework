@@ -15,20 +15,12 @@ public class SortableHeader : ISortableHeader {
 	private SortStatus _sortStatus = new SortStatus(Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None, null);
 
 	public SortStatus SortStatus {
-		get {
-			return _sortStatus;
-		}
-		set {
-			_sortStatus = value;
-		}
+		get => _sortStatus;
+		set => _sortStatus = value;
 	}
 
 	// ISortableHeader Members
-	public SortStatus GetSortStatus(CellContext cellContext) {
-		return _sortStatus;
-	}
+	public SortStatus GetSortStatus(CellContext cellContext) => _sortStatus;
 
-	public void SetSortMode(CellContext cellContext, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle style) {
-		_sortStatus.Style = style;
-	}
+	public void SetSortMode(CellContext cellContext, Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle style) => _sortStatus.Style = style;
 }

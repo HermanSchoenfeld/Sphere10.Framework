@@ -69,9 +69,7 @@ public class WOTSSharp : WOTS {
 	public new class Configuration : WOTS.Configuration {
 		public new static readonly Configuration Default;
 
-		static Configuration() {
-			Default = new Configuration(4, CHF.Blake2b_128, true);
-		}
+		static Configuration() => Default = new Configuration(4, CHF.Blake2b_128, true);
 
 		public Configuration()
 			: this(Default.W, Default.HashFunction, Default.UsePublicKeyHashOptimization) {

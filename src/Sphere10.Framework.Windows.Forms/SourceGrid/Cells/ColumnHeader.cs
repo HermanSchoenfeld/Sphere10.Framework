@@ -41,9 +41,7 @@ public class ColumnHeader : Cell {
 	/// Gets or sets if enable the resize of the width of the column. This property internally use the Controllers.Resizable.ResizeWidth.
 	/// </summary>
 	public bool ResizeEnabled {
-		get {
-			return FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeWidth;
-		}
+		get => FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeWidth;
 		set {
 			if (value == ResizeEnabled)
 				return;
@@ -60,9 +58,7 @@ public class ColumnHeader : Cell {
 	/// If you want to use a custom sort you can add a customized Controller or a customized instance of Controllers.SortableHeader.
 	/// </summary>
 	public bool AutomaticSortEnabled {
-		get {
-			return FindController(typeof(Controllers.SortableHeader)) == Controllers.SortableHeader.Default;
-		}
+		get => FindController(typeof(Controllers.SortableHeader)) == Controllers.SortableHeader.Default;
 		set {
 			if (value == AutomaticSortEnabled)
 				return;
@@ -78,46 +74,30 @@ public class ColumnHeader : Cell {
 	/// Status of the sort.
 	/// </summary>
 	public Models.SortStatus SortStatus {
-		get {
-			return SortableHeaderModel.SortStatus;
-		}
-		set {
-			SortableHeaderModel.SortStatus = value;
-		}
+		get => SortableHeaderModel.SortStatus;
+		set => SortableHeaderModel.SortStatus = value;
 	}
 
 	/// <summary>
 	/// Comparer used.
 	/// </summary>
 	public System.Collections.IComparer SortComparer {
-		get {
-			return SortStatus.Comparer;
-		}
-		set {
-			SortStatus = new SourceGrid.Cells.Models.SortStatus(SortStatus.Style, value);
-		}
+		get => SortStatus.Comparer;
+		set => SortStatus = new SourceGrid.Cells.Models.SortStatus(SortStatus.Style, value);
 	}
 
 	/// <summary>
 	/// Sort style.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle SortStyle {
-		get {
-			return SortStatus.Style;
-		}
-		set {
-			SortStatus = new SourceGrid.Cells.Models.SortStatus(value, SortStatus.Comparer);
-		}
+		get => SortStatus.Style;
+		set => SortStatus = new SourceGrid.Cells.Models.SortStatus(value, SortStatus.Comparer);
 	}
 
 	/// <summary>
 	/// Gets the used SortableHeader model.
 	/// </summary>
-	private Models.SortableHeader SortableHeaderModel {
-		get {
-			return (Models.SortableHeader)Model.FindModel(typeof(Models.SortableHeader));
-		}
-	}
+	private Models.SortableHeader SortableHeaderModel => (Models.SortableHeader)Model.FindModel(typeof(Models.SortableHeader));
 
 	/// <summary>
 	/// Sort the column

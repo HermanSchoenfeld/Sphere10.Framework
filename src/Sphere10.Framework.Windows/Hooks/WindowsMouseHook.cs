@@ -23,9 +23,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 	private readonly SerialThreadPool _mouseActivityQueue = new(error => SystemLog.Exception(error));
 	private long _activityGeneration;
 
-	static WindowsMouseHook() {
-		DefaultMovingStoppedInterval = TimeSpan.FromMilliseconds(100);
-	}
+	static WindowsMouseHook() => DefaultMovingStoppedInterval = TimeSpan.FromMilliseconds(100);
 
 	public WindowsMouseHook()
 		: this(new PollDrivenActiveApplicationMonitor()) {
@@ -95,12 +93,12 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 	}
 
 
-	public override void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY) {
-		HooksTool.SimulateMouseDeviceAction(button, buttonState, screenX, screenY);
-	}
+	public override void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY)
+		=> HooksTool.SimulateMouseDeviceAction(button, buttonState, screenX, screenY);
 
 	private IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam) {
 		var mouseMessages = (WinAPI.USER32.WM)wParam;
+		var intercept = false;
 		if (Status == DeviceHookStatus.Active) {
 			var arrivalTimestamp = Environment.TickCount64;
 			var oldPriority = Thread.CurrentThread.Priority;
@@ -174,6 +172,8 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 
 					}
 
+					intercept = ShouldIntercept?.Invoke(buttonClicked, buttonState) ?? false;
+
 					// Independent workers can turn forward motion into an apparent reversal; preserve native arrival order.
 					var generation = Interlocked.Read(ref _activityGeneration);
 					void ProcessActivity() {
@@ -190,7 +190,7 @@ public sealed class WindowsMouseHook : BaseMouseHook, IComponent {
 			}
 		}
 
-		return WinAPI.USER32.CallNextHookEx(_hMouseHook, nCode, wParam, lParam);
+		return intercept ? new IntPtr(1) : WinAPI.USER32.CallNextHookEx(_hMouseHook, nCode, wParam, lParam);
 	}
 
 

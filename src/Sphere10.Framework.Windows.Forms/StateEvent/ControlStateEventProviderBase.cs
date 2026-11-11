@@ -18,11 +18,7 @@ public abstract class ControlStateEventProviderBase<TControl> : IControlStateEve
 	public event EventHandlerEx StateChanged;
 
 	/// <summary>The native control type accepted by this provider.</summary>
-	public Type ControlType {
-		get {
-			return typeof(TControl);
-		}
-	}
+	public Type ControlType => typeof(TControl);
 
 	/// <summary>The borrowed control currently observed, or null after cleanup.</summary>
 	public TControl Control {
@@ -78,7 +74,5 @@ public abstract class ControlStateEventProviderBase<TControl> : IControlStateEve
 	}
 
 	// Disposal ends observation but never transfers ownership of the native control.
-	private void ControlDisposed(object sender, EventArgs args) {
-		Clear();
-	}
+	private void ControlDisposed(object sender, EventArgs args) => Clear();
 }

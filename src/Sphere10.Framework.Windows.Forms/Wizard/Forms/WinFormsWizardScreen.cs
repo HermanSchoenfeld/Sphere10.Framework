@@ -21,9 +21,7 @@ public class WinFormsWizardScreen<T> : UserControlEx, IWinFormsWizardScreen<T> {
 	public virtual async Task Initialize() {
 	}
 
-	public virtual async Task OnPresent() {
-		CopyModelToUI();
-	}
+	public virtual async Task OnPresent() => CopyModelToUI();
 
 	public virtual async Task OnPrevious() {
 	}
@@ -31,9 +29,13 @@ public class WinFormsWizardScreen<T> : UserControlEx, IWinFormsWizardScreen<T> {
 	public virtual async Task OnNext() {
 	}
 
-	public new virtual async Task<Result> Validate() {
-		return Result.Default;
-	}
+	public new virtual async Task<Result> Validate() => Result.Default;
+
+	/// <summary>
+	/// The height in device pixels this step's content needs at <paramref name="width"/>, wrapped text included, for a wizard sized with
+	/// <see cref="WizardStepSizing.EachStep"/>; null keeps the step's designer height. Called once the step is hosted and presented.
+	/// </summary>
+	public virtual int? MeasureHeight(int width) => null;
 
 }
 

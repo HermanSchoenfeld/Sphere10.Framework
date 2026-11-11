@@ -10,12 +10,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public class FlagsCheckedListBox : CheckedListBoxEx {
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
 	private Type _enumType;
 	private string[] _enumNames;
 	private Enum[] _enumValues;
@@ -32,8 +34,9 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
 	public Type EnumType {
-		get { return _enumType; }
+		get => _enumType;
 		set {
 			if (value == null) {
 				base.Items.Clear();
@@ -53,7 +56,10 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 				throw new ArgumentException("Type dos not have 'Flags' attribute", "value");
 
 			_enumType = value;
-			_enumValues = Enum.GetValues(_enumType).Cast<Enum>().ToArray();
+			var underlyingValues = Enum.GetValuesAsUnderlyingType(_enumType);
+			_enumValues = new Enum[underlyingValues.Length];
+			for (var index = 0; index < underlyingValues.Length; index++)
+				_enumValues[index] = (Enum)Enum.ToObject(_enumType, underlyingValues.GetValue(index));
 			_enumNames = _enumValues.Select(ev => ev.GetDescription()).ToArray();
 			_enumNumericValues = (from e in _enumValues select Convert.ToInt64(e)).ToArray();
 			_enumToIndexLookup = _enumValues.WithDescriptions().ToLookup(e => e.Item, e => e.Index);
@@ -118,9 +124,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasSelectedValue {
-		get { return CheckedItems.Count > 0; }
-	}
+	public bool HasSelectedValue => CheckedItems.Count > 0;
 
 	protected override void OnItemCheck(ItemCheckEventArgs ice) {
 		base.OnItemCheck(ice);
@@ -210,9 +214,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 		}
 	}
 
-	protected override bool CanRaiseEvents {
-		get { return base.CanRaiseEvents && !_suspendEvents; }
-	}
+	protected override bool CanRaiseEvents => base.CanRaiseEvents && !_suspendEvents;
 
 	private void CheckBoxesUsingEnum(Enum value) {
 		try {
@@ -234,6 +236,7 @@ public class FlagsCheckedListBox : CheckedListBoxEx {
 		}
 	}
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(CheckedBoxItem))]
 	private void PopulateCheckedListBox() {
 		try {
 			base.BeginUpdate();

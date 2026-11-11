@@ -7,12 +7,20 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
-public sealed class WindowsPowerSettingDataSource : ReloadableSnapshotDataSource<WindowsPowerSettingInfo> {
-	public WindowsPowerSettingDataSource(Guid planId) : this(token => Tools.Windows.Computer.GetPowerSettingsAsync(planId, token)) { }
-	public WindowsPowerSettingDataSource(Func<CancellationToken, Task<WindowsPowerSettingInfo[]>> capture) : base(capture) { }
+/// <summary>The power settings of one power plan as an IDataSource.</summary>
+public sealed class WindowsPowerSettingDataSource : AsyncListDataSource<WindowsPowerSettingInfo> {
+	private readonly Guid _planId;
+
+	public WindowsPowerSettingDataSource(Guid planId) => _planId = planId;
+
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsPowerSettingInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Computer.GetPowerSettingsAsync(_planId, cancellationToken).ConfigureAwait(false);
 }

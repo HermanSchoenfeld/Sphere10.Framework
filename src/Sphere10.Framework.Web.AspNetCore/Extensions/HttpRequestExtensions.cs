@@ -28,9 +28,7 @@ public static class HttpRequestExtensions {
 		return uriBuilder.Uri;
 	}
 
-	public static string GetParameter(this HttpRequest request, Enum param) {
-		return request.GetParameter<string>(param);
-	}
+	public static string GetParameter(this HttpRequest request, Enum param) => request.GetParameter<string>(param);
 
 	public static bool ContainsParameter(this HttpRequest request, Enum param) {
 		PageParameterProcessor processor = new PageParameterProcessor(request);

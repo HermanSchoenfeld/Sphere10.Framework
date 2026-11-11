@@ -124,14 +124,10 @@ public class CommonControlStateEventProvider : ControlStateEventProviderBase<Con
 	}
 
 	// Calendar ranges are committed before this native event is raised.
-	private void DateChanged(object sender, DateRangeEventArgs args) {
-		_stateChanged?.Invoke();
-	}
+	private void DateChanged(object sender, DateRangeEventArgs args) => _stateChanged?.Invoke();
 
 	// The PropertyGrid has already applied and validated the edited property value.
-	private void PropertyValueChanged(object sender, PropertyValueChangedEventArgs args) {
-		_stateChanged?.Invoke();
-	}
+	private void PropertyValueChanged(object sender, PropertyValueChangedEventArgs args) => _stateChanged?.Invoke();
 
 	// ItemCheck precedes the BCL mutation; scope completion or one UI post observes the final value.
 	private void ItemCheck(object sender, ItemCheckEventArgs args) {
@@ -149,7 +145,9 @@ public class CommonControlStateEventProvider : ControlStateEventProviderBase<Con
 			return;
 
 		_pendingCheckChanges ??= new Dictionary<int, (object, CheckState)>();
-		_pendingCheckChanges.TryAdd(args.Index, (control.Items[args.Index], args.CurrentValue));
+		// An item checked repeatedly before the batch publishes keeps its state from before the first change.
+		if (!_pendingCheckChanges.ContainsKey(args.Index))
+			_pendingCheckChanges.Add(args.Index, (control.Items[args.Index], args.CurrentValue));
 		if (_checkNotificationPosted)
 			return;
 		_checkNotificationPosted = true;

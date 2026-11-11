@@ -44,9 +44,7 @@ public partial class LoadingCircle : Control {
 	[Description("The foreground colour of the indicator.")]
 	[DefaultValue(typeof(Color), "DarkGray")]
 	public Color Color {
-		get {
-			return _color;
-		}
+		get => _color;
 		set {
 			_color = value;
 			Invalidate();
@@ -58,9 +56,7 @@ public partial class LoadingCircle : Control {
 	[Description("The visual form of the indicator.")]
 	[DefaultValue(LoadingCircleAnimationStyle.Spokes)]
 	public LoadingCircleAnimationStyle AnimationStyle {
-		get {
-			return _animationStyle;
-		}
+		get => _animationStyle;
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown loading animation style.");
 			_animationStyle = value;
@@ -73,9 +69,7 @@ public partial class LoadingCircle : Control {
 	[Description("The outer radius in logical pixels; drawing fits the available control size.")]
 	[DefaultValue(10)]
 	public int OuterCircleRadius {
-		get {
-			return _outerCircleRadius;
-		}
+		get => _outerCircleRadius;
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			_outerCircleRadius = value;
@@ -88,9 +82,7 @@ public partial class LoadingCircle : Control {
 	[Description("The inner radius in logical pixels; zero lets spokes start at the centre.")]
 	[DefaultValue(8)]
 	public int InnerCircleRadius {
-		get {
-			return _innerCircleRadius;
-		}
+		get => _innerCircleRadius;
 		set {
 			Guard.ArgumentGTE(value, 0, nameof(value));
 			_innerCircleRadius = value;
@@ -103,9 +95,7 @@ public partial class LoadingCircle : Control {
 	[Description("The number of radial marks and steps per animation cycle.")]
 	[DefaultValue(10)]
 	public int NumberSpoke {
-		get {
-			return _numberOfSpoke;
-		}
+		get => _numberOfSpoke;
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			_numberOfSpoke = value;
@@ -119,9 +109,7 @@ public partial class LoadingCircle : Control {
 	[Description("Requests animation while the indicator is visible, enabled and has a native window.")]
 	[DefaultValue(false)]
 	public bool Active {
-		get {
-			return _active;
-		}
+		get => _active;
 		set {
 			if (value)
 				ObjectDisposedException.ThrowIf(IsDisposed, this);
@@ -139,9 +127,7 @@ public partial class LoadingCircle : Control {
 	[Description("The stroke width or dot diameter in logical pixels.")]
 	[DefaultValue(4)]
 	public int SpokeThickness {
-		get {
-			return _spokeThickness;
-		}
+		get => _spokeThickness;
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			_spokeThickness = value;
@@ -154,9 +140,7 @@ public partial class LoadingCircle : Control {
 	[Description("Milliseconds between frames; larger values animate more slowly.")]
 	[DefaultValue(100)]
 	public int RotationSpeed {
-		get {
-			return _timer.Interval;
-		}
+		get => _timer.Interval;
 		set {
 			if (value > 0)
 				_timer.Interval = value;
@@ -168,9 +152,7 @@ public partial class LoadingCircle : Control {
 	[Description("Applies a predefined circle geometry without changing its colour or animation style.")]
 	[DefaultValue(StylePresets.Custom)]
 	public StylePresets StylePreset {
-		get {
-			return _stylePreset;
-		}
+		get => _stylePreset;
 		set {
 			Guard.Argument(Enum.IsDefined(value), nameof(value), "Unknown loading geometry preset.");
 			_stylePreset = value;
@@ -261,9 +243,7 @@ public partial class LoadingCircle : Control {
 	}
 
 	/// <summary>Animates this borrowed indicator for the lifetime of the returned scope.</summary>
-	public ActionScope<LoadingCircle> BeginAnimationScope() {
-		return BeginAnimationScope(null);
-	}
+	public ActionScope<LoadingCircle> BeginAnimationScope() => BeginAnimationScope(null);
 
 	/// <summary>Animates this indicator and temporarily disables other controls in the supplied container.</summary>
 	public ActionScope<LoadingCircle> BeginAnimationScope(Control containerToDisable, params Control[] exclusionControls) {
@@ -461,19 +441,14 @@ public partial class LoadingCircle : Control {
 	}
 
 	// Apply trail opacity without replacing an explicitly translucent foreground colour.
-	private Color FadeColor(float opacity) {
-		return Color.FromArgb((int)Math.Round(_color.A * opacity), _color.R, _color.G, _color.B);
-	}
+	private Color FadeColor(float opacity) => Color.FromArgb((int)Math.Round(_color.A * opacity), _color.R, _color.G, _color.B);
 
 	// Convert the current geometry directly rather than storing values derived from size or frame.
-	private static PointF Coordinate(PointF center, float radius, double angle) {
-		return new PointF(center.X + radius * (float)Math.Cos(angle), center.Y + radius * (float)Math.Sin(angle));
-	}
+	private static PointF Coordinate(PointF center, float radius, double angle)
+		=> new PointF(center.X + radius * (float)Math.Cos(angle), center.Y + radius * (float)Math.Sin(angle));
 
 	// All circular styles share the same client-centred bounds.
-	private static RectangleF CircleBounds(PointF center, float radius) {
-		return new RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2);
-	}
+	private static RectangleF CircleBounds(PointF center, float radius) => new RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2);
 
 	#region Inner Types
 

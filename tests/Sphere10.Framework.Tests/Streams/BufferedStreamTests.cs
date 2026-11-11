@@ -21,9 +21,7 @@ namespace Sphere10.Framework.Tests;
 public class BufferedStreamTests {
 
 	[Test]
-	public void NullSourceIsRejected() {
-		Assert.That(() => new BufferedStream(null), Throws.ArgumentNullException);
-	}
+	public void NullSourceIsRejected() => Assert.That(() => new BufferedStream(null), Throws.ArgumentNullException);
 
 	[Test]
 	public void InvalidCapacityDoesNotTakeOwnership([Values(0, -1)] int capacity, [Values] bool leaveOpen) {
@@ -253,7 +251,7 @@ public class BufferedStreamTests {
 		var lengthQueries = source.LengthQueries;
 		buffered.Write(Array.Empty<byte>(), 0, 0);
 		Assert.That(buffered.Length, Is.EqualTo(24));
-		Assert.That(source.LengthQueries, Is.EqualTo(lengthQueries + (enabled ? 0 : 1)));
+		Assert.That(source.LengthQueries, Is.EqualTo(lengthQueries));
 	}
 
 	[TestCase(-1, 1, true)]
@@ -600,9 +598,9 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
-	public void SuccessfulLengthsIncludingZeroAreCachedLazily([Values(0, 24)] int length) {
+	public void SuccessfulLengthsIncludingZeroAreCachedLazily([Values(0, 24)] int length, [Values] bool readBuffering) {
 		using var source = new ObservedStream(Pattern(length));
-		using var buffered = new BufferedStream(source, 8);
+		using var buffered = new BufferedStream(source, 8, enableReadBuffering: readBuffering);
 		Assert.That(source.LengthQueries, Is.Zero);
 		for (var index = 0; index < 20; index++)
 			Assert.That(buffered.Length, Is.EqualTo(length));
@@ -611,9 +609,9 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
-	public void DisabledLengthCachingObservesExternalGrowth() {
+	public void DisabledLengthCachingObservesExternalGrowth([Values] bool readBuffering) {
 		using var source = new ObservedStream(Pattern(24));
-		using var buffered = new BufferedStream(source, 8, enableStreamLengthCaching: false);
+		using var buffered = new BufferedStream(source, 8, enableStreamLengthCaching: false, enableReadBuffering: readBuffering);
 		Assert.That(buffered.Length, Is.EqualTo(24));
 		source.SetPhysicalLength(31);
 		Assert.That(buffered.Length, Is.EqualTo(31));
@@ -621,9 +619,9 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
-	public void WritesAndResizesInvalidateLengthBeforeTheAttempt([Values(0, 1, 2, 3)] int operation) {
+	public void WritesAndResizesInvalidateLengthBeforeTheAttempt([Values(0, 1, 2, 3)] int operation, [Values] bool readBuffering) {
 		using var source = new ObservedStream(Pattern(24));
-		using var buffered = new BufferedStream(source, 8);
+		using var buffered = new BufferedStream(source, 8, enableReadBuffering: readBuffering);
 		Assert.That(buffered.Length, Is.EqualTo(24));
 		if (operation == 0) {
 			buffered.WriteByte(99);
@@ -642,6 +640,57 @@ public class BufferedStreamTests {
 			Assert.That(buffered.Length, Is.EqualTo(24));
 		}
 		Assert.That(source.LengthQueries, Is.EqualTo(2));
+	}
+
+	[Test]
+	public async Task EveryWriteRouteInvalidatesAnIndependentLengthCache([Values] bool readBuffering, [Values(0, 1, 2, 3, 4, 5)] int route) {
+		using var source = new ObservedStream(Pattern(24));
+		await using var buffered = new BufferedStream(source, 8, enableReadBuffering: readBuffering);
+		Assert.That(buffered.Length, Is.EqualTo(24));
+		buffered.Position = 24;
+		var bytes = new byte[] { 99 };
+
+		switch (route) {
+			case 0:
+				buffered.Write(bytes, 0, bytes.Length);
+				break;
+			case 1:
+				buffered.Write(bytes.AsSpan());
+				break;
+			case 2:
+				buffered.WriteByte(99);
+				break;
+			case 3:
+				await buffered.WriteAsync(bytes, 0, bytes.Length);
+				break;
+			case 4:
+				await buffered.WriteAsync(bytes.AsMemory());
+				break;
+			case 5:
+				buffered.EndWrite(buffered.BeginWrite(bytes, 0, bytes.Length, null, null));
+				break;
+		}
+
+		Assert.That(buffered.Length, Is.EqualTo(25));
+		Assert.That(buffered.Length, Is.EqualTo(25));
+		Assert.That(source.LengthQueries, Is.EqualTo(2));
+		Assert.That(source.WriteCalls, Is.EqualTo(1));
+	}
+
+	[Test]
+	public void InvalidAndEmptyMutationsKeepAnIndependentCachedLength([Values] bool readBuffering) {
+		using var source = new ObservedStream(Pattern(24));
+		using var buffered = new BufferedStream(source, 8, enableReadBuffering: readBuffering);
+		Assert.That(buffered.Length, Is.EqualTo(24));
+		source.SetPhysicalLength(31);
+
+		buffered.Write(Array.Empty<byte>(), 0, 0);
+		buffered.Write(ReadOnlySpan<byte>.Empty);
+		Assert.That(() => buffered.Write(new byte[1], -1, 1), Throws.InstanceOf<ArgumentException>());
+		Assert.That(() => buffered.SetLength(-1), Throws.InstanceOf<ArgumentException>());
+		Assert.That(buffered.Length, Is.EqualTo(24));
+		Assert.That(source.LengthQueries, Is.EqualTo(1));
+		Assert.That(source.WriteCalls + source.ResizeCalls, Is.Zero);
 	}
 
 	[Test]
@@ -664,9 +713,9 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
-	public void IgnoredAndPartiallyFailingResizeDoNotCreateAnInventedLength([Values] bool partialFailure) {
+	public void IgnoredAndPartiallyFailingResizeDoNotCreateAnInventedLength([Values] bool partialFailure, [Values] bool readBuffering) {
 		using var source = new ObservedStream(Pattern(24));
-		using var buffered = new BufferedStream(source, 8);
+		using var buffered = new BufferedStream(source, 8, enableReadBuffering: readBuffering);
 		Assert.That(buffered.Length, Is.EqualTo(24));
 		if (partialFailure) {
 			source.ResizeFailure = new IOException("Changed then failed");
@@ -750,24 +799,23 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
-	public void DisabledReadBufferingForwardsLengthEvenWhenTheLengthFlagIsTrue() {
+	public void LengthCachingAndReadBufferingAreIndependent([Values] bool readBuffering, [Values] bool lengthCaching) {
 		using var source = new ObservedStream(Pattern(24));
-		using var buffered = new BufferedStream(source, 8, enableReadBuffering: false);
+		using var buffered = new BufferedStream(source, 8, enableStreamLengthCaching: lengthCaching, enableReadBuffering: readBuffering);
+		Assert.That(source.LengthQueries, Is.Zero);
 		Assert.That(buffered.Length, Is.EqualTo(24));
+		Assert.That(buffered.Length, Is.EqualTo(24));
+		Assert.That(source.LengthQueries, Is.EqualTo(lengthCaching ? 1 : 2));
+
 		source.SetPhysicalLength(31);
-		Assert.That(buffered.Length, Is.EqualTo(31));
-		Assert.That(source.LengthQueries, Is.EqualTo(2));
+		Assert.That(buffered.Length, Is.EqualTo(lengthCaching ? 24 : 31));
+		Assert.That(source.LengthQueries, Is.EqualTo(lengthCaching ? 1 : 3));
 		Assert.That(buffered.ReadByte(), Is.Zero);
-		Assert.That(source.PhysicalPosition, Is.EqualTo(1));
-		buffered.EnableReadBuffering = true;
-		Assert.That(buffered.Length, Is.EqualTo(31));
-		Assert.That(buffered.Length, Is.EqualTo(31));
-		Assert.That(source.LengthQueries, Is.EqualTo(3));
-		Assert.That(buffered.Position, Is.EqualTo(1));
+		Assert.That(source.PhysicalPosition, Is.EqualTo(readBuffering ? 8 : 1));
 	}
 
 	[Test]
-	public void ReenablingDiscardsThePriorModesCachedCursorAndLength() {
+	public void ReadBufferModeChangesResetCursorButPreserveIndependentLengthCaching() {
 		using var source = new ObservedStream(Pattern(24));
 		using var buffered = new BufferedStream(source, 8);
 		Assert.That(buffered.Position, Is.Zero);
@@ -777,7 +825,14 @@ public class BufferedStreamTests {
 		source.SetPhysicalLength(31);
 		buffered.EnableReadBuffering = true;
 		Assert.That(buffered.Position, Is.EqualTo(9));
+		Assert.That(buffered.Length, Is.EqualTo(24));
+		Assert.That(source.LengthQueries, Is.EqualTo(1));
+		buffered.EnableReadBuffering = false;
+		Assert.That(buffered.Length, Is.EqualTo(24));
+		buffered.EnableReadBuffering = true;
+		buffered.EnableStreamLengthCaching = false;
 		Assert.That(buffered.Length, Is.EqualTo(31));
+		Assert.That(source.LengthQueries, Is.EqualTo(2));
 		Assert.That(buffered.ReadByte(), Is.EqualTo(9));
 	}
 
@@ -942,9 +997,9 @@ public class BufferedStreamTests {
 	}
 
 	[Test]
-	public async Task CancelledAndEmptyAsyncWritesDoNotInvalidateLengthOrTouchTheSource() {
+	public async Task CancelledAndEmptyAsyncWritesDoNotInvalidateLengthOrTouchTheSource([Values] bool readBuffering) {
 		using var source = new ObservedStream(Pattern(24));
-		await using var buffered = new BufferedStream(source, 8);
+		await using var buffered = new BufferedStream(source, 8, enableReadBuffering: readBuffering);
 		Assert.That(buffered.Length, Is.EqualTo(24));
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
@@ -1161,9 +1216,7 @@ public class BufferedStreamTests {
 	}
 
 	// Produce deterministic content independently of the read-ahead implementation.
-	private static byte[] Pattern(int count, int start = 0) {
-		return Enumerable.Range(start, count).Select(index => (byte)(index % 251)).ToArray();
-	}
+	private static byte[] Pattern(int count, int start = 0) => Enumerable.Range(start, count).Select(index => (byte)(index % 251)).ToArray();
 
 	#region Inner Types
 
@@ -1265,26 +1318,14 @@ public class BufferedStreamTests {
 
 		public CancellationToken LastWriteCancellationToken { get; private set; }
 
-		public byte[] Bytes {
-			get {
-				return _storage.ToArray();
-			}
-		}
+		public byte[] Bytes => _storage.ToArray();
 
 		public long PhysicalPosition {
-			get {
-				return _storage.Position;
-			}
-			set {
-				_storage.Position = value;
-			}
+			get => _storage.Position;
+			set => _storage.Position = value;
 		}
 
-		public int Operations {
-			get {
-				return ReadCalls + WriteCalls + SeekCalls + LengthQueries + PositionQueries + ResizeCalls + FlushCalls;
-			}
-		}
+		public int Operations => ReadCalls + WriteCalls + SeekCalls + LengthQueries + PositionQueries + ResizeCalls + FlushCalls;
 
 		public override bool CanRead {
 			get {
@@ -1332,9 +1373,7 @@ public class BufferedStreamTests {
 					throw new NotSupportedException();
 				return PositionOverride ?? _storage.Position;
 			}
-			set {
-				Seek(value, SeekOrigin.Begin);
-			}
+			set => Seek(value, SeekOrigin.Begin);
 		}
 
 		public override int Read(byte[] buffer, int offset, int count) {
@@ -1347,9 +1386,8 @@ public class BufferedStreamTests {
 			return ReadCore(buffer);
 		}
 
-		public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
-			return await ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
-		}
+		public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+			=> await ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
 
 		public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) {
 			AsyncReadCalls++;
@@ -1370,9 +1408,8 @@ public class BufferedStreamTests {
 			WriteCore(buffer);
 		}
 
-		public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
-			await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
-		}
+		public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+			=> await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
 
 		public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) {
 			AsyncWriteCalls++;
@@ -1429,9 +1466,7 @@ public class BufferedStreamTests {
 			return ValueTask.CompletedTask;
 		}
 
-		public void SetPhysicalLength(long length) {
-			_storage.SetLength(length);
-		}
+		public void SetPhysicalLength(long length) => _storage.SetLength(length);
 
 		protected override void Dispose(bool disposing) {
 			if (disposing) {
@@ -1479,42 +1514,20 @@ public class BufferedStreamTests {
 
 		public int LargestRead { get; private set; }
 
-		public override bool CanRead {
-			get {
-				return true;
-			}
-		}
+		public override bool CanRead => true;
 
-		public override bool CanSeek {
-			get {
-				return true;
-			}
-		}
+		public override bool CanSeek => true;
 
-		public override bool CanWrite {
-			get {
-				return true;
-			}
-		}
+		public override bool CanWrite => true;
 
-		public override long Length {
-			get {
-				return _length;
-			}
-		}
+		public override long Length => _length;
 
 		public override long Position {
-			get {
-				return _position;
-			}
-			set {
-				_position = value;
-			}
+			get => _position;
+			set => _position = value;
 		}
 
-		public override int Read(byte[] buffer, int offset, int count) {
-			return Read(buffer.AsSpan(offset, count));
-		}
+		public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
 
 		public override int Read(Span<byte> buffer) {
 			LargestRead = Math.Max(LargestRead, buffer.Length);

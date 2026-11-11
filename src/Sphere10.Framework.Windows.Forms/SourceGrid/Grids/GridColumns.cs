@@ -17,18 +17,14 @@ public class GridColumns : ColumnInfoCollection {
 	}
 
 	public new Grid Grid {
-		get {
-			return base.Grid as Grid;
-		}
+		get => base.Grid as Grid;
 	}
 
 	/// <summary>
 	/// Insert a column at the specified position
 	/// </summary>
 	/// <param name="index"></param>
-	public void Insert(int index) {
-		InsertRange(index, 1);
-	}
+	public void Insert(int index) => InsertRange(index, 1);
 
 	public void SetCount(int value) {
 		this.Grid.GrowGrid();
@@ -58,7 +54,5 @@ public class GridColumns : ColumnInfoCollection {
 		this.Grid.SpannedCellReferences.MoveLeftSpannedRanges(startIndex, count);
 	}
 
-	protected GridColumn CreateColumn() {
-		return new GridColumn((Grid)Grid);
-	}
+	protected GridColumn CreateColumn() => new GridColumn((Grid)Grid);
 }

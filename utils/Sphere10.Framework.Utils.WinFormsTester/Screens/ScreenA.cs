@@ -26,12 +26,8 @@ public partial class ScreenA : ApplicationScreen {
 	}
 
 	// Native date and confirmation changes update the same readable summary.
-	private void SelectionChanged(object sender, EventArgs args) {
-		UpdateSelection();
-	}
+	private void SelectionChanged(object sender, EventArgs args) => UpdateSelection();
 
 	// Display actual user input, leaving it owned by this independent screen.
-	private void UpdateSelection() {
-		_selection.Text = $"{_monthCalendar1.SelectionStart:d} – {_monthCalendar1.SelectionEnd:d} · confirmed: {_radioButton1.Checked}";
-	}
+	private void UpdateSelection() => _selection.Text = $"{_monthCalendar1.SelectionStart:d} – {_monthCalendar1.SelectionEnd:d} · confirmed: {_radioButton1.Checked}";
 }

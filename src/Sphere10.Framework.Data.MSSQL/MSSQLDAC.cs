@@ -22,9 +22,7 @@ public class MSSQLDAC : DACBase {
 		: base(connectionString, logger) {
 	}
 
-	public override DBMSType DBMSType {
-		get { return DBMSType.SQLServer; }
-	}
+	public override DBMSType DBMSType => DBMSType.SQLServer;
 
 	public override IDbConnection CreateConnection() {
 		var builder = new SqlConnectionStringBuilder(ConnectionString);
@@ -34,9 +32,7 @@ public class MSSQLDAC : DACBase {
 		return new SqlConnection(builder.ConnectionString);
 	}
 
-	public override ISQLBuilder CreateSQLBuilder() {
-		return new MSSQLBuilder();
-	}
+	public override ISQLBuilder CreateSQLBuilder() => new MSSQLBuilder();
 
 	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
 		// DbConnection supports both the current provider and connections supplied by legacy consumers.
@@ -44,9 +40,7 @@ public class MSSQLDAC : DACBase {
 		sqlConnection.EnlistTransaction(transaction);
 	}
 
-	public bool IsAzure() {
-		return this.ExecuteScalar<bool>("SELECT CASE WHEN SERVERPROPERTY('EngineEdition') = 5 THEN 1 ELSE 0 END");
-	}
+	public bool IsAzure() => this.ExecuteScalar<bool>("SELECT CASE WHEN SERVERPROPERTY('EngineEdition') = 5 THEN 1 ELSE 0 END");
 
 	// This needs to be done properly!
 	protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {

@@ -10,17 +10,13 @@ namespace Sphere10.Framework.Application;
 
 public class IncrementUsageByOneInitializer : SyncApplicationInitializerBase {
 
-	public IncrementUsageByOneInitializer(IProductUsageServices productUsageServices) {
-		ProductUsageServices = productUsageServices;
-	}
+	public IncrementUsageByOneInitializer(IProductUsageServices productUsageServices) => ProductUsageServices = productUsageServices;
 
 	public IProductUsageServices ProductUsageServices { get; private set; }
 
 	public override int Priority => 1;
 
-	public override void Initialize() {
-		ProductUsageServices.IncrementUsageByOne();
-	}
+	public override void Initialize() => ProductUsageServices.IncrementUsageByOne();
 
 }
 

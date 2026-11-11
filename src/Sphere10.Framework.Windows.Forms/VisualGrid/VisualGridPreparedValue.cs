@@ -10,12 +10,14 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Worker-prepared data, independent of a native cell's model, controllers and editor lifetime.</summary>
 internal readonly struct VisualGridPreparedValue {
+	private readonly VisualGridPreparedRowStyle _rowStyle;
 	/// <summary>Captures a detached cell value and its worker-prepared display state.</summary>
-	public VisualGridPreparedValue(bool hasValue, object value, string displayText, VisualGridPreparedTextEditor textEditor) {
+	public VisualGridPreparedValue(bool hasValue, object value, string displayText, VisualGridPreparedTextEditor textEditor, VisualGridPreparedRowStyle rowStyle = null) {
 		HasValue = hasValue;
 		Value = value;
 		DisplayText = displayText;
 		TextEditor = textEditor;
+		_rowStyle = rowStyle;
 	}
 
 	/// <summary>Whether the source supplied a value for this cell.</summary>
@@ -37,4 +39,6 @@ internal readonly struct VisualGridPreparedValue {
 	public VisualGridPreparedTextEditor TextEditor {
 		get;
 	}
+
+	public VisualGridRowStyle RowStyle => _rowStyle?.Value ?? default;
 }

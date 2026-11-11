@@ -34,14 +34,10 @@ public sealed class ChartControlStateEventProvider : ControlStateEventProviderBa
 	}
 
 	// Hover and incoming samples do not arrive through this completed range event.
-	private void SelectionRangeChanged(object sender, CursorEventArgs args) {
-		PublishChange();
-	}
+	private void SelectionRangeChanged(object sender, CursorEventArgs args) => PublishChange();
 
 	// The native engine has already accepted the new viewport.
-	private void AxisViewChanged(object sender, ViewEventArgs args) {
-		PublishChange();
-	}
+	private void AxisViewChanged(object sender, ViewEventArgs args) => PublishChange();
 
 	// A zoom gesture changes both axis view and selection; publish its final state once.
 	private void PublishChange() {
@@ -52,9 +48,7 @@ public sealed class ChartControlStateEventProvider : ControlStateEventProviderBa
 	}
 
 	// Native mouse-up processing has completed both range and viewport updates before this event.
-	private void MouseUp(object sender, MouseEventArgs args) {
-		PublishPendingMouseChange();
-	}
+	private void MouseUp(object sender, MouseEventArgs args) => PublishPendingMouseChange();
 
 	// Losing capture also ends an interrupted gesture without retaining a late notification.
 	private void MouseCaptureChanged(object sender, EventArgs args) {

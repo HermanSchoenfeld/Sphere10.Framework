@@ -32,22 +32,12 @@ public class Field : IField {
 		Validator = validator;
 	}
 
-	public int Index {
-		get {
-			return _index;
-		}
-	}
+	public int Index => _index;
 
-	public string Name {
-		get {
-			return _name;
-		}
-	}
+	public string Name => _name;
 
 	public int Length {
-		get {
-			return _length;
-		}
+		get => _length;
 		set {
 			if (value <= 0)
 				throw new InvalidFieldLengthException(value);
@@ -56,18 +46,12 @@ public class Field : IField {
 	}
 
 	public bool TrimBeforeParse {
-		get {
-			return _trimBeforeParse;
-		}
-		set {
-			_trimBeforeParse = value;
-		}
+		get => _trimBeforeParse;
+		set => _trimBeforeParse = value;
 	}
 
 	public Sphere10.Framework.ComponentModel.IValidator Validator {
-		get {
-			return _validator;
-		}
+		get => _validator;
 		set {
 			if (value == null)
 				throw new ArgumentNullException("Validator");

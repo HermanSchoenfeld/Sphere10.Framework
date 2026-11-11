@@ -39,53 +39,31 @@ public class AppointmentBase : IAppointment {
 	}
 
 	public DateTime DateTimeStart {
-		get {
-			return _dateTimeStart;
-		}
-		set {
-			_dateTimeStart = value;
-		}
+		get => _dateTimeStart;
+		set => _dateTimeStart = value;
 	}
 
 	public DateTime DateTimeEnd {
-		get {
-			return _dateTimeEnd;
-		}
-		set {
-			_dateTimeEnd = value;
-		}
+		get => _dateTimeEnd;
+		set => _dateTimeEnd = value;
 	}
 
 	public virtual string Title {
-		get {
-			return _title;
-		}
-		set {
-			_title = value;
-		}
+		get => _title;
+		set => _title = value;
 	}
 
 	[Browsable(false)]
 	public virtual Cells.Views.IView View {
-		get {
-			return _view;
-		}
-		set {
-			_view = value;
-		}
+		get => _view;
+		set => _view = value;
 	}
 
 	[Browsable(false)]
 	public Cells.Controllers.IController Controller {
-		get {
-			return _controller;
-		}
-		set {
-			_controller = value;
-		}
+		get => _controller;
+		set => _controller = value;
 	}
 
-	public bool ContainsDateTime(DateTime dateTime) {
-		return (_dateTimeStart <= dateTime && _dateTimeEnd > dateTime);
-	}
+	public bool ContainsDateTime(DateTime dateTime) => (_dateTimeStart <= dateTime && _dateTimeEnd > dateTime);
 }

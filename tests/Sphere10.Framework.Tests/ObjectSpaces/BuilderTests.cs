@@ -107,15 +107,20 @@ public class BuilderTests {
 		Assert.That(() => objectSpaceBuilder.GetDimension<Account>().UsingEqualityComparer<DummyAccountEqualityComparer>(), Throws.InvalidOperationException);
 	}
 
-	[Test]
-	public void Annotations() {
+	[TestCase(false)]
+	[TestCase(true)]
+	public void Annotations(bool useRuntimeType) {
 		var customComparerFactory = new ComparerFactory(ComparerFactory.Default);
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
-		objectSpaceBuilder
-			.UseMemoryStream()
-			.AddDimension<Account>().Done()
-			.AddDimension<Identity>().Done();
+		objectSpaceBuilder.UseMemoryStream();
+		if (useRuntimeType) {
+			objectSpaceBuilder.AddDimension(typeof(Account)).Done();
+			objectSpaceBuilder.AddDimension(typeof(Identity)).Done();
+		} else {
+			objectSpaceBuilder.AddDimension<Account>().Done()
+				.AddDimension<Identity>().Done();
+		}
 
 
 		var definition = objectSpaceBuilder.BuildDefinition();
@@ -137,40 +142,28 @@ public class BuilderTests {
 		Assert.That(definition.Dimensions[1].Indexes[2].Member, Is.EqualTo(Tools.Mapping.GetMember<Identity>(x => x.Group)));
 
 		// Test comparer
-		var objectSpace = objectSpaceBuilder.Build();
+		using var objectSpace = objectSpaceBuilder.Build();
 		Assert.That( () => objectSpace.Comparers.GetEqualityComparer<Account>(), Is.InstanceOf<AccountEqualityComparer>());
 		
 	}
 
 	internal class DummyAccountSerializer : ItemSerializerBase<Account> {
 
-		public override long CalculateSize(SerializationContext context, Account item) {
-			throw new NotSupportedException();
-		}
+		public override long CalculateSize(SerializationContext context, Account item) => throw new NotSupportedException();
 
-		public override void Serialize(Account item, EndianBinaryWriter writer, SerializationContext context) {
-			throw new NotSupportedException();
-		}
+		public override void Serialize(Account item, EndianBinaryWriter writer, SerializationContext context) => throw new NotSupportedException();
 
-		public override Account Deserialize(EndianBinaryReader reader, SerializationContext context) {
-			throw new NotSupportedException();
-		}
+		public override Account Deserialize(EndianBinaryReader reader, SerializationContext context) => throw new NotSupportedException();
 	}
 
 	internal class DummyAccountComparer : IComparer<Account> {
-		public int Compare(Account x, Account y) {
-			throw new NotSupportedException();
-		}
+		public int Compare(Account x, Account y) => throw new NotSupportedException();
 	}
 
 	internal class DummyAccountEqualityComparer : IEqualityComparer<Account> {
-		public bool Equals(Account x, Account y) {
-			throw new NotSupportedException();
-		}
+		public bool Equals(Account x, Account y) => throw new NotSupportedException();
 
-		public int GetHashCode(Account obj) {
-			throw new NotSupportedException();
-		}
+		public int GetHashCode(Account obj) => throw new NotSupportedException();
 	}
 }
 

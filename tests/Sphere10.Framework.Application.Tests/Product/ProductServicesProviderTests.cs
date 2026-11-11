@@ -203,9 +203,7 @@ public class ProductServicesProviderTests {
 	private sealed class TestInformationProvider : IProductInformationProvider {
 		private readonly ProductInformation _information;
 
-		public TestInformationProvider(ProductInformation information) {
-			_information = information;
-		}
+		public TestInformationProvider(ProductInformation information) => _information = information;
 
 		public int ReadCount { get; private set; }
 
@@ -227,9 +225,7 @@ public class ProductServicesProviderTests {
 
 		public int Increments { get; private set; }
 
-		public void IncrementUsageByOne() {
-			Increments++;
-		}
+		public void IncrementUsageByOne() => Increments++;
 	}
 
 	// Count calls through the existing running-instance contract.

@@ -110,9 +110,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Registers a component whose type is supplied by its callback.</summary>
-	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure) {
-		return AddScreen(configure, out _);
-	}
+	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure) => AddScreen(configure, out _);
 
 	/// <summary>Captures the identity after a callback has supplied the component type and configuration.</summary>
 	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure, out ApplicationScreenRegistration registration) {
@@ -133,9 +131,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Sets the display name of the configured block.</summary>
-	public ApplicationBlockBuilder WithTitle(string title) {
-		return WithName(title);
-	}
+	public ApplicationBlockBuilder WithTitle(string title) => WithName(title);
 
 	/// <summary>Sets the block navigation icon.</summary>
 	public ApplicationBlockBuilder WithIconUrl(string iconUrl) {
@@ -150,9 +146,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds a toolbar action using optional inline web presentation.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(string text, Action action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddToolBarItem(text, action, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(string text, Action action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddToolBarItem(text, action, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds a toolbar action and captures its configuration definition.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(string text, Action action, out IApplicationMenuItem registration,
@@ -161,9 +156,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds a toolbar action using optional inline web presentation.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(string text, Func<IServiceProvider, CancellationToken, Task> action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddToolBarItem(text, action, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(string text, Func<IServiceProvider, CancellationToken, Task> action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddToolBarItem(text, action, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds a toolbar action and captures its configuration definition.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(string text, Func<IServiceProvider, CancellationToken, Task> action, out IApplicationMenuItem registration,
@@ -184,9 +178,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds toolbar navigation without creating or changing a screen registration.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(Type screenType, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddToolBarItem(screenType, text, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(Type screenType, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddToolBarItem(screenType, text, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds toolbar navigation and captures its configuration definition.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(Type screenType, string text, out IApplicationMenuItem registration,
@@ -195,9 +188,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds toolbar navigation without creating or changing a screen registration.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(ApplicationScreenRegistration screen, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddToolBarItem(screen, text, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(ApplicationScreenRegistration screen, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddToolBarItem(screen, text, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds toolbar navigation and captures its configuration definition.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(ApplicationScreenRegistration screen, string text, out IApplicationMenuItem registration,
@@ -206,9 +198,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds toolbar navigation without creating or changing a screen registration.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(SharedUI.ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddToolBarItem(definition, text, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(SharedUI.ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddToolBarItem(definition, text, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds toolbar navigation and captures its configuration definition.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(SharedUI.ApplicationScreenDefinition definition, string text, out IApplicationMenuItem registration,
@@ -218,9 +209,8 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds a toolbar action group using optional inline web presentation.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(string text, IApplicationMenuItem[] children, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddToolBarItem(text, children, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(string text, IApplicationMenuItem[] children, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddToolBarItem(text, children, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds a toolbar action group and captures its configuration definition.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(string text, IApplicationMenuItem[] children,
@@ -229,9 +219,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds a toolbar command to the configured block.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(IApplicationMenuItem item) {
-		return AddToolBarItem(item, out _);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(IApplicationMenuItem item) => AddToolBarItem(item, out _);
 
 	/// <summary>Adds a toolbar command and captures its configured definition before graph snapshots are built.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(IApplicationMenuItem item, out IApplicationMenuItem registration) {
@@ -242,9 +230,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds a toolbar command to the configured block.</summary>
-	public ApplicationBlockBuilder AddToolBarItem(Action<ApplicationMenuItemBuilder> configure) {
-		return AddToolBarItem(configure, out _);
-	}
+	public ApplicationBlockBuilder AddToolBarItem(Action<ApplicationMenuItemBuilder> configure) => AddToolBarItem(configure, out _);
 
 	/// <summary>Configures one toolbar command, captures its definition and returns the block builder.</summary>
 	public ApplicationBlockBuilder AddToolBarItem(Action<ApplicationMenuItemBuilder> configure, out IApplicationMenuItem registration) {
@@ -255,19 +241,13 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Adds a toolbar separator at the current declaration position.</summary>
-	public ApplicationBlockBuilder AddToolBarSeparator() {
-		return AddToolBarItem(new BlazorMenuSeparator());
-	}
+	public ApplicationBlockBuilder AddToolBarSeparator() => AddToolBarItem(new BlazorMenuSeparator());
 
 	/// <inheritdoc />
-	protected override void ValidateName(string name) {
-		Guard.ArgumentNotNullOrEmpty(name, nameof(name));
-	}
+	protected override void ValidateName(string name) => Guard.ArgumentNotNullOrEmpty(name, nameof(name));
 
 	/// <inheritdoc />
-	protected override void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
-	}
+	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(IApplicationScreen));
 
 	/// <inheritdoc />
 	protected override ApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {

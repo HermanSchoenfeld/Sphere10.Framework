@@ -20,9 +20,7 @@ namespace Sphere10.Framework.Windows.Forms;
 /// </summary>
 public class SessionEndingHandlerInitializer : SyncApplicationInitializerBase {
 
-	public SessionEndingHandlerInitializer(IServiceProvider serviceProvider) {
-		ServiceProvider = serviceProvider;
-	}
+	public SessionEndingHandlerInitializer(IServiceProvider serviceProvider) => ServiceProvider = serviceProvider;
 
 	protected IServiceProvider ServiceProvider { get; }
 

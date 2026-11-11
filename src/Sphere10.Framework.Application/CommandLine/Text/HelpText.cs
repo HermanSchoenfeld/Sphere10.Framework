@@ -186,7 +186,7 @@ public class HelpText {
 	/// You can directly assign a <see cref="CommandLine.Text.HeadingInfo"/> instance.
 	/// </summary>
 	public string Heading {
-		get { return heading; }
+		get => heading;
 		set {
 			if (value == null) throw new ArgumentNullException("value");
 
@@ -199,7 +199,7 @@ public class HelpText {
 	/// You can directly assign a <see cref="CommandLine.Text.CopyrightInfo"/> instance.
 	/// </summary>
 	public string Copyright {
-		get { return copyright; }
+		get => copyright;
 		set {
 			if (value == null) throw new ArgumentNullException("value");
 
@@ -212,8 +212,8 @@ public class HelpText {
 	/// </summary>
 	/// <value>The maximum width of the display.</value>
 	public int MaximumDisplayWidth {
-		get { return maximumDisplayWidth; }
-		set { maximumDisplayWidth = value; }
+		get => maximumDisplayWidth;
+		set => maximumDisplayWidth = value;
 	}
 
 	/// <summary>
@@ -221,56 +221,54 @@ public class HelpText {
 	/// It modifies behavior of <see cref="AddOptions{T}(ParserResult{T})"/> method.
 	/// </summary>
 	public bool AddDashesToOption {
-		get { return addDashesToOption; }
-		set { addDashesToOption = value; }
+		get => addDashesToOption;
+		set => addDashesToOption = value;
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether to add an additional line after the description of the specification.
 	/// </summary>
 	public bool AdditionalNewLineAfterOption {
-		get { return additionalNewLineAfterOption; }
-		set { additionalNewLineAfterOption = value; }
+		get => additionalNewLineAfterOption;
+		set => additionalNewLineAfterOption = value;
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether to add newlines between help sections.
 	/// </summary>
 	public bool AddNewLineBetweenHelpSections {
-		get { return addNewLineBetweenHelpSections; }
-		set { addNewLineBetweenHelpSections = value; }
+		get => addNewLineBetweenHelpSections;
+		set => addNewLineBetweenHelpSections = value;
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether to add the values of an enum after the description of the specification.
 	/// </summary>
 	public bool AddEnumValuesToHelpText {
-		get { return addEnumValuesToHelpText; }
-		set { addEnumValuesToHelpText = value; }
+		get => addEnumValuesToHelpText;
+		set => addEnumValuesToHelpText = value;
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether implicit option or verb 'help' should be supported.
 	/// </summary>
 	public bool AutoHelp {
-		get { return autoHelp; }
-		set { autoHelp = value; }
+		get => autoHelp;
+		set => autoHelp = value;
 	}
 
 	/// <summary>
 	/// Gets or sets a value indicating whether implicit option or verb 'version' should be supported.
 	/// </summary>
 	public bool AutoVersion {
-		get { return autoVersion; }
-		set { autoVersion = value; }
+		get => autoVersion;
+		set => autoVersion = value;
 	}
 
 	/// <summary>
 	/// Gets the <see cref="SentenceBuilder"/> instance specified in constructor.
 	/// </summary>
-	public SentenceBuilder SentenceBuilder {
-		get { return sentenceBuilder; }
-	}
+	public SentenceBuilder SentenceBuilder => sentenceBuilder;
 
 	/// <summary>
 	/// Creates a new instance of the <see cref="CommandLine.Text.HelpText"/> class using common defaults.
@@ -359,9 +357,7 @@ public class HelpText {
 	/// </returns>
 	/// <remarks>This feature is meant to be invoked automatically by the parser, setting the HelpWriter property
 	/// of <see cref="CommandLine.ParserSettings"/>.</remarks>
-	public static HelpText AutoBuild<T>(ParserResult<T> parserResult, int maxDisplayWidth = DefaultMaximumLength) {
-		return AutoBuild<T>(parserResult, h => h, maxDisplayWidth);
-	}
+	public static HelpText AutoBuild<T>(ParserResult<T> parserResult, int maxDisplayWidth = DefaultMaximumLength) => AutoBuild<T>(parserResult, h => h, maxDisplayWidth);
 
 	/// <summary>
 	/// Creates a custom instance of the <see cref="CommandLine.Text.HelpText"/> class,
@@ -442,9 +438,7 @@ public class HelpText {
 	/// </summary>
 	/// <param name="info">This <see cref="CommandLine.Text.HelpText"/> instance.</param>
 	/// <returns>The <see cref="System.String"/> that contains the help screen.</returns>
-	public static implicit operator string(HelpText info) {
-		return info.ToString();
-	}
+	public static implicit operator string(HelpText info) => info.ToString();
 
 	/// <summary>
 	/// Adds a text line after copyright and before options usage strings.
@@ -452,9 +446,7 @@ public class HelpText {
 	/// <param name="value">A <see cref="System.String"/> instance.</param>
 	/// <returns>Updated <see cref="CommandLine.Text.HelpText"/> instance.</returns>
 	/// <exception cref="System.ArgumentNullException">Thrown when parameter <paramref name="value"/> is null or empty string.</exception>
-	public HelpText AddPreOptionsLine(string value) {
-		return AddPreOptionsLine(value, MaximumDisplayWidth);
-	}
+	public HelpText AddPreOptionsLine(string value) => AddPreOptionsLine(value, MaximumDisplayWidth);
 
 	/// <summary>
 	/// Adds a text line at the bottom, after options usage string.
@@ -462,9 +454,7 @@ public class HelpText {
 	/// <param name="value">A <see cref="System.String"/> instance.</param>
 	/// <returns>Updated <see cref="CommandLine.Text.HelpText"/> instance.</returns>
 	/// <exception cref="System.ArgumentNullException">Thrown when parameter <paramref name="value"/> is null or empty string.</exception>
-	public HelpText AddPostOptionsLine(string value) {
-		return AddLine(postOptionsHelp, value);
-	}
+	public HelpText AddPostOptionsLine(string value) => AddLine(postOptionsHelp, value);
 
 	/// <summary>
 	/// Adds text lines after copyright and before options usage strings.
@@ -636,9 +626,7 @@ public class HelpText {
 	/// <typeparam name="T">Type of parsing computation result.</typeparam>
 	/// <param name="parserResult">A parsing computation result.</param>
 	/// <returns>Resulting formatted text.</returns>
-	public static string RenderUsageText<T>(ParserResult<T> parserResult) {
-		return RenderUsageText(parserResult, example => example);
-	}
+	public static string RenderUsageText<T>(ParserResult<T> parserResult) => RenderUsageText(parserResult, example => example);
 
 	/// <summary>
 	/// Builds a string with usage text block created using <see cref="CommandLine.Text.UsageAttribute"/> data and metadata.
@@ -647,9 +635,8 @@ public class HelpText {
 	/// <param name="parserResult">A parsing computation result.</param>
 	/// <param name="mapperFunc">A mapping lambda normally used to translate text in other languages.</param>
 	/// <returns>Resulting formatted text.</returns>
-	public static string RenderUsageText<T>(ParserResult<T> parserResult, Func<Example, Example> mapperFunc) {
-		return string.Join(Environment.NewLine, RenderUsageTextAsLines(parserResult, mapperFunc));
-	}
+	public static string RenderUsageText<T>(ParserResult<T> parserResult, Func<Example, Example> mapperFunc)
+		=> string.Join(Environment.NewLine, RenderUsageTextAsLines(parserResult, mapperFunc));
 
 	/// <summary>
 	/// Builds a string sequence with usage text block created using <see cref="CommandLine.Text.UsageAttribute"/> data and metadata.

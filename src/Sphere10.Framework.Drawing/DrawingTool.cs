@@ -45,75 +45,51 @@ public partial class Drawing {
 
 	/// <summary>Tests whether content is aligned to the bottom edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsBottom(ContentAlignment alignment) {
-		return alignment is ContentAlignment.BottomCenter or ContentAlignment.BottomLeft or ContentAlignment.BottomRight;
-	}
+	public static bool IsBottom(ContentAlignment alignment) => alignment is ContentAlignment.BottomCenter or ContentAlignment.BottomLeft or ContentAlignment.BottomRight;
 
 	/// <summary>Tests whether content is aligned to the top edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsTop(ContentAlignment alignment) {
-		return alignment is ContentAlignment.TopCenter or ContentAlignment.TopLeft or ContentAlignment.TopRight;
-	}
+	public static bool IsTop(ContentAlignment alignment) => alignment is ContentAlignment.TopCenter or ContentAlignment.TopLeft or ContentAlignment.TopRight;
 
 	/// <summary>Tests whether content is vertically centered.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsMiddle(ContentAlignment alignment) {
-		return alignment is ContentAlignment.MiddleCenter or ContentAlignment.MiddleLeft or ContentAlignment.MiddleRight;
-	}
+	public static bool IsMiddle(ContentAlignment alignment) => alignment is ContentAlignment.MiddleCenter or ContentAlignment.MiddleLeft or ContentAlignment.MiddleRight;
 
 	/// <summary>Tests whether content is horizontally centered.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsCenter(ContentAlignment alignment) {
-		return alignment is ContentAlignment.TopCenter or ContentAlignment.MiddleCenter or ContentAlignment.BottomCenter;
-	}
+	public static bool IsCenter(ContentAlignment alignment) => alignment is ContentAlignment.TopCenter or ContentAlignment.MiddleCenter or ContentAlignment.BottomCenter;
 
 	/// <summary>Tests whether content is aligned to the left edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsLeft(ContentAlignment alignment) {
-		return alignment is ContentAlignment.BottomLeft or ContentAlignment.MiddleLeft or ContentAlignment.TopLeft;
-	}
+	public static bool IsLeft(ContentAlignment alignment) => alignment is ContentAlignment.BottomLeft or ContentAlignment.MiddleLeft or ContentAlignment.TopLeft;
 
 	/// <summary>Tests whether content is aligned to the right edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsRight(ContentAlignment alignment) {
-		return alignment is ContentAlignment.BottomRight or ContentAlignment.MiddleRight or ContentAlignment.TopRight;
-	}
+	public static bool IsRight(ContentAlignment alignment) => alignment is ContentAlignment.BottomRight or ContentAlignment.MiddleRight or ContentAlignment.TopRight;
 
 	/// <summary>Tests whether a string format aligns content to the bottom edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsBottom(StringFormat format) {
-		return format.LineAlignment == StringAlignment.Far;
-	}
+	public static bool IsBottom(StringFormat format) => format.LineAlignment == StringAlignment.Far;
 
 	/// <summary>Tests whether a string format aligns content to the top edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsTop(StringFormat format) {
-		return format.LineAlignment == StringAlignment.Near;
-	}
+	public static bool IsTop(StringFormat format) => format.LineAlignment == StringAlignment.Near;
 
 	/// <summary>Tests whether a string format centers content vertically.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsMiddle(StringFormat format) {
-		return format.LineAlignment == StringAlignment.Center;
-	}
+	public static bool IsMiddle(StringFormat format) => format.LineAlignment == StringAlignment.Center;
 
 	/// <summary>Tests whether a string format centers content horizontally.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsCenter(StringFormat format) {
-		return format.Alignment == StringAlignment.Center;
-	}
+	public static bool IsCenter(StringFormat format) => format.Alignment == StringAlignment.Center;
 
 	/// <summary>Tests whether a string format aligns content to the left edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsLeft(StringFormat format) {
-		return format.Alignment == StringAlignment.Near;
-	}
+	public static bool IsLeft(StringFormat format) => format.Alignment == StringAlignment.Near;
 
 	/// <summary>Tests whether a string format aligns content to the right edge.</summary>
 	[SupportedOSPlatform("windows")]
-	public static bool IsRight(StringFormat format) {
-		return format.Alignment == StringAlignment.Far;
-	}
+	public static bool IsRight(StringFormat format) => format.Alignment == StringAlignment.Far;
 
 	/// <summary>
 	/// Converts a string to a color
@@ -166,9 +142,7 @@ public partial class Drawing {
 	/// <param name="startColor"></param>
 	/// <param name="endColor"></param>
 	/// <returns></returns>
-	public static Color CalculateMiddleColor(Color startColor, Color endColor) {
-		return CalculateColorGradient(startColor, endColor, 3)[1];
-	}
+	public static Color CalculateMiddleColor(Color startColor, Color endColor) => CalculateColorGradient(startColor, endColor, 3)[1];
 
 	/// <summary>
 	/// Interpolate the specified number of times between start and end color
@@ -200,13 +174,9 @@ public partial class Drawing {
 		return colors;
 	}
 
-	public static string ConvertColorToString(Color color) {
-		return color.ToARGBString();
-	}
+	public static string ConvertColorToString(Color color) => color.ToARGBString();
 
-	public static Color RandomColor(bool solid = true) {
-		return Color.FromArgb(solid ? 255 : Tools.Maths.RNG.Next(256), Tools.Maths.RNG.Next(256), Tools.Maths.RNG.Next(256));
-	}
+	public static Color RandomColor(bool solid = true) => Color.FromArgb(solid ? 255 : Tools.Maths.RNG.Next(256), Tools.Maths.RNG.Next(256), Tools.Maths.RNG.Next(256));
 
 	[SupportedOSPlatform("windows6.1")]
 	public static bool IsRecognisedImageFile(string fileName) {
@@ -405,9 +375,7 @@ public partial class Drawing {
 	}
 
 	[SupportedOSPlatform("windows")]
-	public static Icon Resizeicon(Icon icon, int squareDimension) {
-		return new Icon(icon, new Size(squareDimension, squareDimension));
-	}
+	public static Icon Resizeicon(Icon icon, int squareDimension) => new Icon(icon, new Size(squareDimension, squareDimension));
 
 	/// <summary>
 	/// Create a disabled version of the image.

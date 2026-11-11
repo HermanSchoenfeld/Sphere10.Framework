@@ -24,21 +24,9 @@ public class RangeRegionChangingEventArgs : EventArgs {
 		_regionToInclude = rangeToInclude;
 	}
 
-	public RangeRegion CurrentRegion {
-		get {
-			return _currentRegion;
-		}
-	}
+	public RangeRegion CurrentRegion => _currentRegion;
 
-	public RangeRegion RegionToInclude {
-		get {
-			return _regionToInclude;
-		}
-	}
+	public RangeRegion RegionToInclude => _regionToInclude;
 
-	public RangeRegion RegionToExclude {
-		get {
-			return _regionToExclude;
-		}
-	}
+	public RangeRegion RegionToExclude => _regionToExclude;
 }

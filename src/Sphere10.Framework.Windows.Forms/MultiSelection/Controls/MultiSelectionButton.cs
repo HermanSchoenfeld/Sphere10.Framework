@@ -44,9 +44,7 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public override string Text {
-		get {
-			return _mainButton.Text;
-		}
+		get => _mainButton.Text;
 		set {
 			_mainButton.Text = value;
 			base.Text = value;
@@ -55,20 +53,14 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 
 	[Browsable(false)]
 	public new Color BackColor {
-		get {
-			return base.BackColor;
-		}
-		set {
-			base.BackColor = value;
-		}
+		get => base.BackColor;
+		set => base.BackColor = value;
 	}
 
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public override Color ForeColor {
-		get {
-			return base.ForeColor;
-		}
+		get => base.ForeColor;
 		set {
 			_mainButton.ForeColor = value;
 			_arrowButton.ForeColor = value;
@@ -79,9 +71,7 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public override Font Font {
-		get {
-			return base.Font;
-		}
+		get => base.Font;
 		set {
 			_mainButton.Font = value;
 			_arrowButton.Font = value;
@@ -92,81 +82,51 @@ public partial class MultiSelectionButton : UserControlEx, IButtonControl {
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual System.Drawing.ContentAlignment TextAlign {
-		get {
-			return _mainButton.TextAlign;
-		}
-		set {
-			_mainButton.TextAlign = value;
-		}
+		get => _mainButton.TextAlign;
+		set => _mainButton.TextAlign = value;
 	}
 
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual Image Image {
-		get {
-			return _mainButton.Image;
-		}
-		set {
-			_mainButton.Image = value;
-		}
+		get => _mainButton.Image;
+		set => _mainButton.Image = value;
 	}
 
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual System.Drawing.ContentAlignment ImageAlign {
-		get {
-			return _mainButton.ImageAlign;
-		}
-		set {
-			_mainButton.ImageAlign = value;
-		}
+		get => _mainButton.ImageAlign;
+		set => _mainButton.ImageAlign = value;
 	}
 
 	// IButtonControl Members
 	[Browsable(true)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public virtual DialogResult DialogResult {
-		get {
-			return _mainButton.DialogResult;
-		}
-		set {
-			_mainButton.DialogResult = value;
-		}
+		get => _mainButton.DialogResult;
+		set => _mainButton.DialogResult = value;
 	}
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ExtendedList<SubButtonItem> ButtonsItems {
-		get {
-			return _buttonsItems;
-		}
-		set {
-			_buttonsItems = value;
-		}
+		get => _buttonsItems;
+		set => _buttonsItems = value;
 	}
 
 	[DefaultValue(MultiSelectionButtonMode.InvokeFirstAction)]
 	public MultiSelectionButtonMode Mode {
-		get {
-			return _mode;
-		}
-		set {
-			_mode = value;
-		}
+		get => _mode;
+		set => _mode = value;
 	}
 
-	public void PerformClick() {
-		_mainButton.PerformClick();
-	}
+	public void PerformClick() => _mainButton.PerformClick();
 
-	public void NotifyDefault(bool value) {
-		_mainButton.NotifyDefault(value);
-	}
+	public void NotifyDefault(bool value) => _mainButton.NotifyDefault(value);
 
 	// Routes a selected item through the same button click notification path.
-	internal void InvokeSubItemClick(SubButtonItemEventArgs args) {
-		OnClick(args);
-	}
+	internal void InvokeSubItemClick(SubButtonItemEventArgs args) => OnClick(args);
 
 	protected virtual void OnClick(SubButtonItemEventArgs args) {
 		if (args.ButtonItem != null)

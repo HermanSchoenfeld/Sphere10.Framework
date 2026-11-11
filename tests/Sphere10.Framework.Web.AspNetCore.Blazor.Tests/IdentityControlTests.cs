@@ -302,9 +302,7 @@ public class IdentityControlTests {
 	}
 
 	private sealed class IdentityJsRuntime : IJSRuntime {
-		public IdentityJsRuntime() {
-			Import = Task.FromResult<IJSObjectReference>(Module);
-		}
+		public IdentityJsRuntime() => Import = Task.FromResult<IJSObjectReference>(Module);
 
 		public IdentityJsModule Module { get; } = new();
 

@@ -28,19 +28,13 @@ public partial class ImageNavigator : UserControlEx {
 	}
 
 	public string StatusFormat {
-		get {
-			return _statusFormat;
-		}
-		set {
-			_statusFormat = value;
-		}
+		get => _statusFormat;
+		set => _statusFormat = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Image[] Images {
-		get {
-			return _images;
-		}
+		get => _images;
 		set {
 			_images = value;
 			using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
@@ -50,9 +44,7 @@ public partial class ImageNavigator : UserControlEx {
 	}
 
 	public int CurrentImageIndex {
-		get {
-			return _currentImageIndex;
-		}
+		get => _currentImageIndex;
 		set {
 			var changed = _currentImageIndex != value;
 			_currentImageIndex = value;
@@ -63,9 +55,7 @@ public partial class ImageNavigator : UserControlEx {
 	}
 
 	public Size ImageAreaSize {
-		get {
-			return _pictureBox.Size;
-		}
+		get => _pictureBox.Size;
 		set {
 			Width += value.Width - _pictureBox.Width;
 			Height += value.Height - _pictureBox.Height;
@@ -73,21 +63,13 @@ public partial class ImageNavigator : UserControlEx {
 	}
 
 	public System.Windows.Forms.BorderStyle ImageAreaBorderStyle {
-		get {
-			return _pictureBox.BorderStyle;
-		}
-		set {
-			_pictureBox.BorderStyle = value;
-		}
+		get => _pictureBox.BorderStyle;
+		set => _pictureBox.BorderStyle = value;
 	}
 
 	public PictureBoxSizeMode ImageAreaSizeMode {
-		get {
-			return _pictureBox.SizeMode;
-		}
-		set {
-			_pictureBox.SizeMode = value;
-		}
+		get => _pictureBox.SizeMode;
+		set => _pictureBox.SizeMode = value;
 	}
 
 	public void PreviousImage() {
@@ -166,11 +148,7 @@ public partial class ImageNavigator : UserControlEx {
 	//			base.OnKeyDown (e);
 	//		}
 
-	private void PreviousClick(object sender, System.EventArgs args) {
-		PreviousImage();
-	}
+	private void PreviousClick(object sender, System.EventArgs args) => PreviousImage();
 
-	private void NextClick(object sender, System.EventArgs args) {
-		NextImage();
-	}
+	private void NextClick(object sender, System.EventArgs args) => NextImage();
 }

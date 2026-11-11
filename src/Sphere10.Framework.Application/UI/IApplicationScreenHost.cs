@@ -30,11 +30,7 @@ public interface IApplicationScreenHost : IDisposable, IAsyncDisposable {
 	IApplicationBlock ActiveBlock { get; }
 
 	/// <summary>The block selected for navigation, which may differ from the active screen's owner.</summary>
-	IApplicationBlock SelectedBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock SelectedBlock => ActiveBlock;
 
 	/// <summary>Gets the currently visible retained screen.</summary>
 	IApplicationScreen ActiveScreen { get; }
@@ -110,9 +106,7 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	/// <summary>Gets the independently browsed navigation block.</summary>
 	new TBlock SelectedBlock {
-		get {
-			return ActiveBlock;
-		}
+		get => ActiveBlock;
 	}
 
 	/// <summary>Gets the currently visible retained screen.</summary>
@@ -153,88 +147,58 @@ public interface IApplicationScreenHost<TBlock, TScreen> : IApplicationScreenHos
 
 	#region Base Interface Bridges
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks {
-		get {
-			return AvailableBlocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.AvailableBlocks => AvailableBlocks;
 
 	/// <inheritdoc />
-	IApplicationBlock[] IApplicationScreenHost.Blocks {
-		get {
-			return Blocks;
-		}
-	}
+	IApplicationBlock[] IApplicationScreenHost.Blocks => Blocks;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.ActiveBlock {
-		get {
-			return ActiveBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.ActiveBlock => ActiveBlock;
 
 	/// <inheritdoc />
-	IApplicationBlock IApplicationScreenHost.SelectedBlock {
-		get {
-			return SelectedBlock;
-		}
-	}
+	IApplicationBlock IApplicationScreenHost.SelectedBlock => SelectedBlock;
 
 	/// <inheritdoc />
-	IApplicationScreen IApplicationScreenHost.ActiveScreen {
-		get {
-			return ActiveScreen;
-		}
-	}
+	IApplicationScreen IApplicationScreenHost.ActiveScreen => ActiveScreen;
 
 	/// <inheritdoc />
-	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return SelectBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	Task IApplicationScreenHost.SelectBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> SelectBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.ActivateBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return await ActivateBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.ActivateBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> await ActivateBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, Type screenType, string title, CancellationToken cancellationToken) {
-		return await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), screenType, title, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, Type screenType, string title, CancellationToken cancellationToken)
+		=> await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), screenType, title, cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken) {
-		return await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.ActivateScreenAsync(IApplicationBlock block, IScreenMenuItem item, CancellationToken cancellationToken)
+		=> await ActivateScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), item, cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken) {
-		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenDefinition definition, CancellationToken cancellationToken)
+		=> await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), definition, cancellationToken);
 
 	/// <inheritdoc />
-	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken) {
-		return await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
-	}
+	async Task<IApplicationScreen> IApplicationScreenHost.OpenScreenAsync(IApplicationBlock block, ApplicationScreenRegistration registration, CancellationToken cancellationToken)
+		=> await OpenScreenAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), registration, cancellationToken);
 
 	/// <inheritdoc />
-	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken) {
-		return ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
-	}
+	Task<bool> IApplicationScreenHost.ShowScreenUndockedAsync(IApplicationScreen screen, CancellationToken cancellationToken)
+		=> ShowScreenUndockedAsync(Guard.ArgumentCast<TScreen>(screen, nameof(screen)), cancellationToken);
 
 	/// <inheritdoc />
-	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	Task IApplicationScreenHost.RegisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> RegisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	Task<bool> IApplicationScreenHost.UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken) {
-		return UnregisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
-	}
+	Task<bool> IApplicationScreenHost.UnregisterBlockAsync(IApplicationBlock block, CancellationToken cancellationToken)
+		=> UnregisterBlockAsync(Guard.ArgumentCast<TBlock>(block, nameof(block)), cancellationToken);
 
 	/// <inheritdoc />
-	void IApplicationScreenHost.NotifyScreenChanged(IApplicationScreen screen) {
-		NotifyScreenChanged(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
-	}
+	void IApplicationScreenHost.NotifyScreenChanged(IApplicationScreen screen)
+		=> NotifyScreenChanged(screen == null ? null : Guard.ArgumentCast<TScreen>(screen, nameof(screen)));
 	#endregion
 }

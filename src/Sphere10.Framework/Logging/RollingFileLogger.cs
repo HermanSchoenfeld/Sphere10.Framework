@@ -111,9 +111,7 @@ public class RollingFileLogger : LoggerBase, IDisposable {
 	/// <summary>
 	/// Flushes and releases the underlying file writer.
 	/// </summary>
-	public void Dispose() {
-		_textWriter.Close();
-	}
+	public void Dispose() => _textWriter.Close();
 
 	private void OpenLogFile(string logFilePath, Encoding encoding) {
 		_textWriter = new FileAppendTextWriter(logFilePath, encoding, true);

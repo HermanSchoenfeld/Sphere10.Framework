@@ -22,9 +22,5 @@ public class CellAppointment : Cells.Cell {
 		_appointment = appointment;
 	}
 
-	public IAppointment Appointment {
-		get {
-			return _appointment;
-		}
-	}
+	public IAppointment Appointment => _appointment;
 }

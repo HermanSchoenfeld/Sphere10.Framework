@@ -45,7 +45,7 @@ public class PropertyGridEx : PropertyGrid {
 	[DefaultValue(false)]
 	public bool Readonly {
 		get => _readonly;
-		set { _readonly = value; }
+		set => _readonly = value;
 	}
 
 	[Category("Layout")]

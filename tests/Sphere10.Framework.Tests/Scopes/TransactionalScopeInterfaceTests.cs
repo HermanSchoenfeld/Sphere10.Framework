@@ -159,9 +159,7 @@ public class TransactionalScopeInterfaceTests {
 	[TestCase(true)]
 	public async Task AsyncSurfaceOfActionTransactionPreservesOperationAndEventOrder(bool rollback) {
 		var calls = new List<string>();
-		void Record(string name) {
-			calls.Add(name);
-		}
+		void Record(string name) => calls.Add(name);
 		var contextID = Guid.NewGuid().ToString();
 		var scope = new ActionTransactionalScope<object>(ContextScopePolicy.MustBeRoot, contextID,
 			() => { Record("begin"); return new object(); }, _ => Record("commit"), _ => Record("rollback"), _ => Record("close"));

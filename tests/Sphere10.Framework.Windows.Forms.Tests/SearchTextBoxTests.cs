@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,18 +33,22 @@ public class SearchTextBoxTests {
 			using var search = new SearchTextBox { Location = new Point(15, 15), Width = 220 };
 			owner.Controls.Add(search);
 			var changes = 0;
+			var tooltip = (ToolTip)typeof(SearchTextBox).GetField("_actionToolTip", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(search);
 			search.TextChanged += (_, _) => changes++;
 			Assert.That(Pixels(search.PictureBox.Image), Is.EqualTo(Pixels(Resources.SmallSearchIcon)));
+			Assert.That(tooltip.GetToolTip(search.PictureBox), Is.EqualTo("Enter search text."));
 			search.Text = "Active filter";
 			Assert.That(Pixels(search.PictureBox.Image), Is.EqualTo(Pixels(Resources.Cross)));
 			Assert.That(search.PictureBox.Cursor, Is.SameAs(Cursors.Hand));
 			Assert.That(search.PictureBox.AccessibleName, Is.EqualTo("Clear search"));
+			Assert.That(tooltip.GetToolTip(search.PictureBox), Is.EqualTo("Clear the current search text."));
 			ClickNative(search.PictureBox);
 			Assert.That(search.Text, Is.Empty);
 			Assert.That(changes, Is.EqualTo(2), "The clear action must use the same single text notification as ordinary edits.");
 			Assert.That(search.Focused, Is.True);
 			Assert.That(Pixels(search.PictureBox.Image), Is.EqualTo(Pixels(Resources.SmallSearchIcon)));
 			Assert.That(search.PictureBox.Cursor, Is.SameAs(Cursors.Default));
+			Assert.That(tooltip.GetToolTip(search.PictureBox), Is.EqualTo("Enter search text."));
 			ClickNative(search.PictureBox);
 			Assert.That(changes, Is.EqualTo(2), "Clicking the empty search icon must not invent a query change.");
 			return Task.CompletedTask;
@@ -120,8 +125,8 @@ public class SearchTextBoxTests {
 				GridBindings = new[] { new VisualGridColumn<SearchRow> { ColumnName = "Record", PropertyValue = value => value.Name, DataType = typeof(string) } }
 			};
 			owner.Controls.Add(grid);
-			var source = new SnapshotDataSource<SearchRow>();
-			source.ReplaceSnapshot(new[] { new SearchRow("Keep one"), new SearchRow("Keep two"), new SearchRow("Other") });
+			var source = new ArrayDataSource<SearchRow>();
+			source.ReplaceData(new[] { new SearchRow("Keep one"), new SearchRow("Keep two"), new SearchRow("Other") });
 			await grid.SetDataSource(source);
 			await grid.RefreshGrid();
 			var search = grid.Controls.Find("_searchTextBox", true).OfType<SearchTextBox>().Single();
@@ -170,9 +175,7 @@ public class SearchTextBoxTests {
 	}
 
 	// Inspect the actual native editor margin after layout or handle recreation.
-	private static int RightMargin(SearchTextBox search) {
-		return (int)((WinAPI.USER32.SendMessage(search.Handle, 0x00D4, IntPtr.Zero, IntPtr.Zero).ToInt64() >> 16) & 0xFFFF);
-	}
+	private static int RightMargin(SearchTextBox search) => (int)((WinAPI.USER32.SendMessage(search.Handle, 0x00D4, IntPtr.Zero, IntPtr.Zero).ToInt64() >> 16) & 0xFFFF);
 
 	// Resources may materialize separate bitmap objects; compare their displayed pixels instead of object identity.
 	private static int[] Pixels(Image image) {
@@ -226,9 +229,7 @@ public class SearchTextBoxTests {
 
 	// Expose the protected native lifecycle only for the handle-recreation regression.
 	private sealed class RecreatedSearchTextBox : SearchTextBox {
-		public void RecreateNativeHandle() {
-			RecreateHandle();
-		}
+		public void RecreateNativeHandle() => RecreateHandle();
 	}
 
 	#endregion

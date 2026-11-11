@@ -147,9 +147,7 @@ public class PagedListStorageAttachment<TData> : PagedListStorageAttachmentBase<
 		PagedList.Add(item);
 	}
 
-	void IWriteOnlyExtendedCollection<TData>.Add(TData item) {
-		throw new NotImplementedException();
-	}
+	void IWriteOnlyExtendedCollection<TData>.Add(TData item) => throw new NotImplementedException();
 
 
 	#endregion

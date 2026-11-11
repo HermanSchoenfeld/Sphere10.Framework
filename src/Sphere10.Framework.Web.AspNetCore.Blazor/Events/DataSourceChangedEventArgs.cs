@@ -13,9 +13,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Events;
 public class DataSourceChangedEventArgs : EventArgs {
 	private Uri Server { get; }
 
-	public DataSourceChangedEventArgs(Uri server) {
-		Server = server ?? throw new ArgumentNullException(nameof(server));
-	}
+	public DataSourceChangedEventArgs(Uri server) => Server = server ?? throw new ArgumentNullException(nameof(server));
 }
 
 

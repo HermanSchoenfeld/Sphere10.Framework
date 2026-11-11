@@ -41,45 +41,29 @@ public abstract class FileDataSetBase {
 
 	/// <summary>Gets or sets the path used by load and save operations.</summary>
 	public string FileName {
-		get {
-			return _fileName;
-		}
-		set {
-			_fileName = value;
-		}
+		get => _fileName;
+		set => _fileName = value;
 	}
 
 	/// <summary>
 	/// Gets or Sets the format used to save the DataSet
 	/// </summary>
 	protected StreamDataSetFormat SaveDataFormat {
-		get {
-			return _saveDataFormat;
-		}
-		set {
-			_saveDataFormat = value;
-		}
+		get => _saveDataFormat;
+		set => _saveDataFormat = value;
 	}
 
 	/// <summary>
 	/// Gets the current format of the File where the data are loaded.
 	/// </summary>
-	protected StreamDataSetFormat FileDataFormat {
-		get {
-			return _fileDataFormat;
-		}
-	}
+	protected StreamDataSetFormat FileDataFormat => _fileDataFormat;
 
 	/// <summary>
 	/// Gets or Sets if merge the schema of the file with the schema of the DataSet specified. Use true if the DataSet doesn't have a schema definition. Default is false.
 	/// </summary>
 	protected bool MergeReadSchema {
-		get {
-			return _mergeReadSchema;
-		}
-		set {
-			_mergeReadSchema = value;
-		}
+		get => _mergeReadSchema;
+		set => _mergeReadSchema = value;
 	}
 
 	/// <summary>Writes the DataSet payload and its format/version attributes to the configured file.</summary>

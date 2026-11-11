@@ -258,9 +258,7 @@ public static partial class WinAPI {
 		[DllImport("kernel32.dll", SetLastError = true)]
 		public static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hReservedNull, LoadLibraryFlags dwFlags);
 
-		public static IntPtr LoadLibraryEx(string lpfFileName, LoadLibraryFlags flags) {
-			return LoadLibraryEx(lpfFileName, IntPtr.Zero, flags);
-		}
+		public static IntPtr LoadLibraryEx(string lpfFileName, LoadLibraryFlags flags) => LoadLibraryEx(lpfFileName, IntPtr.Zero, flags);
 
 		[DllImport("kernel32.dll")]
 		public static extern bool FreeLibrary(IntPtr hModule);
@@ -361,6 +359,11 @@ public static partial class WinAPI {
 		public const uint ProcessQueryLimitedInformation = 4096;
 		public const uint Synchronize = 0x00100000;
 		public const uint ThreadQueryLimitedInformation = 0x0800;
+		public const uint ThreadQueryInformation = 0x0040;
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool QueryThreadCycleTime(KernelHandle thread, out ulong cycleTime);
 		public const uint ThreadSetLimitedInformation = 0x0400;
 		public const uint ThreadSuspendResume = 0x0002;
 		public const uint WaitObject0 = 0;
@@ -437,6 +440,12 @@ public static partial class WinAPI {
 		[DllImport("kernel32.dll", EntryPoint = "GetThreadGroupAffinity", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool GetThreadGroupAffinity(IntPtr thread, out KERNEL32.GROUP_AFFINITY affinity);
+		[DllImport("kernel32.dll", EntryPoint = "SetThreadGroupAffinity", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool SetThreadGroupAffinity(IntPtr thread, ref KERNEL32.GROUP_AFFINITY affinity, out KERNEL32.GROUP_AFFINITY previous);
+		[DllImport("kernel32.dll", EntryPoint = "DeviceIoControl", ExactSpelling = true, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool DeviceIoControl(SafeFileHandle device, uint code, byte[] input, int inputLength, [Out] byte[] output, int outputLength, out int returned, IntPtr overlapped);
 		public sealed class KernelHandle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid {
 			public KernelHandle()
 				: base(true) { }

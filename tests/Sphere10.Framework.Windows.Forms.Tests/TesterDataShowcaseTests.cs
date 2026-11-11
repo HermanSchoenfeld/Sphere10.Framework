@@ -548,9 +548,7 @@ public class TesterDataShowcaseTests {
 	}
 
 	// Observe owned session/task state that has no public UI contract.
-	private static T Field<T>(object owner, string name) {
-		return (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
-	}
+	private static T Field<T>(object owner, string name) => (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
 
 	// Pump the native dispatcher until an observable operation has finished.
 	private static async Task WaitUntilAsync(Func<bool> completed) {

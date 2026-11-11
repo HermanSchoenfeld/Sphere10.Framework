@@ -19,6 +19,12 @@ namespace Tools;
 
 /// <summary>Executes the existing application lifecycle task contracts without owning their instances or registration scope.</summary>
 public static class Application {
+	/// <summary>Captures local settings values without serializing their runtime ownership or publishing them to a provider.</summary>
+	public static string SerializeSettingsValues(SettingsObject settings) => SettingsObjectJsonSerializer.SerializeValues(settings);
+
+	/// <summary>Restores values into an existing settings root while retaining its identity, provider and subscriptions.</summary>
+	public static void PopulateSettingsValues(string values, SettingsObject settings) => SettingsObjectJsonSerializer.PopulateValues(values, settings);
+
 	/// <summary>Runs sequential initializers by ascending priority, followed by the parallelizable initializers.</summary>
 	/// <remarks>Progress counts successfully completed tasks. Parallel task execution retains the existing framework's failure behavior.</remarks>
 	public static void ExecuteInitializers(IEnumerable<IApplicationInitializer> initializers, ILogger logger = null, ProgressHandler progress = null) {

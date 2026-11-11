@@ -280,9 +280,8 @@ public static class Guard {
 		[Conditional("DEBUG")]
 #endif
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ArgumentIsAssignable<TType>(object @object, string paramName) {
-		Argument(@object.GetType().IsAssignableFrom(typeof(TType)), paramName, $"Not assignable from {typeof(TType).GetShortName()}");
-	}
+	public static void ArgumentIsAssignable<TType>(object @object, string paramName)
+		=> Argument(@object.GetType().IsAssignableFrom(typeof(TType)), paramName, $"Not assignable from {typeof(TType).GetShortName()}");
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

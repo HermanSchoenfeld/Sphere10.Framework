@@ -39,9 +39,7 @@ internal class TestApplicationBlock : ApplicationBlockBase, IApplicationCommandP
 		_menus.Add(menu);
 	}
 
-	public virtual bool ContainsMenu(IApplicationMenu menu) {
-		return _menus.Any(candidate => ReferenceEquals(candidate, menu));
-	}
+	public virtual bool ContainsMenu(IApplicationMenu menu) => _menus.Any(candidate => ReferenceEquals(candidate, menu));
 
 	public virtual void RemoveMenu(IApplicationMenu menu) {
 		var index = _menus.FindIndex(candidate => ReferenceEquals(candidate, menu));

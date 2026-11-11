@@ -185,9 +185,7 @@ public class BlazorGridReferencePickerTests {
 			Task.FromResult(ReadRange(searchTerm, pageLength, page, sortProperty, sortDirection));
 	}
 	private sealed class PickerJsRuntime : IJSRuntime {
-		public PickerJsRuntime() {
-			Import = Task.FromResult<IJSObjectReference>(Module);
-		}
+		public PickerJsRuntime() => Import = Task.FromResult<IJSObjectReference>(Module);
 
 		public PickerJsModule Module { get; } = new();
 

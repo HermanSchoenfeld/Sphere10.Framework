@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -42,7 +43,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public void Load() => InternalDictionary.Load();
 
-	public Task LoadAsync() => Task.Run(Load);
+	public Task LoadAsync(CancellationToken cancellationToken = default) => Task.Run(Load, cancellationToken);
 
 	public override bool Add(TItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));

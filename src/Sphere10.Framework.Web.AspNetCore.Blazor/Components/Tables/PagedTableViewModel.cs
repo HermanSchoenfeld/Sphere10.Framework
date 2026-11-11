@@ -119,9 +119,7 @@ public class PagedTableViewModel<TItem> : ComponentViewModelBase, IPagedCollecti
 	/// <summary>
 	/// Move to last page. 
 	/// </summary>
-	public void LastPage() {
-		CurrentPage = Math.Max(1, TotalPages);
-	}
+	public void LastPage() => CurrentPage = Math.Max(1, TotalPages);
 }
 
 

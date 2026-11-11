@@ -111,14 +111,10 @@ namespace Sphere10.Framework.NUnit {
 		}
 
 		// ReSharper disable once InconsistentNaming
-		protected virtual void AssertSameTableDataIncludingPK(IDAC source, IDAC dest, string tableName) {
-			AssertSameTableDataInternal(source, dest, tableName, true);
-		}
+		protected virtual void AssertSameTableDataIncludingPK(IDAC source, IDAC dest, string tableName) => AssertSameTableDataInternal(source, dest, tableName, true);
 
 		// ReSharper disable once InconsistentNaming
-		protected virtual void AssertSameTableDataExcludingPK(IDAC source, IDAC dest, string tableName) {
-			AssertSameTableDataInternal(source, dest, tableName, false);
-		}
+		protected virtual void AssertSameTableDataExcludingPK(IDAC source, IDAC dest, string tableName) => AssertSameTableDataInternal(source, dest, tableName, false);
 
 		protected virtual void PrintTableData(IDAC dac, string header, string tableName) {
 			Console.WriteLine(header);
@@ -128,17 +124,12 @@ namespace Sphere10.Framework.NUnit {
 			Console.WriteLine();
 		}
 
-		protected virtual void AssertSingleRow(IDAC dac, string tableName, params object[] expectedRows) {
-			AssertManyRowsInOrder(dac, tableName, expectedRows);
-		}
+		protected virtual void AssertSingleRow(IDAC dac, string tableName, params object[] expectedRows) => AssertManyRowsInOrder(dac, tableName, expectedRows);
 
-		protected virtual void AssertManyRows(IDAC dac, string tableName, params object[][] expectedRows) {
-			AssertRowsInternal(dac, tableName, expectedRows, true);
-		}
+		protected virtual void AssertManyRows(IDAC dac, string tableName, params object[][] expectedRows) => AssertRowsInternal(dac, tableName, expectedRows, true);
 
-		protected virtual void AssertManyRowsInOrder(IDAC dac, string tableName, params object[][] expectedRows) {
-			AssertRowsInternal(dac, tableName, expectedRows, false);
-		}
+		protected virtual void AssertManyRowsInOrder(IDAC dac, string tableName, params object[][] expectedRows)
+			=> AssertRowsInternal(dac, tableName, expectedRows, false);
 
 		private void AssertRowsInternal(IDAC dac, string tableName, IEnumerable<IEnumerable<object>> expectedRows, bool anyOrder) {
 			var tableRows = dac.Select(tableName).Rows.Cast<DataRow>().Select(r => r.ItemArray as IEnumerable<object>);

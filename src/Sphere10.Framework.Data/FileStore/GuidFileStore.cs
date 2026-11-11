@@ -22,9 +22,7 @@ public class GuidFileStore : FileStoreBase<Guid> {
 	public GuidFileStore() : this(Path.GetTempPath()) {
 	}
 
-	public GuidFileStore(string baseDirectory) {
-		BaseDirectory = baseDirectory;
-	}
+	public GuidFileStore(string baseDirectory) => BaseDirectory = baseDirectory;
 
 	public override IEnumerable<Guid> FileKeys =>
 		Directory
@@ -81,9 +79,7 @@ public class GuidFileStore : FileStoreBase<Guid> {
 		}
 	}
 
-	public override void Clear() {
-		Tools.FileSystem.DeleteAllFiles(BaseDirectory, true);
-	}
+	public override void Clear() => Tools.FileSystem.DeleteAllFiles(BaseDirectory, true);
 
 	protected override void DisposeInternal() {
 		if (PersistencePolicy == FileStorePersistencePolicy.DeleteOnDispose) {

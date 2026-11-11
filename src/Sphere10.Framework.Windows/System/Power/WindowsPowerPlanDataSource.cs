@@ -6,13 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
-public sealed class WindowsPowerPlanDataSource : ReloadableSnapshotDataSource<WindowsPowerPlanInfo> {
-	public WindowsPowerPlanDataSource() : this(token => Tools.Windows.Computer.GetPowerPlansAsync(token)) { }
-	public WindowsPowerPlanDataSource(Func<CancellationToken, Task<WindowsPowerPlanInfo[]>> capture) : base(capture) { }
+/// <summary>A power plan inventory IDataSource.</summary>
+public sealed class WindowsPowerPlanDataSource : AsyncListDataSource<WindowsPowerPlanInfo> {
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsPowerPlanInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Computer.GetPowerPlansAsync(cancellationToken).ConfigureAwait(false);
 }

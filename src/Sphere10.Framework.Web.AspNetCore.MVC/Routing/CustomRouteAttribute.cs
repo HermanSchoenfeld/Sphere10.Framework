@@ -49,7 +49,7 @@ public sealed class CustomRouteAttribute : Attribute {
 			}
 			return toReturn;
 		}
-		set { _defaults = value; }
+		set => _defaults = value;
 	}
 
 

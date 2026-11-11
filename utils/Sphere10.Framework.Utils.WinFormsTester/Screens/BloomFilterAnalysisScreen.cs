@@ -28,11 +28,7 @@ public partial class BloomFilterAnalysisScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override BloomFilterScreenSettings ScreenSettings {
-		get {
-			return (BloomFilterScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override BloomFilterScreenSettings ScreenSettings => (BloomFilterScreenSettings)base.ScreenSettings;
 
 	// Options updates the same inputs without starting calculations or writing preferences.
 	protected override void CopyModelToUI() {

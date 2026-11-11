@@ -17,7 +17,7 @@ public sealed class WtsMemoryScope : IScope {
 	private IntPtr _memory;
 	private int _disposed;
 
-	public WtsMemoryScope(IntPtr memory) { _memory = memory; }
+	public WtsMemoryScope(IntPtr memory) => _memory = memory;
 
 	public IntPtr Pointer {
 		get { ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this); return _memory; }

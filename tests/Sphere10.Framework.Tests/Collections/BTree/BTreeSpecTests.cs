@@ -25,14 +25,12 @@ public class BTreeSpecTests {
 	[TestCase(-1)]
 	[TestCase(2)]
 	[TestCase(int.MaxValue)]
-	public void ConstructorRejectsUndefinedTypes(int type) {
-		Assert.That(() => new BTreeSpec((BTreeType)type, 4), Throws.TypeOf<ArgumentOutOfRangeException>().With.Property("ParamName").EqualTo("type"));
-	}
+	public void ConstructorRejectsUndefinedTypes(int type)
+		=> Assert.That(() => new BTreeSpec((BTreeType)type, 4), Throws.TypeOf<ArgumentOutOfRangeException>().With.Property("ParamName").EqualTo("type"));
 
 	[Test]
-	public void ConstructorRejectsOrdersBelowMinimum([Values] BTreeType type, [Values(int.MinValue, -1, 0, 1, 2)] int order) {
-		Assert.That(() => new BTreeSpec(type, order), Throws.TypeOf<ArgumentOutOfRangeException>().With.Property("ParamName").EqualTo("order"));
-	}
+	public void ConstructorRejectsOrdersBelowMinimum([Values] BTreeType type, [Values(int.MinValue, -1, 0, 1, 2)] int order)
+		=> Assert.That(() => new BTreeSpec(type, order), Throws.TypeOf<ArgumentOutOfRangeException>().With.Property("ParamName").EqualTo("order"));
 
 	[Test]
 	public void SpecificationRoundTripsThroughJson([Values] BTreeType type) {
@@ -42,9 +40,7 @@ public class BTreeSpecTests {
 	}
 
 	[Test]
-	public void JsonCannotSupplyANullType() {
-		Assert.That(() => JsonSerializer.Deserialize<BTreeSpec>("{\"Type\":null,\"Order\":4}"), Throws.TypeOf<JsonException>());
-	}
+	public void JsonCannotSupplyANullType() => Assert.That(() => JsonSerializer.Deserialize<BTreeSpec>("{\"Type\":null,\"Order\":4}"), Throws.TypeOf<JsonException>());
 
 	[TestCase(-1)]
 	[TestCase(2)]

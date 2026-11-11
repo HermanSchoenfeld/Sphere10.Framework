@@ -24,7 +24,6 @@ public abstract class SyncApplicationBase : ApplicationBase {
 
 	public override void Initialize() {
 		EnsureCanInitializeSynchronously();
-		// Sync-over-async pattern
 		InitializeCore(_ => Task.FromResult(OnInitialize()), _ => {
 			Tools.Application.ExecuteInitializers(Initializers, Logger, ReportProgress);
 			return Task.CompletedTask;
@@ -37,7 +36,6 @@ public abstract class SyncApplicationBase : ApplicationBase {
 #pragma warning disable CS0465 // Implements the existing synchronous application lifecycle contract.
 	public override void Finalize() {
 		EnsureCanFinalizeSynchronously();
-		// Sync-over-async pattern
 		FinalizeCore(() => {
 			OnFinalize();
 			return Task.CompletedTask;
@@ -57,7 +55,6 @@ public abstract class SyncApplicationBase : ApplicationBase {
 	public override bool Exit(bool force = false, CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		EnsureCanExitSynchronously();
-		// Sync-over-async pattern
 		return ExitCore(force, cancellationToken, token => Task.FromResult(ConfirmExit(token)), token => Task.FromResult(CanExit(token)),
 			(overridePermissions, token) => Task.FromResult(OnExit(overridePermissions, token)), token => Task.FromResult(Exit(true, token)))
 			.GetAwaiter().GetResult();
@@ -81,15 +78,12 @@ public abstract class SyncApplicationBase : ApplicationBase {
 		if (host == null)
 			return true;
 		// Existing host and block guards expose only asynchronous contracts; wait for those collaborators without selecting this application's async primitive.
-		// Sync-over-async pattern
 		if (!Task.Run(() => host.CanNavigateAsync(cancellationToken), cancellationToken).WaitAsync(cancellationToken).GetAwaiter().GetResult())
 			return false;
 		var screenBlock = host.ActiveScreen?.Block;
-		// Sync-over-async pattern
 		if (screenBlock != null && !Task.Run(() => screenBlock.CanExitAsync(this, cancellationToken), cancellationToken).WaitAsync(cancellationToken).GetAwaiter().GetResult())
 			return false;
 		var selectedBlock = host.SelectedBlock;
-		// Sync-over-async pattern
 		return selectedBlock == null || ReferenceEquals(selectedBlock, screenBlock)
 			|| Task.Run(() => selectedBlock.CanExitAsync(this, cancellationToken), cancellationToken).WaitAsync(cancellationToken).GetAwaiter().GetResult();
 	}
@@ -120,14 +114,11 @@ public abstract class SyncApplicationBase : ApplicationBase {
 
 	protected override void DisposeInternal() {
 		EnsureCanDisposeSynchronously();
-		// Sync-over-async pattern
 		DisposeCore(() => {
 			Finalize();
 			return Task.CompletedTask;
 		}).GetAwaiter().GetResult();
 	}
 
-	protected override ValueTask DisposeInternalAsync() {
-		return new(Task.Run(DisposeInternal));
-	}
+	protected override ValueTask DisposeInternalAsync() => new(Task.Run(DisposeInternal));
 }

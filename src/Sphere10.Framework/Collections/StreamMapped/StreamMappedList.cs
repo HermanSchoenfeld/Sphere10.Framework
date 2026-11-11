@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -56,7 +57,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public virtual void Load() => ObjectStream.Load();
 
-	public virtual Task LoadAsync() => ObjectStream.LoadAsync();
+	public virtual Task LoadAsync(CancellationToken cancellationToken = default) => ObjectStream.LoadAsync(cancellationToken);
 
 	public virtual void Dispose() {
 		if (OwnsContainer)

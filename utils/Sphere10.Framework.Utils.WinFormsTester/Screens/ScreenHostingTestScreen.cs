@@ -118,9 +118,7 @@ public partial class ScreenHostingTestScreen : ApplicationScreen {
 	}
 
 	// Layout events only recompute wrapping and spacing for the existing static controls.
-	private void ContentLayoutChanged(object sender, LayoutEventArgs args) {
-		UpdateLayoutMetrics();
-	}
+	private void ContentLayoutChanged(object sender, LayoutEventArgs args) => UpdateLayoutMetrics();
 
 	// Preserve readable instruction wrapping at normal, compact and detached widths.
 	private void UpdateLayoutMetrics() {
@@ -152,7 +150,5 @@ public partial class ScreenHostingTestScreen : ApplicationScreen {
 	}
 
 	// This readout exposes actual retained instance state rather than a registration cache.
-	private void UpdateStatus() {
-		_status.Text = $"Instance {_instance} | Activation: {ActivationMode} | Kind: {ScreenKind} | Views: {_views} | Counter: {_clicks}";
-	}
+	private void UpdateStatus() => _status.Text = $"Instance {_instance} | Activation: {ActivationMode} | Kind: {ScreenKind} | Views: {_views} | Counter: {_clicks}";
 }

@@ -29,22 +29,14 @@ public class CSV {
 
 	/// <summary>The separator written between fields.</summary>
 	public string FieldSeparator {
-		get {
-			return _fieldSeparator;
-		}
-		set {
-			_fieldSeparator = value;
-		}
+		get => _fieldSeparator;
+		set => _fieldSeparator = value;
 	}
 
 	/// <summary>The separator written after each row; null or empty omits it.</summary>
 	public string LineSeparator {
-		get {
-			return _lineSeparator;
-		}
-		set {
-			_lineSeparator = value;
-		}
+		get => _lineSeparator;
+		set => _lineSeparator = value;
 	}
 
 	/// <summary>Writes every grid row and leaves the caller’s writer open.</summary>

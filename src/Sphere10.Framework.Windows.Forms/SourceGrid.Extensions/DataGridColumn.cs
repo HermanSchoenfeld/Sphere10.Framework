@@ -53,15 +53,11 @@ public class DataGridColumn : ColumnInfo {
 	}
 
 	public new DataGrid Grid {
-		get {
-			return (DataGrid)base.Grid;
-		}
+		get => (DataGrid)base.Grid;
 	}
 
 	public string PropertyName {
-		get {
-			return _propertyName;
-		}
+		get => _propertyName;
 		set {
 			_propertyName = value;
 			_propertyColumn = null;
@@ -86,12 +82,8 @@ public class DataGridColumn : ColumnInfo {
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.ColumnHeader
 	/// </summary>
 	public Cells.ICellVirtual HeaderCell {
-		get {
-			return _headerCell;
-		}
-		set {
-			_headerCell = value;
-		}
+		get => _headerCell;
+		set => _headerCell = value;
 	}
 
 	/// <summary>
@@ -99,22 +91,14 @@ public class DataGridColumn : ColumnInfo {
 	/// Typically is an instance of SourceGrid.Cells.DataGrid.Cell or other classes of the same namespace
 	/// </summary>
 	public Cells.ICellVirtual DataCell {
-		get {
-			return _dataCell;
-		}
-		set {
-			_dataCell = value;
-		}
+		get => _dataCell;
+		set => _dataCell = value;
 	}
 
 	/// <summary>
 	/// Gets the conditions used to returns different cell based on the data of the row.
 	/// </summary>
-	public List<Conditions.ICondition> Conditions {
-		get {
-			return _conditions;
-		}
-	}
+	public List<Conditions.ICondition> Conditions => _conditions;
 
 	/// <summary>
 	/// Gets the ICellVirtual for the current column and the specified row.
@@ -145,16 +129,12 @@ public class DataGridColumn : ColumnInfo {
 	/// </summary>
 	/// <param name="grid"></param>
 	/// <returns></returns>
-	public static DataGridColumn CreateRowHeader(DataGrid grid) {
-		return new DataGridColumn(grid, new Cells.DataGrid.Header(), new Cells.DataGrid.RowHeader(), null);
-	}
+	public static DataGridColumn CreateRowHeader(DataGrid grid) => new DataGridColumn(grid, new Cells.DataGrid.Header(), new Cells.DataGrid.RowHeader(), null);
 
 	/// <summary>
 	/// Clears any associated data with DataGridView.
 	/// <remarks>PropertyColumn binds to DataTable, calling invalidate will remove
 	/// this link</remarks>
 	/// </summary>
-	public void Invalidate() {
-		_propertyColumn = null;
-	}
+	public void Invalidate() => _propertyColumn = null;
 }

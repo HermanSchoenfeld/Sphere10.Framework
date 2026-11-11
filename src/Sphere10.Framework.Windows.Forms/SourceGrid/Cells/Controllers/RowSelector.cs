@@ -27,9 +27,7 @@ public class RowSelector : ControllerBase {
 		: this(false) {
 	}
 
-	public RowSelector(bool raiseOnMouseDown) {
-		_raiseOnMouseDown = raiseOnMouseDown;
-	}
+	public RowSelector(bool raiseOnMouseDown) => _raiseOnMouseDown = raiseOnMouseDown;
 
 	public override void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
 		if (_raiseOnMouseDown)
@@ -44,7 +42,5 @@ public class RowSelector : ControllerBase {
 			RaiseEvent(sender);
 	}
 
-	private void RaiseEvent(CellContext sender) {
-		sender.Grid.Selection.SelectRow(sender.Position.Row, true);
-	}
+	private void RaiseEvent(CellContext sender) => sender.Grid.Selection.SelectRow(sender.Position.Row, true);
 }

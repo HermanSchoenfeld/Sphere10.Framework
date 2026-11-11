@@ -39,9 +39,7 @@ public static class Mail {
 	/// </summary>
 	/// <param name="email">Email address to validate</param>
 	/// <returns>Whether email is validly formed</returns>
-	public static bool IsValidEmail(string email) {
-		return !string.IsNullOrWhiteSpace(email) && EmailValidatorRegex.IsMatch(email);
-	}
+	public static bool IsValidEmail(string email) => !string.IsNullOrWhiteSpace(email) && EmailValidatorRegex.IsMatch(email);
 
 	public static void SendEmail(
 		string smtpServer,

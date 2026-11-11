@@ -22,11 +22,7 @@ public sealed class NoOpControlStateProvider : IControlStateEventProvider {
 	}
 
 	/// <summary>The general control contract accepted by this no-op observer.</summary>
-	public Type ControlType {
-		get {
-			return typeof(Control);
-		}
-	}
+	public Type ControlType => typeof(Control);
 
 	/// <summary>Releases no resources because none were acquired.</summary>
 	public void Clear() {

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -40,9 +41,7 @@ public class CrudComboBox : CustomComboBox {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public VisualGrid VisualGrid {
-		get { return _visualGrid; }
-	}
+	public VisualGrid VisualGrid => _visualGrid;
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -67,15 +66,15 @@ public class CrudComboBox : CustomComboBox {
 	[Category("Behavior")]
 	[DefaultValue(DataSourceCapabilities.Default)]
 	public DataSourceCapabilities Capabilities {
-		get { return _visualGrid.Capabilities; }
-		set { _visualGrid.Capabilities = value; }
+		get => _visualGrid.Capabilities;
+		set => _visualGrid.Capabilities = value;
 	}
 
 	[Category("Data")]
 	[DefaultValue(null)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object SelectedEntity {
-		get { return _visualGrid.SelectedEntityDirect; }
+		get => _visualGrid.SelectedEntityDirect;
 		set {
 			_visualGrid.SelectedEntityDirect = value;
 			SetComboText(DetermineDisplayString(value));
@@ -84,9 +83,7 @@ public class CrudComboBox : CustomComboBox {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public VisualGrid Grid {
-		get { return _visualGrid; }
-	}
+	public VisualGrid Grid => _visualGrid;
 
 
 	public override async void ShowDropDown() {
@@ -97,7 +94,7 @@ public class CrudComboBox : CustomComboBox {
 		await _visualGrid.RefreshGrid();
 	}
 
-	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
+	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource, Size? size = null, bool autoPageSize = false) {
 		try {
 			if (entityEditorType != null)
 				_visualGrid.SetEntityEditor<TEntity>(entityEditorType);
@@ -155,7 +152,8 @@ public class CrudComboBox : CustomComboBox {
 
 	private void RaiseEntitySelectionChanged(object selectedEntity) {
 		SelectedEntity = selectedEntity;
-		OnEntitySelectionChanged(SelectedEntity);
+		if (!_visualGrid.IsReconcilingSelection)
+			OnEntitySelectionChanged(SelectedEntity);
 		if (EntitySelectionChanged != null)
 			EntitySelectionChanged(this, SelectedEntity);
 	}
@@ -166,6 +164,9 @@ public class CrudComboBox : CustomComboBox {
 	}
 
 	void _visualGrid_EntityDeselected(VisualGrid arg1, object arg2) {
+		// A replacement has already become the accepted selection; do not briefly clear it or accept a popup choice.
+		if (_visualGrid.IsReconcilingSelection && _visualGrid.SelectedEntityDirect != null)
+			return;
 		SelectedEntity = null;
 		RaiseEntitySelectionChanged(null);
 	}

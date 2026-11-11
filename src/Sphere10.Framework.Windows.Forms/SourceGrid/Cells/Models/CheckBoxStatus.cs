@@ -56,12 +56,8 @@ public struct CheckBoxStatus {
 	/// Gets or sets the state of the check box.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.CheckBoxState CheckState {
-		get {
-			return _checkState;
-		}
-		set {
-			_checkState = value;
-		}
+		get => _checkState;
+		set => _checkState = value;
 	}
 
 	/// <summary>

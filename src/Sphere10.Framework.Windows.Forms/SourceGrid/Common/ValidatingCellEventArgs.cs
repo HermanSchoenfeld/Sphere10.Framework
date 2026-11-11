@@ -22,11 +22,7 @@ public class ValidatingCellEventArgs : CellCancelEventArgs {
 	}
 
 	public object NewValue {
-		get {
-			return _newValue;
-		}
-		set {
-			_newValue = value;
-		}
+		get => _newValue;
+		set => _newValue = value;
 	}
 }

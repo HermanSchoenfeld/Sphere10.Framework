@@ -39,24 +39,32 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 	/// <summary>Controls whether the native property editor groups the model's declared categories.</summary>
 	[Category("Appearance"), DefaultValue(PropertySort.Alphabetical)]
 	public PropertySort PropertySort {
-		get {
-			return _propertyGrid.PropertySort;
-		}
+		get => _propertyGrid.PropertySort;
 
-		set {
-			_propertyGrid.PropertySort = value;
-		}
+		set => _propertyGrid.PropertySort = value;
 	}
 
-	public bool HasChanges {
-		get {
-			return _entityDescriptor?.HasChanges ?? false;
-		}
+	/// <summary>Shows the native property's ordering toolbar; hide it for a compact single-purpose value editor.</summary>
+	[Category("Appearance"), DefaultValue(true)]
+	public bool ToolbarVisible {
+		get => _propertyGrid.ToolbarVisible;
+		set => _propertyGrid.ToolbarVisible = value;
 	}
 
-	public Control AsControl() {
-		return this;
+	/// <summary>Shows the selected property's description pane.</summary>
+	[Category("Appearance"), DefaultValue(true)]
+	public bool HelpVisible {
+		get => _propertyGrid.HelpVisible;
+		set => _propertyGrid.HelpVisible = value;
 	}
+
+	/// <summary>Expands the entity's own expandable properties when it is shown; nested levels stay collapsed.</summary>
+	[Category("Behavior"), DefaultValue(false)]
+	public bool AutoExpandFirstLevel { get; set; }
+
+	public bool HasChanges => _entityDescriptor?.HasChanges ?? false;
+
+	public Control AsControl() => this;
 
 	public void SetEntity(DataSourceCapabilities Capabilities, object Entity, bool IsNewEntity) {
 		Guard.ArgumentNotNull(Entity, nameof(Entity));
@@ -64,11 +72,11 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 		_entityDescriptor = new CrudEntityTypeDescriptor(Entity, ReferenceBindings, !Capabilities.HasFlag(IsNewEntity ? DataSourceCapabilities.CanCreate : DataSourceCapabilities.CanUpdate), HiddenProperties, PropertyFilter);
 		_propertyGrid.SelectedObject = _entityDescriptor;
 		_propertyGrid.Enabled = true;
+		if (AutoExpandFirstLevel && _propertyGrid.IsHandleCreated)
+			ExpandFirstLevel();
 	}
 
-	public object GetEntityWithChanges() {
-		return _entity!;
-	}
+	public object GetEntityWithChanges() => _entity!;
 
 	public void UndoChanges() {
 		_entityDescriptor?.UndoChanges();
@@ -80,13 +88,16 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 		_propertyGrid.Refresh();
 	}
 
-	public new IEnumerable<string> Validate() {
-		return Enumerable.Empty<string>();
-	}
+	public new IEnumerable<string> Validate() => Enumerable.Empty<string>();
 
 	/// <summary>Publishes the completed entity edit rather than the internal property's intermediate notifications.</summary>
-	protected override bool ShouldObserveChildStateChanges(Control child) {
-		return false;
+	protected override bool ShouldObserveChildStateChanges(Control child) => false;
+
+	// An entity bound before the native grid exists is expanded once its handle and rows have been created.
+	protected override void OnLoad(EventArgs e) {
+		base.OnLoad(e);
+		if (AutoExpandFirstLevel)
+			ExpandFirstLevel();
 	}
 
 	private void PropertyGrid_PropertyValueChanged(object source, PropertyValueChangedEventArgs args) {
@@ -101,5 +112,18 @@ public partial class DefaultCrudEntityEditor : UserControlEx, ICrudEntityEditor<
 	}
 
 	protected virtual void OnPropertyChanged(object Entity, object PropertyName, object OldValue, object NewValue) {
+	}
+
+	// Category rows are presentation groups, so properties grouped beneath them still belong to the first level.
+	private void ExpandFirstLevel() {
+		var root = _propertyGrid.SelectedGridItem;
+		while (root?.Parent != null)
+			root = root.Parent;
+		if (root == null)
+			return;
+		foreach (GridItem item in root.GridItems)
+			foreach (var property in item.GridItemType == GridItemType.Category ? item.GridItems.Cast<GridItem>() : new[] { item })
+				if (property.Expandable)
+					property.Expanded = true;
 	}
 }

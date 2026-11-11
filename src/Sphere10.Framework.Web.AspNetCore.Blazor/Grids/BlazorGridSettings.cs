@@ -91,9 +91,7 @@ public class BlazorGridSettings : SettingsObject, IValidatableObject {
 	}
 
 	/// <summary>Screen-owned records save their column schema once; legacy standalone JSON keeps its original dictionary.</summary>
-	public bool ShouldSerializeColumnWidths() {
-		return Columns == null || Columns.Length == 0;
-	}
+	public bool ShouldSerializeColumnWidths() => Columns == null || Columns.Length == 0;
 
 	// Standard object validation also supports using this record directly as an Options page.
 	IEnumerable<ValidationResult> IValidatableObject.Validate(ValidationContext validationContext) {

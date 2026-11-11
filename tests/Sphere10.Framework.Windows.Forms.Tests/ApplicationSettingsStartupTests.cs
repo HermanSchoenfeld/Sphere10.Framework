@@ -161,29 +161,15 @@ public class ApplicationSettingsStartupTests {
 	public class SettingsProbe : ApplicationScreen {
 		public static int CreationCount;
 
-		public override Preferences ScreenSettings {
-			get {
-				return (Preferences)base.ScreenSettings;
-			}
-		}
+		public override Preferences ScreenSettings => (Preferences)base.ScreenSettings;
 
-		public SettingsProbe() {
-			CreationCount++;
-		}
+		public SettingsProbe() => CreationCount++;
 	}
 
 	private sealed class ExistingSettingsServices(ISettingsProvider provider) : BaseSettingsServices {
-		public override ISettingsProvider UserSettings {
-			get {
-				return provider;
-			}
-		}
+		public override ISettingsProvider UserSettings => provider;
 
-		public override ISettingsProvider SystemSettings {
-			get {
-				return provider;
-			}
-		}
+		public override ISettingsProvider SystemSettings => provider;
 	}
 
 	#endregion

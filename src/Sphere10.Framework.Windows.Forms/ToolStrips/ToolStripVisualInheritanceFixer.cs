@@ -55,9 +55,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	}
 
 	/// <summary>Adds the merger to the same component container as its owning window or control.</summary>
-	public ToolStripVisualInheritanceFixer(IContainer container) {
-		container?.Add(this);
-	}
+	public ToolStripVisualInheritanceFixer(IContainer container) => container?.Add(this);
 
 	#endregion
 
@@ -68,9 +66,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	[Description("The base form's tool strip. If you cannot find it, make its designer modifier protected or greater.")]
 	[Category("Behavior")]
 	public ToolStrip InheritedToolStrip {
-		get {
-			return _inheritedToolStrip;
-		}
+		get => _inheritedToolStrip;
 		set {
 			if (ReferenceEquals(_inheritedToolStrip, value))
 				return;
@@ -89,9 +85,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	[Category("Behavior")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public ToolStrip ToolStrip {
-		get {
-			return _toolStrip;
-		}
+		get => _toolStrip;
 		set {
 			if (ReferenceEquals(_toolStrip, value))
 				return;
@@ -173,9 +167,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	}
 
 	/// <summary>Returns merged items to their source without reclaiming items the client explicitly moved or removed.</summary>
-	public bool Unmerge() {
-		return Unmerge(false);
-	}
+	public bool Unmerge() => Unmerge(false);
 
 	// Prepare only this owner's commands; a projection must not prepare other sources merged into its native header.
 	internal static void NotifyDropDownOpening(ToolStripDropDownItem item) {
@@ -302,9 +294,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	}
 
 	// Mnemonic markers do not alter the displayed menu heading.
-	private static string GetMenuCaption(string text) {
-		return (text ?? string.Empty).Replace("&", string.Empty).Trim();
-	}
+	private static string GetMenuCaption(string text) => (text ?? string.Empty).Replace("&", string.Empty).Trim();
 
 	// A mergeable target disposes its existing fixer before the native control releases its items.
 	private static ToolStripVisualInheritanceFixer GetMergeFixer(ToolStrip toolStrip) {
@@ -410,9 +400,7 @@ public class ToolStripVisualInheritanceFixer : Component {
 	}
 
 	// Mergeable targets notify through their fixer before native item disposal; plain targets only provide the final control notification.
-	private void InheritedToolStripDisposed(object sender, EventArgs args) {
-		Unmerge();
-	}
+	private void InheritedToolStripDisposed(object sender, EventArgs args) => Unmerge();
 
 	#endregion
 }

@@ -14,14 +14,10 @@ namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels
 
 public class NewWidgetSummaryViewModel : BlazorWizardStepViewModelBase<NewWidgetModel> {
 	/// <inheritdoc />
-	public override Task<Result> OnNextAsync() {
-		return Task.FromResult(Result.Success);
-	}
+	public override Task<Result> OnNextAsync() => Task.FromResult(Result.Success);
 
 	/// <inheritdoc />
-	public override Task<Result> OnPreviousAsync() {
-		return Task.FromResult(Result.Success);
-	}
+	public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 }
 
 

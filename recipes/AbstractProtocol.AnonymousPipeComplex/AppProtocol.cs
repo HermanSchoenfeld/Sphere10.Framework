@@ -71,9 +71,8 @@ public class AppProtocol {
 	}
 
 
-	private static void HandlePong(ProtocolOrchestrator orchestrator, Ping request, Pong response) {
-		SystemLog.Info($"Handled Ping: Request: {request}, Respose {response} ");
-	}
+	private static void HandlePong(ProtocolOrchestrator orchestrator, Ping request, Pong response)
+		=> SystemLog.Info($"Handled Ping: Request: {request}, Respose {response} ");
 
 	private static FolderContents ListFolder(ProtocolOrchestrator orchestrator, RequestListFolder request) {
 		SystemLog.Info($"Handled ListFolder: OriginalRequest - {request}");
@@ -103,26 +102,19 @@ public class AppProtocol {
 		};
 	}
 
-	private static void SaveFilePart(ProtocolOrchestrator orchestrator, RequestFilePart request, FilePart response) {
-		SystemLog.Info($"Handled SaveFilePart: OriginalRequest - {request} Response - {response}");
-	}
+	private static void SaveFilePart(ProtocolOrchestrator orchestrator, RequestFilePart request, FilePart response)
+		=> SystemLog.Info($"Handled SaveFilePart: OriginalRequest - {request} Response - {response}");
 
 	private static Pong Ping(ProtocolOrchestrator orchestrator, Ping ping) {
 		SystemLog.Info("Handled Ping");
 		return new Pong();
 	}
 
-	private static void HandleNewTransaction(ProtocolOrchestrator orchestrator, NotifyNewTransaction message) {
-		SystemLog.Info("Handled NewTransaction");
-	}
+	private static void HandleNewTransaction(ProtocolOrchestrator orchestrator, NotifyNewTransaction message) => SystemLog.Info("Handled NewTransaction");
 
-	private static void HandleNewBlock(ProtocolOrchestrator orchestrator, NotifyNewBlock message) {
-		SystemLog.Info("Handled NewBlock");
-	}
+	private static void HandleNewBlock(ProtocolOrchestrator orchestrator, NotifyNewBlock message) => SystemLog.Info("Handled NewBlock");
 
-	private static void HandleNewLayer2Message(ProtocolOrchestrator orchestrator, NotifyLayer2Message message) {
-		SystemLog.Info("Handled Layer2Message");
-	}
+	private static void HandleNewLayer2Message(ProtocolOrchestrator orchestrator, NotifyLayer2Message message) => SystemLog.Info("Handled Layer2Message");
 }
 
 

@@ -41,9 +41,7 @@ public class PingGrid : GridVirtual {
 	/// Sorting is always enabled
 	/// </summary>
 	public override bool EnableSort {
-		get {
-			return true;
-		}
+		get => true;
 		set {
 		}
 	}
@@ -54,9 +52,7 @@ public class PingGrid : GridVirtual {
 	///  (that can be used to bind to a generic List) or BoundDataView (that can be used to bind to a DataView).
 	/// </summary>
 	public IPingData DataSource {
-		get {
-			return _boundList;
-		}
+		get => _boundList;
 		set {
 			Unbind();
 			if (value == null)
@@ -72,18 +68,14 @@ public class PingGrid : GridVirtual {
 	/// Gets the rows information as a PingGridRows object.
 	/// </summary>
 	public new PingGridRows Rows {
-		get {
-			return (PingGridRows)base.Rows;
-		}
+		get => (PingGridRows)base.Rows;
 	}
 
 	/// <summary>
 	/// Gets the columns informations as a PingGridColumns object.
 	/// </summary>
 	public new PingGridColumns Columns {
-		get {
-			return (PingGridColumns)base.Columns;
-		}
+		get => (PingGridColumns)base.Columns;
 	}
 
 	/// <summary>
@@ -141,12 +133,8 @@ public class PingGrid : GridVirtual {
 	[System.ComponentModel.DefaultValue(true)]
 	[Obsolete]
 	public bool EndEditingRowOnValidate {
-		get {
-			return _endEditingRowOnValidate;
-		}
-		set {
-			_endEditingRowOnValidate = value;
-		}
+		get => _endEditingRowOnValidate;
+		set => _endEditingRowOnValidate = value;
 	}
 
 	/// <summary>
@@ -154,12 +142,8 @@ public class PingGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool DeleteRowsWithDeleteKey {
-		get {
-			return _deleteRowsWithDeleteKey;
-		}
-		set {
-			_deleteRowsWithDeleteKey = value;
-		}
+		get => _deleteRowsWithDeleteKey;
+		set => _deleteRowsWithDeleteKey = value;
 	}
 
 	/// <summary>
@@ -167,24 +151,16 @@ public class PingGrid : GridVirtual {
 	/// </summary>
 	[System.ComponentModel.DefaultValue(true)]
 	public bool CancelEditingWithEscapeKey {
-		get {
-			return _cancelEditingWithEscapeKey;
-		}
-		set {
-			_cancelEditingWithEscapeKey = value;
-		}
+		get => _cancelEditingWithEscapeKey;
+		set => _cancelEditingWithEscapeKey = value;
 	}
 
 	/// <summary>
 	/// Message showed with the DeleteSelectedRowsAsync method. Set to null to not show any message.
 	/// </summary>
 	public string DeleteQuestionMessage {
-		get {
-			return _deleteQuestionMessage;
-		}
-		set {
-			_deleteQuestionMessage = value;
-		}
+		get => _deleteQuestionMessage;
+		set => _deleteQuestionMessage = value;
 	}
 
 	/// <summary>
@@ -292,16 +268,12 @@ public class PingGrid : GridVirtual {
 	/// <summary>
 	/// Method used to create the rows object, in this class of type PingGridRows.
 	/// </summary>
-	protected override RowsBase CreateRowsObject() {
-		return new PingGridRows(this);
-	}
+	protected override RowsBase CreateRowsObject() => new PingGridRows(this);
 
 	/// <summary>
 	/// Method used to create the columns object, in this class of type DataGridColumns.
 	/// </summary>
-	protected override ColumnsBase CreateColumnsObject() {
-		return new PingGridColumns(this);
-	}
+	protected override ColumnsBase CreateColumnsObject() => new PingGridColumns(this);
 
 	protected override SelectionBase CreateSelectionObject() {
 		var selection = base.CreateSelectionObject();
@@ -363,9 +335,7 @@ public class PingGrid : GridVirtual {
 		}
 	}
 
-	protected override void Dispose(bool disposing) {
-		base.Dispose(disposing);
-	}
+	protected override void Dispose(bool disposing) => base.Dispose(disposing);
 
 	protected virtual void Bind() {
 		//if (Columns.Count == 0)
@@ -397,14 +367,10 @@ public class PingGrid : GridVirtual {
 	}
 
 	[Obsolete]
-	private void BoundListCleared(object sender, EventArgs args) {
-		Rows.ResetRowHeigth();
-	}
+	private void BoundListCleared(object sender, EventArgs args) => Rows.ResetRowHeigth();
 
 	[Obsolete]
-	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) {
-		Rows.RowDeleted(args.Item);
-	}
+	private void BoundListItemDeleted(object sender, Sphere10.Framework.ComponentModel.ItemDeletedEventArgs<object> args) => Rows.RowDeleted(args.Item);
 
 	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
 		try {

@@ -17,17 +17,11 @@ public class Image : IImage {
 	public Image() {
 	}
 
-	public Image(System.Drawing.Image image) {
-		_image = image;
-	}
+	public Image(System.Drawing.Image image) => _image = image;
 
 	public System.Drawing.Image ImageValue {
-		get {
-			return _image;
-		}
-		set {
-			_image = value;
-		}
+		get => _image;
+		set => _image = value;
 	}
 
 	// IImage Members
@@ -35,7 +29,5 @@ public class Image : IImage {
 	/// Get the image of the specified cell.
 	/// </summary>
 	/// <returns></returns>
-	public System.Drawing.Image GetImage(CellContext cellContext) {
-		return _image;
-	}
+	public System.Drawing.Image GetImage(CellContext cellContext) => _image;
 }

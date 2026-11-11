@@ -25,29 +25,19 @@ public partial class EnumComboScreen : ApplicationScreen {
 	}
 
 	// Programmatic selection uses the same typed contract as the user's dropdown choice.
-	private void SetNullButton_Click(object sender, EventArgs args) {
-		_enumComboBox.SelectedEnum = null;
-	}
+	private void SetNullButton_Click(object sender, EventArgs args) => _enumComboBox.SelectedEnum = null;
 
 	// Description attributes affect presentation, while the actual value remains an enum.
-	private void SetEnumVal1Button_Click(object sender, EventArgs args) {
-		_enumComboBox.SelectedEnum = TestEnum.WithDescription;
-	}
+	private void SetEnumVal1Button_Click(object sender, EventArgs args) => _enumComboBox.SelectedEnum = TestEnum.WithDescription;
 
 	// An undescribed value falls back to its ordinary member name.
-	private void SetEnumValue2Button_Click(object sender, EventArgs args) {
-		_enumComboBox.SelectedEnum = TestEnum.WithoutDescription;
-	}
+	private void SetEnumValue2Button_Click(object sender, EventArgs args) => _enumComboBox.SelectedEnum = TestEnum.WithoutDescription;
 
 	// Inspection stays on the page rather than opening a modal message for each choice.
-	private void GetValueButton_Click(object sender, EventArgs args) {
-		_outputTextBox.AppendText(_selectionSummary.Text + Environment.NewLine);
-	}
+	private void GetValueButton_Click(object sender, EventArgs args) => _outputTextBox.AppendText(_selectionSummary.Text + Environment.NewLine);
 
 	// The readout always reflects the completed selection.
-	private void SelectionChanged(object sender, EventArgs args) {
-		UpdateSelection();
-	}
+	private void SelectionChanged(object sender, EventArgs args) => UpdateSelection();
 
 	// Keep the displayed caption, CLR value and numeric value distinct.
 	private void UpdateSelection() {

@@ -24,9 +24,7 @@ public class JsonRpcClientHandler : JsonRpcClient {
 	protected Task<int> Task { get; set; }
 
 	//Context Accessor for RPC functions. For now, ClientContext is the client's UID
-	public static ulong ClientContext {
-		get { return _clientContext.Value; }
-	}
+	public static ulong ClientContext => _clientContext.Value;
 
 	public event EventHandler<JsonRpcClientHandler>? OnStop;
 	public event EventHandler<JsonRpcClientHandler>? OnStart;
@@ -81,9 +79,7 @@ public class JsonRpcClientHandler : JsonRpcClient {
 		return jresult;
 	}
 
-	protected List<JsonRequest> ProcessBatchCalls(string message) {
-		return JsonConvert.DeserializeObject<JsonRequest[]>(message, JsonSettings).ToList();
-	}
+	protected List<JsonRequest> ProcessBatchCalls(string message) => JsonConvert.DeserializeObject<JsonRequest[]>(message, JsonSettings).ToList();
 
 	protected JsonRequest ProcessManySingleCalls(string message) {
 		var jobj = JObject.Parse(message);

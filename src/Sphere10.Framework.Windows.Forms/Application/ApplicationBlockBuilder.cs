@@ -155,9 +155,7 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Accepts a callback that supplies its screen type explicitly.</summary>
-	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure) {
-		return AddScreen(configure, out _);
-	}
+	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure) => AddScreen(configure, out _);
 
 	/// <summary>Adds an explicitly typed native registration and returns its identity.</summary>
 	public ApplicationBlockBuilder AddScreen(Action<ApplicationScreenBuilder> configure,
@@ -189,24 +187,17 @@ public class ApplicationBlockBuilder : ApplicationBlockBuilderBase<ApplicationBl
 	}
 
 	/// <summary>Registers the menu through the block's existing ownership rules.</summary>
-	protected override void OnMenuAdded(IApplicationMenu menu) {
-		_block?.AddMenu(menu);
-	}
+	protected override void OnMenuAdded(IApplicationMenu menu) => _block?.AddMenu(menu);
 
 	// Resolving navigation during composition must not activate the block's immutable runtime command collections.
-	protected override void ResolveScreenReferences(ApplicationBlock block) {
-		ApplicationHelper.ResolveScreenReferences(block, block.MenuCollection, Array.Empty<SharedUI.IApplicationMenuItem>());
-	}
+	protected override void ResolveScreenReferences(ApplicationBlock block)
+		=> ApplicationHelper.ResolveScreenReferences(block, block.MenuCollection, Array.Empty<SharedUI.IApplicationMenuItem>());
 
 	/// <summary>Retained native products keep direct metadata edits as the authoritative configuration.</summary>
-	protected override void ValidateConfiguration() {
-		Guard.Ensure(!string.IsNullOrWhiteSpace(_block?.Name ?? Name), "Block name is required.");
-	}
+	protected override void ValidateConfiguration() => Guard.Ensure(!string.IsNullOrWhiteSpace(_block?.Name ?? Name), "Block name is required.");
 
 	/// <summary>Rejects screen types that cannot be hosted by native application controls.</summary>
-	protected override void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
-	}
+	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 
 	/// <summary>Builds the configured native block and attaches its owned menus.</summary>
 	protected override ApplicationBlock CreateBlock(IReadOnlyList<IApplicationMenu> menus) {

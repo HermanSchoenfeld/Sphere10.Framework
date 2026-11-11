@@ -40,19 +40,13 @@ public sealed class SourceGridControlStateEventProvider : ControlStateEventProvi
 	}
 
 	// Cell values are already stored when the shared controller dispatches this event.
-	private void CellValueChanged(object sender, EventArgs args) {
-		NotifyStateChanged();
-	}
+	private void CellValueChanged(object sender, EventArgs args) => NotifyStateChanged();
 
 	// SelectionMode replaces its selection object and invalidates a live grid synchronously.
-	private void GridInvalidated(object sender, InvalidateEventArgs args) {
-		ObserveSelection();
-	}
+	private void GridInvalidated(object sender, InvalidateEventArgs args) => ObserveSelection();
 
 	// Handle creation also reconciles configuration performed before a native window existed.
-	private void GridHandleCreated(object sender, EventArgs args) {
-		ObserveSelection();
-	}
+	private void GridHandleCreated(object sender, EventArgs args) => ObserveSelection();
 
 	// Keep one listener on the current selection and release the previous selection immediately.
 	private void ObserveSelection() {
@@ -68,7 +62,5 @@ public sealed class SourceGridControlStateEventProvider : ControlStateEventProvi
 	}
 
 	// Selected-region changes are retained UI state; ordinary cursor hover is not observed.
-	private void SelectionChanged(object sender, RangeRegionChangedEventArgs args) {
-		NotifyStateChanged();
-	}
+	private void SelectionChanged(object sender, RangeRegionChangedEventArgs args) => NotifyStateChanged();
 }

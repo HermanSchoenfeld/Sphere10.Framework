@@ -265,9 +265,7 @@ public static class IEnumerableExtensions {
 			yield return enumerable;
 	}
 
-	public static IEnumerable<T> Loop<T>(this IEnumerable<T> enumerable) {
-		return enumerable.Duplicate().SelectMany(x => x);
-	}
+	public static IEnumerable<T> Loop<T>(this IEnumerable<T> enumerable) => enumerable.Duplicate().SelectMany(x => x);
 
 
 	public static IEnumerable<T> TakeUntil<T>(
@@ -309,9 +307,8 @@ public static class IEnumerableExtensions {
 		return result;
 	}
 
-	public static IEnumerable<T> WithoutClones<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector, Func<IEnumerable<T>, T> duplicateResolver) {
-		return source.WithoutClones((x) => x, (x, resolution) => resolution, keySelector, duplicateResolver);
-	}
+	public static IEnumerable<T> WithoutClones<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector, Func<IEnumerable<T>, T> duplicateResolver)
+		=> source.WithoutClones((x) => x, (x, resolution) => resolution, keySelector, duplicateResolver);
 
 	public static IEnumerable<T> WithoutClones<T, TMember, TKey>(this IEnumerable<T> source, Func<T, TMember> memberGetter, Func<T, TMember, T> memberCreator, Func<TMember, TKey> keySelector, Func<IEnumerable<TMember>, TMember> duplicateResolver) {
 		var sourceArray = source.ToArray();
@@ -319,9 +316,7 @@ public static class IEnumerableExtensions {
 		return sourceArray.Select(x => memberCreator(x, membersByKey[keySelector(memberGetter(x))]));
 	}
 
-	public static ObservableList<T> ToObservableList<T>(this IEnumerable<T> source) {
-		return new ObservableList<T>(new List<T>(source));
-	}
+	public static ObservableList<T> ToObservableList<T>(this IEnumerable<T> source) => new ObservableList<T>(new List<T>(source));
 
 	/*public static ObseravableCloneableList<T> ToCloneableListWithEvents<T>(this IEnumerable<T> source) where T : ICloneable {
         return new ObseravableCloneableList<T>(source);
@@ -394,9 +389,8 @@ public static class IEnumerableExtensions {
 	}
 
 
-	public static IEnumerable<Tuple<TFirst, TSecond>> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second) {
-		return first.Zip(second, Tuple.Create);
-	}
+	public static IEnumerable<Tuple<TFirst, TSecond>> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second)
+		=> first.Zip(second, Tuple.Create);
 
 	//public static IEnumerable<TResult> ZipWith<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector) {
 	//	if (first == null) throw new ArgumentNullException("first");
@@ -415,17 +409,11 @@ public static class IEnumerableExtensions {
 	//			yield return resultSelector(e1.Current, e2.Current);
 	//}
 
-	public static IEnumerable<T> Except<T>(this IEnumerable<T> source, T element) {
-		return source.Except(new[] { element });
-	}
+	public static IEnumerable<T> Except<T>(this IEnumerable<T> source, T element) => source.Except(new[] { element });
 
-	public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T element) {
-		return source.Union(new[] { element });
-	}
+	public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T element) => source.Union(new[] { element });
 
-	public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, T element) {
-		return source.Concat(new[] { element });
-	}
+	public static IEnumerable<T> Concat<T>(this IEnumerable<T> source, T element) => source.Concat(new[] { element });
 
 	public static SortedSet<T> ToSortedSet<T>(this IEnumerable<T> source, IComparer<T> comparer = null) {
 		comparer ??= Comparer<T>.Default;
@@ -512,13 +500,11 @@ public static class IEnumerableExtensions {
 		return dict;
 	}
 
-	public static EnumerableKeyDictionary<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, params Func<T, K>[] keySelectors) {
-		return ToMultiKeyDictionary2(source, (IEnumerable<Func<T, K>>)keySelectors);
-	}
+	public static EnumerableKeyDictionary<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, params Func<T, K>[] keySelectors)
+		=> ToMultiKeyDictionary2(source, (IEnumerable<Func<T, K>>)keySelectors);
 
-	public static EnumerableKeyDictionary<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors) {
-		return ToMultiKeyDictionary2Ex(source, keySelectors, (x) => x);
-	}
+	public static EnumerableKeyDictionary<K, T> ToMultiKeyDictionary2<K, T>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors)
+		=> ToMultiKeyDictionary2Ex(source, keySelectors, (x) => x);
 
 	public static EnumerableKeyDictionary<K, V> ToMultiKeyDictionary2Ex<T, K, V>(this IEnumerable<T> source, IEnumerable<Func<T, K>> keySelectors, Func<T, V> valueSelector) {
 		var result = new EnumerableKeyDictionary<K, V>();
@@ -530,9 +516,8 @@ public static class IEnumerableExtensions {
 		return result;
 	}
 
-	public static MultiKeyLookup<K, T> ToMultiKeyLookup<T, K>(this IEnumerable<T> source, Func<T, IEnumerable<K>> keySelector, IEqualityComparer<K> comparer = null) {
-		return source.ToMultiKeyLookup(keySelector, item => item, comparer);
-	}
+	public static MultiKeyLookup<K, T> ToMultiKeyLookup<T, K>(this IEnumerable<T> source, Func<T, IEnumerable<K>> keySelector, IEqualityComparer<K> comparer = null)
+		=> source.ToMultiKeyLookup(keySelector, item => item, comparer);
 
 	public static MultiKeyLookup<K, V> ToMultiKeyLookup<T, K, V>(this IEnumerable<T> source, Func<T, IEnumerable<K>> keySelector, Func<T, V> valueSelector, IEqualityComparer<K> comparer = null) {
 		Guard.ArgumentNotNull(source, nameof(source));
@@ -670,13 +655,10 @@ public static class IEnumerableExtensions {
 		return source.Count() == dest.Count() && !source.Except(dest, c).Any();
 	}
 
-	public static bool ContainsAll<T>(this IEnumerable<T> source, params T[] matches) {
-		return source.ContainsAll(matches.AsEnumerable());
-	}
+	public static bool ContainsAll<T>(this IEnumerable<T> source, params T[] matches) => source.ContainsAll(matches.AsEnumerable());
 
-	public static bool ContainsAll<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer, params T[] matches) {
-		return source.ContainsAll(matches.AsEnumerable(), comparer);
-	}
+	public static bool ContainsAll<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer, params T[] matches)
+		=> source.ContainsAll(matches.AsEnumerable(), comparer);
 
 	public static bool ContainsAll<T>(this IEnumerable<T> source, IEnumerable<T> matches, IEqualityComparer<T> comparer = null) {
 		var c = comparer ?? EqualityComparer<T>.Default;
@@ -684,13 +666,10 @@ public static class IEnumerableExtensions {
 	}
 
 
-	public static bool ContainsAny<T>(this IEnumerable<T> source, params T[] matches) {
-		return source.ContainsAny(matches.AsEnumerable());
-	}
+	public static bool ContainsAny<T>(this IEnumerable<T> source, params T[] matches) => source.ContainsAny(matches.AsEnumerable());
 
-	public static bool ContainsAny<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer, params T[] matches) {
-		return source.ContainsAny(matches.AsEnumerable(), comparer);
-	}
+	public static bool ContainsAny<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer, params T[] matches)
+		=> source.ContainsAny(matches.AsEnumerable(), comparer);
 
 
 	public static bool ContainsAny<T>(this IEnumerable<T> source, IEnumerable<T> matches, IEqualityComparer<T> comparer = null) {
@@ -719,9 +698,7 @@ public static class IEnumerableExtensions {
 	/// <param name="list">The list to be searched.</param>
 	/// <param name="value">The value to search for.</param>
 	/// <returns></returns>
-	public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value) {
-		return BinarySearch(list, value, Comparer<TItem>.Default);
-	}
+	public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value) => BinarySearch(list, value, Comparer<TItem>.Default);
 
 	/// <summary>
 	/// Performs a binary search on the specified collection.
@@ -732,9 +709,7 @@ public static class IEnumerableExtensions {
 	/// <param name="comparer">The comparer that is used to compare the value with the list items.</param>
 	/// <returns></returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value, IComparer<TItem> comparer) {
-		return list.BinarySearch(value, comparer.Compare);
-	}
+	public static int BinarySearch<TItem>(this IEnumerable<TItem> list, TItem value, IComparer<TItem> comparer) => list.BinarySearch(value, comparer.Compare);
 
 	public static IEnumerable<TItem> Randomize<TItem>(this IEnumerable<TItem> source)
 		=> Randomize(source, Tools.Maths.RNG);
@@ -765,13 +740,9 @@ public static class IEnumerableExtensions {
 				.Select(g => g.Select(x => x.Value));
 	}
 
-	public static IEnumerable<T> Unpartition<T>(this IEnumerable<IEnumerable<T>> sequence) {
-		return sequence.SelectMany(partition => partition);
-	}
+	public static IEnumerable<T> Unpartition<T>(this IEnumerable<IEnumerable<T>> sequence) => sequence.SelectMany(partition => partition);
 
-	public static IEnumerable<T> Unpartition<T>(this IEnumerable<T[]> sequence) {
-		return sequence.Cast<IEnumerable<T>>().Unpartition();
-	}
+	public static IEnumerable<T> Unpartition<T>(this IEnumerable<T[]> sequence) => sequence.Cast<IEnumerable<T>>().Unpartition();
 
 	public static IEnumerable<IGrouping<TKey, TSource>> GroupAdjacentBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
 		var last = default(TKey);
@@ -812,9 +783,7 @@ public static class IEnumerableExtensions {
 		return stringBuilder.ToString();
 	}
 
-	public static IEnumerable<Tuple<T, int>> WithIndex<T>(this IEnumerable<T> items) {
-		return items.Select((item, index) => Tuple.Create(item, index));
-	}
+	public static IEnumerable<Tuple<T, int>> WithIndex<T>(this IEnumerable<T> items) => items.Select((item, index) => Tuple.Create(item, index));
 
 	public static (T, IEnumerable<T>) SplitTail<T>(this IEnumerable<T> source) {
 		var enumerator = source.GetEnumerator();
@@ -877,9 +846,7 @@ public static class IEnumerableExtensions {
 	/// <param name="source">A sequence containing elements.</param>
 	/// <param name="item">The item to locate.</param>        
 	/// <returns>The index of the entry if it was found in the sequence; otherwise, -1.</returns>
-	public static long EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item) {
-		return EnumeratedIndexOf(source, item, EqualityComparer<TSource>.Default);
-	}
+	public static long EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item) => EnumeratedIndexOf(source, item, EqualityComparer<TSource>.Default);
 
 
 	// This provides a useful extension-like method to find the index of and item from IEnumerable<T>
@@ -907,9 +874,8 @@ public static class IEnumerableExtensions {
 		return -1;
 	}
 
-	public static long EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item, Func<TSource, TSource, bool> itemComparer) {
-		return source.EnumeratedIndexOf(item, new ActionEqualityComparer<TSource>(itemComparer));
-	}
+	public static long EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, TSource item, Func<TSource, TSource, bool> itemComparer)
+		=> source.EnumeratedIndexOf(item, new ActionEqualityComparer<TSource>(itemComparer));
 
 	public static int EnumeratedIndexOf<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
 		if (source == null) {

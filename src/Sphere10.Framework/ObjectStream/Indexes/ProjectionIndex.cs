@@ -70,24 +70,14 @@ internal sealed class ProjectionIndex<TItem, TProjection> : ProjectionIndexBase<
 
 	public override TProjection ApplyProjection(TItem item) => _projection.Invoke(item);
 
-	protected override void OnAdded(TItem item, long index, TProjection keyChecksum) {
-		Store.Add(index, keyChecksum);
-	}
+	protected override void OnAdded(TItem item, long index, TProjection keyChecksum) => Store.Add(index, keyChecksum);
 
-	protected override void OnUpdated(TItem item, long index, TProjection keyChecksum) {
-		Store.Update(index, keyChecksum);
-	}
-	protected override void OnInserted(TItem item, long index, TProjection keyChecksum) {
-		Store.Insert(index, keyChecksum);
-	}
+	protected override void OnUpdated(TItem item, long index, TProjection keyChecksum) => Store.Update(index, keyChecksum);
+	protected override void OnInserted(TItem item, long index, TProjection keyChecksum) => Store.Insert(index, keyChecksum);
 
-	protected override void OnRemoved(long index) {
-		Store.Remove(index);
-	}
+	protected override void OnRemoved(long index) => Store.Remove(index);
 
-	protected override void OnReaped(long index) {
-		Store.Reap(index);
-	}
+	protected override void OnReaped(long index) => Store.Reap(index);
 
 	protected override void OnContainerClearing() {
 		Store.Clear();

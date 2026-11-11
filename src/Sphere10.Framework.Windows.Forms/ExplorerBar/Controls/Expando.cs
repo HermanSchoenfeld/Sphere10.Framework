@@ -834,9 +834,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Hides the specified Control
 	/// </summary>
 	/// <param name="control">The Control to hide</param>
-	public void HideControl(Control control) {
-		this.HideControl(new Control[] { control });
-	}
+	public void HideControl(Control control) => this.HideControl(new Control[] { control });
 
 
 	/// <summary>
@@ -899,9 +897,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Shows the specified Control
 	/// </summary>
 	/// <param name="control">The Control to show</param>
-	public void ShowControl(Control control) {
-		this.ShowControl(new Control[] { control });
-	}
+	public void ShowControl(Control control) => this.ShowControl(new Control[] { control });
 
 
 	/// <summary>
@@ -996,9 +992,7 @@ public class Expando : Control, ISupportInitialize {
 	/// <summary>
 	/// Invalidates the titlebar area
 	/// </summary>
-	protected void InvalidateTitleBar() {
-		this.Invalidate(new Rectangle(0, 0, this.Width, this._headerHeight), false);
-	}
+	protected void InvalidateTitleBar() => this.Invalidate(new Rectangle(0, 0, this.Width, this._headerHeight), false);
 
 	#endregion
 
@@ -1007,9 +1001,7 @@ public class Expando : Control, ISupportInitialize {
 	/// <summary>
 	/// Signals the object that initialization is starting
 	/// </summary>
-	public void BeginInit() {
-		this._initialising = true;
-	}
+	public void BeginInit() => this._initialising = true;
 
 
 	/// <summary>
@@ -1028,9 +1020,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Gets whether the Expando is currently initializing
 	/// </summary>
 	[Browsable(false)]
-	public bool Initialising {
-		get { return this._initialising; }
-	}
+	public bool Initialising => this._initialising;
 
 	#endregion
 
@@ -1173,9 +1163,7 @@ public class Expando : Control, ISupportInitialize {
 	/// <summary>
 	/// Prevents the Expando from drawing until the EndUpdate method is called
 	/// </summary>
-	public void BeginUpdate() {
-		this._beginUpdateCount++;
-	}
+	public void BeginUpdate() => this._beginUpdateCount++;
 
 
 	/// <summary>
@@ -1212,9 +1200,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Forces the control to apply layout logic to child controls, 
 	/// and adjusts the height of the Expando if necessary
 	/// </summary>
-	public void DoLayout() {
-		this.DoLayout(true);
-	}
+	public void DoLayout() => this.DoLayout(true);
 
 
 	/// <summary>
@@ -1574,7 +1560,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(false),
 	 Description("Specifies whether the Expando is allowed to animate")]
 	public bool Animate {
-		get { return this._animate; }
+		get => this._animate;
 
 		set {
 			if (this._animate != value) {
@@ -1588,26 +1574,20 @@ public class Expando : Control, ISupportInitialize {
 	/// Gets whether the Expando is currently animating
 	/// </summary>
 	[Browsable(false)]
-	public bool Animating {
-		get { return (this._animatingFade || this._animatingSlide); }
-	}
+	public bool Animating => (this._animatingFade || this._animatingSlide);
 
 
 	/// <summary>
 	/// Gets the Image used by the Expando while it is animating
 	/// </summary>
-	protected Image AnimationImage {
-		get { return this._animationImage; }
-	}
+	protected Image AnimationImage => this._animationImage;
 
 
 	/// <summary>
 	/// Gets the height that the Expando should be at the end of its 
 	/// slide animation
 	/// </summary>
-	protected int SlideEndHeight {
-		get { return this._slideEndHeight; }
-	}
+	protected int SlideEndHeight => this._slideEndHeight;
 
 	#endregion
 
@@ -1768,9 +1748,7 @@ public class Expando : Control, ISupportInitialize {
 	/// <summary>
 	/// Returns the height of the fake client rectangle
 	/// </summary>
-	protected int PseudoClientHeight {
-		get { return this.Height - this.HeaderHeight - this.Border.Top - this.Border.Bottom; }
-	}
+	protected int PseudoClientHeight => this.Height - this.HeaderHeight - this.Border.Top - this.Border.Bottom;
 
 	#endregion
 
@@ -1815,7 +1793,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(false),
 	 Description("Determines whether the Expando should display a focus rectangle.")]
 	public new bool ShowFocusCues {
-		get { return this._showFocusCues; }
+		get => this._showFocusCues;
 
 		set {
 			if (this._showFocusCues != value) {
@@ -1837,9 +1815,9 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(true),
 	 Description("Specifies whether the Expando should use Windows default Tab handling mechanism")]
 	public bool UseDefaultTabHandling {
-		get { return this._useDefaultTabHandling; }
+		get => this._useDefaultTabHandling;
 
-		set { this._useDefaultTabHandling = value; }
+		set => this._useDefaultTabHandling = value;
 	}
 
 	#endregion
@@ -2064,9 +2042,7 @@ public class Expando : Control, ISupportInitialize {
 	/// <summary>
 	/// Gets the height of the background image used for the Title Bar.
 	/// </summary>
-	protected int TitleBackImageHeight {
-		get { return this.SystemSettings.Header.BackImageHeight; }
-	}
+	protected int TitleBackImageHeight => this.SystemSettings.Header.BackImageHeight;
 
 
 	/// <summary>
@@ -2076,7 +2052,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(null),
 	 Description("The image used on the left side of the Title Bar.")]
 	public Image TitleImage {
-		get { return this._titleImage; }
+		get => this._titleImage;
 
 		set {
 			this._titleImage = value;
@@ -2126,7 +2102,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(null),
 	 Description("The Image used as a watermark in the client area of the Expando.")]
 	public Image Watermark {
-		get { return this._watermark; }
+		get => this._watermark;
 
 		set {
 			if (this._watermark != value) {
@@ -2175,9 +2151,7 @@ public class Expando : Control, ISupportInitialize {
 	 Description("The Controls contained in the Expando"),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 Editor(typeof(ItemCollectionEditor), typeof(UITypeEditor))]
-	public Expando.ItemCollection Items {
-		get { return this._itemList; }
-	}
+	public Expando.ItemCollection Items => this._itemList;
 
 
 	/// <summary>
@@ -2186,7 +2160,7 @@ public class Expando : Control, ISupportInitialize {
 	/// </summary>
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public new Control.ControlCollection Controls {
-		get { return base.Controls; }
+		get => base.Controls;
 	}
 
 	#endregion
@@ -2201,7 +2175,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(false),
 	 Description("The AutoLayout property determines whether the Expando will automagically layout its items.")]
 	public bool AutoLayout {
-		get { return this._autoLayout; }
+		get => this._autoLayout;
 
 		set {
 			this._autoLayout = value;
@@ -2271,7 +2245,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Gets or sets the height and width of the control
 	/// </summary>
 	public new Size Size {
-		get { return base.Size; }
+		get => base.Size;
 
 		set {
 			if (!this.Size.Equals(value)) {
@@ -2293,9 +2267,7 @@ public class Expando : Control, ISupportInitialize {
 	/// </summary>
 	/// <returns>true if the Size property should be 
 	/// serialized, false otherwise</returns>
-	private bool ShouldSerializeSize() {
-		return this.TaskPane != null;
-	}
+	private bool ShouldSerializeSize() => this.TaskPane != null;
 
 
 	/// <summary>
@@ -2306,7 +2278,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(100),
 	 Description("The height of the Expando in its expanded state.")]
 	public int ExpandedHeight {
-		get { return this._expandedHeight; }
+		get => this._expandedHeight;
 
 		set {
 			this._expandedHeight = value;
@@ -2327,17 +2299,13 @@ public class Expando : Control, ISupportInitialize {
 	/// <summary>
 	/// Gets the height of the header section of the Expando
 	/// </summary>
-	protected int HeaderHeight {
-		get { return this._headerHeight; }
-	}
+	protected int HeaderHeight => this._headerHeight;
 
 
 	/// <summary>
 	/// Gets the height of the titlebar
 	/// </summary>
-	protected int TitleBarHeight {
-		get { return this._titleBarHeight; }
-	}
+	protected int TitleBarHeight => this._titleBarHeight;
 
 	#endregion
 
@@ -2351,7 +2319,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(false),
 	 Description("The SpecialGroup property determines whether the Expando will be rendered as a SpecialGroup.")]
 	public bool SpecialGroup {
-		get { return this._specialGroup; }
+		get => this._specialGroup;
 
 		set {
 			this._specialGroup = value;
@@ -2390,7 +2358,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(false),
 	 Description("The Collapsed property determines whether the Expando is collapsed.")]
 	public bool Collapsed {
-		get { return this._collapsed; }
+		get => this._collapsed;
 
 		set {
 			if (this._collapsed != value) {
@@ -2435,7 +2403,7 @@ public class Expando : Control, ISupportInitialize {
 	/// </summary>
 	[Browsable(false)]
 	protected internal FocusStates FocusState {
-		get { return this._focusState; }
+		get => this._focusState;
 
 		set {
 			// fix: if the Expando isn't allowed to collapse, 
@@ -2470,7 +2438,7 @@ public class Expando : Control, ISupportInitialize {
 	 DefaultValue(true),
 	 Description("The CanCollapse property determines whether the Expando is able to collapse.")]
 	public bool CanCollapse {
-		get { return this._canCollapse; }
+		get => this._canCollapse;
 
 		set {
 			if (this._canCollapse != value) {
@@ -2496,7 +2464,7 @@ public class Expando : Control, ISupportInitialize {
 	///// </summary>
 	[Browsable(false)]
 	protected internal ExplorerBarInfo SystemSettings {
-		get { return this._systemSettings; }
+		get => this._systemSettings;
 
 		set {
 			// make sure we have a new value
@@ -2576,8 +2544,8 @@ public class Expando : Control, ISupportInitialize {
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 TypeConverter(typeof(ExpandoInfoConverter))]
 	public ExpandoInfo CustomSettings {
-		get { return this._customSettings; }
-		internal set { this._customSettings = value; }
+		get => this._customSettings;
+		internal set => this._customSettings = value;
 	}
 
 
@@ -2589,8 +2557,8 @@ public class Expando : Control, ISupportInitialize {
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 TypeConverter(typeof(HeaderInfoConverter))]
 	public HeaderInfo CustomHeaderSettings {
-		get { return this._customHeaderSettings; }
-		internal set { this._customHeaderSettings = value; }
+		get => this._customHeaderSettings;
+		internal set => this._customHeaderSettings = value;
 	}
 
 
@@ -2612,7 +2580,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Gets or sets the TaskPane the Expando belongs to
 	/// </summary>
 	protected internal TaskPane TaskPane {
-		get { return this._taskpane; }
+		get => this._taskpane;
 
 		set {
 			this._taskpane = value;
@@ -2631,7 +2599,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Gets or sets the text displayed on the titlebar
 	/// </summary>
 	public override string Text {
-		get { return base.Text; }
+		get => base.Text;
 
 		set {
 			base.Text = value;
@@ -2648,7 +2616,7 @@ public class Expando : Control, ISupportInitialize {
 	/// Gets or sets a value indicating whether the Expando is displayed
 	/// </summary>
 	public new bool Visible {
-		get { return base.Visible; }
+		get => base.Visible;
 
 		set {
 			// fix: TaskPane will now perform a layout if the 
@@ -3771,9 +3739,7 @@ public class Expando : Control, ISupportInitialize {
 		/// </summary>
 		/// <param name="index">The index value of the Control to 
 		/// remove</param>
-		public new void RemoveAt(int index) {
-			this.Remove(this[index]);
-		}
+		public new void RemoveAt(int index) => this.Remove(this[index]);
 
 
 		/// <summary>
@@ -3822,18 +3788,14 @@ public class Expando : Control, ISupportInitialize {
 		/// Moves the specified control to the top of the control collection
 		/// </summary>
 		/// <param name="value">The control to be moved</param>
-		public void MoveToTop(Control value) {
-			this.Move(value, 0);
-		}
+		public void MoveToTop(Control value) => this.Move(value, 0);
 
 
 		/// <summary>
 		/// Moves the specified control to the bottom of the control collection
 		/// </summary>
 		/// <param name="value">The control to be moved</param>
-		public void MoveToBottom(Control value) {
-			this.Move(value, this.Count);
-		}
+		public void MoveToBottom(Control value) => this.Move(value, this.Count);
 
 		#endregion
 
@@ -3846,9 +3808,7 @@ public class Expando : Control, ISupportInitialize {
 		/// </summary>
 		/// <param name="index">The index of the control to retrieve 
 		/// from the control collection</param>
-		public virtual Control this[int index] {
-			get { return this.List[index] as Control; }
-		}
+		public virtual Control this[int index] => this.List[index] as Control;
 
 		#endregion
 
@@ -3978,7 +3938,7 @@ public class Expando : Control, ISupportInitialize {
 		/// Overrides AutoScroll to disable scrolling
 		/// </summary>
 		public new bool AutoScroll {
-			get { return false; }
+			get => false;
 
 			set { }
 		}
@@ -3988,9 +3948,9 @@ public class Expando : Control, ISupportInitialize {
 		/// Gets or sets the height of the header section of the Expando
 		/// </summary>
 		public int HeaderHeight {
-			get { return this.headerHeight; }
+			get => this.headerHeight;
 
-			set { this.headerHeight = value; }
+			set => this.headerHeight = value;
 		}
 
 
@@ -3998,9 +3958,9 @@ public class Expando : Control, ISupportInitialize {
 		/// Gets or sets the border around the "client area"
 		/// </summary>
 		public Border Border {
-			get { return this.border; }
+			get => this.border;
 
-			set { this.border = value; }
+			set => this.border = value;
 		}
 
 
@@ -4008,9 +3968,9 @@ public class Expando : Control, ISupportInitialize {
 		/// Gets or sets the background image displayed in the control
 		/// </summary>
 		public Image BackImage {
-			get { return this.backImage; }
+			get => this.backImage;
 
-			set { this.backImage = value; }
+			set => this.backImage = value;
 		}
 
 
@@ -4223,9 +4183,7 @@ public class Expando : Control, ISupportInitialize {
 		/// <summary>
 		/// Gets the Expando that is te be animated
 		/// </summary>
-		public Expando Expando {
-			get { return this.expando; }
-		}
+		public Expando Expando => this.expando;
 
 
 		/// <summary>
@@ -4233,7 +4191,7 @@ public class Expando : Control, ISupportInitialize {
 		/// to get from fully expanded to fully collapsed, or visa versa
 		/// </summary>
 		public int NumAnimationSteps {
-			get { return this.numAnimationSteps; }
+			get => this.numAnimationSteps;
 
 			set {
 				if (value < 0) {
@@ -4255,26 +4213,22 @@ public class Expando : Control, ISupportInitialize {
 		/// of the animation stays on the screen
 		/// </summary>
 		public int AnimationFrameInterval {
-			get { return this.animationFrameInterval; }
+			get => this.animationFrameInterval;
 
-			set { this.animationFrameInterval = value; }
+			set => this.animationFrameInterval = value;
 		}
 
 
 		/// <summary>
 		/// Gets whether the Expando is currently animating
 		/// </summary>
-		public bool Animating {
-			get { return this.animating; }
-		}
+		public bool Animating => this.animating;
 
 
 		/// <summary>
 		/// Gets the type of animation to perform
 		/// </summary>
-		public int AnimationType {
-			get { return this.animationType; }
-		}
+		public int AnimationType => this.animationType;
 
 		#endregion
 

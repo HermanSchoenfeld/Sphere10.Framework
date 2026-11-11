@@ -80,9 +80,8 @@ public class ApplicationScreenDefinition {
 	}
 
 	/// <summary>Copies registration metadata into an independent graph with no command membership.</summary>
-	public virtual ApplicationScreenDefinition Clone() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings);
-	}
+	public virtual ApplicationScreenDefinition Clone()
+		=> new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Settings);
 
 	public virtual ApplicationScreenDefinition WithActivationMode(ScreenActivationMode activationMode) {
 		ApplicationHelper.ValidateScreenPolicy(activationMode, ScreenKind);

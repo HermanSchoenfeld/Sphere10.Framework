@@ -218,9 +218,7 @@ public class CacheNotificationTests {
 	private sealed class TypedTrackingCache : CacheBase<object, object> {
 		private readonly List<string> _calls;
 
-		public TypedTrackingCache(List<string> calls) {
-			_calls = calls;
-		}
+		public TypedTrackingCache(List<string> calls) => _calls = calls;
 
 		protected override object Fetch(object key) {
 			_calls.Add("fetch");

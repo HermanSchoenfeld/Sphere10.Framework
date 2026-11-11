@@ -14,21 +14,13 @@ public class IndexCountCallArgs : CallArgs {
 	}
 
 	public long Index {
-		get {
-			return (long)base[0];
-		}
-		set {
-			base[0] = value;
-		}
+		get => (long)base[0];
+		set => base[0] = value;
 	}
 
 	public long Count {
-		get {
-			return (long)base[1];
-		}
-		set {
-			base[1] = value;
-		}
+		get => (long)base[1];
+		set => base[1] = value;
 	}
 }
 

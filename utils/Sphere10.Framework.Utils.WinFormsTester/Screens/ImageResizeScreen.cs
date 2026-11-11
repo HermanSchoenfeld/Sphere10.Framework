@@ -34,11 +34,7 @@ public partial class ImageResizeScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ImageResizeScreenSettings ScreenSettings {
-		get {
-			return (ImageResizeScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ImageResizeScreenSettings ScreenSettings => (ImageResizeScreenSettings)base.ScreenSettings;
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();
@@ -77,9 +73,7 @@ public partial class ImageResizeScreen : ApplicationScreen {
 		}
 	}
 
-	private void SampleClicked(object sender, EventArgs e) {
-		CreateSample();
-	}
+	private void SampleClicked(object sender, EventArgs e) => CreateSample();
 
 	// A labelled asymmetric sample makes alignment differences visible without requiring a file.
 	private void CreateSample() {

@@ -21,13 +21,9 @@ public class OracleSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public override ISQLBuilder CommitTransaction() {
-		return Emit("COMMIT").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder CommitTransaction() => Emit("COMMIT").EndOfStatement(SQLStatementType.TCL);
 
-	public override ISQLBuilder RollbackTransaction() {
-		return Emit("ROLLBACK").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder RollbackTransaction() => Emit("ROLLBACK").EndOfStatement(SQLStatementType.TCL);
 
 	public override ISQLBuilder ObjectName(string objectName) {
 		if (objectName.StartsWith("\""))
@@ -45,25 +41,16 @@ public class OracleSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public override ISQLBuilder NextSequenceValue(string sequenceName) {
-		return Emit(sequenceName).Emit(".NEXTVAL");
-	}
+	public override ISQLBuilder NextSequenceValue(string sequenceName) => Emit(sequenceName).Emit(".NEXTVAL");
 
-	public override ISQLBuilder GetLastIdentity(string hint = null) {
-		throw new NotSupportedException("Oracle does not have a generic last identity function. Use RETURNING clause or sequence.CURRVAL.");
-	}
+	public override ISQLBuilder GetLastIdentity(string hint = null)
+		=> throw new NotSupportedException("Oracle does not have a generic last identity function. Use RETURNING clause or sequence.CURRVAL.");
 
-	public override ISQLBuilder VariableName(string variableName) {
-		return Emit(":").Emit(variableName);
-	}
+	public override ISQLBuilder VariableName(string variableName) => Emit(":").Emit(variableName);
 
-	public override ISQLBuilder DeclareVariable(string variableName, Type type) {
-		throw new NotSupportedException("Oracle variable declarations require PL/SQL blocks");
-	}
+	public override ISQLBuilder DeclareVariable(string variableName, Type type) => throw new NotSupportedException("Oracle variable declarations require PL/SQL blocks");
 
-	public override ISQLBuilder AssignVariable(string variableName, object value) {
-		throw new NotSupportedException("Oracle variable assignment requires PL/SQL blocks");
-	}
+	public override ISQLBuilder AssignVariable(string variableName, object value) => throw new NotSupportedException("Oracle variable assignment requires PL/SQL blocks");
 
 	public override ISQLBuilder EmitQueryResultLimit(int limit, int? offset = null) {
 		// Oracle 12c+ supports FETCH FIRST / OFFSET syntax
@@ -103,7 +90,5 @@ public class OracleSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public override ISQLBuilder CreateBuilder() {
-		return new OracleSQLBuilder();
-	}
+	public override ISQLBuilder CreateBuilder() => new OracleSQLBuilder();
 }

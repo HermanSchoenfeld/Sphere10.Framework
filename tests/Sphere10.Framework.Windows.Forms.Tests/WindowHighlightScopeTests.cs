@@ -23,6 +23,111 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [TestFixture, NonParallelizable, Apartment(ApartmentState.STA)]
 public class WindowHighlightScopeTests {
 	[Test]
+	public void PickerHidesOnlyMainOwnerConsumesThePairAndReturnsFreshWindowIdentity() => RunWithMessageLoop(async owner => {
+		using var detached = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Bounds = new Rectangle(30, 30, 200, 100) };
+		detached.Show(owner);
+		var mouse = new PickerMouse();
+		var keyboard = new PickerKeyboard();
+		var uiThread = Environment.CurrentManagedThreadId;
+		var hover = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var selectedWindow = new WindowsWindowInfo(new IntPtr(123), "Owned Target", "OwnedClass", 42, 7, "Owned", DateTime.UnixEpoch, true, string.Empty);
+		var reads = 0;
+		using var picker = new WindowPicker(owner, mouse, keyboard, (point, token) => {
+			Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(uiThread));
+			Interlocked.Increment(ref reads);
+			hover.TrySetResult();
+			return Task.FromResult(new WindowsWindowTarget(selectedWindow, new Rectangle(-19000, -19000, 350, 200)));
+		});
+		var choosing = picker.PickAsync(owner);
+		Assert.That(owner.Visible, Is.False);
+		Assert.That(detached.Visible, Is.True);
+		Assert.That(detached.Owner, Is.Null);
+		await hover.Task;
+		Assert.That(mouse.Raise(MouseButton.Left, MouseButtonState.Down, 200, 200), Is.True);
+		Assert.That(mouse.Raise(MouseButton.Left, MouseButtonState.Up, 200, 200), Is.True);
+		var selected = await choosing;
+		Assert.That(selected.Window, Is.SameAs(selectedWindow));
+		Assert.That(reads, Is.GreaterThanOrEqualTo(2), "Accepting a click requires a fresh read, not the previous hover target.");
+		Assert.That(owner.Visible && detached.Visible, Is.True);
+		Assert.That(detached.Owner, Is.SameAs(owner));
+		Assert.That(mouse.Status, Is.EqualTo(DeviceHookStatus.Uninstalled));
+		Assert.That(FormsApplication.OpenForms.Cast<Form>().Any(form => form.Name == "WindowHighlightForm"), Is.False);
+	});
+
+	[Test]
+	public void PickerEscapeRestoresTheOwnerImmediatelyAndDrainsConsumedButtonBeforeUnhook() => RunWithMessageLoop(async owner => {
+		var mouse = new PickerMouse();
+		var keyboard = new PickerKeyboard();
+		using var picker = new WindowPicker(owner, mouse, keyboard, (_, _) => Task.FromResult<WindowsWindowTarget>(null));
+		var choosing = picker.PickAsync(owner);
+		var restored = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		EventHandler visible = (_, _) => { if (owner.Visible) restored.TrySetResult(); };
+		owner.VisibleChanged += visible;
+		using var unsubscribe = Tools.Scope.ExecuteOnDispose(() => owner.VisibleChanged -= visible);
+		Assert.That(mouse.Raise(MouseButton.Left, MouseButtonState.Down, 100, 100), Is.True);
+		keyboard.Escape();
+		await restored.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.That(owner.Visible, Is.True);
+		Assert.That(choosing.IsCompleted, Is.False, "The consumed DOWN still owns its matching UP.");
+		Assert.That(mouse.Raise(MouseButton.Left, MouseButtonState.Up, 100, 100), Is.True);
+		Assert.That(await choosing, Is.Null);
+		Assert.That(mouse.Status, Is.EqualTo(DeviceHookStatus.Uninstalled));
+	});
+
+	[Test]
+	public void PhysicalPointReadUsesTheOwnedWindowAndRejectsRecycledIdentity() => RunWithMessageLoop(async owner => {
+		owner.Location = new Point(40, 40);
+		var point = owner.PointToScreen(new Point(owner.ClientSize.Width / 2, owner.ClientSize.Height / 2));
+		var captured = await WindowsWindow.ReadAtPhysicalPointAsync(point);
+		Assert.That(captured, Is.Not.Null);
+		Assert.That(captured.Window.ProcessId, Is.EqualTo(Environment.ProcessId));
+		Assert.That(captured.Window.ProcessStartTimeUtc, Is.Not.Null);
+		Assert.That(captured.Bounds.Width, Is.GreaterThan(0));
+		await Assert.ThatAsync(() => Task.Run(() => WindowsWindow.GetVisiblePhysicalBounds(captured.Window with { ProcessStartTimeUtc = DateTime.UnixEpoch })),
+			Throws.InstanceOf<InvalidOperationException>());
+	});
+
+	[Test]
+	public void ActualNativePickerConsumesTheSelectingClickWithoutPressingTheOwnedTargetsButton() => RunWithMessageLoop(async owner => {
+		using var target = new Form { ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, Bounds = new Rectangle(300, 220, 360, 220) };
+		using var button = new Button { Dock = DockStyle.Fill, Text = "Owned Picker Target" };
+		target.Controls.Add(button);
+		var clicks = 0;
+		button.Click += (_, _) => clicks++;
+		target.Show(owner);
+		var buttonHandle = button.Handle;
+		var physicalBounds = await Task.Run(() => {
+			Guard.Ensure(Tools.Windows.Windowing.TryGetInfo(buttonHandle, out var info), "The owned target button must have a captured native identity.");
+			return Tools.Windows.Windowing.GetPhysicalBounds(info);
+		});
+		var point = new Point(physicalBounds.Left + physicalBounds.Width / 2, physicalBounds.Top + physicalBounds.Height / 2);
+		Point previous;
+		using (new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2))
+			previous = Cursor.Position;
+		using var restorePointer = Tools.Scope.ExecuteOnDispose(() => {
+			using var dpi = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
+			Cursor.Position = previous;
+		});
+		using var picker = new WindowPicker(owner);
+		var choosing = picker.PickAsync(owner);
+		Assert.That(target.Visible, Is.True);
+		// The picker and low-level hook use physical desktop pixels; do not mix those with virtualized PointToScreen coordinates.
+		using (new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2))
+			Cursor.Position = point;
+		await Task.Run(() => {
+			using var dpi = new ThreadDpiAwarenessScope(DpiAwarenessContext.PerMonitorAwareV2);
+			Tools.Windows.Hooks.SimulateMouseDeviceAction(MouseButton.Left, MouseButtonState.Down, point.X, point.Y);
+			Tools.Windows.Hooks.SimulateMouseDeviceAction(MouseButton.Left, MouseButtonState.Up, point.X, point.Y);
+		});
+		var selected = await choosing.WaitAsync(TimeSpan.FromSeconds(5));
+		await Task.Yield();
+		Assert.That(selected.Window.Handle, Is.EqualTo(buttonHandle));
+		Assert.That(clicks, Is.Zero, "Choosing an HWND must not activate its real button.");
+		Assert.That(owner.Visible && target.Visible, Is.True);
+		Assert.That(target.Owner, Is.SameAs(owner));
+	});
+
+	[Test]
 	public void AsynchronousDisposalQueuesAndAwaitsTheFramesOwnerThread() => RunWithMessageLoop(async _ => {
 		var ownerThreadId = Environment.CurrentManagedThreadId;
 		var highlight = Tools.Scope.EnterHighlightScope(new Rectangle(-19000, -19000, 360, 220), Color.Red);
@@ -297,6 +402,31 @@ public class WindowHighlightScopeTests {
 		Assert.That(completed, Is.True);
 	}
 
+	#region Inner Types
+
+	private sealed class PickerMouse : BaseMouseHook {
+		public PickerMouse() : base(new NoOpActiveApplicationMonitor(), TimeSpan.FromMilliseconds(100)) {
+		}
+		public bool Raise(MouseButton button, MouseButtonState state, int x, int y) {
+			var consumed = ShouldIntercept?.Invoke(button, state) ?? false;
+			FireClickEvent(new MouseClickEvent("Owned", x, y, button, state, MouseClickType.Single, DateTime.UtcNow));
+			FireActivityEvent(new MouseEvent("Owned", x, y, DateTime.UtcNow));
+			return consumed;
+		}
+		public override void InstallHook() => Status = DeviceHookStatus.Disabled;
+		public override void UninstallHook() => Status = DeviceHookStatus.Uninstalled;
+		public override void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY) {
+		}
+	}
+
+	private sealed class PickerKeyboard : BaseKeyboardHook {
+		public PickerKeyboard() : base(new NoOpActiveApplicationMonitor()) {
+		}
+		public void Escape() => FireKeyDownEvent(new KeyEvent("Owned", '\0', default, Key.Escape, KeyState.Down, false, false, false, DateTime.UtcNow));
+		public override void InstallHook() => Status = DeviceHookStatus.Disabled;
+		public override void UninstallHook() => Status = DeviceHookStatus.Uninstalled;
+	}
+
 	private sealed class WindowActivationSpy : NativeWindow, IDisposable {
 		public WindowActivationSpy(IntPtr handle) => AssignHandle(handle);
 
@@ -313,4 +443,5 @@ public class WindowHighlightScopeTests {
 			base.WndProc(ref message);
 		}
 	}
+	#endregion
 }

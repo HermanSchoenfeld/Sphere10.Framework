@@ -150,9 +150,7 @@ public sealed class BootstrapFormScope<TModel> : IScope where TModel : FormModel
 			false
 		);
 
-	private void Write(HtmlString text) {
-		Write(text.Value);
-	}
+	private void Write(HtmlString text) => Write(text.Value);
 
 	private void Write(IHtmlContent htmlContent) {
 		using (var writer = new System.IO.StringWriter()) {

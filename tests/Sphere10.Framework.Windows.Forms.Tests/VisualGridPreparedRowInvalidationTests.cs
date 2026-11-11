@@ -29,8 +29,7 @@ public class VisualGridPreparedRowInvalidationTests {
 		var original = new Row(1, "Original Value");
 		var other = new Row(2, "Other Row");
 		var replacement = original with { Value = "Refreshed Value" };
-		var source = new RefreshableSnapshotDataSource<Row, int>(row => row.Id, row => row.Id == original.Id ? replacement : row);
-		source.ReplaceSnapshot(new[] { original, other });
+		var source = new RefreshingRows(new[] { original, other }, row => row.Id == original.Id ? replacement : row);
 		using var crud = new VisualGrid {
 			Dock = DockStyle.Fill, SuppressLoadingIndicator = true,
 			PageMode = VisualGridPageMode.Single, PrepareReadOnlyCellsInBackground = true, AutoSizeRowsOnRefresh = false
@@ -89,4 +88,15 @@ public class VisualGridPreparedRowInvalidationTests {
 	}
 
 	private sealed record Row(int Id, string Value);
+
+	private sealed class RefreshingRows : ListDataSource<Row> {
+		private readonly Func<Row, Row> _refresh;
+
+		public RefreshingRows(IEnumerable<Row> rows, Func<Row, Row> refresh)
+			: base(rows) {
+			_refresh = refresh;
+		}
+
+		protected override Row RefreshMethod(Row entity) => _refresh(entity);
+	}
 }

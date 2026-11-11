@@ -6,18 +6,18 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
-public sealed class WindowsDisplayDataSource : ReloadableSnapshotDataSource<WindowsDisplayInfo> {
-	public WindowsDisplayDataSource()
-		: this(token => Tools.Windows.Display.GetDisplaysAsync(token)) { }
+/// <summary>A native display inventory IDataSource.</summary>
+public sealed class WindowsDisplayDataSource : AsyncListDataSource<WindowsDisplayInfo> {
+	public WindowsDisplayDataSource() => DefaultSortProperty = nameof(WindowsDisplayInfo.GdiDeviceName);
 
-	public WindowsDisplayDataSource(Func<CancellationToken, Task<WindowsDisplayInfo[]>> capture)
-		: base(capture) {
-		DefaultSortProperty = nameof(WindowsDisplayInfo.GdiDeviceName);
-	}
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsDisplayInfo>> FetchAsync(CancellationToken cancellationToken)
+		=> await Tools.Windows.Display.GetDisplaysAsync(cancellationToken).ConfigureAwait(false);
 }

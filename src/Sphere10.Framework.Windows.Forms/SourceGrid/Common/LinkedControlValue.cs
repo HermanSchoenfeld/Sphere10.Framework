@@ -31,53 +31,35 @@ public class LinkedControlValue {
 		_scrollMode = LinkedControlScrollMode.BasedOnPosition;
 	}
 
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control => _control;
 
 	/// <summary>
 	/// Gets or sets the position of the linked control.
 	/// </summary>
 	public Position Position {
-		get {
-			return _position;
-		}
-		set {
-			_position = value;
-		}
+		get => _position;
+		set => _position = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if show the cell border. True to insert the editor control inside the border of the cell, false to put the editor control over the entire cell. If you use true remember to set EnableCellDrawOnEdit == true.
 	/// </summary>
 	public bool UseCellBorder {
-		get {
-			return _useCellBorder;
-		}
-		set {
-			_useCellBorder = value;
-		}
+		get => _useCellBorder;
+		set => _useCellBorder = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the scrolling mode of the control.
 	/// </summary>
 	public LinkedControlScrollMode ScrollMode {
-		get {
-			return _scrollMode;
-		}
-		set {
-			_scrollMode = value;
-		}
+		get => _scrollMode;
+		set => _scrollMode = value;
 	}
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <returns></returns>
-	public override string ToString() {
-		return Position.ToString();
-	}
+	public override string ToString() => Position.ToString();
 }

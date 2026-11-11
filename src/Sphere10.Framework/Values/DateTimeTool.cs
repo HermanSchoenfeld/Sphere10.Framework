@@ -15,9 +15,7 @@ namespace Tools;
 
 public static class Time {
 	/// <summary>Returns the complete calendar years in dateA minus dateB.</summary>
-	public static int YearsDifference(DateTime dateA, DateTime dateB) {
-		return MonthsDifference(dateA, dateB) / 12;
-	}
+	public static int YearsDifference(DateTime dateA, DateTime dateB) => MonthsDifference(dateA, dateB) / 12;
 
 	/// <summary>Returns complete calendar months, using AddMonths for month-end and leap-year boundaries.</summary>
 	public static int MonthsDifference(DateTime dateA, DateTime dateB) {
@@ -75,9 +73,7 @@ public static class Time {
 		return date.Add(timeOfDay);
 	}
 
-	public static DateTime DateFrom1979Jan1(uint milliseconds) {
-		return new DateTime(1979, 1, 1).AddMilliseconds(milliseconds);
-	}
+	public static DateTime DateFrom1979Jan1(uint milliseconds) => new DateTime(1979, 1, 1).AddMilliseconds(milliseconds);
 
 	public static DateTime FromUnixTime(uint unixTimeStamp) {
 		// Unix timestamp is seconds past epoch
@@ -137,9 +133,7 @@ public static class Time {
 		throw new ArgumentOutOfRangeException(nameof(month), "Must  be between 1 and 12 (inclusive)");
 	}
 
-	public static DateTime Max(DateTime date1, DateTime date2) {
-		return date1 >= date2 ? date1 : date2;
-	}
+	public static DateTime Max(DateTime date1, DateTime date2) => date1 >= date2 ? date1 : date2;
 
 	public static DateTime? Max(DateTime? date1, DateTime? date2) {
 		if (date1.HasValue && !date2.HasValue)
@@ -154,7 +148,5 @@ public static class Time {
 		return date1.Value >= date2.Value ? date1.Value : date2.Value;
 	}
 
-	public static DateTime Min(DateTime date1, DateTime date2) {
-		return date1 <= date2 ? date1 : date2;
-	}
+	public static DateTime Min(DateTime date1, DateTime date2) => date1 <= date2 ? date1 : date2;
 }

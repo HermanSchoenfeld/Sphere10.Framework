@@ -275,9 +275,7 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		_sharedAccess.Pulse();
 	}
 
-	private static long UnitSizeEstimator(T item) {
-		return 1;
-	}
+	private static long UnitSizeEstimator(T item) => 1;
 
 	/// <summary>
 	/// Releases managed resources and marks the queue as finished.

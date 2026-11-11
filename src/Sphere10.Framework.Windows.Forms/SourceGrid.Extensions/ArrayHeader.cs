@@ -17,7 +17,5 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 /// A cell used for the top/left cell when using DataGridRowHeader.
 /// </summary>
 public class ArrayHeader : Cells.Virtual.Header {
-	public ArrayHeader() {
-		Model.AddModel(new SourceGrid.Cells.Models.NullValueModel());
-	}
+	public ArrayHeader() => Model.AddModel(new SourceGrid.Cells.Models.NullValueModel());
 }

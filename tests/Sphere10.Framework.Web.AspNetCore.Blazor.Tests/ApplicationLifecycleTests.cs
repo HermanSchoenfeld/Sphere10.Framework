@@ -343,9 +343,7 @@ public class ApplicationLifecycleTests {
 	public sealed class ProcessInitializer : SyncApplicationInitializerBase {
 		private readonly LifecycleState _state;
 
-		public ProcessInitializer(LifecycleState state) {
-			_state = state;
-		}
+		public ProcessInitializer(LifecycleState state) => _state = state;
 
 		public override void Initialize() => _state.ProcessInitializations++;
 	}
@@ -353,9 +351,7 @@ public class ApplicationLifecycleTests {
 	public sealed class ProcessFinalizer : SyncApplicationFinalizerBase {
 		private readonly LifecycleState _state;
 
-		public ProcessFinalizer(LifecycleState state) {
-			_state = state;
-		}
+		public ProcessFinalizer(LifecycleState state) => _state = state;
 
 #pragma warning disable CS0465 // Reuse the existing application finalizer method name.
 		public override void Finalize() => _state.ProcessFinalizations++;

@@ -22,9 +22,7 @@ public readonly struct AsyncScope : IScope {
 
 	public void Dispose() => throw new NotSupportedException("This scope requires asynchronous disposal.");
 
-	public async ValueTask DisposeAsync() {
-		await _finalizer();
-	}
+	public async ValueTask DisposeAsync() => await _finalizer();
 }
 
 /// <summary>Awaits its required finalizer with its item; synchronous disposal is unsupported.</summary>
@@ -41,7 +39,5 @@ public readonly struct AsyncScope<T> : IScope<T> {
 
 	public void Dispose() => throw new NotSupportedException("This scope requires asynchronous disposal.");
 
-	public async ValueTask DisposeAsync() {
-		await _finalizer(Item);
-	}
+	public async ValueTask DisposeAsync() => await _finalizer(Item);
 }

@@ -335,9 +335,7 @@ public class TesterControlShowcaseTests {
 	}
 
 	// Reflection is limited to ownership and private policy state that has no public testing seam.
-	private static T Field<T>(object owner, string name) {
-		return (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
-	}
+	private static T Field<T>(object owner, string name) => (T)owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(owner);
 
 	// Wait for a semantic outcome while pumping the owning native dispatcher.
 	private static async Task WaitUntilAsync(Func<bool> completed) {

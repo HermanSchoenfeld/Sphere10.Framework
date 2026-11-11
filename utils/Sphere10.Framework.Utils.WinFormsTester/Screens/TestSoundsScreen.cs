@@ -60,21 +60,13 @@ public partial class TestSoundsScreen : ApplicationScreen {
 		}
 	}
 
-	private void button1_Click(object sender, EventArgs e) {
-		PlaySound(Resources.LeftClickDown);
-	}
+	private void button1_Click(object sender, EventArgs e) => PlaySound(Resources.LeftClickDown);
 
-	private void button2_Click(object sender, EventArgs e) {
-		PlaySound(Resources.LeftClickUp);
-	}
+	private void button2_Click(object sender, EventArgs e) => PlaySound(Resources.LeftClickUp);
 
-	private void button3_Click(object sender, EventArgs e) {
-		PlaySound(Resources.RightClickDown);
-	}
+	private void button3_Click(object sender, EventArgs e) => PlaySound(Resources.RightClickDown);
 
-	private void button4_Click(object sender, EventArgs e) {
-		PlaySound(Resources.RightClickUp);
-	}
+	private void button4_Click(object sender, EventArgs e) => PlaySound(Resources.RightClickUp);
 
 	private void _systemPlayerButton_Click(object sender, EventArgs e) {
 		StopPlayback();

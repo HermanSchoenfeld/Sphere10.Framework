@@ -27,9 +27,7 @@ public static class StringFormatter {
 	public static void RegisterResolver(ITokenResolver resolver)
 		=> _resolvers.AddRange(new[] { resolver });
 
-	public static string FormatEx(string formatString, params object[] formatArgs) {
-		return FormatEx(formatString, ResolveInternalToken, true, formatArgs);
-	}
+	public static string FormatEx(string formatString, params object[] formatArgs) => FormatEx(formatString, ResolveInternalToken, true, formatArgs);
 
 	public static string FormatWithDictionary(string formatString, IDictionary<string, object> userTokenResolver, bool recursive, params object[] formatArgs) {
 		return FormatEx(

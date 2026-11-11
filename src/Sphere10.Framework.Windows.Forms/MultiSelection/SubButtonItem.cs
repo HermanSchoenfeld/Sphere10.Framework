@@ -69,30 +69,18 @@ public class SubButtonItem {
 	}
 
 	public object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
+		get => _tag;
+		set => _tag = value;
 	}
 
 	public string Text {
-		get {
-			return MenuItem.Text;
-		}
-		set {
-			MenuItem.Text = value;
-		}
+		get => MenuItem.Text;
+		set => MenuItem.Text = value;
 	}
 
 	public MultiSelectionButton Owner {
-		get {
-			return _parentButton;
-		}
-		set {
-			_parentButton = value;
-		}
+		get => _parentButton;
+		set => _parentButton = value;
 	}
 
 	public void InvokeItemClick(EventArgs args) {

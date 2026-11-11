@@ -60,13 +60,9 @@ public class FirebirdDAC : DACBase {
 	}
 
 
-	public override IDataReader ExecuteReader(string query) {
-		return new FirebirdCorrectingReader(base.ExecuteReader(query));
-	}
+	public override IDataReader ExecuteReader(string query) => new FirebirdCorrectingReader(base.ExecuteReader(query));
 
-	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-		throw new NotImplementedException();
-	}
+	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) => throw new NotImplementedException();
 
 	public override DataTable[] ExecuteBatch(ISQLBuilder sqlBuilder) {
 		// Firebird doesn't like mixing DDL with DML, so we break up
@@ -128,9 +124,7 @@ public class FirebirdDAC : DACBase {
 				.Select(statement => statement.SQL);
 	}
 
-	public override ISQLBuilder CreateSQLBuilder() {
-		return new FirebirdSQLBuilder();
-	}
+	public override ISQLBuilder CreateSQLBuilder() => new FirebirdSQLBuilder();
 
 	protected override DataTable GetDenormalizedTableDescriptions() {
 		// Useful link: http://www.alberton.info/firebird_sql_meta_info.html#.Uari3UDI2MA

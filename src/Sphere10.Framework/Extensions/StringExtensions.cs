@@ -73,9 +73,8 @@ public static class StringExtensions {
 		return stringBuilder.ToString();
 	}
 
-	public static IEnumerable<int> IndexOfAll(this string sourceString, string subString) {
-		return Regex.Matches(sourceString, Regex.Escape(subString)).Cast<Match>().Select(m => m.Index);
-	}
+	public static IEnumerable<int> IndexOfAll(this string sourceString, string subString)
+		=> Regex.Matches(sourceString, Regex.Escape(subString)).Cast<Match>().Select(m => m.Index);
 
 	public static IEnumerable<string> SplitAndKeep(this string @string, char[] delims, StringSplitOptions options = StringSplitOptions.None) {
 		var start = 0;
@@ -111,13 +110,9 @@ public static class StringExtensions {
 		return text.Substring(0, maxLength - cap.Length) + cap;
 	}
 
-	public static bool ContainsAnySubstrings(this string text, params string[] substrings) {
-		return substrings.Any(text.Contains);
-	}
+	public static bool ContainsAnySubstrings(this string text, params string[] substrings) => substrings.Any(text.Contains);
 
-	public static bool IsAlphabetic(this string text) {
-		return AlphabetCheckRegex.IsMatch(text);
-	}
+	public static bool IsAlphabetic(this string text) => AlphabetCheckRegex.IsMatch(text);
 
 	public static string Tabbify(this string text, int tabs = 1) {
 		var tabbedText = new StringBuilder();
@@ -155,9 +150,7 @@ public static class StringExtensions {
 
 	public static byte[] ToAsciiByteArray(this string asciiString) => asciiString.ToByteArray(Encoding.ASCII);
 
-	public static byte[] ToByteArray(this string asciiString, Encoding encoding) {
-		return encoding.GetBytes(asciiString);
-	}
+	public static byte[] ToByteArray(this string asciiString, Encoding encoding) => encoding.GetBytes(asciiString);
 
 
 	public static byte[] ToHexByteArray(this string hexString) => HexEncoding.Decode(hexString);
@@ -233,9 +226,7 @@ public static class StringExtensions {
 		return sb.ToString();
 	}
 
-	static public string EncapsulateWith(this string value, string prePostFix) {
-		return value.EncapsulateWith(prePostFix, prePostFix);
-	}
+	static public string EncapsulateWith(this string value, string prePostFix) => value.EncapsulateWith(prePostFix, prePostFix);
 
 	static public string EncapsulateWith(this string value, string preFix, string postFix) {
 		if (!value.StartsWith(preFix))
@@ -472,17 +463,11 @@ public static class StringExtensions {
 		return result;
 	}
 
-	static public string UrlEncoded(this string str) {
-		return Tools.Url.EncodeUrl(str);
-	}
+	static public string UrlEncoded(this string str) => Tools.Url.EncodeUrl(str);
 
-	static public string UrlDecoded(this string str) {
-		return Tools.Url.DecodeUrl(str);
-	}
+	static public string UrlDecoded(this string str) => Tools.Url.DecodeUrl(str);
 
-	public static string EscapeJavascriptString(this string value) {
-		return value.Replace("'", "\\'").Replace("\"", "\\\"");
-	}
+	public static string EscapeJavascriptString(this string value) => value.Replace("'", "\\'").Replace("\"", "\\\"");
 
 	public static string EscapeJavaScript(this string s) {
 		StringBuilder sb = new StringBuilder(s);
@@ -518,27 +503,19 @@ public static class StringExtensions {
 		}
 	}
 
-	public static string ReplaceNewLinesWithBR(this string @string) {
-		return @string.Replace("\n", "<br/>");
-	}
+	public static string ReplaceNewLinesWithBR(this string @string) => @string.Replace("\n", "<br/>");
 
 	public static string RemoveAnchorTag(this string @string) => Tools.Url.StripAnchorTag(@string);
 
-	public static Dictionary<string, string> ParseQueryString(this string encdata) {
-		return Tools.Url.ParseQueryString(encdata);
-	}
+	public static Dictionary<string, string> ParseQueryString(this string encdata) => Tools.Url.ParseQueryString(encdata);
 
-	static public string EscapeSQL(this string unsafeString) {
-		return unsafeString.Replace("'", "''");
-	}
+	static public string EscapeSQL(this string unsafeString) => unsafeString.Replace("'", "''");
 
 	#endregion
 
 	#region Casing
 
-	public static string ToSentenceCase(this string value) {
-		return ParagraphBuilder.StringToSentenceCase(value);
-	}
+	public static string ToSentenceCase(this string value) => ParagraphBuilder.StringToSentenceCase(value);
 
 	/// <summary>
 	/// Every word starts with capital.
@@ -586,9 +563,7 @@ public static class StringExtensions {
 	/// </example>
 	/// <param name="source"></param>
 	/// <returns></returns>
-	public static string SplitUpperCaseToString(this string source) {
-		return String.Join(" ", SplitUpperCase(source));
-	}
+	public static string SplitUpperCaseToString(this string source) => String.Join(" ", SplitUpperCase(source));
 
 	/// <summary>
 	/// Parses a camel cased or pascal cased string and returns an array 
@@ -632,9 +607,7 @@ public static class StringExtensions {
 		return wordArray;
 	}
 
-	public static string GetLeafDirectory(this string path) {
-		return path.Split(Path.DirectorySeparatorChar).Last();
-	}
+	public static string GetLeafDirectory(this string path) => path.Split(Path.DirectorySeparatorChar).Last();
 
 	public static bool IsUNCPath(this string path) {
 		Uri uri = new Uri(path);
@@ -707,9 +680,7 @@ public static class StringExtensions {
 		return Parse<T1>(tokens[index]);
 	}
 
-	private static string[] Tokenize(string stringValue, params string[] delimitters) {
-		return stringValue.Split(delimitters, StringSplitOptions.None);
-	}
+	private static string[] Tokenize(string stringValue, params string[] delimitters) => stringValue.Split(delimitters, StringSplitOptions.None);
 
 	private static T Parse<T>(string token) {
 		T val;

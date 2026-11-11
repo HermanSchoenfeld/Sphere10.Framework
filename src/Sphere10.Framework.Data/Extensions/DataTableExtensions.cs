@@ -55,13 +55,9 @@ public static class DataTableExtensions {
 		dataTable.Rows.Add(dataRow);
 	}
 
-	public static bool HasAutoIncrementPrimaryKey(this DataTable dataTable) {
-		return dataTable.PrimaryKey.Length == 1 && dataTable.PrimaryKey[0].AutoIncrement;
-	}
+	public static bool HasAutoIncrementPrimaryKey(this DataTable dataTable) => dataTable.PrimaryKey.Length == 1 && dataTable.PrimaryKey[0].AutoIncrement;
 
-	public static DataColumn MakeColumnPrimaryKey(this DataTable dataTable, string columnName) {
-		return dataTable.MakeColumnPrimaryKey(dataTable.Columns[columnName]);
-	}
+	public static DataColumn MakeColumnPrimaryKey(this DataTable dataTable, string columnName) => dataTable.MakeColumnPrimaryKey(dataTable.Columns[columnName]);
 
 	public static DataColumn MakeColumnPrimaryKey(this DataTable dataTable, DataColumn col) {
 		dataTable.PrimaryKey = Tools.Array.Concat<DataColumn>(dataTable.PrimaryKey, new[] { col });
@@ -150,9 +146,7 @@ public static class DataTableExtensions {
 		return result.ToString();
 	}
 
-	public static string ToPrintableString() {
-		throw new NotImplementedException();
-	}
+	public static string ToPrintableString() => throw new NotImplementedException();
 
 }
 

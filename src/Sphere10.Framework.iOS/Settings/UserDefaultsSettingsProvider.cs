@@ -85,9 +85,7 @@ public class UserDefaultsSettingsProvider : SyncSettingsProviderBase {
 	}
 
 	/// <summary>Converts a stored value to the requested platform-settings type.</summary>
-	public T ConvertExChangeType<T>(object value) {
-		return (T)Convert.ChangeType(value, typeof(T));
-	}
+	public T ConvertExChangeType<T>(object value) => (T)Convert.ChangeType(value, typeof(T));
 
 	// Include the settings type and optional instance identity in each platform key.
 	private string PropertyNameToKey(Type settingObjectType, object settingId, string propertyName) {
@@ -184,9 +182,8 @@ public class UserDefaultsSettingsProvider : SyncSettingsProviderBase {
 	}
 
 	// Remove the value stored for one settings member.
-	private void DeletePropertyValue(Type settingObjectType, object settingId, string propertyName) {
-		NSUserDefaults.StandardUserDefaults.RemoveObject(PropertyNameToKey(settingObjectType, settingId, propertyName));
-	}
+	private void DeletePropertyValue(Type settingObjectType, object settingId, string propertyName)
+		=> NSUserDefaults.StandardUserDefaults.RemoveObject(PropertyNameToKey(settingObjectType, settingId, propertyName));
 
 	// Choose the existing native storage representation for a declared member type.
 	private StorageClass GetStorageClass(Type type) {

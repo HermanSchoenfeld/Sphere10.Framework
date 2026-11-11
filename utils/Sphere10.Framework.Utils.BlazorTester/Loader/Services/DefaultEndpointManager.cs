@@ -21,9 +21,7 @@ public class DefaultEndpointManager : IEndpointManager {
 
 	private readonly List<Uri> _endpoints = new() { new Uri("https://demo.sphere10.local/") };
 
-	public DefaultEndpointManager() {
-		Endpoint = _endpoints[0];
-	}
+	public DefaultEndpointManager() => Endpoint = _endpoints[0];
 
 	public Uri Endpoint { get; private set; }
 

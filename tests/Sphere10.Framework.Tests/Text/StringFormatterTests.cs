@@ -24,23 +24,15 @@ public class StringFormatterTests {
 	}
 
 	[Test]
-	public void SimpleTest_1() {
-		Assert.That(Tools.Text.FormatEx("{0}", 1), Is.EqualTo(string.Format("{0}", 1)));
-	}
+	public void SimpleTest_1() => Assert.That(Tools.Text.FormatEx("{0}", 1), Is.EqualTo(string.Format("{0}", 1)));
 
 	[Test]
-	public void SimpleTest_2() {
-		Assert.That(Tools.Text.FormatEx(" {0}", 23), Is.EqualTo(string.Format(" {0}", 23)));
-	}
+	public void SimpleTest_2() => Assert.That(Tools.Text.FormatEx(" {0}", 23), Is.EqualTo(string.Format(" {0}", 23)));
 
-	public void SimpleTest_3() {
-		Assert.That(Tools.Text.FormatEx(" {0}", 23), Is.EqualTo(string.Format(" {0}", 23)));
-	}
+	public void SimpleTest_3() => Assert.That(Tools.Text.FormatEx(" {0}", 23), Is.EqualTo(string.Format(" {0}", 23)));
 
 	[Test]
-	public void SimpleTest_4() {
-		Assert.That(Tools.Text.FormatEx(" !{0}! ", 99), Is.EqualTo(string.Format(" !{0}! ", 99)));
-	}
+	public void SimpleTest_4() => Assert.That(Tools.Text.FormatEx(" !{0}! ", 99), Is.EqualTo(string.Format(" !{0}! ", 99)));
 
 	[Test]
 	public void SimpleTest_5() {
@@ -98,39 +90,25 @@ public class StringFormatterTests {
 	}
 
 	[Test]
-	public void EscapedTest_1() {
-		Assert.That(Tools.Text.FormatEx("{{"), Is.EqualTo(string.Format("{{")));
-	}
+	public void EscapedTest_1() => Assert.That(Tools.Text.FormatEx("{{"), Is.EqualTo(string.Format("{{")));
 
 	[Test]
-	public void EscapedTest_2() {
-		Assert.That(Tools.Text.FormatEx("{{"), Is.EqualTo(string.Format("{{")));
-	}
+	public void EscapedTest_2() => Assert.That(Tools.Text.FormatEx("{{"), Is.EqualTo(string.Format("{{")));
 
 	[Test]
-	public void EscapedTest_3() {
-		Assert.That(Tools.Text.FormatEx("{{0}}"), Is.EqualTo(string.Format("{{0}}")));
-	}
+	public void EscapedTest_3() => Assert.That(Tools.Text.FormatEx("{{0}}"), Is.EqualTo(string.Format("{{0}}")));
 
 	[Test]
-	public void EscapedTest_4() {
-		Assert.That(Tools.Text.FormatEx("{{{0}", 1), Is.EqualTo(string.Format("{{{0}", 1)));
-	}
+	public void EscapedTest_4() => Assert.That(Tools.Text.FormatEx("{{{0}", 1), Is.EqualTo(string.Format("{{{0}", 1)));
 
 	[Test]
-	public void EscapedTest_5() {
-		Assert.That(Tools.Text.FormatEx("{0}}}", 1), Is.EqualTo(string.Format("{0}}}", 1)));
-	}
+	public void EscapedTest_5() => Assert.That(Tools.Text.FormatEx("{0}}}", 1), Is.EqualTo(string.Format("{0}}}", 1)));
 
 	[Test]
-	public void EscapedTest_6() {
-		Assert.That(Tools.Text.FormatEx("{{{0}}}", 1), Is.EqualTo(string.Format("{{{0}}}", 1)));
-	}
+	public void EscapedTest_6() => Assert.That(Tools.Text.FormatEx("{{{0}}}", 1), Is.EqualTo(string.Format("{{{0}}}", 1)));
 
 	[Test]
-	public void EscapedTest_7() {
-		Assert.That(Tools.Text.FormatEx("{{}}", 1), Is.EqualTo(string.Format("{{}}", 1)));
-	}
+	public void EscapedTest_7() => Assert.That(Tools.Text.FormatEx("{{}}", 1), Is.EqualTo(string.Format("{{}}", 1)));
 
 
 	[Test]

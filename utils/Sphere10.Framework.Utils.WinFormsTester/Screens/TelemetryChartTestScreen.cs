@@ -27,6 +27,7 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 	private bool _initialized;
 	private bool _finalized;
 	private IDisposable _logOutputs;
+	private string _selectedSample = string.Empty;
 
 	public TelemetryChartTestScreen() {
 		InitializeComponent();
@@ -35,17 +36,17 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override TelemetryChartScreenSettings ScreenSettings {
-		get {
-			return (TelemetryChartScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override TelemetryChartScreenSettings ScreenSettings => (TelemetryChartScreenSettings)base.ScreenSettings;
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();
 		if (_initialized || _finalized || Tools.Runtime.IsDesignMode)
 			return;
 		_initialized = true;
+		_cpuChart.SampleContextText = SampleContextText;
+		_memoryChart.SampleContextText = SampleContextText;
+		_throughputChart.SampleContextText = SampleContextText;
+		_temperatureChart.SampleContextText = SampleContextText;
 		_logOutputs = DemoLogOutputLifetime.RegisterCurrent(this,
 			_cpuChart.LogOutputBehavior, _memoryChart.LogOutputBehavior, _throughputChart.LogOutputBehavior, _temperatureChart.LogOutputBehavior);
 		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
@@ -104,22 +105,18 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 			_captureTimer.Tick -= TimerTick;
 	}
 
-	private void TimerTick(object sender, EventArgs args) {
-		AddSample(DateTime.UtcNow);
-	}
+	private void TimerTick(object sender, EventArgs args) => AddSample(DateTime.UtcNow);
 
-	private void AddSampleClicked(object sender, EventArgs args) {
-		AddSample(DateTime.UtcNow);
-	}
+	private void AddSampleClicked(object sender, EventArgs args) => AddSample(DateTime.UtcNow);
 
 	private void AddSample(DateTime capturedAtUtc, bool render = true) {
 		if (capturedAtUtc <= _lastCapturedAtUtc)
 			capturedAtUtc = _lastCapturedAtUtc.AddTicks(1);
 		_lastCapturedAtUtc = capturedAtUtc;
-		_cpuSamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.Percent)));
-		_memorySamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.Bytes)));
-		_throughputSamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.BytesPerSecond)));
-		_temperatureSamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.Celsius)));
+		_cpuSamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.Percent)) { Context = new SampleContext(_capturedSamples, "CPU") });
+		_memorySamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.Bytes)) { Context = new SampleContext(_capturedSamples, "Memory") });
+		_throughputSamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.BytesPerSecond)) { Context = new SampleContext(_capturedSamples, "Throughput") });
+		_temperatureSamples.Add(new TelemetryChartPoint(capturedAtUtc, CreateValue(_capturedSamples, TelemetryChartUnit.Celsius)) { Context = new SampleContext(_capturedSamples, "Temperature") });
 		_capturedSamples++;
 		if (_cpuSamples.Count > _retainedSampleLimit) {
 			_cpuSamples.RemoveAt(0);
@@ -131,9 +128,7 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 			RenderSamples();
 	}
 
-	private void ResetClicked(object sender, EventArgs args) {
-		ClearSamples(true);
-	}
+	private void ResetClicked(object sender, EventArgs args) => ClearSamples(true);
 
 	private void ClearClicked(object sender, EventArgs args) {
 		_live.Checked = false;
@@ -141,6 +136,7 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 	}
 
 	private void ClearSamples(bool resetCapture) {
+		_selectedSample = string.Empty;
 		_cpuSamples.Clear();
 		_memorySamples.Clear();
 		_throughputSamples.Clear();
@@ -152,9 +148,7 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 		RenderSamples();
 	}
 
-	private void LiveChanged(object sender, EventArgs args) {
-		UpdateCaptureState();
-	}
+	private void LiveChanged(object sender, EventArgs args) => UpdateCaptureState();
 
 	private void UpdateCaptureState() {
 		if (!_initialized || _finalized || _captureTimer == null || _live == null || IsDisposed || Disposing)
@@ -223,7 +217,18 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 		if (_status == null || _captureTimer == null)
 			return;
 		_status.Text = $"Simulated • {_cpuSamples.Count} / {_retainedSampleLimit} Retained • {_capturedSamples} Since Reset • "
-			+ (_captureTimer.Enabled ? $"Live Every {_captureTimer.Interval:N0} ms" : "Paused") + " • Hover For Reading And Timestamp";
+			+ (_captureTimer.Enabled ? $"Live Every {_captureTimer.Interval:N0} ms" : "Paused")
+			+ (_selectedSample.Length == 0 ? " • Double-Click A Point To Inspect Its Context" : " • " + _selectedSample);
+	}
+
+	private static string SampleContextText(TelemetryChartPoint point)
+		=> point.Context is SampleContext context ? $"Generated {context.Metric} Observation #{context.Sequence}; Double-Click To Inspect" : null;
+
+	private void SampleActivated(TelemetryChartPoint point) {
+		if (point.Context is SampleContext context) {
+			_selectedSample = $"Selected {context.Metric} #{context.Sequence} At {point.CapturedAtUtc:HH:mm:ss.fff} UTC";
+			UpdateStatus();
+		}
 	}
 
 	// Restoration chooses cadence and missing-value presentation before initial generated observations.
@@ -251,6 +256,8 @@ public partial class TelemetryChartTestScreen : ApplicationScreen {
 	}
 
 	#region Inner Types
+
+	private readonly record struct SampleContext(long Sequence, string Metric);
 
 	/// <summary>Remembers capture presentation without storing simulated telemetry samples.</summary>
 	[UserEditable]

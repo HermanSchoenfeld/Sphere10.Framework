@@ -26,16 +26,10 @@ public partial class UserControl1 : UserControl {
 
 	/// <summary>A detached snapshot of the categories currently checked in this editor.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public string[] SelectedCategories {
-		get {
-			return _checkedListBox1.CheckedItems.Cast<object>().Select(value => value.ToString()).ToArray();
-		}
-	}
+	public string[] SelectedCategories => _checkedListBox1.CheckedItems.Cast<object>().Select(value => value.ToString()).ToArray();
 
 	// Acceptance belongs to the containing popup, which decides when to close.
-	private void ApplyClicked(object sender, EventArgs args) {
-		SelectionAccepted?.Invoke(this, EventArgs.Empty);
-	}
+	private void ApplyClicked(object sender, EventArgs args) => SelectionAccepted?.Invoke(this, EventArgs.Empty);
 
 	// Reuse the native check-state behavior rather than creating a second selection model.
 	private void SelectAllClicked(object sender, EventArgs args) {

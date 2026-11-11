@@ -111,10 +111,7 @@ public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 		return tcs.Task;
 	}
 
-	public void Dispose() {
-		// Sync-over-async pattern
-		Task.Run(() => DisposeAsync().AsTask()).GetAwaiter().GetResult();
-	}
+	public void Dispose() => Task.ExecuteSyncOverAsync(() => DisposeAsync().AsTask());
 
 	public virtual async ValueTask DisposeAsync() {
 		if (State == ProtocolChannelState.Open)
@@ -129,9 +126,7 @@ public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 
 	protected abstract Task CloseInternal();
 
-	protected virtual void StartReceiveLoop() {
-		_receiveLoop = Task.Run(() => ReceiveLoop(_cancelReceiveLoop.Token));
-	}
+	protected virtual void StartReceiveLoop() => _receiveLoop = Task.Run(() => ReceiveLoop(_cancelReceiveLoop.Token));
 
 	protected virtual async Task StopReceiveLoop() {
 		const int forceCancelReceiveLoopMS = 150;
@@ -234,9 +229,7 @@ public abstract class ProtocolChannel : IDisposable, IAsyncDisposable {
 			throw new InvalidOperationException($"Channel state was not in {expectedStates.ToDelimittedString(", ")}");
 	}
 
-	private void SetState(ProtocolChannelState state) {
-		State = state;
-	}
+	private void SetState(ProtocolChannelState state) => State = state;
 
 	#endregion
 

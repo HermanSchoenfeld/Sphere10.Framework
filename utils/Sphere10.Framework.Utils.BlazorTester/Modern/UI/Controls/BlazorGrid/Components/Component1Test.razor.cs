@@ -18,9 +18,7 @@ partial class Component1Test : IGridComponent<string> {
 	public Component1Test() {
 	}
 
-	public Component1Test(string listId) {
-		ListId = listId;
-	}
+	public Component1Test(string listId) => ListId = listId;
 
 	public void Render(string item, RenderTreeBuilder builder) {
 		builder.OpenComponent<Component1Test>(0);

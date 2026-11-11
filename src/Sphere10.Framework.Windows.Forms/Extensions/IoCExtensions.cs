@@ -106,9 +106,8 @@ public static class IoCExtensions {
 	}
 
 	/// <summary>Checks for an explicitly registered observer for the exact control type.</summary>
-	public static bool HasControlStateEventProvider<TControl>(this IServiceCollection servicesCollection) {
-		return servicesCollection.HasNamedImplementationFor<IControlStateEventProvider>(typeof(TControl).FullName);
-	}
+	public static bool HasControlStateEventProvider<TControl>(this IServiceCollection servicesCollection)
+		=> servicesCollection.HasNamedImplementationFor<IControlStateEventProvider>(typeof(TControl).FullName);
 
 	/// <summary>Gets an independent observer for a live control through its most specific registration.</summary>
 	public static IControlStateEventProvider GetControlStateEventProvider(this IServiceProvider serviceProvider, Control control) {

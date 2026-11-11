@@ -84,17 +84,11 @@ namespace Sphere10.Framework.iOS {
 			NSUserDefaults.StandardUserDefaults.Synchronize();
 		}
 
-		private bool ContainsKey(string key) {
-			return NSUserDefaults.StandardUserDefaults.ValueForKey(new NSString(key)) != null;
-		}
+		private bool ContainsKey(string key) => NSUserDefaults.StandardUserDefaults.ValueForKey(new NSString(key)) != null;
 
-		private string PropertyNameToKey(string name) {
-			return string.Format ("{0}.{1}", base.ID, name);
-		}
+		private string PropertyNameToKey(string name) => string.Format ("{0}.{1}", base.ID, name);
 
-		private T LoadPropertyValue<T>(string propertyName) {
-			return (T)LoadPropertyValue(propertyName, typeof(T));
-		}
+		private T LoadPropertyValue<T>(string propertyName) => (T)LoadPropertyValue(propertyName, typeof(T));
 
 		private object LoadPropertyValue(string propertyName, Type expectedValueType) {
 			var key = PropertyNameToKey(propertyName);
@@ -182,9 +176,7 @@ namespace Sphere10.Framework.iOS {
 		}
 
 
-		public T ConvertExChangeType<T>(object value)  {
-			return (T)Convert.ChangeType(value, typeof(T));
-		}
+		public T ConvertExChangeType<T>(object value) => (T)Convert.ChangeType(value, typeof(T));
 	}
 	
 	/* EXAMPLE

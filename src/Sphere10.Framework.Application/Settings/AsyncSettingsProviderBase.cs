@@ -16,10 +16,7 @@ namespace Sphere10.Framework.Application;
 public abstract class AsyncSettingsProviderBase : SettingsProviderBase {
 
 	/// <inheritdoc />
-	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) {
-		// Sync-over-async pattern
-		return Task.Run(() => NewSettingAsync(settingsObjectType, id)).GetAwaiter().GetResult();
-	}
+	public override SettingsObject NewSetting(Type settingsObjectType, object id = null) => Task.ExecuteSyncOverAsync(() => NewSettingAsync(settingsObjectType, id));
 
 	/// <inheritdoc />
 	public override async Task<SettingsObject> LoadSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
@@ -29,10 +26,7 @@ public abstract class AsyncSettingsProviderBase : SettingsProviderBase {
 	}
 
 	/// <inheritdoc />
-	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) {
-		// Sync-over-async pattern
-		return Task.Run(() => LoadSettingAsync(settingsObjectType, id)).GetAwaiter().GetResult();
-	}
+	public override SettingsObject LoadSetting(Type settingsObjectType, object id = null) => Task.ExecuteSyncOverAsync(() => LoadSettingAsync(settingsObjectType, id));
 
 	/// <inheritdoc />
 	public override async Task<SettingsObject> LoadSettingAsync(SettingsObject defaults, CancellationToken cancellationToken = default) {
@@ -57,10 +51,7 @@ public abstract class AsyncSettingsProviderBase : SettingsProviderBase {
 	}
 
 	/// <inheritdoc />
-	public override SettingsObject LoadSetting(SettingsObject defaults) {
-		// Sync-over-async pattern
-		return Task.Run(() => LoadSettingAsync(defaults)).GetAwaiter().GetResult();
-	}
+	public override SettingsObject LoadSetting(SettingsObject defaults) => Task.ExecuteSyncOverAsync(() => LoadSettingAsync(defaults));
 
 	/// <inheritdoc />
 	public override async Task SaveSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
@@ -84,36 +75,23 @@ public abstract class AsyncSettingsProviderBase : SettingsProviderBase {
 	}
 
 	/// <inheritdoc />
-	public override void SaveSetting(SettingsObject settings) {
-		// Sync-over-async pattern
-		Task.Run(() => SaveSettingAsync(settings)).GetAwaiter().GetResult();
-	}
+	public override void SaveSetting(SettingsObject settings) => Task.ExecuteSyncOverAsync(() => SaveSettingAsync(settings));
 
 	/// <inheritdoc />
-	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-		// Sync-over-async pattern
-		return Task.Run(() => ContainsSettingAsync(settingsObjectType, id)).GetAwaiter().GetResult();
-	}
+	public override bool ContainsSetting(Type settingsObjectType, object id = null) => Task.ExecuteSyncOverAsync(() => ContainsSettingAsync(settingsObjectType, id));
 
 	/// <inheritdoc />
-	public override void DeleteSetting(SettingsObject settings) {
-		// Sync-over-async pattern
-		Task.Run(() => DeleteSettingAsync(settings)).GetAwaiter().GetResult();
-	}
+	public override void DeleteSetting(SettingsObject settings) => Task.ExecuteSyncOverAsync(() => DeleteSettingAsync(settings));
 
 	/// <inheritdoc />
-	public override void ClearSettings() {
-		// Sync-over-async pattern
-		Task.Run(() => ClearSettingsAsync()).GetAwaiter().GetResult();
-	}
+	public override void ClearSettings() => Task.ExecuteSyncOverAsync(() => ClearSettingsAsync());
 
 	/// <summary>Reads serialized settings through the concrete asynchronous store.</summary>
 	protected abstract Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken);
 
 	// Asynchronous providers can overlay stored members onto caller-owned constructor defaults.
-	protected virtual Task<SettingsObject> LoadInternalAsync(SettingsObject defaults, CancellationToken cancellationToken) {
-		return LoadInternalAsync(defaults.GetType(), defaults.ID, cancellationToken);
-	}
+	protected virtual Task<SettingsObject> LoadInternalAsync(SettingsObject defaults, CancellationToken cancellationToken)
+		=> LoadInternalAsync(defaults.GetType(), defaults.ID, cancellationToken);
 
 	/// <summary>Persists an already-encrypted settings value and awaits acceptance.</summary>
 	protected abstract Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken);

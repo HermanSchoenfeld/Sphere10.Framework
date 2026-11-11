@@ -76,9 +76,7 @@ public static class Encryptor {
 		output.Seek(0, SeekOrigin.Begin);
 	}
 
-	public static string EncryptStringAES(string plainText, string sharedSecret, string salt) {
-		return EncryptStringAES(plainText, sharedSecret, Encoding.UTF8.GetBytes(salt));
-	}
+	public static string EncryptStringAES(string plainText, string sharedSecret, string salt) => EncryptStringAES(plainText, sharedSecret, Encoding.UTF8.GetBytes(salt));
 
 	/// <summary>
 	/// Encrypt the given string using AES.  The string can be decrypted using
@@ -129,9 +127,8 @@ public static class Encryptor {
 		return cipherText;
 	}
 
-	public static string DecryptStringAES(string cipherText, string sharedSecret, string salt) {
-		return DecryptStringAES(cipherText, sharedSecret, Encoding.UTF8.GetBytes(salt));
-	}
+	public static string DecryptStringAES(string cipherText, string sharedSecret, string salt)
+		=> DecryptStringAES(cipherText, sharedSecret, Encoding.UTF8.GetBytes(salt));
 
 	/// <summary>
 	/// Decrypt the given string.  Assumes the string was encrypted using
@@ -203,9 +200,8 @@ public static class Encryptor {
 			Tools.Streams.RouteStream(decryptor, output);
 	}
 
-	public static SymmetricAlgorithm PrepareSymmetricAlgorithm(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC) {
-		return PrepareSymmetricAlgorithm(Aes.Create(), password, salt, paddingMode, cipherMode);
-	}
+	public static SymmetricAlgorithm PrepareSymmetricAlgorithm(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
+		=> PrepareSymmetricAlgorithm(Aes.Create(), password, salt, paddingMode, cipherMode);
 
 	public static SymmetricAlgorithm PrepareSymmetricAlgorithm<TSymmetricAlgorithm>(string password, byte[] salt = null, PaddingMode paddingMode = PaddingMode.PKCS7, CipherMode cipherMode = CipherMode.CBC)
 		where TSymmetricAlgorithm : SymmetricAlgorithm, new() {

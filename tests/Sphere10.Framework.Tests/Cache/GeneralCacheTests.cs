@@ -28,9 +28,7 @@ public class GeneralCacheTests {
 		val = cache[1];
 		Assert.That(handlerInvocations, Is.EqualTo(1));  // shouldnt of have been called again
 
-		void Handler(int arg1, int arg2) {
-			handlerInvocations++;
-		}
+		void Handler(int arg1, int arg2) => handlerInvocations++;
 	}
 
 	[Test]

@@ -17,13 +17,9 @@ public class DisposableResource : Disposable {
 	protected Disposables Disposables = new Disposables();
 
 	/// <summary>Awaits asynchronous cleanup of the owned resources.</summary>
-	protected override ValueTask DisposeInternalAsync() {
-		return Disposables.DisposeAsync();
-	}
+	protected override ValueTask DisposeInternalAsync() => Disposables.DisposeAsync();
 
 	/// <summary>Disposes the owned resources synchronously.</summary>
-	protected override void DisposeInternal() {
-		Disposables.Dispose();
-	}
+	protected override void DisposeInternal() => Disposables.Dispose();
 }
 

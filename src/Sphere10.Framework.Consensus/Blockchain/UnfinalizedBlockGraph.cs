@@ -89,9 +89,7 @@ public class UnfinalizedBlockGraph<TBlock, TState, TBlockID, TWeight, TOperation
 		return node;
 	}
 
-	public bool RemoveHead(TBlockID headID) {
-		return _potentialHeads.Remove(headID);
-	}
+	public bool RemoveHead(TBlockID headID) => _potentialHeads.Remove(headID);
 
 	public IReadOnlyList<LinkedBlock<TBlock, TState, TBlockID, TWeight, TOperationID>> GetPathToRoot(TBlockID headID) {
 		if (!_allNodes.TryGetValue(headID, out var head))

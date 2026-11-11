@@ -45,10 +45,23 @@ public partial class OnScreenNotificationForm : Form {
 		}
 	}
 
-	/// <summary>Shows the message on the screen that currently contains the pointer.</summary>
-	public void ShowMessage(string message) {
-		ShowMessage(message, Screen.FromPoint(Cursor.Position));
+	/// <summary>
+	/// Shows a one-off message on a screen in its own popup, which disposes itself once dismissed; for example a display
+	/// number on every screen, like Identify in the Windows display settings. Use it on the UI thread.
+	/// </summary>
+	public static OnScreenNotificationForm ShowTransient(string message, Screen screen, int displayDurationMilliseconds = 1500) {
+		Guard.ArgumentNotNull(screen, nameof(screen));
+		var notification = new OnScreenNotificationForm { DisplayDurationMilliseconds = displayDurationMilliseconds };
+		notification.VisibleChanged += (_, _) => {
+			if (!notification.Visible && notification.IsHandleCreated && !notification.IsDisposed)
+				notification.BeginInvoke(notification.Dispose);
+		};
+		notification.ShowMessage(message, screen);
+		return notification;
 	}
+
+	/// <summary>Shows the message on the screen that currently contains the pointer.</summary>
+	public void ShowMessage(string message) => ShowMessage(message, Screen.FromPoint(Cursor.Position));
 
 	/// <summary>Shows the message centered near the bottom of the given screen's working area.</summary>
 	public void ShowMessage(string message, Screen screen) {

@@ -24,8 +24,7 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 
 	public override void Initialize() {
 		EnsureCanInitializeSynchronously();
-		// Sync-over-async pattern
-		Task.Run(() => InitializeAsync()).GetAwaiter().GetResult();
+		Task.ExecuteSyncOverAsync(() => InitializeAsync());
 	}
 
 	public override Task InitializeAsync(CancellationToken cancellationToken = default)
@@ -34,8 +33,7 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 #pragma warning disable CS0465 // Implements the existing synchronous application lifecycle contract.
 	public override void Finalize() {
 		EnsureCanFinalizeSynchronously();
-		// Sync-over-async pattern
-		Task.Run(() => FinalizeAsync()).GetAwaiter().GetResult();
+		Task.ExecuteSyncOverAsync(() => FinalizeAsync());
 	}
 #pragma warning restore CS0465
 
@@ -50,16 +48,14 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 	public override bool Exit(bool force = false, CancellationToken cancellationToken = default) {
 		cancellationToken.ThrowIfCancellationRequested();
 		EnsureCanExitSynchronously();
-		// Sync-over-async pattern
-		return Task.Run(() => ExitAsync(force, cancellationToken), cancellationToken).GetAwaiter().GetResult();
+		return Task.ExecuteSyncOverAsync(() => ExitAsync(force, cancellationToken), cancellationToken);
 	}
 
 	public override Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default)
 		=> ExitCore(force, cancellationToken, ConfirmExitAsync, CanExitAsync, OnExitAsync, token => ExitAsync(true, token));
 
-	// Sync-over-async pattern
 	protected override bool ConfirmExit(CancellationToken cancellationToken)
-		=> Task.Run(() => ConfirmExitAsync(cancellationToken), cancellationToken).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => ConfirmExitAsync(cancellationToken), cancellationToken);
 
 	protected override Task<bool> ConfirmExitAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
@@ -67,9 +63,8 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 		return ScreenHost.UserInterfaceServices.AskYNAsync("Are you sure you want to exit?", cancellationToken);
 	}
 
-	// Sync-over-async pattern
 	protected override bool CanExit(CancellationToken cancellationToken)
-		=> Task.Run(() => CanExitAsync(cancellationToken), cancellationToken).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => CanExitAsync(cancellationToken), cancellationToken);
 
 	protected override async Task<bool> CanExitAsync(CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
@@ -85,9 +80,8 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 		return selectedBlock == null || ReferenceEquals(selectedBlock, screenBlock) || await selectedBlock.CanExitAsync(this, cancellationToken);
 	}
 
-	// Sync-over-async pattern
 	protected override bool OnExit(bool force, CancellationToken cancellationToken)
-		=> Task.Run(() => OnExitAsync(force, cancellationToken), cancellationToken).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => OnExitAsync(force, cancellationToken), cancellationToken);
 
 	protected override async Task<bool> OnExitAsync(bool force, CancellationToken cancellationToken) {
 		cancellationToken.ThrowIfCancellationRequested();
@@ -101,21 +95,16 @@ public abstract class AsyncApplicationBase : ApplicationBase {
 		return true;
 	}
 
-	// Sync-over-async pattern
 	protected override bool OnInitialize()
-		=> Task.Run(() => OnInitializeAsync(CancellationToken.None)).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => OnInitializeAsync(CancellationToken.None));
 
-	// Sync-over-async pattern
 	protected override void OnFinalize()
-		=> Task.Run(() => OnFinalizeAsync(CancellationToken.None)).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => OnFinalizeAsync(CancellationToken.None));
 
 	protected override void DisposeInternal() {
 		EnsureCanDisposeSynchronously();
-		// Sync-over-async pattern
-		Task.Run(() => DisposeInternalAsync().AsTask()).GetAwaiter().GetResult();
+		Task.ExecuteSyncOverAsync(() => DisposeInternalAsync().AsTask());
 	}
 
-	protected override ValueTask DisposeInternalAsync() {
-		return new(DisposeCore(() => FinalizeAsync()));
-	}
+	protected override ValueTask DisposeInternalAsync() => new(DisposeCore(() => FinalizeAsync()));
 }

@@ -178,9 +178,7 @@ public class SerializationContext : SyncDisposable, IScope {
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	public void NotifySized(long index) {
-		SetObjectStatus(index, SerializationStatus.Sized);
-	}
+	public void NotifySized(long index) => SetObjectStatus(index, SerializationStatus.Sized);
 
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -205,9 +203,7 @@ public class SerializationContext : SyncDisposable, IScope {
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-	public void NotifySerializedObject(long index) {
-		SetObjectStatus(index, SerializationStatus.Serialized);
-	}
+	public void NotifySerializedObject(long index) => SetObjectStatus(index, SerializationStatus.Serialized);
 
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -283,9 +279,7 @@ public class SerializationContext : SyncDisposable, IScope {
 
 	}
 
-	protected override void DisposeInternal() {
-		OnScopeEnd();
-	}
+	protected override void DisposeInternal() => OnScopeEnd();
 
 	// --- External reference support (virtual methods for subclass override) ---
 
@@ -307,27 +301,23 @@ public class SerializationContext : SyncDisposable, IScope {
 	/// returned true. Also performs any post-serialization bookkeeping (e.g. collecting out-refs).
 	/// The base implementation throws — subclasses that support external references must override.
 	/// </summary>
-	protected internal virtual void SerializeExternalReference(object item, EndianBinaryWriter writer) {
-		throw new NotSupportedException("External references are not supported by this serialization context");
-	}
+	protected internal virtual void SerializeExternalReference(object item, EndianBinaryWriter writer)
+		=> throw new NotSupportedException("External references are not supported by this serialization context");
 
 	/// <summary>
 	/// Reads an external reference from the input stream and resolves it to a live object instance.
 	/// Called by <see cref="ReferenceSerializer{TItem}"/> when it encounters an external reference discriminator.
 	/// The base implementation throws — subclasses that support external references must override.
 	/// </summary>
-	protected internal virtual object DeserializeAndResolveExternalReference(EndianBinaryReader reader) {
-		throw new NotSupportedException("External references are not supported by this serialization context");
-	}
+	protected internal virtual object DeserializeAndResolveExternalReference(EndianBinaryReader reader)
+		=> throw new NotSupportedException("External references are not supported by this serialization context");
 
 	/// <summary>
 	/// Stores the serialized size from the most recent successful external reference classification.
 	/// Called by <see cref="TryClassifyAsExternalReference"/> overrides to communicate the size
 	/// to the <see cref="ReferenceSerializer{TItem}"/> CalculateSize path.
 	/// </summary>
-	protected void SetLastClassifiedExternalReferenceSize(long size) {
-		_lastClassifiedExternalReferenceSize = size;
-	}
+	protected void SetLastClassifiedExternalReferenceSize(long size) => _lastClassifiedExternalReferenceSize = size;
 
 	// Scalar reference serializers usually register only one object. Keep that entry inline so
 	// transient placeholders and strings do not need identity hashes or dictionary storage.

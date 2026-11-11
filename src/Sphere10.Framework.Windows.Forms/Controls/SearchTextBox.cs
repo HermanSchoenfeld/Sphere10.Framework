@@ -24,11 +24,7 @@ public partial class SearchTextBox : TextBoxEx {
 	}
 
 	/// <summary>The inline image surface, owned by this control; its resource images remain borrowed.</summary>
-	public PictureBox PictureBox {
-		get {
-			return _pictureBox;
-		}
-	}
+	public PictureBox PictureBox => _pictureBox;
 
 	/// <summary>Updates the action before notifying consumers of the current search text.</summary>
 	protected override void OnTextChanged(EventArgs e) {
@@ -36,6 +32,7 @@ public partial class SearchTextBox : TextBoxEx {
 			_pictureBox.Image = TextLength == 0 ? Resources.SmallSearchIcon : Resources.Cross;
 			_pictureBox.Cursor = TextLength == 0 ? Cursors.Default : Cursors.Hand;
 			_pictureBox.AccessibleName = TextLength == 0 ? "Search" : "Clear search";
+			_actionToolTip.SetToolTip(_pictureBox, TextLength == 0 ? "Enter search text." : "Clear the current search text.");
 		}
 		base.OnTextChanged(e);
 	}
@@ -65,9 +62,7 @@ public partial class SearchTextBox : TextBoxEx {
 	}
 
 	// Parent font/DPI scaling can resize the child after the editor's own resize callback.
-	private void PictureBox_SizeChanged(object sender, EventArgs e) {
-		FitPicture();
-	}
+	private void PictureBox_SizeChanged(object sender, EventArgs e) => FitPicture();
 
 	// Center within the native client area and reserve the same space for the editor's text.
 	private void FitPicture() {

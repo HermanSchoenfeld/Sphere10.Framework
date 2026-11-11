@@ -9,12 +9,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms;
 
 public class EnumComboBox : ComboBoxEx {
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
 	private Type _enumType;
 	private object[] _ignoreVals;
 
@@ -37,8 +39,9 @@ public class EnumComboBox : ComboBoxEx {
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
 	public Type EnumType {
-		get { return _enumType; }
+		get => _enumType;
 		set {
 			if (value != null && !value.IsEnum)
 				throw new ArgumentException("Type is not enum", "value");
@@ -74,7 +77,7 @@ public class EnumComboBox : ComboBoxEx {
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object[] IgnoreEnums {
-		get { return _ignoreVals; }
+		get => _ignoreVals;
 		set {
 			_ignoreVals = value ?? new object[0];
 			if (!DesignMode && _enumType != null)
@@ -83,13 +86,15 @@ public class EnumComboBox : ComboBoxEx {
 	}
 
 
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(ComboItem))]
 	private void PopulateCombo() {
 		var comboItems = new List<ComboItem>();
 		if (AllowEmptyOption) {
 			comboItems.Add(new ComboItem { Display = EmptyOptionText ?? string.Empty, Value = null });
 		}
 		if (_enumType != null) {
-			foreach (Enum enumValue in Enum.GetValues(_enumType)) {
+			foreach (var underlyingValue in Enum.GetValuesAsUnderlyingType(_enumType)) {
+				var enumValue = (Enum)Enum.ToObject(_enumType, underlyingValue);
 				if (_ignoreVals.Contains(enumValue))
 					continue;
 				if (Filter != null && !Filter(enumValue))

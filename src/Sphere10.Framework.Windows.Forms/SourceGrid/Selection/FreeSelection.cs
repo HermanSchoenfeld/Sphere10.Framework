@@ -38,9 +38,7 @@ public class FreeSelection : SelectionBase {
 		base.UnBindToGrid();
 	}
 
-	public override bool IsSelectedColumn(int column) {
-		return _region.ContainsColumn(column);
-	}
+	public override bool IsSelectedColumn(int column) => _region.ContainsColumn(column);
 
 	public override void SelectColumn(int column, bool select) {
 		var rng = Grid.Columns.GetRange(column);
@@ -48,9 +46,7 @@ public class FreeSelection : SelectionBase {
 		SelectRange(rng, select);
 	}
 
-	public override bool IsSelectedRow(int row) {
-		return _region.ContainsRow(row);
-	}
+	public override bool IsSelectedRow(int row) => _region.ContainsRow(row);
 
 	public override void SelectRow(int row, bool select) {
 		var rng = Grid.Rows.GetRange(row);
@@ -58,17 +54,11 @@ public class FreeSelection : SelectionBase {
 		SelectRange(rng, select);
 	}
 
-	public override bool IsSelectedCell(Position position) {
-		return _region.Contains(position);
-	}
+	public override bool IsSelectedCell(Position position) => _region.Contains(position);
 
-	public override void SelectCell(Position position, bool select) {
-		SelectRange(Grid.PositionToCellRange(position), select);
-	}
+	public override void SelectCell(Position position, bool select) => SelectRange(Grid.PositionToCellRange(position), select);
 
-	public override bool IsSelectedRange(CellRange range) {
-		return _region.Contains(range);
-	}
+	public override bool IsSelectedRange(CellRange range) => _region.Contains(range);
 
 	public override void SelectRange(CellRange range, bool select) {
 		var newRange = Grid.RangeToCellRange(range);
@@ -82,28 +72,20 @@ public class FreeSelection : SelectionBase {
 	/// Returns true if the selection is empty
 	/// </summary>
 	/// <returns></returns>
-	public override bool IsEmpty() {
-		return _region.IsEmpty();
-	}
+	public override bool IsEmpty() => _region.IsEmpty();
 
 	/// <summary>
 	/// Returns the selected region.
 	/// </summary>
 	/// <returns></returns>
-	public override RangeRegion GetSelectionRegion() {
-		return new RangeRegion(_region);
-	}
+	public override RangeRegion GetSelectionRegion() => new RangeRegion(_region);
 
 	/// <summary>
 	/// Returns true if the specified selection intersect with the range
 	/// </summary>
 	/// <param name="rng"></param>
 	/// <returns></returns>
-	public override bool IntersectsWith(CellRange rng) {
-		return _region.IntersectsWith(rng);
-	}
+	public override bool IntersectsWith(CellRange rng) => _region.IntersectsWith(rng);
 
-	protected override void OnResetSelection() {
-		_region.Clear();
-	}
+	protected override void OnResetSelection() => _region.Clear();
 }

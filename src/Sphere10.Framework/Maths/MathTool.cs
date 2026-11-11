@@ -37,17 +37,11 @@ public class Maths {
 		}
 	}
 
-	public static float Abs(float value) {
-		return value < 0 ? -value : value;
-	}
+	public static float Abs(float value) => value < 0 ? -value : value;
 
-	public static double Abs(double value) {
-		return value < 0 ? -value : value;
-	}
+	public static double Abs(double value) => value < 0 ? -value : value;
 
-	public static decimal Abs(decimal value) {
-		return value < 0 ? -value : value;
-	}
+	public static decimal Abs(decimal value) => value < 0 ? -value : value;
 
 	public static double EpsilonTrunc(double value) {
 		//return (double)Math.Round((decimal)value, (int)Math.Log(1.0D / EPSILON_D, 10.0D));
@@ -73,17 +67,11 @@ public class Maths {
 		return whole + (long)(mantissa * INVERSE_EPSILON) / INVERSE_EPSILON;
 	}
 
-	public static float EpsilonClip(float val) {
-		return Math.Abs(val) < EPSILON_F ? EPSILON_F : val;
-	}
+	public static float EpsilonClip(float val) => Math.Abs(val) < EPSILON_F ? EPSILON_F : val;
 
-	public static double EpsilonClip(double val) {
-		return Math.Abs(val) < EPSILON_D ? EPSILON_D : val;
-	}
+	public static double EpsilonClip(double val) => Math.Abs(val) < EPSILON_D ? EPSILON_D : val;
 
-	public static decimal EpsilonClip(decimal val) {
-		return Math.Abs(val) < EPSILON_M ? EPSILON_M : val;
-	}
+	public static decimal EpsilonClip(decimal val) => Math.Abs(val) < EPSILON_M ? EPSILON_M : val;
 
 	public static void Rotate2D(double x, double y, double angle, out double x_bar, out double y_bar) {
 		double c = System.Math.Cos(angle);
@@ -99,17 +87,11 @@ public class Maths {
 		y_bar = s * x + c * y;
 	}
 
-	public static double Asinh(double x) {
-		return Math.Log(x + Math.Sqrt(x * x + 1));
-	}
+	public static double Asinh(double x) => Math.Log(x + Math.Sqrt(x * x + 1));
 
-	public static double Acosh(double x) {
-		return Math.Log(x + Math.Sqrt(x * x - 1));
-	}
+	public static double Acosh(double x) => Math.Log(x + Math.Sqrt(x * x - 1));
 
-	public static double Atanh(double x) {
-		return 0.5 * Math.Log((1 + x) / (1 - x));
-	}
+	public static double Atanh(double x) => 0.5 * Math.Log((1 + x) / (1 - x));
 
 	/// <summary>
 	/// Same as ceiling except but also increments perfect integer parameters.
@@ -124,9 +106,21 @@ public class Maths {
 		return y;
 	}
 
-	public static bool Gamble(double winProbability) {
-		return RNG.Next(1, 1000001) / 1000000.0D <= winProbability;
+	/// <summary>The Euclidean remainder, always within [0, modulus), so stepping backwards from 0 wraps to modulus - 1.</summary>
+	public static int Mod(int value, int modulus) {
+		Guard.ArgumentGT(modulus, 0, nameof(modulus));
+		var remainder = value % modulus;
+		return remainder < 0 ? remainder + modulus : remainder;
 	}
+
+	/// <summary>The Euclidean remainder, always within [0, modulus).</summary>
+	public static long Mod(long value, long modulus) {
+		Guard.ArgumentGT(modulus, 0, nameof(modulus));
+		var remainder = value % modulus;
+		return remainder < 0 ? remainder + modulus : remainder;
+	}
+
+	public static bool Gamble(double winProbability) => RNG.Next(1, 1000001) / 1000000.0D <= winProbability;
 
 	public static int GambleOdds(params double[] pieChances) {
 		if (Math.Abs(pieChances.Sum() - 1.0D) > EPSILON_D)
@@ -142,17 +136,11 @@ public class Maths {
 		throw new Exception("Should not happen");
 	}
 
-	public static int EuclideanDistance(int x0, int y0, int x1, int y1) {
-		return (int)Math.Round(EuclideanDistance((double)x0, (double)y0, (double)x1, (double)y1), 0);
-	}
+	public static int EuclideanDistance(int x0, int y0, int x1, int y1) => (int)Math.Round(EuclideanDistance((double)x0, (double)y0, (double)x1, (double)y1), 0);
 
-	public static float EuclideanDistance(float x0, float y0, float x1, float y1) {
-		return (float)EuclideanDistance((double)x0, (double)y0, (double)x1, (double)y1);
-	}
+	public static float EuclideanDistance(float x0, float y0, float x1, float y1) => (float)EuclideanDistance((double)x0, (double)y0, (double)x1, (double)y1);
 
-	public static double EuclideanDistance(double x0, double y0, double x1, double y1) {
-		return Math.Sqrt(Math.Pow(x1 - x0, 2) + Math.Pow(y1 - y0, 2));
-	}
+	public static double EuclideanDistance(double x0, double y0, double x1, double y1) => Math.Sqrt(Math.Pow(x1 - x0, 2) + Math.Pow(y1 - y0, 2));
 
 
 	/// <summary>

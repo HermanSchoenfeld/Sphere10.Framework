@@ -1232,9 +1232,7 @@ public static partial class WinAPI {
 			// e.g. in x32, would be FieldOffset(4) but in x64 would be FieldOffset(8). This approach works on both.
 			internal DEVICEINPUTUNION di;
 
-			public static int Size {
-				get { return Marshal.SizeOf(typeof(INPUT)); }
-			}
+			public static int Size => Marshal.SizeOf(typeof(INPUT));
 		}
 
 
@@ -1374,9 +1372,8 @@ public static partial class WinAPI {
 		[DllImport("user32.dll", EntryPoint = "SetWindowLongPtr", SetLastError = true)]
 		public static extern IntPtr SetWindowLongPtr64(HandleRef hWnd, int nIndex, IntPtr dwNewLong);
 
-		public static IntPtr SetWindowLongPtr(HandleRef hWnd, int nIndex, IntPtr dwNewLong) {
-			return IntPtr.Size == 8 ? SetWindowLongPtr64(hWnd, nIndex, dwNewLong) : new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
-		}
+		public static IntPtr SetWindowLongPtr(HandleRef hWnd, int nIndex, IntPtr dwNewLong)
+			=> IntPtr.Size == 8 ? SetWindowLongPtr64(hWnd, nIndex, dwNewLong) : new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
 
 		///  HOW TO DEAL WITH THIS IN 64bit?
 		//[DllImport("user32")]
@@ -1402,9 +1399,7 @@ public static partial class WinAPI {
 		[DllImport("user32.dll", EntryPoint = "GetWindowLongPtr", SetLastError = true)]
 		public static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
 
-		public static IntPtr GetWindowLong(IntPtr hWnd, int nIndex) {
-			return IntPtr.Size == 8 ? GetWindowLongPtr64(hWnd, nIndex) : new IntPtr(GetWindowLong32(hWnd, nIndex));
-		}
+		public static IntPtr GetWindowLong(IntPtr hWnd, int nIndex) => IntPtr.Size == 8 ? GetWindowLongPtr64(hWnd, nIndex) : new IntPtr(GetWindowLong32(hWnd, nIndex));
 
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern IntPtr BeginDeferWindowPos(int nNumWindows);
@@ -1419,6 +1414,16 @@ public static partial class WinAPI {
 
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern IntPtr GetWindow(IntPtr hWnd, GetWindow_Cmd uCmd);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetParent(IntPtr window);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+		public static extern IntPtr FindWindowExW(IntPtr parent, IntPtr after, string className, string title);
+
+		[DllImport("user32.dll", ExactSpelling = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool EnumChildWindows(IntPtr parent, WindowEnumCallback callback, IntPtr parameter);
 
 
 		[DllImport("user32.dll", SetLastError = true)]

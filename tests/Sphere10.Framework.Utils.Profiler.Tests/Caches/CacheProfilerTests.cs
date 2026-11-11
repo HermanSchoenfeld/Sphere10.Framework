@@ -158,18 +158,16 @@ public class CacheProfilerTests {
 
 	[TestCase(CacheReapPolicy.None)]
 	[TestCase(CacheReapPolicy.Smallest)]
-	public void UnsupportedPolicyIsRejectedForThisComparison(CacheReapPolicy policy) {
-		Assert.That(() => new CacheProfile { Name = "invalid", ReapPolicy = policy }.Validate(), Throws.InstanceOf<ArgumentException>());
-	}
+	public void UnsupportedPolicyIsRejectedForThisComparison(CacheReapPolicy policy)
+		=> Assert.That(() => new CacheProfile { Name = "invalid", ReapPolicy = policy }.Validate(), Throws.InstanceOf<ArgumentException>());
 
 	[TestCase("--hot-set", "0")]
 	[TestCase("--hot-access", "101")]
 	[TestCase("--capacity", "0")]
 	[TestCase("--operations", "0")]
 	[TestCase("--fetch-work", "-1")]
-	public void InvalidWorkloadControlsAreRejected(string option, string value) {
-		Assert.That(() => CacheProfilerSettings.Parse(new[] { option, value }, out _, out _), Throws.InstanceOf<ArgumentException>());
-	}
+	public void InvalidWorkloadControlsAreRejected(string option, string value)
+		=> Assert.That(() => CacheProfilerSettings.Parse(new[] { option, value }, out _, out _), Throws.InstanceOf<ArgumentException>());
 
 	[Test]
 	public void ConfigurationInspectionPreservesSuiteSelectionAndForwardedBenchmarkControls() {

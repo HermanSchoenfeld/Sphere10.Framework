@@ -41,14 +41,11 @@ public class ApplicationScreenBuilder : ApplicationScreenBuilderBase<Application
 	}
 
 	// Keeps incompatible screen types out of the native registration graph.
-	protected override void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
-	}
+	protected override void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType, typeof(ApplicationScreen));
 
 	// Builds metadata only; activation remains deferred until the host opens this registration.
-	protected override SharedUI.ApplicationScreenDefinition CreateDefinition() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _activator, Settings, _settingsEditor);
-	}
+	protected override SharedUI.ApplicationScreenDefinition CreateDefinition()
+		=> new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, _activator, Settings, _settingsEditor);
 }
 
 /// <summary>Supplies the compile-time screen type and typed registration identity for a native screen.</summary>

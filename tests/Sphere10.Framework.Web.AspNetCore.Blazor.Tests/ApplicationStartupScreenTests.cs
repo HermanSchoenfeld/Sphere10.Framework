@@ -218,33 +218,37 @@ public class ApplicationStartupScreenTests {
 		});
 	}
 
-	/// <summary>Verifies open screens selector disambiguates titles and selects the exact retained instance.</summary>
+	/// <summary>Verifies the shell's Screens menu disambiguates titles, checks the active screen and selects the exact retained instance.</summary>
 	[Test]
-	public async Task OpenScreensSelectorDisambiguatesTitlesAndSelectsTheExactRetainedInstance() {
+	public async Task ScreensMenuDisambiguatesTitlesAndSelectsTheExactRetainedInstance() {
 		await using var setup = CreateRenderer(new BrowserRuntime());
 		await setup.InvokeAsync(async () => {
 			var first = await setup.Host.ActivateScreenAsync("block", "other");
 			var second = await setup.Host.ActivateScreenAsync("block", "other");
-			await setup.Host.ActivateScreenAsync("block", "permanent");
+			var permanent = await setup.Host.ActivateScreenAsync("block", "permanent");
 			await setup.Host.ShowScreenAsync(first.Id);
-			TabsProbe tabs = null;
-			var rendered = await setup.Renderer.RenderComponentAsync<TabsHarness>(ParameterView.FromDictionary(new Dictionary<string, object> {
-				[nameof(TabsHarness.Host)] = setup.Host,
-				[nameof(TabsHarness.Capture)] = (Action<TabsProbe>)(instance => tabs = instance)
-			}));
-			var html = rendered.ToHtmlString();
-			Assert.That(html, Does.Contain("aria-label=\"Open Screens\""));
-			Assert.That(html, Does.Match($"<option\\b[^>]*value=\"{first.Id}\"[^>]*>Other</option>"));
-			Assert.That(html, Does.Match($"<option\\b[^>]*value=\"{second.Id}\"[^>]*>Other \\(2\\)</option>"));
-			Assert.That(html, Does.Contain(">Permanent</option>"));
+			var rendered = await setup.RenderAsync();
+			Assert.That(rendered.ToHtmlString(), Does.Not.Contain("aria-label=\"Open Screens\""), "The tab strip no longer carries an open-screens selector.");
+			var screens = setup.ScreensMenu();
+			Assert.That(screens.Text, Is.EqualTo("Screens"));
+			var entries = screens.Items.OfType<BlazorUI.IApplicationCheckableMenuItem>().ToArray();
+			Assert.That(entries.Select(entry => entry.Title), Is.EqualTo(new[] { "Other", "Other (2)", "Permanent" }));
+			Assert.That(entries.Select(entry => entry.IsChecked), Is.EqualTo(new[] { true, false, false }));
+			Assert.That(screens.Items.Select(item => item.Title), Does.Contain("Close All").And.Contain("Close All Others"));
 			var before = setup.Host.Screens;
 
-			await tabs.SelectOpenScreenAsync(second.Id);
+			await setup.Shell.ExecuteCommandAsync(entries[1]);
 
 			Assert.That(setup.Host.ActiveScreen, Is.SameAs(second));
-			Assert.That(setup.Host.Screens, Is.EqualTo(before), "The selector switches existing sessions rather than activating another instance.");
-			await tabs.SelectOpenScreenAsync(Guid.NewGuid());
-			Assert.That(setup.Host.ActiveScreen, Is.SameAs(second));
+			Assert.That(setup.Host.Screens, Is.EqualTo(before), "The menu switches existing sessions rather than activating another instance.");
+			Assert.That(setup.ScreensMenu().Items.OfType<BlazorUI.IApplicationCheckableMenuItem>().Select(entry => entry.IsChecked), Is.EqualTo(new[] { false, true, false }));
+
+			// Close All Others keeps the active screen and never closes the permanent one.
+			await setup.Shell.ExecuteCommandAsync(setup.ScreensMenu().Items.Single(item => item.Title == "Close All Others"));
+			Assert.That(setup.Host.OpenScreens, Is.EqualTo(new[] { second, permanent }));
+			await setup.Shell.ExecuteCommandAsync(setup.ScreensMenu().Items.Single(item => item.Title == "Close All"));
+			Assert.That(setup.Host.OpenScreens, Is.EqualTo(new[] { permanent }));
+			Assert.That(setup.ScreensMenu().Items.Single(item => item.Title == "Close All").IsEnabled, Is.False, "Only permanent screens remain, so nothing is closable.");
 		});
 	}
 
@@ -272,9 +276,7 @@ public class ApplicationStartupScreenTests {
 	}
 
 	// Builds a persisted registration identity from the canonical block graph.
-	private static ApplicationStartupScreen Identity() {
-		return new(string.Empty, "block", "other", typeof(OtherScreen).FullName, typeof(OtherScreen).Assembly.GetName().Name);
-	}
+	private static ApplicationStartupScreen Identity() => new(string.Empty, "block", "other", typeof(OtherScreen).FullName, typeof(OtherScreen).Assembly.GetName().Name);
 
 	// Creates independent registrations with distinct startup policies.
 	private static BlazorUI.IApplicationBlock[] CreateBlocks() {
@@ -343,11 +345,7 @@ public class ApplicationStartupScreenTests {
 	public class SessionScreen : ApplicationScreen {
 
 		/// <summary>Declines restoration for a session-only screen.</summary>
-		public override bool CanRestoreAtStartup {
-			get {
-				return false;
-			}
-		}
+		public override bool CanRestoreAtStartup => false;
 	}
 
 	// Applies an application policy before constructing a startup screen.
@@ -359,23 +357,18 @@ public class ApplicationStartupScreenTests {
 		}
 
 		/// <summary>Rejects the registration configured as unavailable for startup.</summary>
-		protected override bool CanRestoreScreenAtStartup(BlazorUI.IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition) {
-			return definition.ScreenType != typeof(OtherScreen) && base.CanRestoreScreenAtStartup(block, definition);
-		}
+		protected override bool CanRestoreScreenAtStartup(BlazorUI.IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition)
+			=> definition.ScreenType != typeof(OtherScreen) && base.CanRestoreScreenAtStartup(block, definition);
 	}
 
 	/// <summary>Exposes actual shell lifecycle methods to the renderer fixture.</summary>
 	public class ShellProbe : ApplicationShell {
 
 		/// <summary>Completes the shell's actual interactive startup phase.</summary>
-		public Task CompleteRenderAsync() {
-			return OnAfterRenderAsync(false);
-		}
+		public Task CompleteRenderAsync() => OnAfterRenderAsync(false);
 
 		/// <summary>Invokes the shell's actual startup selection command.</summary>
-		public Task MakeStartupAsync(Guid id) {
-			return MakeStartupScreenAsync(id);
-		}
+		public Task MakeStartupAsync(Guid id) => MakeStartupScreenAsync(id);
 	}
 
 	/// <summary>Renders and captures the shell under test.</summary>
@@ -405,13 +398,6 @@ public class ApplicationStartupScreenTests {
 
 	/// <summary>Exposes actual tab commands to the renderer fixture.</summary>
 	public class TabsProbe : ApplicationScreenTabs {
-
-		/// <summary>Selects an existing screen through the tab control.</summary>
-		public Task SelectOpenScreenAsync(Guid id) {
-			return (Task)typeof(ApplicationScreenTabs)
-				.GetMethod("SelectOpenScreenAsync", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-				.Invoke(this, new object[] { new ChangeEventArgs { Value = id.ToString() } });
-		}
 
 		/// <summary>Opens the tab's actual context menu.</summary>
 		public async Task OpenContextAsync(Guid id) {
@@ -470,6 +456,12 @@ public class ApplicationStartupScreenTests {
 		/// <summary>The latest rendered shell markup.</summary>
 		public Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent Markup { get; private set; }
 
+		/// <summary>Reads the shell's composed Screens menu through the same member the command bar binds to.</summary>
+		public BlazorUI.IApplicationMenu ScreensMenu() {
+			var menus = (BlazorUI.IApplicationMenu[])typeof(ApplicationShell).GetProperty("MergedMenus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(Shell);
+			return menus.Single(menu => menu.Id == "sphere10-screens-menu");
+		}
+
 		// The fixture simulates the existing circuit's provider binding for the complete renderer activity.
 		public async Task InvokeAsync(Func<Task> operation) {
 			using var settingsScope = UserSettings.UseProvider(_provider.GetRequiredService<BlazorSettingsProvider>());
@@ -502,14 +494,10 @@ public class ApplicationStartupScreenTests {
 		}
 
 		/// <summary>Updates the fixture's current application URI.</summary>
-		protected override void NavigateToCore(string uri, bool forceLoad) {
-			Uri = ToAbsoluteUri(uri).AbsoluteUri;
-		}
+		protected override void NavigateToCore(string uri, bool forceLoad) => Uri = ToAbsoluteUri(uri).AbsoluteUri;
 
 		/// <summary>Updates the fixture's current application URI.</summary>
-		protected override void NavigateToCore(string uri, NavigationOptions options) {
-			Uri = ToAbsoluteUri(uri).AbsoluteUri;
-		}
+		protected override void NavigateToCore(string uri, NavigationOptions options) => Uri = ToAbsoluteUri(uri).AbsoluteUri;
 	}
 
 	// Emulates typed settings records and existing legacy browser keys.
@@ -563,14 +551,10 @@ public class ApplicationStartupScreenTests {
 		}
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 
 		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
-		public ValueTask DisposeAsync() {
-			return ValueTask.CompletedTask;
-		}
+		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}
 
 	#endregion

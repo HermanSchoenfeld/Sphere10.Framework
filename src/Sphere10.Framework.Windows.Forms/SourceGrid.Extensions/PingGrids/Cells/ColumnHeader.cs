@@ -13,7 +13,5 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells
 /// A cell header used for the columns. Usually used in the HeaderCell property of a DataGridColumn.
 /// </summary>
 public class ColumnHeader : SourceGrid.Cells.Virtual.ColumnHeader {
-	public ColumnHeader(string caption) {
-		Model.AddModel(new SourceGrid.Cells.Models.ValueModel(caption));
-	}
+	public ColumnHeader(string caption) => Model.AddModel(new SourceGrid.Cells.Models.ValueModel(caption));
 }

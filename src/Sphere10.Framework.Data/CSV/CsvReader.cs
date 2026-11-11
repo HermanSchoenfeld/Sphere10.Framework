@@ -403,64 +403,50 @@ public partial class CsvReader
 	/// Gets the comment character indicating that a line is commented out.
 	/// </summary>
 	/// <value>The comment character indicating that a line is commented out.</value>
-	public char Comment {
-		get { return _comment; }
-	}
+	public char Comment => _comment;
 
 	/// <summary>
 	/// Gets the escape character letting insert quotation characters inside a quoted field.
 	/// </summary>
 	/// <value>The escape character letting insert quotation characters inside a quoted field.</value>
-	public char Escape {
-		get { return _escape; }
-	}
+	public char Escape => _escape;
 
 	/// <summary>
 	/// Gets the delimiter character separating each field.
 	/// </summary>
 	/// <value>The delimiter character separating each field.</value>
-	public char Delimiter {
-		get { return _delimiter; }
-	}
+	public char Delimiter => _delimiter;
 
 	/// <summary>
 	/// Gets the quotation character wrapping every field.
 	/// </summary>
 	/// <value>The quotation character wrapping every field.</value>
-	public char Quote {
-		get { return _quote; }
-	}
+	public char Quote => _quote;
 
 	/// <summary>
 	/// Indicates if field names are located on the first non commented line.
 	/// </summary>
 	/// <value><see langword="true"/> if field names are located on the first non commented line, otherwise, <see langword="false"/>.</value>
-	public bool HasHeaders {
-		get { return _hasHeaders; }
-	}
+	public bool HasHeaders => _hasHeaders;
 
 	/// <summary>
 	/// Indicates if spaces at the start and end of a field are trimmed.
 	/// </summary>
 	/// <value><see langword="true"/> if spaces at the start and end of a field are trimmed, otherwise, <see langword="false"/>.</value>
-	public ValueTrimmingOptions TrimmingOption {
-		get { return _trimmingOptions; }
-	}
+	public ValueTrimmingOptions TrimmingOption => _trimmingOptions;
 
 	/// <summary>
 	/// Gets the buffer size.
 	/// </summary>
-	public int BufferSize {
-		get { return _bufferSize; }
-	}
+	public int BufferSize => _bufferSize;
 
 	/// <summary>
 	/// Gets or sets the default action to take when a parsing error has occured.
 	/// </summary>
 	/// <value>The default action to take when a parsing error has occured.</value>
 	public ParseErrorAction DefaultParseErrorAction {
-		get { return _defaultParseErrorAction; }
-		set { _defaultParseErrorAction = value; }
+		get => _defaultParseErrorAction;
+		set => _defaultParseErrorAction = value;
 	}
 
 	/// <summary>
@@ -468,8 +454,8 @@ public partial class CsvReader
 	/// </summary>
 	/// <value>The action to take when a field is missing.</value>
 	public MissingFieldAction MissingFieldAction {
-		get { return _missingFieldAction; }
-		set { _missingFieldAction = value; }
+		get => _missingFieldAction;
+		set => _missingFieldAction = value;
 	}
 
 	/// <summary>
@@ -477,8 +463,8 @@ public partial class CsvReader
 	/// </summary>
 	/// <value>A value indicating if the reader supports multiline field.</value>
 	public bool SupportsMultiline {
-		get { return _supportsMultiline; }
-		set { _supportsMultiline = value; }
+		get => _supportsMultiline;
+		set => _supportsMultiline = value;
 	}
 
 	/// <summary>
@@ -486,8 +472,8 @@ public partial class CsvReader
 	/// </summary>
 	/// <value>A value indicating if the reader will skip empty lines.</value>
 	public bool SkipEmptyLines {
-		get { return _skipEmptyLines; }
-		set { _skipEmptyLines = value; }
+		get => _skipEmptyLines;
+		set => _skipEmptyLines = value;
 	}
 
 	/// <summary>
@@ -519,9 +505,7 @@ public partial class CsvReader
 	/// Gets a value that indicates whether the current stream position is at the end of the stream.
 	/// </summary>
 	/// <value><see langword="true"/> if the current stream position is at the end of the stream; otherwise <see langword="false"/>.</value>
-	public virtual bool EndOfStream {
-		get { return _eof; }
-	}
+	public virtual bool EndOfStream => _eof;
 
 	/// <summary>
 	/// Gets the field headers.
@@ -546,25 +530,19 @@ public partial class CsvReader
 	/// Gets the current record index in the CSV file.
 	/// </summary>
 	/// <value>The current record index in the CSV file.</value>
-	public virtual long CurrentRecordIndex {
-		get { return _currentRecordIndex; }
-	}
+	public virtual long CurrentRecordIndex => _currentRecordIndex;
 
 	/// <summary>
 	/// Indicates if one or more field are missing for the current record.
 	/// Resets after each successful record read.
 	/// </summary>
-	public bool MissingFieldFlag {
-		get { return _missingFieldFlag; }
-	}
+	public bool MissingFieldFlag => _missingFieldFlag;
 
 	/// <summary>
 	/// Indicates if a parse error occured for the current record.
 	/// Resets after each successful record read.
 	/// </summary>
-	public bool ParseErrorFlag {
-		get { return _parseErrorFlag; }
-	}
+	public bool ParseErrorFlag => _parseErrorFlag;
 
 	#endregion
 
@@ -699,9 +677,7 @@ public partial class CsvReader
 	/// <exception cref="T:System.ComponentModel.ObjectDisposedException">
 	///	The instance has been disposed of.
 	/// </exception>
-	public virtual string this[int field] {
-		get { return ReadField(field, false, false); }
-	}
+	public virtual string this[int field] => ReadField(field, false, false);
 
 	#endregion
 
@@ -757,9 +733,7 @@ public partial class CsvReader
 	/// <exception cref="ArgumentException">
 	///		The number of fields in the record is greater than the available space from <paramref name="index"/> to the end of <paramref name="array"/>.
 	/// </exception>
-	public void CopyCurrentRecordTo(string[] array) {
-		CopyCurrentRecordTo(array, 0);
-	}
+	public void CopyCurrentRecordTo(string[] array) => CopyCurrentRecordTo(array, 0);
 
 	/// <summary>
 	/// Copies the field array of the current record to a one-dimensional array, starting at the beginning of the target array.
@@ -1293,9 +1267,7 @@ public partial class CsvReader
 	/// <exception cref="T:System.ComponentModel.ObjectDisposedException">
 	///	The instance has been disposed of.
 	/// </exception>
-	public bool ReadNextRecord() {
-		return ReadNextRecord(false, false);
-	}
+	public bool ReadNextRecord() => ReadNextRecord(false, false);
 
 	/// <summary>
 	/// Reads the next record.
@@ -1739,9 +1711,7 @@ public partial class CsvReader
 		}
 	}
 
-	bool IDataReader.IsClosed {
-		get { return _eof; }
-	}
+	bool IDataReader.IsClosed => _eof;
 
 	bool IDataReader.NextResult() {
 		ValidateDataReader(DataReaderValidations.IsNotClosed);
@@ -1749,9 +1719,7 @@ public partial class CsvReader
 		return false;
 	}
 
-	void IDataReader.Close() {
-		Dispose();
-	}
+	void IDataReader.Close() => Dispose();
 
 	bool IDataReader.Read() {
 		ValidateDataReader(DataReaderValidations.IsNotClosed);
@@ -2034,9 +2002,7 @@ public partial class CsvReader
 	/// <exception cref="T:System.ComponentModel.ObjectDisposedException">
 	///	The instance has been disposed of.
 	/// </exception>
-	public CsvReader.RecordEnumerator GetEnumerator() {
-		return new CsvReader.RecordEnumerator(this);
-	}
+	public CsvReader.RecordEnumerator GetEnumerator() => new CsvReader.RecordEnumerator(this);
 
 	/// <summary>
 	/// Returns an <see cref="T:System.Collections.Generics.IEnumerator"/>  that can iterate through CSV records.
@@ -2045,9 +2011,7 @@ public partial class CsvReader
 	/// <exception cref="T:System.ComponentModel.ObjectDisposedException">
 	///	The instance has been disposed of.
 	/// </exception>
-	IEnumerator<string[]> IEnumerable<string[]>.GetEnumerator() {
-		return this.GetEnumerator();
-	}
+	IEnumerator<string[]> IEnumerable<string[]>.GetEnumerator() => this.GetEnumerator();
 
 	#endregion
 
@@ -2060,9 +2024,7 @@ public partial class CsvReader
 	/// <exception cref="T:System.ComponentModel.ObjectDisposedException">
 	///	The instance has been disposed of.
 	/// </exception>
-	IEnumerator IEnumerable.GetEnumerator() {
-		return GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 	#endregion
 
@@ -2097,9 +2059,7 @@ public partial class CsvReader
 	/// 	<see langword="true"/> if the instance has been disposed of; otherwise, <see langword="false"/>.
 	/// </value>
 	[System.ComponentModel.Browsable(false)]
-	public bool IsDisposed {
-		get { return _isDisposed; }
-	}
+	public bool IsDisposed => _isDisposed;
 
 	/// <summary>
 	/// Raises the <see cref="M:Disposed"/> event.
@@ -2121,9 +2081,7 @@ public partial class CsvReader
 	/// <remarks>
 	/// 	Derived classes should call this method at the start of all methods and properties that should not be accessed after a call to <see cref="M:Dispose()"/>.
 	/// </remarks>
-	protected void CheckDisposed() {
-		ObjectDisposedException.ThrowIf(_isDisposed, this);
-	}
+	protected void CheckDisposed() => ObjectDisposedException.ThrowIf(_isDisposed, this);
 
 	/// <summary>
 	/// Releases all resources used by the instance.

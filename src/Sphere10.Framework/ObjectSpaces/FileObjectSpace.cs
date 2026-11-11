@@ -84,9 +84,7 @@ public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 	protected virtual void OnCommitted() {
 	}
 
-	protected virtual void OnRollingBack() {
-		Unload();
-	}
+	protected virtual void OnRollingBack() => Unload();
 
 	/// <summary>Reloads an initialized container after rollback without reentering initial recovery.</summary>
 	protected virtual void OnRolledBack() {

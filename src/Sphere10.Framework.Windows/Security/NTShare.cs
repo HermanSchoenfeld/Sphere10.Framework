@@ -134,9 +134,7 @@ public class NTShare : NTLocalObject {
 		get { return string.Format("{0}{1}{2}", NTCompatibleHostName, Path.DirectorySeparatorChar, Name); }
 	}
 
-	public ShareSecurity GetAccessControl() {
-		return GetAccessControl(AccessControlSections.All);
-	}
+	public ShareSecurity GetAccessControl() => GetAccessControl(AccessControlSections.All);
 
 	public ShareSecurity GetAccessControl(AccessControlSections sections) {
 		Checkpoint();
@@ -148,13 +146,9 @@ public class NTShare : NTLocalObject {
 		SetAccessControl(FullName, security);
 	}
 
-	public static ShareSecurity GetAccessControl(string path) {
-		return new ShareSecurity(path, AccessControlSections.All);
-	}
+	public static ShareSecurity GetAccessControl(string path) => new ShareSecurity(path, AccessControlSections.All);
 
-	public static void SetAccessControl(string path, ShareSecurity security) {
-		security.Persist(path);
-	}
+	public static void SetAccessControl(string path, ShareSecurity security) => security.Persist(path);
 
 
 	internal void CopyNativeInfo(string host, WinAPI.NETAPI32.SHARE_INFO_502 shareInfo) {

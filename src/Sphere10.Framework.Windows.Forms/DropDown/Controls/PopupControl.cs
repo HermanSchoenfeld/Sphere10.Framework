@@ -33,52 +33,30 @@ public class PopupControl : IDisposable {
 	private bool _autoReset;
 
 	/// <summary>Creates the owned native dropdown.</summary>
-	public PopupControl() {
-		InitializeDropDown();
-	}
+	public PopupControl() => InitializeDropDown();
 
 	/// <summary>Gets whether the native dropdown is visible.</summary>
-	public bool Visible {
-		get {
-			return _dropDown != null && _dropDown.Visible;
-		}
-	}
+	public bool Visible => _dropDown != null && _dropDown.Visible;
 
 	/// <summary>Gets the borrowed content currently hosted by the popup.</summary>
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control => _control;
 
 	/// <summary>Gets or sets the padding applied to the content host.</summary>
 	public Padding Padding {
-		get {
-			return _padding;
-		}
-		set {
-			_padding = value;
-		}
+		get => _padding;
+		set => _padding = value;
 	}
 
 	/// <summary>Gets or sets the margin applied to the content host.</summary>
 	public Padding Margin {
-		get {
-			return _margin;
-		}
-		set {
-			_margin = value;
-		}
+		get => _margin;
+		set => _margin = value;
 	}
 
 	/// <summary>Gets or sets whether native close releases the current content host.</summary>
 	public bool AutoResetWhenClosed {
-		get {
-			return _autoReset;
-		}
-		set {
-			_autoReset = value;
-		}
+		get => _autoReset;
+		set => _autoReset = value;
 	}
 
 	/// <summary>Gets or sets the popup control host, this is used to hide/show popup.</summary>
@@ -87,14 +65,10 @@ public class PopupControl : IDisposable {
 	}
 
 	/// <summary>Displays borrowed content at the supplied screen coordinates.</summary>
-	public void Show(Control control, int x, int y) {
-		Show(control, x, y, PopupResizeMode.None);
-	}
+	public void Show(Control control, int x, int y) => Show(control, x, y, PopupResizeMode.None);
 
 	/// <summary>Displays borrowed content with the requested resize edges.</summary>
-	public void Show(Control control, int x, int y, PopupResizeMode resizeMode) {
-		Show(control, x, y, -1, -1, resizeMode);
-	}
+	public void Show(Control control, int x, int y, PopupResizeMode resizeMode) => Show(control, x, y, -1, -1, resizeMode);
 
 	/// <summary>Displays borrowed content relative to its owner's supplied screen bounds.</summary>
 	public void Show(Control control, int x, int y, int width, int height, PopupResizeMode resizeMode) {
@@ -116,9 +90,7 @@ public class PopupControl : IDisposable {
 	}
 
 	/// <summary>Releases the current content host without disposing its content.</summary>
-	public void Reset() {
-		DisposeHost();
-	}
+	public void Reset() => DisposeHost();
 
 	/// <summary>Releases the owned popup and host, leaving the displayed control with its caller.</summary>
 	public void Dispose() {

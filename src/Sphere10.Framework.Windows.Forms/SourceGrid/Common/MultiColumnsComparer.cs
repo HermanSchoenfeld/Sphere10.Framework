@@ -20,9 +20,7 @@ public class MultiColumnsComparer : IComparer {
 	private IComparer _defaultComparer = new SourceGrid.ValueCellComparer();
 	private int[] _secondarySortColumns;
 
-	public MultiColumnsComparer(params int[] secondarySortColumns) {
-		_secondarySortColumns = secondarySortColumns;
-	}
+	public MultiColumnsComparer(params int[] secondarySortColumns) => _secondarySortColumns = secondarySortColumns;
 
 	public virtual System.Int32 Compare(System.Object x, System.Object y) {
 		var result = _defaultComparer.Compare(x, y);

@@ -25,23 +25,17 @@ namespace Sphere10.Framework.Windows.LevelDB;
 ///    batch.Put("key", "v3");
 /// </summary>
 public class WriteBatch : LevelDBHandle {
-	public WriteBatch() {
-		Handle = LevelDBInterop.leveldb_writebatch_create();
-	}
+	public WriteBatch() => Handle = LevelDBInterop.leveldb_writebatch_create();
 
 	/// <summary>
 	/// Clear all updates buffered in this batch.
 	/// </summary>
-	public void Clear() {
-		LevelDBInterop.leveldb_writebatch_clear(Handle);
-	}
+	public void Clear() => LevelDBInterop.leveldb_writebatch_clear(Handle);
 
 	/// <summary>
 	/// Store the mapping "key->value" in the database.
 	/// </summary>
-	public WriteBatch Put(string key, string value) {
-		return Put(Encoding.UTF8.GetBytes(key), Encoding.UTF8.GetBytes(value));
-	}
+	public WriteBatch Put(string key, string value) => Put(Encoding.UTF8.GetBytes(key), Encoding.UTF8.GetBytes(value));
 
 	/// <summary>
 	/// Store the mapping "key->value" in the database.
@@ -55,9 +49,7 @@ public class WriteBatch : LevelDBHandle {
 	/// If the database contains a mapping for "key", erase it.  
 	/// Else do nothing.
 	/// </summary>
-	public WriteBatch Delete(string key) {
-		return Delete(Encoding.UTF8.GetBytes(key));
-	}
+	public WriteBatch Delete(string key) => Delete(Encoding.UTF8.GetBytes(key));
 
 	/// <summary>
 	/// If the database contains a mapping for "key", erase it.  
@@ -76,9 +68,7 @@ public class WriteBatch : LevelDBHandle {
 		GC.KeepAlive(this);
 	}
 
-	protected override void FreeUnManagedObjects() {
-		LevelDBInterop.leveldb_writebatch_destroy(Handle);
-	}
+	protected override void FreeUnManagedObjects() => LevelDBInterop.leveldb_writebatch_destroy(Handle);
 
 	/// <summary>
 	/// Receives a buffered put. The pointers are valid only during the callback.

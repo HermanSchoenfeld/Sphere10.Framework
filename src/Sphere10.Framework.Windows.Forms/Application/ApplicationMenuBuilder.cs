@@ -21,9 +21,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	private bool _showInMenuStrip;
 
 	/// <summary>Adds an action using optional inline native presentation.</summary>
-	public ApplicationMenuBuilder AddItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false) {
-		return AddItem(text, action, out _, image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad);
-	}
+	public ApplicationMenuBuilder AddItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false)
+		=> AddItem(text, action, out _, image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad);
 
 	/// <summary>Adds an action and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(string text, Action action, out IApplicationMenuItem registration,
@@ -39,9 +38,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds an action using optional inline native presentation.</summary>
-	public ApplicationMenuBuilder AddItem(string text, Action<IUserInterfaceServices> action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false) {
-		return AddItem(text, action, out _, image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad);
-	}
+	public ApplicationMenuBuilder AddItem(string text, Action<IUserInterfaceServices> action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false)
+		=> AddItem(text, action, out _, image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad);
 
 	/// <summary>Adds an action and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(string text, Action<IUserInterfaceServices> action, out IApplicationMenuItem registration,
@@ -70,9 +68,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds navigation without creating or changing a screen registration.</summary>
-	public ApplicationMenuBuilder AddItem(Type screenType, string text = null, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false) {
-		return AddItem(screenType, text, out _, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
-	}
+	public ApplicationMenuBuilder AddItem(Type screenType, string text = null, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false)
+		=> AddItem(screenType, text, out _, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
 
 	/// <summary>Adds navigation and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(Type screenType, string text, out IApplicationMenuItem registration,
@@ -81,9 +78,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds navigation without creating or changing a screen registration.</summary>
-	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text = null, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false) {
-		return AddItem(screen, text, out _, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
-	}
+	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text = null, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false)
+		=> AddItem(screen, text, out _, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
 
 	/// <summary>Adds navigation and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text, out IApplicationMenuItem registration,
@@ -92,9 +88,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds navigation without creating or changing a screen registration.</summary>
-	public ApplicationMenuBuilder AddItem(SharedUI.ApplicationScreenDefinition definition, string text = null, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false) {
-		return AddItem(definition, text, out _, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
-	}
+	public ApplicationMenuBuilder AddItem(SharedUI.ApplicationScreenDefinition definition, string text = null, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool isStartScreen = false)
+		=> AddItem(definition, text, out _, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
 
 	/// <summary>Adds navigation and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(SharedUI.ApplicationScreenDefinition definition, string text, out IApplicationMenuItem registration,
@@ -144,9 +139,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 		return AddShowScreenItem(definition.Registration, text, image16x16, showOnExplorerBar, showOnToolBar, isStartScreen);
 	}
 
-	public ApplicationMenuBuilder AddActionItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false) {
-		return AddItem(text, action, image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad);
-	}
+	public ApplicationMenuBuilder AddActionItem(string text, Action action, Image image16x16 = null, bool showOnExplorerBar = true, bool showOnToolBar = true, bool executeOnLoad = false)
+		=> AddItem(text, action, image16x16, showOnExplorerBar, showOnToolBar, executeOnLoad);
 
 	/// <summary>Passes the executing UI services; PrimaryUIController supplies the native modal owner.</summary>
 	public ApplicationMenuBuilder AddActionItem(string text, Action<IUserInterfaceServices> action, Image image16x16 = null,

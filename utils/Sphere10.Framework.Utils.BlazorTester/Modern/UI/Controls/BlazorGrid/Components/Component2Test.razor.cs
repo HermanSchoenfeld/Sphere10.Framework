@@ -18,9 +18,7 @@ partial class Component2Test : IGridComponent<bool> {
 	public Component2Test() {
 	}
 
-	public Component2Test(bool checkedValue) {
-		Checked = checkedValue;
-	}
+	public Component2Test(bool checkedValue) => Checked = checkedValue;
 
 	public void Render(bool item, RenderTreeBuilder builder) {
 		builder.OpenComponent<Component2Test>(0);

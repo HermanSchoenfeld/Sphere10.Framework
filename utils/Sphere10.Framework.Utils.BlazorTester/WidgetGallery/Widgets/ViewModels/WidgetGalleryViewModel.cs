@@ -14,9 +14,7 @@ namespace Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.ViewModels
 public class WidgetGalleryViewModel : ComponentViewModelBase {
 	public IRandomNumberService NumberService { get; }
 
-	public WidgetGalleryViewModel(IRandomNumberService numberService) {
-		NumberService = numberService;
-	}
+	public WidgetGalleryViewModel(IRandomNumberService numberService) => NumberService = numberService;
 }
 
 

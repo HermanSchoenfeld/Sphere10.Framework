@@ -39,17 +39,13 @@ public class ArrayGrid : GridVirtual {
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public new ArrayRows Rows {
-		get {
-			return (ArrayRows)base.Rows;
-		}
+		get => (ArrayRows)base.Rows;
 	}
 
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public new ArrayColumns Columns {
-		get {
-			return (ArrayColumns)base.Columns;
-		}
+		get => (ArrayColumns)base.Columns;
 	}
 
 	/// <summary>
@@ -58,9 +54,7 @@ public class ArrayGrid : GridVirtual {
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public Array DataSource {
-		get {
-			return _dataSource;
-		}
+		get => _dataSource;
 		set {
 			if (value != null && value.Rank != 2)
 				throw new SourceGridException("Array dimension not valid, must be an array with 2 dimensions");
@@ -76,12 +70,8 @@ public class ArrayGrid : GridVirtual {
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public ICellVirtual ColumnHeader {
-		get {
-			return _columnHeader;
-		}
-		set {
-			_columnHeader = value;
-		}
+		get => _columnHeader;
+		set => _columnHeader = value;
 	}
 
 	/// <summary>
@@ -90,12 +80,8 @@ public class ArrayGrid : GridVirtual {
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public ICellVirtual RowHeader {
-		get {
-			return _rowHeader;
-		}
-		set {
-			_rowHeader = value;
-		}
+		get => _rowHeader;
+		set => _rowHeader = value;
 	}
 
 	/// <summary>
@@ -104,23 +90,15 @@ public class ArrayGrid : GridVirtual {
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public ICellVirtual Header {
-		get {
-			return _header;
-		}
-		set {
-			_header = value;
-		}
+		get => _header;
+		set => _header = value;
 	}
 
 	[System.ComponentModel.Browsable(false)]
 	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 	public ICellVirtual ValueCell {
-		get {
-			return _valueCell;
-		}
-		set {
-			_valueCell = value;
-		}
+		get => _valueCell;
+		set => _valueCell = value;
 	}
 
 	public override ICellVirtual GetCell(int row, int column) {
@@ -133,13 +111,9 @@ public class ArrayGrid : GridVirtual {
 		return _valueCell;
 	}
 
-	protected override RowsBase CreateRowsObject() {
-		return new ArrayRows(this);
-	}
+	protected override RowsBase CreateRowsObject() => new ArrayRows(this);
 
-	protected override ColumnsBase CreateColumnsObject() {
-		return new ArrayColumns(this);
-	}
+	protected override ColumnsBase CreateColumnsObject() => new ArrayColumns(this);
 
 	protected virtual void Bind() {
 		ValueCell = null;

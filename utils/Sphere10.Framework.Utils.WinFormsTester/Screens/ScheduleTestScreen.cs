@@ -38,11 +38,7 @@ public partial class ScheduleTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override SchedulingScreenSettings ScreenSettings {
-		get {
-			return (SchedulingScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override SchedulingScreenSettings ScreenSettings => (SchedulingScreenSettings)base.ScreenSettings;
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();
@@ -68,13 +64,9 @@ public partial class ScheduleTestScreen : ApplicationScreen {
 		_status.Text = "Two screen-owned asynchronous sample jobs are running.";
 	}
 
-	private void TestButton_Click(object sender, EventArgs e) {
-		CreateScheduler(true);
-	}
+	private void TestButton_Click(object sender, EventArgs e) => CreateScheduler(true);
 
-	private void AsyncTestButton_Click(object sender, EventArgs e) {
-		CreateScheduler(false);
-	}
+	private void AsyncTestButton_Click(object sender, EventArgs e) => CreateScheduler(false);
 
 	// The same policy-aware composition serves the two independent scheduler owners.
 	private void CreateScheduler(bool synchronous, bool actionBased = false) {
@@ -178,9 +170,7 @@ public partial class ScheduleTestScreen : ApplicationScreen {
 		return scheduler;
 	}
 
-	private void JobStatusChanged(IJob job, JobStatus from, JobStatus to) {
-		QueueLog($"{job.Name}: {from} → {to}");
-	}
+	private void JobStatusChanged(IJob job, JobStatus from, JobStatus to) => QueueLog($"{job.Name}: {from} → {to}");
 
 	// Callbacks may arrive on worker threads and never access native controls.
 	private void QueueLog(string text) {

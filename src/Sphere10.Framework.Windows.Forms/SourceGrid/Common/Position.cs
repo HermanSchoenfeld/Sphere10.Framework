@@ -39,61 +39,43 @@ public struct Position {
 		_col = column;
 	}
 
-	static Position() {
-		Empty = new Position(EmptyIndex, EmptyIndex);
-	}
+	static Position() => Empty = new Position(EmptyIndex, EmptyIndex);
 
 	/// <summary>
 	/// Row
 	/// </summary>
-	public int Row {
-		get {
-			return _row;
-		}
-	}
+	public int Row => _row;
 
 	/// <summary>
 	/// Column
 	/// </summary>
-	public int Column {
-		get {
-			return _col;
-		}
-	}
+	public int Column => _col;
 
 	/// <summary>
 	/// Returns true if the current struct is empty
 	/// </summary>
 	/// <returns></returns>
-	public bool IsEmpty() {
-		return this.Equals(Empty);
-	}
+	public bool IsEmpty() => this.Equals(Empty);
 
 	/// <summary>
 	/// GetHashCode
 	/// </summary>
 	/// <returns></returns>
-	public override int GetHashCode() {
-		return Row;
-	}
+	public override int GetHashCode() => Row;
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <param name="position"></param>
 	/// <returns></returns>
-	public bool Equals(Position position) {
-		return (_col == position._col && _row == position._row);
-	}
+	public bool Equals(Position position) => (_col == position._col && _row == position._row);
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
-	public override bool Equals(object obj) {
-		return Equals((Position)obj);
-	}
+	public override bool Equals(object obj) => Equals((Position)obj);
 
 	/// <summary>
 	///
@@ -101,9 +83,7 @@ public struct Position {
 	/// <param name="left"></param>
 	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator ==(Position left, Position right) {
-		return left.Equals(right);
-	}
+	public static bool operator ==(Position left, Position right) => left.Equals(right);
 
 	/// <summary>
 	///
@@ -111,17 +91,13 @@ public struct Position {
 	/// <param name="left"></param>
 	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator !=(Position left, Position right) {
-		return !left.Equals(right);
-	}
+	public static bool operator !=(Position left, Position right) => !left.Equals(right);
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <returns></returns>
-	public override string ToString() {
-		return Row.ToString() + ";" + Column.ToString();
-	}
+	public override string ToString() => Row.ToString() + ";" + Column.ToString();
 
 	/// <summary>
 	/// Returns a position with the smaller Row and the smaller column

@@ -26,27 +26,11 @@ public class SortRangeRowsEventArgs : EventArgs {
 		_cellComparer = cellComparer;
 	}
 
-	public CellRange Range {
-		get {
-			return _range;
-		}
-	}
+	public CellRange Range => _range;
 
-	public int KeyColumn {
-		get {
-			return _keyColumn;
-		}
-	}
+	public int KeyColumn => _keyColumn;
 
-	public bool Ascending {
-		get {
-			return _ascending;
-		}
-	}
+	public bool Ascending => _ascending;
 
-	public IComparer CellComparer {
-		get {
-			return _cellComparer;
-		}
-	}
+	public IComparer CellComparer => _cellComparer;
 }

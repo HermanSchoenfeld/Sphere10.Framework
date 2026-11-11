@@ -52,9 +52,7 @@ public sealed class LogOutputConfiguration {
 	public bool RememberAfterClose { get; set; }
 
 	/// <summary>Copies plain output options without creating an output resource.</summary>
-	public LogOutputConfiguration Clone() {
-		return (LogOutputConfiguration)MemberwiseClone();
-	}
+	public LogOutputConfiguration Clone() => (LogOutputConfiguration)MemberwiseClone();
 
 	/// <summary>Formats the configured output and filtering choices for display.</summary>
 	public string Describe() {

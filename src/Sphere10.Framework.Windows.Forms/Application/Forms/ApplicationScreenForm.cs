@@ -97,11 +97,7 @@ public class ApplicationScreenForm : Form {
 
 	/// <summary>The actual title area in desktop coordinates, measured at the window's current DPI.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Rectangle CaptionBounds {
-		get {
-			return _caption.RectangleToScreen(_caption.ClientRectangle);
-		}
-	}
+	public Rectangle CaptionBounds => _caption.RectangleToScreen(_caption.ClientRectangle);
 
 	protected override CreateParams CreateParams {
 		get {
@@ -352,17 +348,16 @@ public class ApplicationScreenForm : Form {
 	}
 
 	// Shared owners retain command definitions; this window owns the generated views merged into its local strips.
+	// A detached window presents its screen's own commands and those of its plugin and block. Application-wide
+	// commands (File, Help, Options, Shutdown and the application toolbar) stay with the main window.
 	private void MergeContextCommands() {
 		var userInterface = ScreenHost.UserInterfaceServices;
-		// Registered screens carry their application; legacy manually hosted screens use their actual root form.
-		var application = Screen.Block?.Parent as IApplication
-			?? (_host.UserInterfaceServices?.PrimaryUIController as LiteMainForm)?.Application as IApplication;
 		var owners = new IApplicationCommandProvider[] { Screen.Block?.Source, Screen.Block }.Where(owner => owner != null).ToArray();
 
 		// Legacy registrations are already native commands; a detached window displays their original top-level items.
 		var menu = _screenMenuVisible ? _screenMenuStrip : null;
 		var registeredItems = Screen.ScreenMenuStrip == null ? Screen.MenuItems : Array.Empty<ToolStripItem>();
-		var hasMenuCommands = registeredItems.Length > 0 || application?.Menus.Any(item => item.ShowInMenuStrip) == true
+		var hasMenuCommands = registeredItems.Length > 0
 			|| owners.Any(owner => (owner is not IApplicationBlock block || block.ShowInMenuStrip)
 				&& owner.Menus.Cast<IApplicationMenu>().Any(item => item.ShowInMenuStrip));
 		if (menu == null && hasMenuCommands) {
@@ -375,8 +370,7 @@ public class ApplicationScreenForm : Form {
 
 		// Create a contextual row only when an active owner actually contributes commands to it.
 		var toolBar = _toolBarVisible ? _screenToolBar : null;
-		var hasToolBarCommands = application?.ToolBarItems.Length > 0
-			|| owners.Any(owner => owner.ToolBarItems.Length > 0 || owner is IApplicationBlock block && block.ShowInToolStrip
+		var hasToolBarCommands = owners.Any(owner => owner.ToolBarItems.Length > 0 || owner is IApplicationBlock block && block.ShowInToolStrip
 				&& block.Menus.SelectMany(item => item.Items).OfType<IWinFormsLinkMenuItem>().Any(item => item.ShowOnToolStrip));
 		if (toolBar == null && hasToolBarCommands) {
 			_contextToolBar ??= new ToolStrip { Name = "_contextToolBar", Dock = DockStyle.Top, GripStyle = ToolStripGripStyle.Hidden };
@@ -385,8 +379,6 @@ public class ApplicationScreenForm : Form {
 			toolBar = _contextToolBar;
 		}
 
-		if (application != null)
-			WinFormsCommandControls.MergeSources(this, menu, toolBar, application.Menus.Where(item => item.ShowInMenuStrip), application.ToolBarItems, application, userInterface);
 		WinFormsCommandControls.MergeSources(this, menu, toolBar, owners, userInterface);
 		if (_contextMenuStrip != null)
 			_contextMenuStrip.Visible = _contextMenuStrip.Items.Count > 0;

@@ -104,9 +104,7 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		}
 	}
 
-	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) {
-		Seeker.ProcessClusterMapChanged(changedEvent);
-	}
+	public void ProcessClusterMapChanged(ClusterMapChangedEventArgs changedEvent) => Seeker.ProcessClusterMapChanged(changedEvent);
 
 	public void ProcessStreamSwapped(long stream1, ClusteredStreamDescriptor stream1Descriptor, long stream2, ClusteredStreamDescriptor streamDescriptor2) {
 		if (Terminal == stream1) {
@@ -118,12 +116,8 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		Seeker.ProcessStreamSwapped(stream1, stream1Descriptor, stream2, streamDescriptor2);
 	}
 
-	public void ClearEventHandlers() {
-		StreamLengthChanged = null;
-	}
-	private void CheckNotEmpty() {
-		Guard.Ensure(TotalBytes > 0, "Stream is empty.");
-	}
+	public void ClearEventHandlers() => StreamLengthChanged = null;
+	private void CheckNotEmpty() => Guard.Ensure(TotalBytes > 0, "Stream is empty.");
 
 	private void NotifyStreamLengthChanged(long newLength) => StreamLengthChanged?.Invoke(this, newLength);
 

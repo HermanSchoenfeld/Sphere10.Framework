@@ -67,13 +67,9 @@ public static class TypeResolver {
 
 	}
 
-	public static Type ResolveTypeInAllAssemblies(string typeName) {
-		return ResolveTypeInAssemblies(AppDomain.CurrentDomain.GetAssemblies(), typeName);
-	}
+	public static Type ResolveTypeInAllAssemblies(string typeName) => ResolveTypeInAssemblies(AppDomain.CurrentDomain.GetAssemblies(), typeName);
 
-	public static Type ResolveTypeInAssembly(Assembly assembly, string typeName) {
-		return ResolveTypeInAssemblies(new[] { assembly }, typeName);
-	}
+	public static Type ResolveTypeInAssembly(Assembly assembly, string typeName) => ResolveTypeInAssemblies(new[] { assembly }, typeName);
 
 	public static Type ResolveTypeInAssemblies(IEnumerable<Assembly> assemblies, string typeName) {
 		// Full name search

@@ -45,11 +45,8 @@ public class BlazorScreenMenuItem : ApplicationMenuItemBase, IScreenMenuItem {
 		}
 	}
 
-	protected override string DefaultId {
-		get {
-			return Registration == null ? base.DefaultId : Registration.IsTypeReference ? Registration.ScreenType.Name : Registration.Token.ToString("N");
-		}
-	}
+	protected override string DefaultId
+		=> Registration == null ? base.DefaultId : Registration.IsTypeReference ? Registration.ScreenType.Name : Registration.Token.ToString("N");
 
 	/// <summary>Binds the command to its own graph's canonical definition and updates reverse membership.</summary>
 	public void ResolveScreenDefinition(SharedUI.ApplicationScreenDefinition definition) {

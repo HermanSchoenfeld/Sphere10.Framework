@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.ObjectSpaces;
 
@@ -67,7 +68,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	public void Load() => ObjectStream.Load();
 
-	public Task LoadAsync() => Task.Run(Load);
+	public Task LoadAsync(CancellationToken cancellationToken = default) => Task.Run(Load, cancellationToken);
 
 	public virtual void Dispose() {
 		if (OwnsContainer)

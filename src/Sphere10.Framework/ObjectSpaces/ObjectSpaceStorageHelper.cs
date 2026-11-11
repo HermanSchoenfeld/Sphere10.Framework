@@ -385,9 +385,8 @@ internal static class ObjectSpaceStorageHelper {
 	}
 
 	// Sets the endian trait to match the configured byte order.
-	private static ObjectSpaceTraits WithEndianness(ObjectSpaceTraits traits, Endianness endianness) {
-		return traits.CopyAndSetFlags(ObjectSpaceTraits.BigEndian, endianness == Endianness.BigEndian);
-	}
+	private static ObjectSpaceTraits WithEndianness(ObjectSpaceTraits traits, Endianness endianness)
+		=> traits.CopyAndSetFlags(ObjectSpaceTraits.BigEndian, endianness == Endianness.BigEndian);
 
 	// Resolves a recorded name to one unambiguous public field or non-indexed property.
 	private static bool TryResolveStoredMember(Type type, string name, out Member member) {

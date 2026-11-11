@@ -28,7 +28,5 @@ public class DataGridRowHeaderModel : Cells.Models.IValueModel {
 		return null;
 	}
 
-	public void SetValue(CellContext cellContext, object value) {
-		throw new ApplicationException("Not supported");
-	}
+	public void SetValue(CellContext cellContext, object value) => throw new ApplicationException("Not supported");
 }

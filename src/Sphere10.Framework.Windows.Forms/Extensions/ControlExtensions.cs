@@ -138,9 +138,7 @@ public static class ControlExtensions {
 		g.FillRectangle(SystemBrushes.Control, clipRect);
 	}
 
-	public static PointF GetCenterPoint(this Control control) {
-		return new PointF(control.Width / 2, control.Height / 2 - 1);
-	}
+	public static PointF GetCenterPoint(this Control control) => new PointF(control.Width / 2, control.Height / 2 - 1);
 
 	public static void InvokeEx(this Control control, Action action) {
 		if (!control.IsHandleCreated) {
@@ -194,9 +192,8 @@ public static class ControlExtensions {
 		return Invoker;
 	}
 
-	public static void EnableChildren(this Control control, bool enabled, params Control[] preserveControls) {
-		EnableChildrenInternal(control, 0, enabled, new HashSet<Control>(preserveControls));
-	}
+	public static void EnableChildren(this Control control, bool enabled, params Control[] preserveControls)
+		=> EnableChildrenInternal(control, 0, enabled, new HashSet<Control>(preserveControls));
 
 	private static void EnableChildrenInternal(this Control control, int nestingLevel, bool enabled, HashSet<Control> preserveControls) {
 		IDictionary<Control, bool> controlStates = null;

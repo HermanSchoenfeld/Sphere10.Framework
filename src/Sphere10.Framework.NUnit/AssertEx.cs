@@ -655,13 +655,11 @@ public static class AssertEx {
 		Assert.That(inRange, Is.True, message ?? $"Value '{actual}' was not approx equal to '{expected}' (tolerance '{tolerance}')");
 	}
 
-	public static void HasLoadedPages<TItem>(PagedListBase<TItem> list, params long[] pageNos) {
-		Assert.That(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were open");
-	}
+	public static void HasLoadedPages<TItem>(PagedListBase<TItem> list, params long[] pageNos)
+		=> Assert.That(list.Pages.Where(p => p.State == PageState.Loaded).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were open");
 
-	public static void HasDirtyPages<TItem>(PagedListBase<TItem> list, params long[] pageNos) {
-		Assert.That(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were dirty");
-	}
+	public static void HasDirtyPages<TItem>(PagedListBase<TItem> list, params long[] pageNos)
+		=> Assert.That(list.Pages.Where(p => p.Dirty).Select(p => p.Number).Except(pageNos), Is.Empty, "Unexpected pages were dirty");
 
 }
 

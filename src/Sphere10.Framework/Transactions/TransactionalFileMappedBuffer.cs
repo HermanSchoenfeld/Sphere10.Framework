@@ -105,9 +105,7 @@ public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListB
 				.ToArray();
 	}
 
-	protected override long GetCommittedPageCount() {
-		return (int)Math.Ceiling(Stream.Length / (double)PageSize);
-	}
+	protected override long GetCommittedPageCount() => (int)Math.Ceiling(Stream.Length / (double)PageSize);
 
 	protected override IPage<byte> NewPageInstance(long pageNumber) {
 		return new PageImpl(

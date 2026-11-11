@@ -39,9 +39,7 @@ public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection 
 		: base(bounds) {
 	}
 
-	public CellRange[] ToArray() {
-		return base.Contents.ToArray();
-	}
+	public CellRange[] ToArray() => base.Contents.ToArray();
 
 	public void Redim(int rowCount, int colCount) {
 		while (this.Bounds.RowsCount <= rowCount)
@@ -58,23 +56,13 @@ public class QuadTreeRangesList : QuadTree<CellRange>, ISpannedRangesCollection 
 		Insert(newRange);
 	}
 
-	public new void Remove(CellRange range) {
-		base.Remove(range);
-	}
+	public new void Remove(CellRange range) => base.Remove(range);
 
-	public void Add(CellRange range) {
-		base.Insert(range);
-	}
+	public void Add(CellRange range) => base.Insert(range);
 
-	public System.Collections.Generic.List<CellRange> GetRanges(CellRange range) {
-		return base.Query(range);
-	}
+	public System.Collections.Generic.List<CellRange> GetRanges(CellRange range) => base.Query(range);
 
-	public CellRange? GetFirstIntersectedRange(Position pos) {
-		return base.QueryFirst(pos.Row, pos.Column);
-	}
+	public CellRange? GetFirstIntersectedRange(Position pos) => base.QueryFirst(pos.Row, pos.Column);
 
-	public CellRange? FindRangeWithStart(Position start) {
-		return base.QueryFirst(start.Row, start.Column);
-	}
+	public CellRange? FindRangeWithStart(Position start) => base.QueryFirst(start.Row, start.Column);
 }

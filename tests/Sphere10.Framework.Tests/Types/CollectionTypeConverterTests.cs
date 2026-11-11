@@ -44,7 +44,7 @@ public class CollectionTypeConverterTests {
 		private sealed class Enumerator : IEnumerator, IDisposable {
 			private readonly OwnedEnumeration _owner;
 			private bool _visited;
-			public Enumerator(OwnedEnumeration owner) { _owner = owner; }
+			public Enumerator(OwnedEnumeration owner) => _owner = owner;
 			public object Current => "value";
 			public bool MoveNext() { if (_visited) return false; _visited = true; return true; }
 			public void Reset() => _visited = false;

@@ -39,11 +39,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override TransactionalCollectionScreenSettings ScreenSettings {
-		get {
-			return (TransactionalCollectionScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override TransactionalCollectionScreenSettings ScreenSettings => (TransactionalCollectionScreenSettings)base.ScreenSettings;
 
 	// Preferences restore before the user creates a temporary storage session.
 
@@ -60,34 +56,22 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 	}
 
 	// Each native action shares the same admission, capture, cancellation and result path.
-	private async void ListClicked(object sender, EventArgs args) {
-		await RunAsync(Scenario.List);
-	}
+	private async void ListClicked(object sender, EventArgs args) => await RunAsync(Scenario.List);
 
 	// Buffer work is enabled only for actual buffer backends.
-	private async void BufferClicked(object sender, EventArgs args) {
-		await RunAsync(Scenario.Buffer);
-	}
+	private async void BufferClicked(object sender, EventArgs args) => await RunAsync(Scenario.Buffer);
 
 	// Dictionary storage is explicitly transactional, independent of the list/backend selector.
-	private async void DictionaryClicked(object sender, EventArgs args) {
-		await RunAsync(Scenario.Dictionary);
-	}
+	private async void DictionaryClicked(object sender, EventArgs args) => await RunAsync(Scenario.Dictionary);
 
 	// Clustered streams retain the original append scenario with configured geometry.
-	private async void StreamClicked(object sender, EventArgs args) {
-		await RunAsync(Scenario.Stream);
-	}
+	private async void StreamClicked(object sender, EventArgs args) => await RunAsync(Scenario.Stream);
 
 	// Verify persisted membership, rollback and reopened data rather than a warmed cache.
-	private async void RollbackClicked(object sender, EventArgs args) {
-		await RunAsync(Scenario.Rollback);
-	}
+	private async void RollbackClicked(object sender, EventArgs args) => await RunAsync(Scenario.Rollback);
 
 	// Cancellation remains available while every other operation is disabled.
-	private void CancelClicked(object sender, EventArgs args) {
-		_operationCancellation?.Cancel();
-	}
+	private void CancelClicked(object sender, EventArgs args) => _operationCancellation?.Cancel();
 
 	// Copy generated results only when a nonempty result exists.
 	private void CopyClicked(object sender, EventArgs args) {

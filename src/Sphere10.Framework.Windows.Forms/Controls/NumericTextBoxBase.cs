@@ -43,9 +43,7 @@ public abstract class NumericBoxBase<T> : TextBoxEx
 	[Category("Appearance")]
 	[Bindable(BindableSupport.Yes)]
 	public new T? Value {
-		get {
-			return this._value;
-		}
+		get => this._value;
 		set {
 			var previousText = Text;
 			this._value = value;
@@ -58,12 +56,8 @@ public abstract class NumericBoxBase<T> : TextBoxEx
 
 	[Browsable(false)]
 	public override string Text {
-		get {
-			return base.Text;
-		}
-		set {
-			base.Text = value;
-		}
+		get => base.Text;
+		set => base.Text = value;
 	}
 
 	[DefaultValue(_defaultNullText)]

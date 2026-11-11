@@ -33,9 +33,7 @@ public partial class EnterAgeScreen : DemoWizardScreenBase {
 	}
 
 	// Copy validated input into this wizard session.
-	protected override void CopyUIToModel() {
-		Model.Age = int.Parse(_textBox1.Text);
-	}
+	protected override void CopyUIToModel() => Model.Age = int.Parse(_textBox1.Text);
 
 	// Restore the retained model when this page is presented again.
 	protected override void CopyModelToUI() {

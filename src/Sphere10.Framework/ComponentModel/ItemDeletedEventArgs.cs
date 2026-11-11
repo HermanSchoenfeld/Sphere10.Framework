@@ -17,9 +17,7 @@ namespace Sphere10.Framework.ComponentModel;
 /// <typeparam name="T">The type of the deleted item.</typeparam>
 public class ItemDeletedEventArgs<T> : EventArgs {
 	/// <summary>Creates a deletion notification containing the removed item.</summary>
-	public ItemDeletedEventArgs(T item) {
-		Item = item;
-	}
+	public ItemDeletedEventArgs(T item) => Item = item;
 
 	/// <summary>Gets or replaces the item passed to subsequent deletion handlers.</summary>
 	public T Item { get; set; }

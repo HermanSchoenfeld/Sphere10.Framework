@@ -80,9 +80,7 @@ public class AppxPackageSentryTests {
 	private sealed class TranscriptSentry : AppxPackageSentry {
 		private readonly ProcessExecutionResult _result;
 
-		public TranscriptSentry(string output, int exitCode = 0, string error = "") {
-			_result = new ProcessExecutionResult(exitCode, output, error);
-		}
+		public TranscriptSentry(string output, int exitCode = 0, string error = "") => _result = new ProcessExecutionResult(exitCode, output, error);
 
 		public string[] Arguments { get; private set; }
 		public string Script => Arguments[^1];

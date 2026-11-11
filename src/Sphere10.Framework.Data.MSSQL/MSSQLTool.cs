@@ -271,9 +271,7 @@ public static class MSSQL {
 		return connString.InitialCatalog;
 	}
 
-	public static void ClearAllPools() {
-		SqlConnection.ClearAllPools();
-	}
+	public static void ClearAllPools() => SqlConnection.ClearAllPools();
 
 	private static string ApplyNetworkLibrary(string dataSource, string networkLibrary) {
 		// Microsoft.Data.SqlClient has no Network Library keyword, so the library becomes the equivalent Data Source protocol prefix.

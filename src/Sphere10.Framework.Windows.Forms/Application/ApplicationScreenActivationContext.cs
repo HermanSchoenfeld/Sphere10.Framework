@@ -26,11 +26,7 @@ public sealed class ApplicationScreenActivationContext {
 	}
 
 	/// <summary>The application currently owning the registered block, or null for a standalone host.</summary>
-	public IApplication Application {
-		get {
-			return Block.Parent ?? (Owner as BlockMainForm)?.Application as IApplication;
-		}
-	}
+	public IApplication Application => Block.Parent ?? (Owner as BlockMainForm)?.Application as IApplication;
 
 	/// <summary>The registration's owning block.</summary>
 	public IApplicationBlock Block { get; }

@@ -55,9 +55,7 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 			Normalize();
 	}
 
-	static CellRange() {
-		Empty = new CellRange(Position.Empty, Position.Empty, false);
-	}
+	static CellRange() => Empty = new CellRange(Position.Empty, Position.Empty, false);
 
 	/// <summary>
 	/// Construct a Range of a single cell
@@ -68,16 +66,12 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	}
 
 	public Position Start {
-		get {
-			return _start;
-		}
+		get => _start;
 		//set{m_Start = value; Normalize();}
 	}
 
 	public Position End {
-		get {
-			return _end;
-		}
+		get => _end;
 		//set{m_End = value; Normalize();}
 	}
 
@@ -85,9 +79,7 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// Sets or Gets the columns count (End.Column-Start.Column)
 	/// </summary>
 	public int ColumnsCount {
-		get {
-			return (_end.Column - _start.Column) + 1;
-		}
+		get => (_end.Column - _start.Column) + 1;
 		set {
 			if (value <= 0) //facendo questo controllo non serve richiamare Normalize
 				throw new SourceGridException("Invalid columns count");
@@ -99,9 +91,7 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// Sets or Gets the rows count (End.Row-Start.Row)
 	/// </summary>
 	public int RowsCount {
-		get {
-			return (_end.Row - _start.Row) + 1;
-		}
+		get => (_end.Row - _start.Row) + 1;
 		set {
 			if (value <= 0) //facendo questo controllo non serve richiamare Normalize
 				throw new SourceGridException("Invalid columns count");
@@ -109,33 +99,15 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 		}
 	}
 
-	int IIntegerRectangle<CellRange>.StartRow {
-		get {
-			return _start.Row;
-		}
-	}
+	int IIntegerRectangle<CellRange>.StartRow => _start.Row;
 
-	int IIntegerRectangle<CellRange>.StartColumn {
-		get {
-			return _start.Column;
-		}
-	}
+	int IIntegerRectangle<CellRange>.StartColumn => _start.Column;
 
-	int IIntegerRectangle<CellRange>.EndRow {
-		get {
-			return _end.Row;
-		}
-	}
+	int IIntegerRectangle<CellRange>.EndRow => _end.Row;
 
-	int IIntegerRectangle<CellRange>.EndColumn {
-		get {
-			return _end.Column;
-		}
-	}
+	int IIntegerRectangle<CellRange>.EndColumn => _end.Column;
 
-	public static CellRange FromPosition(Position startPosition) {
-		return new CellRange(startPosition);
-	}
+	public static CellRange FromPosition(Position startPosition) => new CellRange(startPosition);
 
 	public static CellRange From(Position startPosition, int rowCount, int colCount) {
 		var range = new CellRange(startPosition);
@@ -202,27 +174,21 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	///
 	/// </summary>
 	/// <returns></returns>
-	public override int GetHashCode() {
-		return _start.Row;
-	}
+	public override int GetHashCode() => _start.Row;
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns></returns>
-	public bool Equals(CellRange range) {
-		return (Start.Equals(range.Start) && End.Equals(range.End));
-	}
+	public bool Equals(CellRange range) => (Start.Equals(range.Start) && End.Equals(range.End));
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
-	public override bool Equals(object obj) {
-		return Equals((CellRange)obj);
-	}
+	public override bool Equals(object obj) => Equals((CellRange)obj);
 
 	/// <summary>
 	///
@@ -243,9 +209,7 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// <param name="left"></param>
 	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator ==(CellRange left, CellRange right) {
-		return left.Equals(right);
-	}
+	public static bool operator ==(CellRange left, CellRange right) => left.Equals(right);
 
 	/// <summary>
 	///
@@ -253,17 +217,13 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// <param name="left"></param>
 	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator !=(CellRange left, CellRange right) {
-		return !left.Equals(right);
-	}
+	public static bool operator !=(CellRange left, CellRange right) => !left.Equals(right);
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <returns></returns>
-	public override string ToString() {
-		return Start.ToString() + " to " + End.ToString();
-	}
+	public override string ToString() => Start.ToString() + " to " + End.ToString();
 
 	/// <summary>
 	/// Returns a range with the smaller Start and the bigger End. The Union of the 2 Range. If one of the range is empty then the return is the other range.
@@ -299,9 +259,7 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// <param name="range1"></param>
 	/// <param name="range2"></param>
 	/// <returns></returns>
-	public static bool IntersectsWith(CellRange range1, CellRange range2) {
-		return Intersect(range1, range2).IsEmpty() == false;
-	}
+	public static bool IntersectsWith(CellRange range1, CellRange range2) => Intersect(range1, range2).IsEmpty() == false;
 
 	/// <summary>
 	/// Returns true if the specified range intersects (one or more cells) with the current range.
@@ -309,9 +267,7 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns></returns>
-	public bool IntersectsWith(CellRange range) {
-		return IntersectsWith(this, range);
-	}
+	public bool IntersectsWith(CellRange range) => IntersectsWith(this, range);
 
 	/// <summary>
 	/// Return all the cells that don't intersect with the specified cells. (Remove the specified cells from the current cells ad returns the remaining cells)
@@ -394,26 +350,19 @@ public struct CellRange : IIntegerRectangle<CellRange> {
 	/// Determines if the current range is empty
 	/// </summary>
 	/// <returns></returns>
-	public bool IsEmpty() {
-		return (Start.IsEmpty() || End.IsEmpty());
-	}
+	public bool IsEmpty() => (Start.IsEmpty() || End.IsEmpty());
 
 	/// <summary>
 	/// Returns the intersection between the 2 Range. If one of the range is empty then the return is empty.
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns></returns>
-	public CellRange Intersect(CellRange range) {
-		return Intersect(this, range);
-	}
+	public CellRange Intersect(CellRange range) => Intersect(this, range);
 
-	bool IIntegerRectangle<CellRange>.Contains(int row, int column) {
-		return Contains(new Position(row, column));
-	}
+	bool IIntegerRectangle<CellRange>.Contains(int row, int column) => Contains(new Position(row, column));
 
-	static CellRange IIntegerRectangle<CellRange>.Create(int startRow, int startColumn, int endRow, int endColumn) {
-		return new CellRange(startRow, startColumn, endRow, endColumn);
-	}
+	static CellRange IIntegerRectangle<CellRange>.Create(int startRow, int startColumn, int endRow, int endColumn)
+		=> new CellRange(startRow, startColumn, endRow, endColumn);
 
 	/// <summary>
 	/// Check and fix the range to always have Start smaller than End

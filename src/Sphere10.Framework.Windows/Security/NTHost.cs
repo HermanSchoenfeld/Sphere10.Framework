@@ -113,13 +113,9 @@ public class NTHost : NTObject {
 	/// <summary>
 	/// Gets the current machine.
 	/// </summary>
-	public static NTHost CurrentMachine {
-		get { return NTHost._currentMachine; }
-	}
+	public static NTHost CurrentMachine => NTHost._currentMachine;
 
-	public override string FullName {
-		get { return Name; }
-	}
+	public override string FullName => Name;
 
 	public string[] Aliases { get; set; }
 
@@ -138,9 +134,7 @@ public class NTHost : NTObject {
 		return string.Equals(Dns.GetHostEntry(host).HostName, CurrentMachine.Name, StringComparison.OrdinalIgnoreCase);
 	}
 
-	public static bool CanConnectTo(string hostname) {
-		return Tools.Exceptions.Execute(() => _ = new NTHost(hostname));
-	}
+	public static bool CanConnectTo(string hostname) => Tools.Exceptions.Execute(() => _ = new NTHost(hostname));
 
 	/// <summary>
 	/// Returns the local users on the host.
@@ -172,9 +166,7 @@ public class NTHost : NTObject {
 		return retval;
 	}
 
-	public bool TryGetLocalGroup(string name, out NTLocalGroup group) {
-		return TryGetLocalGroup(name, out group, Checkpoint);
-	}
+	public bool TryGetLocalGroup(string name, out NTLocalGroup group) => TryGetLocalGroup(name, out group, Checkpoint);
 
 	public bool TryGetLocalGroup(string name, out NTLocalGroup group, Action checkpoint) {
 		checkpoint?.Invoke();
@@ -251,9 +243,7 @@ public class NTHost : NTObject {
 		errors = failures.ToArray();
 		return users;
 	}
-	public bool TryGetLocalUser(string name, out NTLocalUser user) {
-		return TryGetLocalUser(name, out user, Checkpoint);
-	}
+	public bool TryGetLocalUser(string name, out NTLocalUser user) => TryGetLocalUser(name, out user, Checkpoint);
 
 	public bool TryGetLocalUser(string name, out NTLocalUser user, Action checkpoint) {
 		checkpoint?.Invoke();
@@ -339,9 +329,7 @@ public class NTHost : NTObject {
 	}
 
 
-	public bool TryGetShare(string name, out NTShare share) {
-		return TryGetShare(name, out share, Checkpoint);
-	}
+	public bool TryGetShare(string name, out NTShare share) => TryGetShare(name, out share, Checkpoint);
 
 	public bool TryGetShare(string name, out NTShare share, Action checkpoint) {
 		checkpoint?.Invoke();
@@ -355,9 +343,8 @@ public class NTHost : NTObject {
 
 	}
 
-	public bool CheckShare(string name, out WinAPI.NETAPI32.SHARE_TYPE shareType) {
-		return WinAPI.NETAPI32.NetShareCheck(this.NTCompatibleHostName, name, out shareType) == WinAPI.NETAPI32.NET_API_STATUS.NERR_Success;
-	}
+	public bool CheckShare(string name, out WinAPI.NETAPI32.SHARE_TYPE shareType)
+		=> WinAPI.NETAPI32.NetShareCheck(this.NTCompatibleHostName, name, out shareType) == WinAPI.NETAPI32.NET_API_STATUS.NERR_Success;
 
 	public bool ContainsShare(string name) {
 		NTShare share = null;

@@ -23,9 +23,7 @@ public class ModalService : IModalService {
 	/// before this object may be used.
 	/// </summary>
 	/// <param name="component"> modal host</param>
-	public void Initialize(ModalHost component) {
-		ModalInstance = component ?? throw new ArgumentNullException(nameof(component));
-	}
+	public void Initialize(ModalHost component) => ModalInstance = component ?? throw new ArgumentNullException(nameof(component));
 
 	/// <summary>
 	/// Show the modal component of type,

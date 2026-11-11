@@ -161,9 +161,8 @@ public class ObjectSpaceWorkloadTests {
 	[TestCase("--lookup", "999")]
 	[TestCase("--payload-mode", "999")]
 	[TestCase("--mix", "999")]
-	public void InvalidWorkloadControlsAreRejectedBeforeStorageCreation(string argument, string value) {
-		Assert.That(() => ProfilerSettings.Parse(new[] { argument, value }, out _, out _), Throws.InstanceOf<ArgumentException>());
-	}
+	public void InvalidWorkloadControlsAreRejectedBeforeStorageCreation(string argument, string value)
+		=> Assert.That(() => ProfilerSettings.Parse(new[] { argument, value }, out _, out _), Throws.InstanceOf<ArgumentException>());
 
 	[Test]
 	public void WorkloadControlsAreParsedAndForwardOnlyBenchmarkArguments() {

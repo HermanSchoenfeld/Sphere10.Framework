@@ -22,21 +22,9 @@ public class ScrollPositionChangedEventArgs : EventArgs {
 		_oldValue = oldValue;
 	}
 
-	public int NewValue {
-		get {
-			return _newValue;
-		}
-	}
+	public int NewValue => _newValue;
 
-	public int OldValue {
-		get {
-			return _oldValue;
-		}
-	}
+	public int OldValue => _oldValue;
 
-	public int Delta {
-		get {
-			return _oldValue - _newValue;
-		}
-	}
+	public int Delta => _oldValue - _newValue;
 }

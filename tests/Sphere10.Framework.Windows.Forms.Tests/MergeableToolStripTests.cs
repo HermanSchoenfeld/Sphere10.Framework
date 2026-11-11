@@ -659,9 +659,7 @@ public class MergeableToolStripTests {
 			: base(text) {
 		}
 
-		public void PrepareDropDown() {
-			OnDropDownShow(EventArgs.Empty);
-		}
+		public void PrepareDropDown() => OnDropDownShow(EventArgs.Empty);
 	}
 
 	#endregion

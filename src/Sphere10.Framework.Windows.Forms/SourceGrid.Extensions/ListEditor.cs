@@ -41,27 +41,17 @@ public partial class ListEditor : UserControlEx {
 
 	/// <summary>Gets or sets the mutable list, including generic lists exposed through their runtime IList contract.</summary>
 	public IList List {
-		get {
-			return _list;
-		}
-		set {
-			_list = value;
-		}
+		get => _list;
+		set => _list = value;
 	}
 
 	/// <summary>Gets the displayed grid for selection, presentation and export configuration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid => _grid;
 
 	/// <summary>Gets or sets the item schema used to create property editors.</summary>
 	public Type ItemType {
-		get {
-			return _itemType;
-		}
+		get => _itemType;
 		set {
 			_itemType = value;
 			LoadEditors();
@@ -71,9 +61,7 @@ public partial class ListEditor : UserControlEx {
 	/// <summary>Gets or sets the editors associated with the displayed properties.</summary>
 	[Browsable(false)]
 	public Cells.Editors.EditorBase[] Editors {
-		get {
-			return _editors;
-		}
+		get => _editors;
 		set {
 			if (ReferenceEquals(_editors, value))
 				return;
@@ -87,49 +75,31 @@ public partial class ListEditor : UserControlEx {
 	/// <summary>Gets or sets the reflected properties displayed as columns.</summary>
 	[Browsable(false)]
 	public System.Reflection.PropertyInfo[] Properties {
-		get {
-			return _properties;
-		}
-		set {
-			_properties = value;
-		}
+		get => _properties;
+		set => _properties = value;
 	}
 
 	/// <summary>Gets or sets whether the add command is visible.</summary>
 	public bool EnableAdd {
-		get {
-			return _addButton.Visible;
-		}
-		set {
-			_addButton.Visible = value;
-		}
+		get => _addButton.Visible;
+		set => _addButton.Visible = value;
 	}
 
 	/// <summary>Gets or sets whether the remove command is visible.</summary>
 	public bool EnableRemove {
-		get {
-			return _removeButton.Visible;
-		}
-		set {
-			_removeButton.Visible = value;
-		}
+		get => _removeButton.Visible;
+		set => _removeButton.Visible = value;
 	}
 
 	/// <summary>Gets or sets whether the refresh command is visible.</summary>
 	public bool EnableRefresh {
-		get {
-			return _refreshButton.Visible;
-		}
-		set {
-			_refreshButton.Visible = value;
-		}
+		get => _refreshButton.Visible;
+		set => _refreshButton.Visible = value;
 	}
 
 	/// <summary>Gets or sets whether row-movement commands are visible.</summary>
 	public bool EnableMove {
-		get {
-			return _moveUpButton.Visible;
-		}
+		get => _moveUpButton.Visible;
 		set {
 			_moveUpButton.Visible = value;
 			_moveDownButton.Visible = value;
@@ -178,9 +148,7 @@ public partial class ListEditor : UserControlEx {
 	}
 
 	/// <summary>Reports complete list edits and row selection rather than intermediate child-grid notifications.</summary>
-	protected override bool ShouldObserveChildStateChanges(Control child) {
-		return false;
-	}
+	protected override bool ShouldObserveChildStateChanges(Control child) => false;
 
 	/// <summary>
 	/// Clean up any resources being used.
@@ -294,14 +262,10 @@ public partial class ListEditor : UserControlEx {
 	}
 
 	// Reports completed cell edits through the list-level notification.
-	private void GridValueChanged(object sender, EventArgs args) {
-		OnListChanged(args);
-	}
+	private void GridValueChanged(object sender, EventArgs args) => OnListChanged(args);
 
 	// Disables row commands while focus leaves the current row.
-	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) {
-		UpdateCommandState(-1);
-	}
+	private void SelectionFocusRowLeaving(object sender, RowCancelEventArgs args) => UpdateCommandState(-1);
 
 	// Updates commands and state observers for the newly focused row.
 	private void SelectionFocusRowEntered(object sender, RowEventArgs args) {

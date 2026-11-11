@@ -34,23 +34,13 @@ public class BoundList<T> : BoundListBase<T> {
 	}
 
 	/// <summary>Returns the item at the requested list index.</summary>
-	public override object this[int index] {
-		get {
-			return _list[index];
-		}
-	}
+	public override object this[int index] => _list[index];
 
 	/// <summary>Gets the current number of items in the wrapped list.</summary>
-	public override int Count {
-		get {
-			return _list.Count;
-		}
-	}
+	public override int Count => _list.Count;
 
 	/// <summary>Locates an item in the wrapped list.</summary>
-	public override int IndexOf(object item) {
-		return _list.IndexOf((T)item);
-	}
+	public override int IndexOf(object item) => _list.IndexOf((T)item);
 
 	/// <summary>Sorts by the configured descriptors and raises one binding reset notification.</summary>
 	public override void ApplySort(ListSortDescriptionCollection sorts) {
@@ -82,12 +72,8 @@ public class BoundList<T> : BoundListBase<T> {
 	}
 
 	/// <summary>Removes the requested item from the wrapped list.</summary>
-	protected override void OnRemoveAt(int index) {
-		_list.RemoveAt(index);
-	}
+	protected override void OnRemoveAt(int index) => _list.RemoveAt(index);
 
 	/// <summary>Removes every item from the wrapped list.</summary>
-	protected override void OnClear() {
-		_list.Clear();
-	}
+	protected override void OnClear() => _list.Clear();
 }

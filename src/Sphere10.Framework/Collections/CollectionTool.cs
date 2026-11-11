@@ -24,6 +24,34 @@ namespace Tools;
 /// </summary>
 public static class Collection {
 
+	/// <summary>Compares two uniquely keyed snapshots without changing either input. Unchanged items are omitted.</summary>
+	/// <remarks>Removals and modifications follow the previous snapshot's order; additions follow the current snapshot's order.
+	/// Duplicate keys are rejected rather than silently selecting one observation. The change kind distinguishes missing entries from default values.</remarks>
+	public static CollectionDifference<T, TKey>[] CompareByKey<T, TKey>(IEnumerable<T> previous, IEnumerable<T> current, Func<T, TKey> key,
+		IEqualityComparer<TKey> keyComparer = null, IEqualityComparer<T> valueComparer = null) {
+		// Materialize each input once and validate membership before producing any differences.
+		Guard.ArgumentNotNull(previous, nameof(previous));
+		Guard.ArgumentNotNull(current, nameof(current));
+		Guard.ArgumentNotNull(key, nameof(key));
+		keyComparer ??= ComparerFactory.Default.GetEqualityComparer<TKey>();
+		valueComparer ??= ComparerFactory.Default.GetEqualityComparer<T>();
+		var previousByKey = previous.ToDictionary(key, keyComparer);
+		var currentByKey = current.ToDictionary(key, keyComparer);
+		var differences = new List<CollectionDifference<T, TKey>>();
+
+		// Preserve the captured values themselves; a default value is not proof of absence.
+		foreach (var entry in previousByKey) {
+			if (!currentByKey.TryGetValue(entry.Key, out var currentValue))
+				differences.Add(new(entry.Key, entry.Value, default, CollectionDifferenceKind.Removed));
+			else if (!valueComparer.Equals(entry.Value, currentValue))
+				differences.Add(new(entry.Key, entry.Value, currentValue, CollectionDifferenceKind.Modified));
+		}
+		foreach (var entry in currentByKey)
+			if (!previousByKey.ContainsKey(entry.Key))
+				differences.Add(new(entry.Key, default, entry.Value, CollectionDifferenceKind.Added));
+		return differences.ToArray();
+	}
+
 	/// <summary>
 	/// Wraps the specified item in an <see cref="IEnumerable{T}"/> so it can be used in LINQ pipelines.
 	/// </summary>
@@ -64,9 +92,7 @@ public static class Collection {
 	/// <typeparam name="T">The item type.</typeparam>
 	/// <param name="values">Items to filter.</param>
 	/// <returns>All non-null items from <paramref name="values"/>.</returns>
-	public static IEnumerable<T> IgnoreNulls<T>(params T[] values) {
-		return values.Where(v => v != null);
-	}
+	public static IEnumerable<T> IgnoreNulls<T>(params T[] values) => values.Where(v => v != null);
 
 	/// <summary>
 	/// Materializes an array using the supplied generator for each index.

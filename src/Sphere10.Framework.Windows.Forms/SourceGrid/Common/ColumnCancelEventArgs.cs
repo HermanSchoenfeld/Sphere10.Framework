@@ -32,20 +32,12 @@ public class ColumnCancelEventArgs : ColumnEventArgs {
 	/// Column
 	/// </summary>
 	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
+		get => _cancel;
+		set => _cancel = value;
 	}
 
 	/// <summary>
 	/// Proposed column
 	/// </summary>
-	public int ProposedColumn {
-		get {
-			return _proposedColumn;
-		}
-	}
+	public int ProposedColumn => _proposedColumn;
 }

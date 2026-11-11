@@ -92,9 +92,7 @@ internal sealed class ApplicationScreenSettings : IDisposable {
 	}
 
 	// The standard header menu is available only for an existing provider-bound grid section.
-	public bool CanConfigureGrid(VisualGrid grid) {
-		return !_disposed && _settings.Provider != null && _grids.Exists(binding => ReferenceEquals(binding.Grid, grid));
-	}
+	public bool CanConfigureGrid(VisualGrid grid) => !_disposed && _settings.Provider != null && _grids.Exists(binding => ReferenceEquals(binding.Grid, grid));
 
 	// Capture only this grid; unrelated grids keep both their saved values and temporary presentation.
 	public async Task SaveGridConfigurationAsync(VisualGrid grid, CancellationToken cancellationToken) {
@@ -154,9 +152,7 @@ internal sealed class ApplicationScreenSettings : IDisposable {
 	}
 
 	// Mark an intentional scalar edit for the same explicit save boundary as native control edits.
-	public void MarkChanged() {
-		_dirty = true;
-	}
+	public void MarkChanged() => _dirty = true;
 
 	// Save the actual settings object; successful persistence emits its existing OnChanged notification.
 	public async Task SaveAsync(CancellationToken cancellationToken) {
@@ -256,9 +252,8 @@ internal sealed class ApplicationScreenSettings : IDisposable {
 	}
 
 	// A typed record is authoritative; old standalone control records are consulted only before it exists.
-	private async Task<bool> ShouldReadLegacyAsync(CancellationToken cancellationToken) {
-		return _settings.Provider != null && !await _settings.Provider.ContainsSettingAsync(_settings.GetType(), _settings.ID, cancellationToken);
-	}
+	private async Task<bool> ShouldReadLegacyAsync(CancellationToken cancellationToken)
+		=> _settings.Provider != null && !await _settings.Provider.ContainsSettingAsync(_settings.GetType(), _settings.ID, cancellationToken);
 
 	// Preserve optional-load failure reporting while cancellation keeps its normal control-flow contract.
 	private async Task<T> ReadOptionalLegacyAsync<T>(Func<Task<T>> read, CancellationToken cancellationToken)

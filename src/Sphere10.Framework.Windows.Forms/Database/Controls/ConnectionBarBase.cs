@@ -31,9 +31,7 @@ public partial class ConnectionBarBase : UserControlEx, IDatabaseConnectionProvi
 		return dac;
 	}
 
-	protected virtual IDAC GetDACInternal() {
-		throw new NotImplementedException();
-	}
+	protected virtual IDAC GetDACInternal() => throw new NotImplementedException();
 
 	public virtual async Task<Result> TestConnection() {
 		var result = Result.Default;
@@ -53,7 +51,7 @@ public partial class ConnectionBarBase : UserControlEx, IDatabaseConnectionProvi
 	[Browsable(false)]
 	public virtual string ConnectionString {
 		get { throw new NotImplementedException(); }
-		set { throw new NotImplementedException(); }
+		set => throw new NotImplementedException();
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

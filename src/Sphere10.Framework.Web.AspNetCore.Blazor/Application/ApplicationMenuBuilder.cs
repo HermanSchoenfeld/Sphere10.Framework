@@ -21,9 +21,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	private string _id;
 
 	/// <summary>Adds an action using optional inline web presentation.</summary>
-	public ApplicationMenuBuilder AddItem(string text, Action action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddItem(text, action, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationMenuBuilder AddItem(string text, Action action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddItem(text, action, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds an action and captures its configuration definition before graph snapshots.</summary>
 	public ApplicationMenuBuilder AddItem(string text, Action action, out IApplicationMenuItem registration,
@@ -38,9 +37,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds an action using optional inline web presentation.</summary>
-	public ApplicationMenuBuilder AddItem(string text, Func<IServiceProvider, CancellationToken, Task> action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddItem(text, action, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationMenuBuilder AddItem(string text, Func<IServiceProvider, CancellationToken, Task> action, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddItem(text, action, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds an action and captures its configuration definition before graph snapshots.</summary>
 	public ApplicationMenuBuilder AddItem(string text, Func<IServiceProvider, CancellationToken, Task> action, out IApplicationMenuItem registration,
@@ -67,9 +65,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds navigation without creating or changing a screen registration.</summary>
-	public ApplicationMenuBuilder AddItem(Type screenType, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddItem(screenType, text, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationMenuBuilder AddItem(Type screenType, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddItem(screenType, text, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds navigation and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(Type screenType, string text, out IApplicationMenuItem registration,
@@ -78,9 +75,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds navigation without creating or changing a screen registration.</summary>
-	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddItem(screen, text, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddItem(screen, text, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds navigation and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(ApplicationScreenRegistration screen, string text, out IApplicationMenuItem registration,
@@ -94,9 +90,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds navigation without creating or changing a screen registration.</summary>
-	public ApplicationMenuBuilder AddItem(SharedUI.ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddItem(definition, text, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationMenuBuilder AddItem(SharedUI.ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddItem(definition, text, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds navigation and captures its configured command definition.</summary>
 	public ApplicationMenuBuilder AddItem(SharedUI.ApplicationScreenDefinition definition, string text, out IApplicationMenuItem registration,
@@ -106,9 +101,8 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds an action group using optional inline web presentation.</summary>
-	public ApplicationMenuBuilder AddItem(string text, IApplicationMenuItem[] children, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null) {
-		return AddItem(text, children, out _, id, icon, isVisible, canExecute);
-	}
+	public ApplicationMenuBuilder AddItem(string text, IApplicationMenuItem[] children, string id = null, string icon = null, bool isVisible = true, Func<bool> canExecute = null)
+		=> AddItem(text, children, out _, id, icon, isVisible, canExecute);
 
 	/// <summary>Adds an action group and captures its independently configured definition.</summary>
 	public ApplicationMenuBuilder AddItem(string text, IApplicationMenuItem[] children, out IApplicationMenuItem registration,
@@ -146,14 +140,12 @@ public class ApplicationMenuBuilder : ApplicationMenuBuilderBase<ApplicationMenu
 	}
 
 	/// <summary>Adds a runtime-type command for the first matching registration in its owning block.</summary>
-	public ApplicationMenuBuilder AddShowScreenItem(Type screenType, string text = null, string id = null, string icon = null) {
-		return AddShowScreenItem(ApplicationScreenRegistration.ForType(screenType), text, id, icon);
-	}
+	public ApplicationMenuBuilder AddShowScreenItem(Type screenType, string text = null, string id = null, string icon = null)
+		=> AddShowScreenItem(ApplicationScreenRegistration.ForType(screenType), text, id, icon);
 
 	/// <summary>Adds presentation for an exact registration without creating or configuring a screen.</summary>
-	public ApplicationMenuBuilder AddShowScreenItem(ApplicationScreenRegistration registration, string text = null, string id = null, string icon = null) {
-		return AddItem(registration, text, id, icon);
-	}
+	public ApplicationMenuBuilder AddShowScreenItem(ApplicationScreenRegistration registration, string text = null, string id = null, string icon = null)
+		=> AddItem(registration, text, id, icon);
 
 	/// <summary>References an existing block-owned definition; the block resolves its graph-local copy.</summary>
 	public ApplicationMenuBuilder AddShowScreenItem(SharedUI.ApplicationScreenDefinition definition, string text = null, string id = null, string icon = null) {

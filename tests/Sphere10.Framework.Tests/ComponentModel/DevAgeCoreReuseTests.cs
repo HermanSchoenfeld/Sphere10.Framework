@@ -24,15 +24,12 @@ public class DevAgeCoreReuseTests {
 	[TestCase(typeof(int), 0)]
 	[TestCase(typeof(bool), false)]
 	[TestCase(typeof(int?), null)]
-	public void FrameworkActivationCreatesImplicitValueDefaults(Type type, object expected) {
-		Assert.That(Tools.Object.Create(type), Is.EqualTo(expected));
-	}
+	public void FrameworkActivationCreatesImplicitValueDefaults(Type type, object expected) => Assert.That(Tools.Object.Create(type), Is.EqualTo(expected));
 
 	/// <summary>Verifies framework activation invokes an explicit value type constructor.</summary>
 	[Test]
-	public void FrameworkActivationInvokesAnExplicitValueTypeConstructor() {
-		Assert.That(((InitializedValue)Tools.Object.Create(typeof(InitializedValue))).Number, Is.EqualTo(17));
-	}
+	public void FrameworkActivationInvokesAnExplicitValueTypeConstructor()
+		=> Assert.That(((InitializedValue)Tools.Object.Create(typeof(InitializedValue))).Number, Is.EqualTo(17));
 
 	/// <summary>Verifies validator defaults retain the first declared enum field.</summary>
 	[Test]
@@ -99,9 +96,8 @@ public class DevAgeCoreReuseTests {
 
 	/// <summary>Verifies empty comparer composition retains its argument failure.</summary>
 	[Test]
-	public void EmptyComparerCompositionRetainsItsArgumentFailure() {
-		Assert.That(() => CompositeComparer<int>.From(Array.Empty<IComparer<int>>()), Throws.ArgumentException.With.Property("ParamName").EqualTo("comparers"));
-	}
+	public void EmptyComparerCompositionRetainsItsArgumentFailure()
+		=> Assert.That(() => CompositeComparer<int>.From(Array.Empty<IComparer<int>>()), Throws.ArgumentException.With.Property("ParamName").EqualTo("comparers"));
 
 	/// <summary>Verifies number converters use the configured type culture and format.</summary>
 	[TestCase(typeof(double), "de-DE")]
@@ -171,9 +167,7 @@ public class DevAgeCoreReuseTests {
 	/// <summary>A value type whose explicit constructor distinguishes activation from zero initialization.</summary>
 	public struct InitializedValue {
 		/// <summary>Provides an explicit value-type constructor for activation checks.</summary>
-		public InitializedValue() {
-			Number = 17;
-		}
+		public InitializedValue() => Number = 17;
 
 		/// <summary>Gets the value supplied by the explicit constructor.</summary>
 		public int Number { get; }
@@ -215,9 +209,7 @@ public class DevAgeCoreReuseTests {
 	// A display value that exercises error-message conversion fallback.
 	private sealed class ThrowingText {
 		/// <inheritdoc />
-		public override string ToString() {
-			throw new InvalidOperationException("No display text.");
-		}
+		public override string ToString() => throw new InvalidOperationException("No display text.");
 	}
 
 	#endregion

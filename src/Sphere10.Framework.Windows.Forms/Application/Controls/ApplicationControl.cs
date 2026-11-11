@@ -27,40 +27,20 @@ public partial class ApplicationControl : UserControlEx {
 
 	/// <summary>The existing user and system settings services for the running application.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected ISettingsServices SettingsServices {
-		get {
-			return TryInitializeServiceCache() ? _settingsServices.Value : null;
-		}
-	}
+	protected ISettingsServices SettingsServices => TryInitializeServiceCache() ? _settingsServices.Value : null;
 
 	/// <summary>The existing interaction service for the running application.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected IUserInterfaceServices UserInterfaceServices {
-		get {
-			return TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
-		}
-	}
+	protected IUserInterfaceServices UserInterfaceServices => TryInitializeServiceCache() ? _userInterfaceServices.Value : null;
 
 	/// <summary>Whether this control has an actual settings instance attached before model initialization.</summary>
-	protected bool HasSettings {
-		get {
-			return _screenSettings != null;
-		}
-	}
+	protected bool HasSettings => _screenSettings != null;
 
 	// Keep the actual declared instance available to typed screen properties.
-	private protected SettingsObject DeclaredSettings {
-		get {
-			return _screenSettings;
-		}
-	}
+	private protected SettingsObject DeclaredSettings => _screenSettings;
 
 	// Create native grid/log bindings only when this screen has settings to bind.
-	private protected ApplicationScreenSettings SettingsBinding {
-		get {
-			return _screenSettings == null ? null : _settingsBinding ??= new ApplicationScreenSettings(_screenSettings);
-		}
-	}
+	private protected ApplicationScreenSettings SettingsBinding => _screenSettings == null ? null : _settingsBinding ??= new ApplicationScreenSettings(_screenSettings);
 
 	// Attach actual owner instances before the existing Load/CopyModelToUI lifecycle runs.
 	internal void AttachSettings(SettingsObject screenSettings, SettingsObject blockSettings, SettingsObject pluginSettings) {

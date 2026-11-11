@@ -54,68 +54,36 @@ public abstract class BoundListBase<T> : IBoundList {
 	/// <summary>
 	/// Gets the current edited object
 	/// </summary>
-	public object EditedObject {
-		get {
-			return _editItem;
-		}
-	}
+	public object EditedObject => _editItem;
 
 	public bool AllowEdit {
-		get {
-			return _allowEdit;
-		}
-		set {
-			_allowEdit = value;
-		}
+		get => _allowEdit;
+		set => _allowEdit = value;
 	}
 
 	public bool AllowNew {
-		get {
-			return _allowNew;
-		}
-		set {
-			_allowNew = value;
-		}
+		get => _allowNew;
+		set => _allowNew = value;
 	}
 
 	public bool AllowDelete {
-		get {
-			return _allowDelete;
-		}
-		set {
-			_allowDelete = value;
-		}
+		get => _allowDelete;
+		set => _allowDelete = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if the sort is enabled. Usually is enabled only if the IList is an instance of List class
 	/// </summary>
 	public bool AllowSort {
-		get {
-			return _allowSort;
-		}
-		set {
-			_allowSort = value;
-		}
+		get => _allowSort;
+		set => _allowSort = value;
 	}
 
-	public List<T> AddedItems {
-		get {
-			return _addedItems;
-		}
-	}
+	public List<T> AddedItems => _addedItems;
 
-	public List<T> RemovedItems {
-		get {
-			return _removedItems;
-		}
-	}
+	public List<T> RemovedItems => _removedItems;
 
-	public List<T> EditedItems {
-		get {
-			return _editedItems;
-		}
-	}
+	public List<T> EditedItems => _editedItems;
 
 	/// <summary>
 	/// Return the item at the specified position.
@@ -224,9 +192,7 @@ public abstract class BoundListBase<T> : IBoundList {
 		OnListChanged(new System.ComponentModel.ListChangedEventArgs(System.ComponentModel.ListChangedType.Reset, -1));
 	}
 
-	public object GetItemValue(int index, System.ComponentModel.PropertyDescriptor property) {
-		return property.GetValue(this[index]);
-	}
+	public object GetItemValue(int index, System.ComponentModel.PropertyDescriptor property) => property.GetValue(this[index]);
 
 	public void SetEditValue(System.ComponentModel.PropertyDescriptor property, object value) {
 		if (_editItem == null)
@@ -254,9 +220,7 @@ public abstract class BoundListBase<T> : IBoundList {
 		return null;
 	}
 
-	public System.ComponentModel.PropertyDescriptorCollection GetItemProperties() {
-		return System.ComponentModel.TypeDescriptor.GetProperties(typeof(T));
-	}
+	public System.ComponentModel.PropertyDescriptorCollection GetItemProperties() => System.ComponentModel.TypeDescriptor.GetProperties(typeof(T));
 
 	/// <summary>
 	/// Return the index of the specified item

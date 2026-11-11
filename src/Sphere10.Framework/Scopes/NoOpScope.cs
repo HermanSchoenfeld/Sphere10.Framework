@@ -19,9 +19,7 @@ public readonly struct NoOpScope : IScope {
 
 /// <summary>Retains a borrowed item without taking ownership of its finalization.</summary>
 public readonly struct NoOpScope<T> : IScope<T> {
-	public NoOpScope(T item) {
-		Item = item;
-	}
+	public NoOpScope(T item) => Item = item;
 
 	public T Item { get; }
 

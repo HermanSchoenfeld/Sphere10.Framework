@@ -21,15 +21,9 @@ public class NullValueModel : IValueModel {
 	}
 
 	// IModel Members
-	public object GetValue(CellContext cellContext) {
-		return null;
-	}
+	public object GetValue(CellContext cellContext) => null;
 
-	public void SetValue(CellContext cellContext, object value) {
-		throw new ApplicationException("This model doesn't support editing");
-	}
+	public void SetValue(CellContext cellContext, object value) => throw new ApplicationException("This model doesn't support editing");
 
-	public string GetDisplayText(CellContext cellContext) {
-		return null;
-	}
+	public string GetDisplayText(CellContext cellContext) => null;
 }

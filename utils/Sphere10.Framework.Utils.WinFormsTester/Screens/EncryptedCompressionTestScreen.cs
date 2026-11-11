@@ -32,9 +32,7 @@ public partial class EncryptedCompressionTestScreen : ApplicationScreen {
 	}
 
 	// Capture native drafts before starting the bounded worker operation.
-	private async void _testButton_Click(object sender, EventArgs e) {
-		await RunRoundTripsAsync();
-	}
+	private async void _testButton_Click(object sender, EventArgs e) => await RunRoundTripsAsync();
 
 	// Capture the path and session-only password before entering worker code.
 	private async Task RunRoundTripsAsync() {

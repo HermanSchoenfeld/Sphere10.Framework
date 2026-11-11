@@ -294,9 +294,7 @@ public class BufferSpanTests {
 		private readonly byte[] _source;
 		private int _additions;
 
-		public SourceMutatingBufferAdapter(byte[] source) {
-			_source = source;
-		}
+		public SourceMutatingBufferAdapter(byte[] source) => _source = source;
 
 		public override void Add(byte value) {
 			base.Add(value);

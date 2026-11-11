@@ -19,13 +19,9 @@ namespace Sphere10.Framework.Web.AspNetCore;
 public class PageParameterProcessor {
 
 
-	public PageParameterProcessor(HttpRequest request) {
-		Request = request;
-	}
+	public PageParameterProcessor(HttpRequest request) => Request = request;
 
-	public bool ContainsParameter(Enum parameter) {
-		return Request.Query.TryGetValue(DeterminePageParameterName(parameter), out var values) && values.Count > 0;
-	}
+	public bool ContainsParameter(Enum parameter) => Request.Query.TryGetValue(DeterminePageParameterName(parameter), out var values) && values.Count > 0;
 
 	public T GetParameter<T>(Enum parameter) {
 		if (!ContainsParameter(parameter)) {
@@ -42,9 +38,8 @@ public class PageParameterProcessor {
 
 	}
 
-	static private string GenerateInvalidParameterError(string paramName, string expected) {
-		return string.Format("Invalid page parameter '{0}' - expected {1}", paramName, expected);
-	}
+	static private string GenerateInvalidParameterError(string paramName, string expected)
+		=> string.Format("Invalid page parameter '{0}' - expected {1}", paramName, expected);
 
 
 	#region Auxilliary methods

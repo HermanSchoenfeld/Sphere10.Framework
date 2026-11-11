@@ -32,20 +32,12 @@ public class RowCancelEventArgs : RowEventArgs {
 	/// Row
 	/// </summary>
 	public bool Cancel {
-		get {
-			return _cancel;
-		}
-		set {
-			_cancel = value;
-		}
+		get => _cancel;
+		set => _cancel = value;
 	}
 
 	/// <summary>
 	/// Proposed row
 	/// </summary>
-	public int ProposedRow {
-		get {
-			return _proposedRow;
-		}
-	}
+	public int ProposedRow => _proposedRow;
 }

@@ -176,9 +176,7 @@ public static class IDACExtensions {
 		dac.ExecuteBatch(builder);
 	}
 
-	public static T ExecuteScalar<T>(this IDAC dac, string query) {
-		return Tools.Object.ChangeType<T>(dac.ExecuteScalar(query));
-	}
+	public static T ExecuteScalar<T>(this IDAC dac, string query) => Tools.Object.ChangeType<T>(dac.ExecuteScalar(query));
 
 	//private static void ApplyArtificialKeys(DBSchema schema) {
 	//    if (!string.IsNullOrEmpty(ArtificialKeys)) {

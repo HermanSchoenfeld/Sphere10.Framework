@@ -19,18 +19,10 @@ public abstract class SettingsProviderBase : ISettingsProvider {
 	public virtual event EventHandlerEx Changed;
 
 	/// <inheritdoc />
-	public virtual bool AutoSaveNewSettings {
-		get {
-			return false;
-		}
-	}
+	public virtual bool AutoSaveNewSettings => false;
 
 	/// <inheritdoc />
-	public virtual bool EncryptSettings {
-		get {
-			return true;
-		}
-	}
+	public virtual bool EncryptSettings => true;
 
 	/// <inheritdoc />
 	public virtual SettingsObject NewSetting(Type settingsObjectType, object id = null) {
@@ -124,7 +116,5 @@ public abstract class SettingsProviderBase : ISettingsProvider {
 	}
 
 	// Storage implementations retain their existing notification boundaries.
-	protected void FireChanged() {
-		Changed?.Invoke();
-	}
+	protected void FireChanged() => Changed?.Invoke();
 }

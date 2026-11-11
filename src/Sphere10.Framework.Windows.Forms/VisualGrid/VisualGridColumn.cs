@@ -15,9 +15,7 @@ namespace Sphere10.Framework.Windows.Forms;
 public class VisualGridColumn<TEntity> : IVisualGridColumn {
 	private string _preferenceKey;
 
-	public VisualGridColumn() {
-		DropDownItemsNullDisplayString = string.Empty;
-	}
+	public VisualGridColumn() => DropDownItemsNullDisplayString = string.Empty;
 
 	public string ColumnName { get; set; }
 
@@ -62,17 +60,11 @@ public class VisualGridColumn<TEntity> : IVisualGridColumn {
 		return PropertyValue((TEntity)row);
 	}
 
-	public void SetCellValue(object row, object @value) {
-		SetPropertyValue((TEntity)row, @value);
-	}
+	public void SetCellValue(object row, object @value) => SetPropertyValue((TEntity)row, @value);
 
-	public IEnumerable<object> GetDropDownItems(object row) {
-		return DropDownItems((TEntity)row);
-	}
+	public IEnumerable<object> GetDropDownItems(object row) => DropDownItems((TEntity)row);
 
-	public void ButtonPressed(object row) {
-		ButtonAction((TEntity)row);
-	}
+	public void ButtonPressed(object row) => ButtonAction((TEntity)row);
 
 	public Size GetButtonSize(object row) {
 		if (ButtonSize == null)

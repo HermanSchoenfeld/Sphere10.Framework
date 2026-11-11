@@ -27,7 +27,5 @@ public sealed class SafeFileHandle : SafeHandleZeroOrMinusOneIsInvalid {
 	}
 
 
-	override protected bool ReleaseHandle() {
-		return WinAPI.KERNEL32.CloseHandle(handle);
-	}
+	override protected bool ReleaseHandle() => WinAPI.KERNEL32.CloseHandle(handle);
 }

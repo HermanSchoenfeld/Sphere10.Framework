@@ -27,9 +27,7 @@ public class DataGridRows : RowsSimpleBase {
 	}
 
 	public new DataGrid Grid {
-		get {
-			return (DataGrid)base.Grid;
-		}
+		get => (DataGrid)base.Grid;
 	}
 
 	/// <summary>
@@ -46,21 +44,15 @@ public class DataGridRows : RowsSimpleBase {
 	}
 
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the header height (row 0)
 	/// </summary>
 	public int HeaderHeight {
-		get {
-			return _headerHeight;
-		}
+		get => _headerHeight;
 		set {
 			if (_headerHeight != value) {
 				_headerHeight = value;
@@ -73,9 +65,7 @@ public class DataGridRows : RowsSimpleBase {
 	/// Returns the grid index for the specified DataSource index
 	/// </summary>
 	/// <returns></returns>
-	public int DataSourceIndexToGridRowIndex(int dataSourceIndex) {
-		return dataSourceIndex + Grid.FixedRows;
-	}
+	public int DataSourceIndexToGridRowIndex(int dataSourceIndex) => dataSourceIndex + Grid.FixedRows;
 
 	/// <summary>
 	/// Returns the index for a given item row. -1 if not valid.
@@ -89,13 +79,9 @@ public class DataGridRows : RowsSimpleBase {
 		return -1;
 	}
 
-	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return _autoSizeMode;
-	}
+	public override AutoSizeMode GetAutoSizeMode(int row) => _autoSizeMode;
 
-	public void ResetRowHeigth() {
-		_rowHeights.Clear();
-	}
+	public void ResetRowHeigth() => _rowHeights.Clear();
 
 	public void RowDeleted(object row) {
 		if (row != null && _rowHeights.ContainsKey(row.GetHashCode()))

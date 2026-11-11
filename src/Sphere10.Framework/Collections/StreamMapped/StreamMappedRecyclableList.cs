@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework;
 
@@ -55,7 +56,7 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 
 	public void Load() => ObjectStream.Load();
 
-	public Task LoadAsync() => ObjectStream.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) => ObjectStream.LoadAsync(cancellationToken);
 
 	public override long IndexOfL(TItem item) {
 		using (ObjectStream.EnterAccessScope())

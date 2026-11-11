@@ -265,9 +265,7 @@ public class ByteArraySpanConsolidationTests {
 	private sealed class TransportProbeStream : Stream {
 		private readonly MemoryStream _stream;
 
-		public TransportProbeStream(byte[] bytes = null) {
-			_stream = bytes is null ? new MemoryStream() : new MemoryStream(bytes);
-		}
+		public TransportProbeStream(byte[] bytes = null) => _stream = bytes is null ? new MemoryStream() : new MemoryStream(bytes);
 
 		public int MaximumRead { get; set; } = int.MaxValue;
 		public long ReadableLength { get; set; } = long.MaxValue;

@@ -24,14 +24,10 @@ public class ValueModel : IValueModel {
 	///
 	/// </summary>
 	/// <param name="val">value to set for this model</param>
-	public ValueModel(object val) {
-		_value = val;
-	}
+	public ValueModel(object val) => _value = val;
 
 	// IModel Members
-	public object GetValue(CellContext cellContext) {
-		return _value;
-	}
+	public object GetValue(CellContext cellContext) => _value;
 
 	/// <summary>
 	///

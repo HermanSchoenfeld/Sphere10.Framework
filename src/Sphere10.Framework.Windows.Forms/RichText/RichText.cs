@@ -29,25 +29,17 @@ public class RichText : IComparable, IComparable<RichText> {
 	/// Constructor
 	/// </summary>
 	/// <param name="rtf"></param>
-	public RichText(string rtf) {
-		_rtf = rtf;
-	}
+	public RichText(string rtf) => _rtf = rtf;
 
 	/// <summary>
 	/// Copy constructor
 	/// </summary>
 	/// <param name="other"></param>
-	public RichText(RichText other) {
-		Rtf = other.Rtf;
-	}
+	public RichText(RichText other) => Rtf = other.Rtf;
 
 	public string Rtf {
-		get {
-			return _rtf;
-		}
-		set {
-			_rtf = value;
-		}
+		get => _rtf;
+		set => _rtf = value;
 	}
 
 	// IComparable Members
@@ -78,7 +70,5 @@ public class RichText : IComparable, IComparable<RichText> {
 	/// Return richtext as string
 	/// </summary>
 	/// <returns></returns>
-	public override string ToString() {
-		return Rtf;
-	}
+	public override string ToString() => Rtf;
 }

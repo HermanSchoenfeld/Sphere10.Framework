@@ -27,37 +27,17 @@ internal sealed class NativeToolStripMenu : IApplicationMenu {
 
 	public ToolStripMenuItem Item { get; }
 
-	internal NativeToolStripCommand Header {
-		get {
-			return _header;
-		}
-	}
+	internal NativeToolStripCommand Header => _header;
 
 	public IApplicationBlock Parent { get; set; }
 
-	public string Text {
-		get {
-			return Item.Text;
-		}
-	}
+	public string Text => Item.Text;
 
-	public bool ShowInMenuStrip {
-		get {
-			return Item.Available;
-		}
-	}
+	public bool ShowInMenuStrip => Item.Available;
 
-	public Image Image32x32 {
-		get {
-			return Item.Image;
-		}
-	}
+	public Image Image32x32 => Item.Image;
 
-	public IApplicationMenuItem[] Items {
-		get {
-			return _header.Children.Cast<IApplicationMenuItem>().ToArray();
-		}
-	}
+	public IApplicationMenuItem[] Items => _header.Children.Cast<IApplicationMenuItem>().ToArray();
 
 	// Native headers and their children retain the form's existing disposal owner.
 	public void Dispose() {

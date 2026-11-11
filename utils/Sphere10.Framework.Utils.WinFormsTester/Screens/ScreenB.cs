@@ -26,9 +26,7 @@ public partial class ScreenB : ApplicationScreen {
 	}
 
 	// Reset is an explicit user action; it does not replace this screen instance.
-	private void ResetClicked(object sender, EventArgs args) {
-		ResetLists();
-	}
+	private void ResetClicked(object sender, EventArgs args) => ResetLists();
 
 	// Preserve the original two independent list populations using useful sample names.
 	private void ResetLists() {

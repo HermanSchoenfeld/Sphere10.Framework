@@ -14,9 +14,7 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids.Cells;
 
 public class Cell : CellVirtual {
-	public Cell() {
-		Model.AddModel(new PingGridValueModel());
-	}
+	public Cell() => Model.AddModel(new PingGridValueModel());
 
 	public static ICellVirtual Create(Type type, bool editable) {
 		ICellVirtual cell;

@@ -40,39 +40,19 @@ public partial class PlanningGrid : UserControlEx {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public AppointmentCollection Appointments {
-		get {
-			return _appointments;
-		}
-	}
+	public AppointmentCollection Appointments => _appointments;
 
-	public DateTime DateTimeStart {
-		get {
-			return _dateTimeStart;
-		}
-	}
+	public DateTime DateTimeStart => _dateTimeStart;
 
-	public DateTime DateTimeEnd {
-		get {
-			return _dateTimeEnd;
-		}
-	}
+	public DateTime DateTimeEnd => _dateTimeEnd;
 
-	public int MinAppointmentLength {
-		get {
-			return _minAppointmentLength;
-		}
-	}
+	public int MinAppointmentLength => _minAppointmentLength;
 
 	/// <summary>
 	/// The grid used internally to display the planning (note that you usually don't need to access directly this class).
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid => _grid;
 
 	/// <summary>
 	/// Load the grid using the parameters specified
@@ -231,9 +211,7 @@ public partial class PlanningGrid : UserControlEx {
 	class AppointmentController : ControllerBase {
 		private PlanningGrid _planningGrid;
 
-		public AppointmentController(PlanningGrid planningGrid) {
-			_planningGrid = planningGrid;
-		}
+		public AppointmentController(PlanningGrid planningGrid) => _planningGrid = planningGrid;
 
 		public override void OnClick(CellContext sender, EventArgs args) {
 			base.OnClick(sender, args);

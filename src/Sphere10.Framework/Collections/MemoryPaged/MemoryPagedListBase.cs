@@ -201,9 +201,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 
 	#region Private methods
 
-	private void CheckNotDisposed() {
-		ObjectDisposedException.ThrowIf(Disposed, this);
-	}
+	private void CheckNotDisposed() => ObjectDisposedException.ThrowIf(Disposed, this);
 
 	#endregion
 

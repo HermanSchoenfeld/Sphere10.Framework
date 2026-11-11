@@ -62,17 +62,11 @@ public sealed class LogOutputSelectorPreferences : SettingsObject {
 	}
 
 	/// <summary>Transient output choices remain available in this session without becoming remembered configuration.</summary>
-	public bool ShouldSerializeHasConfiguration() {
-		return Configuration?.RememberAfterClose == true;
-	}
+	public bool ShouldSerializeHasConfiguration() => Configuration?.RememberAfterClose == true;
 
 	/// <summary>Persists the enabled choice only when remembering this output was explicitly requested.</summary>
-	public bool ShouldSerializeEnabled() {
-		return Configuration?.RememberAfterClose == true;
-	}
+	public bool ShouldSerializeEnabled() => Configuration?.RememberAfterClose == true;
 
 	/// <summary>Omits transient output paths and options from the owning root's persisted values.</summary>
-	public bool ShouldSerializeConfiguration() {
-		return Configuration?.RememberAfterClose == true;
-	}
+	public bool ShouldSerializeConfiguration() => Configuration?.RememberAfterClose == true;
 }

@@ -28,9 +28,7 @@ public class GraphicsMeasurement : IDisposable {
 	}
 
 	/// <summary>Borrows graphics without taking disposal ownership.</summary>
-	public GraphicsMeasurement(Graphics graphics) {
-		_graphics = graphics;
-	}
+	public GraphicsMeasurement(Graphics graphics) => _graphics = graphics;
 
 	/// <summary>Borrows graphics from an existing drawing cache.</summary>
 	public GraphicsMeasurement(GraphicsCache graphics)
@@ -38,11 +36,7 @@ public class GraphicsMeasurement : IDisposable {
 	}
 
 	/// <summary>Gets the graphics used for measurement.</summary>
-	public Graphics Graphics {
-		get {
-			return _graphics;
-		}
-	}
+	public Graphics Graphics => _graphics;
 
 	/// <summary>Releases control-created graphics; borrowed graphics retain their owner.</summary>
 	public void Dispose() {

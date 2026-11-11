@@ -34,22 +34,16 @@ public struct RoundedRectangle {
 	}
 
 	public Rectangle Rectangle {
-		get {
-			return _rectangle;
-		}
+		get => _rectangle;
 
-		set {
-			_rectangle = value;
-		}
+		set => _rectangle = value;
 	}
 
 	/// <summary>
 	/// The amount to round the rectangle, from 0 to 1. Set to 0 for square corners, or 1 for a fully rounded rectangle.
 	/// </summary>
 	public double RoundValue {
-		get {
-			return _roundValue;
-		}
+		get => _roundValue;
 
 		set {
 			if (double.IsNaN(value) || value < 0 || value > 1)

@@ -930,11 +930,7 @@ public class BlazorGridRenderingTests {
 		public Row Reference { get; set; }
 
 		/// <summary>The row's immutable display value.</summary>
-		public string ReadOnly {
-			get {
-				return "Fixed display";
-			}
-		}
+		public string ReadOnly => "Fixed display";
 	}
 
 	/// <summary>A row with no declared properties for legacy-column coverage.</summary>
@@ -965,18 +961,14 @@ public class BlazorGridRenderingTests {
 		}
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 	}
 
 	// Emulates browser storage and grid behavior creation.
 	private sealed class GridJsModule : IJSObjectReference {
 
 		/// <summary>Creates the grid js module with its fixture dependencies.</summary>
-		public GridJsModule() {
-			Initialize = () => Task.FromResult<IJSObjectReference>(Behavior);
-		}
+		public GridJsModule() => Initialize = () => Task.FromResult<IJSObjectReference>(Behavior);
 
 		// Browser records remain ordinary strings; the real settings provider owns their typed serialization.
 		public Dictionary<string, string> TypedRecords { get; } = new();
@@ -1020,9 +1012,7 @@ public class BlazorGridRenderingTests {
 		}
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 
 		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
 		public ValueTask DisposeAsync() {
@@ -1068,9 +1058,7 @@ public class BlazorGridRenderingTests {
 		}
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 
 		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
 		public ValueTask DisposeAsync() {
@@ -1085,7 +1073,7 @@ public class BlazorGridRenderingTests {
 		/// <summary>Creates the probe source with its fixture dependencies.</summary>
 		public ProbeSource(params T[] items)
 			: base(new ExtendedList<T>()) {
-			Future.Value.AddRange(items);
+			List.AddRange(items);
 		}
 
 		/// <summary>The entities accepted by create operations.</summary>
@@ -1110,18 +1098,10 @@ public class BlazorGridRenderingTests {
 		public DataSourceCapabilities AvailableCapabilities { get; set; } = DataSourceCapabilities.Default;
 
 		/// <summary>The source's current synchronous capability mask.</summary>
-		public override DataSourceCapabilities Capabilities {
-			get {
-				return AvailableCapabilities;
-			}
-		}
+		public override DataSourceCapabilities Capabilities => AvailableCapabilities;
 
 		/// <summary>The source's current asynchronous capability mask.</summary>
-		public override Task<DataSourceCapabilities> CapabilitiesAsync {
-			get {
-				return Task.FromResult(AvailableCapabilities);
-			}
-		}
+		public override Task<DataSourceCapabilities> CapabilitiesAsync => Task.FromResult(AvailableCapabilities);
 
 		/// <summary>Records a query before reading the requested rows.</summary>
 		public override async Task<DataSourceItems<T>> ReadRangeAsync(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
@@ -1146,14 +1126,11 @@ public class BlazorGridRenderingTests {
 		}
 
 		/// <summary>Returns the scenario's declared validation result.</summary>
-		public override Result ValidateRange(IEnumerable<(T entity, CrudAction action)> actions) {
-			return Result.Combine(actions.Select(action => Validation?.Invoke(action.entity, action.action) ?? Result.Success));
-		}
+		public override Result ValidateRange(IEnumerable<(T entity, CrudAction action)> actions)
+			=> Result.Combine(actions.Select(action => Validation?.Invoke(action.entity, action.action) ?? Result.Success));
 
 		/// <summary>Returns the scenario's next new-row draft.</summary>
-		protected override T NewMethod() {
-			return NewItem == null ? base.NewMethod() : NewItem();
-		}
+		protected override T NewMethod() => NewItem == null ? base.NewMethod() : NewItem();
 	}
 
 	#endregion

@@ -191,9 +191,7 @@ public class UniqueKeyStorageAttachment<TKey> : CompositeStorageAttachmentBase, 
 			return _btreeStore.Tree.ToList().GetEnumerator();
 	}
 
-	IEnumerator IEnumerable.GetEnumerator() {
-		return GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 	public long this[TKey key] {
 		get {

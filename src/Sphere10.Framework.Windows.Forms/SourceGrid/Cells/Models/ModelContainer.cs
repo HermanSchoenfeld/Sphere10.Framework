@@ -27,12 +27,8 @@ public class ModelContainer {
 	}
 
 	public virtual IValueModel ValueModel {
-		get {
-			return _valueModel;
-		}
-		set {
-			_valueModel = value;
-		}
+		get => _valueModel;
+		set => _valueModel = value;
 	}
 
 	/// <summary>
@@ -78,8 +74,6 @@ public class ModelContainer {
 	/// </summary>
 	public class ModelList : List<IModel> {
 		/// <summary>Returns the first model assignable to the requested type.</summary>
-		public IModel GetByType(Type searchType) {
-			return this.FirstOrDefault(model => searchType.IsAssignableFrom(model.GetType()));
-		}
+		public IModel GetByType(Type searchType) => this.FirstOrDefault(model => searchType.IsAssignableFrom(model.GetType()));
 	}
 }

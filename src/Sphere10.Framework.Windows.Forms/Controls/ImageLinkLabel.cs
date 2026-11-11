@@ -54,9 +54,7 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// </summary>
 	[DefaultValue(null)]
 	public Image Image {
-		get {
-			return _image;
-		}
+		get => _image;
 		set {
 			_image = value;
 			Invalidate(true);
@@ -68,12 +66,8 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// </summary>
 	[DefaultValue(null)]
 	public Image MouseOverImage {
-		get {
-			return _mouseOverImage;
-		}
-		set {
-			_mouseOverImage = value;
-		}
+		get => _mouseOverImage;
+		set => _mouseOverImage = value;
 	}
 
 	/// <summary>
@@ -81,19 +75,13 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// </summary>
 	[DefaultValue(null)]
 	public Image DisabledImage {
-		get {
-			return _disabledImage;
-		}
-		set {
-			_disabledImage = value;
-		}
+		get => _disabledImage;
+		set => _disabledImage = value;
 	}
 
 	[DefaultValue(System.Drawing.ContentAlignment.MiddleLeft)]
 	public System.Drawing.ContentAlignment ImageAlignment {
-		get {
-			return _imageAlignment;
-		}
+		get => _imageAlignment;
 		set {
 			_imageAlignment = value;
 			Invalidate(true);
@@ -101,9 +89,7 @@ public partial class ImageLinkLabel : UserControlEx {
 	}
 
 	public System.Drawing.ContentAlignment TextAlignment {
-		get {
-			return Tools.Drawing.StringFormatToContentAlignment(_stringFormat);
-		}
+		get => Tools.Drawing.StringFormatToContentAlignment(_stringFormat);
 		set {
 			Tools.Drawing.ApplyContentAlignmentToStringFormat(value, _stringFormat);
 			Invalidate(true);
@@ -112,9 +98,7 @@ public partial class ImageLinkLabel : UserControlEx {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public StringFormat StringFormat {
-		get {
-			return _stringFormat;
-		}
+		get => _stringFormat;
 		set {
 			_stringFormat = value;
 			Invalidate(true);
@@ -123,9 +107,7 @@ public partial class ImageLinkLabel : UserControlEx {
 
 	[DefaultValue(true)]
 	public bool AlignTextToImage {
-		get {
-			return _alignTextToImage;
-		}
+		get => _alignTextToImage;
 		set {
 			_alignTextToImage = value;
 			Invalidate(true);
@@ -134,9 +116,7 @@ public partial class ImageLinkLabel : UserControlEx {
 
 	[DefaultValue(false)]
 	public bool ImageStretch {
-		get {
-			return _imageStretch;
-		}
+		get => _imageStretch;
 		set {
 			_imageStretch = value;
 			Invalidate(true);
@@ -145,22 +125,14 @@ public partial class ImageLinkLabel : UserControlEx {
 
 	[DefaultValue(false)]
 	public bool EnableMouseEffect {
-		get {
-			return _enableMouseEffect;
-		}
-		set {
-			_enableMouseEffect = value;
-		}
+		get => _enableMouseEffect;
+		set => _enableMouseEffect = value;
 	}
 
 	[Browsable(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public override string Text {
-		get {
-			return base.Text;
-		}
-		set {
-			base.Text = value;
-		}
+		get => base.Text;
+		set => base.Text = value;
 	}
 
 	/// <summary>
@@ -168,9 +140,7 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// </summary>
 	[DefaultValue(0)]
 	public int BorderWidth {
-		get {
-			return _borderWidth;
-		}
+		get => _borderWidth;
 		set {
 			_borderWidth = value;
 			Invalidate(true);
@@ -182,9 +152,7 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// </summary>
 	[DefaultValue(0)]
 	public double BorderRound {
-		get {
-			return _borderRound;
-		}
+		get => _borderRound;
 		set {
 			_borderRound = value;
 			Invalidate(true);
@@ -195,9 +163,7 @@ public partial class ImageLinkLabel : UserControlEx {
 	/// Border color.
 	/// </summary>
 	public Color BorderColor {
-		get {
-			return _borderColor;
-		}
+		get => _borderColor;
 		set {
 			_borderColor = value;
 			Invalidate(true);
@@ -205,9 +171,7 @@ public partial class ImageLinkLabel : UserControlEx {
 	}
 
 	public new Color BackColor {
-		get {
-			return _backColor;
-		}
+		get => _backColor;
 		set {
 			_backColor = value;
 			Invalidate();

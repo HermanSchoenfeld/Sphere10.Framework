@@ -22,13 +22,9 @@ public class SqliteDAC : DACBase {
 	}
 
 
-	public override DBMSType DBMSType {
-		get { return DBMSType.Sqlite; }
-	}
+	public override DBMSType DBMSType => DBMSType.Sqlite;
 
-	public override IDbConnection CreateConnection() {
-		return new SQLiteConnection() { ConnectionString = ConnectionString };
-	}
+	public override IDbConnection CreateConnection() => new SQLiteConnection() { ConnectionString = ConnectionString };
 
 	protected override IEnumerable<string> GetBatches(ISQLBuilder sqlBuilder) {
 		return
@@ -37,9 +33,7 @@ public class SqliteDAC : DACBase {
 				.Select(statement => statement.SQL);
 	}
 
-	public override ISQLBuilder CreateSQLBuilder() {
-		return new SqliteSQLBuilder();
-	}
+	public override ISQLBuilder CreateSQLBuilder() => new SqliteSQLBuilder();
 
 	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
 		var mssqlConnection = connection as SQLiteConnection;
@@ -49,9 +43,7 @@ public class SqliteDAC : DACBase {
 	}
 
 
-	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-		throw new NotImplementedException();
-	}
+	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) => throw new NotImplementedException();
 
 	protected override DataTable GetDenormalizedTableDescriptions() {
 		DataTable result = new DataTable();
@@ -171,9 +163,7 @@ public class SqliteDAC : DACBase {
 		return 0;
 	}
 
-	protected override DataTable GetDenormalizedTriggerDescriptions() {
-		return this.ExecuteQuery(@"select name from sqlite_master where type = 'trigger'");
-	}
+	protected override DataTable GetDenormalizedTriggerDescriptions() => this.ExecuteQuery(@"select name from sqlite_master where type = 'trigger'");
 
 	public IEnumerable<sqlite_master_result> SelectSqliteMaster() {
 		return this.Select(

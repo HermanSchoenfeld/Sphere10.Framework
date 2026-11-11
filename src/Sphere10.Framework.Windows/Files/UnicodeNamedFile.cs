@@ -45,9 +45,7 @@ public class UnicodeNamedFile {
 		}
 	}
 
-	public static bool Exists(string filename) {
-		return UnicodePath.Exists(filename);
-	}
+	public static bool Exists(string filename) => UnicodePath.Exists(filename);
 
 
 }

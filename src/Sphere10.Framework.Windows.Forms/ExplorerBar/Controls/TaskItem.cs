@@ -190,7 +190,7 @@ public class TaskItem : Button {
 	[Browsable(false),
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Expando Expando {
-		get { return this.expando; }
+		get => this.expando;
 
 		set {
 			this.expando = value;
@@ -211,7 +211,7 @@ public class TaskItem : Button {
 	public new FlatStyle FlatStyle {
 		get { throw new NotSupportedException(); }
 
-		set { throw new NotSupportedException(); }
+		set => throw new NotSupportedException();
 	}
 
 	#endregion
@@ -226,7 +226,7 @@ public class TaskItem : Button {
 	 DefaultValue(false),
 	 Description("Determines whether the TaskItem should display a focus rectangle.")]
 	public new bool ShowFocusCues {
-		get { return this.showFocusCues; }
+		get => this.showFocusCues;
 
 		set {
 			if (this.showFocusCues != value) {
@@ -271,7 +271,7 @@ public class TaskItem : Button {
 			return base.Font;
 		}
 
-		set { base.Font = value; }
+		set => base.Font = value;
 	}
 
 	#endregion
@@ -282,7 +282,7 @@ public class TaskItem : Button {
 	/// Gets or sets the Image displayed by the TaskItem
 	/// </summary>
 	public new Image Image {
-		get { return base.Image; }
+		get => base.Image;
 
 		set {
 			// make sure the image is 16x16
@@ -315,7 +315,7 @@ public class TaskItem : Button {
 	/// display in the TaskItem
 	/// </summary>
 	public new ImageList ImageList {
-		get { return base.ImageList; }
+		get => base.ImageList;
 
 		set {
 			// make sure the images inside the ImageList are 16x16
@@ -357,7 +357,7 @@ public class TaskItem : Button {
 	/// Gets or sets the index value of the image displayed on the TaskItem
 	/// </summary>
 	public new int ImageIndex {
-		get { return base.ImageIndex; }
+		get => base.ImageIndex;
 
 		set {
 			base.ImageIndex = value;
@@ -524,9 +524,7 @@ public class TaskItem : Button {
 	/// This member overrides Button.DefaultSize
 	/// </summary>
 	[Browsable(false)]
-	protected override Size DefaultSize {
-		get { return new Size(162, 16); }
-	}
+	protected override Size DefaultSize => new Size(162, 16);
 
 	#endregion
 
@@ -536,7 +534,7 @@ public class TaskItem : Button {
 	/// Gets or sets whether the TaskItem is in a highlighted state.
 	/// </summary>
 	protected FocusStates FocusState {
-		get { return this.focusState; }
+		get => this.focusState;
 
 		set {
 			if (this.focusState != value) {
@@ -556,7 +554,7 @@ public class TaskItem : Button {
 	/// </summary>
 	[Browsable(false)]
 	protected internal ExplorerBarInfo SystemSettings {
-		get { return this.systemSettings; }
+		get => this.systemSettings;
 
 		set {
 			// make sure we have a new value
@@ -583,8 +581,8 @@ public class TaskItem : Button {
 	 DesignerSerializationVisibility(DesignerSerializationVisibility.Content),
 	 TypeConverter(typeof(TaskItemInfoConverter))]
 	public TaskItemInfo CustomSettings {
-		get { return this.customSettings; }
-		internal set { this.customSettings = value; }
+		get => this.customSettings;
+		internal set => this.customSettings = value;
 	}
 
 
@@ -605,7 +603,7 @@ public class TaskItem : Button {
 	/// Gets or sets the text associated with this TaskItem
 	/// </summary>
 	public override string Text {
-		get { return base.Text; }
+		get => base.Text;
 
 		set {
 			base.Text = value;
@@ -626,9 +624,7 @@ public class TaskItem : Button {
 	/// Gets or sets the alignment of the text on the TaskItem
 	/// </summary>
 	public override ContentAlignment TextAlign {
-		get {
-			return base.TextAlign;
-		}
+		get => base.TextAlign;
 
 		set {
 			if (value != base.TextAlign) {
@@ -665,9 +661,7 @@ public class TaskItem : Button {
 	/// <summary>
 	/// Gets the StringFormat object used to draw the TaskItem's text
 	/// </summary>
-	protected StringFormat StringFormat {
-		get { return this.stringFormat; }
-	}
+	protected StringFormat StringFormat => this.stringFormat;
 
 
 	/// <summary>
@@ -707,9 +701,7 @@ public class TaskItem : Button {
 	/// <summary>
 	/// Gets the Rectangle that the TaskItem's text is drawn in
 	/// </summary>
-	protected Rectangle TextRect {
-		get { return this.textRect; }
-	}
+	protected Rectangle TextRect => this.textRect;
 
 	#endregion
 

@@ -140,88 +140,46 @@ public class BlazorDefaultInterfaceDispatchTests {
 
 		public Disposables Disposables { get; } = new();
 
-		public bool IsInitialized {
-			get {
-				return false;
-			}
-		}
+		public bool IsInitialized => false;
 
-		public bool IsExiting {
-			get {
-				return false;
-			}
-		}
+		public bool IsExiting => false;
 
-		public bool HasExited {
-			get {
-				return false;
-			}
-		}
+		public bool HasExited => false;
 
-		public IBlazorPlugin[] LoadedPlugins {
-			get {
-				return new[] { _plugin };
-			}
-		}
+		public IBlazorPlugin[] LoadedPlugins => new[] { _plugin };
 
-		public BlazorUI.IApplicationBlock[] Blocks {
-			get {
-				return ScreenHost.Blocks;
-			}
-		}
+		public BlazorUI.IApplicationBlock[] Blocks => ScreenHost.Blocks;
 
 		public BlazorUI.IApplicationScreenHost ScreenHost { get; }
 
 		/// <summary>The actual registration-owned settings shared by both screen instances.</summary>
 		public ISettingsProvider Settings { get; }
 
-		public bool HasUnsavedChanges {
-			get {
-				return ScreenHost.HasUnsavedChanges;
-			}
-		}
+		public bool HasUnsavedChanges => ScreenHost.HasUnsavedChanges;
 
-		public BlazorUI.IApplicationMenu[] Menus {
-			get {
-				return Array.Empty<BlazorUI.IApplicationMenu>();
-			}
-		}
+		public BlazorUI.IApplicationMenu[] Menus => Array.Empty<BlazorUI.IApplicationMenu>();
 
-		public BlazorUI.IApplicationMenuItem[] ToolBarItems {
-			get {
-				return Array.Empty<BlazorUI.IApplicationMenuItem>();
-			}
-		}
+		public BlazorUI.IApplicationMenuItem[] ToolBarItems => Array.Empty<BlazorUI.IApplicationMenuItem>();
 
 		public void Initialize() {
 		}
 
-		public Task InitializeAsync(CancellationToken cancellationToken = default) {
-			return Task.CompletedTask;
-		}
+		public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-		public bool Exit(bool force = false, CancellationToken cancellationToken = default) {
-			return true;
-		}
+		public bool Exit(bool force = false, CancellationToken cancellationToken = default) => true;
 
-		public Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) {
-			return Task.FromResult(true);
-		}
+		public Task<bool> ExitAsync(bool force = false, CancellationToken cancellationToken = default) => Task.FromResult(true);
 
 		void SharedUI.IApplication.Finalize() {
 		}
 
-		public Task FinalizeAsync(CancellationToken cancellationToken = default) {
-			return Task.CompletedTask;
-		}
+		public Task FinalizeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
 		public void Dispose() {
 		}
 
 		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
-		public ValueTask DisposeAsync() {
-			return ValueTask.CompletedTask;
-		}
+		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}
 
 	private sealed class ProjectedPlugin : BlazorPlugin {
@@ -233,12 +191,8 @@ public class BlazorDefaultInterfaceDispatchTests {
 
 		/// <inheritdoc />
 		public override BlazorUI.IApplicationBlock[] Blocks {
-			get {
-				return new[] { CurrentBlock };
-			}
-			init {
-				base.Blocks = value;
-			}
+			get => new[] { CurrentBlock };
+			init => base.Blocks = value;
 		}
 	}
 

@@ -16,8 +16,9 @@ namespace Sphere10.Framework.Application.Tests;
 [TestFixture, Parallelizable(ParallelScope.Children)]
 public class SettingsObjectJsonSerializerTests {
 	/// <summary>Local backups restore full values and getter-only membership without publishing or replacing the actual root.</summary>
-	[Test]
-	public void LocalValuesRestoreCollectionsAndSuppressedValuesWhileRetainingRuntimeOwnership() {
+	[TestCase(false)]
+	[TestCase(true)]
+	public void LocalValuesRestoreCollectionsAndSuppressedValuesWhileRetainingRuntimeOwnership(bool toolsFacade) {
 		var provider = new ProhibitedSettingsProvider();
 		var values = new Preferences { ID = "owner", Provider = provider, Caption = "Accepted", HiddenValue = "Remembered" };
 		values.Items.Add("first");
@@ -26,7 +27,7 @@ public class SettingsObjectJsonSerializerTests {
 		var roles = values.Roles;
 		var notifications = 0;
 		values.OnChanged += () => notifications++;
-		var backup = SettingsObjectJsonSerializer.SerializeValues(values);
+		var backup = toolsFacade ? Tools.Application.SerializeSettingsValues(values) : SettingsObjectJsonSerializer.SerializeValues(values);
 
 		// Cancel must recover values omitted by ordinary persistence and preserve transient state.
 		values.Caption = "Unapplied";
@@ -36,7 +37,10 @@ public class SettingsObjectJsonSerializerTests {
 		values.Roles.Clear();
 		values.Roles.Add("writer", 2);
 		values.Runtime = "Current runtime";
-		SettingsObjectJsonSerializer.PopulateValues(backup, values);
+		if (toolsFacade)
+			Tools.Application.PopulateSettingsValues(backup, values);
+		else
+			SettingsObjectJsonSerializer.PopulateValues(backup, values);
 
 		Assert.That(values.Caption, Is.EqualTo("Accepted"));
 		Assert.That(values.HiddenValue, Is.EqualTo("Remembered"));
@@ -91,9 +95,7 @@ public class SettingsObjectJsonSerializerTests {
 		public string Runtime { get; set; }
 
 		/// <summary>Models a persistence-only omission rule used by control settings.</summary>
-		public bool ShouldSerializeHiddenValue() {
-			return false;
-		}
+		public bool ShouldSerializeHiddenValue() => false;
 	}
 
 	#endregion

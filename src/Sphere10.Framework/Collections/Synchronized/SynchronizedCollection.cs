@@ -68,13 +68,9 @@ public class SynchronizedCollection<TItem, TConcrete> : CollectionDecorator<TIte
 
 	public ReaderWriterLockSlim ThreadLock => _lock.ThreadLock;
 
-	public ReadScope EnterReadScope() {
-		return _lock.EnterReadScope();
-	}
+	public ReadScope EnterReadScope() => _lock.EnterReadScope();
 
-	public WriteScope EnterWriteScope() {
-		return _lock.EnterWriteScope();
-	}
+	public WriteScope EnterWriteScope() => _lock.EnterWriteScope();
 }
 
 

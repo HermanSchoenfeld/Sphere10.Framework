@@ -32,17 +32,9 @@ public abstract class RowsBase : IRows {
 		HiddenRowCoordinator = new StandardHiddenRowCoordinator(this);
 	}
 
-	public IHiddenRowCoordinator HiddenRowsCoordinator {
-		get {
-			return HiddenRowCoordinator;
-		}
-	}
+	public IHiddenRowCoordinator HiddenRowsCoordinator => HiddenRowCoordinator;
 
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	// Abstract methods
 	public abstract int Count {
@@ -102,9 +94,7 @@ public abstract class RowsBase : IRows {
 		return list[0];
 	}
 
-	public void AutoSize(bool useColumnWidth) {
-		AutoSize(useColumnWidth, 0, Grid.Columns.Count - 1);
-	}
+	public void AutoSize(bool useColumnWidth) => AutoSize(useColumnWidth, 0, Grid.Columns.Count - 1);
 
 	/// <summary>
 	/// Auto size all the rows with the max required height of all cells.
@@ -219,9 +209,7 @@ public abstract class RowsBase : IRows {
 	/// <summary>
 	/// Gets the rows index inside the specified display area.
 	/// </summary>
-	public List<int> RowsInsideRegion(int y, int height) {
-		return RowsInsideRegion(y, height, true, true);
-	}
+	public List<int> RowsInsideRegion(int y, int height) => RowsInsideRegion(y, height, true, true);
 
 	/// <summary>
 	/// Gets the rows index inside the specified display area.
@@ -275,13 +263,9 @@ public abstract class RowsBase : IRows {
 		return list;
 	}
 
-	public CellRange GetRange(int row) {
-		return new CellRange(row, 0, row, Grid.Columns.Count - 1);
-	}
+	public CellRange GetRange(int row) => new CellRange(row, 0, row, Grid.Columns.Count - 1);
 
-	public void SuspendLayout() {
-		_suspendedCount++;
-	}
+	public void SuspendLayout() => _suspendedCount++;
 
 	public void ResumeLayout() {
 		if (_suspendedCount > 0)
@@ -293,9 +277,7 @@ public abstract class RowsBase : IRows {
 	/// <summary>
 	/// Fired when the numbers of rows changed.
 	/// </summary>
-	public void RowsChanged() {
-		PerformLayout();
-	}
+	public void RowsChanged() => PerformLayout();
 
 	public void PerformLayout() {
 		if (_suspendedCount == 0)
@@ -374,17 +356,13 @@ public abstract class RowsBase : IRows {
 	/// Hide the specified row (set the height to 0)
 	/// </summary>
 	/// <param name="row"></param>
-	public void HideRow(int row) {
-		ShowRow(row, false);
-	}
+	public void HideRow(int row) => ShowRow(row, false);
 
 	/// <summary>
 	/// Show a row (set the height to default height)
 	/// </summary>
 	/// <param name="row"></param>
-	public void ShowRow(int row) {
-		ShowRow(row, true);
-	}
+	public void ShowRow(int row) => ShowRow(row, true);
 
 	/// <summary>
 	/// Makes row visible or hidden.
@@ -414,18 +392,14 @@ public abstract class RowsBase : IRows {
 	/// </summary>
 	/// <param name="row"></param>
 	/// <returns></returns>
-	public bool IsRowVisible(int row) {
-		return GetHeight(row) > 0;
-	}
+	public bool IsRowVisible(int row) => GetHeight(row) > 0;
 
 	protected virtual void OnRowVisibilityChanged(int rowIndex, bool becameVisible) {
 		if (RowVisibilityChanged != null)
 			RowVisibilityChanged(rowIndex, becameVisible);
 	}
 
-	protected virtual void OnLayout() {
-		Grid.OnCellsAreaChanged();
-	}
+	protected virtual void OnLayout() => Grid.OnCellsAreaChanged();
 
 	private int GetTopPositive(int relativeRow, int row) {
 		var top = 0;

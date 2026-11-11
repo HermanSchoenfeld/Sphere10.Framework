@@ -24,34 +24,20 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	/// <summary>
 	/// Initializes a new empty instance of the ControlsRepository class
 	/// </summary>
-	public ControlsRepository(Control parentControl) {
-		_parentControl = parentControl;
-	}
+	public ControlsRepository(Control parentControl) => _parentControl = parentControl;
 
 	/// <summary>
 	/// Gets a collection containing the keys in this ControlsRepository.
 	/// </summary>
-	public virtual ICollection<Guid> Keys {
-		get {
-			return _controls.Keys;
-		}
-	}
+	public virtual ICollection<Guid> Keys => _controls.Keys;
 
 	/// <summary>
 	/// Gets a collection containing the values in this ControlsRepository.
 	/// </summary>
-	public virtual ICollection<Control> Values {
-		get {
-			return _controls.Values;
-		}
-	}
+	public virtual ICollection<Control> Values => _controls.Values;
 
 	/// <summary>Gets the number of registered controls.</summary>
-	public int Count {
-		get {
-			return _controls.Count;
-		}
-	}
+	public int Count => _controls.Count;
 
 	/// <summary>
 	/// Gets or sets the Control associated with the given Guid
@@ -60,9 +46,7 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	/// The Guid whose value to get or set.
 	/// </param>
 	public virtual Control this[Guid key] {
-		get {
-			return _controls.TryGetValue(key, out var control) ? control : null;
-		}
+		get => _controls.TryGetValue(key, out var control) ? control : null;
 		/*			set
 					{
 						this.Dictionary[key] = value;
@@ -70,17 +54,9 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	}
 
 	// Read-only dictionary views retain the same live membership as the public typed collections.
-	IEnumerable<Guid> IReadOnlyDictionary<Guid, Control>.Keys {
-		get {
-			return Keys;
-		}
-	}
+	IEnumerable<Guid> IReadOnlyDictionary<Guid, Control>.Keys => Keys;
 
-	IEnumerable<Control> IReadOnlyDictionary<Guid, Control>.Values {
-		get {
-			return Values;
-		}
-	}
+	IEnumerable<Control> IReadOnlyDictionary<Guid, Control>.Values => Values;
 
 	/// <summary>
 	/// Adds an element with the specified key and value to this ControlsRepository.
@@ -129,9 +105,7 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	}
 
 	/// <summary>Clears registrations while leaving the borrowed controls attached to their parent.</summary>
-	public virtual void Clear() {
-		_controls.Clear();
-	}
+	public virtual void Clear() => _controls.Clear();
 
 	/// <summary>
 	/// Determines whether this ControlsRepository contains a specific key.
@@ -143,9 +117,7 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	/// true if this ControlsRepository contains an element with the specified key;
 	/// otherwise, false.
 	/// </returns>
-	public virtual bool ContainsKey(Guid key) {
-		return _controls.ContainsKey(key);
-	}
+	public virtual bool ContainsKey(Guid key) => _controls.ContainsKey(key);
 
 	/// <summary>
 	/// Determines whether this ControlsRepository contains a specific key.
@@ -157,22 +129,14 @@ public class ControlsRepository : IReadOnlyDictionary<Guid, Control> {
 	/// true if this ControlsRepository contains an element with the specified key;
 	/// otherwise, false.
 	/// </returns>
-	public virtual bool Contains(Guid key) {
-		return _controls.ContainsKey(key);
-	}
+	public virtual bool Contains(Guid key) => _controls.ContainsKey(key);
 
 	/// <summary>Reads a registered control without changing its native parent or ownership.</summary>
-	public bool TryGetValue(Guid key, out Control value) {
-		return _controls.TryGetValue(key, out value);
-	}
+	public bool TryGetValue(Guid key, out Control value) => _controls.TryGetValue(key, out value);
 
 	/// <summary>Enumerates registrations without exposing a writable dictionary interface.</summary>
-	public IEnumerator<KeyValuePair<Guid, Control>> GetEnumerator() {
-		return _controls.GetEnumerator();
-	}
+	public IEnumerator<KeyValuePair<Guid, Control>> GetEnumerator() => _controls.GetEnumerator();
 
 	// Legacy enumeration remains available through the typed registration cursor.
-	IEnumerator IEnumerable.GetEnumerator() {
-		return GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

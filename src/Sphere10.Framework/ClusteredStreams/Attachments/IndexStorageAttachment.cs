@@ -159,9 +159,7 @@ public class IndexStorageAttachment<TData> : CompositeStorageAttachmentBase, ILo
 			return _btreeLookupStore.BTreeLookup.EnumerateGroupings().ToList().GetEnumerator();
 	}
 
-	IEnumerator IEnumerable.GetEnumerator() {
-		return GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 	public override void Attach() {
 		base.Attach();

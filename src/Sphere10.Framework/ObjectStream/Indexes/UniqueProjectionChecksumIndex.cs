@@ -119,22 +119,16 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 		Store.Insert(index, checksum);
 	}
 
-	protected override void OnRemoved(long index) {
-		Store.Remove(index);
-	}
+	protected override void OnRemoved(long index) => Store.Remove(index);
 
-	protected override void OnReaped(long index) {
-		Store.Reap(index);
-	}
+	protected override void OnReaped(long index) => Store.Reap(index);
 
 	protected override void OnContainerClearing() {
 		Store.Clear();
 		Store.Detach();
 	}
 
-	protected override void OnContainerCleared() {
-		Store.Attach();
-	}
+	protected override void OnContainerCleared() => Store.Attach();
 
 	protected override bool IsNullValue((TKey, int) projection) => projection.Item1 is null;
 
@@ -152,18 +146,12 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 	private class ChecksumBasedDictionary : IReadOnlyDictionary<TKey, long> {
 		private readonly UniqueProjectionChecksumIndex<TItem, TKey> _parent;
 		
-		public ChecksumBasedDictionary(UniqueProjectionChecksumIndex<TItem, TKey> parent) {
-			_parent = parent;
-		}
+		public ChecksumBasedDictionary(UniqueProjectionChecksumIndex<TItem, TKey> parent) => _parent = parent;
 
 
-		public IEnumerator<KeyValuePair<TKey, long>> GetEnumerator() {
-			throw new NotImplementedException();
-		}
+		public IEnumerator<KeyValuePair<TKey, long>> GetEnumerator() => throw new NotImplementedException();
 
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		public int Count => _parent.Store.Count;
 

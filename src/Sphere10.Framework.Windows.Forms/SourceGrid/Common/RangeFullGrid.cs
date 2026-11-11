@@ -27,7 +27,5 @@ public class RangeFullGrid : IRangeLoader {
 	/// </summary>
 	/// <param name="grid"></param>
 	/// <returns></returns>
-	public CellRange GetRange(GridVirtual grid) {
-		return grid.CompleteRange;
-	}
+	public CellRange GetRange(GridVirtual grid) => grid.CompleteRange;
 }

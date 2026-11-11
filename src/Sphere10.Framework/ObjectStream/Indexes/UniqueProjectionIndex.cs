@@ -71,44 +71,32 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection violation occurs on projected key '{AttachmentID}' with value '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
-	protected override void OnAdded(TItem item, long index, TKey keyChecksum) {
-		Store.Add(index, keyChecksum);
-	}
+	protected override void OnAdded(TItem item, long index, TKey keyChecksum) => Store.Add(index, keyChecksum);
 
 	protected override void OnUpdating(TItem item, long index, TKey key) {
 		if (!IsUnique(key, index, out var clashIndex)) 
 			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection violation occurs on projected key '{AttachmentID}' with value '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
-	protected override void OnUpdated(TItem item, long index, TKey keyChecksum) {
-		Store.Update(index, keyChecksum);
-	}
+	protected override void OnUpdated(TItem item, long index, TKey keyChecksum) => Store.Update(index, keyChecksum);
 
 	protected override void OnInserting(TItem item, long index, TKey key) {
 		if (!IsUnique(key, index, out var clashIndex)) 
 			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection violation occurs on projected key '{AttachmentID}' with value '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
-	protected override void OnInserted(TItem item, long index, TKey keyChecksum) {
-		Store.Insert(index, keyChecksum);
-	}
+	protected override void OnInserted(TItem item, long index, TKey keyChecksum) => Store.Insert(index, keyChecksum);
 
-	protected override void OnRemoved(long index) {
-		Store.Remove(index);
-	}
+	protected override void OnRemoved(long index) => Store.Remove(index);
 
-	protected override void OnReaped(long index) {
-		Store.Reap(index);
-	}
+	protected override void OnReaped(long index) => Store.Reap(index);
 
 	protected override void OnContainerClearing() {
 		Store.Clear();
 		Store.Detach();
 	}
 
-	protected override void OnContainerCleared() {
-		Store.Attach();
-	}
+	protected override void OnContainerCleared() => Store.Attach();
 	
 	private bool IsUnique(TKey key, long? exemptIndex, out long clashIndex) {
 		if (Store.TryGetValue(key, out var foundIndex)) {

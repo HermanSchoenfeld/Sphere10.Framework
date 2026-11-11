@@ -197,14 +197,10 @@
 		base.Close();
 	}
  
-	private void NotifyStreamLengthChanged(long newSize) {
-		StreamLengthChanged?.Invoke(newSize);
-	}
+	private void NotifyStreamLengthChanged(long newSize) => StreamLengthChanged?.Invoke(newSize);
 
 	[Conditional("DIAGNOSTIC")]
-	private void DiagnosticVerifyClusters() {
-		ClusterDiagnostics.VerifyClusters(_streams);
-	}
+	private void DiagnosticVerifyClusters() => ClusterDiagnostics.VerifyClusters(_streams);
 
 	/// <summary>
 	/// Builds the internal stream pipeline used by <see cref="ClusteredStream"/> for a given descriptor.

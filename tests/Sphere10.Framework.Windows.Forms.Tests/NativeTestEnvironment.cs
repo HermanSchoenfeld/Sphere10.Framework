@@ -16,7 +16,5 @@ public sealed class NativeTestEnvironment {
 
 	/// <summary>Enables visual styles before any fixture registers native control classes.</summary>
 	[OneTimeSetUp]
-	public void InitializeNativeControls() {
-		System.Windows.Forms.Application.EnableVisualStyles();
-	}
+	public void InitializeNativeControls() => System.Windows.Forms.Application.EnableVisualStyles();
 }

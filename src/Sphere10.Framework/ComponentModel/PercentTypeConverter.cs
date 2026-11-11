@@ -36,9 +36,7 @@ public class PercentTypeConverter : TypeConverter {
 
 	// Constructors
 	/// <summary>Creates a converter with the selected parsing and display configuration.</summary>
-	public PercentTypeConverter(Type baseType) {
-		BaseType = baseType;
-	}
+	public PercentTypeConverter(Type baseType) => BaseType = baseType;
 
 	/// <summary>Creates a converter with the selected parsing and display configuration.</summary>
 	public PercentTypeConverter(Type baseType, string format)
@@ -48,19 +46,13 @@ public class PercentTypeConverter : TypeConverter {
 
 	/// <summary>Gets or sets the fallback converter used for operations outside the custom string conversion.</summary>
 	public TypeConverter BaseTypeConverter {
-		get {
-			return _baseTypeConverter;
-		}
-		set {
-			_baseTypeConverter = value;
-		}
+		get => _baseTypeConverter;
+		set => _baseTypeConverter = value;
 	}
 
 	/// <summary>Gets or sets the supported numeric type, including its nullable form where available.</summary>
 	public Type BaseType {
-		get {
-			return _baseType;
-		}
+		get => _baseType;
 		set {
 			if (value != typeof(double) && value != typeof(float) && value != typeof(decimal))
 				throw new ArgumentException("Type not supported", "BaseType");
@@ -73,34 +65,22 @@ public class PercentTypeConverter : TypeConverter {
 
 	/// <summary>Gets or sets the numeric display format.</summary>
 	public string Format {
-		get {
-			return _format;
-		}
-		set {
-			_format = value;
-		}
+		get => _format;
+		set => _format = value;
 	}
 
 	/// <summary>
 	/// If true and the user insert a string with no percent symbel the value is divided by 100, otherwise not.
 	/// </summary>
 	public bool ConsiderAllStringAsPercent {
-		get {
-			return _considerAllStringAsPercent;
-		}
-		set {
-			_considerAllStringAsPercent = value;
-		}
+		get => _considerAllStringAsPercent;
+		set => _considerAllStringAsPercent = value;
 	}
 
 	/// <summary>Gets or sets the numeric styles accepted while parsing strings.</summary>
 	public NumberStyles NumberStyles {
-		get {
-			return _numberStyles;
-		}
-		set {
-			_numberStyles = value;
-		}
+		get => _numberStyles;
+		set => _numberStyles = value;
 	}
 
 	/// <summary>Converts configured string values and delegates other inputs to the fallback converter.</summary>
@@ -158,39 +138,26 @@ public class PercentTypeConverter : TypeConverter {
 	}
 
 	/// <summary>Delegates instance creation from property values to the fallback converter.</summary>
-	public override object CreateInstance(ITypeDescriptorContext context, IDictionary propertyValues) {
-		return _baseTypeConverter.CreateInstance(context, propertyValues);
-	}
+	public override object CreateInstance(ITypeDescriptorContext context, IDictionary propertyValues) => _baseTypeConverter.CreateInstance(context, propertyValues);
 
 	/// <summary>Reports whether the fallback converter supports instance creation.</summary>
-	public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetCreateInstanceSupported(context);
-	}
+	public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) => _baseTypeConverter.GetCreateInstanceSupported(context);
 
 	/// <summary>Returns the properties supplied by the fallback converter.</summary>
-	public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
-		return _baseTypeConverter.GetProperties(context, value, attributes);
-	}
+	public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes)
+		=> _baseTypeConverter.GetProperties(context, value, attributes);
 
 	/// <summary>Reports whether the fallback converter supplies editable properties.</summary>
-	public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetPropertiesSupported(context);
-	}
+	public override bool GetPropertiesSupported(ITypeDescriptorContext context) => _baseTypeConverter.GetPropertiesSupported(context);
 
 	/// <summary>Returns the fallback converter's standard values.</summary>
-	public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValues(context);
-	}
+	public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) => _baseTypeConverter.GetStandardValues(context);
 
 	/// <summary>Reports whether the fallback converter restricts values to its standard list.</summary>
-	public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValuesExclusive(context);
-	}
+	public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => _baseTypeConverter.GetStandardValuesExclusive(context);
 
 	/// <summary>Reports whether the fallback converter supplies standard values.</summary>
-	public override bool GetStandardValuesSupported(ITypeDescriptorContext context) {
-		return _baseTypeConverter.GetStandardValuesSupported(context);
-	}
+	public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => _baseTypeConverter.GetStandardValuesSupported(context);
 
 	/// <summary>Parses the requested numeric value using the supplied styles and format provider.</summary>
 	public static double StringToDouble(string strVal, NumberStyles style, IFormatProvider provider, bool considerAllStringAsPercent) {
@@ -223,19 +190,13 @@ public class PercentTypeConverter : TypeConverter {
 	}
 
 	/// <summary>Formats the numeric value using the supplied format and provider.</summary>
-	public static string DoubleToString(double val, string format, IFormatProvider provider) {
-		return val.ToString(format, provider);
-	}
+	public static string DoubleToString(double val, string format, IFormatProvider provider) => val.ToString(format, provider);
 
 	/// <summary>Formats the numeric value using the supplied format and provider.</summary>
-	public static string FloatToString(float val, string format, IFormatProvider provider) {
-		return val.ToString(format, provider);
-	}
+	public static string FloatToString(float val, string format, IFormatProvider provider) => val.ToString(format, provider);
 
 	/// <summary>Formats the numeric value using the supplied format and provider.</summary>
-	public static string DecimalToString(decimal val, string format, IFormatProvider provider) {
-		return val.ToString(format, provider);
-	}
+	public static string DecimalToString(decimal val, string format, IFormatProvider provider) => val.ToString(format, provider);
 
 	// Conversion String Methods
 	/// <summary>Checks for the percent marker supplied by the requested format provider.</summary>

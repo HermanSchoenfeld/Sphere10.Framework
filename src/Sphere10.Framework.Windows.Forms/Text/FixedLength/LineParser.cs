@@ -23,34 +23,22 @@ public class LineParser {
 	/// <summary>
 	/// Constructor. Fill the Fields list fot specify the columns.
 	/// </summary>
-	public LineParser() {
-		_fields = new FieldList();
-	}
+	public LineParser() => _fields = new FieldList();
 
 	/// <summary>
 	/// Load the parser fields with the properties specified in the type. You must use the FieldAttribute and ParseFormatAttribute to specify additional informations like the field length.
 	/// </summary>
 	/// <param name="lineClassType"></param>
-	public LineParser(Type lineClassType) {
-		_fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
-	}
+	public LineParser(Type lineClassType) => _fields = Tools.FixedLength.ExtractFieldListFromType(lineClassType);
 
 	/// <summary>
 	/// Gets a collection of fields.
 	/// </summary>
-	public FieldList Fields {
-		get {
-			return _fields;
-		}
-	}
+	public FieldList Fields => _fields;
 
 	public char Separator {
-		get {
-			return _separator;
-		}
-		set {
-			_separator = value;
-		}
+		get => _separator;
+		set => _separator = value;
 	}
 
 	/// <summary>

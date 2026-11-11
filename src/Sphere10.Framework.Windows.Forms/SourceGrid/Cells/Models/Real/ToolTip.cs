@@ -15,12 +15,8 @@ public class ToolTip : IToolTipText {
 	private string _toolTipText;
 
 	public string ToolTipText {
-		get {
-			return _toolTipText;
-		}
-		set {
-			_toolTipText = value;
-		}
+		get => _toolTipText;
+		set => _toolTipText = value;
 	}
 
 	// IToolTipText Members

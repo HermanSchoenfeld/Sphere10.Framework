@@ -104,9 +104,7 @@ public class UnicodeNamedDirectory {
 		}
 	}
 
-	public static bool Exists(string directory) {
-		return UnicodePath.Exists(directory);
-	}
+	public static bool Exists(string directory) => UnicodePath.Exists(directory);
 
 
 }

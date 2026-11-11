@@ -32,9 +32,7 @@ public static class Sphere10FrameworkExtensions {
 
 	public static Image GetSplashImage(this Sphere10Framework framework) => _splashImage;
 
-	public static Sphere10FrameworkBuilder BuildWinFormsApplication(this Sphere10Framework framework) {
-		return framework.Build();
-	}
+	public static Sphere10FrameworkBuilder BuildWinFormsApplication(this Sphere10Framework framework) => framework.Build();
 
 	public static Sphere10FrameworkBuilder UseMainForm<TMainForm>(this Sphere10FrameworkBuilder builder, Action<TMainForm>? Configure = null)
 		where TMainForm : class, IMainForm {
@@ -215,7 +213,6 @@ public static class Sphere10FrameworkExtensions {
 				if (!pendingShutdown.IsCompleted)
 					Thread.Sleep(1);
 			}
-			// Sync-over-async pattern
 			Tools.Exceptions.ExecuteCapturingException(() => pendingShutdown.GetAwaiter().GetResult(), errors);
 			if (mainForm != null) {
 				mainForm.FormClosed -= Complete;

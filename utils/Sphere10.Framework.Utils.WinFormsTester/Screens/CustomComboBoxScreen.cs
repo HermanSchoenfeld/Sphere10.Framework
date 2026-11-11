@@ -58,32 +58,21 @@ public partial class CustomComboBoxScreen : ApplicationScreen {
 	}
 
 	// The native open/close events remain visible for each hosted control family.
-	private void CustomComboBox1_DropDown(object sender, EventArgs args) {
-		_label1.Text = "Catalog popup opened.";
-	}
+	private void CustomComboBox1_DropDown(object sender, EventArgs args) => _label1.Text = "Catalog popup opened.";
 
 	// Closing retains the table and its selection for the next opening.
-	private void CustomComboBox1_DropDownClosed(object sender, EventArgs args) {
-		_label1.Text = "Catalog popup closed. Current value: " + _customComboBox1.Text;
-	}
+	private void CustomComboBox1_DropDownClosed(object sender, EventArgs args) => _label1.Text = "Catalog popup closed. Current value: " + _customComboBox1.Text;
 
 	// The composite popup contains native options and a checked list.
-	private void CustomComboBox2_DropDown(object sender, EventArgs args) {
-		_label1.Text = "Composite editor opened.";
-	}
+	private void CustomComboBox2_DropDown(object sender, EventArgs args) => _label1.Text = "Composite editor opened.";
 
 	// The same composite instance survives closing.
-	private void CustomComboBox2_DropDownClosed(object sender, EventArgs args) {
-		_label1.Text = "Composite editor closed; its draft is retained.";
-	}
+	private void CustomComboBox2_DropDownClosed(object sender, EventArgs args) => _label1.Text = "Composite editor closed; its draft is retained.";
 
 	// Rich text retains its own native editing and selection behavior.
-	private void CustomComboBox3_DropDown(object sender, EventArgs args) {
-		_label1.Text = "Rich-text editor opened.";
-	}
+	private void CustomComboBox3_DropDown(object sender, EventArgs args) => _label1.Text = "Rich-text editor opened.";
 
 	// Summarize the result without copying a potentially large editor document into the combo caption.
-	private void CustomComboBox3_DropDownClosed(object sender, EventArgs args) {
-		_label1.Text = $"Rich-text editor closed · {_textPopup.TextLength:N0} characters retained.";
-	}
+	private void CustomComboBox3_DropDownClosed(object sender, EventArgs args)
+		=> _label1.Text = $"Rich-text editor closed · {_textPopup.TextLength:N0} characters retained.";
 }

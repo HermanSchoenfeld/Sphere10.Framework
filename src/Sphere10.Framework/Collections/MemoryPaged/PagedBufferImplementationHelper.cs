@@ -106,13 +106,9 @@ internal static class PagedBufferImplementationHelper {
 		return ReadRange(source, index, count).AsSpan();
 	}
 
-	public static void ExpandTo(IPagedListDelegate<byte> source, long totalBytes) {
-		throw new NotImplementedException();
-	}
+	public static void ExpandTo(IPagedListDelegate<byte> source, long totalBytes) => throw new NotImplementedException();
 
-	public static void ExpandBy(IPagedListDelegate<byte> source, long newBytes) {
-		throw new NotImplementedException();
-	}
+	public static void ExpandBy(IPagedListDelegate<byte> source, long newBytes) => throw new NotImplementedException();
 
 
 	public static ReadOnlySpan<byte> ReadPageSpan(MemoryPageBase<byte> page, MemoryBuffer memoryStore, long index, long count) {

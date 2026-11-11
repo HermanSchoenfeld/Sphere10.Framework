@@ -244,9 +244,7 @@ public class UserSettingsCircuitTests {
 		private readonly string _profile = Guid.NewGuid().ToString("N");
 
 		/// <inheritdoc />
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] arguments) {
-			return InvokeAsync<TValue>(identifier, CancellationToken.None, arguments);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] arguments) => InvokeAsync<TValue>(identifier, CancellationToken.None, arguments);
 
 		/// <inheritdoc />
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] arguments) {
@@ -278,9 +276,7 @@ public class UserSettingsCircuitTests {
 		}
 
 		/// <inheritdoc />
-		public ValueTask DisposeAsync() {
-			return ValueTask.CompletedTask;
-		}
+		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}
 
 	#endregion

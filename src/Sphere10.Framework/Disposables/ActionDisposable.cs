@@ -15,13 +15,9 @@ public sealed class ActionDisposable : SyncDisposable {
 	private readonly Action _endAction;
 
 	/// <summary>Retains the action to invoke during managed cleanup.</summary>
-	public ActionDisposable(Action endAction) {
-		_endAction = endAction;
-	}
+	public ActionDisposable(Action endAction) => _endAction = endAction;
 
 	/// <summary>Invokes the retained action when one was supplied.</summary>
-	protected override void DisposeInternal() {
-		_endAction?.Invoke();
-	}
+	protected override void DisposeInternal() => _endAction?.Invoke();
 }
 

@@ -105,9 +105,7 @@ public class AppointmentBookAppearanceTests {
 		});
 	}
 
-	private static SourceGrid.Cells.Views.Cell View(SourceGrid.Grid grid, int row, int column) {
-		return (SourceGrid.Cells.Views.Cell)grid[row, column].View;
-	}
+	private static SourceGrid.Cells.Views.Cell View(SourceGrid.Grid grid, int row, int column) => (SourceGrid.Cells.Views.Cell)grid[row, column].View;
 
 	// A schedule with the saturated colours, multi-line details and lengths that the sample generator produces.
 	private static MyAppointmentBookDataSource CreateSchedule() {

@@ -39,64 +39,40 @@ public class Container : ContainerBase {
 	}
 
 	public new IBorder Border {
-		get {
-			return base.Border;
-		}
+		get => base.Border;
 
-		set {
-			base.Border = value;
-		}
+		set => base.Border = value;
 	}
 
 	public new Padding Padding {
-		get {
-			return base.Padding;
-		}
+		get => base.Padding;
 
-		set {
-			base.Padding = value;
-		}
+		set => base.Padding = value;
 	}
 
 	public new IVisualElement Background {
-		get {
-			return base.Background;
-		}
+		get => base.Background;
 
-		set {
-			base.Background = value;
-		}
+		set => base.Background = value;
 	}
 
 	public new ElementsDrawMode ElementsDrawMode {
-		get {
-			return base.ElementsDrawMode;
-		}
+		get => base.ElementsDrawMode;
 
-		set {
-			base.ElementsDrawMode = value;
-		}
+		set => base.ElementsDrawMode = value;
 	}
 
 	public virtual VisualElementList Elements {
-		get {
-			return _elements;
-		}
+		get => _elements;
 
-		set {
-			_elements = value;
-		}
+		set => _elements = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Container(this);
-	}
+	public override object Clone() => new Container(this);
 
-	protected override IEnumerable<IVisualElement> GetElements() {
-		return Elements;
-	}
+	protected override IEnumerable<IVisualElement> GetElements() => Elements;
 }

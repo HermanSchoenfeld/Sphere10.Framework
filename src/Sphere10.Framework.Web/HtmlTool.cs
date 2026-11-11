@@ -163,17 +163,14 @@ public static partial class Html {
 		return val;
 	}
 
-	public static string RandomEntryAnimationClass(AnimationDelay delay = AnimationDelay.Seconds_1_0) {
-		return AnimationClass(Tools.Array.RandomElement(EntryAnimationClasses), delay);
-	}
+	public static string RandomEntryAnimationClass(AnimationDelay delay = AnimationDelay.Seconds_1_0)
+		=> AnimationClass(Tools.Array.RandomElement(EntryAnimationClasses), delay);
 
-	public static string RandomExitAnimationClass(AnimationDelay delay = AnimationDelay.Seconds_1_0) {
-		return AnimationClass(Tools.Array.RandomElement(ExitAnimationClasses), delay);
-	}
+	public static string RandomExitAnimationClass(AnimationDelay delay = AnimationDelay.Seconds_1_0)
+		=> AnimationClass(Tools.Array.RandomElement(ExitAnimationClasses), delay);
 
-	public static string AnimationClass(Animation animation, AnimationDelay delay = AnimationDelay.Seconds_1_0) {
-		return string.Format("animated {0} {1}", Tools.Enums.GetDescription(animation), Tools.Enums.GetDescription(delay));
-	}
+	public static string AnimationClass(Animation animation, AnimationDelay delay = AnimationDelay.Seconds_1_0)
+		=> string.Format("animated {0} {1}", Tools.Enums.GetDescription(animation), Tools.Enums.GetDescription(delay));
 
 }
 

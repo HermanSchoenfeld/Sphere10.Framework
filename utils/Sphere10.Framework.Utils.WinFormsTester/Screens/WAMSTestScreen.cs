@@ -34,11 +34,7 @@ public partial class WAMSTestScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override WamsScreenSettings ScreenSettings {
-		get {
-			return (WamsScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override WamsScreenSettings ScreenSettings => (WamsScreenSettings)base.ScreenSettings;
 
 	protected override void CopyModelToUI() {
 		base.CopyModelToUI();
@@ -76,25 +72,15 @@ public partial class WAMSTestScreen : ApplicationScreen {
 		MarkSettingsChanged();
 	}
 
-	private void PreferencesChanged(object sender, EventArgs e) {
-		CopyUIToModel();
-	}
+	private void PreferencesChanged(object sender, EventArgs e) => CopyUIToModel();
 
-	private async void _keyMatchingTestsButton_Click(object sender, EventArgs e) {
-		await RunAsync(0);
-	}
+	private async void _keyMatchingTestsButton_Click(object sender, EventArgs e) => await RunAsync(0);
 
-	private async void _verificationSpeedButton_Click(object sender, EventArgs e) {
-		await RunAsync(1);
-	}
+	private async void _verificationSpeedButton_Click(object sender, EventArgs e) => await RunAsync(1);
 
-	private async void _miscButton_Click(object sender, EventArgs e) {
-		await RunAsync(2);
-	}
+	private async void _miscButton_Click(object sender, EventArgs e) => await RunAsync(2);
 
-	private async void _miscButton2_Click(object sender, EventArgs e) {
-		await RunAsync(3);
-	}
+	private async void _miscButton2_Click(object sender, EventArgs e) => await RunAsync(3);
 
 	// Every operation captures configuration once and owns its cancellation source through completion.
 	private async Task RunAsync(int mode) {

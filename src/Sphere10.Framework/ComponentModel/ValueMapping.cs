@@ -47,12 +47,8 @@ public class ValueMapping {
 	/// A list of valid value. If null an error occurred. The index must match the index of ValueList and DisplayStringList
 	/// </summary>
 	public System.Collections.IList ValueList {
-		get {
-			return _valueList;
-		}
-		set {
-			_valueList = value;
-		}
+		get => _valueList;
+		set => _valueList = value;
 	}
 
 	/// <summary>
@@ -60,36 +56,24 @@ public class ValueMapping {
 	/// Usually this property can be used when performing special conversion of specific type. For example if you want to map an enum value or an id value to a string for a better user experience.
 	/// </summary>
 	public System.Collections.IList SpecialList {
-		get {
-			return _specialList;
-		}
-		set {
-			_specialList = value;
-		}
+		get => _specialList;
+		set => _specialList = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the type used for converting an object to a value and a value to an object when populating the SpecialList property. Default is System.String.
 	/// </summary>
 	public Type SpecialType {
-		get {
-			return _specialType;
-		}
-		set {
-			_specialType = value;
-		}
+		get => _specialType;
+		set => _specialType = value;
 	}
 
 	/// <summary>
 	/// A list of displayString. Can be null. The index must match the index of ValueList and DisplayStringList
 	/// </summary>
 	public System.Collections.IList DisplayStringList {
-		get {
-			return _displayStringList;
-		}
-		set {
-			_displayStringList = value;
-		}
+		get => _displayStringList;
+		set => _displayStringList = value;
 	}
 
 	/// <summary>
@@ -97,12 +81,8 @@ public class ValueMapping {
 	/// Default true.
 	/// </summary>
 	public bool ThrowErrorIfNotFound {
-		get {
-			return _throwErrorIfNotFound;
-		}
-		set {
-			_throwErrorIfNotFound = value;
-		}
+		get => _throwErrorIfNotFound;
+		set => _throwErrorIfNotFound = value;
 	}
 
 	/// <summary>

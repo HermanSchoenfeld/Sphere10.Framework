@@ -18,12 +18,8 @@ public class CheckBox : ICheckBox {
 	private string _caption = null;
 
 	public string Caption {
-		get {
-			return _caption;
-		}
-		set {
-			_caption = value;
-		}
+		get => _caption;
+		set => _caption = value;
 	}
 
 	// ICheckBox Members

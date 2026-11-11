@@ -10,7 +10,6 @@ using System;
 using System.Drawing;
 using System.Security.Permissions;
 using System.Windows.Forms;
-using static Sphere10.Framework.Windows.WinAPI.USER32;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -24,15 +23,9 @@ public sealed class GripRenderer {
 	}
 
 	// Properties
-	private static Bitmap GripBitmap {
-		get {
-			return _sGripBitmap;
-		}
-	}
+	private static Bitmap GripBitmap => _sGripBitmap;
 
-	public static void RefreshSystemColors(Graphics g, Size size) {
-		InitializeGripBitmap(g, size, true);
-	}
+	public static void RefreshSystemColors(Graphics g, Size size) => InitializeGripBitmap(g, size, true);
 
 	public static void Render(Graphics g, Point location, Size size, GripAlignMode mode) {
 		InitializeGripBitmap(g, size, false);
@@ -62,9 +55,7 @@ public sealed class GripRenderer {
 		g.DrawImage(GripBitmap, location.X, location.Y, size.Width, size.Height);
 	}
 
-	public static void Render(Graphics g, Point location, GripAlignMode mode) {
-		Render(g, location, new Size(16, 16), mode);
-	}
+	public static void Render(Graphics g, Point location, GripAlignMode mode) => Render(g, location, new Size(16, 16), mode);
 
 	// Methods
 	private static void InitializeGripBitmap(Graphics graphics, Size size, bool forceRefresh) {

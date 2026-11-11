@@ -19,9 +19,7 @@ public class ArrayColumns : ColumnInfoCollection {
 	}
 
 	public new ArrayGrid Grid {
-		get {
-			return (ArrayGrid)base.Grid;
-		}
+		get => (ArrayGrid)base.Grid;
 	}
 
 	/*public override int Count
@@ -40,8 +38,8 @@ public class ArrayColumns : ColumnInfoCollection {
 			private AutoSizeMode mAutoSizeMode = AutoSizeMode.Default;
 			public AutoSizeMode AutoSizeMode
 			{
-				get { return mAutoSizeMode; }
-				set { mAutoSizeMode = value; }
+				get => mAutoSizeMode;
+				set => mAutoSizeMode = value;
 			}
 
 			public override AutoSizeMode GetAutoSizeMode(int row)

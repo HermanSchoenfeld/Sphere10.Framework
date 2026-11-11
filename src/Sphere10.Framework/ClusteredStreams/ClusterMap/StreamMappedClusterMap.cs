@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -46,7 +47,7 @@ public sealed class StreamMappedClusterMap : ClusterMap, ILoadable {
 
 	public void Load() => _clusters.InternalCollection.Load();
 
-	public Task LoadAsync() => _clusters.InternalCollection.LoadAsync();
+	public Task LoadAsync(CancellationToken cancellationToken = default) => _clusters.InternalCollection.LoadAsync(cancellationToken);
 
 	public override int ClusterSize { get; }
 	

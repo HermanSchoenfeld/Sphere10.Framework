@@ -138,20 +138,12 @@ public class FixedLengthFieldListTests {
 
 		public string Name { get; }
 
-		public string ValueToString(object value) {
-			return value?.ToString();
-		}
+		public string ValueToString(object value) => value?.ToString();
 
-		public object StringToValue(string value) {
-			return value;
-		}
+		public object StringToValue(string value) => value;
 
-		public override bool Equals(object value) {
-			return value is EqualityField field && field.Name == Name;
-		}
+		public override bool Equals(object value) => value is EqualityField field && field.Name == Name;
 
-		public override int GetHashCode() {
-			return StringComparer.Ordinal.GetHashCode(Name);
-		}
+		public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Name);
 	}
 }

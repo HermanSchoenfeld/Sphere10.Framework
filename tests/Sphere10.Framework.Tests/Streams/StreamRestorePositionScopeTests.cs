@@ -139,9 +139,8 @@ public class StreamRestorePositionScopeTests {
 	}
 
 	[Test]
-	public void ConstructionRequiresAStream() {
-		Assert.That(() => new RestorePositionScope(null, 0), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("stream"));
-	}
+	public void ConstructionRequiresAStream()
+		=> Assert.That(() => new RestorePositionScope(null, 0), Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("stream"));
 
 	[Test]
 	public void EntryPointsRequireAStream([Values] bool seek) {

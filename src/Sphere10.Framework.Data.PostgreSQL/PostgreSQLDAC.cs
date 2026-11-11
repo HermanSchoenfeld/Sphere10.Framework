@@ -23,13 +23,9 @@ public class PostgreSQLDAC : DACBase {
 
 	public override DBMSType DBMSType => DBMSType.PostgreSQL;
 
-	public override IDbConnection CreateConnection() {
-		return new NpgsqlConnection(ConnectionString);
-	}
+	public override IDbConnection CreateConnection() => new NpgsqlConnection(ConnectionString);
 
-	public override ISQLBuilder CreateSQLBuilder() {
-		return new PostgreSQLBuilder();
-	}
+	public override ISQLBuilder CreateSQLBuilder() => new PostgreSQLBuilder();
 
 	public override void EnlistInSystemTransaction(IDbConnection connection, Transaction transaction) {
 		var npgsqlConnection = connection as NpgsqlConnection;
@@ -38,9 +34,7 @@ public class PostgreSQLDAC : DACBase {
 		npgsqlConnection.EnlistTransaction(transaction);
 	}
 
-	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) {
-		throw new NotImplementedException();
-	}
+	public override void BulkInsert(DataTable table, BulkInsertOptions bulkInsertOptions, TimeSpan timeout) => throw new NotImplementedException();
 
 	protected override DataTable GetDenormalizedTableDescriptions() {
 		return this.ExecuteQuery(
@@ -76,7 +70,6 @@ ORDER BY c.table_name, c.ordinal_position"
 		);
 	}
 
-	protected override DataTable GetDenormalizedTriggerDescriptions() {
-		return this.ExecuteQuery(@"SELECT trigger_name AS ""Name"" FROM information_schema.triggers WHERE trigger_schema = current_schema()");
-	}
+	protected override DataTable GetDenormalizedTriggerDescriptions()
+		=> this.ExecuteQuery(@"SELECT trigger_name AS ""Name"" FROM information_schema.triggers WHERE trigger_schema = current_schema()");
 }

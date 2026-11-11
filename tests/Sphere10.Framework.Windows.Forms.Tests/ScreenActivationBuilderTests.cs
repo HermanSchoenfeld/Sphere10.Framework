@@ -336,9 +336,7 @@ public class ScreenActivationBuilderTests {
 	}
 
 	public class ArgumentScreen : ApplicationScreen {
-		public ArgumentScreen(string argument) {
-			Argument = argument;
-		}
+		public ArgumentScreen(string argument) => Argument = argument;
 
 		public string Argument { get; }
 	}
@@ -347,16 +345,12 @@ public class ScreenActivationBuilderTests {
 	}
 
 	public class DefaultSingleScreen : ApplicationScreen {
-		public DefaultSingleScreen() {
-			ActivationMode = ScreenActivationMode.SingleInstance;
-		}
+		public DefaultSingleScreen() => ActivationMode = ScreenActivationMode.SingleInstance;
 	}
 
 	public class GuardScreen : ApplicationScreen {
 		public bool Veto;
 
-		protected override void OnHide(ref bool cancelHide) {
-			cancelHide = Veto;
-		}
+		protected override void OnHide(ref bool cancelHide) => cancelHide = Veto;
 	}
 }

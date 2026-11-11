@@ -35,9 +35,7 @@ public abstract class SynchronizedResource<TReadScope, TWriteScope> : Synchroniz
 	protected SynchronizedResource() : this(LockRecursionPolicy.SupportsRecursion) {
 	}
 
-	protected SynchronizedResource(LockRecursionPolicy policy) : base(policy) {
-		_scopeTracker = new Synchronized<ScopeTracker>(ScopeTracker.Zero);
-	}
+	protected SynchronizedResource(LockRecursionPolicy policy) : base(policy) => _scopeTracker = new Synchronized<ScopeTracker>(ScopeTracker.Zero);
 
 	protected abstract void InitializeReadScope();
 

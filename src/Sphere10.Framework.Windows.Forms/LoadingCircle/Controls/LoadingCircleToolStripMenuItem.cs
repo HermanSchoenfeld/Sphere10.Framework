@@ -24,24 +24,14 @@ public class LoadingCircleToolStripMenuItem : ToolStripControlHost {
 	/// <summary>The hosted indicator, including its editable geometry, style and colour.</summary>
 	[RefreshProperties(RefreshProperties.All)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-	public LoadingCircle LoadingCircleControl {
-		get {
-			return (LoadingCircle)Control;
-		}
-	}
+	public LoadingCircle LoadingCircleControl => (LoadingCircle)Control;
 
 	/// <summary>Uses the indicator's complete square preferred size for native tool-strip layout.</summary>
-	public override Size GetPreferredSize(Size constrainingSize) {
-		return LoadingCircleControl.GetPreferredSize(constrainingSize);
-	}
+	public override Size GetPreferredSize(Size constrainingSize) => LoadingCircleControl.GetPreferredSize(constrainingSize);
 
 	/// <summary>Retains the native host's standard control-event subscription behavior.</summary>
-	protected override void OnSubscribeControlEvents(Control control) {
-		base.OnSubscribeControlEvents(control);
-	}
+	protected override void OnSubscribeControlEvents(Control control) => base.OnSubscribeControlEvents(control);
 
 	/// <summary>Retains the native host's standard control-event cleanup behavior.</summary>
-	protected override void OnUnsubscribeControlEvents(Control control) {
-		base.OnUnsubscribeControlEvents(control);
-	}
+	protected override void OnUnsubscribeControlEvents(Control control) => base.OnUnsubscribeControlEvents(control);
 }

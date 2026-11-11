@@ -16,13 +16,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 public class CellContextEventArgs : EventArgs {
 	private CellContext _cellContext;
 
-	public CellContextEventArgs(CellContext cellContext) {
-		_cellContext = cellContext;
-	}
+	public CellContextEventArgs(CellContext cellContext) => _cellContext = cellContext;
 
-	public CellContext CellContext {
-		get {
-			return _cellContext;
-		}
-	}
+	public CellContext CellContext => _cellContext;
 }

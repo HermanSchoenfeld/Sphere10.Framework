@@ -27,21 +27,9 @@ public class AppointmentEventArgs : EventArgs {
 		_appointment = appointment;
 	}
 
-	public DateTime DateTimeStart {
-		get {
-			return _dateTimeStart;
-		}
-	}
+	public DateTime DateTimeStart => _dateTimeStart;
 
-	public DateTime DateTimeEnd {
-		get {
-			return _dateTimeEnd;
-		}
-	}
+	public DateTime DateTimeEnd => _dateTimeEnd;
 
-	public IAppointment Appointment {
-		get {
-			return _appointment;
-		}
-	}
+	public IAppointment Appointment => _appointment;
 }

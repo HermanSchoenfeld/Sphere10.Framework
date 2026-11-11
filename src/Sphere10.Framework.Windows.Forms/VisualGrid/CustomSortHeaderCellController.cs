@@ -15,9 +15,7 @@ namespace Sphere10.Framework.Windows.Forms;
 internal class CustomSortHeaderCellController : SourceGrid.Cells.Controllers.ControllerBase {
 	private readonly VisualGrid _visualGrid;
 
-	public CustomSortHeaderCellController(VisualGrid visualGrid) {
-		_visualGrid = visualGrid;
-	}
+	public CustomSortHeaderCellController(VisualGrid visualGrid) => _visualGrid = visualGrid;
 
 
 	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {

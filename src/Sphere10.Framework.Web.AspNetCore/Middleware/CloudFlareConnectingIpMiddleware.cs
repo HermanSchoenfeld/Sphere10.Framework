@@ -9,9 +9,7 @@ namespace Sphere10.Framework.Web.AspNetCore;
 public class CloudflareConnectingIPMiddleware {
 	private readonly RequestDelegate _next;
 
-	public CloudflareConnectingIPMiddleware(RequestDelegate next) {
-		_next = next;
-	}
+	public CloudflareConnectingIPMiddleware(RequestDelegate next) => _next = next;
 
 	public async Task Invoke(HttpContext context) {
 		if (context.Request.Headers.TryGetValue("cf-connecting-ip", out var values)) {

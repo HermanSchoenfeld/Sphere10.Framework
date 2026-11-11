@@ -39,7 +39,6 @@ public partial class DraggableControlsTestScreen : ApplicationScreen {
 	}
 
 	// Coordinates are local to the playground, not to the desktop.
-	private void UpdatePositions() {
-		_positionSummary.Text = $"First: {_pictureBox1.Left}, {_pictureBox1.Top} · Second: {_pictureBox2.Left}, {_pictureBox2.Top} · Third: {_pictureBox3.Left}, {_pictureBox3.Top}";
-	}
+	private void UpdatePositions()
+		=> _positionSummary.Text = $"First: {_pictureBox1.Left}, {_pictureBox1.Top} · Second: {_pictureBox2.Left}, {_pictureBox2.Top} · Third: {_pictureBox3.Left}, {_pictureBox3.Top}";
 }

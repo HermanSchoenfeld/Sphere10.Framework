@@ -74,9 +74,7 @@ public sealed class MockNodeService : INodeService, IDisposable {
 			Blocks.Count));
 	}
 
-	public void Dispose() {
-		EndpointManager.EndpointChanged -= EndpointManagerOnEndpointChanged;
-	}
+	public void Dispose() => EndpointManager.EndpointChanged -= EndpointManagerOnEndpointChanged;
 
 	private void EndpointManagerOnEndpointChanged(object sender, EventArgs e) {
 	}

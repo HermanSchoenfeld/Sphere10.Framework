@@ -34,7 +34,5 @@ public class Employee {
 	public string Notes { get; set; }
 	public Employee Manager { get; set; }
 
-	public override string ToString() {
-		return FirstName;
-	}
+	public override string ToString() => FirstName;
 }

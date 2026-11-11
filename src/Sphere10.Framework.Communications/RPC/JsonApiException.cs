@@ -18,9 +18,7 @@ public class JsonRpcException : System.Exception {
 
 	[JsonProperty("message")] public string text { get; set; }
 
-	public override string ToString() {
-		return $"RPC error {code}: {text}";
-	}
+	public override string ToString() => $"RPC error {code}: {text}";
 
 	public JsonRpcException(int _code, string _text) : base(_text) {
 		code = _code;

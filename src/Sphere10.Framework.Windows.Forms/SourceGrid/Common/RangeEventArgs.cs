@@ -16,13 +16,7 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid;
 public class RangeEventArgs : EventArgs {
 	private CellRange _gridRange;
 
-	public RangeEventArgs(CellRange gridRange) {
-		_gridRange = gridRange;
-	}
+	public RangeEventArgs(CellRange gridRange) => _gridRange = gridRange;
 
-	public CellRange Range {
-		get {
-			return _gridRange;
-		}
-	}
+	public CellRange Range => _gridRange;
 }

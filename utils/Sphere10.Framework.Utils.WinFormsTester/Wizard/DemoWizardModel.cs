@@ -21,9 +21,5 @@ public class DemoWizardModel {
 	}
 
 	/// <summary>Creates an independent unanswered session for each wizard invocation.</summary>
-	public static DemoWizardModel Default {
-		get {
-			return new DemoWizardModel { Name = string.Empty };
-		}
-	}
+	public static DemoWizardModel Default => new DemoWizardModel { Name = string.Empty };
 }

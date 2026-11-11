@@ -25,8 +25,6 @@ public class GridRow : RowInfo {
 				return cell;
 			return null;
 		}
-		set {
-			_cells[column] = value;
-		}
+		set => _cells[column] = value;
 	}
 }

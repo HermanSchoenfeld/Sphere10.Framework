@@ -20,11 +20,7 @@ public abstract class ApplicationMenuItemBuilderBase {
 
 	protected ApplicationScreenRegistration ScreenRegistration { get; private set; }
 
-	protected Type ScreenType {
-		get {
-			return ScreenRegistration?.ScreenType;
-		}
-	}
+	protected Type ScreenType => ScreenRegistration?.ScreenType;
 
 	protected Action Action { get; private set; }
 
@@ -85,13 +81,9 @@ public abstract class ApplicationMenuItemBuilderBase {
 		Guard.Ensure(ScreenRegistration != null || !string.IsNullOrWhiteSpace(Text), "Menu item text is required.");
 	}
 
-	protected virtual void ValidateText(string text) {
-		Guard.ArgumentNotNull(text, nameof(text));
-	}
+	protected virtual void ValidateText(string text) => Guard.ArgumentNotNull(text, nameof(text));
 
-	protected virtual void ValidateScreenType(Type screenType) {
-		ApplicationHelper.ValidateScreenType(screenType);
-	}
+	protected virtual void ValidateScreenType(Type screenType) => ApplicationHelper.ValidateScreenType(screenType);
 }
 
 /// <summary>Shared fluent command presentation, registered-screen references and runtime action callbacks.</summary>

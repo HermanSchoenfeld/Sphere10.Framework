@@ -63,14 +63,10 @@ public abstract class SettingsObject : ObjectWithDefaultValues {
 	}
 
 	/// <summary>Checks settings-specific constraints before a caller accepts an edit.</summary>
-	public virtual Result Validate() {
-		return Result.Success;
-	}
+	public virtual Result Validate() => Result.Success;
 
 	// Publish changes on the actual shared settings instance after its provider accepts the save.
-	internal void NotifyChanged() {
-		OnChanged?.Invoke();
-	}
+	internal void NotifyChanged() => OnChanged?.Invoke();
 
 	// Settings values must be attached to their persistence owner before storage operations.
 	private void CheckProvider() {

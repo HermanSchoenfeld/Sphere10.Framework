@@ -684,9 +684,8 @@ public class ApplicationScreenHostTests {
 	}
 
 	private class TestHost : ApplicationScreenHost<TestApplicationBlock, ProbeScreen> {
-		public TestHost(IServiceProvider provider, params TestApplicationBlock[] blocks) : base(blocks, provider) {
-			Definitions = ApplicationHelper.GetScreenDefinitions(blocks);
-		}
+		public TestHost(IServiceProvider provider, params TestApplicationBlock[] blocks) : base(blocks, provider)
+			=> Definitions = ApplicationHelper.GetScreenDefinitions(blocks);
 
 		public ApplicationScreenDefinition[] Definitions { get; }
 
@@ -700,9 +699,8 @@ public class ApplicationScreenHostTests {
 		public ScreenKind KindOf(ProbeScreen screen) => GetScreenKind(screen);
 
 		// Run the platform's preparation only for a close accepted by every screen guard.
-		protected override Task OnClosingScreensAsync(ProbeScreen[] screens, CancellationToken cancellationToken) {
-			return ClosingScreens?.Invoke(screens, cancellationToken) ?? Task.CompletedTask;
-		}
+		protected override Task OnClosingScreensAsync(ProbeScreen[] screens, CancellationToken cancellationToken)
+			=> ClosingScreens?.Invoke(screens, cancellationToken) ?? Task.CompletedTask;
 
 		protected override ProbeScreen CreateScreen(TestApplicationBlock block, ApplicationScreenDefinition definition) {
 			if (Creation != null)

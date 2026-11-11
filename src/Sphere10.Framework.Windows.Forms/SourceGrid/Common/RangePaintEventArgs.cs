@@ -24,27 +24,15 @@ public class RangePaintEventArgs : EventArgs {
 		_drawingRange = drawingRange;
 	}
 
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	public Sphere10.Framework.Drawing.GraphicsCache GraphicsCache {
-		get {
-			return _graphicsCache;
-		}
-		set {
-			_graphicsCache = value;
-		}
+		get => _graphicsCache;
+		set => _graphicsCache = value;
 	}
 
 	public CellRange DrawingRange {
-		get {
-			return _drawingRange;
-		}
-		set {
-			_drawingRange = value;
-		}
+		get => _drawingRange;
+		set => _drawingRange = value;
 	}
 }

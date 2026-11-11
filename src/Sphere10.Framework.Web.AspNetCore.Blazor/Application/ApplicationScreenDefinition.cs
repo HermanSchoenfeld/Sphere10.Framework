@@ -45,7 +45,6 @@ public sealed class ApplicationScreenDefinition : SharedUI.ApplicationScreenDefi
 	public Type SettingsEditor { get; }
 
 	/// <summary>Copies configuration without sharing the snapshot's reverse command membership.</summary>
-	public override SharedUI.ApplicationScreenDefinition Clone() {
-		return new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Parameters, Activator, Settings, SettingsEditor);
-	}
+	public override SharedUI.ApplicationScreenDefinition Clone()
+		=> new ApplicationScreenDefinition(ScreenType, Title, ActivationMode, ScreenKind, Registration, StableKey, Parameters, Activator, Settings, SettingsEditor);
 }

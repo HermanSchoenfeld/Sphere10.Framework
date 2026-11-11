@@ -33,9 +33,7 @@ public class Header : Cell {
 	}
 
 	public bool ResizeEnabled {
-		get {
-			return FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeBoth;
-		}
+		get => FindController(typeof(Controllers.Resizable)) == Controllers.Resizable.ResizeBoth;
 		set {
 			if (value == ResizeEnabled)
 				return;

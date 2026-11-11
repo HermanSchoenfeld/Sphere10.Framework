@@ -12,7 +12,5 @@ using System;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.DataGrid;
 
 public class Link : Cells.Virtual.Link {
-	public Link() {
-		Model.AddModel(new DataGridValueModel());
-	}
+	public Link() => Model.AddModel(new DataGridValueModel());
 }

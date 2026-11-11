@@ -37,9 +37,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	}
 
 	protected IFuture<Icon> ApplicationIcon { get; }
-	protected override void OnLoad(EventArgs e) {
-		base.OnLoad(e);
-	}
+	protected override void OnLoad(EventArgs e) => base.OnLoad(e);
 
 	protected override void InitializeUIPrimingData() {
 		base.InitializeUIPrimingData();
@@ -54,7 +52,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public new string CompanyName {
-		get { return _companyName; }
+		get => _companyName;
 		set {
 			_companyName = value;
 			if (Tools.Runtime.IsDesignMode) {
@@ -70,7 +68,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public string Version {
-		get { return _version; }
+		get => _version;
 		set {
 			_version = value;
 			if (Tools.Runtime.IsDesignMode) {
@@ -86,7 +84,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public string Title {
-		get { return _title; }
+		get => _title;
 		set {
 			_title = value;
 			if (Tools.Runtime.IsDesignMode) {
@@ -102,7 +100,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public Color FromColor {
-		get { return _gradientPanel.FromColor; }
+		get => _gradientPanel.FromColor;
 		set {
 			_gradientPanel.FromColor = value;
 			Invalidate();
@@ -112,7 +110,7 @@ public partial class ApplicationBanner : ApplicationControl {
 	[Category("Appearance")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public Color ToColor {
-		get { return _gradientPanel.ToColor; }
+		get => _gradientPanel.ToColor;
 		set {
 			_gradientPanel.ToColor = value;
 			Invalidate();

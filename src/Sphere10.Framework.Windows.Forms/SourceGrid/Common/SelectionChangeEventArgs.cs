@@ -22,15 +22,7 @@ public class SelectionChangeEventArgs : EventArgs {
 		_range = range;
 	}
 
-	public CellRange Range {
-		get {
-			return _range;
-		}
-	}
+	public CellRange Range => _range;
 
-	public SelectionChangeEventType EventType {
-		get {
-			return _type;
-		}
-	}
+	public SelectionChangeEventType EventType => _type;
 }

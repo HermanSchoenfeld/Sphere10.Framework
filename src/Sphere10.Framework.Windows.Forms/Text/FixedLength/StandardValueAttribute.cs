@@ -23,16 +23,10 @@ public class StandardValueAttribute : System.Attribute {
 	/// Construcotr
 	/// </summary>
 	/// <param name="standardValue">Required value</param>
-	public StandardValueAttribute(object standardValue) {
-		_standardValue = standardValue;
-	}
+	public StandardValueAttribute(object standardValue) => _standardValue = standardValue;
 
 	public object StandardValue {
-		get {
-			return _standardValue;
-		}
-		set {
-			_standardValue = value;
-		}
+		get => _standardValue;
+		set => _standardValue = value;
 	}
 }

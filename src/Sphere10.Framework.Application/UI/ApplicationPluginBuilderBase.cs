@@ -88,9 +88,7 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin> : App
 		return (TSelf)(object)this;
 	}
 
-	public TSelf AddBlock(TBlock block) {
-		return AddBlock(block, out _);
-	}
+	public TSelf AddBlock(TBlock block) => AddBlock(block, out _);
 
 	/// <summary>Adds an existing block definition and captures that configuration product.</summary>
 	public TSelf AddBlock(TBlock block, out TBlock registration) {
@@ -149,9 +147,7 @@ public abstract class ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder,
 	where TBlock : class, IApplicationBlock
 	where TPlugin : IApplicationPlugin
 	where TBlockBuilder : IApplicationUIBuilder<TBlock>, new() {
-	public TSelf AddBlock(Action<TBlockBuilder> configure) {
-		return AddBlock(configure, out _);
-	}
+	public TSelf AddBlock(Action<TBlockBuilder> configure) => AddBlock(configure, out _);
 
 	/// <summary>Configures one child block, captures its definition and returns this parent.</summary>
 	public TSelf AddBlock(Action<TBlockBuilder> configure, out TBlock registration) {

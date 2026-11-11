@@ -20,9 +20,7 @@ public class ApplicationMenu : IApplicationMenu {
 		: this(true) {
 	}
 
-	public ApplicationMenu(bool ownsItems) {
-		_definition = new MenuMetadata(this, ownsItems);
-	}
+	public ApplicationMenu(bool ownsItems) => _definition = new MenuMetadata(this, ownsItems);
 
 	public IApplicationBlock Parent {
 		get => (IApplicationBlock)_definition.Parent;

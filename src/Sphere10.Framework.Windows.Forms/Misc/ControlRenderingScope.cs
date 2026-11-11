@@ -15,7 +15,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using static Sphere10.Framework.Windows.WinAPI;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -57,9 +56,7 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 	}
 
 	// Native controls remain on their creating UI thread, including asynchronous disposal.
-	protected override void DisposeInternal() {
-		OnScopeEnd();
-	}
+	protected override void DisposeInternal() => OnScopeEnd();
 
 	// Release rendering suppression and complete the control tree's deferred layout.
 	protected virtual void OnScopeEnd() {
@@ -123,21 +120,11 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 		private IntPtr _suppressedHandle;
 		private bool _layoutResumed;
 
-		public RenderingState(Control control) {
-			_control = control;
-		}
+		public RenderingState(Control control) => _control = control;
 
-		public Control Control {
-			get {
-				return _control;
-			}
-		}
+		public Control Control => _control;
 
-		public bool IsActive {
-			get {
-				return _scopes.Count > 0;
-			}
-		}
+		public bool IsActive => _scopes.Count > 0;
 
 		public bool Enter(ControlRenderingScope scope) {
 			if (!_scopes.Add(scope))
@@ -184,8 +171,8 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 				return;
 			if (!tabs.Visible || IsSuppressed(tabs) || _visibleProperty.ShouldSerializeValue(page))
 				return;
-			var native = new RECT { Left = 0, Top = 0, Right = tabs.ClientSize.Width, Bottom = tabs.ClientSize.Height };
-			USER32.SendMessage(new HandleRef(tabs, tabs.Handle), COMCTL32.TCM_ADJUSTRECT, IntPtr.Zero, ref native);
+			var native = new WinAPI.RECT { Left = 0, Top = 0, Right = tabs.ClientSize.Width, Bottom = tabs.ClientSize.Height };
+			WinAPI.USER32.SendMessage(new HandleRef(tabs, tabs.Handle), WinAPI.COMCTL32.TCM_ADJUSTRECT, IntPtr.Zero, ref native);
 			if (tabs.DisplayRectangle == Rectangle.FromLTRB(native.Left, native.Top, native.Right, native.Bottom))
 				return;
 			// WinForms can cache DisplayRectangle in OnResize before comctl32 handles WM_SIZE. Reapply the existing
@@ -205,7 +192,7 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 				Tools.Windows.Win32.SendMessage(new HandleRef(_control, _suppressedHandle), SetRedrawMessage, 1, 0);
 				// WM_SETREDRAW enables WS_VISIBLE. Preserve an explicit Hide without hiding children of a retained tab.
 				if (!visible)
-					USER32.ShowWindow(_suppressedHandle, USER32.ShowWindowCommands.Hide);
+					WinAPI.USER32.ShowWindow(_suppressedHandle, WinAPI.USER32.ShowWindowCommands.Hide);
 			}
 			_suppressedHandle = IntPtr.Zero;
 		}
@@ -219,13 +206,9 @@ public class ControlRenderingScope : WinFormsSyncDisposableBase, IScope {
 			Tools.Windows.Win32.SendMessage(new HandleRef(_control, _suppressedHandle), SetRedrawMessage, 0, 0);
 		}
 
-		private void HandleCreated(object sender, EventArgs args) {
-			SuppressRedraw();
-		}
+		private void HandleCreated(object sender, EventArgs args) => SuppressRedraw();
 
-		private void VisibleChanged(object sender, EventArgs args) {
-			SuppressRedraw();
-		}
+		private void VisibleChanged(object sender, EventArgs args) => SuppressRedraw();
 
 		private void ControlAdded(object sender, ControlEventArgs args) {
 			foreach (var scope in _scopes.ToArray())

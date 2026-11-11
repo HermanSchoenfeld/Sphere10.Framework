@@ -33,9 +33,7 @@ public class RowInfo {
 	/// Height of the current row
 	/// </summary>
 	public int Height {
-		get {
-			return _height;
-		}
+		get => _height;
 		set {
 			if (value < 0)
 				value = 0;
@@ -51,21 +49,13 @@ public class RowInfo {
 	/// <summary>
 	/// Index of the current row
 	/// </summary>
-	public int Index {
-		get {
-			return ((RowInfoCollection)Grid.Rows).IndexOf(this);
-		}
-	}
+	public int Index => ((RowInfoCollection)Grid.Rows).IndexOf(this);
 
 	/// <summary>
 	/// Attached Grid
 	/// </summary>
 	[Browsable(false)]
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	public CellRange Range {
 		get {
@@ -81,24 +71,16 @@ public class RowInfo {
 	/// </summary>
 	[Browsable(false)]
 	public object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
+		get => _tag;
+		set => _tag = value;
 	}
 
 	/// <summary>
 	/// Flags for autosize and stretch
 	/// </summary>
 	public AutoSizeMode AutoSizeMode {
-		get {
-			return _autoSizeMode;
-		}
-		set {
-			_autoSizeMode = value;
-		}
+		get => _autoSizeMode;
+		set => _autoSizeMode = value;
 	}
 
 	/// <summary>
@@ -106,11 +88,7 @@ public class RowInfo {
 	/// Internally set the height to 0 to hide a row.
 	/// </summary>
 	public bool Visible {
-		get {
-			return Grid.Rows.IsRowVisible(this.Index);
-		}
-		set {
-			Grid.Rows.ShowRow(this.Index, value);
-		}
+		get => Grid.Rows.IsRowVisible(this.Index);
+		set => Grid.Rows.ShowRow(this.Index, value);
 	}
 }

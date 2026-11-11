@@ -20,9 +20,7 @@ namespace Sphere10.Framework;
 public class Disposables : ListDecorator<IDisposable>, IDisposable, IAsyncDisposable {
 	private readonly bool _ignoreExceptions;
 
-	static Disposables() {
-		None = new Disposables();
-	}
+	static Disposables() => None = new Disposables();
 
 	public Disposables(params IDisposable[] disposals)
 		: this(false, disposals) {
@@ -53,13 +51,9 @@ public class Disposables : ListDecorator<IDisposable>, IDisposable, IAsyncDispos
 		}
 	}
 
-	public void Add(Action disposeAction) {
-		base.Add(new ActionDisposable(disposeAction));
-	}
+	public void Add(Action disposeAction) => base.Add(new ActionDisposable(disposeAction));
 
-	public void Add(Func<Task> disposeTask) {
-		base.Add(new TaskDisposable(disposeTask));
-	}
+	public void Add(Func<Task> disposeTask) => base.Add(new TaskDisposable(disposeTask));
 
 	public static Disposables None { get; }
 

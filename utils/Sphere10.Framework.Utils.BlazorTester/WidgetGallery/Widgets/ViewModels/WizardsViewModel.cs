@@ -36,9 +36,7 @@ public class WizardsViewModel : ComponentViewModelBase {
 	/// Wizards view model
 	/// </summary>
 	/// <param name="builder"></param>
-	public WizardsViewModel(IBlazorWizardBuilder<NewWidgetModel> builder) {
-		Builder = builder;
-	}
+	public WizardsViewModel(IBlazorWizardBuilder<NewWidgetModel> builder) => Builder = builder;
 
 	/// <summary>
 	/// Creates a new instance of the wizard model.

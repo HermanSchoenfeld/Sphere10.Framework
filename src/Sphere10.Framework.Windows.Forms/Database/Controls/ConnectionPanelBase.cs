@@ -27,7 +27,7 @@ public partial class ConnectionPanelBase : UserControlEx, IDatabaseConnectionPro
 	[Browsable(false)]
 	public virtual string ConnectionString {
 		get { throw new NotImplementedException(); }
-		set { throw new NotImplementedException(); }
+		set => throw new NotImplementedException();
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -36,9 +36,7 @@ public partial class ConnectionPanelBase : UserControlEx, IDatabaseConnectionPro
 		get { throw new NotImplementedException(); }
 	}
 
-	protected virtual IDAC GetDACInternal() {
-		throw new NotImplementedException();
-	}
+	protected virtual IDAC GetDACInternal() => throw new NotImplementedException();
 
 
 	public virtual async Task<Result> TestConnection() {

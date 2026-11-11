@@ -33,13 +33,9 @@ public static class Threads {
 
 	public static void RaiseAsync<T1, T2, T3>(EventHandlerEx<T1, T2, T3> handler, T1 arg1, T2 arg2, T3 arg3) => Task.Factory.StartNew(() => handler?.Invoke(arg1, arg2, arg3));
 
-	public static void ExecuteAsync(Action action) {
-		action.AsAsyncronous().Invoke();
-	}
+	public static void ExecuteAsync(Action action) => action.AsAsyncronous().Invoke();
 
-	public static void ExecuteConcurrently(IEnumerable<Action> actions) {
-		ExecuteConcurrently(actions.ToArray());
-	}
+	public static void ExecuteConcurrently(IEnumerable<Action> actions) => ExecuteConcurrently(actions.ToArray());
 
 	public static void ExecuteConcurrently(params Action[] actions) {
 #if DISABLE_CONCURRENT
@@ -86,17 +82,11 @@ public static class Threads {
 			action();
 	}
 
-	public static void QueueAction<TArg>(Action<TArg> action, TArg arg) {
-		ThreadPool.QueueUserWorkItem((o) => action((TArg)o), arg);
-	}
+	public static void QueueAction<TArg>(Action<TArg> action, TArg arg) => ThreadPool.QueueUserWorkItem((o) => action((TArg)o), arg);
 
-	public static void QueueAction(Action action) {
-		ThreadPool.QueueUserWorkItem(_ => action());
-	}
+	public static void QueueAction(Action action) => ThreadPool.QueueUserWorkItem(_ => action());
 
-	public static void QueueActionIgnoringException(Action action) {
-		ThreadPool.QueueUserWorkItem(_ => Tools.Exceptions.ExecuteIgnoringException(action));
-	}
+	public static void QueueActionIgnoringException(Action action) => ThreadPool.QueueUserWorkItem(_ => Tools.Exceptions.ExecuteIgnoringException(action));
 
 	public static Task<TimeSpan> MeasureDuration(Action p0)
 		=> MeasureDuration(Task.Factory.StartNew(p0));

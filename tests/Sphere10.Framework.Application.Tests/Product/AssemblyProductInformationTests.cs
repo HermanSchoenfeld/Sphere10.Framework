@@ -112,9 +112,7 @@ public class AssemblyProductInformationTests {
 	}
 
 	[Test]
-	public void ExplicitAssemblyCannotBeNull() {
-		Assert.That(() => new AssemblyAttributesProductInformationProvider(null), Throws.ArgumentNullException);
-	}
+	public void ExplicitAssemblyCannotBeNull() => Assert.That(() => new AssemblyAttributesProductInformationProvider(null), Throws.ArgumentNullException);
 
 	// Each fixture owns a collectible assembly so product attributes cannot affect process-wide entry metadata.
 	private static AssemblyBuilder CreateAssembly() {

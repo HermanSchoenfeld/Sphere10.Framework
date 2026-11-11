@@ -50,9 +50,7 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 	public DBReference DatabaseReference { get; }
 	public ISession Session { get; }
 
-	public sealed override void BeginTransaction() {
-		BeginTransaction(IsolationLevel.ReadCommitted);
-	}
+	public sealed override void BeginTransaction() => BeginTransaction(IsolationLevel.ReadCommitted);
 
 	public void BeginTransaction(IsolationLevel isolationLevel) {
 		CheckNoSystemTransaction();
@@ -120,9 +118,8 @@ public class DataAccessScope : TransactionalScopeBase<ITransaction> {
 		}
 	}
 
-	private void CheckNoSystemTransaction() {
-		Guard.Against(System.Transactions.Transaction.Current != null, "DACScope transactions cannot be used a System.Transactions.TransactionScope.");
-	}
+	private void CheckNoSystemTransaction()
+		=> Guard.Against(System.Transactions.Transaction.Current != null, "DACScope transactions cannot be used a System.Transactions.TransactionScope.");
 
 }
 

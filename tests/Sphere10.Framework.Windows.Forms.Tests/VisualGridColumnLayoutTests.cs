@@ -34,8 +34,8 @@ public class VisualGridColumnLayoutTests {
 		using var visualGrid = NewGrid(owner, prepared);
 		visualGrid.GridBindings = CommandColumns();
 		visualGrid.ApplyGridPreferences(new VisualGridSettings { PageMode = VisualGridPageMode.Paged, PageSize = 2 });
-		var source = new SnapshotDataSource<string>();
-		source.ReplaceSnapshot(Enumerable.Repeat("Employee", 1000).ToArray());
+		var source = new ArrayDataSource<string>();
+		source.ReplaceData(Enumerable.Repeat("Employee", 1000).ToArray());
 		await visualGrid.SetDataSource(source);
 		await visualGrid.RefreshGrid();
 		var grid = FindGrid(visualGrid);
@@ -64,7 +64,7 @@ public class VisualGridColumnLayoutTests {
 		Assert.That(grid.Columns[0].Width, Is.EqualTo(pagedWidth));
 		Assert.That(grid.PositionToRectangle(new Position(1, 1)).Right, Is.LessThanOrEqualTo(grid.DisplayRectangle.Right));
 
-		source.ReplaceSnapshot(new[] { "Employee", "Employee" });
+		source.ReplaceData(new[] { "Employee", "Employee" });
 		visualGrid.PageMode = VisualGridPageMode.Single;
 		await visualGrid.RefreshGrid();
 		Assert.That(grid.RowsCount, Is.EqualTo(3));
@@ -82,8 +82,8 @@ public class VisualGridColumnLayoutTests {
 			preferences.Columns.Single(column => column.Key == "name").Width = 1400;
 			visualGrid.Preferences = preferences;
 		}
-		var source = new SnapshotDataSource<string>();
-		source.ReplaceSnapshot(Enumerable.Repeat(manualWidth ? "Employee" : new string('W', 250), 1000).ToArray());
+		var source = new ArrayDataSource<string>();
+		source.ReplaceData(Enumerable.Repeat(manualWidth ? "Employee" : new string('W', 250), 1000).ToArray());
 		await visualGrid.SetDataSource(source);
 		await visualGrid.RefreshGrid();
 		var grid = FindGrid(visualGrid);
@@ -124,8 +124,8 @@ public class VisualGridColumnLayoutTests {
 		using var font = new Font(grid.Font.FontFamily, fontSize);
 		grid.Font = font;
 		crud.GridBindings = new[] { new VisualGridColumn<string> { ColumnName = "GPU", SortName = "Value", DataType = typeof(string), PropertyValue = value => value } };
-		var source = new SnapshotDataSource<string>();
-		source.ReplaceSnapshot(new[] { "x" });
+		var source = new ArrayDataSource<string>();
+		source.ReplaceData(new[] { "x" });
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
 		var naturalWidth = grid.Columns[0].Width;
@@ -168,8 +168,8 @@ public class VisualGridColumnLayoutTests {
 		if (alignment != DrawingResizeAlignment.CenterCenter)
 			column.ImageAlignment = alignment;
 		crud.GridBindings = new[] { column };
-		var source = new SnapshotDataSource<Image>();
-		source.ReplaceSnapshot(new Image[] { image, image });
+		var source = new ArrayDataSource<Image>();
+		source.ReplaceData(new Image[] { image, image });
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
 		var grid = FindGrid(crud);
@@ -208,8 +208,8 @@ public class VisualGridColumnLayoutTests {
 			ColumnName = "Image", DataType = typeof(Image), DisplayType = CrudCellDisplayType.Image, PropertyValue = value => value,
 			ImageAlignment = DrawingResizeAlignment.BottomRight, ImageResizeMethod = method
 		} };
-		var source = new SnapshotDataSource<Image>();
-		source.ReplaceSnapshot(new Image[] { image });
+		var source = new ArrayDataSource<Image>();
+		source.ReplaceData(new Image[] { image });
 		await crud.SetDataSource(source);
 		await crud.RefreshGrid();
 		using var rendered = RenderCell(FindGrid(crud), new Size(60, 40));
@@ -292,20 +292,12 @@ public class VisualGridColumnLayoutTests {
 			LoadScrollArea(1, 1);
 		}
 
-		protected override int GetScrollRows(int displayHeight) {
-			return Math.Max(0, ContentSize.Height - displayHeight);
-		}
+		protected override int GetScrollRows(int displayHeight) => Math.Max(0, ContentSize.Height - displayHeight);
 
-		protected override int GetScrollColumns(int displayWidth) {
-			return Math.Max(0, ContentSize.Width - displayWidth);
-		}
+		protected override int GetScrollColumns(int displayWidth) => Math.Max(0, ContentSize.Width - displayWidth);
 
-		protected override int GetActualFixedRows() {
-			return 0;
-		}
+		protected override int GetActualFixedRows() => 0;
 
-		protected override void InvalidateScrollableArea() {
-			Invalidate();
-		}
+		protected override void InvalidateScrollableArea() => Invalidate();
 	}
 }

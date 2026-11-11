@@ -44,20 +44,12 @@ public class FieldList : DictionaryDecorator<string, IField, Dictionary<string, 
 	/// <summary>
 	/// Gets a collection containing the keys in this FieldList.
 	/// </summary>
-	public override ICollection<string> Keys {
-		get {
-			return InternalDictionary.Keys;
-		}
-	}
+	public override ICollection<string> Keys => InternalDictionary.Keys;
 
 	/// <summary>
 	/// Gets a collection containing the values in this FieldList.
 	/// </summary>
-	public override ICollection<IField> Values {
-		get {
-			return InternalDictionary.Values;
-		}
-	}
+	public override ICollection<IField> Values => InternalDictionary.Values;
 
 	/// <summary>
 	/// Adds an element with the specified key and value to this FieldList.
@@ -78,9 +70,7 @@ public class FieldList : DictionaryDecorator<string, IField, Dictionary<string, 
 	}
 
 	/// <summary>Applies the same field validation when adding through the generic collection interface.</summary>
-	public override void Add(KeyValuePair<string, IField> item) {
-		Add(item.Key, item.Value);
-	}
+	public override void Add(KeyValuePair<string, IField> item) => Add(item.Key, item.Value);
 
 	/// <summary>
 	/// Determines whether this FieldList contains a specific key.
@@ -89,9 +79,7 @@ public class FieldList : DictionaryDecorator<string, IField, Dictionary<string, 
 	/// true if this FieldList contains an element with the specified key;
 	/// otherwise, false.
 	/// </returns>
-	public override bool ContainsKey(string fieldName) {
-		return InternalDictionary.ContainsKey(fieldName);
-	}
+	public override bool ContainsKey(string fieldName) => InternalDictionary.ContainsKey(fieldName);
 
 	/// <summary>
 	/// Determines whether this FieldList contains a specific key.
@@ -103,9 +91,7 @@ public class FieldList : DictionaryDecorator<string, IField, Dictionary<string, 
 	/// true if this FieldList contains an element with the specified key;
 	/// otherwise, false.
 	/// </returns>
-	public virtual bool Contains(string fieldName) {
-		return ContainsKey(fieldName);
-	}
+	public virtual bool Contains(string fieldName) => ContainsKey(fieldName);
 
 	/// <summary>
 	/// Determines whether this FieldList contains a specific value.
@@ -131,9 +117,7 @@ public class FieldList : DictionaryDecorator<string, IField, Dictionary<string, 
 	/// <param name="fieldName">
 	/// The string key of the element to remove.
 	/// </param>
-	public override bool Remove(string fieldName) {
-		return InternalDictionary.Remove(fieldName);
-	}
+	public override bool Remove(string fieldName) => InternalDictionary.Remove(fieldName);
 
 	public IField[] GetSortedList() {
 		// Resolve every declared position and reject gaps in the field sequence.

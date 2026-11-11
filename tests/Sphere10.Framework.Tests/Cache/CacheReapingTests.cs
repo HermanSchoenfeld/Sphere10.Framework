@@ -26,9 +26,8 @@ public class CacheReapingTests {
 	[TestCase(double.NaN)]
 	[TestCase(double.PositiveInfinity)]
 	[TestCase(double.NegativeInfinity)]
-	public void ReapLevel_RejectsValuesOutsideTheFiniteOpenInterval(double reapLevel) {
-		Assert.That(() => new ActionCache<int, int>(key => key, reapLevel: reapLevel), Throws.ArgumentException);
-	}
+	public void ReapLevel_RejectsValuesOutsideTheFiniteOpenInterval(double reapLevel)
+		=> Assert.That(() => new ActionCache<int, int>(key => key, reapLevel: reapLevel), Throws.ArgumentException);
 
 	[TestCase(0.01)]
 	[TestCase(0.25)]

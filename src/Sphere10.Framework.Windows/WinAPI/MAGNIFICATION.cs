@@ -114,9 +114,7 @@ public static partial class WinAPI {
 			public float M22;
 
 			/// <summary>Creates a transform that scales the source uniformly by <paramref name="scale"/>.</summary>
-			public static MAGTRANSFORM CreateScale(float scale) {
-				return new MAGTRANSFORM { M00 = scale, M11 = scale, M22 = 1.0f };
-			}
+			public static MAGTRANSFORM CreateScale(float scale) => new MAGTRANSFORM { M00 = scale, M11 = scale, M22 = 1.0f };
 		}
 
 		/// <summary>A 5x5 color transformation matrix in row-major order, using the GDI+ ColorMatrix row-vector convention.</summary>
