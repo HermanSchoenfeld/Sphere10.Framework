@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -14,7 +15,8 @@ namespace Sphere10.Framework;
 /// Decorator for an <see cref="IPersistable"/> implementation.
 /// </summary>
 /// <typeparam name="TPersistableImpl"></typeparam>
-public class PersistableDecorator<TPersistableImpl> : LoadableDecorator<TPersistableImpl> where TPersistableImpl : IPersistable {
+public class PersistableDecorator<TPersistableImpl> : LoadableDecorator<TPersistableImpl>
+	where TPersistableImpl : IPersistable {
 	// NOTE: Since multiple inheritance is disallowed in C#, we inherit from LoadableBase and
 	// copy-paste of SaveableDecorator below removing common members.
 
@@ -28,15 +30,13 @@ public class PersistableDecorator<TPersistableImpl> : LoadableDecorator<TPersist
 		remove => Internal.Saved -= value;
 	}
 
-	public PersistableDecorator(TPersistableImpl internalPersistable) : base(internalPersistable) {
+	public PersistableDecorator(TPersistableImpl internalPersistable)
+		: base(internalPersistable) {
 	}
 
 	public virtual bool RequiresSave => Internal.RequiresSave;
 
 	public virtual void Save() => Internal.Save();
 
-	public virtual Task SaveAsync() => Internal.SaveAsync();
-
-
+	public virtual Task SaveAsync(CancellationToken cancellationToken = default) => Internal.SaveAsync(cancellationToken);
 }
-

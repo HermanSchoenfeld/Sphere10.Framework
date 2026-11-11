@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -28,15 +29,16 @@ public abstract class PersistableBase : LoadableBase, IPersistable {
 		NotifySaved();
 	}
 
-	public async Task SaveAsync() {
+	public async Task SaveAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
 		await NotifySavingAsync();
-		await SaveInternalAsync();
+		await SaveInternalAsync(cancellationToken);
 		await NotifySavedAsync();
 	}
 
 	protected abstract void SaveInternal();
 
-	protected abstract Task SaveInternalAsync();
+	protected abstract Task SaveInternalAsync(CancellationToken cancellationToken);
 
 	protected virtual void OnSaving() {
 	}
@@ -67,7 +69,6 @@ public abstract class PersistableBase : LoadableBase, IPersistable {
 			return;
 		OnSaved();
 		Saved?.Invoke(this);
-
 	}
 
 	protected async Task NotifySavedAsync() {
@@ -77,4 +78,3 @@ public abstract class PersistableBase : LoadableBase, IPersistable {
 		await Task.Run(() => Saved?.Invoke(this));
 	}
 }
-

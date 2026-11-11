@@ -24,11 +24,9 @@ public static class Downloader {
 		using var client = new HttpClient(httpClientHandler);
 		client.DefaultRequestHeaders.Clear();
 		client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "none");
-		// Sync-over-async pattern
-		var response = client.GetAsync(url).ResultSafe();
+		var response = Task.ExecuteSyncOverAsync(() => client.GetAsync(url));
 		mimeType = response.Content.Headers.ContentType.MediaType;
-		// Sync-over-async pattern
-		var stream = response.Content.ReadAsStreamAsync().ResultSafe();
+		var stream = Task.ExecuteSyncOverAsync(() => response.Content.ReadAsStreamAsync());
 		using var fileStream = new FileStream(destPath, FileMode.OpenOrCreate);
 		stream.CopyToAsync(fileStream);
 	}

@@ -285,21 +285,75 @@ public static class TaskExtensions {
 		return await taskCompletionSource.Task;
 	}
 
-	public static void WaitSafe(this Task task) {
-		Task.Run(task.Wait);
-	}
+	/// <summary>
+	/// Blocks the calling thread until <paramref name="task"/> completes and rethrows its own exception (not an <see cref="AggregateException"/>).
+	/// </summary>
+	/// <param name="task">The started task to wait for.</param>
+	/// <remarks>The task must not need the blocked thread's synchronization context to complete.</remarks>
+	public static void WaitSafe(this Task task) => task.GetAwaiter().GetResult();
 
-	public static void WaitSafe(this Task task, CancellationToken cancellationToken) {
-		Task.Run(() => task.Wait(cancellationToken), cancellationToken);
-	}
+	/// <summary>
+	/// Blocks the calling thread until <paramref name="task"/> completes or <paramref name="cancellationToken"/> is cancelled, and rethrows the task's own exception.
+	/// </summary>
+	/// <param name="task">The started task to wait for.</param>
+	/// <param name="cancellationToken">Ends the wait (not the task) with an <see cref="OperationCanceledException"/>.</param>
+	/// <remarks>The task must not need the blocked thread's synchronization context to complete.</remarks>
+	public static void WaitSafe(this Task task, CancellationToken cancellationToken) => task.WaitAsync(cancellationToken).GetAwaiter().GetResult();
 
-	public static T ResultSafe<T>(this Task<T> task) {
-		// Sync-over-async pattern
-		return Task.Run(() => task.Result).Result;
-	}
-	public static T ResultSafe<T>(this Task<T> task, CancellationToken cancellationToken) {
-		// Sync-over-async pattern
-		return Task.Run(() => task.Result, cancellationToken).Result;
+	/// <summary>
+	/// Blocks the calling thread until <paramref name="task"/> completes and returns its result, rethrowing its own exception (not an <see cref="AggregateException"/>).
+	/// </summary>
+	/// <typeparam name="T">The type of the task's result.</typeparam>
+	/// <param name="task">The started task to wait for.</param>
+	/// <returns>The task's result.</returns>
+	/// <remarks>The task must not need the blocked thread's synchronization context to complete.</remarks>
+	public static T ResultSafe<T>(this Task<T> task) => task.GetAwaiter().GetResult();
+
+	/// <summary>
+	/// Blocks the calling thread until <paramref name="task"/> completes or <paramref name="cancellationToken"/> is cancelled, and returns its result, rethrowing the task's own exception.
+	/// </summary>
+	/// <typeparam name="T">The type of the task's result.</typeparam>
+	/// <param name="task">The started task to wait for.</param>
+	/// <param name="cancellationToken">Ends the wait (not the task) with an <see cref="OperationCanceledException"/>.</param>
+	/// <returns>The task's result.</returns>
+	/// <remarks>The task must not need the blocked thread's synchronization context to complete.</remarks>
+	public static T ResultSafe<T>(this Task<T> task, CancellationToken cancellationToken) => task.WaitAsync(cancellationToken).GetAwaiter().GetResult();
+
+	extension(Task) {
+
+		/// <summary>
+		/// Runs <paramref name="function"/> on a worker, outside the caller's synchronization context, and blocks the calling thread until it completes,
+		/// rethrowing its own exception (not an <see cref="AggregateException"/>).
+		/// </summary>
+		/// <param name="function">The asynchronous operation a synchronous member must wait for.</param>
+		public static void ExecuteSyncOverAsync(Func<Task> function) => Task.Run(function).WaitSafe();
+
+		/// <summary>
+		/// Runs <paramref name="function"/> on a worker, outside the caller's synchronization context, and blocks the calling thread until it completes,
+		/// rethrowing its own exception (not an <see cref="AggregateException"/>).
+		/// </summary>
+		/// <param name="function">The asynchronous operation a synchronous member must wait for.</param>
+		/// <param name="cancellationToken">Prevents <paramref name="function"/> from starting when already cancelled.</param>
+		public static void ExecuteSyncOverAsync(Func<Task> function, CancellationToken cancellationToken) => Task.Run(function, cancellationToken).WaitSafe();
+
+		/// <summary>
+		/// Runs <paramref name="function"/> on a worker, outside the caller's synchronization context, blocks the calling thread until it completes and
+		/// returns its result, rethrowing its own exception (not an <see cref="AggregateException"/>).
+		/// </summary>
+		/// <typeparam name="T">The type of the operation's result.</typeparam>
+		/// <param name="function">The asynchronous operation a synchronous member must wait for.</param>
+		/// <returns>The operation's result.</returns>
+		public static T ExecuteSyncOverAsync<T>(Func<Task<T>> function) => Task.Run(function).ResultSafe();
+
+		/// <summary>
+		/// Runs <paramref name="function"/> on a worker, outside the caller's synchronization context, blocks the calling thread until it completes and
+		/// returns its result, rethrowing its own exception (not an <see cref="AggregateException"/>).
+		/// </summary>
+		/// <typeparam name="T">The type of the operation's result.</typeparam>
+		/// <param name="function">The asynchronous operation a synchronous member must wait for.</param>
+		/// <param name="cancellationToken">Prevents <paramref name="function"/> from starting when already cancelled.</param>
+		/// <returns>The operation's result.</returns>
+		public static T ExecuteSyncOverAsync<T>(Func<Task<T>> function, CancellationToken cancellationToken) => Task.Run(function, cancellationToken).ResultSafe();
 	}
 
 	public static async Task WithAggregateException(this Task task, bool unwrapSingleAggregateException = true) {

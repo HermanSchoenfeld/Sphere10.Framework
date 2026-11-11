@@ -12,8 +12,7 @@ namespace Sphere10.Framework.Application;
 
 public abstract class AsyncApplicationFinalizerBase : ApplicationFinalizerBase {
 #pragma warning disable CS0465 // Implements the existing synchronous lifecycle task contract.
-	// Sync-over-async pattern
 	public override void Finalize()
-		=> Task.Run(() => FinalizeAsync()).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => FinalizeAsync());
 #pragma warning restore CS0465
 }

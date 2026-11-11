@@ -17,36 +17,26 @@ public abstract class AsyncTransactionalScope<TTransaction> : TransactionalScope
 	protected AsyncTransactionalScope(ContextScopePolicy policy, string contextID) : base(policy, contextID) {
 	}
 
-	// Sync-over-async pattern
-	protected sealed override TTransaction BeginTransactionInternal() => Task.Run(BeginTransactionInternalAsync).GetAwaiter().GetResult();
+	protected sealed override TTransaction BeginTransactionInternal() => Task.ExecuteSyncOverAsync(BeginTransactionInternalAsync);
 
-	// Sync-over-async pattern
-	protected sealed override void CloseTransactionInternal(TTransaction transaction) => Task.Run(() => CloseTransactionInternalAsync(transaction)).GetAwaiter().GetResult();
+	protected sealed override void CloseTransactionInternal(TTransaction transaction) => Task.ExecuteSyncOverAsync(() => CloseTransactionInternalAsync(transaction));
 
-	// Sync-over-async pattern
-	protected sealed override void CommitInternal(TTransaction transaction) => Task.Run(() => CommitInternalAsync(transaction)).GetAwaiter().GetResult();
+	protected sealed override void CommitInternal(TTransaction transaction) => Task.ExecuteSyncOverAsync(() => CommitInternalAsync(transaction));
 
-	// Sync-over-async pattern
-	protected sealed override void RollbackInternal(TTransaction transaction) => Task.Run(() => RollbackInternalAsync(transaction)).GetAwaiter().GetResult();
+	protected sealed override void RollbackInternal(TTransaction transaction) => Task.ExecuteSyncOverAsync(() => RollbackInternalAsync(transaction));
 
-	// Sync-over-async pattern
 	protected sealed override void OnContextEnd()
-		=> Task.Run(() => OnContextEndAsync().AsTask()).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => OnContextEndAsync().AsTask());
 
-	// Sync-over-async pattern
-	protected sealed override void OnTransactionalScopeEnd(List<Exception> errors) => Task.Run(() => OnTransactionalScopeEndAsync(errors)).GetAwaiter().GetResult();
+	protected sealed override void OnTransactionalScopeEnd(List<Exception> errors) => Task.ExecuteSyncOverAsync(() => OnTransactionalScopeEndAsync(errors));
 
-	// Sync-over-async pattern
-	protected sealed override void OnCommitting() => Task.Run(OnCommittingAsync).GetAwaiter().GetResult();
+	protected sealed override void OnCommitting() => Task.ExecuteSyncOverAsync(OnCommittingAsync);
 
-	// Sync-over-async pattern
-	protected sealed override void OnCommitted() => Task.Run(OnCommittedAsync).GetAwaiter().GetResult();
+	protected sealed override void OnCommitted() => Task.ExecuteSyncOverAsync(OnCommittedAsync);
 
-	// Sync-over-async pattern
-	protected sealed override void OnRollingBack() => Task.Run(OnRollingBackAsync).GetAwaiter().GetResult();
+	protected sealed override void OnRollingBack() => Task.ExecuteSyncOverAsync(OnRollingBackAsync);
 
-	// Sync-over-async pattern
-	protected sealed override void OnRolledBack() => Task.Run(OnRolledBackAsync).GetAwaiter().GetResult();
+	protected sealed override void OnRolledBack() => Task.ExecuteSyncOverAsync(OnRolledBackAsync);
 
 }
 

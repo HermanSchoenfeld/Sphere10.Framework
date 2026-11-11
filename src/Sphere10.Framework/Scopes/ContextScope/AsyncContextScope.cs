@@ -14,13 +14,11 @@ public abstract class AsyncContextScope : ContextScope {
 	protected AsyncContextScope(ContextScopePolicy policy, string contextID) : base(policy, contextID) {
 	}
 
-	// Sync-over-async pattern
 	protected sealed override void OnScopeEndInternal()
-		=> Task.Run(() => OnScopeEndInternalAsync().AsTask()).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => OnScopeEndInternalAsync().AsTask());
 
-	// Sync-over-async pattern
 	protected sealed override void OnContextEnd()
-		=> Task.Run(() => OnContextEndAsync().AsTask()).GetAwaiter().GetResult();
+		=> Task.ExecuteSyncOverAsync(() => OnContextEndAsync().AsTask());
 
 }
 

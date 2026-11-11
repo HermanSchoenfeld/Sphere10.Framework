@@ -22,8 +22,7 @@ public readonly struct TaskScope : IScope {
 
 	public void Dispose() {
 		var finalizer = _finalizer;
-		// Sync-over-async pattern
-		Task.Run(() => finalizer().AsTask()).GetAwaiter().GetResult();
+		Task.ExecuteSyncOverAsync(() => finalizer().AsTask());
 	}
 
 	public async ValueTask DisposeAsync() => await _finalizer();
@@ -44,8 +43,7 @@ public readonly struct TaskScope<T> : IScope<T> {
 	public void Dispose() {
 		var finalizer = _finalizer;
 		var item = Item;
-		// Sync-over-async pattern
-		Task.Run(() => finalizer(item).AsTask()).GetAwaiter().GetResult();
+		Task.ExecuteSyncOverAsync(() => finalizer(item).AsTask());
 	}
 
 	public async ValueTask DisposeAsync() => await _finalizer(Item);

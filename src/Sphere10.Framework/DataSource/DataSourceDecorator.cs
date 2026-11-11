@@ -17,16 +17,27 @@ namespace Sphere10.Framework;
 /// <typeparam name="TItem">The entity type.</typeparam>
 /// <typeparam name="TConcrete">The concrete type of the inner data source.</typeparam>
 /// <remarks>The <see cref="TConcrete"/> generic argument ensures sub-classes can retrieve the decorated data source
-/// in its type, without an expensive chain of casts/retrieves.</remarks>
+/// in its type, without an expensive chain of casts/retrieves. A decorator forwards each member in its own direction and works over a synchronous
+/// or an asynchronous inner source alike; a feature decorator adds the members its feature needs.</remarks>
 public abstract class DataSourceDecorator<TItem, TConcrete> : DataSourceBase<TItem>
 	where TConcrete : IDataSource<TItem> {
+	public override event EventHandlerEx Changed { add => InternalDataSource.Changed += value; remove => InternalDataSource.Changed -= value; }
 
 	protected DataSourceDecorator(TConcrete internalDataSource) {
 		Guard.ArgumentNotNull(internalDataSource, nameof(internalDataSource));
 		InternalDataSource = internalDataSource;
 	}
 
-	protected TConcrete InternalDataSource { get; }
+	public override long Count => InternalDataSource.Count;
+
+	public override DataSourceCapabilities Capabilities => InternalDataSource.Capabilities;
+
+	public override Task<long> CountAsync => InternalDataSource.CountAsync;
+
+	public override Task<DataSourceCapabilities> CapabilitiesAsync => InternalDataSource.CapabilitiesAsync;
+
+	/// <summary>The decorated source. A decorator which publishes fresh data by replacing it assigns the new source here.</summary>
+	protected TConcrete InternalDataSource { get; set; }
 
 	// Sync item methods
 
@@ -59,10 +70,6 @@ public abstract class DataSourceDecorator<TItem, TConcrete> : DataSourceBase<TIt
 
 	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) => InternalDataSource.ValidateRange(actions);
 
-	public override long Count => InternalDataSource.Count;
-
-	public override DataSourceCapabilities Capabilities => InternalDataSource.Capabilities;
-
 	// Async item methods
 
 	public override Task CreateAsync(TItem entity) => InternalDataSource.CreateAsync(entity);
@@ -89,10 +96,6 @@ public abstract class DataSourceDecorator<TItem, TConcrete> : DataSourceBase<TIt
 	public override Task DeleteRangeAsync(IEnumerable<TItem> entities) => InternalDataSource.DeleteRangeAsync(entities);
 
 	public override Task<Result> ValidateRangeAsync(IEnumerable<(TItem entity, CrudAction action)> actions) => InternalDataSource.ValidateRangeAsync(actions);
-
-	public override Task<long> CountAsync => InternalDataSource.CountAsync;
-
-	public override Task<DataSourceCapabilities> CapabilitiesAsync => InternalDataSource.CapabilitiesAsync;
 }
 
 

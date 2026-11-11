@@ -41,8 +41,7 @@ public static class UrlShortner {
 
 		var address = new Uri(uriString);
 		using var client = new HttpClient();
-		// Sync-over-async pattern
-		return client.GetStringAsync(address).ResultSafe();
+		return Task.ExecuteSyncOverAsync(() => client.GetStringAsync(address));
 	}
 	public static async Task<string> GoogleAsync(string url, string apiKey) {
 		using var client = new HttpClient();
@@ -77,11 +76,9 @@ public static class UrlShortner {
 		using var client = new HttpClient();
 		var json = "{\"longUrl\":\"" + url + "\",\"key\":\"" + apiKey + "\"}";
 		using var content = new StringContent(json, Encoding.UTF8, "application/json");
-		// Sync-over-async pattern
-		using var response = client.PostAsync("https://www.googleapis.com/urlshortener/v1/url?key=" + apiKey, content).ResultSafe();
+		using var response = Task.ExecuteSyncOverAsync(() => client.PostAsync("https://www.googleapis.com/urlshortener/v1/url?key=" + apiKey, content));
 		response.EnsureSuccessStatusCode();
-		// Sync-over-async pattern
-		var responseJson = response.Content.ReadAsStringAsync().ResultSafe();
+		var responseJson = Task.ExecuteSyncOverAsync(() => response.Content.ReadAsStringAsync());
 
 		/* {
 			 "kind": "urlshortener#url",

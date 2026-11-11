@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -13,18 +14,16 @@ namespace Sphere10.Framework;
 public abstract class SyncPersistableBase : PersistableBase {
 
 	// Copy of SyncLoadableBase
-	protected override Task LoadInternalAsync() => Task.Run(LoadInternal);
+	protected override Task LoadInternalAsync(CancellationToken cancellationToken) => Task.Run(LoadInternal, cancellationToken);
 
 	protected sealed override Task OnLoadingAsync() => Task.Run(OnLoading);
 
 	protected sealed override Task OnLoadedAsync() => Task.Run(OnLoaded);
 
-
 	// Copy of SyncSaveableBase
-	protected override Task SaveInternalAsync() => Task.Run(SaveInternal);
+	protected override Task SaveInternalAsync(CancellationToken cancellationToken) => Task.Run(SaveInternal, cancellationToken);
 
 	protected sealed override Task OnSavingAsync() => Task.Run(OnSaving);
 
 	protected sealed override Task OnSavedAsync() => Task.Run(OnSaved);
 }
-

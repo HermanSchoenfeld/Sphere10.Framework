@@ -6,125 +6,34 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Diagnostics;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
 
 /// <summary>
-/// Base class for async, batch-oriented data source implementations. Item operations delegate to batch operations, sync operations wrap async via .WaitSafe/.ResultSafe.
+/// Base class for async, batch-oriented data source implementations. Item operations delegate to batch operations; synchronous operations come from
+/// <see cref="AsyncDataSourceBase{TItem}"/>. The dual is <see cref="SyncBatchDataSourceBase{TItem}"/>.
 /// </summary>
-public abstract class AsyncBatchDataSourceBase<TItem> : DataSourceBase<TItem> {
+public abstract class AsyncBatchDataSourceBase<TItem> : AsyncDataSourceBase<TItem> {
+
+	// Sync item: creation has no asynchronous form
+
+	public sealed override TItem New() => NewRange(1).Single();
 
 	// Async item: derived from async batch
 
-	public sealed override async Task CreateAsync(TItem entity) {
-        await CreateRangeAsync(new[] { entity });
-	}
+	public sealed override Task CreateAsync(TItem entity) => CreateRangeAsync(new[] { entity });
 
 	public sealed override async Task<TItem> RefreshAsync(TItem entity) {
-		var arr = new[] { entity };
-        await RefreshRangeAsync(arr);
-		return arr[0];
+		var entities = new[] { entity };
+		await RefreshRangeAsync(entities);
+		return entities[0];
 	}
 
-	public sealed override async Task UpdateAsync(TItem entity) {
-        await UpdateRangeAsync(new[] { entity });
-	}
+	public sealed override Task UpdateAsync(TItem entity) => UpdateRangeAsync(new[] { entity });
 
-	public sealed override async Task DeleteAsync(TItem entity) {
-        await DeleteRangeAsync(new[] { entity });
-	}
+	public sealed override Task DeleteAsync(TItem entity) => DeleteRangeAsync(new[] { entity });
 
-	public sealed override Task<Result> ValidateAsync(TItem entity, CrudAction action) {
-       return ValidateRangeAsync(new[] { (entity, action) });
-	}
-
-	// Sync item: derived from sync batch
-
-	public sealed override TItem New() {
-     return NewRange(1).Single();
-	}
-
-	public sealed override void Create(TItem entity) {
-       CreateRange(new[] { entity });
-	}
-
-	public sealed override TItem Refresh(TItem entity) {
-		var arr = new[] { entity };
-       RefreshRange(arr);
-		return arr[0];
-	}
-
-	public sealed override void Update(TItem entity) {
-       UpdateRange(new[] { entity });
-	}
-
-	public sealed override void Delete(TItem entity) {
-       DeleteRange(new[] { entity });
-	}
-
-	public sealed override Result Validate(TItem entity, CrudAction action) {
-        return ValidateRange(new[] { (entity, action) });
-	}
-
-	// Sync batch: wraps async batch via .WaitSafe/.ResultSafe
-
-	public override void CreateRange(IEnumerable<TItem> entities) {
-		Debug.AssertNotMainThread();
-		CreateRangeAsync(entities).WaitSafe();
-	}
-
-	public override DataSourceItems<TItem> ReadRange(string searchTerm, int pageLength, int page, string sortProperty, SortDirection sortDirection) {
-		Debug.AssertNotMainThread();
-		// Sync-over-async pattern
-		return ReadRangeAsync(searchTerm, pageLength, page, sortProperty, sortDirection).ResultSafe();
-	}
-
-	public override void RefreshRange(TItem[] entities) {
-		Debug.AssertNotMainThread();
-		RefreshRangeAsync(entities).WaitSafe();
-	}
-
-	public override void UpdateRange(IEnumerable<TItem> entities) {
-		Debug.AssertNotMainThread();
-		UpdateRangeAsync(entities).WaitSafe();
-	}
-
-	public override void DeleteRange(IEnumerable<TItem> entities) {
-		Debug.AssertNotMainThread();
-		DeleteRangeAsync(entities).WaitSafe();
-	}
-
-	public override Result ValidateRange(IEnumerable<(TItem entity, CrudAction action)> actions) {
-		Debug.AssertNotMainThread();
-		// Sync-over-async pattern
-		return ValidateRangeAsync(actions).ResultSafe();
-	}
-
-	public override long Count {
-		get {
-			var result = CountAsync;
-			if (result.IsCompletedSuccessfully)
-				return result.Result;
-			if (!result.IsCompleted)
-				Debug.AssertNotMainThread();
-			// Sync-over-async pattern
-			return result.ResultSafe();
-		}
-	}
-
-	public override DataSourceCapabilities Capabilities {
-		get {
-			var result = CapabilitiesAsync;
-			if (result.IsCompletedSuccessfully)
-				return result.Result;
-			if (!result.IsCompleted)
-				Debug.AssertNotMainThread();
-			// Sync-over-async pattern
-			return result.ResultSafe();
-		}
-	}
+	public sealed override Task<Result> ValidateAsync(TItem entity, CrudAction action) => ValidateRangeAsync(new[] { (entity, action) });
 }

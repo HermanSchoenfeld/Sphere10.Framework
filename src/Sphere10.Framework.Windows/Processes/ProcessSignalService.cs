@@ -46,8 +46,7 @@ public static class ProcessSignalService {
 			Guard.Argument(args.Length == 4, nameof(args), "Invalid signal sender arguments.");
 			var identity = new ProcessIdentity(int.Parse(args[1], CultureInfo.InvariantCulture), new DateTime(long.Parse(args[2], CultureInfo.InvariantCulture), DateTimeKind.Utc));
 			var signal = uint.Parse(args[3], CultureInfo.InvariantCulture);
-			// Sync-over-async pattern
-			ProcessCommandService.ExecuteAsync(identity, process => Tools.Windows.Processes.SendConsoleSignal(process.Id, signal)).GetAwaiter().GetResult();
+			Task.ExecuteSyncOverAsync(() => ProcessCommandService.ExecuteAsync(identity, process => Tools.Windows.Processes.SendConsoleSignal(process.Id, signal)));
 		}, out var error);
 		if (error != null)
 			exitCode = 1;

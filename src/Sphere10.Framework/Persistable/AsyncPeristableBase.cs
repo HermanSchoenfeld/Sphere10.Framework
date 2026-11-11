@@ -6,26 +6,29 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Sphere10.Framework;
 
 /// <summary>
-/// A <see cref="PersistableBase"/> abstraction that implements it's synchronous members using sync-over-async pattern.
+/// A <see cref="PersistableBase"/> abstraction that implements its synchronous members using the sync-over-async pattern: each starts its
+/// asynchronous counterpart on a worker and waits for it to complete.
 /// </summary>
 public abstract class AsyncPeristableBase : PersistableBase {
 
-	// Copy of AsyncLoadableBase
-	protected override void LoadInternal() => LoadInternalAsync().WaitSafe();
+	// Loading (as AsyncLoadableBase)
+	protected override void LoadInternal() => Task.ExecuteSyncOverAsync(() => LoadInternalAsync(CancellationToken.None));
 
-	protected sealed override void OnLoading() => OnLoadingAsync().WaitSafe();
+	protected sealed override void OnLoading() => Task.ExecuteSyncOverAsync(OnLoadingAsync);
 
-	protected sealed override void OnLoaded() => OnLoadedAsync().WaitSafe();
+	protected sealed override void OnLoaded() => Task.ExecuteSyncOverAsync(OnLoadedAsync);
 
+	// Saving (as AsyncSaveableBase)
+	protected override void SaveInternal() => Task.ExecuteSyncOverAsync(() => SaveInternalAsync(CancellationToken.None));
 
-	// Copy of AsyncSaveableBase
-	protected override void SaveInternal() => SaveInternalAsync().WaitSafe();
+	protected sealed override void OnSaving() => Task.ExecuteSyncOverAsync(OnSavingAsync);
 
-	protected sealed override void OnSaving() => OnSavingAsync().WaitSafe();
-
-	protected sealed override void OnSaved() => OnSavedAsync().WaitSafe();
+	protected sealed override void OnSaved() => Task.ExecuteSyncOverAsync(OnSavedAsync);
 }
-

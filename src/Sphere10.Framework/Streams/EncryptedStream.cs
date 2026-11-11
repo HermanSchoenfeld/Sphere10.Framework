@@ -224,7 +224,6 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 
 	public override int EndRead(IAsyncResult asyncResult) {
 		Guard.Argument(asyncResult is Task<int>, nameof(asyncResult), "Expected the result returned by BeginRead.");
-		// Sync-over-async pattern
 		return ((Task<int>)asyncResult).GetAwaiter().GetResult();
 	}
 
@@ -239,7 +238,6 @@ public class EncryptedStream<TStream> : StreamDecorator<TStream> where TStream :
 
 	public override void EndWrite(IAsyncResult asyncResult) {
 		Guard.Argument(asyncResult is Task, nameof(asyncResult), "Expected the result returned by BeginWrite.");
-		// Sync-over-async pattern
 		((Task)asyncResult).GetAwaiter().GetResult();
 	}
 
