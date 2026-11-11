@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -17,6 +18,12 @@ namespace Sphere10.Framework;
 
 public class SerializerFactory {
 	internal const int PermanentTypeCodeStartDefault = 10; 
+
+	/// <summary>
+	/// The first type code given to a type registered after the defaults. Codes below it are reserved for the Framework's own registrations, so a
+	/// default serializer added later never moves the code of a user type in stored data.
+	/// </summary>
+	public const long UserTypeCodeStart = 100_000;
 	internal const int EphemeralTypeCodeStartDefault = 65536; // Type codes for ephemerally registered types start here. This allows you to update your core serializer registrations over time without affecting previous serialized objects.
 
 	private readonly IDictionary<long, Registration> _registrations;
@@ -43,9 +50,7 @@ public class SerializerFactory {
 		_readOnly = false;
 		}
 
-	public SerializerFactory(SerializerFactory baseFactory) : this() {
-		CopyRegistrations(baseFactory);
-	}
+	public SerializerFactory(SerializerFactory baseFactory) : this() => CopyRegistrations(baseFactory);
 
 	public IEnumerable<Type> RegisteredTypes => _registrationsByType.Keys;
 
@@ -138,6 +143,17 @@ public class SerializerFactory {
 		factory.Register(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));
 		factory.Register(typeof(HashSet<>), typeof(HashSetSerializer<>));
 		factory.Register(typeof(SortedSet<>), typeof(SortedSetSerializer<>));
+		factory.Register(typeof(Queue<>), typeof(QueueSerializer<>));
+		factory.Register(typeof(Stack<>), typeof(StackSerializer<>));
+		factory.Register(typeof(LinkedList<>), typeof(LinkedListSerializer<>));
+		factory.Register(typeof(SortedList<,>), typeof(SortedListSerializer<,>));
+		factory.Register(typeof(SortedDictionary<,>), typeof(SortedDictionarySerializer<,>));
+		factory.Register(typeof(System.Collections.ObjectModel.ObservableCollection<>), typeof(ObservableCollectionSerializer<>));
+		factory.Register(typeof(ReadOnlyCollection<>), typeof(ReadOnlyCollectionSerializer<>));
+		factory.Register(typeof(ConcurrentDictionary<,>), typeof(ConcurrentDictionarySerializer<,>));
+		factory.Register(typeof(ConcurrentQueue<>), typeof(ConcurrentQueueSerializer<>));
+		factory.Register(typeof(ConcurrentStack<>), typeof(ConcurrentStackSerializer<>));
+		factory.Register(typeof(ConcurrentBag<>), typeof(ConcurrentBagSerializer<>));
 
 		// Factories use the same ordinary registration path as the other built-in values.
 		factory.Register<SerializerFactory, SerializerFactorySerializer>();
@@ -145,6 +161,10 @@ public class SerializerFactory {
 		// Object Spaces and Streams
 		factory.Register<ObjectSpaceMetaData, ObjectSpaceMetaDataSerializer>();
 		factory.Register<ObjectStreamMetaData, ObjectStreamMetaDataSerializer>();
+
+		// Everything registered from here on is a user type
+		Guard.Ensure(factory.MaxGeneratedTypeCode < UserTypeCodeStart, "Default registrations have outgrown the reserved type-code band");
+		factory.MinGeneratedTypeCode = Math.Max(factory.MinGeneratedTypeCode, UserTypeCodeStart);
 	}
 
 	/// <summary>Copies registrations and their construction provenance while assigning this factory as their new owner.</summary>
@@ -165,6 +185,7 @@ public class SerializerFactory {
 			_registrationsByType.Add(registration.Value.DataType, registration.Key);
 			MaxGeneratedTypeCode = Math.Max(MaxGeneratedTypeCode, registration.Value.TypeCode);
 		}
+		MinGeneratedTypeCode = Math.Max(MinGeneratedTypeCode, factory.MinGeneratedTypeCode);
 	}
 
 	public SerializerFactory SetMinTypeCode(long min) {
