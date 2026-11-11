@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Sphere10.Framework;
@@ -30,8 +31,9 @@ public static class Runtime {
 	public static string GetExecutablePath() => Process.GetCurrentProcess().MainModule.FileName;
 
 
-	public static bool IsInExceptionContext() 
-		=> GetExceptionPointers() != IntPtr.Zero;
+	/// <summary>Whether an exception is being unwound on this thread. Native AOT cannot report that, so it answers false there.</summary>
+	public static bool IsInExceptionContext()
+		=> RuntimeFeature.IsDynamicCodeSupported && GetExceptionPointers() != IntPtr.Zero;
 
 	public static bool IsDebugBuild {
 		get {

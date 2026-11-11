@@ -276,9 +276,8 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	/// <summary>Attempts to open borrowed raw storage using the supplied byte order and recorded settings.</summary>
-	public static bool TryOpenFromStream(Stream rawStream, Endianness endianness, out ObjectSpace objectSpace) {
-		return ObjectSpaceStorageHelper.TryOpenFromStream(rawStream, endianness, out objectSpace);
-	}
+	public static bool TryOpenFromStream(Stream rawStream, Endianness endianness, out ObjectSpace objectSpace)
+		=> ObjectSpaceStorageHelper.TryOpenFromStream(rawStream, endianness, out objectSpace);
 
 	public virtual void Flush() {
 		// save any modified objects (persistence ignorance)
@@ -611,13 +610,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 				IndexFactory.CreateMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer, indexDefinition.NullPolicy, bTreeSpec);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildRecyclableIndexStore(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
-		return new RecyclableIndexIndex(dimension, indexDefinition.Name);
-	}
+	protected virtual IClusteredStreamsAttachment BuildRecyclableIndexStore(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition)
+		=> new RecyclableIndexIndex(dimension, indexDefinition.Name);
 
-	protected virtual IClusteredStreamsAttachment BuildMerkleTreeIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
-		return new MerkleTreeIndex(dimension, indexDefinition.Name, new ObjectStreamItemHasher(dimension, Definition.HashFunction), Definition.HashFunction);
-	}
+	protected virtual IClusteredStreamsAttachment BuildMerkleTreeIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition)
+		=> new MerkleTreeIndex(dimension, indexDefinition.Name, new ObjectStreamItemHasher(dimension, Definition.HashFunction), Definition.HashFunction);
 
 	/// <summary>Gets the dimension serializer and adds ObjectSpace reference handling when garbage collection is enabled.</summary>
 	protected virtual IItemSerializer CreateItemSerializer(Type objectType) {

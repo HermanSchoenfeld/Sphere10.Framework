@@ -201,6 +201,81 @@ public class ConfigurationTests {
 		Assert.That(space.Get((Record record) => record.Id, 5).Code, Is.EqualTo("five"));
 	}
 
+	[Test]
+	public void MemoryDisposalFlushesPendingAutosaveChanges() {
+		using var memory = new MemoryStream();
+		var builder = CreateBuilder().UseMemoryStream(memory).AutoSave();
+		var released = 0;
+		using (var space = builder.Build()) {
+			space.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => released++));
+			space.Save(new Record { Id = 1, Code = "one", Group = 1, Label = "baseline", Description = "baseline" });
+			space.Flush();
+			AddPendingAutosaveChanges(space);
+			Assert.That(space.Count<Record>(), Is.EqualTo(2));
+			Assert.That(space.GetAll<Record>().Count(), Is.EqualTo(1), "The second record remains provisional until a flush.");
+		}
+		Assert.That(released, Is.EqualTo(1));
+		Assert.That(memory.CanRead && memory.CanWrite, Is.True, "The caller's borrowed stream must remain usable after disposal.");
+		memory.Position = 0;
+		var firstByte = memory.ReadByte();
+		Assert.That(firstByte, Is.GreaterThanOrEqualTo(0));
+		memory.Position = 0;
+		memory.WriteByte((byte)firstByte);
+		using var reopened = builder.Build();
+		Assert.That(reopened.GetAll<Record>().Select(record => record.Id), Is.EquivalentTo(new long[] { 1, 2 }));
+		Assert.That(reopened.Get((Record record) => record.Id, 1).Description, Is.EqualTo("changed"));
+		Assert.That(reopened.Get((Record record) => record.Id, 2).Description, Is.EqualTo("provisional"));
+	}
+
+	[Test]
+	public void DisposalReleasesItsOwnedMemoryStreamAndDisposables() {
+		var space = (MemoryObjectSpace)CreateBuilder().UseMemoryStream().Build();
+		var memory = space.Stream;
+		var released = false;
+		space.Disposables.Add(Tools.Scope.ExecuteOnDispose(() => released = true));
+		space.Dispose();
+		Assert.That(released, Is.True);
+		Assert.That(memory.CanRead, Is.False, "A stream created by the memory space remains owned by that space.");
+	}
+
+	[Test]
+	public void FileDisposalDoesNotCommitFlushedUncommittedAutosaveChanges() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using var cleanup = Tools.Scope.DeleteDirOnDispose(folder);
+		var path = Path.Combine(folder, "space.dat");
+		var pages = Path.Combine(folder, "pages");
+		Directory.CreateDirectory(pages);
+		var builder = CreateBuilder().UseFile(path).KeepUncommittedPagesAt(pages).AutoLoad().AutoSave();
+		using (var baseline = (FileObjectSpace)builder.Build()) {
+			baseline.Save(new Record { Id = 1, Code = "one", Group = 1, Label = "baseline", Description = "baseline" });
+			baseline.Commit();
+		}
+		var committedBytes = File.ReadAllBytes(path);
+		using (var space = (FileObjectSpace)builder.Build()) {
+			AddPendingAutosaveChanges(space);
+			space.Flush();
+			Assert.That(space.GetAll<Record>().Count(), Is.EqualTo(2), "Both edits must reach the uncommitted transaction before disposal.");
+		}
+		Assert.That(File.ReadAllBytes(path), Is.EqualTo(committedBytes), "Disposal must not publish transaction pages into the committed file.");
+		using var reopened = builder.Build();
+		Assert.That(reopened.GetAll<Record>().Select(record => record.Id), Is.EqualTo(new long[] { 1 }));
+		Assert.That(reopened.Get((Record record) => record.Id, 1).Description, Is.EqualTo("baseline"));
+		Assert.That(reopened.TryGet((Record record) => record.Id, 2, out _), Is.False);
+	}
+
+	private static void AddPendingAutosaveChanges(ObjectSpace space) {
+		var saved = space.Get((Record record) => record.Id, 1);
+		saved.Description = "changed";
+		saved.Dirty = true;
+		var provisional = space.New<Record>();
+		provisional.Id = 2;
+		provisional.Code = "two";
+		provisional.Group = 2;
+		provisional.Label = "pending";
+		provisional.Description = "provisional";
+		provisional.Dirty = true;
+	}
+
 	private static ObjectSpaceBuilder CreateBuilder() {
 		return new ObjectSpaceBuilder()
 			.AddDimension<Record>(true)
