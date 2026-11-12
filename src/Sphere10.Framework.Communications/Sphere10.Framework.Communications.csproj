@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Multi-protocol networking and RPC framework for Sphere10 Framework. Provides attribute-based, type-safe RPC with JSON serialization, protocol abstraction, and reusable client/server communication primitives for building distributed systems.</Description>

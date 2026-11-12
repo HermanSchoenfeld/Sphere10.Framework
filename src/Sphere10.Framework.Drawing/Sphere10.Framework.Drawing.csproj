@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Drawing utilities with cross-platform color and geometry helpers, plus Windows image processing and GDI+ rendering. Includes gradients, geometric utilities, and common visual effects.</Description>

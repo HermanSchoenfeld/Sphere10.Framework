@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>ASP.NET Core MVC extensions for Sphere10 Framework: controllers, Razor HTML helpers, Bootstrap forms, action filters, routing, and XML and image results.</Description>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
     <IsPackable>false</IsPackable>
 	<Description>Internal runtime/compiler support assembly shared across Sphere10 Framework. Not intended for NuGet publishing; contains shared types and compatibility shims used by multiple framework components.</Description>
   </PropertyGroup>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Extended cryptography library for distributed systems and blockchain applications. Provides advanced primitives including elliptic-curve cryptography (ECDSA/ECIES across multiple curves), post-quantum signature schemes, key derivation, and verifiable random functions (VRF).</Description>

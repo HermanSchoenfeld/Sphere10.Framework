@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Universal data access abstraction layer providing ADO.NET enhancements, schema management, connection/transaction scoping, and database-agnostic persistence. Includes DAC helpers, SQL execution and query building, CSV support, and common extensions used by provider packages (SQLite, SQL Server, Firebird, MySQL, PostgreSQL, Oracle, NHibernate).</Description>

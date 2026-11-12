@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>SQLite provider for Sphere10.Framework.Data enabling embedded and in-memory databases through the shared DAC abstractions. Includes SQLite-specific helpers and Tools.Sqlite utilities for opening connections and working with the provider.</Description>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Consensus primitives focused on proof-of-work target and difficulty algorithms. Includes compact target encoding/decoding and ASERT-style real-time difficulty adjustment (ASERT_RTT/ASERT2) with configuration helpers.</Description>
