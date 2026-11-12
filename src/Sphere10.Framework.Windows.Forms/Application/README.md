@@ -6,6 +6,8 @@ This domain is the Windows Forms implementation of the shared `Sphere10.Framewor
 
 `BuildWinFormsApplication`, `UseMainForm<TMainForm>`, `UseSplashScreen` and `StartWinFormsApplication` in `Sphere10FrameworkExtensions` start the framework with the native message loop. A main form derived from `BlockMainForm` also registers `IApplication`, whose `ScreenHost` owns screen instances, selection, docking and detached windows. Derive feature UIs from `ApplicationScreen` and override `OnShowFirstTime`, `OnShow`, `OnHide` and `OnDestroyScreen` for lifecycle work. The project [README](../README.md) describes exit, lifecycle, screen hosting and screen construction rules in detail.
 
+The runner finishes the startup splash fade and closes it before showing the main form. First-activation handlers can then show modal notices without leaving the splash above them. BlockMainForm calls the project's central [AOTFixes](../AOTFixes.cs) to preserve the reflected SplitContainer properties used by its designer resources, so native publishing retains the configured navigation width.
+
 Screens bind grid and log-output preferences to their `ScreenSettings` through [VisualGrid](../VisualGrid/README.md) and [Logging](../Logging/README.md). General dialogs live in [Dialogs](../Dialogs/README.md) and [Forms](../Forms/README.md).
 
 ```csharp

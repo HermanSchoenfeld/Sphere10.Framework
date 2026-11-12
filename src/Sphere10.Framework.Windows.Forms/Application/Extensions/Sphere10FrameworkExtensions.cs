@@ -188,11 +188,11 @@ public static class Sphere10FrameworkExtensions {
 				}
 				mainForm.FormClosed += Complete;
 				mainForm.Disposed += Complete;
-				// Showing the main window can immediately request exit while the startup fade pumps messages.
+				// Finish startup presentation before first activation can open a modal notice or request exit.
 				completedStartupSplash = splash;
 				splash = null;
-				mainForm.Show();
 				completedStartupSplash?.FadeOut();
+				mainForm.Show();
 			} catch (Exception error) {
 				errors.Add(error);
 				completing = true;

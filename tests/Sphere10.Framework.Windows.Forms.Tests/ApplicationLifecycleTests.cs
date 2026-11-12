@@ -441,6 +441,7 @@ public class ApplicationLifecycleTests {
 	public void RunnerRunsShutdownTasksBeforeClosingWindowAndDisposingServices(bool failFinalizer, bool showSplash, bool failFrameworkFinalizer, bool vetoFirstExit, bool exitWhenShown) {
 		Assert.That(Sphere10Framework.Instance.IsStarted, Is.False);
 		var events = new List<string>();
+		var noticeShown = false;
 		var configuredSplashes = new List<SplashScreen>();
 		var expectedFailure = new InvalidOperationException("Application finalizer failed.");
 		var expectedFrameworkFailure = new InvalidOperationException("Framework finalizer failed.");
@@ -498,6 +499,21 @@ public class ApplicationLifecycleTests {
 			.UseMainFormSettings(false)
 			.UseMainForm<LifecycleMainForm>(mainForm => {
 				form = mainForm;
+				form.FirstActivation += (_, _) => {
+					Assert.That(System.Windows.Forms.Application.OpenForms.OfType<SplashScreen>(), Is.Empty,
+						"The startup splash must close before first-activation handlers can open licensing dialogs.");
+					using var notice = new Form { ShowInTaskbar = false, Text = "Startup notice" };
+					using var closeNotice = new System.Windows.Forms.Timer { Interval = 25 };
+					closeNotice.Tick += (_, _) => {
+						closeNotice.Stop();
+						notice.Close();
+					};
+					notice.Shown += (_, _) => {
+						noticeShown = true;
+						closeNotice.Start();
+					};
+					notice.ShowDialog(form);
+				};
 				if (exitWhenShown)
 					form.Shown += (_, _) => form.Close();
 				form.FormClosing += (_, args) => {
@@ -580,6 +596,7 @@ public class ApplicationLifecycleTests {
 		Tools.Exceptions.ExecuteCapturingException(builder.StartWinFormsApplication, out var failure);
 		Assert.That(watchdogFailure, Is.Null);
 		Assert.That(vetoed, Is.EqualTo(vetoFirstExit));
+		Assert.That(noticeShown, Is.True, "The startup ordering check must exercise a real first-activation modal dialog.");
 		Assert.That(events, Is.EqualTo(new[] {
 			"Framework initialized", "Application initialized", "Application finalized", "Framework finalized", "Framework shutdown completed", "Main form closed", "Provider disposed"
 		}));
