@@ -42,6 +42,7 @@ public static class WinFormsComponentDemoPlugin {
 				.AddScreen<CustomComboBoxScreen>("Custom Dropdown")
 				.AddScreen<PathSelectorTestScreen>("Path Selector")
 				.AddScreen<TextAreaTestsScreen>("Text Area")
+				.AddScreen<HexEditorTestScreen>("Hex Editor")
 				.AddScreen<PasswordDialogTestScreen>("Password Dialog")
 				.AddScreen<TabControlTestScreen>("Tab Control")
 				.AddScreen<ExpandoTesterScreen>("Expandable Panels")
@@ -64,6 +65,7 @@ public static class WinFormsComponentDemoPlugin {
 					.AddShowScreenItem<CustomComboBoxScreen>("Custom Dropdown", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<PathSelectorTestScreen>("Path Selector", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<TextAreaTestsScreen>("Text Area", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<HexEditorTestScreen>("Hex Editor", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<PasswordDialogTestScreen>("Password Dialog", (Image)Resources.Generic16x16.Clone())
 				)
 				.AddMenuItem("Layout", (Image)Resources.Menu32x32.Clone(), configure: menu => menu
@@ -85,6 +87,16 @@ public static class WinFormsComponentDemoPlugin {
 					.AddShowScreenItem<ChartGalleryScreen>("Data Visualization Gallery", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<ChartTestScreen>("Graph And Bar Charts", (Image)Resources.Generic16x16.Clone())
 					.AddShowScreenItem<TelemetryChartTestScreen>("Live Telemetry", (Image)Resources.Generic16x16.Clone())
+				)
+			)
+			.AddBlock(block => block
+				.WithName("Styling")
+				.WithImage32x32((Image)Resources.TestBlock32x32.Clone())
+				.AddScreen<BlockSelectorStylesScreen>("Block Selector Styles")
+				.AddScreen<ExplorerBarDesignerScreen>("Explorer Bar Designer")
+				.AddMenuItem("Navigation", (Image)Resources.Menu32x32.Clone(), configure: menu => menu
+					.AddShowScreenItem<BlockSelectorStylesScreen>("Block Selector Styles", (Image)Resources.Generic16x16.Clone())
+					.AddShowScreenItem<ExplorerBarDesignerScreen>("Explorer Bar Designer", (Image)Resources.Generic16x16.Clone())
 				)
 			)
 			.AddBlock(block => block
