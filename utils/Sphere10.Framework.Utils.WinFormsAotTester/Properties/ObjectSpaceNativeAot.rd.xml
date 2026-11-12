@@ -1,0 +1,48 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+  <Application>
+    <!-- Native AOT's experimental runtime directives retain exact generic method bodies.
+         The ordinary trimming descriptor retains their reflection metadata separately. -->
+    <Assembly Name="Sphere10.Framework">
+      <Type Name="Sphere10.Framework.DecoratorExtensions">
+        <Method Name="AsWrapped">
+          <GenericArgument Name="Sphere10.Framework.DSS, Sphere10.Framework" />
+        </Method>
+        <Method Name="AsUnwrapped">
+          <GenericArgument Name="Sphere10.Framework.DSS, Sphere10.Framework" />
+        </Method>
+        <Method Name="AsWrapped">
+          <GenericArgument Name="System.Decimal, System.Private.CoreLib" />
+        </Method>
+        <Method Name="AsUnwrapped">
+          <GenericArgument Name="System.Decimal, System.Private.CoreLib" />
+        </Method>
+        <Method Name="AsWrapped">
+          <GenericArgument Name="System.Nullable`1[[Sphere10.Framework.DSS, Sphere10.Framework]], System.Private.CoreLib" />
+        </Method>
+        <Method Name="AsUnwrapped">
+          <GenericArgument Name="System.Nullable`1[[Sphere10.Framework.DSS, Sphere10.Framework]], System.Private.CoreLib" />
+        </Method>
+      </Type>
+      <Type Name="Sphere10.Framework.Mapping.Member">
+        <Method Name="AsFunc">
+          <GenericArgument Name="Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+Identity, Sphere10.Framework.Utils.WinFormsAotTester" />
+          <GenericArgument Name="System.Byte[], System.Private.CoreLib" />
+        </Method>
+        <Method Name="AsFunc">
+          <GenericArgument Name="Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+Account, Sphere10.Framework.Utils.WinFormsAotTester" />
+          <GenericArgument Name="System.String, System.Private.CoreLib" />
+        </Method>
+      </Type>
+      <Type Name="Sphere10.Framework.IndexFactory">
+        <Method Name="CreateUniqueProjectionChecksumIndex">
+          <GenericArgument Name="Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+Identity, Sphere10.Framework.Utils.WinFormsAotTester" />
+          <GenericArgument Name="System.Byte[], System.Private.CoreLib" />
+        </Method>
+        <Method Name="CreateUniqueProjectionChecksumIndex">
+          <GenericArgument Name="Sphere10.Framework.Utils.WinFormsTester.ObjectSpaceScreen+Account, Sphere10.Framework.Utils.WinFormsAotTester" />
+          <GenericArgument Name="System.String, System.Private.CoreLib" />
+        </Method>
+      </Type>
+    </Assembly>
+  </Application>
+</Directives>

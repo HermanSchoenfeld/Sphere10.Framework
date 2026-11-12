@@ -1,0 +1,110 @@
+<linker>
+  <!-- The compiled .resources header names these readers by assembly-qualified string. -->
+  <assembly fullname="System.Resources.Extensions">
+    <type fullname="System.Resources.Extensions.DeserializingResourceReader" preserve="all" />
+    <type fullname="System.Resources.Extensions.RuntimeResourceSet" preserve="all" />
+  </assembly>
+  <!-- The tester's menu resources contain Bitmap objects. -->
+  <assembly fullname="System.Drawing.Common">
+    <type fullname="System.Drawing.Bitmap" preserve="all" />
+    <type fullname="System.Drawing.Icon" preserve="all" />
+  </assembly>
+  <!-- Constructors selected through ControlStateEventProviderManager default registrations. -->
+  <assembly fullname="Sphere10.Framework.Windows.Forms">
+    <type fullname="Sphere10.Framework.Windows.Forms.FormEx/StateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.UserControlEx/StateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.PathSelectorControl/StateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.ContainerControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.SplitContainerControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.TabControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.CommonControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.SourceGridControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.ToolStripControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.ChartControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.ExpandoControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.PadLockButtonControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.CrudComboBoxControlStateEventProvider" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.ExplorerBarInfoSurrogate" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.TaskPaneInfoSurrogate" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.TaskItemInfoSurrogate" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.ExpandoInfoSurrogate" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.HeaderInfoSurrogate" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.PaddingEx" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.Border" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.Margin" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.ImageStretchMode" preserve="all" />
+    <!-- Concrete theme graph inspected by WinFormsCompatibleDeepObjectCloner. -->
+    <type fullname="Sphere10.Framework.Windows.Forms.ExplorerBarInfo" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.TaskPaneInfo" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.TaskItemInfo" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.ExpandoInfo" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.HeaderInfo" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.SessionEndingHandlerInitializer" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Windows.Forms.FormWindowSettings" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.ApplicationStartupScreenSettings" preserve="all" />
+    <!-- Chart-owned logging selectors restore this concrete settings graph reflectively. -->
+    <type fullname="Sphere10.Framework.Windows.Forms.LogOutputSelectorSettings" preserve="all" />
+    <type fullname="Sphere10.Framework.Windows.Forms.LogOutputConfiguration" preserve="all" />
+  </assembly>
+  <!-- Existing ObjectSpace serializer and index factories discover these helpers by name. -->
+  <assembly fullname="Sphere10.Framework">
+    <type fullname="Sphere10.Framework.DecoratorExtensions" preserve="nothing">
+      <method name="AsUnwrapped" />
+      <method name="AsWrapped" />
+      <method name="AsReferenceSerializer" />
+      <method name="AsDereferencedSerializer" />
+      <method name="AsCastedSerializer" />
+    </type>
+    <type fullname="Sphere10.Framework.Mapping.Member" preserve="nothing">
+      <method name="AsFunc" />
+    </type>
+    <type fullname="Tools.Lambda" preserve="nothing">
+      <method name="__Cast_1" />
+    </type>
+    <type fullname="Sphere10.Framework.IndexFactory" preserve="nothing">
+      <method name="CreateUniqueProjectionChecksumIndex" />
+    </type>
+  </assembly>
+  <assembly fullname="Sphere10.Framework.Application">
+    <type fullname="Sphere10.Framework.Application.IncrementUsageByOneInitializer" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.NET.EnsureSystemDataDirGloballyAccessibleInitializer" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+    <type fullname="Sphere10.Framework.Application.ProductUsageServices/UsageSettings" preserve="all" />
+  </assembly>
+  <assembly fullname="System.Windows.Forms">
+    <type fullname="System.Windows.Forms.PropertyGridInternal.PropertiesTab" preserve="nothing">
+      <method name=".ctor" />
+    </type>
+  </assembly>
+</linker>
