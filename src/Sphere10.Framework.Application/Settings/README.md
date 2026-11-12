@@ -134,12 +134,12 @@ On Unix the two default directories are therefore the same. A user record and a 
 
 Mark sensitive strings with `[EncryptedString]`. A provider whose `EncryptSettings` is `true`, such as `DirectoryFileSettingsProvider`, encrypts these members with AES when it saves and decrypts them when it loads. `BlazorSettingsProvider` returns `false`, so browser storage holds them as plain text.
 
-The secret comes from the static `EncryptedStringAttribute.ApplicationSharedSecret` field. The Application module sets it from the entry assembly's `AssemblyProductSecret` attribute when it initializes:
+The secret comes from the static `EncryptedStringAttribute.ApplicationSharedSecret` field. The Application module sets it from the entry assembly's `AssemblyApplicationSecret` attribute, the application's one secret, when it initializes:
 
 ```csharp
 using Sphere10.Framework.Application;
 
-[assembly: AssemblyProductSecret("your-product-secret")]
+[assembly: AssemblyApplicationSecret("your-application-secret")]
 ```
 
 - Without a secret, an encrypting provider throws `InvalidOperationException` when it loads or saves a type with encrypted members.

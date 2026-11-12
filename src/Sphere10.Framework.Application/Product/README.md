@@ -14,7 +14,8 @@ Product identity read from assembly attributes or supplied in code, usage counte
 | [`AssemblyAttributesProductInformationProvider`](AssemblyAttributesProductInformationProvider.cs) | class | Reads `ProductInformation` once from an assembly's product attributes, defaulting to the entry assembly |
 | [`AssemblyInfoProductServicesProvider`](AssemblyInfoProductServicesProvider.cs) | class | `ProductServicesProvider` whose product information comes from a chosen assembly's attributes |
 | [`BugReport`](BugReport.cs) | class | Support request carrying the bug description, the exception's diagnostic text and log entries |
-| [`ClientRequest`](ClientRequest.cs) | abstract class | Base support request with the sender, `UserType`, description, sender product information and service version |
+| [`ClientRequest`](ClientRequest.cs) | abstract class | Base support request with the sender, `UserType`, description, sender product information, service version and at most `MaxAttachments` (2) attachments |
+| [`ClientRequestAttachment`](ClientRequestAttachment.cs) | class | A file attached to a support request, such as a screenshot: its `FileName` and at most `MaxBytes` (1 MiB) of `Data` |
 | [`HelpType`](HelpType.cs) | enum | Help resource format: `None`, `PDF`, `CHM`, `RTF` or `URL` |
 | [`IProductInformationProvider`](IProductInformationProvider.cs) | interface | Supplies the application's `ProductInformation` |
 | [`IProductInstancesCounter`](IProductInstancesCounter.cs) | interface | Counts the running instances of the product |

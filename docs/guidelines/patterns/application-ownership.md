@@ -11,10 +11,17 @@ does not become their shutdown owner merely because it displays their data.
 |---|---|---|
 | Application-wide process inventory, telemetry, caches or shared workers | Application initializer, registered through the existing application/plugin lifecycle | Application finalizer cancels and awaits outstanding work before dependent services are disposed |
 | One screen's initial snapshot and presentation | Screen load or first-display override, after required host services are available | Screen destruction/removal cleanup; retain an idempotent disposal fallback |
-| A visible screen's refresh timer or view subscription | Display/activation override; resume with the latest published snapshot | Actual presentation change/deactivation, then destruction cleanup |
+| A visible screen's acquisition source and view subscription | Display/activation sets the source's Enabled policy and resumes the latest published snapshot | Actual presentation change/deactivation disables future screen-owned automatic work; destruction stops/drains its source |
 | An open screen's explicit capture session or shared-service lease | First display or the user's capture command, according to that screen's policy | Explicit stop or actual screen destruction; hiding a retained screen need not end the session |
 
 Initialize controls and designer state in constructors. Put screen work in the
+screen's source rather than a second collection timer. Use the optional
+[notifying data-source contract](data-sources.md#notifications-and-source-owned-acquisition)
+for Changed/CanNotify, Enabled/AutoRefresh/interval control, worker collection and shutdown. The owning lifecycle
+chooses automatic, on-demand or event-driven policy; grids query published data.
+Keep accepted preferences with their existing settings owner.
+
+Put screen initialization and finalization in the
 screen's overridable lifecycle methods rather than wiring the screen to its own
 display/load events or starting collection in its constructor. Events remain
 appropriate for outside observers and user commands. Initial control loading can

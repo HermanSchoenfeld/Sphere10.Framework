@@ -15,6 +15,7 @@ An initializer implements `IApplicationInitializer` and a finalizer implements `
 | [`ApplicationVersion`](Version.cs) | class | Major, minor, build and revision version with a `ProductDistribution`, `Parse` and `TryParse` of one, two or four parts, comparison operators and the `G`, `F`, `S` and `D` formats |
 | [`AsyncApplicationFinalizerBase`](AsyncApplicationFinalizerBase.cs) | abstract class | Finalizer that implements `FinalizeAsync` and blocks on it on a worker for `Finalize` |
 | [`AsyncApplicationInitializerBase`](AsyncApplicationInitializerBase.cs) | abstract class | Initializer that implements `InitializeAsync` and blocks on it on a worker for `Initialize` |
+| [`AutoRunServicesExtensions`](AutoRunServicesExtensions.cs) | static class | `SetAutoRunEnabled` on `IAutoRunServices`, which adds or removes the automatic start only when it differs and reports whether it changed |
 | [`EnsureSystemDataDirGloballyAccessibleInitializer`](EnsureSystemDataDirGloballyAccessibleInitializer.cs) | class | Windows initializer with `Priority` -1 that creates `{SystemDataDir}` and grants everyone modify access when the folder does not exist |
 | [`IApplicationFinalizer`](IApplicationFinalizer.cs) | interface | Shutdown task with `Priority`, `Finalize` and `FinalizeAsync` |
 | [`IApplicationInitializer`](IApplicationInitializer.cs) | interface | Startup task with `Priority`, `Parallelizable`, `Initialize` and `InitializeAsync` |

@@ -4,7 +4,7 @@ Assembly attributes that declare a product's identity, links, distribution, help
 
 Apply the assembly attributes in the entry assembly's `AssemblyInfo.cs`. `AssemblyAttributesProductInformationProvider` in [Product information and usage](../Product/README.md) reads them, together with the standard .NET `AssemblyProduct`, `AssemblyCompany`, `AssemblyCopyright` and `AssemblyDescription` attributes, into a `ProductInformation` object. Text values pass through `StringFormatter.FormatEx`, so tokens such as `{CurrentYear}` resolve when the product information is read. Help resources come from the attributes that derive from `AssemblyProductHelpResourceAttribute`.
 
-The Application module reads `AssemblyProductSecretAttribute` from the entry assembly during initialization and uses it as the secret for encrypted settings members, as [Settings](../Settings/README.md#encryption) describes. `SettingsAttribute` and its base `UseSettingsAttribute` declare a screen's settings type, and `UserEditableAttribute` enables the automatic settings editor, as the [Application guide](../README.md#screen-block-and-plugin-preferences) describes.
+The Application module reads `AssemblyApplicationSecretAttribute` (the application's one secret) from the entry assembly during initialization and uses it as the secret for encrypted settings members, as [Settings](../Settings/README.md#encryption) describes. `SettingsAttribute` and its base `UseSettingsAttribute` declare a screen's settings type, and `UserEditableAttribute` enables the automatic settings editor, as the [Application guide](../README.md#screen-block-and-plugin-preferences) describes.
 
 ## Contents
 
@@ -21,7 +21,7 @@ The Application module reads `AssemblyProductSecretAttribute` from the entry ass
 | [`AssemblyProductHelpResourceAttribute`](AssemblyProductHelpResourceAttribute.cs) | abstract class | Base of the help-resource attributes, carrying a `HelpType` and a `Path` |
 | [`AssemblyProductLinkAttribute`](AssemblyProductLinkAttribute.cs) | class | Product website URL, read into `ProductInformation.ProductUrl` |
 | [`AssemblyProductPurchaseLinkAttribute`](AssemblyProductPurchaseLinkAttribute.cs) | class | Product purchase URL, read into `ProductInformation.ProductPurchaseUrl` |
-| [`AssemblyProductSecretAttribute`](AssemblyProductSecretAttribute.cs) | class | Application secret that the module assigns to `EncryptedStringAttribute.ApplicationSharedSecret` |
+| [`AssemblyApplicationSecretAttribute`](AssemblyApplicationSecretAttribute.cs) | class | Application secret that the module assigns to `EncryptedStringAttribute.ApplicationSharedSecret` |
 | [`ContextHelpAttribute`](ContextHelpAttribute.cs) | class | Numeric context-help topic `ID`, declared in the `Sphere10.Framework.Application.Help` namespace |
 | [`ProductDistribution`](ProductDistribution.cs) | enum | Release stage: `Alpha`, `Beta`, `ReleaseCandidate` or `InternalRelease`, serialized as `Alpha`, `Beta`, `RC` and `Internal` |
 | [`SettingsAttribute`](SettingsAttribute.cs) | class | Declares the `SettingsObject` type of a screen without constructing the screen |

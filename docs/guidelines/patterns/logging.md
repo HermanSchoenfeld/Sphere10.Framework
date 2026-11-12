@@ -56,7 +56,8 @@ Windows Application Log, Screen, Standard Output or Standard Error, followed by 
 Destination names are bold with explanatory text beside them. Windows Application
 Log forwards to the running application's supplied diagnostics logger.
 Finish validates and opens the output before activating the checkbox. Later
-activation reuses the accepted options. **...** (Configure Log Output) opens a designer-editable
+activation reuses the accepted options. The adjacent log icon (**Log output options**)
+opens a designer-editable
 details dialog with **Start Logging** / **Stop Logging** and a **Change** button that launches that same wizard. Cancellation
 preserves the current output, including an output already active while editing.
 

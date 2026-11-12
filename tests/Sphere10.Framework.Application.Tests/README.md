@@ -71,6 +71,7 @@ Application task runners, process framework tasks and framework builder conventi
 | [ApplicationTaskBaseTests](Lifecycle/ApplicationTaskBaseTests.cs) | Explicit dual task contracts, directional bases, worker execution, blocking awaited completion and errors, caller-context safety. |
 | [ApplicationTaskRegistrationTests](Lifecycle/ApplicationTaskRegistrationTests.cs) | Keyed application tasks remaining separate from existing unkeyed process tasks and real framework startup/shutdown. |
 | [ApplicationTaskRunnerTests](Lifecycle/ApplicationTaskRunnerTests.cs) | Existing initializer phases and finalizer order, task progress/logging, failure propagation and completing every shutdown task. |
+| [AutoRunServicesExtensionsTests](Lifecycle/AutoRunServicesExtensionsTests.cs) | `SetAutoRunEnabled` changing a registration only when it differs, and rejecting missing arguments. |
 | [FrameworkBuilderConventionTests](Lifecycle/FrameworkBuilderConventionTests.cs) | Module references exposing immediate construction without running their registration. |
 | [FrameworkFinalizationTests](Lifecycle/FrameworkFinalizationTests.cs) | Once-only process shutdown tasks before deferred service disposal, failure cleanup, borrowed providers, restart and reentrant shutdown protection. |
 

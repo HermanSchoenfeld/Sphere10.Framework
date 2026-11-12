@@ -58,6 +58,18 @@ persistence-specific `ShouldSerialize` policies, so Cancel and Reset remain usef
 An explicitly requested Options owner takes precedence; otherwise prefer the
 active screen's settings and retain the existing owner/first-page fallback.
 
+A native custom editor may call
+`ApplicationSettingsEditorContext.IncludeSettings(existingRoot, memberNames)`
+before binding selected fields from another existing plugin/block/screen owner.
+This is opt-in page composition, not another settings record. The dialog verifies
+graph membership and editable persisted members, retains each actual root and
+provider, and includes changed participants in that page's Apply/Cancel workflow.
+Each successful save advances only that root's backup, so a later failure does
+not undo an earlier accepted Apply. Page Reset invokes the participant's real
+`RestoreDefaultValues()` and retains only the displayed member defaults through
+the existing value serializer; undisplayed members stay unchanged. Do not mutate
+an unregistered root or save an additional owner directly from an editor callback.
+
 Native Options Reset confirms the affected branch/count, then resets the selected
 owner and descendants by default, including settings without an editor. All
 resets remain provisional; default Apply commits pending resets across navigation,

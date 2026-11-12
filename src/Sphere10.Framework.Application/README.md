@@ -51,18 +51,18 @@ Types declared in the project folder itself:
 
 | Shared responsibility | Types |
 |---|---|
-| Plugin definitions and startup registration | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginDecorator`, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>` |
-| Running application and lifecycle | `IApplication`, `ApplicationBase`, `SyncApplicationBase`, `AsyncApplicationBase`, `ApplicationDecorator` |
+| Plugin definitions and startup registration | `IApplicationPlugin`, `ApplicationPluginBase`, `ApplicationPlugin`, `ApplicationPluginBuilder`, `ApplicationPluginRegistration<TPlugin>` |
+| Running application and lifecycle | `IApplication`, `ApplicationBase`, `SyncApplicationBase`, `AsyncApplicationBase` |
 | Application interactions and command execution | `IUserInterfaceServices`, `ApplicationUserInterfaceServices`, `UserInterfaceServicesDecorator` |
 | Presentation command contracts | `IApplicationCommandProvider`, `ApplicationCommandLevel`, `ApplicationCommandLayer` |
 | Menu and toolbar definitions | `IApplicationMenu<TItem>`, `ApplicationMenuBase<TItem>`, `ApplicationMenuItemBase`, `IApplicationMenuSeparator` |
-| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardStep`, `WizardStepTraits`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardDecorator`, `WizardBuilderBase` |
+| Wizard orchestration and configuration | `IWizard<TStep>`, `IWizard<TModel, TStep>`, `IWizardStep`, `WizardStepTraits`, `IWizardBuilder`, `WizardBase`, `Wizard`, `WizardBuilderBase` |
 | Block, menu and item contracts | `IApplicationBlock`, `IApplicationMenu`, `IApplicationMenuItem`, `IScreenMenuItem` |
 | Mutable metadata and notification handlers | `ApplicationBlockBase`, `ApplicationMenuBase<TItem>`, `ApplicationMenuItemBase` |
 | Fluent builder composition and validation | `IApplicationUIBuilder<TProduct>`, `ApplicationBuilderBase`, `ApplicationPluginBuilderBase`, `ApplicationBlockBuilderBase`, `ApplicationMenuBuilderBase`, `ApplicationMenuItemBuilderBase` |
 | Screen metadata validation and lifecycle | `ScreenActivationMode`, `ScreenKind`, `ApplicationScreenDefinition`, `IApplicationScreen` |
 | Block navigation and screen hosting | `IApplicationScreenHost`, `IApplicationScreenHost<TBlock, TScreen>`, `ApplicationScreenHostBase<TBlock, TScreen>`, `ApplicationScreenHost<TBlock, TScreen>`, `ApplicationScreenHost`, `ApplicationScreenHostDecorator` |
-| Single-screen operations | `ISingleApplicationScreenHost`, `ISingleApplicationScreenHost<TBlock, TScreen>`, `SingleApplicationScreenHostDecorator` |
+| Single-screen operations | `ISingleApplicationScreenHost`, `ISingleApplicationScreenHost<TBlock, TScreen>` |
 | Multiple-screen operations | `IMultiApplicationScreenHost`, `IMultiApplicationScreenHost<TBlock, TScreen>`, `MultiApplicationScreenHostDecorator` |
 | Awaitable menu actions | `ApplicationAction` |
 
@@ -204,7 +204,7 @@ Plugin startup registration validates names and block ownership: plugin names mu
 
 `IApplication` represents the running application rather than service-container startup. It exposes array-valued `Blocks` and `LoadedPlugins`, `ScreenHost`, `HasUnsavedChanges` and a `Changed` event. `Blocks` reflects the host's current registered membership; `LoadedPlugins` preserves startup provenance, including service-only plugins with no blocks. Navigate through `ScreenHost`, inspect its `ActiveBlock` and `ActiveScreen`, and obtain interactions through `ScreenHost.UserInterfaceServices`. The application keeps no duplicate navigation state. `IApplication` and `IApplication` specialize that contract. Resolving the shared interface returns the same platform application instance. Disposal finalizes application tasks and owned resources, then releases subscriptions without taking ownership of the host, its interaction services, screens or plugin registrations.
 
-`IApplication<TPlugin, THost>` and `IApplicationPlugin<TBlock>` provide typed plugin collections and a typed host. Applications, blocks, screens and plugins are shared command providers. Platforms specialize their descriptors through `IApplicationMenu<TItem>` and `IApplicationCommandProvider<TMenu, TItem>`; the inline bridges expose those same arrays through the shared owner interfaces. Consumers can read portable commands through the neutral contracts and use platform contracts for native presentation details. `ApplicationDecorator` forwards the running application's current command arrays rather than substituting empty defaults.
+`IApplication<TPlugin, THost>` and `IApplicationPlugin<TBlock>` provide typed plugin collections and a typed host. Applications, blocks, screens and plugins are shared command providers. Platforms specialize their descriptors through `IApplicationMenu<TItem>` and `IApplicationCommandProvider<TMenu, TItem>`; the inline bridges expose those same arrays through the shared owner interfaces. Consumers can read portable commands through the neutral contracts and use platform contracts for native presentation details.
 
 Platform ownership properties specialize the shared object relationships and bridge them inline at interface level. Keep these projections together under `#region Base Interface Bridges`; execution-direction adapters belong in the directional base classes described below.
 
@@ -327,7 +327,7 @@ public static class WorkspaceCommands {
 }
 ```
 
-`ISingleApplicationScreenHost.CloseActiveScreenAsync` and `CanCloseActiveScreenAsync` work on the current screen. The multiple host contract adds reference-based Show, Close, CanClose, Move and batch Close operations. `ApplicationScreenHostDecorator`, `SingleApplicationScreenHostDecorator` and `MultiApplicationScreenHostDecorator` forward their respective contracts; choose the matching decorator when overriding a capability.
+`ISingleApplicationScreenHost.CloseActiveScreenAsync` and `CanCloseActiveScreenAsync` work on the current screen. The multiple host contract adds reference-based Show, Close, CanClose, Move and batch Close operations. `ApplicationScreenHostDecorator` and `MultiApplicationScreenHostDecorator` forward their respective contracts; choose the matching decorator when overriding a capability.
 
 Closing the active tab selects the first surviving tab after it in presentation order, then the nearest surviving tab before it when none follows. Batch closure uses the order before any removals, including after tabs have been reordered. Closing inactive tabs preserves the current selection. If no tab survives, selection becomes null; closure does not activate an empty-screen definition. Startup and explicit empty-screen navigation retain their existing placeholder behavior.
 
@@ -429,9 +429,9 @@ var result = await wizard.FinishAsync();
 
 `MoveNextAsync` and `MovePreviousAsync` provide awaited navigation. `UpdateStepsAsync` and `RemoveStepAsync` let platform adapters update their displayed controls before returning. `WizardStepUpdateType` supports injecting steps, replacing the remaining branch, replacing all steps and removing subsequent steps. The workflow returns defensive `Steps` arrays while retaining step and model identities. Finish and Cancel share an explicit lifecycle state and operation gate: concurrent terminal operations are rejected while busy; a declined or failed callback leaves a retryable workflow; successful completion runs once. Callbacks must not recursively finish or cancel the same wizard.
 
-Dynamic steps implement `IWizardStep` and expose `Traits = WizardStepTraits.AssumeHasNext` when their navigation callback creates the next step. `HasNext` then advertises Next before a successor is registered. The callback must register a real successor before navigation; a missing successor returns an error without changing the current index or finishing. An assumed-next step cannot finish directly. Ordinary terminal steps use `WizardStepTraits.None`. Hosts rendering definitions such as component `Type` values bind the live instance's traits through `StepTraitsResolver`; they restore the previous resolver when detaching. `WizardDecorator` forwards this resolver and its change notification.
+Dynamic steps implement `IWizardStep` and expose `Traits = WizardStepTraits.AssumeHasNext` when their navigation callback creates the next step. `HasNext` then advertises Next before a successor is registered. The callback must register a real successor before navigation; a missing successor returns an error without changing the current index or finishing. An assumed-next step cannot finish directly. Ordinary terminal steps use `WizardStepTraits.None`. Hosts rendering definitions such as component `Type` values bind the live instance's traits through `StepTraitsResolver`; they restore the previous resolver when detaching.
 
-`WizardBuilderBase<TSelf, TModel, TStep, TWizard>` centralizes the fluent setup methods, reset/start requirements, callbacks and build validation over its shared state base. The shared `IWizardBuilder<TSelf, TModel, TStep, TWizard>` also carries the fluent contract, so interface-returning chains retain the same capabilities. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow. `WizardDecorator` forwards the common contract for behavior extensions.
+`WizardBuilderBase<TSelf, TModel, TStep, TWizard>` centralizes the fluent setup methods, reset/start requirements, callbacks and build validation over its shared state base. The shared `IWizardBuilder<TSelf, TModel, TStep, TWizard>` also carries the fluent contract, so interface-returning chains retain the same capabilities. Platform builders supply their step validation and factories. Use `WinFormsWizardBuilder<TModel>` for native dialogs, or `BlazorWizardBuilder<TModel>` from the chosen Blazor wizard generation. Their adapters keep rendering, screen initialization and component validation in the UI libraries while consuming the same workflow.
 
 ## Awaitable UI services
 
@@ -874,7 +874,7 @@ The framework registers these services by default:
 | `IWebsiteLauncher` | Open URLs in default browser |
 | `IDuplicateProcessDetector` | Detect multiple instances |
 | `IProductInstancesCounter` | Count running instances |
-| `IAutoRunServices` | Windows startup registration |
+| `IAutoRunServices` | Windows startup registration; `SetAutoRunEnabled(type, name, executable, enabled)` makes it match a "Start with Windows" option and touches it only when it differs |
 
 ## 🎯 Framework Options
 

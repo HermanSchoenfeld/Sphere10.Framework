@@ -2,7 +2,7 @@
 
 The optional transport contract for feature requests, comments, bug reports and crash reports, and the feature-request record.
 
-An application that offers support dialogs registers its own `IProductSupportService`, and the framework supplies no implementation. Each call sends a request record and returns a `Result`. `FeatureRequest` is defined here, and the other records, `BugReport`, `ProductComment` and their base `ClientRequest`, are in [Product information and usage](../Product/README.md).
+An application that offers support dialogs registers its own `IProductSupportService`, and the framework supplies no implementation. Each call sends a request record and returns a `Result`. A request can carry up to two `ClientRequestAttachment` files of at most 1 MiB each, which the WinForms support dialogs fill from their attachment selectors. `FeatureRequest` is defined here, and the other records, `BugReport`, `ProductComment` and their base `ClientRequest`, are in [Product information and usage](../Product/README.md).
 
 ## Contents
 

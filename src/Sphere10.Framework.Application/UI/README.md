@@ -18,8 +18,6 @@ Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, w
 | [`ApplicationBuilderBase<TSelf, TApplication, TPlugin, TPluginBuilder, TResult>`](ApplicationBuilderBase.cs) | abstract class | Collects the application title, plugins and deferred callbacks before a platform registers or creates its host |
 | [`ApplicationCommandLayer`](ApplicationCommandLayer.cs) | class | A command provider's menu and toolbar contribution at an explicit `ApplicationCommandLevel` |
 | [`ApplicationCommandLevel`](ApplicationCommandLevel.cs) | enum | Scope of a command contribution: `Application`, `Block`, `Screen` or `Plugin` |
-| [`ApplicationDecorator`](ApplicationDecorator.cs) | abstract class | `ApplicationDecorator<TConcrete>` over a plain `IApplication` |
-| [`ApplicationDecorator<TConcrete>`](ApplicationDecorator.cs) | abstract class | Forwards every `IApplication` member, event and command array to a wrapped application |
 | [`ApplicationMenuBase<TItem>`](ApplicationMenuBase.cs) | abstract class | Menu metadata and item storage independent of controls and images |
 | [`ApplicationMenuBuilderBase<TItem, TMenu>`](ApplicationMenuBuilderBase.cs) | abstract class | Menu builder state: text, icon and items, with an abstract `CreateMenu` factory |
 | [`ApplicationMenuBuilderBase<TSelf, TItem, TItemBuilder, TMenu>`](ApplicationMenuBuilderBase.cs) | abstract class | Fluent menu metadata and child item-builder composition |
@@ -33,8 +31,6 @@ Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, w
 | [`ApplicationPluginBuilderBase<TBlock, TPlugin>`](ApplicationPluginBuilderBase.cs) | abstract class | Plugin builder state: name, settings, blocks and service callbacks, with a platform plugin factory |
 | [`ApplicationPluginBuilderBase<TSelf, TBlock, TPlugin>`](ApplicationPluginBuilderBase.cs) | abstract class | Fluent plugin configuration, `AddInitializer<T>` and `AddFinalizer<T>` over existing block definitions |
 | [`ApplicationPluginBuilderBase<TSelf, TBlock, TBlockBuilder, TPlugin>`](ApplicationPluginBuilderBase.cs) | abstract class | Adds child block-builder composition to the fluent plugin builder |
-| [`ApplicationPluginDecorator`](ApplicationPluginDecorator.cs) | abstract class | `ApplicationPluginDecorator<TConcrete>` over a plain `IApplicationPlugin` |
-| [`ApplicationPluginDecorator<TConcrete>`](ApplicationPluginDecorator.cs) | abstract class | Forwards plugin definitions and startup lifetime to a wrapped plugin without taking ownership |
 | [`ApplicationPluginRegistration<TPlugin>`](ApplicationPluginRegistration.cs) | record | Receipt of a successfully registered startup plugin and its captured block membership |
 | [`ApplicationScreenBuilder`](ApplicationScreenBuilder.cs) | class | Declares UI-independent screen metadata for an explicitly supplied screen type |
 | [`ApplicationScreenBuilder<TScreen>`](ApplicationScreenBuilder.cs) | class | Declares a typed UI-independent screen registration |
@@ -67,7 +63,6 @@ Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, w
 | [`IApplicationScreenHost`](IApplicationScreenHost.cs) | interface | Hosts application blocks and screens: registration, block selection and activation, screen opening, view mode and unsaved-state checks |
 | [`IApplicationScreenHost<TBlock, TScreen>`](IApplicationScreenHost.cs) | interface | Typed block and screen projections shared by all application hosts |
 | [`IApplicationUIBuilder<TProduct>`](IApplicationUIBuilder.cs) | interface | Builder whose `Build` produces a UI definition, so parents can compose child builders through product interfaces |
-| [`IApplicationUpgradeDialog`](IUserInterfaceServices.cs) | interface | Upgrade progress dialog with a `ProgressHandler` and a `Finish` call that takes an error message |
 | [`IHelpableObject`](IHelpableObject.cs) | interface | Help metadata: help type, file name, URL, page number and topic identifiers |
 | [`IHelpServices`](IHelpServices.cs) | interface | Shows general help or the help of an `IHelpableObject` |
 | [`IMultiApplicationScreenHost`](IMultiApplicationScreenHost.cs) | interface | Operations on retained and open screens in a host with several screens: show, close, move and batch close |
@@ -84,10 +79,6 @@ Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, w
 | [`ScreenActivationMode`](ScreenActivationMode.cs) | enum | Screen lifetime: `SingleInstance`, `MultiInstance` or `PermanentSingleton` |
 | [`ScreenKind`](ScreenKind.cs) | enum | `Normal` screen or `Empty` placeholder shown only while no other screen is open |
 | [`ScreenMode`](ScreenMode.cs) | enum | Host view mode: `SingleView` or `MultiView` |
-| [`SingleApplicationScreenHostDecorator`](SingleApplicationScreenHostDecorator.cs) | abstract class | `SingleApplicationScreenHostDecorator<TConcrete>` over a plain `ISingleApplicationScreenHost` |
-| [`SingleApplicationScreenHostDecorator<TBlock, TScreen>`](SingleApplicationScreenHostDecorator.cs) | abstract class | Typed single-screen host decorator over an `ISingleApplicationScreenHost<TBlock, TScreen>` |
-| [`SingleApplicationScreenHostDecorator<TBlock, TScreen, TConcrete>`](SingleApplicationScreenHostDecorator.cs) | abstract class | Forwards typed single-screen host operations to a wrapped host |
-| [`SingleApplicationScreenHostDecorator<TConcrete>`](SingleApplicationScreenHostDecorator.cs) | abstract class | Forwards neutral single-screen host operations to a wrapped host |
 | [`StandardHelpServices`](StandardHelpProvider.cs) | class | `IHelpServices` that opens the product website for general and context help |
 | [`StandardWebsiteLauncher`](StandardWebsiteLauncher.cs) | class | `IWebsiteLauncher` that opens URLs through the shell and reads the product URLs from `IProductInformationProvider` |
 | [`SyncApplicationBase`](SyncApplicationBase.cs) | abstract class | Application whose lifecycle and exit work runs synchronously, with worker-backed asynchronous adapters |
@@ -112,8 +103,6 @@ Most types are in the `Sphere10.Framework.Application.UI` namespace. The help, w
 | [`WizardBase<TModel, TStep>`](Wizard/WizardBase.cs) | abstract class | Abstract `IWizard<TModel, TStep>` members with a protected `OnChanged` notification |
 | [`WizardBuilderBase<TModel, TStep, TWizard>`](Wizard/WizardBuilderBase.cs) | abstract class | Wizard builder state, whose platform builders supply steps and the product factory |
 | [`WizardBuilderBase<TSelf, TModel, TStep, TWizard>`](Wizard/WizardBuilderBase.cs) | abstract class | Fluent wizard setup, reset, ordered steps, cancellation, callbacks and build validation |
-| [`WizardDecorator<TModel, TStep>`](Wizard/WizardDecorator.cs) | abstract class | `WizardDecorator<TModel, TStep, TConcrete>` over a plain `IWizard<TModel, TStep>` |
-| [`WizardDecorator<TModel, TStep, TConcrete>`](Wizard/WizardDecorator.cs) | abstract class | Forwards every wizard member, including the step-traits resolver, to a wrapped wizard |
 | [`WizardResult`](Wizard/WizardResult.cs) | enum | Wizard outcome: `Success`, `Error` or `Cancelled` |
 | [`WizardState`](Wizard/WizardState.cs) | enum | Wizard lifecycle state: `Active`, `Finishing`, `Cancelling`, `Finished` or `Cancelled` |
 | [`WizardStepTraits`](Wizard/WizardStepTraits.cs) | enum | Step flags: `None` or `AssumeHasNext` for a step that supplies its successor during navigation |
