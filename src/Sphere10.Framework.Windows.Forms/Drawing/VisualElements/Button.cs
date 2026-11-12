@@ -16,6 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 
 [Serializable]
 public class Button : ButtonBase {
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -30,17 +32,32 @@ public class Button : ButtonBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Button(this);
-	}
+	public override object Clone() => new Button(this);
 
 	public override System.Drawing.SizeF GetBackgroundExtent(GraphicsMeasurement measure, System.Drawing.SizeF contentSize) {
 		contentSize = new SizeF(contentSize.Width + 4, contentSize.Height + 4);
 		return base.GetBackgroundExtent(measure, contentSize);
+	}
+
+	public override System.Drawing.RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, System.Drawing.RectangleF backGroundArea) {
+		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
+		if (backGroundArea.Width > 4) {
+			backGroundArea.X += 2;
+			backGroundArea.Width -= 4;
+		}
+
+		if (backGroundArea.Height > 4) {
+			backGroundArea.Y += 2;
+			backGroundArea.Height -= 4;
+		}
+
+		return backGroundArea;
 	}
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
@@ -63,20 +80,5 @@ public class Button : ButtonBase {
 				ControlPaint.DrawFocusRectangle(graphics.Graphics, Rectangle.Round(GetBackgroundContentRectangle(measure, area)));
 			}
 		}
-	}
-
-	public override System.Drawing.RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, System.Drawing.RectangleF backGroundArea) {
-		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
-		if (backGroundArea.Width > 4) {
-			backGroundArea.X += 2;
-			backGroundArea.Width -= 4;
-		}
-
-		if (backGroundArea.Height > 4) {
-			backGroundArea.Y += 2;
-			backGroundArea.Height -= 4;
-		}
-
-		return backGroundArea;
 	}
 }

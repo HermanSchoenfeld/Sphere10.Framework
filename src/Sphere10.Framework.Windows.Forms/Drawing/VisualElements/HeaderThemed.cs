@@ -22,6 +22,8 @@ public class HeaderThemed : HeaderBase {
 	/// </summary>
 	private Header _standardHeader = new Header();
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -36,10 +38,10 @@ public class HeaderThemed : HeaderBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override ControlDrawStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -51,9 +53,7 @@ public class HeaderThemed : HeaderBase {
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new HeaderThemed(this);
-	}
+	public override object Clone() => new HeaderThemed(this);
 
 	public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
 		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
@@ -92,7 +92,6 @@ public class HeaderThemed : HeaderBase {
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 }

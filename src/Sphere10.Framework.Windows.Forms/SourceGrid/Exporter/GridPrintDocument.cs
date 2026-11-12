@@ -63,25 +63,15 @@ public class GridPrintDocument : PrintDocument {
 	/// <summary>
 	/// Cell view when printing.
 	/// </summary>
-	public Cells.Views.Cell CellPrintView {
-		get {
-			return _cellPrintView;
-		}
-	}
+	public Cells.Views.Cell CellPrintView => _cellPrintView;
 
 	/// <summary>
 	/// Header cell view when printing.
 	/// </summary>
-	public Cells.Views.Cell HeaderCellPrintView {
-		get {
-			return _headerCellPrintView;
-		}
-	}
+	public Cells.Views.Cell HeaderCellPrintView => _headerCellPrintView;
 
 	public CellRange RangeToPrint {
-		get {
-			return _rangeToPrint;
-		}
+		get => _rangeToPrint;
 		set {
 			if (value.Start.Row < 0 || value.Start.Column < 0
 									|| value.Start.Row >= _grid.Rows.Count || value.Start.Column >= _grid.Columns.Count)
@@ -93,71 +83,43 @@ public class GridPrintDocument : PrintDocument {
 
 	/// <summary>Gets or sets the header font; caller-supplied replacements remain caller-owned.</summary>
 	public Font PageHeaderFont {
-		get {
-			return _pageHeaderFont;
-		}
-		set {
-			_pageHeaderFont = value;
-		}
+		get => _pageHeaderFont;
+		set => _pageHeaderFont = value;
 	}
 
 	public string PageHeaderText {
-		get {
-			return _pageHeaderText;
-		}
-		set {
-			_pageHeaderText = value;
-		}
+		get => _pageHeaderText;
+		set => _pageHeaderText = value;
 	}
 
 	/// <summary>Gets or sets the footer font; caller-supplied replacements remain caller-owned.</summary>
 	public Font PageFooterFont {
-		get {
-			return _pageFooterFont;
-		}
-		set {
-			_pageFooterFont = value;
-		}
+		get => _pageFooterFont;
+		set => _pageFooterFont = value;
 	}
 
 	public string PageFooterText {
-		get {
-			return _pageFooterText;
-		}
-		set {
-			_pageFooterText = value;
-		}
+		get => _pageFooterText;
+		set => _pageFooterText = value;
 	}
 
 	/// <summary>Gets or sets the title font; caller-supplied replacements remain caller-owned.</summary>
 	public Font PageTitleFont {
-		get {
-			return _pageTitleFont;
-		}
-		set {
-			_pageTitleFont = value;
-		}
+		get => _pageTitleFont;
+		set => _pageTitleFont = value;
 	}
 
 	public string PageTitleText {
-		get {
-			return _pageTitleText;
-		}
-		set {
-			_pageTitleText = value;
-		}
+		get => _pageTitleText;
+		set => _pageTitleText = value;
 	}
 
 	/// <summary>
 	/// Property if fixed rows should be repeated on each page.
 	/// </summary>
 	public bool RepeatFixedRows {
-		get {
-			return _repeatFixedRows;
-		}
-		set {
-			_repeatFixedRows = value;
-		}
+		get => _repeatFixedRows;
+		set => _repeatFixedRows = value;
 	}
 
 	/// <summary>
@@ -405,17 +367,14 @@ public class GridPrintDocument : PrintDocument {
 		return g.MeasureString(this.PageFooterText, this.PageFooterFont).Height * 1.5f;
 	}
 
-	protected virtual void DrawHeader(Graphics g, RectangleF clip, int pageNo, int pageCount) {
-		DrawText(g, this.PageHeaderText, this.PageHeaderFont, Brushes.Black, clip, pageNo, pageCount);
-	}
+	protected virtual void DrawHeader(Graphics g, RectangleF clip, int pageNo, int pageCount)
+		=> DrawText(g, this.PageHeaderText, this.PageHeaderFont, Brushes.Black, clip, pageNo, pageCount);
 
-	protected virtual void DrawTitle(Graphics g, RectangleF clip, int pageNo, int pageCount) {
-		DrawText(g, this.PageTitleText, this.PageTitleFont, Brushes.Black, clip, pageNo, pageCount);
-	}
+	protected virtual void DrawTitle(Graphics g, RectangleF clip, int pageNo, int pageCount)
+		=> DrawText(g, this.PageTitleText, this.PageTitleFont, Brushes.Black, clip, pageNo, pageCount);
 
-	protected virtual void DrawFooter(Graphics g, RectangleF clip, int pageNo, int pageCount) {
-		DrawText(g, this.PageFooterText, this.PageFooterFont, Brushes.Black, clip, pageNo, pageCount);
-	}
+	protected virtual void DrawFooter(Graphics g, RectangleF clip, int pageNo, int pageCount)
+		=> DrawText(g, this.PageFooterText, this.PageFooterFont, Brushes.Black, clip, pageNo, pageCount);
 
 	protected virtual int PrecalculatePageCount(PrintPageEventArgs e) {
 		var pageCount = 1;
@@ -459,13 +418,9 @@ public class GridPrintDocument : PrintDocument {
 		return pageCount * columnPageCount;
 	}
 
-	protected virtual float GetRowHeight(Graphics g, int row) {
-		return (float)_grid.Rows.GetHeight(row);
-	}
+	protected virtual float GetRowHeight(Graphics g, int row) => (float)_grid.Rows.GetHeight(row);
 
-	protected virtual float GetColumnWidth(Graphics g, int column) {
-		return (float)_grid.Columns.GetWidth(column);
-	}
+	protected virtual float GetColumnWidth(Graphics g, int column) => (float)_grid.Columns.GetWidth(column);
 
 	protected virtual void DrawCell(Graphics g, CellContext context, RectangleF rect) {
 		if (context.Cell == null)
@@ -517,7 +472,8 @@ public class GridPrintDocument : PrintDocument {
 			.Replace("[PageCount]", pageCount.ToString());
 	}
 
-	// Helper methods
+	#region Helper methods
+
 	private static void AddRange(List<int> list, int from, int to) {
 		for (var index = from; index <= to; index++)
 			list.Add(index);
@@ -529,4 +485,6 @@ public class GridPrintDocument : PrintDocument {
 				return true;
 		return false;
 	}
+
+	#endregion
 }

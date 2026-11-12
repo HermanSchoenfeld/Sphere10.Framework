@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -151,7 +153,7 @@ public abstract class SerializerBuilder {
 		Guard.Ensure(!_factory.ContainsSerializer(ItemType), "Serializer already registered for type");
 
 		// If not retaining assembled serialized in the factory, we use an anonymous chained factory to avoid polluting the factory
-		var typeCodeStart = _factory.MaxGeneratedTypeCode + 1;
+		var typeCodeStart = _factory.GenerateTypeCode();
 		var factory = retainMemberSerializersAsRegistrations ? _factory : new SerializerFactory(_factory) { MinGeneratedTypeCode = typeCodeStart };
 
 		var membersWithoutBindings = GetSerializableMembers(ItemType).Except(_memberBindings.Select(x => x.Member)).ToArray();
@@ -190,7 +192,7 @@ public abstract class SerializerBuilder {
 		=> (IItemSerializer<T>)FactoryAssemble(typeof(T), factory);
 
 	public static IItemSerializer FactoryAssemble(Type itemType, SerializerFactory factory) 
-		=> FactoryAssemble(factory, itemType, false, factory.MaxGeneratedTypeCode + 1);
+		=> FactoryAssemble(factory, itemType, false, factory.GenerateTypeCode());
 
 	/// <summary>Assembles missing serializers and records composite or polymorphic construction for later factory reconstruction.</summary>
 	/// <param name="factory">The existing registrations used to resolve item and member serializers.</param>
@@ -200,7 +202,7 @@ public abstract class SerializerBuilder {
 	public static IItemSerializer FactoryAssemble(SerializerFactory factory, Type itemType, bool retainAssembledTypeSerializersInFactory, long? typeCodeStart = null) {
 
 		// If not retaining assembled serialized in the factory, we use an anonymous chained factory to avoid polluting the factory
-		typeCodeStart ??= factory.MaxGeneratedTypeCode + 1;
+		typeCodeStart ??= factory.GenerateTypeCode();
 		factory = retainAssembledTypeSerializersInFactory ? factory : new SerializerFactory(factory) { MinGeneratedTypeCode = typeCodeStart.Value };
 
 		var assembledSerializer = BuildRecursively(itemType, ReferenceSerializerMode.Default, new());

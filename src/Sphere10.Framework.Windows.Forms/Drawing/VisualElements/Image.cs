@@ -20,6 +20,8 @@ public class Image : VisualElementBase, IImage {
 	private System.Drawing.Image _value = null;
 	private bool _enabled = true;
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -30,9 +32,7 @@ public class Image : VisualElementBase, IImage {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public Image(System.Drawing.Image value) {
-		Value = value;
-	}
+	public Image(System.Drawing.Image value) => Value = value;
 
 	/// <summary>
 	/// Copy constructor
@@ -49,28 +49,22 @@ public class Image : VisualElementBase, IImage {
 		ResizeAlignment = other.ResizeAlignment;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the Image to draw. Default is null.
 	/// </summary>
 	[DefaultValue(null)]
 	public System.Drawing.Image Value {
-		get {
-			return _value;
-		}
+		get => _value;
 
-		set {
-			_value = value;
-		}
+		set => _value = value;
 	}
 
 	public bool Enabled {
-		get {
-			return _enabled;
-		}
+		get => _enabled;
 
-		set {
-			_enabled = value;
-		}
+		set => _enabled = value;
 	}
 
 	/// <summary>Optional scaling through Framework.Drawing; null preserves the visual element's native drawing behavior.</summary>
@@ -80,9 +74,7 @@ public class Image : VisualElementBase, IImage {
 
 	public Sphere10.Framework.ResizeAlignment ResizeAlignment { get; set; } = Sphere10.Framework.ResizeAlignment.CenterCenter;
 
-	public override object Clone() {
-		return new Image(this);
-	}
+	public override object Clone() => new Image(this);
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		var rectangle = Rectangle.Round(area);

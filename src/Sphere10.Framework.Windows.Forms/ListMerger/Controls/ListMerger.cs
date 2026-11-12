@@ -19,10 +19,13 @@ public delegate void ItemSelectedHandler(ListMerger source, ListMergerSide side,
 public delegate void ItemsMovedHandler(ListMerger source, ListMergerSide from, ListMergerSide to, ListMergeMode action, IEnumerable<object> item);
 
 public partial class ListMerger : UserControlEx {
-	// Events
+	#region Events
+
 	public event ItemSelectedHandler ItemSelected;
 
 	public event ItemsMovedHandler ItemsMoved;
+
+	#endregion
 
 	public ListMerger() {
 		InitializeComponent();
@@ -30,7 +33,8 @@ public partial class ListMerger : UserControlEx {
 		MergeMode = ListMergeMode.Move;
 	}
 
-	// Properties
+	#region Properties
+
 	[Category("Behavior")]
 	[DefaultValue(ListMergeMode.Move)]
 	public ListMergeMode MergeMode {
@@ -39,9 +43,7 @@ public partial class ListMerger : UserControlEx {
 
 	[Category("Behavior")]
 	public string DisplayMember {
-		get {
-			return _leftListBox.DisplayMember;
-		}
+		get => _leftListBox.DisplayMember;
 		set {
 			_leftListBox.DisplayMember = value;
 			_rightListBox.DisplayMember = value;
@@ -50,9 +52,7 @@ public partial class ListMerger : UserControlEx {
 
 	[Category("Behavior")]
 	public string ValueMember {
-		get {
-			return _leftListBox.ValueMember;
-		}
+		get => _leftListBox.ValueMember;
 		set {
 			_leftListBox.ValueMember = value;
 			_rightListBox.ValueMember = value;
@@ -62,30 +62,20 @@ public partial class ListMerger : UserControlEx {
 	[Category("Appearance")]
 	[DefaultValue("Left Header")]
 	public string LeftHeader {
-		get {
-			return _leftHeaderLabel.Text;
-		}
-		set {
-			_leftHeaderLabel.Text = value;
-		}
+		get => _leftHeaderLabel.Text;
+		set => _leftHeaderLabel.Text = value;
 	}
 
 	[Category("Appearance")]
 	[DefaultValue("Right Header")]
 	public string RightHeader {
-		get {
-			return _rightHeaderLabel.Text;
-		}
-		set {
-			_rightHeaderLabel.Text = value;
-		}
+		get => _rightHeaderLabel.Text;
+		set => _rightHeaderLabel.Text = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object[] LeftItems {
-		get {
-			return _leftListBox.Items.Cast<object>().ToArray();
-		}
+		get => _leftListBox.Items.Cast<object>().ToArray();
 		set {
 			using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
 			_leftListBox.Items.Clear();
@@ -95,9 +85,7 @@ public partial class ListMerger : UserControlEx {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public object[] RightItems {
-		get {
-			return _rightListBox.Items.Cast<object>().ToArray();
-		}
+		get => _rightListBox.Items.Cast<object>().ToArray();
 		set {
 			using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
 			_rightListBox.Items.Clear();
@@ -105,15 +93,14 @@ public partial class ListMerger : UserControlEx {
 		}
 	}
 
-	// Methods
-	public void ClearLists() {
-		LeftItems = RightItems = new object[0];
-	}
+	#endregion
+
+	#region Methods
+
+	public void ClearLists() => LeftItems = RightItems = new object[0];
 
 	/// <summary>Coalesces completed list actions instead of relaying intermediate native list selection changes.</summary>
-	protected override bool ShouldObserveChildStateChanges(Control child) {
-		return false;
-	}
+	protected override bool ShouldObserveChildStateChanges(Control child) => false;
 
 	// Handlers
 	private async void MoveLeftButton_Click(object sender, EventArgs args) {
@@ -156,6 +143,8 @@ public partial class ListMerger : UserControlEx {
 		_rightListBox.RemoveSelectedItems();
 		RaiseItemsMovedEvent(ListMergerSide.Right, ListMergerSide.Left, ListMergeMode.CopyLeftToRight, selectedItems);
 	}
+
+	#endregion
 
 	private async void MoveRightButton_Click(object sender, EventArgs args) {
 		try {
@@ -260,7 +249,8 @@ ListMergerSide.Left, _leftListBox.Items[_leftListBox.SelectedIndex]);
 		}
 	}
 
-	// Event Triggers
+	#region Event Triggers
+
 	private void RaiseItemsMovedEvent(ListMergerSide from, ListMergerSide to, ListMergeMode action, object[] items) {
 		OnItemMoved(from, to, action, items);
 		if (ItemsMoved != null)
@@ -278,6 +268,8 @@ ListMergerSide.Left, _leftListBox.Items[_leftListBox.SelectedIndex]);
 		if (ItemSelected != null)
 			ItemSelected(this, side, item);
 	}
+
+	#endregion
 
 	protected virtual void OnItemSelected(ListMergerSide side, object selectedItem) {
 	}

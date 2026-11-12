@@ -16,7 +16,8 @@ public class PingGridRowHeaderModel : IValueModel {
 	public PingGridRowHeaderModel() {
 	}
 
-	// IValueModel Members
+	#region IValueModel Members
+
 	public object GetValue(CellContext cellContext) {
 		var dataGrid = (DataGrid)cellContext.Grid;
 		if (dataGrid.DataSource != null && dataGrid.DataSource.AllowNew && cellContext.Position.Row == (dataGrid.Rows.Count - 1))
@@ -24,7 +25,7 @@ public class PingGridRowHeaderModel : IValueModel {
 		return null;
 	}
 
-	public void SetValue(CellContext cellContext, object value) {
-		throw new ApplicationException("Not supported");
-	}
+	public void SetValue(CellContext cellContext, object value) => throw new ApplicationException("Not supported");
+
+	#endregion
 }

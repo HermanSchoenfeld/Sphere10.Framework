@@ -22,12 +22,12 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class SortIndicator : Icon, ISortIndicator {
 	private HeaderSortStyle _headerSortStyle = HeaderSortStyle.None;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
-	public SortIndicator() {
-		AnchorArea = new AnchorArea(float.NaN, float.NaN, 0, float.NaN, false, true);
-	}
+	public SortIndicator() => AnchorArea = new AnchorArea(float.NaN, float.NaN, 0, float.NaN, false, true);
 
 	/// <summary>
 	/// Copy constructor
@@ -39,15 +39,17 @@ public class SortIndicator : Icon, ISortIndicator {
 		ReserveSpaceWhenUnsorted = other.ReserveSpaceWhenUnsorted;
 	}
 
+	#endregion
+
+	#region Properties
+
 	/// <summary>Retains the glyph's width before sorting so natural header sizing also fits a later sort indicator.</summary>
 	[DefaultValue(true)]
 	public bool ReserveSpaceWhenUnsorted { get; set; } = true;
 
 	[DefaultValue(HeaderSortStyle.None)]
 	public virtual HeaderSortStyle SortStyle {
-		get {
-			return _headerSortStyle;
-		}
+		get => _headerSortStyle;
 
 		set {
 			_headerSortStyle = value;
@@ -60,13 +62,13 @@ public class SortIndicator : Icon, ISortIndicator {
 		}
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new SortIndicator(this);
-	}
+	public override object Clone() => new SortIndicator(this);
 
 	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) {
 		var size = base.OnMeasureContent(measure, maxSize);

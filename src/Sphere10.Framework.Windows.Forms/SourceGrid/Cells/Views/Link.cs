@@ -23,11 +23,10 @@ public class Link : Cell {
 	/// </summary>
 	public new readonly static Link Default;
 
-	static Link() {
-		Default = new Link();
-	}
+	static Link() => Default = new Link();
 
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
@@ -44,12 +43,15 @@ public class Link : Cell {
 		: base(source) {
 	}
 
-	// Clone
+	#endregion
+
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Link(this);
-	}
+	public override object Clone() => new Link(this);
+
+	#endregion
 }

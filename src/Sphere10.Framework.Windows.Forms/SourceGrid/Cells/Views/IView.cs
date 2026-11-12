@@ -17,7 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 /// Support a deep cloning.
 /// </summary>
 public interface IView : ICloneable {
-	// Format
+	#region Format
+
 	Font Font {
 		get; set;
 	}
@@ -56,6 +57,8 @@ public interface IView : ICloneable {
 	Color ForeColor {
 		get; set;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Get the font of the cell, check if the current font is null and in this case return the grid font

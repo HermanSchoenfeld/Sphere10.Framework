@@ -24,6 +24,8 @@ public class BackgroundLinearGradient : VisualElementBase {
 	private float[] _blendFactors = null;
 	private float[] _blendPositions = null;
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -55,43 +57,33 @@ public class BackgroundLinearGradient : VisualElementBase {
 		BlendPositions = other.BlendPositions;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the first back color of the content.
 	/// </summary>
 	public virtual Color FirstColor {
-		get {
-			return _firstColor;
-		}
+		get => _firstColor;
 
-		set {
-			_firstColor = value;
-		}
+		set => _firstColor = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the second back color of the content.
 	/// </summary>
 	public virtual Color SecondColor {
-		get {
-			return _secondColor;
-		}
+		get => _secondColor;
 
-		set {
-			_secondColor = value;
-		}
+		set => _secondColor = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the angle of the gradient
 	/// </summary>
 	public virtual float Angle {
-		get {
-			return _angle;
-		}
+		get => _angle;
 
-		set {
-			_angle = value;
-		}
+		set => _angle = value;
 	}
 
 	/// <summary>
@@ -101,13 +93,9 @@ public class BackgroundLinearGradient : VisualElementBase {
 	/// See System.Drawing.Drawing2D.Blend for details
 	/// </summary>
 	public virtual float[] BlendFactors {
-		get {
-			return _blendFactors;
-		}
+		get => _blendFactors;
 
-		set {
-			_blendFactors = value;
-		}
+		set => _blendFactors = value;
 	}
 
 	/// <summary>
@@ -117,22 +105,16 @@ public class BackgroundLinearGradient : VisualElementBase {
 	/// See System.Drawing.Drawing2D.Blend for details
 	/// </summary>
 	public virtual float[] BlendPositions {
-		get {
-			return _blendPositions;
-		}
+		get => _blendPositions;
 
-		set {
-			_blendPositions = value;
-		}
+		set => _blendPositions = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new BackgroundLinearGradient(this);
-	}
+	public override object Clone() => new BackgroundLinearGradient(this);
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		if (FirstColor != Color.Empty || SecondColor != Color.Empty) {
@@ -154,27 +136,15 @@ public class BackgroundLinearGradient : VisualElementBase {
 		}
 	}
 
-	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) {
-		return SizeF.Empty;
-	}
+	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) => SizeF.Empty;
 
-	protected virtual bool ShouldSerializeFirstColor() {
-		return FirstColor != Color.Empty;
-	}
+	protected virtual bool ShouldSerializeFirstColor() => FirstColor != Color.Empty;
 
-	protected virtual bool ShouldSerializeSecondColor() {
-		return SecondColor != Color.Empty;
-	}
+	protected virtual bool ShouldSerializeSecondColor() => SecondColor != Color.Empty;
 
-	protected virtual bool ShouldSerializeAngle() {
-		return Angle != 0;
-	}
+	protected virtual bool ShouldSerializeAngle() => Angle != 0;
 
-	protected virtual bool ShouldSerializeBlendFactors() {
-		return BlendFactors != null;
-	}
+	protected virtual bool ShouldSerializeBlendFactors() => BlendFactors != null;
 
-	protected virtual bool ShouldSerializeBlendPositions() {
-		return BlendPositions != null;
-	}
+	protected virtual bool ShouldSerializeBlendPositions() => BlendPositions != null;
 }

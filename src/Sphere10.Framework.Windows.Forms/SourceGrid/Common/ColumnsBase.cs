@@ -22,15 +22,9 @@ public abstract class ColumnsBase {
 	// Layout
 	private int _suspendedCount = 0;
 
-	public ColumnsBase(GridVirtual grid) {
-		_grid = grid;
-	}
+	public ColumnsBase(GridVirtual grid) => _grid = grid;
 
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	// Abstract methods
 	public abstract int Count {
@@ -104,9 +98,7 @@ public abstract class ColumnsBase {
 	/// Autosize column using default auto size mode
 	/// </summary>
 	/// <param name="column"></param>
-	public void AutoSizeColumn(int column) {
-		AutoSizeColumn(column, true);
-	}
+	public void AutoSizeColumn(int column) => AutoSizeColumn(column, true);
 
 	/// <summary>
 	/// Autosize column using default auto size mode
@@ -231,9 +223,7 @@ public abstract class ColumnsBase {
 	/// Gets the columns index inside the specified display area.
 	/// </summary>
 	/// <returns></returns>
-	public List<int> ColumnsInsideRegion(int x, int width) {
-		return ColumnsInsideRegion(x, width, true, true);
-	}
+	public List<int> ColumnsInsideRegion(int x, int width) => ColumnsInsideRegion(x, width, true, true);
 
 	/// <summary>
 	/// Gets the columns index inside the specified display area.
@@ -288,13 +278,9 @@ public abstract class ColumnsBase {
 		return list;
 	}
 
-	public CellRange GetRange(int column) {
-		return new CellRange(0, column, Grid.Rows.Count - 1, column);
-	}
+	public CellRange GetRange(int column) => new CellRange(0, column, Grid.Rows.Count - 1, column);
 
-	public void SuspendLayout() {
-		_suspendedCount++;
-	}
+	public void SuspendLayout() => _suspendedCount++;
 
 	public void ResumeLayout() {
 		if (_suspendedCount > 0)
@@ -306,9 +292,7 @@ public abstract class ColumnsBase {
 	/// <summary>
 	/// Fired when the numbes of columns changed.
 	/// </summary>
-	public void ColumnsChanged() {
-		PerformLayout();
-	}
+	public void ColumnsChanged() => PerformLayout();
 
 	public void PerformLayout() {
 		if (_suspendedCount == 0)
@@ -320,7 +304,8 @@ public abstract class ColumnsBase {
 		return left + GetWidth(column);
 	}
 
-	// Left/Right
+	#region Left/Right
+
 	public int GetAbsoluteLeft(int column) {
 		if (column < 0)
 			throw new ArgumentException("Must be a valid index");
@@ -344,6 +329,8 @@ public abstract class ColumnsBase {
 		var left = GetLeft(column);
 		return left + GetWidth(column);
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Gets the column left position.
@@ -414,7 +401,5 @@ public abstract class ColumnsBase {
 	/// <returns></returns>
 	public abstract bool IsColumnVisible(int column);
 
-	protected virtual void OnLayout() {
-		Grid.OnCellsAreaChanged();
-	}
+	protected virtual void OnLayout() => Grid.OnCellsAreaChanged();
 }

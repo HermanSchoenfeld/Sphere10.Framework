@@ -21,17 +21,14 @@ public class Button : Cell {
 	/// </summary>
 	public new readonly static Button Default;
 
-	// Constructors
-	static Button() {
-		Default = new Button();
-	}
+	#region Constructors
+
+	static Button() => Default = new Button();
 
 	/// <summary>
 	/// Use default setting
 	/// </summary>
-	public Button() {
-		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ButtonThemed();
-	}
+	public Button() => Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ButtonThemed();
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -42,24 +39,24 @@ public class Button : Cell {
 		Background = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)source.Background.Clone();
 	}
 
-	// Visual Elements
+	#endregion
+
+	#region Visual Elements
+
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IButton)base.Background;
+		set => base.Background = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Button(this);
-	}
+	public override object Clone() => new Button(this);
+
+	#endregion
 
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
@@ -73,4 +70,6 @@ public class Button : Cell {
 		else
 			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ButtonStyle.Normal;
 	}
+
+	#endregion
 }

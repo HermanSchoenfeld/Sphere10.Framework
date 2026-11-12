@@ -16,6 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public abstract class DropDownButtonBase : VisualElementBase, IDropDownButton {
 	private ButtonStyle _controlDrawStyle = ButtonStyle.Normal;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -31,17 +33,13 @@ public abstract class DropDownButtonBase : VisualElementBase, IDropDownButton {
 		Style = other.Style;
 	}
 
+	#endregion
+
 	public virtual ButtonStyle Style {
-		get {
-			return _controlDrawStyle;
-		}
+		get => _controlDrawStyle;
 
-		set {
-			_controlDrawStyle = value;
-		}
+		set => _controlDrawStyle = value;
 	}
 
-	protected virtual bool ShouldSerializeStyle() {
-		return Style != ButtonStyle.Normal;
-	}
+	protected virtual bool ShouldSerializeStyle() => Style != ButtonStyle.Normal;
 }

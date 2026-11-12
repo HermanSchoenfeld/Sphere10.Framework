@@ -18,6 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class TextGDI : Text {
 	private StringFormat _stringFormat = new StringFormat(StringFormat.GenericDefault);
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -28,9 +30,7 @@ public class TextGDI : Text {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public TextGDI(string value) {
-		Value = value;
-	}
+	public TextGDI(string value) => Value = value;
 
 	/// <summary>
 	/// Copy constructor
@@ -44,41 +44,33 @@ public class TextGDI : Text {
 			StringFormat = null;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the StringFormat object.
 	/// Encapsulates text layout information (such as alignment, orientation and tab stops) display manipulations (such as ellipsis insertion and national digit substitution) and OpenType features.
 	/// </summary>
 	[TypeConverter(typeof(ExpandableObjectConverter))]
 	public virtual StringFormat StringFormat {
-		get {
-			return _stringFormat;
-		}
+		get => _stringFormat;
 
-		set {
-			_stringFormat = value;
-		}
+		set => _stringFormat = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the alignment of the content.
 	/// </summary>
 	public virtual ContentAlignment Alignment {
-		get {
-			return Tools.Drawing.StringFormatToContentAlignment(StringFormat);
-		}
+		get => Tools.Drawing.StringFormatToContentAlignment(StringFormat);
 
-		set {
-			Tools.Drawing.ApplyContentAlignmentToStringFormat(value, StringFormat);
-		}
+		set => Tools.Drawing.ApplyContentAlignmentToStringFormat(value, StringFormat);
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new TextGDI(this);
-	}
+	public override object Clone() => new TextGDI(this);
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		//base.OnDrawContent(graphics, area); //Don't call the base method because this class draw the class in a different way

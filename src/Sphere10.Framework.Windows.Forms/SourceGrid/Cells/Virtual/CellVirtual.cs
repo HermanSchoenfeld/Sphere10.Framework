@@ -16,7 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Virtual;
 /// Represents a CellVirtual in a grid.
 /// </summary>
 public class CellVirtual : ICellVirtual {
-	// Model
+	#region Model
+
 	private Models.ModelContainer _model;
 
 	// View
@@ -28,7 +29,8 @@ public class CellVirtual : ICellVirtual {
 	// Editor
 	private Editors.EditorBase _editor = null;
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Constructor. Create a CellVirtual using a default NullValueModel. You must provide your custom ValueModel to bind the cell to a value.
 	/// </summary>
@@ -47,13 +49,13 @@ public class CellVirtual : ICellVirtual {
 		Editor = Editors.Factory.Create(type);
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Represents the model of the cell.
 	/// </summary>
 	public Models.ModelContainer Model {
-		get {
-			return _model;
-		}
+		get => _model;
 		set {
 			if (value == null)
 				throw new SourceGridException("Model cannot be null");
@@ -61,14 +63,14 @@ public class CellVirtual : ICellVirtual {
 		}
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Visual properties of this cell and other cell. You can share the VisualProperties between many cell to optimize memory size.
 	/// Warning Changing this property can affect many cells
 	/// </summary>
 	public virtual Views.IView View {
-		get {
-			return _view;
-		}
+		get => _view;
 		set {
 			if (value == null)
 				throw new ArgumentNullException("View");
@@ -80,23 +82,15 @@ public class CellVirtual : ICellVirtual {
 	/// <summary>
 	/// Controller of the cell.
 	/// </summary>
-	public Controllers.ControllerContainer Controller {
-		get {
-			return _controller;
-		}
-	}
+	public Controllers.ControllerContainer Controller => _controller;
 
 	/// <summary>
 	/// Editor of this cell and others cells. If null no edit is supported.
 	///  You can share the same model between many cells to optimize memory size. Warning Changing this property can affect many cells
 	/// </summary>
 	public Editors.EditorBase Editor {
-		get {
-			return _editor;
-		}
-		set {
-			_editor = value;
-		}
+		get => _editor;
+		set => _editor = value;
 	}
 
 	/// <summary>
@@ -138,13 +132,14 @@ public class CellVirtual : ICellVirtual {
 		return this.FindController(typeof(T)) as T;
 	}
 
-	// Copy
+	#region Copy
+
 	/// <summary>
 	/// Create a shallow copy of the current object. Note that this is not a deep clone, all the reference are the same.
 	/// Use internally MemberwiseClone method.
 	/// </summary>
 	/// <returns></returns>
-	public ICellVirtual Copy() {
-		return (ICellVirtual)MemberwiseClone();
-	}
+	public ICellVirtual Copy() => (ICellVirtual)MemberwiseClone();
+
+	#endregion
 }

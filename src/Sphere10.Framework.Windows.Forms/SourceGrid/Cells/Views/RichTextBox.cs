@@ -15,7 +15,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 
 [Serializable]
 public class RichTextBox : Cell {
-	// Properties
+	#region Properties
+
 	private Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRichText _elementRichText = null;
 
 	/// <summary>
@@ -28,13 +29,12 @@ public class RichTextBox : Cell {
 	/// </summary>
 	public new readonly static RichTextBox Default = new RichTextBox();
 
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
-	public RichTextBox() {
-		ElementRichText = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.RichTextGDI();
-	}
+	public RichTextBox() => ElementRichText = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.RichTextGDI();
 
 	/// <summary>
 	/// Copy constructor. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -45,37 +45,35 @@ public class RichTextBox : Cell {
 		ElementRichText = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRichText)source.ElementRichText.Clone();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the IText visual element used to draw the cell rich text.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRichText ElementRichText {
-		get {
-			return _elementRichText;
-		}
-		set {
-			_elementRichText = value;
-		}
+		get => _elementRichText;
+		set => _elementRichText = value;
 	}
 
 	public RotateFlipType RotateFlipType {
-		get {
-			return _rotateFlipType;
-		}
-		set {
-			_rotateFlipType = value;
-		}
+		get => _rotateFlipType;
+		set => _rotateFlipType = value;
 	}
 
-	// Clone
+	#endregion
+
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new RichTextBox(this);
-	}
+	public override object Clone() => new RichTextBox(this);
 
-	// Preparing
+	#endregion
+
+	#region Preparing
+
 	protected override void PrepareView(CellContext context) {
 		// Do not start base prepare view, as it will render the text as normal TextGDI.
 		// base.PrepareView(context);
@@ -91,6 +89,8 @@ public class RichTextBox : Cell {
 		ElementRichText.RotateFlipType = RotateFlipType;
 	}
 
+	#endregion
+
 	protected override IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementRichText != null)
 			yield return ElementRichText;
@@ -99,7 +99,5 @@ public class RichTextBox : Cell {
 			yield return v;
 	}
 
-	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() {
-		return base.GetElements();
-	}
+	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() => base.GetElements();
 }

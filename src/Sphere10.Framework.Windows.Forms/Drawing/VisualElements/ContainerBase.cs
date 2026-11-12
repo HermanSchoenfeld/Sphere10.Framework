@@ -26,6 +26,8 @@ public abstract class ContainerBase : VisualElementBase, IContainer {
 	private Padding _padding = Padding.Empty;
 	private IBorder _border = null;
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -50,50 +52,36 @@ public abstract class ContainerBase : VisualElementBase, IContainer {
 			Border = null;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets a property that specify how to draw the elements.
 	/// </summary>
 	protected ElementsDrawMode ElementsDrawMode {
-		get {
-			return _drawMode;
-		}
+		get => _drawMode;
 
-		set {
-			_drawMode = value;
-		}
+		set => _drawMode = value;
 	}
 
 	/// <summary>
 	/// The background used to draw
 	/// </summary>
 	protected IVisualElement Background {
-		get {
-			return _background;
-		}
+		get => _background;
 
-		set {
-			_background = value;
-		}
+		set => _background = value;
 	}
 
 	protected Padding Padding {
-		get {
-			return _padding;
-		}
+		get => _padding;
 
-		set {
-			_padding = value;
-		}
+		set => _padding = value;
 	}
 
 	protected IBorder Border {
-		get {
-			return _border;
-		}
+		get => _border;
 
-		set {
-			_border = value;
-		}
+		set => _border = value;
 	}
 
 	/// <summary>
@@ -122,40 +110,6 @@ public abstract class ContainerBase : VisualElementBase, IContainer {
 		} else
 			throw new ApplicationException("DrawMode not supported");
 		return list;
-	}
-
-	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
-		OnDrawBackground(graphics, area);
-		using (var measure = new GraphicsMeasurement(graphics)) {
-			var contentArea = GetContentRectangle(measure, area);
-			OnDrawContent(graphics, contentArea);
-		}
-	}
-
-	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) {
-		var clientSize = new SizeF(0, 0);
-		//In this case the elements are drawed one over the another so to measure I must simply take the greatest
-		if (ElementsDrawMode == ElementsDrawMode.Covering) {
-			foreach (var element in GetElements()) {
-				var elementSize = element.Measure(measure, Size.Empty, maxSize);
-				elementSize = CalculateSizeWithAnchor(elementSize, element.AnchorArea, maxSize);
-				if (elementSize.Width > clientSize.Width)
-					clientSize.Width = elementSize.Width;
-				if (elementSize.Height > clientSize.Height)
-					clientSize.Height = elementSize.Height;
-			}
-		} else if (ElementsDrawMode == ElementsDrawMode.Align) {
-			//In this case the elements are drawed considering an alignment, so to measure I must consider the anchor area of the element and add the size to the if the alignment is set. This code reflect the drawing code
-			AnchorArea previousAnchor = null;
-			foreach (var element in GetElements()) {
-				var elementSize = element.Measure(measure, Size.Empty, maxSize);
-				elementSize = CalculateSizeWithAnchor(elementSize, element.AnchorArea, maxSize);
-				clientSize = CalculateSizeWithContent(clientSize, previousAnchor, elementSize);
-				previousAnchor = element.AnchorArea;
-			}
-		} else
-			throw new ApplicationException("DrawMode not supported");
-		return GetExtent(measure, clientSize);
 	}
 
 	/// <summary>
@@ -245,34 +199,6 @@ public abstract class ContainerBase : VisualElementBase, IContainer {
 		return contentSize;
 	}
 
-	protected virtual void OnDrawBackground(GraphicsCache graphics, RectangleF area) {
-		if (Border != null) {
-			Border.Draw(graphics, area);
-			area = Border.GetContentRectangle(area);
-		}
-
-		if (Background != null)
-			Background.Draw(graphics, area);
-	}
-
-	protected virtual void OnDrawContent(GraphicsCache graphics, RectangleF area) {
-		//In this case the elements are drawed one over the another
-		if (ElementsDrawMode == ElementsDrawMode.Covering) {
-			foreach (var element in GetElements())
-				element.Draw(graphics, area);
-		} else if (ElementsDrawMode == ElementsDrawMode.Align) {
-			//In this case the elements are drawed considering an alignment
-			using (var measure = new GraphicsMeasurement(graphics)) {
-				foreach (var element in GetElements()) {
-					RectangleF elementArea;
-					element.Draw(graphics, area, out elementArea);
-					area = CalculateRemainingArea(area, element.AnchorArea, elementArea);
-				}
-			}
-		} else
-			throw new ApplicationException("DrawMode not supported");
-	}
-
 	/// <summary>
 	/// Utility function. Calculates the remaining empty area of a specified area and a given content.
 	/// </summary>
@@ -309,21 +235,75 @@ public abstract class ContainerBase : VisualElementBase, IContainer {
 		return parentArea;
 	}
 
+	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
+		OnDrawBackground(graphics, area);
+		using (var measure = new GraphicsMeasurement(graphics)) {
+			var contentArea = GetContentRectangle(measure, area);
+			OnDrawContent(graphics, contentArea);
+		}
+	}
+
+	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) {
+		var clientSize = new SizeF(0, 0);
+		//In this case the elements are drawed one over the another so to measure I must simply take the greatest
+		if (ElementsDrawMode == ElementsDrawMode.Covering) {
+			foreach (var element in GetElements()) {
+				var elementSize = element.Measure(measure, Size.Empty, maxSize);
+				elementSize = CalculateSizeWithAnchor(elementSize, element.AnchorArea, maxSize);
+				if (elementSize.Width > clientSize.Width)
+					clientSize.Width = elementSize.Width;
+				if (elementSize.Height > clientSize.Height)
+					clientSize.Height = elementSize.Height;
+			}
+		} else if (ElementsDrawMode == ElementsDrawMode.Align) {
+			//In this case the elements are drawed considering an alignment, so to measure I must consider the anchor area of the element and add the size to the if the alignment is set. This code reflect the drawing code
+			AnchorArea previousAnchor = null;
+			foreach (var element in GetElements()) {
+				var elementSize = element.Measure(measure, Size.Empty, maxSize);
+				elementSize = CalculateSizeWithAnchor(elementSize, element.AnchorArea, maxSize);
+				clientSize = CalculateSizeWithContent(clientSize, previousAnchor, elementSize);
+				previousAnchor = element.AnchorArea;
+			}
+		} else
+			throw new ApplicationException("DrawMode not supported");
+		return GetExtent(measure, clientSize);
+	}
+
+	protected virtual void OnDrawBackground(GraphicsCache graphics, RectangleF area) {
+		if (Border != null) {
+			Border.Draw(graphics, area);
+			area = Border.GetContentRectangle(area);
+		}
+
+		if (Background != null)
+			Background.Draw(graphics, area);
+	}
+
+	protected virtual void OnDrawContent(GraphicsCache graphics, RectangleF area) {
+		//In this case the elements are drawed one over the another
+		if (ElementsDrawMode == ElementsDrawMode.Covering) {
+			foreach (var element in GetElements())
+				element.Draw(graphics, area);
+		} else if (ElementsDrawMode == ElementsDrawMode.Align) {
+			//In this case the elements are drawed considering an alignment
+			using (var measure = new GraphicsMeasurement(graphics)) {
+				foreach (var element in GetElements()) {
+					RectangleF elementArea;
+					element.Draw(graphics, area, out elementArea);
+					area = CalculateRemainingArea(area, element.AnchorArea, elementArea);
+				}
+			}
+		} else
+			throw new ApplicationException("DrawMode not supported");
+	}
+
 	protected abstract IEnumerable<IVisualElement> GetElements();
 
-	protected virtual bool ShouldSerializeElementsDrawMode() {
-		return ElementsDrawMode != ElementsDrawMode.Covering;
-	}
+	protected virtual bool ShouldSerializeElementsDrawMode() => ElementsDrawMode != ElementsDrawMode.Covering;
 
-	protected virtual bool ShouldSerializeBackground() {
-		return Background != null;
-	}
+	protected virtual bool ShouldSerializeBackground() => Background != null;
 
-	protected virtual bool ShouldSerializePadding() {
-		return Padding != Padding.Empty;
-	}
+	protected virtual bool ShouldSerializePadding() => Padding != Padding.Empty;
 
-	protected virtual bool ShouldSerializeBorder() {
-		return Border != null;
-	}
+	protected virtual bool ShouldSerializeBorder() => Border != null;
 }

@@ -23,6 +23,8 @@ public class EditablePanelThemed : EditablePanelBase {
 	private EditablePanel _standard = new EditablePanel();
 	private RectangleBorder _equivalentPadding = new RectangleBorder(new BorderLine(Color.Empty, 2));
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -37,10 +39,10 @@ public class EditablePanelThemed : EditablePanelBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override BorderStyle BorderStyle {
-		get {
-			return base.BorderStyle;
-		}
+		get => base.BorderStyle;
 
 		set {
 			base.BorderStyle = value;
@@ -52,9 +54,7 @@ public class EditablePanelThemed : EditablePanelBase {
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new EditablePanelThemed(this);
-	}
+	public override object Clone() => new EditablePanelThemed(this);
 
 	public override void Draw(GraphicsCache graphics, RectangleF area) {
 		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
@@ -83,16 +83,13 @@ public class EditablePanelThemed : EditablePanelBase {
 		return RectanglePartType.ContentArea;
 	}
 
-	protected VisualStyleElement GetBackgroundElement() {
-		return VisualStyleElement.TextBox.TextEdit.Normal;
-	}
+	protected VisualStyleElement GetBackgroundElement() => VisualStyleElement.TextBox.TextEdit.Normal;
 
 	/// <summary>
 	/// Gets the System.Windows.Forms.VisualStyles.VisualStyleRenderer to draw the specified element.
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 }

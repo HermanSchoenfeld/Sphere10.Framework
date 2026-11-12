@@ -21,6 +21,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public abstract class VisualElementBase : IVisualElement {
 	private AnchorArea _anchorArea = null;
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -38,20 +40,20 @@ public abstract class VisualElementBase : IVisualElement {
 			AnchorArea = null;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the area where the content must be drawed.
 	/// You can set to align the content to the left, right, top or bottom using the relative properties (Left, Right, Top, Bottom).
 	/// You can also set more than one properties to allign the content to more than one side.
 	/// </summary>
 	public virtual AnchorArea AnchorArea {
-		get {
-			return _anchorArea;
-		}
+		get => _anchorArea;
 
-		set {
-			_anchorArea = value;
-		}
+		set => _anchorArea = value;
 	}
+
+	#region Draw
 
 	/// <summary>
 	/// Draw the current VisualElement in the specified Graphics object.
@@ -77,6 +79,8 @@ public abstract class VisualElementBase : IVisualElement {
 		Draw(graphics, area, out drawArea);
 	}
 
+	#region Utilities
+
 	/// <summary>
 	/// Get the element at the specified point. Usually this methods simply return the current element, but an element can return inner elements drawed inside the main elements.
 	/// Returns a list of elements, where the last element is the upper element and the first element is the background element.
@@ -91,6 +95,8 @@ public abstract class VisualElementBase : IVisualElement {
 			list.Add(this);
 		return list;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Gets the area where the visual element will be drawed.
@@ -108,6 +114,8 @@ public abstract class VisualElementBase : IVisualElement {
 		return destContentArea;
 	}
 
+	#region Measure
+
 	/// <summary>
 	/// Measure the current VisualElement using the specified settings.
 	/// </summary>
@@ -120,11 +128,15 @@ public abstract class VisualElementBase : IVisualElement {
 		return Sphere10.Framework.SizeFExtensions.Clip(measureSize, minSize, maxSize);
 	}
 
+	#region IClonable
+
 	/// <summary>
 	/// Clone the current VisualElement.
 	/// </summary>
 	/// <returns></returns>
 	public abstract object Clone();
+
+	#endregion
 
 	/// <summary>
 	/// Measure the current content of the VisualElement.
@@ -134,6 +146,8 @@ public abstract class VisualElementBase : IVisualElement {
 	/// <returns></returns>
 	protected abstract System.Drawing.SizeF OnMeasureContent(GraphicsMeasurement measure, System.Drawing.SizeF maxSize);
 
+	#endregion
+
 	/// <summary>
 	/// Method used to draw the specified content based on the Visual element.
 	/// This is the method that you must override to draw. The area used is already calculated based on the AnchorArea property.
@@ -142,7 +156,7 @@ public abstract class VisualElementBase : IVisualElement {
 	/// <param name="area"></param>
 	protected abstract void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area);
 
-	protected virtual bool ShouldSerializeAnchorArea() {
-		return AnchorArea != null && AnchorArea.IsEmpty == false;
-	}
+	#endregion
+
+	protected virtual bool ShouldSerializeAnchorArea() => AnchorArea != null && AnchorArea.IsEmpty == false;
 }

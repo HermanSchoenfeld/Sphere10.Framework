@@ -19,7 +19,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 /// </summary>
 [Serializable]
 public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ContainerBase, IView {
-	// Format
+	#region Format
+
 	private bool _imageStretch = false;
 	private System.Drawing.ContentAlignment _imageAlignment;
 	private Font _font = null;
@@ -37,7 +38,8 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.Visual
 	public static Color DefaultForeColor = Color.FromKnownColor(KnownColor.WindowText);
 	public static System.Drawing.ContentAlignment DefaultAlignment = System.Drawing.ContentAlignment.MiddleLeft;
 
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Use default setting
 	/// </summary>
@@ -78,88 +80,62 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.Visual
 		ImageStretch = source.ImageStretch;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// True to stretch the image to all the cell
 	/// </summary>
 	public bool ImageStretch {
-		get {
-			return _imageStretch;
-		}
-		set {
-			_imageStretch = value;
-		}
+		get => _imageStretch;
+		set => _imageStretch = value;
 	}
 
 	/// <summary>
 	/// Image Alignment
 	/// </summary>
 	public System.Drawing.ContentAlignment ImageAlignment {
-		get {
-			return _imageAlignment;
-		}
-		set {
-			_imageAlignment = value;
-		}
+		get => _imageAlignment;
+		set => _imageAlignment = value;
 	}
 
 	/// <summary>
 	/// If null the grid font is used
 	/// </summary>
 	public Font Font {
-		get {
-			return _font;
-		}
-		set {
-			_font = value;
-		}
+		get => _font;
+		set => _font = value;
 	}
 
 	/// <summary>
 	/// ForeColor of the cell
 	/// </summary>
 	public Color ForeColor {
-		get {
-			return _foreColor;
-		}
-		set {
-			_foreColor = value;
-		}
+		get => _foreColor;
+		set => _foreColor = value;
 	}
 
 	/// <summary>
 	/// Word Wrap, default false.
 	/// </summary>
 	public bool WordWrap {
-		get {
-			return _wordWrap;
-		}
-		set {
-			_wordWrap = value;
-		}
+		get => _wordWrap;
+		set => _wordWrap = value;
 	}
 
 	/// <summary>
 	/// TrimmingMode, default Char.
 	/// </summary>
 	public TrimmingMode TrimmingMode {
-		get {
-			return _trimmingMode;
-		}
-		set {
-			_trimmingMode = value;
-		}
+		get => _trimmingMode;
+		set => _trimmingMode = value;
 	}
 
 	/// <summary>
 	/// Text Alignment.
 	/// </summary>
 	public System.Drawing.ContentAlignment TextAlignment {
-		get {
-			return _textAlignment;
-		}
-		set {
-			_textAlignment = value;
-		}
+		get => _textAlignment;
+		set => _textAlignment = value;
 	}
 
 	/// <summary>
@@ -181,48 +157,34 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.Visual
 	/// The border of the Cell. Usually it is an instance of the Sphere10.Framework.Drawing.RectangleBorder structure.
 	/// </summary>
 	public new IBorder Border {
-		get {
-			return base.Border;
-		}
-		set {
-			base.Border = value;
-		}
+		get => base.Border;
+		set => base.Border = value;
 	}
 
 	/// <summary>
 	/// The padding of the cell. Usually it is 2 pixel on all sides.
 	/// </summary>
 	public new Sphere10.Framework.Drawing.Padding Padding {
-		get {
-			return base.Padding;
-		}
-		set {
-			base.Padding = value;
-		}
+		get => base.Padding;
+		set => base.Padding = value;
 	}
 
 	/// <summary>
 	/// Gets or sets a property that specify how to draw the elements.
 	/// </summary>
 	public new ElementsDrawMode ElementsDrawMode {
-		get {
-			return base.ElementsDrawMode;
-		}
-		set {
-			base.ElementsDrawMode = value;
-		}
+		get => base.ElementsDrawMode;
+		set => base.ElementsDrawMode = value;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Background of the cell. Usually it is an instance of BackgroundSolid
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement Background {
-		get {
-			return base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => base.Background;
+		set => base.Background = value;
 	}
 
 	/// <summary>
@@ -236,7 +198,8 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.Visual
 		return Font;
 	}
 
-	// DrawCell
+	#region DrawCell
+
 	/// <summary>
 	/// Draw the cell specified
 	/// </summary>
@@ -271,4 +234,6 @@ public abstract class ViewBase : Sphere10.Framework.Windows.Forms.Drawing.Visual
 	/// <param name="context">Current context. Cell to draw. This property is set before drawing. Only inside the PrepareView you can access this property.</param>
 	protected virtual void PrepareView(CellContext context) {
 	}
+
+	#endregion
 }

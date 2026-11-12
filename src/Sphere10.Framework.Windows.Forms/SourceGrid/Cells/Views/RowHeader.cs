@@ -21,17 +21,14 @@ public class RowHeader : Header {
 	/// </summary>
 	public new readonly static RowHeader Default;
 
-	// Constructors
-	static RowHeader() {
-		Default = new RowHeader();
-	}
+	#region Constructors
+
+	static RowHeader() => Default = new RowHeader();
 
 	/// <summary>
 	/// Use default setting
 	/// </summary>
-	public RowHeader() {
-		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.RowHeaderThemed();
-	}
+	public RowHeader() => Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.RowHeaderThemed();
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -41,26 +38,26 @@ public class RowHeader : Header {
 		: base(source) {
 	}
 
-	// Visual Elements
+	#endregion
+
+	#region Visual Elements
+
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IRowHeader)base.Background;
+		set => base.Background = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new RowHeader(this);
-	}
+	public override object Clone() => new RowHeader(this);
 
-	protected override void PrepareView(CellContext context) {
-		base.PrepareView(context);
-	}
+	#endregion
+
+	protected override void PrepareView(CellContext context) => base.PrepareView(context);
+
+	#endregion
 }

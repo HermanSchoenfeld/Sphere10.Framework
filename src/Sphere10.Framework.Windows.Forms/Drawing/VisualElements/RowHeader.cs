@@ -17,6 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class RowHeader : RowHeaderBase {
 	private Header _background = new Header(0);
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -32,10 +34,12 @@ public class RowHeader : RowHeaderBase {
 		_background = (Header)other._background.Clone();
 	}
 
+	#endregion
+
+	#region Properties
+
 	public override ControlDrawStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -47,48 +51,36 @@ public class RowHeader : RowHeaderBase {
 	/// Back Color
 	/// </summary>
 	public Color BackColor {
-		get {
-			return _background.BackColor;
-		}
+		get => _background.BackColor;
 
-		set {
-			_background.BackColor = value;
-		}
+		set => _background.BackColor = value;
 	}
 
 	/// <summary>
 	/// Draw mode for the header. Default is Linear.
 	/// </summary>
 	public BackgroundColorStyle BackgroundColorStyle {
-		get {
-			return _background.BackgroundColorStyle;
-		}
+		get => _background.BackgroundColorStyle;
 
-		set {
-			_background.BackgroundColorStyle = value;
-		}
+		set => _background.BackgroundColorStyle = value;
 	}
 
 	/// <summary>
 	/// Border
 	/// </summary>
 	public RectangleBorder Border {
-		get {
-			return _background.Border;
-		}
+		get => _background.Border;
 
-		set {
-			_background.Border = value;
-		}
+		set => _background.Border = value;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new RowHeader(this);
-	}
+	public override object Clone() => new RowHeader(this);
 
 	public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
 		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);

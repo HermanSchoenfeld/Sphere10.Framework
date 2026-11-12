@@ -16,6 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 
 [Serializable]
 public class DropDownButton : DropDownButtonBase {
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -30,13 +32,13 @@ public class DropDownButton : DropDownButtonBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new DropDownButton(this);
-	}
+	public override object Clone() => new DropDownButton(this);
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		ButtonState state;

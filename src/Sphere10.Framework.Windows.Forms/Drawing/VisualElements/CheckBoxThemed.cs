@@ -22,6 +22,8 @@ public class CheckBoxThemed : CheckBoxBase {
 	/// </summary>
 	private CheckBox _standardCheckBox = new CheckBox();
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -36,10 +38,10 @@ public class CheckBoxThemed : CheckBoxBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override ControlDrawStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -48,9 +50,7 @@ public class CheckBoxThemed : CheckBoxBase {
 	}
 
 	public override CheckBoxState CheckBoxState {
-		get {
-			return base.CheckBoxState;
-		}
+		get => base.CheckBoxState;
 
 		set {
 			base.CheckBoxState = value;
@@ -62,9 +62,7 @@ public class CheckBoxThemed : CheckBoxBase {
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new CheckBoxThemed(this);
-	}
+	public override object Clone() => new CheckBoxThemed(this);
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
@@ -113,7 +111,6 @@ public class CheckBoxThemed : CheckBoxBase {
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 }

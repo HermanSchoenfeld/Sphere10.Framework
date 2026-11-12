@@ -13,7 +13,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// Represents a Cell to use with Grid control.
 /// </summary>
 public interface ICell : ICellVirtual {
-	// Value, DisplayText, ToolTipText, Image, Tag
+	#region Value, DisplayText, ToolTipText, Image, Tag
+
 	/// <summary>
 	/// Gets the string representation of the Cell.Value property (default Value.ToString())
 	/// </summary>
@@ -49,7 +50,10 @@ public interface ICell : ICellVirtual {
 		get; set;
 	}
 
-	// LinkToGrid
+	#endregion
+
+	#region LinkToGrid
+
 	/// <summary>
 	/// The Grid object
 	/// </summary>
@@ -78,7 +82,10 @@ public interface ICell : ICellVirtual {
 		get;
 	}
 
-	// Row/Col Span
+	#endregion
+
+	#region Row/Col Span
+
 	/// <summary>
 	/// ColSpan for merge operation, calculated using the current range.
 	/// </summary>
@@ -115,4 +122,6 @@ public interface ICell : ICellVirtual {
 	/// <param name="rowSpan"></param>
 	/// <param name="colSpan"></param>
 	void SetSpan(int rowSpan, int colSpan);
+
+	#endregion
 }

@@ -22,6 +22,8 @@ public class DropDownButtonThemed : DropDownButtonBase {
 	/// </summary>
 	private DropDownButton _standardButton = new DropDownButton();
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -36,10 +38,10 @@ public class DropDownButtonThemed : DropDownButtonBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override ButtonStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -51,9 +53,7 @@ public class DropDownButtonThemed : DropDownButtonBase {
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new DropDownButtonThemed(this);
-	}
+	public override object Clone() => new DropDownButtonThemed(this);
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
@@ -94,9 +94,8 @@ public class DropDownButtonThemed : DropDownButtonBase {
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 	//public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea)
 	//{
 	//    backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);

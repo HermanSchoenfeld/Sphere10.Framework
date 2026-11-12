@@ -18,6 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class Icon : VisualElementBase, IIcon {
 	private System.Drawing.Icon _value = null;
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -28,9 +30,7 @@ public class Icon : VisualElementBase, IIcon {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public Icon(System.Drawing.Icon value) {
-		Value = value;
-	}
+	public Icon(System.Drawing.Icon value) => Value = value;
 
 	/// <summary>
 	/// Copy constructor
@@ -44,23 +44,19 @@ public class Icon : VisualElementBase, IIcon {
 			Value = null;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the Icon to draw. Default is null.
 	/// </summary>
 	[DefaultValue(null)]
 	public System.Drawing.Icon Value {
-		get {
-			return _value;
-		}
+		get => _value;
 
-		set {
-			_value = value;
-		}
+		set => _value = value;
 	}
 
-	public override object Clone() {
-		return new Icon(this);
-	}
+	public override object Clone() => new Icon(this);
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		if (Value != null)

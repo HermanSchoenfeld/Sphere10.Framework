@@ -16,7 +16,8 @@ public interface IGridSelection {
 	/// </summary>
 	event RangeRegionChangedEventHandler SelectionChanged;
 
-	// Focus Events
+	#region Focus Events
+
 	/// <summary>
 	/// Fired before a cell receive the focus (FocusCell is populated after this event, use e.Cell to read the cell that will receive the focus)
 	/// </summary>
@@ -46,6 +47,8 @@ public interface IGridSelection {
 	/// Fired after a column receive the focus
 	/// </summary>
 	event ColumnEventHandler FocusColumnEntered;
+
+	#endregion
 
 	/// <summary>
 	/// Gets or sets if enable multi selection using Ctrl key or Shift Key or with mouse. Default is true.

@@ -19,13 +19,12 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Views;
 public class MultiImages : Cell {
 	private Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList _images = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList();
 
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Use default setting
 	/// </summary>
-	public MultiImages() {
-		ElementsDrawMode = Sphere10.Framework.Windows.Forms.Drawing.ElementsDrawMode.Covering;
-	}
+	public MultiImages() => ElementsDrawMode = Sphere10.Framework.Windows.Forms.Drawing.ElementsDrawMode.Covering;
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -36,23 +35,22 @@ public class MultiImages : Cell {
 		_images = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList)other._images.Clone();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Images of the cells
 	/// </summary>
-	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList SubImages {
-		get {
-			return _images;
-		}
-	}
+	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.VisualElementList SubImages => _images;
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new MultiImages(this);
-	}
+	public override object Clone() => new MultiImages(this);
+
+	#endregion
 
 	protected override IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetElements() {
 		foreach (var v in GetBaseElements())
@@ -62,7 +60,5 @@ public class MultiImages : Cell {
 			yield return v;
 	}
 
-	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() {
-		return base.GetElements();
-	}
+	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() => base.GetElements();
 }

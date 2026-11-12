@@ -17,6 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public abstract class EditablePanelBase : IEditablePanel {
 	private BorderStyle _borderStyle = BorderStyle.System;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -27,18 +29,14 @@ public abstract class EditablePanelBase : IEditablePanel {
 	/// Copy constructor
 	/// </summary>
 	/// <param name="other"></param>
-	public EditablePanelBase(EditablePanelBase other) {
-		BorderStyle = other.BorderStyle;
-	}
+	public EditablePanelBase(EditablePanelBase other) => BorderStyle = other.BorderStyle;
+
+	#endregion
 
 	public virtual BorderStyle BorderStyle {
-		get {
-			return _borderStyle;
-		}
+		get => _borderStyle;
 
-		set {
-			_borderStyle = value;
-		}
+		set => _borderStyle = value;
 	}
 
 	public abstract RectangleF GetContentRectangle(RectangleF backGroundArea);
@@ -63,7 +61,5 @@ public abstract class EditablePanelBase : IEditablePanel {
 
 	public abstract object Clone();
 
-	protected virtual bool ShouldSerializeBorderStyle() {
-		return BorderStyle != BorderStyle.System;
-	}
+	protected virtual bool ShouldSerializeBorderStyle() => BorderStyle != BorderStyle.System;
 }

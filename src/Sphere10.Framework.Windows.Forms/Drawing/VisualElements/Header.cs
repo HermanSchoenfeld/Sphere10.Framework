@@ -21,6 +21,8 @@ public class Header : HeaderBase {
 	private BackgroundColorStyle _backgroundColorStyle = BackgroundColorStyle.Linear;
 	private BackgroundLinearGradient _background;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -48,65 +50,49 @@ public class Header : HeaderBase {
 		GradientAngle = other.GradientAngle;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Back Color
 	/// </summary>
 	public Color BackColor {
-		get {
-			return _backColor;
-		}
+		get => _backColor;
 
-		set {
-			_backColor = value;
-		}
+		set => _backColor = value;
 	}
 
 	/// <summary>
 	/// Border
 	/// </summary>
 	public RectangleBorder Border {
-		get {
-			return _border;
-		}
+		get => _border;
 
-		set {
-			_border = value;
-		}
+		set => _border = value;
 	}
 
 	/// <summary>
 	/// Gradient angle used for linear gradient.
 	/// </summary>
 	public float GradientAngle {
-		get {
-			return _gradientAngle;
-		}
+		get => _gradientAngle;
 
-		set {
-			_gradientAngle = value;
-		}
+		set => _gradientAngle = value;
 	}
 
 	/// <summary>
 	/// Draw mode for the header. Default is Linear.
 	/// </summary>
 	public BackgroundColorStyle BackgroundColorStyle {
-		get {
-			return _backgroundColorStyle;
-		}
+		get => _backgroundColorStyle;
 
-		set {
-			_backgroundColorStyle = value;
-		}
+		set => _backgroundColorStyle = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Header(this);
-	}
+	public override object Clone() => new Header(this);
 
 	/// <summary>
 	/// Calculate the client area where the content can be drawed, usually removing the area used by the background, for example removing a border.
@@ -134,9 +120,7 @@ public class Header : HeaderBase {
 		OnDrawBorder(graphics, area);
 	}
 
-	protected virtual void OnDrawBorder(GraphicsCache graphics, RectangleF area) {
-		_border.Draw(graphics, area);
-	}
+	protected virtual void OnDrawBorder(GraphicsCache graphics, RectangleF area) => _border.Draw(graphics, area);
 
 	protected virtual void OnDrawBackground(GraphicsCache graphics, RectangleF area) {
 		var darkControlColor = Tools.Drawing.CalculateLightDarkColor(BackColor, -0.2f);

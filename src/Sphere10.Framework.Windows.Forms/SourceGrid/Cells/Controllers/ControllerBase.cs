@@ -15,7 +15,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Implements all the method of the controller interface without any implementation
 /// </summary>
 public abstract class ControllerBase : IController {
-	// IController Members
+	#region IController Members
+
 	public virtual void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
 	}
 
@@ -83,9 +84,7 @@ public abstract class ControllerBase : IController {
 	public virtual void OnEditEnded(CellContext sender, System.EventArgs e) {
 	}
 
-	public virtual bool CanReceiveFocus(CellContext sender, EventArgs e) {
-		return true;
-	}
+	public virtual bool CanReceiveFocus(CellContext sender, EventArgs e) => true;
 
 	public virtual void OnDragDrop(CellContext sender, System.Windows.Forms.DragEventArgs e) {
 	}
@@ -101,4 +100,6 @@ public abstract class ControllerBase : IController {
 
 	public virtual void OnGiveFeedback(CellContext sender, System.Windows.Forms.GiveFeedbackEventArgs e) {
 	}
+
+	#endregion
 }

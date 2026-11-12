@@ -24,6 +24,8 @@ public class RowHeaderThemed : RowHeaderBase {
 	private ColumnHeaderThemed _colHeaderThemed = new ColumnHeaderThemed();
 	private bool _rotateColHeaderIfNotDefined = true;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -38,10 +40,10 @@ public class RowHeaderThemed : RowHeaderBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override ControlDrawStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -55,22 +57,16 @@ public class RowHeaderThemed : RowHeaderBase {
 	/// This is expecially usefull because for many themes the row header is not defined. Default is true.
 	/// </summary>
 	public virtual bool RotateColHeaderIfNotDefined {
-		get {
-			return _rotateColHeaderIfNotDefined;
-		}
+		get => _rotateColHeaderIfNotDefined;
 
-		set {
-			_rotateColHeaderIfNotDefined = value;
-		}
+		set => _rotateColHeaderIfNotDefined = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new RowHeaderThemed(this);
-	}
+	public override object Clone() => new RowHeaderThemed(this);
 
 	public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
 		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
@@ -127,7 +123,6 @@ public class RowHeaderThemed : RowHeaderBase {
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 }

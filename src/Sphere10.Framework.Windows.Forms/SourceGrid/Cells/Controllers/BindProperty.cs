@@ -15,7 +15,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// Summary description for BindProperty.
 /// </summary>
 public class BindProperty : ControllerBase {
-	// Bind Property
+	#region Bind Property
+
 	//proprietà per gestire il link di una cella ad una property
 	private System.Reflection.PropertyInfo _linkPropertyInfo = null;
 	private object _linkObject = null;
@@ -25,9 +26,7 @@ public class BindProperty : ControllerBase {
 	/// </summary>
 	/// <param name="property">Property of the object that you want to lint to the cell. When the value of the cell changed this behavior call automatically this property.</param>
 	/// <param name="linkObject">Instance of the object to link</param>
-	public BindProperty(System.Reflection.PropertyInfo property, object linkObject) {
-		BindValueAtProperty(property, linkObject);
-	}
+	public BindProperty(System.Reflection.PropertyInfo property, object linkObject) => BindValueAtProperty(property, linkObject);
 
 	/// <summary>
 	/// OnValueChanged
@@ -58,6 +57,9 @@ public class BindProperty : ControllerBase {
 		_linkPropertyInfo = null;
 		_linkObject = null;
 	}
+
+	#endregion
+
 	//		/// <summary>
 	//		/// Method that can be used to refresh the cell value
 	//		/// </summary>

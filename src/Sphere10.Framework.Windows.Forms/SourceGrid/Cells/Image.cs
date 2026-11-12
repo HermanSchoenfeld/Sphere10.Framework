@@ -13,7 +13,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// A Cell with an Image. Write and read byte[] values.
 /// </summary>
 public class Image : Cell {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
@@ -33,4 +34,6 @@ public class Image : Cell {
 		Model.AddModel(Models.ValueImage.Default);
 		Editor = Editors.ImagePicker.Default;
 	}
+
+	#endregion
 }

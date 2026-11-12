@@ -17,38 +17,34 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class BackgroundSolid : VisualElementBase {
 	private Color _backColor = Color.Empty;
 
+	#region Constructor
+
 	public BackgroundSolid() {
 	}
 
-	public BackgroundSolid(Color backcolor) {
-		BackColor = backcolor;
-	}
+	public BackgroundSolid(Color backcolor) => BackColor = backcolor;
 
 	public BackgroundSolid(BackgroundSolid other)
 		: base(other) {
 		BackColor = other.BackColor;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the back color of the content.
 	/// </summary>
 	public virtual Color BackColor {
-		get {
-			return _backColor;
-		}
+		get => _backColor;
 
-		set {
-			_backColor = value;
-		}
+		set => _backColor = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new BackgroundSolid(this);
-	}
+	public override object Clone() => new BackgroundSolid(this);
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		if (BackColor != Color.Empty) {
@@ -57,11 +53,7 @@ public class BackgroundSolid : VisualElementBase {
 		}
 	}
 
-	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) {
-		return SizeF.Empty;
-	}
+	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) => SizeF.Empty;
 
-	protected virtual bool ShouldSerializeBackColor() {
-		return BackColor != Color.Empty;
-	}
+	protected virtual bool ShouldSerializeBackColor() => BackColor != Color.Empty;
 }

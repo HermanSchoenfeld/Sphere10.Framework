@@ -56,20 +56,15 @@ public class CheckBox : ControllerBase {
 	/// Constructor
 	/// </summary>
 	/// <param name="autoChangeValueOfSelectedCells">Indicates if this cells when checked or uncheck must change also the value of the selected cells of type CellCheckBox.</param>
-	public CheckBox(bool autoChangeValueOfSelectedCells) {
-		_autoChangeValueOfSelectedCells = autoChangeValueOfSelectedCells;
-	}
+	public CheckBox(bool autoChangeValueOfSelectedCells) => _autoChangeValueOfSelectedCells = autoChangeValueOfSelectedCells;
 
 	/// <summary>
 	/// Indicates if this cells when checked or uncheck must change also the value of the selected cells of type CellCheckBox. Default is false
 	/// </summary>
-	public bool AutoChangeValueOfSelectedCells {
-		get {
-			return _autoChangeValueOfSelectedCells;
-		}
-	}
+	public bool AutoChangeValueOfSelectedCells => _autoChangeValueOfSelectedCells;
 
-	// Controller Events
+	#region Controller Events
+
 	public override void OnKeyPress(CellContext sender, KeyPressEventArgs e) {
 		base.OnKeyPress(sender, e);
 
@@ -89,6 +84,8 @@ public class CheckBox : ControllerBase {
 		if (_lastButton == MouseButtons.Left)
 			UIChangeChecked(sender, e);
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Toggle the value of the current cell and if AutoChangeValueOfSelectedCells is true of all the selected cells.

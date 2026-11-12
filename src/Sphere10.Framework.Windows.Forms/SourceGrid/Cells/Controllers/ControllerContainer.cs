@@ -42,7 +42,8 @@ public class ControllerContainer : IController {
 			_dispatchControllers = null;
 	}
 
-	// IController Members
+	#region IController Members
+
 	public void OnMouseDown(CellContext sender, System.Windows.Forms.MouseEventArgs e) {
 		foreach (var controller in GetDispatchControllers())
 			controller.OnMouseDown(sender, e);
@@ -197,19 +198,17 @@ public class ControllerContainer : IController {
 			controller.OnGiveFeedback(sender, e);
 	}
 
+	#endregion
+
 	// A callback can rebuild cells and modify their controllers. Keep the admitted dispatch stable,
 	// while nested/subsequent events see the new list; reuse the snapshot until membership changes.
-	private IController[] GetDispatchControllers() {
-		return _dispatchControllers ??= _controllerList?.ToArray() ?? Array.Empty<IController>();
-	}
+	private IController[] GetDispatchControllers() => _dispatchControllers ??= _controllerList?.ToArray() ?? Array.Empty<IController>();
 
 	/// <summary>
 	/// A collection of elements of type IController. Only one instance of the same controller is allowed.
 	/// </summary>
 	public class ControllerList : List<IController> {
 		/// <summary>Returns the first controller assignable to the requested type.</summary>
-		public IController GetByType(Type searchType) {
-			return this.FirstOrDefault(controller => searchType.IsAssignableFrom(controller.GetType()));
-		}
+		public IController GetByType(Type searchType) => this.FirstOrDefault(controller => searchType.IsAssignableFrom(controller.GetType()));
 	}
 }

@@ -23,7 +23,8 @@ public class PingGridValueModel : IValueModel {
 	public PingGridValueModel() {
 	}
 
-	// IValueModel Members
+	#region IValueModel Members
+
 	public object GetValue(CellContext cellContext) {
 		// Resolve the source row and property represented by this cell.
 		var grid = cellContext.Grid as PingGrid;
@@ -56,4 +57,6 @@ public class PingGridValueModel : IValueModel {
 			cellContext.Grid.Controller.OnValueChanged(cellContext, EventArgs.Empty);
 			*/
 	}
+
+	#endregion
 }

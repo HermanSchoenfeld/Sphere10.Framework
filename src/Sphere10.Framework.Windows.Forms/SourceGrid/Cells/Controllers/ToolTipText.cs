@@ -27,51 +27,32 @@ public class ToolTipText : ControllerBase {
 	public readonly static ToolTipText Default = new ToolTipText();
 
 	public string ToolTipTitle {
-		get {
-			return _toolTipTitle;
-		}
-		set {
-			_toolTipTitle = value;
-		}
+		get => _toolTipTitle;
+		set => _toolTipTitle = value;
 	}
 
 	public System.Windows.Forms.ToolTipIcon ToolTipIcon {
-		get {
-			return _toolTipIcon;
-		}
-		set {
-			_toolTipIcon = value;
-		}
+		get => _toolTipIcon;
+		set => _toolTipIcon = value;
 	}
 
 	public bool IsBalloon {
-		get {
-			return _isBalloon;
-		}
-		set {
-			_isBalloon = value;
-		}
+		get => _isBalloon;
+		set => _isBalloon = value;
 	}
 
 	public System.Drawing.Color BackColor {
-		get {
-			return _backColor;
-		}
-		set {
-			_backColor = value;
-		}
+		get => _backColor;
+		set => _backColor = value;
 	}
 
 	public System.Drawing.Color ForeColor {
-		get {
-			return _foreColor;
-		}
-		set {
-			_foreColor = value;
-		}
+		get => _foreColor;
+		set => _foreColor = value;
 	}
 
-	// IBehaviorModel Members
+	#region IBehaviorModel Members
+
 	public override void OnMouseEnter(CellContext sender, EventArgs e) {
 		base.OnMouseEnter(sender, e);
 
@@ -83,6 +64,8 @@ public class ToolTipText : ControllerBase {
 
 		ResetToolTipText(sender, e);
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Change the cursor with the cursor of the cell

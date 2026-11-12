@@ -16,7 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// In this Controller are defined all the events fired by the Controller. Each event has a sender object of type CellContext that you can use to read the cell informations.
 /// </summary>
 public class CustomEvents : IController {
-	// IController Members
+	#region IController Members
+
 	public event MouseEventHandler MouseDown;
 
 	public event MouseEventHandler MouseUp;
@@ -192,9 +193,7 @@ public class CustomEvents : IController {
 			EditEnded(sender, e);
 	}
 
-	public virtual bool CanReceiveFocus(CellContext sender, EventArgs e) {
-		return true;
-	}
+	public virtual bool CanReceiveFocus(CellContext sender, EventArgs e) => true;
 
 	public virtual void OnDragDrop(CellContext sender, DragEventArgs e) {
 		if (DragDrop != null)
@@ -220,4 +219,6 @@ public class CustomEvents : IController {
 		if (GiveFeedback != null)
 			GiveFeedback(sender, e);
 	}
+
+	#endregion
 }

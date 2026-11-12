@@ -33,7 +33,8 @@ public abstract class EditorControlBase : EditorBase {
 	/// </summary>
 	private bool _isInsideEndEdit = false;
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -46,23 +47,17 @@ public abstract class EditorControlBase : EditorBase {
 		Control.Hide();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// The Control used to edit the Cell.
 	/// </summary>
-	public Control Control {
-		get {
-			return _control;
-		}
-	}
+	public Control Control => _control;
 
 	/// <summary>
 	/// The grid used by this editor. Null if the editor is not attached on a grid.
 	/// </summary>
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	// Send Keys
 	/// <summary>
@@ -84,15 +79,78 @@ public abstract class EditorControlBase : EditorBase {
 		OnSendCharToEditor(arg.KeyChar);
 	}
 
-	// Minimum Size
+	#region Minimum Size
+
 	/// <summary>
 	/// Calculate the minimum required size for the specified editor cell.
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	public override System.Drawing.Size GetMinimumSize(CellContext cellContext) {
-		return Control.GetPreferredSize(System.Drawing.Size.Empty);
+	public override System.Drawing.Size GetMinimumSize(CellContext cellContext) => Control.GetPreferredSize(System.Drawing.Size.Empty);
+
+	#endregion
+
+	/// <summary>
+	/// Apply edited value without stop the editing.
+	/// </summary>
+	/// <returns></returns>
+	public override bool ApplyEdit() {
+		//Note: I don't use SetFocusCells on this method because this methed can be called also inside some event of the control like TextChanged.
+
+		bool bSuccess;
+
+		if (IsEditing) {
+			try {
+				bSuccess = SetCellValue(EditCellContext, GetEditedValue());
+			} catch (Exception exception) {
+				OnEditException(new ExceptionEventArgs(exception));
+				bSuccess = false;
+			}
+		} else
+			bSuccess = true;
+
+		return bSuccess;
 	}
+
+	/// <summary>
+	/// Undo the edit value of the control to the initial value of the cell, usually used when pressing Esc key or terminate the edit operation with Cancel true.
+	/// </summary>
+	public virtual void UndoEditValue() {
+		if (EditCell == null)
+			throw new SourceGridException("Not in edit state");
+
+		SafeSetEditValue(EditCell.Model.ValueModel.GetValue(EditCellContext));
+	}
+
+	/// <summary>
+	/// Set the specified value in the current editor control calling the SetEditValue method. If an exception is throwed calls the OnUserException method and set the default value.
+	/// </summary>
+	/// <param name="editValue"></param>
+	public void SafeSetEditValue(object editValue) {
+		try {
+			//Can throw an exception if the original value is not valid for the editor
+			SetEditValue(editValue);
+		} catch (Exception exception) {
+			EditCellContext.Grid.OnUserException(new ExceptionEventArgs(new EditingCellException(exception)));
+			//On exception try to put the default value
+			try {
+				SetEditValue(DefaultValue);
+			} catch {
+			}
+		}
+	}
+
+	/// <summary>
+	/// Returns the value inserted with the current editor control
+	/// </summary>
+	/// <returns></returns>
+	public override abstract object GetEditedValue();
+
+	/// <summary>
+	/// Set the specified value in the current editor control.
+	/// </summary>
+	/// <param name="editValue"></param>
+	public abstract void SetEditValue(object editValue);
 
 	/// <summary>
 	/// Start editing the cell passed. Do not call this method for start editing a cell, you must use CellContext.StartEdit.
@@ -178,67 +236,17 @@ public abstract class EditorControlBase : EditorBase {
 		}
 	}
 
-	/// <summary>
-	/// Apply edited value without stop the editing.
-	/// </summary>
-	/// <returns></returns>
-	public override bool ApplyEdit() {
-		//Note: I don't use SetFocusCells on this method because this methed can be called also inside some event of the control like TextChanged.
-
-		bool bSuccess;
-
-		if (IsEditing) {
-			try {
-				bSuccess = SetCellValue(EditCellContext, GetEditedValue());
-			} catch (Exception exception) {
-				OnEditException(new ExceptionEventArgs(exception));
-				bSuccess = false;
-			}
-		} else
-			bSuccess = true;
-
-		return bSuccess;
+	/// <summary>Removes the native editing surface from its grid without disposing this editor's control.</summary>
+	internal void DetachControl() {
+		// Detach callbacks before changing parentage or disposing the editing surface.
+		_control.Validated -= InnerControlValidated;
+		_control.KeyPress -= InnerControlKeyPress;
+		SetEditCell(CellContext.Empty);
+		if (_grid != null && _linkedControl != null)
+			_grid.LinkedControls.Remove(_linkedControl);
+		_grid = null;
+		_linkedControl = null;
 	}
-
-	/// <summary>
-	/// Undo the edit value of the control to the initial value of the cell, usually used when pressing Esc key or terminate the edit operation with Cancel true.
-	/// </summary>
-	public virtual void UndoEditValue() {
-		if (EditCell == null)
-			throw new SourceGridException("Not in edit state");
-
-		SafeSetEditValue(EditCell.Model.ValueModel.GetValue(EditCellContext));
-	}
-
-	/// <summary>
-	/// Set the specified value in the current editor control calling the SetEditValue method. If an exception is throwed calls the OnUserException method and set the default value.
-	/// </summary>
-	/// <param name="editValue"></param>
-	public void SafeSetEditValue(object editValue) {
-		try {
-			//Can throw an exception if the original value is not valid for the editor
-			SetEditValue(editValue);
-		} catch (Exception exception) {
-			EditCellContext.Grid.OnUserException(new ExceptionEventArgs(new EditingCellException(exception)));
-			//On exception try to put the default value
-			try {
-				SetEditValue(DefaultValue);
-			} catch {
-			}
-		}
-	}
-
-	/// <summary>
-	/// Returns the value inserted with the current editor control
-	/// </summary>
-	/// <returns></returns>
-	public override abstract object GetEditedValue();
-
-	/// <summary>
-	/// Set the specified value in the current editor control.
-	/// </summary>
-	/// <param name="editValue"></param>
-	public abstract void SetEditValue(object editValue);
 
 	/// <summary>Detaches the editor and disposes the native control created by this owner.</summary>
 	protected override void Dispose(bool disposing) {
@@ -282,24 +290,10 @@ public abstract class EditorControlBase : EditorBase {
 	/// <param name="key"></param>
 	protected abstract void OnSendCharToEditor(char key);
 
-	/// <summary>Removes the native editing surface from its grid without disposing this editor's control.</summary>
-	internal void DetachControl() {
-		// Detach callbacks before changing parentage or disposing the editing surface.
-		_control.Validated -= InnerControlValidated;
-		_control.KeyPress -= InnerControlKeyPress;
-		SetEditCell(CellContext.Empty);
-		if (_grid != null && _linkedControl != null)
-			_grid.LinkedControls.Remove(_linkedControl);
-		_grid = null;
-		_linkedControl = null;
-	}
-
 	/// <summary>
 	/// Check if the Control is attached to a grid.
 	/// </summary>
-	private bool IsControlAttached() {
-		return _grid != null;
-	}
+	private bool IsControlAttached() => _grid != null;
 
 	/// <summary>
 	/// Add the Control to the specified grid. Consider that a Control can only be a child of one Container.

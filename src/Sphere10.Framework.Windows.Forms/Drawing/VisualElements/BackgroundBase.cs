@@ -19,6 +19,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 /// </summary>
 [Serializable]
 public abstract class BackgroundBase : VisualElementBase, IBackground {
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -33,13 +35,19 @@ public abstract class BackgroundBase : VisualElementBase, IBackground {
 		: base(other) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Calculate the client area where the content can be drawed, usually removing the area used by the background, for example removing a border.
 	/// </summary>
 	/// <returns></returns>
-	public virtual RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
-		return backGroundArea;
-	}
+	public virtual RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) => backGroundArea;
+
+	/// <summary>
+	/// Calculate the total area used by the backgound and the content, adding the background area to the content area.
+	/// </summary>
+	/// <returns></returns>
+	public virtual SizeF GetBackgroundExtent(GraphicsMeasurement measure, SizeF contentSize) => contentSize;
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 	}
@@ -47,13 +55,5 @@ public abstract class BackgroundBase : VisualElementBase, IBackground {
 	protected override SizeF OnMeasureContent(GraphicsMeasurement measure, SizeF maxSize) {
 		var clientSize = SizeF.Empty;
 		return GetBackgroundExtent(measure, clientSize);
-	}
-
-	/// <summary>
-	/// Calculate the total area used by the backgound and the content, adding the background area to the content area.
-	/// </summary>
-	/// <returns></returns>
-	public virtual SizeF GetBackgroundExtent(GraphicsMeasurement measure, SizeF contentSize) {
-		return contentSize;
 	}
 }

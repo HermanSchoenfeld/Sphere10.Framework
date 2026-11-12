@@ -16,6 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 
 [Serializable]
 public class CheckBox : CheckBoxBase {
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -30,13 +32,13 @@ public class CheckBox : CheckBoxBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new CheckBox(this);
-	}
+	public override object Clone() => new CheckBox(this);
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		ButtonState state;

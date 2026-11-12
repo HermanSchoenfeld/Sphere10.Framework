@@ -25,17 +25,14 @@ public class ColumnHeader : Header {
 	/// </summary>
 	public new readonly static ColumnHeader Default;
 
-	// Constructors
-	static ColumnHeader() {
-		Default = new ColumnHeader();
-	}
+	#region Constructors
+
+	static ColumnHeader() => Default = new ColumnHeader();
 
 	/// <summary>
 	/// Use default setting
 	/// </summary>
-	public ColumnHeader() {
-		Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ColumnHeaderThemed();
-	}
+	public ColumnHeader() => Background = new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ColumnHeaderThemed();
 
 	/// <summary>
 	/// Copy constructor.  This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -45,36 +42,32 @@ public class ColumnHeader : Header {
 		: base(source) {
 	}
 
-	// Visual Elements
+	#endregion
+
+	#region Visual Elements
+
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IColumnHeader Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IColumnHeader)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IColumnHeader)base.Background;
+		set => base.Background = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the visual element used to draw the sort indicator. Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.SortIndicator
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ISortIndicator ElementSort {
-		get {
-			return _elementSort;
-		}
-		set {
-			_elementSort = value;
-		}
+		get => _elementSort;
+		set => _elementSort = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new ColumnHeader(this);
-	}
+	public override object Clone() => new ColumnHeader(this);
+
+	#endregion
 
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
@@ -91,6 +84,8 @@ public class ColumnHeader : Header {
 			ElementSort.SortStyle = Sphere10.Framework.Windows.Forms.Drawing.HeaderSortStyle.None;
 	}
 
+	#endregion
+
 	protected override IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetElements() {
 		if (ElementSort != null)
 			yield return ElementSort;
@@ -99,7 +94,5 @@ public class ColumnHeader : Header {
 			yield return v;
 	}
 
-	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() {
-		return base.GetElements();
-	}
+	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() => base.GetElements();
 }

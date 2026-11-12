@@ -12,16 +12,15 @@ using Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Extensions.PingGrids;
 
-// Controller
+#region Controller
+
 /// <summary>
 /// Notify PingGrid of value editing
 /// </summary>
 public class PingGridCellController : ControllerBase {
-	public override void OnValueChanging(CellContext sender, ValueChangeEventArgs args) {
-		base.OnValueChanging(sender, args);
-	}
+	public override void OnValueChanging(CellContext sender, ValueChangeEventArgs args) => base.OnValueChanging(sender, args);
 
-	public override void OnEditStarting(CellContext sender, CancelEventArgs args) {
-		base.OnEditStarting(sender, args);
-	}
+	public override void OnEditStarting(CellContext sender, CancelEventArgs args) => base.OnEditStarting(sender, args);
 }
+
+#endregion

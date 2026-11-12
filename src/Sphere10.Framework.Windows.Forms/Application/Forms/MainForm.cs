@@ -54,28 +54,16 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	/// <summary>Activates and caches this form's own menu definitions; contextual owners retain their own commands.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_menus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= GetMenus());
 
 	/// <summary>Activates and caches this form's own toolbar definitions without copying their native state or callbacks.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 
 	[DefaultValue(ScreenMode.SingleView), Category("Behavior"), Description("Display one screen or multiple screens in detachable tabs")]
 	public ScreenMode ScreenMode {
-		get {
-			return ScreenHost.ScreenMode;
-		}
-		set {
-			ScreenHost.ScreenMode = value;
-		}
+		get => ScreenHost.ScreenMode;
+		set => ScreenHost.ScreenMode = value;
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -84,17 +72,11 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	/// <summary>The UI invoking the current native command; asynchronous handlers capture it before their first await.</summary>
 	/// <remarks>A detached command supplies its local screen host without changing this form's active screen.</remarks>
 	[Browsable(false)]
-	protected IUserInterfaceServices CommandUserInterfaceServices {
-		get {
-			return _commandUserInterfaceServices ?? this;
-		}
-	}
+	protected IUserInterfaceServices CommandUserInterfaceServices => _commandUserInterfaceServices ?? this;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public ApplicationScreen ActiveScreen {
-		get {
-			return ScreenHost.ActiveScreen;
-		}
+		get => ScreenHost.ActiveScreen;
 		set {
 			if (value != null)
 				ScreenHost.ShowScreen(value);
@@ -105,9 +87,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	[DefaultValue(ToolStripStableHeightBehavior.StandardLogicalHeight), Category("Layout"), Description("Common application toolbar row height in logical pixels; screen command changes do not resize the row")]
 	public int ToolBarRowHeight {
-		get {
-			return _toolStripHeight.LogicalHeight;
-		}
+		get => _toolStripHeight.LogicalHeight;
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			_toolStripHeight.LogicalHeight = value;
@@ -115,56 +95,28 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	public override string Status {
-		get {
-			return _statusLabel.Text;
-		}
-		set {
-			ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
-		}
+		get => _statusLabel.Text;
+		set => ExecuteInUIFriendlyContext(() => _statusLabel.Text = value);
 	}
 
 	[Browsable(false)]
-	protected ToolStripMenuItem HelpToolStripMenuItem {
-		get {
-			return _helpToolStripMenuItem;
-		}
-	}
+	protected ToolStripMenuItem HelpToolStripMenuItem => _helpToolStripMenuItem;
 
 	/// <summary>The actual inherited Options header; derived designers append their native option controls here.</summary>
 	[Browsable(false)]
-	protected ToolStripMenuItem OptionsToolStripMenuItem {
-		get {
-			return _optionsMenuItem;
-		}
-	}
+	protected ToolStripMenuItem OptionsToolStripMenuItem => _optionsMenuItem;
 
 	[Browsable(false)]
-	protected ToolStripMenuItem ScreensToolStripMenuItem {
-		get {
-			return _screensMenuItem;
-		}
-	}
+	protected ToolStripMenuItem ScreensToolStripMenuItem => _screensMenuItem;
 
 	[Browsable(false)]
-	protected ToolStrip ToolStrip {
-		get {
-			return _toolStrip;
-		}
-	}
+	protected ToolStrip ToolStrip => _toolStrip;
 
 	[Browsable(false)]
-	protected MenuStrip MenuStrip {
-		get {
-			return _menuStrip;
-		}
-	}
+	protected MenuStrip MenuStrip => _menuStrip;
 
 	[Browsable(false)]
-	protected StatusStrip StatusStrip {
-		get {
-			return _statusStrip;
-		}
-	}
+	protected StatusStrip StatusStrip => _statusStrip;
 
 	#endregion
 
@@ -172,7 +124,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 
 	// Designer controls supply the commands; service-dependent availability is applied after runtime attachment.
 	protected override void OnLoad(EventArgs e) {
-		if (!Tools.Runtime.IsDesignMode) {
+		if (!DesignMode && !Tools.Runtime.IsDesignMode) {
 			_screenOptionsMenuItem.Available = Application != null || ApplicationServices != null;
 			_optionsMenuItem.Available = _optionsMenuItem.DropDownItems.Cast<ToolStripItem>().Any(item => item.Available);
 			RebuildApplicationCommands();
@@ -190,6 +142,26 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	#endregion
 
 	#region Commands
+
+	// Existing application construction activates both owner caches before any contextual merge.
+	internal void CaptureApplicationCommands() {
+		_ = Menus;
+		_ = ToolBarItems;
+	}
+
+	// Preserve designer callbacks while supplying the invoking window to context-aware owner handlers.
+	internal void ExecuteNativeCommand(Action command, IUserInterfaceServices userInterface) {
+		var previous = _commandUserInterfaceServices;
+		_commandUserInterfaceServices = userInterface;
+		try {
+			command();
+		} finally {
+			_commandUserInterfaceServices = previous;
+		}
+	}
+
+	// Screen navigation alone rebuilds its membership on opening; other owner commands remain fixed after activation.
+	internal bool IsScreenNavigationMenu(ToolStripItem item) => ReferenceEquals(item, _screensMenuItem);
 
 	/// <summary>Rebuilds the current window's presentation from its command owners and their fixed definitions.</summary>
 	protected virtual void RebuildApplicationCommands() {
@@ -242,28 +214,6 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		return ToolStrip.Items.Cast<ToolStripItem>().Select(item => (IApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
 	}
 
-	// Existing application construction activates both owner caches before any contextual merge.
-	internal void CaptureApplicationCommands() {
-		_ = Menus;
-		_ = ToolBarItems;
-	}
-
-	// Preserve designer callbacks while supplying the invoking window to context-aware owner handlers.
-	internal void ExecuteNativeCommand(Action command, IUserInterfaceServices userInterface) {
-		var previous = _commandUserInterfaceServices;
-		_commandUserInterfaceServices = userInterface;
-		try {
-			command();
-		} finally {
-			_commandUserInterfaceServices = previous;
-		}
-	}
-
-	// Screen navigation alone rebuilds its membership on opening; other owner commands remain fixed after activation.
-	internal bool IsScreenNavigationMenu(ToolStripItem item) {
-		return ReferenceEquals(item, _screensMenuItem);
-	}
-
 	// Visual-inheritance sources belong to the form; hosted screens and generated contextual views have separate owners.
 	private void MergeInheritedDesignerStrips() {
 		foreach (var control in EnumerateApplicationControls(this)) {
@@ -299,9 +249,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	#region Screen presentation
 
 	/// <summary>Shows the supplied screen through this form's existing host and activation policy.</summary>
-	public bool ShowScreen(ApplicationScreen screen) {
-		return ScreenHost.ShowScreen(screen);
-	}
+	public bool ShowScreen(ApplicationScreen screen) => ScreenHost.ShowScreen(screen);
 
 	// The outgoing owner restores its source controls before the root host changes active selection.
 	protected virtual void OnActiveScreenChanging(ApplicationScreen screen) {
@@ -323,9 +271,7 @@ public partial class MainForm : LiteMainForm, IMainForm {
 	}
 
 	// Explicit pre-activation screen configuration changes reuse the same owner-driven composition path.
-	private void ActiveScreenCommandsChanged() {
-		RebuildApplicationCommands();
-	}
+	private void ActiveScreenCommandsChanged() => RebuildApplicationCommands();
 
 	// Return the active owner's native sources before its normal screen teardown.
 	private void ActiveCommandScreenDestroyed(object sender, EventArgs args) {
@@ -379,15 +325,10 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		}
 	}
 
-	SharedUI.IApplicationScreenHost IUserInterfaceServices.ScreenHost {
-		get {
-			return ScreenHost;
-		}
-	}
+	SharedUI.IApplicationScreenHost IUserInterfaceServices.ScreenHost => ScreenHost;
 
-	public virtual Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default) {
-		return WinFormsCommandControls.ExecuteMenuItemAsync(this, item, cancellationToken);
-	}
+	public virtual Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default)
+		=> WinFormsCommandControls.ExecuteMenuItemAsync(this, item, cancellationToken);
 
 	#endregion
 
@@ -444,6 +385,8 @@ public partial class MainForm : LiteMainForm, IMainForm {
 		if (error != null)
 			await ExceptionDialog.ShowAsync(this, error);
 	}
+
+	#region Event Handlers
 
 	protected virtual async void RequestAFeature_Click(object sender, EventArgs e) {
 		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
@@ -523,6 +466,8 @@ public partial class MainForm : LiteMainForm, IMainForm {
 			ReportError(error);
 		}
 	}
+
+	#endregion
 
 	#endregion
 }

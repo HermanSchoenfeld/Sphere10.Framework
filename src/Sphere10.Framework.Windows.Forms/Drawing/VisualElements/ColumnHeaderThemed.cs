@@ -22,6 +22,8 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 	/// </summary>
 	private ColumnHeader _standardHeader = new ColumnHeader();
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -36,10 +38,10 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override ControlDrawStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -51,9 +53,7 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new ColumnHeaderThemed(this);
-	}
+	public override object Clone() => new ColumnHeaderThemed(this);
 
 	public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
 		//First calls the base class for standard calculation
@@ -94,7 +94,6 @@ public class ColumnHeaderThemed : ColumnHeaderBase {
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 }

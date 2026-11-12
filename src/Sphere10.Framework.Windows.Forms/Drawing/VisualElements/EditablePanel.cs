@@ -18,6 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class EditablePanel : EditablePanelBase {
 	private RectangleBorder _equivalentPadding = new RectangleBorder(new BorderLine(Color.Empty, 2));
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -32,13 +34,13 @@ public class EditablePanel : EditablePanelBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new EditablePanel(this);
-	}
+	public override object Clone() => new EditablePanel(this);
 
 	public override void Draw(GraphicsCache graphics, RectangleF area) {
 		if (BorderStyle == BorderStyle.System)

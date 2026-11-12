@@ -28,6 +28,118 @@ public partial class MiscTestScreen : ApplicationScreen {
 		Disposables.Add(_heading.Font);
 	}
 
+	#region Sqlite
+
+	public string CreateTempSqliteDB() {
+		var table = "CREATE TABLE IF NOT EXISTS TTC (id INTEGER PRIMARY KEY, Route_ID TEXT, Branch_Code TEXT, Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time TEXT)";
+		var tempFile = string.Format("{0}{1}{2}", Path.GetTempPath(), Path.DirectorySeparatorChar, Guid.NewGuid());
+		var dac = Tools.Sqlite.Create(tempFile);
+		using (dac.EnterScope()) {
+			dac.ExecuteNonQuery(table);
+		}
+		return tempFile;
+	}
+
+	public void SqliteDACInsertTest(string path, int numInserts) {
+		var dac = Tools.Sqlite.Open(path);
+		using (dac.EnterScope(true)) {
+			for (var index = 0; index < numInserts; index++)
+				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+		}
+	}
+
+	public void SqliteDACExecuteBatch(string path, int numInserts) {
+		var dac = Tools.Sqlite.Open(path);
+		using (dac.EnterScope()) {
+			var builder = dac.CreateSQLBuilder();
+			for (var index = 0; index < numInserts; index++)
+				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+			dac.ExecuteBatch(builder);
+		}
+	}
+
+	public void SqliteDACExecuteBatch2(string path, int numInserts) {
+		var dac = Tools.Sqlite.Open(path);
+		using (dac.EnterScope()) {
+			var builder = dac.CreateSQLBuilder();
+			for (var index = 0; index < numInserts; index++)
+				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+
+			dac.ExecuteNonQuery(builder.ToString());
+		}
+	}
+
+	public void SqliteDACExecuteBatchManualTransaction(string path, int numInserts) {
+		var dac = Tools.Sqlite.Open(path);
+		using (dac.EnterScope()) {
+			var builder = dac.CreateSQLBuilder();
+			builder.BeginTransaction();
+			for (var index = 0; index < numInserts; index++)
+				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+			builder.CommitTransaction();
+			dac.ExecuteBatch(builder);
+		}
+	}
+
+	#endregion
+
+	#region SQL Server
+
+	public string CreateTempMSSQLDB() {
+		var table = "CREATE TABLE TTC (id INTEGER PRIMARY KEY IDENTITY, Route_ID VARCHAR(255), Branch_Code VARCHAR(255), Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time VARCHAR(255))";
+		var dbName = Guid.NewGuid().ToStrictAlphaString();
+		Tools.MSSQL.CreateDatabase("localhost", dbName, "sa", null, false);
+		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
+		using (dac.EnterScope()) {
+			dac.ExecuteNonQuery(table);
+		}
+		return dbName;
+	}
+
+	public void SqlServerDACInsertTest(string dbName, int numInserts) {
+		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
+		;
+		using (dac.EnterScope(true)) {
+			for (var index = 0; index < numInserts; index++)
+				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+		}
+	}
+
+	public void SqlServerDACExecuteBatch(string dbName, int numInserts) {
+		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
+		using (dac.EnterScope()) {
+			var builder = dac.CreateSQLBuilder();
+			for (var index = 0; index < numInserts; index++)
+				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+			dac.ExecuteBatch(builder);
+		}
+	}
+
+	public void SqlServerDACExecuteBatch2(string dbName, int numInserts) {
+		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
+		using (dac.EnterScope()) {
+			var builder = dac.CreateSQLBuilder();
+			for (var index = 0; index < numInserts; index++)
+				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+
+			dac.ExecuteNonQuery(builder.ToString());
+		}
+	}
+
+	public void SqlServerDACExecuteBatchManualTransaction(string dbName, int numInserts) {
+		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
+		using (dac.EnterScope()) {
+			var builder = dac.CreateSQLBuilder();
+			builder.BeginTransaction();
+			for (var index = 0; index < numInserts; index++)
+				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
+			builder.CommitTransaction();
+			dac.ExecuteBatch(builder);
+		}
+	}
+
+	#endregion
+
 	/// <summary>Loads a small merger example without starting any optional utility or database operation.</summary>
 	protected override void OnLoad(EventArgs e) {
 		base.OnLoad(e);
@@ -241,58 +353,6 @@ public partial class MiscTestScreen : ApplicationScreen {
 		}
 	}
 
-	// Sqlite
-	public string CreateTempSqliteDB() {
-		var table = "CREATE TABLE IF NOT EXISTS TTC (id INTEGER PRIMARY KEY, Route_ID TEXT, Branch_Code TEXT, Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time TEXT)";
-		var tempFile = string.Format("{0}{1}{2}", Path.GetTempPath(), Path.DirectorySeparatorChar, Guid.NewGuid());
-		var dac = Tools.Sqlite.Create(tempFile);
-		using (dac.EnterScope()) {
-			dac.ExecuteNonQuery(table);
-		}
-		return tempFile;
-	}
-
-	public void SqliteDACInsertTest(string path, int numInserts) {
-		var dac = Tools.Sqlite.Open(path);
-		using (dac.EnterScope(true)) {
-			for (var index = 0; index < numInserts; index++)
-				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-		}
-	}
-
-	public void SqliteDACExecuteBatch(string path, int numInserts) {
-		var dac = Tools.Sqlite.Open(path);
-		using (dac.EnterScope()) {
-			var builder = dac.CreateSQLBuilder();
-			for (var index = 0; index < numInserts; index++)
-				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-			dac.ExecuteBatch(builder);
-		}
-	}
-
-	public void SqliteDACExecuteBatch2(string path, int numInserts) {
-		var dac = Tools.Sqlite.Open(path);
-		using (dac.EnterScope()) {
-			var builder = dac.CreateSQLBuilder();
-			for (var index = 0; index < numInserts; index++)
-				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-
-			dac.ExecuteNonQuery(builder.ToString());
-		}
-	}
-
-	public void SqliteDACExecuteBatchManualTransaction(string path, int numInserts) {
-		var dac = Tools.Sqlite.Open(path);
-		using (dac.EnterScope()) {
-			var builder = dac.CreateSQLBuilder();
-			builder.BeginTransaction();
-			for (var index = 0; index < numInserts; index++)
-				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-			builder.CommitTransaction();
-			dac.ExecuteBatch(builder);
-		}
-	}
-
 	private void SqlServerTest_Click(object sender, EventArgs args) {
 		var writer = new TextBoxWriter(_outputTextBox);
 		try {
@@ -336,60 +396,6 @@ public partial class MiscTestScreen : ApplicationScreen {
 			}
 		} catch (Exception error) {
 			writer.WriteLine(error.ToDiagnosticString());
-		}
-	}
-
-	// SQL Server
-	public string CreateTempMSSQLDB() {
-		var table = "CREATE TABLE TTC (id INTEGER PRIMARY KEY IDENTITY, Route_ID VARCHAR(255), Branch_Code VARCHAR(255), Version INTEGER, Stop INTEGER, Vehicle_Index INTEGER, Day Integer, Time VARCHAR(255))";
-		var dbName = Guid.NewGuid().ToStrictAlphaString();
-		Tools.MSSQL.CreateDatabase("localhost", dbName, "sa", null, false);
-		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.EnterScope()) {
-			dac.ExecuteNonQuery(table);
-		}
-		return dbName;
-	}
-
-	public void SqlServerDACInsertTest(string dbName, int numInserts) {
-		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		;
-		using (dac.EnterScope(true)) {
-			for (var index = 0; index < numInserts; index++)
-				dac.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-		}
-	}
-
-	public void SqlServerDACExecuteBatch(string dbName, int numInserts) {
-		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.EnterScope()) {
-			var builder = dac.CreateSQLBuilder();
-			for (var index = 0; index < numInserts; index++)
-				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-			dac.ExecuteBatch(builder);
-		}
-	}
-
-	public void SqlServerDACExecuteBatch2(string dbName, int numInserts) {
-		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.EnterScope()) {
-			var builder = dac.CreateSQLBuilder();
-			for (var index = 0; index < numInserts; index++)
-				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-
-			dac.ExecuteNonQuery(builder.ToString());
-		}
-	}
-
-	public void SqlServerDACExecuteBatchManualTransaction(string dbName, int numInserts) {
-		var dac = Tools.MSSQL.Open("localhost", dbName, "sa", null);
-		using (dac.EnterScope()) {
-			var builder = dac.CreateSQLBuilder();
-			builder.BeginTransaction();
-			for (var index = 0; index < numInserts; index++)
-				builder.Insert("TTC", new[] { new ColumnValue("Route_ID", Guid.NewGuid().ToString()), });
-			builder.CommitTransaction();
-			dac.ExecuteBatch(builder);
 		}
 	}
 
@@ -518,13 +524,9 @@ public partial class MiscTestScreen : ApplicationScreen {
 				TextWriter.WriteLine("[Begin Child Scope]");
 		}
 
-		protected override void OnScopeEndInternal() {
-			TextWriter.WriteLine(RootScope != this ? "[End Child Scope]" : "[End Root Scope]");
-		}
+		protected override void OnScopeEndInternal() => TextWriter.WriteLine(RootScope != this ? "[End Child Scope]" : "[End Root Scope]");
 
-		protected override void OnContextEnd() {
-			TextWriter.WriteLine("Context end");
-		}
+		protected override void OnContextEnd() => TextWriter.WriteLine("Context end");
 	}
 
 	[XmlRoot("Menu")]

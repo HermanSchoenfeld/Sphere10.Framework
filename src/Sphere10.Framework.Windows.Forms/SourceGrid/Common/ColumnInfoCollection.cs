@@ -46,11 +46,7 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 		: base(grid) {
 	}
 
-	public override int Count {
-		get {
-			return _list.Count;
-		}
-	}
+	public override int Count => _list.Count;
 
 	/// <summary>
 	/// Indexer. Returns a ColumnInfo at the specified position
@@ -65,18 +61,15 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 		}
 	}
 
-	// Insert/Remove Methods
-	public void Add(ColumnInfo column) {
-		Insert(Count, column);
-	}
+	#region Insert/Remove Methods
+
+	public void Add(ColumnInfo column) => Insert(Count, column);
 
 	/// <summary>
 	/// Remove a column at the speicifed position
 	/// </summary>
 	/// <param name="index"></param>
-	public void Remove(int index) {
-		RemoveRange(index, 1);
-	}
+	public void Remove(int index) => RemoveRange(index, 1);
 
 	/// <summary>
 	/// Move a column from one position to another position
@@ -125,9 +118,7 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 			ColumnWidthChanged(this, e);
 	}
 
-	public int IndexOf(ColumnInfo info) {
-		return _list.IndexOf(info);
-	}
+	public int IndexOf(ColumnInfo info) => _list.IndexOf(info);
 
 	/// <summary>
 	/// Auto size the columns calculating the required size only on the rows currently visible
@@ -165,6 +156,8 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 		PerformLayout();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Returns true if the range passed is valid
 	/// </summary>
@@ -178,39 +171,64 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 		return false;
 	}
 
-	// ColumnsBase
-	public override int GetWidth(int column) {
-		return (IsColumnVisible(column) ? this[column].Width : 0);
-	}
+	#region ColumnsBase
 
-	public override void SetWidth(int column, int width) {
-		this[column].Width = width;
-	}
+	public override int GetWidth(int column) => (IsColumnVisible(column) ? this[column].Width : 0);
 
-	public override AutoSizeMode GetAutoSizeMode(int column) {
-		return this[column].AutoSizeMode;
-	}
+	public override void SetWidth(int column, int width) => this[column].Width = width;
 
-	public override bool IsColumnVisible(int column) {
-		return this[column].Visible;
-	}
+	public override AutoSizeMode GetAutoSizeMode(int column) => this[column].AutoSizeMode;
 
-	public override void HideColumn(int column) {
-		this[column].Visible = false;
-	}
+	public override bool IsColumnVisible(int column) => this[column].Visible;
 
-	public override void ShowColumn(int column) {
-		this[column].Visible = true;
-	}
+	public override void HideColumn(int column) => this[column].Visible = false;
+
+	public override void ShowColumn(int column) => this[column].Visible = true;
+
+	#endregion
 
 	/// <summary>Enumerates the current columns in their display order.</summary>
-	public IEnumerator<ColumnInfo> GetEnumerator() {
-		return _list.GetEnumerator();
+	public IEnumerator<ColumnInfo> GetEnumerator() => _list.GetEnumerator();
+
+	#region IEnumerable Members
+
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+	#endregion
+
+	/// <summary>
+	/// Returns true if the range passed is valid for insert method
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="count"></param>
+	/// <returns></returns>
+	public bool IsValidRangeForInsert(int startIndex, int count) {
+		if (startIndex <= Count && startIndex >= 0 &&
+			count > 0)
+			return true;
+		return false;
 	}
 
-	protected override void OnLayout() {
-		base.OnLayout();
+	public void Insert(int index, ColumnInfo dataGridColumn) => InsertRange(index, dataGridColumn);
+
+	/// <summary>
+	/// Insert the specified number of Columns at the specified position
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="columns"></param>
+	public void InsertRange(int startIndex, params ColumnInfo[] columns) {
+		if (IsValidRangeForInsert(startIndex, columns.Length) == false)
+			throw new SourceGridException("Invalid index");
+
+		for (var c = 0; c < columns.Length; c++)
+			_list.Insert(startIndex + c, columns[c]);
+
+		PerformLayout();
+
+		OnColumnsAdded(new IndexRangeEventArgs(startIndex, columns.Length));
 	}
+
+	protected override void OnLayout() => base.OnLayout();
 
 	/// <summary>
 	/// Fired when some columns are removed
@@ -231,45 +249,6 @@ public class ColumnInfoCollection : ColumnsBase, IEnumerable<ColumnInfo> {
 		if (ColumnsRemoving != null)
 			ColumnsRemoving(this, e);
 		//Grid.OnColumnsRemoving(e);
-	}
-
-	// IEnumerable Members
-	IEnumerator IEnumerable.GetEnumerator() {
-		return GetEnumerator();
-	}
-
-	/// <summary>
-	/// Returns true if the range passed is valid for insert method
-	/// </summary>
-	/// <param name="startIndex"></param>
-	/// <param name="count"></param>
-	/// <returns></returns>
-	public bool IsValidRangeForInsert(int startIndex, int count) {
-		if (startIndex <= Count && startIndex >= 0 &&
-			count > 0)
-			return true;
-		return false;
-	}
-
-	public void Insert(int index, ColumnInfo dataGridColumn) {
-		InsertRange(index, dataGridColumn);
-	}
-
-	/// <summary>
-	/// Insert the specified number of Columns at the specified position
-	/// </summary>
-	/// <param name="startIndex"></param>
-	/// <param name="columns"></param>
-	public void InsertRange(int startIndex, params ColumnInfo[] columns) {
-		if (IsValidRangeForInsert(startIndex, columns.Length) == false)
-			throw new SourceGridException("Invalid index");
-
-		for (var c = 0; c < columns.Length; c++)
-			_list.Insert(startIndex + c, columns[c]);
-
-		PerformLayout();
-
-		OnColumnsAdded(new IndexRangeEventArgs(startIndex, columns.Length));
 	}
 
 	/// <summary>

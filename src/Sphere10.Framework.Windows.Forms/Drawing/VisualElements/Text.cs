@@ -21,6 +21,8 @@ public class Text : VisualElementBase, IText {
 	private string _value = null;
 	private bool _enabled = true;
 
+	#region Constructor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -31,9 +33,7 @@ public class Text : VisualElementBase, IText {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public Text(string value) {
-		Value = value;
-	}
+	public Text(string value) => Value = value;
 
 	/// <summary>
 	/// Copy constructor.
@@ -47,30 +47,24 @@ public class Text : VisualElementBase, IText {
 		Enabled = other.Enabled;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the Font of the content. Default is System.Windows.Forms.Control.DefaultFont.
 	/// </summary>
 	public virtual Font Font {
-		get {
-			return _font;
-		}
+		get => _font;
 
-		set {
-			_font = value;
-		}
+		set => _font = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the fore color of the content. System.Windows.Forms.Control.DefaultForeColor
 	/// </summary>
 	public virtual Color ForeColor {
-		get {
-			return _foreColor;
-		}
+		get => _foreColor;
 
-		set {
-			_foreColor = value;
-		}
+		set => _foreColor = value;
 	}
 
 	/// <summary>
@@ -78,32 +72,24 @@ public class Text : VisualElementBase, IText {
 	/// </summary>
 	[DefaultValue(null)]
 	public virtual string Value {
-		get {
-			return _value;
-		}
+		get => _value;
 
-		set {
-			_value = value;
-		}
+		set => _value = value;
 	}
 
 	public bool Enabled {
-		get {
-			return _enabled;
-		}
+		get => _enabled;
 
-		set {
-			_enabled = value;
-		}
+		set => _enabled = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Text(this);
-	}
+	public override object Clone() => new Text(this);
+
+	#region Measure
 
 	/// <summary>
 	/// Measure the current content of the VisualElement.
@@ -117,6 +103,8 @@ public class Text : VisualElementBase, IText {
 		return measure.Graphics.MeasureString(Value, Font);
 	}
 
+	#endregion
+
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		SolidBrush brush;
 		if (Enabled)
@@ -126,11 +114,7 @@ public class Text : VisualElementBase, IText {
 		graphics.Graphics.DrawString(Value, Font, brush, area);
 	}
 
-	private bool ShouldSerializeFont() {
-		return Font.ToString() != System.Windows.Forms.Control.DefaultFont.ToString();
-	}
+	private bool ShouldSerializeFont() => Font.ToString() != System.Windows.Forms.Control.DefaultFont.ToString();
 
-	private bool ShouldSerializeForeColor() {
-		return ForeColor != System.Windows.Forms.Control.DefaultForeColor;
-	}
+	private bool ShouldSerializeForeColor() => ForeColor != System.Windows.Forms.Control.DefaultForeColor;
 }

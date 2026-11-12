@@ -22,6 +22,8 @@ public class ButtonThemed : ButtonBase {
 	/// </summary>
 	private Button _standardButton = new Button();
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -36,10 +38,10 @@ public class ButtonThemed : ButtonBase {
 		: base(other) {
 	}
 
+	#endregion
+
 	public override ButtonStyle Style {
-		get {
-			return base.Style;
-		}
+		get => base.Style;
 
 		set {
 			base.Style = value;
@@ -51,9 +53,7 @@ public class ButtonThemed : ButtonBase {
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new ButtonThemed(this);
-	}
+	public override object Clone() => new ButtonThemed(this);
 
 	public override SizeF GetBackgroundExtent(GraphicsMeasurement measure, SizeF contentSize) {
 		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement())) {
@@ -62,6 +62,13 @@ public class ButtonThemed : ButtonBase {
 		} else
 			contentSize = _standardButton.GetBackgroundExtent(measure, contentSize);
 		return base.GetBackgroundExtent(measure, contentSize);
+	}
+
+	public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
+		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
+		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
+			return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
+		return _standardButton.GetBackgroundContentRectangle(measure, backGroundArea);
 	}
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
@@ -75,13 +82,6 @@ public class ButtonThemed : ButtonBase {
 			}
 		} else
 			_standardButton.Draw(graphics, area);
-	}
-
-	public override RectangleF GetBackgroundContentRectangle(GraphicsMeasurement measure, RectangleF backGroundArea) {
-		backGroundArea = base.GetBackgroundContentRectangle(measure, backGroundArea);
-		if (System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetBackgroundElement()))
-			return GetRenderer(GetBackgroundElement()).GetBackgroundContentRectangle(measure.Graphics, Rectangle.Round(backGroundArea));
-		return _standardButton.GetBackgroundContentRectangle(measure, backGroundArea);
 	}
 
 	protected VisualStyleElement GetBackgroundElement() {
@@ -101,7 +101,6 @@ public class ButtonThemed : ButtonBase {
 	/// </summary>
 	/// <param name="element"></param>
 	/// <returns></returns>
-	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
-	}
+	protected System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 }

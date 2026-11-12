@@ -17,17 +17,12 @@ public class ConditionView : ICondition {
 
 	public EvaluateFunctionDelegate EvaluateFunction;
 
-	public ConditionView(IView view) {
-		_view = view;
-	}
+	public ConditionView(IView view) => _view = view;
 
-	public IView View {
-		get {
-			return _view;
-		}
-	}
+	public IView View => _view;
 
-	// ICondition Members
+	#region ICondition Members
+
 	public bool Evaluate(DataGridColumn column, int gridRow, object itemRow) {
 		if (EvaluateFunction == null)
 			return false;
@@ -41,6 +36,8 @@ public class ConditionView : ICondition {
 
 		return copied;
 	}
+
+	#endregion
 
 	public delegate bool EvaluateFunctionDelegate(DataGridColumn column, int gridRow, object itemRow);
 }

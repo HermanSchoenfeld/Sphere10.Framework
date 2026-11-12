@@ -22,10 +22,16 @@ namespace Sphere10.Framework.Drawing;
 public struct RectangleBorder : IBorder {
 	public static readonly RectangleBorder NoBorder = new RectangleBorder(BorderLine.NoBorder);
 	public static readonly RectangleBorder RectangleBlack1Width = new RectangleBorder(new BorderLine(Color.Black, 1));
+	#region Properties
+
 	public BorderLine Top;
 	public BorderLine Bottom;
 	public BorderLine Left;
 	public BorderLine Right;
+
+	#endregion
+
+	#region Constructor
 
 	/// <summary>
 	/// Construct a RectangleBorder with the same border on all the side
@@ -63,6 +69,10 @@ public struct RectangleBorder : IBorder {
 		Left = left;
 		Right = right;
 	}
+
+	#endregion
+
+	#region Helper methods
 
 	/// <summary>
 	/// Change the color of the current struct instance and return a copy of the modified struct.
@@ -115,9 +125,11 @@ public struct RectangleBorder : IBorder {
 		return this;
 	}
 
-	public override string ToString() {
-		return "Top:" + Top.ToString() + " Bottom:" + Bottom.ToString() + " Left:" + Left.ToString() + " Right:" + Right.ToString();
-	}
+	#endregion
+
+	#region .NET override methods (Equals, GetHashCode, operators, ToString, ...)
+
+	public override string ToString() => "Top:" + Top.ToString() + " Bottom:" + Bottom.ToString() + " Left:" + Left.ToString() + " Right:" + Right.ToString();
 
 	/// <summary>
 	/// Compare to current border with another border.
@@ -135,17 +147,15 @@ public struct RectangleBorder : IBorder {
 		return false;
 	}
 
-	public override int GetHashCode() {
-		return Left.GetHashCode();
-	}
+	public override int GetHashCode() => Left.GetHashCode();
 
-	public static bool operator ==(RectangleBorder a, RectangleBorder b) {
-		return a.Equals(b);
-	}
+	public static bool operator ==(RectangleBorder a, RectangleBorder b) => a.Equals(b);
 
-	public static bool operator !=(RectangleBorder a, RectangleBorder b) {
-		return a.Equals(b) == false;
-	}
+	public static bool operator !=(RectangleBorder a, RectangleBorder b) => a.Equals(b) == false;
+
+	#endregion
+
+	#region Factory methods
 
 	/// <summary>
 	/// Create an Inset border
@@ -178,6 +188,8 @@ public struct RectangleBorder : IBorder {
 		border.Right = new BorderLine(shadowColor, width);
 		return border;
 	}
+
+	#endregion
 
 	public SizeF GetExtent(SizeF contentSize) {
 		//Add Border Width
@@ -339,7 +351,5 @@ public struct RectangleBorder : IBorder {
 		return backGroundArea;
 	}
 
-	public object Clone() {
-		return MemberwiseClone();
-	}
+	public object Clone() => MemberwiseClone();
 }

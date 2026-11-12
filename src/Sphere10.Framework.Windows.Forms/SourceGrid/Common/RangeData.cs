@@ -51,51 +51,32 @@ public class RangeData {
 	/// <summary>
 	/// Range source
 	/// </summary>
-	public CellRange SourceRange {
-		get {
-			return _sourceRange;
-		}
-	}
+	public CellRange SourceRange => _sourceRange;
 
 	/// <summary>
 	/// String array for values.
 	/// </summary>
-	public object[,] SourceValues {
-		get {
-			return _sourceValues;
-		}
-	}
+	public object[,] SourceValues => _sourceValues;
 
 	/// <summary>
 	/// Starting drag position. Used only for calculating drop destination range.
 	/// </summary>
 	[Obsolete]
-	public Position StartDragPosition {
-		get {
-			return _startDragPosition;
-		}
-	}
+	public Position StartDragPosition => _startDragPosition;
 
 	/// <summary>
 	/// Working grid.
 	/// </summary>
-	public GridVirtual SourceGrid {
-		get {
-			return _sourceGrid;
-		}
-	}
+	public GridVirtual SourceGrid => _sourceGrid;
 
 	/// <summary>
 	/// Cut mode. Default is none.
 	/// </summary>
 	[Obsolete]
-	public CutMode CutMode {
-		get {
-			return _cutMode;
-		}
-	}
+	public CutMode CutMode => _cutMode;
 
-	// Write data
+	#region Write data
+
 	/// <summary>
 	/// Write the current loaded array string in the specified grid range. This method use the cell editor to set the value.
 	/// </summary>
@@ -145,6 +126,8 @@ public class RangeData {
 			}
 		}*/
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Calculate the destination range for the drop or paste operations.
@@ -203,11 +186,11 @@ public class RangeData {
 		return rngData;
 	}
 
-	// Loading data
+	#region Loading data
+
 	[Obsolete("Use LoadData method without startDragPosition")]
-	public void LoadData(GridVirtual sourceGrid, CellRange sourceRange, Position startDragPosition, CutMode cutMode) {
-		LoadData(sourceGrid, sourceRange, Position.Empty, cutMode);
-	}
+	public void LoadData(GridVirtual sourceGrid, CellRange sourceRange, Position startDragPosition, CutMode cutMode)
+		=> LoadData(sourceGrid, sourceRange, Position.Empty, cutMode);
 
 	/// <summary>
 	/// Load the specified range data into a string array. This method use the cell editor to get the value.
@@ -262,6 +245,8 @@ public class RangeData {
 		_clipboardDataObject.SetData(RangeDataFormat, this);
 		_clipboardDataObject.SetData(typeof(string), StringArrayToString(_sourceValues as string[,]));
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Convert a string buffer into a Range object and an array of string.

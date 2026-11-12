@@ -17,6 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public class TextRenderer : Text {
 	private System.Windows.Forms.TextFormatFlags _textFormatFlags = System.Windows.Forms.TextFormatFlags.Default | System.Windows.Forms.TextFormatFlags.NoPrefix;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -27,9 +29,7 @@ public class TextRenderer : Text {
 	/// Constructor
 	/// </summary>
 	/// <param name="value"></param>
-	public TextRenderer(string value) {
-		Value = value;
-	}
+	public TextRenderer(string value) => Value = value;
 
 	/// <summary>
 	/// Copy constructor
@@ -40,26 +40,22 @@ public class TextRenderer : Text {
 		TextFormatFlags = other.TextFormatFlags;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the TextFormatFlags enum.
 	/// </summary>
 	public virtual System.Windows.Forms.TextFormatFlags TextFormatFlags {
-		get {
-			return _textFormatFlags;
-		}
+		get => _textFormatFlags;
 
-		set {
-			_textFormatFlags = value;
-		}
+		set => _textFormatFlags = value;
 	}
 
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new TextRenderer(this);
-	}
+	public override object Clone() => new TextRenderer(this);
 
 	protected override void OnDraw(GraphicsCache graphics, RectangleF area) {
 		// base.OnDraw(graphics, area); //Don't call the base method because this class draw the class in a different way
@@ -92,7 +88,6 @@ public class TextRenderer : Text {
 		return System.Windows.Forms.TextRenderer.MeasureText(measure.Graphics, Value, Font, proposedSize, TextFormatFlags);
 	}
 
-	protected virtual bool ShouldSerializeTextFormatFlags() {
-		return TextFormatFlags != (System.Windows.Forms.TextFormatFlags.Default | System.Windows.Forms.TextFormatFlags.NoPrefix);
-	}
+	protected virtual bool ShouldSerializeTextFormatFlags()
+		=> TextFormatFlags != (System.Windows.Forms.TextFormatFlags.Default | System.Windows.Forms.TextFormatFlags.NoPrefix);
 }

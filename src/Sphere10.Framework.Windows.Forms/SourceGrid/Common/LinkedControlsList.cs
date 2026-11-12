@@ -19,9 +19,7 @@ public class LinkedControlsList : IEnumerable<LinkedControlValue> {
 	private Control _parent;
 	private List<LinkedControlValue> _list = new List<LinkedControlValue>();
 
-	public LinkedControlsList(Control parent) {
-		_parent = parent;
-	}
+	public LinkedControlsList(Control parent) => _parent = parent;
 
 	public void Clear() {
 		foreach (var linkedControlValue in _list)
@@ -33,6 +31,9 @@ public class LinkedControlsList : IEnumerable<LinkedControlValue> {
 	public void Add(LinkedControlValue linkedControl) {
 		_list.Add(linkedControl);
 
+		// Windows erases a new child window where it is created, so the control is placed over its cell first. Otherwise it flashes at the
+		// grid's origin until the next repaint.
+		(_parent as GridVirtual)?.ArrangeLinkedControl(linkedControl);
 		_parent.Controls.Add(linkedControl.Control);
 	}
 
@@ -45,22 +46,22 @@ public class LinkedControlsList : IEnumerable<LinkedControlValue> {
 		return null;
 	}
 
-	// IEnumerable<LinkedControlValue> Members
-	public IEnumerator<LinkedControlValue> GetEnumerator() {
-		return _list.GetEnumerator();
-	}
+	#region IEnumerable<LinkedControlValue> Members
 
-	// IEnumerable Members
-	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-		return _list.GetEnumerator();
-	}
+	public IEnumerator<LinkedControlValue> GetEnumerator() => _list.GetEnumerator();
 
-	private void RemoveFromParent(LinkedControlValue linkedControl) {
-		_parent.Controls.Remove(linkedControl.Control);
-	}
+	#endregion
+
+	#region IEnumerable Members
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+	#endregion
 
 	public void Remove(LinkedControlValue linkedControl) {
 		_list.Remove(linkedControl);
 		RemoveFromParent(linkedControl);
 	}
+
+	private void RemoveFromParent(LinkedControlValue linkedControl) => _parent.Controls.Remove(linkedControl.Control);
 }

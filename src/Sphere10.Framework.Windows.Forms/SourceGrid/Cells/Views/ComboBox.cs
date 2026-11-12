@@ -19,16 +19,15 @@ public class ComboBox : Cell {
 	/// </summary>
 	public new readonly static ComboBox Default = new ComboBox();
 
-	// Constructors
+	#region Constructors
+
 	static ComboBox() {
 	}
 
 	/// <summary>
 	/// Use default setting and construct a read and write VisualProperties
 	/// </summary>
-	public ComboBox() {
-		ElementDropDown.AnchorArea = new Sphere10.Framework.Drawing.AnchorArea(float.NaN, 0, 0, 0, false, false);
-	}
+	public ComboBox() => ElementDropDown.AnchorArea = new Sphere10.Framework.Drawing.AnchorArea(float.NaN, 0, 0, 0, false, false);
 
 	/// <summary>
 	/// Copy constructor. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
@@ -39,26 +38,25 @@ public class ComboBox : Cell {
 		ElementDropDown = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IDropDownButton)source.ElementDropDown.Clone();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets or sets the visual element used to draw the dropdown button. Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.DropDownButtonThemed.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IDropDownButton ElementDropDown {
-		get {
-			return _elementDropDown;
-		}
-		set {
-			_elementDropDown = value;
-		}
+		get => _elementDropDown;
+		set => _elementDropDown = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new ComboBox(this);
-	}
+	public override object Clone() => new ComboBox(this);
+
+	#endregion
 
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
@@ -81,7 +79,5 @@ public class ComboBox : Cell {
 			yield return v;
 	}
 
-	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() {
-		return base.GetElements();
-	}
+	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() => base.GetElements();
 }

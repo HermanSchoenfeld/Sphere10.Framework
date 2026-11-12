@@ -17,6 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 
 [Serializable]
 public class SortIndicatorThemed : SortIndicator {
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -31,13 +33,21 @@ public class SortIndicatorThemed : SortIndicator {
 		: base(other) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Clone
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new SortIndicatorThemed(this);
-	}
+	public override object Clone() => new SortIndicatorThemed(this);
+
+	/// <summary>
+	/// Gets the System.Windows.Forms.VisualStyles.VisualStyleRenderer to draw the specified element.
+	/// </summary>
+	/// <param name="element"></param>
+	/// <returns></returns>
+	public System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element)
+		=> new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 
 	protected override void OnDraw(GraphicsCache graphics, System.Drawing.RectangleF area) {
 		if (SortStyle != HeaderSortStyle.None && System.Windows.Forms.Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(GetSortElement())) {
@@ -56,15 +66,6 @@ public class SortIndicatorThemed : SortIndicator {
 			return renderer.GetPartSize(measure.Graphics, ThemeSizeType.Draw);
 		}
 		return base.OnMeasureContent(measure, maxSize);
-	}
-
-	/// <summary>
-	/// Gets the System.Windows.Forms.VisualStyles.VisualStyleRenderer to draw the specified element.
-	/// </summary>
-	/// <param name="element"></param>
-	/// <returns></returns>
-	public System.Windows.Forms.VisualStyles.VisualStyleRenderer GetRenderer(VisualStyleElement element) {
-		return new System.Windows.Forms.VisualStyles.VisualStyleRenderer(element);
 	}
 
 	protected VisualStyleElement GetSortElement() {

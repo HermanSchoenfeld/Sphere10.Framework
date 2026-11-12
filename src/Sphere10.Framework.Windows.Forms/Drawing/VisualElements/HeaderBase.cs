@@ -16,6 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 public abstract class HeaderBase : BackgroundBase, IHeader {
 	private ControlDrawStyle _controlDrawStyle = ControlDrawStyle.Normal;
 
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -31,17 +33,13 @@ public abstract class HeaderBase : BackgroundBase, IHeader {
 		Style = other.Style;
 	}
 
+	#endregion
+
 	public virtual ControlDrawStyle Style {
-		get {
-			return _controlDrawStyle;
-		}
+		get => _controlDrawStyle;
 
-		set {
-			_controlDrawStyle = value;
-		}
+		set => _controlDrawStyle = value;
 	}
 
-	protected virtual bool ShouldSerializeStyle() {
-		return Style != ControlDrawStyle.Normal;
-	}
+	protected virtual bool ShouldSerializeStyle() => Style != ControlDrawStyle.Normal;
 }

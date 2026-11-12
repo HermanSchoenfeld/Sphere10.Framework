@@ -30,7 +30,8 @@ public class CheckBox : Cell {
 	/// </summary>
 	public readonly static CheckBox MiddleLeftAlign;
 
-	// Constructors
+	#region Constructors
+
 	static CheckBox() {
 		MiddleLeftAlign = new CheckBox();
 		MiddleLeftAlign.CheckBoxAlignment = System.Drawing.ContentAlignment.MiddleLeft;
@@ -53,38 +54,33 @@ public class CheckBox : Cell {
 		ElementCheckBox = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ICheckBox)ElementCheckBox.Clone();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Image Alignment
 	/// </summary>
 	public System.Drawing.ContentAlignment CheckBoxAlignment {
-		get {
-			return _checkBoxAlignment;
-		}
-		set {
-			_checkBoxAlignment = value;
-		}
+		get => _checkBoxAlignment;
+		set => _checkBoxAlignment = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the visual element used to draw the checkbox. Default is Sphere10.Framework.Windows.Forms.Drawing.VisualElements.CheckBoxThemed.
 	/// </summary>
 	public Sphere10.Framework.Windows.Forms.Drawing.VisualElements.ICheckBox ElementCheckBox {
-		get {
-			return _elementCheckBox;
-		}
-		set {
-			_elementCheckBox = value;
-		}
+		get => _elementCheckBox;
+		set => _elementCheckBox = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new CheckBox(this);
-	}
+	public override object Clone() => new CheckBox(this);
+
+	#endregion
 
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
@@ -123,7 +119,5 @@ public class CheckBox : Cell {
 			yield return v;
 	}
 
-	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() {
-		return base.GetElements();
-	}
+	private IEnumerable<Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IVisualElement> GetBaseElements() => base.GetElements();
 }

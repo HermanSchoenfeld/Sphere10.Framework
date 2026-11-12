@@ -14,6 +14,8 @@ namespace Sphere10.Framework.Windows.Forms.Drawing.VisualElements;
 
 [Serializable]
 public abstract class RowHeaderBase : HeaderBase, IRowHeader {
+	#region Constuctor
+
 	/// <summary>
 	/// Default constructor
 	/// </summary>
@@ -27,4 +29,6 @@ public abstract class RowHeaderBase : HeaderBase, IRowHeader {
 	public RowHeaderBase(RowHeaderBase other)
 		: base(other) {
 	}
+
+	#endregion
 }

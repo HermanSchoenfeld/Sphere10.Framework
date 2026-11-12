@@ -16,7 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBoxCurrency : TextBoxNumeric {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -25,4 +26,6 @@ public class TextBoxCurrency : TextBoxNumeric {
 		: base(type) {
 		TypeConverter = new Sphere10.Framework.ComponentModel.CurrencyTypeConverter(type);
 	}
+
+	#endregion
 }

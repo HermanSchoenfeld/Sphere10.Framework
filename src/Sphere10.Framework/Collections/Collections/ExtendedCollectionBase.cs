@@ -18,9 +18,7 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 
 	protected volatile int Version;
 	
-	protected ExtendedCollectionBase() {
-		Version = 0;
-	}
+	protected ExtendedCollectionBase() => Version = 0;
 	
 	public abstract long Count { get; }
 
@@ -53,6 +51,8 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 		}
 	}
 
+	#region IReadOnlyExtendedCollection wrapper
+
 	int IReadOnlyCollection<T>.Count {
 		get {
 			checked {
@@ -61,9 +61,9 @@ public abstract class ExtendedCollectionBase<T> : IExtendedCollection<T> {
 		}
 	}
 
-	IEnumerator IEnumerable.GetEnumerator() {
-		return ((IEnumerable<T>)this).GetEnumerator();
-	}
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
+
+	#endregion
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckVersion(int enumeratedVersion) {

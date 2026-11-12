@@ -29,14 +29,43 @@ public class DirectoryFileSettingsProvider : SyncSettingsProviderBase {
 	}
 
 	/// <summary>The resolved directory containing this provider's settings files.</summary>
-	public string BaseDirectory {
-		get {
-			return _baseDirectory.Value;
-		}
-	}
+	public string BaseDirectory => _baseDirectory.Value;
 
 	/// <summary>The policy used to derive file names from settings types and identities.</summary>
 	public DirectorySettingsProviderPolicy Policy { get; protected set; }
+
+	/// <inheritdoc />
+	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
+		var path = DetermineFilepath(settingsObjectType, id);
+		if (!File.Exists(path))
+			return false;
+
+		if (!Tools.FileSystem.IsFileEmpty(path))
+			return true;
+
+		// Empty records are unusable and should not survive an existence check.
+		File.Delete(path);
+		return false;
+	}
+
+	/// <inheritdoc />
+	public override void DeleteSetting(SettingsObject settings) {
+		var filename = DetermineFilepath(settings);
+		if (File.Exists(filename))
+			File.Delete(filename);
+
+		FireChanged();
+	}
+
+	/// <inheritdoc />
+	public override void ClearSettings() {
+		if (Directory.Exists(BaseDirectory))
+			foreach (var filePath in Directory.GetFiles(BaseDirectory))
+				if (Path.GetExtension(filePath).ToUpper() == ".SETTING")
+					File.Delete(filePath);
+
+		FireChanged();
+	}
 
 	/// <inheritdoc />
 	protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
@@ -83,50 +112,15 @@ public class DirectoryFileSettingsProvider : SyncSettingsProviderBase {
 		}
 	}
 
-	/// <inheritdoc />
-	public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-		var path = DetermineFilepath(settingsObjectType, id);
-		if (!File.Exists(path))
-			return false;
-
-		if (!Tools.FileSystem.IsFileEmpty(path))
-			return true;
-
-		// Empty records are unusable and should not survive an existence check.
-		File.Delete(path);
-		return false;
-	}
-
-	/// <inheritdoc />
-	public override void DeleteSetting(SettingsObject settings) {
-		var filename = DetermineFilepath(settings);
-		if (File.Exists(filename))
-			File.Delete(filename);
-
-		FireChanged();
-	}
-
-	/// <inheritdoc />
-	public override void ClearSettings() {
-		if (Directory.Exists(BaseDirectory))
-			foreach (var filePath in Directory.GetFiles(BaseDirectory))
-				if (Path.GetExtension(filePath).ToUpper() == ".SETTING")
-					File.Delete(filePath);
-
-		FireChanged();
-	}
-
 	#region Auxiliary Methods
 
+	#region Auxillary methods
+
 	// Resolve a settings value through the same type-and-identity file naming policy.
-	protected string DetermineFilepath(SettingsObject settings) {
-		return DetermineFilepath(settings.GetType(), settings.ID);
-	}
+	protected string DetermineFilepath(SettingsObject settings) => DetermineFilepath(settings.GetType(), settings.ID);
 
 	// Combine the current directory with the file name derived from a settings identity.
-	protected string DetermineFilepath(Type settingsObjectType, object id = null) {
-		return Path.Combine(BaseDirectory, DetermineFilename(settingsObjectType, id));
-	}
+	protected string DetermineFilepath(Type settingsObjectType, object id = null) => Path.Combine(BaseDirectory, DetermineFilename(settingsObjectType, id));
 
 	// Resolve the stored file name for an existing settings value.
 	protected virtual string DetermineFilename(SettingsObject settingsObject) {
@@ -149,14 +143,13 @@ public class DirectoryFileSettingsProvider : SyncSettingsProviderBase {
 	}
 
 	// Append a file-system-safe record identity to its type-derived file name.
-	protected virtual string CombineExtensionlessFilenameWithID(string extensionlessFilename, string id) {
-		return extensionlessFilename + "_" + Tools.FileSystem.ToWellFormedFileName(id);
-	}
+	protected virtual string CombineExtensionlessFilenameWithID(string extensionlessFilename, string id)
+		=> extensionlessFilename + "_" + Tools.FileSystem.ToWellFormedFileName(id);
 
 	// Add the extension used to identify this provider's settings files.
-	protected virtual string AddFileExtension(string partialFilename) {
-		return partialFilename + ".setting";
-	}
+	protected virtual string AddFileExtension(string partialFilename) => partialFilename + ".setting";
+
+	#endregion
 
 	#endregion
 }

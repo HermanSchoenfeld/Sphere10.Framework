@@ -52,38 +52,25 @@ public class Resizable : ControllerBase {
 	/// Constructor
 	/// </summary>
 	/// <param name="mode"></param>
-	public Resizable(CellResizeMode mode) {
-		_resizeMode = mode;
-	}
+	public Resizable(CellResizeMode mode) => _resizeMode = mode;
 
 	/// <summary>
 	/// Resize mode of the cell
 	/// </summary>
-	public CellResizeMode ResizeMode {
-		get {
-			return _resizeMode;
-		}
-	}
+	public CellResizeMode ResizeMode => _resizeMode;
 
 	/// <summary>
 	/// Indicates if the behavior is currently resizing a cell width
 	/// </summary>
-	public bool IsWidthResizing {
-		get {
-			return _isWidthResize;
-		}
-	}
+	public bool IsWidthResizing => _isWidthResize;
 
 	/// <summary>
 	/// Indicates if the behavior is currently resizing a cell height
 	/// </summary>
-	public bool IsHeightResizing {
-		get {
-			return _isHeightResize;
-		}
-	}
+	public bool IsHeightResizing => _isHeightResize;
 
-	// IBehaviorModel Members
+	#region IBehaviorModel Members
+
 	public override void OnMouseDown(CellContext sender, MouseEventArgs e) {
 		base.OnMouseDown(sender, e);
 
@@ -178,6 +165,8 @@ public class Resizable : ControllerBase {
 							partType == Sphere10.Framework.Drawing.RectanglePartType.BottomBorder)
 			sender.Grid.Rows.AutoSizeRow(sender.Position.Row);
 	}
+
+	#endregion
 
 	private void SetWidth(GridVirtual grid, Position position, int width) {
 		var range = grid.PositionToCellRange(position);

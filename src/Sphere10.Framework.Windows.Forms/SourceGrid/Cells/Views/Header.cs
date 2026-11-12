@@ -25,10 +25,9 @@ public class Header : Cell {
 	/// </summary>
 	public new readonly static Header Default;
 
-	// Constructors
-	static Header() {
-		Default = new Header();
-	}
+	#region Constructors
+
+	static Header() => Default = new Header();
 
 	/// <summary>
 	/// Use default setting
@@ -47,24 +46,24 @@ public class Header : Cell {
 		Background = (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)source.Background.Clone();
 	}
 
-	// Visual Elements
+	#endregion
+
+	#region Visual Elements
+
 	public new Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader Background {
-		get {
-			return (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)base.Background;
-		}
-		set {
-			base.Background = value;
-		}
+		get => (Sphere10.Framework.Windows.Forms.Drawing.VisualElements.IHeader)base.Background;
+		set => base.Background = value;
 	}
 
-	// Clone
+	#region Clone
+
 	/// <summary>
 	/// Clone this object. This method duplicate all the reference field (Image, Font, StringFormat) creating a new instance.
 	/// </summary>
 	/// <returns></returns>
-	public override object Clone() {
-		return new Header(this);
-	}
+	public override object Clone() => new Header(this);
+
+	#endregion
 
 	protected override void PrepareView(CellContext context) {
 		base.PrepareView(context);
@@ -76,4 +75,6 @@ public class Header : Cell {
 		else
 			Background.Style = Sphere10.Framework.Windows.Forms.Drawing.ControlDrawStyle.Normal;
 	}
+
+	#endregion
 }

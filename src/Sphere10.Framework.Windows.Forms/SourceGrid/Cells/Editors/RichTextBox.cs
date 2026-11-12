@@ -16,7 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class RichTextBox : EditorControlBase {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
@@ -25,13 +26,13 @@ public class RichTextBox : EditorControlBase {
 		TypeConverter = new Sphere10.Framework.Windows.Forms.RichTextTypeConverter();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.RichTextBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.RichTextBoxEx)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.RichTextBoxEx)base.Control;
 	}
 
 	/// <summary>
@@ -47,11 +48,10 @@ public class RichTextBox : EditorControlBase {
 	/// Returns the value inserted with the current editor control
 	/// </summary>
 	/// <returns></returns>
-	public override object GetEditedValue() {
-		return Control.Value;
-	}
+	public override object GetEditedValue() => Control.Value;
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -91,4 +91,6 @@ public class RichTextBox : EditorControlBase {
 		if (Control.Text != null)
 			Control.SelectionStart = Control.Text.Length;
 	}
+
+	#endregion
 }

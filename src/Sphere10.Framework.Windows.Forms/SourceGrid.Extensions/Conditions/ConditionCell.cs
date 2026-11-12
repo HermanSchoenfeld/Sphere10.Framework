@@ -16,17 +16,12 @@ public class ConditionCell : ICondition {
 
 	public EvaluateFunctionDelegate EvaluateFunction;
 
-	public ConditionCell(ICellVirtual cell) {
-		_cell = cell;
-	}
+	public ConditionCell(ICellVirtual cell) => _cell = cell;
 
-	public ICellVirtual Cell {
-		get {
-			return _cell;
-		}
-	}
+	public ICellVirtual Cell => _cell;
 
-	// ICondition Members
+	#region ICondition Members
+
 	public bool Evaluate(DataGridColumn column, int gridRow, object itemRow) {
 		if (EvaluateFunction == null)
 			return false;
@@ -34,9 +29,9 @@ public class ConditionCell : ICondition {
 		return EvaluateFunction(column, gridRow, itemRow);
 	}
 
-	public ICellVirtual ApplyCondition(ICellVirtual cell) {
-		return Cell;
-	}
+	public ICellVirtual ApplyCondition(ICellVirtual cell) => Cell;
+
+	#endregion
 
 	public delegate bool EvaluateFunctionDelegate(DataGridColumn column, int gridRow, object itemRow);
 }

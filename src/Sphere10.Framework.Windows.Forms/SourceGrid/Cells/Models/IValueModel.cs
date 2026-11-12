@@ -13,7 +13,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Models;
 /// A Model interface specific to contain the value of the cell.
 /// </summary>
 public interface IValueModel : IModel {
-	// GetValue, SetValue
+	#region GetValue, SetValue
+
 	/// <summary>
 	/// Get the value of the cell at the specified position
 	/// </summary>
@@ -27,4 +28,6 @@ public interface IValueModel : IModel {
 	/// <param name="cellContext"></param>
 	/// <param name="value"></param>
 	void SetValue(CellContext cellContext, object value);
+
+	#endregion
 }

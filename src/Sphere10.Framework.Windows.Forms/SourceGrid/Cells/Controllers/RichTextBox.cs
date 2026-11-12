@@ -28,7 +28,8 @@ public class RichTextBox : ControllerBase {
 	public RichTextBox() {
 	}
 
-	// Controller Events
+	#region Controller Events
+
 	/// <summary>
 	/// If ValueEventArgs is a font, use it to change SelectionFont
 	/// If String, assign it as rtf
@@ -67,4 +68,6 @@ public class RichTextBox : ControllerBase {
 				sender.Value = richTextBox.Value;
 		}
 	}
+
+	#endregion
 }

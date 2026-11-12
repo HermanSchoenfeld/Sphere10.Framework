@@ -19,11 +19,10 @@ public class RichTextBox : IRichTextBox {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <param name="s">String to insert</param>
-	public void InsertString(CellContext cellContext, string s) {
-		GetRichTextBoxControl(cellContext).SelectedText = s;
-	}
+	public void InsertString(CellContext cellContext, string s) => GetRichTextBoxControl(cellContext).SelectedText = s;
 
-	// IRichTextBox Members
+	#region IRichTextBox Members
+
 	/// <summary>
 	/// Sets the effect of the selected text.
 	/// </summary>
@@ -55,9 +54,7 @@ public class RichTextBox : IRichTextBox {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	public Font GetSelectionFont(CellContext cellContext) {
-		return GetRichTextBoxControl(cellContext).SelectionFont;
-	}
+	public Font GetSelectionFont(CellContext cellContext) => GetRichTextBoxControl(cellContext).SelectionFont;
 
 	/// <summary>
 	/// Change the font of the selected text.
@@ -78,18 +75,14 @@ public class RichTextBox : IRichTextBox {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	public Color GetSelectionColor(CellContext cellContext) {
-		return GetRichTextBoxControl(cellContext).SelectionColor;
-	}
+	public Color GetSelectionColor(CellContext cellContext) => GetRichTextBoxControl(cellContext).SelectionColor;
 
 	/// <summary>
 	/// Get char offset of current selection
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	public int GetSelectionCharOffset(CellContext cellContext) {
-		return GetRichTextBoxControl(cellContext).SelectionCharOffset;
-	}
+	public int GetSelectionCharOffset(CellContext cellContext) => GetRichTextBoxControl(cellContext).SelectionCharOffset;
 
 	/// <summary>
 	/// Change char offset of the selected text.
@@ -124,9 +117,7 @@ public class RichTextBox : IRichTextBox {
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	public HorizontalAlignment GetSelectionAlignment(CellContext cellContext) {
-		return GetRichTextBoxControl(cellContext).SelectionAlignment;
-	}
+	public HorizontalAlignment GetSelectionAlignment(CellContext cellContext) => GetRichTextBoxControl(cellContext).SelectionAlignment;
 
 	/// <summary>
 	/// Get real RichTextBox Control
@@ -148,4 +139,6 @@ public class RichTextBox : IRichTextBox {
 
 		return null;
 	}
+
+	#endregion
 }
