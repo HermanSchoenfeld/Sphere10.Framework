@@ -115,7 +115,7 @@ public class Scheduler<TJob, TJobSchedule> : SyncDisposable where TJob : class, 
 				_timeLine.Where(t => t.Job == job).ToArray().ForEach(s => _timeLine.Remove(s));
 			}
 			using (_userPausedJobs.EnterWriteScope()) {
-				_userPausedJobs.Where(t => t.Job == job).ToArray().ForEach(s => _timeLine.Remove(s));
+				_userPausedJobs.Where(t => t.Job == job).ToArray().ForEach(s => _userPausedJobs.Remove(s));
 			}
 			UpdateJobStatus(job, JobStatus.Uninitalized);
 		} catch {
@@ -310,24 +310,33 @@ public class Scheduler<TJob, TJobSchedule> : SyncDisposable where TJob : class, 
 		var start = DateTime.UtcNow;
 		var job = schedule.Job;
 		schedule.NotifyStart(start);
-		if (schedule.ReschedulePolicy == ReschedulePolicy.OnStart) {
-			if (schedule.IterationsRemaining > 0) {
-				// add schedule
-				_timeLine.Add(schedule);
-				RestartTimer();
-			}
-		}
+		if (schedule.ReschedulePolicy == ReschedulePolicy.OnStart)
+			Reschedule(schedule);
 		ExecuteJob((TJob)job);
 		var end = DateTime.UtcNow;
 		schedule.NotifyExecution(start, end);
-		if (schedule.ReschedulePolicy == ReschedulePolicy.OnFinish) {
-			if (schedule.IterationsRemaining > 0) {
-				// add schedule
+		if (schedule.ReschedulePolicy == ReschedulePolicy.OnFinish)
+			Reschedule(schedule);
+	}
+
+	/// <summary>Queues the next iteration. A job removed while its schedule was queued or running leaves the timeline; a paused one waits with the paused jobs.</summary>
+	private void Reschedule(TJobSchedule schedule) {
+		if (schedule.IterationsRemaining == 0)
+			return;
+		switch (schedule.Job.Status) {
+			case JobStatus.Uninitalized:
+			case JobStatus.Error:
+				return;
+			case JobStatus.Paused:
+				_userPausedJobs.Add(schedule);
+				return;
+			default:
 				_timeLine.Add(schedule);
 				RestartTimer();
-			}
+				return;
 		}
 	}
+
 	private void ExecuteJob(TJob job) {
 		Log.Debug($"Scheduler ExecuteJob ${job.Name}");
 		Guard.ArgumentNotNull(job, "job");

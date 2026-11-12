@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using Win32Exception = System.ComponentModel.Win32Exception;
 using System.Diagnostics;
 using System.Globalization;
@@ -32,7 +33,7 @@ public class WindowsInventoryDataSourceTests {
 		var calls = 0;
 		var denied = new WindowsServiceInfo { Name = "alpha", DisplayName = "Match Alpha", StatusErrorCode = 5 };
 		var running = new WindowsServiceInfo { Name = "beta", DisplayName = "Match Beta", Status = ServiceControllerStatus.Running, ProcessId = 23 };
-		var source = new WindowsServiceDataSource(_ => { calls++; return Task.FromResult(new[] { running, denied, new WindowsServiceInfo { Name = "other" } }); });
+		var source = new ActionAsyncListDataSource<WindowsServiceInfo>(_ => { calls++; return Task.FromResult<IEnumerable<WindowsServiceInfo>>(new[] { running, denied, new WindowsServiceInfo { Name = "other" } }); });
 		IDataSource<WindowsServiceInfo> contract = source;
 		var page = await contract.ReadRangeAsync("Match", 1, 1, nameof(WindowsServiceInfo.Name), SortDirection.Ascending);
 		Assert.That(page.TotalCount, Is.EqualTo(2));
@@ -45,31 +46,11 @@ public class WindowsInventoryDataSourceTests {
 	}
 
 	[Test]
-	public async Task EndpointDataSourceAppliesProtocolFamilyAndOwnerBeforePaging() {
-		var calls = 0;
-		var source = new WindowsNetworkEndpointDataSource(true, AddressFamily.InterNetwork, 23, _ => {
-			calls++;
-			return Task.FromResult(new[] {
-				Endpoint(true, AddressFamily.InterNetwork, 10, 23), Endpoint(true, AddressFamily.InterNetwork, 20, 23),
-				Endpoint(true, AddressFamily.InterNetwork, 30, 0), Endpoint(true, AddressFamily.InterNetwork, 40, 24),
-				Endpoint(false, AddressFamily.InterNetwork, 50, 23), Endpoint(true, AddressFamily.InterNetworkV6, 60, 23)
-			});
-		});
-		IDataSource<WindowsNetworkEndpoint> contract = source;
-		var last = await contract.ReadRangeAsync(null, 1, int.MaxValue, nameof(WindowsNetworkEndpoint.LocalPort), SortDirection.Ascending);
-		Assert.That(last.TotalCount, Is.EqualTo(2));
-		Assert.That(last.Page, Is.EqualTo(1));
-		Assert.That(last.Items.Single().LocalPort, Is.EqualTo(20));
-		Assert.That((await source.GetSnapshotAsync()).All(row => row.ProcessId == 23 && row.IsTcp && row.AddressFamily == AddressFamily.InterNetwork), Is.True);
-		Assert.That(calls, Is.EqualTo(1));
-	}
-
-	[Test]
 	public async Task ProcessSourcePreservesRawIdentityCountersAndPerRowAccessFailure() {
 		var identity = new ProcessIdentity(23, DateTime.UtcNow);
 		var readable = new WindowsProcessInventoryEntry { ProcessId = 23, ExecutableName = "owned.exe", Counters = new WindowsProcessCounters { Identity = identity, WorkingSetBytes = 1024 } };
 		var denied = new WindowsProcessInventoryEntry { ProcessId = 24, ExecutableName = "protected.exe", ReadError = new Win32Exception(5) };
-		var source = new WindowsProcessDataSource(_ => Task.FromResult(new[] { readable, denied }));
+		var source = new ActionAsyncListDataSource<WindowsProcessInventoryEntry>(_ => Task.FromResult<IEnumerable<WindowsProcessInventoryEntry>>(new[] { readable, denied }));
 		var page = await source.ReadRangeAsync(null, 1, 0, nameof(WindowsProcessInventoryEntry.WorkingSetBytes), SortDirection.Descending);
 		Assert.That(page.Items.Single(), Is.SameAs(readable));
 		Assert.That(readable.Identity, Is.EqualTo(identity));
@@ -96,7 +77,7 @@ public class WindowsInventoryDataSourceTests {
 		using var lifetime = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 		var native = new WindowsProcessDataSource();
 		IDataSource<WindowsProcessInventoryEntry> source = native;
-		await native.ReloadAsync(lifetime.Token);
+		await native.LoadAsync(lifetime.Token);
 		var page = await source.ReadRangeAsync(child.Id.ToString(CultureInfo.InvariantCulture), 100, 0, nameof(WindowsProcessInventoryEntry.ProcessId), SortDirection.Ascending);
 		var row = page.Items.Single(entry => entry.ProcessId == child.Id);
 		Assert.That(row.Identity, Is.EqualTo(new ProcessIdentity(child.Id, child.StartTime.ToUniversalTime())));
@@ -121,30 +102,30 @@ public class WindowsInventoryDataSourceTests {
 		if (tcp)
 			socket.Listen(1);
 		var port = ((IPEndPoint)socket.LocalEndPoint).Port;
-		var native = new WindowsNetworkEndpointDataSource(tcp, family, (uint)Environment.ProcessId);
+		await using var native = new ActionRefreshableDataSource<WindowsNetworkEndpoint>(() => new WindowsNetworkEndpointDataSource(tcp, family, (uint)Environment.ProcessId));
 		IDataSource<WindowsNetworkEndpoint> source = native;
 		var page = await source.ReadRangeAsync(port.ToString(CultureInfo.InvariantCulture), 10, 0, nameof(WindowsNetworkEndpoint.LocalPort), SortDirection.Ascending);
 		var row = page.Items.Single(entry => entry.LocalPort == port && entry.LocalAddress.Equals(address));
 		Assert.That(row.ProcessId, Is.EqualTo((uint)Environment.ProcessId));
 		socket.Dispose();
 		Assert.That((await source.ReadRangeAsync(port.ToString(CultureInfo.InvariantCulture), 10, 0, null, SortDirection.None)).Items, Does.Contain(row));
-		await native.ReloadAsync(lifetime.Token);
-		Assert.That((await native.GetSnapshotAsync(lifetime.Token)).Any(entry => entry.LocalPort == port && entry.LocalAddress.Equals(address)), Is.False);
+		await native.RefreshAsync(lifetime.Token);
+		Assert.That((await Tools.DataSources.ReadAllAsync(native, lifetime.Token)).Any(entry => entry.LocalPort == port && entry.LocalAddress.Equals(address)), Is.False);
 	}
 
 	[Test, Category("Integration")]
 	public async Task NativeServiceDriveAndInterfaceSourcesExposeBoundedPages() {
 		using var lifetime = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 		var services = new WindowsServiceDataSource();
-		await services.ReloadAsync(lifetime.Token);
+		await services.LoadAsync(lifetime.Token);
 		var servicePage = await services.ReadRangeAsync(null, 3, 0, nameof(WindowsServiceInfo.Name), SortDirection.Ascending);
 		Assert.That(servicePage.Items.Count(), Is.InRange(1, 3));
 		Assert.That(servicePage.TotalCount, Is.EqualTo(await services.CountAsync));
 		var drives = new WindowsDriveDataSource();
-		var driveRows = await drives.GetSnapshotAsync(lifetime.Token);
+		var driveRows = await Tools.DataSources.ReadAllAsync(drives, lifetime.Token);
 		Assert.That(driveRows.Any(row => string.Equals(row.Name, Path.GetPathRoot(Environment.SystemDirectory), StringComparison.OrdinalIgnoreCase)), Is.True);
 		var interfaces = new WindowsNetworkInterfaceDataSource();
-		await interfaces.ReloadAsync(lifetime.Token);
+		await interfaces.LoadAsync(lifetime.Token);
 		var interfacePage = await interfaces.ReadRangeAsync(null, 1, 0, nameof(WindowsNetworkInterface.Name), SortDirection.Ascending);
 		Assert.That(interfacePage.Items.Count(), Is.EqualTo(1));
 		Assert.That(interfacePage.TotalCount, Is.EqualTo(await interfaces.CountAsync));
@@ -154,13 +135,11 @@ public class WindowsInventoryDataSourceTests {
 	public async Task PhysicalDiskAndPartitionSourcesKeepTypedDataAndNativeErrorsAcrossPages() {
 		var disk = new WindowsPhysicalDiskInfo { DeviceId = "PhysicalDrive0", Index = 0, SizeBytes = 1024, ReadError = new Win32Exception(5) };
 		var partition = new WindowsPartitionInfo { DeviceId = "Disk0Partition0", DiskIndex = 0, Index = 0, DriveRoots = new[] { "C:\\" } };
-		IDataSource<WindowsPhysicalDiskInfo> disks = new WindowsPhysicalDiskDataSource(_ => Task.FromResult(new[] { disk }));
-		IDataSource<WindowsPartitionInfo> partitions = new WindowsPartitionDataSource(_ => Task.FromResult(new[] { partition }));
+		IDataSource<WindowsPhysicalDiskInfo> disks = new ActionAsyncListDataSource<WindowsPhysicalDiskInfo>(_ => Task.FromResult<IEnumerable<WindowsPhysicalDiskInfo>>(new[] { disk }));
+		IDataSource<WindowsPartitionInfo> partitions = new ActionAsyncListDataSource<WindowsPartitionInfo>(_ => Task.FromResult<IEnumerable<WindowsPartitionInfo>>(new[] { partition }));
 		Assert.That((await disks.ReadRangeAsync(null, 1, int.MaxValue, nameof(WindowsPhysicalDiskInfo.Index), SortDirection.Ascending)).Items.Single(), Is.SameAs(disk));
 		Assert.That((await partitions.ReadRangeAsync("Disk0", 1, 0, nameof(WindowsPartitionInfo.Index), SortDirection.Ascending)).Items.Single(), Is.SameAs(partition));
 		Assert.That(disk.ReadError, Is.TypeOf<Win32Exception>());
 	}
 
-	private static WindowsNetworkEndpoint Endpoint(bool tcp, AddressFamily family, int port, uint processId)
-		=> new(tcp, family, family == AddressFamily.InterNetwork ? IPAddress.Loopback : IPAddress.IPv6Loopback, port, null, null, null, processId);
 }

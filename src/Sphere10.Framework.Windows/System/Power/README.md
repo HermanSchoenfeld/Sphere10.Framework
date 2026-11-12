@@ -24,9 +24,10 @@ with `LocalFree`; the capability structure uses the modern 76-byte Windows layou
 All returned rows are immutable records without native pointers or open handles.
 
 `WindowsPowerPlanDataSource`, `WindowsPowerSettingDataSource(planId)` and
-`WindowsPowerDiagnosticDataSource` use `ReloadableSnapshotDataSource<T>`: capture
-once, then search/sort/page the detached inventory. `ReloadAsync` explicitly
-refreshes it. Paging does not enumerate native settings again.
+`WindowsPowerDiagnosticDataSource` derive `AsyncListDataSource<T>`: capture
+once on load, then search/sort/page the detached inventory. An `ActionRefreshableDataSource`
+over the factory serves a fresh capture on refresh. Paging does not enumerate native
+settings again.
 
 `PowerCfgSentry.ReadReportAsync` offers only the typed read-only reports in
 `PowerCfgReport`: Requests, WakeTimers, LastWake, AvailableSleepStates and

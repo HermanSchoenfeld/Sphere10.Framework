@@ -29,6 +29,10 @@ run. `OnStart` and `OnFinish` select the timestamp anchoring the next interval.
 logging; `RemoveJobOnError` selects removal. Observe the callback rather than
 assuming a `Completed` status proves success under the suppressing policy.
 
+Removing or pausing a repeating job while its schedule is queued or running takes effect: the scheduler does not re-add that schedule afterwards, and removing a paused job discards its paused schedules.
+
+Periodic asynchronous work still uses the scheduler. A job's `Execute()` joins its asynchronous operation (`// Sync-over-async pattern`), so with `ReschedulePolicy.OnFinish` the next interval starts when that operation has completed. [PollingDataSource](../../../src/Sphere10.Framework/DataSource/PollingDataSource.cs) is the shared example: every polled data source keeps one repeating job on `Scheduler.Asynchronous` instead of a timer or delay loop, and its job fires the asynchronous refresh without waiting for it so a slow acquisition never blocks the scheduler. One-shot timing (a watchdog, a stop-after duration) uses `RunOnce` on the same scheduler and `RemoveJob` when the wait is cancelled.
+
 Own the scheduler through the appropriate [resource scope](resource-scopes.md) or [application lifetime](application-ownership.md). Coordinate running work before its dependent services are finalized or disposed; `Stop()` and disposal do not join that work. See [logging](logging.md) for diagnostics and [testing](testing.md) for verifying changed completion behavior.
 
 Implementation references: [scheduler](../../../src/Sphere10.Framework/Scheduler/Scheduler.cs),

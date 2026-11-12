@@ -187,7 +187,7 @@ The **Tools namespace** is a defining feature of Sphere10 Framework, providing a
 
 **Windows Integration**
 - **Tools.Windows** – Registry, services, security, processes, Win32 and shell facade (`Sphere10.Framework.Windows`)
-- **Tools.WinForms** – Cursor and window-settings utilities (`Sphere10.Framework.Windows.Forms`)
+- **Tools.Windows.Forms** – Cursor and window-settings utilities (`Sphere10.Framework.Windows.Forms`)
 
 **Web & Networking**
 - **Tools.Web.Html** – HTML helpers (`Sphere10.Framework.Web`)
@@ -243,7 +243,7 @@ The Tools namespace embodies several key principles:
 
 1. **Discovery-First**: Type `Tools.` to explore all available operations in IntelliSense
 2. **Consistency**: Related operations grouped under consistent tool names
-3. **Extensibility**: Projects extend with their own Tools.* classes (e.g., `Tools.Windows` and `Tools.WinForms`)
+3. **Extensibility**: Projects expose their owning APIs through Tools.* classes and static extensions (for example, `Tools.Windows` and `Tools.WinForms`)
 4. **Composability**: Tools methods work together seamlessly for complex operations
 5. **Performance**: Methods optimized for production use, with zero-allocation variants where possible
 6. **Type Safety**: Generic methods preserve type information, avoiding casts
@@ -251,6 +251,10 @@ The Tools namespace embodies several key principles:
 ### Extending with Custom Tools
 
 Extend the existing facade when it already owns the operation. A new domain can add a static class in `namespace Tools;`, following the framework's source headers, guards and naming conventions. See [ArrayTool.cs](Collections/Arrays/ArrayTool.cs) for the declaring pattern and the [Tools Reference](../../docs/tools-reference.md) for contributor guidance. The class becomes discoverable through `Tools.` when its owning project or package is referenced.
+
+Platform assemblies can add C# 14 static extension members to an existing facade
+without adding a reverse dependency. `Tools.WinForms` is supplied by the
+Windows Forms assembly and requires `using Tools;` for extension lookup.
 
 ## 🚀 Quick Navigation
 
@@ -407,6 +411,10 @@ Sphere10 Framework provides an extensive suite of collection types that extend b
 - **Observable Collections**: Observable variants of standard collections expose events for monitoring mutations, supporting use cases like change tracking and logging.
 - **Synchronized Collections**: Thread-safe variants like `SynchronizedExtendedList<T>`, `SynchronizedDictionary<TKey, TValue>`, and `ProducerConsumerQueue<T>` for concurrent scenarios.
 - **Specialized Data Structures**: Bloom filters, binary heaps, circular lists, bounded lists, and bidirectional dictionaries address specific algorithmic needs.
+
+`BoundedHistory<T>` holds oldest-first observations with independent item-count and caller-defined cost bounds. `TryAdd` rejects an oversized observation and evicts oldest items until an accepted observation fits. `Received`, `Discarded` and `RetainedCost` distinguish admission/eviction from the current snapshot. Operations are synchronized; `Snapshot()` copies collection membership while borrowing item references. Use immutable/detached observations. `Clear(false)` releases retained observations while preserving counters; ordinary `Clear()` also resets them. Consumers choose meaningful byte/character costs rather than treating those units as interchangeable.
+
+`Tools.Network` provides explicit asynchronous DNS, ICMP echo/traceroute and single-server WHOIS probes with cancellation/deadlines. Traceroute limits hops, reports actual ICMP status and separates probe elapsed time from successful-echo RTT. WHOIS bounds its response and never follows referrals automatically. `TryDecodeDnsMessage` and `TryDecodeTlsClientHello` project bounded complete captured messages; they do not reassemble TCP streams or decrypt traffic. DNS names support bounded backward compression references, native RR codes and raw-prefix fallback for unsupported RR payloads. TLS records retain the legacy compatibility field separately from offered versions, observed SNI and ALPN.
 
 Managed and stream-mapped B-tree, B+ and grouped lookup implementations expose family-specific new-tree defaults through `Sphere10FrameworkDefaults`. Stream constructors/factories that omit order require empty storage; existing trees require their original explicit order, serializer layout and endianness. The [B-tree profiling guide](../../utils/Sphere10.Framework.Utils.Profiler/BTrees/README.md) explains the measured numeric and explicit wide-key settings, backend comparisons and limitations. These defaults do not migrate stored nodes or change generic ObjectStream index layouts.
 
@@ -663,46 +671,53 @@ Fluent extensions for .NET types:
 ### 🌍 Data Source Abstractions
 
 `IDataSource<T>` supplies item/range CRUD, validation, count/capabilities and paged
-reads. Choose the existing item-first or batch-first sync/async base according to
-the source's actual primitive; see the [data-source practice](../../docs/guidelines/patterns/data-sources.md).
+reads. Choose the synchronous (`SyncDataSourceBase<T>`) or asynchronous (`AsyncDataSourceBase<T>`) lineage and
+its item-first or batch-first base according to the source's actual primitive; every `Sync*` base has an `Async*`
+dual. See the [data-source practice](../../docs/guidelines/patterns/data-sources.md).
 
-- `ListDataSource<T>` wraps an extended list; `FutureListDataSource<T>` delays its acquisition and `BulkFetchDataSource<T>` can invalidate/reload it. Their default read pages the list rather than automatically implementing arbitrary search/sort.
+- [NetworkProbeDataSource](Network/NetworkProbeDataSource.cs) is a `PollingDataSource` over a nested `RefreshableDataSourceBase` whose fresh capture runs one probe round, for explicit, optionally repeating DNS/ping/trace/WHOIS probes with bounded observations. [DataSourceFormatting](DataSource/DataSourceFormatting.cs) is the shared search/sort text of inventory values.
+- [ListDataSource<T>](DataSource/ListDataSource.cs) is the loadable list storage on the synchronous lineage (`ILoadableDataSource<T>`: `RequiresLoad`, `Load`, `LoadAsync(token)`): it wraps an existing list or, derived, fetches one through `Fetch()`; its dual on the asynchronous lineage, [AsyncListDataSource<T>](DataSource/AsyncListDataSource.cs), fetches through `FetchAsync(token)`; both search and sort before paging, notify committed CRUD and refresh rows through `RefreshMethod`/`RefreshMethodAsync`. `ActionListDataSource<T>`/`ActionAsyncListDataSource<T>` compose a leaf from a callback.
 - `ProjectedDataSource<TFrom,TTo>` adapts representations using forward/inverse maps.
-- [SnapshotDataSource<T>](DataSource/SnapshotDataSource.cs) supplies read-only atomic snapshot replacement, property-based search, raw-value sorting and clamped paging without a Windows or visual dependency.
-- [ReloadableSnapshotDataSource<T>](DataSource/ReloadableSnapshotDataSource.cs) loads through an asynchronous capture delegate on first access, then pages the published snapshot until explicitly reloaded.
+- [ArrayDataSource<T>](DataSource/ArrayDataSource.cs) is the read-only store over one array a screen or control pushes (`ReplaceData`), with property-based search, raw-value sorting, clamped paging and `FormatValue`/`CopyItemForRead` hooks, without a Windows or visual dependency.
+- [RefreshableDataSourceBase<T,TConcrete>](DataSource/RefreshableDataSourceBase.cs) and [PollingDataSource<T,TConcrete>](DataSource/PollingDataSource.cs) are the feature decorators over `DataSourceDecorator`; they are direction-agnostic and work over a synchronous or an asynchronous source. A refresh creates a fresh source through the template's `CreateDataSource()` hook ([ActionRefreshableDataSource](DataSource/ActionRefreshableDataSource.cs) takes a client factory), loads it in the caller's direction, swaps it in under the publication lock, disposes the old one and raises `Changed` (`Refresh`, `RefreshAsync`, `Current`, `Completion`, `CanPublish`, `Publish`, `DisposeAsync`). Polling adds `Enabled`, `AutoRefresh`, `RefreshInterval`, one repeating Framework `Scheduler` job, `RefreshFailed` and permanent `StopAsync`. See the [data-source practice](../../docs/guidelines/patterns/data-sources.md).
 - [DebugExtensions](Extensions/DebugExtensions.cs) adds `Debug.AssertNotMainThread()` and message/detail overloads. Set `Debug.MainThread` at the application entry point; the Debug-only check compares that captured thread with the executing thread. See [foreground-thread assertions](../../docs/guidelines/patterns/data-sources.md#debugging-foreground-thread-data-work).
 
 ```csharp
 using Sphere10.Framework;
 
-var source = new SnapshotDataSource<SnapshotRow>();
-source.ReplaceSnapshot(new[] { new SnapshotRow(2, "Alpha"), new SnapshotRow(1, "ALPHA") });
-var page = source.ReadRange("alpha", 1, 0, nameof(SnapshotRow.Id), SortDirection.Ascending);
+var rows = new ArrayDataSource<Row>();
+rows.ReplaceData(new[] { new Row(2, "Alpha"), new Row(1, "ALPHA") });
+var page = rows.ReadRange("alpha", 1, 0, nameof(Row.Id), SortDirection.Ascending);
 // page contains ID 1, Page 0 and TotalCount 2.
 
-public sealed record SnapshotRow(int Id, string Name);
+// The source an application activates: polling over a refreshable over loadable storage.
+var processes = new PollingDataSource<Process>(new ActionRefreshableDataSource<Process>(() => new ProcessDataSource()));
+processes.Enabled = true;
+await processes.RefreshAsync();
+
+public sealed record Row(int Id, string Name);
 ```
 
-`SnapshotDataSource<T>` searches public readable nonindexed instance properties,
-with invariant default text and case-insensitive matching/string sorting. Supply
-`Func<object,string>` in its constructor for specialized value/search text.
-Comparable raw values retain their native ordering, so formatted numbers do not
-sort lexicographically. Membership arrays are copied on replacement and access;
-row object ownership remains with the caller. Configure default sorting before
-publishing the source. CRUD mutation/validation operations remain unsupported.
-Its async reads use the existing sync-first data-source adapter. Native consumers
-can bind it through the WinForms `VisualGridSnapshotController<T>`; core retains no
-visual dependency. [Snapshot tests](../../tests/Sphere10.Framework.Tests/DataSource/SnapshotDataSourceTests.cs)
-exercise query, ownership, concurrency and adapter behavior.
+`ArrayDataSource<T>` and the list storage search public readable nonindexed instance
+properties, with invariant default text and case-insensitive matching/string sorting;
+derive and override `FormatValue` for specialized search text. Comparable raw values
+retain their native ordering, so formatted numbers do not sort lexicographically; an
+unknown sort name keeps the published order. Membership arrays are copied on
+replacement and access; row object ownership remains with the caller. Configure
+default sorting before publishing the source. Array mutation/validation operations
+remain unsupported. Native consumers can bind a capture source through the WinForms
+`VisualGridArrayController<T>`; core retains no visual dependency.
+[Array tests](../../tests/Sphere10.Framework.Tests/DataSource/ArrayDataSourceTests.cs),
+[list tests](../../tests/Sphere10.Framework.Tests/DataSource/ListDataSourceTests.cs),
+[refreshable tests](../../tests/Sphere10.Framework.Tests/DataSource/RefreshableDataSourceTests.cs) and
+[polling tests](../../tests/Sphere10.Framework.Tests/DataSource/PollingDataSourceTests.cs)
+exercise query, ownership, concurrency, swap and lifecycle behavior.
 
-`ReloadableSnapshotDataSource<T>` provides `GetSnapshotAsync` and `ReloadAsync`.
-It serializes captures, retains the prior successful inventory on failure or
-cancellation, and prevents an older capture overwriting an explicit
-`ReplaceSnapshot` publication. Asynchronous initialization invokes even a loader's
-synchronous setup on a worker. Synchronous `Snapshot`, `Count` and `ReadRange`
-can initialize synchronously; UI callers must use the asynchronous operations.
-Native process, service, endpoint and storage sources in Framework.Windows use
-this mechanism without imposing sampling timers or application display policy.
+A refresh never re-fetches into the served source: the fresh source loads on a
+worker while the served one stays readable, an explicit `Publish` wins over an older
+refresh, and a refresh that fails or is cancelled leaves the served source in place.
+Native process, service, endpoint and storage sources in Framework.Windows are such
+loadable storage, without imposing sampling timers or application display policy.
 
 ### 🔌 Peripherals & Hardware Access
 
