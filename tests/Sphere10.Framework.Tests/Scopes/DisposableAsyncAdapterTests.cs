@@ -263,30 +263,24 @@ public class DisposableAsyncAdapterTests {
 	}
 
 	private sealed class AsyncOwner(Func<ValueTask> cleanup) : AsyncDisposable {
-		protected override ValueTask DisposeInternalAsync() {
-			return cleanup();
-		}
+		protected override ValueTask DisposeInternalAsync() => cleanup();
 	}
 
 	private sealed class SyncRepository(Action cleanup) : SyncRepositoryBase<int, int> {
-		protected override void DisposeInternal() {
-			cleanup();
-		}
 		public override bool TryGet(int identity, out int entity) => throw new NotSupportedException();
 		public override void Create(int entity) => throw new NotSupportedException();
 		public override void Update(int entity) => throw new NotSupportedException();
 		public override void Delete(int identity) => throw new NotSupportedException();
 		public override void Clear() => throw new NotSupportedException();
+		protected override void DisposeInternal() => cleanup();
 	}
 
 	private sealed class AsyncRepository(Func<ValueTask> cleanup) : AsyncRepositoryBase<int, int> {
-		protected override ValueTask DisposeInternalAsync() {
-			return cleanup();
-		}
 		public override Task<(bool, int)> TryGetAsync(int identity) => throw new NotSupportedException();
 		public override Task CreateAsync(int entity) => throw new NotSupportedException();
 		public override Task UpdateAsync(int entity) => throw new NotSupportedException();
 		public override Task DeleteAsync(int identity) => throw new NotSupportedException();
 		public override Task ClearAsync() => throw new NotSupportedException();
+		protected override ValueTask DisposeInternalAsync() => cleanup();
 	}
 }

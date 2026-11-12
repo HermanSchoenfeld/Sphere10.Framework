@@ -10,7 +10,6 @@ using System;
 using System.Drawing;
 using System.Security.Permissions;
 using System.Windows.Forms;
-using static Sphere10.Framework.Windows.WinAPI.USER32;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -35,9 +34,7 @@ public class PopupDropDown : ToolStripDropDown {
 	/// Type of resize mode, grips are automatically drawn at bottom-left and bottom-right corners.
 	/// </summary>
 	public PopupResizeMode ResizeMode {
-		get {
-			return _resizeMode;
-		}
+		get => _resizeMode;
 		set {
 			if (value != _resizeMode) {
 				_resizeMode = value;
@@ -50,12 +47,8 @@ public class PopupDropDown : ToolStripDropDown {
 	/// Bounds of active grip box position.
 	/// </summary>
 	protected Rectangle GripBounds {
-		get {
-			return _gripBounds;
-		}
-		set {
-			_gripBounds = value;
-		}
+		get => _gripBounds;
+		set => _gripBounds = value;
 	}
 
 	/// <summary>
@@ -69,9 +62,7 @@ public class PopupDropDown : ToolStripDropDown {
 	}
 
 	// Methods
-	public new void Show(int x, int y) {
-		Show(x, y, -1, -1);
-	}
+	public new void Show(int x, int y) => Show(x, y, -1, -1);
 
 	public void Show(int x, int y, int width, int height) {
 		// If no hosted control is associated, this procedure is pointless!
@@ -105,6 +96,24 @@ public class PopupDropDown : ToolStripDropDown {
 		// Assign event handler to control.
 		hostedControl.SizeChanged += hostedControl_SizeChanged;
 	}
+
+	/// <summary>
+	/// Processes the resizing messages.
+	/// </summary>
+	/// <param name="m">The message.</param>
+	/// <returns>true, if the WndProc method from the base class shouldn't be invoked.</returns>
+	public bool ProcessGrip(ref Message m) => ProcessGrip(ref m, true);
+
+	public Control GetHostedControl() {
+		if (Items.Count > 0) {
+			var host = Items[0] as ToolStripControlHost;
+			if (host != null)
+				return host.Control;
+		}
+		return null;
+	}
+
+	public bool CompareResizeMode(PopupResizeMode resizeMode) => (ResizeMode & resizeMode) == resizeMode;
 
 	// ToolStripDropDown overrides
 	protected override void OnClosing(ToolStripDropDownClosingEventArgs e) {
@@ -155,15 +164,6 @@ public class PopupDropDown : ToolStripDropDown {
 	protected override void WndProc(ref Message m) {
 		if (!ProcessGrip(ref m, false))
 			base.WndProc(ref m);
-	}
-
-	/// <summary>
-	/// Processes the resizing messages.
-	/// </summary>
-	/// <param name="m">The message.</param>
-	/// <returns>true, if the WndProc method from the base class shouldn't be invoked.</returns>
-	public bool ProcessGrip(ref Message m) {
-		return ProcessGrip(ref m, true);
 	}
 
 	protected void hostedControl_SizeChanged(object sender, EventArgs e) {
@@ -265,10 +265,10 @@ public class PopupDropDown : ToolStripDropDown {
 	private bool ProcessGrip(ref Message m, bool contentControl) {
 		if (ResizeMode != PopupResizeMode.None) {
 			switch (m.Msg) {
-				case WM_NCHITTEST:
+				case WinAPI.USER32.WM_NCHITTEST:
 					return OnNcHitTest(ref m, contentControl);
 
-				case WM_GETMINMAXINFO:
+				case WinAPI.USER32.WM_GETMINMAXINFO:
 					return OnGetMinMaxInfo(ref m);
 			}
 		}
@@ -278,7 +278,7 @@ public class PopupDropDown : ToolStripDropDown {
 	private bool OnGetMinMaxInfo(ref Message m) {
 		var hostedControl = GetHostedControl();
 		if (hostedControl != null) {
-			var minmax = Tools.Windows.Win32.ReadStructure<MINMAXINFO>(m.LParam);
+			var minmax = Tools.Windows.Win32.ReadStructure<WinAPI.USER32.MINMAXINFO>(m.LParam);
 			var workingArea = Screen.FromRectangle(_anchorBounds).WorkingArea;
 			var borderAndGrip = new Size(2, IsGripShown ? 18 : 2);
 
@@ -296,55 +296,42 @@ public class PopupDropDown : ToolStripDropDown {
 		return true;
 	}
 
-	public Control GetHostedControl() {
-		if (Items.Count > 0) {
-			var host = Items[0] as ToolStripControlHost;
-			if (host != null)
-				return host.Control;
-		}
-		return null;
-	}
-
 	private bool OnNcHitTest(ref Message m, bool contentControl) {
 		var location = PointToClient(Tools.Windows.Win32.GetMessagePosition(m.LParam));
-		var transparent = new IntPtr(HTTRANSPARENT);
+		var transparent = new IntPtr(WinAPI.USER32.HTTRANSPARENT);
 
 		// Check for simple gripper dragging.
 		if (GripBounds.Contains(location)) {
 			if (CompareResizeMode(PopupResizeMode.BottomLeft)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTBOTTOMLEFT;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTBOTTOMLEFT;
 				return true;
 			} else if (CompareResizeMode(PopupResizeMode.BottomRight)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTBOTTOMRIGHT;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTBOTTOMRIGHT;
 				return true;
 			} else if (CompareResizeMode(PopupResizeMode.TopLeft)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTTOPLEFT;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTTOPLEFT;
 				return true;
 			} else if (CompareResizeMode(PopupResizeMode.TopRight)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTTOPRIGHT;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTTOPRIGHT;
 				return true;
 			}
 		} else // Check for edge based dragging.
 		{
 			var rectClient = ClientRectangle;
 			if (location.X > rectClient.Right - 3 && location.X <= rectClient.Right && CompareResizeMode(PopupResizeMode.Right)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTRIGHT;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTRIGHT;
 				return true;
 			} else if (location.Y > rectClient.Bottom - 3 && location.Y <= rectClient.Bottom && CompareResizeMode(PopupResizeMode.Bottom)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTBOTTOM;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTBOTTOM;
 				return true;
 			} else if (location.X > -1 && location.X < 3 && CompareResizeMode(PopupResizeMode.Left)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTLEFT;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTLEFT;
 				return true;
 			} else if (location.Y > -1 && location.Y < 3 && CompareResizeMode(PopupResizeMode.Top)) {
-				m.Result = contentControl ? transparent : (IntPtr)HTTOP;
+				m.Result = contentControl ? transparent : (IntPtr)WinAPI.USER32.HTTOP;
 				return true;
 			}
 		}
 		return false;
-	}
-
-	public bool CompareResizeMode(PopupResizeMode resizeMode) {
-		return (ResizeMode & resizeMode) == resizeMode;
 	}
 }

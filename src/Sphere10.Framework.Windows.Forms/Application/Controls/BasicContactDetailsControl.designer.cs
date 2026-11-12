@@ -28,7 +28,8 @@ partial class BasicContactDetailsControl {
 		base.Dispose(disposing);
 	}
 
-	// Component Designer generated code
+	#region Component Designer generated code
+
 	/// <summary>
 	/// Required method for Designer support - do not modify
 	/// the contents of this method with the code editor.
@@ -84,4 +85,6 @@ partial class BasicContactDetailsControl {
 		this.ResumeLayout(false);
 		this.PerformLayout();
 	}
+
+	#endregion
 }

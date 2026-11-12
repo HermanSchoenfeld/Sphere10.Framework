@@ -30,11 +30,11 @@ namespace Sphere10.Framework.Windows.Tests;
 public class WindowsDiagnosticsDependencyTests {
 	private static readonly string[] _appTypeNames = {
 		"IActionObserver", "ActionObserverLogger", "WindowsProcessCollector", "WindowsPerformanceCollector", "WindowsCatalogCollector", "WindowsHardwareCollector",
-		"LivePerformanceStatistics", "LiveMetricSnapshot", "SystemPerformanceSample", "ProcessSnapshot", "ProcessDetails", "ProcessThreadSnapshot", "ProcessModuleSnapshot",
-		"ServiceSnapshot", "DriverSnapshot", "ServiceActionPlan", "DriverActionPlan", "NetworkAdapterSnapshot", "NetworkEndpointSnapshot", "StorageSnapshot",
-		"EnvironmentSnapshot", "StartupEntrySnapshot", "RegistryExplorerService", "RegistryLocation", "RegistryKeySnapshot", "RegistryValueSnapshot",
-		"InstalledApplicationsService", "InstalledApplicationSnapshot", "InstalledApplicationIconCache", "FileSystemWatcherService", "FileWatchOptions",
-		"FileWatchSnapshot", "FileWatchRecord", "WindowMessageService", "WindowMessageRequest", "WindowMessageResult", "TaskManagerReplacementService",
+		"LivePerformanceStatistics", "LiveMetricSample", "SystemPerformanceSample", "ProcessInfo", "ProcessDetails", "ProcessThreadInfo", "ProcessModuleInfo",
+		"ServiceInfo", "DriverInfo", "ServiceActionPlan", "DriverActionPlan", "NetworkAdapterInfo", "StorageInfo",
+		"EnvironmentInfo", "StartupEntryInfo", "RegistryExplorerService", "RegistryLocation", "RegistryKeyInfo", "RegistryValueInfo",
+		"InstalledApplicationsService", "InstalledApplicationInfo", "InstalledApplicationIconCache", "FileSystemWatcherService", "FileWatchOptions",
+		"FileWatchStatus", "FileWatchRecord", "WindowMessageService", "WindowMessageRequest", "WindowMessageResult", "TaskManagerReplacementService",
 		"ApplicationElevationService", "NTFSFileCopier", "NTFSFileCopyOptions", "NTFSFileCopyProgress", "NTFSFileCopyResult", "UserCopier", "GroupCopier", "ShareCopier",
 		"SIDSearcher", "SIDRenamer", "SidTranslator", "SidNameResolver"
 	};
@@ -78,8 +78,8 @@ public class WindowsDiagnosticsDependencyTests {
 		Assert.That(typeof(NssmSentry).BaseType, Is.EqualTo(typeof(ProcessSentry)));
 		Assert.That(ServiceControlManagerSentry.ServiceControlExecutable, Is.EqualTo("sc.exe"));
 		Assert.That(new ServiceControlManagerSentry().ExecutableFileName, Is.EqualTo("sc.exe"));
-		Assert.That(typeof(ProcessSentry).IsAssignableFrom(typeof(ServiceUtil)), Is.False);
-		Assert.That(typeof(Tools.Windows).GetProperty(nameof(Tools.Windows.Services)).PropertyType, Is.EqualTo(typeof(ServiceUtil)));
+		Assert.That(typeof(ProcessSentry).IsAssignableFrom(typeof(Tools.Windows.Services)), Is.False);
+		Assert.That(typeof(Tools.Windows).GetNestedType(nameof(Tools.Windows.Services)), Is.EqualTo(typeof(Tools.Windows.Services)));
 		var nativeMethods = new[] { "GetServices", "GetServicesAsync", "GetDrivers", "GetDriversAsync", "ReadService", "ReadServiceAsync", "ReadConfiguration",
 			"ReadConfigurationAsync", "SetStartMode", "SetStartModeAsync", "StartService", "StopService", "PauseService", "ResumeService" };
 		Assert.That(typeof(ServiceControlManagerSentry).GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
@@ -87,16 +87,15 @@ public class WindowsDiagnosticsDependencyTests {
 	}
 
 	[Test]
-	public void NewWindowsUtilitiesUseInstanceFacadesAndDoNotExportApiAliases() {
-		var utilities = new[] { (Property: "Network", Type: typeof(WindowsNetworkUtil)), (Property: "Drives", Type: typeof(WindowsDriveUtil)),
-			(Property: "Startup", Type: typeof(WindowsStartupUtil)), (Property: "EventLogs", Type: typeof(WindowsEventLogUtil)), (Property: "Services", Type: typeof(ServiceUtil)),
-			(Property: "Environment", Type: typeof(EnvironmentUtil)), (Property: "SecurityDescriptors", Type: typeof(SecurityDescriptorUtil)) };
+	public void WindowsUtilitiesAreStaticClassesNestedInTheFacadeAndDoNotExportApiAliases() {
+		// Only the utilities that own state remain instances behind a facade property
+		var stateful = new[] { nameof(Tools.Windows.Assemblies), nameof(Tools.Windows.UiAutomation), nameof(Tools.Windows.Registry), nameof(Tools.Windows.Dumps) };
+		Assert.That(typeof(Tools.Windows).GetProperties(BindingFlags.Public | BindingFlags.Static).Select(property => property.Name), Is.EquivalentTo(stateful));
+		var utilities = typeof(Tools.Windows).GetNestedTypes(BindingFlags.Public);
+		Assert.That(utilities.Select(type => type.Name), Is.SupersetOf(new[] { "Network", "Drives", "Startup", "EventLogs", "Services", "Environment", "SecurityDescriptors", "Files", "Processes", "Shell" }));
 		foreach (var utility in utilities) {
-			var property = typeof(Tools.Windows).GetProperty(utility.Property);
-			Assert.That(property, Is.Not.Null, utility.Property);
-			Assert.That(property.PropertyType, Is.EqualTo(utility.Type));
-			Assert.That(utility.Type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly), Is.Empty,
-				utility.Type.Name + " exposes operations through its instance facade.");
+			Assert.That(utility.IsAbstract && utility.IsSealed, Is.True, utility.Name + " must be a static class.");
+			Assert.That(utility.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic), Is.Empty, utility.Name + " must hold no instance state.");
 		}
 		var removedNames = new[] { "ServicesUtil", "WindowsNetworkApi", "WindowsDriveApi", "WindowsStartupApi", "WindowsEventLogApi", "EnvironmentVariableService", "SecurityDescriptorTools" };
 		Assert.That(typeof(WinAPI).Assembly.GetExportedTypes().Where(type => removedNames.Contains(type.Name)).Select(type => type.FullName), Is.Empty);
@@ -104,18 +103,15 @@ public class WindowsDiagnosticsDependencyTests {
 
 	[Test]
 	public void UpdatedWindowsOperationMethodsAcceptTokensOnlyWithAsyncCompletion() {
-		var types = new[] { typeof(RegistryUtil), typeof(ServiceUtil), typeof(WindowsNetworkUtil), typeof(WindowsDriveUtil), typeof(WindowsStartupUtil),
-			typeof(WindowsEventLogUtil), typeof(EnvironmentUtil), typeof(SecurityDescriptorUtil), typeof(WindowsUninstallRegistration), typeof(DriverManager), typeof(WindowsFile), typeof(WindowsVolume),
-			typeof(WindowsProcess), typeof(ProcessSignaler), typeof(WindowsSystemInformation), typeof(WindowsComputer), typeof(FileHandleService),
+		var types = new[] { typeof(RegistryUtil), typeof(Tools.Windows.Services), typeof(Tools.Windows.Network), typeof(Tools.Windows.Drives), typeof(Tools.Windows.Startup),
+			typeof(Tools.Windows.EventLogs), typeof(Tools.Windows.Environment), typeof(Tools.Windows.SecurityDescriptors), typeof(WindowsUninstallRegistration), typeof(DriverManager), typeof(WindowsFile), typeof(WindowsVolume),
+			typeof(WindowsProcess), typeof(Tools.Windows.Processes), typeof(WindowsSystemInformation), typeof(WindowsComputer), typeof(FileHandleService),
 			typeof(WindowsFileInspectionService), typeof(ProcessCommandService), typeof(ProcessSignalService), typeof(WindowMessageSender), typeof(WindowsWindow) };
 		var violations = types.SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
 			.Where(method => method.GetParameters().Any(parameter => parameter.ParameterType == typeof(CancellationToken)) && !HasAsyncCompletion(method.ReturnType))
 			.Select(method => method.DeclaringType.FullName + "." + method.Name).OrderBy(name => name).ToArray();
 		Assert.That(violations, Is.Empty, "Synchronous operation methods, including worker helpers, must not expose a CancellationToken parameter.");
 	}
-
-	private static bool HasAsyncCompletion(Type type)
-		=> typeof(Task).IsAssignableFrom(type) || type == typeof(ValueTask) || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ValueTask<>);
 
 	[Test]
 	public void WindowsLibraryDoesNotExportApplicationCollectorsModelsOrPlans() {
@@ -147,6 +143,9 @@ public class WindowsDiagnosticsDependencyTests {
 					$"WinAPI.{container.Name}.{method.Name} must be declared under the DLL it imports ({import.Value}).");
 			}
 	}
+
+	private static bool HasAsyncCompletion(Type type)
+		=> typeof(Task).IsAssignableFrom(type) || type == typeof(ValueTask) || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ValueTask<>);
 
 	private static string[] FrameworkDependencyClosure(Assembly root) {
 		var references = new HashSet<string>(StringComparer.Ordinal);

@@ -97,12 +97,6 @@ public class BootstrapFormScopeTests {
 		Assert.That(script, Does.Contain("options.useLoadingOverlay"));
 	}
 
-	private static IHtmlHelper<TestFormModel> CreateHelper(TextWriter writer) {
-		var helper = DispatchProxy.Create<IHtmlHelper<TestFormModel>, HtmlHelperProxy>();
-		((HtmlHelperProxy)(object)helper).Context = new ViewContext { Writer = writer, FormContext = new FormContext() };
-		return helper;
-	}
-
 	[Test]
 	public async Task AsynchronousFormCompletionBuffersTheSynchronousMvcEndFormAndRestoresItsWriter() {
 		using var constructorOutput = new StringWriter();
@@ -120,6 +114,12 @@ public class BootstrapFormScopeTests {
 		Assert.That(writer.Writes, Is.EqualTo(3), "Marker, client initialization and the buffered MVC form ending must all use asynchronous response output.");
 		Assert.That(writer.ToString(), Does.EndWith("</form>"));
 		Assert.That(helper.ViewContext.Writer, Is.SameAs(writer));
+	}
+
+	private static IHtmlHelper<TestFormModel> CreateHelper(TextWriter writer) {
+		var helper = DispatchProxy.Create<IHtmlHelper<TestFormModel>, HtmlHelperProxy>();
+		((HtmlHelperProxy)(object)helper).Context = new ViewContext { Writer = writer, FormContext = new FormContext() };
+		return helper;
 	}
 
 	public sealed class TestFormModel : FormModelBase {

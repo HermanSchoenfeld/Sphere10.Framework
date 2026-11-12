@@ -18,7 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class ComboBox : EditorControlBase {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -39,13 +40,13 @@ public class ComboBox : EditorControlBase {
 		StandardValuesExclusive = standardValueExclusive;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.ComboBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
 	}
 
 	/// <summary>
@@ -73,11 +74,10 @@ public class ComboBox : EditorControlBase {
 	/// Returns the value inserted with the current editor control
 	/// </summary>
 	/// <returns></returns>
-	public override object GetEditedValue() {
-		return Control.Value;
-	}
+	public override object GetEditedValue() => Control.Value;
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -99,4 +99,6 @@ public class ComboBox : EditorControlBase {
 				Control.SelectionStart = Control.Text.Length;
 		}
 	}
+
+	#endregion
 }

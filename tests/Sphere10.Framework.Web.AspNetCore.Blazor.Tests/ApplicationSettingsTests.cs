@@ -534,15 +534,6 @@ public class ApplicationSettingsTests {
 		Assert.That(await owner.Provider.ContainsSettingAsync(typeof(TransientPreferences), actualDefinition.Settings.ID), Is.True);
 	}
 
-	// Compose the actual application/provider lifecycle without activating operational screens.
-	private static ServiceProvider CreateServices(ISettingsProvider provider, params BlazorUI.IApplicationBlock[] blocks) {
-		var services = new ServiceCollection().AddLogging().AddSingleton<ISettingsProvider>(provider).AddSphere10Blazor();
-		foreach (var block in blocks)
-			services.AddApplicationBlock(block);
-		return services.BuildServiceProvider();
-	}
-
-
 	/// <summary>Verifies transient properties remain excluded across overrides and circuit recreation.</summary>
 	[TestCase(false)]
 	[TestCase(true)]
@@ -570,6 +561,7 @@ public class ApplicationSettingsTests {
 		Assert.That(restored.Name, Is.EqualTo("Accepted"));
 		Assert.That(restored.Runtime, Is.EqualTo(runtimeDefault));
 	}
+
 
 	/// <summary>Verifies provider survives circuit recreation and keeps application user and registration namespaces separate.</summary>
 	[TestCase(false)]
@@ -848,15 +840,19 @@ public class ApplicationSettingsTests {
 		Assert.That(dialog.ApplicationTitle, Is.EqualTo(expectedCaption));
 	}
 
-	// Provider calls exercise actual persistence; only browser interop and principal discovery are substituted.
-	private static Options Defaults() {
-		return new Options { ID = "preferences" };
+	// Compose the actual application/provider lifecycle without activating operational screens.
+	private static ServiceProvider CreateServices(ISettingsProvider provider, params BlazorUI.IApplicationBlock[] blocks) {
+		var services = new ServiceCollection().AddLogging().AddSingleton<ISettingsProvider>(provider).AddSphere10Blazor();
+		foreach (var block in blocks)
+			services.AddApplicationBlock(block);
+		return services.BuildServiceProvider();
 	}
 
+	// Provider calls exercise actual persistence; only browser interop and principal discovery are substituted.
+	private static Options Defaults() => new Options { ID = "preferences" };
+
 	/// <summary>Creates a settings value with the requested refresh count and persistent ID.</summary>
-	private static Options Snapshot(int number) {
-		return new Options { ID = "preferences", Number = number };
-	}
+	private static Options Snapshot(int number) => new Options { ID = "preferences", Number = number };
 
 	// Each Options page belongs to a statically declared screen rather than a separate root descriptor.
 	private static BlazorUI.IApplicationBlock SettingsBlock(string key, SettingsObject settings, Type editor = null) {
@@ -866,14 +862,12 @@ public class ApplicationSettingsTests {
 	}
 
 	// HtmlRenderer owns components; reflection invokes the same private event handlers used by their rendered controls.
-	private static Task InvokeAsync(object component, string method, params object[] arguments) {
-		return (Task)component.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(component, arguments);
-	}
+	private static Task InvokeAsync(object component, string method, params object[] arguments)
+		=> (Task)component.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(component, arguments);
 
 	/// <summary>Reads a renderer-owned test component member for its interaction assertions.</summary>
-	private static T GetField<T>(object component, string field) {
-		return (T)component.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(component);
-	}
+	private static T GetField<T>(object component, string field)
+		=> (T)component.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(component);
 
 	#region Inner Types
 
@@ -925,9 +919,8 @@ public class ApplicationSettingsTests {
 		}
 
 		/// <inheritdoc />
-		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-			return Task.FromResult(true);
-		}
+		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+			=> Task.FromResult(true);
 
 		/// <inheritdoc />
 		public override Task<SettingsObject> LoadSettingAsync(SettingsObject defaults, CancellationToken cancellationToken = default) {
@@ -943,9 +936,7 @@ public class ApplicationSettingsTests {
 	/// <summary>Supplies product identity independently of the web host caption.</summary>
 	private sealed class CaptionProductInformationProvider : IProductInformationProvider {
 		/// <summary>Retains the product name selected by application composition.</summary>
-		public CaptionProductInformationProvider(string productName) {
-			ProductInformation = new ProductInformation { ProductName = productName };
-		}
+		public CaptionProductInformationProvider(string productName) => ProductInformation = new ProductInformation { ProductName = productName };
 
 		/// <inheritdoc />
 		public ProductInformation ProductInformation { get; }
@@ -960,14 +951,10 @@ public class ApplicationSettingsTests {
 		[Inject] public TaskCompletionSource<ApplicationSettingsDialog> Displayed { get; set; }
 
 		/// <inheritdoc />
-		protected override void OnInitialized() {
-			ModalService.Initialize(this);
-		}
+		protected override void OnInitialized() => ModalService.Initialize(this);
 
 		/// <inheritdoc />
-		protected override Task WaitUntilRenderedAsync(ModalComponent component) {
-			return Task.CompletedTask;
-		}
+		protected override Task WaitUntilRenderedAsync(ModalComponent component) => Task.CompletedTask;
 
 		/// <inheritdoc />
 		protected override Task<ModalResult> GetResultAsync(ModalComponent component) {
@@ -1063,9 +1050,7 @@ public class ApplicationSettingsTests {
 		}
 
 		/// <inheritdoc />
-		public override Result Validate() {
-			return Number > 0 ? Result.Success : Result.Error("Refresh count must be positive.");
-		}
+		public override Result Validate() => Number > 0 ? Result.Success : Result.Error("Refresh count must be positive.");
 	}
 
 	/// <summary>Supplies constructor defaults for partial-record hydration checks.</summary>
@@ -1131,9 +1116,7 @@ public class ApplicationSettingsTests {
 
 		/// <summary>Runs the fixture callback at the provider serialization boundary.</summary>
 		[OnSerializing]
-		private void OnSerializing(StreamingContext context) {
-			Serialized?.Invoke();
-		}
+		private void OnSerializing(StreamingContext context) => Serialized?.Invoke();
 	}
 
 	/// <summary>Supplies an unrelated declared type for persisted type-name rejection checks.</summary>
@@ -1142,25 +1125,17 @@ public class ApplicationSettingsTests {
 	/// <summary>Rejects operational construction so Options discovery must use registration metadata.</summary>
 	public class UnopenedScreen : ApplicationScreen {
 		/// <inheritdoc />
-		public override Options ScreenSettings {
-			get {
-				return (Options)base.ScreenSettings;
-			}
-		}
+		public override Options ScreenSettings => (Options)base.ScreenSettings;
 
 		/// <summary>Rejects operational construction during metadata-only Options checks.</summary>
-		public UnopenedScreen() {
-			throw new InvalidOperationException("Options discovery cannot activate an operational screen.");
-		}
+		public UnopenedScreen() => throw new InvalidOperationException("Options discovery cannot activate an operational screen.");
 	}
 
 	/// <summary>Declares Options values by attribute without constructing an operational component.</summary>
 	[Settings(typeof(UnopenedAttributeSettingsScreen.Preferences))]
 	public class UnopenedAttributeSettingsScreen : ApplicationScreen {
 		/// <summary>Metadata-only Options discovery must not construct this component.</summary>
-		public UnopenedAttributeSettingsScreen() {
-			throw new InvalidOperationException("Options must not activate an unopened screen.");
-		}
+		public UnopenedAttributeSettingsScreen() => throw new InvalidOperationException("Options must not activate an unopened screen.");
 
 		#region Inner Types
 
@@ -1227,19 +1202,13 @@ public class ApplicationSettingsTests {
 		[Parameter] public EventCallback Changed { get; set; }
 
 		/// <summary>Returns the fixture editor's pending or immediate validation decision.</summary>
-		public Task<Result> ValidateAsync(CancellationToken cancellationToken = default) {
-			return Task.FromResult(Result.Success);
-		}
+		public Task<Result> ValidateAsync(CancellationToken cancellationToken = default) => Task.FromResult(Result.Success);
 	}
 
 	/// <summary>Captures actual settings, business drafts and screen deactivation behavior.</summary>
 	public class LifecycleScreen : ApplicationScreen {
 		/// <inheritdoc />
-		public override Options ScreenSettings {
-			get {
-				return (Options)base.ScreenSettings;
-			}
-		}
+		public override Options ScreenSettings => (Options)base.ScreenSettings;
 
 		/// <summary>The current actual settings instance applied to this screen.</summary>
 		public Options Values { get; private set; }
@@ -1260,9 +1229,7 @@ public class ApplicationSettingsTests {
 		}
 
 		/// <summary>Saves the completed local edit through the screen's existing settings lifecycle.</summary>
-		public Task SaveChangeAsync() {
-			return SaveSettingsChangesAsync();
-		}
+		public Task SaveChangeAsync() => SaveSettingsChangesAsync();
 
 		/// <inheritdoc />
 		protected override Task OnSettingsChangedAsync(SettingsObject values) {
@@ -1271,9 +1238,7 @@ public class ApplicationSettingsTests {
 		}
 
 		/// <inheritdoc />
-		protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
-			return Task.FromResult(AllowLeave);
-		}
+		protected override Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) => Task.FromResult(AllowLeave);
 
 		/// <inheritdoc />
 		protected override Task OnDeactivatedAsync(CancellationToken cancellationToken) {
@@ -1316,18 +1281,10 @@ public class ApplicationSettingsTests {
 		public SettingsObject Settings { get; private set; }
 
 		/// <summary>The first renderer-created screen component.</summary>
-		public LifecycleScreen FirstScreen {
-			get {
-				return (LifecycleScreen)First.Screen;
-			}
-		}
+		public LifecycleScreen FirstScreen => (LifecycleScreen)First.Screen;
 
 		/// <summary>The second renderer-created screen component.</summary>
-		public LifecycleScreen SecondScreen {
-			get {
-				return (LifecycleScreen)Second.Screen;
-			}
-		}
+		public LifecycleScreen SecondScreen => (LifecycleScreen)Second.Screen;
 
 		/// <summary>Creates the actual application, host and two retained renderer components for lifecycle checks.</summary>
 		public static async Task<LifecycleOwner> CreateAsync(ISettingsProvider store) {
@@ -1364,9 +1321,7 @@ public class ApplicationSettingsTests {
 		}
 
 		// Drain settings notifications already queued on this renderer.
-		public Task WaitForSettingsAsync() {
-			return Renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
-		}
+		public Task WaitForSettingsAsync() => Renderer.Dispatcher.InvokeAsync(() => Task.CompletedTask);
 
 		/// <summary>Disposes the owned renderer once before releasing its application services.</summary>
 		public async Task DisposeRendererAsync() {
@@ -1386,25 +1341,10 @@ public class ApplicationSettingsTests {
 	// Exercise the existing provider contract that may return a different loaded record.
 	private sealed class DistinctRecordProvider : SyncSettingsProviderBase {
 		/// <inheritdoc />
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		/// <inheritdoc />
-		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-			return true;
-		}
-
-		/// <inheritdoc />
-		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
-			return new Options { ID = id, Number = 73 };
-		}
-
-		/// <inheritdoc />
-		protected override void SaveInternal(SettingsObject settings) {
-		}
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) => true;
 
 		/// <inheritdoc />
 		public override void DeleteSetting(SettingsObject settings) {
@@ -1412,6 +1352,13 @@ public class ApplicationSettingsTests {
 
 		/// <inheritdoc />
 		public override void ClearSettings() {
+		}
+
+		/// <inheritdoc />
+		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) => new Options { ID = id, Number = 73 };
+
+		/// <inheritdoc />
+		protected override void SaveInternal(SettingsObject settings) {
 		}
 	}
 
@@ -1470,9 +1417,7 @@ public class ApplicationSettingsTests {
 	/// <summary>Implements only the browser storage calls used by the real provider.</summary>
 	private sealed class BrowserRuntime(BrowserState browser) : IJSRuntime, IJSObjectReference {
 		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] arguments) {
-			return InvokeAsync<TValue>(identifier, CancellationToken.None, arguments);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] arguments) => InvokeAsync<TValue>(identifier, CancellationToken.None, arguments);
 
 		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
 		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] arguments) {
@@ -1507,9 +1452,7 @@ public class ApplicationSettingsTests {
 		}
 
 		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
-		public ValueTask DisposeAsync() {
-			return ValueTask.CompletedTask;
-		}
+		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}
 
 	#endregion

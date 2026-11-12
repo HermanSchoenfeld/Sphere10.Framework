@@ -77,19 +77,15 @@ public class CrudReferencePicker : UserControlEx {
 		NotifyStateChanged();
 	}
 
+	public Task LoadItemsAsync() => _loadTask ??= LoadItemsInternalAsync();
+
 	/// <summary>Reports accepted references instead of the popup's search, paging and temporary row selection.</summary>
-	protected override bool ShouldObserveChildStateChanges(Control child) {
-		return false;
-	}
+	protected override bool ShouldObserveChildStateChanges(Control child) => false;
 
 	protected override async void OnLoad(EventArgs Args) {
 		LimitDropDownSize();
 		base.OnLoad(Args);
 		await LoadItemsAsync();
-	}
-
-	public Task LoadItemsAsync() {
-		return _loadTask ??= LoadItemsInternalAsync();
 	}
 
 	protected override void OnFontChanged(EventArgs Args) {
@@ -131,8 +127,6 @@ public class CrudReferencePicker : UserControlEx {
 	}
 
 	private sealed class ReferenceGrid : VisualGrid {
-		public override Task EditEntity(object Entity) {
-			return Task.CompletedTask;
-		}
+		public override Task EditEntity(object Entity) => Task.CompletedTask;
 	}
 }

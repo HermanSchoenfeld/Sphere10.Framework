@@ -24,9 +24,7 @@ public struct CellContext {
 	public Cells.ICellVirtual Cell;
 	public GridVirtual Grid;
 
-	static CellContext() {
-		Empty = new CellContext(null, Position.Empty, null);
-	}
+	static CellContext() => Empty = new CellContext(null, Position.Empty, null);
 
 	/// <summary>
 	/// Constructor
@@ -78,25 +76,18 @@ public struct CellContext {
 	/// Gets or sets the cell value.
 	/// </summary>
 	public object Value {
-		get {
-			return Cell.Model.ValueModel.GetValue(this);
-		}
-		set {
-			Cell.Model.ValueModel.SetValue(this, value);
-		}
+		get => Cell.Model.ValueModel.GetValue(this);
+		set => Cell.Model.ValueModel.SetValue(this, value);
 	}
 
 	/// <summary>
 	/// Calculate the Range occupied by the current cell. Usually it is simply the Position property, only if RowSpan or ColumnSpan is used this property returns a larger range.
 	/// Internally use the Grid.PositionToCellRange method.
 	/// </summary>
-	public CellRange CellRange {
-		get {
-			return Grid.PositionToCellRange(Position);
-		}
-	}
+	public CellRange CellRange => Grid.PositionToCellRange(Position);
 
-	// Methods
+	#region Methods
+
 	/// <summary>
 	/// If the cell is not linked to a grid the result is not accurate (Font can be null). Call InternalGetRequiredSize with RowSpan and ColSpan = 1.
 	/// </summary>
@@ -209,40 +200,35 @@ public struct CellContext {
 		Grid.InvalidateCell(Position);
 	}
 
-	// Standard methods for equality and comparison
+	#endregion
+
+	#region Standard methods for equality and comparison
+
 	/// <summary>
 	/// Returns true if the current struct is empty
 	/// </summary>
 	/// <returns></returns>
-	public bool IsEmpty() {
-		return this.Equals(Empty);
-	}
+	public bool IsEmpty() => this.Equals(Empty);
 
 	/// <summary>
 	/// GetHashCode
 	/// </summary>
 	/// <returns></returns>
-	public override int GetHashCode() {
-		return Position.GetHashCode();
-	}
+	public override int GetHashCode() => Position.GetHashCode();
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <param name="other"></param>
 	/// <returns></returns>
-	public bool Equals(CellContext other) {
-		return (Position == other.Position && Cell == other.Cell && Grid == other.Grid);
-	}
+	public bool Equals(CellContext other) => (Position == other.Position && Cell == other.Cell && Grid == other.Grid);
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
-	public override bool Equals(object obj) {
-		return Equals((CellContext)obj);
-	}
+	public override bool Equals(object obj) => Equals((CellContext)obj);
 
 	/// <summary>
 	///
@@ -250,9 +236,7 @@ public struct CellContext {
 	/// <param name="left"></param>
 	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator ==(CellContext left, CellContext right) {
-		return left.Equals(right);
-	}
+	public static bool operator ==(CellContext left, CellContext right) => left.Equals(right);
 
 	/// <summary>
 	///
@@ -260,15 +244,13 @@ public struct CellContext {
 	/// <param name="left"></param>
 	/// <param name="right"></param>
 	/// <returns></returns>
-	public static bool operator !=(CellContext left, CellContext right) {
-		return !left.Equals(right);
-	}
+	public static bool operator !=(CellContext left, CellContext right) => !left.Equals(right);
 
 	/// <summary>
 	///
 	/// </summary>
 	/// <returns></returns>
-	public override string ToString() {
-		return Position.ToString();
-	}
+	public override string ToString() => Position.ToString();
+
+	#endregion
 }

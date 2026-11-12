@@ -44,6 +44,16 @@ public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase
 		init => base.Title = value;
 	}
 
+	public override void NotifyHover() {
+		base.NotifyHover();
+		OnHover();
+	}
+
+	public override void NotifySelect() {
+		base.NotifySelect();
+		OnSelect();
+	}
+
 	internal void CopySubscriptionsFrom(ApplicationMenuItemBase source) {
 		Guard.ArgumentNotNull(source, nameof(source));
 		base.CopySubscriptionsFrom(source);
@@ -53,16 +63,6 @@ public abstract class ApplicationMenuItemBase : SharedUI.ApplicationMenuItemBase
 	protected void SetDefaultTitle(string title) {
 		if (string.IsNullOrWhiteSpace(base.Title))
 			base.Title = title;
-	}
-
-	public override void NotifyHover() {
-		base.NotifyHover();
-		OnHover();
-	}
-
-	public override void NotifySelect() {
-		base.NotifySelect();
-		OnSelect();
 	}
 
 	protected virtual void OnHover() {

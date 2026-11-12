@@ -42,10 +42,36 @@ public static partial class WinAPI {
 		}
 
 		public const uint EVENT_TRACE_REAL_TIME_MODE = 0x00000100;
+		public const uint EVENT_TRACE_SYSTEM_LOGGER_MODE = 0x02000000;
 		public const uint PROCESS_TRACE_MODE_REAL_TIME = 0x00000100;
 		public const uint PROCESS_TRACE_MODE_EVENT_RECORD = 0x10000000;
 		public const uint EVENT_TRACE_CONTROL_UPDATE = 2;
+		public const uint EVENT_TRACE_CONTROL_QUERY = 0;
+		public const uint EVENT_TRACE_CONTROL_STOP = 1;
+		public const uint EVENT_CONTROL_CODE_DISABLE_PROVIDER = 0;
+		public const uint EVENT_CONTROL_CODE_ENABLE_PROVIDER = 1;
+		public const uint EVENT_CONTROL_CODE_CAPTURE_STATE = 2;
 		public const uint WNODE_FLAG_TRACED_GUID = 0x00020000;
+		public const uint ENABLE_TRACE_PARAMETERS_VERSION_2 = 2;
+		public const uint EVENT_ENABLE_PROPERTY_STACK_TRACE = 0x00000004;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct ENABLE_TRACE_PARAMETERS {
+			public uint Version;
+			public uint EnableProperty;
+			public uint ControlFlags;
+			public Guid SourceId;
+			public IntPtr EnableFilterDesc;
+			public uint FilterDescCount;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct CLASSIC_EVENT_ID {
+			public Guid EventGuid;
+			public byte Type;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 7)]
+			public byte[] Reserved;
+		}
 
 		[UnmanagedFunctionPointer(CallingConvention.Winapi)]
 		public delegate void EVENT_RECORD_CALLBACK(IntPtr record);
@@ -85,6 +111,18 @@ public static partial class WinAPI {
 			public IntPtr ExtendedData;
 			public IntPtr UserData;
 			public IntPtr UserContext;
+		}
+
+		public const ushort EVENT_HEADER_EXT_TYPE_STACK_TRACE32 = 0x0005;
+		public const ushort EVENT_HEADER_EXT_TYPE_STACK_TRACE64 = 0x0006;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct EVENT_HEADER_EXTENDED_DATA_ITEM {
+			public ushort Reserved1;
+			public ushort ExtType;
+			public ushort LinkageAndReserved;
+			public ushort DataSize;
+			public ulong DataPtr;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -157,6 +195,16 @@ public static partial class WinAPI {
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
 		public static extern uint ControlTraceW(ulong sessionHandle, string sessionName, IntPtr properties, uint controlCode);
+
+		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern uint StartTraceW(out ulong sessionHandle, string sessionName, IntPtr properties);
+
+		[DllImport("advapi32.dll", ExactSpelling = true)]
+		public static extern uint EnableTraceEx2(ulong sessionHandle, ref Guid providerId, uint controlCode, byte level,
+			ulong matchAnyKeyword, ulong matchAllKeyword, uint timeoutMilliseconds, IntPtr enableParameters);
+
+		[DllImport("advapi32.dll", ExactSpelling = true)]
+		public static extern uint TraceSetInformation(ulong sessionHandle, uint informationClass, IntPtr traceInformation, uint informationLength);
 
 		[DllImport("advapi32.dll", ExactSpelling = true, SetLastError = true)]
 		public static extern ulong OpenTraceW(ref EVENT_TRACE_LOGFILEW logfile);
@@ -336,15 +384,8 @@ public static partial class WinAPI {
 		                                                out UInt32 ReturnLengthInBytes);
 
 
-		public static bool AdjustTokenPrivileges(IntPtr TokenHandle, [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, out UInt32 ReturnLengthInBytes) {
-			return _AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, ref NewState, BufferLengthInBytes, IntPtr.Zero, out ReturnLengthInBytes);
-		}
-
-
-		[DllImport("advapi32.dll", EntryPoint = "AdjustTokenPrivileges", SetLastError = true, CharSet = CharSet.Auto)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		private static extern bool _AdjustTokenPrivileges(IntPtr TokenHandle, [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, [Out] IntPtr PreviousState,
-		                                                  out UInt32 ReturnLengthInBytes);
+		public static bool AdjustTokenPrivileges(IntPtr TokenHandle, [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, out UInt32 ReturnLengthInBytes)
+			=> _AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, ref NewState, BufferLengthInBytes, IntPtr.Zero, out ReturnLengthInBytes);
 
 
 		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
@@ -356,6 +397,7 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool SetSecurityDescriptorOwner(ref SECURITY_DESCRIPTOR pSecurityDescriptor, IntPtr pOwner, bool bOwnerDefaulted);
 
+
 		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool SetFileSecurity(string lpFileName, UInt32 SecurityInformation, ref SECURITY_DESCRIPTOR pSecurityDescriptor);
@@ -364,10 +406,10 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool ConvertStringSidToSid(string StringSid, out IntPtr ptrSid);
 
-
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool LookupAccountName(string lpSystemName, string lpAccountName, IntPtr Sid, ref uint cbSid, StringBuilder ReferencedDomainName, ref uint cchReferencedDomainName, out SidNameUse peUse);
+
 
 		[DllImport("advapi32.dll", SetLastError = true)]
 		public static extern uint GetSecurityDescriptorLength(IntPtr securityDescriptor);
@@ -388,27 +430,31 @@ public static partial class WinAPI {
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public extern static bool DuplicateToken(IntPtr ExistingTokenHandle, SECURITY_IMPERSONATION_LEVEL impersonationLevel, out IntPtr DuplicateTokenHandle);
 
-
 		[DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public extern static bool DuplicateTokenEx(IntPtr hExistingToken, uint dwDesiredAccess, ref SECURITY_ATTRIBUTES lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out IntPtr phNewToken);
 
-		public static bool DuplicateTokenEx(IntPtr hExistingToken, uint dwDesiredAccess, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out IntPtr phNewToken) {
-			return _DuplicateTokenEx(hExistingToken, dwDesiredAccess, IntPtr.Zero, ImpersonationLevel, TokenType, out phNewToken);
-		}
 
-		[DllImport("advapi32.dll", CharSet = CharSet.Auto, EntryPoint = "DuplicateTokenEx", SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		private extern static bool _DuplicateTokenEx(IntPtr hExistingToken, uint dwDesiredAccess, IntPtr lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out IntPtr phNewToken);
-
+		public static bool DuplicateTokenEx(IntPtr hExistingToken, uint dwDesiredAccess, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out IntPtr phNewToken)
+			=> _DuplicateTokenEx(hExistingToken, dwDesiredAccess, IntPtr.Zero, ImpersonationLevel, TokenType, out phNewToken);
 
 		[DllImport("advapi32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool RevertToSelf();
 
-
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode)]
 		public static extern bool ConvertStringSidToSidW(string stringSID, out IntPtr SID);
+
+
+		[DllImport("advapi32.dll", EntryPoint = "AdjustTokenPrivileges", SetLastError = true, CharSet = CharSet.Auto)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool _AdjustTokenPrivileges(IntPtr TokenHandle, [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges, ref TOKEN_PRIVILEGES NewState, UInt32 BufferLengthInBytes, [Out] IntPtr PreviousState,
+		                                                  out UInt32 ReturnLengthInBytes);
+
+
+		[DllImport("advapi32.dll", CharSet = CharSet.Auto, EntryPoint = "DuplicateTokenEx", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private extern static bool _DuplicateTokenEx(IntPtr hExistingToken, uint dwDesiredAccess, IntPtr lpTokenAttributes, SECURITY_IMPERSONATION_LEVEL ImpersonationLevel, TOKEN_TYPE TokenType, out IntPtr phNewToken);
 
 		#endregion
 
@@ -466,6 +512,52 @@ public static partial class WinAPI {
 		public const uint SERVICE_QUERY_STATUS = 4;
 		public const uint SERVICE_NO_CHANGE = uint.MaxValue;
 		public const uint SERVICE_CONFIG_DESCRIPTION = 1;
+		public const uint SERVICE_CONFIG_FAILURE_ACTIONS = 2;
+		public const uint SERVICE_CONFIG_DELAYED_AUTO_START_INFO = 3;
+		public const uint SERVICE_CONFIG_FAILURE_ACTIONS_FLAG = 4;
+		public const uint SERVICE_CONFIG_SERVICE_SID_INFO = 5;
+		public const uint SERVICE_CONFIG_REQUIRED_PRIVILEGES_INFO = 6;
+		public const uint SERVICE_CONFIG_PRESHUTDOWN_INFO = 7;
+		public const uint SERVICE_CONFIG_TRIGGER_INFO = 8;
+		public const uint SERVICE_CONFIG_LAUNCH_PROTECTED = 12;
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SERVICE_FAILURE_ACTIONS {
+			public uint ResetPeriod;
+			public IntPtr RebootMessage;
+			public IntPtr Command;
+			public uint ActionCount;
+			public IntPtr Actions;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SC_ACTION {
+			public uint Type;
+			public uint DelayMilliseconds;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SERVICE_TRIGGER_INFO {
+			public uint TriggerCount;
+			public IntPtr Triggers;
+			public IntPtr Reserved;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SERVICE_TRIGGER {
+			public uint Type;
+			public uint Action;
+			public IntPtr Subtype;
+			public uint DataItemCount;
+			public IntPtr DataItems;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SERVICE_TRIGGER_SPECIFIC_DATA_ITEM {
+			public uint Type;
+			public uint Size;
+			public IntPtr Data;
+		}
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct QUERY_SERVICE_CONFIG {

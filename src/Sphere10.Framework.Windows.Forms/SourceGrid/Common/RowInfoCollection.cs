@@ -47,11 +47,7 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 		HiddenRowCoordinator = new RowInfoCollectoinHiddenRowCoordinator(this);
 	}
 
-	public override int Count {
-		get {
-			return _list.Count;
-		}
-	}
+	public override int Count => _list.Count;
 
 	/// <summary>
 	/// Indexer. Returns a RowInfo at the specified position
@@ -70,9 +66,7 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 	/// Remove a row at the speicifed position
 	/// </summary>
 	/// <param name="index"></param>
-	public void Remove(int index) {
-		RemoveRange(index, 1);
-	}
+	public void Remove(int index) => RemoveRange(index, 1);
 
 	/// <summary>
 	/// Move a row from one position to another position
@@ -121,9 +115,7 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 			RowHeightChanged(this, e);
 	}
 
-	public int IndexOf(RowInfo info) {
-		return _list.IndexOf(info);
-	}
+	public int IndexOf(RowInfo info) => _list.IndexOf(info);
 
 	/// <summary>
 	/// Auto size the rows calculating the required size only on the columns currently visible
@@ -176,29 +168,45 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 		return false;
 	}
 
-	// RowsBase
-	public override int GetHeight(int row) {
-		return this[row].Height;
+	#region RowsBase
+
+	public override int GetHeight(int row) => this[row].Height;
+
+	public override void SetHeight(int row, int height) => this[row].Height = height;
+
+	public override AutoSizeMode GetAutoSizeMode(int row) => this[row].AutoSizeMode;
+
+	#endregion
+
+	#region IEnumerable<RowInfo> Members
+
+	public IEnumerator<RowInfo> GetEnumerator() => _list.GetEnumerator();
+
+	#endregion
+
+	/// <summary>
+	/// Returns true if the range passed is valid for insert method
+	/// </summary>
+	/// <param name="startIndex"></param>
+	/// <param name="count"></param>
+	/// <returns></returns>
+	public bool IsValidRangeForInsert(int startIndex, int count) {
+		if (startIndex <= Count && startIndex >= 0 &&
+			count > 0)
+			return true;
+		return false;
 	}
 
-	public override void SetHeight(int row, int height) {
-		this[row].Height = height;
-	}
+	#region IEnumerable Members
 
-	public override AutoSizeMode GetAutoSizeMode(int row) {
-		return this[row].AutoSizeMode;
-	}
+	IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 
-	// IEnumerable<RowInfo> Members
-	public IEnumerator<RowInfo> GetEnumerator() {
-		return _list.GetEnumerator();
-	}
+	#endregion
 
-	protected override void OnLayout() {
-		base.OnLayout();
-	}
+	protected override void OnLayout() => base.OnLayout();
 
-	// Insert/Remove Methods
+	#region Insert/Remove Methods
+
 	/// <summary>
 	/// Insert the specified number of rows at the specified position
 	/// </summary>
@@ -214,19 +222,6 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 		PerformLayout();
 
 		OnRowsAdded(new IndexRangeEventArgs(startIndex, rows.Length));
-	}
-
-	/// <summary>
-	/// Returns true if the range passed is valid for insert method
-	/// </summary>
-	/// <param name="startIndex"></param>
-	/// <param name="count"></param>
-	/// <returns></returns>
-	public bool IsValidRangeForInsert(int startIndex, int count) {
-		if (startIndex <= Count && startIndex >= 0 &&
-			count > 0)
-			return true;
-		return false;
 	}
 
 	/// <summary>
@@ -261,8 +256,5 @@ public abstract class RowInfoCollection : RowsBase, IEnumerable<RowInfo> {
 		//Grid.OnRowsRemoving(e);
 	}
 
-	// IEnumerable Members
-	IEnumerator IEnumerable.GetEnumerator() {
-		return _list.GetEnumerator();
-	}
+	#endregion
 }

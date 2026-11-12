@@ -112,16 +112,15 @@ public class WizardNavigationTests {
 
 	public class RouteStep : BlazorWizardStep<Model> {
 		public override string Title => "Route";
-		protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) => builder.AddContent(0, "Route marker");
 		public override Task<Result> OnPreviousAsync() {
 			Model.BackCalls++;
 			return Model.BackCompletion ?? Task.FromResult(Model.BackAllowed ? Result.Success : Result.Error("Finish the pending route row."));
 		}
+		protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) => builder.AddContent(0, "Route marker");
 	}
 
 	public class ImportStep : BlazorWizardStep<Model> {
 		public override string Title => "Import";
-		protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) => builder.AddContent(0, "Import marker");
 		public override Task<Result> OnNextAsync() {
 			Model.Applied = true;
 			return OnPreviousAsync();
@@ -131,6 +130,7 @@ public class WizardNavigationTests {
 			Wizard.RemoveStep(typeof(ImportStep));
 			return Task.FromResult(Result.Success);
 		}
+		protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) => builder.AddContent(0, "Import marker");
 	}
 
 	public class FinalStep : BlazorWizardStep<Model> {

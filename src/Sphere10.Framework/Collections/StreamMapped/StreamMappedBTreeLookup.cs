@@ -82,12 +82,10 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 		_lookup = new BTreeLookup<K, V>(_btree, keyComparer);
 	}
 
-	private static Stream RequireEmptyStream(Stream stream) {
-		Guard.ArgumentNotNull(stream, nameof(stream));
-		Guard.Argument(stream.CanSeek, nameof(stream), "Tree storage must support seeking.");
-		Guard.Argument(stream.Length == 0, nameof(stream), "Opening an existing tree requires its original explicit order. Default-order construction is only supported for an empty stream.");
-		return stream;
-	}
+	/// <summary>
+	/// Adds a key-value pair to the lookup. Multiple values may be associated with the same key.
+	/// </summary>
+	public void Add(K key, V value) => _lookup.Add(key, value);
 
 	/// <summary>
 	/// The order of the underlying B-tree.
@@ -110,11 +108,6 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 	public Stream Stream => _stream;
 
 	public BTreeSpec Spec { get; }
-
-	/// <summary>
-	/// Adds a key-value pair to the lookup. Multiple values may be associated with the same key.
-	/// </summary>
-	public void Add(K key, V value) => _lookup.Add(key, value);
 
 	/// <summary>
 	/// Removes a specific key-value pair from the lookup. Returns true if the pair was found and removed.
@@ -159,7 +152,12 @@ public class StreamMappedBTreeLookup<K, V> : IExtendedBTreeLookup<K, V>, IDispos
 	// Preserve the class enumeration mapping when subclasses add another enumerable interface.
 	IEnumerator IEnumerable.GetEnumerator() => EnumerateGroupings().GetEnumerator();
 
-	public void Dispose() {
-		((IDisposable)_btree).Dispose();
+	public void Dispose() => ((IDisposable)_btree).Dispose();
+
+	private static Stream RequireEmptyStream(Stream stream) {
+		Guard.ArgumentNotNull(stream, nameof(stream));
+		Guard.Argument(stream.CanSeek, nameof(stream), "Tree storage must support seeking.");
+		Guard.Argument(stream.Length == 0, nameof(stream), "Opening an existing tree requires its original explicit order. Default-order construction is only supported for an empty stream.");
+		return stream;
 	}
 }

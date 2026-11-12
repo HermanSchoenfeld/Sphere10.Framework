@@ -61,22 +61,21 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	public IItemSerializer ItemSerializer { get; }
 
 	/// <summary>Opens borrowed raw storage using the supplied byte order and recorded settings, or returns false when it cannot be reconstructed.</summary>
-	public static bool TryOpenFromStream(Stream rawStream, Endianness endianness, out ObjectStream objects) {
-		return ObjectStreamStorageHelper.TryOpenFromStream(rawStream, endianness, out objects);
-	}
+	public static bool TryOpenFromStream(Stream rawStream, Endianness endianness, out ObjectStream objects)
+		=> ObjectStreamStorageHelper.TryOpenFromStream(rawStream, endianness, out objects);
 
 	#region ILoadable & IDisposable
-
-	protected override void LoadInternal() {
-		if (Streams.RequiresLoad)
-			Streams.Load();
-	}
 
 	public AccessScope EnterAccessScope() => Streams.EnterAccessScope();
 
 	public void Dispose() {
 		if (OwnsStreams)
 			Streams.Dispose();
+	}
+
+	protected override void LoadInternal() {
+		if (Streams.RequiresLoad)
+			Streams.Load();
 	}
 
 	#endregion

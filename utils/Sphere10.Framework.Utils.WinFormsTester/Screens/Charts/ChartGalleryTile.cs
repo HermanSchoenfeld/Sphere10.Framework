@@ -25,15 +25,6 @@ public partial class ChartGalleryTile : UserControl {
 
 	public ChartGallerySample Sample { get; private set; }
 
-	protected override void OnLoad(EventArgs args) {
-		base.OnLoad(args);
-		if (!Tools.Runtime.IsDesignMode) {
-			_logOutput ??= new ChartLogOutputBehavior(_chart);
-			_logOutputLifetime ??= DemoLogOutputLifetime.RegisterCurrent(this, _logOutput);
-			_logOutput.RestoreSettings();
-		}
-	}
-
 	public void ShowSample(ChartGallerySample sample) {
 		Sample = sample;
 		Visible = sample != null;
@@ -42,6 +33,15 @@ public partial class ChartGalleryTile : UserControl {
 		_name.Text = sample.Name;
 		ChartGalleryRenderer.Render(_chart, sample, true);
 		_explore.AccessibleName = "Explore " + sample.Name;
+	}
+
+	protected override void OnLoad(EventArgs args) {
+		base.OnLoad(args);
+		if (!Tools.Runtime.IsDesignMode) {
+			_logOutput ??= new ChartLogOutputBehavior(_chart);
+			_logOutputLifetime ??= DemoLogOutputLifetime.RegisterCurrent(this, _logOutput);
+			_logOutput.RestoreSettings();
+		}
 	}
 
 	private void ExploreClicked(object sender, EventArgs args) => ExploreRequested?.Invoke(this, EventArgs.Empty);

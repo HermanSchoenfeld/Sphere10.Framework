@@ -19,6 +19,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 /// <summary>Adds the shared Log Output workflow and bounded asynchronous observation logging to a chart.</summary>
 public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
+	private const string GroupSeparator = " / ";
 	private readonly Control _surface;
 	private readonly int _ownerThreadId;
 	private readonly Func<ChartLogSample[]> _samples;
@@ -27,7 +28,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 	private readonly ToolStripMenuItem _logOutputCommand;
 	private readonly List<(Control Control, ContextMenuStrip Previous)> _surfaces = new();
 	private readonly Dictionary<ContextMenuStrip, ToolStripMenuItem> _extendedMenus = new();
-	private readonly Dictionary<(string Series, string Identity), string> _published = new();
+	private Dictionary<(string Series, string Identity), string> _published = new();
 	private LogOutputSelectorControl _ownedSelector;
 	private LogOutputSelectorControl _outputSelector;
 	private Task _retiredOutput = Task.CompletedTask;
@@ -58,6 +59,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		_samples = samples;
 		_titleProvider = titleProvider;
 		_logOutputCommand = new ToolStripMenuItem("Log Output");
+		_logOutputCommand.ToolTipText = "Configure or review logging for this chart.";
 		_logOutputCommand.Click += LogOutputClicked;
 		_menu = new ContextMenuStrip();
 		_menu.Items.Add(_logOutputCommand);
@@ -163,8 +165,9 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 			}
 			if (!changed)
 				continue;
-			var message = FormatSample(title, sample.Key.CapturedAtUtc ?? publicationTime, sample.ToArray());
-			if (!_outputSelector.EnqueueInfo(message, includesTimestamp: true)) {
+			// One line per device or group keeps a sample spanning many devices readable.
+			var lines = FormatSampleLines(title, sample.Key.CapturedAtUtc ?? publicationTime, sample.ToArray());
+			if (!lines.All(line => _outputSelector.EnqueueInfo(line, includesTimestamp: true))) {
 				if (_outputSelector.IsLogging)
 					Interlocked.Increment(ref _droppedSamples);
 				// Retry the entire related sample together while it remains in the retained snapshot.
@@ -175,19 +178,25 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 						current.Remove(measurement.Key);
 			}
 		}
-		var previousCount = _published.Count;
-		_published.Clear();
-		foreach (var item in current)
-			_published.Add(item.Key, item.Value);
-		if (current.Count == 0 || current.Count < previousCount / 4)
-			_published.TrimExcess();
+		_published = current;
 	}
 
 	/// <summary>Formats one related captured sample without reading controls or performing output IO. Safe for sampler workers.</summary>
 	public static string FormatSample(string title, DateTime capturedAtUtc, ChartLogSample[] readings) {
 		Guard.ArgumentNotNull(readings, nameof(readings));
-		return AsUtc(capturedAtUtc).ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)
-			+ " " + Clean(title) + " — " + string.Join("; ", readings.Where(reading => reading != null).Select(reading => FormatDetails(title, reading)));
+		return FormatPrefix(title, capturedAtUtc) + string.Join("; ", readings.Where(reading => reading != null).Select(reading => FormatDetails(title, reading)));
+	}
+
+	/// <summary>Formats one log line per device or group of a captured sample, each carrying the sample time. A reading's group is
+	/// the part of its series before " / " (for example "GPU 0 / Temperature"); readings without one share the title's line.
+	/// Safe for sampler workers.</summary>
+	public static string[] FormatSampleLines(string title, DateTime capturedAtUtc, ChartLogSample[] readings) {
+		Guard.ArgumentNotNull(readings, nameof(readings));
+		var prefix = FormatPrefix(title, capturedAtUtc);
+		return readings.Where(reading => reading != null).GroupBy(reading => GroupOf(reading.Series))
+			.Select(group => prefix + (group.Key == null ? string.Empty : Clean(group.Key) + ": ") + string.Join("; ", group.Select(reading =>
+				FormatDetails(title, group.Key == null ? reading : reading with { Series = reading.Series[(group.Key.Length + GroupSeparator.Length)..] }))))
+			.ToArray();
 	}
 
 	/// <summary>Awaits every write accepted before this call, without stopping capture or blocking the UI thread.</summary>
@@ -264,6 +273,38 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		await _completion;
 	}
 
+	internal static string ResolveTitle(Control surface) {
+		var native = surface as Chart ?? (surface as GraphChart)?.NativeChart;
+		var nativeTitle = native?.Titles.FirstOrDefault(title => !string.IsNullOrWhiteSpace(title.Text))?.Text;
+		if (!string.IsNullOrWhiteSpace(nativeTitle))
+			return nativeTitle;
+		for (var current = surface; current != null; current = current.Parent)
+			if (current is ApplicationScreen screen && !string.IsNullOrWhiteSpace(screen.Title))
+				return screen.Title;
+		for (var current = surface; current != null; current = current.Parent)
+			if (current is TelemetryChart telemetry && IsDescriptive(telemetry.ChartTitle))
+				return telemetry.ChartTitle;
+		return ResolveGroupTitle(surface) ?? (surface as GraphChart)?.Series.FirstOrDefault()?.Name ?? native?.Series.FirstOrDefault()?.Name ?? "Chart";
+	}
+
+	private string ResolvedLogTitle => !string.IsNullOrWhiteSpace(_logTitle) ? _logTitle : _titleProvider?.Invoke() ?? ResolveTitle(_surface);
+
+	internal static string ResolveGroupTitle(Control surface) {
+		for (var current = surface.Parent; current != null; current = current.Parent)
+			if (current is GroupBox && !string.IsNullOrWhiteSpace(current.Text))
+				return current.Text;
+		return null;
+	}
+
+	internal static bool IsDescriptive(string title) => !string.IsNullOrWhiteSpace(title) && !string.Equals(title, "Metric", StringComparison.OrdinalIgnoreCase);
+
+	internal static string ExtractUnits(string title) {
+		if (string.IsNullOrWhiteSpace(title))
+			return null;
+		var opening = title.LastIndexOf('(');
+		return opening >= 0 && title.EndsWith(')') ? title[(opening + 1)..^1].Trim() : title.Trim();
+	}
+
 	private void SetSelector(LogOutputSelectorControl selector) {
 		if (ReferenceEquals(selector, _outputSelector))
 			return;
@@ -277,8 +318,6 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		if (selector != null)
 			selector.LoggingStateChanged += LoggingStateChanged;
 	}
-
-	private string ResolvedLogTitle => !string.IsNullOrWhiteSpace(_logTitle) ? _logTitle : _titleProvider?.Invoke() ?? ResolveTitle(_surface);
 
 	private void OwnedLoggingStarting(LogOutputConfiguration configuration) => UpdateOwnedScreenTitle();
 
@@ -372,6 +411,7 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		if (ReferenceEquals(menu, _menu) || _extendedMenus.ContainsKey(menu))
 			return;
 		var command = new ToolStripMenuItem("Log Output");
+		command.ToolTipText = _logOutputCommand.ToolTipText;
 		command.Click += LogOutputClicked;
 		menu.Items.Add(command);
 		_extendedMenus.Add(menu, command);
@@ -423,36 +463,6 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 		return samples.ToArray();
 	}
 
-	internal static string ResolveTitle(Control surface) {
-		var native = surface as Chart ?? (surface as GraphChart)?.NativeChart;
-		var nativeTitle = native?.Titles.FirstOrDefault(title => !string.IsNullOrWhiteSpace(title.Text))?.Text;
-		if (!string.IsNullOrWhiteSpace(nativeTitle))
-			return nativeTitle;
-		for (var current = surface; current != null; current = current.Parent)
-			if (current is ApplicationScreen screen && !string.IsNullOrWhiteSpace(screen.Title))
-				return screen.Title;
-		for (var current = surface; current != null; current = current.Parent)
-			if (current is TelemetryChart telemetry && IsDescriptive(telemetry.ChartTitle))
-				return telemetry.ChartTitle;
-		return ResolveGroupTitle(surface) ?? (surface as GraphChart)?.Series.FirstOrDefault()?.Name ?? native?.Series.FirstOrDefault()?.Name ?? "Chart";
-	}
-
-	internal static string ResolveGroupTitle(Control surface) {
-		for (var current = surface.Parent; current != null; current = current.Parent)
-			if (current is GroupBox && !string.IsNullOrWhiteSpace(current.Text))
-				return current.Text;
-		return null;
-	}
-
-	internal static bool IsDescriptive(string title) => !string.IsNullOrWhiteSpace(title) && !string.Equals(title, "Metric", StringComparison.OrdinalIgnoreCase);
-
-	internal static string ExtractUnits(string title) {
-		if (string.IsNullOrWhiteSpace(title))
-			return null;
-		var opening = title.LastIndexOf('(');
-		return opening >= 0 && title.EndsWith(')') ? title[(opening + 1)..^1].Trim() : title.Trim();
-	}
-
 	private static string FormatDetails(string title, ChartLogSample sample) {
 		var series = IsDescriptive(sample.Series) ? sample.Series : title;
 		var values = sample.Values == null || sample.Values.Length == 0 ? new[] { "Unavailable" } : sample.Values;
@@ -462,6 +472,14 @@ public sealed class ChartLogOutputBehavior : IDisposable, IAsyncDisposable {
 			? $" ({Clean(sample.PositionLabel ?? "X")}: {Clean(sample.Position)})" : string.Empty;
 		return $"{Clean(series)}: {reading}{position}";
 	}
+
+	private static string GroupOf(string series) {
+		var index = series?.IndexOf(GroupSeparator, StringComparison.Ordinal) ?? -1;
+		return index > 0 ? series[..index] : null;
+	}
+
+	private static string FormatPrefix(string title, DateTime capturedAtUtc)
+		=> AsUtc(capturedAtUtc).ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + " " + Clean(title) + " — ";
 
 	private static DateTime AsUtc(DateTime time) => time.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(time, DateTimeKind.Utc) : time.ToUniversalTime();
 

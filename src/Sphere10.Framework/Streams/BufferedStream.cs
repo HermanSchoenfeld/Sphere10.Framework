@@ -56,7 +56,7 @@ public class BufferedStream : StreamDecorator {
 	/// <param name="stream">The source, accessed exclusively through this decorator while it is in use.</param>
 	/// <param name="bufferSize">The positive read-ahead capacity, retained even while buffering is disabled.</param>
 	/// <param name="leaveOpen">Whether disposal leaves the source open; defaults to borrowing it.</param>
-	/// <param name="enableStreamLengthCaching">Whether successful length queries are cached while read buffering is enabled.</param>
+	/// <param name="enableStreamLengthCaching">Whether successful length queries are cached independently of read buffering.</param>
 	/// <param name="enableReadBuffering">Whether reads use the private buffer rather than forwarding directly.</param>
 	public BufferedStream(Stream stream, int bufferSize = DefaultBufferSize, bool leaveOpen = true,
 		bool enableStreamLengthCaching = true, bool enableReadBuffering = true)
@@ -73,11 +73,7 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	/// <summary>The source whose physical cursor may be ahead of this stream's logical position.</summary>
-	public Stream WrappedStream {
-		get {
-			return InnerStream;
-		}
-	}
+	public Stream WrappedStream => InnerStream;
 
 	/// <summary>The configured read-ahead capacity, including while its allocation is released.</summary>
 	public int BufferSize { get; }
@@ -87,9 +83,7 @@ public class BufferedStream : StreamDecorator {
 
 	/// <summary>Enables read-ahead or direct forwarding; disabling requires no unread buffered bytes.</summary>
 	public bool EnableReadBuffering {
-		get {
-			return _enableReadBuffering;
-		}
+		get => _enableReadBuffering;
 		set {
 			EnsureOpen();
 			if (value == _enableReadBuffering)
@@ -102,16 +96,13 @@ public class BufferedStream : StreamDecorator {
 			_buffer = buffer;
 			DiscardReadBuffer();
 			_positionKnown = false;
-			_streamLengthKnown = false;
 			_enableReadBuffering = value;
 		}
 	}
 
-	/// <summary>Caches successful length queries while read buffering is enabled; disable for independently growing sources.</summary>
+	/// <summary>Caches successful length queries independently of read buffering; disable for independently growing sources.</summary>
 	public bool EnableStreamLengthCaching {
-		get {
-			return _enableStreamLengthCaching;
-		}
+		get => _enableStreamLengthCaching;
 		set {
 			EnsureOpen();
 			if (value == _enableStreamLengthCaching)
@@ -123,45 +114,29 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	/// <inheritdoc />
-	public override bool CanRead {
-		get {
-			return !_disposed && InnerStream.CanRead;
-		}
-	}
+	public override bool CanRead => !_disposed && InnerStream.CanRead;
 
 	/// <inheritdoc />
-	public override bool CanWrite {
-		get {
-			return !_disposed && InnerStream.CanWrite;
-		}
-	}
+	public override bool CanWrite => !_disposed && InnerStream.CanWrite;
 
 	/// <inheritdoc />
-	public override bool CanSeek {
-		get {
-			return !_disposed && InnerStream.CanSeek;
-		}
-	}
+	public override bool CanSeek => !_disposed && InnerStream.CanSeek;
 
 	/// <inheritdoc />
-	public override bool CanTimeout {
-		get {
-			return !_disposed && InnerStream.CanTimeout;
-		}
-	}
+	public override bool CanTimeout => !_disposed && InnerStream.CanTimeout;
 
-	/// <summary>The source's length, cached lazily when both buffering settings permit it.</summary>
+	/// <summary>The source's length, cached lazily when length caching is enabled.</summary>
 	public override long Length {
 		get {
 			EnsureOpen();
-			if (_enableReadBuffering && _enableStreamLengthCaching && _streamLengthKnown)
+			if (_enableStreamLengthCaching && _streamLengthKnown)
 				return _streamLength;
 
 			try {
 				var length = InnerStream.Length;
 				if (length < 0)
 					throw new IOException("The source returned a negative stream length.");
-				if (_enableReadBuffering && _enableStreamLengthCaching) {
+				if (_enableStreamLengthCaching) {
 					_streamLength = length;
 					_streamLengthKnown = true;
 				}
@@ -220,11 +195,7 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	// Track only the unread portion; the consumed portion remains available for in-buffer seeks.
-	private int UnreadCount {
-		get {
-			return _bufferCount - _bufferOffset;
-		}
-	}
+	private int UnreadCount => _bufferCount - _bufferOffset;
 
 	/// <summary>Reads buffered bytes plus at most one source read, preserving positive short-read results.</summary>
 	public override int Read(byte[] buffer, int offset, int count) {
@@ -359,13 +330,14 @@ public class BufferedStream : StreamDecorator {
 		if (buffer.IsEmpty)
 			return;
 
+		// A mutation attempt invalidates length independently of read buffering.
+		_streamLengthKnown = false;
 		if (!_enableReadBuffering) {
 			InnerStream.Write(buffer);
 			return;
 		}
 
-		// Mutations can partly succeed or fail during rewind; the previous length must never survive either attempt.
-		_streamLengthKnown = false;
+		// Synchronize unread data before any write; a failed rewind must retain it.
 		FlushUnreadData();
 		try {
 			InnerStream.Write(buffer);
@@ -396,12 +368,12 @@ public class BufferedStream : StreamDecorator {
 		if (buffer.IsEmpty)
 			return;
 
+		_streamLengthKnown = false;
 		if (!_enableReadBuffering) {
 			await InnerStream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
 			return;
 		}
 
-		_streamLengthKnown = false;
 		FlushUnreadData();
 		try {
 			await InnerStream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
@@ -465,12 +437,12 @@ public class BufferedStream : StreamDecorator {
 	public override void SetLength(long value) {
 		EnsureOpen();
 		Guard.ArgumentNotNegative(value, nameof(value));
+		_streamLengthKnown = false;
 		if (!_enableReadBuffering) {
 			InnerStream.SetLength(value);
 			return;
 		}
 
-		_streamLengthKnown = false;
 		FlushUnreadData();
 		try {
 			InnerStream.SetLength(value);
@@ -525,26 +497,12 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	/// <summary>Returns unread data to the source using <see cref="FlushUnreadData"/>.</summary>
-	public void SynchronizePosition() {
-		FlushUnreadData();
-	}
+	public void SynchronizePosition() => FlushUnreadData();
 
 	/// <summary>Closes this decorator while respecting its source ownership policy.</summary>
 	public override void Close() {
 		Dispose(true);
 		GC.SuppressFinalize(this);
-	}
-
-	/// <summary>Releases the private buffer and closes only an owned source, without flushing or seeking.</summary>
-	protected override void Dispose(bool disposing) {
-		if (_disposed)
-			return;
-
-		_disposed = true;
-		_buffer = Array.Empty<byte>();
-		DiscardReadBuffer();
-		if (disposing && !LeaveOpen)
-			InnerStream.Dispose();
 	}
 
 	/// <summary>Releases the private buffer and awaits only an owned source's asynchronous disposal.</summary>
@@ -558,6 +516,18 @@ public class BufferedStream : StreamDecorator {
 		if (!LeaveOpen)
 			await InnerStream.DisposeAsync().ConfigureAwait(false);
 		GC.SuppressFinalize(this);
+	}
+
+	/// <summary>Releases the private buffer and closes only an owned source, without flushing or seeking.</summary>
+	protected override void Dispose(bool disposing) {
+		if (_disposed)
+			return;
+
+		_disposed = true;
+		_buffer = Array.Empty<byte>();
+		DiscardReadBuffer();
+		if (disposing && !LeaveOpen)
+			InnerStream.Dispose();
 	}
 
 	// Keep the borrowed copy buffer alive until both decorated reads and destination writes complete.
@@ -630,7 +600,5 @@ public class BufferedStream : StreamDecorator {
 	}
 
 	// Enforce this wrapper's lifetime independently of a borrowed source's lifetime.
-	private void EnsureOpen() {
-		ObjectDisposedException.ThrowIf(_disposed, this);
-	}
+	private void EnsureOpen() => ObjectDisposedException.ThrowIf(_disposed, this);
 }

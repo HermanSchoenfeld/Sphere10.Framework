@@ -323,15 +323,9 @@ public class UserSettingsAsyncTests {
 		private readonly bool _autoSave;
 
 		// Configure only creation policy; all storage operations remain directly asynchronous.
-		public ControlledProvider(bool autoSave = false) {
-			_autoSave = autoSave;
-		}
+		public ControlledProvider(bool autoSave = false) => _autoSave = autoSave;
 
-		public override bool AutoSaveNewSettings {
-			get {
-				return _autoSave;
-			}
-		}
+		public override bool AutoSaveNewSettings => _autoSave;
 
 		public Task ContainsRelease { get; init; } = Task.CompletedTask;
 
@@ -361,11 +355,7 @@ public class UserSettingsAsyncTests {
 
 		public SynchronizationContext ClearContext { get; private set; }
 
-		public int RecordCount {
-			get {
-				return _records.Count;
-			}
-		}
+		public int RecordCount => _records.Count;
 
 		// A creation count detects facade code that bypasses the provider's creation path or duplicates autosave.
 		public override Task<SettingsObject> NewSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
@@ -382,24 +372,6 @@ public class UserSettingsAsyncTests {
 			if (ContainsFailure != null)
 				throw ContainsFailure;
 			return _records.ContainsKey(new SettingKey(settingsObjectType, id));
-		}
-
-		// Let the actual async base attach provider identity to the returned persisted value.
-		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
-			cancellationToken.ThrowIfCancellationRequested();
-			LoadCalls++;
-			if (LoadFailure != null)
-				return Task.FromException<SettingsObject>(LoadFailure);
-			return Task.FromResult(_records[new SettingKey(settingsObjectType, id)]);
-		}
-
-		// Publish a record only after storage acceptance; failure and cancellation leave it absent.
-		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
-			SaveCalls++;
-			await SaveRelease.WaitAsync(cancellationToken);
-			if (SaveFailure != null)
-				throw SaveFailure;
-			_records[new SettingKey(settings.GetType(), settings.ID)] = settings;
 		}
 
 		// Clear only after the controlled asynchronous storage boundary succeeds.
@@ -421,7 +393,23 @@ public class UserSettingsAsyncTests {
 		}
 
 		// Seed actual stored records without invoking creation or save behavior under test.
-		public void Seed(SettingsObject settings) {
+		public void Seed(SettingsObject settings) => _records[new SettingKey(settings.GetType(), settings.ID)] = settings;
+
+		// Let the actual async base attach provider identity to the returned persisted value.
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
+			cancellationToken.ThrowIfCancellationRequested();
+			LoadCalls++;
+			if (LoadFailure != null)
+				return Task.FromException<SettingsObject>(LoadFailure);
+			return Task.FromResult(_records[new SettingKey(settingsObjectType, id)]);
+		}
+
+		// Publish a record only after storage acceptance; failure and cancellation leave it absent.
+		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
+			SaveCalls++;
+			await SaveRelease.WaitAsync(cancellationToken);
+			if (SaveFailure != null)
+				throw SaveFailure;
 			_records[new SettingKey(settings.GetType(), settings.ID)] = settings;
 		}
 	}

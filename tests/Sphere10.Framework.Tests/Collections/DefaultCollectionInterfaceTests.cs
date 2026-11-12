@@ -487,20 +487,6 @@ public class DefaultCollectionInterfaceTests {
 
 		long IExtendedCollection<int>.Count => CountOverride ?? _items.Count;
 
-		void IExtendedCollection<int>.Add(int item) => _items.Add(item);
-
-		void IExtendedCollection<int>.Clear() => _items.Clear();
-
-		bool IExtendedCollection<int>.Contains(int item) => _items.Contains(item);
-
-		bool IExtendedCollection<int>.Remove(int item) => _items.Remove(item);
-
-		void IExtendedCollection<int>.CopyTo(int[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
-
-		void IExtendedList<int>.Insert(long index, int item) => _items.Insert(checked((int)index), item);
-
-		void IExtendedList<int>.RemoveAt(long index) => _items.RemoveAt(checked((int)index));
-
 		public void AddRange(IEnumerable<int> items) => _items.AddRange(items);
 
 		public bool[] RemoveRange(IEnumerable<int> items) => items.Select(_items.Remove).ToArray();
@@ -527,6 +513,20 @@ public class DefaultCollectionInterfaceTests {
 		public void RemoveRange(long index, long count) => _items.RemoveRange(checked((int)index), checked((int)count));
 
 		public IEnumerator<int> GetEnumerator() => _items.GetEnumerator().OnDispose(() => EnumerationDisposals++);
+
+		void IExtendedCollection<int>.Add(int item) => _items.Add(item);
+
+		void IExtendedCollection<int>.Clear() => _items.Clear();
+
+		bool IExtendedCollection<int>.Contains(int item) => _items.Contains(item);
+
+		bool IExtendedCollection<int>.Remove(int item) => _items.Remove(item);
+
+		void IExtendedCollection<int>.CopyTo(int[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+
+		void IExtendedList<int>.Insert(long index, int item) => _items.Insert(checked((int)index), item);
+
+		void IExtendedList<int>.RemoveAt(long index) => _items.RemoveAt(checked((int)index));
 	}
 
 	private sealed class DispatchListDecorator : ExtendedListDecorator<int> {

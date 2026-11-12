@@ -17,7 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBoxButton : EditorControlBase {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -26,13 +27,13 @@ public class TextBoxButton : EditorControlBase {
 		: base(type) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.ValidatedTextBoxButton)base.Control;
 	}
 
 	/// <summary>
@@ -48,11 +49,10 @@ public class TextBoxButton : EditorControlBase {
 	/// Returns the value inserted with the current editor control
 	/// </summary>
 	/// <returns></returns>
-	public override object GetEditedValue() {
-		return Control.Value;
-	}
+	public override object GetEditedValue() => Control.Value;
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -83,4 +83,6 @@ public class TextBoxButton : EditorControlBase {
 		if (Control.TextBox.Text != null)
 			Control.TextBox.SelectionStart = Control.TextBox.Text.Length;
 	}
+
+	#endregion
 }

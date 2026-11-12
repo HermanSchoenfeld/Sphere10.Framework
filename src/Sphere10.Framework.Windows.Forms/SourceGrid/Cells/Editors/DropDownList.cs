@@ -21,7 +21,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 public class DropDownList : EditorControlBase {
 	private readonly string _displayMember;
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -43,13 +44,13 @@ public class DropDownList : EditorControlBase {
 		StandardValuesExclusive = standardValueExclusive;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.ComboBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.ComboBoxEx)base.Control;
 	}
 
 	/// <summary>
@@ -77,15 +78,12 @@ public class DropDownList : EditorControlBase {
 	/// Returns the value inserted with the current editor control
 	/// </summary>
 	/// <returns></returns>
-	public override object GetEditedValue() {
-		return Control.Value;
-	}
+	public override object GetEditedValue() => Control.Value;
 
-	public override bool IsStringConversionSupported() {
-		return false;
-	}
+	public override bool IsStringConversionSupported() => false;
 
-	// Edit Control
+	#region Edit Control
+
 	internal override void InternalStartEdit(CellContext cellContext) {
 		base.InternalStartEdit(cellContext);
 		SendKeys.Flush();
@@ -125,4 +123,6 @@ public class DropDownList : EditorControlBase {
 				Control.SelectionStart = Control.Text.Length;
 		}
 	}
+
+	#endregion
 }

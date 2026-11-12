@@ -306,14 +306,14 @@ public class ApplicationBarSelectionTests {
 		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		public Func<FormsUI.IApplicationBlock, Color> NavigationColor { get; set; }
 
+		public void ClickButton(ApplicationBarButton button) => InvokeOnClick(button, EventArgs.Empty);
+
 		protected override TaskPane CreateApplicationBlockPane(FormsUI.IApplicationBlock block) {
 			var pane = base.CreateApplicationBlockPane(block);
 			if (NavigationColor != null)
 				pane.CustomSettings.GradientStartColor = NavigationColor(block);
 			return pane;
 		}
-
-		public void ClickButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
 	}
 
 	private sealed class BorrowedControlMenuItem : FormsUI.ApplicationMenuItemBase, IWinFormsControlMenuItem {

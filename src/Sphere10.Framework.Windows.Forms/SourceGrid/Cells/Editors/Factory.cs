@@ -13,7 +13,8 @@ using System.Collections;
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
 public static class Factory {
-	// DataModel Utility
+	#region DataModel Utility
+
 	/// <summary>
 	/// Construct an EditorBase for the specified type. You can set the value returned in the Editor property.
 	/// If the Type support a UITypeEditor returns a EditorUITypeEditor else if the type has a StandardValues list return a EditorComboBox else if the type support string conversion returns a EditorTextBox otherwise returns null.
@@ -54,6 +55,9 @@ public static class Factory {
 	/// <param name="uiTypeEditor">UITypeEditor if null must be populated the TypeConverter</param>
 	/// <returns></returns>
 	public static Cells.Editors.EditorBase Create(
+
+	#endregion
+
 Type type,
 object defaultValue,
 bool allowNull,

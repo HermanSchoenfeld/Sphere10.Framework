@@ -37,25 +37,24 @@ public partial class ChartGalleryScreen : ApplicationScreen {
 		Title = "Data Visualization Gallery";
 	}
 
-	public ChartGallerySample SelectedExample {
-		get {
-			return _selected;
-		}
-	}
+	public ChartGallerySample SelectedExample => _selected;
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override ChartGalleryScreenSettings ScreenSettings {
-		get {
-			return (ChartGalleryScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override ChartGalleryScreenSettings ScreenSettings => (ChartGalleryScreenSettings)base.ScreenSettings;
 
 	public void SelectExample(string id) {
 		var sample = ChartGallerySamples.All.Single(example => example.Id == id);
 		if (!_filtered.Contains(sample))
 			_categories.SelectedIndex = 0;
 		ShowExample(sample, true);
+	}
+
+	public async Task SavePngAsync(string path) {
+		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
+		using var image = new MemoryStream();
+		_chart.SaveImage(image, ChartImageFormat.Png);
+		await File.WriteAllBytesAsync(path, image.ToArray());
 	}
 
 	protected override void InitializeUIPrimingData() {
@@ -260,13 +259,6 @@ public partial class ChartGalleryScreen : ApplicationScreen {
 			if (picker.ShowDialog(this) == DialogResult.OK)
 				await SavePngAsync(picker.FileName);
 		});
-	}
-
-	public async Task SavePngAsync(string path) {
-		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
-		using var image = new MemoryStream();
-		_chart.SaveImage(image, ChartImageFormat.Png);
-		await File.WriteAllBytesAsync(path, image.ToArray());
 	}
 
 	private async Task ExecuteAsync(Func<Task> work) {

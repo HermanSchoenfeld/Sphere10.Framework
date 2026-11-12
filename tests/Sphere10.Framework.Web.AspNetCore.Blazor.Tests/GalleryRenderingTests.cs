@@ -314,14 +314,11 @@ public class GalleryRenderingTests {
 	public class TestJsRuntime : IJSRuntime {
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
-			return ValueTask.FromResult(identifier == "import" ? (TValue)(object)new EmptyJsModule() : default);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+			=> ValueTask.FromResult(identifier == "import" ? (TValue)(object)new EmptyJsModule() : default);
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 	}
 
 	// Models an empty browser without activating storage, data sources or platform services.
@@ -331,25 +328,12 @@ public class GalleryRenderingTests {
 		public int Reads { get; private set; }
 
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
 		public override bool ContainsSetting(Type settingsType, object id = null) {
 			Reads++;
 			return false;
-		}
-
-		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
-			throw new InvalidOperationException("No test preferences have been saved.");
-		}
-
-		// Persist fixture values after the base provider prepares them.
-		protected override void SaveInternal(SettingsObject settings) {
 		}
 
 		// Remove this fixture record.
@@ -359,25 +343,27 @@ public class GalleryRenderingTests {
 		// Clear this fixture storage.
 		public override void ClearSettings() {
 		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null)
+			=> throw new InvalidOperationException("No test preferences have been saved.");
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) {
+		}
 	}
 
 	// Value-only legacy imports find no record in this isolated browser substitute.
 	private sealed class EmptyJsModule : IJSObjectReference {
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
-			return ValueTask.FromResult(default(TValue));
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) => ValueTask.FromResult(default(TValue));
 
 		/// <summary>Implements the fixture's browser or renderer invocation boundary.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) => InvokeAsync<TValue>(identifier, args);
 
 		/// <summary>Releases the fixture-owned asynchronous resources.</summary>
-		public ValueTask DisposeAsync() {
-			return ValueTask.CompletedTask;
-		}
+		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}
 
 	#endregion

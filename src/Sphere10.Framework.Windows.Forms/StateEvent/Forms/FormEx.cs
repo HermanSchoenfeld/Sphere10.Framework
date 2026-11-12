@@ -63,21 +63,13 @@ public partial class FormEx : Form, IUpdatable {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	[DefaultValue(true)]
 	public bool AutoSave {
-		get {
-			return _autoSave;
-		}
-		set {
-			_autoSave = value;
-		}
+		get => _autoSave;
+		set => _autoSave = value;
 	}
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool Updating {
-		get {
-			return _updating;
-		}
-	}
+	public bool Updating => _updating;
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -116,68 +108,12 @@ public partial class FormEx : Form, IUpdatable {
 			Opacity = OpacityBeforeHide;
 	}
 
-	protected override async void OnLoad(EventArgs e) {
-		try {
-			base.OnLoad(e);
-			if (Loaded || DesignMode || Tools.Runtime.IsDesignMode)
-				return;
-
-			using (this.EnterUpdateScope()) {
-				PopulatePrimingData();
-				CopyModelToUI();
-			}
-			Loaded = true;
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	public UpdateScope EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) {
-		return new UpdateScope(this, behaviour);
-	}
-
-	protected override void OnFormClosing(FormClosingEventArgs e) {
-		if (!CloseAction.HasFlag(FormCloseAction.Close)) {
-			e.Cancel = true;
-			if (CloseAction.HasFlag(FormCloseAction.Hide))
-				Hide();
-
-			if (CloseAction.HasFlag(FormCloseAction.Minimize))
-				WindowState = FormWindowState.Minimized;
-		}
-		base.OnFormClosing(e);
-	}
+	public UpdateScope EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) => new UpdateScope(this, behaviour);
 
 	public virtual new void Hide() {
 		OpacityBeforeHide = Opacity;
 		Opacity = 0;
 		Visible = false;
-	}
-
-	// Stop state propagation before disposing children or designer-owned components.
-	protected override void Dispose(bool disposing) {
-		if (disposing) {
-			// The observer may not yet exist when native construction fails.
-			if (_stateEventProvider != null) {
-				_stateEventProvider.StateChanged -= NotifyStateChanged;
-				_stateEventProvider.Clear();
-			}
-			_components?.Dispose();
-		}
-		base.Dispose(disposing);
-	}
-
-	/// <summary>Loads lists or other UI data before the initial model copy.</summary>
-	protected virtual void PopulatePrimingData() {
-	}
-
-	/// <summary>Controls automatic observation of direct child controls.</summary>
-	protected virtual bool ShouldObserveChildStateChanges(Control child) {
-		return true;
-	}
-
-	/// <summary>Lets derived forms save their accepted model.</summary>
-	protected virtual void Save() {
 	}
 
 	void IUpdatable.BeginUpdate() {
@@ -209,14 +145,64 @@ public partial class FormEx : Form, IUpdatable {
 			NotifyStateChanged(!forcedCopy);
 	}
 
+	protected override async void OnLoad(EventArgs e) {
+		try {
+			base.OnLoad(e);
+			if (Loaded || DesignMode || Tools.Runtime.IsDesignMode)
+				return;
+
+			using (this.EnterUpdateScope()) {
+				PopulatePrimingData();
+				CopyModelToUI();
+			}
+			Loaded = true;
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	protected override void OnFormClosing(FormClosingEventArgs e) {
+		if (!CloseAction.HasFlag(FormCloseAction.Close)) {
+			e.Cancel = true;
+			if (CloseAction.HasFlag(FormCloseAction.Hide))
+				Hide();
+
+			if (CloseAction.HasFlag(FormCloseAction.Minimize))
+				WindowState = FormWindowState.Minimized;
+		}
+		base.OnFormClosing(e);
+	}
+
+	// Stop state propagation before disposing children or designer-owned components.
+	protected override void Dispose(bool disposing) {
+		if (disposing) {
+			// The observer may not yet exist when native construction fails.
+			if (_stateEventProvider != null) {
+				_stateEventProvider.StateChanged -= NotifyStateChanged;
+				_stateEventProvider.Clear();
+			}
+			_components?.Dispose();
+		}
+		base.Dispose(disposing);
+	}
+
+	/// <summary>Loads lists or other UI data before the initial model copy.</summary>
+	protected virtual void PopulatePrimingData() {
+	}
+
+	/// <summary>Controls automatic observation of direct child controls.</summary>
+	protected virtual bool ShouldObserveChildStateChanges(Control child) => true;
+
+	/// <summary>Lets derived forms save their accepted model.</summary>
+	protected virtual void Save() {
+	}
+
 	/// <summary>Copies the form model into its UI.</summary>
 	protected virtual void CopyModelToUI() {
 	}
 
 	/// <summary>Publishes edited state, or records it for the active update scope's completion.</summary>
-	protected internal void NotifyStateChanged() {
-		NotifyStateChanged(true);
-	}
+	protected internal void NotifyStateChanged() => NotifyStateChanged(true);
 
 	// A forced completion copy must not be repeated when the same scope publishes its notification.
 	private void NotifyStateChanged(bool copyUIToModel) {
@@ -244,21 +230,15 @@ public partial class FormEx : Form, IUpdatable {
 	/// <summary>Relays the form's completed state as one child observation.</summary>
 	public class StateEventProvider : ControlStateEventProviderBase<FormEx> {
 		/// <summary>Subscribes to the form's completed semantic state.</summary>
-		protected override void RegisterStateChangedListener(FormEx control, EventHandlerEx eventHandler) {
-			control.StateChanged += eventHandler;
-		}
+		protected override void RegisterStateChangedListener(FormEx control, EventHandlerEx eventHandler) => control.StateChanged += eventHandler;
 
 		/// <summary>Removes the matching relay while leaving the borrowed form alive.</summary>
-		protected override void DeregisterStateChangedListener(FormEx control, EventHandlerEx eventHandler) {
-			control.StateChanged -= eventHandler;
-		}
+		protected override void DeregisterStateChangedListener(FormEx control, EventHandlerEx eventHandler) => control.StateChanged -= eventHandler;
 	}
 
 	// The owning form can replace broad child observation with completed semantic operations.
 	private sealed class ChildStateEventProvider : ContainerControlStateEventProvider {
 		// Apply the owning form's policy before attaching a child observer.
-		protected override bool ShouldObserveChildControl(Control control) {
-			return ((FormEx)Control).ShouldObserveChildStateChanges(control);
-		}
+		protected override bool ShouldObserveChildControl(Control control) => ((FormEx)Control).ShouldObserveChildStateChanges(control);
 	}
 }

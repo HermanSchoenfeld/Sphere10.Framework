@@ -33,6 +33,25 @@ public static class WindowMessageSender {
 		return Dispatch(target, message, wParam, lParam, flags, timeoutMilliseconds, null);
 	}
 
+	public static Task SendMainWindowMessageAsync(ProcessIdentity identity, uint message, UIntPtr wParam, IntPtr lParam, bool post = false,
+		CancellationToken cancellationToken = default, uint timeoutMilliseconds = 5000) {
+		if (!post && message != (uint)WinAPI.USER32.WM.QUIT) Guard.ArgumentGT(timeoutMilliseconds, 0U, nameof(timeoutMilliseconds));
+		return ProcessCommandService.ExecuteAsync(identity, process => {
+			cancellationToken.ThrowIfCancellationRequested();
+			var window = process.MainWindowHandle;
+			Guard.Ensure(window != IntPtr.Zero, "The process has no main window.");
+			var threadId = WinAPI.USER32.GetWindowThreadProcessId(window, out var owner);
+			Guard.Ensure(threadId != 0 && owner == process.Id, "The main window has a different owner.");
+			Marshal.SetLastPInvokeError(0);
+			var succeeded = message == (uint)WinAPI.USER32.WM.QUIT
+				? WinAPI.USER32.PostThreadMessageW(threadId, message, wParam, lParam)
+				: post ? WinAPI.USER32.PostMessageW(window, message, wParam, lParam)
+					: WinAPI.USER32.SendMessageTimeoutW(window, message, wParam, lParam,
+						WinAPI.USER32.SendMessageTimeoutFlags.AbortIfHung | WinAPI.USER32.SendMessageTimeoutFlags.ErrorOnExit, timeoutMilliseconds, out _) != IntPtr.Zero;
+			if (!succeeded) throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows rejected or timed out the main-window message.");
+		}, cancellationToken);
+	}
+
 	private static NativeWindowMessageResult Dispatch(WindowsWindowInfo target, uint message, UIntPtr wParam, IntPtr lParam,
 		WinAPI.USER32.SendMessageTimeoutFlags? flags, uint timeoutMilliseconds, Action checkpoint) {
 		Guard.ArgumentNotNull(target, nameof(target));
@@ -57,24 +76,5 @@ public static class WindowMessageSender {
 			: WinAPI.USER32.PostMessageW(target.Handle, message, wParam, lParam);
 		var error = succeeded ? 0 : Marshal.GetLastPInvokeError();
 		return new NativeWindowMessageResult(succeeded, returned, error, timestamp, watch.ElapsedMilliseconds);
-	}
-
-	public static Task SendMainWindowMessageAsync(ProcessIdentity identity, uint message, UIntPtr wParam, IntPtr lParam, bool post = false,
-		CancellationToken cancellationToken = default, uint timeoutMilliseconds = 5000) {
-		if (!post && message != (uint)WinAPI.USER32.WM.QUIT) Guard.ArgumentGT(timeoutMilliseconds, 0U, nameof(timeoutMilliseconds));
-		return ProcessCommandService.ExecuteAsync(identity, process => {
-			cancellationToken.ThrowIfCancellationRequested();
-			var window = process.MainWindowHandle;
-			Guard.Ensure(window != IntPtr.Zero, "The process has no main window.");
-			var threadId = WinAPI.USER32.GetWindowThreadProcessId(window, out var owner);
-			Guard.Ensure(threadId != 0 && owner == process.Id, "The main window has a different owner.");
-			Marshal.SetLastPInvokeError(0);
-			var succeeded = message == (uint)WinAPI.USER32.WM.QUIT
-				? WinAPI.USER32.PostThreadMessageW(threadId, message, wParam, lParam)
-				: post ? WinAPI.USER32.PostMessageW(window, message, wParam, lParam)
-					: WinAPI.USER32.SendMessageTimeoutW(window, message, wParam, lParam,
-						WinAPI.USER32.SendMessageTimeoutFlags.AbortIfHung | WinAPI.USER32.SendMessageTimeoutFlags.ErrorOnExit, timeoutMilliseconds, out _) != IntPtr.Zero;
-			if (!succeeded) throw new Win32Exception(Marshal.GetLastPInvokeError(), "Windows rejected or timed out the main-window message.");
-		}, cancellationToken);
 	}
 }

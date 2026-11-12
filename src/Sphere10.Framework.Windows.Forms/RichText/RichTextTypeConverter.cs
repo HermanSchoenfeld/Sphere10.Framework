@@ -15,12 +15,15 @@ namespace Sphere10.Framework.Windows.Forms;
 /// A TypeConverter that support rich text conversion from and to string.
 /// </summary>
 public class RichTextTypeConverter : System.ComponentModel.TypeConverter {
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	public RichTextTypeConverter() {
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Convert string to RichText
@@ -77,7 +80,8 @@ public class RichTextTypeConverter : System.ComponentModel.TypeConverter {
 		return false;
 	}
 
-	// Implementation TypeConverter
+	#region Implementation TypeConverter
+
 	/// <summary>
 	/// string and RichText can be converted from
 	/// </summary>
@@ -109,4 +113,6 @@ public class RichTextTypeConverter : System.ComponentModel.TypeConverter {
 
 		return false;
 	}
+
+	#endregion
 }

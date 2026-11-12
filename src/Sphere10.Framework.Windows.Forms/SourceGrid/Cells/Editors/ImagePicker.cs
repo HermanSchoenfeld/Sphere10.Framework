@@ -18,7 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 public class ImagePicker : EditorControlBase {
 	public readonly static ImagePicker Default = new ImagePicker();
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct an Editor of type ImagePicker.
 	/// </summary>
@@ -26,13 +27,13 @@ public class ImagePicker : EditorControlBase {
 		: base(typeof(byte[])) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
 	}
 
 	public override object GetEditedValue() {
@@ -66,11 +67,10 @@ public class ImagePicker : EditorControlBase {
 	/// </summary>
 	/// <param name="value"></param>
 	/// <returns></returns>
-	public override string ValueToDisplayString(object value) {
-		return null;
-	}
+	public override string ValueToDisplayString(object value) => null;
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -85,4 +85,6 @@ public class ImagePicker : EditorControlBase {
 	protected override void OnSendCharToEditor(char key) {
 		//No implementation
 	}
+
+	#endregion
 }

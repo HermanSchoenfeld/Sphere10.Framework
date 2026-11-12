@@ -19,7 +19,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// Controllers: Controllers.RichTextBox.Default
 /// </summary>
 public class RichTextBox : Cell {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Default constrcutor
 	/// </summary>
@@ -38,93 +39,71 @@ public class RichTextBox : Cell {
 		Editor = new Editors.RichTextBox();
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Font of current selection
 	/// </summary>
 	public Font SelectionFont {
-		get {
-			return RichTextBoxModel.GetSelectionFont(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionFont(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionFont(GetContext());
+		set => RichTextBoxModel.SetSelectionFont(GetContext(), value);
 	}
 
 	/// <summary>
 	/// Color of current selection
 	/// </summary>
 	public Color SelectionColor {
-		get {
-			return RichTextBoxModel.GetSelectionColor(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionColor(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionColor(GetContext());
+		set => RichTextBoxModel.SetSelectionColor(GetContext(), value);
 	}
 
 	/// <summary>
 	/// CharOffset of current selection
 	/// </summary>
 	public int SelectionCharOffset {
-		get {
-			return RichTextBoxModel.GetSelectionCharOffset(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionCharOffset(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionCharOffset(GetContext());
+		set => RichTextBoxModel.SetSelectionCharOffset(GetContext(), value);
 	}
 
 	/// <summary>
 	/// Alignment of current selection
 	/// </summary>
 	public HorizontalAlignment SelectionAlignment {
-		get {
-			return RichTextBoxModel.GetSelectionAlignment(GetContext());
-		}
-		set {
-			RichTextBoxModel.SetSelectionAlignment(GetContext(), value);
-		}
+		get => RichTextBoxModel.GetSelectionAlignment(GetContext());
+		set => RichTextBoxModel.SetSelectionAlignment(GetContext(), value);
 	}
 
-	// Properties
+	#region Properties
+
 	/// <summary>
 	/// Get RichTextBoxModel
 	/// </summary>
-	private Models.RichTextBox RichTextBoxModel {
-		get {
-			return (Models.RichTextBox)Model.FindModel(typeof(Models.RichTextBox));
-		}
-	}
+	private Models.RichTextBox RichTextBoxModel => (Models.RichTextBox)Model.FindModel(typeof(Models.RichTextBox));
 
-	// Helper Methods
+	#endregion
+
+	#region Helper Methods
+
 	/// <summary>
 	/// Change SelectionFont to bold respectively not bold if already set.
 	/// </summary>
-	public void SelectionBold() {
-		SelectionFont = new Font(SelectionFont, SelectionFont.Style ^ FontStyle.Bold);
-	}
+	public void SelectionBold() => SelectionFont = new Font(SelectionFont, SelectionFont.Style ^ FontStyle.Bold);
 
 	/// <summary>
 	/// Change SelectionFont to italic respectively not italic if already set.
 	/// </summary>
-	public void SelectionItalic() {
-		SelectionFont = new Font(SelectionFont, SelectionFont.Style ^ FontStyle.Italic);
-	}
+	public void SelectionItalic() => SelectionFont = new Font(SelectionFont, SelectionFont.Style ^ FontStyle.Italic);
 
 	/// <summary>
 	/// Change SelectionFont to underline respectively not underline if already set.
 	/// </summary>
-	public void SelectionUnderline() {
-		SelectionFont = new Font(SelectionFont, SelectionFont.Style ^ FontStyle.Underline);
-	}
+	public void SelectionUnderline() => SelectionFont = new Font(SelectionFont, SelectionFont.Style ^ FontStyle.Underline);
 
 	/// <summary>
 	/// Insert a string at the selection
 	/// </summary>
 	/// <param name="s">String to insert</param>
-	public void InsertString(string s) {
-		RichTextBoxModel.InsertString(GetContext(), s);
-	}
+	public void InsertString(string s) => RichTextBoxModel.InsertString(GetContext(), s);
 
 	/// <summary>
 	/// Change SelectionCharOffset to OFFSET respectively 0 if already set.
@@ -149,9 +128,7 @@ public class RichTextBox : Cell {
 	/// <summary>
 	/// Change SelectionEffectType to normal.
 	/// </summary>
-	public void SelectionNormalScript() {
-		RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.EffectType.Normal);
-	}
+	public void SelectionNormalScript() => RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.EffectType.Normal);
 
 	/// <summary>
 	/// Change SelectionCharOffset to OFFSET respectively 0 if already set.
@@ -176,7 +153,7 @@ public class RichTextBox : Cell {
 	/// <summary>
 	/// Change SelectionCharOffset to OFFSET respectively 0 if already set.
 	/// </summary>
-	public void SelectionNormal() {
-		RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.EffectType.Normal);
-	}
+	public void SelectionNormal() => RichTextBoxModel.SetSelectionEffect(GetContext(), Sphere10.Framework.Windows.Forms.EffectType.Normal);
+
+	#endregion
 }

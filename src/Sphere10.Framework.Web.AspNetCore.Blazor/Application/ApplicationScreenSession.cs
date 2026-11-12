@@ -88,11 +88,7 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 	public string Title => Screen?.Title ?? _registeredTitle;
 
 	/// <summary>The renderer component's current typed settings, exposed through the portable state contract.</summary>
-	public SettingsObject ScreenSettings {
-		get {
-			return Screen?.ScreenSettings;
-		}
-	}
+	public SettingsObject ScreenSettings => Screen?.ScreenSettings;
 
 	public bool HasUnsavedChanges => Screen?.HasUnsavedChanges ?? false;
 
@@ -167,6 +163,10 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 	}
 
 
+	void IComponent.Attach(RenderHandle renderHandle) => throw new NotSupportedException("Render the registered ScreenType; retained screen sessions are logical proxies.");
+
+	Task IComponent.SetParametersAsync(ParameterView parameters) => throw new NotSupportedException("Render the registered ScreenType; retained screen sessions are logical proxies.");
+
 	internal void SetScreen(IApplicationScreen screen) {
 		Guard.Argument(screen == null || ScreenType.IsInstanceOfType(screen), nameof(screen), "The component must match the retained screen type.");
 		Guard.Argument(!ReferenceEquals(screen, this), nameof(screen), "A screen proxy cannot be attached to itself.");
@@ -218,8 +218,4 @@ public sealed class ApplicationScreenSession : IApplicationScreen {
 				}
 		}
 	}
-
-	void IComponent.Attach(RenderHandle renderHandle) => throw new NotSupportedException("Render the registered ScreenType; retained screen sessions are logical proxies.");
-
-	Task IComponent.SetParametersAsync(ParameterView parameters) => throw new NotSupportedException("Render the registered ScreenType; retained screen sessions are logical proxies.");
 }

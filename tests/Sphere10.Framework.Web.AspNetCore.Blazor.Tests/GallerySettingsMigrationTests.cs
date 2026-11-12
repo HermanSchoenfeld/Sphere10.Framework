@@ -128,26 +128,10 @@ public class GallerySettingsMigrationTests {
 		public int Writes { get; private set; }
 
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
-		public override bool ContainsSetting(Type settingsType, object id = null) {
-			return false;
-		}
-
-		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
-			throw new InvalidOperationException("No test preferences have been saved.");
-		}
-
-		// Persist fixture values after the base provider prepares them.
-		protected override void SaveInternal(SettingsObject settings) {
-			Writes++;
-		}
+		public override bool ContainsSetting(Type settingsType, object id = null) => false;
 
 		// Remove this fixture record.
 		public override void DeleteSetting(SettingsObject settings) {
@@ -156,6 +140,13 @@ public class GallerySettingsMigrationTests {
 		// Clear this fixture storage.
 		public override void ClearSettings() {
 		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null)
+			=> throw new InvalidOperationException("No test preferences have been saved.");
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) => Writes++;
 	}
 
 	// Models old paging-only browser records, whose original schema contained no manual-width entries.
@@ -171,14 +162,11 @@ public class GallerySettingsMigrationTests {
 		public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) {
-			return ValueTask.FromResult(identifier == "import" ? (TValue)(object)new LegacyModule(this) : default);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+			=> ValueTask.FromResult(identifier == "import" ? (TValue)(object)new LegacyModule(this) : default);
 
 		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] args) => InvokeAsync<TValue>(identifier, args);
 	}
 
 	// Delays actual legacy IO without delaying application/profile readiness or the renderer's interim render.
@@ -204,14 +192,10 @@ public class GallerySettingsMigrationTests {
 		}
 
 		/// <summary>Implements the fixture browser interop boundary while retaining its declared cancellation contract.</summary>
-		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] args) {
-			return InvokeAsync<TValue>(identifier, args);
-		}
+		public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken token, object[] args) => InvokeAsync<TValue>(identifier, args);
 
 		/// <summary>Releases the fixture-owned resources after pending asynchronous work completes.</summary>
-		public ValueTask DisposeAsync() {
-			return ValueTask.CompletedTask;
-		}
+		public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 	}
 
 	// Observes real controller query starts without replacing the gallery's sources or operational components.
@@ -228,7 +212,7 @@ public class GallerySettingsMigrationTests {
 			var component = (IComponent)ActivatorUtilities.CreateInstance(provider, componentType);
 			if (component is BlazorGrid<TestClass> editable)
 				Observe(editable);
-			if (component is BlazorGrid<GridDemoSnapshotDataSource.Row> live)
+			if (component is BlazorGrid<GridDemoDataSource.Row> live)
 				Observe(live);
 			return component;
 		}

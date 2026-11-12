@@ -21,12 +21,6 @@ namespace Sphere10.Framework.UnitTests;
 public class LevelDBTests {
 	static string testPath;
 
-	// Each test gets its own directory, so destroying a database never touches files outside it.
-	static string CleanTestDB() {
-		testPath = Path.Combine(Path.GetTempPath(), "Sphere10.Framework.Windows.LevelDB.Tests", Guid.NewGuid().ToString("N"));
-		return testPath;
-	}
-
 	[TearDown]
 	public void DeleteTestDB() {
 		if (testPath != null && Directory.Exists(testPath))
@@ -229,6 +223,12 @@ public class LevelDBTests {
 
 		Assert.That(() => snapShot.Dispose(), Throws.Nothing);
 		GC.KeepAlive(db);
+	}
+
+	// Each test gets its own directory, so destroying a database never touches files outside it.
+	static string CleanTestDB() {
+		testPath = Path.Combine(Path.GetTempPath(), "Sphere10.Framework.Windows.LevelDB.Tests", Guid.NewGuid().ToString("N"));
+		return testPath;
 	}
 }
 

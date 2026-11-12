@@ -19,15 +19,11 @@ public class PingGridColumns : ColumnInfoCollection {
 	}
 
 	public new PingGrid Grid {
-		get {
-			return (PingGrid)base.Grid;
-		}
+		get => (PingGrid)base.Grid;
 	}
 
 	public new PingGridColumn this[int index] {
-		get {
-			return base[index] as PingGridColumn;
-		}
+		get => base[index] as PingGridColumn;
 	}
 
 	/// <summary>
@@ -36,9 +32,7 @@ public class PingGridColumns : ColumnInfoCollection {
 	/// <param name="gridColumnIndex"></param>
 	/// <returns></returns>
 	[Obsolete]
-	public System.ComponentModel.PropertyDescriptor IndexToPropertyColumn(int gridColumnIndex) {
-		return Grid.Columns[gridColumnIndex].PropertyColumn;
-	}
+	public System.ComponentModel.PropertyDescriptor IndexToPropertyColumn(int gridColumnIndex) => Grid.Columns[gridColumnIndex].PropertyColumn;
 
 	/// <summary>
 	/// Returns the index for a given DataColumn. -1 if not valid.
@@ -54,7 +48,8 @@ public class PingGridColumns : ColumnInfoCollection {
 		return -1;
 	}
 
-	// Add Helper methods
+	#region Add Helper methods
+
 	public PingGridColumn Add(string property, string caption, Type propertyType) {
 		var cell = SourceGrid.Extensions.PingGrids.Cells.Cell.Create(propertyType, true);
 
@@ -74,4 +69,6 @@ public class PingGridColumns : ColumnInfoCollection {
 
 		return column;
 	}
+
+	#endregion
 }

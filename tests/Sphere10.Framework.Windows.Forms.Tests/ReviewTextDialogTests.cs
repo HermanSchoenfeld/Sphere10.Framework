@@ -293,8 +293,8 @@ public class ReviewTextDialogTests {
 
 		public bool Disposed { get; private set; }
 
-		protected override void Log(LogLevel logLevel, string message) => Messages.Add(message);
-
 		public void Dispose() => Disposed = true;
+
+		protected override void Log(LogLevel logLevel, string message) => Messages.Add(message);
 	}
 }

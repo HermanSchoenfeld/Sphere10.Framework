@@ -60,10 +60,55 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override SourceGridGalleryScreenSettings ScreenSettings {
-		get {
-			return (SourceGridGalleryScreenSettings)base.ScreenSettings;
-		}
+	public override SourceGridGalleryScreenSettings ScreenSettings => (SourceGridGalleryScreenSettings)base.ScreenSettings;
+
+	/// <summary>Exports the active example through SourceGrid's CSV exporter.</summary>
+	public string ExportCsv() {
+		var grid = PrepareExport();
+		using var output = new StringWriter();
+		new SourceGrid.Exporter.CSV { FieldSeparator = "," }.Export(grid, output);
+		return output.ToString();
+	}
+
+	/// <summary>Exports the active example's text and cell formatting as a standalone HTML table.</summary>
+	public string ExportHtml() {
+		var grid = PrepareExport();
+		using var output = new MemoryStream();
+		var exporter = new SourceGrid.Exporter.HTML(SourceGrid.Exporter.ExportHTMLMode.Default & ~SourceGrid.Exporter.ExportHTMLMode.CellImages, string.Empty, string.Empty, output);
+		exporter.Export(grid);
+		return Encoding.UTF8.GetString(output.ToArray()).TrimStart('\uFEFF');
+	}
+
+	/// <summary>Writes the same bounded PNG image offered by the native toolbar.</summary>
+	public async Task SavePreviewAsync(string path) {
+		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
+		using var image = CreatePreviewImage();
+		using var output = new MemoryStream();
+		image.Save(output, ImageFormat.Png);
+		await File.WriteAllBytesAsync(path, output.ToArray());
+	}
+
+	/// <summary>Renders the active grid's first forty rows into an owned bitmap.</summary>
+	public Bitmap CreatePreviewImage() {
+		var grid = PrepareExport();
+		return new SourceGrid.Exporter.Image().Export(grid, GetPreviewRange(grid));
+	}
+
+	/// <summary>Restores the editable examples and their independent grid data sources.</summary>
+	public void ResetExamples() {
+		CancelEditing();
+		ReleaseEditors();
+		ReleaseDataView();
+		BuildCellLab();
+		BuildBoundList();
+		BuildDataView();
+		BuildVirtualArray();
+		BuildPlanning();
+		BuildPing();
+		BuildListEditor();
+		_initialized = true;
+		UpdateStatus();
+		RecordEvent("Loaded seven raw SourceGrid examples. All values are demonstration data.");
 	}
 
 	/// <summary>Initializes grid controllers and data only outside the Visual Studio designer.</summary>
@@ -116,14 +161,6 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 		}
 	}
 
-	/// <summary>Exports the active example through SourceGrid's CSV exporter.</summary>
-	public string ExportCsv() {
-		var grid = PrepareExport();
-		using var output = new StringWriter();
-		new SourceGrid.Exporter.CSV { FieldSeparator = "," }.Export(grid, output);
-		return output.ToString();
-	}
-
 	// HTML output demonstrates the engine's cell colors, borders and text formatting.
 	private async void HtmlClicked(object sender, EventArgs args) {
 		try {
@@ -131,15 +168,6 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 		} catch (Exception error) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
-	}
-
-	/// <summary>Exports the active example's text and cell formatting as a standalone HTML table.</summary>
-	public string ExportHtml() {
-		var grid = PrepareExport();
-		using var output = new MemoryStream();
-		var exporter = new SourceGrid.Exporter.HTML(SourceGrid.Exporter.ExportHTMLMode.Default & ~SourceGrid.Exporter.ExportHTMLMode.CellImages, string.Empty, string.Empty, output);
-		exporter.Export(grid);
-		return Encoding.UTF8.GetString(output.ToArray()).TrimStart('\uFEFF');
 	}
 
 	// Save an image only to the path chosen in the native file picker.
@@ -151,21 +179,6 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 		} catch (Exception error) {
 			await ExceptionDialog.ShowAsync(this, error);
 		}
-	}
-
-	/// <summary>Writes the same bounded PNG image offered by the native toolbar.</summary>
-	public async Task SavePreviewAsync(string path) {
-		Guard.ArgumentNotNullOrEmpty(path, nameof(path));
-		using var image = CreatePreviewImage();
-		using var output = new MemoryStream();
-		image.Save(output, ImageFormat.Png);
-		await File.WriteAllBytesAsync(path, output.ToArray());
-	}
-
-	/// <summary>Renders the active grid's first forty rows into an owned bitmap.</summary>
-	public Bitmap CreatePreviewImage() {
-		var grid = PrepareExport();
-		return new SourceGrid.Exporter.Image().Export(grid, GetPreviewRange(grid));
 	}
 
 	// The preview dialog and print document remain owned until the modal operation completes.
@@ -191,31 +204,11 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 	}
 
 	// Bound rendering allocations for large virtual datasets while retaining every column.
-	private static SourceGrid.CellRange GetPreviewRange(SourceGrid.GridVirtual grid) {
-		return new SourceGrid.CellRange(0, 0, Math.Min(grid.Rows.Count, _previewRows) - 1, grid.Columns.Count - 1);
-	}
+	private static SourceGrid.CellRange GetPreviewRange(SourceGrid.GridVirtual grid)
+		=> new SourceGrid.CellRange(0, 0, Math.Min(grid.Rows.Count, _previewRows) - 1, grid.Columns.Count - 1);
 
 	// Reset every source using the same button path shown in the native toolbar.
-	private void ResetClicked(object sender, EventArgs args) {
-		ResetExamples();
-	}
-
-	/// <summary>Restores the editable examples and their independent grid data sources.</summary>
-	public void ResetExamples() {
-		CancelEditing();
-		ReleaseEditors();
-		ReleaseDataView();
-		BuildCellLab();
-		BuildBoundList();
-		BuildDataView();
-		BuildVirtualArray();
-		BuildPlanning();
-		BuildPing();
-		BuildListEditor();
-		_initialized = true;
-		UpdateStatus();
-		RecordEvent("Loaded seven raw SourceGrid examples. All values are demonstration data.");
-	}
+	private void ResetClicked(object sender, EventArgs args) => ResetExamples();
 
 	// Populate real cells, editors and span models rather than wrapping a VisualGrid.
 	private void BuildCellLab() {
@@ -459,14 +452,11 @@ public partial class SourceGridGalleryScreen : ApplicationScreen {
 	}
 
 	// Planning emits domain-specific appointment and empty-slot notifications.
-	private void PlanningClicked(object sender, SourceGrid.Planning.AppointmentEventArgs args) {
-		RecordEvent($"Planning: {args.DateTimeStart:ddd HH:mm} — {args.Appointment?.Title ?? "available time slot"}.");
-	}
+	private void PlanningClicked(object sender, SourceGrid.Planning.AppointmentEventArgs args)
+		=> RecordEvent($"Planning: {args.DateTimeStart:ddd HH:mm} — {args.Appointment?.Title ?? "available time slot"}.");
 
 	// Report real composite list edits and row-management commands.
-	private void ListEditorChanged(object sender, EventArgs args) {
-		RecordEvent($"List editor changed: {_listEditor.List?.Count ?? 0} rows.");
-	}
+	private void ListEditorChanged(object sender, EventArgs args) => RecordEvent($"List editor changed: {_listEditor.List?.Count ?? 0} rows.");
 
 	// Publish a concise, bounded event trace on the screen's owning UI thread.
 	private void RecordEvent(string message) {

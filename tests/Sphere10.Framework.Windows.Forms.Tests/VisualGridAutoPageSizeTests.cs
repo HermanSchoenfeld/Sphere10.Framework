@@ -246,7 +246,7 @@ public class VisualGridAutoPageSizeTests {
 		Assert.That(crud.VisibleEntities.Count(), Is.EqualTo(240));
 		Assert.That(ModeSelector(crud).Visible, Is.False);
 		Assert.That(crud.Capabilities.HasFlag(DataSourceCapabilities.CanPage), Is.False);
-		Assert.That(crud.Capabilities, Is.EqualTo(DataSourceCapabilities.ComboBoxDefault));
+		Assert.That(crud.Capabilities, Is.EqualTo(DataSourceCapabilities.ComboBoxDefault | DataSourceCapabilities.CanNotify), "A CRUD list notifies after its own mutations; that is independent of the requested mask.");
 	});
 
 	[Test]
@@ -429,17 +429,6 @@ public class VisualGridAutoPageSizeTests {
 		AssertChildrenFit(footer);
 	});
 
-	private static ToolStripChoiceSelector ModeSelector(VisualGrid grid) {
-		return Find<ToolStrip>(grid, "_pageModeToolStrip").Items.OfType<ToolStripChoiceSelector>().Single();
-	}
-
-	private static void AssertChildrenFit(Control parent) {
-		foreach (var child in parent.Controls.Cast<Control>().Where(control => control.Visible)) {
-			Assert.That(parent.ClientRectangle.Contains(child.Bounds), Is.True, $"{child.Name} must fit inside {parent.Name} ({parent.ClientSize}).");
-			AssertChildrenFit(child);
-		}
-	}
-
 	[TestCase(319, 8.25f)]
 	[TestCase(319, 18f)]
 	[TestCase(1000, 8.25f)]
@@ -519,8 +508,8 @@ public class VisualGridAutoPageSizeTests {
 			crud.GridBindings = new[] {
 				new VisualGridColumn<SortRow> { ColumnName = "Number", SortName = nameof(SortRow.Number), DataType = typeof(int), PropertyValue = row => row.Number }
 			};
-			var source = new SnapshotDataSource<SortRow> { DefaultSortProperty = nameof(SortRow.Number), DefaultSortDirection = SortDirection.Descending };
-			source.ReplaceSnapshot(new[] { 6, 1, 5, 2, 4, 3 }.Select(number => new SortRow { Number = number }).ToArray());
+			var source = new ArrayDataSource<SortRow> { DefaultSortProperty = nameof(SortRow.Number), DefaultSortDirection = SortDirection.Descending };
+			source.ReplaceData(new[] { 6, 1, 5, 2, 4, 3 }.Select(number => new SortRow { Number = number }).ToArray());
 			await crud.SetDataSource(source);
 			await CompleteRefreshAsync(crud);
 			Find<NumericUpDown>(crud, "_pageSizeUpDown").Value = 2;
@@ -685,15 +674,22 @@ public class VisualGridAutoPageSizeTests {
 		});
 	}
 
+	private static ToolStripChoiceSelector ModeSelector(VisualGrid grid) => Find<ToolStrip>(grid, "_pageModeToolStrip").Items.OfType<ToolStripChoiceSelector>().Single();
+
+	private static void AssertChildrenFit(Control parent) {
+		foreach (var child in parent.Controls.Cast<Control>().Where(control => control.Visible)) {
+			Assert.That(parent.ClientRectangle.Contains(child.Bounds), Is.True, $"{child.Name} must fit inside {parent.Name} ({parent.ClientSize}).");
+			AssertChildrenFit(child);
+		}
+	}
+
 	private static VisualGrid NewGrid(Form owner) {
 		var crud = new VisualGrid { Dock = DockStyle.Fill };
 		owner.Controls.Add(crud);
 		return crud;
 	}
 
-	private static async Task<RecordingSource> BindAsync(VisualGrid crud, int count = 240) {
-		return await BindAsync(crud, new RecordingSource(count));
-	}
+	private static async Task<RecordingSource> BindAsync(VisualGrid crud, int count = 240) => await BindAsync(crud, new RecordingSource(count));
 
 	private static async Task<RecordingSource> BindAsync(VisualGrid crud, RecordingSource source) {
 		crud.GridBindings = new[] {

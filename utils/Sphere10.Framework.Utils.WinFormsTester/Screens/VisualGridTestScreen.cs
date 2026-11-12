@@ -32,8 +32,8 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	private readonly TestCrudDataSource _dataSource;
 	private readonly IEnumerable<IVisualGridColumn> _gridBindings;
 	private readonly CancellationTokenSource _liveCancellation = new();
-	private readonly VisualGridSnapshotController<LiveSample> _liveController;
-	private readonly RefreshableSnapshotDataSource<LiveSample, int> _liveSource;
+	private readonly VisualGridDataSourceController<LiveSample> _liveController;
+	private readonly PollingDataSource<LiveSample> _liveSource;
 	private readonly VisualGridColumn<LiveSample> _liveImageColumn;
 	private readonly Image[] _liveImages;
 	private Task _liveWork = Task.CompletedTask;
@@ -42,6 +42,7 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	private int _disappearingSampleId;
 	private bool _loaded;
 	private bool _liveDisposed;
+	private bool _liveInitialized;
 
 	/// <summary>Creates the complete laboratory surface; initial data loading starts on native Load.</summary>
 	public VisualGridTestScreen() {
@@ -206,9 +207,15 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 			new VisualGridColumn<LiveSample> { ColumnName = "Generation", SortName = nameof(LiveSample.Generation), DataType = typeof(long), PropertyValue = sample => sample.Generation },
 			new VisualGridColumn<LiveSample> { ColumnName = "Captured (UTC)", SortName = nameof(LiveSample.CapturedUtc), DataType = typeof(string), PropertyValue = sample => sample.CapturedUtc.ToString("HH:mm:ss.fff") }
 		};
-		_liveSource = new RefreshableSnapshotDataSource<LiveSample, int>(sample => sample.Id, RefreshLiveSample);
-		_liveController = new VisualGridSnapshotController<LiveSample>(_liveGrid, _liveSource, sample => sample.Id, CollectLiveSamplesAsync);
-		_liveController.SetDefaultSort(nameof(LiveSample.Id), SortDirection.Ascending);
+		// Storage, refresh and cadence compose: each capture is a fresh list source, swapped in by the refreshable decorator, timed by the polling decorator.
+		_liveSource = new PollingDataSource<LiveSample>(new ActionRefreshableDataSource<LiveSample, LiveSampleDataSource>(new LiveSampleDataSource(this, Array.Empty<LiveSample>()), () => new LiveSampleDataSource(this))) {
+			AutoRefresh = false, RefreshInterval = TimeSpan.FromMilliseconds(750)
+		};
+		_liveController = new VisualGridDataSourceController<LiveSample>(_liveGrid, _liveSource,
+			selected => _liveSource.ReadRange(null, int.MaxValue, 0, null, SortDirection.None).Items.FirstOrDefault(sample => sample.Id == selected.Id));
+		_liveGrid.DataBindingComplete += (_, _) => { if (!_liveDisposed) UpdateLiveStatus(); };
+		VisibleChanged += LiveSourcePolicyChanged;
+		_contentTabs.SelectedIndexChanged += LiveSourcePolicyChanged;
 		_liveTitleAlignment.SelectedIndex = 0;
 		_liveImageAlignment.SelectedIndex = 4;
 		_liveImageResize.SelectedIndex = 0;
@@ -218,19 +225,40 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	/// <summary>The first preference binding, employee query and live capture for this screen.</summary>
 	public Task Initialization { get; private set; } = Task.CompletedTask;
 
+	/// <summary>Joins source collection before borrowed chart images and cancellation resources are released.</summary>
+	public Task DisposalCompletion { get; private set; } = Task.CompletedTask;
+
 	/// <summary>The preferences declared by this screen type and restored for its exact registration.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override VisualGridShowcaseSettings ScreenSettings {
-		get {
-			return (VisualGridShowcaseSettings)base.ScreenSettings;
-		}
-	}
+	public override VisualGridShowcaseSettings ScreenSettings => (VisualGridShowcaseSettings)base.ScreenSettings;
 
 	/// <summary>Joins first binding before the normal accepted-close preference capture.</summary>
 	public override async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
 		await Initialization.WaitAsync(cancellationToken);
 		if (!IsDisposed && !Disposing)
 			await base.SaveSettingsAsync(cancellationToken);
+	}
+
+	/// <summary>Refreshes the selected entity through the live source, optionally simulating its disappearance.</summary>
+	public async Task<bool> RefreshSelectedLiveRowAsync(bool disappear = false) {
+		if (disappear)
+			_liveUpdatesCheckBox.Checked = false;
+		await _liveWork;
+		if (IsDisposed || _liveGrid.SelectedEntity is not LiveSample selected)
+			return false;
+		_disappearingSampleId = disappear ? selected.Id : 0;
+		using var restore = Tools.Scope.ExecuteOnDispose(() => _disappearingSampleId = 0);
+		var refreshed = await _liveGrid.RefreshSelectedEntityAsync();
+		if (!IsDisposed)
+			UpdateLiveStatus();
+		return refreshed;
+	}
+
+	/// <summary>Joins the current capture or starts one new worker-produced snapshot.</summary>
+	public Task RefreshLiveSnapshotAsync() {
+		if (_liveWork is { IsCompleted: false })
+			return _liveWork;
+		return _liveWork = RefreshLiveSnapshotCoreAsync();
 	}
 
 	// Start initialization only after the native surface and its optional registration settings exist.
@@ -277,6 +305,8 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 			return;
 		_optionsPanel.Enabled = true;
 		await RefreshLiveSnapshotAsync();
+		_liveInitialized = true;
+		UpdateLiveSourcePolicy();
 	}
 
 	// Reflect restored paging choices without turning Options updates into another source query.
@@ -319,44 +349,28 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Compose the first optional location line.
-	private string RandomLocation1() {
-		return string.Format("{0} {1} {2}", RandomStreetNumber(), RandomStreetName(), RandomStreetType());
-	}
+	private string RandomLocation1() => string.Format("{0} {1} {2}", RandomStreetNumber(), RandomStreetName(), RandomStreetType());
 
 	// Choose one demonstration street name.
-	private string RandomStreetName() {
-		return _streets.Randomize().First();
-	}
+	private string RandomStreetName() => _streets.Randomize().First();
 
 	// Generate a bounded demonstration street number.
-	private string RandomStreetNumber() {
-		return Tools.Maths.RNG.Next(1, 100).ToString();
-	}
+	private string RandomStreetNumber() => Tools.Maths.RNG.Next(1, 100).ToString();
 
 	// Choose one demonstration street suffix.
-	private string RandomStreetType() {
-		return _streetTypes.Randomize().First();
-	}
+	private string RandomStreetType() => _streetTypes.Randomize().First();
 
 	// Compose the second optional location line.
-	private string RandomLocation2() {
-		return string.Format("{0}, {1} {2}", RandomCity(), RandomState(), RandomPostCode());
-	}
+	private string RandomLocation2() => string.Format("{0}, {1} {2}", RandomCity(), RandomState(), RandomPostCode());
 
 	// Choose one demonstration city.
-	private string RandomCity() {
-		return _cities.Randomize().First();
-	}
+	private string RandomCity() => _cities.Randomize().First();
 
 	// Choose one demonstration state.
-	private string RandomState() {
-		return _states.Randomize().First();
-	}
+	private string RandomState() => _states.Randomize().First();
 
 	// Generate a four-digit demonstration postcode.
-	private string RandomPostCode() {
-		return Tools.Maths.RNG.Next(1001, 10000).ToString();
-	}
+	private string RandomPostCode() => Tools.Maths.RNG.Next(1001, 10000).ToString();
 
 	// Apply the selected CRUD capabilities to both the main grid and reference picker.
 	private void FlagsCheckedListBox_SelectedValueChanged(object sender, EventArgs args) {
@@ -368,54 +382,37 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Record deselection without assuming the old entity still exists.
-	private void VisualGrid_EntityDeselected(VisualGrid arg1, object arg2) {
-		_textWriter.WriteLine("{0}: Entity Deselected - ID: {1}", arg1.Name, arg2 != null ? ((Employee)arg2).ID.ToString() : "(unknown)");
-	}
+	private void VisualGrid_EntityDeselected(VisualGrid arg1, object arg2)
+		=> _textWriter.WriteLine("{0}: Entity Deselected - ID: {1}", arg1.Name, arg2 != null ? ((Employee)arg2).ID.ToString() : "(unknown)");
 
 	// Record the actual employee selected by the grid.
-	private void VisualGrid_EntitySelected(VisualGrid arg1, object arg2) {
-		_textWriter.WriteLine("{0}: Entity Selected - ID: {1}", arg1.Name, ((Employee)arg2).ID);
-	}
+	private void VisualGrid_EntitySelected(VisualGrid arg1, object arg2) => _textWriter.WriteLine("{0}: Entity Selected - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 
 	// Expose the edited property and its before/after values in the event trace.
-	private void VisualGrid_EntityEditing(VisualGrid arg1, CrudEntityPropertyChangedEventArgs args) {
-		_textWriter.WriteLine("{0}: Entity Changing - ID: {1}, Property: {2}, Old Value: {3}, New Value: {4}", arg1.Name, ((Employee)args.Entity).ID, args.PropertyName, args.OldValue, args.NewValue);
-	}
+	private void VisualGrid_EntityEditing(VisualGrid arg1, CrudEntityPropertyChangedEventArgs args)
+		=> _textWriter.WriteLine("{0}: Entity Changing - ID: {1}, Property: {2}, Old Value: {3}, New Value: {4}", arg1.Name, ((Employee)args.Entity).ID, args.PropertyName, args.OldValue, args.NewValue);
 
 	// Record a completed employee deletion.
-	private void VisualGrid_EntityDeleted(VisualGrid arg1, object arg2) {
-		_textWriter.WriteLine("{0}: Entity Deleted - ID: {1}", arg1.Name, ((Employee)arg2).ID);
-	}
+	private void VisualGrid_EntityDeleted(VisualGrid arg1, object arg2) => _textWriter.WriteLine("{0}: Entity Deleted - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 
 	// Record a completed employee creation.
-	private void VisualGrid_EntityCreated(VisualGrid arg1, object arg2) {
-		_textWriter.WriteLine("{0}: Entity Created - ID: {1}", arg1.Name, ((Employee)arg2).ID);
-	}
+	private void VisualGrid_EntityCreated(VisualGrid arg1, object arg2) => _textWriter.WriteLine("{0}: Entity Created - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 
 	// Record a completed employee save.
-	private void VisualGrid_EntityUpdated(VisualGrid arg1, object arg2) {
-		_textWriter.WriteLine("{0}: Entity Updated - ID: {1}", arg1.Name, ((Employee)arg2).ID);
-	}
+	private void VisualGrid_EntityUpdated(VisualGrid arg1, object arg2) => _textWriter.WriteLine("{0}: Entity Updated - ID: {1}", arg1.Name, ((Employee)arg2).ID);
 
 	// Enable the explicit data-source deletion failure demonstration.
-	private void GenerateDeleteErrorCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_dataSource.GenerateDeleteError = _generateDeleteErrorCheckBox.Checked;
-	}
+	private void GenerateDeleteErrorCheckBox_CheckedChanged(object sender, EventArgs args) => _dataSource.GenerateDeleteError = _generateDeleteErrorCheckBox.Checked;
 
 	// Enable the explicit data-source creation failure demonstration.
-	private void GenerateCreateErrorCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_dataSource.GenerateCreateError = _generateCreateErrorCheckBox.Checked;
-	}
+	private void GenerateCreateErrorCheckBox_CheckedChanged(object sender, EventArgs args) => _dataSource.GenerateCreateError = _generateCreateErrorCheckBox.Checked;
 
 	// Enable the explicit data-source update failure demonstration.
-	private void CreateUpdateErrorCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_dataSource.GenerateUpdateError = _generateUpdateErrorCheckBox.Checked;
-	}
+	private void CreateUpdateErrorCheckBox_CheckedChanged(object sender, EventArgs args) => _dataSource.GenerateUpdateError = _generateUpdateErrorCheckBox.Checked;
 
 	// Open the same employee source and bindings through the standalone modal editor.
-	private async void CrudDialogButton_Click(object sender, EventArgs args) {
-		await RunDemoActionAsync(() => CrudDialog.ShowAsync(this, "Employees", _gridBindings, _flagsCheckedListBox.SelectedEnum != null ? (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum : DataSourceCapabilities.Default, _dataSource));
-	}
+	private async void CrudDialogButton_Click(object sender, EventArgs args)
+		=> await RunDemoActionAsync(() => CrudDialog.ShowAsync(this, "Employees", _gridBindings, _flagsCheckedListBox.SelectedEnum != null ? (DataSourceCapabilities)_flagsCheckedListBox.SelectedEnum : DataSourceCapabilities.Default, _dataSource));
 
 	// Show the employee chosen by the independent reference picker.
 	private void CrudComboBox_EntitySelectionChanged(CrudComboBox arg1, object arg2) {
@@ -424,24 +421,16 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Select the first available employee through the grid selection contract.
-	private void SelectFirstEntityButton_Click(object sender, EventArgs args) {
-		_visualGrid.SelectedEntity = _dataSource.FirstEntity;
-	}
+	private void SelectFirstEntityButton_Click(object sender, EventArgs args) => _visualGrid.SelectedEntity = _dataSource.FirstEntity;
 
 	// Toggle left-click deselection on the editable grid.
-	private void LeftClickCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_visualGrid.LeftClickToDeselect = _leftClickCheckBox.Checked;
-	}
+	private void LeftClickCheckBox_CheckedChanged(object sender, EventArgs args) => _visualGrid.LeftClickToDeselect = _leftClickCheckBox.Checked;
 
 	// Toggle the editable grid's existing context menu.
-	private void RightClickCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_visualGrid.RightClickForContextMenu = _rightClickCheckBox.Checked;
-	}
+	private void RightClickCheckBox_CheckedChanged(object sender, EventArgs args) => _visualGrid.RightClickForContextMenu = _rightClickCheckBox.Checked;
 
 	// Refresh the current employee query through the owned error-reporting path.
-	private async void RefreshGrid_Click(object sender, EventArgs args) {
-		await RunDemoActionAsync(_visualGrid.RefreshGrid);
-	}
+	private async void RefreshGrid_Click(object sender, EventArgs args) => await RunDemoActionAsync(_visualGrid.RefreshGrid);
 
 	// Compare fitted paging in the employee grid and reference picker.
 	private async void AutoSizeCheckBox_CheckedChanged(object sender, EventArgs args) {
@@ -452,24 +441,18 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Toggle selection of a newly created employee.
-	private void AutoSelectOnCreateCheckBox_CheckedChanged_1(object sender, EventArgs args) {
-		_visualGrid.AutoSelectOnCreate = _autoSelectOnCreateCheckBox.Checked;
-	}
+	private void AutoSelectOnCreateCheckBox_CheckedChanged_1(object sender, EventArgs args) => _visualGrid.AutoSelectOnCreate = _autoSelectOnCreateCheckBox.Checked;
 
 	// Toggle editing on the configured editable columns.
-	private void AllowCellEditingCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_visualGrid.AllowCellEditing = _allowCellEditingCheckBox.Checked;
-	}
+	private void AllowCellEditingCheckBox_CheckedChanged(object sender, EventArgs args) => _visualGrid.AllowCellEditing = _allowCellEditingCheckBox.Checked;
 
 	// Choose whole-query refresh after an employee update.
-	private void RefreshEntireGridOnUpdateCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_visualGrid.RefreshEntireGridOnUpdate = _refreshEntireGridOnUpdateCheckBox.Checked;
-	}
+	private void RefreshEntireGridOnUpdateCheckBox_CheckedChanged(object sender, EventArgs args)
+		=> _visualGrid.RefreshEntireGridOnUpdate = _refreshEntireGridOnUpdateCheckBox.Checked;
 
 	// Choose whole-query refresh after an employee deletion.
-	private void RefreshEntireGridOnDeleteCheckBox_CheckedChanged(object sender, EventArgs args) {
-		_visualGrid.RefreshEntireGridOnDelete = _refreshEntireGridOnDeleteCheckBox.Checked;
-	}
+	private void RefreshEntireGridOnDeleteCheckBox_CheckedChanged(object sender, EventArgs args)
+		=> _visualGrid.RefreshEntireGridOnDelete = _refreshEntireGridOnDeleteCheckBox.Checked;
 
 	// Apply the same loading-feedback choice to both employee presentations.
 	private void SuppressLoadingIndicatorCheckedChanged(object sender, EventArgs args) {
@@ -478,15 +461,13 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Capture immutable synthetic values on a worker while retaining cancellation ownership.
-	private Task<LiveSample[]> CollectLiveSamplesAsync(CancellationToken cancellationToken) {
-		return Task.Run(async () => {
-			// Synthetic capture deliberately takes time; the owner dispatcher remains free for input and resize.
-			await Task.Delay(150, cancellationToken).ConfigureAwait(false);
-			Volatile.Write(ref _sampleThreadId, Environment.CurrentManagedThreadId);
-			var generation = Interlocked.Increment(ref _liveGeneration);
-			var captured = DateTime.UtcNow;
-			return Enumerable.Range(1, 500).Select(id => CreateLiveSample(id, generation, captured)).ToArray();
-		}, cancellationToken);
+	private async Task<LiveSample[]> CollectLiveSamplesAsync(CancellationToken cancellationToken) {
+		// The source invokes capture on its worker; simulated latency leaves the dispatcher free for input and resize.
+		await Task.Delay(150, cancellationToken).ConfigureAwait(false);
+		Volatile.Write(ref _sampleThreadId, Environment.CurrentManagedThreadId);
+		var generation = Interlocked.Increment(ref _liveGeneration);
+		var captured = DateTime.UtcNow;
+		return Enumerable.Range(1, 500).Select(id => CreateLiveSample(id, generation, captured)).ToArray();
 	}
 
 	// Re-read one synthetic identity, including the deliberate missing-row demonstration.
@@ -503,9 +484,9 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Request a complete capture through the existing admission path.
-	private async void LiveRefreshClicked(object sender, EventArgs args) {
-		await RunDemoActionAsync(RefreshLiveSnapshotAsync);
-	}
+	private async void LiveRefreshClicked(object sender, EventArgs args) => await RunDemoActionAsync(RefreshLiveSnapshotAsync);
+
+	private async void LivePageRefreshClicked(object sender, EventArgs args) => await RunDemoActionAsync(_liveGrid.RefreshGrid);
 
 	// Re-read only the selected row.
 	private async void RefreshSelectedLiveClicked(object sender, EventArgs args) {
@@ -517,41 +498,12 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 		await RunDemoActionAsync(async () => { await RefreshSelectedLiveRowAsync(disappear: true); });
 	}
 
-	/// <summary>Refreshes the selected entity through the live source, optionally simulating its disappearance.</summary>
-	public async Task<bool> RefreshSelectedLiveRowAsync(bool disappear = false) {
-		if (disappear)
-			_liveUpdatesCheckBox.Checked = false;
-		await _liveWork;
-		if (IsDisposed || _liveGrid.SelectedEntity is not LiveSample selected)
-			return false;
-		_disappearingSampleId = disappear ? selected.Id : 0;
-		using var restore = Tools.Scope.ExecuteOnDispose(() => _disappearingSampleId = 0);
-		var refreshed = await _liveGrid.RefreshSelectedEntityAsync();
-		if (!IsDisposed)
-			UpdateLiveStatus();
-		return refreshed;
-	}
-
 	// Select the first row in the current visible snapshot.
-	private void SelectFirstLiveClicked(object sender, EventArgs args) {
-		_liveGrid.SelectedEntity = _liveGrid.VisibleEntities.FirstOrDefault();
-	}
-
-	// Capture only for a visible live tab after the prior operation has completed.
-	private async void LiveTimerTick(object sender, EventArgs args) {
-		if (_loaded && Visible && _contentTabs.SelectedTab == _liveTab && _liveUpdatesCheckBox.Checked && _liveWork.IsCompleted)
-			await RunDemoActionAsync(RefreshLiveSnapshotAsync);
-	}
-
-	/// <summary>Joins the current capture or starts one new worker-produced snapshot.</summary>
-	public Task RefreshLiveSnapshotAsync() {
-		if (_liveWork is { IsCompleted: false })
-			return _liveWork;
-		return _liveWork = RefreshLiveSnapshotCoreAsync();
-	}
+	private void SelectFirstLiveClicked(object sender, EventArgs args) => _liveGrid.SelectedEntity = _liveGrid.VisibleEntities.FirstOrDefault();
 
 	// Publish the completed snapshot and update native status on the owner dispatcher.
 	private async Task RefreshLiveSnapshotCoreAsync() {
+		await _liveSource.RefreshAsync(_liveCancellation.Token);
 		await _liveController.RefreshAsync(_liveCancellation.Token);
 		if (!IsDisposed)
 			UpdateLiveStatus();
@@ -559,20 +511,58 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 
 	// Describe the published generation and keep row actions aligned with actual selection.
 	private void UpdateLiveStatus() {
-		_liveStatus.Text = $"Synthetic Capture {Volatile.Read(ref _liveGeneration):N0} • {_liveController.Count:N0} Rows • Capture Thread {Volatile.Read(ref _sampleThreadId)} • UI Thread {Environment.CurrentManagedThreadId}"
+		_liveStatus.Text = $"Synthetic Capture {Volatile.Read(ref _liveGeneration):N0} • {_liveSource.Count:N0} Rows • Capture Thread {Volatile.Read(ref _sampleThreadId)} • UI Thread {Environment.CurrentManagedThreadId}"
 			+ "\r\nSelect a row, keep clicking or resize during live updates. Search, sorting and the footer operate on the published snapshot. Disappearing rows return in the next full capture.";
 		_refreshSelectedLiveButton.Enabled = _removeSelectedLiveButton.Enabled = _liveGrid.SelectedEntity != null;
 	}
 
 	// Enable periodic capture only on the explicit live-updates choice.
-	private void LiveUpdatesChanged(object sender, EventArgs args) {
-		_liveTimer.Enabled = _liveUpdatesCheckBox.Checked;
+	private void LiveUpdatesChanged(object sender, EventArgs args) => UpdateLiveSourcePolicy();
+
+	private void LiveSourcePolicyChanged(object sender, EventArgs args) => UpdateLiveSourcePolicy();
+
+	private void UpdateLiveSourcePolicy() {
+		if (_liveSource == null || _liveDisposed)
+			return;
+		_liveSource.AutoRefresh = _liveUpdatesCheckBox.Checked;
+		_liveSource.Enabled = _liveInitialized && Visible && _contentTabs.SelectedTab == _liveTab;
+	}
+
+	protected override void OnDestroyScreen() {
+		EndLiveSource();
+		base.OnDestroyScreen();
+	}
+
+	private void EndLiveSource() {
+		if (_liveDisposed)
+			return;
+		_liveDisposed = true;
+		if (_liveSource != null)
+			_liveSource.Enabled = false;
+		var presentation = _liveGrid?.RefreshCompletion ?? Task.CompletedTask;
+		DisposalCompletion = ReleaseLiveSourceAsync(presentation);
+		_ = DisposalCompletion.ContinueWith(task => {
+			Tools.Exceptions.ExecuteIgnoringException(() => SystemLog.Logger.Exception(task.Exception, "Could not finalize the live grid demonstration."));
+		}, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+	}
+
+	private async Task ReleaseLiveSourceAsync(Task presentation) {
+		var cancellation = _liveCancellation.CancelAsync();
+		if (_liveSource != null)
+			await _liveSource.DisposeAsync().ConfigureAwait(false);
+		await cancellation.ConfigureAwait(false);
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(() => Task.WhenAll(_liveWork, presentation)).ConfigureAwait(false);
+		_liveCancellation.Dispose();
+		if (_liveImages != null)
+			foreach (var image in _liveImages)
+				image.Dispose();
+		if (error != null && error is not OperationCanceledException)
+			System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw();
 	}
 
 	// Keep selected-row actions available only while the grid has a real entity.
-	private void LiveSelectionChanged(VisualGrid sender, object entity) {
-		_refreshSelectedLiveButton.Enabled = _removeSelectedLiveButton.Enabled = _liveGrid.SelectedEntity != null;
-	}
+	private void LiveSelectionChanged(VisualGrid sender, object entity)
+		=> _refreshSelectedLiveButton.Enabled = _removeSelectedLiveButton.Enabled = _liveGrid.SelectedEntity != null;
 
 	// Apply the laboratory presentation choices, then refresh the current immutable snapshot.
 	private async void LivePresentationChanged(object sender, EventArgs args) {
@@ -586,9 +576,13 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 		_liveGrid.SuppressLoadingIndicator = !_liveLoadingFeedbackCheckBox.Checked;
 		_liveGrid.SelectOnMouseUp = _liveMouseUpCheckBox.Checked;
 		_liveGrid.LeftClickToDeselect = _liveToggleSelectionCheckBox.Checked;
+		_liveGrid.RowStyleProvider = _liveRowStylesCheckBox.Checked ? ColorLiveSample : null;
 		if (_loaded)
 			await RunDemoActionAsync(_liveGrid.RefreshGrid);
 	}
+
+	private static VisualGridRowStyle ColorLiveSample(object entity)
+		=> entity is LiveSample { Load: >= 75 } ? new VisualGridRowStyle(Color.DarkRed, Color.MistyRose) : default;
 
 	// Apply a deliberate mode selection without feeding restored Options values back as edits.
 	private async void LivePageModeChanged(object sender, EventArgs args) {
@@ -611,12 +605,33 @@ public partial class VisualGridTestScreen : ApplicationScreen {
 	}
 
 	// Refresh the laboratory selector from the grid before opening its mode list.
-	private void LivePageModeDropDown(object sender, EventArgs args) {
-		_livePageMode.SelectedIndex = (int)_liveGrid.PageMode;
-	}
+	private void LivePageModeDropDown(object sender, EventArgs args) => _livePageMode.SelectedIndex = (int)_liveGrid.PageMode;
 
 	/// <summary>An immutable published row that borrows its image from the owning screen.</summary>
 	public sealed record LiveSample(int Id, string Name, double Load, long Bytes, long Generation, DateTime CapturedUtc, Image Icon);
+
+	/// <summary>One synthetic capture: the list fetched on load by the screen's worker collector, with its keyed row refresh.</summary>
+	private sealed class LiveSampleDataSource : AsyncListDataSource<LiveSample> {
+		private readonly VisualGridTestScreen _owner;
+
+		public LiveSampleDataSource(VisualGridTestScreen owner) {
+			_owner = owner;
+			DefaultSortProperty = nameof(LiveSample.Id);
+		}
+
+		public LiveSampleDataSource(VisualGridTestScreen owner, IEnumerable<LiveSample> rows)
+			: base(rows) {
+			_owner = owner;
+			DefaultSortProperty = nameof(LiveSample.Id);
+		}
+
+		public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+		protected override async Task<IEnumerable<LiveSample>> FetchAsync(CancellationToken cancellationToken)
+			=> await _owner.CollectLiveSamplesAsync(cancellationToken).ConfigureAwait(false);
+
+		protected override Task<LiveSample> RefreshMethodAsync(LiveSample entity) => Task.FromResult(_owner.RefreshLiveSample(entity));
+	}
 
 	/// <summary>Independent reusable column/paging values for the editable and live grids.</summary>
 	[UserEditable]

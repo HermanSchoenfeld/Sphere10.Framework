@@ -118,6 +118,20 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		base.Dispose();
 	}
 
+	public static Guid ComputeFileID(string caseCorrectFilePath) {
+		// FileID is a first 16 bytes of the case-correct path converted into a guid
+		Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
+		return new Guid(Hashers.Hash(CHF.Blake2b_128, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
+	}
+
+	internal static bool HasPersistedState(TransactionalFileDescriptor descriptor) {
+		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
+		return File.Exists(descriptor.Path) && new FileInfo(descriptor.Path).Length > 0 || HasPendingState(descriptor);
+	}
+
+	internal static string GetPagesDirectoryPath(TransactionalFileDescriptor descriptor)
+		=> Path.GetFullPath(ResolvePagesDirectoryPath(descriptor, out _));
+
 	protected abstract long GetCommittedPageCount();
 
 	protected override void OnLoaded() {
@@ -216,17 +230,6 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		RolledBack?.Invoke();
 	}
 
-	public static Guid ComputeFileID(string caseCorrectFilePath) {
-		// FileID is a first 16 bytes of the case-correct path converted into a guid
-		Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
-		return new Guid(Hashers.Hash(CHF.Blake2b_128, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
-	}
-
-	internal static bool HasPersistedState(TransactionalFileDescriptor descriptor) {
-		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
-		return File.Exists(descriptor.Path) && new FileInfo(descriptor.Path).Length > 0 || HasPendingState(descriptor);
-	}
-
 	private static bool HasPendingState(TransactionalFileDescriptor descriptor) {
 		Guard.ArgumentNotNull(descriptor, nameof(descriptor));
 		var pagesPath = ResolvePagesDirectoryPath(descriptor, out _);
@@ -237,9 +240,6 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		return pageMarkers.Any() || fileMarkers.Any()
 			|| Tools.Enums.GetValues<FileMarkerType>().Any(marker => File.Exists(MarkerRepository.GenerateFileMarkerFileName(pagesPath, fileID, marker)));
 	}
-
-	internal static string GetPagesDirectoryPath(TransactionalFileDescriptor descriptor)
-		=> Path.GetFullPath(ResolvePagesDirectoryPath(descriptor, out _));
 
 	private static string ResolvePagesDirectoryPath(TransactionalFileDescriptor descriptor, out bool ownsPagesPath) {
 		ownsPagesPath = !string.IsNullOrWhiteSpace(descriptor.PagesDirectoryPath) && !Path.IsPathFullyQualified(descriptor.PagesDirectoryPath);
@@ -355,9 +355,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			}
 		}
 
-		public void RemoveAllPageMarkersExcept(PageMarkerType except, long pageNumber) {
-			RemoveAllPageMakers(pageNumber, except);
-		}
+		public void RemoveAllPageMarkersExcept(PageMarkerType except, long pageNumber) => RemoveAllPageMakers(pageNumber, except);
 
 		public void RemoveAllPageMakers(long pageNumber, params PageMarkerType[] except) {
 			except = except ?? new PageMarkerType[0];
@@ -390,21 +388,13 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 				throw new AggregateException(exceptions);
 		}
 
-		public bool Contains(FileMarkerType marker) {
-			return _fileMarkers.Contains(marker);
-		}
+		public bool Contains(FileMarkerType marker) => _fileMarkers.Contains(marker);
 
-		public bool Contains(PageMarkerType marker, long pageNumber) {
-			return _pageMarkers.Contains(pageNumber) && _pageMarkers[pageNumber].Contains(marker);
-		}
+		public bool Contains(PageMarkerType marker, long pageNumber) => _pageMarkers.Contains(pageNumber) && _pageMarkers[pageNumber].Contains(marker);
 
-		public string GetMarkerFilename(FileMarkerType marker) {
-			return GenerateFileMarkerFileName(BaseDir, FileID, marker);
-		}
+		public string GetMarkerFilename(FileMarkerType marker) => GenerateFileMarkerFileName(BaseDir, FileID, marker);
 
-		public string GetMarkerFilename(long pageNumber, PageMarkerType marker) {
-			return GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
-		}
+		public string GetMarkerFilename(long pageNumber, PageMarkerType marker) => GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
 
 		public static void ScanPersistedFileMarkers(string baseDir, Guid fileID, out ExtendedLookup<long, PageMarkerType> pagerMarkers, out HashSet<FileMarkerType> fileMarkers) {
 			pagerMarkers = new ExtendedLookup<long, PageMarkerType>(_ => new ExtendedList<PageMarkerType>(capacity: 2, capacityGrowthSize: 2, maxCapacity: long.MaxValue));

@@ -42,7 +42,8 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 	/// </summary>
 	public event ScrollPositionChangedEventHandler HScrollPositionChanged;
 
-	// ScrollBars and Panels
+	#region ScrollBars and Panels
+
 	private HScrollBar _hScrollBar = new HScrollBar();
 	private VScrollBar _vScrollBar = new VScrollBar();
 
@@ -80,15 +81,14 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 		ResumeLayout(false);
 	}
 
-	// override AutoScroll
+	#region override AutoScroll
+
 	/// <summary>
 	/// I disabled the default AutoScroll property because I have a custom implementation
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), DefaultValue(false)]
 	public override bool AutoScroll {
-		get {
-			return false;
-		}
+		get => false;
 		set {
 			if (value)
 				throw new SourceGridException("Auto Scroll not supported in this control");
@@ -96,49 +96,45 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 		}
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the vertical scrollbar. Can be visible or unvisible.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public VScrollBar VScrollBar {
-		get {
-			return _vScrollBar;
-		}
-	}
+	public VScrollBar VScrollBar => _vScrollBar;
 
 	/// <summary>
 	/// Gets the horizontal scrollbar. Can be visible or unvisible.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public HScrollBar HScrollBar {
-		get {
-			return _hScrollBar;
-		}
-	}
+	public HScrollBar HScrollBar => _hScrollBar;
 
 	/// <summary>
 	/// Gets the panel at the bottom right of the control. This panel is valid only if HScrollBar and VScrollBar are valid. Otherwise is null.
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Panel BottomRightPanel {
-		get {
-			return _bottomRightPanel;
-		}
-	}
+	public Panel BottomRightPanel => _bottomRightPanel;
 
 	[Browsable(false)]
-	public bool HScrollBarVisible {
-		get {
-			return _hScrollBar.Height != 0;
-		}
-	}
+	public bool HScrollBarVisible => _hScrollBar.Height != 0;
 
 	[Browsable(false)]
-	public bool VScrollBarVisible {
-		get {
-			return _vScrollBar.Width != 0;
+	public bool VScrollBarVisible => _vScrollBar.Width != 0;
+
+	#endregion
+
+	/// <summary>Allows an enclosing table to own horizontal scrolling while this control retains independent vertical scrolling.</summary>
+	[DefaultValue(true), Category("Behavior")]
+	public bool HorizontalScrollingEnabled {
+		get;
+		set {
+			if (field == value)
+				return;
+			field = value;
+			RecalcCustomScrollBars();
 		}
-	}
+	} = true;
 
 	/// <summary>
 	/// Gets or sets the current scroll position relative to the CustomScrollArea.
@@ -196,20 +192,13 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected int HorizontalPage {
-		get {
-			return _horizontalPage;
-		}
-	}
+	protected int HorizontalPage => _horizontalPage;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected int VerticalPage {
-		get {
-			return _verticalPage;
-		}
-	}
+	protected int VerticalPage => _verticalPage;
 
-	// Maximum/Minimum Scroll Position
+	#region Maximum/Minimum Scroll Position
+
 	/// <summary>
 	/// Return the maximum position that can be scrolled
 	/// </summary>
@@ -226,21 +215,13 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 	/// Return the minimum position that can be scrolled
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected int MinimumVScroll {
-		get {
-			return 0;
-		}
-	}
+	protected int MinimumVScroll => 0;
 
 	/// <summary>
 	/// Return the minimum position that can be scrolled
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected int MinimumHScroll {
-		get {
-			return 0;
-		}
-	}
+	protected int MinimumHScroll => 0;
 
 	/// <summary>
 	/// Return the maximum position that can be scrolled
@@ -254,19 +235,16 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 		}
 	}
 
-	public new void PerformLayout() {
-		PerformLayout(this, null);
-	}
+	#endregion
 
-	public new void PerformLayout(Control affectedControl, string affectedProperty) {
-		base.PerformLayout(affectedControl, affectedProperty);
-	}
+	public new void PerformLayout() => PerformLayout(this, null);
 
-	public bool IsSuspended() {
-		return _suspendedCount > 0;
-	}
+	public new void PerformLayout(Control affectedControl, string affectedProperty) => base.PerformLayout(affectedControl, affectedProperty);
 
-	// Scroll PageDown/Up/Right/Left/LineUp/Down/Right/Left
+	public bool IsSuspended() => _suspendedCount > 0;
+
+	#region Scroll PageDown/Up/Right/Left/LineUp/Down/Right/Left
+
 	/// <summary>
 	/// Scroll the page down
 	/// </summary>
@@ -289,9 +267,7 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 	/// <summary>
 	/// Scroll the page down to line
 	/// </summary>
-	public virtual bool IsMaxPage() {
-		return (_vScrollBar.Value == _vScrollBar.Maximum);
-	}
+	public virtual bool IsMaxPage() => (_vScrollBar.Value == _vScrollBar.Maximum);
 
 	/// <summary>
 	/// Scroll the page up
@@ -367,7 +343,10 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 			_hScrollBar.Value = Math.Max(_hScrollBar.Value - _hScrollBar.SmallChange, _hScrollBar.Minimum);
 	}
 
-	// Layout Events
+	#endregion
+
+	#region Layout Events
+
 	/// <summary>
 	/// OnLayout Method
 	/// </summary>
@@ -443,19 +422,19 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 
 		// Start with the full client area so obsolete scrollbars can disappear.
 		var scrollRows = GetScrollRows(base.DisplayRectangle.Height);
-		var scrollCols = GetScrollColumns(base.DisplayRectangle.Width);
+		var scrollCols = HorizontalScrollingEnabled ? GetScrollColumns(base.DisplayRectangle.Width) : 0;
 
 		PrepareScrollBars(scrollCols > 0, scrollRows > 0);
 
 		// Either scrollbar can consume enough space to require the other axis too.
 		scrollRows = GetScrollRows(DisplayRectangle.Height);
-		scrollCols = GetScrollColumns(DisplayRectangle.Width);
+		scrollCols = HorizontalScrollingEnabled ? GetScrollColumns(DisplayRectangle.Width) : 0;
 		if (scrollRows > 0 && !VScrollBarVisible || scrollCols > 0 && !HScrollBarVisible) {
 			PrepareScrollBars(scrollCols > 0, scrollRows > 0);
 
 			// Both bars are now settled; calculate their ranges from the remaining viewport.
 			scrollRows = GetScrollRows(DisplayRectangle.Height);
-			scrollCols = GetScrollColumns(DisplayRectangle.Width);
+			scrollCols = HorizontalScrollingEnabled ? GetScrollColumns(DisplayRectangle.Width) : 0;
 		}
 
 		//MICK(6)
@@ -564,7 +543,10 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 	/// </summary>
 	protected abstract int GetScrollColumns(int displayWidth);
 
-	// Add/Remove ScrollBars
+	#endregion
+
+	#region Add/Remove ScrollBars
+
 	/// <summary>
 	/// recalculate the position of the horizontal scrollbar
 	/// </summary>
@@ -646,4 +628,6 @@ public abstract class CustomScrollControl : System.Windows.Forms.Panel {
 		if (HScrollPositionChanged != null)
 			HScrollPositionChanged(this, e);
 	}
+
+	#endregion
 }

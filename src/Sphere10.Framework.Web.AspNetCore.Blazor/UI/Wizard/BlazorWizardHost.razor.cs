@@ -56,7 +56,7 @@ public partial class BlazorWizardHost : IDisposable {
 			_currentStepInstance = value;
 			_stepTraitsResolver ??= ResolveStepTraits;
 			Wizard.StepTraitsResolver = _stepTraitsResolver;
-			Title = $"{Wizard.Title} -> {value?.Title}";
+			Title = $"{Wizard.Title} → {value?.Title}";
 			StateHasChanged();
 			OnStepChange.InvokeAsync();
 		}
@@ -124,6 +124,15 @@ public partial class BlazorWizardHost : IDisposable {
 		return _cancelled;
 	}
 
+	public void Dispose() {
+		_disposed = true;
+		if (_renderedWizard != null)
+			_renderedWizard.Changed -= WizardChanged;
+		RestoreStepTraitsResolver();
+		_currentStepInstance = null;
+		_renderedWizard = null;
+	}
+
 	protected override void OnParametersSet() {
 		Guard.Ensure(Wizard != null, "Wizard parameter is required.");
 		if (ReferenceEquals(_renderedWizard, Wizard))
@@ -144,6 +153,7 @@ public partial class BlazorWizardHost : IDisposable {
 		Title = Wizard.Title;
 		SynchronizeCurrentStep();
 	}
+
 
 	private async Task AdvanceAsync() {
 		if (IsBusy || _finished || _cancelled)
@@ -192,16 +202,6 @@ public partial class BlazorWizardHost : IDisposable {
 			ErrorMessages = result.ErrorMessages.ToArray();
 		}
 		StateHasChanged();
-	}
-
-
-	public void Dispose() {
-		_disposed = true;
-		if (_renderedWizard != null)
-			_renderedWizard.Changed -= WizardChanged;
-		RestoreStepTraitsResolver();
-		_currentStepInstance = null;
-		_renderedWizard = null;
 	}
 
 	private WizardStepTraits ResolveStepTraits(Type stepType) {

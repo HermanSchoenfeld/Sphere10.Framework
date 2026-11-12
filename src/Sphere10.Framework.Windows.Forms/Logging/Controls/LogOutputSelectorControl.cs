@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -193,6 +195,104 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		return new ValueTask(Volatile.Read(ref _pendingDrain));
 	}
 
+	/// <summary>Shows output, file/rolling, formatting and review steps. Cancellation never opens output.</summary>
+	public async Task<bool> ConfigureAsync(IWin32Window owner = null) {
+		EnsureOwnerThread();
+		Guard.Ensure(!Tools.Runtime.IsDesignMode, "Logging cannot be configured on the design surface.");
+		Guard.Ensure(!_configuring, "The logging wizard is already open.");
+		_configuring = true;
+		UpdateUiState();
+		using var configurationScope = Tools.Scope.ExecuteOnDispose(() => {
+			_configuring = false;
+			if (!IsDisposed && !Disposing)
+				UpdateUiState();
+		});
+		using var wizard = CreateConfigurationWizard(Configuration);
+		var parent = owner as Form ?? (owner as Control)?.FindForm() ?? FindForm();
+		return await wizard.Start(parent) == WizardResult.Success;
+	}
+
+	/// <summary>Shows current details and a Change button. Opening or cancelling this dialog does not interrupt active output.</summary>
+	public async Task ShowConfigurationAsync(IWin32Window owner = null) {
+		EnsureOwnerThread();
+		Guard.Ensure(!Tools.Runtime.IsDesignMode, "Logging cannot be configured on the design surface.");
+		Guard.Ensure(!_configuring && !_detailsOpen, "Logging configuration is already open.");
+		_detailsOpen = true;
+		UpdateUiState();
+		using var dialogScope = Tools.Scope.ExecuteOnDispose(() => {
+			_detailsOpen = false;
+			if (!IsDisposed && !Disposing)
+				UpdateUiState();
+		});
+		using var dialog = new LogOutputConfigurationDialog();
+		dialog.Bind(this);
+		var parent = owner as Form ?? (owner as Control)?.FindForm() ?? FindForm();
+		await dialog.ShowDialogAsync(parent);
+	}
+
+	public string GetDetailsText() {
+		var state = IsLogging ? "Logging Is On." : "Logging Is Off.";
+		if (_hasConfiguration)
+			state += Environment.NewLine + Configuration.Describe();
+		else
+			state += Environment.NewLine + "No logging output has been selected.";
+		if (LastError != null)
+			state += Environment.NewLine + "Last Output Error: " + LastError.Message;
+		if (LastSettingsError != null)
+			state += Environment.NewLine + "Preferences Could Not Be Saved Or Restored: " + LastSettingsError.Message;
+		return state;
+	}
+
+	/// <summary>Reports compact content dimensions to standalone layouts and autosizing native toolbar hosts.</summary>
+	public override Size GetPreferredSize(Size proposedSize) {
+		if (_layoutPanel == null)
+			return base.GetPreferredSize(proposedSize);
+		var content = _layoutPanel.GetPreferredSize(proposedSize);
+		return new Size(Math.Max(LogicalToDeviceUnits(48), content.Width + Padding.Horizontal), Math.Max(LogicalToDeviceUnits(26), content.Height + Padding.Vertical));
+	}
+
+	/// <summary>Restores optional preferences after the owner has assigned its application logger and preflight/failure handlers.
+	/// Returns false when no stable identity/provider is available yet, allowing the owner to retry after initialization.</summary>
+	public bool RestoreSettings() {
+		EnsureOwnerThread();
+		if (_ownsPreferences)
+			return true;
+		if (DesignMode || Tools.Runtime.IsDesignMode)
+			return false;
+		if (_restoreCompleted)
+			return true;
+		var key = ResolveLogSettingsKey();
+		if (key == null || !TryGetSettingsProvider(out var provider))
+			return false;
+		_restoringSettings = true;
+		using var restoreScope = Tools.Scope.ExecuteOnDispose(() => _restoringSettings = false);
+		try {
+			var exists = provider.ContainsSetting(typeof(LogOutputSelectorSettings), key);
+			_outputSettingsProvider = provider;
+			_outputSettings = provider.Get<LogOutputSelectorSettings>(key);
+			_restoreCompleted = true;
+			// A choice already accepted by this instance takes precedence over older stored preferences.
+			if (_hasConfiguration || !exists || !_outputSettings.HasConfiguration || _outputSettings.Configuration?.RememberAfterClose != true)
+				return true;
+			_configuration = _outputSettings.Configuration.ValidateOptionsAndNormalize();
+			_hasConfiguration = true;
+			_rememberedEnabled = _outputSettings.IsLogging;
+			if (_rememberedEnabled)
+				Tools.Exceptions.Execute(StartLogging, error => LoggingFailed?.Invoke(error));
+			UpdateUiState();
+			return true;
+		} catch (Exception error) {
+			_restoreCompleted = true;
+			RecordSettingsFailure(error, "Could not restore logging preferences.");
+			if (_outputSettings == null)
+				Tools.Exceptions.Execute(() => {
+					_outputSettings = (LogOutputSelectorSettings)provider.NewSetting(typeof(LogOutputSelectorSettings), key);
+				}, recoveryError => RecordSettingsFailure(recoveryError, "Could not initialize logging preferences."));
+			UpdateUiState();
+			return true;
+		}
+	}
+
 	private LogOutputSession DetachSession(bool userStopped, out Exception stateError) {
 		NotifyPendingFailure();
 		_configuration = Configuration;
@@ -244,54 +344,6 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 			ExceptionDispatchInfo.Capture(error).Throw();
 	}
 
-	/// <summary>Shows output, file/rolling, formatting and review steps. Cancellation never opens output.</summary>
-	public async Task<bool> ConfigureAsync(IWin32Window owner = null) {
-		EnsureOwnerThread();
-		Guard.Ensure(!Tools.Runtime.IsDesignMode, "Logging cannot be configured on the design surface.");
-		Guard.Ensure(!_configuring, "The logging wizard is already open.");
-		_configuring = true;
-		UpdateUiState();
-		using var configurationScope = Tools.Scope.ExecuteOnDispose(() => {
-			_configuring = false;
-			if (!IsDisposed && !Disposing)
-				UpdateUiState();
-		});
-		using var wizard = CreateConfigurationWizard(Configuration);
-		var parent = owner as Form ?? (owner as Control)?.FindForm() ?? FindForm();
-		return await wizard.Start(parent) == WizardResult.Success;
-	}
-
-	/// <summary>Shows current details and a Change button. Opening or cancelling this dialog does not interrupt active output.</summary>
-	public async Task ShowConfigurationAsync(IWin32Window owner = null) {
-		EnsureOwnerThread();
-		Guard.Ensure(!Tools.Runtime.IsDesignMode, "Logging cannot be configured on the design surface.");
-		Guard.Ensure(!_configuring && !_detailsOpen, "Logging configuration is already open.");
-		_detailsOpen = true;
-		UpdateUiState();
-		using var dialogScope = Tools.Scope.ExecuteOnDispose(() => {
-			_detailsOpen = false;
-			if (!IsDisposed && !Disposing)
-				UpdateUiState();
-		});
-		using var dialog = new LogOutputConfigurationDialog();
-		dialog.Bind(this);
-		var parent = owner as Form ?? (owner as Control)?.FindForm() ?? FindForm();
-		await dialog.ShowDialogAsync(parent);
-	}
-
-	public string GetDetailsText() {
-		var state = IsLogging ? "Logging Is On." : "Logging Is Off.";
-		if (_hasConfiguration)
-			state += Environment.NewLine + Configuration.Describe();
-		else
-			state += Environment.NewLine + "No logging output has been selected.";
-		if (LastError != null)
-			state += Environment.NewLine + "Last Output Error: " + LastError.Message;
-		if (LastSettingsError != null)
-			state += Environment.NewLine + "Preferences Could Not Be Saved Or Restored: " + LastSettingsError.Message;
-		return state;
-	}
-
 	/// <summary>Creates the shared native wizard; override only to extend the existing workflow.</summary>
 	protected virtual WinFormsActionWizard<LogOutputConfiguration> CreateConfigurationWizard(LogOutputConfiguration configuration) =>
 		new WinFormsWizardBuilder<LogOutputConfiguration>()
@@ -331,7 +383,29 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		_loggingCheckBox.Checked = IsLogging;
 		_loggingCheckBox.Enabled = !_configuring && !_detailsOpen && !_stopping;
 		_configureButton.Enabled = !_configuring && !_detailsOpen && !_stopping;
-		_toolTip.SetToolTip(_loggingCheckBox, GetDetailsText());
+		_loggingCheckBox.AccessibleDescription = GetDetailsText();
+	}
+
+	// Retain native themed button feedback and draw the log-document glyph at the owning window's DPI.
+	private void ConfigureButtonPaint(object sender, PaintEventArgs args) {
+		var scale = _configureButton.DeviceDpi / 96F;
+		var width = 12 * scale;
+		var height = 14 * scale;
+		var left = (_configureButton.ClientSize.Width - width) / 2;
+		var top = (_configureButton.ClientSize.Height - height) / 2;
+		var state = args.Graphics.Save();
+		using var restore = Tools.Scope.ExecuteOnDispose(() => args.Graphics.Restore(state));
+		args.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+		using var stroke = new Pen(_configureButton.Enabled ? _configureButton.ForeColor : SystemColors.GrayText, Math.Max(1, scale));
+		args.Graphics.DrawLines(stroke, new[] {
+			new PointF(left, top), new PointF(left + 8 * scale, top), new PointF(left + width, top + 4 * scale),
+			new PointF(left + width, top + height), new PointF(left, top + height), new PointF(left, top)
+		});
+		args.Graphics.DrawLines(stroke, new[] { new PointF(left + 8 * scale, top), new PointF(left + 8 * scale, top + 4 * scale), new PointF(left + width, top + 4 * scale) });
+		for (var line = 0; line < 3; line++) {
+			var y = top + (6 + line * 3) * scale;
+			args.Graphics.DrawLine(stroke, left + 3 * scale, y, left + 9 * scale, y);
+		}
 	}
 
 	private async void LoggingCheckedChanged(object sender, EventArgs e) {
@@ -462,6 +536,8 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		NotifyLoggingStateChanged(loggerReplaced: true);
 	}
 
+	private bool OutputLifetimeEnded => Volatile.Read(ref _notificationsDisposed) != 0 || IsDisposed || Disposing;
+
 	private void DisposeLogger() {
 		Volatile.Write(ref _notificationsDisposed, 1);
 		Interlocked.Exchange(ref _pendingFailure, null);
@@ -474,13 +550,20 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		_standaloneScreenHost = null;
 	}
 
-	private bool OutputLifetimeEnded => Volatile.Read(ref _notificationsDisposed) != 0 || IsDisposed || Disposing;
-
 	private LogOutputSession CreateSession(LogOutputConfiguration configuration) {
 		if (configuration.Destination != LogOutputDestination.Screen)
 			return LogOutputSession.Create(configuration, ApplicationLogger);
 		var host = ResolveScreenHost();
 		var title = ResolveLogScreenTitle(host);
+		// Re-enabling continues in this selector's open log view, docked or undocked, rather than opening another.
+		if (FindOpenLogScreen() is { } existing) {
+			existing.Title = title;
+			// A docked view stays in its tab when the active screen refuses to hide; its output still resumes there.
+			existing.Host.ShowScreen(existing);
+			var resumed = LogOutputSession.Create(configuration, ApplicationLogger, existing.Logger);
+			_activeLogScreen = existing;
+			return resumed;
+		}
 		if (host == null || host.ScreenMode != ScreenMode.MultiView) {
 			_standaloneScreenHost ??= new ApplicationScreenHost { ScreenMode = ScreenMode.MultiView };
 			host = _standaloneScreenHost;
@@ -502,6 +585,15 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		_activeLogScreen = screen;
 		shown = true;
 		return session;
+	}
+
+	private LogScreen FindOpenLogScreen() {
+		for (var index = _logScreens.Count - 1; index >= 0; index--) {
+			var screen = _logScreens[index];
+			if (!screen.IsDisposed && !screen.Disposing && screen.Host != null)
+				return screen;
+		}
+		return null;
 	}
 
 	private string ResolveLogScreenTitle(IApplicationScreenHost host) {
@@ -566,14 +658,6 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 		return null;
 	}
 
-	private async void OutputScreenDestroyed(object sender, EventArgs args) {
-		var screen = (LogScreen)sender;
-		screen.ScreenDestroyed -= OutputScreenDestroyed;
-		_logScreens.Remove(screen);
-		if (ReferenceEquals(screen, _activeLogScreen))
-			await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => await StopLoggingAsync().ConfigureAwait(false)).ConfigureAwait(false);
-	}
-
 	private LogOutputSelectorSettings _outputSettings;
 	private ISettingsProvider _outputSettingsProvider;
 	private string _settingsKey = string.Empty;
@@ -600,46 +684,12 @@ public partial class LogOutputSelectorControl : UserControlEx, IAsyncDisposable 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Exception LastSettingsError => _lastSettingsError;
 
-	/// <summary>Restores optional preferences after the owner has assigned its application logger and preflight/failure handlers.
-	/// Returns false when no stable identity/provider is available yet, allowing the owner to retry after initialization.</summary>
-	public bool RestoreSettings() {
-		EnsureOwnerThread();
-		if (_ownsPreferences)
-			return true;
-		if (DesignMode || Tools.Runtime.IsDesignMode)
-			return false;
-		if (_restoreCompleted)
-			return true;
-		var key = ResolveLogSettingsKey();
-		if (key == null || !TryGetSettingsProvider(out var provider))
-			return false;
-		_restoringSettings = true;
-		using var restoreScope = Tools.Scope.ExecuteOnDispose(() => _restoringSettings = false);
-		try {
-			var exists = provider.ContainsSetting(typeof(LogOutputSelectorSettings), key);
-			_outputSettingsProvider = provider;
-			_outputSettings = provider.Get<LogOutputSelectorSettings>(key);
-			_restoreCompleted = true;
-			// A choice already accepted by this instance takes precedence over older stored preferences.
-			if (_hasConfiguration || !exists || !_outputSettings.HasConfiguration || _outputSettings.Configuration?.RememberAfterClose != true)
-				return true;
-			_configuration = _outputSettings.Configuration.ValidateOptionsAndNormalize();
-			_hasConfiguration = true;
-			_rememberedEnabled = _outputSettings.IsLogging;
-			if (_rememberedEnabled)
-				Tools.Exceptions.Execute(StartLogging, error => LoggingFailed?.Invoke(error));
-			UpdateUiState();
-			return true;
-		} catch (Exception error) {
-			_restoreCompleted = true;
-			RecordSettingsFailure(error, "Could not restore logging preferences.");
-			if (_outputSettings == null)
-				Tools.Exceptions.Execute(() => {
-					_outputSettings = (LogOutputSelectorSettings)provider.NewSetting(typeof(LogOutputSelectorSettings), key);
-				}, recoveryError => RecordSettingsFailure(recoveryError, "Could not initialize logging preferences."));
-			UpdateUiState();
-			return true;
-		}
+	private async void OutputScreenDestroyed(object sender, EventArgs args) {
+		var screen = (LogScreen)sender;
+		screen.ScreenDestroyed -= OutputScreenDestroyed;
+		_logScreens.Remove(screen);
+		if (ReferenceEquals(screen, _activeLogScreen))
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => await StopLoggingAsync().ConfigureAwait(false)).ConfigureAwait(false);
 	}
 
 	private void AcceptLogOutputSettings() {

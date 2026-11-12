@@ -55,7 +55,8 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	//Queste variabili vengono usato durante le fasi di editing
 	private CellContext _editCellContext = CellContext.Empty;
 
-	// ErrorString
+	#region ErrorString
+
 	/// <summary>
 	/// Error rappresentation
 	/// </summary>
@@ -67,7 +68,8 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	private bool _enableCellDrawOnEdit = true;
 	private bool _useCellViewProperties = true;
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate StringEditor property
 	/// </summary>
@@ -76,102 +78,71 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 		: base(type) {
 	}
 
-	/// <summary>
-	/// Cell in editing, if null no cell is in editing state
-	/// </summary>
-	public CellContext EditCellContext {
-		get {
-			return _editCellContext;
-		}
-	}
+	#endregion
 
 	/// <summary>
 	/// Cell in editing, if null no cell is in editing state
 	/// </summary>
-	public Cells.ICellVirtual EditCell {
-		get {
-			return _editCellContext.Cell;
-		}
-	}
+	public CellContext EditCellContext => _editCellContext;
+
+	/// <summary>
+	/// Cell in editing, if null no cell is in editing state
+	/// </summary>
+	public Cells.ICellVirtual EditCell => _editCellContext.Cell;
 
 	/// <summary>
 	/// Cell in editing, if Empty no cell is in editing state
 	/// </summary>
-	public Position EditPosition {
-		get {
-			return _editCellContext.Position;
-		}
-	}
+	public Position EditPosition => _editCellContext.Position;
 
 	/// <summary>
 	/// String used when error occurred
 	/// </summary>
 	public string ErrorString {
-		get {
-			return _errorString;
-		}
-		set {
-			_errorString = value;
-		}
+		get => _errorString;
+		set => _errorString = value;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Enable or disable the cell editor (if disable no visual edit is allowed)
 	/// </summary>
 	public bool EnableEdit {
-		get {
-			return _enableEdit;
-		}
-		set {
-			_enableEdit = value;
-		}
+		get => _enableEdit;
+		set => _enableEdit = value;
 	}
 
 	/// <summary>
 	/// Mode to edit the cell.
 	/// </summary>
 	public EditableMode EditableMode {
-		get {
-			return _editableMode;
-		}
-		set {
-			_editableMode = value;
-		}
+		get => _editableMode;
+		set => _editableMode = value;
 	}
 
 	/// <summary>
 	/// Indicates if the draw of the cell when in editing mode is enabled.
 	/// </summary>
 	public virtual bool EnableCellDrawOnEdit {
-		get {
-			return _enableCellDrawOnEdit;
-		}
-		set {
-			_enableCellDrawOnEdit = value;
-		}
+		get => _enableCellDrawOnEdit;
+		set => _enableCellDrawOnEdit = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if the editor must assign to the editor control the default view properties: ForeColor, BackColor, Font. This can be disabled if you want to manually assign these properties to the control.
 	/// </summary>
 	public virtual bool UseCellViewProperties {
-		get {
-			return _useCellViewProperties;
-		}
-		set {
-			_useCellViewProperties = value;
-		}
+		get => _useCellViewProperties;
+		set => _useCellViewProperties = value;
 	}
 
-	// StartEdit/EndEdit/IsEditing/ApplyEdit/GetEditedValue
+	#region StartEdit/EndEdit/IsEditing/ApplyEdit/GetEditedValue
+
 	/// <summary>
 	/// Indicates if the current editor is in editing state
 	/// </summary>
-	public bool IsEditing {
-		get {
-			return (EditCell != null);
-		}
-	}
+	public bool IsEditing => (EditCell != null);
 
 	/// <summary>
 	/// Returns true if the string passed is equal to the error string rappresentation
@@ -188,26 +159,23 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	/// Apply edited value
 	/// </summary>
 	/// <returns></returns>
-	public virtual bool ApplyEdit() {
-		return true;
-	}
+	public virtual bool ApplyEdit() => true;
 
 	/// <summary>
 	/// Returns the new value edited with the custom control
 	/// </summary>
 	/// <returns></returns>
-	public virtual object GetEditedValue() {
-		throw new SourceGridException("No valid cell editor found");
-	}
+	public virtual object GetEditedValue() => throw new SourceGridException("No valid cell editor found");
 
-	// ClearCell/SetCellValue
+	#endregion
+
+	#region ClearCell/SetCellValue
+
 	/// <summary>
 	/// Clear the value of the cell using the default value
 	/// </summary>
 	/// <param name="cellContext"></param>
-	public virtual void ClearCell(CellContext cellContext) {
-		SetCellValue(cellContext, DefaultValue);
-	}
+	public virtual void ClearCell(CellContext cellContext) => SetCellValue(cellContext, DefaultValue);
 
 	/// <summary>
 	/// Change the value of the cell applying the rule of the current editor. Is recommend to use this method to simulate a edit operation and to validate the cell value using the current model.
@@ -242,7 +210,10 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 		return false;
 	}
 
-	// Send Keys
+	#endregion
+
+	#region Send Keys
+
 	/// <summary>
 	/// Used to send some keyboard keys to the active editor. It is only valid when there is an active edit operations.
 	/// </summary>
@@ -251,25 +222,27 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 		//No Action
 	}
 
-	// Minimum Size
+	#endregion
+
+	#region Minimum Size
+
 	/// <summary>
 	/// Calculate the minimum required size for the specified editor cell.
 	/// </summary>
 	/// <param name="cellContext"></param>
 	/// <returns></returns>
-	public virtual System.Drawing.Size GetMinimumSize(CellContext cellContext) {
-		return System.Drawing.Size.Empty;
-	}
+	public virtual System.Drawing.Size GetMinimumSize(CellContext cellContext) => System.Drawing.Size.Empty;
+
+	#endregion
 
 	/// <summary>
 	/// Set the current editing cell, for an editor only one cell can be in editing state
 	/// </summary>
 	/// <param name="cellContext"></param>
-	protected void SetEditCell(CellContext cellContext) {
-		_editCellContext = cellContext;
-	}
+	protected void SetEditCell(CellContext cellContext) => _editCellContext = cellContext;
 
-	// Validating
+	#region Validating
+
 	//TODO: Remove OnValidated and OnValidating methods. For a better user experience (focus, validating, ...) must be used the validating event of the Control. The cell simply check if the value is valid but cannot handle correctly the user interface.
 
 	/// <summary>
@@ -295,6 +268,9 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	/// </summary>
 	/// <param name="e"></param>
 	protected virtual void OnEditException(ExceptionEventArgs e) {
+
+	#endregion
+
 #if DEBUG
 		System.Diagnostics.Debug.WriteLine("Exception on editing cell: " + e.Exception.ToString());
 #endif
@@ -322,7 +298,5 @@ public class EditorBase : Sphere10.Framework.ComponentModel.TypeConverterValidat
 	/// </summary>
 	/// <param name="cancel">True to cancel the editing and return to normal mode, false to call automatically ApplyEdit and terminate editing</param>
 	/// <returns>Returns true if the cell terminate the editing mode</returns>
-	internal virtual bool InternalEndEdit(bool cancel) {
-		return true;
-	}
+	internal virtual bool InternalEndEdit(bool cancel) => true;
 }

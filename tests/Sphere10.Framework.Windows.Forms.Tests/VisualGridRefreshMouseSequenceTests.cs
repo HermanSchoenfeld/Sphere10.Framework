@@ -43,7 +43,7 @@ public class VisualGridRefreshMouseSequenceTests {
 		}).ToArray();
 		var generation = 0;
 		var rows = CreateRows(generation);
-		var controller = new VisualGridSnapshotController<Row>(crud, row => row.Id, _ => Task.FromResult(rows));
+		var controller = new VisualGridArrayController<Row>(crud, row => row.Id, _ => Task.FromResult(rows));
 		await controller.RefreshAsync();
 		var pageSize = crud.Controls.Find("_pageSizeUpDown", true).OfType<NumericUpDown>().Single();
 		pageSize.Value = 10;
@@ -156,6 +156,8 @@ public class VisualGridRefreshMouseSequenceTests {
 			_log.Add($"{_watch.Elapsed.TotalMilliseconds:F1}ms {phase}: state={state}, enabled={_native.Enabled}, capture=0x{WinAPI.USER32.GetCapture().ToInt64():X}, selection={RuntimeHelpers.GetHashCode(_native.Selection)}, selected={row?.Id}/g{row?.Generation}, down={_native.MouseDownPosition}");
 		}
 
+		public void Dispose() => ReleaseHandle();
+
 		protected override void WndProc(ref Message message) {
 			var input = message.Msg is (int)WinAPI.WindowMessageFlags.WM_MOUSEMOVE or (int)WinAPI.USER32.WM_LBUTTONDOWN or (int)WinAPI.USER32.WM_LBUTTONUP or 0x0215;
 			var began = Stopwatch.GetTimestamp();
@@ -168,8 +170,6 @@ public class VisualGridRefreshMouseSequenceTests {
 			LongestInput = elapsed > LongestInput ? elapsed : LongestInput;
 			Record($"After 0x{message.Msg:X} ({elapsed.TotalMilliseconds:F1}ms)");
 		}
-
-		public void Dispose() => ReleaseHandle();
 	}
 
 	public sealed class Row {

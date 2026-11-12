@@ -30,24 +30,18 @@ public partial class LoggingTestScreen : ApplicationScreen {
 
 	/// <summary>Declares the logging screen's own preferences through the existing settings lifecycle.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override LoggingScreenSettings ScreenSettings {
-		get {
-			return (LoggingScreenSettings)base.ScreenSettings;
-		}
-	}
+	public override LoggingScreenSettings ScreenSettings => (LoggingScreenSettings)base.ScreenSettings;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public LogOutputSelectorControl OutputSelector {
-		get {
-			return _logOutputSelector;
-		}
-	}
+	public LogOutputSelectorControl OutputSelector => _logOutputSelector;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public Task OutputCompletion {
-		get {
-			return _outputCompletion;
-		}
+	public Task OutputCompletion => _outputCompletion;
+
+	/// <summary>Joins preference binding before accepted closure captures the selected output.</summary>
+	public override async Task SaveSettingsAsync(System.Threading.CancellationToken cancellationToken = default) {
+		await _preferencesLoading.WaitAsync(cancellationToken);
+		await base.SaveSettingsAsync(cancellationToken);
 	}
 
 	protected override void OnLoad(EventArgs args) {
@@ -101,13 +95,9 @@ public partial class LoggingTestScreen : ApplicationScreen {
 			SystemLog.Exception(error, "Could not close the logging demonstration output.");
 	}
 
-	private void LoggingStateChanged() {
-		UpdateLoggingStatus();
-	}
+	private void LoggingStateChanged() => UpdateLoggingStatus();
 
-	private void LoggingFailed(Exception error) {
-		_status.Text = "Output stopped: " + error.Message;
-	}
+	private void LoggingFailed(Exception error) => _status.Text = "Output stopped: " + error.Message;
 
 	private void UpdateLoggingStatus() {
 		_status.Text = _logOutputSelector.IsLogging
@@ -136,15 +126,7 @@ public partial class LoggingTestScreen : ApplicationScreen {
 		}
 	}
 
-	private void ClearPreviewClick(object sender, EventArgs args) {
-		_preview.Clear();
-	}
-
-	/// <summary>Joins preference binding before accepted closure captures the selected output.</summary>
-	public override async Task SaveSettingsAsync(System.Threading.CancellationToken cancellationToken = default) {
-		await _preferencesLoading.WaitAsync(cancellationToken);
-		await base.SaveSettingsAsync(cancellationToken);
-	}
+	private void ClearPreviewClick(object sender, EventArgs args) => _preview.Clear();
 
 	// Bind one ordinary output value before the user can activate its destination.
 	private async Task BindOutputAsync() {

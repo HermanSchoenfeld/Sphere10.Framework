@@ -46,17 +46,11 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 		return base.Clear();
 	}
 
-	public override ISQLBuilder BeginTransaction() {
-		return Emit("SAVEPOINT TRAN" + ++_transactionBlockCount).EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder BeginTransaction() => Emit("SAVEPOINT TRAN" + ++_transactionBlockCount).EndOfStatement(SQLStatementType.TCL);
 
-	public override ISQLBuilder CommitTransaction() {
-		return Emit("COMMIT").EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder CommitTransaction() => Emit("COMMIT").EndOfStatement(SQLStatementType.TCL);
 
-	public override ISQLBuilder RollbackTransaction() {
-		return Emit("ROLLBACK TO TRAN" + _transactionBlockCount).EndOfStatement(SQLStatementType.TCL);
-	}
+	public override ISQLBuilder RollbackTransaction() => Emit("ROLLBACK TO TRAN" + _transactionBlockCount).EndOfStatement(SQLStatementType.TCL);
 
 	public override ISQLBuilder ObjectName(string objectName) {
 		if (objectName.StartsWith("\""))
@@ -106,9 +100,7 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public override ISQLBuilder NextSequenceValue(string sequenceName) {
-		return Emit("NEXT VALUE FOR ").ObjectName(sequenceName);
-	}
+	public override ISQLBuilder NextSequenceValue(string sequenceName) => Emit("NEXT VALUE FOR ").ObjectName(sequenceName);
 
 	public override ISQLBuilder GetLastIdentity(string hint = null) {
 		if (string.IsNullOrEmpty(hint)) {
@@ -117,13 +109,9 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 		return Emit("gen_id(").ObjectName(hint).Emit(", 0)");
 	}
 
-	public override ISQLBuilder DefaultValues() {
-		return Emit("DEFAULT VALUES");
-	}
+	public override ISQLBuilder DefaultValues() => Emit("DEFAULT VALUES");
 
-	public override ISQLBuilder VariableName(string variableName) {
-		return Emit(":").Emit(variableName);
-	}
+	public override ISQLBuilder VariableName(string variableName) => Emit(":").Emit(variableName);
 
 	public override ISQLBuilder EmitQueryResultLimit(int limit, int? offset = null) {
 		Emit("FIRST ").Emit(limit.ToString());
@@ -187,18 +175,10 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 		return this;
 	}
 
-	public override ISQLBuilder CreateBuilder() {
-		return new FirebirdSQLBuilder();
-	}
+	public override ISQLBuilder CreateBuilder() => new FirebirdSQLBuilder();
 
-	public override ISequentialGuidGenerator CreateSequentialGuidGenerator(long capacity, bool regenerateOnEmpty = false) {
-		return new PreGenSequentialGuidGenerator(capacity, regenerateOnEmpty);
-	}
-
-	private string GetSequenceName(string table) {
-		throw new NotImplementedException();
-		throw new SoftwareException("Table '{0}' does not have a sequence associated with it. Make sure you associate sequences to tables before using the firebird SQL Builder");
-	}
+	public override ISequentialGuidGenerator CreateSequentialGuidGenerator(long capacity, bool regenerateOnEmpty = false)
+		=> new PreGenSequentialGuidGenerator(capacity, regenerateOnEmpty);
 
 	public override Type ConvertSQLTypeToType(string sqlType, int? length) {
 
@@ -329,6 +309,11 @@ public class FirebirdSQLBuilder : SQLBuilderBase {
 		if (type == TableType.Temporary)
 			return " ON COMMIT PRESERVE ROWS";
 		return string.Empty;
+	}
+
+	private string GetSequenceName(string table) {
+		throw new NotImplementedException();
+		throw new SoftwareException("Table '{0}' does not have a sequence associated with it. Make sure you associate sequences to tables before using the firebird SQL Builder");
 	}
 
 }

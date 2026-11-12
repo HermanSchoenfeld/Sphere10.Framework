@@ -22,31 +22,6 @@ public sealed class DriverManager {
 
 	public WindowsDriverPackageInfo[] GetDriverPackages(TimeSpan? timeout = null) => GetDriverPackagesCore(timeout, null);
 
-	private WindowsDriverPackageInfo[] GetDriverPackagesCore(TimeSpan? timeout, Action checkpoint) {
-		checkpoint?.Invoke();
-		var queryTimeout = timeout ?? TimeSpan.FromSeconds(15);
-		Guard.Argument(queryTimeout > TimeSpan.Zero, nameof(timeout), "The query timeout must be positive.");
-		using var searcher = new ManagementObjectSearcher(new ManagementScope(@"\\.\root\cimv2", new ConnectionOptions { Timeout = queryTimeout }),
-			new ObjectQuery("SELECT DeviceName,DeviceID,DeviceClass,DriverVersion,DriverProviderName,IsSigned,Signer,InfName,DriverDate FROM Win32_PnPSignedDriver"),
-			new System.Management.EnumerationOptions { Timeout = queryTimeout, Rewindable = false, ReturnImmediately = true });
-		using var objects = searcher.Get();
-		var result = new List<WindowsDriverPackageInfo>();
-		foreach (ManagementObject item in objects) {
-			using (item) {
-				checkpoint?.Invoke();
-				var date = item["DriverDate"]?.ToString();
-				result.Add(new WindowsDriverPackageInfo {
-					DeviceName = item["DeviceName"]?.ToString(), DeviceId = item["DeviceID"]?.ToString(), DeviceClass = item["DeviceClass"]?.ToString(),
-					DriverVersion = item["DriverVersion"]?.ToString(), Provider = item["DriverProviderName"]?.ToString(),
-					IsSigned = item["IsSigned"] is bool signed ? signed : null, Signer = item["Signer"]?.ToString(), InfName = item["InfName"]?.ToString(),
-					DriverDate = string.IsNullOrEmpty(date) ? null : ManagementDateTimeConverter.ToDateTime(date)
-				});
-			}
-		}
-		checkpoint?.Invoke();
-		return result.ToArray();
-	}
-
 	public static string ResolveInfPath(string infName, string windowsDirectory = null) {
 		Guard.ArgumentNotNullOrWhitespace(infName, nameof(infName));
 		windowsDirectory ??= Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -72,5 +47,30 @@ public sealed class DriverManager {
 		Guard.Argument(Path.IsPathFullyQualified(path) && !path.StartsWith(@"\\", StringComparison.Ordinal)
 			&& path.EndsWith(".sys", StringComparison.OrdinalIgnoreCase), nameof(binaryPath), "The registration does not identify an absolute local .sys file.");
 		return Path.GetFullPath(path);
+	}
+
+	private WindowsDriverPackageInfo[] GetDriverPackagesCore(TimeSpan? timeout, Action checkpoint) {
+		checkpoint?.Invoke();
+		var queryTimeout = timeout ?? TimeSpan.FromSeconds(15);
+		Guard.Argument(queryTimeout > TimeSpan.Zero, nameof(timeout), "The query timeout must be positive.");
+		using var searcher = new ManagementObjectSearcher(new ManagementScope(@"\\.\root\cimv2", new ConnectionOptions { Timeout = queryTimeout }),
+			new ObjectQuery("SELECT DeviceName,DeviceID,DeviceClass,DriverVersion,DriverProviderName,IsSigned,Signer,InfName,DriverDate FROM Win32_PnPSignedDriver"),
+			new System.Management.EnumerationOptions { Timeout = queryTimeout, Rewindable = false, ReturnImmediately = true });
+		using var objects = searcher.Get();
+		var result = new List<WindowsDriverPackageInfo>();
+		foreach (ManagementObject item in objects) {
+			using (item) {
+				checkpoint?.Invoke();
+				var date = item["DriverDate"]?.ToString();
+				result.Add(new WindowsDriverPackageInfo {
+					DeviceName = item["DeviceName"]?.ToString(), DeviceId = item["DeviceID"]?.ToString(), DeviceClass = item["DeviceClass"]?.ToString(),
+					DriverVersion = item["DriverVersion"]?.ToString(), Provider = item["DriverProviderName"]?.ToString(),
+					IsSigned = item["IsSigned"] is bool signed ? signed : null, Signer = item["Signer"]?.ToString(), InfName = item["InfName"]?.ToString(),
+					DriverDate = string.IsNullOrEmpty(date) ? null : ManagementDateTimeConverter.ToDateTime(date)
+				});
+			}
+		}
+		checkpoint?.Invoke();
+		return result.ToArray();
 	}
 }

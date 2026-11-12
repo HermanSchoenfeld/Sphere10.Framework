@@ -143,12 +143,12 @@ public class DemoLogOutputLifetimeTests {
 		public ConcurrentQueue<string> Messages { get; } = new();
 		public Task Entered => _entered.Task;
 		public bool Disposed { get; private set; }
+		public void Release() => _release.TrySetResult();
+		public void Dispose() => Disposed = true;
 		protected override void Log(LogLevel level, string message) {
 			_entered.TrySetResult();
 			_release.Task.GetAwaiter().GetResult();
 			Messages.Enqueue(message);
 		}
-		public void Release() => _release.TrySetResult();
-		public void Dispose() => Disposed = true;
 	}
 }

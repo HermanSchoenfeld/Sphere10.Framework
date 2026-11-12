@@ -440,11 +440,7 @@ public class ApplicationSettingsResetTests {
 			public bool RejectSave { get; set; }
 
 			[Transient]
-			public int ResetCalls {
-				get {
-					return _resetCalls;
-				}
-			}
+			public int ResetCalls => _resetCalls;
 
 			/// <summary>Counts actual default restoration so aliases cannot conceal repeated resets.</summary>
 			public override void RestoreDefaultValues() {
@@ -475,36 +471,27 @@ public class ApplicationSettingsResetTests {
 
 		public bool RejectAfterFirstWrite { get; set; }
 
-		public string[] Writes {
-			get {
-				return _writes.ToArray();
-			}
-		}
+		public string[] Writes => _writes.ToArray();
 
 		// Supplied fixture settings have no earlier backing record.
-		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-			return false;
-		}
-
-		// Loading is outside this fixture's explicitly supplied owner graph.
-		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
-			throw new NotSupportedException("This fixture supplies its actual settings owners directly.");
-		}
-
-		// Record only accepted writes so partial failures remain observable.
-		protected override void SaveInternal(SettingsObject settings) {
-			if (RejectAfterFirstWrite && _writes.Count == 1)
-				throw new IOException("Fixture storage rejected this page.");
-			_writes.Add((string)settings.ID);
-		}
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) => false;
 
 		// The fixture creates no backing files to delete.
 		public override void DeleteSetting(SettingsObject settings) {
 		}
 
 		// Clear the fixture's observed write history.
-		public override void ClearSettings() {
-			_writes.Clear();
+		public override void ClearSettings() => _writes.Clear();
+
+		// Loading is outside this fixture's explicitly supplied owner graph.
+		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null)
+			=> throw new NotSupportedException("This fixture supplies its actual settings owners directly.");
+
+		// Record only accepted writes so partial failures remain observable.
+		protected override void SaveInternal(SettingsObject settings) {
+			if (RejectAfterFirstWrite && _writes.Count == 1)
+				throw new IOException("Fixture storage rejected this page.");
+			_writes.Add((string)settings.ID);
 		}
 	}
 

@@ -112,18 +112,6 @@ public class RegistryUtil {
 	public Task<RegistryAddress[]> GetSubKeysAsync(RegistryAddress address, CancellationToken cancellationToken = default)
 		=> Task.Run(() => GetSubKeysCore(address, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
-	private RegistryAddress[] GetSubKeysCore(RegistryAddress address, Action checkpoint) {
-		using var scope = _registryAccess.EnterReadScope();
-		checkpoint?.Invoke();
-		using var key = OpenKey(address);
-		var children = new List<RegistryAddress>();
-		foreach (var name in key.GetSubKeyNames()) {
-			checkpoint?.Invoke();
-			children.Add(Child(address, name));
-		}
-		return children.ToArray();
-	}
-
 	public string[] GetValueNames(RegistryAddress address) {
 		using var scope = _registryAccess.EnterReadScope();
 		using var key = OpenKey(address);
@@ -142,23 +130,6 @@ public class RegistryUtil {
 
 	public Task<RegistryValue[]> ReadValuesAsync(RegistryAddress address, bool throwIfMissing = true, CancellationToken cancellationToken = default)
 		=> Task.Run(() => ReadValuesCore(address, throwIfMissing, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
-
-	private RegistryValue[] ReadValuesCore(RegistryAddress address, bool throwIfMissing, Action checkpoint) {
-		using var scope = _registryAccess.EnterReadScope();
-		checkpoint?.Invoke();
-		using var key = OpenKey(address, throwIfMissing: throwIfMissing);
-		if (key == null)
-			return Array.Empty<RegistryValue>();
-		var values = new List<RegistryValue>();
-		foreach (var name in key.GetValueNames()) {
-			checkpoint?.Invoke();
-			Tools.Exceptions.ExecuteCapturingException(() => values.Add(ReadValue(key, address, name)), out var error,
-				failure => failure is IOException or UnauthorizedAccessException or SecurityException or ArgumentException);
-			if (error != null)
-				values.Add(new RegistryValue(address, name, RegistryValueKind.Unknown, null, error));
-		}
-		return values.ToArray();
-	}
 
 	public RegistryAddress CreateKey(RegistryAddress parent, string name) {
 		ValidateComponent(name);
@@ -247,6 +218,35 @@ public class RegistryUtil {
 			Materialize(tree, cancellationToken.ThrowIfCancellationRequested);
 			return tree;
 		}, cancellationToken);
+
+	private RegistryAddress[] GetSubKeysCore(RegistryAddress address, Action checkpoint) {
+		using var scope = _registryAccess.EnterReadScope();
+		checkpoint?.Invoke();
+		using var key = OpenKey(address);
+		var children = new List<RegistryAddress>();
+		foreach (var name in key.GetSubKeyNames()) {
+			checkpoint?.Invoke();
+			children.Add(Child(address, name));
+		}
+		return children.ToArray();
+	}
+
+	private RegistryValue[] ReadValuesCore(RegistryAddress address, bool throwIfMissing, Action checkpoint) {
+		using var scope = _registryAccess.EnterReadScope();
+		checkpoint?.Invoke();
+		using var key = OpenKey(address, throwIfMissing: throwIfMissing);
+		if (key == null)
+			return Array.Empty<RegistryValue>();
+		var values = new List<RegistryValue>();
+		foreach (var name in key.GetValueNames()) {
+			checkpoint?.Invoke();
+			Tools.Exceptions.ExecuteCapturingException(() => values.Add(ReadValue(key, address, name)), out var error,
+				failure => failure is IOException or UnauthorizedAccessException or SecurityException or ArgumentException);
+			if (error != null)
+				values.Add(new RegistryValue(address, name, RegistryValueKind.Unknown, null, error));
+		}
+		return values.ToArray();
+	}
 
 	private RegistryTree CreateTree(RegistryAddress address, int depth, RegistryReadBudget budget, bool nodeCounted = false) {
 		ValidateAddress(address);

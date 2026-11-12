@@ -38,6 +38,12 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		_reportTimer.Tick += RefreshReport;
 	}
 
+	/// <summary>Stops reporting and requests channel closure before an accepted close saves preferences.</summary>
+	public override async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
+		await CloseOwnedAsync().WaitAsync(cancellationToken);
+		await base.SaveSettingsAsync(cancellationToken);
+	}
+
 	// Pause UI reporting while WinForms recreates this screen's native handle.
 	protected override void OnHandleDestroyed(EventArgs args) {
 		_reportTimer?.Stop();
@@ -51,12 +57,6 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 			_reportTimer?.Start();
 	}
 
-	/// <summary>Stops reporting and requests channel closure before an accepted close saves preferences.</summary>
-	public override async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-		await CloseOwnedAsync().WaitAsync(cancellationToken);
-		await base.SaveSettingsAsync(cancellationToken);
-	}
-
 	protected override void OnDestroyScreen() {
 		_reportTimer.Stop();
 		_reportTimer.Tick -= RefreshReport;
@@ -65,9 +65,7 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		base.OnDestroyScreen();
 	}
 
-	private async void OpenClicked(object sender, EventArgs e) {
-		await OpenChannelAsync();
-	}
+	private async void OpenClicked(object sender, EventArgs e) => await OpenChannelAsync();
 
 	// Capture the endpoint controls and retain the current demonstration channel.
 	private async Task OpenChannelAsync() {
@@ -119,9 +117,7 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		}
 	}
 
-	private async void SendClicked(object sender, EventArgs e) {
-		await SendMessageAsync();
-	}
+	private async void SendClicked(object sender, EventArgs e) => await SendMessageAsync();
 
 	// Sending observes the actual transport result and reports errors on the native dispatcher.
 	private async Task SendMessageAsync() {
@@ -138,9 +134,7 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		}
 	}
 
-	private async void StopClicked(object sender, EventArgs e) {
-		await StopOwnedAsync();
-	}
+	private async void StopClicked(object sender, EventArgs e) => await StopOwnedAsync();
 
 	// A user-requested stop reports cleanup failures rather than claiming success.
 	private async Task StopOwnedAsync() {
@@ -159,9 +153,7 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		}
 	}
 
-	private async void CloseSelectedClicked(object sender, EventArgs e) {
-		await CloseSelectedAsync();
-	}
+	private async void CloseSelectedClicked(object sender, EventArgs e) => await CloseSelectedAsync();
 
 	// A selected data-source row denotes a client; a raw-channel row denotes its sole transport.
 	private async Task CloseSelectedAsync() {
@@ -212,13 +204,9 @@ public partial class CommunicationsTestScreen : ApplicationScreen {
 		SetAvailability();
 	}
 
-	private void InfoClicked(object sender, EventArgs e) {
-		RefreshReport(sender, e);
-	}
+	private void InfoClicked(object sender, EventArgs e) => RefreshReport(sender, e);
 
-	private void SelectionChanged(object sender, EventArgs e) {
-		_closeSelected.Enabled = _clients.SelectedRows.Count != 0;
-	}
+	private void SelectionChanged(object sender, EventArgs e) => _closeSelected.Enabled = _clients.SelectedRows.Count != 0;
 
 	private void ClearClicked(object sender, EventArgs e) {
 		_received.Clear();

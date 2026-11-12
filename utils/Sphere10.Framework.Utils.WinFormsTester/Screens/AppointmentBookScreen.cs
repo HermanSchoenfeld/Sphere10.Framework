@@ -42,13 +42,11 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 			GenerateData();
 	}
 
-	private void AppointmentBook_AppointmentBookFreeRegionSelected(AppointmentBookFreeRegionSelected arg) {
-		_outputWriter.WriteLine("{0}: free region selected - column '{1}' start time: '{2}' end time: '{3}'", arg.Source.Name, arg.Column.Name, arg.StartTime.ToShortTimeString(), arg.EndTime.ToShortTimeString());
-	}
+	private void AppointmentBook_AppointmentBookFreeRegionSelected(AppointmentBookFreeRegionSelected arg)
+		=> _outputWriter.WriteLine("{0}: free region selected - column '{1}' start time: '{2}' end time: '{3}'", arg.Source.Name, arg.Column.Name, arg.StartTime.ToShortTimeString(), arg.EndTime.ToShortTimeString());
 
-	private void AppointmentBook_AppointmentDrag(AppointmentDraggedEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment dragged - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void AppointmentBook_AppointmentDrag(AppointmentDraggedEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment dragged - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
 	private void AppointmentBook_AppointmentDragStarting(AppointmentDragStartingEvent arg) {
 		_outputWriter.WriteLine("{0}: appointment drag starting - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
@@ -98,29 +96,23 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 			arg.SelectedEndTime.ToShortTimeString());
 	}
 
-	private void AppointmentBook_AppointmentResizingStarted(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment resizing started - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void AppointmentBook_AppointmentResizingStarted(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment resizing started - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void AppointmentBook_AppointmentDoubleClicked(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment double clicked - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void AppointmentBook_AppointmentDoubleClicked(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment double clicked - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void AppointmentBook_AppointmentSelected(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment selected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void AppointmentBook_AppointmentSelected(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment selected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void AppointmentBook_AppointmentDeselected(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment deselected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void AppointmentBook_AppointmentDeselected(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment deselected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void AppointmentBook_AppointmentDragging(AppointmentDraggingEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment dragging - appointment '{1}' column '{2}' start: '{3}' finish: '{4}' ", arg.Source.Name, arg.Appointment.Subject, arg.DestinationColumn.Name, arg.DestinationStartTime, arg.DestinationEndTime);
-	}
+	private void AppointmentBook_AppointmentDragging(AppointmentDraggingEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment dragging - appointment '{1}' column '{2}' start: '{3}' finish: '{4}' ", arg.Source.Name, arg.Appointment.Subject, arg.DestinationColumn.Name, arg.DestinationStartTime, arg.DestinationEndTime);
 
-	private void UnallocatedBook_AppointmentDrag(AppointmentDraggedEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment dragged - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void UnallocatedBook_AppointmentDrag(AppointmentDraggedEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment dragged - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
 	private void UnallocatedBook_AppointmentDragStarting(AppointmentDragStartingEvent arg) {
 		_outputWriter.WriteLine("{0}: appointment drag starting - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
@@ -152,28 +144,26 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 		// arg.ErrorMessage = reason for cancel
 	}
 
-	private void UnallocatedBook_AppointmentDoubleClicked(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment double clicked - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void UnallocatedBook_AppointmentDoubleClicked(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment double clicked - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void UnallocatedBook_AppointmentSelected(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment selected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void UnallocatedBook_AppointmentSelected(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment selected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void UnallocatedBook_AppointmentDeselected(AppointmentEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment deselected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
-	}
+	private void UnallocatedBook_AppointmentDeselected(AppointmentEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment deselected - column '{1}' appointment '{2}'", arg.Source.Name, arg.SourceColumn.Name, arg.Appointment.Subject);
 
-	private void UnallocatedBook_AppointmentDragging(AppointmentDraggingEvent arg) {
-		_outputWriter.WriteLine("{0}: appointment dragging - appointment '{1}' column '{2}' start: '{3}' finish: '{4}' ", arg.Source.Name, arg.Appointment.Subject, arg.DestinationColumn.Name, arg.DestinationStartTime, arg.DestinationEndTime);
-	}
+	private void UnallocatedBook_AppointmentDragging(AppointmentDraggingEvent arg)
+		=> _outputWriter.WriteLine("{0}: appointment dragging - appointment '{1}' column '{2}' start: '{3}' finish: '{4}' ", arg.Source.Name, arg.Appointment.Subject, arg.DestinationColumn.Name, arg.DestinationStartTime, arg.DestinationEndTime);
 
-	// Form Event Handlers
-	private void PopulateButton_Click(object sender, EventArgs args) {
-		GenerateData();
-	}
+	#region Form Event Handlers
 
-	// Data Generation
+	private void PopulateButton_Click(object sender, EventArgs args) => GenerateData();
+
+	#endregion
+
+	#region Data Generation
+
 	private void GenerateData() {
 		const int numResources = 10;
 		const int maxAppointmentsPerDay = 4;
@@ -251,45 +241,25 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 		}
 	}
 
-	private Color RandomAppointmentColor() {
-		return _appointmentColors[Tools.Maths.RNG.Next(_appointmentColors.Length)];
-	}
+	private Color RandomAppointmentColor() => _appointmentColors[Tools.Maths.RNG.Next(_appointmentColors.Length)];
 
-	private string RandomSubject() {
-		return _subjects.Randomize().First();
-	}
+	private string RandomSubject() => _subjects.Randomize().First();
 
-	private string RandomLocation1() {
-		return string.Format("{0} {1} {2}", RandomStreetNumber(), RandomStreetName(), RandomStreetType());
-	}
+	private string RandomLocation1() => string.Format("{0} {1} {2}", RandomStreetNumber(), RandomStreetName(), RandomStreetType());
 
-	private string RandomStreetName() {
-		return _streets.Randomize().First();
-	}
+	private string RandomStreetName() => _streets.Randomize().First();
 
-	private string RandomStreetNumber() {
-		return Tools.Maths.RNG.Next(1, 100).ToString();
-	}
+	private string RandomStreetNumber() => Tools.Maths.RNG.Next(1, 100).ToString();
 
-	private string RandomStreetType() {
-		return _streetTypes.Randomize().First();
-	}
+	private string RandomStreetType() => _streetTypes.Randomize().First();
 
-	private string RandomLocation2() {
-		return string.Format("{0}, {1} {2}", RandomCity(), RandomState(), RandomPostCode());
-	}
+	private string RandomLocation2() => string.Format("{0}, {1} {2}", RandomCity(), RandomState(), RandomPostCode());
 
-	private string RandomCity() {
-		return _cities.Randomize().First();
-	}
+	private string RandomCity() => _cities.Randomize().First();
 
-	private string RandomState() {
-		return _states.Randomize().First();
-	}
+	private string RandomState() => _states.Randomize().First();
 
-	private string RandomPostCode() {
-		return Tools.Maths.RNG.Next(1001, 10000).ToString();
-	}
+	private string RandomPostCode() => Tools.Maths.RNG.Next(1001, 10000).ToString();
 
 	private string RandomNotes() {
 		if (Tools.Maths.Gamble(0.2))
@@ -298,12 +268,13 @@ public partial class AppointmentBookScreen : ApplicationScreen {
 		return string.Empty;
 	}
 
+	#endregion
+
 	private void TimeViewSelector_SelectedIndexChanged(object sender, EventArgs args) {
 		_appointmentBook.SetTimePeriodType((TimePeriodType)_timeViewSelector.SelectedEnum);
 		_unallocatedBook.SetTimePeriodType((TimePeriodType)_timeViewSelector.SelectedEnum);
 	}
 
-	private void ColumnFilterComboBox_SelectedIndexChanged(object sender, EventArgs args) {
-		_appointmentBook.ColumnFilter = (AppointmentBookViewModelFilter)_columnFilterComboBox.SelectedEnum;
-	}
+	private void ColumnFilterComboBox_SelectedIndexChanged(object sender, EventArgs args)
+		=> _appointmentBook.ColumnFilter = (AppointmentBookViewModelFilter)_columnFilterComboBox.SelectedEnum;
 }

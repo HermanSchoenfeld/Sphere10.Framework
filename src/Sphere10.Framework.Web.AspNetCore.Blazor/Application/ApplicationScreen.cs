@@ -43,95 +43,43 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	public IApplicationBlock Block { get; set; }
 
 	/// <summary>Override for a dynamic tab title and call NotifyScreenChanged after changing it.</summary>
-	public virtual string Title {
-		get {
-			return null;
-		}
-	}
+	public virtual string Title => null;
 
 	/// <summary>Returns the actual registration settings; a typed override declares this screen's settings class.</summary>
-	public virtual SettingsObject ScreenSettings {
-		get {
-			return Session?.Definition.Settings;
-		}
-	}
+	public virtual SettingsObject ScreenSettings => Session?.Definition.Settings;
 
 	/// <inheritdoc />
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Array.Empty<IApplicationMenu>();
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Array.Empty<IApplicationMenu>();
 
 	/// <inheritdoc />
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Array.Empty<IApplicationMenuItem>();
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Array.Empty<IApplicationMenuItem>();
 
 	/// <inheritdoc />
-	public virtual bool HasUnsavedChanges {
-		get {
-			return false;
-		}
-	}
+	public virtual bool HasUnsavedChanges => false;
 
 	/// <inheritdoc />
-	public virtual bool CanRestoreAtStartup {
-		get {
-			return true;
-		}
-	}
+	public virtual bool CanRestoreAtStartup => true;
 
 	/// <inheritdoc />
-	public virtual HelpType Type {
-		get {
-			return HelpType.None;
-		}
-	}
+	public virtual HelpType Type => HelpType.None;
 
 	/// <inheritdoc />
-	public virtual string FileName {
-		get {
-			return null;
-		}
-	}
+	public virtual string FileName => null;
 
 	/// <inheritdoc />
-	public virtual string Url {
-		get {
-			return null;
-		}
-	}
+	public virtual string Url => null;
 
 	/// <inheritdoc />
-	public virtual int? PageNumber {
-		get {
-			return null;
-		}
-	}
+	public virtual int? PageNumber => null;
 
 	/// <inheritdoc />
-	public virtual int? HelpTopicID {
-		get {
-			return null;
-		}
-	}
+	public virtual int? HelpTopicID => null;
 
 	/// <inheritdoc />
-	public virtual int? HelpTopicAlias {
-		get {
-			return null;
-		}
-	}
+	public virtual int? HelpTopicAlias => null;
 
 	/// <summary>The most recent settings failure, cleared after a successful save or settings application.</summary>
-	public string SettingsError {
-		get {
-			return _settingsError;
-		}
-	}
+	public string SettingsError => _settingsError;
 
 	/// <summary>Saves a completed local settings edit through the actual object's configured provider.</summary>
 	public async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
@@ -163,6 +111,15 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 		GC.SuppressFinalize(this);
 	}
 
+	/// <inheritdoc />
+	Task<bool> SharedUI.IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) => CanDeactivateAsync(cancellationToken);
+
+	/// <inheritdoc />
+	Task SharedUI.IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) => OnActivatedAsync(cancellationToken);
+
+	/// <inheritdoc />
+	Task SharedUI.IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) => OnDeactivatedAsync(cancellationToken);
+
 	/// <summary>Applies restored settings before attaching or constructing operational child controls.</summary>
 	protected override async Task OnInitializedAsync() {
 		await base.OnInitializedAsync();
@@ -192,14 +149,10 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	}
 
 	/// <summary>Refreshes screen presentation after its own, block or plugin settings are saved.</summary>
-	protected virtual Task OnSettingsChangedAsync(SettingsObject values) {
-		return Task.CompletedTask;
-	}
+	protected virtual Task OnSettingsChangedAsync(SettingsObject values) => Task.CompletedTask;
 
 	/// <summary>Marks a completed local preference edit for the accepted close/save lifecycle.</summary>
-	protected void MarkSettingsChanged() {
-		_settingsDirty = true;
-	}
+	protected void MarkSettingsChanged() => _settingsDirty = true;
 
 	/// <summary>Saves a completed control edit while keeping a recoverable failure visible on the screen.</summary>
 	protected async Task SaveSettingsChangesAsync() {
@@ -209,24 +162,16 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 	}
 
 	/// <summary>Allows derived screens to veto navigation without saving rejected state.</summary>
-	protected virtual Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) {
-		return Task.FromResult(true);
-	}
+	protected virtual Task<bool> CanDeactivateAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
 	/// <summary>Runs when the existing host activates this screen.</summary>
-	protected virtual Task OnActivatedAsync(CancellationToken cancellationToken) {
-		return Task.CompletedTask;
-	}
+	protected virtual Task OnActivatedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
 	/// <summary>Runs when the existing host deactivates this screen.</summary>
-	protected virtual Task OnDeactivatedAsync(CancellationToken cancellationToken) {
-		return Task.CompletedTask;
-	}
+	protected virtual Task OnDeactivatedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
 	/// <summary>Releases resources owned by a derived screen.</summary>
-	protected virtual ValueTask DisposeAsyncCore() {
-		return ValueTask.CompletedTask;
-	}
+	protected virtual ValueTask DisposeAsyncCore() => ValueTask.CompletedTask;
 
 	/// <summary>Refreshes the current host's screen presentation when the screen remains attached.</summary>
 	protected void NotifyScreenChanged() {
@@ -260,20 +205,5 @@ public abstract class ApplicationScreen : ComponentBase, IApplicationScreen, IAs
 			yield return block.BlockSettings;
 		if (block?.Source?.PluginSettings != null)
 			yield return block.Source.PluginSettings;
-	}
-
-	/// <inheritdoc />
-	Task<bool> SharedUI.IApplicationScreen.CanDeactivateAsync(CancellationToken cancellationToken) {
-		return CanDeactivateAsync(cancellationToken);
-	}
-
-	/// <inheritdoc />
-	Task SharedUI.IApplicationScreen.OnActivatedAsync(CancellationToken cancellationToken) {
-		return OnActivatedAsync(cancellationToken);
-	}
-
-	/// <inheritdoc />
-	Task SharedUI.IApplicationScreen.OnDeactivatedAsync(CancellationToken cancellationToken) {
-		return OnDeactivatedAsync(cancellationToken);
 	}
 }

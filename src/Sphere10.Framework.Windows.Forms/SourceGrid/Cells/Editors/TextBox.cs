@@ -9,6 +9,7 @@
 
 using System;
 using System.Windows.Forms;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 
@@ -17,7 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBox : EditorControlBase {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -26,13 +28,13 @@ public class TextBox : EditorControlBase {
 		: base(type) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.TextBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.TextBoxEx)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.TextBoxEx)base.Control;
 	}
 
 	/// <summary>
@@ -48,11 +50,10 @@ public class TextBox : EditorControlBase {
 	/// Returns the value inserted with the current editor control
 	/// </summary>
 	/// <returns></returns>
-	public override object GetEditedValue() {
-		return Control.Value;
-	}
+	public override object GetEditedValue() => Control.Value;
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -87,4 +88,6 @@ public class TextBox : EditorControlBase {
 		if (Control.Text != null)
 			Control.SelectionStart = Control.Text.Length;
 	}
+
+	#endregion
 }

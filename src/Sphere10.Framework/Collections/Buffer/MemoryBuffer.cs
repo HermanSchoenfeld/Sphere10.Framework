@@ -124,9 +124,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public ReadOnlySpan<byte> ReadSpan(long index, long count) {
-		return AsSpan(index, count);
-	}
+	public ReadOnlySpan<byte> ReadSpan(long index, long count) => AsSpan(index, count);
 
 	public void ReadRange(long index, Span<byte> destination) {
 		CheckRange(index, destination.Length);
@@ -141,9 +139,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public void AddRange(ReadOnlySpan<byte> items) {
-		Write(_length, items);
-	}
+	public void AddRange(ReadOnlySpan<byte> items) => Write(_length, items);
 
 	public void Write(long index, ReadOnlySpan<byte> items) {
 		var newBytesCount = Math.Max(index + items.Length, _length) - _length;
@@ -186,9 +182,7 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		items.CopyTo(_internalArray.AsSpan(indexI, items.Length));
 	}
 
-	public override void InsertRange(long index, IEnumerable<byte> items) {
-		InsertRange(index, items as byte[] ?? items.ToArray());
-	}
+	public override void InsertRange(long index, IEnumerable<byte> items) => InsertRange(index, items as byte[] ?? items.ToArray());
 
 	public void InsertRange(long index, ReadOnlySpan<byte> items) {
 		CheckIndex(index, allowAtEnd: true);
@@ -236,13 +230,13 @@ public sealed class MemoryBuffer : RangedListBase<byte>, IBuffer {
 		return _internalArray.AsSpan(indexI, countI);
 	}
 
-	private void CopyRange(int index, Span<byte> destination) => _internalArray.AsSpan(index, destination.Length).CopyTo(destination);
-
 	public override void Clear() {
 		var initialCapacityI = Tools.Collection.CheckNotImplemented64bitAddressingLength(_initialCapacity);
 		Array.Resize(ref _internalArray, initialCapacityI);
 		_length = 0;
 	}
+
+	private void CopyRange(int index, Span<byte> destination) => _internalArray.AsSpan(index, destination.Length).CopyTo(destination);
 
 	private void GrowSpaceIfRequired(long newBytes) {
 		var newCapacity = _length + newBytes;

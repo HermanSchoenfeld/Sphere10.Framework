@@ -55,9 +55,7 @@ public partial class ValidationIndicator : UserControlEx {
 	[Category("Behavior")]
 	[DefaultValue(ValidationState.Valid)]
 	public ValidationState State {
-		get {
-			return _validationState;
-		}
+		get => _validationState;
 		set {
 			switch (value) {
 				case ValidationState.Disabled:
@@ -173,11 +171,14 @@ public partial class ValidationIndicator : UserControlEx {
 	protected virtual void OnRaiseValidationStateChanged(ValidationState previousState, ValidationState newState) {
 	}
 
-	// Event Handlers
+	#region Event Handlers
+
 	private void HandleMouseHover(object sender, EventArgs args) {
 		if (ShowValidationMessageToolTip) {
 			var displayMsg = string.IsNullOrWhiteSpace(_validationMessage) ? "Valid" : _validationMessage;
 			_toolTip.Show(displayMsg, this);
 		}
 	}
+
+	#endregion
 }

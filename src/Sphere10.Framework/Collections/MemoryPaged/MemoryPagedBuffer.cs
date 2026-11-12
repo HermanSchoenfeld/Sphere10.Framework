@@ -28,14 +28,6 @@ public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 
 	public new IReadOnlyList<IBufferPage> Pages { get; }
 
-	protected override IPage<byte> NewPageInstance(long pageNumber) {
-		return new BufferPage(PageSize);
-	}
-
-	protected override IPage<byte>[] LoadPages() {
-		throw new NotSupportedException($"Pages are not loadable across runtime sessions in this implementation. See {nameof(FileMappedBuffer)} class.");
-	}
-
 	public override IEnumerable<byte> ReadRange(long index, long count)
 		=> PagedBufferImplementationHelper.ReadRange(_friend, index, count);
 
@@ -67,13 +59,14 @@ public class MemoryPagedBuffer : MemoryPagedListBase<byte>, IMemoryPagedBuffer {
 	public Span<byte> AsSpan(long index, long count)
 		=> PagedBufferImplementationHelper.AsSpan(_friend, index, count);
 
-	public void ExpandTo(long totalBytes) {
-		throw new NotImplementedException();
-	}
+	public void ExpandTo(long totalBytes) => throw new NotImplementedException();
 
-	public void ExpandBy(long newBytes) {
-		throw new NotImplementedException();
-	}
+	public void ExpandBy(long newBytes) => throw new NotImplementedException();
+
+	protected override IPage<byte> NewPageInstance(long pageNumber) => new BufferPage(PageSize);
+
+	protected override IPage<byte>[] LoadPages()
+		=> throw new NotSupportedException($"Pages are not loadable across runtime sessions in this implementation. See {nameof(FileMappedBuffer)} class.");
 
 
 	/// <summary>

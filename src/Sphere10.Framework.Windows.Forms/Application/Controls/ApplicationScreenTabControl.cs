@@ -66,6 +66,53 @@ public partial class ApplicationScreenTabControl : TabControl {
 		ApplyMetrics();
 	}
 
+	/// <summary>Shows a highlighted docking tab without adding pages or disturbing their layout and selection.</summary>
+	public void ShowDockPreview(string Title, Point Location) {
+		Guard.ArgumentNotNull(Title, nameof(Title));
+		var Index = GetInsertionIndex(Location);
+		var MarkerBounds = GetDockMarkerBounds(Index);
+		var PreviewBounds = GetDockPreviewBounds(Title, MarkerBounds);
+		if (_dockPreviewIndex == Index && _dockPreviewTitle == Title && _dockMarkerBounds == MarkerBounds && _dockPreviewBounds == PreviewBounds)
+			return;
+		var PreviousBounds = DockPreviewVisible ? Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds) : Rectangle.Empty;
+		_dockPreviewIndex = Index;
+		_dockPreviewTitle = Title;
+		_dockMarkerBounds = MarkerBounds;
+		_dockPreviewBounds = PreviewBounds;
+		InvalidatePreview(PreviousBounds);
+		InvalidatePreview(Rectangle.Union(MarkerBounds, PreviewBounds));
+		if (IsHandleCreated && Visible)
+			_dockPreviewTip.Show($"Release to dock: {Title}", this, new Point(PreviewBounds.Left, TabStripBounds.Bottom + ScaleMetric(LogicalDockToolTipGap)));
+	}
+
+	public void HideDockPreview() {
+		if (!DockPreviewVisible)
+			return;
+		var PreviousBounds = Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds);
+		_dockPreviewIndex = -1;
+		_dockPreviewTitle = null;
+		_dockMarkerBounds = Rectangle.Empty;
+		_dockPreviewBounds = Rectangle.Empty;
+		_dockPreviewTip.Hide(this);
+		InvalidatePreview(PreviousBounds);
+	}
+
+	/// <summary>Moves a tab without changing the selected screen or its lifecycle.</summary>
+	public void MoveTab(TabPage Page, int Index) {
+		Guard.ArgumentNotNull(Page, nameof(Page));
+		Guard.Argument(TabPages.Contains(Page), nameof(Page), "Tab does not belong to this control");
+		Guard.ArgumentInRange(Index, 0, TabCount - 1, nameof(Index));
+		if (TabPages.IndexOf(Page) == Index)
+			return;
+		using var Update = EnterReorderScope();
+		var Selected = SelectedTab;
+		TabPages.Remove(Page);
+		TabPages.Insert(Index, Page);
+		SelectedTab = Selected;
+		Invalidate();
+		TabOrderChanged?.Invoke();
+	}
+
 	private void TabMenuOpening(object sender, CancelEventArgs args) {
 		_undockMenuItem.Enabled = _closeMenuItem.Enabled = CanCloseOrUndock(_contextTab);
 		var screen = _contextTab?.Tag as ApplicationScreen;
@@ -83,24 +130,6 @@ public partial class ApplicationScreenTabControl : TabControl {
 	private void UndockMenuClicked(object sender, EventArgs args) => RequestUndock(_contextTab);
 
 	private void CloseMenuClicked(object sender, EventArgs args) => RequestClose(_contextTab);
-
-	private void CloseAllMenuClicked(object sender, EventArgs args) => ScreenCloseAllRequested?.Invoke();
-
-	private void CloseOthersMenuClicked(object sender, EventArgs args) {
-		if (_contextTab?.Tag is ApplicationScreen screen)
-			ScreenCloseOthersRequested?.Invoke(screen);
-	}
-
-	private async void MakeStartupMenuClicked(object sender, EventArgs args) {
-		if (_contextTab?.Tag is not ApplicationScreen screen || screen.Host is not ApplicationScreenHost host)
-			return;
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			await host.MakeStartupScreenAsync(screen);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, "Make Startup Screen", error);
-		}
-	}
 
 	internal bool Reordering { get; private set; }
 
@@ -164,51 +193,22 @@ public partial class ApplicationScreenTabControl : TabControl {
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public bool UndockPreviewVisible => _undockPreviewVisible;
 
-	/// <summary>Shows a highlighted docking tab without adding pages or disturbing their layout and selection.</summary>
-	public void ShowDockPreview(string Title, Point Location) {
-		Guard.ArgumentNotNull(Title, nameof(Title));
-		var Index = GetInsertionIndex(Location);
-		var MarkerBounds = GetDockMarkerBounds(Index);
-		var PreviewBounds = GetDockPreviewBounds(Title, MarkerBounds);
-		if (_dockPreviewIndex == Index && _dockPreviewTitle == Title && _dockMarkerBounds == MarkerBounds && _dockPreviewBounds == PreviewBounds)
-			return;
-		var PreviousBounds = DockPreviewVisible ? Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds) : Rectangle.Empty;
-		_dockPreviewIndex = Index;
-		_dockPreviewTitle = Title;
-		_dockMarkerBounds = MarkerBounds;
-		_dockPreviewBounds = PreviewBounds;
-		InvalidatePreview(PreviousBounds);
-		InvalidatePreview(Rectangle.Union(MarkerBounds, PreviewBounds));
-		if (IsHandleCreated && Visible)
-			_dockPreviewTip.Show($"Release to dock: {Title}", this, new Point(PreviewBounds.Left, TabStripBounds.Bottom + ScaleMetric(LogicalDockToolTipGap)));
+	private void CloseAllMenuClicked(object sender, EventArgs args) => ScreenCloseAllRequested?.Invoke();
+
+	private void CloseOthersMenuClicked(object sender, EventArgs args) {
+		if (_contextTab?.Tag is ApplicationScreen screen)
+			ScreenCloseOthersRequested?.Invoke(screen);
 	}
 
-	public void HideDockPreview() {
-		if (!DockPreviewVisible)
+	private async void MakeStartupMenuClicked(object sender, EventArgs args) {
+		if (_contextTab?.Tag is not ApplicationScreen screen || screen.Host is not ApplicationScreenHost host)
 			return;
-		var PreviousBounds = Rectangle.Union(_dockMarkerBounds, _dockPreviewBounds);
-		_dockPreviewIndex = -1;
-		_dockPreviewTitle = null;
-		_dockMarkerBounds = Rectangle.Empty;
-		_dockPreviewBounds = Rectangle.Empty;
-		_dockPreviewTip.Hide(this);
-		InvalidatePreview(PreviousBounds);
-	}
-
-	/// <summary>Moves a tab without changing the selected screen or its lifecycle.</summary>
-	public void MoveTab(TabPage Page, int Index) {
-		Guard.ArgumentNotNull(Page, nameof(Page));
-		Guard.Argument(TabPages.Contains(Page), nameof(Page), "Tab does not belong to this control");
-		Guard.ArgumentInRange(Index, 0, TabCount - 1, nameof(Index));
-		if (TabPages.IndexOf(Page) == Index)
-			return;
-		using var Update = EnterReorderScope();
-		var Selected = SelectedTab;
-		TabPages.Remove(Page);
-		TabPages.Insert(Index, Page);
-		SelectedTab = Selected;
-		Invalidate();
-		TabOrderChanged?.Invoke();
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			await host.MakeStartupScreenAsync(screen);
+		});
+		if (error != null) {
+			await ExceptionDialog.ShowAsync(this, "Make Startup Screen", error);
+		}
 	}
 
 	protected override void OnDrawItem(DrawItemEventArgs Args) {

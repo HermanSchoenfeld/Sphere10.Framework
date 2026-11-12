@@ -28,13 +28,121 @@ public partial class VisualGrid {
 	private bool _columnResizePending;
 	private readonly Dictionary<IVisualGridColumn, bool> _columnStretchOverrides = new();
 	private bool _restoringGridSettings;
+	private VisualGrid _columnLayoutSource;
+	private bool _applyingSharedColumns;
+	private bool _publishingColumnLayout;
+	internal event EventHandler ColumnLayoutChanged;
+
+	/// <summary>Optionally borrows another grid's column schema and resolved widths. Query, paging and selection remain local; the source owns column preferences.</summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public VisualGrid ColumnLayoutSource {
+		get => _columnLayoutSource;
+		set {
+			Guard.Ensure(!InvokeRequired && (value == null || !value.InvokeRequired), "Share column layouts on the controls' owning UI thread.");
+			for (var ancestor = value; ancestor != null; ancestor = ancestor._columnLayoutSource)
+				Guard.Argument(!ReferenceEquals(ancestor, this), nameof(value), "Column layout sources cannot form a cycle.");
+			Guard.Argument(value == null || !value.IsDisposed, nameof(value), "A column layout source must be alive.");
+			if (ReferenceEquals(value, _columnLayoutSource))
+				return;
+			ReleaseColumnLayoutSource();
+			_columnLayoutSource = value;
+			_grid.HorizontalScrollingEnabled = value == null;
+			if (value == null)
+				return;
+			value.ColumnLayoutChanged += SharedColumnLayoutChanged;
+			value.Disposed += SharedColumnSourceDisposed;
+			SharedColumnLayoutChanged(value, EventArgs.Empty);
+		}
+	}
+
+	/// <summary>Applies screen-owned values without saving or replacing an active cell's draft.</summary>
+	public void ApplyGridPreferences(VisualGridSettings preferences) {
+		Guard.ArgumentNotNull(preferences, nameof(preferences));
+		ValidatePreferenceBindings(_columnsBindings);
+		_preferences = preferences.Copy();
+		if (_columnLayoutSource != null)
+			_preferences.Columns = _columnLayoutSource.CaptureGridPreferences().Columns;
+		ApplyGridPreferencesCore(_preferences);
+		ApplySharedColumnGeometry();
+	}
+
+	/// <summary>Captures current query and deliberate widths as detached values on the owning UI thread.</summary>
+	public VisualGridSettings CaptureGridPreferences() {
+		Guard.Ensure(!InvokeRequired, "Capture grid preferences on the owning UI thread.");
+		var result = _pendingQueryPreferences == null ? new VisualGridSettings {
+			ConsumerVersion = _preferences?.ConsumerVersion ?? 0,
+			PageMode = _pageMode,
+			AutoPageSize = AutoPageSize,
+			PageSize = _manualPageSize,
+			PageNumber = _pageNumber,
+			SortColumnName = _sortColumnName ?? string.Empty,
+			SortDirection = _sortDirection
+		} : _pendingQueryPreferences.Copy();
+
+		// Keep optional schema columns while updating the metadata of currently bound columns.
+		var columns = new Dictionary<string, ApplicationGridColumnPreferences>(StringComparer.Ordinal);
+		foreach (var column in (_preferences?.Columns) ?? Array.Empty<ApplicationGridColumnPreferences>()) {
+			if (column != null && !string.IsNullOrWhiteSpace(column.Key))
+				columns[column.Key] = new ApplicationGridColumnPreferences {
+					Key = column.Key,
+					Title = column.Title,
+					ExpandsToFit = column.ExpandsToFit,
+					Width = column.Width.HasValue && double.IsFinite(column.Width.Value) && column.Width.Value > 0
+						? Math.Min(column.Width.Value, _maximumPreferenceColumnWidth) : null
+				};
+		}
+		foreach (var binding in _columnsBindings.Where(column => !string.IsNullOrWhiteSpace(column.PreferenceKey))
+			.GroupBy(column => column.PreferenceKey, StringComparer.Ordinal).Where(group => group.Count() == 1).Select(group => group.Single())) {
+			var key = binding.PreferenceKey;
+			if (string.IsNullOrWhiteSpace(key))
+				continue;
+			columns[key] = new ApplicationGridColumnPreferences {
+				Key = key,
+				Title = binding.ColumnName,
+				ExpandsToFit = _columnStretchOverrides.TryGetValue(binding, out var expands) ? expands : binding.ExpandsToFit,
+				Width = _columnWidthOverrides.TryGetValue(binding, out var width) && width > 0
+					? Math.Min(width * 96D / DeviceDpi, _maximumPreferenceColumnWidth)
+					: columns.TryGetValue(key, out var previous) ? previous.Width : null
+			};
+		}
+		result.Columns = columns.Values.ToArray();
+		return result;
+	}
+
+	private void ReleaseColumnLayoutSource() {
+		if (_columnLayoutSource == null)
+			return;
+		_columnLayoutSource.ColumnLayoutChanged -= SharedColumnLayoutChanged;
+		_columnLayoutSource.Disposed -= SharedColumnSourceDisposed;
+		_columnLayoutSource = null;
+		if (!_grid.IsDisposed)
+			_grid.HorizontalScrollingEnabled = true;
+	}
+
+	private void SharedColumnSourceDisposed(object sender, EventArgs args) => ReleaseColumnLayoutSource();
+
+	private async void SharedColumnLayoutChanged(object sender, EventArgs args) {
+		if (IsDisposed || Disposing || _columnLayoutSource == null || _applyingSharedColumns)
+			return;
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
+			var source = _columnLayoutSource;
+			var schemaChanged = !_columnsBindings.SequenceEqual(source._columnsBindings);
+			if (_preferences != null)
+				_preferences.Columns = source.CaptureGridPreferences().Columns;
+			if (schemaChanged)
+				GridBindings = source._columnsBindings;
+			ApplySharedColumnGeometry();
+			if (schemaChanged && _dataSource != null)
+				await RefreshGrid();
+		});
+		if (error != null && !IsDisposed && !Disposing)
+			(ResolveSettingsLogger() ?? SystemLog.Logger).Exception(error, "Could not update shared grid columns.");
+	}
 
 	/// <summary>Applies externally owned presentation values; the grid never loads or saves a settings record.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public VisualGridSettings Preferences {
-		get {
-			return _preferences == null ? null : CaptureGridPreferences();
-		}
+		get => _preferences == null ? null : CaptureGridPreferences();
 		set {
 			if (value == null) {
 				_preferences = null;
@@ -44,12 +152,48 @@ public partial class VisualGrid {
 		}
 	}
 
-	/// <summary>Applies screen-owned values without saving or replacing an active cell's draft.</summary>
-	public void ApplyGridPreferences(VisualGridSettings preferences) {
-		Guard.ArgumentNotNull(preferences, nameof(preferences));
-		ValidatePreferenceBindings(_columnsBindings);
-		_preferences = preferences.Copy();
-		ApplyGridPreferencesCore(_preferences);
+	private bool ApplySharedColumnGeometry() {
+		var source = _columnLayoutSource;
+		if (source == null || source.IsDisposed || _applyingSharedColumns || _grid.ColumnsCount != _columnsBindings.Length
+			|| source._grid.ColumnsCount != _columnsBindings.Length || !_columnsBindings.SequenceEqual(source._columnsBindings))
+			return false;
+		_applyingSharedColumns = true;
+		var previousSizing = _sizingColumns;
+		_sizingColumns = true;
+		using var restore = Tools.Scope.ExecuteOnDispose(() => { _sizingColumns = previousSizing; _applyingSharedColumns = false; });
+		var scale = DeviceDpi / (double)source.DeviceDpi;
+		_columnWidthOverrides.Clear();
+		_columnStretchOverrides.Clear();
+		foreach (var column in source._columnWidthOverrides)
+			_columnWidthOverrides[column.Key] = Math.Max(1, (int)Math.Round(column.Value * scale));
+		foreach (var column in source._columnStretchOverrides)
+			_columnStretchOverrides[column.Key] = column.Value;
+		_columnMinimumWidths = new int[_columnsBindings.Length];
+		_grid.Columns.SuspendLayout();
+		using (Tools.Scope.ExecuteOnDispose(() => _grid.Columns.ResumeLayout())) {
+			for (var index = 0; index < _columnsBindings.Length; index++) {
+				var width = Math.Max(1, (int)Math.Round(source._grid.Columns[index].Width * scale));
+				_columnMinimumWidths[index] = width;
+				_grid.Columns[index].AutoSizeMode = SourceGrid.AutoSizeMode.None;
+				if (_grid.Columns[index].Width != width)
+					_grid.Columns[index].Width = width;
+			}
+		}
+		_sizedColumnBindings = _columnsBindings;
+		_columnsSizedFromData = source._columnsSizedFromData;
+		_columnViewportWidth = _grid.DisplayRectangle.Width;
+		NotifyColumnLayoutChanged();
+		return true;
+	}
+
+	private void NotifyColumnLayoutChanged() {
+		if (_publishingColumnLayout || IsDisposed || Disposing)
+			return;
+		if (_dataSource != null && !ReferenceEquals(_boundColumns, _columnsBindings))
+			return;
+		_publishingColumnLayout = true;
+		using var restore = Tools.Scope.ExecuteOnDispose(() => _publishingColumnLayout = false);
+		ColumnLayoutChanged?.Invoke(this, EventArgs.Empty);
 	}
 
 	// Stored widths are logical units; a monitor-DPI change reuses the same values without creating a save.
@@ -88,6 +232,7 @@ public partial class VisualGrid {
 				_columnMinimumWidths[index] = _grid.Columns[index].Width;
 		}
 		NotifyPreferencesChanged();
+		NotifyColumnLayoutChanged();
 	}
 
 	// Deliberate grid operations notify their owner; persistence is outside the control.
@@ -100,6 +245,7 @@ public partial class VisualGrid {
 
 	// Accepted query preferences wait for SourceGrid to finish its independent row-edit lifecycle.
 	private async void GridPreferenceEditEnded(object sender, EventArgs args) {
+		QueueDataSourceNotification();
 		if (_pendingQueryPreferences == null || IsDisposed || Disposing)
 			return;
 		await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => {
@@ -226,49 +372,6 @@ public partial class VisualGrid {
 
 	/// <summary>Lets derived grids observe an accepted detached preference value before public subscribers.</summary>
 	protected virtual void OnPreferencesChanged(VisualGridSettings preferences) {
-	}
-
-	/// <summary>Captures current query and deliberate widths as detached values on the owning UI thread.</summary>
-	public VisualGridSettings CaptureGridPreferences() {
-		Guard.Ensure(!InvokeRequired, "Capture grid preferences on the owning UI thread.");
-		var result = _pendingQueryPreferences == null ? new VisualGridSettings {
-			ConsumerVersion = _preferences?.ConsumerVersion ?? 0,
-			PageMode = _pageMode,
-			AutoPageSize = AutoPageSize,
-			PageSize = _manualPageSize,
-			PageNumber = _pageNumber,
-			SortColumnName = _sortColumnName ?? string.Empty,
-			SortDirection = _sortDirection
-		} : _pendingQueryPreferences.Copy();
-
-		// Keep optional schema columns while updating the metadata of currently bound columns.
-		var columns = new Dictionary<string, ApplicationGridColumnPreferences>(StringComparer.Ordinal);
-		foreach (var column in (_preferences?.Columns) ?? Array.Empty<ApplicationGridColumnPreferences>()) {
-			if (column != null && !string.IsNullOrWhiteSpace(column.Key))
-				columns[column.Key] = new ApplicationGridColumnPreferences {
-					Key = column.Key,
-					Title = column.Title,
-					ExpandsToFit = column.ExpandsToFit,
-					Width = column.Width.HasValue && double.IsFinite(column.Width.Value) && column.Width.Value > 0
-						? Math.Min(column.Width.Value, _maximumPreferenceColumnWidth) : null
-				};
-		}
-		foreach (var binding in _columnsBindings.Where(column => !string.IsNullOrWhiteSpace(column.PreferenceKey))
-			.GroupBy(column => column.PreferenceKey, StringComparer.Ordinal).Where(group => group.Count() == 1).Select(group => group.Single())) {
-			var key = binding.PreferenceKey;
-			if (string.IsNullOrWhiteSpace(key))
-				continue;
-			columns[key] = new ApplicationGridColumnPreferences {
-				Key = key,
-				Title = binding.ColumnName,
-				ExpandsToFit = _columnStretchOverrides.TryGetValue(binding, out var expands) ? expands : binding.ExpandsToFit,
-				Width = _columnWidthOverrides.TryGetValue(binding, out var width) && width > 0
-					? Math.Min(width * 96D / DeviceDpi, _maximumPreferenceColumnWidth)
-					: columns.TryGetValue(key, out var previous) ? previous.Width : null
-			};
-		}
-		result.Columns = columns.Values.ToArray();
-		return result;
 	}
 
 	// The settings array determines presentation order; newly declared columns follow in binding order.

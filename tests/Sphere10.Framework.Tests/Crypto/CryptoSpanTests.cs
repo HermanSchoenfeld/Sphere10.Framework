@@ -288,13 +288,13 @@ public class CryptoSpanTests {
 			// Reset invalidated the original cached digest even if a derived initializer did not call base.
 		}
 
+		public override object Clone() => throw new NotSupportedException();
+
 		protected override void Finalize(Span<byte> digest) {
 			FinalizeCalls++;
 			digest[..BytesToWrite].Fill(FillValue);
 			if (FailFinalize)
 				throw new InvalidOperationException("Injected finalization failure.");
 		}
-
-		public override object Clone() => throw new NotSupportedException();
 	}
 }

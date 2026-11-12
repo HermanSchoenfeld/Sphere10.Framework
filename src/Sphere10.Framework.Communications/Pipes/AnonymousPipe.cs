@@ -64,6 +64,23 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 		await DisposePipeResourcesAsync();
 	}
 
+	public override bool IsConnectionAlive() => _readStream is { IsConnected: true } && _writeStream is { IsConnected: true };
+
+	public async Task<bool> TryWaitForString(string value, CancellationToken cancellationToken) {
+		var taskCompletionSource = new TaskCompletionSource<bool>();
+		cancellationToken.Register(() => { taskCompletionSource.TrySetResult(false); });
+
+		void MonitorSync(string @string) {
+			if (@string == value)
+				taskCompletionSource.TrySetResult(true);
+			this.ReceivedString -= MonitorSync;
+		}
+
+		this.ReceivedString += MonitorSync;
+
+		return await taskCompletionSource.Task;
+	}
+
 	protected override async Task OpenInternal() {
 		(Endpoint, _readStream, _writeStream) = await OpenPipeInternal();
 		_writer = new StreamWriter(_writeStream, leaveOpen: true) { AutoFlush = true };
@@ -73,8 +90,6 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 	protected abstract Task<(AnonymousPipeEndpoint endpoint, PipeStream readStream, PipeStream writeStream)> OpenPipeInternal();
 
 	protected override Task CloseInternal() => DisposePipeResourcesAsync();
-
-	public override bool IsConnectionAlive() => _readStream is { IsConnected: true } && _writeStream is { IsConnected: true };
 
 	protected override Task<bool> TrySendBytesInternal(ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
 		=> TrySendString(Convert.ToBase64String(bytes.Span), cancellationToken);
@@ -94,21 +109,6 @@ public abstract class AnonymousPipe : ProtocolChannel, IDisposable {
 	}
 
 	protected virtual void OnSentString(string @string) {
-	}
-
-	public async Task<bool> TryWaitForString(string value, CancellationToken cancellationToken) {
-		var taskCompletionSource = new TaskCompletionSource<bool>();
-		cancellationToken.Register(() => { taskCompletionSource.TrySetResult(false); });
-
-		void MonitorSync(string @string) {
-			if (@string == value)
-				taskCompletionSource.TrySetResult(true);
-			this.ReceivedString -= MonitorSync;
-		}
-
-		this.ReceivedString += MonitorSync;
-
-		return await taskCompletionSource.Task;
 	}
 
 	private async Task<string> ReceiveString(CancellationToken cancellationToken) {

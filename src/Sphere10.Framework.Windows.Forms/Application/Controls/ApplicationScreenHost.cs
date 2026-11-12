@@ -82,11 +82,7 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	/// <summary>The independently selected sidebar block.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public override IApplicationBlock SelectedBlock {
-		get {
-			return _engine.SelectedBlock;
-		}
-	}
+	public override IApplicationBlock SelectedBlock => _engine.SelectedBlock;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public override IUserInterfaceServices UserInterfaceServices => FindForm() as IUserInterfaceServices;
@@ -95,12 +91,18 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	internal IApplicationBlock[] StartupBlocks => _engine.RegistrationBlocks;
 
-	internal IScope EnterPresentationScope() => EnterUpdateScope();
-
 	public override void SelectBlock(IApplicationBlock block) {
 		ObjectDisposedException.ThrowIf(_disposing, this);
 		Guard.Argument(block == null || _engine.RegistrationBlocks.Contains(block, ReferenceEqualityComparer.Instance), nameof(block), "Block is not registered.");
 		_engine.SelectBlock(block);
+	}
+
+	/// <summary>Loads the optional startup choice off the UI thread before initial screen registration. Normal application startup calls this automatically.</summary>
+	public Task LoadStartupScreenSettingsAsync(CancellationToken cancellationToken = default) {
+		cancellationToken.ThrowIfCancellationRequested();
+		if (Tools.Runtime.IsDesignMode || _disposing)
+			return Task.CompletedTask;
+		return (_startupSettingsLoad ??= LoadStartupScreenSettingsCoreAsync()).WaitAsync(cancellationToken);
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -122,14 +124,6 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Exception LastStartupScreenSettingsError { get; private set; }
-
-	/// <summary>Loads the optional startup choice off the UI thread before initial screen registration. Normal application startup calls this automatically.</summary>
-	public Task LoadStartupScreenSettingsAsync(CancellationToken cancellationToken = default) {
-		cancellationToken.ThrowIfCancellationRequested();
-		if (Tools.Runtime.IsDesignMode || _disposing)
-			return Task.CompletedTask;
-		return (_startupSettingsLoad ??= LoadStartupScreenSettingsCoreAsync()).WaitAsync(cancellationToken);
-	}
 
 	/// <summary>Session-only targets and screens without a registered normal definition cannot be reopened automatically.</summary>
 	public bool CanMakeStartupScreen(ApplicationScreen screen) {
@@ -157,33 +151,6 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		}
 	}
 
-	internal Task CompleteStartupScreenWritesAsync() {
-		_startupSettingsFinalizing = true;
-		return Task.WhenAll(_startupSettingsWrites.ToArray());
-	}
-
-	private async Task SaveStartupScreenSettingsAsync(StartupScreenIdentity identity, CancellationToken cancellationToken) {
-		await LoadStartupScreenSettingsAsync(cancellationToken);
-		using var admission = await _startupSettingsGate.EnterScopeAsync(cancellationToken);
-		try {
-			var provider = _startupSettingsProvider ?? UserSettings.Provider;
-			await Task.Run(() => {
-				var settings = provider.Get<ApplicationStartupScreenSettings>();
-				var previous = StartupScreenIdentity.FromSettings(settings);
-				identity.CopyTo(settings);
-				try { settings.Save(); }
-				catch { previous.CopyTo(settings); throw; }
-			}, cancellationToken);
-			_startupScreenIdentity = identity;
-			LastStartupScreenSettingsError = null;
-		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
-			throw;
-		} catch (Exception error) {
-			RecordStartupScreenSettingsError(error);
-			throw;
-		}
-	}
-
 	public override void RegisterScreenTypes(IApplicationBlock Block) {
 		Guard.ArgumentNotNull(Block, nameof(Block));
 		ObjectDisposedException.ThrowIf(_disposing, this);
@@ -198,88 +165,10 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	public override bool InitializeScreens(IEnumerable<IApplicationBlock> blocks) => InitializeScreens(blocks, null);
 
-	internal bool InitializeScreens(IEnumerable<IApplicationBlock> blocks, Action registerBlocks) {
-		Guard.ArgumentNotNull(blocks, nameof(blocks));
-		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
-		var allBlocks = ordered.Concat(_engine.RegistrationBlocks.Where(block => !ordered.Contains(block, ReferenceEqualityComparer.Instance))).ToArray();
-		var definitions = ApplicationHelper.GetScreenDefinitions(allBlocks);
-		var replaceEmpty = ActiveScreen?.ScreenKind == ScreenKind.Empty && definitions.Any(definition =>
-			IsPermanentDefinition(definition) && allBlocks.Any(block => block.ScreenDefinitions.Contains(definition, ReferenceEqualityComparer.Instance)
-				&& !Screens.Any(screen => ReferenceEquals(screen.Block, block) && ReferenceEquals(GetBinding(screen).Definition, definition))));
-		if (replaceEmpty && !CanHide(ActiveScreen))
-			return false;
-		using var update = EnterUpdateScope();
-		// Block chrome and definitions are installed only after the current placeholder accepts the transition.
-		registerBlocks?.Invoke();
-		foreach (var block in ordered)
-			RegisterScreenTypes(block);
-		_engine.ReorderBlocks(allBlocks);
-		_engine.InitializeState();
-		var previous = ActiveScreen;
-		EnsurePermanentScreens(definitions);
-		IApplicationBlock startupOwner = null;
-		var rememberedStartup = previous == null || replaceEmpty ? ResolveStartupScreen(allBlocks, out startupOwner) : null;
-		var startup = previous == null ? ApplicationHelper.GetDefaultScreen(allBlocks) ?? (allBlocks.FirstOrDefault() is { } first ? _engine.GetBlockDefault(first) : null) : null;
-		var restoredStartup = rememberedStartup != null && TryActivateStartupScreen(startupOwner, rememberedStartup);
-		if (!restoredStartup) {
-			if (replaceEmpty)
-				ShowScreenCore(Screens.First(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton), false);
-			else if (startup != null)
-				ActivateScreenCore(_engine.GetDefinitionOwner(startup), startup.ScreenType, startup.Title, requestedDefinition: startup);
-			else if (previous != null && !ReferenceEquals(previous, ActiveScreen) && ContainsScreen(previous))
-				ShowScreen(previous);
-		}
-		SelectRemainingScreen();
-		return true;
-	}
-
-	private bool IsPermanentDefinition(SharedUI.ApplicationScreenDefinition definition) {
-		return definition.ActivationMode == ScreenActivationMode.PermanentSingleton;
-	}
-
-	private void EnsurePermanentScreens(SharedUI.ApplicationScreenDefinition[] definitions) {
-		foreach (var registration in _engine.RegistrationBlocks.SelectMany(block => block.ScreenDefinitions
-			.Where(definition => IsPermanentDefinition(definition) && definitions.Contains(definition, ReferenceEqualityComparer.Instance))
-			.Select(definition => (Block: block, Definition: definition)))) {
-			var block = registration.Block;
-			var definition = registration.Definition;
-			if (Screens.Any(screen => ReferenceEquals(screen.Block, block) && ReferenceEquals(GetBinding(screen).Definition, definition)))
-				continue;
-			var screen = CreateRegisteredScreen(block, definition);
-			using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
-				if (!ContainsScreen(screen))
-					screen.Dispose();
-			});
-			screen.Block = block;
-			screen.ConfigureActivationMode(ScreenActivationMode.PermanentSingleton);
-			screen.ScreenKind = definition.ScreenKind;
-			screen.Title = definition.Title;
-			var binding = RetainScreen(screen, definition);
-			if (ScreenMode == ScreenMode.MultiView) {
-				using var update = EnterUpdateScope();
-				AddPresentation(screen, binding);
-			}
-		}
-	}
-
 	public override bool UnregisterScreenTypes(IApplicationBlock block) {
 		Guard.ArgumentNotNull(block, nameof(block));
 		if (!UnregisterScreensCore(block))
 			return false;
-		return true;
-	}
-
-	private bool UnregisterScreensCore(SharedUI.IApplicationBlock block) {
-		var closing = Screens.Where(screen => ReferenceEquals(screen.Block, block)).ToArray();
-		if (!CanCloseScreens(closing))
-			return false;
-		WaitOnUIThread(SaveScreenSettingsAsync(closing, CancellationToken.None));
-		// Remove the definitions first so fallback cannot recreate a screen owned by the departing block.
-		using var update = EnterUpdateScope();
-		_engine.UnregisterBlock((IApplicationBlock)block);
-		CloseScreensCore(closing, false);
-		EnsurePermanentScreens(_engine.Definitions);
-		SelectRemainingScreen();
 		return true;
 	}
 
@@ -291,40 +180,6 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 		Guard.ArgumentNotNull(definition, nameof(definition));
 		Guard.Argument(block.ScreenDefinitions.Contains(definition, ReferenceEqualityComparer.Instance), nameof(definition), "The screen definition is not owned by this block.");
 		return ActivateScreenCore(block, definition.ScreenType, definition.Title, definition);
-	}
-
-	private ApplicationScreen ActivateScreenCore(IApplicationBlock Block, Type ScreenType, string Title,
-		SharedUI.ApplicationScreenDefinition requestedDefinition = null, bool registerBlock = true, bool startupRestoration = false,
-		CancellationToken cancellationToken = default) {
-		Guard.ArgumentNotNull(Block, nameof(Block));
-		Guard.ArgumentNotNull(ScreenType, nameof(ScreenType));
-		ApplicationHelper.ValidateScreenType(ScreenType, typeof(ApplicationScreen));
-		using var update = EnterUpdateScope();
-		if (registerBlock)
-			RegisterScreenTypes(Block);
-		var definition = requestedDefinition ?? ApplicationHelper.ResolveScreenRegistration(Block.ScreenDefinitions, ApplicationScreenRegistration.ForType(ScreenType));
-		if (definition?.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
-			return null;
-		var Existing = Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, Block) && ReferenceEquals(GetBinding(screen).Definition, definition) && ApplicationHelper.IsSingleton(screen.ActivationMode));
-		if (Existing != null)
-			return (!startupRestoration || Existing.CanRestoreAtStartup) && ShowScreen(Existing) ? Existing : null;
-
-		var Created = CreateRegisteredScreen(Block, definition);
-		using var Cleanup = Tools.Scope.ExecuteOnDispose(() => {
-			if (!ContainsScreen(Created))
-				Created.Dispose();
-		});
-		// A custom constructor can cancel its request before returning a newly created control.
-		cancellationToken.ThrowIfCancellationRequested();
-		if (startupRestoration && !Created.CanRestoreAtStartup)
-			return null;
-		Created.Block = Block;
-		Created.ScreenKind = definition?.ScreenKind ?? ScreenKind.Normal;
-		if (!string.IsNullOrWhiteSpace(Title))
-			Created.Title = Title;
-		if (string.IsNullOrWhiteSpace(Created.Title))
-			Created.Title = ScreenType.Name;
-		return ShowScreenCore(Created, true, definition, registerBlock) ? Created : null;
 	}
 
 	public override bool ShowScreen(ApplicationScreen Screen) => ShowScreenCore(Screen, true);
@@ -342,165 +197,12 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 	public override bool ShowScreenUndocked(ApplicationScreen screen) => ShowScreenCore(screen, false, undocked: true);
 
-	private bool ShowScreenCore(ApplicationScreen Screen, bool checkHide, SharedUI.ApplicationScreenDefinition requestedDefinition = null,
-		bool registerBlock = true, bool selectTab = true, bool undocked = false) {
-		Guard.ArgumentNotNull(Screen, nameof(Screen));
-		Guard.Argument(!Screen.IsDisposed, nameof(Screen), "Cannot show a disposed screen");
-		Guard.Argument(Screen.Host == null || OwnsScreenAttachment(Screen), nameof(Screen), "Screen already belongs to another host");
-		ObjectDisposedException.ThrowIf(_disposing, this);
-		if (registerBlock && Screen.Host == null && Screen.Block != null)
-			RegisterScreenTypes(Screen.Block);
-		var ScreenType = Screen.GetType();
-		var definition = requestedDefinition ?? (TryGetBinding(Screen, out var currentBinding) ? currentBinding.Definition
-			: ResolveSuppliedScreenDefinition(Screen));
-		if (Screen.Host == null && definition?.ActivationMode is { } activationMode)
-			Screen.ConfigureActivationMode(activationMode);
-		if (Screen.Host == null && definition != null)
-			Screen.ScreenKind = definition.ScreenKind;
-		ApplicationHelper.ValidateScreenPolicy(Screen.ActivationMode, Screen.ScreenKind);
-		if (undocked && (ScreenMode != ScreenMode.MultiView || Screen.ScreenKind != ScreenKind.Normal || Screen.ActivationMode == ScreenActivationMode.PermanentSingleton))
-			return false;
-		if (Screen.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
-			return false;
-		Guard.Argument(!ApplicationHelper.IsSingleton(Screen.ActivationMode)
-			|| !Screens.Any(existing => !ReferenceEquals(existing, Screen) && (definition != null ? ReferenceEquals(existing.Block, Screen.Block) && ReferenceEquals(GetBinding(existing).Definition, definition)
-				: existing.GetType() == ScreenType && ReferenceEquals(existing.Block, Screen.Block))),
-			nameof(Screen), "A single-instance screen for this registration already exists; use OpenScreenAsync to select it");
-		if (TryGetBinding(Screen, out var Binding) && Binding.Window != null) {
-			if (Binding.Window.WindowState == FormWindowState.Minimized)
-				Binding.Window.WindowState = FormWindowState.Normal;
-			Binding.Window.Activate();
-			return true;
-		}
-		if (undocked) {
-			using var undockedUpdate = EnterUpdateScope(repaintImmediately: selectTab);
-			if (Binding != null && IsPresented(Screen, Binding))
-				return UndockScreen(Screen);
-			Binding ??= RetainScreen(Screen, definition);
-			Binding.Window = CreateScreenForm(Screen);
-			Binding.Window.Disposed += ScreenFormDisposed;
-			_engine.SetOpen(Screen, true);
-			if (FindForm() is { } owner)
-				Binding.Window.Show(owner);
-			else
-				Binding.Window.Show();
-			Screen.NotifyShow();
-			return true;
-		}
-		if (ReferenceEquals(Screen, ActiveScreen)) {
-			_engine.SelectScreen(Screen);
-			return true;
-		}
-		if (checkHide && !CanHide(ActiveScreen))
-			return false;
-
-		var Previous = ActiveScreen;
-		if (Previous?.ActivationMode == ScreenActivationMode.MultiInstance && (ScreenMode == ScreenMode.SingleView || Previous.ScreenKind == ScreenKind.Empty))
-			WaitOnUIThread(Previous.SaveSettingsAsync());
-		using var update = EnterUpdateScope(repaintImmediately: selectTab);
-		ChangeActiveScreen(null);
-		if (Previous != null && (ScreenMode == ScreenMode.SingleView || Previous.ScreenKind == ScreenKind.Empty)) {
-			RemovePresentation(Previous, GetBinding(Previous));
-			if (Previous.ActivationMode == ScreenActivationMode.MultiInstance)
-				DestroyScreen(Previous);
-		}
-		if (Binding == null)
-			Binding = RetainScreen(Screen, definition);
-		if (!IsPresented(Screen, Binding))
-			AddPresentation(Screen, Binding);
-		if (selectTab && Binding.Tab != null)
-			_tabs.SelectedTab = Binding.Tab;
-		ChangeActiveScreen(Screen);
-		Screen.NotifyShow();
-		return true;
-	}
-
 	public override bool CloseScreen(ApplicationScreen Screen) => CloseScreens(new[] { Screen });
-
-	private async void CloseAllRequested() {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			await CloseAllScreensAsync();
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	private async void CloseOthersRequested(ApplicationScreen screen) {
-		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
-			await CloseAllOtherScreensAsync(screen);
-		});
-		if (error != null) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
 
 	public override bool CloseScreens(IEnumerable<ApplicationScreen> screens) {
 		var operation = _engine.CloseScreensAsync(screens, CancellationToken.None);
 		WaitOnUIThread(operation);
 		return operation.GetAwaiter().GetResult();
-	}
-
-	// All guards succeed before capturing preferences; failed writes keep every screen retained and retryable.
-	private async Task<bool> CloseAcceptedScreensAsync(IEnumerable<ApplicationScreen> screens, CancellationToken token) {
-		Guard.ArgumentNotNull(screens, nameof(screens));
-		var closing = screens.Distinct<ApplicationScreen>(ReferenceEqualityComparer.Instance).ToArray();
-		if (closing.Any(screen => screen?.ActivationMode == ScreenActivationMode.PermanentSingleton) || !CanCloseScreens(closing))
-			return false;
-		token.ThrowIfCancellationRequested();
-		await SaveScreenSettingsAsync(closing, token);
-		CloseScreensCore(closing);
-		return true;
-	}
-
-	// Native callbacks can await persistence without holding rendering/layout scopes across the write.
-	private async void CloseRequested(ApplicationScreen screen) {
-		try {
-			await CloseScreenAsync(screen);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	// Finalization uses the same UI capture path after application exit guards have accepted the operation.
-	internal async Task SaveScreenSettingsAsync(IEnumerable<ApplicationScreen> screens, CancellationToken token) {
-		foreach (var screen in screens) {
-			token.ThrowIfCancellationRequested();
-			await screen.SaveSettingsAsync(token);
-		}
-	}
-
-	// Legacy synchronous native entry points retain their existing message-pumping convention.
-	private static void WaitOnUIThread(Task operation) {
-		while (!operation.IsCompleted) {
-			System.Windows.Forms.Application.DoEvents();
-			if (!operation.IsCompleted)
-				Thread.Sleep(1);
-		}
-		operation.GetAwaiter().GetResult();
-	}
-
-	private void CloseScreensCore(ApplicationScreen[] Closing, bool selectRemaining = true) {
-		using var Update = EnterUpdateScope();
-		var nextScreen = GetScreenAfterClosing(Closing);
-		if (ActiveScreen != null && Closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
-			ChangeActiveScreen(null);
-		foreach (var Screen in Closing)
-			DestroyScreen(Screen);
-		if (selectRemaining)
-			SelectRemainingScreen(nextScreen, showEmptyScreen: false);
-	}
-
-	private ApplicationScreen GetScreenAfterClosing(ApplicationScreen[] closing) {
-		if (ActiveScreen == null || !closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
-			return null;
-		// Native removal chooses a page of its own. Resolve the successor against the visual order before any page is removed.
-		var tabs = _tabs.TabPages.Cast<TabPage>().Select(page => (ApplicationScreen)page.Tag).ToArray();
-		var activeIndex = Array.FindIndex(tabs, screen => ReferenceEquals(screen, ActiveScreen));
-		if (activeIndex < 0)
-			return null;
-		return tabs.Skip(activeIndex + 1).FirstOrDefault(screen => !closing.Contains(screen, ReferenceEqualityComparer.Instance))
-			?? tabs.Take(activeIndex).Reverse().FirstOrDefault(screen => !closing.Contains(screen, ReferenceEqualityComparer.Instance));
 	}
 
 	public override bool CanCloseScreens(IEnumerable<ApplicationScreen> Screens) {
@@ -627,6 +329,295 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 				_tabs.SelectedTab = GetBinding(active).Tab;
 		}
 		return true;
+	}
+
+	internal IScope EnterPresentationScope() => EnterUpdateScope();
+
+	internal Task CompleteStartupScreenWritesAsync() {
+		_startupSettingsFinalizing = true;
+		return Task.WhenAll(_startupSettingsWrites.ToArray());
+	}
+
+	internal bool InitializeScreens(IEnumerable<IApplicationBlock> blocks, Action registerBlocks) {
+		Guard.ArgumentNotNull(blocks, nameof(blocks));
+		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		var allBlocks = ordered.Concat(_engine.RegistrationBlocks.Where(block => !ordered.Contains(block, ReferenceEqualityComparer.Instance))).ToArray();
+		var definitions = ApplicationHelper.GetScreenDefinitions(allBlocks);
+		var replaceEmpty = ActiveScreen?.ScreenKind == ScreenKind.Empty && definitions.Any(definition =>
+			IsPermanentDefinition(definition) && allBlocks.Any(block => block.ScreenDefinitions.Contains(definition, ReferenceEqualityComparer.Instance)
+				&& !Screens.Any(screen => ReferenceEquals(screen.Block, block) && ReferenceEquals(GetBinding(screen).Definition, definition))));
+		if (replaceEmpty && !CanHide(ActiveScreen))
+			return false;
+		using var update = EnterUpdateScope();
+		// Block chrome and definitions are installed only after the current placeholder accepts the transition.
+		registerBlocks?.Invoke();
+		foreach (var block in ordered)
+			RegisterScreenTypes(block);
+		_engine.ReorderBlocks(allBlocks);
+		_engine.InitializeState();
+		var previous = ActiveScreen;
+		EnsurePermanentScreens(definitions);
+		IApplicationBlock startupOwner = null;
+		var rememberedStartup = previous == null || replaceEmpty ? ResolveStartupScreen(allBlocks, out startupOwner) : null;
+		var startup = previous == null ? ApplicationHelper.GetDefaultScreen(allBlocks) ?? (allBlocks.FirstOrDefault() is { } first ? _engine.GetBlockDefault(first) : null) : null;
+		var restoredStartup = rememberedStartup != null && TryActivateStartupScreen(startupOwner, rememberedStartup);
+		if (!restoredStartup) {
+			if (replaceEmpty)
+				ShowScreenCore(Screens.First(screen => screen.ActivationMode == ScreenActivationMode.PermanentSingleton), false);
+			else if (startup != null)
+				ActivateScreenCore(_engine.GetDefinitionOwner(startup), startup.ScreenType, startup.Title, requestedDefinition: startup);
+			else if (previous != null && !ReferenceEquals(previous, ActiveScreen) && ContainsScreen(previous))
+				ShowScreen(previous);
+		}
+		SelectRemainingScreen();
+		return true;
+	}
+
+	// Finalization uses the same UI capture path after application exit guards have accepted the operation.
+	internal async Task SaveScreenSettingsAsync(IEnumerable<ApplicationScreen> screens, CancellationToken token) {
+		foreach (var screen in screens) {
+			token.ThrowIfCancellationRequested();
+			await screen.SaveSettingsAsync(token);
+		}
+	}
+
+	private async Task SaveStartupScreenSettingsAsync(StartupScreenIdentity identity, CancellationToken cancellationToken) {
+		await LoadStartupScreenSettingsAsync(cancellationToken);
+		using var admission = await _startupSettingsGate.EnterScopeAsync(cancellationToken);
+		try {
+			var provider = _startupSettingsProvider ?? UserSettings.Provider;
+			await Task.Run(() => {
+				var settings = provider.Get<ApplicationStartupScreenSettings>();
+				var previous = StartupScreenIdentity.FromSettings(settings);
+				identity.CopyTo(settings);
+				try { settings.Save(); }
+				catch { previous.CopyTo(settings); throw; }
+			}, cancellationToken);
+			_startupScreenIdentity = identity;
+			LastStartupScreenSettingsError = null;
+		} catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
+			throw;
+		} catch (Exception error) {
+			RecordStartupScreenSettingsError(error);
+			throw;
+		}
+	}
+
+	private bool IsPermanentDefinition(SharedUI.ApplicationScreenDefinition definition) => definition.ActivationMode == ScreenActivationMode.PermanentSingleton;
+
+	private void EnsurePermanentScreens(SharedUI.ApplicationScreenDefinition[] definitions) {
+		foreach (var registration in _engine.RegistrationBlocks.SelectMany(block => block.ScreenDefinitions
+			.Where(definition => IsPermanentDefinition(definition) && definitions.Contains(definition, ReferenceEqualityComparer.Instance))
+			.Select(definition => (Block: block, Definition: definition)))) {
+			var block = registration.Block;
+			var definition = registration.Definition;
+			if (Screens.Any(screen => ReferenceEquals(screen.Block, block) && ReferenceEquals(GetBinding(screen).Definition, definition)))
+				continue;
+			var screen = CreateRegisteredScreen(block, definition);
+			using var cleanup = Tools.Scope.ExecuteOnDispose(() => {
+				if (!ContainsScreen(screen))
+					screen.Dispose();
+			});
+			screen.Block = block;
+			screen.ConfigureActivationMode(ScreenActivationMode.PermanentSingleton);
+			screen.ScreenKind = definition.ScreenKind;
+			screen.Title = definition.Title;
+			var binding = RetainScreen(screen, definition);
+			if (ScreenMode == ScreenMode.MultiView) {
+				using var update = EnterUpdateScope();
+				AddPresentation(screen, binding);
+			}
+		}
+	}
+
+	private bool UnregisterScreensCore(SharedUI.IApplicationBlock block) {
+		var closing = Screens.Where(screen => ReferenceEquals(screen.Block, block)).ToArray();
+		if (!CanCloseScreens(closing))
+			return false;
+		WaitOnUIThread(SaveScreenSettingsAsync(closing, CancellationToken.None));
+		// Remove the definitions first so fallback cannot recreate a screen owned by the departing block.
+		using var update = EnterUpdateScope();
+		_engine.UnregisterBlock((IApplicationBlock)block);
+		CloseScreensCore(closing, false);
+		EnsurePermanentScreens(_engine.Definitions);
+		SelectRemainingScreen();
+		return true;
+	}
+
+	private ApplicationScreen ActivateScreenCore(IApplicationBlock Block, Type ScreenType, string Title,
+		SharedUI.ApplicationScreenDefinition requestedDefinition = null, bool registerBlock = true, bool startupRestoration = false,
+		CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(Block, nameof(Block));
+		Guard.ArgumentNotNull(ScreenType, nameof(ScreenType));
+		ApplicationHelper.ValidateScreenType(ScreenType, typeof(ApplicationScreen));
+		using var update = EnterUpdateScope();
+		if (registerBlock)
+			RegisterScreenTypes(Block);
+		var definition = requestedDefinition ?? ApplicationHelper.ResolveScreenRegistration(Block.ScreenDefinitions, ApplicationScreenRegistration.ForType(ScreenType));
+		if (definition?.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
+			return null;
+		var Existing = Screens.FirstOrDefault(screen => ReferenceEquals(screen.Block, Block) && ReferenceEquals(GetBinding(screen).Definition, definition) && ApplicationHelper.IsSingleton(screen.ActivationMode));
+		if (Existing != null)
+			return (!startupRestoration || Existing.CanRestoreAtStartup) && ShowScreen(Existing) ? Existing : null;
+
+		var Created = CreateRegisteredScreen(Block, definition);
+		using var Cleanup = Tools.Scope.ExecuteOnDispose(() => {
+			if (!ContainsScreen(Created))
+				Created.Dispose();
+		});
+		// A custom constructor can cancel its request before returning a newly created control.
+		cancellationToken.ThrowIfCancellationRequested();
+		if (startupRestoration && !Created.CanRestoreAtStartup)
+			return null;
+		Created.Block = Block;
+		Created.ScreenKind = definition?.ScreenKind ?? ScreenKind.Normal;
+		if (!string.IsNullOrWhiteSpace(Title))
+			Created.Title = Title;
+		if (string.IsNullOrWhiteSpace(Created.Title))
+			Created.Title = ScreenType.Name;
+		return ShowScreenCore(Created, true, definition, registerBlock) ? Created : null;
+	}
+
+	private bool ShowScreenCore(ApplicationScreen Screen, bool checkHide, SharedUI.ApplicationScreenDefinition requestedDefinition = null,
+		bool registerBlock = true, bool selectTab = true, bool undocked = false) {
+		Guard.ArgumentNotNull(Screen, nameof(Screen));
+		Guard.Argument(!Screen.IsDisposed, nameof(Screen), "Cannot show a disposed screen");
+		Guard.Argument(Screen.Host == null || OwnsScreenAttachment(Screen), nameof(Screen), "Screen already belongs to another host");
+		ObjectDisposedException.ThrowIf(_disposing, this);
+		if (registerBlock && Screen.Host == null && Screen.Block != null)
+			RegisterScreenTypes(Screen.Block);
+		var ScreenType = Screen.GetType();
+		var definition = requestedDefinition ?? (TryGetBinding(Screen, out var currentBinding) ? currentBinding.Definition
+			: ResolveSuppliedScreenDefinition(Screen));
+		if (Screen.Host == null && definition?.ActivationMode is { } activationMode)
+			Screen.ConfigureActivationMode(activationMode);
+		if (Screen.Host == null && definition != null)
+			Screen.ScreenKind = definition.ScreenKind;
+		ApplicationHelper.ValidateScreenPolicy(Screen.ActivationMode, Screen.ScreenKind);
+		if (undocked && (ScreenMode != ScreenMode.MultiView || Screen.ScreenKind != ScreenKind.Normal || Screen.ActivationMode == ScreenActivationMode.PermanentSingleton))
+			return false;
+		if (Screen.ScreenKind == ScreenKind.Empty && OpenScreens.Length > 0)
+			return false;
+		Guard.Argument(!ApplicationHelper.IsSingleton(Screen.ActivationMode)
+			|| !Screens.Any(existing => !ReferenceEquals(existing, Screen) && (definition != null ? ReferenceEquals(existing.Block, Screen.Block) && ReferenceEquals(GetBinding(existing).Definition, definition)
+				: existing.GetType() == ScreenType && ReferenceEquals(existing.Block, Screen.Block))),
+			nameof(Screen), "A single-instance screen for this registration already exists; use OpenScreenAsync to select it");
+		if (TryGetBinding(Screen, out var Binding) && Binding.Window != null) {
+			if (Binding.Window.WindowState == FormWindowState.Minimized)
+				Binding.Window.WindowState = FormWindowState.Normal;
+			Binding.Window.Activate();
+			return true;
+		}
+		if (undocked) {
+			using var undockedUpdate = EnterUpdateScope(repaintImmediately: selectTab);
+			if (Binding != null && IsPresented(Screen, Binding))
+				return UndockScreen(Screen);
+			Binding ??= RetainScreen(Screen, definition);
+			Binding.Window = CreateScreenForm(Screen);
+			Binding.Window.Disposed += ScreenFormDisposed;
+			_engine.SetOpen(Screen, true);
+			if (FindForm() is { } owner)
+				Binding.Window.Show(owner);
+			else
+				Binding.Window.Show();
+			Screen.NotifyShow();
+			return true;
+		}
+		if (ReferenceEquals(Screen, ActiveScreen)) {
+			_engine.SelectScreen(Screen);
+			return true;
+		}
+		if (checkHide && !CanHide(ActiveScreen))
+			return false;
+
+		var Previous = ActiveScreen;
+		if (Previous?.ActivationMode == ScreenActivationMode.MultiInstance && (ScreenMode == ScreenMode.SingleView || Previous.ScreenKind == ScreenKind.Empty))
+			WaitOnUIThread(Previous.SaveSettingsAsync());
+		using var update = EnterUpdateScope(repaintImmediately: selectTab);
+		ChangeActiveScreen(null);
+		if (Previous != null && (ScreenMode == ScreenMode.SingleView || Previous.ScreenKind == ScreenKind.Empty)) {
+			RemovePresentation(Previous, GetBinding(Previous));
+			if (Previous.ActivationMode == ScreenActivationMode.MultiInstance)
+				DestroyScreen(Previous);
+		}
+		if (Binding == null)
+			Binding = RetainScreen(Screen, definition);
+		if (!IsPresented(Screen, Binding))
+			AddPresentation(Screen, Binding);
+		if (selectTab && Binding.Tab != null)
+			_tabs.SelectedTab = Binding.Tab;
+		ChangeActiveScreen(Screen);
+		Screen.NotifyShow();
+		return true;
+	}
+
+	private async void CloseAllRequested() {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			await CloseAllScreensAsync();
+		});
+		if (error != null) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	private async void CloseOthersRequested(ApplicationScreen screen) {
+		var error = await Tools.Exceptions.ExecuteCapturingExceptionAsync<Exception>(async () => {
+			await CloseAllOtherScreensAsync(screen);
+		});
+		if (error != null) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	// All guards succeed before capturing preferences; failed writes keep every screen retained and retryable.
+	private async Task<bool> CloseAcceptedScreensAsync(IEnumerable<ApplicationScreen> screens, CancellationToken token) {
+		Guard.ArgumentNotNull(screens, nameof(screens));
+		var closing = screens.Distinct<ApplicationScreen>(ReferenceEqualityComparer.Instance).ToArray();
+		if (closing.Any(screen => screen?.ActivationMode == ScreenActivationMode.PermanentSingleton) || !CanCloseScreens(closing))
+			return false;
+		token.ThrowIfCancellationRequested();
+		await SaveScreenSettingsAsync(closing, token);
+		CloseScreensCore(closing);
+		return true;
+	}
+
+	// Native callbacks can await persistence without holding rendering/layout scopes across the write.
+	private async void CloseRequested(ApplicationScreen screen) {
+		try {
+			await CloseScreenAsync(screen);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	// Legacy synchronous native entry points retain their existing message-pumping convention.
+	private static void WaitOnUIThread(Task operation) {
+		while (!operation.IsCompleted) {
+			System.Windows.Forms.Application.DoEvents();
+			if (!operation.IsCompleted)
+				Thread.Sleep(1);
+		}
+		operation.GetAwaiter().GetResult();
+	}
+
+	private void CloseScreensCore(ApplicationScreen[] Closing, bool selectRemaining = true) {
+		using var Update = EnterUpdateScope();
+		var nextScreen = GetScreenAfterClosing(Closing);
+		if (ActiveScreen != null && Closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
+			ChangeActiveScreen(null);
+		foreach (var Screen in Closing)
+			DestroyScreen(Screen);
+		if (selectRemaining)
+			SelectRemainingScreen(nextScreen, showEmptyScreen: false);
+	}
+
+	private ApplicationScreen GetScreenAfterClosing(ApplicationScreen[] closing) {
+		if (ActiveScreen == null || !closing.Contains(ActiveScreen, ReferenceEqualityComparer.Instance))
+			return null;
+		// Native removal chooses a page of its own. Resolve the successor against the visual order before any page is removed.
+		var tabs = _tabs.TabPages.Cast<TabPage>().Select(page => (ApplicationScreen)page.Tag).ToArray();
+		var activeIndex = Array.FindIndex(tabs, screen => ReferenceEquals(screen, ActiveScreen));
+		return activeIndex < 0 ? null : ApplicationHelper.GetScreenAfterClosing(tabs, activeIndex, closing);
 	}
 
 	protected virtual ApplicationScreen CreateScreen(IApplicationBlock Block, Type ScreenType) {
@@ -1077,9 +1068,8 @@ public class ApplicationScreenHost : ApplicationScreenHostBase {
 
 		public void SelectBlock(IApplicationBlock block) => SetTrackedBlockSelection(block);
 
-		public void Retain(ApplicationScreen screen, SharedUI.ApplicationScreenDefinition definition) {
-			TrackScreen(screen, screen.Block, definition, screen.ActivationMode, screen.ScreenKind);
-		}
+		public void Retain(ApplicationScreen screen, SharedUI.ApplicationScreenDefinition definition)
+			=> TrackScreen(screen, screen.Block, definition, screen.ActivationMode, screen.ScreenKind);
 
 		public void Remove(ApplicationScreen screen) {
 			RemoveTrackedScreen(screen);

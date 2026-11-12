@@ -38,7 +38,8 @@ public class RangeRegion : ICollection<CellRange> {
 	/// </summary>
 	private bool _validated = false;
 
-	// Constructors
+	#region Constructors
+
 	public RangeRegion() {
 	}
 
@@ -56,21 +57,13 @@ public class RangeRegion : ICollection<CellRange> {
 	/// Copy constructor
 	/// </summary>
 	/// <param name="other"></param>
-	public RangeRegion(RangeRegion other) {
-		_rangeCollection.AddRange(other._rangeCollection);
-	}
+	public RangeRegion(RangeRegion other) => _rangeCollection.AddRange(other._rangeCollection);
 
-	public int Count {
-		get {
-			return _rangeCollection.Count;
-		}
-	}
+	#endregion
 
-	public bool IsReadOnly {
-		get {
-			return false;
-		}
-	}
+	public int Count => _rangeCollection.Count;
+
+	public bool IsReadOnly => false;
 
 	// GetCellsPositions, GetRanges
 	/// <summary>
@@ -78,13 +71,10 @@ public class RangeRegion : ICollection<CellRange> {
 	/// </summary>
 	/// <param name="index"></param>
 	/// <returns></returns>
-	public CellRange this[int index] {
-		get {
-			return _rangeCollection[index];
-		}
-	}
+	public CellRange this[int index] => _rangeCollection[index];
 
-	// GetRows/GetColumns
+	#region GetRows/GetColumns
+
 	/// <summary>
 	/// Returns all the selected rows index
 	/// </summary>
@@ -117,6 +107,8 @@ public class RangeRegion : ICollection<CellRange> {
 
 		return indexList.ToArray();
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Indicates if the specified row is selected
@@ -175,35 +167,29 @@ public class RangeRegion : ICollection<CellRange> {
 		return buffer;
 	}
 
-	public void CopyTo(CellRange[] array, int arrayIndex) {
-		_rangeCollection.CopyTo(array, arrayIndex);
-	}
+	public void CopyTo(CellRange[] array, int arrayIndex) => _rangeCollection.CopyTo(array, arrayIndex);
 
-	// IEnumerable<CellRange> Members
-	public IEnumerator<CellRange> GetEnumerator() {
-		return _rangeCollection.GetEnumerator();
-	}
+	#region IEnumerable<CellRange> Members
 
-	/// <summary>
-	/// Reset the object to its original state. It is similar to the Clear method but doesn't call any events when removeing the saved positions, usually used when refreshing the cells with new data.
-	/// To simply clear the object use the Clear method, only use this method when you want to force a reset of the object without calling additional methods.
-	/// </summary>
-	protected virtual void ResetRange() {
-		_validated = false;
-		_rangeCollection.Clear();
-	}
+	public IEnumerator<CellRange> GetEnumerator() => _rangeCollection.GetEnumerator();
 
-	// IEnumerable Members
-	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-		return _rangeCollection.GetEnumerator();
-	}
+	#endregion
 
-	// IsEmpty
+	#region IEnumerable Members
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _rangeCollection.GetEnumerator();
+
+	#endregion
+
+	#region IsEmpty
+
 	public virtual bool IsEmpty() {
 		if (_rangeCollection.Count == 0)
 			return true;
 		return false;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Returns a Collection of cells that represents the current class
@@ -219,7 +205,8 @@ public class RangeRegion : ICollection<CellRange> {
 		return positions;
 	}
 
-	// Contains
+	#region Contains
+
 	/// <summary>
 	/// Indicates if the specified cell is selected
 	/// </summary>
@@ -312,7 +299,10 @@ public class RangeRegion : ICollection<CellRange> {
 		return result;
 	}
 
-	// Exclude
+	#endregion
+
+	#region Exclude
+
 	/// <summary>
 	/// Returns the cells of the current range that don't intersect with the specified range
 	/// </summary>
@@ -339,13 +329,14 @@ public class RangeRegion : ICollection<CellRange> {
 		return excludedRange;
 	}
 
-	// Add/Remove/Clear
+	#endregion
+
+	#region Add/Remove/Clear
+
 	/// <summary>
 	/// Remove all the cells
 	/// </summary>
-	public void Clear() {
-		Remove(new RangeRegion(this));
-	}
+	public void Clear() => Remove(new RangeRegion(this));
 
 	/// <summary>
 	/// Remove all the cells excluse the specified range
@@ -362,53 +353,80 @@ public class RangeRegion : ICollection<CellRange> {
 	/// </summary>
 	/// <param name="cell"></param>
 	/// <returns>Returns true if sucesfully added</returns>
-	public bool Add(Position cell) {
-		return Add(new CellRange(cell));
-	}
+	public bool Add(Position cell) => Add(new CellRange(cell));
 
 	/// <summary>
 	/// Remove from the collection the specified cell
 	/// </summary>
 	/// <param name="cell"></param>
 	/// <returns>Returns true if sucesfully removed</returns>
-	public bool Remove(Position cell) {
-		return Remove(new CellRange(cell));
-	}
+	public bool Remove(Position cell) => Remove(new CellRange(cell));
 
 	/// <summary>
 	/// Add the specified Range of cells
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns>Returns true if sucesfully added</returns>
-	public bool Add(CellRange range) {
-		return InternalAdd(new RangeRegion(range));
-	}
+	public bool Add(CellRange range) => InternalAdd(new RangeRegion(range));
 
 	/// <summary>
 	/// Remove from the collection the specified range of cells
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns>Returns true if sucesfully removed</returns>
-	public bool Remove(CellRange range) {
-		return InternalRemove(new RangeRegion(range));
-	}
+	public bool Remove(CellRange range) => InternalRemove(new RangeRegion(range));
 
 	/// <summary>
 	/// Add the specified ranges of cells
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns></returns>
-	public bool Add(RangeRegion range) {
-		return InternalAdd(range);
-	}
+	public bool Add(RangeRegion range) => InternalAdd(range);
 
 	/// <summary>
 	/// Remove the specified ranges of cells
 	/// </summary>
 	/// <param name="range"></param>
 	/// <returns></returns>
-	public bool Remove(RangeRegion range) {
-		return InternalRemove(range);
+	public bool Remove(RangeRegion range) => InternalRemove(range);
+
+	// Events
+	public virtual void OnAddingRange(RangeRegionCancelEventArgs e) {
+		if (AddingRange != null)
+			AddingRange(this, e);
+	}
+
+	public virtual void OnRemovingRange(RangeRegionCancelEventArgs e) {
+		if (RemovingRange != null)
+			RemovingRange(this, e);
+	}
+
+	public virtual void OnAddedRange(RangeRegionEventArgs e) {
+		if (AddedRange != null)
+			AddedRange(this, e);
+
+		OnChanged(new RangeRegionChangedEventArgs(e.RangeRegion, null));
+	}
+
+	public virtual void OnRemovedRange(RangeRegionEventArgs e) {
+		if (RemovedRange != null)
+			RemovedRange(this, e);
+
+		OnChanged(new RangeRegionChangedEventArgs(null, e.RangeRegion));
+	}
+
+	public virtual void OnChanged(RangeRegionChangedEventArgs e) {
+		if (Changed != null)
+			Changed(this, e);
+	}
+
+	/// <summary>
+	/// Reset the object to its original state. It is similar to the Clear method but doesn't call any events when removeing the saved positions, usually used when refreshing the cells with new data.
+	/// To simply clear the object use the Clear method, only use this method when you want to force a reset of the object without calling additional methods.
+	/// </summary>
+	protected virtual void ResetRange() {
+		_validated = false;
+		_rangeCollection.Clear();
 	}
 
 	/// <summary>
@@ -490,38 +508,11 @@ public class RangeRegion : ICollection<CellRange> {
 		return true;
 	}
 
-	// Events
-	public virtual void OnAddingRange(RangeRegionCancelEventArgs e) {
-		if (AddingRange != null)
-			AddingRange(this, e);
-	}
+	#endregion
 
-	public virtual void OnRemovingRange(RangeRegionCancelEventArgs e) {
-		if (RemovingRange != null)
-			RemovingRange(this, e);
-	}
+	#region ICollection<CellRange> Members
 
-	public virtual void OnAddedRange(RangeRegionEventArgs e) {
-		if (AddedRange != null)
-			AddedRange(this, e);
+	void ICollection<CellRange>.Add(CellRange item) => this.Add(item);
 
-		OnChanged(new RangeRegionChangedEventArgs(e.RangeRegion, null));
-	}
-
-	public virtual void OnRemovedRange(RangeRegionEventArgs e) {
-		if (RemovedRange != null)
-			RemovedRange(this, e);
-
-		OnChanged(new RangeRegionChangedEventArgs(null, e.RangeRegion));
-	}
-
-	public virtual void OnChanged(RangeRegionChangedEventArgs e) {
-		if (Changed != null)
-			Changed(this, e);
-	}
-
-	// ICollection<CellRange> Members
-	void ICollection<CellRange>.Add(CellRange item) {
-		this.Add(item);
-	}
+	#endregion
 }

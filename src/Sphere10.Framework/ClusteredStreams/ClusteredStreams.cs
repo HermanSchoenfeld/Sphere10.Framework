@@ -550,6 +550,40 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		return bytes;
 	}
 
+	/// <summary>Reads only the stored opaque metadata allocation from borrowed, readable/seekable storage, including read-only files.</summary>
+	/// <remarks>Validates the metadata envelope and caller's allocation limit, not the payload cluster graph. Preserves the caller's position.</remarks>
+	public static bool TryReadMetaData(Stream rootStream, int maximumByteCount, out byte[] bytes, Endianness endianness = Endianness.LittleEndian) {
+		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
+		Guard.Argument(rootStream.CanRead && rootStream.CanSeek, nameof(rootStream), "Metadata inspection requires readable, seekable storage.");
+		using var restore = Tools.Scope.EnterRestorePositionScope(rootStream);
+		var capacity = ReadStoredMetaDataCapacity(rootStream, maximumByteCount, endianness);
+		bytes = Array.Empty<byte>();
+		if (!capacity.HasValue)
+			return false;
+		bytes = new byte[capacity.Value];
+		rootStream.Position = ClusteredStreamsHeader.MetaDataOffset;
+		rootStream.ReadExactly(bytes);
+		return true;
+	}
+
+	/// <summary>Reads a typed metadata value without allocating or reading its unused padding. Borrows storage and preserves position.</summary>
+	public static bool TryReadMetaData<T>(Stream rootStream, int maximumByteCount, IItemSerializer<T> serializer, out T value,
+		Endianness endianness = Endianness.LittleEndian) {
+		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
+		Guard.ArgumentNotNull(serializer, nameof(serializer));
+		Guard.Argument(rootStream.CanRead && rootStream.CanSeek, nameof(rootStream), "Metadata inspection requires readable, seekable storage.");
+		using var restore = Tools.Scope.EnterRestorePositionScope(rootStream);
+		var capacity = ReadStoredMetaDataCapacity(rootStream, maximumByteCount, endianness);
+		value = default;
+		if (!capacity.HasValue)
+			return false;
+		rootStream.Position = ClusteredStreamsHeader.MetaDataOffset;
+		var region = new BoundedStream(rootStream, ClusteredStreamsHeader.MetaDataOffset, capacity.Value) { UseRelativeAddressing = true, AllowInnerResize = false };
+		using var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), region, leaveOpen: true);
+		value = serializer.Deserialize(reader);
+		return true;
+	}
+
 	/// <summary>Replaces metadata bytes within the existing allocation and clears its unused padding.</summary>
 	public void WriteMetaData(byte[] bytes) {
 		CheckInitialized();
@@ -574,17 +608,14 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			_initActions.Add(action);
 	}
 
-	protected override void LoadInternal() {
-		if (_rootStream is ILoadable { RequiresLoad: true } loadableStream)
-			loadableStream.Load();
-
-		if (!Initialized)
-			Initialize();
-
-		if (_clusters.RequiresLoad)
-			_clusters.Load();
-
-		LoadAttachments();
+	public void Dispose() {
+		UnloadAttachments();
+		CheckNoOpenedStreams(false);
+		//using (_rootStream.EnterAccessScope())
+		//	_rootStream.Flush();
+		if (OwnsStream) {
+			_rootStream.Dispose();
+		}
 	}
 
 	internal void Initialize() {
@@ -765,14 +796,34 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 	}
 
-	public void Dispose() {
-		UnloadAttachments();
-		CheckNoOpenedStreams(false);
-		//using (_rootStream.EnterAccessScope())
-		//	_rootStream.Flush();
-		if (OwnsStream) {
-			_rootStream.Dispose();
-		}
+	private static int? ReadStoredMetaDataCapacity(Stream rootStream, int maximumByteCount, Endianness endianness) {
+		Guard.ArgumentGTE(maximumByteCount, 0, nameof(maximumByteCount));
+		Guard.Ensure(rootStream.Length >= ClusteredStreamsHeader.ByteLength, "The clustered-stream header is incomplete.");
+		rootStream.Position = 0;
+		var header = new byte[ClusteredStreamsHeader.ByteLength];
+		rootStream.ReadExactly(header);
+		Guard.Ensure(header[ClusteredStreamsHeader.VersionOffset] == ClusteredStreamsHeader.VersionNumber, "Unsupported clustered-stream header version.");
+		var converter = EndianBitConverter.For(endianness);
+		var policy = (ClusteredStreamsPolicy)converter.ToUInt32(header, ClusteredStreamsHeader.PolicyOffset);
+		if (!policy.HasFlag(ClusteredStreamsPolicy.MetaData))
+			return null;
+		var capacity = converter.ToInt32(header, ClusteredStreamsHeader.MetaDataSizeOffset);
+		Guard.Ensure(capacity >= 0 && capacity <= maximumByteCount && capacity <= rootStream.Length - ClusteredStreamsHeader.MetaDataOffset,
+			"The clustered-stream metadata allocation exceeds the available storage or requested limit.");
+		return capacity;
+	}
+
+	protected override void LoadInternal() {
+		if (_rootStream is ILoadable { RequiresLoad: true } loadableStream)
+			loadableStream.Load();
+
+		if (!Initialized)
+			Initialize();
+
+		if (_clusters.RequiresLoad)
+			_clusters.Load();
+
+		LoadAttachments();
 	}
 
 	#endregion
@@ -1040,9 +1091,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	[Conditional("DIAGNOSTIC")]
-	private void DiagnosticVerifyClusters() {
-		ClusterDiagnostics.VerifyClusters(this);
-	}
+	private void DiagnosticVerifyClusters() => ClusterDiagnostics.VerifyClusters(this);
 
 	#endregion
 

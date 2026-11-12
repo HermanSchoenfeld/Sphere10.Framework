@@ -70,7 +70,7 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase, IDisposable {
 				_stepTraitsResolver ??= ResolveStepTraits;
 				Wizard.StepTraitsResolver = _stepTraitsResolver;
 			}
-			Title = $"{Wizard.Title} -> {_currentStepInstance?.Title}";
+			Title = $"{Wizard.Title} → {_currentStepInstance?.Title}";
 			StateHasChangedDelegate?.Invoke();
 			OnStepChange.InvokeAsync();
 		}
@@ -118,45 +118,6 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase, IDisposable {
 	/// </summary>
 	/// <returns></returns>
 	public Task FinishAsync() => AdvanceAsync();
-
-	private async Task AdvanceAsync() {
-		if (IsBusy || _finished || _cancelled)
-			return;
-		Guard.Ensure(CurrentStepInstance != null, "The current wizard step has not rendered.");
-		_finishing = true;
-		using var scope = Tools.Scope.ExecuteOnDispose(() => {
-			_finishing = false;
-			StateHasChangedDelegate?.Invoke();
-		});
-		ErrorMessages = Array.Empty<string>();
-		StateHasChangedDelegate?.Invoke();
-		var wizard = Wizard;
-		var step = CurrentStepInstance;
-		var validation = await step.OnNextAsync();
-		if (!ReferenceEquals(Wizard, wizard))
-			return;
-		if (!validation.IsSuccess) {
-			ErrorMessages = validation.ErrorMessages.ToArray();
-			return;
-		}
-		if (wizard.HasNext) {
-			var navigation = wizard.Next();
-			if (navigation.IsSuccess && navigation.Value)
-				SynchronizeCurrentStep();
-			else
-				ErrorMessages = navigation.ErrorMessages.ToArray();
-			return;
-		}
-		var result = await wizard.FinishAsync();
-		if (!ReferenceEquals(Wizard, wizard))
-			return;
-		if (result.IsSuccess && result.Value) {
-			_finished = true;
-			await OnFinished.InvokeAsync();
-		} else {
-			ErrorMessages = result.ErrorMessages.ToArray();
-		}
-	}
 
 	/// <summary>
 	/// Cancel the wizard workflow
@@ -217,6 +178,45 @@ public class BlazorWizardHostViewModel : ComponentViewModelBase, IDisposable {
 		CurrentStep = null;
 		Wizard = null;
 		_boundWizard = null;
+	}
+
+	private async Task AdvanceAsync() {
+		if (IsBusy || _finished || _cancelled)
+			return;
+		Guard.Ensure(CurrentStepInstance != null, "The current wizard step has not rendered.");
+		_finishing = true;
+		using var scope = Tools.Scope.ExecuteOnDispose(() => {
+			_finishing = false;
+			StateHasChangedDelegate?.Invoke();
+		});
+		ErrorMessages = Array.Empty<string>();
+		StateHasChangedDelegate?.Invoke();
+		var wizard = Wizard;
+		var step = CurrentStepInstance;
+		var validation = await step.OnNextAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
+		if (!validation.IsSuccess) {
+			ErrorMessages = validation.ErrorMessages.ToArray();
+			return;
+		}
+		if (wizard.HasNext) {
+			var navigation = wizard.Next();
+			if (navigation.IsSuccess && navigation.Value)
+				SynchronizeCurrentStep();
+			else
+				ErrorMessages = navigation.ErrorMessages.ToArray();
+			return;
+		}
+		var result = await wizard.FinishAsync();
+		if (!ReferenceEquals(Wizard, wizard))
+			return;
+		if (result.IsSuccess && result.Value) {
+			_finished = true;
+			await OnFinished.InvokeAsync();
+		} else {
+			ErrorMessages = result.ErrorMessages.ToArray();
+		}
 	}
 
 	/// <inheritdoc />

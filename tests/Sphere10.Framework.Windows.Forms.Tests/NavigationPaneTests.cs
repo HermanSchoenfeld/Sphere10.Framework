@@ -637,9 +637,8 @@ public class NavigationPaneTests {
 	}
 
 	// Read the actual current view instead of retaining inactive panes in a test registry.
-	private static TaskPane CurrentPane(BlockMainForm form) {
-		return (TaskPane)form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single().ApplicationBarControl;
-	}
+	private static TaskPane CurrentPane(BlockMainForm form)
+		=> (TaskPane)form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single().ApplicationBarControl;
 
 	private static void AssertSidebarCaptionLayout(TaskPane pane, Expando[] menus, TaskItem[] items) {
 		Assert.That(pane.HorizontalScroll.Visible, Is.False, "Caption reflow must not create a horizontal navigation scrollbar.");
@@ -687,20 +686,20 @@ public class NavigationPaneTests {
 		[System.ComponentModel.Browsable(false), System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
 		public Func<FormsUI.IApplicationBlock, Color> NavigationColor { get; set; }
 
+		public void RescaleDpi(int OldDpi, int NewDpi) => RescaleConstantsForDpi(OldDpi, NewDpi);
+
+		public void ClickNavigationButton(ApplicationBarButton Button) => InvokeOnClick(Button, EventArgs.Empty);
+
+		public bool ToggleSidebarWithKeyboard() {
+			var Message = System.Windows.Forms.Message.Create(Handle, 0x0100, (IntPtr)Keys.M, IntPtr.Zero);
+			return ProcessCmdKey(ref Message, Keys.Control | Keys.Alt | Keys.M);
+		}
+
 		protected override TaskPane CreateApplicationBlockPane(FormsUI.IApplicationBlock block) {
 			var pane = base.CreateApplicationBlockPane(block);
 			if (NavigationColor != null)
 				pane.CustomSettings.GradientStartColor = NavigationColor(block);
 			return pane;
-		}
-
-		public void RescaleDpi(int OldDpi, int NewDpi) => RescaleConstantsForDpi(OldDpi, NewDpi);
-
-		public void ClickNavigationButton(SquareButton Button) => InvokeOnClick(Button, EventArgs.Empty);
-
-		public bool ToggleSidebarWithKeyboard() {
-			var Message = System.Windows.Forms.Message.Create(Handle, 0x0100, (IntPtr)Keys.M, IntPtr.Zero);
-			return ProcessCmdKey(ref Message, Keys.Control | Keys.Alt | Keys.M);
 		}
 	}
 

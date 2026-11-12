@@ -24,9 +24,7 @@ public class MouseSelection : ControllerBase {
 
 	public static MouseSelection Default = new MouseSelection();
 
-	public MouseSelection() {
-		MouseButtons = MouseButtons.Left;
-	}
+	public MouseSelection() => MouseButtons = MouseButtons.Left;
 
 	/// <summary>
 	/// Controls which mouse buttons invoke mouse selection.
@@ -102,49 +100,6 @@ public class MouseSelection : ControllerBase {
 	}
 
 	/// <summary>
-	/// Start the timer to scroll the visible area
-	/// </summary>
-	/// <param name="grid"></param>
-	private void BeginScrollTracking(GridVirtual grid) {
-		//grid.Capture = true;
-		_capturedGrid = grid;
-
-		if (_scrollTimer == null) {
-			_scrollTimer = new Timer();
-			_scrollTimer.Interval = 100;
-			_scrollTimer.Tick += this.ScrollTimerTick;
-		}
-		_scrollTimer.Enabled = true;
-	}
-
-	private void ScrollTimerTick(object sender, EventArgs args) {
-		if (_capturedGrid == null)
-			return;
-		if (_capturedGrid.IsDisposed == true) {
-			EndScrollTracking();
-			return;
-		}
-
-		//If grid has lost focus end scroll tracking
-		if (!_capturedGrid.Focused) {
-			EndScrollTracking();
-			return;
-		}
-
-		//Scroll the view if required
-		var mousePoint = _capturedGrid.PointToClient(Control.MousePosition);
-		_capturedGrid.ScrollOnPoint(mousePoint);
-		// If we are scrolling view fire mouse move event to change also selection
-		if (_capturedMouseMoveEventArgs != null)
-			this.OnMouseMove(_capturedMouseMoveSender,
-				new MouseEventArgs(_capturedMouseMoveEventArgs.Button,
-					_capturedMouseMoveEventArgs.Clicks,
-					mousePoint.X,
-					mousePoint.Y,
-					_capturedMouseMoveEventArgs.Delta));
-	}
-
-	/// <summary>
 	/// Used for mouse multi selection and mouse scrolling
 	/// </summary>
 	/// <param name="sender"></param>
@@ -212,6 +167,49 @@ public class MouseSelection : ControllerBase {
 			_capturedMouseMoveSender = sender;
 			_capturedMouseMoveEventArgs = e;
 		}
+	}
+
+	/// <summary>
+	/// Start the timer to scroll the visible area
+	/// </summary>
+	/// <param name="grid"></param>
+	private void BeginScrollTracking(GridVirtual grid) {
+		//grid.Capture = true;
+		_capturedGrid = grid;
+
+		if (_scrollTimer == null) {
+			_scrollTimer = new Timer();
+			_scrollTimer.Interval = 100;
+			_scrollTimer.Tick += this.ScrollTimerTick;
+		}
+		_scrollTimer.Enabled = true;
+	}
+
+	private void ScrollTimerTick(object sender, EventArgs args) {
+		if (_capturedGrid == null)
+			return;
+		if (_capturedGrid.IsDisposed == true) {
+			EndScrollTracking();
+			return;
+		}
+
+		//If grid has lost focus end scroll tracking
+		if (!_capturedGrid.Focused) {
+			EndScrollTracking();
+			return;
+		}
+
+		//Scroll the view if required
+		var mousePoint = _capturedGrid.PointToClient(Control.MousePosition);
+		_capturedGrid.ScrollOnPoint(mousePoint);
+		// If we are scrolling view fire mouse move event to change also selection
+		if (_capturedMouseMoveEventArgs != null)
+			this.OnMouseMove(_capturedMouseMoveSender,
+				new MouseEventArgs(_capturedMouseMoveEventArgs.Button,
+					_capturedMouseMoveEventArgs.Clicks,
+					mousePoint.X,
+					mousePoint.Y,
+					_capturedMouseMoveEventArgs.Delta));
 	}
 
 	/// <summary>

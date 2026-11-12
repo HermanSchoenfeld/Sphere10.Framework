@@ -24,21 +24,6 @@ public static class ComboBoxExtensions {
 		combo.DrawItem += DrawSelectionOnlyItem;
 	}
 
-	private static void DrawSelectionOnlyItem(object sender, DrawItemEventArgs args) {
-		var combo = (ComboBox)sender;
-		var collapsed = (args.State & DrawItemState.ComboBoxEdit) != 0;
-		var selected = !collapsed && (args.State & DrawItemState.Selected) != 0;
-		var background = selected ? SystemColors.Highlight : combo.BackColor;
-		var foreground = !combo.Enabled ? SystemColors.GrayText : selected ? SystemColors.HighlightText : combo.ForeColor;
-		using var brush = new SolidBrush(background);
-		args.Graphics.FillRectangle(brush, args.Bounds);
-		if (args.Index >= 0 && args.Index < combo.Items.Count)
-			TextRenderer.DrawText(args.Graphics, combo.GetItemText(combo.Items[args.Index]), args.Font, args.Bounds, foreground, background,
-				TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
-		if (!collapsed)
-			args.DrawFocusRectangle();
-	}
-
 	/// <summary>
 	/// Selects the item in the combo box which matches the given text.
 	/// </summary>
@@ -67,6 +52,21 @@ public static class ComboBoxExtensions {
 			combo.Items.Add(itemText);
 			TrySelectByText(combo, itemText);
 		}
+	}
+
+	private static void DrawSelectionOnlyItem(object sender, DrawItemEventArgs args) {
+		var combo = (ComboBox)sender;
+		var collapsed = (args.State & DrawItemState.ComboBoxEdit) != 0;
+		var selected = !collapsed && (args.State & DrawItemState.Selected) != 0;
+		var background = selected ? SystemColors.Highlight : combo.BackColor;
+		var foreground = !combo.Enabled ? SystemColors.GrayText : selected ? SystemColors.HighlightText : combo.ForeColor;
+		using var brush = new SolidBrush(background);
+		args.Graphics.FillRectangle(brush, args.Bounds);
+		if (args.Index >= 0 && args.Index < combo.Items.Count)
+			TextRenderer.DrawText(args.Graphics, combo.GetItemText(combo.Items[args.Index]), args.Font, args.Bounds, foreground, background,
+				TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+		if (!collapsed)
+			args.DrawFocusRectangle();
 	}
 }
 

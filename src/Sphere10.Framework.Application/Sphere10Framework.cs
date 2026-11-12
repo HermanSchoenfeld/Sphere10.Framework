@@ -31,9 +31,7 @@ public class Sphere10Framework {
 
 	public event EventHandlerEx<ProductInformation, ProductInformation> VersionChangeDetected;
 
-	static Sphere10Framework() {
-		Instance = new Sphere10Framework();
-	}
+	static Sphere10Framework() => Instance = new Sphere10Framework();
 
 	public Sphere10Framework() {
 		IsStarted = false;
@@ -57,26 +55,6 @@ public class Sphere10Framework {
 	public Sphere10FrameworkBuilder Build() {
 		CheckNotStarted();
 		return new Sphere10FrameworkBuilder(this);
-	}
-
-	internal void FireRegistering() => Registering?.Invoke();
-
-	protected virtual void OnVersionChangeDetected(ProductInformation previousVersion, ProductInformation currentVersion)
-		=> VersionChangeDetected?.Invoke(previousVersion, currentVersion);
-
-	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider,
-		Func<IServiceProvider, ILogger> loggerSelector = null) {
-		CheckNotStarted();
-		ServiceProvider = serviceProvider;
-		_moduleConfigurations = modules;
-		_frameworkOwnsServicesProvider = ownsProvider;
-		_finalizationAttempted = false;
-		Initializing?.Invoke();
-		InitializeModules(serviceProvider);
-		var logger = loggerSelector?.Invoke(serviceProvider) ?? serviceProvider.GetService<ILogger>() ?? SystemLog.Logger;
-		InitializeApplication(logger);
-		Initialized?.Invoke();
-		IsStarted = true;
 	}
 
 	public void EndFramework() {
@@ -107,6 +85,46 @@ public class Sphere10Framework {
 			throw new AggregateException(errors);
 	}
 
+	public void TerminateApplication(int exitCode) {
+		if (IsStarted)
+			EndFramework();
+		System.Environment.Exit(exitCode);
+	}
+
+	public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
+		=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
+
+	public ILogger CreateApplicationLogger(string fileName, bool visibleToAllUsers = false)
+		=> CreateApplicationLogger(fileName, RollingFileLogger.DefaultMaxFiles, RollingFileLogger.DefaultMaxFileSizeB, visibleToAllUsers);
+
+	public ILogger CreateApplicationLogger(string fileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
+		=> new ThreadIdLogger(
+			new TimestampLogger(
+				new RollingFileLogger(
+					Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", fileName),
+					maxFiles,
+					maxFileSize
+				)
+			)
+		);
+
+	internal void FireRegistering() => Registering?.Invoke();
+
+	internal void StartInternal(IServiceProvider serviceProvider, ICoreModuleConfiguration[] modules, bool ownsProvider,
+		Func<IServiceProvider, ILogger> loggerSelector = null) {
+		CheckNotStarted();
+		ServiceProvider = serviceProvider;
+		_moduleConfigurations = modules;
+		_frameworkOwnsServicesProvider = ownsProvider;
+		_finalizationAttempted = false;
+		Initializing?.Invoke();
+		InitializeModules(serviceProvider);
+		var logger = loggerSelector?.Invoke(serviceProvider) ?? serviceProvider.GetService<ILogger>() ?? SystemLog.Logger;
+		InitializeApplication(logger);
+		Initialized?.Invoke();
+		IsStarted = true;
+	}
+
 	/// <summary>Runs process shutdown tasks once while keeping the service provider and owned resources available until EndFramework.</summary>
 	internal void FinalizeFramework() {
 		CheckStarted();
@@ -127,19 +145,6 @@ public class Sphere10Framework {
 			throw new AggregateException(errors);
 	}
 
-	public void TerminateApplication(int exitCode) {
-		if (IsStarted)
-			EndFramework();
-		System.Environment.Exit(exitCode);
-	}
-
-	private void InitializeModules(IServiceProvider serviceProvider)
-		=> _moduleConfigurations.ForEach(m => m.OnInitialize(serviceProvider));
-
-	private void InitializeApplication(ILogger logger)
-		=> Tools.Application.ExecuteInitializers(ServiceProvider.GetServices<IApplicationInitializer>(), logger,
-			(title, message, completed, total, percent) => Progress?.Invoke(title, message, completed, total, percent));
-
 	internal void FinalizeModules(IServiceProvider serviceProvider) {
 		var errors = new List<Exception>();
 		foreach (var module in _moduleConfigurations)
@@ -150,6 +155,16 @@ public class Sphere10Framework {
 			throw new AggregateException(errors);
 	}
 
+	protected virtual void OnVersionChangeDetected(ProductInformation previousVersion, ProductInformation currentVersion)
+		=> VersionChangeDetected?.Invoke(previousVersion, currentVersion);
+
+	private void InitializeModules(IServiceProvider serviceProvider)
+		=> _moduleConfigurations.ForEach(m => m.OnInitialize(serviceProvider));
+
+	private void InitializeApplication(ILogger logger)
+		=> Tools.Application.ExecuteInitializers(ServiceProvider.GetServices<IApplicationInitializer>(), logger,
+			(title, message, completed, total, percent) => Progress?.Invoke(title, message, completed, total, percent));
+
 	private void FinalizeApplication() {
 		var errors = new List<Exception>();
 		foreach (var finalizer in ServiceProvider.GetServices<IApplicationFinalizer>())
@@ -159,23 +174,6 @@ public class Sphere10Framework {
 		if (errors.Count > 1)
 			throw new AggregateException(errors);
 	}
-
-	public ILogger CreateApplicationLogger(bool visibleToAllUsers = false)
-		=> CreateApplicationLogger(Tools.Text.FormatEx("{ProductName}"), visibleToAllUsers: visibleToAllUsers);
-
-	public ILogger CreateApplicationLogger(string fileName, bool visibleToAllUsers = false)
-		=> CreateApplicationLogger(fileName, RollingFileLogger.DefaultMaxFiles, RollingFileLogger.DefaultMaxFileSizeB, visibleToAllUsers);
-
-	public ILogger CreateApplicationLogger(string fileName, int maxFiles, int maxFileSize, bool visibleToAllUsers = false)
-		=> new ThreadIdLogger(
-			new TimestampLogger(
-				new RollingFileLogger(
-					Path.Combine(Tools.Text.FormatEx(visibleToAllUsers ? "{SystemDataDir}" : "{UserDataDir}"), Tools.Text.FormatEx("{ProductName}"), "logs", fileName),
-					maxFiles,
-					maxFileSize
-				)
-			)
-		);
 
 	private void CheckStarted() {
 		if (!IsStarted)

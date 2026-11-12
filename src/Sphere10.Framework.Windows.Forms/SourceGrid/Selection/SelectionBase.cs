@@ -56,7 +56,8 @@ public abstract class SelectionBase : IGridSelection {
 
 	private GridVirtual _grid;
 
-	// Focus
+	#region Focus
+
 	private Position _activePosition = Position.Empty;
 	private Color _focusBackColor = Color.Transparent;
 	private FocusStyle _focusStyle = FocusStyle.Default;
@@ -66,42 +67,35 @@ public abstract class SelectionBase : IGridSelection {
 	private System.Drawing.Color _backColor = System.Drawing.Color.FromArgb(75, System.Drawing.Color.FromKnownColor(System.Drawing.KnownColor.Highlight));
 	private Sphere10.Framework.Drawing.RectangleBorder _border = new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(Color.Black, 2));
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
 	public SelectionBase() {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// The Grid object
 	/// </summary>
-	public GridVirtual Grid {
-		get {
-			return _grid;
-		}
-	}
+	public GridVirtual Grid => _grid;
 
 	/// <summary>
 	/// Gets the active cell position. The cell with the focus.
 	/// Returns Position.Empty if there isn't an active cell.
 	/// </summary>
 	public Position ActivePosition {
-		get {
-			return _activePosition;
-		}
-		protected set {
-			_activePosition = value;
-		}
+		get => _activePosition;
+		protected set => _activePosition = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the backColor of the cell with the Focus. Default is Color.Transparent.
 	/// </summary>
 	public Color FocusBackColor {
-		get {
-			return _focusBackColor;
-		}
+		get => _focusBackColor;
 		set {
 			_focusBackColor = value;
 			Invalidate();
@@ -112,24 +106,16 @@ public abstract class SelectionBase : IGridSelection {
 	/// Gets or sets the behavior of the focus and selection. Default is FocusStyle.Default.
 	/// </summary>
 	public FocusStyle FocusStyle {
-		get {
-			return _focusStyle;
-		}
-		set {
-			_focusStyle = value;
-		}
+		get => _focusStyle;
+		set => _focusStyle = value;
 	}
 
 	/// <summary>
 	/// Gets or sets if enable multi selection using Ctrl key or Shift Key or with mouse. Default is true.
 	/// </summary>
 	public bool EnableMultiSelection {
-		get {
-			return _enableMultiSelection;
-		}
-		set {
-			_enableMultiSelection = value;
-		}
+		get => _enableMultiSelection;
+		set => _enableMultiSelection = value;
 	}
 
 	/// <summary>
@@ -137,9 +123,7 @@ public abstract class SelectionBase : IGridSelection {
 	/// Usually is a color with a transparent value so you can see the color of the cell. Default is: Color.FromArgb(75, Color.FromKnownColor(KnownColor.Highlight))
 	/// </summary>
 	public System.Drawing.Color BackColor {
-		get {
-			return _backColor;
-		}
+		get => _backColor;
 		set {
 			_backColor = value;
 			Invalidate();
@@ -150,32 +134,27 @@ public abstract class SelectionBase : IGridSelection {
 	/// The Border used to highlight the range
 	/// </summary>
 	public Sphere10.Framework.Drawing.RectangleBorder Border {
-		get {
-			return _border;
-		}
+		get => _border;
 		set {
 			_border = value;
 			Invalidate();
 		}
 	}
 
-	// Grid
+	#region Grid
+
 	/// <summary>
 	/// Link the cell at the specified grid.
 	/// For internal use only.
 	/// </summary>
 	/// <param name="grid"></param>
-	public virtual void BindToGrid(GridVirtual grid) {
-		_grid = grid;
-	}
+	public virtual void BindToGrid(GridVirtual grid) => _grid = grid;
 
 	/// <summary>
 	/// Remove the link of the cell from the grid.
 	/// For internal use only.
 	/// </summary>
-	public virtual void UnBindToGrid() {
-		_grid = null;
-	}
+	public virtual void UnBindToGrid() => _grid = null;
 
 	/// <summary>
 	/// Set the focus on the first available cells starting from the not fixed cells.
@@ -233,7 +212,10 @@ public abstract class SelectionBase : IGridSelection {
 		return Focus(Position.Empty, true);
 	}
 
-	// Cell navigation
+	#endregion
+
+	#region Cell navigation
+
 	/// <summary>
 	/// Move the active cell (focus), moving the row and column as specified. Returns true if the focus can be moved.
 	/// Returns false if there aren't any cell to move.
@@ -241,21 +223,15 @@ public abstract class SelectionBase : IGridSelection {
 	/// <param name="rowShift"></param>
 	/// <param name="colShift"></param>
 	/// <returns></returns>
-	public bool MoveActiveCell(int rowShift, int colShift) {
-		return MoveActiveCell(ActivePosition, rowShift, colShift);
-	}
+	public bool MoveActiveCell(int rowShift, int colShift) => MoveActiveCell(ActivePosition, rowShift, colShift);
 
-	public bool MoveActiveCell(int rowShift, int colShift, bool resetSelection) {
-		return MoveActiveCell(ActivePosition, rowShift, colShift, resetSelection);
-	}
+	public bool MoveActiveCell(int rowShift, int colShift, bool resetSelection) => MoveActiveCell(ActivePosition, rowShift, colShift, resetSelection);
 
 	/// <summary>
 	/// Move the active cell (focus), moving the row and column as specified. Returns true if the focus can be moved.
 	/// Returns false if there aren't any cell to move.
 	/// </summary>
-	public bool MoveActiveCell(Position start, int rowShift, int colShift) {
-		return MoveActiveCell(start, rowShift, colShift, true);
-	}
+	public bool MoveActiveCell(Position start, int rowShift, int colShift) => MoveActiveCell(start, rowShift, colShift, true);
 
 	/// <summary>
 	/// Move the active cell (focus), moving the row and column as specified. Returns true if the focus can be moved.
@@ -310,9 +286,7 @@ public abstract class SelectionBase : IGridSelection {
 	/// Returns false if there aren't any cell to move.
 	/// </summary>
 	/// <returns></returns>
-	public bool MoveActiveCell(int rowShift1, int colShift1, int rowShift2, int colShift2) {
-		return MoveActiveCell(ActivePosition, rowShift1, colShift1, rowShift2, colShift2);
-	}
+	public bool MoveActiveCell(int rowShift1, int colShift1, int rowShift2, int colShift2) => MoveActiveCell(ActivePosition, rowShift1, colShift1, rowShift2, colShift2);
 
 	/// <summary>
 	/// Move the active cell (focus), moving the row and column as specified.
@@ -370,6 +344,8 @@ public abstract class SelectionBase : IGridSelection {
 		return MoveActiveCell(start, rowShift1, colShift1, rowShift2, colShift2);
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Check if the column is selected. Returns true if one or more row of the column is selected.
 	/// </summary>
@@ -417,59 +393,6 @@ public abstract class SelectionBase : IGridSelection {
 	/// <param name="rng"></param>
 	/// <returns></returns>
 	public abstract bool IntersectsWith(CellRange rng);
-
-	/// <summary>
-	/// Check if the range can be selected
-	/// </summary>
-	/// <param name="rng"></param>
-	/// <returns></returns>
-	protected CellRange ValidateRange(CellRange rng) {
-		//Position start = rng.Start;
-		//Position end = rng.End;
-
-		//if (rng.Start.Row < Grid.FixedRows)
-		//    start = new Position(Grid.FixedRows, start.Column);
-
-		//if (rng.Start.Column < Grid.FixedColumns)
-		//    start = new Position(start.Row, Grid.FixedColumns);
-
-		//if (rng.End.Row < Grid.FixedRows)
-		//    end = new Position(Grid.FixedRows, end.Column);
-
-		//if (rng.End.Column < Grid.FixedColumns)
-		//    end = new Position(end.Row, Grid.FixedColumns);
-
-		//return new CellRange(start, end);
-
-		return Grid.CompleteRange.Intersect(rng);
-	}
-
-	private Position SearchForValidFocusPosition(PositionCollection positions) {
-		foreach (var ps in positions) {
-			if (CanReceiveFocus(ps))
-				return ps;
-		}
-
-		return Position.Empty;
-	}
-
-	private Position SearchForValidFocusPosition() {
-		for (var r = Grid.FixedRows; r < Grid.Rows.Count; r++) {
-			for (var c = Grid.FixedColumns; c < Grid.Columns.Count; c++) {
-				var startPosition = new Position(r, c);
-				if (CanReceiveFocus(startPosition))
-					return startPosition;
-			}
-		}
-
-		return Position.Empty;
-	}
-
-	private bool IsActivePositionValid() {
-		return ActivePosition.IsEmpty() == false &&
-				Grid != null &&
-				Grid.CompleteRange.Contains(ActivePosition);
-	}
 
 	/// <summary>
 	/// Change the ActivePosition (focus) of the grid.
@@ -568,16 +491,6 @@ public abstract class SelectionBase : IGridSelection {
 		return true;
 	}
 
-	private void DeselectOldRangeAndSelectActiveCell() {
-		//Deselect previous selected cells
-		//ResetSelection(true);
-		//Select the cell
-		SelectCell(_activePosition, true);
-
-		//Invalidate the selection
-		Invalidate();
-	}
-
 	/// <summary>
 	/// Returns true if the specified position can receive the focus.
 	/// </summary>
@@ -595,6 +508,115 @@ public abstract class SelectionBase : IGridSelection {
 			return false;
 		}
 		return false;
+	}
+
+	#region Drawing
+
+	/// <summary>
+	/// Invalidate all the selected cells
+	/// </summary>
+	public virtual void Invalidate() {
+		foreach (var rng in GetSelectionRegion())
+			Grid.InvalidateRange(rng);
+	}
+
+	#endregion
+
+	/// <summary>
+	/// Select or unselect the specified cell
+	/// </summary>
+	/// <param name="position"></param>
+	/// <param name="select"></param>
+	public abstract void SelectCell(Position position, bool select);
+
+	/// <summary>
+	/// Reset the selection
+	/// </summary>
+	public void ResetSelection(bool mantainFocus) {
+		//Reset also the focus is mantainFocus == false
+		if (mantainFocus == false && ActivePosition.IsEmpty() == false)
+			Focus(Position.Empty, false);
+
+		OnResetSelection();
+
+		//If mantainFocus == true leave the selection for the focus
+		if (mantainFocus && ActivePosition.IsEmpty() == false)
+			SelectCell(ActivePosition, true);
+	}
+
+	/// <summary>
+	/// Returns true if the selection is empty
+	/// </summary>
+	/// <returns></returns>
+	public abstract bool IsEmpty();
+
+	/// <summary>
+	/// Returns the selected region.
+	/// </summary>
+	/// <returns></returns>
+	public abstract RangeRegion GetSelectionRegion();
+
+	/// <summary>
+	/// Check if the range can be selected
+	/// </summary>
+	/// <param name="rng"></param>
+	/// <returns></returns>
+	protected CellRange ValidateRange(CellRange rng) {
+		//Position start = rng.Start;
+		//Position end = rng.End;
+
+		//if (rng.Start.Row < Grid.FixedRows)
+		//    start = new Position(Grid.FixedRows, start.Column);
+
+		//if (rng.Start.Column < Grid.FixedColumns)
+		//    start = new Position(start.Row, Grid.FixedColumns);
+
+		//if (rng.End.Row < Grid.FixedRows)
+		//    end = new Position(Grid.FixedRows, end.Column);
+
+		//if (rng.End.Column < Grid.FixedColumns)
+		//    end = new Position(end.Row, Grid.FixedColumns);
+
+		//return new CellRange(start, end);
+
+		return Grid.CompleteRange.Intersect(rng);
+	}
+
+	private Position SearchForValidFocusPosition(PositionCollection positions) {
+		foreach (var ps in positions) {
+			if (CanReceiveFocus(ps))
+				return ps;
+		}
+
+		return Position.Empty;
+	}
+
+	private Position SearchForValidFocusPosition() {
+		for (var r = Grid.FixedRows; r < Grid.Rows.Count; r++) {
+			for (var c = Grid.FixedColumns; c < Grid.Columns.Count; c++) {
+				var startPosition = new Position(r, c);
+				if (CanReceiveFocus(startPosition))
+					return startPosition;
+			}
+		}
+
+		return Position.Empty;
+	}
+
+	private bool IsActivePositionValid() {
+		return ActivePosition.IsEmpty() == false &&
+				Grid != null &&
+				Grid.CompleteRange.Contains(ActivePosition);
+	}
+
+	private void DeselectOldRangeAndSelectActiveCell() {
+		//Deselect previous selected cells
+		//ResetSelection(true);
+		//Select the cell
+		SelectCell(_activePosition, true);
+
+		//Invalidate the selection
+		Invalidate();
 	}
 
 	/// <summary>
@@ -730,53 +752,12 @@ public abstract class SelectionBase : IGridSelection {
 		Grid.Controller.OnFocusLeft(new CellContext(Grid, e.OldFocusPosition), EventArgs.Empty);
 	}
 
-	// Drawing
-	/// <summary>
-	/// Invalidate all the selected cells
-	/// </summary>
-	public virtual void Invalidate() {
-		foreach (var rng in GetSelectionRegion())
-			Grid.InvalidateRange(rng);
-	}
-
-	/// <summary>
-	/// Select or unselect the specified cell
-	/// </summary>
-	/// <param name="position"></param>
-	/// <param name="select"></param>
-	public abstract void SelectCell(Position position, bool select);
+	#endregion
 
 	/// <summary>
 	/// Reset the selection
 	/// </summary>
 	protected abstract void OnResetSelection();
-
-	/// <summary>
-	/// Reset the selection
-	/// </summary>
-	public void ResetSelection(bool mantainFocus) {
-		//Reset also the focus is mantainFocus == false
-		if (mantainFocus == false && ActivePosition.IsEmpty() == false)
-			Focus(Position.Empty, false);
-
-		OnResetSelection();
-
-		//If mantainFocus == true leave the selection for the focus
-		if (mantainFocus && ActivePosition.IsEmpty() == false)
-			SelectCell(ActivePosition, true);
-	}
-
-	/// <summary>
-	/// Returns true if the selection is empty
-	/// </summary>
-	/// <returns></returns>
-	public abstract bool IsEmpty();
-
-	/// <summary>
-	/// Returns the selected region.
-	/// </summary>
-	/// <returns></returns>
-	public abstract RangeRegion GetSelectionRegion();
 
 	protected virtual void OnSelectionChanged(RangeRegionChangedEventArgs e) {
 		if (SelectionChanged != null)

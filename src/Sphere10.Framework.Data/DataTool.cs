@@ -157,17 +157,13 @@ public static partial class Data {
 	/// Create an equal expression, automatically calls FormatValueForExpression
 	/// </summary>
 	/// <returns></returns>
-	public static string EqualExpression(string fieldName, object fieldValue) {
-		return fieldName + " = " + ExpressionFormat(fieldValue);
-	}
+	public static string EqualExpression(string fieldName, object fieldValue) => fieldName + " = " + ExpressionFormat(fieldValue);
 
 	/// <summary>
 	/// Create a Not equal expression, automatically calls FormatValueForExpression
 	/// </summary>
 	/// <returns></returns>
-	public static string NotEqualExpression(string fieldName, object fieldValue) {
-		return fieldName + " <> " + ExpressionFormat(fieldValue);
-	}
+	public static string NotEqualExpression(string fieldName, object fieldValue) => fieldName + " <> " + ExpressionFormat(fieldValue);
 
 	public static DataTable SelectDistinct(DataTable sourceTable, string fieldName, bool addEmptyValue, object emptyValue) {
 		var dataTable = new DataTable();
@@ -333,63 +329,49 @@ public static partial class Data {
 	/// </summary>
 	/// <param name="date"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(DateTime date) {
-		return "#" + date.ToString("MM/dd/yyyy") + "#";
-	}
+	public static string ExpressionFormat(DateTime date) => "#" + date.ToString("MM/dd/yyyy") + "#";
 
 	/// <summary>
 	/// Create a string with an InvariantCulture format.
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(int data) {
-		return data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-	}
+	public static string ExpressionFormat(int data) => data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
 	/// <summary>
 	/// Create a string with an InvariantCulture format.
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(long data) {
-		return data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-	}
+	public static string ExpressionFormat(long data) => data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
 	/// <summary>
 	/// Create a string with an InvariantCulture format.
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(float data) {
-		return data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-	}
+	public static string ExpressionFormat(float data) => data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
 	/// <summary>
 	/// Create a string with an InvariantCulture format.
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(double data) {
-		return data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-	}
+	public static string ExpressionFormat(double data) => data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
 	/// <summary>
 	/// Create a string with an InvariantCulture format.
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(decimal data) {
-		return data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-	}
+	public static string ExpressionFormat(decimal data) => data.ToString(System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
 	/// <summary>
 	/// Create a string with an InvariantCulture format.
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(bool data) {
-		return data.ToString(System.Globalization.CultureInfo.InvariantCulture);
-	}
+	public static string ExpressionFormat(bool data) => data.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
 	/// <summary>
 	/// Replace any special sql character (like single quote) and replace it with the valid sql equivalent. Then add the appropriate quote if the type require (string).
@@ -406,17 +388,30 @@ public static partial class Data {
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(char data) {
-		return ExpressionFormat(data.ToString());
-	}
+	public static string ExpressionFormat(char data) => ExpressionFormat(data.ToString());
 
 	/// <summary>
 	/// Return NULL
 	/// </summary>
 	/// <param name="data"></param>
 	/// <returns></returns>
-	public static string ExpressionFormat(System.DBNull data) {
-		return "NULL";
+	public static string ExpressionFormat(System.DBNull data) => "NULL";
+
+	// Helper methods
+	/// <summary>
+	/// Compares two values to see if they are equal. Also compares DBNULL.Value.
+	/// Note: If your DataTable contains object fields, then you must extend this
+	/// function to handle them in a meaningful way if you intend to group on them.
+	/// </summary>
+	/// <param name="left"></param>
+	/// <param name="right"></param>
+	/// <returns></returns>
+	public static bool ValEquals(object left, object right) {
+		if (left == DBNull.Value && right == DBNull.Value) //  both are DBNull.Value
+			return true;
+		if (left == DBNull.Value || right == DBNull.Value) //  only one is DBNull.Value
+			return false;
+		return (left.Equals(right)); // value type standard comparison
 	}
 
 	// Preserve the binary DataSet contract: version 1, length-prefixed XSD, table row counts and marked field values.
@@ -481,22 +476,5 @@ public static partial class Data {
 			}
 		}
 		destination.AcceptChanges();
-	}
-
-	// Helper methods
-	/// <summary>
-	/// Compares two values to see if they are equal. Also compares DBNULL.Value.
-	/// Note: If your DataTable contains object fields, then you must extend this
-	/// function to handle them in a meaningful way if you intend to group on them.
-	/// </summary>
-	/// <param name="left"></param>
-	/// <param name="right"></param>
-	/// <returns></returns>
-	public static bool ValEquals(object left, object right) {
-		if (left == DBNull.Value && right == DBNull.Value) //  both are DBNull.Value
-			return true;
-		if (left == DBNull.Value || right == DBNull.Value) //  only one is DBNull.Value
-			return false;
-		return (left.Equals(right)); // value type standard comparison
 	}
 }

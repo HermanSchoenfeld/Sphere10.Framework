@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -111,7 +112,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	/// <summary>
 	/// Asynchronously invokes <see cref="Load"/>.
 	/// </summary>
-	public Task LoadAsync() => Task.Run(Load);
+	public Task LoadAsync(CancellationToken cancellationToken = default) => Task.Run(Load, cancellationToken);
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
@@ -123,9 +124,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	/// <param name="index">Zero-based starting index.</param>
 	/// <param name="count">Number of items to read.</param>
 	/// <returns>Sequential batches aligned to page boundaries.</returns>
-	public override IEnumerable<TItem> ReadRange(long index, long count) {
-		return ReadRangeByPage(index, count).SelectMany(x => x);
-	}
+	public override IEnumerable<TItem> ReadRange(long index, long count) => ReadRangeByPage(index, count).SelectMany(x => x);
 
 	/// <summary>
 	/// Reads items grouped by the pages they fall into, issuing page lifecycle notifications as needed.
@@ -278,6 +277,8 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		}
 	}
 
+	public abstract PageScope<TItem> EnterOpenPageScope(IPage<TItem> page);
+
 	protected abstract IPage<TItem> NewPageInstance(long pageNumber);
 
 	protected abstract IPage<TItem>[] LoadPages();
@@ -402,8 +403,6 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		_lastFoundPage = ~lower;
 		return _lastFoundPage;
 	}
-
-	public abstract PageScope<TItem> EnterOpenPageScope(IPage<TItem> page);
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

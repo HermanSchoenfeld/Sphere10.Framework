@@ -95,26 +95,36 @@ public class ApplicationTabsBrowserTests {
 	}
 
 	[Test]
-	public async Task OpenScreensSelectorRestoresItsSelectedOptionWhenTheScreenRejectsNavigation() {
+	public async Task ScreensMenuChecksTheActiveScreenAndKeepsItWhenTheScreenRejectsNavigation() {
 		var menu = _page.GetByRole(AriaRole.Navigation, new() { Name = "Workspace menus", Exact = true });
+		var commands = _page.GetByRole(AriaRole.Navigation, new() { Name = "Application commands", Exact = true });
 		await menu.GetByRole(AriaRole.Button, new() { Name = "Single-instance screen", Exact = true }).ClickAsync();
 		var editor = _page.GetByRole(AriaRole.Tab, new() { Name = "Single-instance screen", Exact = true });
 		await Assertions.Expect(editor).ToHaveAttributeAsync("aria-selected", "true");
-		var selector = _page.GetByRole(AriaRole.Combobox, new() { Name = "Open Screens", Exact = true });
-		var originalValue = await selector.InputValueAsync();
 		await _page.GetByRole(AriaRole.Textbox, new() { Name = "Session note", Exact = true }).FillAsync("Keep this guarded screen selected");
 		await _page.GetByText("Unsaved changes — navigation is blocked.", new() { Exact = true }).WaitForAsync();
 
-		await selector.SelectOptionAsync(new SelectOptionValue { Label = "Overview" });
+		// The Screens menu mirrors the native main form: open screens with the active one checked, then Close All / Close All Others.
+		var screens = await OpenScreensMenuAsync(commands);
+		await Assertions.Expect(screens.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Single-instance screen", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
+		await Assertions.Expect(screens.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Overview", Exact = true })).ToHaveAttributeAsync("aria-checked", "false");
+		await Assertions.Expect(screens.GetByRole(AriaRole.Button, new() { Name = "Close All", Exact = true })).ToBeEnabledAsync();
+		await Assertions.Expect(screens.GetByRole(AriaRole.Button, new() { Name = "Close All Others", Exact = true })).ToBeEnabledAsync();
+		await screens.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Overview", Exact = true }).ClickAsync();
 
 		await Assertions.Expect(editor).ToHaveAttributeAsync("aria-selected", "true");
-		await Assertions.Expect(selector).ToHaveValueAsync(originalValue);
+		screens = await OpenScreensMenuAsync(commands);
+		await Assertions.Expect(screens.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Single-instance screen", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
+		await _page.Keyboard.PressAsync("Escape");
 		await _page.GetByRole(AriaRole.Tabpanel, new() { Name = "Single-instance screen", Exact = true })
 			.GetByRole(AriaRole.Button, new() { Name = "Discard changes", Exact = true }).ClickAsync();
 		await _page.GetByText("No unsaved changes.", new() { Exact = true }).WaitForAsync();
-		await selector.SelectOptionAsync(new SelectOptionValue { Label = "Overview" });
+		screens = await OpenScreensMenuAsync(commands);
+		await screens.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Overview", Exact = true }).ClickAsync();
 		await Assertions.Expect(_page.GetByRole(AriaRole.Tab, new() { Name = "Overview", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
-		Assert.That(await selector.InputValueAsync(), Is.Not.EqualTo(originalValue));
+		screens = await OpenScreensMenuAsync(commands);
+		await Assertions.Expect(screens.GetByRole(AriaRole.Menuitemcheckbox, new() { Name = "Overview", Exact = true })).ToHaveAttributeAsync("aria-checked", "true");
+		await _page.Keyboard.PressAsync("Escape");
 	}
 
 	[Test]
@@ -309,6 +319,13 @@ public class ApplicationTabsBrowserTests {
 		await commands.GetByRole(AriaRole.Button, new() { Name = "Tabbed screens", Exact = true }).ClickAsync();
 		await _page.GetByRole(AriaRole.Tab, new() { Name = "New scratchpad", Exact = true }).WaitForAsync();
 		Assert.That(await _page.GetByRole(AriaRole.Tab).CountAsync(), Is.EqualTo(1));
+	}
+
+	private static async Task<ILocator> OpenScreensMenuAsync(ILocator commands) {
+		await commands.GetByRole(AriaRole.Button, new() { Name = "Screens", Exact = true }).ClickAsync();
+		var screens = commands.GetByRole(AriaRole.Group, new() { Name = "Screens", Exact = true });
+		await screens.WaitForAsync();
+		return screens;
 	}
 
 	private async Task AssertSelectedAndFocusedAsync(ILocator tab) {

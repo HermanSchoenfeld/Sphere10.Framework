@@ -23,9 +23,7 @@ public class TypeConverterValidator : ValidatorBase {
 	/// <summary>
 	/// Constructor. Initialize the Validator with a null TypeConverter.
 	/// </summary>
-	public TypeConverterValidator() {
-		_typeConverter = null;
-	}
+	public TypeConverterValidator() => _typeConverter = null;
 
 	/// <summary>
 	/// Constructor. If the Type doesn't implements a TypeConverter no conversion is made.
@@ -50,9 +48,7 @@ public class TypeConverterValidator : ValidatorBase {
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public System.ComponentModel.TypeConverter TypeConverter {
-		get {
-			return _typeConverter;
-		}
+		get => _typeConverter;
 		set {
 			if (_typeConverter != value) {
 				_typeConverter = value;
@@ -60,6 +56,19 @@ public class TypeConverterValidator : ValidatorBase {
 				OnChanged(EventArgs.Empty);
 			}
 		}
+	}
+
+	// Conversion
+	/// <summary>
+	/// Returns true if string conversion is suported. AllowStringConversion must be true and the current Validator must support string conversion.
+	/// </summary>
+	public override bool IsStringConversionSupported() {
+		if (typeof(string).IsAssignableFrom(ValueType))
+			return AllowStringConversion;
+
+		if (_typeConverter != null)
+			return AllowStringConversion && _typeConverter.CanConvertFrom(typeof(string)) && _typeConverter.CanConvertTo(typeof(string));
+		return base.AllowStringConversion;
 	}
 
 	/// <summary>
@@ -116,19 +125,6 @@ public class TypeConverterValidator : ValidatorBase {
 			throw new ApplicationException("String conversion not supported for this type of Validator.");
 		else if (_typeConverter != null)
 			args.Value = _typeConverter.ConvertTo(null, CultureInfo, args.Value, args.DestinationType);
-	}
-
-	// Conversion
-	/// <summary>
-	/// Returns true if string conversion is suported. AllowStringConversion must be true and the current Validator must support string conversion.
-	/// </summary>
-	public override bool IsStringConversionSupported() {
-		if (typeof(string).IsAssignableFrom(ValueType))
-			return AllowStringConversion;
-
-		if (_typeConverter != null)
-			return AllowStringConversion && _typeConverter.CanConvertFrom(typeof(string)) && _typeConverter.CanConvertTo(typeof(string));
-		return base.AllowStringConversion;
 	}
 
 	protected override void OnLoadingValueType() {

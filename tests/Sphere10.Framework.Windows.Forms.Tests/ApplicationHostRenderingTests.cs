@@ -343,107 +343,6 @@ public class ApplicationHostRenderingTests {
 		});
 	}
 
-	private static Bitmap CaptureNativeClient(Control control, Size size) {
-		var image = new Bitmap(size.Width, size.Height);
-		var captured = false;
-		using var rollback = Tools.Scope.ExecuteOnDispose(() => { if (!captured) image.Dispose(); });
-		using var graphics = Graphics.FromImage(image);
-		var source = WinAPI.USER32.GetDC(control.Handle);
-		using var sourceScope = Tools.Scope.ExecuteOnDispose(() => WinAPI.USER32.ReleaseDC(control.Handle, source));
-		var target = graphics.GetHdc();
-		using var targetScope = Tools.Scope.ExecuteOnDispose(() => graphics.ReleaseHdc(target));
-		Assert.That(WinAPI.GDI32.BitBlt(target, 0, 0, size.Width, size.Height, source, 0, 0, WinAPI.GDI32.TernaryRasterOperations.SRCCOPY), Is.True);
-		captured = true;
-		return image;
-	}
-
-	private static int CountCaptionPixels(Bitmap image, Rectangle header) {
-		var bounds = Rectangle.Intersect(new Rectangle(Point.Empty, image.Size), Rectangle.Inflate(header, -6, -4));
-		var dark = 0;
-		var light = 0;
-		for (var y = bounds.Top; y < bounds.Bottom; y++)
-			for (var x = bounds.Left; x < bounds.Right; x++) {
-				var pixel = image.GetPixel(x, y);
-				if (pixel.R + pixel.G + pixel.B < 360)
-					dark++;
-				if (pixel.R + pixel.G + pixel.B > 600)
-					light++;
-			}
-		return light >= 8 ? dark : 0;
-	}
-
-
-	private static void SendTabMessage(TabControl tabs, uint message, Point location) => WinAPI.USER32.SendMessage(new HandleRef(tabs, tabs.Handle), message,
-		message == WinAPI.USER32.WM_LBUTTONDOWN ? (IntPtr)1 : IntPtr.Zero, (IntPtr)((location.Y << 16) | (location.X & 0xFFFF)));
-
-	private sealed class NativeTabPaintSpy : NativeWindow, IDisposable {
-		private readonly TabControl _tabs;
-		private int _mouseDownDepth;
-		public int PaintCount { get; private set; }
-		public int PaintMessageCount { get; private set; }
-		public int DrawCount { get; private set; }
-		public int InvalidationCount { get; private set; }
-		public int PaintsInsideMouseDown { get; private set; }
-		public int DrawsInsideMouseDown { get; private set; }
-		public int SelectionsInsideMouseDown { get; private set; }
-		public List<string> Trace { get; } = new();
-
-		public NativeTabPaintSpy(TabControl tabs) {
-			_tabs = tabs;
-			AssignHandle(tabs.Handle);
-			tabs.DrawItem += DrawItem;
-			tabs.Invalidated += Invalidated;
-		}
-
-		public void Dispose() {
-			_tabs.DrawItem -= DrawItem;
-			_tabs.Invalidated -= Invalidated;
-			ReleaseHandle();
-		}
-
-		protected override void WndProc(ref Message message) {
-			if (_mouseDownDepth > 0 && (message.Msg == 0x000B || message.Msg == 0x0018 || message.Msg == WinAPI.USER32.WM_PAINT)) {
-				Trace.Add($"Native input message 0x{message.Msg:X4}, wParam={message.WParam}; managed/native visible={_tabs.Visible}/{WinAPI.USER32.IsWindowVisible(Handle)}; selected={_tabs.SelectedIndex}.");
-				if (message.Msg == WinAPI.USER32.WM_PAINT)
-					Trace.Add(Environment.StackTrace);
-			}
-			if (message.Msg == WinAPI.USER32.WM_PAINT) {
-				PaintMessageCount++;
-				var previousDraws = DrawCount;
-				base.WndProc(ref message);
-				if (DrawCount > previousDraws) {
-					PaintCount++;
-					if (_mouseDownDepth > 0)
-						PaintsInsideMouseDown++;
-				}
-				return;
-			}
-			if (message.Msg == WinAPI.COMCTL32.TCM_SETCURSEL && _mouseDownDepth > 0)
-				SelectionsInsideMouseDown++;
-			if (message.Msg != WinAPI.USER32.WM_LBUTTONDOWN) {
-				base.WndProc(ref message);
-				return;
-			}
-			_mouseDownDepth++;
-			{
-				using var restoreMouseDispatchDepth = Tools.Scope.ExecuteOnDispose(() => {
-					_mouseDownDepth--;
-				});
-				base.WndProc(ref message);
-			}
-		}
-
-		private void DrawItem(object sender, DrawItemEventArgs args) {
-			DrawCount++;
-			if (_mouseDownDepth > 0) {
-				DrawsInsideMouseDown++;
-				Trace.Add($"Draw tab {args.Index}, selected={_tabs.SelectedIndex}, state={args.State}; native visible={WinAPI.USER32.IsWindowVisible(Handle)}; bounds={args.Bounds}; visible clip={args.Graphics.VisibleClipBounds}.");
-			}
-		}
-
-		private void Invalidated(object sender, InvalidateEventArgs args) => InvalidationCount++;
-	}
-
 	[Test]
 	public void ScreenTransitionPublishesOneFinalSelectionAndRebuildsChromeOnce() {
 		using var form = new CountingMainForm { ScreenMode = ScreenMode.MultiView };
@@ -503,6 +402,7 @@ public class ApplicationHostRenderingTests {
 		Assert.That(changes, Is.EqualTo(1));
 		Assert.That(selections, Is.EqualTo(1));
 	}
+
 
 	[Test]
 	public async Task ApplicationCommandsSurviveBlockAndScreenCaptionCollisions() {
@@ -591,6 +491,74 @@ public class ApplicationHostRenderingTests {
 		Assert.That(form.MenuEntries.Last(), Is.SameAs(legacyHelp));
 	}
 
+	private sealed class NativeTabPaintSpy : NativeWindow, IDisposable {
+		private readonly TabControl _tabs;
+		private int _mouseDownDepth;
+		public int PaintCount { get; private set; }
+		public int PaintMessageCount { get; private set; }
+		public int DrawCount { get; private set; }
+		public int InvalidationCount { get; private set; }
+		public int PaintsInsideMouseDown { get; private set; }
+		public int DrawsInsideMouseDown { get; private set; }
+		public int SelectionsInsideMouseDown { get; private set; }
+		public List<string> Trace { get; } = new();
+
+		public NativeTabPaintSpy(TabControl tabs) {
+			_tabs = tabs;
+			AssignHandle(tabs.Handle);
+			tabs.DrawItem += DrawItem;
+			tabs.Invalidated += Invalidated;
+		}
+
+		public void Dispose() {
+			_tabs.DrawItem -= DrawItem;
+			_tabs.Invalidated -= Invalidated;
+			ReleaseHandle();
+		}
+
+		protected override void WndProc(ref Message message) {
+			if (_mouseDownDepth > 0 && (message.Msg == 0x000B || message.Msg == 0x0018 || message.Msg == WinAPI.USER32.WM_PAINT)) {
+				Trace.Add($"Native input message 0x{message.Msg:X4}, wParam={message.WParam}; managed/native visible={_tabs.Visible}/{WinAPI.USER32.IsWindowVisible(Handle)}; selected={_tabs.SelectedIndex}.");
+				if (message.Msg == WinAPI.USER32.WM_PAINT)
+					Trace.Add(Environment.StackTrace);
+			}
+			if (message.Msg == WinAPI.USER32.WM_PAINT) {
+				PaintMessageCount++;
+				var previousDraws = DrawCount;
+				base.WndProc(ref message);
+				if (DrawCount > previousDraws) {
+					PaintCount++;
+					if (_mouseDownDepth > 0)
+						PaintsInsideMouseDown++;
+				}
+				return;
+			}
+			if (message.Msg == WinAPI.COMCTL32.TCM_SETCURSEL && _mouseDownDepth > 0)
+				SelectionsInsideMouseDown++;
+			if (message.Msg != WinAPI.USER32.WM_LBUTTONDOWN) {
+				base.WndProc(ref message);
+				return;
+			}
+			_mouseDownDepth++;
+			{
+				using var restoreMouseDispatchDepth = Tools.Scope.ExecuteOnDispose(() => {
+					_mouseDownDepth--;
+				});
+				base.WndProc(ref message);
+			}
+		}
+
+		private void DrawItem(object sender, DrawItemEventArgs args) {
+			DrawCount++;
+			if (_mouseDownDepth > 0) {
+				DrawsInsideMouseDown++;
+				Trace.Add($"Draw tab {args.Index}, selected={_tabs.SelectedIndex}, state={args.State}; native visible={WinAPI.USER32.IsWindowVisible(Handle)}; bounds={args.Bounds}; visible clip={args.Graphics.VisibleClipBounds}.");
+			}
+		}
+
+		private void Invalidated(object sender, InvalidateEventArgs args) => InvalidationCount++;
+	}
+
 	[TestCase("&File")]
 	[TestCase("&Actions")]
 	public async Task NativeScreenMenusReuseExistingHeadersWithoutTakingCommandOwnership(string caption) {
@@ -665,6 +633,38 @@ public class ApplicationHostRenderingTests {
 		Assert.That(single.CloseActiveScreenAsync().Result, Is.True);
 		Assert.That(screen.IsDisposed, Is.True);
 	}
+
+	private static Bitmap CaptureNativeClient(Control control, Size size) {
+		var image = new Bitmap(size.Width, size.Height);
+		var captured = false;
+		using var rollback = Tools.Scope.ExecuteOnDispose(() => { if (!captured) image.Dispose(); });
+		using var graphics = Graphics.FromImage(image);
+		var source = WinAPI.USER32.GetDC(control.Handle);
+		using var sourceScope = Tools.Scope.ExecuteOnDispose(() => WinAPI.USER32.ReleaseDC(control.Handle, source));
+		var target = graphics.GetHdc();
+		using var targetScope = Tools.Scope.ExecuteOnDispose(() => graphics.ReleaseHdc(target));
+		Assert.That(WinAPI.GDI32.BitBlt(target, 0, 0, size.Width, size.Height, source, 0, 0, WinAPI.GDI32.TernaryRasterOperations.SRCCOPY), Is.True);
+		captured = true;
+		return image;
+	}
+
+	private static int CountCaptionPixels(Bitmap image, Rectangle header) {
+		var bounds = Rectangle.Intersect(new Rectangle(Point.Empty, image.Size), Rectangle.Inflate(header, -6, -4));
+		var dark = 0;
+		var light = 0;
+		for (var y = bounds.Top; y < bounds.Bottom; y++)
+			for (var x = bounds.Left; x < bounds.Right; x++) {
+				var pixel = image.GetPixel(x, y);
+				if (pixel.R + pixel.G + pixel.B < 360)
+					dark++;
+				if (pixel.R + pixel.G + pixel.B > 600)
+					light++;
+			}
+		return light >= 8 ? dark : 0;
+	}
+
+	private static void SendTabMessage(TabControl tabs, uint message, Point location) => WinAPI.USER32.SendMessage(new HandleRef(tabs, tabs.Handle), message,
+		message == WinAPI.USER32.WM_LBUTTONDOWN ? (IntPtr)1 : IntPtr.Zero, (IntPtr)((location.Y << 16) | (location.X & 0xFFFF)));
 
 	private sealed class OffscreenScreenHost : FormsUI.ApplicationScreenHost {
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

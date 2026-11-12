@@ -208,10 +208,10 @@ public class ApplicationTaskRunnerTests {
 
 		public ConcurrentQueue<Exception> Errors { get; } = new();
 
-		protected override void Log(LogLevel logLevel, string message) => Messages.Enqueue(message);
-
 		// LoggerBase.Exception formats exception details, so retain original exceptions through the logger contract in this fixture.
 		void ILogger.Exception(Exception exception, string message) => Errors.Enqueue(exception);
+
+		protected override void Log(LogLevel logLevel, string message) => Messages.Enqueue(message);
 	}
 
 	private sealed class FailingLogger : LoggerDecorator {

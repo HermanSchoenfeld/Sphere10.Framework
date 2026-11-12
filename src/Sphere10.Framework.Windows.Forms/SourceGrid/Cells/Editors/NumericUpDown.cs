@@ -39,9 +39,7 @@ public class NumericUpDown : EditorControlBase {
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new System.Windows.Forms.NumericUpDown Control {
-		get {
-			return (System.Windows.Forms.NumericUpDown)base.Control;
-		}
+		get => (System.Windows.Forms.NumericUpDown)base.Control;
 	}
 
 	/// <summary>
@@ -84,7 +82,8 @@ public class NumericUpDown : EditorControlBase {
 		throw new SourceGridException("Invalid type of the cell expected decimal, long or int");
 	}
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -98,4 +97,6 @@ public class NumericUpDown : EditorControlBase {
 	protected override void OnSendCharToEditor(char key) {
 		//No implementation
 	}
+
+	#endregion
 }

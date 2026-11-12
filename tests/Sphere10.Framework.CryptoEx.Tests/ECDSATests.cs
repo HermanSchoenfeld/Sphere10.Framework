@@ -25,53 +25,6 @@ public class ECDSATests {
 	private const string InvalidDerSignature = "Invalid DER Signature";
 	private const string InvalidRAndSSignature = "Invalid R and S Signature";
 
-	private static string RandomString(int length) {
-		var rng = new Random(31337);
-		const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		return new string(Enumerable.Repeat(chars, length)
-			.Select(s => s[rng.Next(s.Length)]).ToArray());
-	}
-
-	private static bool IsLowS(BigInteger order, BigInteger s) {
-		return s.CompareTo(order.ShiftRight(1)) <= 0;
-	}
-
-	private static BigInteger[] DerSig_To_R_And_S(byte[] derSig) {
-		if (derSig == null) {
-			throw new ArgumentNullException(nameof(derSig));
-		}
-
-		try {
-			var decoder = new Asn1InputStream(derSig);
-			var derSequence = decoder.ReadObject() as DerSequence;
-			if (derSequence is not { Count: 2 }) {
-				throw new FormatException(InvalidDerSignature);
-			}
-
-			var r = (derSequence[0] as DerInteger)?.Value;
-			var s = (derSequence[1] as DerInteger)?.Value;
-			return new[] { r, s };
-		} catch (Exception ex) {
-			throw new FormatException(InvalidDerSignature, ex);
-		}
-	}
-
-	private static byte[] R_And_S_To_DerSig(BigInteger[] rs) {
-		if (rs == null)
-			throw new ArgumentNullException(nameof(rs));
-		if (rs.Length != 2) {
-			throw new ArgumentException(InvalidRAndSSignature, nameof(rs));
-		}
-
-		using (var outputStream = new MemoryStream()) {
-			using (var sequenceGenerator = new DerSequenceGenerator(outputStream)) {
-				sequenceGenerator.AddObject(new DerInteger(rs[0]));
-				sequenceGenerator.AddObject(new DerInteger(rs[1]));
-			}
-			return outputStream.ToArray();
-		}
-	}
-
 	public static byte[] CanonicalizeSig(BigInteger order, byte[] sig) {
 		var rs = DerSig_To_R_And_S(sig);
 		if (!IsLowS(order, rs[1])) {
@@ -259,6 +212,51 @@ public class ECDSATests {
 	public void TestSignatureMalleability_Valid_Strict_DER(string goodDerSig) {
 		var validBip66Der = goodDerSig.ToHexByteArray();
 		Assert.That(CustomDsaEncoding.IsValidSignatureEncoding(validBip66Der), Is.True);
+	}
+
+	private static string RandomString(int length) {
+		var rng = new Random(31337);
+		const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		return new string(Enumerable.Repeat(chars, length)
+			.Select(s => s[rng.Next(s.Length)]).ToArray());
+	}
+
+	private static bool IsLowS(BigInteger order, BigInteger s) => s.CompareTo(order.ShiftRight(1)) <= 0;
+
+	private static BigInteger[] DerSig_To_R_And_S(byte[] derSig) {
+		if (derSig == null) {
+			throw new ArgumentNullException(nameof(derSig));
+		}
+
+		try {
+			var decoder = new Asn1InputStream(derSig);
+			var derSequence = decoder.ReadObject() as DerSequence;
+			if (derSequence is not { Count: 2 }) {
+				throw new FormatException(InvalidDerSignature);
+			}
+
+			var r = (derSequence[0] as DerInteger)?.Value;
+			var s = (derSequence[1] as DerInteger)?.Value;
+			return new[] { r, s };
+		} catch (Exception ex) {
+			throw new FormatException(InvalidDerSignature, ex);
+		}
+	}
+
+	private static byte[] R_And_S_To_DerSig(BigInteger[] rs) {
+		if (rs == null)
+			throw new ArgumentNullException(nameof(rs));
+		if (rs.Length != 2) {
+			throw new ArgumentException(InvalidRAndSSignature, nameof(rs));
+		}
+
+		using (var outputStream = new MemoryStream()) {
+			using (var sequenceGenerator = new DerSequenceGenerator(outputStream)) {
+				sequenceGenerator.AddObject(new DerInteger(rs[0]));
+				sequenceGenerator.AddObject(new DerInteger(rs[1]));
+			}
+			return outputStream.ToArray();
+		}
 	}
 
 	#region Key Derivation Determinism

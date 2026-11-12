@@ -552,8 +552,6 @@ public class TypedProtocolAdapterTests {
 	}
 
 	private class BaseHandshakeHandler : HandshakeHandlerBase<string, int, long> {
-		protected override string GenerateHandshakeInternal(ProtocolOrchestrator orchestrator) => "handshake";
-
 		public override HandshakeOutcome ReceiveHandshake(ProtocolOrchestrator orchestrator, string handshake, out int acknowledgement) {
 			acknowledgement = handshake?.Length ?? 0;
 			return HandshakeOutcome.Accepted;
@@ -566,6 +564,8 @@ public class TypedProtocolAdapterTests {
 
 		public override bool AcknowledgeHandshake(ProtocolOrchestrator orchestrator, string handshake, int acknowledgement, long verifyAcknowledgement)
 			=> handshake == "handshake" && acknowledgement == 9 && verifyAcknowledgement == 10L;
+
+		protected override string GenerateHandshakeInternal(ProtocolOrchestrator orchestrator) => "handshake";
 	}
 
 	private sealed class RemappedHandshakeHandler : BaseHandshakeHandler, IHandshakeHandler<string, int, long> {

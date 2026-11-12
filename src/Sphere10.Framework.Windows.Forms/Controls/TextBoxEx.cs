@@ -29,9 +29,7 @@ public partial class TextBoxEx : TextBox {
 	[Category("Appearance")]
 	[DefaultValue("")]
 	public string PlaceHolderText {
-		get {
-			return _placeHolderTextExtender == null ? string.Empty : _placeHolderTextExtender.GetPlaceHolderText(this);
-		}
+		get => _placeHolderTextExtender == null ? string.Empty : _placeHolderTextExtender.GetPlaceHolderText(this);
 		set {
 			// Ordinary editors do not need a placeholder component or a native window.
 			if (_placeHolderTextExtender == null) {
@@ -54,9 +52,7 @@ public partial class TextBoxEx : TextBox {
 	/// <summary>Gets or sets the borrowed validator used to convert and validate input.</summary>
 	[DefaultValue(null)]
 	public IValidator Validator {
-		get {
-			return _validator;
-		}
+		get => _validator;
 		set {
 			if (ReferenceEquals(_validator, value))
 				return;
@@ -87,6 +83,15 @@ public partial class TextBoxEx : TextBox {
 		}
 	}
 
+	/// <summary>Tries to convert the current input with the configured validator.</summary>
+	public bool IsValidValue(out object convertedValue) {
+		if (_validator != null)
+			return _validator.IsValidObject(Text, out convertedValue);
+
+		convertedValue = Text;
+		return true;
+	}
+
 	/// <summary>Restores a configured cue banner after Windows recreates the editor handle.</summary>
 	protected override void OnHandleCreated(EventArgs args) {
 		base.OnHandleCreated(args);
@@ -111,15 +116,6 @@ public partial class TextBoxEx : TextBox {
 			Value = value;
 	}
 
-	/// <summary>Tries to convert the current input with the configured validator.</summary>
-	public bool IsValidValue(out object convertedValue) {
-		if (_validator != null)
-			return _validator.IsValidObject(Text, out convertedValue);
-
-		convertedValue = Text;
-		return true;
-	}
-
 	/// <summary>Detaches borrowed validation events and releases owned designer components.</summary>
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
@@ -133,9 +129,7 @@ public partial class TextBoxEx : TextBox {
 	}
 
 	// Refresh derived editor rules without taking ownership of the validator.
-	private void ValidatorChanged(object sender, EventArgs args) {
-		ApplyValidatorRules();
-	}
+	private void ValidatorChanged(object sender, EventArgs args) => ApplyValidatorRules();
 
 	/// <summary>Applies type-specific editor rules when the validator changes.</summary>
 	protected virtual void ApplyValidatorRules() {

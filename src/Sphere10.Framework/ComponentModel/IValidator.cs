@@ -20,7 +20,8 @@ namespace Sphere10.Framework.ComponentModel;
 /// DisplayString = a string representation of the Value
 /// </summary>
 public interface IValidator {
-	// Events
+	#region Events
+
 	/// <summary>
 	/// Fired when converting a object to the value specified. Called from method ObjectToValue and IsValidObject
 	/// </summary>
@@ -36,11 +37,16 @@ public interface IValidator {
 	/// </summary>
 	event ConvertingObjectEventHandler ConvertingValueToDisplayString;
 
-	// Changed event
+	#endregion
+
+	#region Changed event
+
 	/// <summary>
 	/// Fired when one of the properties of the Validator change.
 	/// </summary>
 	event EventHandler Changed;
+
+	#endregion
 
 	// Null
 	/// <summary>
@@ -73,7 +79,8 @@ public interface IValidator {
 		get; set;
 	}
 
-	// Maximum/Minimum
+	#region Maximum/Minimum
+
 	/// <summary>
 	/// Minimum value allowed. If null no check is performed. The value must derive from IComparable interface to use Minimum or Maximum feature.
 	/// </summary>
@@ -88,7 +95,10 @@ public interface IValidator {
 		get; set;
 	}
 
-	// Type
+	#endregion
+
+	#region Type
+
 	/// <summary>
 	/// Type allowed for the current editor. Cannot be null.
 	/// </summary>
@@ -96,13 +106,18 @@ public interface IValidator {
 		get;
 	}
 
-	// Default Value
+	#endregion
+
+	#region Default Value
+
 	/// <summary>
 	/// Default value for this editor, usually is the default value for the specified type.
 	/// </summary>
 	object DefaultValue {
 		get; set;
 	}
+
+	#endregion
 
 	// Standard Value Exclusive
 	/// <summary>
@@ -119,13 +134,16 @@ public interface IValidator {
 		get; set;
 	}
 
-	// Culture
+	#region Culture
+
 	/// <summary>
 	/// Culture for conversion. If null the default user culture is used. Default is null.
 	/// </summary>
 	System.Globalization.CultureInfo CultureInfo {
 		get; set;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Returns true if the string is null or if is equals to the NullString
@@ -134,7 +152,8 @@ public interface IValidator {
 	/// <returns></returns>
 	bool IsNullString(string str);
 
-	// Conversion
+	#region Conversion
+
 	/// <summary>
 	/// Convert an object according to the current ValueType of the validator
 	/// </summary>
@@ -169,7 +188,10 @@ public interface IValidator {
 	/// </summary>
 	bool IsStringConversionSupported();
 
-	// DisplayString
+	#endregion
+
+	#region DisplayString
+
 	/// <summary>
 	/// Converts a value valid for this validator valuetype to a string representation. The string cannot be used for conversion.
 	/// If the validator support string conversion this method simply call ValueToString otherwise call Value.ToString()
@@ -178,7 +200,10 @@ public interface IValidator {
 	/// <returns></returns>
 	string ValueToDisplayString(object value);
 
-	// Validating
+	#endregion
+
+	#region Validating
+
 	/// <summary>
 	/// Returns true if the value is valid for this type of editor without any conversion.
 	/// </summary>
@@ -215,6 +240,8 @@ public interface IValidator {
 	/// <param name="valueConverted"></param>
 	/// <returns></returns>
 	bool IsValidString(string strValue, out object valueConverted);
+
+	#endregion
 
 	/// <summary>
 	/// Returns true if the value specified is presents in the list StandardValues.

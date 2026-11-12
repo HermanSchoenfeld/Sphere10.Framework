@@ -32,16 +32,7 @@ public class CrudReference : TextBoxUITypeEditor {
 		};
 	}
 
-	public override bool IsStringConversionSupported() {
-		return false;
-	}
-
-	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ComponentModel.ConvertingObjectEventArgs args) {
-		args.Value = _binding.GetDisplayText(args.Value);
-	}
-
-	protected override void OnSendCharToEditor(char key) {
-	}
+	public override bool IsStringConversionSupported() => false;
 
 	internal override void InternalStartEdit(CellContext context) {
 		base.InternalStartEdit(context);
@@ -50,5 +41,11 @@ public class CrudReference : TextBoxUITypeEditor {
 				if (IsEditing && !Control.IsDisposed)
 					Control.ShowDialog();
 			}));
+	}
+
+	protected override void OnConvertingValueToDisplayString(Sphere10.Framework.ComponentModel.ConvertingObjectEventArgs args)
+		=> args.Value = _binding.GetDisplayText(args.Value);
+
+	protected override void OnSendCharToEditor(char key) {
 	}
 }

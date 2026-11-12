@@ -173,11 +173,6 @@ public sealed class ProfilerSettings {
 		return settings;
 	}
 
-	private static ObjectSpaceProfile[] ReadProfiles(string path) {
-		using var document = JsonDocument.Parse(File.ReadAllText(path));
-		return document.RootElement.EnumerateArray().Select(ReadProfile).ToArray();
-	}
-
 	internal static ObjectSpaceProfile ReadProfile(JsonElement element) {
 		var profile = element.Deserialize<ObjectSpaceProfile>(JsonOptions);
 		if (profile?.Configuration == null)
@@ -196,6 +191,11 @@ public sealed class ProfilerSettings {
 				profile.Configuration.IndexBTreeSpec = new BTreeSpec(implementation.Value, profile.Configuration.IndexBTreeOrder);
 		}
 		return profile;
+	}
+
+	private static ObjectSpaceProfile[] ReadProfiles(string path) {
+		using var document = JsonDocument.Parse(File.ReadAllText(path));
+		return document.RootElement.EnumerateArray().Select(ReadProfile).ToArray();
 	}
 
 	private static bool TryGetProfileProperty(JsonElement element, string name, out JsonElement value) {

@@ -57,15 +57,6 @@ public class ServersViewModel : ComponentViewModelBase, IDisposable {
 	}
 
 	/// <summary>
-	/// Handles active server change
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
-	private void EndpointManagerOnEndpointChanged(object sender, EventArgs e) {
-		StateHasChangedDelegate?.Invoke();
-	}
-
-	/// <summary>
 	/// Handles select new active server.
 	/// </summary>
 	/// <param name="server"></param>
@@ -86,9 +77,14 @@ public class ServersViewModel : ComponentViewModelBase, IDisposable {
 			StateHasChangedDelegate?.Invoke();
 		}
 	}
-	public void Dispose() {
-		EndpointManager.EndpointChanged -= EndpointManagerOnEndpointChanged;
-	}
+
+	public void Dispose() => EndpointManager.EndpointChanged -= EndpointManagerOnEndpointChanged;
+	/// <summary>
+	/// Handles active server change
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="e"></param>
+	private void EndpointManagerOnEndpointChanged(object sender, EventArgs e) => StateHasChangedDelegate?.Invoke();
 
 }
 

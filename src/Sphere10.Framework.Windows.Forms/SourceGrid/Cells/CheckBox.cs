@@ -13,7 +13,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// A Cell with a CheckBox. This Cell is of type bool.
 /// </summary>
 public class CheckBox : Cell {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Constrcutor
 	/// </summary>
@@ -45,34 +46,27 @@ public class CheckBox : Cell {
 		Caption = caption;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Checked status (equal to the Value property but returns a bool)
 	/// </summary>
 	public bool? Checked {
-		get {
-			return CheckBoxModel.GetCheckBoxStatus(GetContext()).Checked;
-		}
-		set {
-			CheckBoxModel.SetCheckedValue(GetContext(), value);
-		}
+		get => CheckBoxModel.GetCheckBoxStatus(GetContext()).Checked;
+		set => CheckBoxModel.SetCheckedValue(GetContext(), value);
 	}
 
 	/// <summary>
 	/// Caption of the cell
 	/// </summary>
 	public string Caption {
-		get {
-			return CheckBoxModel.Caption;
-		}
-		set {
-			CheckBoxModel.Caption = value;
-		}
+		get => CheckBoxModel.Caption;
+		set => CheckBoxModel.Caption = value;
 	}
 
-	// Properties
-	private Models.CheckBox CheckBoxModel {
-		get {
-			return (Models.CheckBox)Model.FindModel(typeof(Models.CheckBox));
-		}
-	}
+	#region Properties
+
+	private Models.CheckBox CheckBoxModel => (Models.CheckBox)Model.FindModel(typeof(Models.CheckBox));
+
+	#endregion
 }

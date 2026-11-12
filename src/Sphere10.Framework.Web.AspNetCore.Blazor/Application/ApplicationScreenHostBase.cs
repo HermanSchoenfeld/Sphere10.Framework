@@ -82,24 +82,6 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		return OpenScreenAsync(block, item.ScreenDefinition, item as BlazorScreenMenuItem, null, cancellationToken);
 	}
 
-	private Task<ApplicationScreenSession> OpenScreenAsync(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition, BlazorScreenMenuItem menuItem,
-		ApplicationScreenActivation activation, CancellationToken cancellationToken, SharedUI.ApplicationScreenDefinition registration = null) {
-		Guard.ArgumentNotNull(definition, nameof(definition));
-		return RunTransitionAsync(async token => {
-			Guard.Argument(block != null && Blocks.Any(candidate => ReferenceEquals(candidate, block)), nameof(block), "The block is not registered.");
-			Guard.Argument(block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, registration ?? definition)), nameof(definition), "The screen definition is not owned by this block.");
-			var previous = _activation;
-			var previousMenuItem = _menuItem;
-			using var request = Tools.Scope.ExecuteOnDispose(() => {
-				_activation = previous;
-				_menuItem = previousMenuItem;
-			});
-			_activation = activation;
-			_menuItem = menuItem;
-			return await ActivateCoreAsync(block, definition, token, registration);
-		}, cancellationToken);
-	}
-
 	public virtual Task<bool> ExecuteMenuItemAsync(SharedUI.IApplicationMenuItem item, CancellationToken cancellationToken = default) =>
 		UserInterfaceServices.ExecuteMenuItemAsync(item, cancellationToken);
 
@@ -152,9 +134,9 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 
 	public virtual void NotifyScreenChanged(Guid id) => NotifyScreenChanged(GetScreen(id));
 
-	public virtual ApplicationStartupScreen StartupScreen { get; private set; }
-
 	public virtual bool CanMakeStartupScreen(ApplicationScreenSession screen) => GetStartupScreenUnavailableReason(screen) == null;
+
+	public virtual ApplicationStartupScreen StartupScreen { get; private set; }
 
 	public virtual string GetStartupScreenUnavailableReason(ApplicationScreenSession screen) {
 		if (screen == null || !Screens.Any(candidate => ReferenceEquals(candidate, screen)) || !ReferenceEquals(screen.Host, this))
@@ -181,6 +163,24 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		StartupScreen = ResolveStartupScreen(identity) != null ? identity : null;
 		OnChanged();
 		return StartupScreen != null;
+	}
+
+	private Task<ApplicationScreenSession> OpenScreenAsync(IApplicationBlock block, SharedUI.ApplicationScreenDefinition definition, BlazorScreenMenuItem menuItem,
+		ApplicationScreenActivation activation, CancellationToken cancellationToken, SharedUI.ApplicationScreenDefinition registration = null) {
+		Guard.ArgumentNotNull(definition, nameof(definition));
+		return RunTransitionAsync(async token => {
+			Guard.Argument(block != null && Blocks.Any(candidate => ReferenceEquals(candidate, block)), nameof(block), "The block is not registered.");
+			Guard.Argument(block.ScreenDefinitions.Any(candidate => ReferenceEquals(candidate, registration ?? definition)), nameof(definition), "The screen definition is not owned by this block.");
+			var previous = _activation;
+			var previousMenuItem = _menuItem;
+			using var request = Tools.Scope.ExecuteOnDispose(() => {
+				_activation = previous;
+				_menuItem = previousMenuItem;
+			});
+			_activation = activation;
+			_menuItem = menuItem;
+			return await ActivateCoreAsync(block, definition, token, registration);
+		}, cancellationToken);
 	}
 
 	/// <summary>Override to exclude registrations requiring application-specific state before a component is constructed.</summary>
@@ -229,9 +229,8 @@ public abstract class ApplicationScreenHostBase : SharedUI.ApplicationScreenHost
 		base.OnScreenRemoved(screen);
 	}
 
-	protected override SharedUI.ApplicationScreenDefinition[] GetDefinitions() {
-		return GetDefinitions(ApplicationBlockSnapshot.OrderBlocks(Services.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Blocks));
-	}
+	protected override SharedUI.ApplicationScreenDefinition[] GetDefinitions()
+		=> GetDefinitions(ApplicationBlockSnapshot.OrderBlocks(Services.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), Blocks));
 
 	protected override SharedUI.ApplicationScreenDefinition GetStartupScreen() {
 		var startup = ResolveStartupScreen(StartupScreen);

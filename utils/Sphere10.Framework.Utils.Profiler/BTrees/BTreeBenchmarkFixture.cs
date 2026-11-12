@@ -245,6 +245,33 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 		_disposed = true;
 	}
 
+	public void WriteMetadata() {
+		var directory = Path.Combine(_settings.OutputDirectory, "storage", _settings.RunId);
+		Directory.CreateDirectory(directory);
+		var metadata = new {
+			Profile = Profile.Name,
+			RunId = _settings.RunId,
+			Profile.Storage,
+			Profile.Family,
+			Profile.Spec,
+			Profile.EffectiveType,
+			Profile.KeyShape,
+			MaximumLeafEntries = Profile.Order - 1,
+			Profile.KeyBytes,
+			Profile.StoredKeyBytes,
+			NodeRecordBytes = Profile.Storage == BTreeStorage.ManagedNodes ? (int?)null : Profile.NodeRecordBytes,
+			LogicalTreeBytes = LogicalBytes,
+			ProvisionedMappedCapacity = Profile.Storage == BTreeStorage.OSMemoryMapped ? (long?)_mappedCapacity : null,
+			EntryCount = Count,
+			PhysicalStorageBytes = Directory.EnumerateFiles(_workspace, "*", SearchOption.AllDirectories).Sum(path => new FileInfo(path).Length),
+			Geometry = ReadGeometry(),
+			AppliedPageSize = Profile.Storage is BTreeStorage.FilePaged or BTreeStorage.TransactionalFile ? (long?)Profile.PageSize : null,
+			AppliedCacheBytes = Profile.Storage is BTreeStorage.FilePaged or BTreeStorage.TransactionalFile ? (long?)Profile.CacheBytes : null,
+			AppliedFileBufferBytes = Profile.Storage == BTreeStorage.FileStream ? (int?)Profile.FileBufferBytes : null
+		};
+		File.WriteAllText(Path.Combine(directory, _workspaceId + ".json"), JsonSerializer.Serialize(metadata, BTreeProfilerSettings.JsonOptions));
+	}
+
 	private int Key(int identity) => Profile.Family == BTreeFamily.Lookup ? identity / _settings.GroupSize : identity;
 
 	private static long InitialValue(int identity) => (identity + 1L) * 17;
@@ -285,33 +312,6 @@ public sealed class BTreeBenchmarkFixture : IDisposable {
 		_index = null;
 		_stream?.Dispose();
 		_stream = null;
-	}
-
-	public void WriteMetadata() {
-		var directory = Path.Combine(_settings.OutputDirectory, "storage", _settings.RunId);
-		Directory.CreateDirectory(directory);
-		var metadata = new {
-			Profile = Profile.Name,
-			RunId = _settings.RunId,
-			Profile.Storage,
-			Profile.Family,
-			Profile.Spec,
-			Profile.EffectiveType,
-			Profile.KeyShape,
-			MaximumLeafEntries = Profile.Order - 1,
-			Profile.KeyBytes,
-			Profile.StoredKeyBytes,
-			NodeRecordBytes = Profile.Storage == BTreeStorage.ManagedNodes ? (int?)null : Profile.NodeRecordBytes,
-			LogicalTreeBytes = LogicalBytes,
-			ProvisionedMappedCapacity = Profile.Storage == BTreeStorage.OSMemoryMapped ? (long?)_mappedCapacity : null,
-			EntryCount = Count,
-			PhysicalStorageBytes = Directory.EnumerateFiles(_workspace, "*", SearchOption.AllDirectories).Sum(path => new FileInfo(path).Length),
-			Geometry = ReadGeometry(),
-			AppliedPageSize = Profile.Storage is BTreeStorage.FilePaged or BTreeStorage.TransactionalFile ? (long?)Profile.PageSize : null,
-			AppliedCacheBytes = Profile.Storage is BTreeStorage.FilePaged or BTreeStorage.TransactionalFile ? (long?)Profile.CacheBytes : null,
-			AppliedFileBufferBytes = Profile.Storage == BTreeStorage.FileStream ? (int?)Profile.FileBufferBytes : null
-		};
-		File.WriteAllText(Path.Combine(directory, _workspaceId + ".json"), JsonSerializer.Serialize(metadata, BTreeProfilerSettings.JsonOptions));
 	}
 
 	private object ReadGeometry() {

@@ -284,6 +284,23 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 		}
 	}
 
+	internal void RemoveItemInternal(TKey key) {
+		if (!InternalStorage.TryGetValue(key, out var item) || item.IsRemoving)
+			return;
+		item.IsRemoving = true;
+		_removalDepth++;
+		try {
+			NotifyItemRemoving(key, item);
+		} finally {
+			_removalDepth--;
+			item.IsRemoving = false;
+		}
+		InternalStorage.Remove(key);
+		CurrentSize -= item.Size;
+		item.Traits = (item.Traits | CachedItemTraits.Purged) & ~CachedItemTraits.CanPurge;
+		NotifyItemRemoved(key, item);
+	}
+
 	protected abstract long EstimateSize(TValue value);
 
 	protected abstract TValue Fetch(TKey key);
@@ -331,23 +348,6 @@ public abstract class CacheBase<TKey, TValue> : SynchronizedObject, ICache<TKey,
 	protected void NotifyItemRemoved(TKey key, CachedItem<TValue> item) {
 		OnItemRemoved(key, item);
 		_itemRemoved?.Invoke(key, item);
-	}
-
-	internal void RemoveItemInternal(TKey key) {
-		if (!InternalStorage.TryGetValue(key, out var item) || item.IsRemoving)
-			return;
-		item.IsRemoving = true;
-		_removalDepth++;
-		try {
-			NotifyItemRemoving(key, item);
-		} finally {
-			_removalDepth--;
-			item.IsRemoving = false;
-		}
-		InternalStorage.Remove(key);
-		CurrentSize -= item.Size;
-		item.Traits = (item.Traits | CachedItemTraits.Purged) & ~CachedItemTraits.CanPurge;
-		NotifyItemRemoved(key, item);
 	}
 
 	private CachedItem<TValue> StoreValue(TKey key, TValue value, DateTime now, bool fetched) {

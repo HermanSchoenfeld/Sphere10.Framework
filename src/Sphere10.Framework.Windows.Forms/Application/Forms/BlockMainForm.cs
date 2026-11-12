@@ -72,9 +72,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	[DefaultValue(false), Category("Appearance"), Description("Collapse the navigation menu while preserving its width and current selection")]
 	public bool NavigationPaneCollapsed {
-		get {
-			return _navigationPaneCollapsed;
-		}
+		get => _navigationPaneCollapsed;
 		set {
 			if (_navigationPaneCollapsed == value)
 				return;
@@ -83,12 +81,38 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
+	/// <summary>
+	/// The explorer bar theme of every block's navigation pane and the block selector beneath it; null uses the default Luna theme.
+	/// Each pane receives its own copy, so changing the returned surrogate has no effect until it is assigned again.
+	/// </summary>
+	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+	public ExplorerBarInfoSurrogate NavigationTheme {
+		get;
+		set {
+			field = value;
+			if (_applicationBar.ApplicationBarControl is TaskPane { IsDisposed: false } pane)
+				ApplyNavigationTheme(pane);
+		}
+	}
+
+	/// <summary>The block selector's colour style, overriding the navigation theme's; null follows the theme.</summary>
+	[DefaultValue(null), Category("Appearance"), Description("The colour style of the block selector buttons; empty follows the navigation theme")]
+	public BlockSelectorColorStyle? BlockSelectorColorStyle {
+		get => _applicationBar.ColorStyle;
+		set => _applicationBar.ColorStyle = value;
+	}
+
+	/// <summary>The block selector's shape, overriding the navigation theme's; null follows the theme.</summary>
+	[DefaultValue(null), Category("Appearance"), Description("The shape of the block selector buttons; empty follows the navigation theme")]
+	public BlockSelectorShape? BlockSelectorShape {
+		get => _applicationBar.Shape;
+		set => _applicationBar.Shape = value;
+	}
+
 	/// <summary>The preferred navigation width in device pixels, retained while hidden or temporarily constrained by a narrow window.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public int NavigationPaneWidth {
-		get {
-			return (int)Math.Round(_navigationPaneWidth);
-		}
+		get => (int)Math.Round(_navigationPaneWidth);
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			ApplyNavigationPaneWidth(value);
@@ -98,9 +122,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	/// <summary>The maximum navigation width in logical pixels at 96 DPI. Available content space can impose a smaller limit.</summary>
 	[DefaultValue(480), Category("Layout"), Description("Maximum navigation width in logical pixels at 96 DPI")]
 	public int MaximumNavigationPaneWidth {
-		get {
-			return _maximumNavigationPaneWidth;
-		}
+		get => _maximumNavigationPaneWidth;
 		set {
 			Guard.ArgumentGT(value, 0, nameof(value));
 			_maximumNavigationPaneWidth = value;
@@ -110,18 +132,12 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 
 	/// <summary>The block owning this window's visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IApplicationBlock ActiveBlock {
-		get {
-			return ScreenHost.ActiveBlock;
-		}
-	}
+	public IApplicationBlock ActiveBlock => ScreenHost.ActiveBlock;
 
 	/// <summary>The block being browsed in the sidebar, independently of the visible active screen.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IApplicationBlock SelectedBlock {
-		get {
-			return ScreenHost.SelectedBlock;
-		}
+		get => ScreenHost.SelectedBlock;
 		set {
 			if (!ReferenceEquals(ScreenHost.SelectedBlock, value))
 				ScreenHost.SelectBlock(value);
@@ -129,19 +145,11 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public IApplicationBlock[] Blocks {
-		get {
-			return RegisteredBlocks;
-		}
-	}
+	public IApplicationBlock[] Blocks => RegisteredBlocks;
 
 	/// <summary>The registered blocks owned by the screen host.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationBlock[] RegisteredBlocks {
-		get {
-			return ScreenHost.Blocks;
-		}
-	}
+	public virtual IApplicationBlock[] RegisteredBlocks => ScreenHost.Blocks;
 
 	private bool HasUsableNavigationPaneBounds {
 		get {
@@ -159,43 +167,6 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			RegisterBlockCore(block);
 		else
 			RegisterBlocks(ScreenHost.StartupBlocks.Append(block), false);
-	}
-
-	// Register only the block's navigation button; its menu is built when selected.
-	private void RegisterBlockCore(IApplicationBlock block) {
-		Guard.ArgumentNotNull(block, nameof(block));
-		ScreenHost.RegisterScreenTypes(block);
-		if (SelectedBlock == null || ReferenceEquals(SelectedBlock, block))
-			Text = block.Name;
-
-		var button = new SquareButton { Tag = block };
-		_applicationBar.AddItem(new ApplicationBar.Item(button, null, block.Image32x32, block.Name));
-		if (SelectedBlock == null)
-			SelectedBlock = block;
-		SynchronizeNavigationSelection();
-	}
-
-	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
-	internal bool RegisterBlocks(IEnumerable<IApplicationBlock> blocks, bool invokeOverrides = true) {
-		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
-		var definitions = ordered.Where(block => !IsBlockRegistered(block)).ToArray();
-		var accepted = ScreenHost.InitializeScreens(ordered, () => {
-			using (Tools.Scope.ExecuteOnDispose(() => _registeringBlocks = false)) {
-				_registeringBlocks = true;
-				foreach (var block in definitions.OrderBy(block => block.Position)) {
-					if (invokeOverrides)
-						RegisterBlock(block);
-					else
-						RegisterBlockCore(block);
-				}
-			}
-			var hasDefault = ApplicationHelper.GetDefaultScreen(ordered) != null;
-			foreach (var item in definitions.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)) {
-				if (item.ExecuteOnLoad && (item is not IWinFormsScreenMenuItem || !hasDefault))
-					ExecuteMenuItem(item);
-			}
-		});
-		return accepted;
 	}
 
 	/// <summary>Removes an accepted block and its navigation view after the host's existing screen guards succeed.</summary>
@@ -238,18 +209,51 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
+	/// <summary>Preserves startup declaration order independently of the navigation's Position ordering.</summary>
+	internal bool RegisterBlocks(IEnumerable<IApplicationBlock> blocks, bool invokeOverrides = true) {
+		var ordered = blocks.Distinct<IApplicationBlock>(ReferenceEqualityComparer.Instance).ToArray();
+		var definitions = ordered.Where(block => !IsBlockRegistered(block)).ToArray();
+		var accepted = ScreenHost.InitializeScreens(ordered, () => {
+			using (Tools.Scope.ExecuteOnDispose(() => _registeringBlocks = false)) {
+				_registeringBlocks = true;
+				foreach (var block in definitions.OrderBy(block => block.Position)) {
+					if (invokeOverrides)
+						RegisterBlock(block);
+					else
+						RegisterBlockCore(block);
+				}
+			}
+			var hasDefault = ApplicationHelper.GetDefaultScreen(ordered) != null;
+			foreach (var item in definitions.SelectMany(block => block.Menus).SelectMany(menu => menu.Items)) {
+				if (item.ExecuteOnLoad && (item is not IWinFormsScreenMenuItem || !hasDefault))
+					ExecuteMenuItem(item);
+			}
+		});
+		return accepted;
+	}
+
+	// Register only the block's navigation button; its menu is built when selected.
+	private void RegisterBlockCore(IApplicationBlock block) {
+		Guard.ArgumentNotNull(block, nameof(block));
+		ScreenHost.RegisterScreenTypes(block);
+		if (SelectedBlock == null || ReferenceEquals(SelectedBlock, block))
+			Text = block.Name;
+
+		var button = new ApplicationBarButton { Tag = block };
+		_applicationBar.AddItem(new ApplicationBar.Item(button, null, block.Image32x32, block.Name));
+		if (SelectedBlock == null)
+			SelectedBlock = block;
+		SynchronizeNavigationSelection();
+	}
+
 	private void ExecuteViewMenuItem(IWinFormsScreenMenuItem ViewItem) {
 		if (ScreenHost.ActivateScreen(ViewItem.Parent.Parent, ViewItem.ScreenDefinition) != null)
 			ExecuteLinkMenuItem(ViewItem);
 	}
 
-	private void ExecuteLinkMenuItem(IWinFormsLinkMenuItem linkItem) {
-		linkItem.OnSelect(this);
-	}
+	private void ExecuteLinkMenuItem(IWinFormsLinkMenuItem linkItem) => linkItem.OnSelect(this);
 
-	private void ExecuteControlMenuItem(IWinFormsControlMenuItem controlItem) {
-		throw new NotImplementedException();
-	}
+	private void ExecuteControlMenuItem(IWinFormsControlMenuItem controlItem) => throw new NotImplementedException();
 
 	/// <summary>Creates the selected block's current sidebar from its owner-supplied menus.</summary>
 	protected virtual TaskPane CreateApplicationBlockPane(IApplicationBlock block) {
@@ -263,8 +267,13 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		};
 		foreach (var menu in block.Menus)
 			taskPane.Expandos.Add(CreateMenu(menu));
+		if (NavigationTheme != null)
+			ApplyNavigationTheme(taskPane);
 		return taskPane;
 	}
+
+	// Gives the pane its own copy of the navigation theme, or the default theme when none is set; the pane owns and disposes it.
+	private void ApplyNavigationTheme(TaskPane pane) => pane.UseCustomTheme(NavigationTheme?.Save() ?? ExplorerBarInfo.Default);
 
 	// Each generated menu group owns its font and child controls; command images remain borrowed.
 	private Expando CreateMenu(IApplicationMenu menu) {
@@ -442,21 +451,13 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 			ApplyNavigationPaneWidth(_splitContainer.Panel1Collapsed ? _navigationPaneWidth : _splitContainer.SplitterDistance);
 	}
 
-	private void NavigationPaneSizeChanged(object sender, EventArgs args) {
-		ApplyNavigationPaneWidth(_navigationPaneWidth);
-	}
+	private void NavigationPaneSizeChanged(object sender, EventArgs args) => ApplyNavigationPaneWidth(_navigationPaneWidth);
 
-	private void NavigationPaneToggle_Click(object sender, EventArgs args) {
-		NavigationPaneCollapsed = !NavigationPaneCollapsed;
-	}
+	private void NavigationPaneToggle_Click(object sender, EventArgs args) => NavigationPaneCollapsed = !NavigationPaneCollapsed;
 
 	#endregion
 
 	#region Misc
-
-	protected virtual void OnApplicationChanged() {
-		ApplicationChanged?.Invoke();
-	}
 
 	public virtual void ShowActiveScreenContextHelp() {
 		var helpServices = Sphere10Framework.Instance.ServiceProvider.GetService<IHelpServices>();
@@ -468,17 +469,15 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 		}
 	}
 
+	protected virtual void OnApplicationChanged() => ApplicationChanged?.Invoke();
+
 	#endregion
 
 	#region Handlers
 
-	protected override void ContextHelp_Click(object sender, EventArgs e) {
-		ShowActiveScreenContextHelp();
-	}
+	protected override void ContextHelp_Click(object sender, EventArgs e) => ShowActiveScreenContextHelp();
 
-	protected override void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) {
-		ShowActiveScreenContextHelp();
-	}
+	protected override void MainForm_HelpRequested(object sender, HelpEventArgs hlpevent) => ShowActiveScreenContextHelp();
 
 	#endregion
 
@@ -532,9 +531,7 @@ public partial class BlockMainForm : MainForm, IBlockManager {
 	}
 
 	// Forward live pane color/theme changes to the docking preview.
-	private void NavigationThemeChanged(object sender, EventArgs args) {
-		UpdateNavigationTheme();
-	}
+	private void NavigationThemeChanged(object sender, EventArgs args) => UpdateNavigationTheme();
 
 	// Observe only the currently displayed pane and use drawing utilities for its contrast color.
 	private void UpdateNavigationTheme() {

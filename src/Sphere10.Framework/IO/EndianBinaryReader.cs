@@ -118,27 +118,21 @@ public class EndianBinaryReader : IDisposable {
 	/// <summary>
 	/// The bit converter used to read values from the stream
 	/// </summary>
-	public EndianBitConverter BitConverter {
-		get { return _bitConverter; }
-	}
+	public EndianBitConverter BitConverter => _bitConverter;
 
 	private readonly Encoding _encoding;
 
 	/// <summary>
 	/// The encoding used to read strings
 	/// </summary>
-	public Encoding Encoding {
-		get { return _encoding; }
-	}
+	public Encoding Encoding => _encoding;
 
 	private readonly Stream _stream;
 
 	/// <summary>
 	/// Gets the underlying stream of the EndianBinaryReader.
 	/// </summary>
-	public Stream BaseStream {
-		get { return _stream; }
-	}
+	public Stream BaseStream => _stream;
 
 	#endregion
 
@@ -147,9 +141,7 @@ public class EndianBinaryReader : IDisposable {
 	/// <summary>
 	/// Closes the reader and, unless <c>leaveOpen</c> is true, its underlying stream.
 	/// </summary>
-	public void Close() {
-		Dispose();
-	}
+	public void Close() => Dispose();
 
 	/// <summary>
 	/// Seeks within the stream.
@@ -485,28 +477,6 @@ public class EndianBinaryReader : IDisposable {
 		return ret;
 	}
 
-	internal int ReadBytes(Span<byte> destination)
-		=> TryReadInternal(destination, destination.Length);
-
-	internal int ValidateReadBytesLength(long count) {
-		CheckDisposed();
-		if (count < 0)
-			throw new ArgumentOutOfRangeException(nameof(count));
-		return Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
-	}
-
-	internal void DiscardBytes(long count) {
-		var remaining = ValidateReadBytesLength(count);
-		Span<byte> scratch = stackalloc byte[Math.Min(remaining, 512)];
-		while (remaining > 0) {
-			var requested = Math.Min(scratch.Length, remaining);
-			var read = ReadBytes(scratch[..requested]);
-			remaining -= read;
-			if (read < requested)
-				break;
-		}
-	}
-
 	/// <summary>
 	/// Reads the specified number of bytes, returning them in a new byte array.
 	/// If not enough bytes are available before the end of the stream, this
@@ -600,6 +570,28 @@ public class EndianBinaryReader : IDisposable {
 		return _encoding.GetString(data, 0, data.Length);
 	}
 
+	internal int ReadBytes(Span<byte> destination)
+		=> TryReadInternal(destination, destination.Length);
+
+	internal int ValidateReadBytesLength(long count) {
+		CheckDisposed();
+		if (count < 0)
+			throw new ArgumentOutOfRangeException(nameof(count));
+		return Tools.Collection.CheckNotImplemented64bitAddressingLength(count);
+	}
+
+	internal void DiscardBytes(long count) {
+		var remaining = ValidateReadBytesLength(count);
+		Span<byte> scratch = stackalloc byte[Math.Min(remaining, 512)];
+		while (remaining > 0) {
+			var requested = Math.Min(scratch.Length, remaining);
+			var read = ReadBytes(scratch[..requested]);
+			remaining -= read;
+			if (read < requested)
+				break;
+		}
+	}
+
 	#endregion
 
 	#region Private methods
@@ -607,9 +599,7 @@ public class EndianBinaryReader : IDisposable {
 	/// <summary>
 	/// Checks whether or not the reader has been disposed, throwing an exception if so.
 	/// </summary>
-	private void CheckDisposed() {
-		ObjectDisposedException.ThrowIf(_disposed, nameof(EndianBinaryReader));
-	}
+	private void CheckDisposed() => ObjectDisposedException.ThrowIf(_disposed, nameof(EndianBinaryReader));
 
 	/// <summary>
 	/// Reads the given number of bytes from the stream, throwing an exception

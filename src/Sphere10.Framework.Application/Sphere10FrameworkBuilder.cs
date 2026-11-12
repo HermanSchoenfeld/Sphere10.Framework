@@ -28,9 +28,7 @@ public class Sphere10FrameworkBuilder {
 	public Sphere10Framework Framework => _framework;	
 
 	/// <summary>Selects product information from the supplied assembly, or the application's entry assembly.</summary>
-	public Sphere10FrameworkBuilder UseAssemblyInfo(Assembly assembly = null) {
-		return AddServices(services => services.AddAssemblyInfoProductServices(assembly));
-	}
+	public Sphere10FrameworkBuilder UseAssemblyInfo(Assembly assembly = null) => AddServices(services => services.AddAssemblyInfoProductServices(assembly));
 
 	/// <summary>Uses the supplied product-information instance for product services.</summary>
 	public Sphere10FrameworkBuilder WithProductInformation(ProductInformation productInformation) {
@@ -61,9 +59,7 @@ public class Sphere10FrameworkBuilder {
 	}
 
 	/// <summary>Adds an existing module without running its lifecycle or component registration.</summary>
-	public Sphere10FrameworkBuilder AddModule(ICoreModuleConfiguration module) {
-		return AddModule(module, out _);
-	}
+	public Sphere10FrameworkBuilder AddModule(ICoreModuleConfiguration module) => AddModule(module, out _);
 
 	/// <summary>Adds an existing module and exposes that same registration.</summary>
 	public Sphere10FrameworkBuilder AddModule(ICoreModuleConfiguration module, out ICoreModuleConfiguration registration) {
@@ -94,6 +90,9 @@ public class Sphere10FrameworkBuilder {
 
 	public void Start() => Start(loggerSelector: null);
 
+	public void Start(IServiceProvider serviceProvider)
+		=> _framework.StartInternal(serviceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: false);
+
 	/// <summary>Allows a platform to select its runtime logger after module initialization and before process initializers run.</summary>
 	internal void Start(Func<IServiceProvider, ILogger> loggerSelector) {
 		var ServiceCollection = new ServiceCollection();
@@ -110,9 +109,5 @@ public class Sphere10FrameworkBuilder {
 				throw new AggregateException("Framework startup and service cleanup failed.", errors);
 			throw;
 		}
-	}
-
-	public void Start(IServiceProvider serviceProvider) {
-		_framework.StartInternal(serviceProvider, _modules.OrderByDescending(m => m.Priority).ToArray(), ownsProvider: false);
 	}
 }

@@ -26,7 +26,8 @@ public class Cell : Virtual.CellVirtual, ICell {
 	private int _columnSpan = 1;
 	private int _rowSpan = 1;
 
-	// Constructors
+	#region Constructors
+
 	/// <summary>
 	/// Constructor
 	/// </summary>
@@ -68,32 +69,22 @@ public class Cell : Virtual.CellVirtual, ICell {
 		Editor = editor;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// The Grid object
 	/// </summary>
-	public Grid Grid {
-		get {
-			return _grid;
-		}
-	}
+	public Grid Grid => _grid;
 
 	/// <summary>
 	/// Gets the column of the specified cell
 	/// </summary>
-	public GridColumn Column {
-		get {
-			return _column;
-		}
-	}
+	public GridColumn Column => _column;
 
 	/// <summary>
 	/// Gets the row of the specified cell
 	/// </summary>
-	public GridRow Row {
-		get {
-			return _row;
-		}
-	}
+	public GridRow Row => _row;
 
 	/// <summary>
 	/// Gets the range of the cell
@@ -116,43 +107,29 @@ public class Cell : Virtual.CellVirtual, ICell {
 	/// <summary>
 	/// The string representation of the Cell.Value property (default Value.ToString())
 	/// </summary>
-	public virtual string DisplayText {
-		get {
-			return GetContext().DisplayText;
-		}
-	}
+	public virtual string DisplayText => GetContext().DisplayText;
 
 	/// <summary>
 	/// Value of the cell
 	/// </summary>
 	public virtual object Value {
-		get {
-			return Model.ValueModel.GetValue(GetContext());
-		}
-		set {
-			Model.ValueModel.SetValue(GetContext(), value);
-		}
+		get => Model.ValueModel.GetValue(GetContext());
+		set => Model.ValueModel.SetValue(GetContext(), value);
 	}
 
 	/// <summary>
 	/// Object to put additional info for this cell
 	/// </summary>
 	public virtual object Tag {
-		get {
-			return _tag;
-		}
-		set {
-			_tag = value;
-		}
+		get => _tag;
+		set => _tag = value;
 	}
 
 	/// <summary>
 	/// ColSpan for merge operation
 	/// </summary>
 	public int ColumnSpan {
-		get {
-			return _columnSpan;
-		}
+		get => _columnSpan;
 		set {
 			if (value < 1)
 				throw new ArgumentOutOfRangeException("ColumnSpan");
@@ -165,9 +142,7 @@ public class Cell : Virtual.CellVirtual, ICell {
 	/// RowSpan for merge operation
 	/// </summary>
 	public int RowSpan {
-		get {
-			return _rowSpan;
-		}
+		get => _rowSpan;
 		set {
 			if (value < 1)
 				throw new ArgumentOutOfRangeException("RowSpan");
@@ -180,41 +155,32 @@ public class Cell : Virtual.CellVirtual, ICell {
 	/// Gets or sets the tool tip text of the cell. Internally use the Models.ToolTip class.
 	/// </summary>
 	public string ToolTipText {
-		get {
-			return ToolTipModel.ToolTipText;
-		}
-		set {
-			ToolTipModel.ToolTipText = value;
-		}
+		get => ToolTipModel.ToolTipText;
+		set => ToolTipModel.ToolTipText = value;
 	}
 
 	/// <summary>
 	/// Gets or sets the Image associeted with the Cell. Internally use a Models.Image class.
 	/// </summary>
 	public System.Drawing.Image Image {
-		get {
-			return ImageModel.ImageValue;
-		}
-		set {
-			ImageModel.ImageValue = value;
-		}
+		get => ImageModel.ImageValue;
+		set => ImageModel.ImageValue = value;
 	}
 
-	// ToolTipText
-	private Models.ToolTip ToolTipModel {
-		get {
-			return (Models.ToolTip)Model.FindModel(typeof(Models.ToolTip));
-		}
-	}
+	#region ToolTipText
 
-	// Image
-	private Models.Image ImageModel {
-		get {
-			return (Models.Image)Model.FindModel(typeof(Models.Image));
-		}
-	}
+	private Models.ToolTip ToolTipModel => (Models.ToolTip)Model.FindModel(typeof(Models.ToolTip));
 
-	// LinkToGrid
+	#endregion
+
+	#region Image
+
+	private Models.Image ImageModel => (Models.Image)Model.FindModel(typeof(Models.Image));
+
+	#endregion
+
+	#region LinkToGrid
+
 	/// <summary>
 	/// Link the cell at the specified grid.
 	/// For internal use only.
@@ -241,9 +207,7 @@ public class Cell : Virtual.CellVirtual, ICell {
 	/// ToString method
 	/// </summary>
 	/// <returns></returns>
-	public override string ToString() {
-		return DisplayText;
-	}
+	public override string ToString() => DisplayText;
 
 	// Row/Col Span
 	public void SetSpan(int rowSpan, int colSpan) {
@@ -272,7 +236,7 @@ public class Cell : Virtual.CellVirtual, ICell {
 		}
 	}
 
-	protected CellContext GetContext() {
-		return new CellContext(Grid, Range.Start, this);
-	}
+	protected CellContext GetContext() => new CellContext(Grid, Range.Start, this);
+
+	#endregion
 }

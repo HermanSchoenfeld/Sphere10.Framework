@@ -262,7 +262,8 @@ public class ShellLink : IDisposable {
 
 	private enum EShellLinkGP : uint {
 		SLGP_SHORTPATH = 1,
-		SLGP_UNCPRIORITY = 2
+		SLGP_UNCPRIORITY = 2,
+		SLGP_RAWPATH = 4
 	}
 
 
@@ -471,9 +472,7 @@ public class ShellLink : IDisposable {
 	/// <summary>
 	/// Call dispose just in case it hasn't happened yet
 	/// </summary>
-	~ShellLink() {
-		Dispose();
-	}
+	~ShellLink() => Dispose();
 
 	/// <summary>
 	/// Dispose the object, releasing the COM ShellLink object
@@ -494,74 +493,22 @@ public class ShellLink : IDisposable {
 	#region Implementation
 
 	public string ShortCutFile {
-		get { return this.shortcutFile; }
-		set { this.shortcutFile = value; }
+		get => this.shortcutFile;
+		set => this.shortcutFile = value;
 	}
 
 	/// <summary>
 	/// Gets a System.Drawing.Icon containing the icon for this
 	/// ShellLink object.
 	/// </summary>
-	public Icon LargeIcon {
-		get { return getIcon(true); }
-	}
+	public Icon LargeIcon => getIcon(true);
 
-	public Icon SmallIcon {
-		get { return getIcon(false); }
-	}
+	public Icon SmallIcon => getIcon(false);
 
-	private Icon getIcon(bool large) {
-		// Get icon index and path:
-		int iconIndex = 0;
-		StringBuilder iconPath = new StringBuilder(260, 260);
-		if (linkA == null) {
-			linkW.GetIconLocation(iconPath, iconPath.Capacity, out iconIndex);
-		} else {
-			linkA.GetIconLocation(iconPath, iconPath.Capacity, out iconIndex);
-		}
-		string iconFile = iconPath.ToString();
-
-		// If there are no details set for the icon, then we must use
-		// the shell to get the icon for the target:
-		if (iconFile.Length == 0) {
-			// Use the FileIcon object to get the icon:
-			FileIcon.SHGetFileInfoConstants flags = FileIcon.SHGetFileInfoConstants.SHGFI_ICON |
-			                                        FileIcon.SHGetFileInfoConstants.SHGFI_ATTRIBUTES;
-			if (large) {
-				flags = flags | FileIcon.SHGetFileInfoConstants.SHGFI_LARGEICON;
-			} else {
-				flags = flags | FileIcon.SHGetFileInfoConstants.SHGFI_SMALLICON;
-			}
-			FileIcon fileIcon = new FileIcon(Target, flags);
-			return fileIcon.ShellIcon;
-		} else {
-			// Use ExtractIconEx to get the icon:
-			IntPtr[] hIconEx = new IntPtr[1] { IntPtr.Zero };
-			int iconCount = 0;
-			if (large) {
-				iconCount = UnManagedMethods.ExtractIconEx(
-					iconFile,
-					iconIndex,
-					hIconEx,
-					null,
-					1);
-			} else {
-				iconCount = UnManagedMethods.ExtractIconEx(
-					iconFile,
-					iconIndex,
-					null,
-					hIconEx,
-					1);
-			}
-			// If success then return as a GDI+ object
-			Icon icon = null;
-			if (hIconEx[0] != IntPtr.Zero) {
-				icon = Icon.FromHandle(hIconEx[0]);
-				//UnManagedMethods.DestroyIcon(hIconEx[0]);
-			}
-			return icon;
-		}
-	}
+	/// <summary>
+	/// Saves the shortcut to ShortCutFile.
+	/// </summary>
+	public void Save() => Save(shortcutFile);
 
 	/// <summary>
 	/// Gets the path to the file containing the icon for this shortcut.
@@ -644,6 +591,21 @@ public class ShellLink : IDisposable {
 			} else {
 				linkA.SetPath(value);
 			}
+		}
+	}
+
+	/// <summary>Gets stored target text without target discovery, existence checks or link repair.</summary>
+	public string RawTarget {
+		get {
+			var target = new StringBuilder(260, 260);
+			if (linkA == null) {
+				var data = new _WIN32_FIND_DATAW();
+				linkW.GetPath(target, target.Capacity, ref data, (uint)EShellLinkGP.SLGP_RAWPATH);
+			} else {
+				var data = new _WIN32_FIND_DATAA();
+				linkA.GetPath(target, target.Capacity, ref data, (uint)EShellLinkGP.SLGP_RAWPATH);
+			}
+			return target.ToString();
 		}
 	}
 
@@ -759,13 +721,6 @@ public class ShellLink : IDisposable {
 	}
 
 	/// <summary>
-	/// Saves the shortcut to ShortCutFile.
-	/// </summary>
-	public void Save() {
-		Save(shortcutFile);
-	}
-
-	/// <summary>
 	/// Saves the shortcut to the specified file
 	/// </summary>
 	/// <param name="linkFile">The shortcut file (.lnk)</param>
@@ -782,10 +737,15 @@ public class ShellLink : IDisposable {
 		}
 	}
 
-	/// <summary>
-	/// Loads a shortcut from the specified file
-	/// </summary>
-	/// <param name="linkFile">The shortcut file (.lnk) to load</param>
+	/// <summary>Loads the stored link only. Unlike Open, this never calls IShellLink.Resolve.</summary>
+	public void LoadWithoutResolve(string linkFile) {
+		Guard.ArgumentNotNullOrWhitespace(linkFile, nameof(linkFile));
+		((IPersistFile)(linkW ?? (object)linkA)).Load(linkFile, 0);
+		shortcutFile = linkFile;
+	}
+
+	/// <summary>Loads a shortcut and resolves its target according to the existing Open policy.</summary>
+	/// <param name="linkFile">The shortcut file (.lnk) to load.</param>
 	public void Open(
 		string linkFile
 	) {
@@ -845,6 +805,59 @@ public class ShellLink : IDisposable {
 			((IPersistFile)linkA).Load(linkFile, 0); //STGM_DIRECT)
 			linkA.Resolve(hWnd, flags);
 			this.shortcutFile = linkFile;
+		}
+	}
+
+	private Icon getIcon(bool large) {
+		// Get icon index and path:
+		int iconIndex = 0;
+		StringBuilder iconPath = new StringBuilder(260, 260);
+		if (linkA == null) {
+			linkW.GetIconLocation(iconPath, iconPath.Capacity, out iconIndex);
+		} else {
+			linkA.GetIconLocation(iconPath, iconPath.Capacity, out iconIndex);
+		}
+		string iconFile = iconPath.ToString();
+
+		// If there are no details set for the icon, then we must use
+		// the shell to get the icon for the target:
+		if (iconFile.Length == 0) {
+			// Use the FileIcon object to get the icon:
+			FileIcon.SHGetFileInfoConstants flags = FileIcon.SHGetFileInfoConstants.SHGFI_ICON |
+			                                        FileIcon.SHGetFileInfoConstants.SHGFI_ATTRIBUTES;
+			if (large) {
+				flags = flags | FileIcon.SHGetFileInfoConstants.SHGFI_LARGEICON;
+			} else {
+				flags = flags | FileIcon.SHGetFileInfoConstants.SHGFI_SMALLICON;
+			}
+			FileIcon fileIcon = new FileIcon(Target, flags);
+			return fileIcon.ShellIcon;
+		} else {
+			// Use ExtractIconEx to get the icon:
+			IntPtr[] hIconEx = new IntPtr[1] { IntPtr.Zero };
+			int iconCount = 0;
+			if (large) {
+				iconCount = UnManagedMethods.ExtractIconEx(
+					iconFile,
+					iconIndex,
+					hIconEx,
+					null,
+					1);
+			} else {
+				iconCount = UnManagedMethods.ExtractIconEx(
+					iconFile,
+					iconIndex,
+					null,
+					hIconEx,
+					1);
+			}
+			// If success then return as a GDI+ object
+			Icon icon = null;
+			if (hIconEx[0] != IntPtr.Zero) {
+				icon = Icon.FromHandle(hIconEx[0]);
+				//UnManagedMethods.DestroyIcon(hIconEx[0]);
+			}
+			return icon;
 		}
 	}
 

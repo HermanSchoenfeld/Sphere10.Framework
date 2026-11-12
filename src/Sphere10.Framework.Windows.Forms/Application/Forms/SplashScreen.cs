@@ -38,9 +38,7 @@ public partial class SplashScreen : Form {
 		SplashImage =  splashImage.Resize(_pictureBox.Size, ResizeMethod.AspectFill, ResizeAlignment.TopCenter);
 	}
 
-	protected override void OnFormClosed(FormClosedEventArgs e) {
-		base.OnFormClosed(e);
-	}
+	public void UpdateTitle(string text) => UpdateDisplay(() => _titleLabel.Text = FormatProgressText(text));
 
 	public Image SplashImage {
 		get => _pictureBox.Image;
@@ -85,8 +83,6 @@ public partial class SplashScreen : Form {
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public Func<string, string> ProgressTextFormatter { get; set; }
-
-	public void UpdateTitle(string text) => UpdateDisplay(() => _titleLabel.Text = FormatProgressText(text));
 
 	public void UpdateSubTitle(string text) => UpdateDisplay(() => _subTitleLabel.Text = FormatProgressText(text));
 
@@ -159,6 +155,8 @@ public partial class SplashScreen : Form {
 		_application.Progress -= OnApplicationProgress;
 		_application = null;
 	}
+
+	protected override void OnFormClosed(FormClosedEventArgs e) => base.OnFormClosed(e);
 
 	protected override void OnFormClosing(FormClosingEventArgs e) {
 		DetachFromApplication();

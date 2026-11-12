@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -22,9 +23,8 @@ public class TransactionalStream<TInnerStream> : StreamDecorator<TInnerStream>, 
 
 	private readonly ITransactionalObject _innerTransactionalObject;
 
-	public TransactionalStream(TInnerStream innerStream, ITransactionalObject innerTransactionalObject) : base(innerStream) {
-		_innerTransactionalObject = innerTransactionalObject;
-	}
+	public TransactionalStream(TInnerStream innerStream, ITransactionalObject innerTransactionalObject) : base(innerStream)
+		=> _innerTransactionalObject = innerTransactionalObject;
 
 	public void Commit() {
 		InnerStream.Flush();
@@ -50,16 +50,16 @@ public class TransactionalStream : TransactionalStream<ExtendedMemoryStream>, IL
 		: base(CreateInnerStream(fileDescriptor, accessMode, out var transactionalBuffer), transactionalBuffer) {
 	}
 
+	public void Load() => InnerStream.Load();
+
+	public bool RequiresLoad => InnerStream.RequiresLoad;
+
+	public Task LoadAsync(CancellationToken cancellationToken = default) => InnerStream.LoadAsync(cancellationToken);
+
 	private static ExtendedMemoryStream CreateInnerStream(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode, out TransactionalFileMappedBuffer transactionalBuffer) {
 		transactionalBuffer = new TransactionalFileMappedBuffer(fileDescriptor, accessMode);
 		var extendedStream = new ExtendedMemoryStream(transactionalBuffer, true);
 		return extendedStream;
 	}
-
-	public bool RequiresLoad => InnerStream.RequiresLoad;
-
-	public void Load() => InnerStream.Load();
-
-	public Task LoadAsync() => InnerStream.LoadAsync();
 }
 

@@ -187,25 +187,6 @@ public class ApplicationToolbarLayoutTests {
 		Assert.That(toolbar.Height, Is.EqualTo(ordinaryHeight));
 	}
 
-	private static void ClickNative(ToolStripItem item) {
-		var owner = item.Owner;
-		var location = new Point(item.Bounds.Left + item.Width / 2, item.Bounds.Top + item.Height / 2);
-		var point = (IntPtr)((location.Y << 16) | (location.X & 0xFFFF));
-		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), 0x0200, IntPtr.Zero, point);
-		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), WinAPI.USER32.WM_LBUTTONDOWN, (IntPtr)1, point);
-		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), WinAPI.USER32.WM_LBUTTONUP, IntPtr.Zero, point);
-	}
-
-	private static void CaptureLayout(Form form, string name) {
-		var directory = TestContext.Parameters.Get("UiCaptureDirectory", string.Empty);
-		if (string.IsNullOrWhiteSpace(directory))
-			return;
-		Directory.CreateDirectory(directory);
-		using var bitmap = new Bitmap(form.Width, form.Height);
-		form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
-		bitmap.Save(Path.Combine(directory, name), ImageFormat.Png);
-	}
-
 	[Test]
 	public void DisposingBehaviorRestoresTheOriginalMinimumAndReleasesTheBorrowedToolbar() {
 		using var form = new Form();
@@ -247,6 +228,25 @@ public class ApplicationToolbarLayoutTests {
 		Assert.That(toolbar.MinimumSize, Is.EqualTo(requested));
 		behavior.Dispose();
 		Assert.That(toolbar.MinimumSize, Is.EqualTo(requested));
+	}
+
+	private static void ClickNative(ToolStripItem item) {
+		var owner = item.Owner;
+		var location = new Point(item.Bounds.Left + item.Width / 2, item.Bounds.Top + item.Height / 2);
+		var point = (IntPtr)((location.Y << 16) | (location.X & 0xFFFF));
+		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), 0x0200, IntPtr.Zero, point);
+		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), WinAPI.USER32.WM_LBUTTONDOWN, (IntPtr)1, point);
+		WinAPI.USER32.SendMessage(new HandleRef(owner, owner.Handle), WinAPI.USER32.WM_LBUTTONUP, IntPtr.Zero, point);
+	}
+
+	private static void CaptureLayout(Form form, string name) {
+		var directory = TestContext.Parameters.Get("UiCaptureDirectory", string.Empty);
+		if (string.IsNullOrWhiteSpace(directory))
+			return;
+		Directory.CreateDirectory(directory);
+		using var bitmap = new Bitmap(form.Width, form.Height);
+		form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
+		bitmap.Save(Path.Combine(directory, name), ImageFormat.Png);
 	}
 
 	private sealed class ToolbarMainForm : BlockMainForm {

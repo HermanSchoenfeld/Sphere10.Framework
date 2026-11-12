@@ -33,31 +33,15 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 	/// </summary>
 	[DefaultValue(null), Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public UITypeEditor UITypeEditor {
-		get {
-			return _uiTypeEditor;
-		}
-		set {
-			_uiTypeEditor = value;
-		}
+		get => _uiTypeEditor;
+		set => _uiTypeEditor = value;
 	}
 
-	IContainer ITypeDescriptorContext.Container {
-		get {
-			return base.Container;
-		}
-	}
+	IContainer ITypeDescriptorContext.Container => base.Container;
 
-	object ITypeDescriptorContext.Instance {
-		get {
-			return Value;
-		}
-	}
+	object ITypeDescriptorContext.Instance => Value;
 
-	PropertyDescriptor ITypeDescriptorContext.PropertyDescriptor {
-		get {
-			return null;
-		}
-	}
+	PropertyDescriptor ITypeDescriptorContext.PropertyDescriptor => null;
 
 	public override void ShowDialog() {
 		try {
@@ -91,9 +75,8 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 		return dialog.ShowDialog(this);
 	}
 
-	public virtual async System.Threading.Tasks.Task<System.Windows.Forms.DialogResult> ShowDialogAsync(System.Windows.Forms.Form dialog) {
-		return await dialog.ShowDialogAsync(this);
-	}
+	public virtual async System.Threading.Tasks.Task<System.Windows.Forms.DialogResult> ShowDialogAsync(System.Windows.Forms.Form dialog)
+		=> await dialog.ShowDialogAsync(this);
 
 	public virtual void CloseDropDown() {
 		if (_dropDown != null)
@@ -110,6 +93,21 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 		}
 		_dropDown = null;
 	}
+
+	// IServiceProvider Members
+	System.Object IServiceProvider.GetService(System.Type serviceType) {
+		//modal
+		if (serviceType == typeof(System.Windows.Forms.Design.IWindowsFormsEditorService))
+			return this;
+
+		return null;
+	}
+
+	// ITypeDescriptorContext Members
+	void ITypeDescriptorContext.OnComponentChanged() {
+	}
+
+	bool ITypeDescriptorContext.OnComponentChanging() => true;
 
 	//public bool ShouldSerializeUITypeEditor()
 	//{
@@ -135,22 +133,5 @@ public partial class TextBoxUITypeEditor : ValidatedTextBoxButton, IServiceProvi
 				_components.Dispose();
 		}
 		base.Dispose(disposing);
-	}
-
-	// IServiceProvider Members
-	System.Object IServiceProvider.GetService(System.Type serviceType) {
-		//modal
-		if (serviceType == typeof(System.Windows.Forms.Design.IWindowsFormsEditorService))
-			return this;
-
-		return null;
-	}
-
-	// ITypeDescriptorContext Members
-	void ITypeDescriptorContext.OnComponentChanged() {
-	}
-
-	bool ITypeDescriptorContext.OnComponentChanging() {
-		return true;
 	}
 }

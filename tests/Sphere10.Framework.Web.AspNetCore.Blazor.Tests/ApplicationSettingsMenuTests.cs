@@ -69,8 +69,12 @@ public class ApplicationSettingsMenuTests {
 		using var shell = new ApplicationShell { Application = application, ScreenHost = application.ScreenHost };
 		var menus = (BlazorUI.IApplicationMenu[])typeof(ApplicationShell).GetProperty("MergedMenus", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(shell);
 
-		Assert.That(menus.Select(menu => menu.Text.Replace("&", string.Empty)), Is.EqualTo(new[] { "File", "Views", "Options", "Help" }));
-		var options = menus[2];
+		// The shell adds the native-style Screens menu once a screen is open, between the block menus and Options.
+		Assert.That(menus.Select(menu => menu.Text.Replace("&", string.Empty)), Is.EqualTo(new[] { "File", "Views", "Screens", "Options", "Help" }));
+		var screens = menus[2];
+		Assert.That(screens.Items.OfType<BlazorUI.IApplicationCheckableMenuItem>().Single().IsChecked, Is.True, "The active screen is the checked Screens entry.");
+		Assert.That(screens.Items.Select(item => item.Title), Does.Contain("Close All").And.Contain("Close All Others"));
+		var options = menus[3];
 		Assert.That(options.Items.Count(item => item.Title == "Screen Options..."), Is.EqualTo(1));
 		if (existingOptions) {
 			Assert.That(options.Id, Is.EqualTo("product-preferences"));
@@ -84,26 +88,10 @@ public class ApplicationSettingsMenuTests {
 	// This composition test restores declared defaults without invoking browser storage or writing preferences.
 	private sealed class MissingSettingsProvider : SyncSettingsProviderBase {
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
-		public override bool ContainsSetting(Type settingsType, object id = null) {
-			return false;
-		}
-
-		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
-			throw new InvalidOperationException("No test preferences have been saved.");
-		}
-
-		// Persist fixture values after the base provider prepares them.
-		protected override void SaveInternal(SettingsObject settings) {
-			throw new InvalidOperationException("Menu composition must not write settings.");
-		}
+		public override bool ContainsSetting(Type settingsType, object id = null) => false;
 
 		// Remove this fixture record.
 		public override void DeleteSetting(SettingsObject settings) {
@@ -112,6 +100,13 @@ public class ApplicationSettingsMenuTests {
 		// Clear this fixture storage.
 		public override void ClearSettings() {
 		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null)
+			=> throw new InvalidOperationException("No test preferences have been saved.");
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) => throw new InvalidOperationException("Menu composition must not write settings.");
 	}
 
 	public sealed class Preferences : SettingsObject {

@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.SourceGrid.Exporter;
 
@@ -44,12 +45,8 @@ public class HTML {
 	/// Export mode
 	/// </summary>
 	public virtual ExportHTMLMode Mode {
-		get {
-			return ExportMode;
-		}
-		set {
-			ExportMode = value;
-		}
+		get => ExportMode;
+		set => ExportMode = value;
 	}
 
 	/// <summary>
@@ -63,18 +60,12 @@ public class HTML {
 		}
 	}
 
-	public virtual System.IO.Stream Stream {
-		get {
-			return OutputStream;
-		}
-	}
+	public virtual System.IO.Stream Stream => OutputStream;
 
 	/// <summary>
 	/// Clear the list of embedded images. This method don't delete the files only clear the list.
 	/// </summary>
-	public virtual void ClearEmbeddedImages() {
-		EmbeddedImagePaths.Clear();
-	}
+	public virtual void ClearEmbeddedImages() => EmbeddedImagePaths.Clear();
 
 	/// <summary>Exports grid presentation at the stream's current position without closing the borrowed stream.</summary>
 	public void Export(GridVirtual grid) {
@@ -117,104 +108,6 @@ public class HTML {
 		}
 
 		writer.Flush();
-	}
-
-	/// <summary>
-	/// Export the specified cell to HTML
-	/// </summary>
-	/// <param name="context"></param>
-	/// <param name="writer"></param>
-	protected virtual void ExportHTMLCell(CellContext context, System.Xml.XmlTextWriter writer) {
-		if (context.Cell == null) {
-			//start element td
-			writer.WriteStartElement("td");
-			writer.WriteRaw("&nbsp;");
-			writer.WriteEndElement();
-		} else {
-
-			// TD style
-			var rangeCell = context.Grid.PositionToCellRange(context.Position);
-			if (rangeCell.Start != context.Position)
-				return;
-
-			//start element td
-			writer.WriteStartElement("td");
-
-			//check for rowspan and colspan
-			if (rangeCell.ColumnsCount > 1 || rangeCell.RowsCount > 1) {
-				//colspan, rowspan
-				writer.WriteAttributeString("colspan", rangeCell.ColumnsCount.ToString());
-				writer.WriteAttributeString("rowspan", rangeCell.RowsCount.ToString());
-			}
-
-			if (context.Cell.View is Cells.Views.Cell) {
-				var viewCell = (Cells.Views.Cell)context.Cell.View;
-
-				//write backcolor
-				if ((Mode & ExportHTMLMode.CellBackColor) == ExportHTMLMode.CellBackColor)
-					writer.WriteAttributeString("bgcolor", ColorToHTML(context.Cell.View.BackColor));
-
-				var style = "";
-
-				//border
-				style = BorderToHTMLStyle(viewCell.Border);
-
-				//style
-				writer.WriteAttributeString("style", style);
-
-				//alignment
-				writer.WriteAttributeString("align", Tools.WinForms.ContentToHorizontalAlignment(viewCell.TextAlignment).ToString().ToLower());
-				if (Tools.Drawing.IsBottom(viewCell.TextAlignment))
-					writer.WriteAttributeString("valign", "bottom");
-				else if (Tools.Drawing.IsTop(viewCell.TextAlignment))
-					writer.WriteAttributeString("valign", "top");
-				else if (Tools.Drawing.IsMiddle(viewCell.TextAlignment))
-					writer.WriteAttributeString("valign", "middle");
-			}
-
-			if (context.Cell.View is Cells.Views.CheckBox) {
-				var checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
-				var status = checkModel.GetCheckBoxStatus(context);
-				if (status.Checked == true)
-					writer.WriteRaw("<input type=\"checkbox\" checked>");
-				else
-					writer.WriteRaw("<input type=\"checkbox\">");
-			}
-
-			// Font
-			if (context.Cell.View is Cells.Views.Cell) {
-				//Read the image
-				System.Drawing.Image img = null;
-				var imgModel = (Cells.Models.IImage)context.Cell.Model.FindModel(typeof(Cells.Models.IImage));
-				if (imgModel != null)
-					img = imgModel.GetImage(context);
-
-				var viewCell = (Cells.Views.Cell)context.Cell.View;
-
-				if (img != null && Mode.HasFlag(ExportHTMLMode.CellImages)) {
-					writer.WriteStartElement("img");
-
-					writer.WriteAttributeString("align", Tools.WinForms.ContentToHorizontalAlignment(viewCell.ImageAlignment).ToString().ToLower());
-					writer.WriteAttributeString("src", ExportImage(img));
-
-					//img
-					writer.WriteEndElement();
-				}
-
-				writer.WriteStartElement("font");
-
-				writer.WriteAttributeString("color", ColorToHTML(viewCell.ForeColor));
-
-				ExportHTMLCellContent(context, writer);
-
-				//font
-				writer.WriteEndElement();
-			} else
-				ExportHTMLCellContent(context, writer);
-
-			//td
-			writer.WriteEndElement();
-		}
 	}
 
 	/// <summary>
@@ -264,15 +157,6 @@ public class HTML {
 		return string.Empty;
 	}
 
-	protected virtual void ExportHTMLCellContent(CellContext context, System.Xml.XmlTextWriter writer) {
-		if (context.Cell.View is Cells.Views.CheckBox) {
-			var checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
-			var status = checkModel.GetCheckBoxStatus(context);
-			ExportHTMLElementFont(writer, status.Caption, context.Cell.View.GetDrawingFont(context.Grid));
-		} else
-			ExportHTMLElementFont(writer, context.DisplayText, context.Cell.View.GetDrawingFont(context.Grid));
-	}
-
 	/// <summary>
 	/// Export a font html element with the specified font and text
 	/// </summary>
@@ -312,5 +196,118 @@ public class HTML {
 			if (font.Bold)
 				writer.WriteEndElement();
 		}
+	}
+
+	/// <summary>
+	/// Export the specified cell to HTML
+	/// </summary>
+	/// <param name="context"></param>
+	/// <param name="writer"></param>
+	protected virtual void ExportHTMLCell(CellContext context, System.Xml.XmlTextWriter writer) {
+		if (context.Cell == null) {
+			//start element td
+			writer.WriteStartElement("td");
+			writer.WriteRaw("&nbsp;");
+			writer.WriteEndElement();
+		} else {
+
+			#region TD style
+
+			var rangeCell = context.Grid.PositionToCellRange(context.Position);
+			if (rangeCell.Start != context.Position)
+				return;
+
+			//start element td
+			writer.WriteStartElement("td");
+
+			//check for rowspan and colspan
+			if (rangeCell.ColumnsCount > 1 || rangeCell.RowsCount > 1) {
+				//colspan, rowspan
+				writer.WriteAttributeString("colspan", rangeCell.ColumnsCount.ToString());
+				writer.WriteAttributeString("rowspan", rangeCell.RowsCount.ToString());
+			}
+
+			if (context.Cell.View is Cells.Views.Cell) {
+				var viewCell = (Cells.Views.Cell)context.Cell.View;
+
+				//write backcolor
+				if ((Mode & ExportHTMLMode.CellBackColor) == ExportHTMLMode.CellBackColor)
+					writer.WriteAttributeString("bgcolor", ColorToHTML(context.Cell.View.BackColor));
+
+				var style = "";
+
+				//border
+				style = BorderToHTMLStyle(viewCell.Border);
+
+				//style
+				writer.WriteAttributeString("style", style);
+
+				//alignment
+				writer.WriteAttributeString("align", Tools.WinForms.ContentToHorizontalAlignment(viewCell.TextAlignment).ToString().ToLower());
+				if (Tools.Drawing.IsBottom(viewCell.TextAlignment))
+					writer.WriteAttributeString("valign", "bottom");
+				else if (Tools.Drawing.IsTop(viewCell.TextAlignment))
+					writer.WriteAttributeString("valign", "top");
+				else if (Tools.Drawing.IsMiddle(viewCell.TextAlignment))
+					writer.WriteAttributeString("valign", "middle");
+			}
+
+			#endregion
+
+			if (context.Cell.View is Cells.Views.CheckBox) {
+				var checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
+				var status = checkModel.GetCheckBoxStatus(context);
+				if (status.Checked == true)
+					writer.WriteRaw("<input type=\"checkbox\" checked>");
+				else
+					writer.WriteRaw("<input type=\"checkbox\">");
+			}
+
+			#region Font
+
+			if (context.Cell.View is Cells.Views.Cell) {
+				//Read the image
+				System.Drawing.Image img = null;
+				var imgModel = (Cells.Models.IImage)context.Cell.Model.FindModel(typeof(Cells.Models.IImage));
+				if (imgModel != null)
+					img = imgModel.GetImage(context);
+
+				var viewCell = (Cells.Views.Cell)context.Cell.View;
+
+				if (img != null && Mode.HasFlag(ExportHTMLMode.CellImages)) {
+					writer.WriteStartElement("img");
+
+					writer.WriteAttributeString("align", Tools.WinForms.ContentToHorizontalAlignment(viewCell.ImageAlignment).ToString().ToLower());
+					writer.WriteAttributeString("src", ExportImage(img));
+
+					//img
+					writer.WriteEndElement();
+				}
+
+				writer.WriteStartElement("font");
+
+				writer.WriteAttributeString("color", ColorToHTML(viewCell.ForeColor));
+
+				ExportHTMLCellContent(context, writer);
+
+				//font
+				writer.WriteEndElement();
+			} else
+				ExportHTMLCellContent(context, writer);
+
+			//td
+			writer.WriteEndElement();
+
+			#endregion
+		}
+	}
+
+	protected virtual void ExportHTMLCellContent(CellContext context, System.Xml.XmlTextWriter writer) {
+		if (context.Cell.View is Cells.Views.CheckBox) {
+			var checkModel = (Cells.Models.ICheckBox)context.Cell.Model.FindModel(typeof(Cells.Models.ICheckBox));
+			var status = checkModel.GetCheckBoxStatus(context);
+			ExportHTMLElementFont(writer, status.Caption, context.Cell.View.GetDrawingFont(context.Grid));
+		} else
+			ExportHTMLElementFont(writer, context.DisplayText, context.Cell.View.GetDrawingFont(context.Grid));
 	}
 }

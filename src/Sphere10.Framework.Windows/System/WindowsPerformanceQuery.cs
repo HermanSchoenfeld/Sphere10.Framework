@@ -93,6 +93,17 @@ public class WindowsPerformanceQuery : SynchronizedObject, IDisposable {
 		_query?.Dispose();
 	}
 
+	internal static DateTime? ConvertLocalTimestampToUtc(long fileTime, TimeZoneInfo timeZone) {
+		if (fileTime <= 0 || fileTime > DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc).ToFileTimeUtc())
+			return null;
+		// PDH encodes local wall time in FILETIME; FromFileTimeUtc alone adds the local offset to the reported instant.
+		var localTime = DateTime.SpecifyKind(DateTime.FromFileTimeUtc(fileTime), DateTimeKind.Unspecified);
+		// A repeated daylight-saving hour has no offset in the native value. Do not invent an instant for identity checks.
+		if (timeZone.IsInvalidTime(localTime) || timeZone.IsAmbiguousTime(localTime))
+			return null;
+		return TimeZoneInfo.ConvertTimeToUtc(localTime, timeZone);
+	}
+
 	private WindowsPerformanceCounterSample[] ReadRawSamplesCore(Action checkpoint) {
 		checkpoint?.Invoke();
 		using var access = EnterWriteScope();
@@ -162,17 +173,6 @@ public class WindowsPerformanceQuery : SynchronizedObject, IDisposable {
 			TimestampUtc = ConvertLocalTimestampToUtc(collectionTime, TimeZoneInfo.Local), RawTimestampFileTime = unchecked((long)time), FirstValue = raw.FirstValue,
 			SecondValue = raw.SecondValue, MultiCount = raw.MultiCount, TimeBase = counter.TimeBase, Owner = this, Counter = counter.Handle
 		};
-	}
-
-	internal static DateTime? ConvertLocalTimestampToUtc(long fileTime, TimeZoneInfo timeZone) {
-		if (fileTime <= 0 || fileTime > DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc).ToFileTimeUtc())
-			return null;
-		// PDH encodes local wall time in FILETIME; FromFileTimeUtc alone adds the local offset to the reported instant.
-		var localTime = DateTime.SpecifyKind(DateTime.FromFileTimeUtc(fileTime), DateTimeKind.Unspecified);
-		// A repeated daylight-saving hour has no offset in the native value. Do not invent an instant for identity checks.
-		if (timeZone.IsInvalidTime(localTime) || timeZone.IsAmbiguousTime(localTime))
-			return null;
-		return TimeZoneInfo.ConvertTimeToUtc(localTime, timeZone);
 	}
 
 	private static string ReadName(UnmanagedMemoryScope buffer, IntPtr name) {

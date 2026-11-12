@@ -25,26 +25,6 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		FetchCount = 0;
 	}
 
-	protected sealed override TValue Fetch(TKey key) {
-		TValue result;
-		using (EnterWriteScope()) {
-			if (InternalStorage.TryGetValue(key, out var item)) {
-				result = item.Value;
-			} else {
-				switch (NullValuePolicy) {
-					case NullValuePolicy.Throw:
-						throw new SoftwareException("BulkCache does not have key with id {0}", key);
-					case NullValuePolicy.ReturnButDontCache:
-					case NullValuePolicy.CacheNormally:
-					default:
-						result = default;
-						break;
-				}
-			}
-		}
-		return result;
-	}
-
 	public override CachedItem<TValue> Get(TKey key) {
 		if (key is null)
 			Guard.ArgumentNotNull(key, nameof(key));
@@ -55,9 +35,6 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 			return base.Get(key);
 		}
 	}
-
-	// Get has already checked the snapshot; fetch-once entries must also survive expiry and invalidation.
-	protected sealed override bool RequiresFetch(TKey key, CachedItem<TValue> item, DateTime now) => false;
 
 	public override bool ContainsCachedItem(TKey key) {
 		if (key is null)
@@ -85,9 +62,7 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		FetchCount = 0;
 	}
 
-	public override void Remove(TKey key) {
-		throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
-	}
+	public override void Remove(TKey key) => throw new NotSupportedException("Items cannot be manually removed from a bulk fetch cache");
 
 	public override long Reap(long minimumRelease) {
 		Guard.Argument(minimumRelease >= 0, nameof(minimumRelease), "The requested release must be nonnegative.");
@@ -95,6 +70,29 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		// The base zero-release path preserves synchronized disposed validation without fetching or removing entries.
 		return base.Reap(0);
 	}
+
+	protected sealed override TValue Fetch(TKey key) {
+		TValue result;
+		using (EnterWriteScope()) {
+			if (InternalStorage.TryGetValue(key, out var item)) {
+				result = item.Value;
+			} else {
+				switch (NullValuePolicy) {
+					case NullValuePolicy.Throw:
+						throw new SoftwareException("BulkCache does not have key with id {0}", key);
+					case NullValuePolicy.ReturnButDontCache:
+					case NullValuePolicy.CacheNormally:
+					default:
+						result = default;
+						break;
+				}
+			}
+		}
+		return result;
+	}
+
+	// Get has already checked the snapshot; fetch-once entries must also survive expiry and invalidation.
+	protected sealed override bool RequiresFetch(TKey key, CachedItem<TValue> item, DateTime now) => false;
 
 	protected sealed override long EstimateSize(TValue value) {
 		// Size limiting not applied to bulk-fetched cache

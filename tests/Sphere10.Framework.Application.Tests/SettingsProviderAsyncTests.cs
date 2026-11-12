@@ -139,27 +139,8 @@ public class SettingsProviderAsyncTests {
 		public bool FailSave { get; set; }
 
 		// Check record presence through the asynchronous fixture contract.
-		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-			return Task.FromResult(Values.ContainsKey((settingsObjectType, id)));
-		}
-
-		// Read fixture storage through the asynchronous provider primitive.
-		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-			return Task.FromResult(Values[(settingsObjectType, id)]);
-		}
-
-		// Read fixture storage through the asynchronous provider primitive.
-		protected override Task<SettingsObject> LoadInternalAsync(SettingsObject defaults, CancellationToken cancellationToken = default) {
-			return LoadInternalAsync(defaults.GetType(), defaults.ID, cancellationToken);
-		}
-
-		// Persist fixture values after the asynchronous provider prepares them.
-		protected override Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
-			if (FailSave)
-				throw new InvalidOperationException("Storage rejected the write.");
-			Values[(settings.GetType(), settings.ID)] = settings;
-			return Task.CompletedTask;
-		}
+		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+			=> Task.FromResult(Values.ContainsKey((settingsObjectType, id)));
 
 		// Remove this fixture record through the asynchronous contract.
 		public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
@@ -170,6 +151,22 @@ public class SettingsProviderAsyncTests {
 		// Clear this fixture storage through the asynchronous contract.
 		public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
 			Values.Clear();
+			return Task.CompletedTask;
+		}
+
+		// Read fixture storage through the asynchronous provider primitive.
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+			=> Task.FromResult(Values[(settingsObjectType, id)]);
+
+		// Read fixture storage through the asynchronous provider primitive.
+		protected override Task<SettingsObject> LoadInternalAsync(SettingsObject defaults, CancellationToken cancellationToken = default)
+			=> LoadInternalAsync(defaults.GetType(), defaults.ID, cancellationToken);
+
+		// Persist fixture values after the asynchronous provider prepares them.
+		protected override Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
+			if (FailSave)
+				throw new InvalidOperationException("Storage rejected the write.");
+			Values[(settings.GetType(), settings.ID)] = settings;
 			return Task.CompletedTask;
 		}
 	}

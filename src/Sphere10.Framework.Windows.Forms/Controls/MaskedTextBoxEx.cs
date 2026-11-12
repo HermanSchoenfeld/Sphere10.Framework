@@ -24,12 +24,8 @@ public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 	/// </summary>
 	[DefaultValue(false)]
 	public bool FormatValue {
-		get {
-			return _formatValue;
-		}
-		set {
-			_formatValue = value;
-		}
+		get => _formatValue;
+		set => _formatValue = value;
 	}
 
 	/// <summary>
@@ -38,9 +34,7 @@ public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 	/// </summary>
 	[DefaultValue(null)]
 	public Sphere10.Framework.ComponentModel.IValidator Validator {
-		get {
-			return _validator;
-		}
+		get => _validator;
 		set {
 			if (_validator != value) {
 				if (_validator != null)
@@ -81,7 +75,23 @@ public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 		}
 	}
 
-	// Generic validation methods
+	/// <summary>
+	/// Check if the selected value is valid based on the current validator and returns the value.
+	/// </summary>
+	/// <param name="convertedValue"></param>
+	/// <returns></returns>
+	public bool IsValidValue(out object convertedValue) {
+		if (Validator != null) {
+			if (Validator.IsValidObject(this.Text, out convertedValue))
+				return true;
+			return false;
+		}
+		convertedValue = this.Text;
+		return true;
+	}
+
+	#region Generic validation methods
+
 	protected override void OnValidating(CancelEventArgs args) {
 		base.OnValidating(args);
 
@@ -98,21 +108,6 @@ public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 		}
 	}
 
-	/// <summary>
-	/// Check if the selected value is valid based on the current validator and returns the value.
-	/// </summary>
-	/// <param name="convertedValue"></param>
-	/// <returns></returns>
-	public bool IsValidValue(out object convertedValue) {
-		if (Validator != null) {
-			if (Validator.IsValidObject(this.Text, out convertedValue))
-				return true;
-			return false;
-		}
-		convertedValue = this.Text;
-		return true;
-	}
-
 	/// <summary>Detaches events from the borrowed validator before disposing the native editor.</summary>
 	protected override void Dispose(bool disposing) {
 		if (disposing) {
@@ -124,13 +119,13 @@ public class MaskedTextBoxEx : System.Windows.Forms.MaskedTextBox {
 		base.Dispose(disposing);
 	}
 
-	void ValidatorChanged(object sender, EventArgs args) {
-		ApplyValidatorRules();
-	}
+	void ValidatorChanged(object sender, EventArgs args) => ApplyValidatorRules();
 
 	/// <summary>
 	/// Apply the current Validator rules. This method is automatically fired when the Validator change.
 	/// </summary>
 	protected virtual void ApplyValidatorRules() {
 	}
+
+	#endregion
 }

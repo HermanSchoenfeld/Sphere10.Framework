@@ -16,7 +16,8 @@ namespace Sphere10.Framework.ComponentModel;
 /// Support Conversion for Float, Double and Decimal, Int
 /// </summary>
 public class CurrencyTypeConverter : NumberTypeConverter {
-	// Constructors
+	#region Constructors
+
 	public CurrencyTypeConverter(Type baseType)
 		: base(baseType) {
 		Format = "C";
@@ -27,4 +28,6 @@ public class CurrencyTypeConverter : NumberTypeConverter {
 		: this(baseType) {
 		Format = format;
 	}
+
+	#endregion
 }

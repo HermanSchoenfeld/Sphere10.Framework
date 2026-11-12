@@ -488,9 +488,7 @@ public class ControlStateEventProviderTests {
 		return new WeakReference(container);
 	}
 
-	private static IProbe CreateProbe(bool form) {
-		return form ? new FormProbe() : new UserProbe();
-	}
+	private static IProbe CreateProbe(bool form) => form ? new FormProbe() : new UserProbe();
 
 	// Every deferred native observation runs on one owned WinForms dispatcher.
 	private static void RunWithMessageLoop(Func<Form, Task> test) {
@@ -539,11 +537,7 @@ public class ControlStateEventProviderTests {
 		public int Events { get; private set; }
 		public bool ThrowModelCopy { get; set; }
 		public bool ThrowUICopy { get; set; }
-		public string[] Order {
-			get {
-				return _order.ToArray();
-			}
-		}
+		public string[] Order => _order.ToArray();
 
 		public void Capture(TextBox editor, CheckedListBox choices) {
 			ModelCopies++;
@@ -563,9 +557,7 @@ public class ControlStateEventProviderTests {
 			choices.SetItemChecked(0, ModelChecked);
 		}
 
-		public void Hook() {
-			_order.Add("hook");
-		}
+		public void Hook() => _order.Add("hook");
 
 		public void Event() {
 			Events++;
@@ -586,26 +578,14 @@ public class ControlStateEventProviderTests {
 			Choices = new CheckedListBox { Parent = this };
 			Choices.Items.Add("Choice");
 		}
-		public Control Root {
-			get {
-				return this;
-			}
-		}
+		public Control Root => this;
 		public TextBox Editor { get; }
 		public CheckedListBox Choices { get; }
 		public ProbeState State { get; } = new();
-		public void InitializeLoaded() {
-			OnLoad(EventArgs.Empty);
-		}
-		protected override void CopyUIToModel() {
-			State.Capture(Editor, Choices);
-		}
-		protected override void CopyModelToUI() {
-			State.Apply(Editor, Choices);
-		}
-		protected override void OnStateChanged() {
-			State.Hook();
-		}
+		public void InitializeLoaded() => OnLoad(EventArgs.Empty);
+		protected override void CopyUIToModel() => State.Capture(Editor, Choices);
+		protected override void CopyModelToUI() => State.Apply(Editor, Choices);
+		protected override void OnStateChanged() => State.Hook();
 	}
 
 	private sealed class FormProbe : FormEx, IProbe {
@@ -614,56 +594,32 @@ public class ControlStateEventProviderTests {
 			Choices = new CheckedListBox { Parent = this };
 			Choices.Items.Add("Choice");
 		}
-		public Control Root {
-			get {
-				return this;
-			}
-		}
+		public Control Root => this;
 		public TextBox Editor { get; }
 		public CheckedListBox Choices { get; }
 		public ProbeState State { get; } = new();
-		public void InitializeLoaded() {
-			OnLoad(EventArgs.Empty);
-		}
-		protected override void CopyUIToModel() {
-			State.Capture(Editor, Choices);
-		}
-		protected override void CopyModelToUI() {
-			State.Apply(Editor, Choices);
-		}
-		protected override void OnStateChanged() {
-			State.Hook();
-		}
+		public void InitializeLoaded() => OnLoad(EventArgs.Empty);
+		protected override void CopyUIToModel() => State.Capture(Editor, Choices);
+		protected override void CopyModelToUI() => State.Apply(Editor, Choices);
+		protected override void OnStateChanged() => State.Hook();
 	}
 
 	private sealed class SemanticProbe : UserProbe {
-		protected override bool ShouldObserveChildStateChanges(Control child) {
-			return false;
-		}
-		public void Commit() {
-			NotifyStateChanged();
-		}
+		public void Commit() => NotifyStateChanged();
+		protected override bool ShouldObserveChildStateChanges(Control child) => false;
 	}
 
 	// A consumer-owned numeric specialization must retain the generic base's semantic event contract.
 	private sealed class LongBox : NumericBoxBase<long> {
-		protected override bool CanParse(string text) {
-			return long.TryParse(text, out _);
-		}
+		protected override bool CanParse(string text) => long.TryParse(text, out _);
 
-		protected override long? DoParse(string text) {
-			return long.TryParse(text, out var value) ? value : null;
-		}
+		protected override long? DoParse(string text) => long.TryParse(text, out var value) ? value : null;
 
-		protected override string ToText(long value) {
-			return value.ToString();
-		}
+		protected override string ToText(long value) => value.ToString();
 	}
 
 	// Equal presentation text must not collapse different selected values.
 	private sealed class CaptionItem {
-		public override string ToString() {
-			return "Shared caption";
-		}
+		public override string ToString() => "Shared caption";
 	}
 }

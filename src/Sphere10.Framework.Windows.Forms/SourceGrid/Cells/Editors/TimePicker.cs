@@ -35,12 +35,11 @@ public class TimePicker : DateTimePicker {
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new System.Windows.Forms.DateTimePicker Control {
-		get {
-			return (System.Windows.Forms.DateTimePicker)base.Control;
-		}
+		get => (System.Windows.Forms.DateTimePicker)base.Control;
 	}
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -51,4 +50,6 @@ public class TimePicker : DateTimePicker {
 		dtPicker.ShowUpDown = true;
 		return dtPicker;
 	}
+
+	#endregion
 }

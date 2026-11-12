@@ -28,9 +28,7 @@ public class DateTimePicker : EditorControlBase {
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new System.Windows.Forms.DateTimePicker Control {
-		get {
-			return (System.Windows.Forms.DateTimePicker)base.Control;
-		}
+		get => (System.Windows.Forms.DateTimePicker)base.Control;
 	}
 
 	/// <summary>
@@ -56,7 +54,8 @@ public class DateTimePicker : EditorControlBase {
 		return null;
 	}
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -91,4 +90,6 @@ public class DateTimePicker : EditorControlBase {
 	protected override void OnSendCharToEditor(char key) {
 		//No implementation
 	}
+
+	#endregion
 }

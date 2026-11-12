@@ -143,11 +143,6 @@ public sealed class BTreeProfilerSettings {
 		return settings;
 	}
 
-	private static BTreeProfile[] ReadProfiles(string path) {
-		using var document = JsonDocument.Parse(File.ReadAllText(path));
-		return document.RootElement.EnumerateArray().Select(ReadProfile).ToArray();
-	}
-
 	internal static BTreeProfile ReadProfile(JsonElement element) {
 		var profile = element.Deserialize<BTreeProfile>(JsonOptions);
 		if (profile == null)
@@ -164,6 +159,11 @@ public sealed class BTreeProfilerSettings {
 				profile.Spec = new BTreeSpec(implementation.Value, profile.Order);
 		}
 		return profile;
+	}
+
+	private static BTreeProfile[] ReadProfiles(string path) {
+		using var document = JsonDocument.Parse(File.ReadAllText(path));
+		return document.RootElement.EnumerateArray().Select(ReadProfile).ToArray();
 	}
 
 	private static bool TryGetProfileProperty(JsonElement element, string name, out JsonElement value) {

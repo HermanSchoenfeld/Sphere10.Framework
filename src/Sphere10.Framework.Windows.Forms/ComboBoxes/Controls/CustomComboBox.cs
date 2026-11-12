@@ -14,7 +14,6 @@ using System.Security.Permissions;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-using static Sphere10.Framework.Windows.WinAPI.USER32;
 
 namespace Sphere10.Framework.Windows.Forms;
 
@@ -32,7 +31,8 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 
 	private static DateTime _sShowTime = DateTime.Now;
 
-	// Attributes
+	#region Attributes
+
 	/// <summary>
 	/// Popup control.
 	/// </summary>
@@ -79,7 +79,10 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	/// </summary>
 	bool _isResizable = true;
 
-	// Construction and destruction
+	#endregion
+
+	#region Construction and destruction
+
 	public CustomComboBox()
 		: base() {
 		base.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -92,18 +95,17 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 		DropDownControl = dropControl;
 	}
 
-	// Properties
+	#endregion
+
+	#region Properties
+
 	/// <summary>
 	/// Actual drop-down control itself.
 	/// </summary>
 	[Browsable(false)]
 	public Control DropDownControl {
-		get {
-			return _dropDownCtrl;
-		}
-		set {
-			AssignControl(value);
-		}
+		get => _dropDownCtrl;
+		set => AssignControl(value);
 	}
 
 	/// <summary>
@@ -121,12 +123,8 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	/// </summary>
 	[Category("Custom Drop-Down"), Description("Indicates if drop-down is resizable.")]
 	public bool AllowResizeDropDown {
-		get {
-			return _isResizable;
-		}
-		set {
-			_isResizable = value;
-		}
+		get => _isResizable;
+		set => _isResizable = value;
 	}
 
 	/// <summary>
@@ -134,9 +132,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	/// </summary>
 	[Category("Custom Drop-Down"), Description("Indicates current sizing mode."), DefaultValue(SizeMode.UseComboSize)]
 	public SizeMode DropDownSizeMode {
-		get {
-			return _sizeMode;
-		}
+		get => _sizeMode;
 		set {
 			if (value != _sizeMode) {
 				_sizeMode = value;
@@ -147,9 +143,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 
 	[Category("Custom Drop-Down")]
 	public Size DropSize {
-		get {
-			return _sizeCombo;
-		}
+		get => _sizeCombo;
 		set {
 			_sizeCombo = value;
 			if (DropDownSizeMode == SizeMode.UseDropDownSize)
@@ -159,9 +153,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 
 	[Category("Custom Drop-Down"), Browsable(false)]
 	public Size ControlSize {
-		get {
-			return _sizeOriginal;
-		}
+		get => _sizeOriginal;
 		set {
 			_sizeOriginal = value;
 			if (DropDownSizeMode == SizeMode.UseInitialControlSize)
@@ -169,13 +161,14 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 		}
 	}
 
-	// Hide some unwanted properties
+	#endregion
+
+	#region Hide some unwanted properties
+
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new ComboBoxStyle DropDownStyle {
-		get {
-			return base.DropDownStyle;
-		}
+		get => base.DropDownStyle;
 		set {
 		}
 	}
@@ -183,17 +176,13 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new ObjectCollection Items {
-		get {
-			return base.Items;
-		}
+		get => base.Items;
 	}
 
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new int ItemHeight {
-		get {
-			return base.ItemHeight;
-		}
+		get => base.ItemHeight;
 		set {
 		}
 	}
@@ -201,9 +190,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new int MaxDropDownItems {
-		get {
-			return base.MaxDropDownItems;
-		}
+		get => base.MaxDropDownItems;
 		set {
 		}
 	}
@@ -211,9 +198,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new string DisplayMember {
-		get {
-			return base.DisplayMember;
-		}
+		get => base.DisplayMember;
 		set {
 		}
 	}
@@ -221,9 +206,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new string ValueMember {
-		get {
-			return base.ValueMember;
-		}
+		get => base.ValueMember;
 		set {
 		}
 	}
@@ -231,9 +214,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new int DropDownWidth {
-		get {
-			return base.DropDownWidth;
-		}
+		get => base.DropDownWidth;
 		set {
 		}
 	}
@@ -241,9 +222,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new int DropDownHeight {
-		get {
-			return base.DropDownHeight;
-		}
+		get => base.DropDownHeight;
 		set {
 		}
 	}
@@ -251,9 +230,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new bool IntegralHeight {
-		get {
-			return base.IntegralHeight;
-		}
+		get => base.IntegralHeight;
 		set {
 		}
 	}
@@ -261,12 +238,12 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	[Browsable(false), ReadOnly(true)]
 	public new bool Sorted {
-		get {
-			return base.Sorted;
-		}
+		get => base.Sorted;
 		set {
 		}
 	}
+
+	#endregion
 
 	public void RaiseSelectedValueChangedEvent(object oldValue, object newValue) {
 		var eventHandler = this.SelectedValueChanged;
@@ -274,90 +251,18 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 			this.SelectedValueChanged(this, new OldNewEventArgs<object>(oldValue, newValue));
 	}
 
-	// Win32 message handlers
+	#region Win32 message handlers
 
 	public override bool PreProcessMessage(ref Message m) {
-		if (m.Msg == (WM_REFLECT + WM_COMMAND)) {
-			if (Tools.Windows.Win32.HIWORD(m.WParam) == CBN_DROPDOWN)
+		if (m.Msg == (WinAPI.USER32.WM_REFLECT + WinAPI.USER32.WM_COMMAND)) {
+			if (Tools.Windows.Win32.HIWORD(m.WParam) == WinAPI.USER32.CBN_DROPDOWN)
 				return false;
 		}
 		return base.PreProcessMessage(ref m);
 	}
 
-	// ComboBox overrides
-	protected override void Dispose(bool disposing) {
-		try {
-			if (disposing) {
-				try {
-					if (_timerAutoFocus != null) {
-						_timerAutoFocus.Dispose();
-						_timerAutoFocus = null;
-					}
-				} finally {
-					// The popup owns its native host; the assigned dropdown content remains borrowed.
-					_popupCtrl.Closing -= DropDown_Closing;
-					_popupCtrl.Dispose();
-				}
-			}
-		} finally {
-			// Consumer callbacks must not prevent the combo's normal control disposal.
-			base.Dispose(disposing);
-		}
-	}
+	#region IPopupControlHost Members
 
-	protected override void WndProc(ref Message m) {
-		if (m.Msg == WM_LBUTTONDOWN) {
-			AutoDropDown();
-			return;
-		}
-
-		if (m.Msg == (WM_REFLECT + WM_COMMAND)) {
-			switch (Tools.Windows.Win32.HIWORD(m.WParam)) {
-				case CBN_DROPDOWN:
-					AutoDropDown();
-					return;
-
-				case CBN_CLOSEUP:
-					if ((DateTime.Now - _sShowTime).Seconds > 1)
-						HideDropDown();
-					return;
-			}
-		}
-
-		base.WndProc(ref m);
-	}
-
-	/// <summary>
-	/// Assigns control to custom drop-down area of combo box.
-	/// </summary>
-	/// <param name="control">Control to be used as drop-down. Please note that this control must not be contained elsewhere.</param>
-	protected virtual void AssignControl(Control control) {
-		// If specified control is different then...
-		if (control != DropDownControl) {
-			// Preserve original objectStream size.
-			_sizeOriginal = control.Size;
-
-			// Reference the user-specified drop down control.
-			_dropDownCtrl = control;
-		}
-	}
-
-	void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs args) {
-		_lastHideTime = DateTime.Now;
-	}
-
-	private void DropDown_LostFocus(object sender, EventArgs args) {
-		_lastHideTime = DateTime.Now;
-	}
-
-	private void AutoDropDown() {
-		if (_popupCtrl != null && _popupCtrl.Visible)
-			HideDropDown();
-		else if ((DateTime.Now - _lastHideTime).Milliseconds > 50)
-			ShowDropDown();
-	}
-
-	// IPopupControlHost Members
 	/// <summary>
 	/// Displays drop-down area of combo box, if not already shown.
 	/// </summary>
@@ -413,13 +318,93 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 			RaiseDropDownClosedEvent();
 	}
 
+	#endregion
+
 	public void RaiseDropDownClosedEvent() {
 		var eventHandler = this.DropDownClosed;
 		if (eventHandler != null)
 			this.DropDownClosed(this, EventArgs.Empty);
 	}
 
-	// Methods
+	#region ComboBox overrides
+
+	protected override void Dispose(bool disposing) {
+		try {
+			if (disposing) {
+				try {
+					if (_timerAutoFocus != null) {
+						_timerAutoFocus.Dispose();
+						_timerAutoFocus = null;
+					}
+				} finally {
+					// The popup owns its native host; the assigned dropdown content remains borrowed.
+					_popupCtrl.Closing -= DropDown_Closing;
+					_popupCtrl.Dispose();
+				}
+			}
+		} finally {
+			// Consumer callbacks must not prevent the combo's normal control disposal.
+			base.Dispose(disposing);
+		}
+	}
+
+	#endregion
+
+	protected override void WndProc(ref Message m) {
+		if (m.Msg == WinAPI.USER32.WM_LBUTTONDOWN) {
+			AutoDropDown();
+			return;
+		}
+
+		if (m.Msg == (WinAPI.USER32.WM_REFLECT + WinAPI.USER32.WM_COMMAND)) {
+			switch (Tools.Windows.Win32.HIWORD(m.WParam)) {
+				case WinAPI.USER32.CBN_DROPDOWN:
+					AutoDropDown();
+					return;
+
+				case WinAPI.USER32.CBN_CLOSEUP:
+					if ((DateTime.Now - _sShowTime).TotalSeconds > 1)
+						HideDropDown();
+					return;
+			}
+		}
+
+		base.WndProc(ref m);
+	}
+
+	#endregion
+
+	/// <summary>
+	/// Assigns control to custom drop-down area of combo box.
+	/// </summary>
+	/// <param name="control">Control to be used as drop-down. Please note that this control must not be contained elsewhere.</param>
+	protected virtual void AssignControl(Control control) {
+		// If specified control is different then...
+		if (control != DropDownControl) {
+			// Preserve original objectStream size.
+			_sizeOriginal = control.Size;
+
+			// Reference the user-specified drop down control.
+			_dropDownCtrl = control;
+		}
+	}
+
+	void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs args) => _lastHideTime = DateTime.Now;
+
+	private void DropDown_LostFocus(object sender, EventArgs args) => _lastHideTime = DateTime.Now;
+
+	private void AutoDropDown() => AutoDropDown(DateTime.Now);
+
+	// A click within 50 ms of the drop-down closing is the click that closed it; only a later click shows the drop-down again.
+	private void AutoDropDown(DateTime now) {
+		if (_popupCtrl != null && _popupCtrl.Visible)
+			HideDropDown();
+		else if ((now - _lastHideTime).TotalMilliseconds > 50)
+			ShowDropDown();
+	}
+
+	#region Methods
+
 	/// <summary>
 	/// Automatically resize drop-down from properties.
 	/// </summary>
@@ -445,7 +430,10 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 		}
 	}
 
-	// Event handlers
+	#endregion
+
+	#region Event handlers
+
 	private void TimerAutoFocus_Tick(object sender, EventArgs args) {
 		if (_popupCtrl.Visible && !DropDownControl.Focused) {
 			DropDownControl.Focus();
@@ -456,11 +444,16 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 			base.DroppedDown = false;
 	}
 
-	// Enumerations
+	#endregion
+
+	#region Enumerations
+
 	public enum SizeMode {
 		UseComboSize,
 		UseInitialControlSize,
 		UseCurrentControlSize,
 		UseDropDownSize,
 	}
+
+	#endregion
 }

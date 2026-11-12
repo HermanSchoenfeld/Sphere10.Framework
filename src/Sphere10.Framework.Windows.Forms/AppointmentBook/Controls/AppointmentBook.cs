@@ -15,6 +15,7 @@ using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Sphere10.Framework.Windows.Forms.SourceGrid;
+using Tools;
 
 namespace Sphere10.Framework.Windows.Forms.AppointmentBook;
 
@@ -76,7 +77,8 @@ public class AppointmentBook : BaseAppointmentBook {
 		base.DragDrop += ResourceCalendar_DragDrop;
 	}
 
-	// Properties
+	#region Properties
+
 	public override bool CanResize {
 		get {
 			switch (TimePeriodType) {
@@ -86,15 +88,11 @@ public class AppointmentBook : BaseAppointmentBook {
 					return base.CanResize;
 			}
 		}
-		set {
-			base.CanResize = value;
-		}
+		set => base.CanResize = value;
 	}
 
 	public virtual IAppointmentBookDataSource DataSource {
-		get {
-			return _dataSource;
-		}
+		get => _dataSource;
 		set {
 			_dataSource = value;
 			RefreshFromDataSource();
@@ -114,30 +112,18 @@ public class AppointmentBook : BaseAppointmentBook {
 	}
 
 	public new virtual AppointmentBookViewModel ViewModel {
-		get {
-			return base.ViewModel as AppointmentBookViewModel;
-		}
+		get => base.ViewModel as AppointmentBookViewModel;
 		set {
 			base.ViewModel = value; // base will bind
 		}
 	}
 
-	public virtual DateTime TimePeriodStart {
-		get {
-			return _timePeriodStart;
-		}
-	}
+	public virtual DateTime TimePeriodStart => _timePeriodStart;
 
-	public virtual TimePeriodType TimePeriodType {
-		get {
-			return _timePeriodType;
-		}
-	}
+	public virtual TimePeriodType TimePeriodType => _timePeriodType;
 
 	public virtual AppointmentBookViewModelFilter ColumnFilter {
-		get {
-			return _columnFilter;
-		}
+		get => _columnFilter;
 		set {
 			_columnFilter = value;
 			if (ViewModel != null) {
@@ -146,6 +132,8 @@ public class AppointmentBook : BaseAppointmentBook {
 			}
 		}
 	}
+
+	#endregion
 
 	public void SetTimePeriod(TimePeriodType timePeriodTime, DateTime startTime) {
 		_timePeriodStart = startTime;
@@ -305,7 +293,361 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		}
 	}
 
-	// Binding
+	public virtual void DeselectAppointment() {
+		var changed = _selectedAppointment != null;
+		DeselectAppointmentInternal(true, true);
+		if (changed)
+			NotifyStateChanged();
+	}
+
+	public virtual void SelectAppointment(Appointment appointment) {
+		var previous = SelectedAppointment;
+		if (!ReferenceEquals(previous, appointment)) {
+			SelectAppointmentInternal(appointment, true);
+			if (!ReferenceEquals(previous, SelectedAppointment))
+				NotifyStateChanged();
+		}
+	}
+
+	// Appointment Selection
+	public override void ClearSelection() => base.ClearSelection();
+
+	public virtual void RefreshFromDataSource() {
+		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
+		ViewModel = _dataSource != null ? ViewModelGenerator.Convert(_dataSource, TimePeriodStart, TimePeriodType, ColumnFilter) : null;
+		if (_selectedAppointment != null) {
+			_selectedAppointment = ViewModel.FindAppointmentByDataObject(_selectedAppointment.AppointmentDataObject);
+			if (_selectedAppointment != null)
+				SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
+		}
+	}
+
+	internal void FireAppointmentResizingStarted(int col, int row, ResizedAppointmentBorder borderType) {
+		try {
+			var cell = GetCell(col, row);
+			_resizingStart = Tuple.Create(col, row);
+			_resizingEnd = Tuple.Create(col, row);
+			_resizing = true;
+			//_resizingAppointment = ViewModel.GetAppointmentBlockAt(col, row);
+			_resizingBorder = borderType;
+
+			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
+			Debug.Assert(appointment != null);
+			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
+			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
+			OnAppointmentResizingStart(column.ColumnDataObject, appointment.AppointmentDataObject);
+			if (AppointmentResizingStarted != null)
+				AppointmentResizingStarted(
+					new AppointmentEvent {
+						Source = this,
+						SourceColumn = column.ColumnDataObject,
+						Appointment = appointment.AppointmentDataObject
+					}
+				);
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	internal void FireAppointmentResizing(int col, int row) {
+		try {
+
+			#region Select grid cells
+
+			_resizingEnd = Tuple.Create(col, row);
+			_grid.Selection.ResetSelection(false);
+			int startGridCol = _resizingStart.Item1, startGridRow = _resizingStart.Item2, endGridCol = _resizingEnd.Item1, endGridRow = _resizingEnd.Item2;
+			TransformModelToGrid(ref startGridCol, ref startGridRow);
+			TransformModelToGrid(ref endGridCol, ref endGridRow);
+			_grid.Selection.SelectRange(new SourceGrid.CellRange(startGridRow, startGridCol, endGridRow, endGridCol), true);
+
+			#endregion
+
+			_resizingEnd = Tuple.Create(col, row);
+			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
+			Debug.Assert(appointment != null);
+			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
+			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
+
+			int minRow, maxRow;
+			switch (_resizingBorder) {
+				case ResizedAppointmentBorder.Top:
+					minRow = _resizingEnd.Item2;
+					maxRow = appointment.EndRow;
+					break;
+				case ResizedAppointmentBorder.Bottom:
+					minRow = appointment.StartRow;
+					maxRow = _resizingEnd.Item2;
+					break;
+				default:
+					return;
+			}
+
+			var newStartTime = ViewModel.RowToStartTime(minRow);
+			var newEndTime = ViewModel.RowToEndTime(maxRow);
+			OnAppointmentResizing(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime);
+			if (AppointmentResizing != null)
+				AppointmentResizing(
+					new AppointmentResizingEvent {
+						Source = this,
+						SourceColumn = column.ColumnDataObject,
+						Appointment = appointment.AppointmentDataObject,
+						SelectedStartTime = newStartTime,
+						SelectedEndTime = newEndTime,
+					}
+				);
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	internal async Task FireAppointmentResizingFinishedAsync() {
+		try {
+			_resizing = false;
+			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
+			Debug.Assert(appointment != null);
+			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
+			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
+			int minRow, maxRow;
+			switch (_resizingBorder) {
+				case ResizedAppointmentBorder.Top:
+					minRow = _resizingEnd.Item2;
+					maxRow = appointment.EndRow;
+					break;
+				case ResizedAppointmentBorder.Bottom:
+					minRow = appointment.StartRow;
+					maxRow = _resizingEnd.Item2;
+					break;
+				default:
+					return;
+			}
+
+			var newStartTime = ViewModel.RowToStartTime(minRow);
+			var newEndTime = ViewModel.RowToEndTime(maxRow);
+			string errorMessage;
+			var resizeAccepted = OnAppointmentRescheduled(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime, out errorMessage);
+			if (!resizeAccepted)
+				await DialogEx.ShowAsync(this, SystemIconType.Error, "Scheduling Error", errorMessage ?? "Unable to reschedule appointment", "OK");
+			else {
+				if (AppointmentResizingFinished != null) {
+					foreach (EventHandlerEx<AppointmentResizingFinishedEvent> handler in AppointmentResizingFinished.GetInvocationList()) {
+						var eventArgs = new AppointmentResizingFinishedEvent {
+							Source = this,
+							SourceColumn = column.ColumnDataObject,
+							Appointment = appointment.AppointmentDataObject,
+							SelectedStartTime = newStartTime,
+							SelectedEndTime = newEndTime,
+						};
+						handler.Invoke(eventArgs);
+						resizeAccepted = !eventArgs.Cancel;
+						if (!resizeAccepted) {
+							await DialogEx.ShowAsync(this, SystemIconType.Error, "Scheduling Error", errorMessage ?? "Unable to reschedule appointment", "OK");
+							ClearSelection();
+							break;
+						}
+					}
+				}
+			}
+
+			if (resizeAccepted)
+				RescheduleAppointment(appointment.AppointmentDataObject, column.ColumnDataObject, column.ColumnDataObject, newStartTime, newEndTime);
+		} catch (Exception error) {
+			await ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	internal bool FireAppointmentDragStartingEvent(int col, int row) {
+		try {
+			var column = ViewModel.GetColumnAt(col);
+			if (column == null)
+				return false;
+
+			var appointment = ViewModel.GetAppointmentBlockAt(col, row);
+			if (appointment == null)
+				return false;
+
+			var dragAccepted = OnAppointmentDragStarting(column.ColumnDataObject, appointment.AppointmentDataObject);
+			if (dragAccepted) {
+				if (AppointmentResizingFinished != null) {
+					foreach (EventHandlerEx<AppointmentDragStartingEvent> handler in AppointmentDragStarting.GetInvocationList()) {
+						var eventArgs = new AppointmentDragStartingEvent {
+							Source = this,
+							SourceColumn = column.ColumnDataObject,
+							Appointment = appointment.AppointmentDataObject
+						};
+						handler.Invoke(eventArgs);
+						dragAccepted = !eventArgs.Cancel;
+						if (!dragAccepted)
+							break;
+					}
+				}
+			}
+			return dragAccepted;
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+			return false;
+		}
+	}
+
+	internal void FireAppointmentDraggedEvent(AppointmentDragObject dragObject) {
+		try {
+			var sourceColumn = dragObject.SourceColumn;
+			var appointment = dragObject.Appointment;
+			if (appointment == null)
+				throw new ArgumentException("dragObject", "Appointment property is null");
+
+			OnAppointmentDrag(sourceColumn, appointment);
+			if (AppointmentDragged != null)
+				AppointmentDragged(
+					new AppointmentDraggedEvent {
+						Source = this,
+						SourceColumn = sourceColumn,
+						Appointment = appointment,
+					}
+				);
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	internal bool FireAppointmentDraggingEvent(int col, int row, AppointmentDragObject dragObject) {
+		var result = _lastDraggedOver.Item3;
+		try {
+			if (_lastDraggedOver.Item1 == col && _lastDraggedOver.Item2 == row)
+				return _lastDraggedOver.Item3;
+
+			var dragOverColumn = ViewModel.GetColumnAt(col);
+			if (dragOverColumn == null)
+				return false;
+
+			var sourceColumn = dragObject.SourceColumn;
+			var appointment = dragObject.Appointment;
+			if (appointment == null)
+				throw new ArgumentException("dragObject", "Appointment property is null");
+
+			var draggingOverStartTime = base.HasColHeaders && row == -1 ? appointment.StartTime : ViewModel.RowToStartTime(row);
+			var draggingOverEndTime = draggingOverStartTime.Add(appointment.EndTime.Subtract(appointment.StartTime));
+			var dragCompatible = OnAppointmentDragging(appointment, dragOverColumn.ColumnDataObject, draggingOverStartTime, draggingOverEndTime);
+			if (dragCompatible) {
+				if (AppointmentDragging != null) {
+					foreach (EventHandlerEx<AppointmentDraggingEvent> handler in AppointmentDragging.GetInvocationList()) {
+						var eventArgs = new AppointmentDraggingEvent {
+							Source = this,
+							SourceColumn = sourceColumn,
+							DestinationColumn = dragOverColumn.ColumnDataObject,
+							DestinationStartTime = draggingOverStartTime,
+							DestinationEndTime = draggingOverEndTime,
+							Appointment = appointment
+						};
+						handler.Invoke(eventArgs);
+						dragCompatible = eventArgs.IsDestinationCompatible;
+						if (!dragCompatible)
+							break;
+					}
+				}
+			}
+			result = dragCompatible;
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+			result = false;
+		} finally {
+			_lastDraggedOver = Tuple.Create(col, row, result);
+		}
+		return result;
+	}
+
+	internal bool FireAppointmentDropStartingEvent(AppointmentDragObject dragObject, int col, int row) {
+		try {
+			var column = ViewModel.GetColumnAt(col);
+			if (column == null)
+				return false;
+
+			var sourceColumn = dragObject.SourceColumn;
+			var appointment = dragObject.Appointment;
+			if (appointment == null)
+				return false;
+
+			DateTime startTime, endTime;
+			if (row < 0) {
+				// appointment dragged over column header, which means use original start/end time
+				startTime = appointment.StartTime;
+				endTime = appointment.EndTime;
+			} else {
+				var rowStart = ViewModel.RowToStartTime(row);
+				var offset = rowStart.Subtract(appointment.StartTime);
+				startTime = appointment.StartTime.Add(offset);
+				endTime = appointment.EndTime.Add(offset);
+			}
+
+			var dragAccepted = OnAppointmentDropStarting(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
+			if (dragAccepted) {
+				if (AppointmentResizingFinished != null) {
+					foreach (EventHandlerEx<AppointmentDropStartingEvent> handler in AppointmentDropStarting.GetInvocationList()) {
+						var eventArgs =
+							new AppointmentDropStartingEvent {
+								Source = this,
+								SourceColumn = sourceColumn,
+								TargetColumn = column.ColumnDataObject,
+								StartTime = startTime,
+								EndTime = endTime,
+								Appointment = appointment
+							};
+						handler.Invoke(eventArgs);
+						dragAccepted = !eventArgs.Cancel;
+						if (!dragAccepted)
+							break;
+					}
+				}
+			}
+			return dragAccepted;
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+			return false;
+		}
+	}
+
+	internal void FireAppointmentDropEvent(AppointmentDragObject dragObject, int col, int row) {
+		try {
+			var column = ViewModel.GetColumnAt(col);
+			if (column == null)
+				throw new ArgumentOutOfRangeException("col");
+
+			var sourceColumn = dragObject.SourceColumn;
+			var appointment = dragObject.Appointment;
+			if (appointment == null)
+				throw new ArgumentException("dragObject", "Appointment property is null");
+
+			DateTime startTime, endTime;
+			if (row < 0) {
+				// appointment dragged over column header, which means use original start/end time
+				startTime = appointment.StartTime;
+				endTime = appointment.EndTime;
+			} else {
+				var rowStart = ViewModel.RowToStartTime(row);
+				var offset = rowStart.Subtract(appointment.StartTime);
+				startTime = appointment.StartTime.Add(offset);
+				endTime = appointment.EndTime.Add(offset);
+			}
+
+			OnAppointmentDrop(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
+			if (AppointmentDrop != null)
+				AppointmentDrop(
+					new AppointmentDropEvent {
+						Source = this,
+						SourceColumn = sourceColumn,
+						TargetColumn = column.ColumnDataObject,
+						StartTime = startTime,
+						EndTime = endTime,
+						Appointment = appointment
+					}
+				);
+		} catch (Exception error) {
+			_ = ExceptionDialog.ShowAsync(this, error);
+		}
+	}
+
+	#region Binding
+
 	protected override void BindToViewModel() {
 		base.BindToViewModel();
 		if (_selectedAppointment != null)
@@ -336,13 +678,6 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		base.OnSelectingStarted(col, row);
 	}
 
-	public virtual void DeselectAppointment() {
-		var changed = _selectedAppointment != null;
-		DeselectAppointmentInternal(true, true);
-		if (changed)
-			NotifyStateChanged();
-	}
-
 	protected override void OnSelectingFinished(int startCol, int startRow, int endCol, int endRow) {
 		base.OnSelectingFinished(startCol, startRow, endCol, endRow);
 		if (startCol == endCol) {
@@ -354,21 +689,15 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		ClearSelection();
 	}
 
-	// Mouse
+	#endregion
+
+	#region Mouse
+
 	protected override void OnCellClick(int col, int row) {
 		base.OnCellClick(col, row);
 		var appointment = ViewModel.GetAppointmentBlockAt(col, row);
 		if (appointment != null)
 			SelectAppointment(appointment.AppointmentDataObject);
-	}
-
-	public virtual void SelectAppointment(Appointment appointment) {
-		var previous = SelectedAppointment;
-		if (!ReferenceEquals(previous, appointment)) {
-			SelectAppointmentInternal(appointment, true);
-			if (!ReferenceEquals(previous, SelectedAppointment))
-				NotifyStateChanged();
-		}
 	}
 
 	protected override void OnCellDoubleClick(int col, int row) {
@@ -377,13 +706,16 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 			FireAppointmentDoubleClick(appointment.Column.ColumnDataObject, appointment.AppointmentDataObject);
 	}
 
+	#endregion
+
 	// Creating Appointments
 	protected virtual void DeleteAppointment(AppointmentColumn column, Appointment appointment) {
 		DataSource.DeleteAppointment(column, appointment);
 		RefreshFromDataSource();
 	}
 
-	// Event Triggers
+	#region Event Triggers
+
 	protected void FireAppointmentDoubleClick(AppointmentColumn column, Appointment appointment) {
 		OnAppointmentDoubleClicked(column, appointment);
 		if (AppointmentDoubleClicked != null)
@@ -554,147 +886,14 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		}
 	}
 
-	internal void FireAppointmentResizingStarted(int col, int row, ResizedAppointmentBorder borderType) {
-		try {
-			var cell = GetCell(col, row);
-			_resizingStart = Tuple.Create(col, row);
-			_resizingEnd = Tuple.Create(col, row);
-			_resizing = true;
-			//_resizingAppointment = ViewModel.GetAppointmentBlockAt(col, row);
-			_resizingBorder = borderType;
+	#endregion
 
-			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
-			Debug.Assert(appointment != null);
-			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
-			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
-			OnAppointmentResizingStart(column.ColumnDataObject, appointment.AppointmentDataObject);
-			if (AppointmentResizingStarted != null)
-				AppointmentResizingStarted(
-					new AppointmentEvent {
-						Source = this,
-						SourceColumn = column.ColumnDataObject,
-						Appointment = appointment.AppointmentDataObject
-					}
-				);
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-		}
-	}
+	#region Appointments Resizing
 
-	// Appointments Resizing
 	protected virtual void OnAppointmentResizingStart(AppointmentColumn column, Appointment appointment) {
 	}
 
-	internal void FireAppointmentResizing(int col, int row) {
-		try {
-
-			// Select grid cells
-			_resizingEnd = Tuple.Create(col, row);
-			_grid.Selection.ResetSelection(false);
-			int startGridCol = _resizingStart.Item1, startGridRow = _resizingStart.Item2, endGridCol = _resizingEnd.Item1, endGridRow = _resizingEnd.Item2;
-			TransformModelToGrid(ref startGridCol, ref startGridRow);
-			TransformModelToGrid(ref endGridCol, ref endGridRow);
-			_grid.Selection.SelectRange(new SourceGrid.CellRange(startGridRow, startGridCol, endGridRow, endGridCol), true);
-
-			_resizingEnd = Tuple.Create(col, row);
-			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
-			Debug.Assert(appointment != null);
-			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
-			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
-
-			int minRow, maxRow;
-			switch (_resizingBorder) {
-				case ResizedAppointmentBorder.Top:
-					minRow = _resizingEnd.Item2;
-					maxRow = appointment.EndRow;
-					break;
-				case ResizedAppointmentBorder.Bottom:
-					minRow = appointment.StartRow;
-					maxRow = _resizingEnd.Item2;
-					break;
-				default:
-					return;
-			}
-
-			var newStartTime = ViewModel.RowToStartTime(minRow);
-			var newEndTime = ViewModel.RowToEndTime(maxRow);
-			OnAppointmentResizing(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime);
-			if (AppointmentResizing != null)
-				AppointmentResizing(
-					new AppointmentResizingEvent {
-						Source = this,
-						SourceColumn = column.ColumnDataObject,
-						Appointment = appointment.AppointmentDataObject,
-						SelectedStartTime = newStartTime,
-						SelectedEndTime = newEndTime,
-					}
-				);
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
 	protected virtual void OnAppointmentResizing(AppointmentColumn column, Appointment appointment, DateTime newTime, DateTime endTime) {
-	}
-
-	internal async Task FireAppointmentResizingFinishedAsync() {
-		try {
-			_resizing = false;
-			var appointment = ViewModel.GetAppointmentBlockAt(_resizingStart.Item1, _resizingStart.Item2);
-			Debug.Assert(appointment != null);
-			Debug.Assert(_resizingStart.Item1 == _resizingEnd.Item1);
-			var column = ViewModel.GetColumnAt(_resizingStart.Item1);
-			int minRow, maxRow;
-			switch (_resizingBorder) {
-				case ResizedAppointmentBorder.Top:
-					minRow = _resizingEnd.Item2;
-					maxRow = appointment.EndRow;
-					break;
-				case ResizedAppointmentBorder.Bottom:
-					minRow = appointment.StartRow;
-					maxRow = _resizingEnd.Item2;
-					break;
-				default:
-					return;
-			}
-
-			var newStartTime = ViewModel.RowToStartTime(minRow);
-			var newEndTime = ViewModel.RowToEndTime(maxRow);
-			string errorMessage;
-			var resizeAccepted = OnAppointmentRescheduled(column.ColumnDataObject, appointment.AppointmentDataObject, newStartTime, newEndTime, out errorMessage);
-			if (!resizeAccepted)
-				await DialogEx.ShowAsync(this, SystemIconType.Error, "Scheduling Error", errorMessage ?? "Unable to reschedule appointment", "OK");
-			else {
-				if (AppointmentResizingFinished != null) {
-					foreach (EventHandlerEx<AppointmentResizingFinishedEvent> handler in AppointmentResizingFinished.GetInvocationList()) {
-						var eventArgs = new AppointmentResizingFinishedEvent {
-							Source = this,
-							SourceColumn = column.ColumnDataObject,
-							Appointment = appointment.AppointmentDataObject,
-							SelectedStartTime = newStartTime,
-							SelectedEndTime = newEndTime,
-						};
-						handler.Invoke(eventArgs);
-						resizeAccepted = !eventArgs.Cancel;
-						if (!resizeAccepted) {
-							await DialogEx.ShowAsync(this, SystemIconType.Error, "Scheduling Error", errorMessage ?? "Unable to reschedule appointment", "OK");
-							ClearSelection();
-							break;
-						}
-					}
-				}
-			}
-
-			if (resizeAccepted)
-				RescheduleAppointment(appointment.AppointmentDataObject, column.ColumnDataObject, column.ColumnDataObject, newStartTime, newEndTime);
-		} catch (Exception error) {
-			await ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	// Appointment Selection
-	public override void ClearSelection() {
-		base.ClearSelection();
 	}
 
 	protected virtual bool OnAppointmentRescheduled(AppointmentColumn column, Appointment appointment, DateTime newTime, DateTime endTime, out string errorMessage) {
@@ -702,167 +901,17 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		return true;
 	}
 
-	internal bool FireAppointmentDragStartingEvent(int col, int row) {
-		try {
-			var column = ViewModel.GetColumnAt(col);
-			if (column == null)
-				return false;
+	#endregion
 
-			var appointment = ViewModel.GetAppointmentBlockAt(col, row);
-			if (appointment == null)
-				return false;
-
-			var dragAccepted = OnAppointmentDragStarting(column.ColumnDataObject, appointment.AppointmentDataObject);
-			if (dragAccepted) {
-				if (AppointmentResizingFinished != null) {
-					foreach (EventHandlerEx<AppointmentDragStartingEvent> handler in AppointmentDragStarting.GetInvocationList()) {
-						var eventArgs = new AppointmentDragStartingEvent {
-							Source = this,
-							SourceColumn = column.ColumnDataObject,
-							Appointment = appointment.AppointmentDataObject
-						};
-						handler.Invoke(eventArgs);
-						dragAccepted = !eventArgs.Cancel;
-						if (!dragAccepted)
-							break;
-					}
-				}
-			}
-			return dragAccepted;
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-			return false;
-		}
-	}
-
-	protected virtual bool OnAppointmentDragStarting(AppointmentColumn column, Appointment appointment) {
-		return true;
-	}
-
-	internal void FireAppointmentDraggedEvent(AppointmentDragObject dragObject) {
-		try {
-			var sourceColumn = dragObject.SourceColumn;
-			var appointment = dragObject.Appointment;
-			if (appointment == null)
-				throw new ArgumentException("dragObject", "Appointment property is null");
-
-			OnAppointmentDrag(sourceColumn, appointment);
-			if (AppointmentDragged != null)
-				AppointmentDragged(
-					new AppointmentDraggedEvent {
-						Source = this,
-						SourceColumn = sourceColumn,
-						Appointment = appointment,
-					}
-				);
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-		}
-	}
+	protected virtual bool OnAppointmentDragStarting(AppointmentColumn column, Appointment appointment) => true;
 
 	protected virtual void OnAppointmentDrag(AppointmentColumn column, Appointment appointment) {
 	}
 
-	internal bool FireAppointmentDraggingEvent(int col, int row, AppointmentDragObject dragObject) {
-		var result = _lastDraggedOver.Item3;
-		try {
-			if (_lastDraggedOver.Item1 == col && _lastDraggedOver.Item2 == row)
-				return _lastDraggedOver.Item3;
+	#region Appointment Drag-n-Drop
 
-			var dragOverColumn = ViewModel.GetColumnAt(col);
-			if (dragOverColumn == null)
-				return false;
-
-			var sourceColumn = dragObject.SourceColumn;
-			var appointment = dragObject.Appointment;
-			if (appointment == null)
-				throw new ArgumentException("dragObject", "Appointment property is null");
-
-			var draggingOverStartTime = base.HasColHeaders && row == -1 ? appointment.StartTime : ViewModel.RowToStartTime(row);
-			var draggingOverEndTime = draggingOverStartTime.Add(appointment.EndTime.Subtract(appointment.StartTime));
-			var dragCompatible = OnAppointmentDragging(appointment, dragOverColumn.ColumnDataObject, draggingOverStartTime, draggingOverEndTime);
-			if (dragCompatible) {
-				if (AppointmentDragging != null) {
-					foreach (EventHandlerEx<AppointmentDraggingEvent> handler in AppointmentDragging.GetInvocationList()) {
-						var eventArgs = new AppointmentDraggingEvent {
-							Source = this,
-							SourceColumn = sourceColumn,
-							DestinationColumn = dragOverColumn.ColumnDataObject,
-							DestinationStartTime = draggingOverStartTime,
-							DestinationEndTime = draggingOverEndTime,
-							Appointment = appointment
-						};
-						handler.Invoke(eventArgs);
-						dragCompatible = eventArgs.IsDestinationCompatible;
-						if (!dragCompatible)
-							break;
-					}
-				}
-			}
-			result = dragCompatible;
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-			result = false;
-		} finally {
-			_lastDraggedOver = Tuple.Create(col, row, result);
-		}
-		return result;
-	}
-
-	// Appointment Drag-n-Drop
-	protected virtual bool OnAppointmentDragging(Appointment appointment, AppointmentColumn overColumn, DateTime startTime, DateTime endTime) {
-		return IsTimeAvailable(overColumn, appointment, startTime, endTime);
-	}
-
-	internal bool FireAppointmentDropStartingEvent(AppointmentDragObject dragObject, int col, int row) {
-		try {
-			var column = ViewModel.GetColumnAt(col);
-			if (column == null)
-				return false;
-
-			var sourceColumn = dragObject.SourceColumn;
-			var appointment = dragObject.Appointment;
-			if (appointment == null)
-				return false;
-
-			DateTime startTime, endTime;
-			if (row < 0) {
-				// appointment dragged over column header, which means use original start/end time
-				startTime = appointment.StartTime;
-				endTime = appointment.EndTime;
-			} else {
-				var rowStart = ViewModel.RowToStartTime(row);
-				var offset = rowStart.Subtract(appointment.StartTime);
-				startTime = appointment.StartTime.Add(offset);
-				endTime = appointment.EndTime.Add(offset);
-			}
-
-			var dragAccepted = OnAppointmentDropStarting(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
-			if (dragAccepted) {
-				if (AppointmentResizingFinished != null) {
-					foreach (EventHandlerEx<AppointmentDropStartingEvent> handler in AppointmentDropStarting.GetInvocationList()) {
-						var eventArgs =
-							new AppointmentDropStartingEvent {
-								Source = this,
-								SourceColumn = sourceColumn,
-								TargetColumn = column.ColumnDataObject,
-								StartTime = startTime,
-								EndTime = endTime,
-								Appointment = appointment
-							};
-						handler.Invoke(eventArgs);
-						dragAccepted = !eventArgs.Cancel;
-						if (!dragAccepted)
-							break;
-					}
-				}
-			}
-			return dragAccepted;
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-			return false;
-		}
-	}
+	protected virtual bool OnAppointmentDragging(Appointment appointment, AppointmentColumn overColumn, DateTime startTime, DateTime endTime)
+		=> IsTimeAvailable(overColumn, appointment, startTime, endTime);
 
 	protected virtual bool OnAppointmentDropStarting(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime) {
 		// Check 1 - start is less than or equal to finish
@@ -874,68 +923,16 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 		return check1 && true && check3;
 	}
 
-	protected virtual bool IsTimeAvailable(AppointmentColumn column, Appointment appointment, DateTime startTime, DateTime endTime) {
-		return DataSource.IsTimeAvailable(column, appointment, startTime, endTime);
-	}
+	protected virtual bool IsTimeAvailable(AppointmentColumn column, Appointment appointment, DateTime startTime, DateTime endTime)
+		=> DataSource.IsTimeAvailable(column, appointment, startTime, endTime);
 
-	internal void FireAppointmentDropEvent(AppointmentDragObject dragObject, int col, int row) {
-		try {
-			var column = ViewModel.GetColumnAt(col);
-			if (column == null)
-				throw new ArgumentOutOfRangeException("col");
-
-			var sourceColumn = dragObject.SourceColumn;
-			var appointment = dragObject.Appointment;
-			if (appointment == null)
-				throw new ArgumentException("dragObject", "Appointment property is null");
-
-			DateTime startTime, endTime;
-			if (row < 0) {
-				// appointment dragged over column header, which means use original start/end time
-				startTime = appointment.StartTime;
-				endTime = appointment.EndTime;
-			} else {
-				var rowStart = ViewModel.RowToStartTime(row);
-				var offset = rowStart.Subtract(appointment.StartTime);
-				startTime = appointment.StartTime.Add(offset);
-				endTime = appointment.EndTime.Add(offset);
-			}
-
-			OnAppointmentDrop(sourceColumn, column.ColumnDataObject, appointment, startTime, endTime);
-			if (AppointmentDrop != null)
-				AppointmentDrop(
-					new AppointmentDropEvent {
-						Source = this,
-						SourceColumn = sourceColumn,
-						TargetColumn = column.ColumnDataObject,
-						StartTime = startTime,
-						EndTime = endTime,
-						Appointment = appointment
-					}
-				);
-		} catch (Exception error) {
-			_ = ExceptionDialog.ShowAsync(this, error);
-		}
-	}
-
-	protected virtual void OnAppointmentDrop(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime) {
-		RescheduleAppointment(appointment, originalColumn, targetColumn, startTime, endTime);
-	}
+	protected virtual void OnAppointmentDrop(AppointmentColumn originalColumn, AppointmentColumn targetColumn, Appointment appointment, DateTime startTime, DateTime endTime)
+		=> RescheduleAppointment(appointment, originalColumn, targetColumn, startTime, endTime);
 
 	protected virtual void RescheduleAppointment(Appointment appointment, AppointmentColumn sourceColumn, AppointmentColumn destColumn, DateTime newStartTime, DateTime newEndTime) {
 		DataSource.Reschedule(appointment, sourceColumn, destColumn, newStartTime, newEndTime);
 		RefreshFromDataSource();
 		NotifyStateChanged();
-	}
-
-	public virtual void RefreshFromDataSource() {
-		using var update = EnterUpdateScope(FinishedUpdateBehaviour.DoNothing);
-		ViewModel = _dataSource != null ? ViewModelGenerator.Convert(_dataSource, TimePeriodStart, TimePeriodType, ColumnFilter) : null;
-		if (_selectedAppointment != null) {
-			_selectedAppointment = ViewModel.FindAppointmentByDataObject(_selectedAppointment.AppointmentDataObject);
-			if (_selectedAppointment != null)
-				SelectAppointmentInternal(_selectedAppointment.AppointmentDataObject, false);
-		}
 	}
 
 	protected void SelectAppointmentInternal(Appointment appointment, bool fireEvent) {
@@ -1002,4 +999,6 @@ new Position(startRow, startCol), new Position(endRow, endCol)));
 
 	protected void OnAppointmentDeselected(AppointmentColumn column, Appointment appointment) {
 	}
+
+	#endregion
 }

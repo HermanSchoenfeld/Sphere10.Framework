@@ -16,8 +16,10 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Controllers;
 /// A behavior that support sort and resize. Once created cannot be modified. When calculated automatically the range to sort is all the grid range without the rows minor of the current row and the range header is all the grid range with the rows minor or equal of the current row
 /// </summary>
 public class SortableHeader : ControllerBase {
-	// Sort Methods
-	// Status Properties
+	#region Sort Methods
+
+	#region Status Properties
+
 	/// <summary>
 	/// Range to sort
 	/// </summary>
@@ -38,13 +40,12 @@ public class SortableHeader : ControllerBase {
 	/// </summary>
 	public Sphere10.Framework.Drawing.RectangleBorder LogicalBorder = new Sphere10.Framework.Drawing.RectangleBorder(new Sphere10.Framework.Drawing.BorderLine(System.Drawing.Color.Black, 4), new Sphere10.Framework.Drawing.BorderLine(System.Drawing.Color.Black, 4));
 
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Static constructor
 	/// </summary>
-	static SortableHeader() {
-		Default = new SortableHeader();
-	}
+	static SortableHeader() => Default = new SortableHeader();
 
 	public SortableHeader()
 		: this(null, null) {
@@ -60,25 +61,22 @@ public class SortableHeader : ControllerBase {
 		_rangeToSort = rangeToSort;
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Range to sort. If null and EnableSort is true the range is automatically calculated.
 	/// </summary>
-	public IRangeLoader RangeToSort {
-		get {
-			return _rangeToSort;
-		}
-	}
+	public IRangeLoader RangeToSort => _rangeToSort;
 
 	/// <summary>
 	/// Header range. If null and EnableSort is true the range is automatically calculated.
 	/// </summary>
-	public IRangeLoader RangeHeader {
-		get {
-			return _headerRange;
-		}
-	}
+	public IRangeLoader RangeHeader => _headerRange;
 
-	// IBehaviorModel Members
+	#endregion
+
+	#region IBehaviorModel Members
+
 	public override void OnMouseUp(CellContext sender, MouseEventArgs e) {
 		base.OnMouseUp(sender, e);
 
@@ -101,6 +99,8 @@ public class SortableHeader : ControllerBase {
 				SortColumn(sender, true, status.Comparer);
 		}
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Sort the current column. If the range contains all the columns this method move directly the row object otherwise move each cell.
@@ -158,7 +158,10 @@ public class SortableHeader : ControllerBase {
 		}
 	}
 
-	// Support Function
+	#endregion
+
+	#region Support Function
+
 	/// <summary>
 	/// Indicates if for the specified cell the sort is enabled.
 	/// </summary>
@@ -172,4 +175,6 @@ public class SortableHeader : ControllerBase {
 			return true;
 		return false;
 	}
+
+	#endregion
 }

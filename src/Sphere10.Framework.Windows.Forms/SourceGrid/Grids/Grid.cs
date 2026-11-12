@@ -52,29 +52,25 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 		this.ResumeLayout(false);
 	}
 
-	// properties
+	#region properties
+
 	/// <summary>
 	/// Allows to check what spanned cells we have.
 	/// Do not use this property directly from client code
 	/// </summary>
-	public ISpannedCellRangesController SpannedCellReferences {
-		get {
-			return _spannedCellReferences;
-		}
-	}
+	public ISpannedCellRangesController SpannedCellReferences => _spannedCellReferences;
 
-	// Rows/Columns
+	#endregion
+
+	#region Rows/Columns
+
 	/// <summary>
 	/// Gets or Sets the number of columns
 	/// </summary>
 	[DefaultValue(0)]
 	public int ColumnsCount {
-		get {
-			return Columns.Count;
-		}
-		set {
-			Columns.SetCount(value);
-		}
+		get => Columns.Count;
+		set => Columns.SetCount(value);
 	}
 
 	/// <summary>
@@ -82,32 +78,22 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[DefaultValue(0)]
 	public int RowsCount {
-		get {
-			return Rows.Count;
-		}
-		set {
-			Rows.SetCount(value);
-		}
+		get => Rows.Count;
+		set => Rows.SetCount(value);
 	}
 
 	/// <summary>
 	/// Returns the maximum number of rows that can fit without a vertical scrollbar
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public int RowsPerPage {
-		get {
-			return base.VerticalPage;
-		}
-	}
+	public int RowsPerPage => base.VerticalPage;
 
 	/// <summary>
 	/// RowsCount informations
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public new GridRows Rows {
-		get {
-			return (GridRows)base.Rows;
-		}
+		get => (GridRows)base.Rows;
 	}
 
 	/// <summary>
@@ -115,22 +101,18 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public new GridColumns Columns {
-		get {
-			return (GridColumns)base.Columns;
-		}
+		get => (GridColumns)base.Columns;
 	}
 
 	/// <summary>
 	/// Gets or sets the optimize mode. Default is ForRows
 	/// </summary>
 	public CellOptimizeMode OptimizeMode {
-		get {
-			return _optimizeMode;
-		}
-		set {
-			_optimizeMode = value;
-		}
+		get => _optimizeMode;
+		set => _optimizeMode = value;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Indicates that overlapping cells are not allowed and will be thrown an exception.
@@ -141,12 +123,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[DefaultValue(false)]
 	public bool AllowOverlappingCells {
-		get {
-			return _allowOverlappingCells;
-		}
-		set {
-			_allowOverlappingCells = value;
-		}
+		get => _allowOverlappingCells;
+		set => _allowOverlappingCells = value;
 	}
 
 	/// <summary>
@@ -157,12 +135,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[Obsolete("This property is not needed anymore. It has completely no effect")]
 	public static int MaxSpan {
-		get {
-			return _maxSpan;
-		}
-		set {
-			_maxSpan = value;
-		}
+		get => _maxSpan;
+		set => _maxSpan = value;
 	}
 
 	/// <summary>
@@ -170,12 +144,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	[DefaultValue(false)]
 	public bool CustomSort {
-		get {
-			return _customSort;
-		}
-		set {
-			_customSort = value;
-		}
+		get => _customSort;
+		set => _customSort = value;
 	}
 
 	public override bool EnableSort {
@@ -189,9 +159,7 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 				return cell;
 			return GetSpannedCell(position);
 		}
-		set {
-			InsertCell(position.Row, position.Column, value);
-		}
+		set => InsertCell(position.Row, position.Column, value);
 	}
 
 	/// <summary>
@@ -200,12 +168,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// and EnableRowColSpan is true, this method returns the cell with Row/Col span.
 	/// </summary>
 	public Cells.ICell this[int row, int column] {
-		get {
-			return this[new Position(row, column)];
-		}
-		set {
-			this[new Position(row, column)] = value;
-		}
+		get => this[new Position(row, column)];
+		set => this[new Position(row, column)] = value;
 	}
 
 	// GetCell methods
@@ -229,9 +193,7 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// </summary>
 	/// <param name="position"></param>
 	/// <param name="cell"></param>
-	public void SetCell(Position position, Cells.ICellVirtual cell) {
-		SetCell(position.Row, position.Column, cell);
-	}
+	public void SetCell(Position position, Cells.ICellVirtual cell) => SetCell(position.Row, position.Column, cell);
 
 	/// <summary>
 	/// Return the Cell at the specified Row and Col position.
@@ -239,9 +201,7 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// <param name="row"></param>
 	/// <param name="column"></param>
 	/// <returns></returns>
-	public override Cells.ICellVirtual GetCell(int row, int column) {
-		return this[row, column];
-	}
+	public override Cells.ICellVirtual GetCell(int row, int column) => this[row, column];
 
 	public void UpdateSpannedArea(int row, int column, ICell cell) {
 		if (cell == null)
@@ -283,7 +243,8 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 		return new CellRange(y, x, y1, x1);
 	}
 
-	// InvalidateCell
+	#region InvalidateCell
+
 	/// <summary>
 	/// Force a redraw of the specified cell
 	/// </summary>
@@ -305,19 +266,17 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 			InvalidateRange(cell.Range);
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Method used to create the rows object, in this class of type RowInfoCollection.
 	/// </summary>
-	protected override RowsBase CreateRowsObject() {
-		return new GridRows(this);
-	}
+	protected override RowsBase CreateRowsObject() => new GridRows(this);
 
 	/// <summary>
 	/// Method used to create the columns object, in this class of type ColumnInfoCollection.
 	/// </summary>
-	protected override ColumnsBase CreateColumnsObject() {
-		return new GridColumns(this);
-	}
+	protected override ColumnsBase CreateColumnsObject() => new GridColumns(this);
 
 	protected override void OnRangePaint(RangePaintEventArgs e) {
 		_drawnRange.Clear();
@@ -465,9 +424,7 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 	/// Overriden to return a custom accessibility object instance.
 	/// </summary>
 	/// <returns>AccessibleObject for the grid control.</returns>
-	protected override AccessibleObject CreateAccessibilityInstance() {
-		return new GridAccessibleObject(this);
-	}
+	protected override AccessibleObject CreateAccessibilityInstance() => new GridAccessibleObject(this);
 
 	/// <summary>
 	/// Check if a cell exists in spanned cells.
@@ -595,10 +552,14 @@ this, new QuadTreeRangesList(CellRange.From(new Position(0, 0), 4, 4)));
 		}*/
 	}
 
-	// Spanned Cells support
+	#region Spanned Cells support
+
 	private void EnsureNoSpannedCellsExist(int row, int column, Cells.ICell cell) {
 		var spanRange = new CellRange(row, column, row + cell.RowSpan - 1, column + cell.ColumnSpan - 1);
 		var ranges = _spannedCellReferences.SpannedRangesCollection.GetRanges(
+
+	#endregion
+
 spanRange);
 		if (ranges.Count == 0)
 			return;
@@ -646,9 +607,7 @@ spanRange);
 		}
 	}
 
-	private Cells.ICell DirectGetCell(int row, int column) {
-		return DirectGetCell(new Position(row, column));
-	}
+	private Cells.ICell DirectGetCell(int row, int column) => DirectGetCell(new Position(row, column));
 
 	private Cells.ICell DirectGetCell(Position position) {
 		if (IsInGrid(position) == false)
@@ -703,14 +662,13 @@ spanRange);
 		}
 	}
 
-	// AddRow/Col, RemoveRow/Col
+	#region AddRow/Col, RemoveRow/Col
+
 	/// <summary>
 	/// Call this method to update internal grid structures.
 	/// This is used to update QuadTree space at the moment.
 	/// </summary>
-	internal void GrowGrid() {
-		_spannedCellReferences.SpannedRangesCollection.Redim(RowsCount, ColumnsCount);
-	}
+	internal void GrowGrid() => _spannedCellReferences.SpannedRangesCollection.Redim(RowsCount, ColumnsCount);
 
 	/// <summary>
 	/// Set the number of columns and rows
@@ -722,6 +680,8 @@ spanRange);
 		base.ResumeLayout();
 		GrowGrid();
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Provides information about the grid control in the acessibility tree.
@@ -741,37 +701,25 @@ spanRange);
 		/// <summary>
 		/// Returns the role of the grid control
 		/// </summary>
-		public override AccessibleRole Role {
-			get {
-				return AccessibleRole.Table;
-			}
-		}
+		public override AccessibleRole Role => AccessibleRole.Table;
 
 		/// <summary>
 		/// Retrieves the accessible name of the grid control
 		/// </summary>
-		public override string Name {
-			get {
-				return _grid.Name;
-			}
-		}
+		public override string Name => _grid.Name;
 
 		/// <summary>
 		/// Retrieves the accessibility object of a row in the grid.
 		/// </summary>
 		/// <param name="index">Index of child</param>
 		/// <returns>AccessibleObject of a child element</returns>
-		public override AccessibleObject GetChild(int index) {
-			return new GridRowAccessibleObject(_grid.Rows[index], this);
-		}
+		public override AccessibleObject GetChild(int index) => new GridRowAccessibleObject(_grid.Rows[index], this);
 
 		/// <summary>
 		/// Returns the number of children
 		/// </summary>
 		/// <returns>The number of rows in the grid.</returns>
-		public override int GetChildCount() {
-			return _grid.RowsCount;
-		}
+		public override int GetChildCount() => _grid.RowsCount;
 	}
 
 	/// <summary>
@@ -845,29 +793,17 @@ spanRange);
 		/// <summary>
 		/// Returns the name of the grid row.
 		/// </summary>
-		public override string Name {
-			get {
-				return "Row " + _gridRow.Index;
-			}
-		}
+		public override string Name => "Row " + _gridRow.Index;
 
 		/// <summary>
 		/// Returns the role of the grid row.
 		/// </summary>
-		public override AccessibleRole Role {
-			get {
-				return AccessibleRole.Row;
-			}
-		}
+		public override AccessibleRole Role => AccessibleRole.Row;
 
 		/// <summary>
 		/// Returns the parent grid of the grid row.
 		/// </summary>
-		public override AccessibleObject Parent {
-			get {
-				return _parent;
-			}
-		}
+		public override AccessibleObject Parent => _parent;
 
 		/// <summary>
 		/// Returns a child cell of the row.
@@ -892,9 +828,7 @@ spanRange);
 		/// Returns the number of children.
 		/// </summary>
 		/// <returns>Number of cells in a row</returns>
-		public override int GetChildCount() {
-			return _gridRow.Grid.GetCellsAtRow(_gridRow.Index).Length;
-		}
+		public override int GetChildCount() => _gridRow.Grid.GetCellsAtRow(_gridRow.Index).Length;
 	}
 
 	/// <summary>
@@ -956,11 +890,7 @@ spanRange);
 		/// <summary>
 		/// Returns the role of the grid cell.
 		/// </summary>
-		public override AccessibleRole Role {
-			get {
-				return AccessibleRole.Cell;
-			}
-		}
+		public override AccessibleRole Role => AccessibleRole.Cell;
 
 		/// <summary>
 		/// Returns the name of the cell.
@@ -980,21 +910,13 @@ spanRange);
 		/// Set or get the value of the cell.
 		/// </summary>
 		public override string Value {
-			get {
-				return _cell.DisplayText;
-			}
-			set {
-				_cell.Value = value;
-			}
+			get => _cell.DisplayText;
+			set => _cell.Value = value;
 		}
 
 		/// <summary>
 		/// Returns the parent row of the cell.
 		/// </summary>
-		public override AccessibleObject Parent {
-			get {
-				return _parent;
-			}
-		}
+		public override AccessibleObject Parent => _parent;
 	}
 }

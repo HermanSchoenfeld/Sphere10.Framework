@@ -688,9 +688,7 @@ public class ApplicationSettingsNativeTests {
 	/// <summary>Supplies the product identity selected by application composition.</summary>
 	private sealed class CaptionProductInformationProvider : IProductInformationProvider {
 		/// <summary>Retains the configured product name for the Options heading.</summary>
-		public CaptionProductInformationProvider(string productName) {
-			ProductInformation = new ProductInformation { ProductName = productName };
-		}
+		public CaptionProductInformationProvider(string productName) => ProductInformation = new ProductInformation { ProductName = productName };
 
 		/// <inheritdoc />
 		public ProductInformation ProductInformation { get; }
@@ -717,27 +715,7 @@ public class ApplicationSettingsNativeTests {
 
 		public VisualGrid Grid { get; private set; }
 
-		public override Preferences ScreenSettings {
-			get {
-				return (Preferences)base.ScreenSettings;
-			}
-		}
-
-		// Capture the value available before the first real data query.
-		protected override void InitializeUIPrimingData() {
-			FirstName = ScreenSettings?.Name;
-			base.InitializeUIPrimingData();
-		}
-
-		// Observe actual owner values through the existing refresh lifecycle.
-		protected override void CopyModelToUI() {
-			base.CopyModelToUI();
-			ModelCopies++;
-			DisplayedName = ScreenSettings?.Name;
-			LastCopyThread = Environment.CurrentManagedThreadId;
-			if (Block?.BlockSettings is Preferences)
-				BlockName = GetBlockSettings<Preferences>().Name;
-		}
+		public override Preferences ScreenSettings => (Preferences)base.ScreenSettings;
 
 		// Release the native destruction call before awaiting a worker, then restore the handle on the UI thread.
 		public async Task RecreateNativeHandleAsync(Func<Task> whileHandleAbsent) {
@@ -767,6 +745,22 @@ public class ApplicationSettingsNativeTests {
 			MarkSettingsChanged();
 		}
 
+		// Capture the value available before the first real data query.
+		protected override void InitializeUIPrimingData() {
+			FirstName = ScreenSettings?.Name;
+			base.InitializeUIPrimingData();
+		}
+
+		// Observe actual owner values through the existing refresh lifecycle.
+		protected override void CopyModelToUI() {
+			base.CopyModelToUI();
+			ModelCopies++;
+			DisplayedName = ScreenSettings?.Name;
+			LastCopyThread = Environment.CurrentManagedThreadId;
+			if (Block?.BlockSettings is Preferences)
+				BlockName = GetBlockSettings<Preferences>().Name;
+		}
+
 		#region Inner Types
 
 		/// <summary>Actual screen-owned values used by the native lifecycle and Options tests.</summary>
@@ -789,9 +783,7 @@ public class ApplicationSettingsNativeTests {
 			}
 
 			// Reject empty names through the settings object's existing validation contract.
-			public override Result Validate() {
-				return string.IsNullOrWhiteSpace(Name) ? Result.Error("A name is required.") : Result.Success;
-			}
+			public override Result Validate() => string.IsNullOrWhiteSpace(Name) ? Result.Error("A name is required.") : Result.Success;
 		}
 
 		/// <summary>Nested mutable values used to check repeated local backup restoration.</summary>
@@ -810,9 +802,7 @@ public class ApplicationSettingsNativeTests {
 	[Settings(typeof(UnopenedSettingsScreen.Preferences))]
 	public class UnopenedSettingsScreen : ApplicationScreen {
 		/// <summary>Options discovery must only read the class declaration.</summary>
-		public UnopenedSettingsScreen() {
-			throw new InvalidOperationException("Options must not activate an unopened screen.");
-		}
+		public UnopenedSettingsScreen() => throw new InvalidOperationException("Options must not activate an unopened screen.");
 
 		#region Inner Types
 
@@ -839,9 +829,7 @@ public class ApplicationSettingsNativeTests {
 
 	// Observe the actual object and services supplied to a settings-class editor.
 	public sealed class DeclaredEditor : DefaultCrudEntityEditor {
-		public DeclaredEditor(ApplicationSettingsEditorContext context) {
-			Context = context;
-		}
+		public DeclaredEditor(ApplicationSettingsEditorContext context) => Context = context;
 
 		public ApplicationSettingsEditorContext Context { get; }
 	}
@@ -854,34 +842,13 @@ public class ApplicationSettingsNativeTests {
 
 		public TaskCompletionSource ReleaseFirstWrite { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-		public string[] SavedNames {
-			get {
-				return _savedNames.ToArray();
-			}
-		}
+		public string[] SavedNames => _savedNames.ToArray();
 
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(false);
-		}
-
-		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
-			throw new NotSupportedException("This fixture starts with no stored settings.");
-		}
-
-		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
-			var name = ((ProbeScreen.Preferences)settings).Name;
-			if (_savedNames.Count == 0) {
-				FirstWriteStarted.TrySetResult();
-				await ReleaseFirstWrite.Task.WaitAsync(cancellationToken);
-			}
-			_savedNames.Add(name);
 		}
 
 		public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
@@ -893,6 +860,18 @@ public class ApplicationSettingsNativeTests {
 			cancellationToken.ThrowIfCancellationRequested();
 			_savedNames.Clear();
 			return Task.CompletedTask;
+		}
+
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken)
+			=> throw new NotSupportedException("This fixture starts with no stored settings.");
+
+		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
+			var name = ((ProbeScreen.Preferences)settings).Name;
+			if (_savedNames.Count == 0) {
+				FirstWriteStarted.TrySetResult();
+				await ReleaseFirstWrite.Task.WaitAsync(cancellationToken);
+			}
+			_savedNames.Add(name);
 		}
 	}
 
@@ -906,20 +885,25 @@ public class ApplicationSettingsNativeTests {
 	private sealed class RejectedLoadStore(string failure, CancellationTokenSource cancellation) : AsyncSettingsProviderBase {
 		public int Writes { get; private set; }
 
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
 			cancellationToken.ThrowIfCancellationRequested();
 			return Task.FromResult(true);
 		}
 
-		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
-			throw new NotSupportedException("This fixture deliberately populates the actual owner.");
+		public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.CompletedTask;
 		}
+
+		public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.CompletedTask;
+		}
+
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken)
+			=> throw new NotSupportedException("This fixture deliberately populates the actual owner.");
 
 		protected override Task<SettingsObject> LoadInternalAsync(SettingsObject defaults, CancellationToken cancellationToken) {
 			var payload = failure switch {
@@ -941,16 +925,6 @@ public class ApplicationSettingsNativeTests {
 			Writes++;
 			return Task.CompletedTask;
 		}
-
-		public override Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
-			cancellationToken.ThrowIfCancellationRequested();
-			return Task.CompletedTask;
-		}
-
-		public override Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
-			cancellationToken.ThrowIfCancellationRequested();
-			return Task.CompletedTask;
-		}
 	}
 
 	// Isolated storage exercises the actual directional base and normal SettingsObject save lifecycle.
@@ -962,16 +936,16 @@ public class ApplicationSettingsNativeTests {
 
 		public bool FailSave { get; set; }
 
-		public int Writes {
-			get {
-				return _writes;
-			}
-		}
+		public int Writes => _writes;
 
 		// Test persistence through the same type and identity used by the actual setting.
-		public override bool ContainsSetting(Type settingsObjectType, object id = null) {
-			return _records.ContainsKey(new SettingKey(settingsObjectType, id));
-		}
+		public override bool ContainsSetting(Type settingsObjectType, object id = null) => _records.ContainsKey(new SettingKey(settingsObjectType, id));
+
+		// Remove the fixture's real stored value.
+		public override void DeleteSetting(SettingsObject settings) => _records.TryRemove(new SettingKey(settings.GetType(), settings.ID), out _);
+
+		// Clear the fixture storage without introducing an application-specific registry.
+		public override void ClearSettings() => _records.Clear();
 
 		// Restore serialized values while the provider base manages context and encryption.
 		protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {
@@ -987,16 +961,6 @@ public class ApplicationSettingsNativeTests {
 			new SettingsObjectJsonSerializer().Serialize(writer, settings);
 			_records[new SettingKey(settings.GetType(), settings.ID)] = writer.ToString();
 			Interlocked.Increment(ref _writes);
-		}
-
-		// Remove the fixture's real stored value.
-		public override void DeleteSetting(SettingsObject settings) {
-			_records.TryRemove(new SettingKey(settings.GetType(), settings.ID), out _);
-		}
-
-		// Clear the fixture storage without introducing an application-specific registry.
-		public override void ClearSettings() {
-			_records.Clear();
 		}
 	}
 

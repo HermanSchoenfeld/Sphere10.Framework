@@ -50,11 +50,7 @@ public class UserControlEx : UserControl, IUpdatable {
 	/// <summary>Whether the current model/UI update scope is active.</summary>
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool Updating {
-		get {
-			return _updating;
-		}
-	}
+	public bool Updating => _updating;
 
 	/// <summary>Copies edited UI state to the model before notifying observers.</summary>
 	[Category("Behavior")]
@@ -78,48 +74,12 @@ public class UserControlEx : UserControl, IUpdatable {
 			CopyModelToUI();
 	}
 
-	/// <summary>Primes and copies the initial model once, before accepting edited state.</summary>
-	protected override void OnLoad(EventArgs e) {
-		base.OnLoad(e);
-		if (Loaded || DesignMode || Tools.Runtime.IsDesignMode)
-			return;
-
-		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
-			InitializeUIPrimingData();
-			CopyModelToUI();
-			SetLocalizedText();
-		}
-		Loaded = true;
-	}
-
 	/// <summary>Lets derived controls refresh localized captions.</summary>
 	public virtual void SetLocalizedText(CultureInfo culture = null) {
 	}
 
 	/// <summary>Coalesces model and UI changes using the requested completion behavior.</summary>
-	public UpdateScope EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) {
-		return new UpdateScope(this, behaviour);
-	}
-
-	/// <summary>Detaches state observers before native children; owned resources retain their existing cleanup order.</summary>
-	protected override void Dispose(bool disposing) {
-		if (disposing && _stateEventProvider != null) {
-			_stateEventProvider.StateChanged -= NotifyStateChanged;
-			_stateEventProvider.Clear();
-		}
-		base.Dispose(disposing);
-		if (disposing)
-			Disposables?.Dispose();
-	}
-
-	/// <summary>Controls automatic observation of direct child controls.</summary>
-	protected virtual bool ShouldObserveChildStateChanges(Control child) {
-		return true;
-	}
-
-	/// <summary>Loads lists or other UI data before the initial model copy.</summary>
-	protected virtual void InitializeUIPrimingData() {
-	}
+	public UpdateScope EnterUpdateScope(FinishedUpdateBehaviour behaviour = FinishedUpdateBehaviour.Default) => new UpdateScope(this, behaviour);
 
 	// Nested UpdateScope values leave the first acquisition responsible for completion.
 	void IUpdatable.BeginUpdate() {
@@ -152,14 +112,44 @@ public class UserControlEx : UserControl, IUpdatable {
 			NotifyStateChanged(!forcedCopy);
 	}
 
+	/// <summary>Primes and copies the initial model once, before accepting edited state.</summary>
+	protected override void OnLoad(EventArgs e) {
+		base.OnLoad(e);
+		if (Loaded || DesignMode || Tools.Runtime.IsDesignMode)
+			return;
+
+		using (EnterUpdateScope(FinishedUpdateBehaviour.DoNothing)) {
+			InitializeUIPrimingData();
+			CopyModelToUI();
+			SetLocalizedText();
+		}
+		Loaded = true;
+	}
+
+	/// <summary>Detaches state observers before native children; owned resources retain their existing cleanup order.</summary>
+	protected override void Dispose(bool disposing) {
+		if (disposing && _stateEventProvider != null) {
+			_stateEventProvider.StateChanged -= NotifyStateChanged;
+			_stateEventProvider.Clear();
+		}
+		base.Dispose(disposing);
+		if (disposing)
+			Disposables?.Dispose();
+	}
+
+	/// <summary>Controls automatic observation of direct child controls.</summary>
+	protected virtual bool ShouldObserveChildStateChanges(Control child) => true;
+
+	/// <summary>Loads lists or other UI data before the initial model copy.</summary>
+	protected virtual void InitializeUIPrimingData() {
+	}
+
 	/// <summary>Copies the derived control's model into its UI.</summary>
 	protected virtual void CopyModelToUI() {
 	}
 
 	/// <summary>Publishes edited state, or records it for the active update scope's completion.</summary>
-	protected internal void NotifyStateChanged() {
-		NotifyStateChanged(true);
-	}
+	protected internal void NotifyStateChanged() => NotifyStateChanged(true);
 
 	// A forced completion copy must not be repeated when the same scope publishes its notification.
 	private void NotifyStateChanged(bool copyUIToModel) {
@@ -189,22 +179,16 @@ public class UserControlEx : UserControl, IUpdatable {
 	/// <summary>Relays the completed state of a reusable control as one child observation.</summary>
 	public class StateEventProvider : ControlStateEventProviderBase<UserControlEx> {
 		/// <summary>Subscribes to the control's completed semantic state.</summary>
-		protected override void RegisterStateChangedListener(UserControlEx control, EventHandlerEx eventHandler) {
-			control.StateChanged += eventHandler;
-		}
+		protected override void RegisterStateChangedListener(UserControlEx control, EventHandlerEx eventHandler) => control.StateChanged += eventHandler;
 
 		/// <summary>Removes the matching relay without disposing the control.</summary>
-		protected override void DeregisterStateChangedListener(UserControlEx control, EventHandlerEx eventHandler) {
-			control.StateChanged -= eventHandler;
-		}
+		protected override void DeregisterStateChangedListener(UserControlEx control, EventHandlerEx eventHandler) => control.StateChanged -= eventHandler;
 	}
 
 	// The owning control chooses whether its children or its own semantic operations define state.
 	private sealed class ChildStateEventProvider : ContainerControlStateEventProvider {
 		// Apply the owning composite's policy before attaching a child observer.
-		protected override bool ShouldObserveChildControl(Control control) {
-			return ((UserControlEx)Control).ShouldObserveChildStateChanges(control);
-		}
+		protected override bool ShouldObserveChildControl(Control control) => ((UserControlEx)Control).ShouldObserveChildStateChanges(control);
 	}
 
 	#endregion

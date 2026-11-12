@@ -23,9 +23,7 @@ public abstract class ColumnsSimpleBase : ColumnsBase {
 	}
 
 	public int ColumnWidth {
-		get {
-			return _columnWidth;
-		}
+		get => _columnWidth;
 		set {
 			if (_columnWidth != value) {
 				_columnWidth = value;
@@ -34,23 +32,14 @@ public abstract class ColumnsSimpleBase : ColumnsBase {
 		}
 	}
 
-	public override int GetWidth(int column) {
-		return ColumnWidth;
-	}
+	public override int GetWidth(int column) => ColumnWidth;
 
-	public override void SetWidth(int column, int width) {
-		ColumnWidth = width;
-	}
+	public override void SetWidth(int column, int width) => ColumnWidth = width;
 
-	public override bool IsColumnVisible(int column) {
-		return true;
-	}
+	public override bool IsColumnVisible(int column) => true;
 
-	public override void HideColumn(int column) {
-		throw new NotSupportedException("ColumnsSimpleBase does not support column hiding");
-	}
+	public override void HideColumn(int column) => throw new NotSupportedException("ColumnsSimpleBase does not support column hiding");
 
 	public override void ShowColumn(int column) {
-		return;
 	}
 }

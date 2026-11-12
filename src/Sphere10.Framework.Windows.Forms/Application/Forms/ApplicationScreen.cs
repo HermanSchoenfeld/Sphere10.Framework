@@ -92,9 +92,7 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	/// <summary>Defaults to MultiInstance unless the constructor or this registration declares another policy.</summary>
 	[Browsable(true), Category("Behavior"), DefaultValue(ScreenActivationMode.MultiInstance), Description("The instance policy declared by this screen type")]
 	public ScreenActivationMode ActivationMode {
-		get {
-			return _activationMode;
-		}
+		get => _activationMode;
 		protected set {
 			ApplicationHelper.ValidateActivationMode(value);
 			Guard.Ensure(Host == null, "A screen's activation mode cannot change while it belongs to a host");
@@ -104,12 +102,8 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	[Browsable(true), Category("Appearance"), Description("The title displayed in the screen tab and detached window")]
 	public string Title {
-		get {
-			return Text;
-		}
-		set {
-			Text = value;
-		}
+		get => Text;
+		set => Text = value;
 	}
 
 	/// <summary>A borrowed image supplied before hosting, with registered menu activator images used as the fallback.</summary>
@@ -118,11 +112,7 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>Whether the registered screen can be reopened without session-specific launch state.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual bool CanRestoreAtStartup {
-		get {
-			return true;
-		}
-	}
+	public virtual bool CanRestoreAtStartup => true;
 
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 	public IApplicationScreenHost Host { get; set; }
@@ -132,12 +122,8 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	[Browsable(false)]
 	public IApplicationBlock ApplicationBlock {
-		get {
-			return Block;
-		}
-		set {
-			Block = value;
-		}
+		get => Block;
+		set => Block = value;
 	}
 
 	/// <summary>The registered presentation role. Empty screens occupy the workspace without a tab.</summary>
@@ -146,20 +132,15 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>The actual menu items supplied by this screen.</summary>
 	[Browsable(false)]
-	public ToolStripItem[] MenuItems {
-		get {
-			return ScreenMenuStrip == null ? _menuStripItems.ToArray() : Menus.OfType<NativeToolStripMenu>().Select(menu => (ToolStripItem)menu.Item).ToArray();
-		}
-	}
+	public ToolStripItem[] MenuItems
+		=> ScreenMenuStrip == null ? _menuStripItems.ToArray() : Menus.OfType<NativeToolStripMenu>().Select(menu => (ToolStripItem)menu.Item).ToArray();
 
 	/// <summary>The screen-owned designer menu strip merged while this screen is active.</summary>
 	/// <remarks>Assign during configuration. Its original callbacks, state and images remain on the native items.</remarks>
 	[Browsable(true), Category("Behavior"), Description("The screen-owned MenuStrip whose actual items are merged while this screen is active.")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public MenuStrip ScreenMenuStrip {
-		get {
-			return _screenMenuStrip;
-		}
+		get => _screenMenuStrip;
 		set {
 			if (ReferenceEquals(_screenMenuStrip, value))
 				return;
@@ -174,9 +155,7 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	[Browsable(true), Category("Behavior"), Description("The screen-owned ToolStrip whose actual items are merged while this screen is active.")]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
 	public ToolStrip ScreenToolBar {
-		get {
-			return _screenToolBar;
-		}
+		get => _screenToolBar;
 		set {
 			if (ReferenceEquals(_screenToolBar, value))
 				return;
@@ -190,19 +169,11 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>Activates and caches this screen's fixed command membership.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenu[] Menus {
-		get {
-			return Tools.Array.Clone(_menus ??= GetMenus());
-		}
-	}
+	public virtual IApplicationMenu[] Menus => Tools.Array.Clone(_menus ??= GetMenus());
 
 	/// <summary>Activates and caches the screen's toolbar commands; native item state remains live.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual IApplicationMenuItem[] ToolBarItems {
-		get {
-			return Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
-		}
-	}
+	public virtual IApplicationMenuItem[] ToolBarItems => Tools.Array.Clone(_toolBarItems ??= GetToolBarItems());
 
 	public HelpType Type { get; }
 
@@ -218,19 +189,11 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 
 	/// <summary>Override with the ordinary settings type to declare this screen's preferences without constructing its control.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public virtual SettingsObject ScreenSettings {
-		get {
-			return DeclaredSettings;
-		}
-	}
+	public virtual SettingsObject ScreenSettings => DeclaredSettings;
 
 	/// <summary>The owning host, for operations on this screen instance.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	protected SharedUI.IApplicationScreenHost ApplicationScreenHost {
-		get {
-			return Host;
-		}
-	}
+	protected SharedUI.IApplicationScreenHost ApplicationScreenHost => Host;
 
 	// The legacy registration API owns its source strip just as a designer-authored screen does.
 	internal MenuStrip CommandMenuStrip {
@@ -240,24 +203,32 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 		}
 	}
 
-	/// <summary>Creates this screen's menu definitions once, after its designer configuration is complete.</summary>
-	protected virtual IApplicationMenu[] GetMenus() {
-		var source = ScreenMenuStrip;
-		if (source == null && _menuStripItems.Count > 0 && ShowInApplicationMenuStrip) {
-			_registeredMenuStrip = new MenuStrip();
-			var header = new ToolStripMenuItem(ApplicationMenuStripText);
-			header.DropDownItems.AddRange(_menuStripItems.ToArray());
-			_registeredMenuStrip.Items.Add(header);
-			source = _registeredMenuStrip;
-		}
-		return source == null ? Array.Empty<IApplicationMenu>() : source.Items.OfType<ToolStripMenuItem>()
-			.Select(item => (IApplicationMenu)new NativeToolStripMenu(item, _ => true)).ToArray();
+	/// <summary>Captures accepted native preferences before close or application shutdown; disposal never saves.</summary>
+	public virtual async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
+		CopyUIToModel();
+		if (SettingsBinding != null)
+			await SettingsBinding.SaveAsync(cancellationToken);
 	}
 
-	/// <summary>Creates toolbar definitions from this screen's original native controls.</summary>
-	protected virtual IApplicationMenuItem[] GetToolBarItems() {
-		return ScreenToolBar == null ? Array.Empty<IApplicationMenuItem>() : ScreenToolBar.Items.Cast<ToolStripItem>()
-			.Select(item => (IApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
+	/// <summary>Applies the selected culture to this screen and its child application controls.</summary>
+	public override void SetLocalizedText(CultureInfo culture = null) {
+		base.SetLocalizedText(culture);
+		SetLocalizedTextInApplicationControls(this.Controls);
+	}
+
+	// Runs the existing hide guard without changing screen ownership.
+	bool IApplicationScreen.CanDeactivate() {
+		var cancel = false;
+		NotifyHideScreen(ref cancel);
+		return !cancel;
+	}
+
+	// Runs this screen's existing display notification.
+	void IApplicationScreen.OnActivated() => NotifyShow();
+
+	// Runs this screen's existing hide notification.
+	void IApplicationScreen.OnDeactivated() {
+		// The native hide notification already runs as part of its cancelable guard.
 	}
 
 	// Merge bookkeeping belongs to the reusable merge control, while this screen owns the native sources.
@@ -297,6 +268,75 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 			detachedMenu.Items.Remove(item);
 			header?.DropDownItems.Add(item);
 		}
+	}
+
+	// The reusable header menu resolves its screen and existing grid binding on demand.
+	internal bool CanConfigureGrid(VisualGrid grid) => SettingsBinding?.CanConfigureGrid(grid) == true;
+
+	// Explicit grid configuration saves use the screen's existing settings provider and notification path.
+	internal Task SaveGridConfigurationAsync(VisualGrid grid, CancellationToken cancellationToken = default) {
+		Guard.Ensure(SettingsBinding != null, "Declare settings before saving a grid configuration.");
+		return SettingsBinding.SaveGridConfigurationAsync(grid, cancellationToken);
+	}
+
+	// Reset only this grid's live presentation; saving the reset is a separate user action.
+	internal Task RestoreGridDefaultsAsync(VisualGrid grid, CancellationToken cancellationToken = default) {
+		Guard.Ensure(SettingsBinding != null, "Declare settings before restoring a grid configuration.");
+		return SettingsBinding.RestoreGridDefaultsAsync(grid, cancellationToken);
+	}
+
+	// Sets registration policy before the screen becomes hosted.
+	internal void ConfigureActivationMode(ScreenActivationMode Mode) => ActivationMode = Mode;
+
+	// Notifies display listeners and the existing screen presentation hook.
+	internal void NotifyShow() {
+		OnShow();
+		ScreenDisplayed?.Invoke(this, EventArgs.Empty);
+	}
+
+	// Notifies first-display listeners and the corresponding presentation hook.
+	internal void NotifyShowScreenFirstTime() {
+		OnShowFirstTime();
+		ScreenDisplayedFirstTime?.Invoke(this, EventArgs.Empty);
+	}
+
+	// Runs the hide guard and notifies listeners when the screen may be hidden.
+	internal void NotifyHideScreen(ref bool cancel) {
+		OnHide(ref cancel);
+		if (!cancel) {
+			var cancelArgs = new HideScreenEventArgs();
+			ScreenHidden?.Invoke(this, cancelArgs);
+			cancel = cancelArgs.Cancel;
+		}
+	}
+
+	// Runs destruction once and releases settings subscriptions before callbacks.
+	internal void NotifyScreenDestroyed() {
+		if (_destroyed)
+			return;
+		_destroyed = true;
+		OnDestroyScreen();
+		ScreenDestroyed?.Invoke(this, EventArgs.Empty);
+	}
+
+	/// <summary>Creates this screen's menu definitions once, after its designer configuration is complete.</summary>
+	protected virtual IApplicationMenu[] GetMenus() {
+		var source = ScreenMenuStrip;
+		if (source == null && _menuStripItems.Count > 0 && ShowInApplicationMenuStrip) {
+			_registeredMenuStrip = new MenuStrip();
+			var header = new ToolStripMenuItem(ApplicationMenuStripText);
+			header.DropDownItems.AddRange(_menuStripItems.ToArray());
+			_registeredMenuStrip.Items.Add(header);
+			source = _registeredMenuStrip;
+		}
+		return source == null ? Array.Empty<IApplicationMenu>() : source.Items.OfType<ToolStripMenuItem>()
+			.Select(item => (IApplicationMenu)new NativeToolStripMenu(item, _ => true)).ToArray();
+	}
+
+	/// <summary>Creates toolbar definitions from this screen's original native controls.</summary>
+	protected virtual IApplicationMenuItem[] GetToolBarItems() {
+		return ScreenToolBar == null ? Array.Empty<IApplicationMenuItem>() : ScreenToolBar.Items.Cast<ToolStripItem>()
+			.Select(item => (IApplicationMenuItem)NativeToolStripCommand.Create(item)).ToArray();
 	}
 
 	/// <summary>Reads the actual settings instance owned by this screen's block.</summary>
@@ -351,36 +391,6 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 	protected void MarkSettingsChanged() {
 		Guard.Ensure(SettingsBinding != null, "Declare typed settings before changing preferences.");
 		SettingsBinding.MarkChanged();
-	}
-
-	/// <summary>Captures accepted native preferences before close or application shutdown; disposal never saves.</summary>
-	public virtual async Task SaveSettingsAsync(CancellationToken cancellationToken = default) {
-		CopyUIToModel();
-		if (SettingsBinding != null)
-			await SettingsBinding.SaveAsync(cancellationToken);
-	}
-
-	// The reusable header menu resolves its screen and existing grid binding on demand.
-	internal bool CanConfigureGrid(VisualGrid grid) {
-		return SettingsBinding?.CanConfigureGrid(grid) == true;
-	}
-
-	// Explicit grid configuration saves use the screen's existing settings provider and notification path.
-	internal Task SaveGridConfigurationAsync(VisualGrid grid, CancellationToken cancellationToken = default) {
-		Guard.Ensure(SettingsBinding != null, "Declare settings before saving a grid configuration.");
-		return SettingsBinding.SaveGridConfigurationAsync(grid, cancellationToken);
-	}
-
-	// Reset only this grid's live presentation; saving the reset is a separate user action.
-	internal Task RestoreGridDefaultsAsync(VisualGrid grid, CancellationToken cancellationToken = default) {
-		Guard.Ensure(SettingsBinding != null, "Declare settings before restoring a grid configuration.");
-		return SettingsBinding.RestoreGridDefaultsAsync(grid, cancellationToken);
-	}
-
-	/// <summary>Applies the selected culture to this screen and its child application controls.</summary>
-	public override void SetLocalizedText(CultureInfo culture = null) {
-		base.SetLocalizedText(culture);
-		SetLocalizedTextInApplicationControls(this.Controls);
 	}
 
 	/// <summary>Allows a screen to initialize presentation when first displayed.</summary>
@@ -443,63 +453,8 @@ public class ApplicationScreen : ApplicationControl, IApplicationScreen {
 		_menuStripItems.Add(item);
 	}
 
-	// Runs the existing hide guard without changing screen ownership.
-	bool IApplicationScreen.CanDeactivate() {
-		var cancel = false;
-		NotifyHideScreen(ref cancel);
-		return !cancel;
-	}
-
-	// Runs this screen's existing display notification.
-	void IApplicationScreen.OnActivated() {
-		NotifyShow();
-	}
-
-	// Runs this screen's existing hide notification.
-	void IApplicationScreen.OnDeactivated() {
-		// The native hide notification already runs as part of its cancelable guard.
-	}
-
-	// Sets registration policy before the screen becomes hosted.
-	internal void ConfigureActivationMode(ScreenActivationMode Mode) {
-		ActivationMode = Mode;
-	}
-
-	// Notifies display listeners and the existing screen presentation hook.
-	internal void NotifyShow() {
-		OnShow();
-		ScreenDisplayed?.Invoke(this, EventArgs.Empty);
-	}
-
-	// Notifies first-display listeners and the corresponding presentation hook.
-	internal void NotifyShowScreenFirstTime() {
-		OnShowFirstTime();
-		ScreenDisplayedFirstTime?.Invoke(this, EventArgs.Empty);
-	}
-
-	// Runs the hide guard and notifies listeners when the screen may be hidden.
-	internal void NotifyHideScreen(ref bool cancel) {
-		OnHide(ref cancel);
-		if (!cancel) {
-			var cancelArgs = new HideScreenEventArgs();
-			ScreenHidden?.Invoke(this, cancelArgs);
-			cancel = cancelArgs.Cancel;
-		}
-	}
-
-	// Runs destruction once and releases settings subscriptions before callbacks.
-	internal void NotifyScreenDestroyed() {
-		if (_destroyed)
-			return;
-		_destroyed = true;
-		OnDestroyScreen();
-		ScreenDestroyed?.Invoke(this, EventArgs.Empty);
-	}
-
 	// Command membership is configured before activation; native appearance and checked/enabled state remain mutable.
-	private void EnsureCommandsNotActivated() {
-		Guard.Ensure(_menus == null && _toolBarItems == null, "Command membership is read-only after activation.");
-	}
+	private void EnsureCommandsNotActivated() => Guard.Ensure(_menus == null && _toolBarItems == null, "Command membership is read-only after activation.");
 
 	// Recurses through child application controls to apply the selected culture.
 	private void SetLocalizedTextInApplicationControls(ControlCollection controls) {

@@ -17,7 +17,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBoxNumeric : TextBox {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -26,16 +27,17 @@ public class TextBoxNumeric : TextBox {
 		: base(type) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.TextBoxEx Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.TextBoxEx)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.TextBoxEx)base.Control;
 	}
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -47,4 +49,6 @@ public class TextBoxNumeric : TextBox {
 		editor.Validator = this;
 		return editor;
 	}
+
+	#endregion
 }

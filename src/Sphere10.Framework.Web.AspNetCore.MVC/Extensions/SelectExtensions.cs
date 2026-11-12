@@ -28,15 +28,6 @@ public static class SelectExtensions {
 		return expression.Body.ToString().Substring(expression.Parameters[0].Name.Length + 1);
 	}
 
-	private static string GetInputName(MethodCallExpression expression) {
-		// p => p.Foo.Bar().Baz.ToString() => p.Foo OR throw...
-		MethodCallExpression methodCallExpression = expression.Object as MethodCallExpression;
-		if (methodCallExpression != null) {
-			return GetInputName(methodCallExpression);
-		}
-		return expression.Object.ToString();
-	}
-
 	public static IHtmlContent EnumDropDownListFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression) where TModel : class {
 		string inputName = GetInputName(expression);
 		var value = htmlHelper.ViewData.Model == null
@@ -45,7 +36,6 @@ public static class SelectExtensions {
 
 		return htmlHelper.DropDownList(inputName, Tools.Web.Mvc.ToSelectList(typeof(TProperty), value as Enum));
 	}
-
 
 	public static List<SelectListItem> ToSelectList<T>(
 		this IEnumerable<T> enumerable,
@@ -70,8 +60,16 @@ public static class SelectExtensions {
 	}
 
 
-	public static SelectListItem GetSelectedItem(this IEnumerable<SelectListItem> selectListItems) {
-		return selectListItems.Single(i => i.Selected);
+	public static SelectListItem GetSelectedItem(this IEnumerable<SelectListItem> selectListItems) => selectListItems.Single(i => i.Selected);
+
+
+	private static string GetInputName(MethodCallExpression expression) {
+		// p => p.Foo.Bar().Baz.ToString() => p.Foo OR throw...
+		MethodCallExpression methodCallExpression = expression.Object as MethodCallExpression;
+		if (methodCallExpression != null) {
+			return GetInputName(methodCallExpression);
+		}
+		return expression.Object.ToString();
 	}
 }
 

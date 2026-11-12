@@ -33,50 +33,10 @@ public static class WindowsComputer {
 
 	public static WindowsComputerInfo Query() => QueryCore(null);
 
-	private static WindowsComputerInfo QueryCore(Action checkpoint) {
-		checkpoint?.Invoke();
-		using var search = new ManagementObjectSearcher("SELECT Name,Domain,PartOfDomain,Manufacturer,Model,TotalPhysicalMemory,SystemType,HypervisorPresent FROM Win32_ComputerSystem");
-		search.Options.Timeout = TimeSpan.FromSeconds(5);
-		using var results = search.Get();
-		foreach (ManagementObject computer in results) {
-			using (computer) {
-				checkpoint?.Invoke();
-				return new WindowsComputerInfo(Convert.ToString(computer["Name"]), Convert.ToString(computer["Domain"]), Convert.ToBoolean(computer["PartOfDomain"]),
-					Convert.ToString(computer["Manufacturer"]), Convert.ToString(computer["Model"])) {
-					TotalPhysicalMemory = computer["TotalPhysicalMemory"] == null ? null : Convert.ToUInt64(computer["TotalPhysicalMemory"]),
-					SystemType = Convert.ToString(computer["SystemType"]),
-					HypervisorPresent = computer["HypervisorPresent"] == null ? null : Convert.ToBoolean(computer["HypervisorPresent"])
-				};
-			}
-		}
-		throw new InvalidOperationException("Windows did not provide the computer identity.");
-	}
-
 	public static Task RenameAsync(string expectedCurrentName, string newName, CancellationToken cancellationToken = default)
 		=> Task.Run(() => RenameCore(expectedCurrentName, newName, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
 
 	public static void Rename(string expectedCurrentName, string newName) => RenameCore(expectedCurrentName, newName, null);
-
-	private static void RenameCore(string expectedCurrentName, string newName, Action checkpoint) {
-		Guard.ArgumentNotNullOrWhitespace(newName, nameof(newName));
-		checkpoint?.Invoke();
-		using var search = new ManagementObjectSearcher("SELECT * FROM Win32_ComputerSystem");
-		search.Options.Timeout = TimeSpan.FromSeconds(5);
-		using var results = search.Get();
-		foreach (ManagementObject computer in results) {
-			using (computer) {
-				Guard.Ensure(expectedCurrentName == null || string.Equals(Convert.ToString(computer["Name"]), expectedCurrentName, StringComparison.OrdinalIgnoreCase), "The computer name changed.");
-				using var input = computer.GetMethodParameters("Rename");
-				input["Name"] = newName;
-				checkpoint?.Invoke();
-				using var output = computer.InvokeMethod("Rename", input, new InvokeMethodOptions { Timeout = TimeSpan.FromSeconds(15) });
-				var code = Convert.ToUInt32(output?["ReturnValue"] ?? uint.MaxValue);
-				if (code != 0) throw new Win32Exception(unchecked((int)code), $"Windows could not rename the computer (code {code}).");
-				return;
-			}
-		}
-		throw new InvalidOperationException("Windows did not provide the computer identity.");
-	}
 
 	public static WindowsSystemProductInfo[] GetSystemProducts() => ReadResources("SELECT Name,Vendor,Version,IdentifyingNumber,UUID FROM Win32_ComputerSystemProduct", item => new WindowsSystemProductInfo(Text(item, "Name"), Text(item, "Vendor"), Text(item, "Version"), Text(item, "IdentifyingNumber"), Text(item, "UUID")), null);
 
@@ -138,6 +98,74 @@ public static class WindowsComputer {
 
 	public static Task<WindowsPrinterInfo[]> GetPrintersAsync(CancellationToken cancellationToken = default)
 		=> Task.Run(() => ReadResources(PrintersQuery, ReadPrinter, cancellationToken.ThrowIfCancellationRequested), cancellationToken);
+
+	internal static ulong? ConvertMemoryCapacity(ulong? extendedKilobytes, uint? legacyKilobytes) {
+		// Both provider properties use kilobytes. Zero means unknown; avoid overflowing bytes for a malformed provider value.
+		var kilobytes = extendedKilobytes.GetValueOrDefault() > 0 ? extendedKilobytes : legacyKilobytes;
+		return kilobytes.GetValueOrDefault() > 0 && kilobytes <= ulong.MaxValue / 1024 ? kilobytes * 1024 : null;
+	}
+
+	internal static string DecodeMonitorText(ushort[] characters) {
+		if (characters == null || characters.Length == 0)
+			return string.Empty;
+		// EDID-backed monitor identifiers are ASCII code units, terminated by zero. Bound even a malformed provider array.
+		var buffer = new char[Math.Min(characters.Length, 256)];
+		var length = 0;
+		while (length < buffer.Length && characters[length] != 0) {
+			buffer[length] = characters[length] <= 127 ? (char)characters[length] : '\uFFFD';
+			length++;
+		}
+		return new string(buffer, 0, length);
+	}
+
+	internal static DateTime? ParseDmtfDate(string text) {
+		if (string.IsNullOrEmpty(text) || text.Contains('*'))
+			return null;
+		DateTime? value = null;
+		Tools.Exceptions.ExecuteCapturingException(() => value = ManagementDateTimeConverter.ToDateTime(text).ToUniversalTime(), out _,
+			error => error is ArgumentException or FormatException);
+		return value;
+	}
+
+	private static WindowsComputerInfo QueryCore(Action checkpoint) {
+		checkpoint?.Invoke();
+		using var search = new ManagementObjectSearcher("SELECT Name,Domain,PartOfDomain,Manufacturer,Model,TotalPhysicalMemory,SystemType,HypervisorPresent FROM Win32_ComputerSystem");
+		search.Options.Timeout = TimeSpan.FromSeconds(5);
+		using var results = search.Get();
+		foreach (ManagementObject computer in results) {
+			using (computer) {
+				checkpoint?.Invoke();
+				return new WindowsComputerInfo(Convert.ToString(computer["Name"]), Convert.ToString(computer["Domain"]), Convert.ToBoolean(computer["PartOfDomain"]),
+					Convert.ToString(computer["Manufacturer"]), Convert.ToString(computer["Model"])) {
+					TotalPhysicalMemory = computer["TotalPhysicalMemory"] == null ? null : Convert.ToUInt64(computer["TotalPhysicalMemory"]),
+					SystemType = Convert.ToString(computer["SystemType"]),
+					HypervisorPresent = computer["HypervisorPresent"] == null ? null : Convert.ToBoolean(computer["HypervisorPresent"])
+				};
+			}
+		}
+		throw new InvalidOperationException("Windows did not provide the computer identity.");
+	}
+
+	private static void RenameCore(string expectedCurrentName, string newName, Action checkpoint) {
+		Guard.ArgumentNotNullOrWhitespace(newName, nameof(newName));
+		checkpoint?.Invoke();
+		using var search = new ManagementObjectSearcher("SELECT * FROM Win32_ComputerSystem");
+		search.Options.Timeout = TimeSpan.FromSeconds(5);
+		using var results = search.Get();
+		foreach (ManagementObject computer in results) {
+			using (computer) {
+				Guard.Ensure(expectedCurrentName == null || string.Equals(Convert.ToString(computer["Name"]), expectedCurrentName, StringComparison.OrdinalIgnoreCase), "The computer name changed.");
+				using var input = computer.GetMethodParameters("Rename");
+				input["Name"] = newName;
+				checkpoint?.Invoke();
+				using var output = computer.InvokeMethod("Rename", input, new InvokeMethodOptions { Timeout = TimeSpan.FromSeconds(15) });
+				var code = Convert.ToUInt32(output?["ReturnValue"] ?? uint.MaxValue);
+				if (code != 0) throw new Win32Exception(unchecked((int)code), $"Windows could not rename the computer (code {code}).");
+				return;
+			}
+		}
+		throw new InvalidOperationException("Windows did not provide the computer identity.");
+	}
 
 	private static WindowsMemoryModuleInfo ReadMemoryModule(ManagementObject resource) => new() {
 		DeviceLocator = Text(resource, "DeviceLocator"),
@@ -253,32 +281,4 @@ public static class WindowsComputer {
 	private static bool? Boolean(ManagementObject resource, string property) => resource[property] == null ? null : Convert.ToBoolean(resource[property], CultureInfo.InvariantCulture);
 
 	private static DateTime? Date(ManagementObject resource, string property) => ParseDmtfDate(Text(resource, property));
-
-	internal static ulong? ConvertMemoryCapacity(ulong? extendedKilobytes, uint? legacyKilobytes) {
-		// Both provider properties use kilobytes. Zero means unknown; avoid overflowing bytes for a malformed provider value.
-		var kilobytes = extendedKilobytes.GetValueOrDefault() > 0 ? extendedKilobytes : legacyKilobytes;
-		return kilobytes.GetValueOrDefault() > 0 && kilobytes <= ulong.MaxValue / 1024 ? kilobytes * 1024 : null;
-	}
-
-	internal static string DecodeMonitorText(ushort[] characters) {
-		if (characters == null || characters.Length == 0)
-			return string.Empty;
-		// EDID-backed monitor identifiers are ASCII code units, terminated by zero. Bound even a malformed provider array.
-		var buffer = new char[Math.Min(characters.Length, 256)];
-		var length = 0;
-		while (length < buffer.Length && characters[length] != 0) {
-			buffer[length] = characters[length] <= 127 ? (char)characters[length] : '\uFFFD';
-			length++;
-		}
-		return new string(buffer, 0, length);
-	}
-
-	internal static DateTime? ParseDmtfDate(string text) {
-		if (string.IsNullOrEmpty(text) || text.Contains('*'))
-			return null;
-		DateTime? value = null;
-		Tools.Exceptions.ExecuteCapturingException(() => value = ManagementDateTimeConverter.ToDateTime(text).ToUniversalTime(), out _,
-			error => error is ArgumentException or FormatException);
-		return value;
-	}
 }

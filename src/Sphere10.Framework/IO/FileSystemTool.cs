@@ -193,13 +193,10 @@ public static class FileSystem {
 	/// </summary>
 	/// <param name="pathTemplate"></param>
 	/// <returns></returns>
-	public static string ResolvePathTemplate(string pathTemplate) {
-		return ResolvePathTemplate(pathTemplate, DefaultPathTokenResolver);
-	}
+	public static string ResolvePathTemplate(string pathTemplate) => ResolvePathTemplate(pathTemplate, DefaultPathTokenResolver);
 
-	public static string ResolvePathTemplate(string pathTemplate, Func<string, string> tokenResolver) {
-		return StringFormatter.FormatEx(pathTemplate, (token) => tokenResolver(token) ?? DefaultPathTokenResolver(token), true);
-	}
+	public static string ResolvePathTemplate(string pathTemplate, Func<string, string> tokenResolver)
+		=> StringFormatter.FormatEx(pathTemplate, (token) => tokenResolver(token) ?? DefaultPathTokenResolver(token), true);
 
 	public static string DefaultPathTokenResolver(string token) {
 		switch (token) {
@@ -233,13 +230,9 @@ public static class FileSystem {
 		return new DirectoryInfo(dirpath).FullName;
 	}
 
-	public static long GetFileSize(string filePath) {
-		return new FileInfo(filePath).Length;
-	}
+	public static long GetFileSize(string filePath) => new FileInfo(filePath).Length;
 
-	public static bool IsFileEmpty(string file) {
-		return new FileInfo(file).Length == 0;
-	}
+	public static bool IsFileEmpty(string file) => new FileInfo(file).Length == 0;
 
 	public static string DetermineAvailableFileName(string filePath)
 		=> DetermineAvailableFileName(Tools.FileSystem.GetParentDirectoryPath(filePath), Path.GetFileName(filePath));
@@ -279,9 +272,7 @@ public static class FileSystem {
 		File.WriteAllBytes(filename, new byte[0]);
 	}
 
-	public static Task CreateBlankFileAsync(string filename, bool createDirectories = false) {
-		return Task.Run(() => CreateBlankFile(filename, createDirectories));
-	}
+	public static Task CreateBlankFileAsync(string filename, bool createDirectories = false) => Task.Run(() => CreateBlankFile(filename, createDirectories));
 
 	public static void CopyFile(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
 		var dir = Path.GetDirectoryName(destPath);
@@ -302,13 +293,10 @@ public static class FileSystem {
 	}
 
 
-	public static async Task DeleteFileAsync(string path) {
-		await Task.Run(() => DeleteFile(path));
-	}
+	public static async Task DeleteFileAsync(string path) => await Task.Run(() => DeleteFile(path));
 
-	public static async Task CopyFileAsync(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false) {
-		await Task.Run(() => CopyFile(sourcePath, destPath, overwrite, createDirectories));
-	}
+	public static async Task CopyFileAsync(string sourcePath, string destPath, bool overwrite = false, bool createDirectories = false)
+		=> await Task.Run(() => CopyFile(sourcePath, destPath, overwrite, createDirectories));
 
 	public static void RenameFile(string sourcePath, string newName) {
 		var fileInfo = new FileInfo(sourcePath);
@@ -377,9 +365,7 @@ public static class FileSystem {
 		}
 	}
 
-	public static void DeleteDirectories(params string[] directories) {
-		DeleteDirectories(false, directories);
-	}
+	public static void DeleteDirectories(params string[] directories) => DeleteDirectories(false, directories);
 
 	public static Task DeleteDirectoriesAsync(params string[] directories)
 		=> DeleteDirectoriesAsync(false, directories);
@@ -394,9 +380,7 @@ public static class FileSystem {
 			await DeleteDirectoryAsync(dir, ignoreIfLocked);
 	}
 
-	public static Task DeleteDirectoryAsync(string directory, bool ignoreIfLocked = false) {
-		return Task.Run(() => DeleteDirectory(directory, ignoreIfLocked));
-	}
+	public static Task DeleteDirectoryAsync(string directory, bool ignoreIfLocked = false) => Task.Run(() => DeleteDirectory(directory, ignoreIfLocked));
 
 	public static void DeleteEmptyDirectory(string directory, bool recurseSubDirs = false) {
 		if (!Directory.Exists(directory))
@@ -503,26 +487,6 @@ public static class FileSystem {
 		where TSymmetricAlgorithm : SymmetricAlgorithm, new()
 		=> DecompressFile(sourcePath, destPath, password, (source, destination) => Streams.Decrypt<TSymmetricAlgorithm>(source, destination, password, null, paddingMode, cipherMode));
 
-	private static void CompressFile(string sourcePath, string destPath, string password, Action<Stream, Stream> encrypt) {
-		var hasPassword = !String.IsNullOrEmpty(password);
-		Action<Stream, Stream> compress = Streams.GZipCompress;
-		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
-		using var sourceStream = File.OpenRead(sourcePath);
-		using var destStream = File.OpenWrite(destPath);
-		using var pipeline = new StreamPipeline(compress, hasPassword ? encrypt : copy);
-		pipeline.Run(sourceStream, destStream);
-	}
-
-	private static void DecompressFile(string sourcePath, string destPath, string password, Action<Stream, Stream> decrypt) {
-		var hasPassword = !String.IsNullOrEmpty(password);
-		Action<Stream, Stream> decompress = Streams.GZipDecompress;
-		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
-		using var sourceStream = File.OpenRead(sourcePath);
-		using var destStream = File.OpenWrite(destPath);
-		using var pipeline = new StreamPipeline(hasPassword ? decrypt : copy, decompress);
-		pipeline.Run(sourceStream, destStream);
-	}
-
 	public static string GetTempEmptyDirectory(bool create = true) {
 		var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToStrictAlphaString());
 		if (create)
@@ -530,9 +494,7 @@ public static class FileSystem {
 		return path;
 	}
 
-	public static string GetTempFileName(bool create = true) {
-		return GetTempFileName(Path.GetTempPath(), create);
-	}
+	public static string GetTempFileName(bool create = true) => GetTempFileName(Path.GetTempPath(), create);
 
 	public static string GetTempFileName(string basePath, bool create = true) {
 		var path = Path.Combine(basePath, Guid.NewGuid().ToStrictAlphaString() + ".tmp");
@@ -597,6 +559,26 @@ public static class FileSystem {
 	public static void SplitFilePath(string filepath, out string folder, out string fileName) {
 		folder = Path.GetDirectoryName(filepath);
 		fileName = Path.GetFileName(filepath);
+	}
+
+	private static void CompressFile(string sourcePath, string destPath, string password, Action<Stream, Stream> encrypt) {
+		var hasPassword = !String.IsNullOrEmpty(password);
+		Action<Stream, Stream> compress = Streams.GZipCompress;
+		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
+		using var sourceStream = File.OpenRead(sourcePath);
+		using var destStream = File.OpenWrite(destPath);
+		using var pipeline = new StreamPipeline(compress, hasPassword ? encrypt : copy);
+		pipeline.Run(sourceStream, destStream);
+	}
+
+	private static void DecompressFile(string sourcePath, string destPath, string password, Action<Stream, Stream> decrypt) {
+		var hasPassword = !String.IsNullOrEmpty(password);
+		Action<Stream, Stream> decompress = Streams.GZipDecompress;
+		Action<Stream, Stream> copy = (source, destination) => Streams.RouteStream(source, destination);
+		using var sourceStream = File.OpenRead(sourcePath);
+		using var destStream = File.OpenWrite(destPath);
+		using var pipeline = new StreamPipeline(hasPassword ? decrypt : copy, decompress);
+		pipeline.Run(sourceStream, destStream);
 	}
 }
 

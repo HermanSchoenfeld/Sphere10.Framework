@@ -56,14 +56,13 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	// The runner lends its actual service provider; forms never create or dispose another container.
 	internal IServiceProvider ApplicationServices { get; private set; }
 
+	/// <summary>Opens the running application's settings, preferring the active screen unless an owner is supplied.</summary>
+	public Task<DialogResult> ShowScreenOptionsAsync(object selectedOwner = null, CancellationToken cancellationToken = default)
+		=> ShowScreenOptionsAsync(selectedOwner, this, cancellationToken);
+
 	internal void AttachApplicationServices(IServiceProvider services) {
 		Guard.Ensure(ApplicationServices == null || ReferenceEquals(ApplicationServices, services), "The main form already belongs to another application provider.");
 		ApplicationServices = services;
-	}
-
-	/// <summary>Opens the running application's settings, preferring the active screen unless an owner is supplied.</summary>
-	public Task<DialogResult> ShowScreenOptionsAsync(object selectedOwner = null, CancellationToken cancellationToken = default) {
-		return ShowScreenOptionsAsync(selectedOwner, this, cancellationToken);
 	}
 
 	// The invoking window selects its own active settings and owns the modal presentation.
@@ -82,13 +81,59 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	/// <summary>Lets an application configure the Options dialog's policies before the existing host shows it.</summary>
-	protected virtual ApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner) {
-		return new ApplicationSettingsDialog(Application as IApplication, ApplicationServices, selectedOwner);
-	}
+	protected virtual ApplicationSettingsDialog CreateScreenOptionsDialog(object selectedOwner)
+		=> new ApplicationSettingsDialog(Application as IApplication, ApplicationServices, selectedOwner);
 
 	#region Form Methods
 
 
+
+	internal async Task<bool> ConfirmApplicationExitAsync(CancellationToken cancellationToken) {
+		cancellationToken.ThrowIfCancellationRequested();
+		var previousToken = _exitConfirmationCancellationToken;
+		_exitConfirmationCancellationToken = cancellationToken;
+		using var restoreToken = Tools.Scope.ExecuteOnDispose(() => _exitConfirmationCancellationToken = previousToken);
+		return await ConfirmExitAsync().WaitAsync(cancellationToken);
+	}
+
+	internal bool CanApplicationExit() {
+		var previouslyChecked = ScreenExitPermissionsChecked;
+		ScreenExitPermissionsChecked = true;
+		using var restorePermissions = Tools.Scope.ExecuteOnDispose(() => ScreenExitPermissionsChecked = previouslyChecked);
+		var cancellation = new CancelEventArgs();
+		FireApplicationExitingEvent(cancellation);
+		return !cancellation.Cancel;
+	}
+
+
+	internal async Task<ApplicationCloseResult> CloseFromApplicationAsync(bool force, Func<Task> shutdown) {
+		if (IsDisposed)
+			return new ApplicationCloseResult(true, null);
+		Guard.ArgumentNotNull(shutdown, nameof(shutdown));
+		// Continuations must complete before the final native close can end its message loop.
+		var completion = new TaskCompletionSource<ApplicationCloseResult>();
+		_approvedCloseCompletion = completion;
+		_approvedCloseContext = SynchronizationContext.Current;
+		_approvedShutdownAsync = shutdown;
+		_exitConfirmed = true;
+		_forceExitConfirmed = force;
+		ApplicationExiting = true;
+		_closeActionBeforeExit ??= CloseAction;
+		CloseAction = FormCloseAction.Close;
+		using var restoreExit = Tools.Scope.ExecuteOnDispose(() => {
+			_approvedShutdownAsync = null;
+			_approvedCloseCompletion = null;
+			_approvedCloseContext = null;
+			_forceExitConfirmed = false;
+			if (!IsDisposed) {
+				_exitConfirmed = false;
+				ApplicationExiting = false;
+				RestoreCloseAction();
+			}
+		});
+		Close();
+		return await completion.Task;
+	}
 
 	protected virtual void OnFirstActivated() {
 	}
@@ -104,10 +149,9 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		}
 	}
 
-
 	protected override void OnLoad(EventArgs e) {
 		base.OnLoad(e);
-		if (!Tools.Runtime.IsDesignMode) {
+		if (!DesignMode && !Tools.Runtime.IsDesignMode) {
 
 			//// initialize local members
 
@@ -239,52 +283,6 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	protected virtual async Task<bool> ConfirmExitAsync()
 		=> await DialogEx.ShowAsync(this, SystemIconType.Question, "Confirm", "Are you sure you want to exit?", _exitConfirmationCancellationToken, "&No", "&Yes") == DialogExResult.Button2;
 
-	internal async Task<bool> ConfirmApplicationExitAsync(CancellationToken cancellationToken) {
-		cancellationToken.ThrowIfCancellationRequested();
-		var previousToken = _exitConfirmationCancellationToken;
-		_exitConfirmationCancellationToken = cancellationToken;
-		using var restoreToken = Tools.Scope.ExecuteOnDispose(() => _exitConfirmationCancellationToken = previousToken);
-		return await ConfirmExitAsync().WaitAsync(cancellationToken);
-	}
-
-	internal bool CanApplicationExit() {
-		var previouslyChecked = ScreenExitPermissionsChecked;
-		ScreenExitPermissionsChecked = true;
-		using var restorePermissions = Tools.Scope.ExecuteOnDispose(() => ScreenExitPermissionsChecked = previouslyChecked);
-		var cancellation = new CancelEventArgs();
-		FireApplicationExitingEvent(cancellation);
-		return !cancellation.Cancel;
-	}
-
-	internal async Task<ApplicationCloseResult> CloseFromApplicationAsync(bool force, Func<Task> shutdown) {
-		if (IsDisposed)
-			return new ApplicationCloseResult(true, null);
-		Guard.ArgumentNotNull(shutdown, nameof(shutdown));
-		// Continuations must complete before the final native close can end its message loop.
-		var completion = new TaskCompletionSource<ApplicationCloseResult>();
-		_approvedCloseCompletion = completion;
-		_approvedCloseContext = SynchronizationContext.Current;
-		_approvedShutdownAsync = shutdown;
-		_exitConfirmed = true;
-		_forceExitConfirmed = force;
-		ApplicationExiting = true;
-		_closeActionBeforeExit ??= CloseAction;
-		CloseAction = FormCloseAction.Close;
-		using var restoreExit = Tools.Scope.ExecuteOnDispose(() => {
-			_approvedShutdownAsync = null;
-			_approvedCloseCompletion = null;
-			_approvedCloseContext = null;
-			_forceExitConfirmed = false;
-			if (!IsDisposed) {
-				_exitConfirmed = false;
-				ApplicationExiting = false;
-				RestoreCloseAction();
-			}
-		});
-		Close();
-		return await completion.Task;
-	}
-
 	protected virtual void OnApplicationExiting(CancelEventArgs cancelEventArgs) {
 	}
 
@@ -312,28 +310,11 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 
 	#region IApplicationIconProvider Implementation
 
-	public virtual Icon ApplicationIcon {
-		get { return Sphere10Framework.Instance.GetAppIcon() ?? Icon; }
-	}
+	public virtual Icon ApplicationIcon => Sphere10Framework.Instance.GetAppIcon() ?? Icon;
 
 	#endregion
 
 	#region IUserInterfaceServices Implementation
-
-	protected override void WndProc(ref Message m) {
-		if (m.Msg == WinAPI.USER32.WM_QUERYENDSESSION) {
-			// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!
-			CloseAction = FormCloseAction.Close;
-			SuppressExitConfirmation = true;
-			if (Application != null) {
-				var exit = Application.ExitAsync(true);
-				m.Result = exit.IsCompletedSuccessfully && !exit.Result ? IntPtr.Zero : new IntPtr(1);
-				_ = ObserveApplicationExit(exit);
-				return;
-			}
-		}
-		base.WndProc(ref m);
-	}
 
 	public virtual void Exit(bool force = false) {
 		if (IsDisposed)
@@ -359,12 +340,42 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		}
 	}
 
+	public virtual void ExecuteInUIFriendlyContext(Action function, bool executeAsync = false) {
+		if (executeAsync) {
+			BeginInvoke(function);
+		} else {
+			Invoke(function);
+		}
+	}
+
+	protected override void WndProc(ref Message m) {
+		if (m.Msg == WinAPI.USER32.WM_QUERYENDSESSION) {
+			// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!
+			CloseAction = FormCloseAction.Close;
+			SuppressExitConfirmation = true;
+			if (Application != null) {
+				var exit = Application.ExitAsync(true);
+				m.Result = exit.IsCompletedSuccessfully && !exit.Result ? IntPtr.Zero : new IntPtr(1);
+				_ = ObserveApplicationExit(exit);
+				return;
+			}
+		}
+		base.WndProc(ref m);
+	}
+
 	private void RestoreCloseAction() {
 		if (_closeActionBeforeExit.HasValue) {
 			CloseAction = _closeActionBeforeExit.Value;
 			_closeActionBeforeExit = null;
 		}
 	}
+
+	public virtual bool ApplicationExiting {
+		get => _applicationExiting || _confirmingExit;
+		set => _applicationExiting = value;
+	}
+
+	public virtual string Status { get; set; }
 
 	private async Task ObserveApplicationExit(Task<bool> exit) {
 		try {
@@ -379,27 +390,10 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 		}
 	}
 
-	public virtual bool ApplicationExiting {
-		get => _applicationExiting || _confirmingExit;
-		set => _applicationExiting = value;
-	}
-
-	public virtual string Status { get; set; }
-
-	public virtual void ExecuteInUIFriendlyContext(Action function, bool executeAsync = false) {
-		if (executeAsync) {
-			BeginInvoke(function);
-		} else {
-			Invoke(function);
-		}
-	}
 
 
 
-
-	public virtual object PrimaryUIController {
-		get { return this; }
-	}
+	public virtual object PrimaryUIController => this;
 
 	#endregion
 
@@ -421,13 +415,9 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 			await about.ShowDialogAsync(this);
 		});
 
-	public virtual void ReportError(Exception error) {
-		ExecuteInUIFriendlyContext(() => _ = ExceptionDialog.ShowAsync(this, error));
-	}
+	public virtual void ReportError(Exception error) => ExecuteInUIFriendlyContext(() => _ = ExceptionDialog.ShowAsync(this, error));
 
-	public virtual void ReportError(string msg) {
-		ReportError("Unexpected Error", msg);
-	}
+	public virtual void ReportError(string msg) => ReportError("Unexpected Error", msg);
 
 	public virtual void ReportError(string title, string msg) {
 		ExecuteInUIFriendlyContext(

@@ -83,9 +83,8 @@ public class ApplicationOwnerSettingsTests {
 	/// <summary>Reads actual block and plugin settings without declaring screen settings of its own.</summary>
 	public class OwnerScreen : ApplicationScreen {
 		/// <inheritdoc />
-		protected override void BuildRenderTree(RenderTreeBuilder builder) {
-			builder.AddContent(0, $"block={GetBlockSettings<BlockPreferences>().Number};plugin={GetPluginSettings<PluginPreferences>().Number}");
-		}
+		protected override void BuildRenderTree(RenderTreeBuilder builder)
+			=> builder.AddContent(0, $"block={GetBlockSettings<BlockPreferences>().Number};plugin={GetPluginSettings<PluginPreferences>().Number}");
 	}
 
 	/// <summary>Declares the block-owned refresh value used by the renderer.</summary>
@@ -105,25 +104,10 @@ public class ApplicationOwnerSettingsTests {
 	// A successful store boundary isolates runtime ownership from browser/authentication tests covered elsewhere.
 	private sealed class MemorySettingsProvider : SyncSettingsProviderBase {
 		// Keeps this fixture storage readable for its assertions.
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
+		public override bool EncryptSettings => false;
 
 		// Check whether this fixture has a persisted record.
-		public override bool ContainsSetting(Type settingsType, object id = null) {
-			return false;
-		}
-
-		// Read fixture storage without bypassing the base provider lifecycle.
-		protected override SettingsObject LoadInternal(Type settingsType, object id = null) {
-			throw new InvalidOperationException("No test preferences have been saved.");
-		}
-
-		// Persist fixture values after the base provider prepares them.
-		protected override void SaveInternal(SettingsObject settings) {
-		}
+		public override bool ContainsSetting(Type settingsType, object id = null) => false;
 
 		// Remove this fixture record.
 		public override void DeleteSetting(SettingsObject settings) {
@@ -131,6 +115,14 @@ public class ApplicationOwnerSettingsTests {
 
 		// Clear this fixture storage.
 		public override void ClearSettings() {
+		}
+
+		// Read fixture storage without bypassing the base provider lifecycle.
+		protected override SettingsObject LoadInternal(Type settingsType, object id = null)
+			=> throw new InvalidOperationException("No test preferences have been saved.");
+
+		// Persist fixture values after the base provider prepares them.
+		protected override void SaveInternal(SettingsObject settings) {
 		}
 	}
 

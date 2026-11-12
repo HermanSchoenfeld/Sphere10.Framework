@@ -9,6 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -278,34 +279,17 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> AddDimension<T>(bool ignoreAnnotations = false) 
-		=> (ObjectSpaceDimensionBuilder<T>)AddDimension(typeof(T), ignoreAnnotations);
+	public ObjectSpaceDimensionBuilder<T> AddDimension<T>(bool ignoreAnnotations = false) {
+		var dimensionBuilder = new ObjectSpaceDimensionBuilder<T>(this);
+		ConfigureDimension(dimensionBuilder, ignoreAnnotations);
+		return dimensionBuilder;
+	}
 
+	// Metadata reopening uses the Type overload even for dimensions first configured generically.
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(ObjectSpaceDimensionBuilder<>))]
 	public IObjectSpaceDimensionBuilder AddDimension(Type type, bool ignoreAnnotations = false) {
 		var dimensionBuilder = (IObjectSpaceDimensionBuilder)typeof(ObjectSpaceDimensionBuilder<>).MakeGenericType(type).ActivateWithCompatibleArgs(this);
-		_dimensions.Add(dimensionBuilder);
-
-		if (!ignoreAnnotations) {
-
-			// Check for [Root] attribute — marks the dimension as a GC root so its objects are never auto-collected
-			if (type.TryGetCustomAttributeOfType<RootAttribute>(false, out _))
-				dimensionBuilder.AsRoot();
-
-			if (type.TryGetCustomAttributeOfType<EqualityComparerAttribute>(false, out var equalityComparerAttribute))
-				dimensionBuilder.UsingEqualityComparer(equalityComparerAttribute.EqualityComparerType.ActivateWithCompatibleArgs());
-
-			foreach(var member in SerializerBuilder.GetSerializableMembers(type)) {
-				if (member.MemberInfo.TryGetCustomAttributeOfType<IdentityAttribute>(false, out var identityAttribute)) 
-					dimensionBuilder.WithIdentifier(member, identityAttribute.IndexName); 
-
-				if (member.MemberInfo.TryGetCustomAttributeOfType<IndexAttribute>(false, out var indexAttribute)) 
-					dimensionBuilder.WithIndexOn(member, indexAttribute.IndexName, indexAttribute.NullPolicy); 
-
-				if (member.MemberInfo.TryGetCustomAttributeOfType<UniqueIndexAttribute>(false, out var uniqueIndexAttribute)) 
-					dimensionBuilder.WithUniqueIndexOn(member, uniqueIndexAttribute.IndexName, uniqueIndexAttribute.NullPolicy); 
-
-			}
-		}
+		ConfigureDimension(dimensionBuilder, ignoreAnnotations);
 		return dimensionBuilder;
 	}
 
@@ -373,6 +357,33 @@ public class ObjectSpaceBuilder {
 		// Storage helpers perform metadata configuration and loading after construction.
 		return new ObjectSpace(streams, BuildDefinition(), _serializerFactory, _comparerFactory,
 			FileAccessMode.Default, Sphere10FrameworkDefaults.MemoryObjectSpaceDimensionClusterSize);
+	}
+
+	private void ConfigureDimension(IObjectSpaceDimensionBuilder dimensionBuilder, bool ignoreAnnotations) {
+		var type = dimensionBuilder.ItemType;
+		_dimensions.Add(dimensionBuilder);
+
+		if (!ignoreAnnotations) {
+
+			// Check for [Root] attribute — marks the dimension as a GC root so its objects are never auto-collected
+			if (type.TryGetCustomAttributeOfType<RootAttribute>(false, out _))
+				dimensionBuilder.AsRoot();
+
+			if (type.TryGetCustomAttributeOfType<EqualityComparerAttribute>(false, out var equalityComparerAttribute))
+				dimensionBuilder.UsingEqualityComparer(equalityComparerAttribute.EqualityComparerType.ActivateWithCompatibleArgs());
+
+			foreach(var member in SerializerBuilder.GetSerializableMembers(type)) {
+				if (member.MemberInfo.TryGetCustomAttributeOfType<IdentityAttribute>(false, out var identityAttribute)) 
+					dimensionBuilder.WithIdentifier(member, identityAttribute.IndexName); 
+
+				if (member.MemberInfo.TryGetCustomAttributeOfType<IndexAttribute>(false, out var indexAttribute)) 
+					dimensionBuilder.WithIndexOn(member, indexAttribute.IndexName, indexAttribute.NullPolicy); 
+
+				if (member.MemberInfo.TryGetCustomAttributeOfType<UniqueIndexAttribute>(false, out var uniqueIndexAttribute)) 
+					dimensionBuilder.WithUniqueIndexOn(member, uniqueIndexAttribute.IndexName, uniqueIndexAttribute.NullPolicy); 
+
+			}
+		}
 	}
 
 	/// <summary>The backend selected for ordinary ObjectSpace construction.</summary>

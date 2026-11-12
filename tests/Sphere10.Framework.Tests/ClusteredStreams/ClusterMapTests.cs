@@ -27,24 +27,6 @@ public class ClusterMapTests {
 		StreamMappedCached
 	}
 
-	private IDisposable Create(ClusterMapImplementationType implementationType, int clusterSize, out ClusterMap clusterMap) {
-		switch (implementationType) {
-			case ClusterMapImplementationType.InMemory:
-				clusterMap = new InMemoryClusterMap(new ExtendedList<Cluster>(), clusterSize);
-				return new Disposables();
-			case ClusterMapImplementationType.StreamMappedNoCache:
-				var memoryStream = new MemoryStream();
-				clusterMap = new StreamMappedClusterMap(memoryStream, 0, new ClusterSerializer(clusterSize), false, autoLoad: true);
-				return new Disposables(memoryStream);
-			case ClusterMapImplementationType.StreamMappedCached:
-				memoryStream = new MemoryStream();
-				clusterMap = new StreamMappedClusterMap(memoryStream, 0, new ClusterSerializer(clusterSize), true, autoLoad: true);
-				return new Disposables(memoryStream);
-			default:
-				throw new ArgumentOutOfRangeException(nameof(implementationType), implementationType, null);
-		}
-	}
-
 	[Test]
 	public void EmptyOnActivation([Values] ClusterMapImplementationType implementationType) {
 		using var _ = Create(implementationType, 1, out var clusterMap);
@@ -139,7 +121,6 @@ public class ClusterMapTests {
 		Assert.That(reopened.ReadClusterPrev(2), Is.EqualTo(1));
 	}
 
-
 	[Test]
 	public void SingleCluster([Values] ClusterMapImplementationType implementationType) {
 		using var _ = Create(implementationType, 1, out var clusterMap);
@@ -150,6 +131,7 @@ public class ClusterMapTests {
 		Assert.That(cluster.Prev, Is.EqualTo(99));
 		Assert.That(cluster.Next, Is.EqualTo(99));
 	}
+
 
 	[Test]
 	public void TwoClusters([Values] ClusterMapImplementationType implementationType) {
@@ -186,7 +168,6 @@ public class ClusterMapTests {
 
 	}
 
-
 	[Test]
 	public void ThreeClusters_ExpandMiddle([Values] ClusterMapImplementationType implementationType) {
 		using var _ = Create(implementationType, 1, out var clusterMap);
@@ -210,6 +191,7 @@ public class ClusterMapTests {
 		Assert.That(cluster3.Next, Is.EqualTo(99));
 
 	}
+
 
 	[Test]
 	public void FourClusters_ExpandMiddle([Values] ClusterMapImplementationType implementationType) {
@@ -244,7 +226,6 @@ public class ClusterMapTests {
 
 	}
 
-
 	[Test]
 	public void RemoveAll_1([Values] ClusterMapImplementationType implementationType) {
 		// chain 1 = [0]
@@ -253,6 +234,7 @@ public class ClusterMapTests {
 		clusterMap.RemoveBackwards(0, 1);
 		Assert.That(clusterMap.Clusters.Count, Is.EqualTo(0));
 	}
+
 
 	[Test]
 	public void RemoveFullChainEnd_1([Values] ClusterMapImplementationType implementationType) {
@@ -268,7 +250,6 @@ public class ClusterMapTests {
 		Assert.That(cluster1.Prev, Is.EqualTo(88));
 		Assert.That(cluster1.Next, Is.EqualTo(88));
 	}
-
 
 	[Test]
 	public void RemoveFullChainEnd_2([Values] ClusterMapImplementationType implementationType) {
@@ -302,6 +283,7 @@ public class ClusterMapTests {
 		Assert.That(cluster1.Prev, Is.EqualTo(88));
 		Assert.That(cluster1.Next, Is.EqualTo(88));
 	}
+
 
 	[Test]
 	public void RemoveFullChainEnd_3([Values] ClusterMapImplementationType implementationType) {
@@ -376,7 +358,6 @@ public class ClusterMapTests {
 		Assert.That(cluster2.Next, Is.EqualTo(99));
 	}
 
-
 	[Test]
 	public void RemoveFromMiddle_4([Values] ClusterMapImplementationType implementationType) {
 		// chain 1 - [0,1,2]
@@ -448,6 +429,25 @@ public class ClusterMapTests {
 		Assert.That(cluster2.Prev, Is.EqualTo(0));
 		Assert.That(cluster2.Next, Is.EqualTo(99));
 
+	}
+
+
+	private IDisposable Create(ClusterMapImplementationType implementationType, int clusterSize, out ClusterMap clusterMap) {
+		switch (implementationType) {
+			case ClusterMapImplementationType.InMemory:
+				clusterMap = new InMemoryClusterMap(new ExtendedList<Cluster>(), clusterSize);
+				return new Disposables();
+			case ClusterMapImplementationType.StreamMappedNoCache:
+				var memoryStream = new MemoryStream();
+				clusterMap = new StreamMappedClusterMap(memoryStream, 0, new ClusterSerializer(clusterSize), false, autoLoad: true);
+				return new Disposables(memoryStream);
+			case ClusterMapImplementationType.StreamMappedCached:
+				memoryStream = new MemoryStream();
+				clusterMap = new StreamMappedClusterMap(memoryStream, 0, new ClusterSerializer(clusterSize), true, autoLoad: true);
+				return new Disposables(memoryStream);
+			default:
+				throw new ArgumentOutOfRangeException(nameof(implementationType), implementationType, null);
+		}
 	}
 
 	private sealed class TruncatedReadStream : MemoryStream {

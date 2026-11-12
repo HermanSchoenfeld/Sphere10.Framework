@@ -33,9 +33,7 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	/// <param name="items">
 	/// The array whose elements are to be added to the new CellBaseCollection.
 	/// </param>
-	public CellCollection(Cells.ICellVirtual[] items) {
-		this.AddRange(items);
-	}
+	public CellCollection(Cells.ICellVirtual[] items) => this.AddRange(items);
 
 	/// <summary>
 	/// Initializes a new instance of the CellBaseCollection class, containing elements
@@ -44,41 +42,25 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	/// <param name="items">
 	/// The CellBaseCollection whose elements are to be added to the new CellBaseCollection.
 	/// </param>
-	public CellCollection(CellCollection items) {
-		this.AddRange(items);
-	}
+	public CellCollection(CellCollection items) => this.AddRange(items);
 
 	/// <summary>Gets the number of cells in the collection.</summary>
-	public int Count {
-		get {
-			return _items.Count;
-		}
-	}
+	public int Count => _items.Count;
 
 	/// <summary>Gets or sets the allocated capacity without changing collection membership.</summary>
 	public int Capacity {
-		get {
-			return _items.Capacity;
-		}
-		set {
-			_items.Capacity = value;
-		}
+		get => _items.Capacity;
+		set => _items.Capacity = value;
 	}
 
 	/// <summary>Gets whether the collection rejects membership changes.</summary>
-	public bool IsReadOnly {
-		get {
-			return false;
-		}
-	}
+	public bool IsReadOnly => false;
 
 	/// <summary>
 	/// Gets or sets the Cells.ICellVirtual at the given index in this CellBaseCollection.
 	/// </summary>
 	public virtual Cells.ICellVirtual this[int index] {
-		get {
-			return _items[index];
-		}
+		get => _items[index];
 		set {
 			Guard.ArgumentNotNull(value, nameof(value));
 			_items[index] = value;
@@ -128,9 +110,7 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	/// true if value is found in this CellBaseCollection;
 	/// false otherwise.
 	/// </returns>
-	public virtual bool Contains(Cells.ICellVirtual value) {
-		return _items.Contains(value);
-	}
+	public virtual bool Contains(Cells.ICellVirtual value) => _items.Contains(value);
 
 	/// <summary>
 	/// Return the zero-based index of the first occurrence of a specific value
@@ -143,9 +123,7 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	/// The zero-based index of the first occurrence of the _ELEMENT value if found;
 	/// -1 otherwise.
 	/// </returns>
-	public virtual int IndexOf(Cells.ICellVirtual value) {
-		return _items.IndexOf(value);
-	}
+	public virtual int IndexOf(Cells.ICellVirtual value) => _items.IndexOf(value);
 
 	/// <summary>
 	/// Inserts an element into the CellBaseCollection at the specified index
@@ -174,19 +152,13 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	}
 
 	/// <summary>Removes the cell at its zero-based position.</summary>
-	public virtual void RemoveAt(int index) {
-		_items.RemoveAt(index);
-	}
+	public virtual void RemoveAt(int index) => _items.RemoveAt(index);
 
 	/// <summary>Removes all cells without disposing their borrowed contents.</summary>
-	public virtual void Clear() {
-		_items.Clear();
-	}
+	public virtual void Clear() => _items.Clear();
 
 	/// <summary>Copies the current cells into the supplied typed array.</summary>
-	public void CopyTo(Cells.ICellVirtual[] array, int arrayIndex) {
-		_items.CopyTo(array, arrayIndex);
-	}
+	public void CopyTo(Cells.ICellVirtual[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
 
 	/// <summary>
 	/// Returns an enumerator that can iterate through the elements of this CellBaseCollection.
@@ -194,9 +166,9 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	/// <returns>
 	/// An object that implements System.Collections.IEnumerator.
 	/// </returns>
-	public virtual CellCollection.Enumerator GetEnumerator() {
-		return new CellCollection.Enumerator(this);
-	}
+	public virtual CellCollection.Enumerator GetEnumerator() => new CellCollection.Enumerator(this);
+
+	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 	// Generic collection removal reports absence while the original public method still rejects it.
 	bool ICollection<Cells.ICellVirtual>.Remove(Cells.ICellVirtual item) {
@@ -208,13 +180,7 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 	}
 
 	// Both enumeration interfaces use the same typed cursor and invalid-state checks.
-	IEnumerator<Cells.ICellVirtual> IEnumerable<Cells.ICellVirtual>.GetEnumerator() {
-		return GetEnumerator();
-	}
-
-	IEnumerator IEnumerable.GetEnumerator() {
-		return GetEnumerator();
-	}
+	IEnumerator<Cells.ICellVirtual> IEnumerable<Cells.ICellVirtual>.GetEnumerator() => GetEnumerator();
 
 	/// <summary>
 	/// Type-specific enumeration class, used by CellBaseCollection.GetEnumerator.
@@ -226,46 +192,30 @@ public class CellCollection : IList<Cells.ICellVirtual>, IReadOnlyList<Cells.ICe
 		///
 		/// </summary>
 		/// <param name="collection"></param>
-		public Enumerator(CellCollection collection) {
-			_wrapped = collection._items.GetEnumerator();
-		}
+		public Enumerator(CellCollection collection) => _wrapped = collection._items.GetEnumerator();
 
 		/// <summary>
 		///
 		/// </summary>
-		public Cells.ICellVirtual Current {
-			get {
-				return (Cells.ICellVirtual)((IEnumerator)_wrapped).Current;
-			}
-		}
+		public Cells.ICellVirtual Current => (Cells.ICellVirtual)((IEnumerator)_wrapped).Current;
 
 		/// <summary>
 		///
 		/// </summary>
-		object System.Collections.IEnumerator.Current {
-			get {
-				return Current;
-			}
-		}
+		object System.Collections.IEnumerator.Current => Current;
 
 		/// <summary>
 		///
 		/// </summary>
 		/// <returns></returns>
-		public bool MoveNext() {
-			return _wrapped.MoveNext();
-		}
+		public bool MoveNext() => _wrapped.MoveNext();
 
 		/// <summary>
 		///
 		/// </summary>
-		public void Reset() {
-			_wrapped.Reset();
-		}
+		public void Reset() => _wrapped.Reset();
 
 		/// <summary>Releases the wrapped cursor without disposing its cells or collection.</summary>
-		public void Dispose() {
-			_wrapped.Dispose();
-		}
+		public void Dispose() => _wrapped.Dispose();
 	}
 }

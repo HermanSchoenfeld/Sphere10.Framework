@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,40 +22,23 @@ public partial class CrudDialog : Form {
 		_delayedInitializationAction = null;
 	}
 
-	protected override async void OnLoad(EventArgs e) {
-		base.OnLoad(e);
-		try {
-			if (_delayedInitializationAction != null) {
-				var Initialization = _delayedInitializationAction;
-				_delayedInitializationAction = null;
-				await Initialization();
-			}
-			await _visualGrid.RefreshGrid();
-		} catch (Exception Error) {
-			await ExceptionDialog.ShowAsync(this, Error);
-		}
-	}
+	public static Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource)
+		=> ShowAsync(window, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
 
-	public static Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
-		return ShowAsync(window, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
-	}
+	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource)
+		=> ShowAsync(null, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
 
-	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
-		return ShowAsync(null, title, gridBindings, typeof(DefaultCrudEntityEditor), capabilities, dataSource);
-	}
+	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource)
+		=> ShowAsync(null, title, gridBindings, entityEditorType, capabilities, dataSource);
 
-	public static Task ShowAsync<TEntity>(string title, IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
-		return ShowAsync(null, title, gridBindings, entityEditorType, capabilities, dataSource);
-	}
-
-	public static async Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public static async Task ShowAsync<TEntity>(IWin32Window window, string title, IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		using var crudDialog = new CrudDialog();
 		crudDialog.Text = title;
 		await crudDialog.SetCrudParameters(gridBindings, entityEditorType, capabilities, dataSource);
 		await crudDialog.ShowDialogAsync(window);
 	}
 
-	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
+	public async Task SetCrudParameters<TEntity>(IEnumerable<IVisualGridColumn> gridBindings, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type entityEditorType, DataSourceCapabilities capabilities, IDataSource<TEntity> dataSource) {
 		var initializationAction =
 			new Func<Task>(async () => {
 				try {
@@ -72,6 +56,20 @@ public partial class CrudDialog : Form {
 			_delayedInitializationAction = initializationAction;
 		else
 			await initializationAction();
+	}
+
+	protected override async void OnLoad(EventArgs e) {
+		base.OnLoad(e);
+		try {
+			if (_delayedInitializationAction != null) {
+				var Initialization = _delayedInitializationAction;
+				_delayedInitializationAction = null;
+				await Initialization();
+			}
+			await _visualGrid.RefreshGrid();
+		} catch (Exception Error) {
+			await ExceptionDialog.ShowAsync(this, Error);
+		}
 	}
 
 	private async void _okButton_Click(object sender, EventArgs e) {

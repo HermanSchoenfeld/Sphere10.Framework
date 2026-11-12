@@ -32,21 +32,13 @@ public class ColumnSelection : SelectionBase {
 		base.UnBindToGrid();
 	}
 
-	public override bool IsSelectedRow(int row) {
-		return false;
-	}
+	public override bool IsSelectedRow(int row) => false;
 
-	public override void SelectRow(int row, bool select) {
-		throw new Exception("The method or operation is not implemented.");
-	}
+	public override void SelectRow(int row, bool select) => throw new Exception("The method or operation is not implemented.");
 
-	public override bool IsSelectedCell(Position position) {
-		return IsSelectedColumn(position.Column);
-	}
+	public override bool IsSelectedCell(Position position) => IsSelectedColumn(position.Column);
 
-	public override void SelectCell(Position position, bool select) {
-		SelectColumn(position.Column, select);
-	}
+	public override void SelectCell(Position position, bool select) => SelectColumn(position.Column, select);
 
 	public override bool IsSelectedRange(CellRange range) {
 		for (var c = range.Start.Column; c <= range.End.Column; c++) {
@@ -74,9 +66,7 @@ public class ColumnSelection : SelectionBase {
 		}
 	}
 
-	public override bool IsEmpty() {
-		return _list.Count == 0;
-	}
+	public override bool IsEmpty() => _list.Count == 0;
 
 	public override bool IntersectsWith(CellRange rng) {
 		for (var c = rng.Start.Column; c <= rng.End.Column; c++) {
@@ -87,17 +77,7 @@ public class ColumnSelection : SelectionBase {
 		return false;
 	}
 
-	public override bool IsSelectedColumn(int column) {
-		return _list.Contains(column);
-	}
-
-	protected override void OnResetSelection() {
-		var prevRange = GetSelectionRegion();
-
-		_list.Clear();
-
-		OnSelectionChanged(new RangeRegionChangedEventArgs(null, prevRange));
-	}
+	public override bool IsSelectedColumn(int column) => _list.Contains(column);
 
 	public override RangeRegion GetSelectionRegion() {
 		var region = new RangeRegion();
@@ -108,5 +88,13 @@ public class ColumnSelection : SelectionBase {
 		}
 
 		return region;
+	}
+
+	protected override void OnResetSelection() {
+		var prevRange = GetSelectionRegion();
+
+		_list.Clear();
+
+		OnSelectionChanged(new RangeRegionChangedEventArgs(null, prevRange));
 	}
 }

@@ -55,6 +55,33 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 			.OnMoveNext(CheckVersion);
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="itemIndex">Global index of the item (not the index within page)</param>
+	/// <param name="byteOffset"></param>
+	/// <param name="byteLength"></param>
+	/// <param name="result"></param>
+	/// <returns>Number of bytes actually read</returns>
+	public override long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
+		SeekToItem(itemIndex, byteOffset);
+		result = Reader.ReadBytes(byteLength ?? ItemSize);
+		return result.Length;
+	}
+
+	public override void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes) {
+		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
+		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
+		//Stream.Seek(offset, SeekOrigin.Begin);
+		using var _ = Stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin);
+		Writer.Write(bytes);
+	}
+
+	public override int ReadItemBytes(long itemIndex, long byteOffset, Span<byte> destination) {
+		SeekToItem(itemIndex, byteOffset);
+		return ReadBytes(destination);
+	}
+
 	protected override IEnumerable<TItem> ReadInternal(long index, long count) {
 		var startIndex = index * ItemSize + _item0Offset;
 
@@ -87,6 +114,7 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 		return items.Length;
 	}
 
+
 	protected override void UpdateInternal(long index, TItem[] items, out long oldItemsSize, out long newItemsSize) {
 		CheckPageState(PageState.Loaded);
 		Guard.Ensure(index + items.Length <= Count, "Update outside bounds of list");
@@ -111,34 +139,6 @@ internal class ConstantSizeStreamPage<TItem> : StreamPageBase<TItem> {
 		Stream.SetLength(Stream.Length - erasedBytes);
 		oldItemsSize = erasedBytes;
 		Interlocked.Increment(ref _version);
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="itemIndex">Global index of the item (not the index within page)</param>
-	/// <param name="byteOffset"></param>
-	/// <param name="byteLength"></param>
-	/// <param name="result"></param>
-	/// <returns>Number of bytes actually read</returns>
-	public override long ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
-		SeekToItem(itemIndex, byteOffset);
-		result = Reader.ReadBytes(byteLength ?? ItemSize);
-		return result.Length;
-	}
-
-
-	public override void WriteItemBytes(long itemIndex, long byteOffset, ReadOnlySpan<byte> bytes) {
-		Guard.ArgumentInRange(itemIndex, 0, Count - 1, nameof(itemIndex));
-		var offset = itemIndex * ItemSize + _item0Offset + byteOffset;
-		//Stream.Seek(offset, SeekOrigin.Begin);
-		using var _ = Stream.EnterRestorePositionSeek(offset, SeekOrigin.Begin);
-		Writer.Write(bytes);
-	}
-
-	public override int ReadItemBytes(long itemIndex, long byteOffset, Span<byte> destination) {
-		SeekToItem(itemIndex, byteOffset);
-		return ReadBytes(destination);
 	}
 
 	private void SeekToItem(long itemIndex, long byteOffset) {

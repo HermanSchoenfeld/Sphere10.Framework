@@ -16,7 +16,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells;
 /// Interface to represents a cell virtual (without position or value information).
 /// </summary>
 public interface ICellVirtual {
-	// Editor
+	#region Editor
+
 	/// <summary>
 	/// Editor of this cell and others cells. If null no edit is supported.
 	///  You can share the same model between many cells to optimize memory size. Warning Changing this property can affect many cells
@@ -25,7 +26,10 @@ public interface ICellVirtual {
 		get; set;
 	}
 
-	// Controller
+	#endregion
+
+	#region Controller
+
 	/// <summary>
 	/// Controller of the cell. Represents the actions of a cell.
 	/// </summary>
@@ -33,7 +37,10 @@ public interface ICellVirtual {
 		get;
 	}
 
-	// View
+	#endregion
+
+	#region View
+
 	/// <summary>
 	/// Visual properties of this cell and other cell. You can share the VisualProperties between many cell to optimize memory size.
 	/// Warning Changing this property can affect many cells
@@ -42,13 +49,18 @@ public interface ICellVirtual {
 		get; set;
 	}
 
-	// Model
+	#endregion
+
+	#region Model
+
 	/// <summary>
 	/// Model that contains the data of the cells. Cannot be null.
 	/// </summary>
 	Models.ModelContainer Model {
 		get; set;
 	}
+
+	#endregion
 
 	/// <summary>
 	/// Add the specified controller.
@@ -76,11 +88,14 @@ public interface ICellVirtual {
 	T FindController<T>()
 		where T : class, IController;
 
-	// Copy
+	#region Copy
+
 	/// <summary>
 	/// Create a shallow copy of the current object. Note that this is not a deep clone, all the reference are the same.
 	/// Use internally MemberwiseClone method.
 	/// </summary>
 	/// <returns></returns>
 	ICellVirtual Copy();
+
+	#endregion
 }

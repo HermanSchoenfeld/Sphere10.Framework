@@ -17,6 +17,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
 using SharedUI = global::Sphere10.Framework.Application.UI;
@@ -28,6 +30,7 @@ public partial class ApplicationSettingsDialog : Form {
 	private readonly Dictionary<SettingsObject, string> _backups = new(ReferenceEqualityComparer.Instance);
 	private readonly HashSet<SettingsObject> _dirty = new(ReferenceEqualityComparer.Instance);
 	private readonly HashSet<SettingsObject> _resetPending = new(ReferenceEqualityComparer.Instance);
+	private readonly Dictionary<SettingsObject, Dictionary<SettingsObject, string[]>> _participants = new(ReferenceEqualityComparer.Instance);
 	private readonly IApplication _application;
 	private readonly IServiceProvider _services;
 	private object _selectedOwner;
@@ -65,20 +68,14 @@ public partial class ApplicationSettingsDialog : Form {
 
 	/// <summary>The selected existing application, plugin, block or screen definition.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public object SelectedOwner {
-		get {
-			return _selectedOwner;
-		}
-	}
+	public object SelectedOwner => _selectedOwner;
 
 	/// <summary>Controls reset descendants, non-editable reset targets and whether Apply saves pending resets beyond the selected page.</summary>
 	[Category("Behavior")]
 	[DefaultValue(ApplicationSettingsScreenPolicy.Default)]
 	[Description("Controls the reset scope and targets, and whether Apply includes pending resets. OK always saves pending resets.")]
 	public ApplicationSettingsScreenPolicy Policy {
-		get {
-			return _policy;
-		}
+		get => _policy;
 		set {
 			Guard.Argument((value & ~(ApplicationSettingsScreenPolicy.ResetDescendants | ApplicationSettingsScreenPolicy.IncludeNonEditableSettings
 				| ApplicationSettingsScreenPolicy.ApplyPendingResetScope)) == ApplicationSettingsScreenPolicy.None, nameof(value), "Select supported settings policy flags.");
@@ -89,11 +86,7 @@ public partial class ApplicationSettingsDialog : Form {
 
 	/// <summary>Whether any visited settings object contains unapplied dialog edits.</summary>
 	[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool HasUnappliedChanges {
-		get {
-			return _dirty.Count > 0 || _editor?.HasChanges == true;
-		}
-	}
+	public bool HasUnappliedChanges => _dirty.Count > 0 || _editor?.HasChanges == true;
 
 	/// <summary>Selects an owner already present in the running application's graph.</summary>
 	public void SelectOwner(object owner) {
@@ -105,8 +98,24 @@ public partial class ApplicationSettingsDialog : Form {
 	}
 
 	/// <summary>Validates and saves the selected page and any pending resets included by the apply policy.</summary>
-	public Task<bool> ApplySelectedAsync(CancellationToken cancellationToken = default) {
-		return ApplyAsync(Policy.HasFlag(ApplicationSettingsScreenPolicy.ApplyPendingResetScope), cancellationToken);
+	public Task<bool> ApplySelectedAsync(CancellationToken cancellationToken = default)
+		=> ApplyAsync(Policy.HasFlag(ApplicationSettingsScreenPolicy.ApplyPendingResetScope), cancellationToken);
+
+	/// <summary>Restores declared defaults for the selected reset scope without prompting or saving.</summary>
+	public void ResetSelectedDefaults() => ResetDefaults(GetResetTargets(_navigation.SelectedNode));
+
+	/// <summary>Restores local backups for unapplied edits while retaining earlier successful Apply operations.</summary>
+	public void CancelEdits() {
+		CaptureEditorChanges();
+		foreach (var settings in _dirty)
+			SettingsObjectJsonSerializer.PopulateValues(_backups[settings], settings);
+		var restored = _dirty.ToArray();
+		_dirty.Clear();
+		_resetPending.Clear();
+		foreach (var settings in restored)
+			RefreshPageCaptions(settings);
+		ClearEditor();
+		UpdateButtons();
 	}
 
 	// Each accepted record updates its own backup; a later failure leaves only the remaining changes pending.
@@ -152,11 +161,6 @@ public partial class ApplicationSettingsDialog : Form {
 		}
 	}
 
-	/// <summary>Restores declared defaults for the selected reset scope without prompting or saving.</summary>
-	public void ResetSelectedDefaults() {
-		ResetDefaults(GetResetTargets(_navigation.SelectedNode));
-	}
-
 	// Back up unvisited targets before changing any values so Cancel can restore the whole reset scope.
 	private void ResetDefaults(SettingsObject[] targets) {
 		Guard.Ensure(!_applying, "Wait for the current settings save to complete.");
@@ -170,27 +174,18 @@ public partial class ApplicationSettingsDialog : Form {
 		foreach (var settings in targets) {
 			_dirty.Add(settings);
 			_resetPending.Add(settings);
-			settings.RestoreDefaultValues();
+			var selected = GetSettings(SelectedOwner);
+			if (selected != null && !ReferenceEquals(settings, selected)
+				&& _participants.TryGetValue(selected, out var participants) && participants.TryGetValue(settings, out var members)) {
+				RestoreParticipatingDefaults(settings, members);
+			} else
+				settings.RestoreDefaultValues();
 			RefreshPageCaptions(settings);
 		}
 		if (GetSettings(_selectedOwner) != null)
 			CreateEditor();
 		_status.ForeColor = SystemColors.ControlText;
 		_status.Text = "Defaults are provisional until Apply or OK succeeds.";
-		UpdateButtons();
-	}
-
-	/// <summary>Restores local backups for unapplied edits while retaining earlier successful Apply operations.</summary>
-	public void CancelEdits() {
-		CaptureEditorChanges();
-		foreach (var settings in _dirty)
-			SettingsObjectJsonSerializer.PopulateValues(_backups[settings], settings);
-		var restored = _dirty.ToArray();
-		_dirty.Clear();
-		_resetPending.Clear();
-		foreach (var settings in restored)
-			RefreshPageCaptions(settings);
-		ClearEditor();
 		UpdateButtons();
 	}
 
@@ -239,7 +234,8 @@ public partial class ApplicationSettingsDialog : Form {
 		var settings = GetSettings(_selectedOwner);
 		var factory = (_selectedOwner as ApplicationScreenDefinition)?.SettingsEditor;
 		var editorType = factory == null ? GetDeclaredEditorType(settings.GetType()) : null;
-		var context = new ApplicationSettingsEditorContext(settings, _application, _services, this);
+		var context = new ApplicationSettingsEditorContext(settings, _application, _services, this,
+			(additional, members) => IncludeSettings(settings, additional, members));
 		ICrudEntityEditor<object> editor;
 		if (factory != null)
 			editor = factory(context);
@@ -282,6 +278,54 @@ public partial class ApplicationSettingsDialog : Form {
 			_dirty.Add(settings);
 			RefreshPageCaptions(settings);
 		}
+		if (_participants.TryGetValue(settings, out var participants))
+			foreach (var additional in participants.Keys)
+				if (_backups[additional] != SettingsObjectJsonSerializer.SerializeValues(additional)) {
+					_dirty.Add(additional);
+					RefreshPageCaptions(additional);
+				}
+	}
+
+	// Participation is opt-in for an editor and refers only to already registered, independently persisted owners.
+	private void IncludeSettings(SettingsObject primary, SettingsObject additional, string[] members) {
+		Guard.Argument(!ReferenceEquals(primary, additional), nameof(additional), "The primary settings root already belongs to this page.");
+		Guard.Argument(EnumerateNodes(_navigation.Nodes.Cast<TreeNode>()).Any(node => ReferenceEquals(GetSettings(node.Tag), additional)),
+			nameof(additional), "Additional settings must belong to an existing owner in this application's Options tree.");
+		Guard.Argument(members.Length > 0 && members.All(name => !string.IsNullOrWhiteSpace(name)), nameof(members), "Specify the existing members shown on this page.");
+		members = members.Distinct(StringComparer.Ordinal).ToArray();
+		var contract = (JsonObjectContract)new SettingsObjectJsonSerializer().ContractResolver.ResolveContract(additional.GetType());
+		foreach (var name in members) {
+			var property = TypeDescriptor.GetProperties(additional)[name];
+			var persisted = contract.Properties.FirstOrDefault(member => member.UnderlyingName == name);
+			Guard.Argument(property != null && !property.IsReadOnly && property.IsBrowsable
+				&& persisted is { Ignored: false, Readable: true, Writable: true }
+				&& ApplicationHelper.IsSettingsMember(property.PropertyType, property.Attributes.Cast<Attribute>())
+				&& name is not (nameof(SettingsObject.ID) or nameof(SettingsObject.Provider)), nameof(members), "Participating members must be editable persisted settings values.");
+		}
+		if (!_participants.TryGetValue(primary, out var participants))
+			_participants.Add(primary, participants = new Dictionary<SettingsObject, string[]>(ReferenceEqualityComparer.Instance));
+		participants[additional] = participants.TryGetValue(additional, out var previous) ? previous.Concat(members).Distinct(StringComparer.Ordinal).ToArray() : members;
+		_backups.TryAdd(additional, SettingsObjectJsonSerializer.SerializeValues(additional));
+	}
+
+	// Run the actual owner's declared defaults, retaining only the displayed members through the same value serializer used by Cancel.
+	private static void RestoreParticipatingDefaults(SettingsObject settings, string[] members) {
+		var before = SettingsObjectJsonSerializer.SerializeValues(settings);
+		var accepted = false;
+		using var rollback = Tools.Scope.ExecuteOnDispose(() => {
+			if (!accepted)
+				SettingsObjectJsonSerializer.PopulateValues(before, settings);
+		});
+		settings.RestoreDefaultValues();
+		var defaults = JObject.Parse(SettingsObjectJsonSerializer.SerializeValues(settings));
+		var retained = JObject.Parse(before);
+		var contract = (JsonObjectContract)new SettingsObjectJsonSerializer().ContractResolver.ResolveContract(settings.GetType());
+		foreach (var name in members) {
+			var property = contract.Properties.Single(member => member.UnderlyingName == name);
+			retained[property.PropertyName] = defaults[property.PropertyName]?.DeepClone();
+		}
+		SettingsObjectJsonSerializer.PopulateValues(retained.ToString(), settings);
+		accepted = true;
 	}
 
 	// Property changes remain provisional until the user explicitly saves the actual settings object.
@@ -289,6 +333,8 @@ public partial class ApplicationSettingsDialog : Form {
 		var settings = GetSettings(_selectedOwner);
 		if (settings == null)
 			return;
+		if (change.Entity is SettingsObject additional && _participants.TryGetValue(settings, out var participants) && participants.ContainsKey(additional))
+			settings = additional;
 		_dirty.Add(settings);
 		RefreshPageCaptions(settings);
 	}
@@ -410,9 +456,7 @@ public partial class ApplicationSettingsDialog : Form {
 	}
 
 	// Apply the configured reset scope while retaining unrelated manual edits on other pages.
-	private async void ApplyClick(object sender, EventArgs e) {
-		await ApplySelectedAsync();
-	}
+	private async void ApplyClick(object sender, EventArgs e) => await ApplySelectedAsync();
 
 	// Close only after the selected save succeeds and other visited pages have been resolved.
 	private async void OkClick(object sender, EventArgs e) {
@@ -456,6 +500,8 @@ public partial class ApplicationSettingsDialog : Form {
 		if (selected != null && (CanEdit(_selectedOwner) || _resetPending.Contains(selected))
 			&& (!includePendingReset || _resetPending.Count == 0 || _dirty.Contains(selected)))
 			targets.Add(selected);
+		if (selected != null && _participants.TryGetValue(selected, out var participants))
+			targets.AddRange(participants.Keys.Where(settings => _dirty.Contains(settings) || _resetPending.Contains(settings)));
 		return targets.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();
 	}
 
@@ -464,9 +510,12 @@ public partial class ApplicationSettingsDialog : Form {
 		if (node == null)
 			return Array.Empty<SettingsObject>();
 		var nodes = Policy.HasFlag(ApplicationSettingsScreenPolicy.ResetDescendants) ? EnumerateNodes(new[] { node }) : new[] { node };
-		return nodes.Where(entry => Policy.HasFlag(ApplicationSettingsScreenPolicy.IncludeNonEditableSettings) || CanEdit(entry.Tag))
+		var targets = nodes.Where(entry => Policy.HasFlag(ApplicationSettingsScreenPolicy.IncludeNonEditableSettings) || CanEdit(entry.Tag))
 			.Select(entry => GetSettings(entry.Tag)).Where(settings => settings != null)
 			.Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray();
+		var selected = GetSettings(node.Tag);
+		return selected != null && _participants.TryGetValue(selected, out var participants)
+			? targets.Concat(participants.Keys).Distinct<SettingsObject>(ReferenceEqualityComparer.Instance).ToArray() : targets;
 	}
 
 	// Describe the selected level, descendant policy and actual settings count before any defaults change.

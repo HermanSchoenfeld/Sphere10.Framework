@@ -870,11 +870,11 @@ public class ApplicationScreenTabTests {
 	private sealed class HostedTabLayoutForm : BlockMainForm {
 		public List<Exception> UiErrors { get; } = new();
 
+		public override void ReportError(Exception Error) => UiErrors.Add(Error);
+
 		// This fixture exercises native screen layout, independently of product usage/licensing startup services.
 		protected override void OnLoad(EventArgs Args) { }
 
 		protected override void OnFirstActivated() { }
-
-		public override void ReportError(Exception Error) => UiErrors.Add(Error);
 	}
 }

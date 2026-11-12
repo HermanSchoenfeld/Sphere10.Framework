@@ -18,7 +18,8 @@ namespace Sphere10.Framework.Windows.Forms.SourceGrid.Cells.Editors;
 /// </summary>
 [System.ComponentModel.ToolboxItem(false)]
 public class TextBoxUITypeEditor : TextBoxButton {
-	// Constructor
+	#region Constructor
+
 	/// <summary>
 	/// Construct a Model. Based on the Type specified the constructor populate AllowNull, DefaultValue, TypeConverter, StandardValues, StandardValueExclusive
 	/// </summary>
@@ -27,16 +28,17 @@ public class TextBoxUITypeEditor : TextBoxButton {
 		: base(type) {
 	}
 
+	#endregion
+
 	/// <summary>
 	/// Gets the control used for editing the cell.
 	/// </summary>
 	public new Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor Control {
-		get {
-			return (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
-		}
+		get => (Sphere10.Framework.Windows.Forms.TextBoxUITypeEditor)base.Control;
 	}
 
-	// Edit Control
+	#region Edit Control
+
 	/// <summary>
 	/// Create the editor control
 	/// </summary>
@@ -54,4 +56,6 @@ public class TextBoxUITypeEditor : TextBoxButton {
 		editor.UITypeEditor = uiEditor;
 		return editor;
 	}
+
+	#endregion
 }

@@ -46,10 +46,50 @@ public sealed class BlazorSettingsProvider : AsyncSettingsProviderBase, IAsyncDi
 	}
 
 	/// <summary>Browser preferences retain the existing value-only serialization without machine-bound encryption.</summary>
-	public override bool EncryptSettings {
-		get {
-			return false;
-		}
+	public override bool EncryptSettings => false;
+
+	/// <inheritdoc />
+	public override async Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default)
+		=> await ReadAsync(GetSettingKey(settingsObjectType, id), cancellationToken) != null;
+
+	/// <inheritdoc />
+	public override async Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
+		Guard.ArgumentNotNull(settings, nameof(settings));
+
+		await EnsureInitializedAsync(cancellationToken);
+		await EnsureSameUserAsync();
+		cancellationToken.ThrowIfCancellationRequested();
+		await _module.InvokeVoidAsync("Delete", GetStorageKey(GetSettingKey(settings.GetType(), settings.ID)));
+		FireChanged();
+	}
+
+	/// <inheritdoc />
+	public override async Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
+		await EnsureInitializedAsync(cancellationToken);
+		await EnsureSameUserAsync();
+		cancellationToken.ThrowIfCancellationRequested();
+		await _module.InvokeVoidAsync("Clear", GetStorageKey(Uri.EscapeDataString(_applicationKey) + "/"));
+		FireChanged();
+	}
+
+	/// <summary>Releases this circuit's imported module after any in-flight initialization finishes.</summary>
+	public async ValueTask DisposeAsync() {
+		if (_disposed)
+			return;
+		_disposed = true;
+
+		if (_initialization != null)
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => await _initialization,
+				error => error is JSDisconnectedException or OperationCanceledException);
+		if (_module != null)
+			await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => await _module.DisposeAsync());
+	}
+
+	// Reads a provider key only after interactive initialization and verifies the circuit's original user.
+	internal async Task<string> ReadAsync(string key, CancellationToken cancellationToken) {
+		await EnsureInitializedAsync(cancellationToken);
+		await EnsureSameUserAsync();
+		return await _module.InvokeAsync<string>("Read", cancellationToken, GetStorageKey(key));
 	}
 
 	/// <inheritdoc />
@@ -100,51 +140,6 @@ public sealed class BlazorSettingsProvider : AsyncSettingsProviderBase, IAsyncDi
 
 		// Once a browser write starts, await its acknowledgement before publishing accepted values.
 		await _module.InvokeVoidAsync("Write", GetStorageKey(GetSettingKey(settings.GetType(), settings.ID)), payload);
-	}
-
-	/// <inheritdoc />
-	public override async Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
-		return await ReadAsync(GetSettingKey(settingsObjectType, id), cancellationToken) != null;
-	}
-
-	/// <inheritdoc />
-	public override async Task DeleteSettingAsync(SettingsObject settings, CancellationToken cancellationToken = default) {
-		Guard.ArgumentNotNull(settings, nameof(settings));
-
-		await EnsureInitializedAsync(cancellationToken);
-		await EnsureSameUserAsync();
-		cancellationToken.ThrowIfCancellationRequested();
-		await _module.InvokeVoidAsync("Delete", GetStorageKey(GetSettingKey(settings.GetType(), settings.ID)));
-		FireChanged();
-	}
-
-	/// <inheritdoc />
-	public override async Task ClearSettingsAsync(CancellationToken cancellationToken = default) {
-		await EnsureInitializedAsync(cancellationToken);
-		await EnsureSameUserAsync();
-		cancellationToken.ThrowIfCancellationRequested();
-		await _module.InvokeVoidAsync("Clear", GetStorageKey(Uri.EscapeDataString(_applicationKey) + "/"));
-		FireChanged();
-	}
-
-	/// <summary>Releases this circuit's imported module after any in-flight initialization finishes.</summary>
-	public async ValueTask DisposeAsync() {
-		if (_disposed)
-			return;
-		_disposed = true;
-
-		if (_initialization != null)
-			await Tools.Exceptions.ExecuteCapturingExceptionAsync(async () => await _initialization,
-				error => error is JSDisconnectedException or OperationCanceledException);
-		if (_module != null)
-			await Tools.Exceptions.ExecuteCapturingExceptionAsync<JSDisconnectedException>(async () => await _module.DisposeAsync());
-	}
-
-	// Reads a provider key only after interactive initialization and verifies the circuit's original user.
-	internal async Task<string> ReadAsync(string key, CancellationToken cancellationToken) {
-		await EnsureInitializedAsync(cancellationToken);
-		await EnsureSameUserAsync();
-		return await _module.InvokeAsync<string>("Read", cancellationToken, GetStorageKey(key));
 	}
 
 	// Imports storage only in the live circuit; a failed initialization remains retryable on a later explicit save.
@@ -198,7 +193,5 @@ public sealed class BlazorSettingsProvider : AsyncSettingsProviderBase, IAsyncDi
 	}
 
 	// Segments are escaped independently, so application keys cannot collide with another browser/user namespace.
-	private string GetStorageKey(string profileKey) {
-		return "sphere10.settings:" + Uri.EscapeDataString(_ownerKey) + ":" + profileKey;
-	}
+	private string GetStorageKey(string profileKey) => "sphere10.settings:" + Uri.EscapeDataString(_ownerKey) + ":" + profileKey;
 }

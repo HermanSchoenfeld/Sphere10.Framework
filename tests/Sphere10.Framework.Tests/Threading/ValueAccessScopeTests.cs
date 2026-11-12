@@ -243,6 +243,12 @@ public class ValueAccessScopeTests {
 		public bool FailNextDispose { get; set; }
 		public Action DisposingCallback { get; set; }
 
+		public void ResetCounters() {
+			Entered = 0;
+			Completed = 0;
+			DisposeAttempts = 0;
+		}
+
 		protected override void OnAccessScopeOpen() {
 			if (FailNextEnter) {
 				FailNextEnter = false;
@@ -259,12 +265,6 @@ public class ValueAccessScopeTests {
 			}
 			DisposingCallback?.Invoke();
 			Completed++;
-		}
-
-		public void ResetCounters() {
-			Entered = 0;
-			Completed = 0;
-			DisposeAttempts = 0;
 		}
 
 	}
