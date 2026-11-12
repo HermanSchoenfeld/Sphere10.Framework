@@ -146,6 +146,7 @@ partial class TelemetryChartTestScreen {
 		_cpuDescription.ForeColor = Color.FromArgb(83, 96, 112);
 		_cpuDescription.TextAlign = ContentAlignment.MiddleLeft;
 		_cpuChart.Name = "telemetryCpuChart";
+		_cpuChart.SampleActivated += SampleActivated;
 		_cpuChart.Dock = DockStyle.Fill;
 		_cpuChart.MinimumSize = new Size(240, 130);
 		_cpuChart.ChartTitle = "CPU Utilization";
@@ -168,6 +169,7 @@ partial class TelemetryChartTestScreen {
 		_memoryDescription.ForeColor = Color.FromArgb(83, 96, 112);
 		_memoryDescription.TextAlign = ContentAlignment.MiddleLeft;
 		_memoryChart.Name = "telemetryMemoryChart";
+		_memoryChart.SampleActivated += SampleActivated;
 		_memoryChart.Dock = DockStyle.Fill;
 		_memoryChart.MinimumSize = new Size(240, 130);
 		_memoryChart.ChartTitle = "Working Set";
@@ -188,6 +190,7 @@ partial class TelemetryChartTestScreen {
 		_throughputDescription.ForeColor = Color.FromArgb(83, 96, 112);
 		_throughputDescription.TextAlign = ContentAlignment.MiddleLeft;
 		_throughputChart.Name = "telemetryThroughputChart";
+		_throughputChart.SampleActivated += SampleActivated;
 		_throughputChart.Dock = DockStyle.Fill;
 		_throughputChart.MinimumSize = new Size(240, 130);
 		_throughputChart.ChartTitle = "Receive Throughput";
@@ -211,6 +214,7 @@ partial class TelemetryChartTestScreen {
 		_temperatureDescription.ForeColor = Color.FromArgb(83, 96, 112);
 		_temperatureDescription.TextAlign = ContentAlignment.MiddleLeft;
 		_temperatureChart.Name = "telemetryTemperatureChart";
+		_temperatureChart.SampleActivated += SampleActivated;
 		_temperatureChart.Dock = DockStyle.Fill;
 		_temperatureChart.MinimumSize = new Size(240, 130);
 		_temperatureChart.ChartTitle = "Temperature Sensor";
