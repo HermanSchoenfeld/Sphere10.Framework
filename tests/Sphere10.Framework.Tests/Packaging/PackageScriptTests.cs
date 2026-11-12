@@ -38,11 +38,13 @@ public class PackageScriptTests {
 		Tools.FileSystem.CreateDirectory(_packagesDirectory);
 		Tools.FileSystem.CreateDirectory(_buildDirectory);
 		Tools.FileSystem.CreateDirectory(Path.Combine(_directory, "src"));
-		File.WriteAllText(Path.Combine(_directory, "src", "Sphere10.Framework (Win).sln"), "Synthetic solution for command argument verification.");
+		var projects = new List<string>();
 		foreach (var packageId in new[] { "Sphere10.Framework", "Sphere10.Framework.CryptoEx", "Sphere10.HashLib4CSharp" }) {
+			projects.Add($"Project(\"synthetic\") = \"{packageId}\", \"{packageId}/{packageId}.csproj\", \"synthetic\"");
 			CreatePackage(packageId, "1.2.3", directory: _buildDirectory);
 			CreatePackage(packageId, "1.2.3", symbols: true, directory: _buildDirectory);
 		}
+		File.WriteAllLines(Path.Combine(_directory, "src", "Sphere10.Framework (Win).sln"), projects);
 	}
 
 	[TearDown]
@@ -216,15 +218,17 @@ public class PackageScriptTests {
 		var result = await RunScript("pack.ps1", new(), powershellExecutable: powershellExecutable);
 
 		Assert.That(result.ExitCode, Is.Zero, result.Output);
-		Assert.That(result.Commands.Select(command => command[0]), Is.EqualTo(new[] { "clean", "pack" }));
-		foreach (var command in result.Commands) {
-			Assert.That(command[1], Is.EqualTo(Path.Combine(_directory, "src", "Sphere10.Framework (Win).sln")));
+		var buildCommands = result.Commands.Where(command => command[0] is "clean" or "pack").ToArray();
+		Assert.That(buildCommands.Select(command => command[0]), Is.EqualTo(new[] { "clean", "pack" }));
+		Assert.That(buildCommands[0][1], Is.EqualTo(Path.Combine(_directory, "src", "Sphere10.Framework (Win).sln")));
+		Assert.That(Path.GetFileName(buildCommands[1][1]), Is.EqualTo("Packages.sln"));
+		foreach (var command in buildCommands) {
 			Assert.That(command, Does.Contain("Release"));
 		}
 		Assert.That(Directory.GetFiles(_packagesDirectory).Select(Path.GetFileName), Is.EquivalentTo(new[] {
 			"Sphere10.Framework.1.2.3.nupkg", "Sphere10.Framework.1.2.3.snupkg", "Sphere10.Framework.CryptoEx.1.2.3.nupkg",
 			"Sphere10.Framework.CryptoEx.1.2.3.snupkg", "Sphere10.HashLib4CSharp.1.2.3.nupkg", "Sphere10.HashLib4CSharp.1.2.3.snupkg",
-			"Unrelated.1.0.0.nupkg", "release-notes.txt"
+			"Unrelated.1.0.0.nupkg", "release-notes.txt", "package-projects.json"
 		}));
 		Assert.That(File.ReadAllText(unrelatedPackage), Is.EqualTo("Existing unrelated package"));
 		Assert.That(File.ReadAllText(notes), Is.EqualTo("Existing notes"));
@@ -242,7 +246,7 @@ public class PackageScriptTests {
 		var result = await RunScript("pack.ps1", new(), failure);
 
 		Assert.That(result.ExitCode, Is.Not.Zero, result.Output);
-		Assert.That(result.Commands, Has.Length.EqualTo(expectedCommandCount));
+		Assert.That(result.Commands.Count(command => command[0] is "clean" or "pack"), Is.EqualTo(expectedCommandCount));
 		Assert.That(File.ReadAllBytes(previousPackage), Is.EqualTo(previousPackageBytes));
 		Assert.That(File.ReadAllBytes(previousSymbols), Is.EqualTo(previousSymbolBytes));
 		Assert.That(Directory.GetFiles(_packagesDirectory), Has.Length.EqualTo(2));
@@ -254,7 +258,11 @@ public class PackageScriptTests {
 		var result = await RunScript("pack.ps1", new() { ["OutputDirectory"] = outputDirectory });
 
 		Assert.That(result.ExitCode, Is.Zero, result.Output);
-		Assert.That(Directory.GetFiles(outputDirectory), Has.Length.EqualTo(6));
+		Assert.That(Directory.GetFiles(outputDirectory, "*.nupkg"), Has.Length.EqualTo(3));
+		Assert.That(Directory.GetFiles(outputDirectory, "*.snupkg"), Has.Length.EqualTo(3));
+		using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputDirectory, "package-projects.json")));
+		Assert.That(manifest.RootElement.EnumerateArray().Select(project => project.GetProperty("Id").GetString()),
+			Is.EquivalentTo(new[] { "Sphere10.Framework", "Sphere10.Framework.CryptoEx", "Sphere10.HashLib4CSharp" }));
 		Assert.That(Directory.GetFiles(_packagesDirectory), Is.Empty);
 	}
 
@@ -297,13 +305,20 @@ public class PackageScriptTests {
 		Tools.FileSystem.CreateDirectory(scriptsDirectory);
 		var deployedScriptPath = Path.Combine(scriptsDirectory, scriptName);
 		File.Copy(scriptPath, deployedScriptPath);
+		if (scriptName == "pack.ps1")
+			File.Copy(Path.Combine(Path.GetDirectoryName(scriptPath), "package-common.ps1"), Path.Combine(scriptsDirectory, "package-common.ps1"));
 		var wrapper = Path.Combine(_directory, "invoke-script.ps1");
 		File.WriteAllText(wrapper, """
 			$ErrorActionPreference = 'Stop'
 			function global:dotnet {
-				$commandArguments = @($args)
+				# Native invocation flattens array arguments; model that for the solution's project list.
+				$commandArguments = [string[]]@($args | ForEach-Object { $_ })
 				[IO.File]::AppendAllText($env:PACKAGE_TEST_COMMANDS, (ConvertTo-Json -InputObject $commandArguments -Compress) + [Environment]::NewLine)
 				$global:LASTEXITCODE = 0
+				if ($commandArguments[0] -eq 'msbuild') {
+					$id = [IO.Path]::GetFileNameWithoutExtension($commandArguments[1])
+					return (ConvertTo-Json @{ Properties = @{ IsPackable = 'true'; PackageId = $id; TargetFramework = 'net10.0'; TargetFrameworks = '' } })
+				}
 				$failed = $env:PACKAGE_TEST_FAILURE -eq $commandArguments[0] -or
 					($env:PACKAGE_TEST_FAILURE -eq 'mainPush' -and $commandArguments[2] -like '*.nupkg') -or
 					($env:PACKAGE_TEST_FAILURE -eq 'symbolPush' -and $commandArguments[2] -like '*.snupkg')
