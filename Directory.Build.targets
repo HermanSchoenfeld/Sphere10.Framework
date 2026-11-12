@@ -76,4 +76,9 @@
       <InformationalVersion>$(FileVersion)</InformationalVersion>
     </PropertyGroup>
   </Target>
+
+  <!-- Runtime async is the documented net11.0 compiler opt-in; net10.0 builds keep compiler-generated async state machines. -->
+  <PropertyGroup Condition="'$(TargetFramework)' != '' And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
 </Project>

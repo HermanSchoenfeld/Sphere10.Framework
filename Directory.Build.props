@@ -34,6 +34,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
 
+    <!-- Target .NET 11 as well when the building SDK supports it; machines with only the .NET 10 SDK keep building net10.0. -->
+    <FrameworkBuildSdkVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildSDKsPath)'))))</FrameworkBuildSdkVersion>
+    <FrameworkBuildSupportsNet11 Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(FrameworkBuildSdkVersion)', '^\d+\.')) and $([MSBuild]::VersionGreaterThanOrEquals('$(FrameworkBuildSdkVersion)', '11.0'))">true</FrameworkBuildSupportsNet11>
+    <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0;net11.0</FrameworkTargetFrameworks>
+    <FrameworkTargetFrameworks Condition="'$(FrameworkTargetFrameworks)' == ''">net10.0</FrameworkTargetFrameworks>
+    <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == '' and '$(FrameworkBuildSupportsNet11)' == 'true'">net10.0-windows;net11.0-windows</FrameworkWindowsTargetFrameworks>
+    <FrameworkWindowsTargetFrameworks Condition="'$(FrameworkWindowsTargetFrameworks)' == ''">net10.0-windows</FrameworkWindowsTargetFrameworks>
+
     <!-- NuGet Packaging -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
