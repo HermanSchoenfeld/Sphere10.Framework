@@ -19,10 +19,10 @@ convention, boolean marshaling, SetLastError and ownership using official Micros
 documentation and real callers.
 
 Before adding an API, inspect the [Windows resource catalog](../../../src/Sphere10.Framework.Windows/README.md#windows-resource-abstractions).
-Extend the existing instance domain utility exposed by Tools.Windows in its
-owning file: RegistryUtil, ServiceUtil, ProcessSignaler, WindowsNetworkUtil,
-WindowsDriveUtil and their peers. Keep discovery in WindowsTool.cs and source in
-the owning domain folder; read the
+Extend the existing static domain utility nested in Tools.Windows in its owning
+file: Tools.Windows.Services in Services/ServiceUtil.cs, Tools.Windows.Processes
+in Processes/ProcessSignaler.cs, Tools.Windows.Network, Tools.Windows.Drives and
+their peers. Keep the source in the owning domain folder; read the
 [facade/folder rules](framework-utilities.md#windows-utility-facade-and-source-folders).
 ServiceControlManagerSentry wraps sc.exe rather than native SCM operations; read
 [Process Sentries](process-sentries.md). Do not add partial extension files.
@@ -38,9 +38,9 @@ several screens of one app is not thereby reusable Framework code.
 
 Keep dependency directions intact: Windows may depend on Core/provider packages,
 not an executable, Application, Data or WinForms. Core's
-[SnapshotDataSource<T>](../../../src/Sphere10.Framework/DataSource/SnapshotDataSource.cs)
+[ArrayDataSource<T>](../../../src/Sphere10.Framework/DataSource/ArrayDataSource.cs)
 owns generic query behavior; WinForms'
-[VisualGridSnapshotController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridSnapshotController.cs)
+[VisualGridArrayController<T>](../../../src/Sphere10.Framework.Windows.Forms/VisualGrid/VisualGridArrayController.cs)
 owns visual binding/selection. Application export envelopes use the existing
 Data CSV implementation without pulling it into native wrappers.
 
@@ -60,6 +60,14 @@ automatic DPI resize. This keeps an app's existing DPI policy intact. See
 Microsoft's [GetWindowRect](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowrect)
 and [mixed-mode DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-improvements-for-desktop-applications)
 contracts; a single scale multiplier cannot map a mixed-monitor desktop.
+[ThreadGroupAffinityScope](../../../src/Sphere10.Framework.Windows/Scopes/ThreadGroupAffinityScope.cs)
+follows the same synchronous, same-thread contract for processor-group affinity.
+
+Open kernel devices through [WindowsDevice](../../../src/Sphere10.Framework.Windows/Drivers/WindowsDevice.cs)
+rather than binding `CreateFileW`/`DeviceIoControl` in an application: it owns the
+handle, surfaces the unchanged Windows error and dispatches caller-owned control
+buffers. The driver's control codes, payload layout and response validation stay
+with the consumer that knows that driver.
 
 Use [Tools.Windows.Files](../../../src/Sphere10.Framework.Windows/Files/FileUtil.cs)
 for named `$DATA` stream inventory, bounded byte reads, writes and deletion.
@@ -144,7 +152,7 @@ See [NetLocalGroupGetMembers](https://learn.microsoft.com/en-us/windows/win32/ap
 [NetUserEnum](https://learn.microsoft.com/en-us/windows/win32/api/lmaccess/nf-lmaccess-netuserenum)
 and [ConvertStringSidToSidW](https://learn.microsoft.com/en-us/windows/win32/api/sddl/nf-sddl-convertstringsidtosidw).
 
-[SecurityDescriptorUtil](../../../src/Sphere10.Framework.Windows/Security/SecurityDescriptorUtil.cs), accessed through Tools.Windows.SecurityDescriptors,
+[Tools.Windows.SecurityDescriptors](../../../src/Sphere10.Framework.Windows/Security/SecurityDescriptorUtil.cs), accessed through Tools.Windows.SecurityDescriptors,
 matches exact owner/group/ACE SIDs and translates original identities once while
 preserving unrelated sections. SDDL text replacement can match prefixes, miss
 aliases and chain mappings. Distinguish unmapped accounts from lookup access/network
