@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
 using SharedUI = global::Sphere10.Framework.Application.UI;
 
@@ -54,7 +53,6 @@ public class SharedPresentationAdapterTests {
 		Assert.That(((BlazorUI.IApplicationBlock)block).Id, Is.EqualTo("workspace"));
 		Assert.That(menu.Text, Is.EqualTo("Screens"));
 		Assert.That(((BlazorUI.IApplicationMenuItem)screen).Id, Is.EqualTo("overview"));
-		Assert.That(typeof(BlazorRoutedApplicationBlock).IsAssignableTo(typeof(SharedUI.IApplicationBlock)), Is.False);
 		Assert.That(screen.ScreenDefinition.ScreenType, Is.EqualTo(typeof(ExtensionScreen)));
 		Assert.That(screen.ScreenDefinition.ActivationMode, Is.Null, "Omitted registration policy remains a platform default.");
 		Assert.That(((BlazorScreenMenuItem)screen).ActivationMode, Is.EqualTo(ScreenActivationMode.MultiInstance));

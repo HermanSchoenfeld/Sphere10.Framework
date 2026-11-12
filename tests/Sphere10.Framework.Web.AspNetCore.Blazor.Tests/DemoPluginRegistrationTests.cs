@@ -20,7 +20,6 @@ using Sphere10.Framework.Utils.BlazorTester;
 using Sphere10.Framework.Utils.BlazorTester.Application;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Models;
 using Sphere10.Framework.Utils.BlazorTester.WidgetGallery.Widgets.Services;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Tests.Loader;
 using BlazorUI = global::Sphere10.Framework.Web.AspNetCore.Blazor;
@@ -50,9 +49,6 @@ public class DemoPluginRegistrationTests {
 		Assert.That(application.Blocks, Has.Length.EqualTo(5));
 		Assert.That(application.Menus.Single(menu => menu.Id == "file").Items.Single(item => item.Id == "exit"), Is.TypeOf<BlazorActionMenuItem>());
 		Assert.That(provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>().Select(registration => registration.Plugin), Is.EqualTo(plugins));
-		Assert.That(provider.GetService<IBlazorRoutedPluginLocator>(), Is.Null);
-		Assert.That(provider.GetService<IBlazorRoutedPluginManager>(), Is.Null);
-		Assert.That(provider.GetService<IBlazorRoutedApplicationManager>(), Is.Null);
 	}
 
 	[TestCase("components", "gallery")]

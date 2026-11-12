@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sphere10.Framework.Application;
 using Sphere10.Framework.Application.UI;
-using Sphere10.Framework.Web.AspNetCore.Blazor.Plugins;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Services;
 using Sphere10.Framework.Web.AspNetCore.Blazor.Theming;
 using Sphere10.Framework.Web.AspNetCore.Blazor.ViewModels;
@@ -69,43 +68,6 @@ public static class IServiceCollectionExtensions {
 	public static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<Application> configure) {
 		Guard.ArgumentNotNull(configure, nameof(configure));
 		return AddSphere10BlazorApplication(services, configure, null);
-	}
-
-	// Builder metadata travels into each circuit's application; no application or preference values are resolved at registration time.
-	internal static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<Application> configure,
-		string settingsKey) {
-		Guard.ArgumentNotNull(services, nameof(services));
-		services.AddSphere10Blazor();
-		if (settingsKey != null)
-			services.Replace(ServiceDescriptor.Scoped<BlazorSettingsProvider>(provider => new BlazorSettingsProvider(provider, settingsKey)));
-		services.Replace(ServiceDescriptor.Scoped<IApplication>(provider => {
-			var application = new Application(provider.GetRequiredService<IApplicationScreenHost>(),
-				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider, settingsKey);
-
-			// Configuration and later disposal share the provider captured while this circuit scope is alive.
-			using var settings = UserSettings.UseProvider(application.Settings);
-			try {
-				configure?.Invoke(application);
-				return application;
-			} catch {
-				// Failed construction must not leave a subscription on the circuit's host.
-				application.Dispose();
-				throw;
-			}
-		}));
-		return services;
-	}
-
-	/// <summary>
-	/// Registers navigation services using the application's plugin locator.
-	/// </summary>
-	public static IServiceCollection AddSphere10BlazorPlugins<TPluginLocator>(this IServiceCollection services)
-		where TPluginLocator : class, IBlazorRoutedPluginLocator {
-		Guard.ArgumentNotNull(services, nameof(services));
-		services.TryAddScoped<IBlazorRoutedPluginLocator, TPluginLocator>();
-		services.TryAddScoped<IBlazorRoutedPluginManager, DefaultBlazorRoutedPluginManager>();
-		services.TryAddScoped<IBlazorRoutedApplicationManager, DefaultBlazorRoutedApplicationManager>();
-		return services;
 	}
 
 	/// <summary>Builds and registers a modern plugin into the existing application catalog and circuit-scoped screen host.</summary>
@@ -164,6 +126,31 @@ public static class IServiceCollectionExtensions {
 			type.Name.Contains("ViewModel", StringComparison.OrdinalIgnoreCase) && type.IsClass && !type.IsAbstract);
 		foreach (var viewModel in viewModels)
 			services.TryAddTransient(viewModel, viewModel);
+		return services;
+	}
+
+	// Builder metadata travels into each circuit's application; no application or preference values are resolved at registration time.
+	internal static IServiceCollection AddSphere10BlazorApplication(this IServiceCollection services, Action<Application> configure,
+		string settingsKey) {
+		Guard.ArgumentNotNull(services, nameof(services));
+		services.AddSphere10Blazor();
+		if (settingsKey != null)
+			services.Replace(ServiceDescriptor.Scoped<BlazorSettingsProvider>(provider => new BlazorSettingsProvider(provider, settingsKey)));
+		services.Replace(ServiceDescriptor.Scoped<IApplication>(provider => {
+			var application = new Application(provider.GetRequiredService<IApplicationScreenHost>(),
+				provider.GetServices<ApplicationPluginRegistration<IBlazorPlugin>>(), provider, settingsKey);
+
+			// Configuration and later disposal share the provider captured while this circuit scope is alive.
+			using var settings = UserSettings.UseProvider(application.Settings);
+			try {
+				configure?.Invoke(application);
+				return application;
+			} catch {
+				// Failed construction must not leave a subscription on the circuit's host.
+				application.Dispose();
+				throw;
+			}
+		}));
 		return services;
 	}
 
