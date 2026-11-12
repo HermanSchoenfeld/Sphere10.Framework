@@ -14,6 +14,7 @@ The domain folder itself declares no types. Its types are grouped by subfolder b
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`NewWidgetSummaryStep`](Components/NewWidgetSummaryStep.razor) | class | Razor wizard step titled "Summary" that shows the new widget's name, description and price. |
 | [`NewWidgetWizardStep`](Components/NewWidgetWizardStep.razor) | class | Razor wizard step titled "Details" that edits the name, description, price and the "Supply dimensions" choice, and declares `WizardStepTraits.AssumeHasNext`. |
 | [`WidgetDimensionsStep`](Components/WidgetDimensionsStep.razor) | class | Razor wizard step titled "Properties" that edits the widget's height and length. |
 
@@ -27,6 +28,7 @@ The domain folder itself declares no types. Its types are grouped by subfolder b
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`Modals`](Pages/Modals.razor) | class | Razor page with buttons that open an `InfoDialog` and a `ConfirmDialog` through `IModalService`. |
 | [`Tables`](Pages/Tables.razor) | class | Razor page that shows sample blocks in a `RapidTable`, a `PagedTable` and a `VirtualPagedTable`, and opens an `InfoDialog` for a selected row. |
 | [`Wizards`](Pages/Wizards.razor) | class | Razor page that opens the new-widget wizard through `IModalService.ShowWizardAsync`, with an option to allow cancellation, and lists the widgets it created. |
 

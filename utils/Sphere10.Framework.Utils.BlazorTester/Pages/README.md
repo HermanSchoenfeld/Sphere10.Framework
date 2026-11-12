@@ -8,3 +8,7 @@ These components carry no `@page` route. The single routed [`Workspace`](../Appl
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`DialogsPage`](DialogsPage.razor) | class | Razor content that hosts `DialogsDemo` |
+| [`OverviewPage`](OverviewPage.razor) | class | Razor tour of linked cards for the application patterns, the component reference and the screen-hosting and legacy examples, shown by the default screen |
+| [`TablesPage`](TablesPage.razor) | class | Razor content that hosts `TablesDemo` |
+| [`WizardsPage`](WizardsPage.razor) | class | Razor content that hosts `GuidedWorkspaceDemo` followed by the original `WizardsDemo` |

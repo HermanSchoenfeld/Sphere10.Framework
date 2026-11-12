@@ -14,5 +14,3 @@ The scoped theme service and the catalogue of built-in theme presets with their 
 | [`ThemeMode`](ThemeMode.cs) | enum | The 20 built-in presets, such as `Light`, `Dark`, `Blue`, `ClassicBlue`, `Hud` and `AppStack`. |
 | [`ThemeService`](ThemeService.cs) | class | Default `IThemeService` that holds the current theme, defaulting to `Light`. |
 | [`ThemeServiceBase`](ThemeServiceBase.cs) | abstract class | Base theme service whose `Toggle` calls `SetTheme` with `Light` or `Dark` and whose `OnChanged` raises `Changed`. |
-| [`ThemeServiceDecorator`](ThemeServiceDecorator.cs) | abstract class | Decorator base over an inner `IThemeService`. |
-| [`ThemeServiceDecorator<TConcrete>`](ThemeServiceDecorator.cs) | abstract class | Forwards theme members and the `Changed` event to an inner service of type `TConcrete`. |

@@ -41,7 +41,8 @@ public class ApplicationCommandScopeTests {
 			var pipe = await host.ActivateScreenAsync("pipes", "pipe-screen");
 			var rendered = await renderer.RenderComponentAsync<ApplicationShell>();
 			var bar = provider.GetRequiredService<CommandCapture>().Bar;
-			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "tools", "inspect", "help" }));
+			// The shell appends its own Screens menu before Help once a screen is open; block scopes never own it.
+			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "tools", "inspect", "sphere10-screens-menu", "help" }));
 			Assert.That(bar.Menus.Count(menu => menu.Id == "file"), Is.EqualTo(1));
 			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item.Id),
 				Is.EqualTo(new[] { "common-open", "save", "export", "pipe-file", "export", "save" }));
@@ -50,7 +51,7 @@ public class ApplicationCommandScopeTests {
 
 			var admin = await host.ActivateScreenAsync("administration", "admin-screen");
 			Assert.That(host.SelectedBlock.Id, Is.EqualTo("administration"));
-			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "reports", "help" }));
+			Assert.That(bar.Menus.Where(menu => menu.Items.Any(item => item.IsVisible)).Select(menu => menu.Id), Is.EqualTo(new[] { "file", "reports", "sphere10-screens-menu", "help" }));
 			Assert.That(bar.Menus.Single(menu => menu.Id == "file").Items.Where(item => item.IsVisible).Select(item => item.Id),
 				Is.EqualTo(new[] { "common-open", "save", "export", "admin-file" }));
 			Assert.That(bar.ToolBarItems.Select(item => item.Title), Is.EqualTo(new[] { "Common tool", "Common save", "Administration tool" }));

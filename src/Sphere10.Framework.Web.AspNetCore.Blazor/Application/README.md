@@ -38,6 +38,7 @@ Each interactive circuit gets one `ApplicationScreenHost`, registered under `IAp
 | [`BlazorUserInterfaceServices`](BlazorUserInterfaceServices.cs) | class | Circuit-local command execution, error and information reporting, yes or no prompts and exit coordination over the screen host. |
 | [`IApplication`](IApplication.cs) | interface | Circuit-local application contract over the screen host, with blocks, loaded plugins, application commands and lifecycle. |
 | [`IApplicationBlock`](IApplicationBlock.cs) | interface | Blazor block contract that adds a title, icon URL, tooltip and default-screen metadata to the shared block. |
+| [`IApplicationCheckableMenuItem`](IApplicationCheckableMenuItem.cs) | interface | Menu command with an `IsChecked` state, such as the active entry of the Screens menu. |
 | [`IApplicationMenu`](IApplicationMenu.cs) | interface | Blazor menu contract with its parent block, ID and icon. |
 | [`IApplicationMenuItem`](IApplicationMenuItem.cs) | interface | Blazor menu item metadata and registration-time notification handlers. |
 | [`IApplicationScreen`](IApplicationScreen.cs) | interface | Contract for a renderer-created screen component that implements the shared screen lifecycle and command provider. |

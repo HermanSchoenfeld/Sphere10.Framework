@@ -48,7 +48,7 @@ Every folder of `Sphere10.Framework.Web.AspNetCore.Blazor` is a domain with its 
 | [Grids](Grids/README.md) | The controller, column model, settings and value conversions behind the `BlazorGrid<TItem>` CRUD grid. | [source](Grids/) |
 | [Modal](Modal/README.md) | The current dialog services that show modal components, confirmations, information messages and wizards through `UI.Dialogs.ModalHost`. | [source](Modal/) |
 | [Models](Models/README.md) | Small records and classes used by the original component generation for search results and paged table requests. | [source](Models/) |
-| [Plugins](Plugins/README.md) | Blazor plugin definitions and builders for the application workspace, and the older routed-plugin navigation model. | [source](Plugins/) |
+| [Plugins](Plugins/README.md) | Blazor plugin definitions and builders for the application workspace. | [source](Plugins/) |
 | [Services](Services/README.md) | Services of the original component generation for modal dialogs, wizard building, typed event publishing and example endpoint and node data. | [source](Services/) |
 | [Theming](Theming/README.md) | The scoped theme service and the catalogue of built-in theme presets with their stylesheet paths and dark or light classification. | [source](Theming/) |
 | [UI](UI/README.md) | The Razor components of the current generation, from the application shell and CRUD grid to dialogs, tables, layout pieces, theme controls and the wizard host. | [source](UI/) |
@@ -61,7 +61,7 @@ Types declared in the project folder itself:
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`IServiceCollectionExtensions`](IServiceCollectionExtensions.cs) | static class | `BuildBlazorApplication`, `AddSphere10Blazor`, `AddSphere10BlazorApplication`, `AddSphere10BlazorPlugin`, `AddSphere10BlazorPlugins<TPluginLocator>`, `AddApplicationBlock` and `AddViewModelsFromAssembly` register the Blazor application, plugins, blocks, screen host, dialog, wizard, theme and settings services. |
+| [`IServiceCollectionExtensions`](IServiceCollectionExtensions.cs) | static class | `BuildBlazorApplication`, `AddSphere10Blazor`, `AddSphere10BlazorApplication`, `AddSphere10BlazorPlugin`, `AddApplicationBlock` and `AddViewModelsFromAssembly` register the Blazor application, plugins, blocks, screen host, dialog, wizard, theme and settings services. |
 <!-- domains:end -->
 
 ## Current Blazor hosting and assets
@@ -194,7 +194,7 @@ For a static host that does not use `ThemeProvider`, include the chosen template
 <div class="sphere10-theme" data-sphere10-theme="hud" data-bs-theme="dark">...</div>
 ```
 
-`ThemeProvider` changes the stylesheet and `data-sphere10-theme`/`data-bs-theme` attributes on a stable wrapper. It supports fingerprinted static assets through Blazor's `Assets` collection. `ThemeMode.ClassicBlue` retains the white header, pale content background, blue sidebar gradient and original font stack; `ThemeMode.Blue` retains the newer blue header and sidebar. `ThemeToggle` switches any dark preset to Light and any light preset to Dark. Call `IThemeService.SetTheme(...)` for a specific preset. Selection lasts for the service scope; persistence across reloads belongs to the host's preference service.
+`ThemeProvider` changes the stylesheet and `data-sphere10-theme`/`data-bs-theme` attributes on a stable wrapper. It supports fingerprinted static assets through Blazor's `Assets` collection. `ThemeMode.ClassicBlue` retains the white header, pale content background, blue sidebar gradient and original font stack; `ThemeMode.Blue` retains the newer blue header and sidebar. `IThemeService.Toggle()` switches any dark preset to Light and any light preset to Dark. Call `IThemeService.SetTheme(...)` for a specific preset. Selection lasts for the service scope; persistence across reloads belongs to the host's preference service.
 
 Keep layout in component styles and consume semantic tokens for appearance:
 
@@ -501,6 +501,21 @@ Default editors support strings/chars, booleans (including nullable tri-state va
 
 ### Paging and external refresh
 
+Sources advertising `DataSourceCapabilities.CanNotify` automatically update a
+bound grid through `IDataSource<T>.Changed`. The controller subscribes once,
+captures its owning renderer synchronization context during binding, and
+coalesces worker notifications into a silent current-query read. Notification
+support is checked independently of the allowed CRUD mask. Data collection stays
+inside the source; notification refresh never invokes its acquisition/reload API.
+
+The current page, filter, sort, stable selected identity and measured column widths
+are retained. A source change immediately invalidates an older pending read.
+Notifications received during a buffered edit or save wait until commit/cancel;
+they do not overwrite the draft. A successful write's normal page read also
+satisfies its source notification. Replacing or disposing a binding removes the
+handler without disposing the borrowed source. Non-notifying sources retain the
+existing explicit refresh API below.
+
 `PageMode` selects `BlazorGridPageMode.Paged`, `Auto` or `Single`; the footer presents **Paged**, **Auto Paged** and **Single Paged**. Paged uses the remembered manual size. Auto measures the viewport, headers, row heights and scrollbar space to fit complete rows while keeping navigation. Single asks for page zero and `int.MaxValue` page length, showing every matching row with vertical scrolling and no navigator. Sources without `CanPage` retain complete-result behavior and hide the paging controls. Search and sorting apply in every mode. `AutoPageSize` remains a compatibility alias: true selects Auto; false selects Paged.
 
 `PageSize` defaults to 10 and accepts 1–9999. Paged uses accessible First/Previous/Next/Last icon buttons with tooltips and a **Rows per page** dropdown. `PageSizeOptions="new[] { 5, 10, 25, 50, 100 }"` customizes the choices; those are also the defaults. The active size is included automatically even when it is not listed (for example, `PageSize="6"`). Auto and Single preserve the manual size for returning to Paged; they hide its editor. Paging and page-size changes remain disabled during editing/foreground loading. `CurrentPage` and `SetPageAsync` are **zero-based**; the visible pager starts at one. The source returns the actual zero-based `DataSourceItems.Page` and filtered `TotalCount`, not the count on that page. Filter and sort before slicing. A source may collect its full inventory once and still implement paging over that published snapshot; changing pages must not recollect it.
@@ -532,7 +547,7 @@ Automatic sizing measures the header and rows within the fixed-height viewport, 
 
 For periodic or event-driven snapshots, set `SuppressLoadingIndicator="true"`, or call `RefreshAsync(showLoadingIndicator: false)` for an individual refresh. The initial binding retains the full-table loading surface; later suppressed reads retain the previous rows, selection and usable query controls while the source is awaited. `Controller.IsRefreshing` tracks all refresh work, while `IsLoading` identifies foreground loading. Reads still share serialization/coalescing and reject stale results after a newer query, source replacement or disposal. A plain `RefreshAsync()` follows the component's suppression setting. Source work must use its native asynchronous API or the framework's synchronous-source worker adapter; wrapping a blocking query in an async method alone does not move its synchronous prefix off the renderer.
 
-For a row action, await `RefreshRowsAsync(rows)`, `Controller.RefreshEntityAsync(entity)` or `Controller.RefreshSelectedEntityAsync()` rather than rereading the entire page. The source's `RefreshRangeAsync` returns fresh objects through its supplied array; null removes a row that disappeared. Core's `RefreshableSnapshotDataSource<T,TKey>` provides this behavior over an atomically published snapshot. An ordinary `SnapshotDataSource<T>` does not implement row refresh. Set `Controller.EntityComparer` to stable identity when replacement objects should retain selection. `RemoveRows(rows)` removes caller-known rows from the displayed collection; update the caller-owned source too so its next read does not restore them. Row updates retain the query, unaffected rows and established widths.
+For a row action, await `RefreshRowsAsync(rows)`, `Controller.RefreshEntityAsync(entity)` or `Controller.RefreshSelectedEntityAsync()` rather than rereading the entire page. The source's `RefreshRangeAsync` returns fresh objects through its supplied array; null removes a row that disappeared. Core's `ListDataSource<T>` leaves provide this behavior through their `RefreshMethod` hook over the served list. An `ArrayDataSource<T>` does not implement row refresh. Set `Controller.EntityComparer` to stable identity when replacement objects should retain selection. `RemoveRows(rows)` removes caller-known rows from the displayed collection; update the caller-owned source too so its next read does not restore them. Row updates retain the query, unaffected rows and established widths.
 
 `await grid.ReadFilteredEntitiesAsync(cancellationToken)` captures all matching rows across pages in the current sort order. It asks the bound source for page zero and `int.MaxValue`, without recollecting a snapshot, changing the visible page/filter/selection or starting a loading indicator. The typed array is suitable for the caller's CSV/JSON/export policy; reporting and download UI remain with the application. Cancellation is checked before queued work and after the source read completes; it does not interrupt an in-flight `IDataSource<T>` read, which has no cancellation-token contract.
 
@@ -632,9 +647,11 @@ Custom row actions are application commands. They do not automatically run CRUD 
 
 | Responsibility | Implementation |
 | --- | --- |
+| Rendering and component parameters | [BlazorGrid.razor](UI/Controls/BlazorGrid/BlazorGrid.razor) and its [code-behind](UI/Controls/BlazorGrid/BlazorGrid.razor.cs) |
 | Query, selection and edit workflow | [IBlazorGridController<T>](Grids/IBlazorGridController.cs), abstract base, concrete controller and decorator |
 | Value access and templates | [BlazorGridColumn<T>](Grids/BlazorGridColumn.cs) and [BlazorGridCellEditContext<T>](Grids/BlazorGridCellEditContext.cs) |
 | Scalar conversion | [Tools.BlazorGrid](Grids/GridTool.cs) |
+| Existing-reference selection | [BlazorGridReferencePicker](UI/Controls/BlazorGrid/BlazorGridReferencePicker.razor) |
 | Browser layout/lifetime | Collocated isolated CSS and JavaScript |
 
 Both the WinForms `VisualGrid` and Blazor grid consume the same core `IDataSource<T>`, `DataSourceCapabilities`, `CrudAction` and `Result`. WinForms column bindings correspond to typed Blazor columns; entity/property editors correspond to the buffered row editor and Razor templates; native reference dropdowns correspond to `BlazorGridReferencePicker`. Browser rendering and interaction remain in this library. Blazor does not provide a recursive native PropertyGrid; use explicit editors for owned objects.
@@ -1028,7 +1045,7 @@ Configuration runs once per scope. The callback configures that scope's applicat
 
 Keep commands shared by every workspace at application level. A block command belongs to the active screen's owning block; a screen command disappears when that screen is deactivated. Browsing another sidebar does not change the displayed screen's command context. Within the contextual layer, matching uses local IDs and a narrower action group replaces the matching block group as one command. Application groups remain separate. `ApplicationCommandBar.CommandKeySelector` lets independent layouts namespace renderer identities when different levels share an ID; the shell supplies this automatically without changing command registrations. Hidden items remain registered but are omitted from rendered controls, and menus containing only hidden items are omitted.
 
-Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Registered icons, long-title ellipsis/full tooltips and dirty indicators retain their separate space. The **Open Screens** selector lists exact open sessions, including permanent screens, and disambiguates duplicate titles with occurrence numbers. Choosing one calls the normal guarded selection path without opening another instance; hidden retained and Empty sessions are excluded.
+Tabs retain each renderer-created component and its state. `ApplicationScreenTabs` provides selection, close buttons, middle-click closure, context commands for closing one/other/all screens, drag reordering, and keyboard interaction. Arrow keys, Home and End select; Ctrl+Shift with those keys reorders; Delete closes; Shift+F10 opens tab commands. Override `Title` and call `NotifyScreenChanged()` to update a tab's caption. Registered icons, long-title ellipsis/full tooltips and dirty indicators retain their separate space. The shell's **Screens** menu, placed like the native main form's between the block menus and Options/Help once a screen is open, lists the exact open sessions including permanent screens, checks the active one, disambiguates duplicate titles with occurrence numbers, and offers **Close All** and **Close All Others** for the screens that permit closing. Choosing an entry calls the normal guarded selection path without opening another instance; hidden retained and Empty sessions are excluded. Menu commands that implement `IApplicationCheckableMenuItem` render as checkable items.
 
 The host defaults to `ScreenMode.MultiView`. The tester's toolbar toggle and View menu await `TrySetScreenModeAsync`; `ApplicationShell.ShowScreenModeSelector` provides an optional header selector. Entering `SingleView` preflights every ordinary tab that would close before removing any; permanent sessions are retained. The synchronous `ScreenMode` setter accepts transitions requiring no closures and rejects transitions requiring async guards; use the awaited method for runtime changes. During single-view navigation, hidden single-instance screens remain mounted and multi-instance screens are released. The multi-screen contract's `Screens` includes retained hidden sessions and `OpenScreens` supplies normal tab membership in presentation order; empty screens are excluded. `MoveScreenAsync` changes that order. `CloseScreensAsync` preflights a batch and preserves every screen if a guard rejects it. Components remain owned by the renderer. Docking is not part of the Blazor host.
 
@@ -1221,7 +1238,7 @@ Removing a modal host while a dialog is pending completes the interaction with `
 ## Existing components and migration
 
 - `Components`, `ViewModels`, `Models`, `Services`: original MVVM components, tables and modal/wizard framework.
-- `Plugins`: root-namespace `BlazorPlugin` definitions/builders and legacy routed navigation with `BlazorRoutedApplication`, `BlazorRoutedApplicationBlock`, `BlazorRoutedApplicationPage`, `BlazorRoutedPlugin` and their `IBlazorRouted*` contracts. Routed pages describe URLs; they do not implement the shared hosted-screen block contract.
+- `Plugins`: root-namespace `BlazorPlugin` definitions/builders.
 - `Application`, `Grids`: application workspace contracts, builders and grid behavior in the root namespace.
 - `Modal`, `Wizard`: dialog and wizard behavior in the corresponding domain namespaces.
 - `UI`: application workspace, dialog, wizard, table and editable-grid rendering. Component-specific support types live beside their `.razor` files in the same namespace.

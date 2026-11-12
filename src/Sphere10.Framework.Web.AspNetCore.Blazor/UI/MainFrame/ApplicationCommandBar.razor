@@ -11,6 +11,7 @@
 @using ApplicationMenuItemBase = Sphere10.Framework.Web.AspNetCore.Blazor.ApplicationMenuItemBase
 @using IApplicationMenu = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationMenu
 @using IApplicationMenuItem = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationMenuItem
+@using IApplicationCheckableMenuItem = Sphere10.Framework.Web.AspNetCore.Blazor.IApplicationCheckableMenuItem
 
 <div class="sphere10-command-bar" @onkeydown="KeyDown">
 	@if (_openMenu != null) {
@@ -148,8 +149,11 @@
 					}
 				</div>
 			} else {
-				<button @ref="_menuButtons[key]" type="button" disabled="@(_executing || !ancestorEnabled || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
+				var checkable = item as IApplicationCheckableMenuItem;
+				<button @ref="_menuButtons[key]" type="button" role="@(checkable == null ? null : "menuitemcheckbox")" aria-checked="@(checkable == null ? null : checkable.IsChecked ? "true" : "false")"
+					disabled="@(_executing || !ancestorEnabled || !item.IsEnabled)" @onclick="() => ExecuteAsync(item)"
 					@onmouseenter="() => NotifyHover(item)" @onfocus="() => NotifyHover(item)">
+					@if (checkable != null) { <span class="sphere10-command-check" aria-hidden="true">@(checkable.IsChecked ? "✓" : string.Empty)</span> }
 					@if (!string.IsNullOrEmpty(item.Icon)) { <span class="@item.Icon" aria-hidden="true"></span> }
 					@item.Title
 				</button>

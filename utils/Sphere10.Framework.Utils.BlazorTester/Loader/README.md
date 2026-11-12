@@ -16,6 +16,7 @@ Every folder of `Sphere10.Framework.DApp.Presentation.Loader` is a domain with i
 | [Components](Components/README.md) | Holds the original loader shell's Razor navigation and modal components, including the endpoint selector that the current tester still shows. | [source](Components/) |
 | [Layouts](Layouts/README.md) | Holds the original loader shell's main layout, which composes its sidebar, top bar, modal host and footer. | [source](Layouts/) |
 | [Pages](Pages/README.md) | Holds the original loader's dashboard, endpoint management and not-found pages, which the current tester still hosts. | [source](Pages/) |
+| [Plugins](Plugins/README.md) | Empty folder retained from the original loader layout, with no source files or types. | [source](Plugins/) |
 | [Services](Services/README.md) | Provides the in-memory endpoint manager and mock node data service that the loader pages and the tester's endpoint selector use. | [source](Services/) |
 | [ViewModels](ViewModels/README.md) | Provides the view models behind the loader's menus, endpoint selector and endpoint page. | [source](ViewModels/) |
 
@@ -26,7 +27,6 @@ Types declared in the project folder itself:
 | Type | Kind | Purpose |
 |---|---|---|
 | [`App`](App.razor) | class | Razor router of the original WebAssembly loader over the plugin routing assemblies with `MainLayout` and a `NotFound` fallback, excluded from the current tester |
-| [`AppViewModel`](AppViewModel.cs) | class | Collects the distinct assemblies of the located routed plugins, other than the loader's own, for the original router |
 | [`DataSourceOptions`](ServerOptions.cs) | class | Options bound from the `DataSource` configuration section, holding the configured server URIs |
 | [`Program`](Program.cs) | class | Original WebAssembly entry point that registers view models, modal, wizard, endpoint, node and plugin services, excluded from the current tester |
 | [`Sphere10Plugin`](Sphere10Plugin.cs) | static class | Configures the tester's Workspace plugin: scoped status, endpoint and node services, the workspace block with its screens, toolbar and menus, and lifecycle tasks |

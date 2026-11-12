@@ -100,6 +100,7 @@ Fixtures for the library's application shell, grid, themes, wizards and settings
 | [BlazorGridBrowserTests](BlazorGridBrowserTests.cs) | Browser checks of settled grid geometry under fractional scaling, editing, the reference popup, column resizing and paging (explicit). |
 | [BlazorGridColumnTests](BlazorGridColumnTests.cs) | Typed property factories, automatic definitions, metadata, scalar parsing and formatting, invariant culture and reference identity. |
 | [BlazorGridControllerTests](BlazorGridControllerTests.cs) | Capability intersection, zero-based query paging, stale-result rejection, buffered edits, validation and write rollback, creation, deletion and source ownership. |
+| [BlazorGridNotificationTests](BlazorGridNotificationTests.cs) | Source notifications refresh the current query and selection, wait for drafts and use the binding synchronization context. |
 | [BlazorGridReferencePickerTests](BlazorGridReferencePickerTests.cs) | The compact reference popover, dismissal generations, rebinding, disabled state, disposal and JavaScript import races. |
 | [BlazorGridRenderingTests](BlazorGridRenderingTests.cs) | Capability-controlled commands, editing, validation, paging controls, stored preferences, column widths and JavaScript initialization and disposal. |
 | [BlazorGridSettingsTests](BlazorGridSettingsTests.cs) | Grid settings JSON shape, declared column widths and validation. |
@@ -154,14 +155,6 @@ The `Loader` folder holds the nested project file [`Sphere10.Framework.DApp.Pres
 | Fixture | Purpose |
 | --- | --- |
 | [TestNavigationManager](Loader/TestNavigationManager.cs) | A `NavigationManager` with a configurable base URI for loader tests (helper, not a fixture). |
-| [TestPlugin](Loader/TestPlugin.cs) | A routed plugin with sample applications, blocks, pages and menu items (helper, not a fixture). |
-| [BlockMenuTests](Loader/ComponentTests/BlockMenuTests.cs) | The block menu renders the selected application's links through `HtmlRenderer`. |
-| [AppMenuTests](Loader/NavigationTests/AppMenuTests.cs) | The application menu is initialized with the loaded applications. |
-| [DefaultAppManagerTests](Loader/NavigationTests/DefaultAppManagerTests.cs) | Application loading, default selection and navigation to applications and pages. |
-| [DefaultPluginManagerTests](Loader/NavigationTests/DefaultPluginManagerTests.cs) | Plugin loading and service registration. |
-| [TopbarMenuTests](Loader/NavigationTests/TopbarMenuTests.cs) | An empty class retained from the original source. It contains no tests. |
-| [MenuItemTests](Loader/PluginTests/MenuItemTests.cs) | Menu item child copies, defensive metadata arrays, merging and copying. |
-| [RoutingPathExtensionTests](Loader/PluginTests/RoutingPathExtensionTests.cs) | Application path extraction and query trimming for relative routes. |
 
 ## Coverage notes
 

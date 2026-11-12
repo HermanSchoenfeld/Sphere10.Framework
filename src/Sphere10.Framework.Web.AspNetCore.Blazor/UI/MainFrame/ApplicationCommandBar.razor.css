@@ -15,6 +15,7 @@
 .sphere10-top-menu:has(> button[aria-expanded="true"]) { z-index: 43; }
 .sphere10-menu-button[aria-expanded="true"] { background: var(--sphere10-hover, #e9eef6); }
 .sphere10-command-bar button > span[aria-hidden="true"] { margin-inline-end: .4rem; }
+.sphere10-command-menu .sphere10-command-check { display: inline-block; width: 1.1em; margin-inline-end: .2rem; text-align: center; }
 
 .sphere10-menu-strip { min-height: 1.75rem; background: var(--sphere10-menu-background, var(--sphere10-surface, white)); }
 .sphere10-menu-strip .sphere10-menu-button { padding: .2rem .5rem; }

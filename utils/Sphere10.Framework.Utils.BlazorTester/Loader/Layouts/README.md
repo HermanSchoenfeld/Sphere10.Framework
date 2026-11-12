@@ -8,3 +8,4 @@ Holds the original loader shell's main layout, which composes its sidebar, top b
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`MainLayout`](MainLayout.razor) | class | Razor `LayoutComponentBase` of the original shell that hosts the sidebar, top bar, footer and modal host and registers the host with `IModalService` |

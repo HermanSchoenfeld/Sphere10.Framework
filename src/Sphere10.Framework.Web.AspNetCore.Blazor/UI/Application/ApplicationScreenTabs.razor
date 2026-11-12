@@ -36,16 +36,6 @@
 			</div>
 		}
 	</div>
-	<label class="sphere10-open-screens">Open Screens
-		<select @key="_openScreenSelectionVersion" aria-label="Open Screens" value="@(ActiveSession?.Id.ToString() ?? string.Empty)" @onchange="SelectOpenScreenAsync" disabled="@_closing">
-			@if (ActiveSession == null) {
-				<option value="" disabled>Select an open screen</option>
-			}
-			@foreach (var option in GetOpenScreenOptions()) {
-				<option value="@option.Screen.Id">@option.Title</option>
-			}
-		</select>
-	</label>
 	@if (_context.HasValue && Sessions.Any(session => session.Id == _context.Value)) {
 		<div class="sphere10-tab-context" role="group" aria-label="Tab commands" @onkeydown="DismissContext">
 			@{ var contextSession = Sessions.First(session => session.Id == _context.Value); }
@@ -66,7 +56,6 @@
 	private Guid? _context;
 	private bool _focusSelection;
 	private bool _closing;
-	private int _openScreenSelectionVersion;
 
 	[Parameter] public ApplicationScreenSession[] Sessions { get; set; } = Array.Empty<ApplicationScreenSession>();
 
@@ -105,29 +94,6 @@
 			return;
 		await OnSelect.InvokeAsync(id);
 		_focusSelection = true;
-	}
-
-	private (ApplicationScreenSession Screen, string Title)[] GetOpenScreenOptions() {
-		var occurrences = new Dictionary<string, int>(StringComparer.Ordinal);
-		return Sessions.Where(screen => screen.ScreenKind == Sphere10.Framework.Application.UI.ScreenKind.Normal).Select(screen => {
-			var title = string.IsNullOrWhiteSpace(screen.Title) ? "Untitled Screen" : screen.Title;
-			occurrences.TryGetValue(title, out var count);
-			occurrences[title] = ++count;
-			return (screen, count == 1 ? title : $"{title} ({count})");
-		}).ToArray();
-	}
-
-	private async Task SelectOpenScreenAsync(ChangeEventArgs args) {
-		if (!Guid.TryParse(args.Value?.ToString(), out var id)
-			|| !Sessions.Any(screen => screen.Id == id && screen.ScreenKind == Sphere10.Framework.Application.UI.ScreenKind.Normal))
-			return;
-		try {
-			await SelectAsync(id);
-		} finally {
-			// A veto keeps the same model value, but the browser has already selected the attempted option.
-			_openScreenSelectionVersion++;
-			StateHasChanged();
-		}
 	}
 
 	private async Task MakeStartupAsync(Guid id) {

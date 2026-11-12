@@ -12,6 +12,8 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ApplicationScreenHostView`](Application/ApplicationScreenHostView.razor) | class | Renders every retained screen session as a `DynamicComponent`, showing only the active one, once screen preferences are ready. |
+| [`ApplicationScreenTabs`](Application/ApplicationScreenTabs.razor) | class | Tab strip for open screen sessions with select, close, reorder and make-startup callbacks. |
 | [`ApplicationSettingsDialog`](Application/ApplicationSettingsDialog.razor.cs) | class | Options dialog that edits the application's plugin, block and screen settings owners and keeps serialized backups only to undo Cancel. |
 | [`ApplicationSettingsEditor`](Application/ApplicationSettingsEditor.razor) | class | Default `IApplicationSettingsEditor` that edits one settings object through `ApplicationSettingsValueEditor` and reports its input errors. |
 | [`ApplicationSettingsValueEditor`](Application/ApplicationSettingsValueEditor.razor.cs) | class | Edits the public values of a detached settings object using their component-model names, descriptions and read-only metadata. |
@@ -22,6 +24,7 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 | Type | Kind | Purpose |
 |---|---|---|
 | [`BlazorGrid<TItem>`](Controls/BlazorGrid/BlazorGrid.razor.cs) | class | CRUD grid over `IDataSource<TItem>` with typed columns, buffered row editing, search, sort, paging modes, row actions and optional saved preferences. |
+| [`BlazorGridCellEditor<TItem>`](Controls/BlazorGrid/BlazorGridCellEditor.razor) | class | Default cell editor that renders a select, checkbox or typed HTML input for a `BlazorGridCellEditContext<TItem>`. |
 | [`BlazorGridReferencePicker<TItem>`](Controls/BlazorGrid/BlazorGridReferencePicker.razor.cs) | class | Cell editor that chooses an existing record from a data source through a dropdown containing a read-only grid. |
 | [`Cell`](Controls/BlazorGrid/Cell.cs) | class | Legacy cell model with header, row, type information and display text, kept for cell-based consumers. |
 | [`DataEnd<TInItem, TOutItem>`](Controls/BlazorGrid/DataEnd.cs) | class | Legacy column that extracts an `IColumnDefinition` from an item and renders it with the `IGridComponent` that the definition names. |
@@ -45,13 +48,18 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 | Type | Kind | Purpose |
 |---|---|---|
 | [`Confirm`](Dialogs/Confirm.razor) | class | Confirmation modal with a title, message and confirm and cancel buttons. |
+| [`Dialog`](Dialogs/Dialog.razor) | class | Information modal with a title, message or body fragment and optional custom buttons. |
+| [`ModalComponent`](Dialogs/ModalComponent.razor) | class | Base modal content of this generation with `ModalOptions` and `ShowAsync`, `Ok`, `OkData`, `Cancel` and `RequestCloseAsync`. |
 | [`ModalHost`](Dialogs/ModalHost.razor.cs) | class | Hosts one `Dialogs.ModalComponent` at a time for `Modal.ModalService` until its interaction finishes. |
+| [`ModalTemplate`](Dialogs/ModalTemplate.razor) | class | Modal frame with header, body and footer templates, an optional close button and `ModalOptions` sizing. |
 | [`Severity`](Dialogs/Severity.cs) | enum | `Info`, `Warning` or `Error`. |
 
 ### Dialogs/Content
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ExceptionContent`](Dialogs/Content/ExceptionContent.razor) | class | Shows an exception's display text with collapsible diagnostic details and a copy-to-clipboard button. |
+| [`MessageContent`](Dialogs/Content/MessageContent.razor) | class | Renders a cascaded message string. |
 
 ### Grids
 
@@ -59,6 +67,7 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 |---|---|---|
 | [`ItemRequest`](Grids/ItemsRequest.cs) | record | Requested item index, count, sort column and sort direction for `VirtualPagedTable<TItem>`. |
 | [`ItemsResponse<TItem>`](Grids/ItemsResponse.cs) | record | One page of items and the total item count returned to `VirtualPagedTable<TItem>`. |
+| [`PageSizeSelector`](Grids/PageSizeSelector.razor) | class | Two-way bound page-size dropdown that always includes the current value among its options. |
 | [`PagedTable<TItem>`](Grids/PagedTable.razor.cs) | class | Table that pages a local collection with item and header templates and a row-select callback. |
 | [`RapidTable<TItem>`](Grids/RapidTable.razor.cs) | class | Table that renders items from an `IAsyncEnumerable<TItem>` up to `ItemLimit` and restarts when the source changes. |
 | [`VirtualPagedTable<TItem>`](Grids/VirtualPagedTable.razor.cs) | class | Table that requests pages from an asynchronous items provider and ignores stale responses. |
@@ -67,8 +76,15 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ApplicationBlockMenu`](MainFrame/ApplicationBlockMenu.razor) | class | Block list rendered as buttons or links, with an optional compact icon dock. |
+| [`ApplicationCommandBar`](MainFrame/ApplicationCommandBar.razor) | class | Menu bar and toolbar for arrays of application menus and toolbar items with a select callback. |
+| [`ApplicationMenus`](MainFrame/ApplicationMenus.razor) | class | Renders a block's menus and marks the active menu item. |
+| [`Footer`](MainFrame/Footer.razor) | class | Footer element rendered only when it has child content. |
+| [`MainLayout`](MainFrame/MainLayout.razor) | class | Minimal layout with a header, the page body and a `Dialogs.ModalHost` that it passes to `Modal.ModalService`. |
 | [`SearchInput`](MainFrame/SearchInput.razor.cs) | class | Search box that calls a provider returning matching strings, with a minimum interval between searches. |
 | [`Sidebar`](MainFrame/Sidebar.razor) | class | Sidebar with a brand link, block menu and the selected block's menus. |
+| [`SidebarBrand`](MainFrame/SidebarBrand.razor) | class | Sidebar title link to the home URL with optional child content. |
+| [`TopMenu`](MainFrame/TopMenu.razor) | class | Renders a block's menus through `ApplicationMenus`. |
 
 ### Theming
 
@@ -76,7 +92,6 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 |---|---|---|
 | [`ThemeProvider`](Theming/ThemeProvider.razor.cs) | class | Wrapper that loads the active theme's stylesheet and applies its theme attributes to descendants without recreating them. |
 | [`ThemeSelector`](Theming/ThemeSelector.razor.cs) | class | Dropdown of every catalogue theme that changes the scoped theme without changing the route. |
-| [`ThemeToggle`](Theming/ThemeToggle.razor.cs) | class | Toggle button whose pressed state shows that a dark theme is selected. |
 | [`ThemedComponentBase`](Theming/ThemedComponentBase.cs) | abstract class | Base component that subscribes to `IThemeService.Changed`, exposes the current theme and Bootstrap theme names and unsubscribes on disposal. |
 
 ### Wizard
@@ -84,5 +99,6 @@ The `Dialogs` components render through `Dialogs.ModalHost`, which the [Modal](.
 | Type | Kind | Purpose |
 |---|---|---|
 | [`BlazorWizardHost`](Wizard/BlazorWizardHost.razor.cs) | class | Renders the current step of a `Wizard.IBlazorWizard`, applies step validation and cancellation policies and raises finished, cancelled and step-change callbacks. |
+| [`BlazorWizardModal`](Wizard/BlazorWizardModal.razor) | class | Modal that hosts a `BlazorWizardHost` and allows closing only when the wizard can be cancelled. |
 | [`BlazorWizardStep<TModel>`](Wizard/BlazorWizardStep.razor.cs) | abstract class | Base step component with typed access to its wizard and model. |
 | [`BlazorWizardStepBase`](Wizard/BlazorWizardStep.razor.cs) | abstract class | Non-generic step base that implements the shared `IWizardStep` traits, title, button texts, cancellation flag and next and previous callbacks. |

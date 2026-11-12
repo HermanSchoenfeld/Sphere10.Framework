@@ -9,4 +9,5 @@ Holds the original loader's dashboard, endpoint management and not-found pages, 
 | Type | Kind | Purpose |
 |---|---|---|
 | [`Home`](Home.razor) | class | Razor legacy dashboard of static, illustrative statistics cards |
+| [`NotFound`](NotFound.razor) | class | Razor page routed at `/not-found` that reports an unknown address |
 | [`Servers`](Servers.razor) | class | Razor endpoint sample that lists, selects and validates new endpoint URIs through `ServersViewModel` without contacting them |

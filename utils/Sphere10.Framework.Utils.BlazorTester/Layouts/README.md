@@ -8,4 +8,5 @@ Provides the tester's layout component and the compatibility routes and header s
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`DemoLayout`](DemoLayout.razor) | class | Razor `LayoutComponentBase` that supplies the theme provider and the legacy and current modal hosts |
 | [`DemoNavigation`](DemoNavigation.cs) | static class | Route aliases (nested `Alias` record of route, block id and screen id), alias resolution and screen search over an `IApplicationScreenHost` |

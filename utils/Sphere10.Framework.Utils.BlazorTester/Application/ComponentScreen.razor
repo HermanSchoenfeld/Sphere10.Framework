@@ -46,7 +46,7 @@
 			return;
 		if (!await UserSettings.HasAsync<GallerySettings>(ScreenSettings.ID)) {
 			var grid = await BlazorGrid<TestClass>.ReadLegacyPreferencesAsync(JSRuntime, "tester.editable-grid");
-			var live = await BlazorGrid<GridDemoSnapshotDataSource.Row>.ReadLegacyPreferencesAsync(JSRuntime, "tester.live-grid");
+			var live = await BlazorGrid<GridDemoDataSource.Row>.ReadLegacyPreferencesAsync(JSRuntime, "tester.live-grid");
 			if (grid != null)
 				ScreenSettings.Grid = MergeLegacy(ScreenSettings.Grid, grid);
 			if (live != null)

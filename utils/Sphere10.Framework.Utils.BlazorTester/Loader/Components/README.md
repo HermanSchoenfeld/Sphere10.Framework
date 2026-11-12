@@ -8,9 +8,8 @@ These components belong to the original standalone loader shell. The current tes
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`AppsMenu`](AppsMenu.razor) | class | Razor sidebar list of routed plugin applications as icon links, driven by `AppsMenuViewModel` |
-| [`BlockMenu`](BlockMenu.razor) | class | Razor collapsible sidebar menu of the selected application's blocks and pages, driven by `BlockMenuViewModel` |
-| [`MainMenu`](MainMenu.razor) | class | Razor top navigation bar of the selected application's menu items and dropdowns, driven by `MainMenuViewModel` |
-| [`Sidebar`](Sidebar.razor) | class | Razor original sidebar with brand, links to the gallery, modals, tables, wizards and endpoints, and the block and apps menus |
+| [`LogoutModal`](LogoutModal.razor) | class | Razor static Bootstrap logout confirmation dialog from the original template |
+| [`NewServerModal`](NewServerModal.razor) | class | Razor placeholder modal for adding a server, with a fixed input and unbound buttons |
+| [`Sidebar`](Sidebar.razor) | class | Razor original sidebar with brand, links to the gallery, modals, tables, wizards and endpoints |
 | [`SidebarBrand`](SidebarBrand.razor) | class | Razor brand link and endpoint selector bound to `SidebarBrandViewModel`, with a link to the endpoint management screen |
-| [`Topbar`](Topbar.razor) | class | Razor original top bar with the main menu, a `SearchInput` and the template's alert, message and user dropdowns |
+| [`Topbar`](Topbar.razor) | class | Razor original top bar with a `SearchInput` and the template's alert, message and user dropdowns |

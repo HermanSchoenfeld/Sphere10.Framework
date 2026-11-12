@@ -14,8 +14,6 @@ The controller, column model, settings and value conversions behind the `BlazorG
 | [`BlazorGridColumn<T>`](BlazorGridColumn.cs) | class | Typed column definition with header, property and sort names, getter and setter, templates, width, image presentation, format and preference key. |
 | [`BlazorGridController<TItem>`](BlazorGridController.cs) | class | Default grid controller that serializes data-source I/O, coalesces refreshes and keeps edit values separate until an explicit save. |
 | [`BlazorGridControllerBase<TItem>`](BlazorGridControllerBase.cs) | abstract class | Disposable base for grid controllers that declares the query, selection, refresh and edit members and the `Changed` event. |
-| [`BlazorGridControllerDecorator<TItem>`](BlazorGridControllerDecorator.cs) | abstract class | Decorator base over an inner `IBlazorGridController<TItem>`. |
-| [`BlazorGridControllerDecorator<TItem, TConcrete>`](BlazorGridControllerDecorator.cs) | abstract class | Forwards every controller member and event to an inner controller of type `TConcrete`. |
 | [`BlazorGridHorizontalAlignment`](BlazorGridHorizontalAlignment.cs) | enum | `Left`, `Center` or `Right`, used for the grid caption. |
 | [`BlazorGridPageMode`](BlazorGridPageMode.cs) | enum | `Paged` for manually sized pages, `Auto` for pages fitted to the viewport and `Single` for one complete result page. |
 | [`BlazorGridSettings`](BlazorGridSettings.cs) | class | User-editable `SettingsObject` with page mode, page size, page number, sort column and direction, and explicit column widths. |

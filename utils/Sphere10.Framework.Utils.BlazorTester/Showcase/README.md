@@ -16,8 +16,11 @@ This block demonstrates complete, generic application interactions composed from
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`CardsScreen`](Cards/CardsScreen.razor) | class | Razor screen that shows the catalogue as filterable, paged artwork cards or a native `BlazorGrid` and opens keyed detail editors |
+| [`CollectionArtwork`](Cards/CollectionArtwork.razor) | class | Razor deterministic, theme-aware SVG cover chosen by a variant number and label |
 | [`CollectionCatalogue`](Cards/CollectionCatalogue.cs) | class | Scoped, synchronized sample catalogue that returns detached copies, saves edits and raises `Changed` |
 | [`CollectionDataSource`](Cards/CollectionDataSource.cs) | class | Read-only, notifying `ListDataSource` over one fetched catalogue capture, with text, status and category filters |
+| [`CollectionDetailScreen`](Cards/CollectionDetailScreen.razor) | class | Razor keyed editor for one collection with a draft, Save and Discard commands and an unsaved-changes guard |
 | [`CollectionStatus`](Cards/CreativeCollection.cs) | enum | Sample collection status: `Draft`, `Active` or `Archived` |
 | [`CreativeCollection`](Cards/CreativeCollection.cs) | class | Circuit-local sample collection entity with copy and edit comparison |
 
@@ -25,16 +28,25 @@ This block demonstrates complete, generic application interactions composed from
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`CommandsScreen`](Commands/CommandsScreen.razor) | class | Razor screen that contributes File, Tools, nested Export and toolbar commands whose enabled and visible states follow the selected document |
 
 ### Themes
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ThemeStudioScreen`](Themes/ThemeStudioScreen.razor) | class | Razor screen that filters `ThemeCatalog` presets and applies the chosen one to a release-board layout, chart, form and dialog |
 
 ### Wizards
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`GuidedWizardsScreen`](Wizards/GuidedWizardsScreen.razor) | class | Razor screen that hosts `GuidedWorkspaceDemo` |
+| [`GuidedWorkspaceDemo`](Wizards/GuidedWorkspaceDemo.razor) | class | Razor launcher that runs the workspace setup wizard embedded in a `BlazorWizardHost` or in a dialog and shows the last completed summary |
+| [`WorkspaceDetailsStep`](Wizards/WorkspaceDetailsStep.razor) | class | Razor wizard step that names the workspace and chooses solo or team mode |
+| [`WorkspacePresetStep`](Wizards/WorkspacePresetStep.razor) | class | Razor detour step that applies a starting preset and returns to the settings step |
+| [`WorkspaceReviewersStep`](Wizards/WorkspaceReviewersStep.razor) | class | Razor wizard step, added only for team workspaces, that requires at least one reviewer |
+| [`WorkspaceReviewStep`](Wizards/WorkspaceReviewStep.razor) | class | Razor final step that reviews the values and requires acknowledgement |
+| [`WorkspaceSettingsStep`](Wizards/WorkspaceSettingsStep.razor) | class | Razor wizard step that validates a capacity of 1 to 100 and sets access and digest options, with the preset chooser detour |
 | [`WorkspaceSetupDraft`](Wizards/WorkspaceSetupDraft.cs) | class | Draft model owned by one wizard run, with name, mode, capacity, access, digest, reviewers, preset and acknowledgement |
 | [`WorkspaceSetupFlow`](Wizards/WorkspaceSetupFlow.cs) | static class | Replaces the steps after settings with review, or reviewers and review for team mode,, opens and returns from the preset chooser and supplies step titles |
 
@@ -51,6 +63,12 @@ The Overview also has an **Activate the block's default screen** checkbox. It sw
 
 | Example | Source | Library foundations |
 | --- | --- | --- |
+| Plugin and block composition | [ShowcasePlugin.cs](ShowcasePlugin.cs) | AddPlugin, AddBlock, AddMenu, canonical screen definitions, scoped services and named initializer/finalizer registration |
+| Card/table catalogue | [CardsScreen.razor](Cards/CardsScreen.razor), [CollectionDataSource.cs](Cards/CollectionDataSource.cs) | BulkFetchDataSource, BlazorGridController, BlazorGrid, PageSizeSelector, ExpandsToFit |
+| Keyed editor | [CollectionDetailScreen.razor](Cards/CollectionDetailScreen.razor) | ApplicationScreenActivation parameters and instance key; HasUnsavedChanges, CanDeactivateAsync, NotifyScreenChanged |
+| Native commands | [CommandsScreen.razor](Commands/CommandsScreen.razor) | Menus/ToolBarItems, merge by ID, WithChildren, EnabledWhen, WithVisibility and ViewService |
+| Guided wizard | [GuidedWorkspaceDemo.razor](Wizards/GuidedWorkspaceDemo.razor), [WorkspaceSetupFlow.cs](Wizards/WorkspaceSetupFlow.cs) | BlazorWizardBuilder, conditional UpdateSteps, BlazorWizardStep, embedded BlazorWizardHost and ViewService.WizardDialogAsync |
+| Theme studio | [ThemeStudioScreen.razor](Themes/ThemeStudioScreen.razor) | ThemeCatalog, scoped IThemeService, ThemeProvider, semantic CSS tokens and themed dialogs |
 
 The cards are an application-specific view over the existing data-source/controller APIs; no parallel card data framework is introduced. SVG artwork is deterministic and theme-aware. Collection IDs are passed into retained screens rather than copying mutable catalogue entities into registration metadata. Catalogue read and write scopes return detached copies.
 

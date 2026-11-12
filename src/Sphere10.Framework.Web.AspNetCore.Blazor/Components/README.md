@@ -11,6 +11,7 @@ The current application workspace uses the generation in [UI](../UI/README.md), 
 | Type | Kind | Purpose |
 |---|---|---|
 | [`ComponentWithViewModel<TViewModel>`](ComponentWithViewModel.cs) | abstract class | Base component that injects its view model, initializes it once and marshals its notifications onto the renderer. |
+| [`LoadingOverlay`](LoadingOverlay.razor) | class | Renders a spinner overlay while its `IsLoading` parameter is true. |
 | [`SearchInput`](SearchInput.razor.cs) | class | Route search box that calls a `SearchProvider` delegate as the user types and renders the results as keyboard-accessible links. |
 
 ### Modal
@@ -19,12 +20,15 @@ The current application workspace uses the generation in [UI](../UI/README.md), 
 |---|---|---|
 | [`BlazorWizardModal`](Modal/BlazorWizardModal.razor.cs) | class | Modal component that shows a `Components.Wizard` wizard in a dialog, with configurable button classes. |
 | [`BlazorWizardModalViewModel`](Modal/BlazorWizardModalViewModel.cs) | class | View model of `BlazorWizardModal` that holds the wizard and its host and decides whether the dialog can close. |
+| [`ConfirmDialog`](Modal/ConfirmDialog.razor) | class | Modal with a title, message and confirm and cancel buttons. |
+| [`InfoDialog`](Modal/InfoDialog.razor) | class | Modal with a title, message and one confirmation button. |
 | [`ModalComponent<TViewModel>`](Modal/ModalComponent.razor.cs) | abstract class | Base modal content component bound to a `ModalViewModel`, whose `ShowAsync` completes with the modal result. |
 | [`ModalComponentBase`](Modal/ModalComponent.razor.cs) | abstract class | Non-generic modal content base that signals when it has rendered and exposes `ShowAsync` and `OnCloseAsync`. |
 | [`ModalHost`](Modal/ModalHost.razor.cs) | class | Hosts one `ModalComponentBase` at a time until its interaction finishes. |
 | [`ModalHostBase<TComponent, TResult>`](Modal/ModalHostBase.cs) | abstract class | Renders modal content and owns the isolated JavaScript module that shows and hides the host element, shared by both modal hosts. |
 | [`ModalResult`](Modal/ModalResult.cs) | class | Result of a modal interaction with a `ModalResultType` and optional data. |
 | [`ModalResultType`](Modal/ModalResultType.cs) | enum | `Ok`, `Cancel` or `Exit`. |
+| [`ModalTemplate`](Modal/ModalTemplate.razor) | class | Modal frame with header, body and footer templates, an optional close button and optional size bounds. |
 
 ### Tables
 
@@ -34,6 +38,7 @@ The current application workspace uses the generation in [UI](../UI/README.md), 
 | [`PageSizeSelector`](Tables/PageSizeSelector.razor) | class | Two-way bound page-size dropdown with configurable options. |
 | [`PagedTable<TItem>`](Tables/PagedTable.razor.cs) | class | Table that pages an in-memory collection through `PagedTableViewModel<TItem>`. |
 | [`PagedTableViewModel<TItem>`](Tables/PagedTableViewModel.cs) | class | View model that slices an item collection into pages and tracks the current page. |
+| [`Pagination`](Tables/Pagination.razor) | class | Previous, current and next page buttons over an `IPagedCollectionViewModel`. |
 | [`RapidTable<TItem>`](Tables/RapidTable.razor.cs) | class | Table that renders items from an asynchronous stream up to an item limit. |
 | [`RapidTableViewModel<TItem>`](Tables/RapidTableViewModel.cs) | class | Keeps a bounded list of streamed items until cancellation or disposal. |
 | [`VirtualPagedTable<TItem>`](Tables/VirtualPagedTable.razor.cs) | class | Table that requests each page from an asynchronous items provider. |
