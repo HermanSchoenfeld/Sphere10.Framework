@@ -319,11 +319,23 @@ public class BitsJob : IDisposable {
 		}
 	}
 
-	public void AddFiles(ArrayList files) {
+	public unsafe void AddFiles(ArrayList files) {
 		try {
 			uint count = Convert.ToUInt32(files.Count);
-			BG_FILE_INFO[] fileArray = files.ToArray(typeof(BG_FILE_INFO)) as BG_FILE_INFO[];
-			this.job.AddFileSet(count, ref fileArray);
+			// BG_FILE_INFO is a contiguous array of two native string pointers per entry.
+			using var names = new Disposables();
+			using var memory = new UnmanagedMemoryScope(checked(Math.Max(1, files.Count) * 2 * IntPtr.Size));
+			var entries = (IntPtr*)memory.Item;
+			for (var i = 0; i < files.Count; i++) {
+				var file = (BG_FILE_INFO)files[i];
+				var remote = UnmanagedMemoryScope.FromUnicodeString(file.RemoteName);
+				names.Add(remote);
+				var local = UnmanagedMemoryScope.FromUnicodeString(file.LocalName);
+				names.Add(local);
+				entries[2 * i] = remote.Item;
+				entries[2 * i + 1] = local.Item;
+			}
+			job.AddFileSet(count, memory.Item);
 		} catch (COMException exception) {
 			manager.PublishException(this, exception);
 		}
@@ -333,12 +345,17 @@ public class BitsJob : IDisposable {
 		try {
 			if (job2 != null) // only supported from IBackgroundCopyJob2 and above
 			{
-				BG_AUTH_CREDENTIALS bgCredentials = new BG_AUTH_CREDENTIALS();
-				bgCredentials.Scheme = (BG_AUTH_SCHEME)credentials.AuthenticationScheme;
-				bgCredentials.Target = (BG_AUTH_TARGET)credentials.AuthenticationTarget;
-				bgCredentials.Credentials.Basic.Password = credentials.Password.ToString();
-				bgCredentials.Credentials.Basic.UserName = credentials.UserName.ToString();
-				job2.SetCredentials(ref bgCredentials);
+				using var userName = UnmanagedMemoryScope.FromUnicodeString(credentials.UserName.ToString());
+				using var password = UnmanagedMemoryScope.FromUnicodeString(credentials.Password.ToString());
+				// Native BG_AUTH_CREDENTIALS stores Target, Scheme, then UserName and Password.
+				var native = new BG_AUTH_CREDENTIALS {
+					Target = (BG_AUTH_TARGET)credentials.AuthenticationTarget,
+					Scheme = (BG_AUTH_SCHEME)credentials.AuthenticationScheme,
+					Credentials = new BG_AUTH_CREDENTIALS_UNION {
+						Basic = new BG_BASIC_CREDENTIALS { UserName = userName.Item, Password = password.Item }
+					}
+				};
+				job2.SetCredentials(in native);
 			}
 		} catch (COMException exception) {
 			manager.PublishException(this, exception);
@@ -388,7 +405,7 @@ public class BitsJob : IDisposable {
 
 	internal IBackgroundCopyCallback NotificationInterface {
 		get {
-			object notificationInterface = null;
+			IBackgroundCopyCallback notificationInterface = null;
 			try {
 				job.GetNotifyInterface(out notificationInterface);
 			} catch (COMException exception) {

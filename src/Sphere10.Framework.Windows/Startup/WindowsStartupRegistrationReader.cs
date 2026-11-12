@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Management;
 using Microsoft.Win32;
 
 namespace Sphere10.Framework.Windows.Startup;
@@ -101,30 +100,30 @@ internal sealed class WindowsStartupRegistrationReader {
 
 	private void ReadTasks() {
 		ReadManagement(@"root\Microsoft\Windows\TaskScheduler", "SELECT * FROM MSFT_ScheduledTask", WindowsStartupSources.ScheduledTasks, item => {
-			var allTriggers = item["Triggers"] as ManagementBaseObject[] ?? Array.Empty<ManagementBaseObject>();
+			var allTriggers = item["Triggers"] as WindowsManagementObject[] ?? Array.Empty<WindowsManagementObject>();
 			using var disposeTriggers = Tools.Scope.ExecuteOnDispose(() => { foreach (var trigger in allTriggers) trigger.Dispose(); });
 			var triggers = allTriggers.Where(trigger =>
-				trigger.ClassPath.ClassName is "MSFT_TaskBootTrigger" or "MSFT_TaskLogonTrigger").ToArray();
+				trigger.ClassName is "MSFT_TaskBootTrigger" or "MSFT_TaskLogonTrigger").ToArray();
 			if (triggers.Length == 0)
 				return;
 			var path = Text(item, "TaskPath") + Text(item, "TaskName");
-			var actions = item["Actions"] as ManagementBaseObject[] ?? Array.Empty<ManagementBaseObject>();
+			var actions = item["Actions"] as WindowsManagementObject[] ?? Array.Empty<WindowsManagementObject>();
 			using var disposeActions = Tools.Scope.ExecuteOnDispose(() => { foreach (var action in actions) action.Dispose(); });
 			var state = Convert.ToInt32(item["State"]);
-			using var principal = item["Principal"] as ManagementBaseObject;
+			using var principal = item["Principal"] as WindowsManagementObject;
 			for (var index = 0; index < actions.Length && !_truncated; index++) {
 				var action = actions[index];
-				var executable = action.ClassPath.ClassName == "MSFT_TaskExecAction" ? Text(action, "Execute") : string.Empty;
+				var executable = action.ClassName == "MSFT_TaskExecAction" ? Text(action, "Execute") : string.Empty;
 				Add(new WindowsStartupRegistration {
 					Identity = "Task|" + path + "|" + index, Family = WindowsStartupSources.ScheduledTasks,
 					Name = Text(item, "TaskName") + " / Action " + (index + 1), Location = path,
 					Scope = principal == null ? "Task Principal Unavailable" : Text(principal, "UserId"),
-					Command = string.IsNullOrEmpty(executable) ? action.ClassPath.ClassName + " / " + string.Join("; ", action.Properties.Cast<PropertyData>().Select(property => property.Name + "=" + Clip(property.Value?.ToString()))) : "\"" + executable + "\" " + Text(action, "Arguments"),
+					Command = string.IsNullOrEmpty(executable) ? action.ClassName + " / " + string.Join("; ", action.Properties.Select(property => property.Key + "=" + Clip(property.Value?.ToString()))) : "\"" + executable + "\" " + Text(action, "Arguments"),
 					Executable = executable, Arguments = string.IsNullOrEmpty(executable) ? string.Empty : Text(action, "Arguments"),
 					WorkingDirectory = string.IsNullOrEmpty(executable) ? string.Empty : Text(action, "WorkingDirectory"),
-					Trigger = string.Join("; ", triggers.Select(trigger => trigger.ClassPath.ClassName + " Enabled=" + Text(trigger, "Enabled")
+					Trigger = string.Join("; ", triggers.Select(trigger => trigger.ClassName + " Enabled=" + Text(trigger, "Enabled")
 						+ ", Start=" + Text(trigger, "StartBoundary") + ", End=" + Text(trigger, "EndBoundary") + ", Delay=" + Text(trigger, "Delay")
-						+ (trigger.ClassPath.ClassName == "MSFT_TaskLogonTrigger" ? ", User=" + Text(trigger, "UserId") : string.Empty))),
+						+ (trigger.ClassName == "MSFT_TaskLogonTrigger" ? ", User=" + Text(trigger, "UserId") : string.Empty))),
 					SourceState = state switch { 0 => "Unknown", 1 => "Disabled", 2 => "Queued", 3 => "Ready", 4 => "Running", _ => state.ToString() },
 					Availability = string.IsNullOrEmpty(executable) ? "Non-executable action fields retained; no file target inferred." : "Boot/logon trigger presence is not evidence of execution. Task conditions and trigger enablement still apply."
 				});
@@ -135,38 +134,37 @@ internal sealed class WindowsStartupRegistrationReader {
 	private void ReadSubscriptions() {
 		const string scope = @"root\subscription";
 		ReadManagement(scope, "SELECT * FROM __EventFilter", WindowsStartupSources.WmiSubscriptions, item => Add(new WindowsStartupRegistration {
-			Identity = item.Path.Path, Family = WindowsStartupSources.WmiSubscriptions, Name = Text(item, "Name"), Scope = scope,
-			Location = item.Path.Path, Trigger = Text(item, "EventNamespace") + " / " + Text(item, "QueryLanguage") + " / " + Text(item, "Query"),
+			Identity = item.Path, Family = WindowsStartupSources.WmiSubscriptions, Name = Text(item, "Name"), Scope = scope,
+			Location = item.Path, Trigger = Text(item, "EventNamespace") + " / " + Text(item, "QueryLanguage") + " / " + Text(item, "Query"),
 			SourceState = "Event Filter (Read Only)", Availability = "A filter alone does not establish an active consumer binding."
 		}));
 		ReadManagement(scope, "SELECT * FROM __EventConsumer", WindowsStartupSources.WmiSubscriptions, item => {
-			var commandLine = item.ClassPath.ClassName == "CommandLineEventConsumer";
-			var script = item.ClassPath.ClassName == "ActiveScriptEventConsumer";
+			var commandLine = item.ClassName == "CommandLineEventConsumer";
+			var script = item.ClassName == "ActiveScriptEventConsumer";
 			Add(new WindowsStartupRegistration {
-				Identity = item.Path.Path, Family = WindowsStartupSources.WmiSubscriptions, Name = Text(item, "Name"), Scope = scope,
-				Location = item.Path.Path, Command = commandLine ? Text(item, "CommandLineTemplate") : script ? Text(item, "ScriptFileName") + " / " + Text(item, "ScriptText") : item.ClassPath.ClassName,
+				Identity = item.Path, Family = WindowsStartupSources.WmiSubscriptions, Name = Text(item, "Name"), Scope = scope,
+				Location = item.Path, Command = commandLine ? Text(item, "CommandLineTemplate") : script ? Text(item, "ScriptFileName") + " / " + Text(item, "ScriptText") : item.ClassName,
 				Executable = commandLine ? Text(item, "ExecutablePath") : string.Empty,
 				WorkingDirectory = commandLine ? Text(item, "WorkingDirectory") : string.Empty,
-				Trigger = item.ClassPath.ClassName + (script ? " / Engine=" + Text(item, "ScriptingEngine") : string.Empty), SourceState = "Event Consumer (Read Only)",
+				Trigger = item.ClassName + (script ? " / Engine=" + Text(item, "ScriptingEngine") : string.Empty), SourceState = "Event Consumer (Read Only)",
 				Availability = "Consumer configuration is not proof of execution. WMI templates/scripts are retained verbatim; no expanded runtime command is inferred."
 			});
 		});
 		ReadManagement(scope, "SELECT * FROM __FilterToConsumerBinding", WindowsStartupSources.WmiSubscriptions, item => Add(new WindowsStartupRegistration {
-			Identity = item.Path.Path, Family = WindowsStartupSources.WmiSubscriptions, Name = "Filter To Consumer Binding", Scope = scope,
-			Location = item.Path.Path, Command = Text(item, "Consumer"), Trigger = Text(item, "Filter"), SourceState = "Subscription Binding (Read Only)",
+			Identity = item.Path, Family = WindowsStartupSources.WmiSubscriptions, Name = "Filter To Consumer Binding", Scope = scope,
+			Location = item.Path, Command = Text(item, "Consumer"), Trigger = Text(item, "Filter"), SourceState = "Subscription Binding (Read Only)",
 			Availability = "The captured association links the raw filter and consumer paths; no operation is invoked."
 		}));
 	}
 
-	private void ReadManagement(string scope, string query, WindowsStartupSources family, Action<ManagementObject> project) {
+	private void ReadManagement(string scope, string query, WindowsStartupSources family, Action<WindowsManagementObject> project) {
 		if (_truncated)
 			return;
 		Capture(family, scope + " / " + query, () => {
 			var elapsed = Stopwatch.StartNew();
-			using var searcher = new ManagementObjectSearcher(new ManagementScope(@"\\.\" + scope, new ConnectionOptions { Timeout = _timeout }),
-				new ObjectQuery(query), new EnumerationOptions { Timeout = _timeout, Rewindable = false, ReturnImmediately = true });
-			using var objects = searcher.Get();
-			foreach (ManagementObject item in objects) {
+			using var searcher = Tools.Windows.COM.CreateManagementQuery(_timeout, scope);
+			var objects = searcher.Read(query);
+			foreach (WindowsManagementObject item in objects) {
 				using (item) {
 					_checkpoint?.Invoke();
 					if (_truncated)
@@ -176,7 +174,7 @@ internal sealed class WindowsStartupRegistrationReader {
 							Location = query, Availability = "The provider enumeration time limit was reached; completed rows were retained. Native provider waits may finish after this cooperative deadline." });
 						break;
 					}
-					Capture(family, item.Path.Path, () => project(item));
+					Capture(family, item.Path, () => project(item));
 					if (_truncated)
 						break;
 				}
@@ -191,7 +189,7 @@ internal sealed class WindowsStartupRegistrationReader {
 			Add(new WindowsStartupRegistration { Identity = "Unavailable|" + family + "|" + location, Family = family, Name = "Source Unavailable", Location = location, Availability = error.Message });
 	}
 
-	private static string Text(ManagementBaseObject item, string name) => Clip(item[name]?.ToString());
+	private static string Text(WindowsManagementObject item, string name) => Clip(item[name]?.ToString());
 
 	private static string Clip(string value) {
 		value ??= string.Empty;

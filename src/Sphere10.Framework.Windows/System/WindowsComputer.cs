@@ -129,10 +129,9 @@ public static class WindowsComputer {
 
 	private static WindowsComputerInfo QueryCore(Action checkpoint) {
 		checkpoint?.Invoke();
-		using var search = new ManagementObjectSearcher("SELECT Name,Domain,PartOfDomain,Manufacturer,Model,TotalPhysicalMemory,SystemType,HypervisorPresent FROM Win32_ComputerSystem");
-		search.Options.Timeout = TimeSpan.FromSeconds(5);
-		using var results = search.Get();
-		foreach (ManagementObject computer in results) {
+		using var search = Tools.Windows.COM.CreateManagementQuery(TimeSpan.FromSeconds(5));
+		var results = search.Read("SELECT Name,Domain,PartOfDomain,Manufacturer,Model,TotalPhysicalMemory,SystemType,HypervisorPresent FROM Win32_ComputerSystem");
+		foreach (WindowsManagementObject computer in results) {
 			using (computer) {
 				checkpoint?.Invoke();
 				return new WindowsComputerInfo(Convert.ToString(computer["Name"]), Convert.ToString(computer["Domain"]), Convert.ToBoolean(computer["PartOfDomain"]),
@@ -149,16 +148,15 @@ public static class WindowsComputer {
 	private static void RenameCore(string expectedCurrentName, string newName, Action checkpoint) {
 		Guard.ArgumentNotNullOrWhitespace(newName, nameof(newName));
 		checkpoint?.Invoke();
-		using var search = new ManagementObjectSearcher("SELECT * FROM Win32_ComputerSystem");
-		search.Options.Timeout = TimeSpan.FromSeconds(5);
-		using var results = search.Get();
-		foreach (ManagementObject computer in results) {
+		using var search = Tools.Windows.COM.CreateManagementQuery(TimeSpan.FromSeconds(5));
+		var results = search.Read("SELECT * FROM Win32_ComputerSystem");
+		foreach (WindowsManagementObject computer in results) {
 			using (computer) {
 				Guard.Ensure(expectedCurrentName == null || string.Equals(Convert.ToString(computer["Name"]), expectedCurrentName, StringComparison.OrdinalIgnoreCase), "The computer name changed.");
 				using var input = computer.GetMethodParameters("Rename");
 				input["Name"] = newName;
 				checkpoint?.Invoke();
-				using var output = computer.InvokeMethod("Rename", input, new InvokeMethodOptions { Timeout = TimeSpan.FromSeconds(15) });
+				using var output = computer.InvokeMethod("Rename", input, TimeSpan.FromSeconds(15));
 				var code = Convert.ToUInt32(output?["ReturnValue"] ?? uint.MaxValue);
 				if (code != 0) throw new Win32Exception(unchecked((int)code), $"Windows could not rename the computer (code {code}).");
 				return;
@@ -167,7 +165,7 @@ public static class WindowsComputer {
 		throw new InvalidOperationException("Windows did not provide the computer identity.");
 	}
 
-	private static WindowsMemoryModuleInfo ReadMemoryModule(ManagementObject resource) => new() {
+	private static WindowsMemoryModuleInfo ReadMemoryModule(WindowsManagementObject resource) => new() {
 		DeviceLocator = Text(resource, "DeviceLocator"),
 		BankLabel = Text(resource, "BankLabel"),
 		Manufacturer = Text(resource, "Manufacturer"),
@@ -181,7 +179,7 @@ public static class WindowsComputer {
 		TotalWidthBits = Number(resource, "TotalWidth")
 	};
 
-	private static WindowsMemoryArrayInfo ReadMemoryArray(ManagementObject resource) => new() {
+	private static WindowsMemoryArrayInfo ReadMemoryArray(WindowsManagementObject resource) => new() {
 		Tag = Text(resource, "Tag"),
 		Location = Number(resource, "Location"),
 		Use = Number(resource, "Use"),
@@ -189,7 +187,7 @@ public static class WindowsComputer {
 		MaximumCapacityBytes = ConvertMemoryCapacity(LargeNumber(resource, "MaxCapacityEx"), Number(resource, "MaxCapacity"))
 	};
 
-	private static WindowsEnclosureInfo ReadEnclosure(ManagementObject resource) => new() {
+	private static WindowsEnclosureInfo ReadEnclosure(WindowsManagementObject resource) => new() {
 		Manufacturer = Text(resource, "Manufacturer"),
 		Model = Text(resource, "Model"),
 		Version = Text(resource, "Version"),
@@ -198,7 +196,7 @@ public static class WindowsComputer {
 		ChassisTypes = resource["ChassisTypes"] as ushort[] ?? Array.Empty<ushort>()
 	};
 
-	private static WindowsVideoControllerInfo ReadVideoController(ManagementObject resource) => new() {
+	private static WindowsVideoControllerInfo ReadVideoController(WindowsManagementObject resource) => new() {
 		DeviceId = Text(resource, "DeviceID"),
 		Name = Text(resource, "Name"),
 		Manufacturer = Text(resource, "AdapterCompatibility"),
@@ -213,7 +211,7 @@ public static class WindowsComputer {
 		RefreshRateHz = Number(resource, "CurrentRefreshRate")
 	};
 
-	private static WindowsPlugAndPlayDeviceInfo ReadDevice(ManagementObject resource) => new() {
+	private static WindowsPlugAndPlayDeviceInfo ReadDevice(WindowsManagementObject resource) => new() {
 		DeviceId = Text(resource, "DeviceID"),
 		Name = Text(resource, "Name"),
 		Description = Text(resource, "Description"),
@@ -228,7 +226,7 @@ public static class WindowsComputer {
 		CompatibleIds = resource["CompatibleID"] as string[] ?? Array.Empty<string>()
 	};
 
-	private static WindowsMonitorInfo ReadMonitor(ManagementObject resource) => new() {
+	private static WindowsMonitorInfo ReadMonitor(WindowsManagementObject resource) => new() {
 		InstanceName = Text(resource, "InstanceName"),
 		Manufacturer = DecodeMonitorText(resource["ManufacturerName"] as ushort[]),
 		ProductCode = DecodeMonitorText(resource["ProductCodeID"] as ushort[]),
@@ -239,7 +237,7 @@ public static class WindowsComputer {
 		ManufactureYear = SmallNumber(resource, "YearOfManufacture")
 	};
 
-	private static WindowsPrinterInfo ReadPrinter(ManagementObject resource) => new() {
+	private static WindowsPrinterInfo ReadPrinter(WindowsManagementObject resource) => new() {
 		DeviceId = Text(resource, "DeviceID"),
 		Name = Text(resource, "Name"),
 		DriverName = Text(resource, "DriverName"),
@@ -253,14 +251,13 @@ public static class WindowsComputer {
 		PrinterStatus = Number(resource, "PrinterStatus")
 	};
 
-	private static T[] ReadResources<T>(string query, Func<ManagementObject, T> convert, Action checkpoint, string scope = @"\\.\root\cimv2") {
+	private static T[] ReadResources<T>(string query, Func<WindowsManagementObject, T> convert, Action checkpoint, string scope = @"\\.\root\cimv2") {
 		checkpoint?.Invoke();
 		var timeout = TimeSpan.FromSeconds(5);
-		using var searcher = new ManagementObjectSearcher(new ManagementScope(scope, new ConnectionOptions { Timeout = timeout }),
-			new ObjectQuery(query), new EnumerationOptions { Timeout = timeout, Rewindable = false, ReturnImmediately = true, BlockSize = 32 });
-		using var resources = searcher.Get();
+		using var searcher = Tools.Windows.COM.CreateManagementQuery(timeout, scope);
+		var resources = searcher.Read(query);
 		var result = new List<T>();
-		foreach (ManagementObject resource in resources) {
+		foreach (WindowsManagementObject resource in resources) {
 			using (resource) {
 				checkpoint?.Invoke();
 				result.Add(convert(resource));
@@ -270,15 +267,15 @@ public static class WindowsComputer {
 		return result.ToArray();
 	}
 
-	private static string Text(ManagementObject resource, string property) => Convert.ToString(resource[property], CultureInfo.InvariantCulture);
+	private static string Text(WindowsManagementObject resource, string property) => Convert.ToString(resource[property], CultureInfo.InvariantCulture);
 
-	private static uint? Number(ManagementObject resource, string property) => resource[property] == null ? null : Convert.ToUInt32(resource[property], CultureInfo.InvariantCulture);
+	private static uint? Number(WindowsManagementObject resource, string property) => resource[property] == null ? null : Convert.ToUInt32(resource[property], CultureInfo.InvariantCulture);
 
-	private static ulong? LargeNumber(ManagementObject resource, string property) => resource[property] == null ? null : Convert.ToUInt64(resource[property], CultureInfo.InvariantCulture);
+	private static ulong? LargeNumber(WindowsManagementObject resource, string property) => resource[property] == null ? null : Convert.ToUInt64(resource[property], CultureInfo.InvariantCulture);
 
-	private static ushort? SmallNumber(ManagementObject resource, string property) => resource[property] == null ? null : Convert.ToUInt16(resource[property], CultureInfo.InvariantCulture);
+	private static ushort? SmallNumber(WindowsManagementObject resource, string property) => resource[property] == null ? null : Convert.ToUInt16(resource[property], CultureInfo.InvariantCulture);
 
-	private static bool? Boolean(ManagementObject resource, string property) => resource[property] == null ? null : Convert.ToBoolean(resource[property], CultureInfo.InvariantCulture);
+	private static bool? Boolean(WindowsManagementObject resource, string property) => resource[property] == null ? null : Convert.ToBoolean(resource[property], CultureInfo.InvariantCulture);
 
-	private static DateTime? Date(ManagementObject resource, string property) => ParseDmtfDate(Text(resource, property));
+	private static DateTime? Date(WindowsManagementObject resource, string property) => ParseDmtfDate(Text(resource, property));
 }

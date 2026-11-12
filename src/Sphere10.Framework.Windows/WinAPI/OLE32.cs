@@ -18,6 +18,12 @@ public static partial class WinAPI {
 		public const uint COINIT_DISABLE_OLE1DDE = 0x4;
 
 		[DllImport("ole32.dll", ExactSpelling = true)]
+		public static extern int CoCreateInstance(in Guid classId, IntPtr outer, uint context, in Guid interfaceId, out IntPtr instance);
+
+		[DllImport("ole32.dll", ExactSpelling = true)]
+		public static extern int CoSetProxyBlanket(IntPtr proxy, uint authentication, uint authorization, IntPtr principal, uint authenticationLevel, uint impersonationLevel, IntPtr credentials, uint capabilities);
+
+		[DllImport("ole32.dll", ExactSpelling = true)]
 		public static extern int CoInitializeEx(IntPtr reserved, uint concurrencyModel);
 
 		[DllImport("ole32.dll", ExactSpelling = true)]

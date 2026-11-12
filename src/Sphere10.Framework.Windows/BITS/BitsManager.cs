@@ -8,6 +8,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Threading;
 
 namespace Sphere10.Framework.Windows.BITS;
@@ -16,6 +17,7 @@ namespace Sphere10.Framework.Windows.BITS;
 /// Use the IBackgroundCopyManager interface to create transfer jobs, 
 /// retrieve an enumerator object that contains the jobs in the queue, 
 /// and to retrieve individual jobs from the queue.
+/// Explicit generated COM wrappers preserve these operations under Native AOT.
 /// </summary>
 public class BitsManager : IDisposable {
 	private IBackgroundCopyManager manager;
@@ -34,7 +36,7 @@ public class BitsManager : IDisposable {
 		System.Threading.Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
 		WinAPI.OLE32.CoInitializeSecurity(IntPtr.Zero, -1, IntPtr.Zero, IntPtr.Zero, WinAPI.OLE32.RpcAuthnLevel.Connect, WinAPI.OLE32.RpcImpLevel.Impersonate, IntPtr.Zero, WinAPI.OLE32.EoAuthnCap.None, IntPtr.Zero);
 
-		this.manager = new BackgroundCopyManager() as IBackgroundCopyManager;
+		manager = Tools.Windows.COM.CreateBackgroundCopyManager();
 		this.notificationHandler = new BitsNotification(this);
 		this.notificationHandler.OnJobErrorEvent += new EventHandler<ErrorNotificationEventArgs>(notificationHandler_OnJobErrorEvent);
 		this.notificationHandler.OnJobModifiedEvent += new EventHandler<NotificationEventArgs>(notificationHandler_OnJobModifiedEvent);
@@ -202,8 +204,9 @@ public class BitsManager : IDisposable {
 	protected virtual void Dispose(bool disposing) {
 		if (!this.disposed) {
 			if (disposing) {
-				Marshal.ReleaseComObject(notificationHandler);
-				Marshal.ReleaseComObject(manager);
+				// The callback is managed; only the unique native manager wrapper owns a releaseable COM reference.
+				((ComObject)(object)manager)?.FinalRelease();
+				notificationHandler = null;
 				manager = null;
 			}
 		}

@@ -407,10 +407,9 @@ public sealed class WindowsProcess : IDisposable {
 		var identity = Identity;
 		Guard.Ensure(identity.IsVerified && !HasExited, "The process identity is unavailable or has exited.");
 		checkpoint?.Invoke();
-		var options = new System.Management.EnumerationOptions { Timeout = TimeSpan.FromSeconds(3), ReturnImmediately = false, Rewindable = false };
-		using var searcher = new ManagementObjectSearcher("root\\cimv2", $"SELECT CommandLine, CreationDate FROM Win32_Process WHERE ProcessId = {ProcessId}", options);
-		using var matches = searcher.Get();
-		foreach (ManagementObject match in matches) {
+		using var searcher = Tools.Windows.COM.CreateManagementQuery(TimeSpan.FromSeconds(3));
+		var matches = searcher.Read($"SELECT CommandLine, CreationDate FROM Win32_Process WHERE ProcessId = {ProcessId}");
+		foreach (WindowsManagementObject match in matches) {
 			using (match) {
 				checkpoint?.Invoke();
 				var creation = match["CreationDate"] as string;

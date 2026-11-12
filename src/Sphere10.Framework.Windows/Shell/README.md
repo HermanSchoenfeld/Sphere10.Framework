@@ -6,6 +6,8 @@ Wraps Windows Shell operations: launching and opening items, file associations, 
 
 `ShellLink` wraps the COM `IShellLink` object to create, load, edit and save `.lnk` shortcuts. `LoadWithoutResolve` reads the stored fields only, while `Open` can resolve a missing target. `Tools.Windows.Shell.ReadShortcutAsync` returns the stored fields as `WindowsShortcutInfo` without resolving the target. `FileIcon` extracts a file's Shell icon, display name and type name through `SHGetFileInfo`. `FileIconCache` loads icons from `FileIconLocation` values on a worker and lends cached images at one size. Startup shortcuts are read by the [Startup](../Startup/README.md) domain.
 
+`ShellLink` uses source-generated Unicode COM bindings on both CoreCLR and Native AOT. Its unique wrapper owns the native reference and releases it on disposal. Shortcut creation and stored-field reads retain their existing public API.
+
 ## Contents
 
 | Type | Kind | Purpose |

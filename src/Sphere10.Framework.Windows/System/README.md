@@ -10,6 +10,9 @@ Reads computer identity, firmware, hardware, operating-system and performance da
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`WindowsManagementQuery`](WindowsManagementQuery.cs) | class | Owns a native WMI connection on one thread; created through `Tools.Windows.COM.CreateManagementQuery` |
+| [`WindowsManagementObject`](WindowsManagementObject.cs) | class | Owns a WMI object, typed property values and method parameters within its query lifetime |
+| [`WindowsIpmi`](WindowsIpmi.cs) | static class | Discovers Microsoft_IPMI provider paths and exchanges IPMI request/response byte arrays through native WMI |
 | [`AlwaysOnScope`](AlwaysOnScope.cs) | struct | Thread-bound scope that requests system or display availability through `SetThreadExecutionState` and restores the prior state |
 | [`Tools.Windows.Computer`](ComputerUtil.cs) | static class | `Tools.Windows.Computer` identity, firmware, hardware, counter and power queries, power data-source factories, rename and power-state requests |
 | [`Tools.Windows.PerformanceCounters`](PerformanceCounterUtil.cs) | static class | `Tools.Windows.PerformanceCounters` factory that opens caller-owned PDH queries over English counter paths |

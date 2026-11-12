@@ -14,5 +14,3 @@ namespace Sphere10.Framework.Windows;
 public sealed record WindowsWindowTarget(WindowsWindowInfo Window, Rectangle Bounds);
 
 public sealed record WindowsUiAutomationProperty(int Id, string Name, string Value, string Availability);
-
-internal readonly record struct WindowsUiAutomationPropertyDescription(int Id, string Name, bool PatternSupport = false);

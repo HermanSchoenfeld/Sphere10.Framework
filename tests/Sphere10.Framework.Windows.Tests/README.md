@@ -243,3 +243,7 @@ Window and DPI scopes.
 | Fixture | Purpose |
 | --- | --- |
 | [ThreadDpiAwarenessScopeTests](Windowing/ThreadDpiAwarenessScopeTests.cs) | Nested thread DPI-awareness scopes restore the calling context and reject wrong-thread or asynchronous disposal. |
+
+### Generated COM compatibility
+
+`ShellLinkTests` verifies Unicode save/load/resolve; the existing startup fixture verifies that stored-field reads do not repair missing targets. `BitsInteropTests` is an explicit Windows integration fixture. Set `SPHERE10_BITS_TEST_URL` to a loopback HTTP endpoint serving `Sphere10 Native COM transfer fixture` followed by a newline, then select `GeneratedComWrappersTransferFilesAndDeliverCompletionCallbacks` with `NUnit.ExplicitMode=Relaxed`. It creates one uniquely named BITS job, checks credentials and file enumeration, receives the completion callback and verifies the downloaded content. Cleanup cancels only that owned job when it has not completed.

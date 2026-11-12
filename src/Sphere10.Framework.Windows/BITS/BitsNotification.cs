@@ -8,6 +8,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Sphere10.Framework.Windows.BITS;
 
@@ -86,7 +87,8 @@ public class BitsInterfaceNotificationEventArgs : NotificationEventArgs {
 #endregion
 
 
-internal class BitsNotification : IBackgroundCopyCallback {
+[GeneratedComClass]
+internal partial class BitsNotification : IBackgroundCopyCallback {
 
 	#region IBackgroundCopyCallback Members
 

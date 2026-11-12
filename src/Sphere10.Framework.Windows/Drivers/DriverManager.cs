@@ -53,12 +53,10 @@ public sealed class DriverManager {
 		checkpoint?.Invoke();
 		var queryTimeout = timeout ?? TimeSpan.FromSeconds(15);
 		Guard.Argument(queryTimeout > TimeSpan.Zero, nameof(timeout), "The query timeout must be positive.");
-		using var searcher = new ManagementObjectSearcher(new ManagementScope(@"\\.\root\cimv2", new ConnectionOptions { Timeout = queryTimeout }),
-			new ObjectQuery("SELECT DeviceName,DeviceID,DeviceClass,DriverVersion,DriverProviderName,IsSigned,Signer,InfName,DriverDate FROM Win32_PnPSignedDriver"),
-			new System.Management.EnumerationOptions { Timeout = queryTimeout, Rewindable = false, ReturnImmediately = true });
-		using var objects = searcher.Get();
+		using var searcher = Tools.Windows.COM.CreateManagementQuery(queryTimeout);
+		var objects = searcher.Read("SELECT DeviceName,DeviceID,DeviceClass,DriverVersion,DriverProviderName,IsSigned,Signer,InfName,DriverDate FROM Win32_PnPSignedDriver");
 		var result = new List<WindowsDriverPackageInfo>();
-		foreach (ManagementObject item in objects) {
+		foreach (WindowsManagementObject item in objects) {
 			using (item) {
 				checkpoint?.Invoke();
 				var date = item["DriverDate"]?.ToString();

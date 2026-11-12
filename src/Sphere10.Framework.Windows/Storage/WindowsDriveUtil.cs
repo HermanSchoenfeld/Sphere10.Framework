@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 using Sphere10.Framework.Windows.Storage;
@@ -90,7 +89,7 @@ public static partial class Windows {
 			=> ReadHardware("SELECT DeviceID,DiskIndex,Index,Type,Size,StartingOffset,BootPartition FROM Win32_DiskPartition",
 				item => ReadPartition(item, timeout, checkpoint), error => new WindowsPartitionInfo { ReadError = error }, checkpoint, timeout);
 
-		private static WindowsPartitionInfo ReadPartition(ManagementObject item, TimeSpan? timeout, Action checkpoint) {
+		private static WindowsPartitionInfo ReadPartition(WindowsManagementObject item, TimeSpan? timeout, Action checkpoint) {
 			var row = new WindowsPartitionInfo {
 				DeviceId = Text(item, "DeviceID"), DiskIndex = Number<uint>(item, "DiskIndex"), Index = Number<uint>(item, "Index"), Type = Text(item, "Type"),
 				SizeBytes = Number<ulong>(item, "Size"), StartingOffsetBytes = Number<ulong>(item, "StartingOffset"), BootPartition = Number<bool>(item, "BootPartition")
@@ -98,9 +97,8 @@ public static partial class Windows {
 			var resolved = row;
 			Tools.Exceptions.ExecuteCapturingException(() => {
 				var roots = new List<string>();
-				using var drives = item.GetRelated("Win32_LogicalDisk", "Win32_LogicalDiskToPartition", null, null, null, null, false,
-					new System.Management.EnumerationOptions { Timeout = timeout ?? TimeSpan.FromSeconds(15), Rewindable = false });
-				foreach (ManagementObject drive in drives) {
+				var drives = item.GetRelated("Win32_LogicalDisk", "Win32_LogicalDiskToPartition");
+				foreach (WindowsManagementObject drive in drives) {
 					using (drive) {
 						checkpoint?.Invoke();
 						var name = Text(drive, "DeviceID");
@@ -113,16 +111,15 @@ public static partial class Windows {
 			return associationError == null ? resolved : row with { DriveAssociationError = associationError };
 		}
 
-		private static T[] ReadHardware<T>(string query, Func<ManagementObject, T> read, Func<Exception, T> failure,
+		private static T[] ReadHardware<T>(string query, Func<WindowsManagementObject, T> read, Func<Exception, T> failure,
 			Action checkpoint, TimeSpan? timeout) {
 			checkpoint?.Invoke();
 			var queryTimeout = timeout ?? TimeSpan.FromSeconds(15);
 			Guard.Argument(queryTimeout > TimeSpan.Zero, nameof(timeout), "The native query timeout must be positive.");
-			using var searcher = new ManagementObjectSearcher(new ManagementScope(@"\\.\root\cimv2", new ConnectionOptions { Timeout = queryTimeout }),
-				new ObjectQuery(query), new System.Management.EnumerationOptions { Timeout = queryTimeout, Rewindable = false, ReturnImmediately = true, BlockSize = 64 });
-			using var objects = searcher.Get();
+			using var searcher = Tools.Windows.COM.CreateManagementQuery(queryTimeout);
+			var objects = searcher.Read(query);
 			var result = new List<T>();
-			foreach (ManagementObject item in objects) {
+			foreach (WindowsManagementObject item in objects) {
 				using (item) {
 					checkpoint?.Invoke();
 					Tools.Exceptions.ExecuteCapturingException(() => result.Add(read(item)), out var readError, error => error is not OperationCanceledException);
@@ -134,8 +131,8 @@ public static partial class Windows {
 			return result.ToArray();
 		}
 
-		private static string Text(ManagementObject item, string property) => item[property]?.ToString();
-		private static T? Number<T>(ManagementObject item, string property)
+		private static string Text(WindowsManagementObject item, string property) => item[property]?.ToString();
+		private static T? Number<T>(WindowsManagementObject item, string property)
 			where T : struct
 			=> item[property] == null ? null : (T)Convert.ChangeType(item[property], typeof(T), CultureInfo.InvariantCulture);
 	}

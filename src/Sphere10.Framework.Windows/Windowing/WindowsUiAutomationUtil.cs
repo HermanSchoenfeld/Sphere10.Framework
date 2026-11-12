@@ -11,13 +11,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework.Windows;
 
 /// <summary>Captures selected-window UIA metadata through an owned isolated worker. Provider hangs never occupy the application's native dispatcher.</summary>
-public sealed class WindowsUiAutomationUtil {
+public sealed partial class WindowsUiAutomationUtil {
 	public const string WorkerArgument = "--sphere10-uia-inspection";
 	private static readonly AsyncSynchronizedGate _workers = new();
 	private static ProcessIdentity? _unfinishedWorker;
@@ -38,7 +39,7 @@ public sealed class WindowsUiAutomationUtil {
 			return false;
 		Tools.Exceptions.ExecuteCapturingException(() => {
 			Guard.Argument(args.Length == 2 && args[1].Length <= 16 * 1024, nameof(args), "Invalid UI Automation worker request.");
-			var request = JsonSerializer.Deserialize<WorkerRequest>(args[1]);
+			var request = JsonSerializer.Deserialize(args[1], WorkerJsonContext.Default.WorkerRequest);
 			Guard.ArgumentNotNull(request, nameof(args));
 			request.Options.Validate();
 			var expected = new WindowsWindowInfo(new IntPtr(request.Handle), string.Empty, request.ClassName, request.ProcessId, request.ThreadId,
@@ -73,7 +74,7 @@ public sealed class WindowsUiAutomationUtil {
 		_unfinishedWorker = null;
 		host ??= new WindowsProcessWorkerHost();
 		var request = new WorkerRequest(expected.Handle.ToInt64(), expected.ProcessId, expected.ProcessStartTimeUtc.Value.Ticks, expected.ThreadId, expected.ClassName, options);
-		var startInfo = host.CreateStartInfo(WorkerArgument, JsonSerializer.Serialize(request));
+		var startInfo = host.CreateStartInfo(WorkerArgument, JsonSerializer.Serialize(request, WorkerJsonContext.Default.WorkerRequest));
 		var rows = new List<WindowsUiAutomationElement>();
 		var notes = new List<string>();
 		var complete = false;
@@ -86,7 +87,7 @@ public sealed class WindowsUiAutomationUtil {
 				var line = await worker.ReadLineAsync(cancellationToken: timeout.Token).ConfigureAwait(false);
 				if (line == null)
 					break;
-				var message = JsonSerializer.Deserialize<WorkerMessage>(line);
+				var message = JsonSerializer.Deserialize(line, WorkerJsonContext.Default.WorkerMessage);
 				if (message == null)
 					continue;
 				if (message.Kind == "row" && message.Row != null) {
@@ -133,7 +134,7 @@ public sealed class WindowsUiAutomationUtil {
 	}
 
 	private static void Write(WorkerMessage message) {
-		Console.WriteLine(JsonSerializer.Serialize(message));
+		Console.WriteLine(JsonSerializer.Serialize(message, WorkerJsonContext.Default.WorkerMessage));
 		Console.Out.Flush();
 	}
 
@@ -148,6 +149,11 @@ public sealed class WindowsUiAutomationUtil {
 		public WindowsUiAutomationElement Row { get; set; }
 		public string Message { get; set; }
 		public bool Partial { get; set; }
+	}
+
+	[JsonSerializable(typeof(WorkerRequest))]
+	[JsonSerializable(typeof(WorkerMessage))]
+	private partial class WorkerJsonContext : JsonSerializerContext {
 	}
 
 	#endregion
