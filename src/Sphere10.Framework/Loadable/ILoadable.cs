@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -13,10 +14,11 @@ namespace Sphere10.Framework;
 public interface ILoadable {
 	event EventHandlerEx<object> Loading;
 	event EventHandlerEx<object> Loaded;
+
 	bool RequiresLoad { get; }
 
 	void Load();
 
-	Task LoadAsync();
+	/// <summary>Loads asynchronously. Cancellation ends this caller's wait, and the load itself when its implementation observes the token.</summary>
+	Task LoadAsync(CancellationToken cancellationToken = default);
 }
-

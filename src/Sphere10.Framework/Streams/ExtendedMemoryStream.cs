@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -53,10 +54,10 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 		}
 	}
 
-	public async Task LoadAsync() {
+	public async Task LoadAsync(CancellationToken cancellationToken = default) {
 		if (_source is ILoadable { RequiresLoad: true } loadable) {
 			Loading?.Invoke(this);
-			await loadable.LoadAsync();
+			await loadable.LoadAsync(cancellationToken);
 			Loaded?.Invoke(this);
 		}
 	}

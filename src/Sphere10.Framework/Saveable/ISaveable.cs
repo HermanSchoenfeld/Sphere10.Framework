@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sphere10.Framework;
@@ -13,10 +14,11 @@ namespace Sphere10.Framework;
 public interface ISaveable {
 	event EventHandlerEx<object> Saving;
 	event EventHandlerEx<object> Saved;
+
 	bool RequiresSave { get; }
 
 	void Save();
 
-	Task SaveAsync();
+	/// <summary>Saves asynchronously. Cancellation ends this caller's wait, and the save itself when its implementation observes the token.</summary>
+	Task SaveAsync(CancellationToken cancellationToken = default);
 }
-
