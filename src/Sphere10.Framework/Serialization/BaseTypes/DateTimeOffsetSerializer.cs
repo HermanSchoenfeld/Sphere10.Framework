@@ -26,7 +26,10 @@ public class DateTimeOffsetSerializer : ConstantSizeItemSerializerBase<DateTimeO
 	public override DateTimeOffset Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var datetime = DateTimeSerializer.Instance.Deserialize(reader, context);
 		var timespan = TimeSpanSerializer.Instance.Deserialize(reader, context);
-		return new DateTimeOffset(datetime, timespan);
+
+		// The stored local time is the same instant on any machine, so it is read as that instant and then given the stored offset.
+		// Passing both to the constructor would throw whenever the stored offset is not this machine's own offset.
+		return new DateTimeOffset(datetime).ToOffset(timespan);
 	}
 }
 

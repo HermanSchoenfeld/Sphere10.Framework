@@ -13,7 +13,7 @@ namespace Sphere10.Framework;
 
 public class HashSetSerializer<TItem> : CollectionSerializerBase<HashSet<TItem>, TItem> {
 
-	public HashSetSerializer(IItemSerializer<TItem> itemSerializer, SizeDescriptorStrategy sizeDescriptorStrategy) 
+	public HashSetSerializer(IItemSerializer<TItem> itemSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
 		: base(itemSerializer, sizeDescriptorStrategy) {
 	}
 

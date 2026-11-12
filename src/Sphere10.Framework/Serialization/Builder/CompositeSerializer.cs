@@ -93,14 +93,15 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 	}
 
 	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
-		var item = _activator();
+		// Members are set through one boxed reference, otherwise each set on a value type would go to its own discarded copy
+		object item = _activator();
 		if (ShouldNotifyInstanceActivation) 
 			context.SetDeserializingItem(item);  // let context know instance now in case needed for cyclic references 
 		foreach (var binding in _memberBindings) {
 			var memberValue = binding.Serializer.PackedDeserialize(reader, context);
 			binding.Member.SetValue(item, memberValue);
 		}
-		return item;
+		return (TItem)item;
 	}
 
 }
@@ -122,9 +123,13 @@ public static class CompositeSerializer {
 			.Invoke(null);
 
 	public static void Configure(IItemSerializer serializer, Type itemType, IEnumerable<MemberSerializationBinding> memberBindings) {
+		var bindings = memberBindings.ToArray();
 		var constructor = itemType.FindCompatibleConstructor(Array.Empty<Type>());
-		Guard.Ensure(constructor is not null, $"Unable to compose a serializer for type '{itemType.ToStringCS()}' as it did not have a public parameterless constructor");
-		Configure(serializer, Tools.Lambda.CastFunc(() => constructor.Invoke(null), itemType), memberBindings);
+
+		// A value type that declares no parameterless constructor is activated as its default value, provided it has members to restore
+		Guard.Ensure(constructor is not null || itemType.IsValueType && bindings.Length > 0, $"Unable to compose a serializer for type '{itemType.ToStringCS()}' as it did not have a public parameterless constructor");
+		Func<object> activator = constructor is not null ? () => constructor.Invoke(null) : () => TypeActivator.Activate(itemType);
+		Configure(serializer, Tools.Lambda.CastFunc(activator, itemType), bindings);
 	}
 
 	public static void Configure(IItemSerializer serializer, Delegate activator, IEnumerable<MemberSerializationBinding> memberBindings) {

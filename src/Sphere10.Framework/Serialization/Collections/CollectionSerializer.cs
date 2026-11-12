@@ -12,7 +12,7 @@ namespace Sphere10.Framework;
 
 public class CollectionSerializer<T> : CollectionSerializerBase<Collection<T>, T> {
 
-	public CollectionSerializer(IItemSerializer<T> itemSerializer, SizeDescriptorStrategy sizeDescriptorStrategy) : base(itemSerializer, sizeDescriptorStrategy) {
+	public CollectionSerializer(IItemSerializer<T> itemSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) : base(itemSerializer, sizeDescriptorStrategy) {
 	}
 
 	protected override long GetLength(Collection<T> collection) => collection.Count;

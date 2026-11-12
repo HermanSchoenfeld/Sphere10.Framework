@@ -6,7 +6,7 @@ using System.Linq;
 namespace Sphere10.Framework;
 
 /// <summary>
-/// Replacement for BinarySerializer deprecated in .NET 5.0 using Sphere10.Framework's serialization framework.
+/// Replacement for BinaryFormatter deprecated in .NET 5.0 using Sphere10.Framework's serialization framework.
 /// </summary>
 public sealed class BinarySerializer : ItemSerializerDecorator<object, ReferenceSerializer<object>> {
 	private readonly RegistrationSerializer _registrationsSerializer;

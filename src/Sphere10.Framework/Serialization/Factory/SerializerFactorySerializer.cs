@@ -96,7 +96,7 @@ public sealed class SerializerFactorySerializer : ItemSerializerBase<SerializerF
 
 			// Composite bindings carry the actual wire order and each member's serializer wrappers.
 			if (row.Construction == ConstructionKind.Composite) {
-				if (!source.SerializerType.IsConstructedGenericTypeOf(typeof(CompositeSerializer<>)) || source.DataType.GetConstructor(Type.EmptyTypes) == null)
+				if (!source.SerializerType.IsConstructedGenericTypeOf(typeof(CompositeSerializer<>)) || !source.DataType.IsValueType && source.DataType.GetConstructor(Type.EmptyTypes) == null)
 					throw new NotSupportedException("Composite reconstruction requires a public parameterless constructor.");
 				var serializer = factory.GetPureSerializer(source.DataType);
 				var bindings = (MemberSerializationBinding[])source.SerializerType.GetProperty(nameof(CompositeSerializer<object>.MemberBindings)).GetValue(serializer);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Sphere10.Framework;
 
@@ -64,6 +65,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 					if (context.IsSizingOrSerializingObject(item, out _))
 						throw new InvalidOperationException($"Cyclic-reference was encountered when sizing item  '{item}'. Please ensure context references are enabled sizing cyclic-referencing object graphs or ensure no cyclic references exist.");
 				context.NotifySizing(item, out contextIndex);
+				RuntimeHelpers.EnsureSufficientExecutionStack(); // a graph nested too deeply throws here instead of overflowing the stack
 				size = sizeof(byte) + Internal.CalculateSize(context, item);
 				context.NotifySized(contextIndex);
 				break;
@@ -93,6 +95,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 					if (context.IsSerializingObject(item, out _))
 						throw new InvalidOperationException($"Cyclic-reference was encountered when serializing item '{item}'. Please ensure context references are enabled serializing cyclic-referencing object graphs or ensure no cyclic references exist.");
 				context.NotifySerializingObject(item, out contextIndex);
+				RuntimeHelpers.EnsureSufficientExecutionStack(); // a graph nested too deeply throws here instead of overflowing the stack
 				Internal.Serialize(item, writer, context);
 				context.NotifySerializedObject(contextIndex);
 				break;
@@ -121,6 +124,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 					return default;
 				case ReferenceType.IsNotNull:
 					context.NotifyDeserializingObject(out index);
+					RuntimeHelpers.EnsureSufficientExecutionStack(); // a graph nested too deeply throws here instead of overflowing the stack
 					var item = Internal.Deserialize(reader, context);
 					context.NotifyDeserializedObject(item, index);
 					return item;

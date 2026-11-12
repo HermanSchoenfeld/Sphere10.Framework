@@ -18,9 +18,20 @@ public class StringSerializer : ItemSerializerBase<string> {
 		: this(Encoding.UTF8) {
 	}
 
-	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
+	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
+		: this(textEncoding, sizeDescriptorStrategy, int.MaxValue) {
+	}
+
+	public StringSerializer(Encoding textEncoding, int maximumByteCount)
+		: this(textEncoding, SizeDescriptorStrategy.UseCVarInt, maximumByteCount) {
+	}
+
+	/// <summary>Retains the existing wire format while bounding encoded and declared payload bytes before allocation.</summary>
+	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy, int maximumByteCount) {
 		Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));
+		Guard.ArgumentGTE(maximumByteCount, 0, nameof(maximumByteCount));
 		TextEncoding = textEncoding;
+		MaximumByteCount = maximumByteCount;
 		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
@@ -41,15 +52,18 @@ public class StringSerializer : ItemSerializerBase<string> {
 
 
 	public Encoding TextEncoding { get; }
+	public int MaximumByteCount { get; }
 
 	public override long CalculateSize(SerializationContext context, string item) {
 		var textByteCount = TextEncoding.GetByteCount(item);
+		Guard.Ensure(textByteCount <= MaximumByteCount, $"The encoded string exceeds its configured byte limit ({MaximumByteCount}).");
 		var sizeCount = _sizeSerializer.CalculateSize(context, textByteCount);
 		return sizeCount + textByteCount;
 	}
 
 	public override void Serialize(string item, EndianBinaryWriter writer, SerializationContext context) {
 		var byteCount = TextEncoding.GetByteCount(item);
+		Guard.Ensure(byteCount <= MaximumByteCount, $"The encoded string exceeds its configured byte limit ({MaximumByteCount}).");
 		_sizeSerializer.Serialize(byteCount, writer, context);
 		using BorrowArrayScope<byte>? rented = byteCount <= 512 ? null : Tools.Scope.EnterBorrowArrayScope(byteCount);
 		Span<byte> bytes = rented.HasValue ? rented.Value.Span : stackalloc byte[byteCount];
@@ -61,6 +75,7 @@ public class StringSerializer : ItemSerializerBase<string> {
 	public override string Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var size = _sizeSerializer.Deserialize(reader, context);
 		var byteCount = reader.ValidateReadBytesLength(size);
+		Guard.Ensure(byteCount <= MaximumByteCount, $"The declared string exceeds its configured byte limit ({MaximumByteCount}).");
 		using BorrowArrayScope<byte>? rented = byteCount <= 512 ? null : Tools.Scope.EnterBorrowArrayScope(byteCount);
 		Span<byte> bytes = rented.HasValue ? rented.Value.Span : stackalloc byte[byteCount];
 		var read = reader.ReadBytes(bytes);

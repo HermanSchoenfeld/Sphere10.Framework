@@ -60,6 +60,7 @@ public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSeriali
 			var item = _itemSerializer.Deserialize(reader, context);
 			SetItem(collection, i, item);
 		}
+		OnItemsSet(collection);
 		return collection;
 	}
 
@@ -68,5 +69,12 @@ public abstract class CollectionSerializerBase<TCollection, TItem> : ItemSeriali
 	protected abstract TCollection Activate(long capacity);
 	
 	protected abstract void SetItem(TCollection collection, long index, TItem item);
+
+	/// <summary>
+	/// Called once after the last item has been set. Items are written in the collection's enumeration order, so a collection
+	/// that enumerates in a different order to the one it is filled in (such as a stack) restores its order here.
+	/// </summary>
+	protected virtual void OnItemsSet(TCollection collection) {
+	}
 }
 
