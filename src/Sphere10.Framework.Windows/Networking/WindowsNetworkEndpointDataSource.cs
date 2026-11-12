@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -15,10 +15,10 @@ using System.Threading.Tasks;
 namespace Sphere10.Framework.Windows.Networking;
 
 /// <summary>A native TCP/UDP owner-table IDataSource for one address family, optionally limited to an owning PID.</summary>
-public sealed class WindowsNetworkEndpointDataSource : ReloadableSnapshotDataSource<WindowsNetworkEndpoint> {
-	public WindowsNetworkEndpointDataSource(bool isTcp, AddressFamily addressFamily, uint? processId = null,
-		Func<CancellationToken, Task<WindowsNetworkEndpoint[]>> capture = null)
-		: base(CreateCapture(isTcp, addressFamily, processId, capture)) {
+public sealed class WindowsNetworkEndpointDataSource : AsyncListDataSource<WindowsNetworkEndpoint> {
+	public WindowsNetworkEndpointDataSource(bool isTcp, AddressFamily addressFamily, uint? processId = null) {
+		Guard.Argument(addressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6, nameof(addressFamily), "Specify IPv4 or IPv6.");
+		Guard.Argument(!processId.HasValue || processId.Value > 0, nameof(processId), "Specify a positive owning process ID.");
 		IsTcp = isTcp;
 		AddressFamily = addressFamily;
 		ProcessId = processId;
@@ -31,14 +31,11 @@ public sealed class WindowsNetworkEndpointDataSource : ReloadableSnapshotDataSou
 
 	public uint? ProcessId { get; }
 
-	private static Func<CancellationToken, Task<WindowsNetworkEndpoint[]>> CreateCapture(bool isTcp, AddressFamily addressFamily, uint? processId,
-		Func<CancellationToken, Task<WindowsNetworkEndpoint[]>> capture) {
-		Guard.Argument(addressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6, nameof(addressFamily), "Specify IPv4 or IPv6.");
-		Guard.Argument(!processId.HasValue || processId.Value > 0, nameof(processId), "Specify a positive owning process ID.");
-		return async token => {
-			var rows = await (capture == null ? Tools.Windows.Network.GetEndpointsAsync(isTcp, addressFamily, token) : capture(token)).ConfigureAwait(false);
-			token.ThrowIfCancellationRequested();
-			return rows.Where(row => row.IsTcp == isTcp && row.AddressFamily == addressFamily && (!processId.HasValue || row.ProcessId == processId.Value)).ToArray();
-		};
+	public override DataSourceCapabilities Capabilities => DataSourceCapabilities.ReadOnly | DataSourceCapabilities.CanNotify;
+
+	protected override async Task<IEnumerable<WindowsNetworkEndpoint>> FetchAsync(CancellationToken cancellationToken) {
+		var rows = await Tools.Windows.Network.GetEndpointsAsync(IsTcp, AddressFamily, cancellationToken).ConfigureAwait(false);
+		cancellationToken.ThrowIfCancellationRequested();
+		return rows.Where(row => row.IsTcp == IsTcp && row.AddressFamily == AddressFamily && (!ProcessId.HasValue || row.ProcessId == ProcessId.Value)).ToArray();
 	}
 }

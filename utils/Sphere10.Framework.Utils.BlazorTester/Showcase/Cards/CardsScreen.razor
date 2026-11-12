@@ -108,7 +108,7 @@
 	private const DataSourceCapabilities TableCapabilities = DataSourceCapabilities.CanRead | DataSourceCapabilities.CanPage | DataSourceCapabilities.CanSort;
 	private readonly IBlazorGridController<CreativeCollection> _controller = new BlazorGridController<CreativeCollection>();
 	private readonly int[] _pageSizes = { 3, 6, 9 };
-	private CollectionDataSource _dataSource;
+	private ActionRefreshableDataSource<CreativeCollection, CollectionDataSource> _dataSource;
 	private BlazorGrid<CreativeCollection> _grid;
 	private BlazorGridColumn<CreativeCollection>[] _columns;
 	private GridAction<CreativeCollection>[] _actions;
@@ -127,7 +127,8 @@
 	private string SelectedText => _selectedId == null ? "Select a cover or table row, then open a collection." : $"Selected: {Catalogue.Read(_selectedId)?.Name}.";
 
 	protected override async Task OnInitializedAsync() {
-		_dataSource = new CollectionDataSource(Catalogue);
+		// Each refresh captures the catalogue again under the filters the screen holds at that moment.
+		_dataSource = new ActionRefreshableDataSource<CreativeCollection, CollectionDataSource>(() => new CollectionDataSource(Catalogue) { FilterText = _search, StatusFilter = _status, CategoryFilter = _category });
 		var name = BlazorGridColumn<CreativeCollection>.For(item => item.Name, "Collection");
 		name.ExpandsToFit = true;
 		name.CanEditCell = false;
@@ -160,6 +161,8 @@
 
 	protected override async ValueTask DisposeAsyncCore() {
 		_disposed = true;
+		if (_dataSource != null)
+			await _dataSource.DisposeAsync();
 		Catalogue.Changed -= CatalogueChanged;
 		_controller.Changed -= ControllerChanged;
 		await _controller.DisposeAsync();
@@ -203,9 +206,7 @@
 	}
 
 	private async Task ApplyFiltersAsync() {
-		_dataSource.FilterText = _search;
-		_dataSource.StatusFilter = _status;
-		_dataSource.CategoryFilter = _category;
+		await _dataSource.RefreshAsync();
 		await _controller.SetPageAsync(0);
 		await _controller.RefreshAsync();
 		if (_tableView && _grid != null) {
@@ -224,7 +225,7 @@
 	private Task SearchKeyDownAsync(KeyboardEventArgs args) => args.Key == "Enter" ? ApplyFiltersAsync() : Task.CompletedTask;
 
 	private async Task RefreshAsync() {
-		_dataSource.Invalidate();
+		await _dataSource.RefreshAsync();
 		await _controller.RefreshAsync();
 		if (_tableView && _grid != null)
 			await _grid.RefreshAsync();

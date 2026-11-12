@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -28,9 +29,9 @@ public class WindowsPowerInventoryTests {
 	[Test]
 	public async Task SettingPagesSearchAndSortOneImmutablePublishedCapture() {
 		var captures = 0;
-		var source = new WindowsPowerSettingDataSource(_ => {
+		var source = new ActionAsyncListDataSource<WindowsPowerSettingInfo>(_ => {
 			Interlocked.Increment(ref captures);
-			return Task.FromResult(new[] {
+			return Task.FromResult<IEnumerable<WindowsPowerSettingInfo>>(new[] {
 				new WindowsPowerSettingInfo { Name = "Sleep Timeout", AcValue = 300 },
 				new WindowsPowerSettingInfo { Name = "Sleep Allow", AcValue = 1 },
 				new WindowsPowerSettingInfo { Name = "Display Timeout", AcValue = 120 }
@@ -43,7 +44,7 @@ public class WindowsPowerInventoryTests {
 			Assert.That(first.TotalCount, Is.EqualTo(2));
 			Assert.That(first.Items.Single().AcValue, Is.EqualTo(300));
 			Assert.That(second.Items.Single().AcValue, Is.EqualTo(1));
-			Assert.That(source.Capabilities.HasFlag(DataSourceCapabilities.CanCreate), Is.False);
+			Assert.That(new WindowsPowerSettingDataSource(Guid.Empty).Capabilities.HasFlag(DataSourceCapabilities.CanCreate), Is.False, "The native inventory is read only; the fixture list only supplies rows.");
 		});
 	}
 

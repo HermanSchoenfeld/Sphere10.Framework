@@ -212,18 +212,18 @@ public class CollectionShowcaseTests {
 	}
 
 	[Test]
-	public void InvalidationReloadsSavedValuesWithoutChangingAnExistingSnapshot() {
+	public void RefreshReloadsSavedValuesWithoutChangingAnExistingCapture() {
 		var catalogue = new CollectionCatalogue();
-		var source = new CollectionDataSource(catalogue);
+		using var source = new ActionRefreshableDataSource<CreativeCollection, CollectionDataSource>(() => new CollectionDataSource(catalogue));
 		var first = source.ReadRange("coast", 3, 0, null, SortDirection.Ascending).Items.Single();
 		var draft = catalogue.Read("coastal-notes");
 		draft.Owner = "New owner";
 		catalogue.Save(draft);
 
 		Assert.That(source.ReadRange("coast", 3, 0, null, SortDirection.Ascending).Items.Single().Owner, Is.EqualTo("Alex Morgan"));
-		source.Invalidate();
+		source.Refresh();
 		Assert.That(source.ReadRange("coast", 3, 0, null, SortDirection.Ascending).Items.Single().Owner, Is.EqualTo("New owner"));
-		Assert.That(first.Owner, Is.EqualTo("Alex Morgan"), "An existing presentation snapshot must not change behind its owner.");
+		Assert.That(first.Owner, Is.EqualTo("Alex Morgan"), "An existing presentation capture must not change behind its owner.");
 	}
 
 	[TestCase("null item")]

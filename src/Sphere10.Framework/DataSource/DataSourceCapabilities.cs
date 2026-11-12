@@ -19,7 +19,9 @@ public enum DataSourceCapabilities {
 	CanSearch = 1 << 4 | CanRead,
 	CanSort = 1 << 5 | CanRead,
 	CanPage = 1 << 6 | CanRead,
+	CanNotify = 1 << 7,
 	Default = CanCreate | CanRead | CanUpdate | CanDelete | CanSearch | CanSort | CanPage,
+	ReadOnly = CanRead | CanSearch | CanSort | CanPage,
 	ComboBoxDefault = CanRead | CanSearch | CanSort
 }
 
