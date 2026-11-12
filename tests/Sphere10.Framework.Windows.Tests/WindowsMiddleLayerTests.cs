@@ -31,10 +31,38 @@ public class WindowsMiddleLayerTests {
 	public async Task WindowQueriesAndDispatchRejectCancellationOrUnverifiedTargetsBeforeSending() {
 		using var cancellation = new CancellationTokenSource();
 		cancellation.Cancel();
-		await Assert.ThatAsync(async () => await WindowsWindow.EnumerateAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.Windowing.EnumerateAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.Windowing.ReadAtPointerAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
+		await Assert.ThatAsync(async () => await Tools.Windows.Drivers.GetDriverPackagesAsync(cancellation.Token), Throws.InstanceOf<OperationCanceledException>());
 		var target = new WindowsWindowInfo(new IntPtr(123), "Fixture", "Fixture", Environment.ProcessId, 1, "Fixture", null, false, "");
-		Assert.That(() => WindowMessageSender.Post(target, 0, UIntPtr.Zero, IntPtr.Zero), Throws.ArgumentException);
-		Assert.That(() => WindowMessageSender.Send(target, 0, UIntPtr.Zero, IntPtr.Zero, 0, 0), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => Tools.Windows.Windowing.Post(target, 0, UIntPtr.Zero, IntPtr.Zero), Throws.ArgumentException);
+		Assert.That(() => Tools.Windows.Windowing.Send(target, 0, UIntPtr.Zero, IntPtr.Zero, 0, 0), Throws.InstanceOf<ArgumentOutOfRangeException>());
+	}
+
+	[Test]
+	public void ForegroundGrantRejectsInvalidProcessIdsAndReportsAMissingProcess() {
+		Assert.That(() => Tools.Windows.Windowing.AllowForeground(0), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		Assert.That(() => Tools.Windows.Windowing.AllowForeground(-1), Throws.InstanceOf<ArgumentOutOfRangeException>());
+		// Process IDs are multiples of four, so this identifier never names a live process.
+		Assert.That(Tools.Windows.Windowing.AllowForeground(int.MaxValue), Is.False);
+	}
+
+	[TestCase(@"\SystemRoot\System32\drivers\fixture.sys", @"D:\Windows\System32\drivers\fixture.sys")]
+	[TestCase(@"System32\drivers\fixture.sys", @"D:\Windows\System32\drivers\fixture.sys")]
+	public void DriverToolsRetainRegisteredLocalPathResolution(string registeredPath, string expected) {
+		Assert.That(Tools.Windows.Drivers.ResolveBinaryPath(registeredPath, @"D:\Windows"), Is.EqualTo(expected));
+		Assert.That(Tools.Windows.Drivers.ResolveInfPath("fixture.inf", @"D:\Windows"), Is.EqualTo(@"D:\Windows\INF\fixture.inf"));
+		Assert.That(() => Tools.Windows.Drivers.ResolveInfPath(@"..\fixture.inf", @"D:\Windows"), Throws.ArgumentException);
+		Assert.That(() => Tools.Windows.Drivers.ResolveBinaryPath(@"\\server\fixture.sys", @"D:\Windows"), Throws.ArgumentException);
+	}
+
+	[Test]
+	public void ToolWorkerDispatchLeavesOrdinaryApplicationArgumentsUnclaimed() {
+		var arguments = new[] { "--ordinary-application-option" };
+		Assert.That(Tools.Windows.Processes.TryRunSignalWorker(arguments, out var signalExit), Is.False);
+		Assert.That(Tools.Windows.UiAutomation.TryRunAutomationWorker(arguments, out var automationExit), Is.False);
+		Assert.That(signalExit, Is.Zero);
+		Assert.That(automationExit, Is.Zero);
 	}
 
 	[Test]
