@@ -1,0 +1,35 @@
+<section class="ln-articles-portal">
+    <link rel="stylesheet" href="{theme://resources/css/articles.css}">
+    <div class="container-xxl ln-articles-layout">
+        <aside class="ln-articles-sidebar" aria-label="Listing navigation">
+            <details class="ln-articles-topics">
+                <summary>Browse topics</summary>
+                <div class="ln-articles-topic-content">
+                    <form class="ln-articles-search" role="search">
+                        <div class="input-group">
+                            <input name="search" class="form-control" onkeypress="DoSearch(event)" type="search" placeholder="Search" aria-label="Search this collection" value="">
+                            <button class="btn" type="submit" onclick="DoSearch(event)" aria-label="Search with Google">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                    <nav class="ln-articles-category-nav" aria-label="Topic hierarchy">
+                        <ul class="ln-articles-categories">
+                            {category_root}
+                            {categories}
+                        </ul>
+                    </nav>
+                </div>
+            </details>
+        </aside>
+        <div class="ln-articles-content">
+            <div class="ln-articles-summaries">
+                {summaries}
+            </div>
+            {pagination}
+        </div>
+    </div>
+    <script defer src="{theme://resources/js/articles.js}"></script>
+</section>

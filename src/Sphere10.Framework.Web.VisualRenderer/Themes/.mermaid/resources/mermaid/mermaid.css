@@ -1,0 +1,39 @@
+.ln-mermaid {
+    margin: 1.5rem 0;
+    max-width: 100%;
+}
+
+.ln-mermaid-diagram {
+    max-width: 100%;
+    overflow-x: auto;
+    text-align: center;
+}
+
+.ln-mermaid-diagram > svg {
+    height: auto;
+    max-width: 100%;
+}
+
+.ln-mermaid-source {
+    margin-top: .75rem;
+    text-align: left;
+}
+
+.ln-mermaid-source > summary {
+    cursor: pointer;
+}
+
+.ln-mermaid-source pre {
+    margin-top: .5rem;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.ln-mermaid-error {
+    border-left: .25rem solid currentColor;
+    padding: .5rem .75rem;
+}
+
+.ln-mermaid > figcaption:empty {
+    display: none;
+}

@@ -1,0 +1,9 @@
+{
+  "type": "html",
+  "tokens": {
+    "page_subtitle_placement": {
+      "offline": "cover",
+      "online": "cover"
+    }
+  }
+}

@@ -340,3 +340,7 @@ The API key comes from `-ApiKey`, then the `NUGET_API_KEY` environment variable,
 - **Preview and staging.** `-WhatIf` shows the version and package list without packing. `-PackOnly` leaves the packages in `-OutputDirectory`, which defaults to `publish/.staging/private-<version>`, for a caller that adds its own packages built against them before publishing the set. The script returns an object with the `Version`, `OutputDirectory` and `Packages` paths.
 
 A consumer adds the folder to its `NuGet.Config` and references an exact version, such as `Version="[3.1.3-private.20261108.1]"`.
+
+## Visual document rendering
+
+[Sphere10.Framework.Web.VisualRenderer](src/Sphere10.Framework.Web.VisualRenderer/README.md) provides the visual object model, HTML/text renderers and default/CMS templates. See the [renderer documentation](docs/visual-renderer/README.md). It is built and packed with the Framework solutions.

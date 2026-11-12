@@ -217,7 +217,7 @@ Further documents in these projects:
 | **Sphere10.Framework.Web.AspNetCore.Blazor** | Interactive Server components for the ApplicationBlock workspace, CRUD grid, custom editors, dialogs and wizards | [View](../src/Sphere10.Framework.Web.AspNetCore.Blazor/README.md) |
 | **Sphere10.Framework.Drawing** | Color and geometry helpers, plus Windows-only image processing and GDI+ rendering | [View](../src/Sphere10.Framework.Drawing/README.md) |
 
-`Sphere10.VisualRenderer`, which renders visual documents to HTML and plain text, is maintained in its own repository and does not depend on Framework.
+**[Sphere10.Framework.Web.VisualRenderer](../src/Sphere10.Framework.Web.VisualRenderer/README.md)** renders an independent visual model to static HTML and plain text. Its [documentation](visual-renderer/README.md) covers the object model, default/CMS templates, embedded assets and source adapters. It is included in both Framework solutions and packaged as `Sphere10.Framework.Web.VisualRenderer`.
 
 ### Legacy Platforms
 

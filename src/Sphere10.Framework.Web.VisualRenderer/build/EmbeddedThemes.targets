@@ -1,0 +1,61 @@
+<Project>
+  <UsingTask TaskName="BuildVisualRendererThemeArchive" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <SourceRoot ParameterType="System.String" Required="true" />
+      <Destination ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.IO.Compression" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        Directory.CreateDirectory(Path.GetDirectoryName(Destination));
+        var temporaryFile = Destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try {
+          using (var output = File.Create(temporaryFile))
+          using (var archive = new ZipArchive(output, ZipArchiveMode.Create)) {
+            foreach (var file in Files.OrderBy(item => item.ItemSpec, StringComparer.Ordinal)) {
+              var prefix = Path.GetFullPath(SourceRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+              var sourcePath = file.GetMetadata("FullPath");
+              if (!sourcePath.StartsWith(prefix, StringComparison.Ordinal))
+                throw new InvalidOperationException("Theme resource is outside the source directory.");
+              var name = sourcePath.Substring(prefix.Length).Replace('\\', '/');
+              if (name.StartsWith("../", StringComparison.Ordinal) || Path.IsPathRooted(name))
+                throw new InvalidOperationException("Theme resource is outside the source directory: " + name);
+              var entry = archive.CreateEntry(name, CompressionLevel.Optimal);
+              entry.LastWriteTime = new DateTimeOffset(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+              using (var source = File.OpenRead(file.GetMetadata("FullPath")))
+              using (var target = entry.Open())
+                source.CopyTo(target);
+            }
+          }
+          // Re-evaluate membership on every build, including removed files, but retain
+          // the output timestamp when bytes are unchanged so compilation stays incremental.
+          if (!File.Exists(Destination) || !File.ReadAllBytes(Destination).SequenceEqual(File.ReadAllBytes(temporaryFile)))
+            File.Copy(temporaryFile, Destination, true);
+        } finally {
+          if (File.Exists(temporaryFile))
+            File.Delete(temporaryFile);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="BuildEmbeddedThemeArchive" BeforeTargets="AssignTargetPaths"
+          Condition="'$(TargetFramework)' != '' And '$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <_VisualRendererThemeArchive>$(IntermediateOutputPath)Themes.zip</_VisualRendererThemeArchive>
+    </PropertyGroup>
+    <ItemGroup>
+      <_VisualRendererThemeFile Include="$(MSBuildProjectDirectory)/Themes/**/*" Exclude="$(MSBuildProjectDirectory)/Themes/**/*.cs" />
+    </ItemGroup>
+    <BuildVisualRendererThemeArchive Files="@(_VisualRendererThemeFile)"
+                                    SourceRoot="$(MSBuildProjectDirectory)/Themes"
+                                    Destination="$(_VisualRendererThemeArchive)" />
+    <ItemGroup>
+      <EmbeddedResource Include="$(_VisualRendererThemeArchive)" LogicalName="Sphere10.Framework.Web.VisualRenderer.Themes.zip" Visible="false" />
+      <FileWrites Include="$(_VisualRendererThemeArchive)" />
+    </ItemGroup>
+  </Target>
+</Project>

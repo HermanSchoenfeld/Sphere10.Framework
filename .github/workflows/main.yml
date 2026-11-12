@@ -68,6 +68,7 @@ jobs:
           "compiled-tests/Sphere10.Framework.Communications.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Communications.Tests.dll"
           "compiled-tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.dll"
           "compiled-tests/Sphere10.Framework.Web.AspNetCore.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Web.AspNetCore.Tests.dll"
+          "compiled-tests/Sphere10.Framework.Web.VisualRenderer.Tests/bin/Debug/${{ matrix.framework }}/Sphere10.Framework.Web.VisualRenderer.Tests.dll"
           /Logger:"console;verbosity=detailed"
           /Logger:trx /ResultsDirectory:TestResults
           -- NUnit.RandomSeed=1234567 NUnit.ExplicitMode=None NUnit.ConsoleOut=1

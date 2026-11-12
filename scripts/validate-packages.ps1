@@ -164,6 +164,11 @@ foreach ($package in $packages) {
 			}
 		}
 		if ($metadata.id -eq 'Sphere10.Framework.Web.AspNetCore.Blazor') { $blazorEntries = $entries }
+		if ($metadata.id -eq 'Sphere10.Framework.Web.VisualRenderer') {
+			foreach ($entry in @('THIRD-PARTY-NOTICES.md', 'buildTransitive/Sphere10.Framework.Web.VisualRenderer.targets', 'third-party/MathJax/LICENSE', 'third-party/Mermaid/LICENSE.txt', 'third-party/Mermaid/DOMPurify-LICENSE.txt')) {
+				if ($entry -notin $entries) { throw "VisualRenderer package is missing $entry" }
+			}
+		}
 	} finally {
 		$archive.Dispose()
 	}

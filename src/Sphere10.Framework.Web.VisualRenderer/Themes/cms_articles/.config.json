@@ -1,0 +1,13 @@
+﻿{
+  "type": "html",
+  "base":  "cms",
+  "online_url": "https://cdn.jsdelivr.net/gh/sphere10/cdn/local-notion/themes/cms_articles",
+  "tokens": {
+    "pagination": { "offline": "", "online": "" },
+    "range_start": { "offline": "", "online": "" },
+    "range_end": { "offline": "", "online": "" },
+    "total_count": { "offline": "", "online": "" },
+    "page_number": { "offline": "", "online": "" },
+    "page_count": { "offline": "", "online": "" }
+  }
+}
