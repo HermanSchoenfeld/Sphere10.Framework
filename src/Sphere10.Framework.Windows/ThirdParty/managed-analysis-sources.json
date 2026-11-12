@@ -1,0 +1,820 @@
+{
+  "verifiedOn": "2026-11-03",
+  "targetFramework": "net10.0",
+  "roots": [
+    "ICSharpCode.Decompiler/11.2.0.10050",
+    "ICSharpCode.BamlDecompiler/11.2.0.10050",
+    "Microsoft.Diagnostics.Runtime/4.2.751201"
+  ],
+  "scope": "Managed-engine dependency variants observed in source and direct/indirect package consumer QA, plus the declared BAML dependency minimums. Multiple versions reflect consumer dependency unification or those minimums, not additional PackageReferences. Shared identical legal files are retained once by SHA-256; mappings preserve package/version and pinned source URLs.",
+  "files": [
+    {
+      "file": "ILSpy.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/icsharpcode/ILSpy/c86190ef4e24f3137c13a9275316042842d2fada/LICENSE",
+      "sha256": "5527fe802347740da8ec2b510cffa4d22939c7f0773ae342a85a2e2b64e4a34b"
+    },
+    {
+      "file": "ClrMD.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/microsoft/clrmd/2e7e5d74cddb2be0ac523aedead10b90a95e71c3/LICENSE",
+      "sha256": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310"
+    },
+    {
+      "file": "AzureSDK-f7400e447111.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/Azure/azure-sdk-for-net/f7400e4471111bf7f2154834022786119acbdd77/LICENSE.txt",
+      "sha256": "9b45236978bb5cd5de992021769e1eeaa79f0116d3b02cf8ba065a1ed603d5fa"
+    },
+    {
+      "file": "AzureSDK-f7400e447111.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/Azure/azure-sdk-for-net/f7400e4471111bf7f2154834022786119acbdd77/NOTICE.txt",
+      "sha256": "edca5c0353ab7281300dec18793a4eb06d26857e5bf9cb905e4b77543e467210"
+    },
+    {
+      "file": "ClrMD.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/dotnet/diagnostics/d7b455b46332b31fd9ba3a3f3e020387984c511a/LICENSE.TXT",
+      "sha256": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310"
+    },
+    {
+      "file": "Diagnostics-d7b455b46332.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/dotnet/diagnostics/d7b455b46332b31fd9ba3a3f3e020387984c511a/THIRD-PARTY-NOTICES.TXT",
+      "sha256": "8fd258379044804c3df612e2cd7ef045a0595329c59af259cc232cdd61d7c379"
+    },
+    {
+      "file": "AntiSSRF-8366ff53e9c7.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/microsoft/AntiSSRF/8366ff53e9c75a52d1edcc06fde7b1620243928c/LICENSE",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+    },
+    {
+      "file": "AzureSDK-f7400e447111.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/Azure/azure-sdk-for-net/c94768fafa4dd93eef9f7c90c92522434fcedb32/LICENSE.txt",
+      "sha256": "9b45236978bb5cd5de992021769e1eeaa79f0116d3b02cf8ba065a1ed603d5fa"
+    },
+    {
+      "file": "AzureSDK-f7400e447111.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/Azure/azure-sdk-for-net/c94768fafa4dd93eef9f7c90c92522434fcedb32/NOTICE.txt",
+      "sha256": "edca5c0353ab7281300dec18793a4eb06d26857e5bf9cb905e4b77543e467210"
+    },
+    {
+      "file": "DotNet-c2435c3e0f46.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/dotnet/dotnet/c2435c3e0f46de784341ac3ed62863ce77e117b4/LICENSE.TXT",
+      "sha256": "ae48df11a335dc1a615f4f938b69cba73bcf4485c4f97af49b38efb0f216353b"
+    },
+    {
+      "file": "DotNet-c2435c3e0f46.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/dotnet/dotnet/c2435c3e0f46de784341ac3ed62863ce77e117b4/THIRD-PARTY-NOTICES.txt",
+      "sha256": "4bef6a7e7b359869d751c9ff70274a80a0f626927afa5a0681583c1b1861267b"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.logging.abstractions/10.0.3/microsoft.extensions.logging.abstractions.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.bcl.asyncinterfaces/10.0.3/microsoft.bcl.asyncinterfaces.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.configuration.abstractions/10.0.3/microsoft.extensions.configuration.abstractions.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.hosting.abstractions/10.0.3/microsoft.extensions.hosting.abstractions.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "MSAL-d5d7de6b103f.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/AzureAD/microsoft-authentication-library-for-dotnet/d5d7de6b103f0d9dd7bca9bf13cbb9f3da37bc9f/LICENSE",
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+    },
+    {
+      "file": "MSAL-d5d7de6b103f.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/AzureAD/microsoft-authentication-library-for-dotnet/d5d7de6b103f0d9dd7bca9bf13cbb9f3da37bc9f/ThirdPartyNotice.txt",
+      "sha256": "6ceaa32c30e007e6f7f7a4ba5e07926da77c82866c459f29b020e66c78d8adcf"
+    },
+    {
+      "file": "AzureSDK-f7400e447111.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/Azure/azure-sdk-for-net/6b41983be6c45a7439db0b25f0c0874d7c867ed9/LICENSE.txt",
+      "sha256": "9b45236978bb5cd5de992021769e1eeaa79f0116d3b02cf8ba065a1ed603d5fa"
+    },
+    {
+      "file": "AzureSDK-f7400e447111.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/Azure/azure-sdk-for-net/6b41983be6c45a7439db0b25f0c0874d7c867ed9/NOTICE.txt",
+      "sha256": "edca5c0353ab7281300dec18793a4eb06d26857e5bf9cb905e4b77543e467210"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.memory.data/10.0.3/system.memory.data.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/10.0.3/microsoft.extensions.dependencyinjection.abstractions.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.primitives/10.0.3/microsoft.extensions.primitives.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.diagnostics.abstractions/10.0.3/microsoft.extensions.diagnostics.abstractions.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.fileproviders.abstractions/10.0.3/microsoft.extensions.fileproviders.abstractions.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "IdentityModel-c8f7d87bcda3.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/c8f7d87bcda35557a68f6cb9c55856a2ee733856/LICENSE.txt",
+      "sha256": "cba03f5387b05405e56b688376421acae396136af4b5116738dc6e5160f87ddd"
+    },
+    {
+      "file": "IdentityModel-c8f7d87bcda3.NOTICES.html",
+      "source": "https://raw.githubusercontent.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/c8f7d87bcda35557a68f6cb9c55856a2ee733856/NOTICE.html",
+      "sha256": "d9f0289a2c38b4eedf5f22a045b6b37212d0989afb5f416a5f9ace59958136f7"
+    },
+    {
+      "file": "IdentityModel-c8f7d87bcda3.NOTICES.txt",
+      "source": "https://raw.githubusercontent.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/c8f7d87bcda35557a68f6cb9c55856a2ee733856/ThirdPartyNotice.txt",
+      "sha256": "8d53e3a82ef34420b78b856dc5199ebed5ad854fc586014526ac17224fbbbc5e"
+    },
+    {
+      "file": "ProtectedData-4.5.0.LICENSE.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.security.cryptography.protecteddata/4.5.0/system.security.cryptography.protecteddata.4.5.0.nupkg#LICENSE.TXT",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b"
+    },
+    {
+      "file": "ProtectedData-4.5.0.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.security.cryptography.protecteddata/4.5.0/system.security.cryptography.protecteddata.4.5.0.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "7864a01e2fdef7e8fdf81b906efb1466f083206affea7ba7e6dadea429754765"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.options/10.0.3/microsoft.extensions.options.10.0.3.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-c2435c3e0f46.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/dotnet/dotnet/820230c386db5b0106c5430b3e5aee92a7826bf5/LICENSE.TXT",
+      "sha256": "ae48df11a335dc1a615f4f938b69cba73bcf4485c4f97af49b38efb0f216353b"
+    },
+    {
+      "file": "DotNet-11rc2-Package.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.extensions.dependencyinjection.abstractions/11.0.0-rc.2.26504.105/microsoft.extensions.dependencyinjection.abstractions.11.0.0-rc.2.26504.105.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "e3a241a6cf35167d82bf7e081de9641c59d10d2dbd8824409817bed31980d407"
+    },
+    {
+      "file": "DotNet-11rc2-Package.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.security.cryptography.protecteddata/11.0.0-rc.2.26504.105/system.security.cryptography.protecteddata.11.0.0-rc.2.26504.105.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "e3a241a6cf35167d82bf7e081de9641c59d10d2dbd8824409817bed31980d407"
+    },
+    {
+      "file": "DotNet-c2435c3e0f46.LICENSE.txt",
+      "source": "https://raw.githubusercontent.com/dotnet/dotnet/0427b9abbead3fa64c6655eb4290c537397131fa/LICENSE.TXT",
+      "sha256": "ae48df11a335dc1a615f4f938b69cba73bcf4485c4f97af49b38efb0f216353b"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.collections.immutable/10.0.14/system.collections.immutable.10.0.14.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-10.0.3.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.reflection.metadata/10.0.14/system.reflection.metadata.10.0.14.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21"
+    },
+    {
+      "file": "DotNet-11rc2-Package.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.collections.immutable/11.0.0-rc.2.26504.105/system.collections.immutable.11.0.0-rc.2.26504.105.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "e3a241a6cf35167d82bf7e081de9641c59d10d2dbd8824409817bed31980d407"
+    },
+    {
+      "file": "DotNet-11rc2-Package.NOTICES.txt",
+      "source": "https://api.nuget.org/v3-flatcontainer/system.reflection.metadata/11.0.0-rc.2.26504.105/system.reflection.metadata.11.0.0-rc.2.26504.105.nupkg#THIRD-PARTY-NOTICES.TXT",
+      "sha256": "e3a241a6cf35167d82bf7e081de9641c59d10d2dbd8824409817bed31980d407"
+    }
+  ],
+  "packages": [
+    {
+      "package": "System.Collections.Immutable",
+      "version": "11.0.0-rc.2.26504.105",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "820230c386db5b0106c5430b3e5aee92a7826bf5",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-11rc2-Package.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.Collections.Immutable.dll"
+      ]
+    },
+    {
+      "package": "System.Reflection.Metadata",
+      "version": "11.0.0-rc.2.26504.105",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "820230c386db5b0106c5430b3e5aee92a7826bf5",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-11rc2-Package.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.Reflection.Metadata.dll"
+      ]
+    },
+    {
+      "package": "ICSharpCode.BamlDecompiler",
+      "version": "11.2.0.10050",
+      "license": "MIT",
+      "repository": "https://github.com/icsharpcode/ILSpy.git",
+      "commit": "c86190ef4e24f3137c13a9275316042842d2fada",
+      "copyright": "Copyright 2024-2026 AlphaSierraPapa",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "ILSpy.LICENSE.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/ICSharpCode.BamlDecompiler.dll"
+      ]
+    },
+    {
+      "package": "System.Collections.Immutable",
+      "version": "10.0.14",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "0427b9abbead3fa64c6655eb4290c537397131fa",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.Collections.Immutable.dll"
+      ]
+    },
+    {
+      "package": "System.Reflection.Metadata",
+      "version": "10.0.14",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "0427b9abbead3fa64c6655eb4290c537397131fa",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.Reflection.Metadata.dll"
+      ]
+    },
+    {
+      "package": "ICSharpCode.Decompiler",
+      "version": "11.2.0.10050",
+      "license": "MIT",
+      "repository": "https://github.com/icsharpcode/ILSpy.git",
+      "commit": "c86190ef4e24f3137c13a9275316042842d2fada",
+      "copyright": "Copyright 2011-2026 AlphaSierraPapa",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "ILSpy.LICENSE.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/netstandard2.0/ICSharpCode.Decompiler.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Diagnostics.Runtime",
+      "version": "4.2.751201",
+      "license": "MIT",
+      "repository": "https://github.com/Microsoft/clrmd",
+      "commit": "2e7e5d74cddb2be0ac523aedead10b90a95e71c3",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "ClrMD.LICENSE.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Diagnostics.Runtime.dll"
+      ]
+    },
+    {
+      "package": "Azure.Identity",
+      "version": "1.21.0",
+      "license": "MIT",
+      "repository": "https://github.com/Azure/azure-sdk-for-net",
+      "commit": "f7400e4471111bf7f2154834022786119acbdd77",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "AzureSDK-f7400e447111.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "AzureSDK-f7400e447111.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Azure.Identity.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Diagnostics.NETCore.Client",
+      "version": "0.2.661903",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/diagnostics",
+      "commit": "d7b455b46332b31fd9ba3a3f3e020387984c511a",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "ClrMD.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "Diagnostics-d7b455b46332.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net8.0/Microsoft.Diagnostics.NETCore.Client.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Security.AntiSSRF",
+      "version": "1.0.0",
+      "license": "MIT",
+      "repository": "https://github.com/Microsoft/AntiSSRF",
+      "commit": "8366ff53e9c75a52d1edcc06fde7b1620243928c",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "AntiSSRF-8366ff53e9c7.LICENSE.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net8.0/Microsoft.Security.AntiSSRF.dll"
+      ]
+    },
+    {
+      "package": "Azure.Core",
+      "version": "1.53.0",
+      "license": "MIT",
+      "repository": "https://github.com/Azure/azure-sdk-for-net",
+      "commit": "c94768fafa4dd93eef9f7c90c92522434fcedb32",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "AzureSDK-f7400e447111.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "AzureSDK-f7400e447111.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Azure.Core.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.Hosting.Abstractions",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.Hosting.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Identity.Client",
+      "version": "4.83.1",
+      "license": "MIT",
+      "repository": "https://github.com/AzureAD/microsoft-authentication-library-for-dotnet",
+      "commit": "d5d7de6b103f0d9dd7bca9bf13cbb9f3da37bc9f",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "MSAL-d5d7de6b103f.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "MSAL-d5d7de6b103f.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net8.0/Microsoft.Identity.Client.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Identity.Client.Extensions.Msal",
+      "version": "4.83.1",
+      "license": "MIT",
+      "repository": "https://github.com/AzureAD/microsoft-authentication-library-for-dotnet",
+      "commit": "d5d7de6b103f0d9dd7bca9bf13cbb9f3da37bc9f",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "MSAL-d5d7de6b103f.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "MSAL-d5d7de6b103f.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net8.0/Microsoft.Identity.Client.Extensions.Msal.dll"
+      ]
+    },
+    {
+      "package": "System.ClientModel",
+      "version": "1.10.0",
+      "license": "MIT",
+      "repository": "https://github.com/Azure/azure-sdk-for-net",
+      "commit": "6b41983be6c45a7439db0b25f0c0874d7c867ed9",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "AzureSDK-f7400e447111.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "AzureSDK-f7400e447111.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.ClientModel.dll"
+      ]
+    },
+    {
+      "package": "System.Memory.Data",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.Memory.Data.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.Primitives",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.Primitives.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.FileProviders.Abstractions",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.FileProviders.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.IdentityModel.Abstractions",
+      "version": "8.14.0",
+      "license": "MIT",
+      "repository": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+      "commit": "c8f7d87bcda35557a68f6cb9c55856a2ee733856",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "IdentityModel-c8f7d87bcda3.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "IdentityModel-c8f7d87bcda3.NOTICES.html"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "IdentityModel-c8f7d87bcda3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net9.0/Microsoft.IdentityModel.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "System.Security.Cryptography.ProtectedData",
+      "version": "4.5.0",
+      "license": "MIT (retained package LICENSE)",
+      "repository": "",
+      "commit": "",
+      "copyright": "© Microsoft Corporation.  All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "ProtectedData-4.5.0.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "ProtectedData-4.5.0.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.Options",
+      "version": "10.0.3",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "c2435c3e0f46de784341ac3ed62863ce77e117b4",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-c2435c3e0f46.NOTICES.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-10.0.3.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.Options.dll"
+      ]
+    },
+    {
+      "package": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "11.0.0-rc.2.26504.105",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "820230c386db5b0106c5430b3e5aee92a7826bf5",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-11rc2-Package.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll"
+      ]
+    },
+    {
+      "package": "System.Security.Cryptography.ProtectedData",
+      "version": "11.0.0-rc.2.26504.105",
+      "license": "MIT",
+      "repository": "https://github.com/dotnet/dotnet",
+      "commit": "820230c386db5b0106c5430b3e5aee92a7826bf5",
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "files": [
+        {
+          "kind": "LICENSE",
+          "file": "DotNet-c2435c3e0f46.LICENSE.txt"
+        },
+        {
+          "kind": "NOTICES",
+          "file": "DotNet-11rc2-Package.NOTICES.txt"
+        }
+      ],
+      "runtimeAssets": [
+        "lib/net10.0/System.Security.Cryptography.ProtectedData.dll"
+      ]
+    }
+  ]
+}
