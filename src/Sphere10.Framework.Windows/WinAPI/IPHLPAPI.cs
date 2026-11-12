@@ -102,6 +102,36 @@ public static partial class WinAPI {
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
+		public struct MIB_TCPROW {
+			public uint State;
+			public uint LocalAddress;
+			public uint LocalPort;
+			public uint RemoteAddress;
+			public uint RemotePort;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MIB_TCPROW_OWNER_MODULE {
+			public uint State;
+			public uint LocalAddress;
+			public uint LocalPort;
+			public uint RemoteAddress;
+			public uint RemotePort;
+			public uint ProcessId;
+			public long CreatedAt;
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)] public ulong[] OwningModuleInfo;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct MIB_TCPTABLE_OWNER_MODULE_HEADER {
+			public uint Count;
+			public MIB_TCPROW_OWNER_MODULE FirstRow;
+		}
+
+		[DllImport("iphlpapi.dll", ExactSpelling = true)]
+		public static extern uint SetTcpEntry(ref MIB_TCPROW row);
+
+		[StructLayout(LayoutKind.Sequential)]
 		public struct MIB_TCP6ROW_OWNER_PID {
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
 			public byte[] ucLocalAddr;

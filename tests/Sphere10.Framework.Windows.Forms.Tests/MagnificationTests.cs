@@ -77,6 +77,9 @@ public class MagnificationTests {
 		using var backdrop = new Form { FormBorderStyle = FormBorderStyle.None, ShowInTaskbar = false, StartPosition = FormStartPosition.Manual, BackColor = Color.White, Bounds = region };
 		using var sprite = new SpriteForm { BackColor = Color.Red, Bounds = home };
 		backdrop.Show();
+		// A test process cannot take the foreground, so the user's windows could cover an ordinary backdrop and the capture would show
+		// them instead. Topmost keeps the white backdrop under only the magnifier and the sprite, which are placed above it afterwards.
+		WinAPI.USER32.SetWindowPos(backdrop.Handle, WinAPI.USER32.HWND_TOPMOST, region.X, region.Y, region.Width, region.Height, WinAPI.USER32.SetWindowPosFlags.SWP_NOACTIVATE);
 		var negative = ColorMatrices.FromArray(new[,] {
 			{ -1f, 0f, 0f, 0f, 0f }, { 0f, -1f, 0f, 0f, 0f }, { 0f, 0f, -1f, 0f, 0f }, { 0f, 0f, 0f, 1f, 0f }, { 1f, 1f, 1f, 0f, 1f }
 		});

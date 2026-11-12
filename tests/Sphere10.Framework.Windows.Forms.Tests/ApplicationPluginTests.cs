@@ -584,7 +584,7 @@ public class ApplicationPluginTests {
 
 		public int RegisterCount => _registerCount;
 
-		public void ClickNavigationButton(SquareButton button) => InvokeOnClick(button, EventArgs.Empty);
+		public void ClickNavigationButton(ApplicationBarButton button) => InvokeOnClick(button, EventArgs.Empty);
 
 		public override void RegisterBlock(FormsUI.IApplicationBlock block) {
 			_registerCount++;

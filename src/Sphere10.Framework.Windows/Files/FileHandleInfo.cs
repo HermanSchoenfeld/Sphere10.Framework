@@ -17,6 +17,9 @@ public sealed record FileHandleInfo {
 	public ulong? HandleValue { get; init; }
 	public ulong ObjectAddress { get; init; }
 	public ushort ObjectTypeIndex { get; init; }
+	public string ObjectType { get; init; } = "File";
+	public bool IsDiskFile { get; init; } = true;
+	public string AccessRights { get; init; } = string.Empty;
 	public string Path { get; init; } = string.Empty;
 	public uint GrantedAccess { get; init; }
 	public string Availability { get; init; } = string.Empty;

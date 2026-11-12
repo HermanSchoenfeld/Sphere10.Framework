@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFrameworks>$(FrameworkWindowsTargetFrameworks)</TargetFrameworks>
     <IsPackable>true</IsPackable>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<Description>Windows Forms integration for Sphere10.Framework.Data.Sqlite. Provides desktop UI helpers and components intended to work with Sphere10 Framework WinForms and the SQLite provider for data-driven applications.</Description>

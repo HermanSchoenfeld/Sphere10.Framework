@@ -3,7 +3,7 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFramework>net10.0-windows</TargetFramework>
+		<TargetFrameworks>$(FrameworkWindowsTargetFrameworks)</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Windows Forms UI framework and component library for building desktop applications with Sphere10 Framework. Provides reusable WinForms controls, dialogs, layout/helpers, and common UI utilities intended to integrate cleanly with the framework's application and data layers.</Description>
@@ -77,8 +77,13 @@
 		</Compile>
 		<Compile Update="HexEditor\Controls\HexEditorControl.cs"><SubType>UserControl</SubType></Compile>
 		<Compile Update="HexEditor\Controls\HexEditorControl.Designer.cs"><DependentUpon>HexEditorControl.cs</DependentUpon></Compile>
-		<Compile Update="HexEditor\Forms\HexEditorDialog.cs"><SubType>Form</SubType></Compile>
-		<Compile Update="HexEditor\Forms\HexEditorDialog.Designer.cs"><DependentUpon>HexEditorDialog.cs</DependentUpon></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorForm.cs"><SubType>Form</SubType></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorForm.Designer.cs"><DependentUpon>HexEditorForm.cs</DependentUpon></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorFindDialog.cs"><SubType>Form</SubType></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorFindDialog.Designer.cs"><DependentUpon>HexEditorFindDialog.cs</DependentUpon></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorGoToDialog.cs"><SubType>Form</SubType></Compile>
+		<Compile Update="HexEditor\Forms\HexEditorGoToDialog.Designer.cs"><DependentUpon>HexEditorGoToDialog.cs</DependentUpon></Compile>
+		<Compile Update="HexEditor\Controls\HexEditorView.cs"><SubType>Component</SubType></Compile>
 		<Compile Update="Logging\Controls\LogOutputSelectorControl.cs">
 			<SubType>UserControl</SubType>
 		</Compile>

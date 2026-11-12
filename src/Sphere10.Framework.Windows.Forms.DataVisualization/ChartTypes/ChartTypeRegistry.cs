@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 
 namespace Sphere10.Framework.Windows.Forms.DataVisualization.ChartTypes;
@@ -37,7 +38,7 @@ internal class ChartTypeRegistry : IServiceProvider, IDisposable
     #region Fields
 
     // Storage for registered/created chart types
-    internal readonly Dictionary<string, Type> registeredChartTypes = new(StringComparer.OrdinalIgnoreCase);
+    internal readonly Dictionary<string, RegisteredChartType> registeredChartTypes = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, IChartType> _createdChartTypes = new(StringComparer.OrdinalIgnoreCase);
 
     #endregion
@@ -76,13 +77,13 @@ internal class ChartTypeRegistry : IServiceProvider, IDisposable
     /// </summary>
     /// <param name="name">Chart type name.</param>
     /// <param name="chartType">Chart class type.</param>
-    public void Register(string name, Type chartType)
+    public void Register(string name, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.Interfaces)] Type chartType)
     {
         // First check if chart type with specified name already registered
         if (registeredChartTypes.TryGetValue(name, out var curT))
         {
             // If same type provided - ignore
-            if (curT == chartType)
+            if (curT.Type == chartType)
                 return;
 
             // Error - throw exception
@@ -105,7 +106,7 @@ internal class ChartTypeRegistry : IServiceProvider, IDisposable
             throw new ArgumentException(SR.ExceptionChartTypeHasNoInterface);
 
         // Add chart type to the hash table
-        registeredChartTypes[name] = chartType;
+        registeredChartTypes[name] = new RegisteredChartType(chartType);
     }
 
     /// <summary>
@@ -134,7 +135,7 @@ internal class ChartTypeRegistry : IServiceProvider, IDisposable
             throw new ArgumentException(SR.ExceptionChartTypeUnknown(name));
 
         // Create chart type object
-        var res = (IChartType)regT.Assembly.CreateInstance(regT.ToString());
+        var res = (IChartType)Activator.CreateInstance(regT.Type);
         _createdChartTypes[name] = res;
         return res;
     }
@@ -169,6 +170,23 @@ internal class ChartTypeRegistry : IServiceProvider, IDisposable
     {
         Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    #endregion
+
+    #region Inner Types
+
+    // A dictionary's Type values cannot carry member-preservation requirements.
+    // Keep the constructor contract with each registration through lazy activation.
+    internal sealed class RegisteredChartType
+    {
+        public RegisteredChartType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+        {
+            Type = type;
+        }
+
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+        public Type Type { get; }
     }
 
     #endregion

@@ -10,6 +10,8 @@ The project builds one modern .NET assembly containing line, bar, column, area, 
 
 The old .NET Framework 4.7.2 designer client and its custom editor/server integration were removed. Standard WinForms control design, property metadata, type converters and runtime chart serialization remain available.
 
+The internal chart-type registry retains each registered renderer's public parameterless constructor through an annotated registration entry and activates that retained `Type` directly. This supports the built-in renderer activation path when trimming removes otherwise unused constructors; it preserves lazy, case-insensitive caching. It does not establish full Native AOT compatibility for WinForms or the chart engine's other reflection, serialization and interop paths.
+
 Build and package this project with the usual Framework commands. SDK 10 builds `net10.0-windows`; SDK 11 also builds `net11.0-windows`. .NET 11 RC 2 support is a prerelease. `DataVisualizationTargetFrameworks` can restrict the targets explicitly. Build outputs and intermediates can be redirected with `--artifacts-path`.
 
 ```powershell
@@ -18,3 +20,7 @@ dotnet pack src/Sphere10.Framework.Windows.Forms.DataVisualization/Sphere10.Fram
 ```
 
 Source builds and normal SDK packaging use the same single chart project. Tests adapted from the imported project are kept under `Tests/` and linked into Framework's WinForms NUnit suite; they are excluded from the runtime assembly.
+
+| Fixture | Coverage |
+|---|---|
+| [`ChartTypeRegistryTests`](Tests/ChartTypeRegistryTests.cs) | All 35 built-in renderer activations, case-insensitive cache identity, duplicate registrations and invalid/unknown type rejection. |

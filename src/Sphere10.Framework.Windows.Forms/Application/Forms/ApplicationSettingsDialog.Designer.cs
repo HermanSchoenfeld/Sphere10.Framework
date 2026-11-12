@@ -10,6 +10,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class ApplicationSettingsDialog {
 	private System.ComponentModel.IContainer components = new System.ComponentModel.Container();
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private System.Windows.Forms.TableLayoutPanel _layout;
 	private System.Windows.Forms.SplitContainer _split;
 	private System.Windows.Forms.TreeView _navigation;
@@ -35,6 +36,8 @@ partial class ApplicationSettingsDialog {
 
 	// Native layout remains editable in the WinForms designer without resolving services or preference data.
 	private void InitializeComponent() {
+		components ??= new System.ComponentModel.Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_layout = new System.Windows.Forms.TableLayoutPanel();
 		_split = new System.Windows.Forms.SplitContainer();
 		_navigation = new System.Windows.Forms.TreeView();
@@ -83,6 +86,7 @@ partial class ApplicationSettingsDialog {
 		_navigation.HideSelection = false;
 		_navigation.FullRowSelect = true;
 		_navigation.Name = "_navigation";
+		_actionToolTip.SetToolTip(_navigation, "Select an application, plugin, block or screen settings page.");
 		_navigation.TabIndex = 0;
 		_navigation.AfterSelect += NavigationAfterSelect;
 
@@ -130,18 +134,22 @@ partial class ApplicationSettingsDialog {
 		_buttons.Controls.AddRange(new System.Windows.Forms.Control[] { _cancel, _ok, _apply, _reset });
 		_cancel.Text = "&Cancel";
 		_cancel.Name = "_cancel";
+		_actionToolTip.SetToolTip(_cancel, "Close Options and restore changes that have not been applied.");
 		_cancel.TabIndex = 5;
 		_cancel.Click += CancelClick;
 		_ok.Text = "&OK";
 		_ok.Name = "_ok";
+		_actionToolTip.SetToolTip(_ok, "Validate and save pending changes, then close Options.");
 		_ok.TabIndex = 4;
 		_ok.Click += OkClick;
 		_apply.Text = "&Apply";
 		_apply.Name = "_apply";
+		_actionToolTip.SetToolTip(_apply, "Validate and save the pending changes covered by the current apply policy.");
 		_apply.TabIndex = 3;
 		_apply.Click += ApplyClick;
 		_reset.Text = "&Reset Defaults";
 		_reset.Name = "_reset";
+		_actionToolTip.SetToolTip(_reset, "Restore default values using the current reset scope; changes are saved by Apply or OK.");
 		_reset.TabIndex = 2;
 		_reset.Click += ResetClick;
 		foreach (var button in new[] { _cancel, _ok, _apply, _reset }) {

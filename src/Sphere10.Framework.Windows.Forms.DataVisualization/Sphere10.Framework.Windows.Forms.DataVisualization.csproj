@@ -25,9 +25,15 @@
 		<Using Include="System" />
 		<Using Include="System.Windows.Forms" />
 		<None Include="README.md" Pack="true" PackagePath="" />
-		<None Include="PROVENANCE.md" Pack="true" PackagePath="" />
-		<None Include="LICENSE.TXT" Pack="true" PackagePath="LICENSE.DataVisualization.txt" />
-		<None Include="THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="" />
+		<!-- Package root copies for NuGet, and Licenses/DataVisualization for consumers in both source and package mode. -->
+		<None Include="PROVENANCE.md;THIRD-PARTY-NOTICES.TXT" Pack="true" PackagePath="\;contentFiles/any/any/Licenses/DataVisualization"
+			PackageCopyToOutput="true" PackageFlatten="false" BuildAction="None" Link="Licenses/DataVisualization/%(Filename)%(Extension)"
+			CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+		<None Include="LICENSE.TXT" Pack="true" PackagePath="LICENSE.DataVisualization.txt;contentFiles/any/any/Licenses/DataVisualization/LICENSE.TXT"
+			PackageCopyToOutput="true" PackageFlatten="false" BuildAction="None" Link="Licenses/DataVisualization/LICENSE.TXT"
+			CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+		<None Remove="buildTransitive/Sphere10.Framework.Windows.Forms.DataVisualization.targets" />
+		<None Include="buildTransitive/Sphere10.Framework.Windows.Forms.DataVisualization.targets" Pack="true" PackagePath="buildTransitive/Sphere10.Framework.Windows.Forms.DataVisualization.targets" />
 	</ItemGroup>
 	<ItemGroup Label="Embedded Resources">
 		<EmbeddedResource Update="Resources\SR.resx">

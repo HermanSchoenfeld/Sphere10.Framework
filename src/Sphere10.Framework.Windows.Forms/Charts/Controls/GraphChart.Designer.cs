@@ -44,6 +44,7 @@ partial class GraphChart {
 		_chart.Visible = false;
 		_chart.MouseMove += ChartMouseMove;
 		_chart.MouseLeave += ChartMouseLeave;
+		_chart.MouseDoubleClick += ChartMouseDoubleClick;
 		_chart.Customize += ChartCustomize;
 		_chart.PostPaint += ChartPostPaint;
 		_emptyState.BackColor = SystemColors.Control;

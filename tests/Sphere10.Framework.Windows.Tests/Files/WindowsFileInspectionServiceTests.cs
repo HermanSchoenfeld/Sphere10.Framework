@@ -31,7 +31,7 @@ public class WindowsFileInspectionServiceTests {
 				File.Delete(path);
 			});
 			await File.WriteAllBytesAsync(path, contents);
-			var service = new WindowsFileInspectionService();
+			var service = Tools.Windows.Files.CreateInspectionService();
 			for (var i = 0; i < 3; i++) {
 				var result = await service.InspectAsync(path);
 				Assert.That(result.Path, Is.EqualTo(path));

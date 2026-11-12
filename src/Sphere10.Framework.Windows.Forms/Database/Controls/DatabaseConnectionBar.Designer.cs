@@ -12,6 +12,7 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
+		private System.Windows.Forms.ToolTip _actionToolTip;
 
 		/// <summary> 
 		/// Clean up any resources being used.
@@ -31,6 +32,8 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
+            components ??= new System.ComponentModel.Container();
+            _actionToolTip = new System.Windows.Forms.ToolTip(components);
             this._connectionProviderPanel = new System.Windows.Forms.Panel();
             this._dbmsCombo = new Sphere10.Framework.Windows.Forms.EnumComboBox();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
@@ -67,6 +70,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._dbmsCombo.Location = new System.Drawing.Point(3, 17);
             this._dbmsCombo.Margin = new System.Windows.Forms.Padding(3, 0, 3, 0);
             this._dbmsCombo.Name = "_dbmsCombo";
+            _actionToolTip.SetToolTip(_dbmsCombo, "Choose the database management system for this connection.");
             this._dbmsCombo.Size = new System.Drawing.Size(119, 21);
             this._dbmsCombo.TabIndex = 56;
             this._dbmsCombo.SelectedIndexChanged += new System.EventHandler(this._dbmsCombo_SelectedIndexChanged);

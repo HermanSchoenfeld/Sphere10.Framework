@@ -9,11 +9,10 @@
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
-
-
 using Sphere10.Framework.Windows.Forms;
 
 namespace Sphere10.Framework.Windows.Forms.Tests;
@@ -22,6 +21,62 @@ namespace Sphere10.Framework.Windows.Forms.Tests;
 [NonParallelizable]
 [Apartment(ApartmentState.STA)]
 public class TelemetryChartTests {
+	[Test]
+	public void PointContextSurvivesPublicationAndNativeDoubleClickTargetsTheCapturedObservation() {
+		using var chart = new TelemetryChart { Compact = true };
+		var firstContext = new object();
+		var lastContext = new object();
+		var time = DateTime.UtcNow;
+		chart.SetSamples(new[] { new TelemetryChartPoint(time, 10) { Context = firstContext },
+			new TelemetryChartPoint(time.AddSeconds(10), 30) { Context = lastContext } });
+		chart.CreateControl();
+		chart.PerformLayout();
+		var plot = chart.Controls.Find("chartPlot", true).OfType<GraphChart>().Single();
+		using var image = new Bitmap(chart.Width, chart.Height);
+		chart.DrawToBitmap(image, chart.ClientRectangle);
+		TelemetryChartPoint activated = null;
+		chart.SampleActivated += point => activated = point;
+		var local = new Point(plot.NativeChart.Width - 4, plot.NativeChart.Height / 2);
+		var mouse = typeof(Control).GetMethod("OnMouseDoubleClick", BindingFlags.Instance | BindingFlags.NonPublic);
+		mouse.Invoke(plot.NativeChart, new object[] { new MouseEventArgs(MouseButtons.Right, 2, local.X, local.Y, 0) });
+		Assert.That(activated, Is.Null);
+		mouse.Invoke(plot.NativeChart, new object[] { new MouseEventArgs(MouseButtons.Left, 2, local.X, local.Y, 0) });
+		Assert.That(activated?.CapturedAtUtc, Is.EqualTo(time.AddSeconds(10)));
+		Assert.That(activated.Context, Is.SameAs(lastContext));
+		chart.SetSamples(Array.Empty<TelemetryChartPoint>());
+		Assert.That(chart.Points, Is.Empty);
+		mouse.Invoke(plot.NativeChart, new object[] { new MouseEventArgs(MouseButtons.Left, 2, local.X, local.Y, 0) });
+		Assert.That(chart.Points, Is.Empty);
+	}
+
+	[TestCase(false)]
+	[TestCase(true)]
+	public void NativeChartCoordinatesActivateTheExactDenseSampleThroughContainerPadding(bool compact) {
+		using var chart = new TelemetryChart { Compact = compact, Size = new Size(320, 180) };
+		var at = DateTime.UtcNow;
+		chart.SetSamples(Enumerable.Range(0, 120).Select(index => new TelemetryChartPoint(at.AddSeconds(index), index % 100)).ToArray());
+		chart.CreateControl();
+		chart.PerformLayout();
+		using var image = new Bitmap(chart.Width, chart.Height);
+		chart.DrawToBitmap(image, chart.ClientRectangle);
+		var plot = chart.Controls.Find("chartPlot", true).OfType<GraphChart>().Single();
+		var native = plot.NativeChart;
+		var mouse = typeof(Control).GetMethod("OnMouseDoubleClick", BindingFlags.Instance | BindingFlags.NonPublic);
+		TelemetryChartPoint actual = null;
+		chart.SampleActivated += point => actual = point;
+		var checkedSamples = 0;
+		for (var x = 0; x < native.Width; x++) {
+			var local = new Point(x, native.Height / 2);
+			var chartLocation = chart.PointToClient(native.PointToScreen(local));
+			if (!chart.TryGetSampleAt(chartLocation, out var expected))
+				continue;
+			mouse.Invoke(native, new object[] { new MouseEventArgs(MouseButtons.Left, 2, local.X, local.Y, 0) });
+			Assert.That(actual, Is.SameAs(expected), $"Native Pixel {x} Must Select Its Actual Captured Sample");
+			checkedSamples++;
+		}
+		Assert.That(checkedSamples, Is.GreaterThan(100));
+	}
+
 	[Test]
 	public void OwnsSnapshotMembershipAndRejectedInputDoesNotReplaceTheDisplayedHistory() {
 		using var chart = new TelemetryChart();

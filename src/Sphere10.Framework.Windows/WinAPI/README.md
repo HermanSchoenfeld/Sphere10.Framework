@@ -11,28 +11,30 @@ This is the lowest of the library's three Windows layers. The domain folders wra
 | Type | Kind | Purpose |
 |---|---|---|
 | [`WinAPI`](WinAPI.cs) | static class | Partial root class of all native declarations, with shared window and geometry structures |
-| [`WinAPI.ADVAPI32`](ADVAPI32.cs) | static class | `advapi32.dll`: tokens and privileges, account and SID lookup, logon and impersonation, security descriptors, registry key rename, service configuration, ETW session control and consumption, and Wait Chain Traversal in ADVAPI32.Threading.cs |
+| [`WinAPI.ADVAPI32`](ADVAPI32.cs) | static class | `advapi32.dll`: tokens and privileges, account and SID lookup, logon and impersonation, security descriptors, registry key rename, service configuration, ETW session control and consumption, and Wait Chain Traversal in [ADVAPI32.Threading.cs](ADVAPI32.Threading.cs) |
 | [`WinAPI.COMCTL32`](COMCTL32.cs) | static class | `comctl32.dll` `DllGetVersion` and its version structure |
 | [`WinAPI.COREDLL`](COREDLL.cs) | static class | `coredll.dll` `mouse_event` and `keybd_event` declarations |
 | [`WinAPI.CRYPT32`](CRYPT32.cs) | static class | The `CERT_CONTEXT` structure used by signature inspection |
+| [`WinAPI.DBGHELP`](DBGHELP.cs) | static class | `dbghelp.dll` symbol initialization, module loading, address-to-symbol and line lookup, `StackWalk64` and `MiniDumpWriteDump` |
 | [`WinAPI.DWMAPI`](DWMAPI.cs) | static class | `dwmapi.dll` window attributes and composition timing |
 | [`WinAPI.GDI32`](GDI32.cs) | static class | `gdi32.dll` device contexts, bitmaps, brushes, blitting and text colour and mode |
 | [`WinAPI.HHCTRL`](HHCTRL.cs) | static class | `hhctrl.ocx` `HtmlHelp` for compiled help files |
 | [`WinAPI.IPHLPAPI`](IPHLPAPI.cs) | static class | `iphlpapi.dll` extended TCP and UDP owner tables, `SetTcpEntry` and interface rows |
-| [`WinAPI.KERNEL32`](KERNEL32.cs) | static class | `kernel32.dll` processes, threads, memory, files and streams, consoles, libraries and resources, named pipes, device IO and processor groups, with PSS snapshots in KERNEL32.Diagnostics.cs, affinity, CPU Sets and mitigations in KERNEL32.ProcessScheduling.cs and waitable timers in KERNEL32.WaitableTimers.cs |
+| [`WinAPI.KERNEL32`](KERNEL32.cs) | static class | `kernel32.dll` processes, threads, memory, files and streams, consoles, libraries and resources, named pipes, device IO and processor groups, with PSS snapshots in [KERNEL32.Diagnostics.cs](KERNEL32.Diagnostics.cs), affinity, CPU Sets and mitigations in [KERNEL32.ProcessScheduling.cs](KERNEL32.ProcessScheduling.cs) and waitable timers in [KERNEL32.WaitableTimers.cs](KERNEL32.WaitableTimers.cs) |
 | [`WinAPI.MAGNIFICATION`](MAGNIFICATION.cs) | static class | `magnification.dll` initialization, magnifier window source, transform, colour effect and filter list, and full-screen transforms |
 | [`WinAPI.NETAPI32`](NETAPI32.cs) | static class | `netapi32.dll` user, group, local group, membership and share management and `NetApiBufferFree` |
-| [`WinAPI.NTDLL`](NTDLL.cs) | static class | `ntdll.dll` process and system information queries and status conversion, with object-directory, symbolic-link and object queries in NTDLL.Objects.cs |
+| [`WinAPI.NTDLL`](NTDLL.cs) | static class | `ntdll.dll` process and system information queries and status conversion, with object-directory, symbolic-link and object queries in [NTDLL.Objects.cs](NTDLL.Objects.cs) |
 | [`WinAPI.OLE32`](OLE32.cs) | static class | `ole32.dll` COM initialization and security |
 | [`WinAPI.PDH`](PDH.cs) | static class | `pdh.dll` performance counter queries, raw values and value calculation |
 | [`WinAPI.POWRPROF`](POWRPROF.cs) | static class | `powrprof.dll` power schemes and settings, power capabilities and information, and suspend state |
-| [`WinAPI.PSAPI`](PSAPI.cs) | static class | `psapi.dll` process memory and system performance information, with working-set queries and watches in PSAPI.WorkingSet.cs |
+| [`WinAPI.PSAPI`](PSAPI.cs) | static class | `psapi.dll` process memory and system performance information, with working-set queries and watches in [PSAPI.WorkingSet.cs](PSAPI.WorkingSet.cs) |
 | [`WinAPI.RICHEDIT`](RICHEDIT.cs) | static class | Rich-edit messages, character-format constants and the `CHARFORMAT`, `FORMATRANGE` and related structures |
 | [`WinAPI.RSTRTMGR`](RSTRTMGR.cs) | static class | `rstrtmgr.dll` Restart Manager sessions for finding processes that use a file |
 | [`WinAPI.SHELL32`](SHELL32.cs) | static class | `shell32.dll` change notification, Recycle Bin, known folders, `ShellExecuteEx` and icon extraction |
 | [`WinAPI.SHLWAPI`](SHLWAPI.cs) | static class | `shlwapi.dll` `AssocQueryString` for file associations |
 | [`WinAPI.TDH`](TDH.cs) | static class | `tdh.dll` `TdhGetEventInformation` for ETW event metadata |
-| [`WinAPI.USER32`](USER32.cs) | static class | `user32.dll` windows, messages, input, hooks, cursors and icons, DPI, display configuration and session exit, with hot keys in [HotKeys.cs](HotKeys.cs), foreground permission in USER32.Foreground.cs and layered windows in [USER32.Layering.cs](USER32.Layering.cs) |
+| [`WinAPI.UIAUTOMATION`](UIAUTOMATION.cs) | static class | COM interop declarations of the UI Automation client, element, cache request and tree walker interfaces |
+| [`WinAPI.USER32`](USER32.cs) | static class | `user32.dll` windows, messages, input, hooks, cursors and icons, DPI, display configuration and session exit, with hot keys in [HotKeys.cs](HotKeys.cs), foreground permission in [USER32.Foreground.cs](USER32.Foreground.cs) and layered windows in [USER32.Layering.cs](USER32.Layering.cs) |
 | [`WinAPI.UXTHEME`](UXTHEME.cs) | static class | `uxtheme.dll` visual style theme data and drawing |
 | [`WinAPI.WINMM`](WINMM.cs) | static class | `winmm.dll` `PlaySound` and its flags |
 | [`WinAPI.WINTRUST`](WINTRUST.cs) | static class | `wintrust.dll` `WinVerifyTrust` and signer and certificate chain helpers |

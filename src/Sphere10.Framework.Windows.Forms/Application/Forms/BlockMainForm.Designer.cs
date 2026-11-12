@@ -106,7 +106,6 @@ namespace Sphere10.Framework.Windows.Forms
 			// 
 			this._applicationBar.ApplicationBarControl = null;
 			this._applicationBar.EnableStateChangeEvent = false;
-			this._applicationBar.ButtonHeight = 32;
 			resources.ApplyResources(this._applicationBar, "_applicationBar");
 			this._applicationBar.Name = "_applicationBar";
 			this._applicationBar.SelectedItem = null;

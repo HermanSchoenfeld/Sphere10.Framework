@@ -12,6 +12,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private System.Windows.Forms.ToolTip _actionToolTip;
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -31,6 +32,8 @@ namespace Sphere10.Framework.Windows.Forms {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            components ??= new System.ComponentModel.Container();
+            _actionToolTip = new System.Windows.Forms.ToolTip(components);
             this._fileSelectorButton = new System.Windows.Forms.Button();
             this._filenameTextBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
             this._tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
@@ -43,6 +46,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._fileSelectorButton.Location = new System.Drawing.Point(396, 0);
             this._fileSelectorButton.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this._fileSelectorButton.Name = "_fileSelectorButton";
+            _actionToolTip.SetToolTip(_fileSelectorButton, "Browse for a file or directory.");
             this._fileSelectorButton.Size = new System.Drawing.Size(27, 20);
             this._fileSelectorButton.TabIndex = 5;
             this._fileSelectorButton.Text = "...";
@@ -55,6 +59,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._filenameTextBox.Location = new System.Drawing.Point(0, 0);
             this._filenameTextBox.Margin = new System.Windows.Forms.Padding(0, 0, 3, 0);
             this._filenameTextBox.Name = "_filenameTextBox";
+            _actionToolTip.SetToolTip(_filenameTextBox, "Enter the file or directory path.");
             this._filenameTextBox.Size = new System.Drawing.Size(390, 20);
             this._filenameTextBox.TabIndex = 4;
             this._filenameTextBox.Enter += new System.EventHandler(this._filenameTextBox_Enter);

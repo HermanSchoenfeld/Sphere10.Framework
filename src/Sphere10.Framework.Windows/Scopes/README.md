@@ -10,4 +10,5 @@ Adds Windows scope factories to the Framework `Tools.Scope` entry point and prov
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ThreadGroupAffinityScope`](ThreadGroupAffinityScope.cs) | struct | Synchronous scope that pins the current thread to a processor-group mask and restores its previous group affinity |
 | [`WindowsScopeExtensions`](WindowsScopeExtensions.cs) | static class | Extension members on `Tools.Scope` that create the Windows memory, always-on, DPI, console-attachment and token-privilege scopes |

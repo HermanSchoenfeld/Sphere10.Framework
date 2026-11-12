@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class LogOutputConfigurationDialog {
 	private IContainer components;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private TableLayoutPanel _layoutPanel;
 	private Label _stateLabel;
 	private TextBox _detailsTextBox;
@@ -32,6 +33,7 @@ partial class LogOutputConfigurationDialog {
 
 	private void InitializeComponent() {
 		components = new Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_layoutPanel = new TableLayoutPanel();
 		_stateLabel = new Label();
 		_detailsTextBox = new TextBox();
@@ -77,17 +79,20 @@ partial class LogOutputConfigurationDialog {
 		_buttonsPanel.Controls.Add(_toggleButton);
 		_closeButton.DialogResult = DialogResult.OK;
 		_closeButton.Name = "_closeButton";
+		_actionToolTip.SetToolTip(_closeButton, "Close these details without changing the current output.");
 		_closeButton.Size = new Size(90, 28);
 		_closeButton.Text = "Close";
 		_closeButton.TabIndex = 1;
 		_closeButton.UseVisualStyleBackColor = true;
 		_changeButton.Name = "_changeButton";
+		_actionToolTip.SetToolTip(_changeButton, "Open the logging wizard to change output options.");
 		_changeButton.Size = new Size(90, 28);
 		_changeButton.Text = "Change...";
 		_changeButton.TabIndex = 0;
 		_changeButton.UseVisualStyleBackColor = true;
 		_changeButton.Click += ChangeClick;
 		_toggleButton.Name = "_toggleButton";
+		_actionToolTip.SetToolTip(_toggleButton, "Start or stop logging with the selected output options.");
 		_toggleButton.Size = new Size(130, 28);
 		_toggleButton.Text = "Start Logging";
 		_toggleButton.AccessibleName = "Start Or Stop Logging";

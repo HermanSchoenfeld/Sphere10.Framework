@@ -8,6 +8,7 @@ Monitor arrangement control that draws the desktop's displays as selectable tile
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`MonitorLayoutHostedControlMode`](MonitorLayoutHostedControlMode.cs) | enum | Shows no hosted controls, one control per tile or one shared control under the arrangement |
 | [`MonitorLayoutItem`](MonitorLayoutItem.cs) | class | One display tile with key, label, caption, desktop bounds, primary flag, enabled state and accent color |
 
 ### Controls

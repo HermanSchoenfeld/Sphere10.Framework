@@ -50,6 +50,7 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 | [ActionMenuOwnerTests](ActionMenuOwnerTests.cs) | Action menu items receive the executing main form, execute-on-load callbacks and contextual selection. |
 | [ApplicationAggregateTests](ApplicationAggregateTests.cs) | One live shared application aggregate per native startup, block initialization, hidden unsaved screens and application command membership. |
 | [ApplicationBannerResourceTests](ApplicationBannerResourceTests.cs) | Banner bitmaps are released on resize and disposal while borrowed icon providers survive. |
+| [ApplicationBarThemeTests](ApplicationBarThemeTests.cs) | Block selector shapes (full-width buttons, inset tags) and colour styles (expando header, Soft Office) resolve from the explorer bar theme, its explicit overrides and the bar and main-form overrides, including Classic and the main form's navigation theme; the settings round-trip through theme XML and the buttons are accessible push buttons. |
 | [ApplicationBarSelectionTests](ApplicationBarSelectionTests.cs) | Navigation bar selection, programmatic and clicked selection, rejected clicks and inactive block registration. |
 | [ApplicationControlServicesTests](ApplicationControlServicesTests.cs) | Controls resolve application services lazily, across startup, design surfaces, shutdown and restart. |
 | [ApplicationExitTests](ApplicationExitTests.cs) | Application-owned exit confirmation, vetoes and retries, awaited finalization with a live disabled window, forced close and worker or UI-thread dispatch. |
@@ -92,14 +93,24 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 | [DefaultCrudEntityEditorTests](DefaultCrudEntityEditorTests.cs) | The default entity editor's nested properties, cancel, circular references and change baselines. |
 | [DemoLogOutputLifetimeTests](DemoLogOutputLifetimeTests.cs) | Application finalization joins accepted log output after its demo is destroyed. |
 | [DemoPluginRegistrationTests](DemoPluginRegistrationTests.cs) | The tester's demo plugins, blocks, screens, application tasks and launch profiles through the native host. |
+| [DesignerCompatibilityTests](DesignerCompatibilityTests.cs) | Forms and controls load as the root of a WinForms design surface with no framework running, and their designer files keep the generated shape. |
 | [DevAgeDrawingReuseTests](DevAgeDrawingReuseTests.cs) | Shared drawing calculations used by the imported shading, split button and task pane painting. |
+| [DisplayFrameClockTests](DisplayFrameClockTests.cs) | The display frame clock's thread, rate, throttling, slow handlers and restart. |
 | [DrawingCacheTests](DrawingCacheTests.cs) | Brush and pen cache keys, reuse limits and disposal of cached and overflow resources. |
 | [DrawingExtractionTests](DrawingExtractionTests.cs) | Drawing geometry, contrast colours, alignment and rounded rectangles extracted from SourceGrid. |
 | [FixedLengthFieldListTests](FixedLengthFieldListTests.cs) | The fixed-length field dictionary's typed views, field identity and declared ordering. |
 | [FixedLengthRecordTests](FixedLengthRecordTests.cs) | Fixed-length records round-trip with padding and reject oversized fields. |
 | [FormWindowSettingsTests](FormWindowSettingsTests.cs) | Saved window bounds across monitor moves, DPI changes, removed monitors, size limits and invalid values. |
+| [GlobalHotKeySetTests](GlobalHotKeySetTests.cs) | Global hot key sets register, re-register, release and report failures. |
 | [GraphChartTests](GraphChartTests.cs) | `GraphChart` snapshot ownership, rejected input, signed series, gaps, horizontal bars and empty states. |
+| [HexEditorControlTests](HexEditorControlTests.cs) | Edits, save, find, document ownership and hit testing in the real hex editor control, view and form on an STA message loop. |
+| [HexEditorDataInspectorTests](HexEditorDataInspectorTests.cs) | Data inspector integer, floating-point and character decoding in both byte orders. |
+| [HexEditorDocumentTests](HexEditorDocumentTests.cs) | The hex document's bounded block cache, pending edits, structural changes, save and revert. |
+| [HexEditorSearchTests](HexEditorSearchTests.cs) | Forward and backward streaming search across chunk and cache boundaries, pending edits and cancellation. |
+| [HexEditorViewportTests](HexEditorViewportTests.cs) | Caret movement, selection, go-to, scrolling, overwrite typing and copy on the view model. |
+| [HotKeyCommandEditorTests](HotKeyCommandEditorTests.cs) | The command shortcut editor's assignments, conflicts and grouping. |
 | [HotKeyEditorTests](HotKeyEditorTests.cs) | The shortcut editor round trip, accepted keys, descriptions and Windows-key shortcuts. |
+| [ImageComboBoxTests](ImageComboBoxTests.cs) | Image combo choices, commits, metrics, painting, DPI and the underlying custom combo drop-down. |
 | [ImportedUtilityReuseTests](ImportedUtilityReuseTests.cs) | Imported property resolution and record separator parsing through their consumer APIs. |
 | [LoadingCircleGalleryTests](LoadingCircleGalleryTests.cs) | The loading indicator gallery's bindings, cancellable examples and screen lifetime. |
 | [LoadingCircleTests](LoadingCircleTests.cs) | Loading circle styles, colours, geometry, transparent painting and restoration of borrowed controls. |
@@ -122,6 +133,7 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 | [OnScreenNotificationFormTests](OnScreenNotificationFormTests.cs) | Passive on-screen notifications show near the screen edge and dispose after dismissal. |
 | [PropertyGridExTests](PropertyGridExTests.cs) | `PropertyGridEx` caption sizing, fitting, manual splitter positions and read-only selection. |
 | [ReviewTextDialogTests](ReviewTextDialogTests.cs) | The text review dialog's preview, copy, save, encoding, replacement failure and cancellation. |
+| [RoundedRectanglePathTests](RoundedRectanglePathTests.cs) | Rounded rectangle paths round only the chosen corners and limit large radii. |
 | [ScreenActivationBuilderTests](ScreenActivationBuilderTests.cs) | Screen registrations own their metadata, startup activators, same-type registrations and cancellation. |
 | [ScreenPolicyTests](ScreenPolicyTests.cs) | Shared default ordering, permanent singleton screens, legacy start flags and guarded mode changes. |
 | [ScreenSettingsOwnershipTests](ScreenSettingsOwnershipTests.cs) | Native screens declare their own nested settings and keep existing provider record identities. |
@@ -142,17 +154,22 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 | [TesterDataShowcaseTests](TesterDataShowcaseTests.cs) | The tester's data showcase settings, observable collections and worker cancellation. |
 | [TesterIntegrationShowcaseTests](TesterIntegrationShowcaseTests.cs) | The tester's integration workbenches without mail, audio, hooks or network traffic. |
 | [TextLogTests](TextLogTests.cs) | The text log control's construction, text, selection and append behaviour. |
+| [ToggleSwitchTests](ToggleSwitchTests.cs) | The toggle switch's check behaviour, preferred size, DPI scaling and painting. |
 | [ToolStripChoiceSelectorTests](ToolStripChoiceSelectorTests.cs) | The tool strip choice selector's models, keyboard selection, checks and disposal. |
+| [ToolStripItemExtensionsTests](ToolStripItemExtensionsTests.cs) | Tool strip image replacement disposal and icon rendering size. |
+| [VisualGridArrayControllerTests](VisualGridArrayControllerTests.cs) | `VisualGrid` array controller binding, visible entity capture and selection across reloads. |
 | [VisualGridAutoPageFillTests](VisualGridAutoPageFillTests.cs) | Automatic page fill with mixed row heights, fonts, resizing and DPI. |
 | [VisualGridAutoPageSizeTests](VisualGridAutoPageSizeTests.cs) | Automatic page size mode, pager controls, owner values and the mode dropdown. |
 | [VisualGridBackgroundPreparationTests](VisualGridBackgroundPreparationTests.cs) | Background row preparation off the owner thread, bounded allocation and stale result rejection. |
 | [VisualGridColumnLayoutTests](VisualGridColumnLayoutTests.cs) | Column layout, scrollbars, header widths and image cells. |
 | [VisualGridColumnsEditorTests](VisualGridColumnsEditorTests.cs) | The column collection editor publishes ordering and edits only on acceptance. |
 | [VisualGridConfigurationContextMenuTests](VisualGridConfigurationContextMenuTests.cs) | Header configuration context menu attachment, targeting and ownership. |
+| [VisualGridDataSourceControllerTests](VisualGridDataSourceControllerTests.cs) | Data source controller publication identity, stale snapshots, filtered export and ranged reads. |
 | [VisualGridInteractionTests](VisualGridInteractionTests.cs) | Cell editing permissions, click selection and rapid row changes. |
 | [VisualGridLiveDemoTests](VisualGridLiveDemoTests.cs) | The live grid demo's capture, timer publication, targeted refresh and disposal. |
 | [VisualGridLiveInputTests](VisualGridLiveInputTests.cs) | Native clicks and context menus during suppressed and ordinary row preparation. |
 | [VisualGridNativeInputRouteTests](VisualGridNativeInputRouteTests.cs) | Prepared refreshes keep the committed native input window visible to hit testing. |
+| [VisualGridNotificationTests](VisualGridNotificationTests.cs) | Source change notifications refresh the grid silently, wait for drafts and detach on rebinding. |
 | [VisualGridPageModeMenuTests](VisualGridPageModeMenuTests.cs) | Page mode menu selection of single, automatic and manual paging. |
 | [VisualGridPagingTests](VisualGridPagingTests.cs) | Locate across pages, manual and automatic page sizes and scrollbar allowance. |
 | [VisualGridPreferencesTests](VisualGridPreferencesTests.cs) | Screen-supplied grid settings validation, restoration and column width and order round trips. |
@@ -161,11 +178,14 @@ The project keeps all of its own fixtures at the root. `NativeTestEnvironment` i
 | [VisualGridReadOnlyCellTests](VisualGridReadOnlyCellTests.cs) | Read-only text cells, type converter formatting and opt-in row height reuse. |
 | [VisualGridRefreshMouseSequenceTests](VisualGridRefreshMouseSequenceTests.cs) | A mouse press spanning a snapshot replacement does not gate movement or release. |
 | [VisualGridRefreshTests](VisualGridRefreshTests.cs) | Row styles during preparation, grid titles and header layout during refresh. |
+| [VisualGridRowDetailsTests](VisualGridRowDetailsTests.cs) | Row detail panels, recursive tables, shared columns, scrolling, paging and teardown. |
+| [VisualGridSelectionPaintingTests](VisualGridSelectionPaintingTests.cs) | Selection painting through prepared refreshes, including a physical mouse selection case. |
 | [WidgetStateEventTests](WidgetStateEventTests.cs) | Committed state events and refresh boundaries on adopted numeric, colour, text, hex and list controls. |
 | [WinFormsCommandOwnerTests](WinFormsCommandOwnerTests.cs) | Block and plugin command owner activation, fixed membership and disposal. |
 | [WinFormsDefaultInterfaceDispatchTests](WinFormsDefaultInterfaceDispatchTests.cs) | Native plugin and decorator overrides project through the shared interfaces. |
 | [WinFormsWizardAdapterTests](WinFormsWizardAdapterTests.cs) | The native wizard adapter's dynamic successors, validation, shared metadata and terminal callbacks. |
 | [WindowHighlightScopeTests](WindowHighlightScopeTests.cs) | The window picker and highlight frame, owner hiding, consumed clicks and owner-thread disposal. |
+| [WindowsFormsToolTests](WindowsFormsToolTests.cs) | WinForms tool discovery and factories for charts, grids, inputs, pickers and review dialogs. |
 | [WindowsInteropTests](WindowsInteropTests.cs) | Native structure layouts, rich edit formatting, cursor hotspots and device hook cleanup. |
 | [WindowsWindowLayeringTests](WindowsWindowLayeringTests.cs) | Passive overlay detection above reference windows. |
 | [WizardDemoTests](WizardDemoTests.cs) | The demo wizard's validation, model updates, back navigation and completion. |

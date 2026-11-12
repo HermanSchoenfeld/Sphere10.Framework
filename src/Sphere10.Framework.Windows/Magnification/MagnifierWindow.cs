@@ -92,11 +92,15 @@ public sealed class MagnifierWindow : SyncDisposable {
 	}
 
 	/// <summary>Windows left out of the captured source; the host itself is always excluded.</summary>
+	/// <remarks>Assigning the same handles again is free, so callers can re-assign the list on every frame.</remarks>
 	public IntPtr[] ExcludedWindows {
 		get => (IntPtr[])_excludedWindows.Clone();
 		set {
 			EnsureUsable();
-			_excludedWindows = value == null ? Array.Empty<IntPtr>() : (IntPtr[])value.Clone();
+			var excluded = value ?? Array.Empty<IntPtr>();
+			if (excluded.AsSpan().SequenceEqual(_excludedWindows))
+				return;
+			_excludedWindows = (IntPtr[])excluded.Clone();
 			if (IsShown)
 				ApplyExclusions();
 		}

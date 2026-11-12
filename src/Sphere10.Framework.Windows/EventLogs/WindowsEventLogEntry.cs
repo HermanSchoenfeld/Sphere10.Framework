@@ -23,4 +23,14 @@ public sealed class WindowsEventLogEntry {
 	public Exception LevelError { get; internal set; }
 	public Exception MessageError { get; internal set; }
 	public Exception XmlError { get; internal set; }
+	public int? WriterProcessId { get; internal set; }
+	public int? WriterThreadId { get; internal set; }
+	public Guid? ActivityId { get; internal set; }
+	public Guid? RelatedActivityId { get; internal set; }
+	public string MachineName { get; internal set; }
+	public string UserSid { get; internal set; }
+	public WindowsEventLogProperty[] Properties { get; internal set; } = Array.Empty<WindowsEventLogProperty>();
+	public Exception PropertiesError { get; internal set; }
+	public Exception SystemMetadataError { get; internal set; }
+	public Exception EventDataNamesError { get; internal set; }
 }

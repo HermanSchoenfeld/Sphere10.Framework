@@ -17,8 +17,11 @@ partial class ValidatedTextBoxButton {
 	private System.Windows.Forms.Button _browseButton;
 	private System.Windows.Forms.TextBox _textBox;
 	private System.ComponentModel.Container _components = null;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 
 	private void InitializeComponent() {
+		_components ??= new System.ComponentModel.Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._browseButton = new System.Windows.Forms.Button();
 		this._textBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();
 		this.SuspendLayout();
@@ -31,6 +34,7 @@ partial class ValidatedTextBoxButton {
 		this._browseButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
 		this._browseButton.Location = new System.Drawing.Point(134, 2);
 		this._browseButton.Name = "btDown";
+		_actionToolTip.SetToolTip(_browseButton, "Open the value editor.");
 		this._browseButton.Size = new System.Drawing.Size(24, 16);
 		this._browseButton.TabIndex = 1;
 		this._browseButton.Text = "...";

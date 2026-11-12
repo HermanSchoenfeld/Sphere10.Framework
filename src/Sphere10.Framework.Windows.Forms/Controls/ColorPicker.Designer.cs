@@ -18,8 +18,11 @@ partial class ColorPicker {
 	private System.Windows.Forms.Panel _colorPanel;
 	private System.Windows.Forms.Label _colorLabel;
 	private System.ComponentModel.Container _components = null;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 
 	private void InitializeComponent() {
+		_components ??= new System.ComponentModel.Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._colorLabel = new System.Windows.Forms.Label();
 		this._colorPanel = new System.Windows.Forms.Panel();
 		this._browseButton = new System.Windows.Forms.Button();
@@ -58,6 +61,7 @@ partial class ColorPicker {
 		this._browseButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
 		this._browseButton.Location = new System.Drawing.Point(110, 2);
 		this._browseButton.Name = "btBrowse";
+		_actionToolTip.SetToolTip(_browseButton, "Choose a color.");
 		this._browseButton.Size = new System.Drawing.Size(24, 16);
 		this._browseButton.TabIndex = 0;
 		this._browseButton.Text = "...";

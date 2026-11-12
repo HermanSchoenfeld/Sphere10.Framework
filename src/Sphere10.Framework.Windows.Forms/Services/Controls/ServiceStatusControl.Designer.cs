@@ -12,6 +12,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private System.Windows.Forms.ToolTip _actionToolTip;
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -31,6 +32,8 @@ namespace Sphere10.Framework.Windows.Forms {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            components ??= new System.ComponentModel.Container();
+            _actionToolTip = new System.Windows.Forms.ToolTip(components);
             this._trafficLightLabel = new System.Windows.Forms.Label();
             this._trafficLight = new Sphere10.Framework.Windows.Forms.PanelEx();
             this._serviceButton = new System.Windows.Forms.Button();
@@ -65,6 +68,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this._serviceButton.Location = new System.Drawing.Point(846, 0);
             this._serviceButton.Margin = new System.Windows.Forms.Padding(2);
             this._serviceButton.Name = "_serviceButton";
+            _actionToolTip.SetToolTip(_serviceButton, "Start or stop the configured Windows service.");
             this._serviceButton.Size = new System.Drawing.Size(83, 28);
             this._serviceButton.TabIndex = 14;
             this._serviceButton.Text = "Stop";

@@ -40,6 +40,7 @@ partial class TelemetryChart {
 		_plot.Dock = DockStyle.Fill;
 		_plot.MouseMove += PlotMouseMove;
 		_plot.MouseLeave += PlotMouseLeave;
+		_plot.MouseDoubleClick += PlotMouseDoubleClick;
 		Controls.Add(_plot);
 		Controls.Add(_value);
 		Controls.Add(_title);

@@ -4,7 +4,7 @@ Manages local users, groups and shares through the NetAPI, adjusts token privile
 
 `NTHost` is the entry point for account administration. `NTHost.CurrentMachine` or `new NTHost(name)` represents a local or remote machine, and its methods list, look up and create `NTLocalUser`, `NTLocalGroup` and `NTShare` objects. Every object derives `NTObject`, which carries a host, name, SID and SID type. Local objects (`NTLocalObject`) push edits with `Update`, reload with `Refresh` and remove themselves with `Delete`. Group members are `NTLocalObject`, `NTRemoteObject` for domain accounts, or `NTDanglingObject` for references whose SID or name cannot be resolved. Remote hosts use the caller's Windows credentials, and each native query checks access separately. `NetApiBufferScope` frees NetAPI output buffers, and `NetApiException` reports `NET_API_STATUS` failures.
 
-`PrivilegeUtil` (`Tools.Windows.Security`) enables privileges such as `SeBackupPrivilege` for one operation through `EnterScope` or `TryEnterScope`, which return a `TokenPrivilegeScope` over a duplicated thread token. Acquire and dispose that scope synchronously on the same worker thread, because it restores the previous thread token on disposal. `Impersonator.RunAs` logs on with supplied credentials and runs a synchronous action under that identity. `SecurityDescriptorUtil` (`Tools.Windows.SecurityDescriptors`) lists the SIDs a descriptor references and rewrites them without changing any other descriptor data. `SecurityTool` reads and writes file, directory and registry security, changes owners and looks up account names and SIDs. `ShareSecurity` with `ShareAccessRule` and `ShareAuditRule` is a `NativeObjectSecurity` model of share permissions.
+`Tools.Windows.Security` enables privileges such as `SeBackupPrivilege` for one operation through `EnterScope` or `TryEnterScope`, which return a `TokenPrivilegeScope` over a duplicated thread token. Acquire and dispose that scope synchronously on the same worker thread, because it restores the previous thread token on disposal. `Impersonator.RunAs` logs on with supplied credentials and runs a synchronous action under that identity. `Tools.Windows.SecurityDescriptors` lists the SIDs a descriptor references and rewrites them without changing any other descriptor data. `SecurityTool` reads and writes file, directory and registry security, changes owners and looks up account names and SIDs. `ShareSecurity` with `ShareAccessRule` and `ShareAuditRule` is a `NativeObjectSecurity` model of share permissions.
 
 ## Contents
 
@@ -21,9 +21,9 @@ Manages local users, groups and shares through the NetAPI, adjusts token privile
 | [`NTObject`](NTObject.cs) | abstract class | Base of security principals with host, name, full name, SID and SID type |
 | [`NTRemoteObject`](NTRemoteObject.cs) | class | A domain account referenced from a host, such as a domain member of a local group |
 | [`NTShare`](NTShare.cs) | class | A network share with server path, type, permissions, use counts and security descriptor, and access-control get and set operations |
-| [`PrivilegeUtil`](PrivilegeUtil.cs) | class | `Tools.Windows.Security` token-privilege lookup, enabling and disabling, and operation-local privilege scopes |
+| [`Tools.Windows.Security`](PrivilegeUtil.cs) | static class | `Tools.Windows.Security` token-privilege lookup, enabling and disabling, and operation-local privilege scopes |
 | [`SecurityDescriptorSidReference`](SecurityDescriptorSidReference.cs) | struct | Record struct of one SID and the owner, group, DACL and SACL sections that reference it |
-| [`SecurityDescriptorUtil`](SecurityDescriptorUtil.cs) | class | `Tools.Windows.SecurityDescriptors` SID reference listing and SID translation of binary security descriptors |
+| [`Tools.Windows.SecurityDescriptors`](SecurityDescriptorUtil.cs) | static class | `Tools.Windows.SecurityDescriptors` SID reference listing and SID translation of binary security descriptors |
 | [`SecurityTool`](SecurityTool.cs) | class | Static file, directory and registry security reads and writes, owner changes, current-user SID and account and SID lookups |
 | [`ShareAccessRule`](ShareAuditRule.cs) | class | `AccessRule` granting or denying `ShareRights` to an identity |
 | [`ShareAuditRule`](ShareAuditRule.cs) | class | `AuditRule` auditing `ShareRights` use by an identity |
@@ -40,3 +40,15 @@ Manages local users, groups and shares through the NetAPI, adjusts token privile
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`ActionLocalGroupDataSource`](LocalAccounts/ActionLocalGroupDataSource.cs) | class | Local group data source whose change confirmation and logger are supplied as delegates |
+| [`ActionLocalUserDataSource`](LocalAccounts/ActionLocalUserDataSource.cs) | class | Local user data source whose change confirmation and logger are supplied as delegates |
+| [`ILocalAccountsBackend`](LocalAccounts/ILocalAccountsBackend.cs) | interface | Async boundary for reading, creating, updating and deleting local users and groups and their members, replaceable in tests |
+| [`LocalAccountsService`](LocalAccounts/LocalAccountsService.cs) | class | Serialized user and group workflows with expected-state checks, name validation and change logging |
+| [`LocalGroupDataSourceBase`](LocalAccounts/LocalGroupDataSourceBase.cs) | abstract class | Template CRUD data source over the local groups with nested `Inventories` and `Inventory` captures and an abstract `ConfirmAsync` |
+| [`LocalGroupEntry`](LocalAccounts/LocalGroupEntry.cs) | class | Editable group row with name and description, its captured `LocalGroupInfo` baseline and owner |
+| [`LocalGroupInfo`](LocalAccounts/LocalGroupInfo.cs) | record | Detached local group with host, SID, description and members |
+| [`LocalGroupMemberInfo`](LocalAccounts/LocalGroupMemberInfo.cs) | record | One group member's identity, SID and type |
+| [`LocalUserDataSourceBase`](LocalAccounts/LocalUserDataSourceBase.cs) | abstract class | Template CRUD data source over the local users with nested `Inventories` and `Inventory` captures and an abstract `ConfirmAsync` |
+| [`LocalUserEntry`](LocalAccounts/LocalUserEntry.cs) | class | Editable user row with its captured `LocalUserInfo` baseline and internal password inputs |
+| [`LocalUserInfo`](LocalAccounts/LocalUserInfo.cs) | record | Detached local user with SID, names, flags and derived account states, last logon, password age and groups |
+| [`WindowsLocalAccountsBackend`](LocalAccounts/WindowsLocalAccountsBackend.cs) | class | `ILocalAccountsBackend` over `NTHost` for the local machine that runs native calls off the UI thread |

@@ -47,6 +47,8 @@ public class FileHandleReleaseTests {
 	[TestCase("object")]
 	[TestCase("path")]
 	[TestCase("partial")]
+	[TestCase("nondisk")]
+	[TestCase("objecttype")]
 	public async Task IncompleteCaptureCannotStartAReleaseWorker(string missing) {
 		var expected = Expected();
 		expected = missing switch {
@@ -54,6 +56,8 @@ public class FileHandleReleaseTests {
 			"handle" => expected with { HandleValue = null },
 			"object" => expected with { ObjectAddress = 0 },
 			"path" => expected with { Path = string.Empty },
+			"nondisk" => expected with { IsDiskFile = false },
+			"objecttype" => expected with { ObjectType = "Key" },
 			_ => expected with { Availability = "Partial captured identity" }
 		};
 		await Assert.ThatAsync(async () => await new FileHandleService().ForceReleaseAsync(expected), Throws.InstanceOf<ArgumentException>());

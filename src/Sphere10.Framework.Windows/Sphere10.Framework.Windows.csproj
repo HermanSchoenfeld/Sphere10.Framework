@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>$(FrameworkTargetFrameworks)</TargetFrameworks>
     <IsPackable>true</IsPackable>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<Description>Windows platform integration layer providing secure, type-safe access to Windows-specific APIs and system integration features. Includes abstractions for NT security objects (users/groups/SIDs), services, event logging, registry access, privileges, and related Windows utilities.</Description>
@@ -11,6 +11,11 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
+		<None Update="THIRD-PARTY-NOTICES.md;ThirdParty/**/*" Pack="true"
+			PackagePath="licenses;contentFiles/any/any/Licenses/Sphere10.Framework.Windows"
+			PackageCopyToOutput="true" PackageFlatten="false" BuildAction="None"
+			CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+		<None Update="buildTransitive/Sphere10.Framework.Windows.targets" Pack="true" PackagePath="buildTransitive/Sphere10.Framework.Windows.targets" />
 	</ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -22,6 +27,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ICSharpCode.BamlDecompiler" />
+    <PackageReference Include="ICSharpCode.Decompiler" />
+    <PackageReference Include="Microsoft.Diagnostics.Runtime" />
     <PackageReference Include="Microsoft.Win32.Registry.AccessControl" />
     <PackageReference Include="System.CodeDom" />
     <PackageReference Include="System.Diagnostics.EventLog" />

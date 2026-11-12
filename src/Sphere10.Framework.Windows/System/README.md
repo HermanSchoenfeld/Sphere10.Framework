@@ -2,17 +2,17 @@
 
 Reads computer identity, firmware, hardware, operating-system and performance data, reads power plans and capabilities, and requests shutdown, restart, logoff, lock, sleep and hibernate.
 
-`ComputerUtil` (`Tools.Windows.Computer`) is the entry point. Its hardware queries delegate to `WindowsComputer`, which reads WMI classes such as `Win32_BIOS`, `Win32_BaseBoard`, `Win32_Processor`, `Win32_PhysicalMemory`, `Win32_PnPEntity` and `Win32_Printer` into detached records. Monitor identities come from the `root\wmi` namespace. `GetSystemCounters` reads raw memory, commit, kernel-pool, process, thread, handle and CPU tick counts through `WindowsSystemInformation`. `Rename` changes the computer name only when the current name matches the expected one. `Shutdown`, `Restart`, `Logoff`, `Lock`, `Sleep` and `Hibernate` send requests that the user or another application can still veto. Every query has an async variant, and the caller owns sampling and aggregation.
+`Tools.Windows.Computer` is the entry point. Its hardware queries delegate to `WindowsComputer`, which reads WMI classes such as `Win32_BIOS`, `Win32_BaseBoard`, `Win32_Processor`, `Win32_PhysicalMemory`, `Win32_PnPEntity` and `Win32_Printer` into detached records. Monitor identities come from the `root\wmi` namespace. `GetSystemCounters` reads raw memory, commit, kernel-pool, process, thread, handle and CPU tick counts through `WindowsSystemInformation`. `Rename` changes the computer name only when the current name matches the expected one. `Shutdown`, `Restart`, `Logoff`, `Lock`, `Sleep` and `Hibernate` send requests that the user or another application can still veto. Every query has an async variant, and the caller owns sampling and aggregation.
 
-`PerformanceCounterUtil` (`Tools.Windows.PerformanceCounters`) opens a `WindowsPerformanceQuery` over English PDH counter paths. The query owns its PDH handle, returns raw `WindowsPerformanceCounterSample` values and computes a formatted value from a current and an earlier sample, so it keeps no history of its own. `AlwaysOnScope` keeps the system or display awake with `SetThreadExecutionState` until it is disposed on the same thread. Display paths and EDID data are in the [Display](../Display/README.md) domain, and logical drives and disks are in the [Storage](../Storage/README.md) domain.
+`Tools.Windows.PerformanceCounters` opens a `WindowsPerformanceQuery` over English PDH counter paths. The query owns its PDH handle, returns raw `WindowsPerformanceCounterSample` values and computes a formatted value from a current and an earlier sample, so it keeps no history of its own. `AlwaysOnScope` keeps the system or display awake with `SetThreadExecutionState` until it is disposed on the same thread. Display paths and EDID data are in the [Display](../Display/README.md) domain, and logical drives and disks are in the [Storage](../Storage/README.md) domain.
 
 ## Contents
 
 | Type | Kind | Purpose |
 |---|---|---|
 | [`AlwaysOnScope`](AlwaysOnScope.cs) | struct | Thread-bound scope that requests system or display availability through `SetThreadExecutionState` and restores the prior state |
-| [`ComputerUtil`](ComputerUtil.cs) | class | `Tools.Windows.Computer` identity, firmware, hardware, counter and power queries, power data-source factories, rename and power-state requests |
-| [`PerformanceCounterUtil`](PerformanceCounterUtil.cs) | class | `Tools.Windows.PerformanceCounters` factory that opens caller-owned PDH queries over English counter paths |
+| [`Tools.Windows.Computer`](ComputerUtil.cs) | static class | `Tools.Windows.Computer` identity, firmware, hardware, counter and power queries, power data-source factories, rename and power-state requests |
+| [`Tools.Windows.PerformanceCounters`](PerformanceCounterUtil.cs) | static class | `Tools.Windows.PerformanceCounters` factory that opens caller-owned PDH queries over English counter paths |
 | [`WindowsBaseboardInfo`](WindowsBaseboardInfo.cs) | record | Baseboard manufacturer, product, version and serial number |
 | [`WindowsBiosInfo`](WindowsBiosInfo.cs) | record | BIOS manufacturer, version, serial number and release date |
 | [`WindowsComputer`](WindowsComputer.cs) | static class | WMI queries for computer, product, firmware, processor, memory, enclosure, video, PnP device, monitor and printer records, and computer rename |
@@ -35,7 +35,7 @@ Reads computer identity, firmware, hardware, operating-system and performance da
 
 ### Power
 
-The [Power README](Power/README.md) describes the power inventories in detail. `ComputerUtil` reads power plans, the settings of one plan with their AC and DC values and policy overrides, and sleep and wake diagnostics, all without changing anything. The three data sources capture once on load and then page the detached rows. `PowerCfgSentry` runs `powercfg.exe` for the read-only reports in `PowerCfgReport` and returns its localized output unparsed.
+The [Power README](Power/README.md) describes the power inventories in detail. `Tools.Windows.Computer` reads power plans, the settings of one plan with their AC and DC values and policy overrides, and sleep and wake diagnostics, all without changing anything. The three data sources capture once on load and then page the detached rows. `PowerCfgSentry` runs `powercfg.exe` for the read-only reports in `PowerCfgReport` and returns its localized output unparsed.
 
 | Type | Kind | Purpose |
 |---|---|---|

@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class ReviewTextDialog {
 	private IContainer components;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private TableLayoutPanel _layoutPanel;
 	private Label _instructionsLabel;
 	private TextBoxEx _previewTextBox;
@@ -36,6 +37,7 @@ partial class ReviewTextDialog {
 
 	private void InitializeComponent() {
 		components = new Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_layoutPanel = new TableLayoutPanel();
 		_instructionsLabel = new Label();
 		_previewTextBox = new TextBoxEx();
@@ -108,6 +110,7 @@ partial class ReviewTextDialog {
 		_copyButton.AutoSize = true;
 		_copyButton.Anchor = AnchorStyles.Left;
 		_copyButton.Name = "_copyButton";
+		_actionToolTip.SetToolTip(_copyButton, "Copy the reviewed text to the clipboard.");
 		_copyButton.Padding = new Padding(12, 3, 12, 3);
 		_copyButton.TabIndex = 1;
 		_copyButton.Text = "&Copy To Clipboard";
@@ -115,6 +118,7 @@ partial class ReviewTextDialog {
 		_copyButton.Click += CopyButtonClick;
 		_saveButton.AutoSize = true;
 		_saveButton.Name = "_saveButton";
+		_actionToolTip.SetToolTip(_saveButton, "Save the reviewed text to a file.");
 		_saveButton.Padding = new Padding(12, 3, 12, 3);
 		_saveButton.TabIndex = 2;
 		_saveButton.Text = "&Save...";
@@ -123,6 +127,7 @@ partial class ReviewTextDialog {
 		_closeButton.AutoSize = true;
 		_closeButton.DialogResult = DialogResult.Cancel;
 		_closeButton.Name = "_closeButton";
+		_actionToolTip.SetToolTip(_closeButton, "Close this review.");
 		_closeButton.Padding = new Padding(12, 3, 12, 3);
 		_closeButton.TabIndex = 3;
 		_closeButton.Text = "&Close";

@@ -7,12 +7,12 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Native = Sphere10.Framework.Windows.WinAPI.USER32;
 
 namespace Sphere10.Framework.Windows.Tests;
 
@@ -71,14 +71,14 @@ public class WindowsDisplayTests {
 
 	[Test]
 	public void NativeDisplayStructuresMatchWindowsSdkLayouts() {
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_PATH_INFO>(), Is.EqualTo(72));
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_MODE_INFO>(), Is.EqualTo(64));
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_SOURCE_DEVICE_NAME>(), Is.EqualTo(84));
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_TARGET_DEVICE_NAME>(), Is.EqualTo(420));
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_TARGET_PREFERRED_MODE>(), Is.EqualTo(80));
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO>(), Is.EqualTo(32));
-		Assert.That(Marshal.SizeOf<Native.DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2>(), Is.EqualTo(36));
-		Assert.That(Marshal.SizeOf<Native.DISPLAY_DEVMODE>(), Is.EqualTo(220));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_PATH_INFO>(), Is.EqualTo(72));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_MODE_INFO>(), Is.EqualTo(64));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_SOURCE_DEVICE_NAME>(), Is.EqualTo(84));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_TARGET_DEVICE_NAME>(), Is.EqualTo(420));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_TARGET_PREFERRED_MODE>(), Is.EqualTo(80));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO>(), Is.EqualTo(32));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2>(), Is.EqualTo(36));
+		Assert.That(Marshal.SizeOf<WinAPI.USER32.DISPLAY_DEVMODE>(), Is.EqualTo(220));
 	}
 
 	[Test]
@@ -86,18 +86,18 @@ public class WindowsDisplayTests {
 		var caller = Environment.CurrentManagedThreadId;
 		var captureThread = caller;
 		var calls = 0;
-		var source = new WindowsDisplayDataSource(_ => {
+		await using var source = new ActionRefreshableDataSource<WindowsDisplayInfo>(() => new ActionAsyncListDataSource<WindowsDisplayInfo>(_ => {
 			captureThread = Environment.CurrentManagedThreadId;
 			Interlocked.Increment(ref calls);
-			return Task.FromResult(new[] { new WindowsDisplayInfo { Name = "Panel A" }, new WindowsDisplayInfo { Name = "Panel B" }, new WindowsDisplayInfo { Name = "Other" } });
-		});
+			return Task.FromResult<IEnumerable<WindowsDisplayInfo>>(new[] { new WindowsDisplayInfo { Name = "Panel A" }, new WindowsDisplayInfo { Name = "Panel B" }, new WindowsDisplayInfo { Name = "Other" } });
+		}));
 		var first = await source.ReadRangeAsync("Panel", 1, 0, nameof(WindowsDisplayInfo.Name), SortDirection.Ascending);
 		var second = await source.ReadRangeAsync("Panel", 1, 1, nameof(WindowsDisplayInfo.Name), SortDirection.Ascending);
 		Assert.That(first.TotalCount, Is.EqualTo(2));
 		Assert.That(second.Items.Single().Name, Is.EqualTo("Panel B"));
 		Assert.That(calls, Is.EqualTo(1));
 		Assert.That(captureThread, Is.Not.EqualTo(caller));
-		await source.ReloadAsync();
+		await source.RefreshAsync();
 		Assert.That(calls, Is.EqualTo(2));
 	}
 
@@ -114,6 +114,19 @@ public class WindowsDisplayTests {
 				Assert.That(display.ActiveTiming.TotalWidth, Is.GreaterThanOrEqualTo(display.ActiveTiming.ActiveWidth));
 			}
 			TestContext.Progress.WriteLine($"{display.GdiDeviceName}: {display.Name}, {display.Connector}, {display.Modes.Length} source modes; HDR supported={display.HdrSupported}, active={display.ActiveColorMode}");
+		}
+	}
+
+	[Test, Category("Integration")]
+	public async Task DisplayNamesAgreeWithTheFullInventoryForEveryNamedSource() {
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+		var names = await Tools.Windows.Display.GetDisplayNamesAsync(timeout.Token);
+		var displays = await Tools.Windows.Display.GetDisplaysAsync(timeout.Token);
+		Assert.That(names.Keys, Is.SubsetOf(displays.Select(display => display.GdiDeviceName)).Using((IEqualityComparer<string>)StringComparer.OrdinalIgnoreCase));
+		foreach (var (deviceName, name) in names) {
+			Assert.That(deviceName, Does.StartWith(@"\\.\DISPLAY"));
+			Assert.That(name, Is.Not.Empty);
+			Assert.That(displays.Where(display => string.Equals(display.GdiDeviceName, deviceName, StringComparison.OrdinalIgnoreCase)).Select(display => display.Name), Does.Contain(name));
 		}
 	}
 

@@ -12,6 +12,7 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
+		private System.Windows.Forms.ToolTip _actionToolTip;
 
 		/// <summary> 
 		/// Clean up any resources being used.
@@ -32,6 +33,7 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// </summary>
 		private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
+            _actionToolTip = new System.Windows.Forms.ToolTip(components);
             this.OptionsButton = new System.Windows.Forms.Button();
             this.DatabaseOptionsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this._artificialKeysMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -44,6 +46,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this.OptionsButton.Image = global::Sphere10.Framework.Windows.Forms.Resources.NORMALGROUPEXPAND;
             this.OptionsButton.Location = new System.Drawing.Point(463, 15);
             this.OptionsButton.Name = "OptionsButton";
+            _actionToolTip.SetToolTip(OptionsButton, "Show database connection options.");
             this.OptionsButton.Size = new System.Drawing.Size(28, 23);
             this.OptionsButton.TabIndex = 0;
             this.OptionsButton.UseVisualStyleBackColor = true;

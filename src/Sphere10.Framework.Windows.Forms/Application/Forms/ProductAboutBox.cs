@@ -25,7 +25,8 @@ public partial class ProductAboutBox : ApplicationForm, IAboutBox {
 
 	protected override void OnLoad(EventArgs e) {
 		base.OnLoad(e);
-		if (!Tools.Runtime.IsDesignMode) {
+		// As FormEx does: a sited designer instance reports DesignMode in any designer host, not only Visual Studio's process.
+		if (!DesignMode && !Tools.Runtime.IsDesignMode) {
 			var icon = Sphere10Framework.Instance.ServiceProvider.GetService<IApplicationIconProvider>()?.ApplicationIcon;
 			if (icon != null)
 				Icon = icon;

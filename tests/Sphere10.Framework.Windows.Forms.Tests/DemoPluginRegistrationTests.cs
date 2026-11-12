@@ -150,7 +150,7 @@ public class DemoPluginRegistrationTests {
 		var plugins = application.LoadedPlugins;
 		Assert.That(plugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Workspace demonstrations", "Component demonstrations" }));
 		Assert.That(plugins[0].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Workspace", "Notes" }));
-		Assert.That(plugins[1].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Controls", "Data And Collections", "Integration", "Utilities" }));
+		Assert.That(plugins[1].Blocks.Select(block => block.Name), Is.EqualTo(new[] { "Controls", "Styling", "Data And Collections", "Integration", "Utilities" }));
 		var contributedBlocks = plugins.SelectMany(plugin => plugin.Blocks).ToArray();
 		Assert.That(form.RegisteredBlocks, Is.EqualTo(contributedBlocks));
 		Assert.That(application.Blocks, Is.EqualTo(form.RegisteredBlocks));
@@ -161,7 +161,7 @@ public class DemoPluginRegistrationTests {
 				Assert.That(block.Parent, Is.SameAs(application));
 			}
 		var navigation = form.Controls.OfType<SplitContainer>().Single().Panel1.Controls.OfType<ApplicationBar>().Single();
-		Assert.That(navigation.Items, Has.Length.EqualTo(6), "The two plugins contribute six independent block navigation buttons.");
+		Assert.That(navigation.Items, Has.Length.EqualTo(7), "The two plugins contribute seven independent block navigation buttons.");
 
 		// Preserve the original screen inventory across both launch profiles while removing duplicate menu registrations.
 		var workspaceBuilder = new FormsUI.ApplicationPluginBuilder();
@@ -181,6 +181,7 @@ public class DemoPluginRegistrationTests {
 		Assert.That(normalScreens.Concat(freshScreens).Select(type => type.Name).Distinct(), Is.EquivalentTo(new[] {
 			"ApplicationServicesTestScreen",
 			"AppointmentBookScreen",
+			"BlockSelectorStylesScreen",
 			"BloomFilterAnalysisScreen",
 			"CBACSVConverterScreen",
 			"ChartGalleryScreen",
@@ -199,7 +200,9 @@ public class DemoPluginRegistrationTests {
 			"EncryptedCompressionTestScreen",
 			"EnumComboScreen",
 			"ExpandoTesterScreen",
+			"ExplorerBarDesignerScreen",
 			"FlagsCheckedBoxListScreen",
+			"HexEditorTestScreen",
 			"HooksScreen",
 			"ImageResizeScreen",
 			"LoadingCircleTestScreen",
@@ -278,7 +281,7 @@ public class DemoPluginRegistrationTests {
 		var application = Sphere10Framework.Instance.ServiceProvider.GetRequiredService<FormsUI.IApplication>();
 		Assert.That(application.LoadedPlugins.Select(plugin => plugin.Name), Is.EqualTo(new[] { "Workspace demonstrations", "Component demonstrations" }));
 		Assert.That(application.LoadedPlugins[0].Blocks.Length, Is.EqualTo(freshEmptyWorkspace ? 1 : 2));
-		Assert.That(application.LoadedPlugins[1].Blocks.Length, Is.EqualTo(4));
+		Assert.That(application.LoadedPlugins[1].Blocks.Length, Is.EqualTo(5));
 		var empty = form.RegisteredBlocks.Single(block => block.Name == "Workspace").Menus.SelectMany(menu => menu.Items)
 			.OfType<IWinFormsScreenMenuItem>().Single(item => item.ScreenDefinition.ScreenKind == ScreenKind.Empty);
 		Assert.That(empty.ShowOnExplorerBar, Is.False);
@@ -740,7 +743,7 @@ public class DemoPluginRegistrationTests {
 					}
 				}
 			}
-			Assert.That(opened.Count, Is.EqualTo(alternateWorkspace ? 52 : 53));
+			Assert.That(opened.Count, Is.EqualTo(alternateWorkspace ? 55 : 56));
 
 			// Empty screens are genuine fallbacks, reached through the same public host operation as the menu.
 			var notes = form.RegisteredBlocks.SingleOrDefault(block => block.Name == "Notes");

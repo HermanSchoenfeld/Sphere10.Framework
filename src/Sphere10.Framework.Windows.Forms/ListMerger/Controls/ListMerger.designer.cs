@@ -13,6 +13,7 @@ partial class ListMerger {
 	/// Required designer variable.
 	/// </summary>
 	private System.ComponentModel.IContainer _components = null;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private System.Windows.Forms.Label _rightHeaderLabel;
 	private System.Windows.Forms.Button _moveRightButton;
 	private System.Windows.Forms.Button _moveLeftButton;
@@ -39,6 +40,8 @@ partial class ListMerger {
 	/// the contents of this method with the code editor.
 	/// </summary>
 	private void InitializeComponent() {
+		_components ??= new System.ComponentModel.Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._rightHeaderLabel = new System.Windows.Forms.Label();
 		this._moveRightButton = new System.Windows.Forms.Button();
 		this._moveLeftButton = new System.Windows.Forms.Button();
@@ -70,6 +73,7 @@ partial class ListMerger {
 		this._moveRightButton.Location = new System.Drawing.Point(11, 130);
 		this._moveRightButton.Margin = new System.Windows.Forms.Padding(6);
 		this._moveRightButton.Name = "_moveRightButton";
+		_actionToolTip.SetToolTip(_moveRightButton, "Move the selected items to the right list.");
 		this._moveRightButton.Size = new System.Drawing.Size(48, 46);
 		this._moveRightButton.TabIndex = 3;
 		this._moveRightButton.UseVisualStyleBackColor = true;
@@ -82,6 +86,7 @@ partial class ListMerger {
 		this._moveLeftButton.Location = new System.Drawing.Point(11, 188);
 		this._moveLeftButton.Margin = new System.Windows.Forms.Padding(6);
 		this._moveLeftButton.Name = "_moveLeftButton";
+		_actionToolTip.SetToolTip(_moveLeftButton, "Move the selected items to the left list.");
 		this._moveLeftButton.Size = new System.Drawing.Size(48, 46);
 		this._moveLeftButton.TabIndex = 2;
 		this._moveLeftButton.UseVisualStyleBackColor = true;

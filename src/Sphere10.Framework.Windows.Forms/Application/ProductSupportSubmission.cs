@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,7 +18,8 @@ using Sphere10.Framework.Application;
 namespace Sphere10.Framework.Windows.Forms;
 
 internal static class ProductSupportSubmission {
-	internal static async Task SendAsync<TRequest>(Form dialog, Button sendButton, IUserInterfaceServices userInterface, TRequest request, Func<IProductSupportService, TRequest, CancellationToken, Task<Result>> send)
+	internal static async Task SendAsync<TRequest>(Form dialog, Button sendButton, Button cancelButton, LoadingCircle loadingCircle, IUserInterfaceServices userInterface, TRequest request,
+		IEnumerable<ImageAttachmentSelectorControl> attachmentControls, Func<IProductSupportService, TRequest, CancellationToken, Task<Result>> send)
 		where TRequest : ClientRequest {
 		if (!sendButton.Enabled)
 			return;
@@ -28,6 +31,29 @@ internal static class ProductSupportSubmission {
 			await userInterface.ReportErrorAsync("Request details", "Enter a description between 1 and 16000 characters.");
 			return;
 		}
+		var attachments = new List<ClientRequestAttachment>();
+		foreach (var control in attachmentControls.Where(control => control.AttachmentSource != ImageAttachmentSelectorControl.ImageAttachmentSource.None)) {
+			if (!control.TryGetAttachment(out var fileName, out var data)) {
+				await userInterface.ReportErrorAsync("Attachment", control.AttachmentSource == ImageAttachmentSelectorControl.ImageAttachmentSource.Clipboard
+					? "The clipboard holds no image. Copy a screenshot or choose a file."
+					: "Choose a file that exists and can be read.");
+				return;
+			}
+			if (data.Length > ClientRequestAttachment.MaxBytes) {
+				await userInterface.ReportErrorAsync("Attachment", $"{fileName} is larger than {Tools.Memory.GetBytesReadable(ClientRequestAttachment.MaxBytes)}.");
+				return;
+			}
+			if (fileName.Length > ClientRequestAttachment.MaxFileNameLength) {
+				await userInterface.ReportErrorAsync("Attachment", $"The file name must be at most {ClientRequestAttachment.MaxFileNameLength} characters.");
+				return;
+			}
+			attachments.Add(new ClientRequestAttachment(fileName, data));
+		}
+		if (attachments.Count > ClientRequest.MaxAttachments) {
+			await userInterface.ReportErrorAsync("Attachment", $"Attach at most {ClientRequest.MaxAttachments} files.");
+			return;
+		}
+		request.Attachments = attachments.ToArray();
 		var service = Sphere10Framework.Instance.ServiceProvider.GetService<IProductSupportService>();
 		if (service == null) {
 			await userInterface.ReportErrorAsync("Support unavailable", "This application's support service has not been configured.");
@@ -47,7 +73,8 @@ internal static class ProductSupportSubmission {
 			dialog.FormClosing -= OnClosing;
 			if (!sendButton.IsDisposed)
 				sendButton.Enabled = true;
-		})) {
+		}))
+		using (loadingCircle.BeginAnimationScope(dialog, cancelButton)) {
 			try {
 				var result = await send(service, request, cancellation.Token);
 				if (result.IsFailure)

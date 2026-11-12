@@ -41,9 +41,14 @@ namespace Sphere10.Framework.Windows.Forms {
 			this.applicationBanner1 = new Sphere10.Framework.Windows.Forms.ApplicationBanner();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
 			this._whoAreYouControl = new Sphere10.Framework.Windows.Forms.WhoAreYouControl();
+            this._attachmentsGroupBox = new System.Windows.Forms.GroupBox();
+            this._firstAttachmentControl = new Sphere10.Framework.Windows.Forms.ImageAttachmentSelectorControl();
+            this._secondAttachmentControl = new Sphere10.Framework.Windows.Forms.ImageAttachmentSelectorControl();
+            this._loadingCircle = new Sphere10.Framework.Windows.Forms.LoadingCircle();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this._attachmentsGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -51,7 +56,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this._basicContactDetailsControl);
-            this.groupBox1.Location = new System.Drawing.Point(12, 378);
+            this.groupBox1.Location = new System.Drawing.Point(12, 550);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(528, 72);
             this.groupBox1.TabIndex = 6;
@@ -92,7 +97,7 @@ namespace Sphere10.Framework.Windows.Forms {
             // _cancelButton
             // 
             this._cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this._cancelButton.Location = new System.Drawing.Point(465, 456);
+            this._cancelButton.Location = new System.Drawing.Point(465, 628);
             this._cancelButton.Name = "_cancelButton";
             this._cancelButton.Size = new System.Drawing.Size(75, 23);
             this._cancelButton.TabIndex = 10;
@@ -103,7 +108,7 @@ namespace Sphere10.Framework.Windows.Forms {
             // _sendButton
             // 
             this._sendButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this._sendButton.Location = new System.Drawing.Point(384, 456);
+            this._sendButton.Location = new System.Drawing.Point(384, 628);
             this._sendButton.Name = "_sendButton";
             this._sendButton.Size = new System.Drawing.Size(75, 23);
             this._sendButton.TabIndex = 11;
@@ -140,17 +145,68 @@ namespace Sphere10.Framework.Windows.Forms {
             this._whoAreYouControl.TabIndex = 0;
 			this._whoAreYouControl.UserType = Sphere10.Framework.Application.UserType.HomeUser;
             // 
+            // _attachmentsGroupBox
+            // 
+            this._attachmentsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this._attachmentsGroupBox.Controls.Add(this._firstAttachmentControl);
+            this._attachmentsGroupBox.Controls.Add(this._secondAttachmentControl);
+            this._attachmentsGroupBox.Location = new System.Drawing.Point(12, 378);
+            this._attachmentsGroupBox.Name = "_attachmentsGroupBox";
+            this._attachmentsGroupBox.Size = new System.Drawing.Size(528, 166);
+            this._attachmentsGroupBox.TabIndex = 17;
+            this._attachmentsGroupBox.TabStop = false;
+            this._attachmentsGroupBox.Text = "Attachments (optional, up to 1 MB each)";
+            // 
+            // _firstAttachmentControl
+            // 
+            this._firstAttachmentControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this._firstAttachmentControl.Location = new System.Drawing.Point(14, 19);
+            this._firstAttachmentControl.Name = "_firstAttachmentControl";
+            this._firstAttachmentControl.Size = new System.Drawing.Size(508, 66);
+            this._firstAttachmentControl.TabIndex = 0;
+            // 
+            // _secondAttachmentControl
+            // 
+            this._secondAttachmentControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this._secondAttachmentControl.Location = new System.Drawing.Point(14, 91);
+            this._secondAttachmentControl.Name = "_secondAttachmentControl";
+            this._secondAttachmentControl.Size = new System.Drawing.Size(508, 66);
+            this._secondAttachmentControl.TabIndex = 1;
+            // 
+            // _loadingCircle
+            // 
+            this._loadingCircle.Active = false;
+            this._loadingCircle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this._loadingCircle.BackColor = System.Drawing.Color.Transparent;
+            this._loadingCircle.Color = System.Drawing.Color.DarkGray;
+            this._loadingCircle.InnerCircleRadius = 5;
+            this._loadingCircle.Location = new System.Drawing.Point(343, 625);
+            this._loadingCircle.Name = "_loadingCircle";
+            this._loadingCircle.NumberSpoke = 12;
+            this._loadingCircle.OuterCircleRadius = 11;
+            this._loadingCircle.RotationSpeed = 100;
+            this._loadingCircle.Size = new System.Drawing.Size(35, 28);
+            this._loadingCircle.SpokeThickness = 2;
+            this._loadingCircle.StylePreset = Sphere10.Framework.Windows.Forms.LoadingCircle.StylePresets.MacOSX;
+            this._loadingCircle.TabIndex = 18;
+            this._loadingCircle.Visible = false;
+            // 
             // SendCommentsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(552, 491);
+            this.ClientSize = new System.Drawing.Size(552, 663);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.applicationBanner1);
             this.Controls.Add(this._sendButton);
             this.Controls.Add(this._cancelButton);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this._attachmentsGroupBox);
+            this.Controls.Add(this._loadingCircle);
             this.MinimizeBox = false;
             this.Name = "SendCommentsForm";
             this.ShowIcon = false;
@@ -161,6 +217,7 @@ namespace Sphere10.Framework.Windows.Forms {
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this._attachmentsGroupBox.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -173,6 +230,10 @@ namespace Sphere10.Framework.Windows.Forms {
         private System.Windows.Forms.Button _cancelButton;
         private System.Windows.Forms.Button _sendButton;
         private BasicContactDetailsControl _basicContactDetailsControl;
+        private System.Windows.Forms.GroupBox _attachmentsGroupBox;
+        private ImageAttachmentSelectorControl _firstAttachmentControl;
+        private ImageAttachmentSelectorControl _secondAttachmentControl;
+        private LoadingCircle _loadingCircle;
         private ApplicationBanner applicationBanner1;
         private System.Windows.Forms.GroupBox groupBox3;
         private Sphere10.Framework.Windows.Forms.WhoAreYouControl _whoAreYouControl;

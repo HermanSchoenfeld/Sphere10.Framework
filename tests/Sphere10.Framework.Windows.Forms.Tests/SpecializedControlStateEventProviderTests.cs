@@ -333,8 +333,8 @@ public class SpecializedControlStateEventProviderTests {
 			var replacement = new[] { new ChoiceRow { Id = 1, Name = "Same" }, new ChoiceRow { Id = 2, Name = "Same" } };
 			var collected = new TaskCompletionSource<ChoiceRow[]>(TaskCreationOptions.RunContinuationsAsynchronously);
 			var collectionCount = 0;
-			var source = new SnapshotDataSource<ChoiceRow>();
-			var controller = new VisualGridSnapshotController<ChoiceRow>(combo.VisualGrid, source, row => row.Id,
+			var source = new ArrayDataSource<ChoiceRow>();
+			var controller = new VisualGridArrayController<ChoiceRow>(combo.VisualGrid, source, row => row.Id,
 				_ => ++collectionCount == 1 ? Task.FromResult(original) : collected.Task);
 			await controller.RefreshAsync();
 			var provider = new CrudComboBoxControlStateEventProvider();

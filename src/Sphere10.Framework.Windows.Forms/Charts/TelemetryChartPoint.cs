@@ -10,4 +10,7 @@ using System;
 
 namespace Sphere10.Framework.Windows.Forms;
 
-public sealed record TelemetryChartPoint(DateTime CapturedAtUtc, double? Value);
+public sealed record TelemetryChartPoint(DateTime CapturedAtUtc, double? Value) {
+	/// <summary>Optional detached caller-owned context for this observation; no resource acquisition is performed by the chart.</summary>
+	public object Context { get; init; }
+}

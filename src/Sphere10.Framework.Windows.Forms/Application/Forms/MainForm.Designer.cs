@@ -68,6 +68,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			_menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, _screensMenuItem, _optionsMenuItem, _helpToolStripMenuItem });
 			_menuStrip.Location = new System.Drawing.Point(0, 0);
 			_menuStrip.Name = "_menuStrip";
+			_menuStrip.ShowItemToolTips = true;
 			_menuStrip.Size = new System.Drawing.Size(664, 24);
 			_menuStrip.TabIndex = 3;
 			_menuStrip.Text = "menuStrip1";
@@ -86,6 +87,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			_optionsMenuItem.DropDownItems.Add(_screenOptionsMenuItem);
 			_screenOptionsMenuItem.Name = "_screenOptionsMenuItem";
 			_screenOptionsMenuItem.Text = "Screen &Options...";
+			_screenOptionsMenuItem.ToolTipText = "Edit the registered application, plugin, block and screen settings.";
 			_screenOptionsMenuItem.Click += ScreenOptionsClick;
 			//
 			// Screens
@@ -100,10 +102,12 @@ namespace Sphere10.Framework.Windows.Forms {
 			_screensSeparator.Name = "_screensSeparator";
 			_closeAllScreensMenuItem.Name = "_closeAllScreensMenuItem";
 			_closeAllScreensMenuItem.Text = "Close All";
+			_closeAllScreensMenuItem.ToolTipText = "Close every screen that permits closing.";
 			_closeAllScreensMenuItem.Enabled = false;
 			_closeAllScreensMenuItem.Click += CloseAllScreensClicked;
 			_closeOtherScreensMenuItem.Name = "_closeOtherScreensMenuItem";
 			_closeOtherScreensMenuItem.Text = "Close All Others";
+			_closeOtherScreensMenuItem.ToolTipText = "Close other screens that permit closing, keeping the active screen.";
 			_closeOtherScreensMenuItem.Enabled = false;
 			_closeOtherScreensMenuItem.Click += CloseOtherScreensClicked;
 			// 
@@ -119,6 +123,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			exitToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
 			exitToolStripMenuItem.Text = "E&xit";
+			exitToolStripMenuItem.ToolTipText = "Exit the application using its normal shutdown checks.";
 			exitToolStripMenuItem.Click += Exit_Click;
 			// 
 			// _userguideToolStripMenuItem
@@ -126,6 +131,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			_userguideToolStripMenuItem.Name = "_userguideToolStripMenuItem";
 			_userguideToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			_userguideToolStripMenuItem.Text = "User Guide";
+			_userguideToolStripMenuItem.ToolTipText = "Open the application's user guide.";
 			_userguideToolStripMenuItem.Click += UserGuide_Click;
 			// 
 			// _contextHelpToolStripMenuItem
@@ -134,6 +140,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			_contextHelpToolStripMenuItem.Name = "_contextHelpToolStripMenuItem";
 			_contextHelpToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			_contextHelpToolStripMenuItem.Text = "Context Help";
+			_contextHelpToolStripMenuItem.ToolTipText = "Open help for the active screen.";
 			_contextHelpToolStripMenuItem.Click += ContextHelp_Click;
 			// 
 			// toolStripSeparator1
@@ -146,6 +153,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			_requestAFeatureToolStripMenuItem.Name = "_requestAFeatureToolStripMenuItem";
 			_requestAFeatureToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			_requestAFeatureToolStripMenuItem.Text = "Request A Feature";
+			_requestAFeatureToolStripMenuItem.ToolTipText = "Open the application's feature request form.";
 			_requestAFeatureToolStripMenuItem.Click += RequestAFeature_Click;
 			// 
 			// sendACommentToolStripMenuItem
@@ -153,6 +161,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			sendACommentToolStripMenuItem.Name = "sendACommentToolStripMenuItem";
 			sendACommentToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			sendACommentToolStripMenuItem.Text = "Send A Comment";
+			sendACommentToolStripMenuItem.ToolTipText = "Open the application's feedback form.";
 			sendACommentToolStripMenuItem.Click += SendComment_Click;
 			// 
 			// reportABugToolStripMenuItem
@@ -160,6 +169,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			reportABugToolStripMenuItem.Name = "reportABugToolStripMenuItem";
 			reportABugToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			reportABugToolStripMenuItem.Text = "Report A Bug";
+			reportABugToolStripMenuItem.ToolTipText = "Open the application's bug report form.";
 			reportABugToolStripMenuItem.Click += ReportABug_Click;
 			// 
 			// toolStripSeparator4
@@ -172,6 +182,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			_aboutToolStripMenuItem.Name = "_aboutToolStripMenuItem";
 			_aboutToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
 			_aboutToolStripMenuItem.Text = "About";
+			_aboutToolStripMenuItem.ToolTipText = "Show product, version and license information.";
 			_aboutToolStripMenuItem.Click += About_Click;
 			// 
 			// _statusStrip

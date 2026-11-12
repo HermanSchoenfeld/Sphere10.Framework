@@ -20,4 +20,16 @@ namespace Sphere10.Framework.Windows;
 public sealed record WindowsWindowInfo(IntPtr Handle, string Title, string ClassName, int ProcessId, uint ThreadId, string ProcessName,
 	DateTime? ProcessStartTimeUtc, bool IsVisible, string Error) {
 	public bool IsMinimized { get; init; }
+
+	public IntPtr ParentHandle { get; init; }
+
+	public IntPtr OwnerHandle { get; init; }
+
+	public bool IsMessageOnly { get; init; }
+
+	public uint? Style { get; init; }
+
+	public uint? ExtendedStyle { get; init; }
+
+	public uint? Dpi { get; init; }
 }

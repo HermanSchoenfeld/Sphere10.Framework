@@ -1,0 +1,10 @@
+<Project>
+  <!-- NuGet contentFiles alone do not flow through an indirect package reference. -->
+  <ItemGroup>
+    <None Remove="$(MSBuildThisFileDirectory)../contentFiles/any/any/Licenses/Sphere10.Framework.Windows/**/*" />
+    <None Include="$(MSBuildThisFileDirectory)../contentFiles/any/any/Licenses/Sphere10.Framework.Windows/**/*"
+          Link="Licenses/Sphere10.Framework.Windows/%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+          ExcludeFromSingleFile="true" Pack="false" />
+  </ItemGroup>
+</Project>

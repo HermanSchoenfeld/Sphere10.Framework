@@ -4,7 +4,7 @@ Designer-editable numeric and telemetry chart controls over captured data, with 
 
 `GraphChart` plots `GraphChartSeries` of `GraphChartPoint` values as lines, areas, columns or bars. `BarChart` is its column-chart preset. `TelemetryChart` plots `TelemetryChartPoint` time series in percent, bytes, bytes per second or Celsius. All three render through [Sphere10.Framework.Windows.Forms.DataVisualization](../../Sphere10.Framework.Windows.Forms.DataVisualization/README.md). None of them samples data. The caller captures values and passes detached arrays with `SetSeries` or `SetSamples` on the owning UI thread.
 
-`ChartLogOutputBehavior` adds the **Log Output** context command and bounded asynchronous logging of chart observations through the `LogOutputSelectorControl` in [Logging](../Logging/README.md). The chart controls create their own behavior. Create one explicitly only for a bare native `Chart`, and dispose it on the UI thread. `WindowsFormsChartUtil`, reached as `Tools.Windows.Forms.Charts`, creates these controls and formats log lines without a control. The project [README](../README.md) covers ranges, gaps, hover lookup and log formatting in detail.
+`ChartLogOutputBehavior` adds the **Log Output** context command and bounded asynchronous logging of chart observations through the `LogOutputSelectorControl` in [Logging](../Logging/README.md). The chart controls create their own behavior. Create one explicitly only for a bare native `Chart`, and dispose it on the UI thread. `Tools.WinForms.Charts`, reached as `Tools.WinForms.Charts`, creates these controls and formats log lines without a control. The project [README](../README.md) covers ranges, gaps, hover lookup and log formatting in detail.
 
 ```csharp
 var chart = new BarChart { YAxisTitle = "Temperature (°C)", MinimumY = 0 };
@@ -28,6 +28,7 @@ chart.SetSeries(new[] {
 | [`TelemetryChartPoint`](TelemetryChartPoint.cs) | record | UTC capture time and optional value, with optional detached `Context` for hover text and activation |
 | [`TelemetryChartStyle`](TelemetryChartStyle.cs) | enum | Line or filled-area telemetry history |
 | [`TelemetryChartUnit`](TelemetryChartUnit.cs) | enum | Percent, bytes, bytes per second or Celsius scale for `TelemetryChart` |
+| [`Tools.WinForms.Charts`](WindowsFormsChartUtil.cs) | static class | `Tools.WinForms.Charts` factory for chart controls, native charts and log behavior, plus log-line formatting |
 
 ### Controls
 

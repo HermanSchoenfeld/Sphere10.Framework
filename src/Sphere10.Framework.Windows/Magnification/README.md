@@ -10,5 +10,7 @@ Applies colour transformations to the desktop or to single displays through the 
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`DisplayColorEffect`](DisplayColorEffect.cs) | record | The GDI device name, desktop bounds and `ColorMatrix` one display should show |
+| [`DisplayColorEffectRenderer`](DisplayColorEffectRenderer.cs) | class | Shows per-display colour matrices through the full-screen effect when they match, with fades, or through per-display magnifier windows when they differ |
 | [`MagnificationSession`](MagnificationSession.cs) | class | Owns the process's Magnification API initialization and sets, reads and resets the full-screen colour effect |
 | [`MagnifierWindow`](MagnifierWindow.cs) | class | Topmost click-through magnifier that re-renders a desktop region through a colour matrix, with excluded windows and source clipping |

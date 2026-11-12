@@ -14,7 +14,6 @@ using System.Security.Permissions;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-using static Sphere10.Framework.Windows.WinAPI.USER32;
 
 namespace Sphere10.Framework.Windows.Forms;
 

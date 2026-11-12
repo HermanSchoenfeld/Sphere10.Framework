@@ -75,9 +75,9 @@ Sphere10Framework.Instance
 | [`ScreenDisplayMode`](ScreenDisplayMode.cs) | enum | Normal, maximized, filled or filled-and-maximized screen presentation |
 | [`SessionEndingHandlerInitializer`](SessionEndingHandlerTask.cs) | class | Initializer that handles Windows session ending so the application closes gracefully |
 | [`StartupFolderAutoRunServicesProvider`](StartupFolderAutoRunServicesProvider.cs) | class | `IAutoRunServices` implementation that creates a shortcut in the user's Startup folder |
+| [`Tools.WinForms`](WindowSettingsTool.cs) | static class | Partial of the `Tools.WinForms` utility that captures, restores, calculates and auto-persists window placement |
 | [`WinFormsActionMenuItem`](WinFormsActionMenuItem.cs) | class | Menu item that runs an `Action` or `Action<IUserInterfaceServices>` when selected |
 | [`WinFormsLinkMenuItemBase`](WinFormsLinkMenuItemBase.cs) | abstract class | Base for text menu items that raise a selection notification |
-| [`WinFormsMenuSeparator`](WinFormsMenuSeparator.cs) | class | Separator between native menu or toolbar command groups |
 | [`WinFormsScreenMenuItem`](WinFormsScreenMenuItem.cs) | class | Menu item that opens the screen identified by a registration, definition or screen type |
 
 ### Controls
@@ -86,7 +86,8 @@ Sphere10Framework.Instance
 |---|---|---|
 | [`ApplicationBanner`](Controls/ApplicationBanner.cs) | class | Gradient banner that shows the application icon, title, company name and version |
 | [`ApplicationBannerHost`](Controls/ApplicationBannerHost.cs) | class | Hosts the registered `ApplicationBanner` at runtime and a stock banner in the designer |
-| [`ApplicationBar`](Controls/ApplicationBar.cs) | class | Navigation bar of stacked buttons that shows the selected item's control above them, where a nested `Item` pairs a button with its control |
+| [`ApplicationBar`](Controls/ApplicationBar.cs) | class | Navigation bar of stacked block selector buttons that shows the selected item's control above them, where a nested `Item` pairs a button with its control. The buttons follow the explorer bar theme of the displayed `TaskPane`, or the default theme, and its `Shape` and `ColorStyle` override the theme's block selector shape and colour style |
+| [`ApplicationBarButton`](Controls/ApplicationBarButton.cs) | class | Block selector push button painted in its `ApplicationBar`'s resolved shape and colour style, with idle, hot, pressed and selected gradients; keyboard, assistive technology and UI automation can activate it |
 | [`ApplicationControl`](Controls/ApplicationControl.cs) | class | User control base with settings and UI services that refreshes when its settings change |
 | [`ApplicationScreenHost`](Controls/ApplicationScreenHost.cs) | class | Native screen host that creates screens, presents them in tabs or detached windows and guards navigation |
 | [`ApplicationScreenHostBase`](Controls/ApplicationScreenHostBase.cs) | abstract class | User control base that implements `IApplicationScreenHost` over an abstract host engine |
@@ -116,8 +117,9 @@ Sphere10Framework.Instance
 | [`LiteMainForm`](Forms/LiteMainForm.cs) | class | Main form base with first-run events, exit confirmation, closing permissions and Screen Options |
 | [`MainForm`](Forms/MainForm.cs) | class | Main form that composes menus and toolbar commands around its `ApplicationScreenHost` |
 | [`ProductAboutBox`](Forms/ProductAboutBox.cs) | class | Default `IAboutBox` whose labels and link are filled from product information tokens |
-| [`ProductProductReportBugDialog`](Forms/ProductProductReportBugDialog.cs) | class | Default `IProductReportBugDialog` that submits a bug report through the product support service |
-| [`ProductProductRequestFeatureDialog`](Forms/ProductProductRequestFeatureDialog.cs) | class | Default `IProductRequestFeatureDialog` that submits a feature request through the product support service |
-| [`ProductProductSendCommentsDialog`](Forms/ProductProductSendCommentsDialog.cs) | class | Default `IProductSendCommentsDialog` that submits comments through the product support service |
+| [`ProductProductReportBugDialog`](Forms/ProductProductReportBugDialog.cs) | class | Default `IProductReportBugDialog` that submits a bug report with up to two attachments through the product support service, showing a loading circle while it sends |
+| [`ProductProductRequestFeatureDialog`](Forms/ProductProductRequestFeatureDialog.cs) | class | Default `IProductRequestFeatureDialog` that submits a feature request with up to two attachments through the product support service, showing a loading circle while it sends |
+| [`ProductProductSendCommentsDialog`](Forms/ProductProductSendCommentsDialog.cs) | class | Default `IProductSendCommentsDialog` that submits comments with up to two attachments through the product support service, showing a loading circle while it sends |
+| [`ProductSupportDialog`](Forms/ProductSupportDialog.cs) | class | Base of the three support dialogs that lays out the banner, groups, attachments and buttons in code at the current DPI, so a dialog moved to a monitor of another DPI keeps its layout |
 | [`ServerPostBackForm`](Forms/ServerPostBackForm.cs) | class | Wait form that says the application is contacting software support |
 | [`SplashScreen`](Forms/SplashScreen.cs) | class | Startup and shutdown splash with artwork, progress title and message, and fade in and out |

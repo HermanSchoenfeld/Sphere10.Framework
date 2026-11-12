@@ -4,7 +4,9 @@ Standalone general-purpose WinForms controls for text, numeric, color, image, bu
 
 These controls have no dedicated support classes, so they share one folder. The validated editors `TextBoxEx`, `MaskedTextBoxEx` and `ValidatedTextBoxButton` accept a borrowed `IValidator` and expose a typed `Value`. `NumericBoxBase<T>` derives from `TextBoxEx`, and `IntBox`, `DecimalBox` and `MoneyBox` specialize it. `EditableControl` draws a themed edit border around composed inputs such as `ColorPicker` and `ValidatedTextBoxButton`.
 
-`WindowsFormsControlUtil`, reached as `Tools.Windows.Forms.Controls`, creates the shared `SearchTextBox` and the toolbar choice selector from [ToolStrips](../ToolStrips/README.md). Controls with their own support types have their own domains, such as [ComboBoxes](../ComboBoxes/README.md), [DropDown](../DropDown/README.md) and [Display](../Display/README.md).
+`Tools.WinForms.Controls`, reached as `Tools.WinForms.Controls`, creates the shared `SearchTextBox` and the toolbar choice selector from [ToolStrips](../ToolStrips/README.md). Controls with their own support types have their own domains, such as [ComboBoxes](../ComboBoxes/README.md), [DropDown](../DropDown/README.md) and [Display](../Display/README.md).
+
+`FlagsCheckedListBox` retains enum values for flag composition while enumerating underlying scalar values. A runtime-selected enum therefore does not require reflection to create a concrete enum array. Trimmed callers must preserve its public enum fields for names and descriptions, and retain WinForms binding support. The control preserves its internal display/value properties used by binding.
 
 ## Contents
 
@@ -20,7 +22,7 @@ These controls have no dedicated support classes, so they share one folder. The 
 | [`FlagsCheckedListBox`](FlagsCheckedListBox.cs) | class | Checked list box bound to a flags `EnumType` whose checks combine into `SelectedEnum` |
 | [`GradientPanel`](GradientPanel.cs) | class | Panel that paints a linear gradient from `FromColor` to `ToColor` at an `Angle` with an optional `Blend` |
 | [`HeaderGroupBox`](HeaderGroupBox.cs) | class | Group box drawn as heading text, an optional image and a trailing rule |
-| [`ImageAttachmentSelectorControl`](ImageAttachmentSelectorControl.cs) | class | Lets the user attach an image from a file or the clipboard and returns it through `TryGetSelectedImage` |
+| [`ImageAttachmentSelectorControl`](ImageAttachmentSelectorControl.cs) | class | Lets the user attach any file, chosen or dropped on the control, or the clipboard image as `Clipboard.png`, previews images, and returns the name and bytes through `TryGetAttachment` or an image through `TryGetSelectedImage` |
 | [`ImageLinkLabel`](ImageLinkLabel.cs) | class | Link label with normal, mouse-over and disabled images, alignment options and an optional rounded border |
 | [`ImageNavigator`](ImageNavigator.cs) | class | Shows borrowed images one at a time with previous and next navigation and a status line |
 | [`IntBox`](IntBox.cs) | class | `NumericBoxBase<int>` editor for integer values |
@@ -40,5 +42,7 @@ These controls have no dedicated support classes, so they share one folder. The 
 | [`SquareButton`](SquareButton.cs) | class | Gradient button with configurable normal, hover and selected colors and a `ButtonStateChanged` event |
 | [`TextBoxEx`](TextBoxEx.cs) | class | Text box with placeholder text and `IValidator`-based typed `Value` validation |
 | [`TextBoxUITypeEditor`](TextBoxUITypeEditor.cs) | class | Text box with a button that hosts the `UITypeEditor` of the configured value type as a dialog or drop-down |
+| [`ToggleSwitch`](ToggleSwitch.cs) | class | On/off check box drawn as a thumb in a rounded track with optional on and off text and animation |
 | [`TransparentPanel`](TransparentPanel.cs) | class | Panel with a transparent background that raises `OnBackgroundPaint` for custom background drawing |
 | [`ValidatedTextBoxButton`](ValidatedTextBoxButton.cs) | class | Validated text box with a right-hand button that opens a dialog through `ShowDialog` |
+| [`Tools.WinForms.Controls`](WindowsFormsControlUtil.cs) | static class | `Tools.WinForms.Controls` factory for a `ToolStripChoiceSelector` and a `SearchTextBox` |

@@ -20,8 +20,11 @@ partial class ImageNavigator {
 	private System.Windows.Forms.Button _nextButton;
 	private System.Windows.Forms.Button _previousButton;
 	private System.ComponentModel.Container _components = null;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 
 	private void InitializeComponent() {
+		_components ??= new System.ComponentModel.Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		var resources = new System.Resources.ResourceManager(typeof(ImageNavigator));
 		this._pictureBox = new System.Windows.Forms.PictureBox();
 		this._nextButton = new System.Windows.Forms.Button();
@@ -49,6 +52,7 @@ partial class ImageNavigator {
 		this._nextButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		this._nextButton.Location = new System.Drawing.Point(176, 228);
 		this._nextButton.Name = "btNext";
+		_actionToolTip.SetToolTip(_nextButton, "Show the next image.");
 		this._nextButton.Size = new System.Drawing.Size(24, 24);
 		this._nextButton.TabIndex = 1;
 		this._nextButton.TabStop = false;
@@ -63,6 +67,7 @@ partial class ImageNavigator {
 		this._previousButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 		this._previousButton.Location = new System.Drawing.Point(144, 228);
 		this._previousButton.Name = "btPrevious";
+		_actionToolTip.SetToolTip(_previousButton, "Show the previous image.");
 		this._previousButton.Size = new System.Drawing.Size(24, 24);
 		this._previousButton.TabIndex = 2;
 		this._previousButton.TabStop = false;

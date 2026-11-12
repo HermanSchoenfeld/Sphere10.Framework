@@ -10,7 +10,6 @@ using System;
 using System.Drawing;
 using System.Security.Permissions;
 using System.Windows.Forms;
-using static Sphere10.Framework.Windows.WinAPI.USER32;
 
 namespace Sphere10.Framework.Windows.Forms;
 

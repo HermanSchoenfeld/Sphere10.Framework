@@ -54,11 +54,14 @@ Fixtures for the general Windows utilities and native facades.
 | [WindowsComputerTests](WindowsComputerTests.cs) | Computer identity, processor, operating system, firmware and product queries, including provider date parsing. |
 | [WindowsDisplayTests](WindowsDisplayTests.cs) | EDID decoding and validation, display structure layouts, display inventory paging and the current desktop modes. |
 | [WindowsDriveHardwareApiTests](WindowsDriveHardwareApiTests.cs) | Physical disk and partition queries, timeouts and cancellation before WMI. |
+| [WindowsHookUtilTests](WindowsHookUtilTests.cs) | Mouse and keyboard hook factories keep supplied monitors borrowed and leave hooks uninstalled. |
 | [WindowsMiddleLayerTests](WindowsMiddleLayerTests.cs) | Raw window, foreground, driver-tool and file-capture results carry no presentation data and reject unverified targets. |
 | [WindowsMouseHookTests](WindowsMouseHookTests.cs) | Asynchronous and synchronous mouse-motion dispatch order, timestamps and restart behaviour. |
+| [WindowsObjectTests](WindowsObjectTests.cs) | NT object-directory and symbolic-link reads, text budgets and access-right decoding. |
 | [WindowsPowerInventoryTests](WindowsPowerInventoryTests.cs) | Power capability layout, power plans and settings, and sleep diagnostics. |
 | [WindowsProcessApiTests](WindowsProcessApiTests.cs) | Process handle queries, Toolhelp enumeration, system counters, cancellation and named-pipe peers. |
 | [WindowsSecurityTests](WindowsSecurityTest.cs) | `NTHost`, local users, local groups and membership through the NT security object model. |
+| [WindowsUtilityFactoryTests](WindowsUtilityFactoryTests.cs) | Inventory, process, suspension and pipe-peer factories keep captures lazy and ownership independent. |
 
 ### Applications
 
@@ -97,6 +100,8 @@ Diagnostic utilities and dependency rules for the Windows library.
 | [ProcessCommandServiceTests](Diagnostics/ProcessCommandServiceTests.cs) | Process actions require a verified process identity and creation time. |
 | [ProcessSignalServiceTests](Diagnostics/ProcessSignalServiceTests.cs) | Console-signal worker dispatch and request validation. |
 | [WindowsDiagnosticsDependencyTests](Diagnostics/WindowsDiagnosticsDependencyTests.cs) | Reflection checks that the Windows library has no application or presentation dependencies and follows its facade and async conventions. |
+| [WindowsEventLogQueryTests](Diagnostics/WindowsEventLogQueryTests.cs) | Structured event-log query construction and the historical reader. |
+| [WindowsTcpCloseTests](Diagnostics/WindowsTcpCloseTests.cs) | TCP connection close identity and preflight checks on an owned loopback connection. |
 
 ### Drivers
 
@@ -104,6 +109,7 @@ Device access.
 
 | Fixture | Purpose |
 | --- | --- |
+| [WindowsDeviceTests](Drivers/WindowsDeviceTests.cs) | Device probing, opening, control-code rejection and disposal. |
 
 ### Files
 
@@ -111,6 +117,10 @@ File, assembly and portable-executable inspection.
 
 | Fixture | Purpose |
 | --- | --- |
+| [FileToolDiscoveryTests](Files/FileToolDiscoveryTests.cs) | File-tool factories, cancellation and handle and dump worker dispatch. |
+| [ManagedAssemblyFixture](Files/ManagedAssemblyFixture.cs) | Small static methods that `ManagedAssemblyTests` decompiles to check direct-call references (helper, not a fixture). |
+| [ManagedAssemblyTests](Files/ManagedAssemblyTests.cs) | Metadata, decompilation, BAML-to-XAML decoding, resource inventory and project export without loading the target. |
+| [PortableExecutableTests](Files/PortableExecutableTests.cs) | PE parsing of exports, resources and unwind data, mapping bounds, revision checks and malformed images. |
 | [WindowsAlternateStreamTests](Files/WindowsAlternateStreamTests.cs) | Creation, reading, update and deletion of NTFS alternate data streams, with name validation, read caps and cancellation. |
 | [WindowsFileInspectionServiceTests](Files/WindowsFileInspectionServiceTests.cs) | File hash, version and signature trust inspection, and native trust structure layouts. |
 | [WindowsFileTests](Files/WindowsFileTests.cs) | Native file copy with progress, fail-if-exists, cancellation and callback failures. |
@@ -145,8 +155,14 @@ Process and thread inspection and control.
 
 | Fixture | Purpose |
 | --- | --- |
+| [ManagedDiagnosticsTests](Processes/ManagedDiagnosticsTests.cs) | Managed runtime snapshots, heap bounds and native stack capture. |
+| [ProcessSchedulingTests](Processes/ProcessSchedulingTests.cs) | Scheduling metadata and actions stay bound to the process creation time. |
+| [ProcessSuspensionTests](Processes/ProcessSuspensionTests.cs) | Suspension owners release only their own suspend increments. |
 | [ThreadUtilTests](Processes/ThreadUtilTests.cs) | Thread reads, priority and boost changes, wait chains and stale identity rejection. |
 | [WindowsProcessInspectionTests](Processes/WindowsProcessInspectionTests.cs) | Token, mitigation, module header, page state and address resolution queries. |
+| [WindowsProcessMemoryStreamTests](Processes/WindowsProcessMemoryStreamTests.cs) | Process memory stream reads across seeks and block boundaries, and unreadable memory errors. |
+| [WindowsProcessMemoryTests](Processes/WindowsProcessMemoryTests.cs) | Memory maps, slices, the UTF-8 string scanner and bounds checks. |
+| [WindowsProcessWorkerSessionTests](Processes/WindowsProcessWorkerSessionTests.cs) | Worker-process protocol lines, error bounds, admission failures and cleanup of owned children. |
 
 ### Registry
 
@@ -158,7 +174,7 @@ Registry access.
 
 ### Resources
 
-Resources/Baml holds the BAML, XAML and compiled fixture inputs used by `ManagedAssemblyTests`, with their provenance and rebuild recipe. The folder contains no fixtures.
+[Resources/Baml](Resources/Baml/README.md) holds the BAML, XAML and compiled fixture inputs used by `ManagedAssemblyTests`, with their provenance and rebuild recipe. The folder contains no fixtures.
 
 ### Scopes
 
@@ -166,6 +182,7 @@ Thread scopes.
 
 | Fixture | Purpose |
 | --- | --- |
+| [ThreadGroupAffinityScopeTests](Scopes/ThreadGroupAffinityScopeTests.cs) | Processor-group affinity pinning, exact restoration and same-thread disposal. |
 
 ### Security
 
@@ -196,6 +213,7 @@ Startup registrations.
 
 | Fixture | Purpose |
 | --- | --- |
+| [WindowsStartupRegistrationTests](Startup/WindowsStartupRegistrationTests.cs) | Startup sources, scheduled-task triggers, command parsing and shortcut inspection. |
 
 ### System
 
@@ -213,7 +231,10 @@ ETW sessions and event decoding.
 
 | Fixture | Purpose |
 | --- | --- |
+| [EtwCpuProfilingTests](Tracing/EtwCpuProfilingTests.cs) | CPU sample payload decoding, stack timestamps and system-logger admission. |
+| [EtwOwnedSessionTests](Tracing/EtwOwnedSessionTests.cs) | Owned ETW session start, commands and stop, with explicit native capture cases. |
 | [EtwTraceConsumerTests](Tracing/EtwTraceConsumerTests.cs) | Event ABI layout, consumer cancellation and manifest payload decoding. |
+| [EtwTraceExtendedDataTests](Tracing/EtwTraceExtendedDataTests.cs) | Extended stack data decoding and copying of callback-owned pointers. |
 
 ### Windowing
 

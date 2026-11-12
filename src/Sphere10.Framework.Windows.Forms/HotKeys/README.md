@@ -18,10 +18,15 @@ if (!hotKey.TryRegister(GlobalHotKey.WindowsKey | Keys.Alt | Keys.L, out var err
 | Type | Kind | Purpose |
 |---|---|---|
 | [`GlobalHotKey`](GlobalHotKey.cs) | class | Registers one global shortcut on a message-only window and raises `Pressed`, without a keyboard hook |
+| [`GlobalHotKeyBinding`](GlobalHotKeyBinding.cs) | record | Key, caption, shortcut and action of one binding that a `GlobalHotKeySet` keeps registered |
+| [`GlobalHotKeySet`](GlobalHotKeySet.cs) | class | Registers, re-registers and releases a set of bindings, keeping a failed binding's previous registration |
+| [`HotKeyAssignment`](HotKeyAssignment.cs) | class | A user's shortcut for one command in application settings, with `Resolve`, `Assign` and `FindConflicts` helpers |
+| [`HotKeyCommand`](HotKeyCommand.cs) | record | Name, caption, default shortcut, action and display group of a bindable operation |
 | [`IGlobalHotKey`](IGlobalHotKey.cs) | interface | Contract for a UI-thread global shortcut, which a `GlobalHotKeySet` creates through an overridable factory |
 
 ### Controls
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`HotKeyCommandEditor`](Controls/HotKeyCommandEditor.cs) | class | Lists commands by group with their shortcuts and edits the selected command, showing registration errors |
 | [`HotKeyEditor`](Controls/HotKeyEditor.cs) | class | Edits a shortcut as a regular key plus Win, Ctrl, Alt and Shift modifiers, and formats shortcuts as text |

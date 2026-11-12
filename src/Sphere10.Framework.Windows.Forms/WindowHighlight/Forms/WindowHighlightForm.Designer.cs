@@ -24,6 +24,8 @@ partial class WindowHighlightForm {
 		BackColor = System.Drawing.SystemColors.Highlight;
 		ClientSize = new System.Drawing.Size(320, 200);
 		ControlBox = false;
+		// Native point lookup skips disabled windows; the input-transparent outline must never become a picker target.
+		Enabled = false;
 		FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 		MaximizeBox = false;
 		MinimizeBox = false;

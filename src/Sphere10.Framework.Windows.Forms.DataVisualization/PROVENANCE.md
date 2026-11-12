@@ -9,5 +9,6 @@ Sphere10 adaptations:
 - Retained modern .NET 10 and .NET 11 Windows targets, Framework version metadata and standard NuGet/symbol packaging.
 - Removed the legacy .NET Framework designer client, its protocol/server support and associated custom editor declarations. Standard WinForms component metadata, runtime converters and chart serialization remain.
 - Adapted upstream collection, keyword and chart rendering tests to Framework's NUnit suite.
+- Preserved registered chart renderer constructors through trimming annotations and direct type activation, retaining the registry's lazy, case-insensitive behavior.
 
 Original Microsoft/.NET Foundation and contributor license notices remain in the source. See `LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` for the upstream MIT license and third-party notices. The separate Framework license also applies to Sphere10's contributions.

@@ -14,7 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class HotKeyEditor {
 	private IContainer components = null;
-	private FlowLayoutPanel _layoutPanel;
+	private TableLayoutPanel _layoutPanel;
 	private CheckBox _windowsCheckBox;
 	private CheckBox _controlCheckBox;
 	private CheckBox _altCheckBox;
@@ -30,7 +30,7 @@ partial class HotKeyEditor {
 	#region Component Designer generated code
 
 	private void InitializeComponent() {
-		_layoutPanel = new FlowLayoutPanel();
+		_layoutPanel = new TableLayoutPanel();
 		_windowsCheckBox = new CheckBox();
 		_controlCheckBox = new CheckBox();
 		_altCheckBox = new CheckBox();
@@ -41,23 +41,32 @@ partial class HotKeyEditor {
 		//
 		// _layoutPanel
 		//
+		// Undocked: an auto-sizing control whose only child fills it sizes itself from its own stale size, which re-scales
+		// the height on every DPI change.
 		_layoutPanel.AutoSize = true;
 		_layoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-		_layoutPanel.Controls.Add(_windowsCheckBox);
-		_layoutPanel.Controls.Add(_controlCheckBox);
-		_layoutPanel.Controls.Add(_altCheckBox);
-		_layoutPanel.Controls.Add(_shiftCheckBox);
-		_layoutPanel.Controls.Add(_keyComboBox);
-		_layoutPanel.Dock = DockStyle.Fill;
+		_layoutPanel.ColumnCount = 5;
+		_layoutPanel.ColumnStyles.Add(new ColumnStyle());
+		_layoutPanel.ColumnStyles.Add(new ColumnStyle());
+		_layoutPanel.ColumnStyles.Add(new ColumnStyle());
+		_layoutPanel.ColumnStyles.Add(new ColumnStyle());
+		_layoutPanel.ColumnStyles.Add(new ColumnStyle());
+		_layoutPanel.Controls.Add(_windowsCheckBox, 0, 0);
+		_layoutPanel.Controls.Add(_controlCheckBox, 1, 0);
+		_layoutPanel.Controls.Add(_altCheckBox, 2, 0);
+		_layoutPanel.Controls.Add(_shiftCheckBox, 3, 0);
+		_layoutPanel.Controls.Add(_keyComboBox, 4, 0);
 		_layoutPanel.Location = new Point(0, 0);
 		_layoutPanel.Margin = new Padding(0);
 		_layoutPanel.Name = "_layoutPanel";
-		_layoutPanel.Size = new Size(380, 25);
+		_layoutPanel.RowCount = 1;
+		_layoutPanel.RowStyles.Add(new RowStyle());
+		_layoutPanel.Size = new Size(380, 29);
 		_layoutPanel.TabIndex = 0;
-		_layoutPanel.WrapContents = false;
 		//
-		// _controlCheckBox
+		// _windowsCheckBox
 		//
+		_windowsCheckBox.Anchor = AnchorStyles.Left;
 		_windowsCheckBox.AutoSize = true;
 		_windowsCheckBox.Location = new Point(3, 3);
 		_windowsCheckBox.Name = "_windowsCheckBox";
@@ -68,6 +77,7 @@ partial class HotKeyEditor {
 		//
 		// _controlCheckBox
 		//
+		_controlCheckBox.Anchor = AnchorStyles.Left;
 		_controlCheckBox.AutoSize = true;
 		_controlCheckBox.Location = new Point(53, 3);
 		_controlCheckBox.Name = "_controlCheckBox";
@@ -78,6 +88,7 @@ partial class HotKeyEditor {
 		//
 		// _altCheckBox
 		//
+		_altCheckBox.Anchor = AnchorStyles.Left;
 		_altCheckBox.AutoSize = true;
 		_altCheckBox.Location = new Point(103, 3);
 		_altCheckBox.Name = "_altCheckBox";
@@ -88,6 +99,7 @@ partial class HotKeyEditor {
 		//
 		// _shiftCheckBox
 		//
+		_shiftCheckBox.Anchor = AnchorStyles.Left;
 		_shiftCheckBox.AutoSize = true;
 		_shiftCheckBox.Location = new Point(149, 3);
 		_shiftCheckBox.Name = "_shiftCheckBox";
@@ -98,6 +110,7 @@ partial class HotKeyEditor {
 		//
 		// _keyComboBox
 		//
+		_keyComboBox.Anchor = AnchorStyles.Left;
 		_keyComboBox.AllowEmptyOption = true;
 		_keyComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
 		_keyComboBox.EmptyOptionText = "(none)";

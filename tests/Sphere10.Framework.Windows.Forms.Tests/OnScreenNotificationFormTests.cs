@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using NUnit.Framework;
@@ -43,5 +44,22 @@ public class OnScreenNotificationFormTests {
 		Assert.That(form.Visible, Is.True);
 		form.Hide();
 		Assert.That(form.Visible, Is.False);
+	}
+
+	[Test]
+	public void TransientMessagesShowOnTheirScreenAndDisposeThemselvesOnceDismissed() {
+		var foreground = WinAPI.USER32.GetForegroundWindow();
+		var notifications = Screen.AllScreens.Select((screen, index) => (Screen: screen, Form: OnScreenNotificationForm.ShowTransient((index + 1).ToString(), screen, 200))).ToArray();
+
+		foreach (var (screen, form) in notifications) {
+			Assert.That(form.Visible, Is.True);
+			Assert.That(screen.WorkingArea.Contains(form.Bounds), Is.True);
+			Assert.That(form.DisplayDurationMilliseconds, Is.EqualTo(200));
+		}
+		Assert.That(WinAPI.USER32.GetForegroundWindow(), Is.EqualTo(foreground), "Transient popups must not take focus.");
+		var clock = Stopwatch.StartNew();
+		while (notifications.Any(notification => !notification.Form.IsDisposed) && clock.ElapsedMilliseconds < 3000)
+			System.Windows.Forms.Application.DoEvents();
+		Assert.That(notifications.Select(notification => notification.Form.IsDisposed), Has.All.True);
 	}
 }
