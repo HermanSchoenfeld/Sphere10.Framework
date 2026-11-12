@@ -80,6 +80,7 @@ Every folder of `Sphere10.Framework.Data.NHibernate` is a domain with its own RE
 | [Json](Json/README.md) | Provides NHibernate `IUserType` implementations that store an object as a JSON string column, optionally encrypted. | [source](Json/) |
 | [Listeners](Listeners/README.md) | Holds the NHibernate event listener behind the auditing extension and a checksum helper for business-object buffers. | [source](Listeners/) |
 | [Scopes](Scopes/README.md) | Provides `DataAccessScope`, a nestable transactional scope that shares one NHibernate session and transaction across nested scopes. | [source](Scopes/) |
+| [Types](Types/README.md) | Reads decimal columns through provider conversions while preserving their SQL definitions. | [source](Types/) |
 
 ### Project root
 

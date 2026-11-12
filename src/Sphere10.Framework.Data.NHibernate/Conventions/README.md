@@ -11,6 +11,7 @@ Add the conventions an application needs to `FluentMappings.Conventions` when it
 | [`AnsiStringConvention`](AnsiStringConvention.cs) | class | Maps every `string` property with the `AnsiString` custom type, which produces non-Unicode columns |
 | [`BinaryColumnLengthConvention`](BinaryColumnLengthConvention.cs) | class | Maps `byte[]` properties with length `int.MaxValue` and SQL type `varbinary(MAX)` |
 | [`CoreConventions`](CoreConventions.cs) | class | Names many-to-many tables as the owning entity followed by the plural of the other entity, such as `CustomerOrders` |
+| [`DecimalColumnConvention`](DecimalColumnConvention.cs) | class | Selects provider decimal reads for decimal and nullable decimal properties without changing SQL column definitions |
 | [`EnumConvention`](EnumConvention.cs) | class | Maps enum and nullable enum properties with their enum type as the custom type, which stores the numeric value |
 | [`ForeignKeyConventions`](ForeignKeyConventions.cs) | class | Names foreign-key columns after the property, or the type when there is no property, with an `ID` suffix |
 | [`StringColumnLengthConvention`](StringColumnLengthConvention.cs) | class | Gives `string` properties without an explicit length a length of 4000 |
