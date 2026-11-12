@@ -17,8 +17,8 @@ not supply a transaction backend.
 | Need | Existing contract and responsibility |
 |---|---|
 | Entity CRUD by business identity | [IRepository<TEntity, TIdentity>](../../../src/Sphere10.Framework/Repository/IRepository.cs): contains/get, create/update/delete/clear, notifications and both disposal forms. |
-| Prepare a stored representation for use | [ILoadable](../../../src/Sphere10.Framework/Loadable/ILoadable.cs): `RequiresLoad`, `Load`/`LoadAsync`, `Loading`/`Loaded`. |
-| Save an object's own state | [ISaveable](../../../src/Sphere10.Framework/Saveable/ISaveable.cs): `RequiresSave`, `Save`/`SaveAsync`, `Saving`/`Saved`. |
+| Prepare a stored representation for use | [ILoadable](../../../src/Sphere10.Framework/Loadable/ILoadable.cs): `RequiresLoad`, `Load`/`LoadAsync(cancellationToken)`, `Loading`/`Loaded`. |
+| Save an object's own state | [ISaveable](../../../src/Sphere10.Framework/Saveable/ISaveable.cs): `RequiresSave`, `Save`/`SaveAsync(cancellationToken)`, `Saving`/`Saved`. |
 | Both load and save lifecycle | [IPersistable](../../../src/Sphere10.Framework/Persistable/IPersistable.cs): composes `ILoadable` and `ISaveable`. |
 | Complete or discard pending backend changes | [ITransactionalObject](../../../src/Sphere10.Framework/Transactions/ITransactionalObject.cs): commit/rollback pairs and notifications. |
 | Begin a transaction and participate in logical nesting | [ITransactionalScope](../../../src/Sphere10.Framework/Transactions/ITransactionalScope.cs): adds explicit begin and transactional root access to the context/scope contracts. |
@@ -167,11 +167,10 @@ adapts the opposite API; concrete implementations supply their chosen primitive.
 Do not make the neutral base choose a direction, make both forms call each other,
 or repeat bridges in every concrete implementation. The
 [sync/async guide](sync-async.md#adapter-completion-and-cancellation) owns the
-completion and context requirements. Several older async-first bases above use
-`WaitSafe`, which currently schedules a wait without joining it. Their
-synchronous void operations and synchronous cleanup are not evidence that the
-asynchronous work has finished; prefer their awaited APIs and do not copy the
-legacy bridge into new implementations.
+completion and context requirements. The async-first bases above start each
+asynchronous primitive on a worker and join it through `Task.ExecuteSyncOverAsync`, so a
+synchronous load, save, commit or rollback returns only after the asynchronous
+work has finished and rethrows its failure.
 
 Context and transaction scopes keep their actual class identity and domain
 inheritance. [ContextScope](../../../src/Sphere10.Framework/Scopes/ContextScope/ContextScope.cs)

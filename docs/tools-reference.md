@@ -1,7 +1,7 @@
 # 🛠️ Tools.* Namespace Reference
 
 **Scope:** Source-audited utility catalog for the current Framework repository.
-**Last source audit:** October 12, 2026.
+**Core catalog source audit:** October 12, 2026. **Windows and WinForms discovery update:** November 4, 2026.
 
 Type `Tools.` in IntelliSense to discover the utilities exposed by the assemblies
 your project references. Most facades are in the global `Tools` namespace; web
@@ -35,6 +35,7 @@ These facades are declared in `Sphere10.Framework`, including
 | `Tools.Collection` | `GenerateArray`, `Repeat`, `Partition`, `BinarySearch`, `RangeL`, `ResizeArray` | [CollectionTool.cs](../src/Sphere10.Framework/Collections/CollectionTool.cs) |
 | `Tools.Streams` | `ReadByteArray`, `RouteStream`, `WriteStreamToFile`, GZip compression and encryption helpers | [StreamTool.cs](../src/Sphere10.Framework/Streams/StreamTool.cs) |
 | `Tools.Spans` | `Empty<T>()` | [SpanTool.cs](../src/Sphere10.Framework/Spans/SpanTool.cs) |
+| `Tools.DataSources` | `ReadAllAsync` loads a loadable source when required and returns every row; `CaptureAsync` owns, reads and drains a temporary source; `Query` searches, sorts and pages rows | [DataSourceTool.cs](../src/Sphere10.Framework/DataSource/DataSourceTool.cs) |
 
 `Tools.Array.Gen(size, value)` repeats one value; indexed generation belongs to
 `Tools.Collection.GenerateArray(count, generator)`. Array resizing belongs to
@@ -136,9 +137,12 @@ provide general framework-version or OS inspection. `Tools.Debugger` is not a
 wrapper for `System.Diagnostics.Debugger.Break` or logging sinks.
 
 Some legacy thread helpers return no completion task.
-`Tools.Threads.CreateAwaitTask` constructs an unstarted task whose body uses
-the current `WaitSafe` helper; it is not an automatically started, awaited
-replacement for an async operation. Follow the
+`Tools.Threads.CreateAwaitTask` constructs an unstarted task whose body starts
+the async method and joins it with `WaitSafe`; the caller must start it, and it
+is not an awaited replacement for an async operation. `WaitSafe` and
+`ResultSafe` block until a started task completes and rethrow its own
+exception; they cannot undo a synchronization context the task already
+captured. Follow the
 [sync/async completion rules](guidelines/patterns/sync-async.md#adapter-completion-and-cancellation)
 when the caller needs completion and failure propagation.
 
@@ -162,8 +166,8 @@ Reference the declaring project and meet its platform requirements.
 
 | Facade | Project | Existing entrypoints and source |
 |---|---|---|
-| `Tools.Windows` | Sphere10.Framework.Windows | Thread-static `Registry`, `Services`, `Security`, `Processes`, `Win32` and `Shell` utility instances: [WindowsTool.cs](../src/Sphere10.Framework.Windows/WindowsTool.cs) |
-| `Tools.WinForms` | Sphere10.Framework.Windows.Forms | Cursor helpers in [Tool.cs](../src/Sphere10.Framework.Windows.Forms/Misc/Tool.cs) and window capture/restore/automatic persistence in [WindowSettingsTool.cs](../src/Sphere10.Framework.Windows.Forms/Application/WindowSettingsTool.cs) |
+| `Tools.Windows` | Sphere10.Framework.Windows | Thread-static native utility discovery, including `Windowing`, `Drivers`, `Hooks`, resource operations and fresh inventory factories: [WindowsTool.cs](../src/Sphere10.Framework.Windows/WindowsTool.cs) |
+| `Tools.WinForms` | Sphere10.Framework.Windows.Forms | Fresh widgets and adapters grouped under `Windowing`, `Charts`, `Logging`, `Grids`, `Review` and `Controls`, plus existing cursor and window-settings operations. See the tables below. |
 | `Tools.Web.Html` | Sphere10.Framework.Web | `Percent`, `Beautify` and animation classes: [HtmlTool.cs](../src/Sphere10.Framework.Web/HtmlTool.cs) |
 | `Tools.Web.AspNetCore` | Sphere10.Framework.Web.AspNetCore | `ParseNetwork`: [AspNetCoreTool.cs](../src/Sphere10.Framework.Web.AspNetCore/AspNetCoreTool.cs) |
 | `Tools.Web.Mvc` | Sphere10.Framework.Web.AspNetCore.MVC | `ToSelectList` enum helpers: [MvcTool.cs](../src/Sphere10.Framework.Web.AspNetCore.MVC/MvcTool.cs) |
@@ -176,6 +180,83 @@ facade. `Tools.Drawing` is supplied by the separate Drawing project below.
 The iOS project retains its legacy Xamarin target; consult its
 [project guide](../src/Sphere10.Framework.iOS/README.md) before selecting that integration.
 The Android project does not define a `Tools.AndroidTool` facade.
+
+### Windows operations and resource factories
+
+Use the existing utility object, or ask it for the existing concrete resource
+class. These are thin entry points to the original implementations. Discovery
+does not enumerate the machine, install a hook, open a process or start capture.
+An explicit operation or resource constructor retains its existing behavior.
+
+| Route | Operations or existing owner returned |
+|---|---|
+| `Tools.Windows.Windowing` | `Tools.Windows.Windowing`: window enumeration, pointer/physical-point queries, captured-owner bounds and verified Post/Send/main-window message dispatch. |
+| `Tools.Windows.Drivers` | `Tools.Windows.Drivers`: existing installed-package queries and INF/registered driver-image path resolution. |
+| `Tools.Windows.UiAutomation` | Existing isolated read-only capture and `TryRunAutomationWorker` startup dispatch. |
+| `Tools.Windows.Objects` | Existing bounded native object-directory/symbolic-link reads and `GetRetainedCharacterCount` over detached captures. |
+| `Tools.Windows.Hooks` | Existing input simulation and button-state operations; `CreateMouseHook` / `CreateKeyboardHook` return fresh native hook owners. They are installed and started explicitly through their existing APIs. |
+| `Tools.Windows.Processes` | `Open` / `OpenAsync` return an owned `WindowsProcess`; identity, command, console signal and scheduling operations forward to their existing services. Fresh suspension, working-set-watch, worker-host and worker-session factories keep their original lifetime contracts. |
+| `Tools.Windows.Processes.CreateDataSource()` | Fresh pageable `WindowsProcessDataSource`; its first read captures data. |
+| `Tools.Windows.Services.CreateDataSource(drivers: false)` | Fresh pageable service or system-driver inventory. |
+| `Tools.Windows.Network.CreateEndpointDataSource(...)` / `CreateInterfaceDataSource()` | Existing TCP/UDP owner-table and interface snapshot sources. Preserve family/PID/options arguments. |
+| `Tools.Windows.Drives.CreateDataSource()` / `CreatePhysicalDiskDataSource()` / `CreatePartitionDataSource()` | Existing volume, physical-disk and partition sources; preserve probe and timeout options. |
+| `Tools.Windows.Display.CreateDataSource()` | Existing monitor/display inventory. |
+| `Tools.Windows.Startup.CreateRegistrationDataSource(...)` | Existing startup-registration source with selected provenance and limits. |
+| `Tools.Windows.Computer` | Existing machine/power/system-counter reads; `CreatePowerPlanDataSource`, `CreatePowerSettingDataSource`, `CreatePowerDiagnosticDataSource` and a fresh `CreatePowerCfgSentry`. |
+| `Tools.Windows.Files.CreateHandleService(...)` / `CreateInspectionService()` | Existing file/kernel-handle capture, blocking-process/explicit-close operations and file inspection. File helper startup dispatch is `TryRunHandleWorker`. |
+| `Tools.Windows.Assemblies` | Existing C#/IL decompilation, references, resources, BAML/XAML and project export. |
+| `Tools.Windows.Managed`, `.Dumps`, `.Symbols` | Existing runtime/heap/native-and-managed-dump analysis, confirmed dump capture and symbol operations. Capture-helper startup dispatch is `Dumps.TryRunCaptureWorker`. |
+| `Tools.Windows.TraceSessions` | Existing accessible session/trace operations plus `TryReadCpuProfileSample` / `TryReadCpuProfileStack` over captured records. |
+| `Tools.Windows.Pipes` | Existing passive names/path discovery and borrowed connected-pipe client/server process-ID queries. |
+
+Inventory factories also expose their existing capture-delegate constructors
+where the source supports them. Every factory call returns an independent source;
+no Tools singleton retains its snapshot or chooses a refresh timer. Async native
+operations retain the original worker dispatch and cancellation. Synchronous
+native operations still belong on a worker.
+
+Dispose returned process handles, sessions, watches and executable wrappers as
+their types require. Suspension services remain application-owned and require
+their existing finalization tasks. Working-set watch still needs explicit user
+confirmation: Windows does not provide a disable operation for the target's
+enabled watch. A tool proxy changes neither permission nor operation policy.
+
+### WinForms widgets and adapters
+
+Reference `Sphere10.Framework.Windows.Forms` and import `using Tools;` to discover
+the C# 14 `Forms` extension property on `Tools.Windows`. It returns the thread's
+lightweight `Tools.WinForms`; native Windows code has no dependency on the UI
+assembly. Each factory returns the existing
+class with the existing defaults. Create and use controls on their UI thread;
+the returned control belongs to the caller or its containing native control.
+
+| Group | Entry points |
+|---|---|
+| `Tools.WinForms.Windowing` | `CreatePicker(Control dispatcher)`; its dispatcher must already have a native handle. The picker owns its input hooks. Existing highlights remain `Tools.Scope.EnterHighlightScope`. |
+| `Tools.WinForms.Charts` | `CreateGraphChart`, `CreateBarChart`, `CreateTelemetryChart`, `CreateChart`; `CreateLogOutputBehavior` attaches caller-owned behavior to a bare DataVisualization chart. `FormatLogSample` delegates the existing captured-sample formatter. |
+| `Tools.WinForms.Logging` | `CreateOutputSelector`, `RegisterOutputLifetime`; configuration, files and host-owned log screens retain their existing lifecycle. |
+| `Tools.WinForms.Grids` | `CreateVisualGrid`, `CreateDataSourceController`, `CreateArrayController`, `CreateArrayDetail`, `CreateControlDetail`. Controllers borrow existing sources/grids; detail adapters retain their documented control/resource ownership. |
+| `Tools.WinForms.Review` | `CreateHexEditor`, `ShowBytesAsync`, `ShowTextAsync`; existing accepted-value, optional-save and cancellation contracts. |
+| `Tools.WinForms.Controls` | `CreateChoiceSelector`, `CreateSearchBox`. |
+
+GraphChart, BarChart and TelemetryChart already own a lazy logging behavior;
+use their `LogOutputBehavior` property instead of attaching another behavior.
+Tools stores no control, chart history, hook, logger session or screen host.
+Designer-declared controls retain their normal constructors so native designer
+serialization and layout remain supported.
+
+```csharp
+using Sphere10.Framework;
+
+var processes = Tools.Windows.Processes.CreateDataSource();
+var page = await processes.ReadRangeAsync(null, 50, 0, "ProcessId", SortDirection.Ascending);
+if (page.Items.Length > 0) {
+	using var process = await Tools.Windows.Processes.OpenAsync(page.Items[0].ProcessId);
+	var metadata = await process.ReadMetadataAsync();
+}
+```
+
+The example needs the Windows assembly. It starts no shared poller.
 
 ## Database Tools
 
@@ -205,7 +286,7 @@ The Firebird provider exposes
 | Facade | Project | Existing entrypoints and source |
 |---|---|---|
 | `Tools.Config` | Sphere10.Framework.Application | `GetAppSetting` over `ConfigurationManager.AppSettings`: [ConfigTool.cs](../src/Sphere10.Framework.Application/Settings/ConfigTool.cs) |
-| `Tools.Application` | Sphere10.Framework.Application | `ExecuteInitializers`/`ExecuteFinalizers` and their async forms: [ApplicationTool.cs](../src/Sphere10.Framework.Application/Lifecycle/ApplicationTool.cs) |
+| `Tools.Application` | Sphere10.Framework.Application | `ExecuteInitializers`/`ExecuteFinalizers` and async forms; `SerializeSettingsValues` / `PopulateSettingsValues` forward the existing values-only settings serializer: [ApplicationTool.cs](../src/Sphere10.Framework.Application/Lifecycle/ApplicationTool.cs) |
 | `Tools.NUnit` | Sphere10.Framework.NUnit | `Convert2DArrayToString` and test diagnostics: [NUnitTool.cs](../src/Sphere10.Framework.NUnit/NUnitTool.cs) |
 | `Tools.Drawing` | Sphere10.Framework.Drawing | Color conversion/gradients, image encoding and disabled images: [DrawingTool.cs](../src/Sphere10.Framework.Drawing/DrawingTool.cs) |
 

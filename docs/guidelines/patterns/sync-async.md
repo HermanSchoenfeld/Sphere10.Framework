@@ -76,9 +76,7 @@ public abstract class SyncWorkBase : WorkBase {
 }
 
 public abstract class AsyncWorkBase : WorkBase {
-	// Sync-over-async pattern
-	public override void Execute()
-		=> Task.Run(() => ExecuteAsync()).GetAwaiter().GetResult();
+	public override void Execute() => Task.ExecuteSyncOverAsync(() => ExecuteAsync());
 }
 ```
 
@@ -137,13 +135,19 @@ cancellation to the operations they await according to the operation's policy;
 committed application shutdown continues cleanup even if a caller stops waiting.
 
 The async-first synchronous adapter must wait for the entire asynchronous
-primitive and propagate its failure. In the example, the async factory is
-evaluated inside `Task.Run`, so it starts without capturing the caller's
-synchronization context. The same approach handles `Task<T>` results through
-`GetAwaiter().GetResult()`. Running a wait on a task already created on the
-caller does not undo that task's captured context.
+primitive and propagate its failure. `Task.ExecuteSyncOverAsync`, a static
+extension on `Task` in
+[`TaskExtensions`](../../../src/Sphere10.Framework/Extensions/TaskExtensions.cs),
+is the one way to write that bridge. It evaluates the async factory on a worker,
+so the operation starts without capturing the caller's synchronization context,
+then blocks until it completes and rethrows its own exception. Its `Task<T>`
+overloads return the result, and the overloads that take a `CancellationToken`
+stop the operation from starting once the token is cancelled. Running a wait on a
+task already created on the caller does not undo that task's captured context.
 
-Mark each sync-over-async bridge with `// Sync-over-async pattern`.
+Write every sync-over-async bridge through that method, as an expression-bodied
+member where it is the whole body. Do not spell out `Task.Run(...)` with a join,
+and do not mark the site with a comment.
 
 Use the current
 [`SyncApplicationInitializerBase`](../../../src/Sphere10.Framework.Application/Lifecycle/SyncApplicationInitializerBase.cs)
@@ -151,12 +155,14 @@ and [`AsyncApplicationInitializerBase`](../../../src/Sphere10.Framework.Applicat
 as adapter examples;
 [SyncApplicationFinalizerBase](../../../src/Sphere10.Framework.Application/Lifecycle/SyncApplicationFinalizerBase.cs)
 and [AsyncApplicationFinalizerBase](../../../src/Sphere10.Framework.Application/Lifecycle/AsyncApplicationFinalizerBase.cs)
-follow the same structure. Older
-repository adapters use `WaitSafe` and `ResultSafe`. Verify their behavior
-before reuse: the current `WaitSafe` in
+follow the same structure. The loadable, saveable, persistable, transactional,
+repository and text-writer adapters use the same shape with the
 [`TaskExtensions`](../../../src/Sphere10.Framework/Extensions/TaskExtensions.cs)
-queues a wait without joining it, while `ResultSafe` receives an already-started
-task. Neither is a replacement for the completion and context guarantees above.
+bridge: `Task.ExecuteSyncOverAsync(() => OperationAsync())` and
+`Task.ExecuteSyncOverAsync(() => QueryAsync())`. `WaitSafe` and `ResultSafe` join
+a task that is already running: they block until it completes and rethrow its own
+exception rather than an `AggregateException`, and their token overloads end only
+the wait. They cannot undo a context that task captured when it started.
 
 Keep these rules explicit:
 
