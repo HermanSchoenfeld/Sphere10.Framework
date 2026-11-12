@@ -40,7 +40,7 @@ partial class ListMerger {
 	/// the contents of this method with the code editor.
 	/// </summary>
 	private void InitializeComponent() {
-		_components ??= new System.ComponentModel.Container();
+		_components = new System.ComponentModel.Container();
 		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._rightHeaderLabel = new System.Windows.Forms.Label();
 		this._moveRightButton = new System.Windows.Forms.Button();

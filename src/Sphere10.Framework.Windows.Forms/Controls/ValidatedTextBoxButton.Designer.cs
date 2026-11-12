@@ -20,7 +20,7 @@ partial class ValidatedTextBoxButton {
 	private System.Windows.Forms.ToolTip _actionToolTip;
 
 	private void InitializeComponent() {
-		_components ??= new System.ComponentModel.Container();
+		_components = new System.ComponentModel.Container();
 		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._browseButton = new System.Windows.Forms.Button();
 		this._textBox = new Sphere10.Framework.Windows.Forms.TextBoxEx();

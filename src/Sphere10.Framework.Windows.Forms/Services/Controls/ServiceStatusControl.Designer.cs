@@ -32,7 +32,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            components ??= new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             _actionToolTip = new System.Windows.Forms.ToolTip(components);
             this._trafficLightLabel = new System.Windows.Forms.Label();
             this._trafficLight = new Sphere10.Framework.Windows.Forms.PanelEx();

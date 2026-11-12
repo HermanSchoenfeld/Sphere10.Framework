@@ -9,7 +9,7 @@
 namespace Sphere10.Framework.Windows.Forms;
 
 partial class ApplicationSettingsDialog {
-	private System.ComponentModel.IContainer components = new System.ComponentModel.Container();
+	private System.ComponentModel.IContainer components = null;
 	private System.Windows.Forms.ToolTip _actionToolTip;
 	private System.Windows.Forms.TableLayoutPanel _layout;
 	private System.Windows.Forms.SplitContainer _split;
@@ -36,7 +36,7 @@ partial class ApplicationSettingsDialog {
 
 	// Native layout remains editable in the WinForms designer without resolving services or preference data.
 	private void InitializeComponent() {
-		components ??= new System.ComponentModel.Container();
+		components = new System.ComponentModel.Container();
 		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_layout = new System.Windows.Forms.TableLayoutPanel();
 		_split = new System.Windows.Forms.SplitContainer();
@@ -152,12 +152,22 @@ partial class ApplicationSettingsDialog {
 		_actionToolTip.SetToolTip(_reset, "Restore default values using the current reset scope; changes are saved by Apply or OK.");
 		_reset.TabIndex = 2;
 		_reset.Click += ResetClick;
-		foreach (var button in new[] { _cancel, _ok, _apply, _reset }) {
-			button.AutoSize = true;
-			button.MinimumSize = new System.Drawing.Size(96, 32);
-			button.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
-			button.UseVisualStyleBackColor = true;
-		}
+		_cancel.AutoSize = true;
+		_cancel.MinimumSize = new System.Drawing.Size(96, 32);
+		_cancel.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
+		_cancel.UseVisualStyleBackColor = true;
+		_ok.AutoSize = true;
+		_ok.MinimumSize = new System.Drawing.Size(96, 32);
+		_ok.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
+		_ok.UseVisualStyleBackColor = true;
+		_apply.AutoSize = true;
+		_apply.MinimumSize = new System.Drawing.Size(96, 32);
+		_apply.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
+		_apply.UseVisualStyleBackColor = true;
+		_reset.AutoSize = true;
+		_reset.MinimumSize = new System.Drawing.Size(96, 32);
+		_reset.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
+		_reset.UseVisualStyleBackColor = true;
 
 		AcceptButton = _ok;
 		CancelButton = _cancel;

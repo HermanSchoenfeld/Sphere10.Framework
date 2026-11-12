@@ -16,6 +16,8 @@ param(
 	[string]$filter = 'FullyQualifiedName~WizardBrowserTests',
 	[ValidateSet('Debug', 'Release')]
 	[string]$configuration = 'Release',
+	[ValidateSet('net10.0', 'net11.0')]
+	[string]$framework = 'net11.0',
 	[string]$browserExecutablePath,
 	[string]$outputDirectory = (Join-Path ([IO.Path]::GetTempPath()) ('Sphere10-BlazorBrowser-' + [Guid]::NewGuid().ToString('N')))
 )
@@ -30,7 +32,7 @@ $resultsDirectory = Join-Path $outputDirectory 'results'
 $browserWorkDirectory = Join-Path $outputDirectory 'browser'
 $testProject = Join-Path $repository 'tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests/Sphere10.Framework.Web.AspNetCore.Blazor.Tests.csproj'
 $testerDirectory = Join-Path $repository 'utils/Sphere10.Framework.Utils.BlazorTester'
-$testerAssembly = Join-Path $artifactsDirectory "bin/Sphere10.Framework.Utils.BlazorTester/$($configuration.ToLowerInvariant())/Sphere10.Framework.Utils.BlazorTester.dll"
+$testerAssembly = Join-Path $artifactsDirectory "bin/Sphere10.Framework.Utils.BlazorTester/$($configuration.ToLowerInvariant())_$framework/Sphere10.Framework.Utils.BlazorTester.dll"
 $resultName = 'browser-' + [Guid]::NewGuid().ToString('N') + '.trx'
 
 # Runs one build/test command and retains its complete diagnostic output.
@@ -67,7 +69,7 @@ $browserFilter = "($filter)&TestCategory=Browser"
 [IO.Directory]::CreateDirectory($resultsDirectory) | Out-Null
 [IO.Directory]::CreateDirectory($browserWorkDirectory) | Out-Null
 Write-Host "Browser regression output: $outputDirectory"
-Invoke-Dotnet -arguments @('build', $testProject, '-c', $configuration, '-p:BuildRevision=0', '--artifacts-path', $artifactsDirectory) -logName 'build.log'
+Invoke-Dotnet -arguments @('build', $testProject, '-c', $configuration, '-f', $framework, '-p:BuildRevision=0', '--artifacts-path', $artifactsDirectory) -logName 'build.log'
 if (-not (Test-Path -LiteralPath $testerAssembly -PathType Leaf)) {
 	throw "The tester assembly was not built: $testerAssembly"
 }
@@ -127,7 +129,7 @@ try {
 	}
 	$settingsPath = Join-Path $outputDirectory 'browser.runsettings'
 	$settings.Save($settingsPath)
-	Invoke-Dotnet -arguments @('test', $testProject, '-c', $configuration, '-p:BuildRevision=0', '--artifacts-path', $artifactsDirectory, '--no-build', '--no-restore', '--filter', $browserFilter, '--settings', $settingsPath, '--logger', "trx;LogFileName=$resultName", '--results-directory', $resultsDirectory) -logName 'tests.log'
+	Invoke-Dotnet -arguments @('test', $testProject, '-c', $configuration, '-f', $framework, '-p:BuildRevision=0', '--artifacts-path', $artifactsDirectory, '--no-build', '--no-restore', '--filter', $browserFilter, '--settings', $settingsPath, '--logger', "trx;LogFileName=$resultName", '--results-directory', $resultsDirectory) -logName 'tests.log'
 
 	# A successful CLI exit with every case skipped must not be reported as browser verification.
 	$report = [xml](Get-Content -LiteralPath (Join-Path $resultsDirectory $resultName) -Raw)

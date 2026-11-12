@@ -32,7 +32,7 @@ namespace Sphere10.Framework.Windows.Forms {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-            components ??= new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             _actionToolTip = new System.Windows.Forms.ToolTip(components);
             this._dbmsCombo = new Sphere10.Framework.Windows.Forms.EnumComboBox();
             this._connectionProviderPanel = new System.Windows.Forms.Panel();

@@ -21,7 +21,7 @@ partial class ColorPicker {
 	private System.Windows.Forms.ToolTip _actionToolTip;
 
 	private void InitializeComponent() {
-		_components ??= new System.ComponentModel.Container();
+		_components = new System.ComponentModel.Container();
 		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		this._colorLabel = new System.Windows.Forms.Label();
 		this._colorPanel = new System.Windows.Forms.Panel();

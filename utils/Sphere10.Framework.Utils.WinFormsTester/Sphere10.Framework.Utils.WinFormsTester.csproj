@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net10.0-windows</TargetFramework>
+		<TargetFrameworks>$(FrameworkWindowsTargetFrameworks)</TargetFrameworks>
 		<UseWindowsForms>true</UseWindowsForms>
 		<NoWarn>$(NoWarn);WFO1000</NoWarn>
 		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>

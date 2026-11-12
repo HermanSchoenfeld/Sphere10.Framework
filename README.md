@@ -6,7 +6,7 @@
 
 ![Version](https://img.shields.io/badge/version-3.1.3-blue)
 [![NuGet](https://img.shields.io/nuget/v/Sphere10.Framework.svg)](https://www.nuget.org/packages/Sphere10.Framework)
-![.NET](https://img.shields.io/badge/.NET-10.0-purple)
+![.NET](https://img.shields.io/badge/.NET-10.0%20%7C%2011.0-purple)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 # Sphere10 Framework
@@ -15,7 +15,7 @@ Copyright © Herman Schoenfeld 2005 - Present
 
 **Build desktop and web applications, embedded storage engines and cryptographic systems with one modular .NET toolkit.**
 
-Sphere10 Framework brings application shells, data access, embedded object storage, collections, binary serialization and cryptography together in one consistent set of C# libraries for .NET 10. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
+Sphere10 Framework brings application shells, data access, embedded object storage, collections, binary serialization and cryptography together in one consistent set of C# libraries for .NET 10 and 11. Build a complete desktop or web application, compose your own storage engine, or pick the components your existing application needs.
 
 [Explore the features](#what-you-can-build) · [Try the demos](#see-it-in-action) · [Read the docs](docs/README.md) · [Install](#installation)
 
@@ -101,8 +101,8 @@ Type **`Tools.`** in your IDE to explore utilities grouped by domain, such as `T
 Run a tester from the repository root:
 
 ```powershell
-dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p:BuildRevision=0
-dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -f net11.0-windows -p:BuildRevision=0
+dotnet run --project utils/Sphere10.Framework.Utils.BlazorTester/Sphere10.Framework.Utils.BlazorTester.csproj -c Release -f net11.0 -p:BuildRevision=0
 ```
 
 The WinForms tester needs Windows. The Blazor tester listens on `http://localhost:5187` through its default launch profile. Each tester README describes its screens and other launch options.
@@ -247,10 +247,10 @@ Some projects keep third-party code under its original license, such as the [com
 
 ### Prerequisites
 
-- **.NET 10 SDK**
-- An IDE that supports the **.NET 10 SDK**, such as Visual Studio or JetBrains Rider
+- **.NET 11 SDK** for the complete solutions, utilities and recipes
+- An IDE that supports the **.NET 11 SDK**, such as Visual Studio or JetBrains Rider
 - **Windows** for the `Sphere10.Framework.Windows*` projects, the Windows solution and the WinForms tester
-- Optionally the **.NET 11 SDK**. When the building SDK is version 11 or later, the projects that use the `FrameworkTargetFrameworks` or `FrameworkWindowsTargetFrameworks` list from `Directory.Build.props` also target `net11.0` or `net11.0-windows`. `Directory.Build.targets` compiles those targets with runtime async (`runtime-async=on` in `Features`). With only the .NET 10 SDK, these projects build `net10.0` and `net10.0-windows`.
+- Install the **.NET 10 runtime** as well to run both test targets. Libraries using the `FrameworkTargetFrameworks` or `FrameworkWindowsTargetFrameworks` list from `Directory.Build.props` retain their .NET 10 targets and add .NET 11 when the SDK supports it. `Directory.Build.targets` enables runtime async for .NET 11. Individual libraries can still build their .NET 10 target with the .NET 10 SDK.
 
 ### NuGet packages
 
@@ -291,7 +291,7 @@ dotnet test tests/Sphere10.Framework.Tests/Sphere10.Framework.Tests.csproj -c Re
 
 ## Building and publishing packages
 
-Build the full package set on Windows with the .NET 10 SDK.
+Build the full package set on Windows with the .NET 11 SDK to include both supported runtime targets.
 
 ### Versions
 

@@ -23,7 +23,7 @@ partial class ImageNavigator {
 	private System.Windows.Forms.ToolTip _actionToolTip;
 
 	private void InitializeComponent() {
-		_components ??= new System.ComponentModel.Container();
+		_components = new System.ComponentModel.Container();
 		_actionToolTip = new System.Windows.Forms.ToolTip(_components);
 		var resources = new System.Resources.ResourceManager(typeof(ImageNavigator));
 		this._pictureBox = new System.Windows.Forms.PictureBox();
