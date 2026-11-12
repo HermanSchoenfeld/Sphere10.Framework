@@ -10,4 +10,8 @@ using System;
 
 namespace Sphere10.Framework.Windows;
 
-public sealed record EtwTraceSessionInfo(string Name, Guid Guid, ulong SessionId, string LogFilePath, uint LogFileMode, uint EventsLost);
+public sealed record EtwTraceSessionInfo(string Name, Guid Guid, ulong SessionId, string LogFilePath, uint LogFileMode, uint EventsLost) {
+	public uint RealTimeBuffersLost { get; init; }
+	public uint LogBuffersLost { get; init; }
+	public uint BuffersWritten { get; init; }
+}

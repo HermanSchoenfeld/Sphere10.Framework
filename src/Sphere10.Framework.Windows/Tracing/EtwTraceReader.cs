@@ -64,16 +64,22 @@ internal sealed class EtwTraceReader {
 	private void Receive(IntPtr pointer) {
 		if (_cancellationToken.IsCancellationRequested || _callbackFailure != null)
 			return;
-		try {
+		Tools.Exceptions.ExecuteCapturingException(() => {
 			var record = Marshal.PtrToStructure<WinAPI.ADVAPI32.EVENT_RECORD>(pointer);
 			var data = new byte[record.UserDataLength];
 			if (data.Length > 0)
 				Marshal.Copy(record.UserData, data, 0, data.Length);
 			var header = record.EventHeader;
+			var extended = EtwTraceExtendedDataReader.Read(record.ExtendedData, record.ExtendedDataCount, out var extendedOmitted);
 			_receive(new EtwTraceEventRecord(header.ProviderId, header.EventDescriptor.Id, header.EventDescriptor.Version,
 				DateTime.FromFileTimeUtc(header.TimeStamp), header.ProcessId, header.ThreadId, data,
-				_decoder.Decode(pointer, header, data)));
-		} catch (Exception error) {
+				_decoder.Decode(pointer, header, data)) {
+				Opcode = header.EventDescriptor.Opcode, Task = header.EventDescriptor.Task,
+				Keywords = header.EventDescriptor.Keyword, ActivityId = header.ActivityId, HeaderFlags = header.Flags,
+				ExtendedData = extended, ExtendedDataItemsOmitted = extendedOmitted
+			});
+		}, out var error);
+		if (error != null) {
 			// Managed exceptions must never unwind through the native event callback.
 			_callbackFailure = ExceptionDispatchInfo.Capture(error);
 			Close();

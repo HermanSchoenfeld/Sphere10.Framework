@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -49,7 +48,7 @@ internal sealed class EtwTracePropertyDecoder {
 				offset += size;
 			}
 			var value = data.AsSpan(start, offset - start);
-			result[index] = new EtwTraceProperty(property.Name, value.ToArray());
+			result[index] = new EtwTraceProperty(property.Name, value.ToArray()) { InputType = property.InType, ElementCount = checked((int)count) };
 			if (count == 1)
 				integers[index] = ReadInteger(property.InType, value);
 		}
@@ -87,9 +86,9 @@ internal sealed class EtwTracePropertyDecoder {
 
 	private static ulong? ReadInteger(ushort type, ReadOnlySpan<byte> value) => type switch {
 		3 or 4 when value.Length == 1 => value[0],
-		5 or 6 when value.Length == 2 => BinaryPrimitives.ReadUInt16LittleEndian(value),
-		7 or 8 or 20 when value.Length == 4 => BinaryPrimitives.ReadUInt32LittleEndian(value),
-		9 or 10 or 21 when value.Length == 8 => BinaryPrimitives.ReadUInt64LittleEndian(value),
+		5 or 6 when value.Length == 2 => EndianBitConverter.Little.ToUInt16(value),
+		7 or 8 or 20 when value.Length == 4 => EndianBitConverter.Little.ToUInt32(value),
+		9 or 10 or 21 when value.Length == 8 => EndianBitConverter.Little.ToUInt64(value),
 		_ => null
 	};
 

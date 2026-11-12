@@ -12,8 +12,16 @@ URL parsing and building, MIME types, SMTP mail, file download, host diagnostics
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`DnsMessage`](NetworkProtocolRecords.cs) | record | Decoded DNS message header with its questions and resource records. |
+| [`DnsQuestion`](NetworkProtocolRecords.cs) | record | One DNS question with its name, type and class. |
+| [`DnsResourceRecord`](NetworkProtocolRecords.cs) | record | One DNS answer, authority or additional record with its TTL and rendered value. |
 | [`MimeHelper`](MimeHelper.cs) | static class | Maps a file extension, with or without a leading dot, to a MIME type. |
+| [`NetworkDnsResult`](NetworkProbeObservation.cs) | record | Host name, aliases and addresses returned by `Tools.Network.ResolveHostAsync`. |
+| [`NetworkProbeDataSource`](NetworkProbeDataSource.cs) | class | Sealed polling data source that runs one explicit probe command at a time and serves its bounded observation history. |
+| [`NetworkProbeObservation`](NetworkProbeObservation.cs) | record | One probe result with its time, operation, target, address, hop, status, round trip, elapsed time and detail. |
+| [`NetworkWhoisResult`](NetworkProbeObservation.cs) | record | Server, query and response text of one WHOIS lookup, with a flag for truncated output. |
 | [`QueryStringBuilder`](QueryStringBuilder.cs) | class | Collects name and value pairs and renders them as a query string, optionally appended to a base URL. |
+| [`TlsClientHello`](NetworkProtocolRecords.cs) | record | Decoded TLS ClientHello versions, server names, ALPN protocols, cipher-suite count and extension types. |
 | [`Tools.Mail`](MailTool.cs) | tools | SMTP and mail port constants, email syntax validation, synchronous and asynchronous `SendEmail`, and comma-separated address parsing. |
 | [`Tools.Network`](NetworkTool.cs) | tools | MIME lookup, local IP and MAC addresses, DNS resolution, ping, traceroute, WHOIS and DNS or TLS ClientHello decoding. |
 | [`Tools.Url`](UrlTool.cs) | tools | URL parsing, combining, encoding, query strings, slugs, breadcrumbs, DOM identifiers and video-sharing link detection. |
