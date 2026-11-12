@@ -223,6 +223,16 @@ public class BinarySerializerTests {
 	}
 
 	[Test]
+	public void BoxedStruct_SharedAndCyclicReferences_ArePreserved() {
+		object boxed = new BoxedLink { Value = 17 };
+		typeof(BoxedLink).GetField(nameof(BoxedLink.Next)).SetValue(boxed, boxed);
+		var copy = RoundTrip(new object[] { boxed, boxed });
+		Assert.That(copy[0], Is.SameAs(copy[1]));
+		Assert.That(((BoxedLink)copy[0]).Next, Is.SameAs(copy[0]));
+		Assert.That(((BoxedLink)copy[0]).Value, Is.EqualTo(17));
+	}
+
+	[Test]
 	public void Struct_WithoutConstructorOrMembers_IsRejected()
 		=> Assert.That(() => RoundTrip(new Opaque(5)), Throws.InvalidOperationException.With.Message.Contains("public parameterless constructor"));
 
@@ -470,6 +480,12 @@ public class BinarySerializerTests {
 		public Dictionary<string, PlainPoint> Map { get; set; }
 
 		public Segment Nested { get; set; }
+	}
+
+	public struct BoxedLink {
+		public int Value;
+
+		public object Next;
 	}
 
 	public struct PlainPoint {

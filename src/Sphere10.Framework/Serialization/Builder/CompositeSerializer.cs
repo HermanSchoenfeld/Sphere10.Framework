@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Sphere10.Framework;
 
-public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeActivatingSerializer {
+public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IItemSerializer, IValueTypeActivatingSerializer {
 	private Func<TItem> _activator;
 	private MemberSerializationBinding[] _memberBindings;
 	private bool _isConstantSize;
@@ -92,7 +92,13 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 		}
 	}
 
-	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
+	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> (TItem)DeserializeBoxed(reader, context);
+
+	object IItemSerializer.PackedDeserialize(EndianBinaryReader reader, SerializationContext context)
+		=> DeserializeBoxed(reader, context);
+
+	private object DeserializeBoxed(EndianBinaryReader reader, SerializationContext context) {
 		// Members are set through one boxed reference, otherwise each set on a value type would go to its own discarded copy
 		object item = _activator();
 		if (ShouldNotifyInstanceActivation) 
@@ -101,7 +107,8 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem>, IValueTypeA
 			var memberValue = binding.Serializer.PackedDeserialize(reader, context);
 			binding.Member.SetValue(item, memberValue);
 		}
-		return (TItem)item;
+		// Keep the registered box when the caller requests an object, including cyclic boxed structs.
+		return item;
 	}
 
 }

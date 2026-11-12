@@ -40,6 +40,6 @@ public class CastedSerializer<TFrom, TTo> : IItemSerializer<TTo>  {
 		=> _serializer.Serialize((TFrom)(object)item, writer, context);
 
 	public TTo Deserialize(EndianBinaryReader reader, SerializationContext context) 
-		=> (TTo)(object)_serializer.Deserialize(reader, context);
+		=> (TTo)_serializer.PackedDeserialize(reader, context);
 }
 
