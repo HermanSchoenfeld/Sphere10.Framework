@@ -24,7 +24,7 @@ The output writer is borrowed, serialized and never disposed by the sentry.
 
 A Sentry is not a container for native methods merely because its executable
 operates on the same domain. Windows service queries and native controls belong
-to `ServiceUtil`, accessed through `Tools.Windows.Services`. Keep native resource
+to `Tools.Windows.Services`, accessed through `Tools.Windows.Services`. Keep native resource
 utilities separate from executable wrappers. See
 [Windows resource layers](framework-reuse.md#windows-abstraction-layers) and
 [Windows utility discovery](framework-utilities.md#windows-utility-facade-and-source-folders).

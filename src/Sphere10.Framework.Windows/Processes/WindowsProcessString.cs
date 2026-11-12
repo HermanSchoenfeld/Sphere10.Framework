@@ -9,5 +9,7 @@
 namespace Sphere10.Framework.Windows;
 
 /// <summary>Address is a virtual address for memory scans and a file offset for image scans.</summary>
-public sealed record WindowsProcessString(ulong Address, string Value, bool IsUnicode, bool IsTruncated = false);
+public sealed record WindowsProcessString(ulong Address, string Value, bool IsUnicode, bool IsTruncated = false) {
+	public string Encoding { get; init; } = IsUnicode ? "UTF-16LE" : "ASCII";
+}
 

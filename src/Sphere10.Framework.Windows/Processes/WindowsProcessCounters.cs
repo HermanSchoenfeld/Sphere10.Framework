@@ -19,6 +19,8 @@ public sealed record WindowsProcessCounters {
 	public ulong? OtherBytes { get; init; }
 	public long? WorkingSetBytes { get; init; }
 	public long? PrivateMemoryBytes { get; init; }
+	/// <summary>Cumulative process page faults, including soft faults. This is not a count of hard faults or disk reads.</summary>
+	public uint? PageFaultCount { get; init; }
 	public int? HandleCount { get; init; }
 	public int? SessionId { get; init; }
 	public ProcessPriorityClass? Priority { get; init; }

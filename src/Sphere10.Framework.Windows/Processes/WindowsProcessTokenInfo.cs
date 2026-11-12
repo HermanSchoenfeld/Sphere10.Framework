@@ -11,6 +11,8 @@ using System;
 namespace Sphere10.Framework.Windows;
 
 public sealed record WindowsProcessTokenInfo {
+	public ProcessIdentity Process { get; init; }
+	public DateTime CapturedAtUtc { get; init; }
 	public string UserSid { get; init; }
 	public string OwnerSid { get; init; }
 	public string PrimaryGroupSid { get; init; }
@@ -21,5 +23,19 @@ public sealed record WindowsProcessTokenInfo {
 	public int TokenType { get; init; }
 	public WindowsTokenGroup[] Groups { get; init; } = Array.Empty<WindowsTokenGroup>();
 	public WindowsTokenPrivilege[] Privileges { get; init; } = Array.Empty<WindowsTokenPrivilege>();
+	public bool? HasRestrictions { get; init; }
+	public bool? IsRestricted { get; init; }
+	public bool? IsAppContainer { get; init; }
+	public bool? IsLessPrivilegedAppContainer { get; init; }
+	public bool? IsSandboxed { get; init; }
+	public bool? UIAccess { get; init; }
+	public bool? VirtualizationAllowed { get; init; }
+	public bool? VirtualizationEnabled { get; init; }
+	public uint? MandatoryPolicyFlags { get; init; }
+	public string AppContainerSid { get; init; }
+	public uint? AppContainerNumber { get; init; }
+	public WindowsTokenGroup[] RestrictedSids { get; init; } = Array.Empty<WindowsTokenGroup>();
+	public WindowsTokenGroup[] Capabilities { get; init; } = Array.Empty<WindowsTokenGroup>();
+	public string[] Issues { get; init; } = Array.Empty<string>();
 }
 
