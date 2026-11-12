@@ -54,6 +54,37 @@ public class WinFormsWizardAdapterTests {
 		Assert.That(finishes, Is.EqualTo(1));
 	});
 
+	[TestCase(WizardStepSizing.LargestStep)]
+	[TestCase(WizardStepSizing.EachStep)]
+	public void TheDialogTakesTheLargestStepsSizeOrEachStepsOwn(WizardStepSizing stepSizing) => RunWithMessageLoop(async owner => {
+		var small = new WinFormsWizardScreen<object> { Size = new Size(240, 120) };
+		var large = new WinFormsWizardScreen<object> { Size = new Size(420, 300) };
+		using var wizard = new WinFormsWizardBuilder<object>()
+			.WithTitle("Sized steps")
+			.WithStepSizing(stepSizing)
+			.AddScreen(small)
+			.AddScreen(large)
+			.OnFinished(_ => Task.FromResult(Result.Success))
+			.Build();
+		Assert.That(wizard.StepSizing, Is.EqualTo(stepSizing));
+		var pending = wizard.Start(owner);
+		var dialog = await WaitForDialog(owner);
+		var content = FindControl<Panel>(dialog, "_contentPanel");
+		// Step sizes are the designer's logical sizes, shown at the dialog's DPI.
+		var largest = dialog.LogicalToDeviceUnits(new Size(420, 300));
+		var smallest = dialog.LogicalToDeviceUnits(new Size(240, 120));
+		Assert.That(content.Size, Is.EqualTo(stepSizing == WizardStepSizing.LargestStep ? largest : smallest));
+		var centre = new Point(dialog.Left + dialog.Width / 2, dialog.Top + dialog.Height / 2);
+		await wizard.Next();
+		Assert.That(content.Size, Is.EqualTo(largest));
+		Assert.That(new Point(dialog.Left + dialog.Width / 2, dialog.Top + dialog.Height / 2).X, Is.EqualTo(centre.X).Within(1), "A resized dialog keeps its centre.");
+		await wizard.Previous();
+		Assert.That(content.Size, Is.EqualTo(stepSizing == WizardStepSizing.LargestStep ? largest : smallest));
+		await wizard.Next();
+		await wizard.Next();
+		Assert.That(await pending, Is.EqualTo(WizardResult.Success));
+	});
+
 	[Test]
 	public void MissingDynamicSuccessorKeepsTheNativeWizardActiveAndCanBeRetried() => RunWithMessageLoop(async owner => {
 		var finishes = 0;

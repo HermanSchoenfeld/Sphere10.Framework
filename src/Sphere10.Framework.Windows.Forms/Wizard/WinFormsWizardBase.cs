@@ -28,6 +28,8 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 	private WinFormsWizardScreen<T> _currentVisibleScreen;
 	private readonly HashSet<WinFormsWizardScreen<T>> _ownedScreens = new();
 	private readonly HashSet<WinFormsWizardScreen<T>> _initializedScreens = new();
+	// Each step's designer size in logical (96 DPI) units, read when it is initialized, before the dialog hosts and scales it.
+	private readonly Dictionary<WinFormsWizardScreen<T>, Size> _stepSizes = new();
 	private Wizard<T, WinFormsWizardScreen<T>> _workflow;
 	private bool _started;
 	private bool _navigating;
@@ -68,6 +70,9 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 	public bool IsBusy => _navigating || Workflow.IsBusy;
 	public WizardState State => Workflow.State;
 	public bool IsCancellable { get; set; } = true;
+
+	/// <summary>How the dialog sizes to the steps: every step at the largest step's size (the default), or each at its own.</summary>
+	public WizardStepSizing StepSizing { get; set; } = WizardStepSizing.LargestStep;
 
 	public bool HasNext => Workflow.HasNext;
 
@@ -110,7 +115,10 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 		_started = true;
 		foreach (var screen in Steps)
 			await InitializeScreen(screen);
-		dialog.Size = new Size(Steps.Max(screen => screen.Width), Steps.Max(screen => screen.Height)) + dialog.DialogSizeOverhead;
+		if (StepSizing == WizardStepSizing.LargestStep)
+			SizeDialogTo(LargestStepSize());
+		// A dialog moved to a monitor of another DPI is sized for its steps again at that DPI; WinForms' own rescale keeps the old size.
+		dialog.DpiChanged += (_, _) => dialog.BeginInvoke(ApplyStepSizing);
 		await PresentScreen(CurrentStep);
 		await dialog.ShowDialogAsync(parent);
 		return WizardResult;
@@ -279,6 +287,7 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 			screen.Dispose();
 		_ownedScreens.Clear();
 		_initializedScreens.Clear();
+		_stepSizes.Clear();
 	}
 
 	private Wizard<T, WinFormsWizardScreen<T>> CreateWorkflow(WinFormsWizardScreen<T>[] screens) {
@@ -305,6 +314,9 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 		RefreshNavigationButtons();
 		await _dialog.SetContent(screen);
 		await screen.OnPresent();
+		// Measured once the step is hosted and presented, so a measured height reflects its scaled fonts and current text.
+		if (StepSizing == WizardStepSizing.EachStep)
+			SizeDialogTo(StepSize(screen));
 	}
 
 	private async Task RefreshPresentation() {
@@ -329,6 +341,40 @@ public abstract class WinFormsWizardBase<T> : WinFormsSyncDisposableBase, IWinFo
 		screen.Wizard = this;
 		await screen.Initialize();
 		_initializedScreens.Add(screen);
+		_stepSizes[screen] = screen.Size;
+	}
+
+	// Posted by a DPI change, so it can run after Finish or Cancel began closing the dialog and releasing the steps.
+	private void ApplyStepSizing() {
+		if (_dialog == null || _dialog.IsDisposed || State != WizardState.Active)
+			return;
+		if (StepSizing == WizardStepSizing.LargestStep)
+			SizeDialogTo(LargestStepSize());
+		else if (_currentVisibleScreen != null)
+			SizeDialogTo(StepSize(_currentVisibleScreen));
+	}
+
+	private Size LargestStepSize() => _dialog.LogicalToDeviceUnits(new Size(Steps.Max(screen => _stepSizes[screen].Width), Steps.Max(screen => _stepSizes[screen].Height)));
+
+	// A step's size at the dialog's DPI: its designer width, and the height its content needs at that width when the step measures
+	// itself (WinFormsWizardScreen.MeasureHeight); otherwise its designer height.
+	private Size StepSize(WinFormsWizardScreen<T> screen) {
+		var size = _dialog.LogicalToDeviceUnits(_stepSizes[screen]);
+		if (screen.MeasureHeight(size.Width) is { } height)
+			size.Height = height;
+		return size;
+	}
+
+	// A shown dialog keeps its centre as it resizes, so a step change does not walk it across the screen; before it is shown,
+	// the dialog's CenterParent start position places it.
+	private void SizeDialogTo(Size stepSize) {
+		var size = stepSize + _dialog.DialogSizeOverhead;
+		if (!_dialog.Visible) {
+			_dialog.Size = size;
+			return;
+		}
+		var bounds = _dialog.Bounds;
+		_dialog.Bounds = new Rectangle(bounds.Left + (bounds.Width - size.Width) / 2, bounds.Top + (bounds.Height - size.Height) / 2, size.Width, size.Height);
 	}
 
 	private void CheckStarted() => Guard.Ensure(_started, "Wizard has not been started.");

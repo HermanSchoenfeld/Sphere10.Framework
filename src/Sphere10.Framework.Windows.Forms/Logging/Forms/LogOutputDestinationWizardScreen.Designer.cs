@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class LogOutputDestinationWizardScreen {
 	private IContainer components;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private TableLayoutPanel _layoutPanel;
 	private Label _titleLabel;
 	private Label _introLabel;
@@ -39,6 +40,7 @@ partial class LogOutputDestinationWizardScreen {
 
 	private void InitializeComponent() {
 		components = new Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_layoutPanel = new TableLayoutPanel();
 		_titleLabel = new Label();
 		_introLabel = new Label();
@@ -121,6 +123,7 @@ partial class LogOutputDestinationWizardScreen {
 		_fileRadioButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
 		_fileRadioButton.Margin = new Padding(4, 7, 12, 7);
 		_fileRadioButton.Name = "_fileRadioButton";
+		_actionToolTip.SetToolTip(_fileRadioButton, "Write messages to a file with optional rolling limits.");
 		_fileRadioButton.TabIndex = 2;
 		_fileRadioButton.TabStop = true;
 		_fileRadioButton.Text = "File";
@@ -144,6 +147,7 @@ partial class LogOutputDestinationWizardScreen {
 		_applicationRadioButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
 		_applicationRadioButton.Margin = new Padding(4, 7, 12, 7);
 		_applicationRadioButton.Name = "_applicationRadioButton";
+		_actionToolTip.SetToolTip(_applicationRadioButton, "Send messages to the application logger configured by the host.");
 		_applicationRadioButton.TabIndex = 4;
 		_applicationRadioButton.Text = "Windows Application Log";
 		_applicationRadioButton.UseVisualStyleBackColor = true;
@@ -166,6 +170,7 @@ partial class LogOutputDestinationWizardScreen {
 		_standardOutputRadioButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
 		_standardOutputRadioButton.Margin = new Padding(4, 7, 12, 7);
 		_standardOutputRadioButton.Name = "_standardOutputRadioButton";
+		_actionToolTip.SetToolTip(_standardOutputRadioButton, "Write messages to the process standard output stream.");
 		_standardOutputRadioButton.TabIndex = 6;
 		_standardOutputRadioButton.Text = "Standard Output";
 		_standardOutputRadioButton.UseVisualStyleBackColor = true;
@@ -188,6 +193,7 @@ partial class LogOutputDestinationWizardScreen {
 		_standardErrorRadioButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
 		_standardErrorRadioButton.Margin = new Padding(4, 7, 12, 7);
 		_standardErrorRadioButton.Name = "_standardErrorRadioButton";
+		_actionToolTip.SetToolTip(_standardErrorRadioButton, "Write messages to the process standard error stream.");
 		_standardErrorRadioButton.TabIndex = 8;
 		_standardErrorRadioButton.Text = "Standard Error";
 		_standardErrorRadioButton.UseVisualStyleBackColor = true;
@@ -210,6 +216,7 @@ partial class LogOutputDestinationWizardScreen {
 		_screenRadioButton.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
 		_screenRadioButton.Margin = new Padding(4, 7, 12, 7);
 		_screenRadioButton.Name = "_screenRadioButton";
+		_actionToolTip.SetToolTip(_screenRadioButton, "Open a bounded log output screen, undocked by default.");
 		_screenRadioButton.TabIndex = 10;
 		_screenRadioButton.Text = "Screen";
 		_screenRadioButton.UseVisualStyleBackColor = true;

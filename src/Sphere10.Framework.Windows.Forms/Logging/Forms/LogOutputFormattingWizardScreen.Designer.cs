@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class LogOutputFormattingWizardScreen {
 	private IContainer components;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private Label _titleLabel;
 	private Label _introLabel;
 	private FlowLayoutPanel _levelsPanel;
@@ -37,6 +38,7 @@ partial class LogOutputFormattingWizardScreen {
 
 	private void InitializeComponent() {
 		components = new Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_titleLabel = new Label();
 		_introLabel = new Label();
 		_levelsPanel = new FlowLayoutPanel();
@@ -75,23 +77,29 @@ partial class LogOutputFormattingWizardScreen {
 		_levelsPanel.Controls.Add(_errorCheckBox);
 		_debugCheckBox.AutoSize = true;
 		_debugCheckBox.Name = "_debugCheckBox";
+		_actionToolTip.SetToolTip(_debugCheckBox, "Include debug messages in the selected output.");
 		_debugCheckBox.Text = "Debug";
 		_infoCheckBox.AutoSize = true;
 		_infoCheckBox.Name = "_infoCheckBox";
+		_actionToolTip.SetToolTip(_infoCheckBox, "Include information messages in the selected output.");
 		_infoCheckBox.Text = "Information";
 		_warningCheckBox.AutoSize = true;
 		_warningCheckBox.Name = "_warningCheckBox";
+		_actionToolTip.SetToolTip(_warningCheckBox, "Include warning messages in the selected output.");
 		_warningCheckBox.Text = "Warning";
 		_errorCheckBox.AutoSize = true;
 		_errorCheckBox.Name = "_errorCheckBox";
+		_actionToolTip.SetToolTip(_errorCheckBox, "Include error messages in the selected output.");
 		_errorCheckBox.Text = "Error";
 		_timestampCheckBox.AutoSize = true;
 		_timestampCheckBox.Location = new Point(20, 158);
 		_timestampCheckBox.Name = "_timestampCheckBox";
+		_actionToolTip.SetToolTip(_timestampCheckBox, "Include timestamps in logged messages.");
 		_timestampCheckBox.Text = "Include Timestamp (Local Time, Milliseconds And UTC Offset)";
 		_exceptionDetailsCheckBox.AutoSize = true;
 		_exceptionDetailsCheckBox.Location = new Point(20, 192);
 		_exceptionDetailsCheckBox.Name = "_exceptionDetailsCheckBox";
+		_actionToolTip.SetToolTip(_exceptionDetailsCheckBox, "Include exception details when logging exceptions.");
 		_exceptionDetailsCheckBox.Text = "Include Exception Details And Stack Traces";
 		_encodingLabel.Location = new Point(20, 235);
 		_encodingLabel.Name = "_encodingLabel";
@@ -101,6 +109,7 @@ partial class LogOutputFormattingWizardScreen {
 		_encodingComboBox.Items.AddRange(new object[] { "UTF-8", "UTF-16", "ASCII" });
 		_encodingComboBox.Location = new Point(150, 232);
 		_encodingComboBox.Name = "_encodingComboBox";
+		_actionToolTip.SetToolTip(_encodingComboBox, "Choose the text encoding used for file output.");
 		_encodingComboBox.Size = new Size(150, 23);
 		_encodingComboBox.SelectedIndex = 0;
 		_encodingExplanationLabel.Location = new Point(20, 274);
@@ -110,6 +119,7 @@ partial class LogOutputFormattingWizardScreen {
 		_rememberAfterCloseCheckBox.AutoSize = true;
 		_rememberAfterCloseCheckBox.Location = new Point(20, 324);
 		_rememberAfterCloseCheckBox.Name = "_rememberAfterCloseCheckBox";
+		_actionToolTip.SetToolTip(_rememberAfterCloseCheckBox, "Save this output configuration and enabled choice for this control.");
 		_rememberAfterCloseCheckBox.Text = "Remember After Close";
 		_rememberExplanationLabel.Location = new Point(20, 351);
 		_rememberExplanationLabel.Name = "_rememberExplanationLabel";

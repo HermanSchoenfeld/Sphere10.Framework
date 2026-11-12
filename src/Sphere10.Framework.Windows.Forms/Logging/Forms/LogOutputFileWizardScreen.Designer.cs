@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class LogOutputFileWizardScreen {
 	private IContainer components;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private Label _titleLabel;
 	private Label _introLabel;
 	private Label _fileLabel;
@@ -28,6 +29,7 @@ partial class LogOutputFileWizardScreen {
 
 	private void InitializeComponent() {
 		components = new Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_titleLabel = new Label();
 		_introLabel = new Label();
 		_fileLabel = new Label();
@@ -57,6 +59,7 @@ partial class LogOutputFileWizardScreen {
 		_fileSelector.Mode = PathSelectionMode.SaveFile;
 		_fileSelector.OverwritePrompt = false;
 		_fileSelector.Name = "_fileSelector";
+		_actionToolTip.SetToolTip(_fileSelector, "Choose the log file. Output opens only after you finish the wizard.");
 		_fileSelector.Size = new Size(618, 30);
 		_fileSelector.TabIndex = 0;
 		_appendExplanationLabel.Location = new Point(16, 193);

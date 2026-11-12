@@ -14,6 +14,7 @@ namespace Sphere10.Framework.Windows.Forms;
 
 partial class LogOutputRollingWizardScreen {
 	private IContainer components;
+	private System.Windows.Forms.ToolTip _actionToolTip;
 	private Label _titleLabel;
 	private Label _introLabel;
 	private CheckBox _rollingCheckBox;
@@ -31,6 +32,7 @@ partial class LogOutputRollingWizardScreen {
 
 	private void InitializeComponent() {
 		components = new Container();
+		_actionToolTip = new System.Windows.Forms.ToolTip(components);
 		_titleLabel = new Label();
 		_introLabel = new Label();
 		_rollingCheckBox = new CheckBox();
@@ -58,6 +60,7 @@ partial class LogOutputRollingWizardScreen {
 		_rollingCheckBox.AutoSize = true;
 		_rollingCheckBox.Location = new Point(20, 116);
 		_rollingCheckBox.Name = "_rollingCheckBox";
+		_actionToolTip.SetToolTip(_rollingCheckBox, "Roll the log file when it reaches the selected size limit.");
 		_rollingCheckBox.Text = "Roll Log Files";
 		_rollingCheckBox.CheckedChanged += RollingCheckedChanged;
 		_maxFilesLabel.Location = new Point(20, 161);
@@ -69,6 +72,7 @@ partial class LogOutputRollingWizardScreen {
 		_maxFilesNumber.Maximum = 9999;
 		_maxFilesNumber.Value = RollingFileLogger.DefaultMaxFiles;
 		_maxFilesNumber.Name = "_maxFilesNumber";
+		_actionToolTip.SetToolTip(_maxFilesNumber, "Maximum number of retained log files, including the active file.");
 		_maxFilesNumber.Size = new Size(180, 23);
 		_maxFilesNumber.ThousandsSeparator = true;
 		_maxFileSizeLabel.Location = new Point(20, 204);
@@ -80,6 +84,7 @@ partial class LogOutputRollingWizardScreen {
 		_maxFileSizeNumber.Maximum = int.MaxValue;
 		_maxFileSizeNumber.Value = RollingFileLogger.DefaultMaxFileSizeB;
 		_maxFileSizeNumber.Name = "_maxFileSizeNumber";
+		_actionToolTip.SetToolTip(_maxFileSizeNumber, "Maximum encoded size of each log file.");
 		_maxFileSizeNumber.Size = new Size(180, 23);
 		_maxFileSizeNumber.ThousandsSeparator = true;
 		_retentionLabel.Location = new Point(20, 252);

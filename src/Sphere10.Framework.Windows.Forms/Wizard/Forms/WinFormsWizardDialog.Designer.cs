@@ -12,6 +12,7 @@ namespace Sphere10.Framework.Windows.Forms {
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+        private System.Windows.Forms.ToolTip _actionToolTip;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -31,6 +32,8 @@ namespace Sphere10.Framework.Windows.Forms {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+			components ??= new System.ComponentModel.Container();
+			_actionToolTip = new System.Windows.Forms.ToolTip(components);
 			this._nextButton = new System.Windows.Forms.Button();
 			this._previousButton = new System.Windows.Forms.Button();
 			this._contentPanel = new System.Windows.Forms.Panel();
@@ -43,6 +46,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._nextButton.Location = new System.Drawing.Point(388, 332);
 			this._nextButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this._nextButton.Name = "_nextButton";
+			_actionToolTip.SetToolTip(_nextButton, "Continue to the next step or finish the wizard.");
 			this._nextButton.Size = new System.Drawing.Size(88, 27);
 			this._nextButton.TabIndex = 0;
 			this._nextButton.Text = "&Next";
@@ -55,6 +59,7 @@ namespace Sphere10.Framework.Windows.Forms {
 			this._previousButton.Location = new System.Drawing.Point(13, 331);
 			this._previousButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this._previousButton.Name = "_previousButton";
+			_actionToolTip.SetToolTip(_previousButton, "Return to the previous wizard step.");
 			this._previousButton.Size = new System.Drawing.Size(88, 27);
 			this._previousButton.TabIndex = 2;
 			this._previousButton.Text = "&Previous";
