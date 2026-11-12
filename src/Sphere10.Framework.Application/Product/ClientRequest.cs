@@ -13,6 +13,8 @@ namespace Sphere10.Framework.Application;
 
 [Obfuscation(Exclude = true)]
 public abstract class ClientRequest {
+	/// <summary>How many files a request may attach.</summary>
+	public const int MaxAttachments = 2;
 
 	public ClientRequest()
 		: this(
@@ -49,6 +51,9 @@ public abstract class ClientRequest {
 	public string Description { get; set; }
 
 	public ProductInformation SenderProductInformation { get; set; }
+
+	/// <summary>Files the user attached, at most <see cref="MaxAttachments"/> of at most <see cref="ClientRequestAttachment.MaxBytes"/> bytes each.</summary>
+	public ClientRequestAttachment[] Attachments { get; set; } = Array.Empty<ClientRequestAttachment>();
 
 }
 
