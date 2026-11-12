@@ -83,9 +83,8 @@ public class ApplicationSettingsTests {
 	[TestCase(typeof(NoDefaultConstructorSettingsScreen))]
 	[TestCase(typeof(ConflictingSettingsPropertyScreen))]
 	[TestCase(typeof(ConflictingLegacySettingsScreen))]
-	public void SettingsAttributesRejectInvalidOrConflictingSchemas(Type screenType) {
-		Assert.That(() => new ApplicationScreenBuilder().WithScreen(screenType).Build(), Throws.ArgumentException);
-	}
+	public void SettingsAttributesRejectInvalidOrConflictingSchemas(Type screenType)
+		=> Assert.That(() => new ApplicationScreenBuilder().WithScreen(screenType).Build(), Throws.ArgumentException);
 
 	// Compatible subclasses remain valid explicit values for an existing declared base schema.
 	[Test]
@@ -302,14 +301,12 @@ public class ApplicationSettingsTests {
 	}
 
 	[Test]
-	public void ApplicationAndDecoratorExposeTheExistingUserSettingsProvider() {
+	public void ApplicationExposesTheExistingUserSettingsProvider() {
 		var provider = new RecordingProvider();
 		using var services = new ServiceCollection().AddSingleton<ISettingsServices>(new TestSettingsServices(provider)).BuildServiceProvider();
 		using var application = new SettingsApplication(services);
-		var decorator = new SettingsApplicationDecorator(application);
 
 		Assert.That(application.Settings, Is.SameAs(provider));
-		Assert.That(decorator.Settings, Is.SameAs(provider));
 	}
 
 	#region Inner Types
@@ -330,28 +327,7 @@ public class ApplicationSettingsTests {
 		public Exception SaveError { get; set; }
 
 		/// <inheritdoc />
-		public override bool EncryptSettings {
-			get {
-				return false;
-			}
-		}
-
-		/// <inheritdoc />
-		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
-			cancellationToken.ThrowIfCancellationRequested();
-			return Task.FromResult(Saved);
-		}
-
-		/// <inheritdoc />
-		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
-			SaveCalls++;
-			if (BeforeSave != null)
-				await BeforeSave();
-			cancellationToken.ThrowIfCancellationRequested();
-			if (SaveError != null)
-				throw SaveError;
-			Saved = settings;
-		}
+		public override bool EncryptSettings => false;
 
 		/// <inheritdoc />
 		public override Task<bool> ContainsSettingAsync(Type settingsObjectType, object id = null, CancellationToken cancellationToken = default) {
@@ -372,15 +348,30 @@ public class ApplicationSettingsTests {
 			Saved = null;
 			return Task.CompletedTask;
 		}
+
+		/// <inheritdoc />
+		protected override Task<SettingsObject> LoadInternalAsync(Type settingsObjectType, object id, CancellationToken cancellationToken) {
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(Saved);
+		}
+
+		/// <inheritdoc />
+		protected override async Task SaveInternalAsync(SettingsObject settings, CancellationToken cancellationToken) {
+			SaveCalls++;
+			if (BeforeSave != null)
+				await BeforeSave();
+			cancellationToken.ThrowIfCancellationRequested();
+			if (SaveError != null)
+				throw SaveError;
+			Saved = settings;
+		}
 	}
 
 	// Metadata discovery must never activate the operational screen.
 	public class ScreenSurface : IApplicationScreen {
 
 		// Fail immediately if metadata discovery constructs this screen.
-		public ScreenSurface() {
-			throw new InvalidOperationException("Metadata discovery must not construct a screen.");
-		}
+		public ScreenSurface() => throw new InvalidOperationException("Metadata discovery must not construct a screen.");
 
 		/// <inheritdoc />
 		public IApplicationScreenHost Host { get; set; }
@@ -516,9 +507,7 @@ public class ApplicationSettingsTests {
 		public sealed class Preferences : SettingsObject {
 
 			/// <summary>Requires a supplied initial value instead of inventing activation machinery.</summary>
-			public Preferences(int number) {
-				Number = number;
-			}
+			public Preferences(int number) => Number = number;
 
 			/// <summary>The required construction-time value.</summary>
 			public int Number { get; }
@@ -608,15 +597,10 @@ public class ApplicationSettingsTests {
 		public override IApplicationPlugin[] LoadedPlugins { get; } = Array.Empty<IApplicationPlugin>();
 
 		/// <inheritdoc />
-		public override IApplicationScreenHost ScreenHost {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationScreenHost ScreenHost => null;
 	}
 
 	// Preserve the wrapped application's provider identity through decoration.
-	private sealed class SettingsApplicationDecorator(SettingsApplication application) : ApplicationDecorator<SettingsApplication>(application);
 	#endregion
 
 }

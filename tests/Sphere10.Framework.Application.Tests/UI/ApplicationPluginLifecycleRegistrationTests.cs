@@ -176,24 +176,6 @@ public class ApplicationPluginLifecycleRegistrationTests {
 	}
 
 	[Test]
-	public void NestedDecoratorsPreserveThePluginNameUsedForTaskRegistration() {
-		var plugin = new ApplicationPluginBuilder()
-			.WithName("Wrapped")
-			.AddInitializer<FirstInitializer>()
-			.AddFinalizer<FirstFinalizer>()
-			.Build();
-		IApplicationPlugin decorated = new PluginDecorator(new PluginDecorator(plugin));
-		var services = new ServiceCollection();
-		decorated.Load(services);
-		using var provider = services.BuildServiceProvider();
-
-		Assert.That(decorated.Name, Is.EqualTo(plugin.Name));
-		Assert.That(provider.GetKeyedServices<IApplicationInitializer>(decorated.Name).Single(), Is.TypeOf<FirstInitializer>());
-		Assert.That(provider.GetKeyedServices<IApplicationFinalizer>(decorated.Name).Single(), Is.TypeOf<FirstFinalizer>());
-		Assert.That(services, Has.Count.EqualTo(2));
-	}
-
-	[Test]
 	public void TaskFactoryArgumentsAreValidatedDuringConfiguration() {
 		var builder = new ApplicationPluginBuilder()
 			.WithName("Named");
@@ -302,6 +284,4 @@ public class ApplicationPluginLifecycleRegistrationTests {
 
 		public void Unload() => Unloaded?.Invoke();
 	}
-
-	private sealed class PluginDecorator(IApplicationPlugin plugin) : ApplicationPluginDecorator<IApplicationPlugin>(plugin);
 }

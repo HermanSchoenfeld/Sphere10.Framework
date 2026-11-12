@@ -40,25 +40,6 @@ public class ApplicationCommandProviderContractTests {
 	}
 
 	[Test]
-	public void DecoratorsForwardCommandReplacementsWithoutRetainingOldArrays() {
-		using var concrete = new TypedApplication {
-			Menus = new[] { new TestApplicationMenu<TestApplicationMenuItem> { Text = "File" } },
-			ToolBarItems = new[] { new TestApplicationMenuItem { Title = "Save" } }
-		};
-		using IApplication application = new CommandDecorator(concrete);
-		Assert.That(application.Menus, Is.SameAs(concrete.Menus));
-		Assert.That(application.ToolBarItems, Is.SameAs(concrete.ToolBarItems));
-
-		// A change in the underlying application's presentation must be visible through the same decorator.
-		concrete.Menus = new[] { new TestApplicationMenu<TestApplicationMenuItem> { Text = "Help" } };
-		concrete.ToolBarItems = new[] { new TestApplicationMenuItem { Title = "About" } };
-		Assert.That(application.Menus, Is.SameAs(concrete.Menus));
-		Assert.That(application.ToolBarItems, Is.SameAs(concrete.ToolBarItems));
-		Assert.That(application.Menus[0].Text, Is.EqualTo("Help"));
-		Assert.That(application.ToolBarItems[0].Title, Is.EqualTo("About"));
-	}
-
-	[Test]
 	public void SharedBlocksExposeEmptyCommandDefaults() {
 		IApplicationBlock block = new EmptyBlock();
 
@@ -126,17 +107,9 @@ public class ApplicationCommandProviderContractTests {
 
 	// The running application has the same portable provider defaults as its other command scopes.
 	private sealed class EmptyApplication : SyncApplicationBase {
-		public override IApplicationPlugin[] LoadedPlugins {
-			get {
-				return Array.Empty<IApplicationPlugin>();
-			}
-		}
+		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
 
-		public override IApplicationScreenHost ScreenHost {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationScreenHost ScreenHost => null;
 	}
 
 	// A platform specialization bridges its real descriptor arrays over the inherited empty defaults.
@@ -146,25 +119,12 @@ public class ApplicationCommandProviderContractTests {
 
 		public TestApplicationMenuItem[] ToolBarItems { get; set; }
 
-		public override IApplicationPlugin[] LoadedPlugins {
-			get {
-				return Array.Empty<IApplicationPlugin>();
-			}
-		}
+		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
 
-		public override IApplicationScreenHost ScreenHost {
-			get {
-				return null;
-			}
-		}
+		public override IApplicationScreenHost ScreenHost => null;
 	}
 
 	// A real decorator consumer must observe current application commands rather than interface defaults.
-	private sealed class CommandDecorator : ApplicationDecorator {
-		public CommandDecorator(IApplication application)
-			: base(application) {
-		}
-	}
 
 	// An ordinary block needs no redundant provider declaration or command storage for empty defaults.
 	private sealed class EmptyBlock : ApplicationBlockBase {

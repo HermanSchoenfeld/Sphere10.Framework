@@ -74,14 +74,6 @@ public interface IUserInterfaceServices {
 
 }
 
-
-public interface IApplicationUpgradeDialog {
-	
-	ProgressHandler ProgressHandler { get; }
-
-	void Finish(string errorMessage);
-}
-
 internal static class UserInterfaceServicesDispatch {
 	internal static async Task ExecuteAsync(IUserInterfaceServices ui, Func<Task> action, CancellationToken cancellationToken) {
 		Guard.ArgumentNotNull(action, nameof(action));

@@ -57,32 +57,11 @@ public class ThemeTests {
 
 	[Test]
 	public void RegistrationPreservesCustomThemeService() {
-		var custom = new ForwardingThemeService(new ThemeService());
+		var custom = new ThemeService();
 		using var provider = new ServiceCollection().AddScoped<IThemeService>(_ => custom).AddSphere10Blazor().BuildServiceProvider();
 		using var scope = provider.CreateScope();
 		Assert.That(scope.ServiceProvider.GetRequiredService<IThemeService>(), Is.SameAs(custom));
 	}
-
-	[Test]
-	public void DecoratorForwardsOperationsAndEventUnsubscription() {
-		var inner = new ThemeService();
-		var decorated = new ForwardingThemeService(inner);
-		var notifications = 0;
-		EventHandlerEx handler = () => notifications++;
-		decorated.Changed += handler;
-		decorated.SetTheme(ThemeMode.Dark);
-		Assert.That(inner.CurrentTheme, Is.EqualTo(ThemeMode.Dark));
-		inner.Toggle();
-		Assert.That(decorated.CurrentTheme, Is.EqualTo(ThemeMode.Light));
-		Assert.That(notifications, Is.EqualTo(2));
-		decorated.Changed -= handler;
-		decorated.Toggle();
-		Assert.That(inner.CurrentTheme, Is.EqualTo(ThemeMode.Dark));
-		Assert.That(notifications, Is.EqualTo(2));
-	}
-
-	[Test]
-	public void DecoratorRejectsMissingService() => Assert.That(() => new ForwardingThemeService(null), Throws.ArgumentNullException);
 
 	[Test]
 	public void ConstructorAcceptsEverySupportedInitialSkin([Values] ThemeMode initialTheme) {
@@ -165,10 +144,5 @@ public class ThemeTests {
 		Assert.That(first.CurrentTheme, Is.EqualTo(ThemeMode.Blue));
 		first.SetTheme(ThemeMode.Dark);
 		Assert.That(second.CurrentTheme, Is.EqualTo(ThemeMode.Blue));
-	}
-	private sealed class ForwardingThemeService : ThemeServiceDecorator {
-		public ForwardingThemeService(IThemeService service)
-			: base(service) {
-		}
 	}
 }

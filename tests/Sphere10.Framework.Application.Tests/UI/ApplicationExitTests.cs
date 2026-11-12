@@ -607,24 +607,6 @@ public class ApplicationExitTests {
 	}
 
 	[Test]
-	public async Task ApplicationDecoratorForwardsExitAndPendingState() {
-		var answer = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-		using var application = new ExitApplication { Confirmation = _ => answer.Task };
-		using var decorator = new ExitDecorator(application);
-		IApplication contract = decorator;
-
-		var pending = contract.ExitAsync();
-
-		Assert.That(contract.IsExiting, Is.True);
-		Assert.That(contract.HasExited, Is.False);
-		answer.SetResult(true);
-		Assert.That(await pending, Is.True);
-		Assert.That(contract.IsExiting, Is.False);
-		Assert.That(contract.HasExited, Is.True);
-		Assert.That(application.ExitCalls, Is.EqualTo(1));
-	}
-
-	[Test]
 	public async Task ADeclineNotificationCanRetryWithoutTheOldRequestResettingTheNewExitState() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		using var host = new ExitHost(provider);
@@ -828,14 +810,8 @@ public class ApplicationExitTests {
 	}
 
 	private sealed class NavigationHost(IApplicationScreenHost host, IApplicationBlock selectedBlock) : ApplicationScreenHostDecorator(host) {
-		public override IApplicationBlock SelectedBlock {
-			get {
-				return selectedBlock;
-			}
-		}
+		public override IApplicationBlock SelectedBlock => selectedBlock;
 	}
-
-	private sealed class ExitDecorator(IApplication application) : ApplicationDecorator(application);
 
 	private sealed class ExitLogger : LoggerBase {
 		public ExitLogger() => Options = LogOptions.VerboseProfile;

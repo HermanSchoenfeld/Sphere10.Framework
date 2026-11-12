@@ -145,30 +145,6 @@ public class ApplicationPluginTests {
 	}
 
 	[Test]
-	public void DecoratorForwardsIdentityRegistrationAndBothEventSubscriptions() {
-		var plugin = new ApplicationPlugin("Work", new[] { new TestApplicationBlock { Name = "Work" } });
-		var decorator = new PluginDecorator(plugin);
-		var loaded = 0;
-		var unloaded = 0;
-		EventHandlerEx onLoaded = () => loaded++;
-		EventHandlerEx onUnloaded = () => unloaded++;
-		decorator.Loaded += onLoaded;
-		decorator.Unloaded += onUnloaded;
-		decorator.Load(new ServiceCollection());
-		decorator.Unload();
-		Assert.That(decorator.Name, Is.EqualTo(plugin.Name));
-		Assert.That(decorator.Blocks.Single(), Is.SameAs(plugin.Blocks.Single()));
-		Assert.That(loaded, Is.EqualTo(1));
-		Assert.That(unloaded, Is.EqualTo(1));
-		decorator.Loaded -= onLoaded;
-		decorator.Unloaded -= onUnloaded;
-		decorator.Load(new ServiceCollection());
-		decorator.Unload();
-		Assert.That(loaded, Is.EqualTo(1));
-		Assert.That(unloaded, Is.EqualTo(1));
-	}
-
-	[Test]
 	public async Task ApplicationProjectsLiveHostBlocksAndOriginalLoadedPluginsWithoutSyntheticGroups() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var first = new TestApplicationBlock { Name = "First" };
@@ -250,12 +226,6 @@ public class ApplicationPluginTests {
 		public override string Name { get; init; }
 
 		public override IApplicationBlock[] Blocks { get; init; } = Array.Empty<IApplicationBlock>();
-	}
-
-	private sealed class PluginDecorator : ApplicationPluginDecorator<ApplicationPlugin> {
-		public PluginDecorator(ApplicationPlugin plugin)
-			: base(plugin) {
-		}
 	}
 
 	private sealed class PluginApplication : SyncApplicationBase {

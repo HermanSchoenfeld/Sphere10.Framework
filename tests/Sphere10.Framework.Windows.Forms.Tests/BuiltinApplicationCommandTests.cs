@@ -293,13 +293,16 @@ public class BuiltinApplicationCommandTests {
 		using var application = new FormsUI.Application(form, Array.Empty<FormsUI.IApplicationBlock>());
 		using var menu = new ApplicationMenu("Custom");
 		menu.AddItem(new WinFormsActionMenuItem("First", () => { }));
-		menu.AddItem(new WinFormsMenuSeparator());
+		menu.AddItem(new CustomSeparator());
 		menu.AddItem(new WinFormsActionMenuItem("Second", () => { }));
 		application.SetMenus(new[] { menu });
 		application.SetToolBarItems(menu.Items);
 		form.RebuildCommands();
 		Assert.That(form.Headers.Single(header => header.Text == "Custom").DropDownItems.OfType<ToolStripSeparator>().Count(), Is.EqualTo(1));
 		Assert.That(form.ToolbarItems.OfType<ToolStripSeparator>().Count(), Is.EqualTo(2));
+	}
+
+	private sealed class CustomSeparator : ApplicationMenuItemBase, IApplicationMenuSeparator {
 	}
 
 	// These ordinary native assignments model Designer output; no command factory is involved.
@@ -329,25 +332,14 @@ public class BuiltinApplicationCommandTests {
 
 		public int ToolBarActivations { get; private set; }
 
-		public ToolStripMenuItem[] Headers {
-			get {
-				return MenuStrip.Items.OfType<ToolStripMenuItem>().ToArray();
-			}
-		}
+		public ToolStripMenuItem[] Headers => MenuStrip.Items.OfType<ToolStripMenuItem>().ToArray();
 
-		public ToolStripItem[] ToolbarItems {
-			get {
-				return ToolStrip.Items.Cast<ToolStripItem>().ToArray();
-			}
-		}
+		public ToolStripItem[] ToolbarItems => ToolStrip.Items.Cast<ToolStripItem>().ToArray();
 
-		public ToolStripMenuItem MenuCommand(string text) {
-			return Headers.SelectMany(header => header.DropDownItems.OfType<ToolStripMenuItem>()).Single(item => item.Text == text);
-		}
+		public ToolStripMenuItem MenuCommand(string text)
+			=> Headers.SelectMany(header => header.DropDownItems.OfType<ToolStripMenuItem>()).Single(item => item.Text == text);
 
-		public void RebuildCommands() {
-			RebuildApplicationCommands();
-		}
+		public void RebuildCommands() => RebuildApplicationCommands();
 
 		protected override FormsUI.IApplicationMenu[] GetMenus() {
 			MenuActivations++;
@@ -359,33 +351,19 @@ public class BuiltinApplicationCommandTests {
 			return base.GetToolBarItems();
 		}
 
-		protected override void Exit_Click(object sender, EventArgs args) {
-			Invocations.Add("Exit");
-		}
+		protected override void Exit_Click(object sender, EventArgs args) => Invocations.Add("Exit");
 
-		protected override void About_Click(object sender, EventArgs args) {
-			Invocations.Add("About");
-		}
+		protected override void About_Click(object sender, EventArgs args) => Invocations.Add("About");
 
-		protected override void RequestAFeature_Click(object sender, EventArgs args) {
-			Invocations.Add("Feature");
-		}
+		protected override void RequestAFeature_Click(object sender, EventArgs args) => Invocations.Add("Feature");
 
-		protected override void SendComment_Click(object sender, EventArgs args) {
-			Invocations.Add("Comment");
-		}
+		protected override void SendComment_Click(object sender, EventArgs args) => Invocations.Add("Comment");
 
-		protected override void ReportABug_Click(object sender, EventArgs args) {
-			Invocations.Add("Bug");
-		}
+		protected override void ReportABug_Click(object sender, EventArgs args) => Invocations.Add("Bug");
 
-		protected override void UserGuide_Click(object sender, EventArgs args) {
-			Invocations.Add("Guide");
-		}
+		protected override void UserGuide_Click(object sender, EventArgs args) => Invocations.Add("Guide");
 
-		protected override void ContextHelp_Click(object sender, EventArgs args) {
-			Invocations.Add("Context");
-		}
+		protected override void ContextHelp_Click(object sender, EventArgs args) => Invocations.Add("Context");
 	}
 
 	// Native UI access and owned disposal remain on a live dispatcher.

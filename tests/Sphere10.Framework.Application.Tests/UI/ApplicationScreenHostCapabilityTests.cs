@@ -35,13 +35,12 @@ public class ApplicationScreenHostCapabilityTests {
 		Assert.That(typeof(IApplicationScreenHost).GetMethod(nameof(IApplicationScreenHost.ShowScreenUndockedAsync)), Is.Not.Null);
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task ALogicalHostRejectsDetachedPresentationWithoutChangingOwnershipOrSelection(bool decorate) {
+	[Test]
+	public async Task ALogicalHostRejectsDetachedPresentationWithoutChangingOwnershipOrSelection() {
 		using var provider = new ServiceCollection().BuildServiceProvider();
 		var block = Block();
 		using var owner = new ApplicationScreenHost(new[] { block }, provider);
-		using IApplicationScreenHost host = decorate ? new SingleDecorator(owner) : owner;
+		IApplicationScreenHost host = owner;
 		var active = await host.ActivateBlockAsync(block);
 		var supplied = new ProbeScreen();
 		await Assert.ThatAsync(async () => await host.ShowScreenUndockedAsync(supplied), Throws.TypeOf<NotSupportedException>());
@@ -145,24 +144,6 @@ public class ApplicationScreenHostCapabilityTests {
 		Assert.That(owner.ScreenMode, Is.EqualTo(ScreenMode.MultiView));
 	}
 
-	[Test]
-	public async Task CapabilityDecoratorsExposeOnlyTheirDeclaredOperationsAndForwardTheSameState() {
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = Block();
-		using var owner = new ApplicationScreenHost(new[] { block }, provider);
-		using var single = new SingleDecorator(owner);
-		using var multi = new MultiDecorator(owner);
-		Assert.That(single, Is.Not.InstanceOf<IMultiApplicationScreenHost>());
-		Assert.That(multi, Is.Not.InstanceOf<ISingleApplicationScreenHost>());
-		var screen = await single.ActivateBlockAsync(block);
-		Assert.That(multi.ActiveScreen, Is.SameAs(screen));
-		Assert.That(multi.Screens.Single(), Is.SameAs(screen));
-		single.ScreenMode = ScreenMode.SingleView;
-		Assert.That(multi.ScreenMode, Is.EqualTo(ScreenMode.SingleView));
-		Assert.That(await single.CloseActiveScreenAsync(), Is.True);
-		Assert.That(multi.OpenScreens, Is.Empty);
-	}
-
 	private static TestApplicationBlock Block(ScreenActivationMode mode = ScreenActivationMode.MultiInstance) =>
 		new("Work", new ApplicationScreenDefinition(typeof(ProbeScreen), activationMode: mode));
 
@@ -177,11 +158,5 @@ public class ApplicationScreenHostCapabilityTests {
 			GuardCalls++;
 			return Guard?.Task ?? Task.FromResult(AllowDeactivation);
 		}
-	}
-
-	private sealed class SingleDecorator(ISingleApplicationScreenHost host) : SingleApplicationScreenHostDecorator(host) {
-	}
-
-	private sealed class MultiDecorator(IMultiApplicationScreenHost host) : MultiApplicationScreenHostDecorator(host) {
 	}
 }

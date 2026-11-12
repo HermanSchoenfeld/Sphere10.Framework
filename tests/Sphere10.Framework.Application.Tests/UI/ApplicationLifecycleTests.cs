@@ -216,42 +216,6 @@ public class ApplicationLifecycleTests {
 		Assert.That(application.IsInitialized, Is.False);
 	}
 
-	[Test]
-	public void DecoratorForwardsLifecyclePropertiesCallsAndRemovableEvents() {
-		using var application = new TestApplication { Logger = new RecordingLogger() };
-		application.ConfigureInitializers(new[] { new Initializer(() => { }) });
-		application.ConfigureFinalizers(new[] { new Finalizer(() => { }) });
-		using var decorator = new TestDecorator(application);
-		IApplication contract = decorator;
-		var calls = new List<string>();
-		var progress = 0;
-		EventHandlerEx initializing = () => calls.Add("initializing");
-		EventHandlerEx initialized = () => calls.Add("initialized");
-		EventHandlerEx finalizing = () => calls.Add("finalizing");
-		EventHandlerEx finalized = () => calls.Add("finalized");
-		ProgressHandler report = (_, _, _, _, _) => progress++;
-		contract.Initializing += initializing;
-		contract.Initialized += initialized;
-		contract.Finalizing += finalizing;
-		contract.Finalized += finalized;
-		contract.Progress += report;
-
-		Assert.That(contract.Logger, Is.SameAs(application.Logger));
-		Assert.That(contract.Disposables, Is.SameAs(application.Disposables));
-		contract.Initialize();
-		Assert.That(contract.IsInitialized, Is.True);
-		contract.Initializing -= initializing;
-		contract.Initialized -= initialized;
-		contract.Finalizing -= finalizing;
-		contract.Finalized -= finalized;
-		contract.Progress -= report;
-		contract.Finalize();
-
-		Assert.That(calls, Is.EqualTo(new[] { "initializing", "initialized" }));
-		Assert.That(progress, Is.EqualTo(2));
-		Assert.That(contract.IsInitialized, Is.False);
-	}
-
 	private sealed class TestApplication(IServiceProvider services = null) : SyncApplicationBase(services) {
 		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();
 		public override IApplicationScreenHost ScreenHost => null;
@@ -260,8 +224,6 @@ public class ApplicationLifecycleTests {
 		public void ConfigureInitializers(IEnumerable<IApplicationInitializer> tasks) => SetInitializers(tasks);
 		public void ConfigureFinalizers(IEnumerable<IApplicationFinalizer> tasks) => SetFinalizers(tasks);
 	}
-
-	private sealed class TestDecorator(IApplication application) : ApplicationDecorator(application);
 
 	private sealed class Initializer(Action action) : SyncApplicationInitializerBase {
 		public override int Priority => 0;
@@ -332,13 +294,11 @@ public class ApplicationLifecycleTests {
 	}
 
 	private sealed class RecordingLogger : LoggerBase, IDisposable {
-		public RecordingLogger() {
-			Options = LogOptions.VerboseProfile;
-		}
+		public RecordingLogger() => Options = LogOptions.VerboseProfile;
 
 		public List<string> Messages { get; } = new();
 		public bool IsDisposed { get; private set; }
-		protected override void Log(LogLevel logLevel, string message) => Messages.Add(message);
 		public void Dispose() => IsDisposed = true;
+		protected override void Log(LogLevel logLevel, string message) => Messages.Add(message);
 	}
 }

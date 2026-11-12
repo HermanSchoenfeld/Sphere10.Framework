@@ -217,28 +217,6 @@ public class ApplicationAsyncLifecycleTests {
 	}
 
 	[Test]
-	public async Task DecoratorAwaitsLifecycleAndBothExitFormsForwardWithoutExposingTaskCollections() {
-		await using var application = new TestApplication();
-		var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var initializer = new AsyncInitializer(_ => gate.Task);
-		application.Configure(new[] { initializer });
-		await using var decorator = new TestDecorator(application);
-		IApplication contract = decorator;
-		var startup = contract.InitializeAsync();
-		Assert.That(startup.IsCompleted, Is.False);
-		gate.SetResult();
-		await startup.WaitAsync(TimeSpan.FromSeconds(5));
-		Assert.That(contract.IsInitialized, Is.True);
-		await contract.FinalizeAsync();
-		Assert.That(await contract.ExitAsync(force: true), Is.True);
-		Assert.That(contract.Exit(force: true), Is.True);
-		Assert.That(typeof(IApplication).GetProperty("Initializers"), Is.Null);
-		Assert.That(typeof(IApplication).GetProperty("Finalizers"), Is.Null);
-		Assert.That(typeof(ApplicationBase).GetProperty("Initializers", BindingFlags.Public | BindingFlags.Instance), Is.Null);
-		Assert.That(typeof(ApplicationBase).GetMethod("SetInitializers", BindingFlags.Public | BindingFlags.Instance), Is.Null);
-	}
-
-	[Test]
 	public async Task SyncLifecycleAndDisposalRunSynchronouslyOnAContextWithoutStartingAsyncOverrides() {
 		var calls = new List<string>();
 		var application = new SyncTestApplication();
@@ -380,8 +358,6 @@ public class ApplicationAsyncLifecycleTests {
 
 		protected override Task<bool> OnInitializeAsync(CancellationToken cancellationToken) => Task.FromResult(Ready);
 	}
-
-	private sealed class TestDecorator(IApplication application) : ApplicationDecorator(application);
 
 	private sealed class SyncTestApplication : SyncApplicationBase {
 		public override IApplicationPlugin[] LoadedPlugins => Array.Empty<IApplicationPlugin>();

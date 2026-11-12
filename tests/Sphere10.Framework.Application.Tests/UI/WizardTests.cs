@@ -51,20 +51,19 @@ public class WizardTests {
 	}
 
 	[Test]
-	public void ResolverReadsLiveMetadataAndDecoratorsForwardItsReplacement() {
+	public void ResolverReadsLiveMetadataAndItsReplacementNotifies() {
 		var wizard = new Wizard<object, string>("Setup", new object(), new[] { "dynamic" });
-		var decorator = new ProbeDecorator(wizard);
 		var traits = WizardStepTraits.AssumeHasNext;
 		var notifications = 0;
-		decorator.Changed += () => notifications++;
-		decorator.StepTraitsResolver = step => step == "dynamic" ? traits : WizardStepTraits.None;
+		wizard.Changed += () => notifications++;
+		wizard.StepTraitsResolver = step => step == "dynamic" ? traits : WizardStepTraits.None;
 		Assert.That(wizard.HasNext, Is.True);
 		Assert.That(notifications, Is.EqualTo(1));
 		traits = WizardStepTraits.None;
-		Assert.That(decorator.HasNext, Is.False);
+		Assert.That(wizard.HasNext, Is.False);
 		traits = WizardStepTraits.AssumeHasNext;
 		Assert.That(wizard.HasNext, Is.True);
-		decorator.StepTraitsResolver = null;
+		wizard.StepTraitsResolver = null;
 		Assert.That(wizard.HasNext, Is.False);
 		Assert.That(notifications, Is.EqualTo(2));
 	}
@@ -178,49 +177,43 @@ public class WizardTests {
 	}
 
 	[Test]
-	public async Task HostAcceptanceIsRecheckedBeforeCommittingCancellationAndForwardsThroughDecorator() {
+	public async Task HostAcceptanceIsRecheckedBeforeCommittingCancellation() {
 		var completion = new TaskCompletionSource<Result<bool>>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var callbacks = 0;
 		var allowed = true;
 		var wizard = new Wizard<object, int>("Setup", new object(), new[] { 1 }, cancel: _ => { callbacks++; return completion.Task; });
-		var decorator = new WizardProbeDecorator(wizard);
-		var pending = decorator.CancelAsync(() => allowed);
+		var pending = wizard.CancelAsync(() => allowed);
 		allowed = false;
 		completion.SetResult(true);
 		Assert.That((await pending).Value, Is.False);
 		Assert.That(wizard.State, Is.EqualTo(WizardState.Active));
 		Assert.That(wizard.IsBusy, Is.False);
-		Assert.That((await decorator.CancelAsync(() => allowed)).Value, Is.False);
+		Assert.That((await wizard.CancelAsync(() => allowed)).Value, Is.False);
 		Assert.That(callbacks, Is.EqualTo(1));
 		allowed = true;
-		Assert.That((await decorator.CancelAsync(() => allowed)).Value, Is.True);
+		Assert.That((await wizard.CancelAsync(() => allowed)).Value, Is.True);
 		Assert.That(callbacks, Is.EqualTo(2));
 		Assert.That(wizard.State, Is.EqualTo(WizardState.Cancelled));
 	}
 
 	[Test]
-	public async Task BuildersGiveProductsIndependentMembershipAndTheDecoratorForwardsNotifications() {
+	public async Task BuildersGiveProductsIndependentMembershipAndRemovableNotifications() {
 		var builder = new ProbeBuilder();
 		var first = builder.Build();
 		builder.Add("second");
 		var second = builder.Build();
 		Assert.That(first.Steps, Is.EqualTo(new[] { "first" }));
 		Assert.That(second.Steps, Is.EqualTo(new[] { "first", "second" }));
-		var decorator = new ProbeDecorator(second);
 		var notifications = 0;
 		EventHandlerEx changed = () => notifications++;
-		decorator.Changed += changed;
-		await decorator.MoveNextAsync();
-		decorator.Changed -= changed;
-		await decorator.MovePreviousAsync();
+		second.Changed += changed;
+		await second.MoveNextAsync();
+		second.Changed -= changed;
+		await second.MovePreviousAsync();
 		Assert.That(notifications, Is.EqualTo(1));
-		Assert.That(decorator.Model, Is.SameAs(second.Model));
-		decorator.Steps[0] = "changed";
+		Assert.That(second.Model, Is.SameAs(second.Model));
+		second.Steps[0] = "changed";
 		Assert.That(second.CurrentStep, Is.EqualTo("first"));
-	}
-
-	private class WizardProbeDecorator : WizardDecorator<object, int> {
-		public WizardProbeDecorator(IWizard<object, int> wizard) : base(wizard) { }
 	}
 
 	private sealed class DynamicStep : IWizardStep {
@@ -237,9 +230,4 @@ public class WizardTests {
 		protected override Wizard<object, string> CreateWizard(string[] steps) => new(Title, Model, steps, FinishCallback, CancelCallback);
 	}
 
-	private class ProbeDecorator : WizardDecorator<object, string> {
-		public ProbeDecorator(IWizard<object, string> wizard)
-			: base(wizard) {
-		}
-	}
 }

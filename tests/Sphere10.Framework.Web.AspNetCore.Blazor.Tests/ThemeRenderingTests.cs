@@ -24,7 +24,7 @@ namespace Sphere10.Framework.Web.AspNetCore.Blazor.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ThemeRenderingTests {
 	[Test]
-	public async Task ThemeChangesUpdateBothAttributesAndToggleWithoutReplacingStatefulChildren() {
+	public async Task ThemeChangesUpdateBothAttributesWithoutReplacingStatefulChildren() {
 		await using var provider = CreateServices().BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		var theme = provider.GetRequiredService<IThemeService>();
@@ -33,11 +33,10 @@ public class ThemeRenderingTests {
 			var rendered = await renderer.RenderComponentAsync<ThemeHarness>();
 			var originalChild = state.Child;
 			Assert.That(rendered.ToHtmlString(), Does.Contain("data-sphere10-theme=\"light\"").And.Contain("data-bs-theme=\"light\""));
-			Assert.That(rendered.ToHtmlString(), Does.Contain("aria-pressed=\"false\"").And.Contain("Dark theme"));
 			await originalChild.SetDraftAsync("Unsaved draft");
 			theme.SetTheme(ThemeMode.Dark);
 			Assert.That(rendered.ToHtmlString(), Does.Contain("data-sphere10-theme=\"dark\"").And.Contain("data-bs-theme=\"dark\""));
-			Assert.That(rendered.ToHtmlString(), Does.Contain("aria-pressed=\"true\"").And.Contain("Unsaved draft"));
+			Assert.That(rendered.ToHtmlString(), Does.Contain("Unsaved draft"));
 			Assert.That(state.Child, Is.SameAs(originalChild));
 			Assert.That(state.Created, Is.EqualTo(1));
 			Assert.That(state.Disposed, Is.Zero);
@@ -74,7 +73,6 @@ public class ThemeRenderingTests {
 			Assert.That(markup, Does.Contain($"href=\"{definition.StylesheetPath}\""));
 			Assert.That(Regex.Matches(markup, "data-sphere10-theme-stylesheet=").Count, Is.EqualTo(1), "A provider must include only its active preset stylesheet.");
 			Assert.That(markup, Does.Contain($"value=\"{definition.Id}\" selected"));
-			Assert.That(markup, Does.Contain($"aria-pressed=\"{definition.IsDark.ToString().ToLowerInvariant()}\""));
 			Assert.That(markup, Does.Contain("Draft retained while switching presets"));
 			Assert.That(state.Child, Is.SameAs(originalChild));
 			Assert.That(state.Created, Is.EqualTo(1));
@@ -98,24 +96,12 @@ public class ThemeRenderingTests {
 	}
 
 	[Test]
-	public async Task StandaloneToggleObservesServiceChangesDispatchedOutsideRenderer() {
-		await using var provider = CreateServices().BuildServiceProvider();
-		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
-		var theme = provider.GetRequiredService<IThemeService>();
-		var rendered = await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<ThemeToggle>());
-		await Task.Run(() => theme.SetTheme(ThemeMode.Dark));
-		await renderer.Dispatcher.InvokeAsync(() => {
-			Assert.That(rendered.ToHtmlString(), Does.Contain("type=\"button\"").And.Contain("aria-pressed=\"true\"").And.Contain("Dark theme"));
-		});
-	}
-
-	[Test]
-	public async Task RendererDisposalReleasesProviderAndToggleSubscriptions() {
+	public async Task RendererDisposalReleasesProviderAndSelectorSubscriptions() {
 		var theme = new TrackingThemeService(new ThemeService());
 		await using var provider = CreateServices(theme).BuildServiceProvider();
 		await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
 		await renderer.Dispatcher.InvokeAsync(() => renderer.RenderComponentAsync<ThemeHarness>());
-		Assert.That(theme.SubscriberCount, Is.EqualTo(3));
+		Assert.That(theme.SubscriberCount, Is.EqualTo(2));
 		await renderer.DisposeAsync();
 		Assert.That(theme.SubscriberCount, Is.Zero);
 		Assert.That(provider.GetRequiredService<ProbeState>().Disposed, Is.EqualTo(1));
@@ -144,11 +130,9 @@ public class ThemeRenderingTests {
 		protected override void BuildRenderTree(RenderTreeBuilder builder) {
 			builder.OpenComponent<ThemeProvider>(0);
 			builder.AddAttribute(1, nameof(ThemeProvider.ChildContent), (RenderFragment)(content => {
-				content.OpenComponent<ThemeToggle>(0);
+				content.OpenComponent<ThemeSelector>(0);
 				content.CloseComponent();
-				content.OpenComponent<ThemeSelector>(1);
-				content.CloseComponent();
-				content.OpenComponent<ProbeComponent>(2);
+				content.OpenComponent<ProbeComponent>(1);
 				content.CloseComponent();
 			}));
 			builder.CloseComponent();
@@ -176,22 +160,24 @@ public class ThemeRenderingTests {
 		protected override void BuildRenderTree(RenderTreeBuilder builder) => builder.AddContent(0, _draft);
 	}
 
-	private sealed class TrackingThemeService : ThemeServiceDecorator {
-		public override event EventHandlerEx Changed {
+	private sealed class TrackingThemeService(IThemeService service) : IThemeService {
+		public event EventHandlerEx Changed {
 			add {
 				SubscriberCount++;
-				InternalThemeService.Changed += value;
+				service.Changed += value;
 			}
 			remove {
 				SubscriberCount--;
-				InternalThemeService.Changed -= value;
+				service.Changed -= value;
 			}
 		}
 
-		public TrackingThemeService(IThemeService service)
-			: base(service) {
-		}
-
 		public int SubscriberCount { get; private set; }
+
+		public ThemeMode CurrentTheme => service.CurrentTheme;
+
+		public void SetTheme(ThemeMode theme) => service.SetTheme(theme);
+
+		public void Toggle() => service.Toggle();
 	}
 }

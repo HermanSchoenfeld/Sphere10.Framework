@@ -30,39 +30,6 @@ public class ApplicationAggregateTests {
 		Assert.That(application.Blocks, Is.Empty);
 	}
 
-	[TestCase(false)]
-	[TestCase(true)]
-	public async Task DecoratorForwardsLiveStateNotificationsAndDisposal(bool asynchronous) {
-		using var provider = new ServiceCollection().BuildServiceProvider();
-		var block = new TestApplicationBlock("Work", new(typeof(ProbeScreen)));
-		using var host = new ProbeHost(block, new ProbeScreen(), provider);
-		var application = new ProbeApplication(host);
-		var decorator = new ProbeDecorator(application);
-		var notifications = 0;
-		EventHandlerEx handler = () => notifications++;
-		decorator.Changed += handler;
-		Assert.That(decorator.LoadedPlugins, Is.EqualTo(application.LoadedPlugins));
-		Assert.That(decorator.Blocks, Is.EqualTo(application.Blocks));
-		Assert.That(decorator.ScreenHost, Is.SameAs(application.ScreenHost));
-		Assert.That(decorator.ScreenHost.SelectedBlock, Is.SameAs(block));
-		Assert.That(decorator.ScreenHost.ActiveScreen, Is.SameAs(host.ActiveScreen));
-		Assert.That(decorator.HasUnsavedChanges, Is.True);
-		Assert.That(await host.UnregisterBlockAsync(block), Is.True);
-		Assert.That(decorator.Blocks, Is.Empty);
-		application.NotifyMetadataChanged();
-		Assert.That(notifications, Is.GreaterThan(0));
-		var delivered = notifications;
-		decorator.Changed -= handler;
-		await host.RegisterBlockAsync(block);
-		application.NotifyMetadataChanged();
-		Assert.That(notifications, Is.EqualTo(delivered));
-		if (asynchronous)
-			await decorator.DisposeAsync();
-		else
-			decorator.Dispose();
-		Assert.That(application.WasDisposed, Is.True);
-	}
-
 	private sealed class ProbeApplication : SyncApplicationBase {
 		private readonly ApplicationPlugin _plugin;
 
@@ -77,9 +44,7 @@ public class ApplicationAggregateTests {
 		public override IApplicationScreenHost ScreenHost { get; }
 		public bool WasDisposed => IsDisposed;
 
-		public void NotifyMetadataChanged() {
-			OnChanged();
-		}
+		public void NotifyMetadataChanged() => OnChanged();
 	}
 
 	private sealed class ProbeHost : ApplicationScreenHost {
@@ -95,11 +60,5 @@ public class ApplicationAggregateTests {
 
 		public IApplicationBlock Block { get; set; }
 		public bool HasUnsavedChanges => true;
-	}
-
-	private sealed class ProbeDecorator : ApplicationDecorator<ProbeApplication> {
-		public ProbeDecorator(ProbeApplication application)
-			: base(application) {
-		}
 	}
 }
