@@ -515,7 +515,10 @@ The library is included in both main solutions, but its test project is only in 
 | [Blockchain/](Blockchain/) | State/operation/block contracts, base classes, linear chain, candidate graph, finalization, weights, and Merkle helpers |
 | [MolinaTargetAlgorithm.cs](MolinaTargetAlgorithm.cs) | PascalCoin-style compact targets and digest conversion |
 | [ICompactTargetAlgorithm.cs](ICompactTargetAlgorithm.cs) / [extensions](ICompactTargetAlgorithmExtensions.cs) | Target representation contract and allocating digest helpers |
+| [IDAAlgorithm.cs](IDAAlgorithm.cs) | Difficulty adjustment contract |
 | [ASERT_RTT.cs](ASERT_RTT.cs) / [ASERT2.cs](ASERT2.cs) | Wall-clock and block-to-block adjustment variants |
+| [ASERTConfiguration.cs](ASERTConfiguration.cs) | Block interval and relaxation configuration |
+| [CryptoTool.cs](CryptoTool.cs) | Checksum and indexed child-digest derivation |
 | [HashStats.cs](HashStats.cs) | `PeriodicStatistics` lifecycle and unfinished history support |
 | [DESIGN.md](DESIGN.md) | Broader design background and intended architecture |
 | [Consensus tests](../../tests/Sphere10.Framework.Consensus.Tests/) | NUnit fixtures and the reference account ledger |

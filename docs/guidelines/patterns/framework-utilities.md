@@ -22,9 +22,12 @@ Public utility facades intended for Framework clients live in the **`Tools`** gl
 - **`Tools.Sqlite`** / **`Tools.MSSQL`** — provider-specific helpers; the Firebird project exposes `FirebirdDAC`, not a `Tools.Firebird` facade.
 - **`Tools.NUnit`** — test utilities (e.g., 2D array formatting).
 
-`Tools.Windows` is the existing **static facade** whose thread-static properties
-return instance utilities. Read the Windows-specific rules below before adding
-a utility, and read [process Sentries](process-sentries.md) for executable wrappers.
+Utilities are static classes with static methods and no instance state. A type
+that needs state, a lifetime, substitution or a hierarchy is a service, a scope or
+a data source and is named and designed as one. `Tools.Windows` is a static
+partial facade whose domain utilities are nested static classes. Read the
+Windows-specific rules below before adding a utility, and read
+[process Sentries](process-sentries.md) for executable wrappers.
 
 Before adding a tool, identify its actual client-facing contract and owning project/domain. A public facade must have a coherent domain name; Application/UI utilities would belong under an application/UI facade rather than an unrelated root `Tools.UI`. Do not export internal methods merely because several Framework assemblies use them.
 
@@ -108,24 +111,45 @@ For cleanup owners, keep the normal logical sequence visible in one ordered body
 
 Expose reusable Windows utilities through the central
 [WindowsTool.cs](../../../src/Sphere10.Framework.Windows/WindowsTool.cs) facade.
-Inspect the existing property/utility before extending it. Retain its established
-pattern: a private ThreadStatic instance field and public property using lazy
-initialization. Public utility methods are instance methods on that utility;
-private stateless helpers may remain static. Consumers use `Tools.Windows.<Domain>`
-rather than instantiate an otherwise parallel public helper or invent another
-static discovery class. This facade does not change ownership of resources
-returned by an operation.
+Inspect the existing utility before extending it. Each domain utility is a
+static class nested in the partial `Tools.Windows` class and declared in its
+domain folder, for example `Tools.Windows.Files` in `Files/FileUtil.cs`:
+
+```csharp
+namespace Tools;
+
+public static partial class Windows {
+
+	public static class Files {
+		public static FileStream OpenAlternateStream(string filePath, string streamName, FileMode mode, FileAccess access)
+			=> WindowsFile.OpenAlternateStream(filePath, streamName, mode, access);
+	}
+}
+```
+
+Every member is static. A utility has no instance fields, no virtual members and
+no subclasses, and it is never passed as a parameter or registered as a service.
+Consumers call `Tools.Windows.<Domain>.<Method>()`. Code inside these files is in
+the `Tools` namespace, where `Array`, `Environment` and `Registry` name Framework
+tools or sibling utilities, so write `System.Array`, `System.Environment` and
+`Microsoft.Win32.Registry` there. The facade does not change ownership of
+resources returned by an operation.
+
+Four utilities own state and remain per-thread instances returned by properties
+in `WindowsTool.cs`: `Tools.Windows.Assemblies` (a metadata cache),
+`Tools.Windows.Registry` (an access lock), `Tools.Windows.UiAutomation` and
+`Tools.Windows.Dumps` (each a worker host). Do not add another.
 
 Current additional domains include `Tools.Windows.Pipes` for passive local pipe
 name discovery and `Tools.Windows.TraceSessions` for accessible native ETW session
-identity/logfile queries. Their instance utilities live under Pipes and Tracing.
+identity/logfile queries. Their utilities live under Pipes and Tracing.
 Client reads, capture attribution/retention, selected log output and recovery/exit
 policy stay in the app. `PktMonSentry` wraps an executable rather than becoming
 a native utility property; see [its command boundary](process-sentries.md).
 
 Choose an appropriate domain property and extend the existing utility when it
-already owns the responsibility. `Tools.Windows.Services` returns ServiceUtil
-for native service resource operations. ServiceControlManagerSentry is a
+already owns the responsibility. `Tools.Windows.Services` holds the native
+service resource operations. ServiceControlManagerSentry is a
 ProcessSentry executable wrapper for sc.exe and must not absorb those methods.
 New native utility abstractions use a Util name, not an Api name. Reuse the
 existing native → resource utility → app layering; see
@@ -139,11 +163,39 @@ remains the central root facade. Physical folders need not introduce additional
 public namespaces. Preserve type filenames and
 [one-type source organization](../code-styling.md#type-source-files).
 
-ThreadStatic caching means one utility instance per accessing thread, not a
-process-wide singleton or a lease for returned handles. Acquire and dispose
+A static utility is not a lease for returned handles. Acquire and dispose
 thread-affine scopes on the actual worker thread, do not carry them across await,
 and obey each returned resource's owner. A utility with mutable state must still
 use the existing [synchronization contract](synchronization.md) where needed.
+
+### Discovery of resource owners and reusable widgets
+
+When adding a reusable client operation, resource class or widget, include its
+coherent `Tools` discovery route. A thin factory can return the existing concrete
+class directly. Add it to the existing owning domain rather than reimplementing
+the class's behavior. Keep constructor arguments, defaults, validation, cancellation,
+thread dispatch and ownership unchanged.
+
+Return a fresh mutable
+data source, control, hook, suspension owner, session or disposable resource from
+an explicit factory; never store these in a thread-static or global Tools field.
+Discovery must not start polling, native acquisition or UI construction. Resource
+constructors retain their actual behavior, including any existing monitor/timer
+ownership. The caller still registers application/screen finalization at its
+existing owner. Do not make a factory into a second service locator.
+
+Native widget factories are discovered through `Tools.WinForms`, a static partial
+class in the Windows Forms assembly. Its nested static classes `Windowing`,
+`Charts`, `Logging`, `Grids`, `Review` and `Controls` create existing types on the
+caller's UI thread. It is a separate class from `Tools.Windows` because a partial
+class cannot span two assemblies. Keep these implementations in their
+owning Windows Forms domain folders. Do not duplicate the native `Tools.Windows`
+type or add a Windows-to-Windows-Forms project dependency to create this branch.
+Designer-owned controls retain normal native constructor serialization. Scope
+acquisition remains on `Tools.Scope`; builders remain the configuration API.
+DTOs, internal validators, private readers and application policy do not need
+Tools aliases. Document the route in the Tools reference and use it in an actual
+consumer while retaining behavioral and ownership checks.
 
 ## Deferred utility inputs
 

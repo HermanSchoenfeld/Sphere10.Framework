@@ -76,7 +76,7 @@ UI frameworks for desktop, web, and cross-platform applications.
 
 | Domain | Purpose | Tools |
 |--------|---------|-------|
-| **Windows Forms** | Data binding, validation, component library | Tools.WinForms |
+| **Windows Forms** | Data binding, validation, component library | Tools.Windows.Forms |
 | **Windows Forms + SQLite** | Windows Forms with SQLite data binding | Tools.WinForms.Sqlite |
 | **Windows Forms + SQL Server** | Windows Forms with SQL Server data binding | Tools.WinForms.MSSQL |
 | **Windows Forms + Firebird** | Windows Forms with Firebird data binding | Tools.WinForms.Firebird |

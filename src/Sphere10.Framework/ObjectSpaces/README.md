@@ -6,6 +6,8 @@ An embedded, indexed store of typed CLR objects over clustered streams, in memor
 
 The [WinForms tester](../../../utils/Sphere10.Framework.Utils.WinFormsTester/README.md) demonstrates a self-describing store on its **ObjectSpace** screen, which is in the **Data And Collections** block and under **Data Editing > ObjectSpace**. The screen creates, edits and deletes accounts and reloads the store through `ObjectSpace.TryOpenFromStream`. The general profiler's [ObjectSpace suite](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/README.md) holds repeatable measurements, and its [lab](../../../utils/Sphere10.Framework.Utils.Profiler/ObjectSpaces/Lab/README.md) supplies the models, configuration and factory used for profiling and correctness fixtures.
 
+`AddDimension<T>()` constructs its typed dimension builder directly. It shares annotation and registration logic with `AddDimension(Type)`, which remains available for metadata reconstruction. Native AOT callers still need the metadata and closed serializer/storage instantiations used by their schema and its reload path; typed builder construction alone does not establish compatibility for arbitrary runtime-selected models.
+
 ## Quick start
 
 ```csharp
@@ -153,6 +155,8 @@ Bind UI grids to detached editable rows. Keep slot or generation checks so that 
 ## Durability, scopes and ownership
 
 A memory space flushes into its backing `MemoryStream` and has no file transaction. A supplied `MemoryStream` remains caller-owned, while a space built without one owns the stream it creates. Flush before taking a byte snapshot. Disposal flushes a memory space unless an exception is in flight.
+
+Native AOT cannot report whether an exception is in flight, so `Tools.Runtime.IsInExceptionContext()` answers false there and a memory space always flushes on disposal. File disposal never commits pending transactions.
 
 A file space writes through a `TransactionalStream` that stages pages in the folder set by `KeepUncommittedPagesAt`, which defaults to `.txn` in the file's directory. `Save` and `Flush` update pending pages, and `Commit()` publishes them. `Rollback()` unloads and reloads the space, which invalidates every tracked instance and any UI or query snapshot derived from them. Disposing a file space neither flushes nor commits, so commit or roll back pending work before replacement or shutdown. `FileObjectSpace.CommitAsync()` and `RollbackAsync()` throw `NotSupportedException`.
 

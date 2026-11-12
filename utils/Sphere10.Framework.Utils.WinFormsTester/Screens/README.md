@@ -13,6 +13,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`Address`](Address.cs) | class | Street, city, post code and state values of the sample `Employee`. |
 | [`ApplicationServicesTestScreen`](ApplicationServicesTestScreen.cs) | class | Lists the owning application, its logger and each block's screen registrations, and writes a message through the application logger. |
 | [`AppointmentBookScreen`](AppointmentBookScreen.cs) | class | Appointment book with an unallocated-work tray beside it over `MyAppointmentBookDataSource`, using a pastel category palette and logging selection, drag and resize events. |
+| [`BlockSelectorStylesScreen`](BlockSelectorStylesScreen.cs) | class | Switches the window's block selector shape and colour style live and shows every combination side by side on sample task panes. |
 | [`BloomFilterAnalysisScreen`](BloomFilterAnalysisScreen.cs) | class | Compares `BloomFilterMath` length and error estimates for an item count, error rate and round count in bit and byte units. |
 | [`CBACSVConverterScreen`](CBACSVConverterScreen.cs) | class | Rewrites the dates of a bank CSV export through the Framework `CsvReader` without breaking quoted fields. |
 | [`ChartGalleryScreen`](ChartGalleryScreen.cs) | class | Browses the `ChartGallerySamples` data-visualization charts by family, with exploration, zoom, palettes, PNG export and C# example generation. |
@@ -32,8 +33,12 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`EncryptedCompressionTestScreen`](EncryptedCompressionTestScreen.cs) | class | Password-protected compression round trip of a chosen file in owned temporary files, verified by content hash. |
 | [`EnumComboScreen`](EnumComboScreen.cs) | class | `EnumComboBox` choices with description attributes and an explicit empty option. |
 | [`ExpandoTesterScreen`](ExpandoTesterScreen.cs) | class | Animated `ExplorerBar` and `Expando` groups holding commands, filters and tree navigation. |
+| [`ExplorerBarDesignerScreen`](ExplorerBarDesignerScreen.cs) | class | Edits a complete explorer bar theme, including its block selector, in a property grid; previews it on a task pane above sample block buttons, starts from Luna or Classic, applies it to the window's navigation sidebar and exports it as XML. |
+| [`ExplorerBarSettings`](ExplorerBarDesignerScreen.cs) | class | Flat property-grid model of every explorer bar theme setting, converted to and from `ExplorerBarInfoSurrogate` by `ExplorerBarDesignerScreen`. |
+| [`ExplorerBarThemeExportForm`](ExplorerBarThemeExportForm.cs) | class | Shows an exported explorer bar theme as XML for copying. |
 | [`FakeTransparentForm`](FakeTransparentForm.cs) | class | Form that imitates transparency by copying the screen behind it into its background image. |
 | [`FlagsCheckedBoxListScreen`](FlagsCheckedBoxListScreen.cs) | class | `FlagsCheckedListBox` with single, combined and zero-valued flags and a live bit-mask readout. |
+| [`HexEditorTestScreen`](HexEditorTestScreen.cs) | class | `HexEditorControl` over a file, a small in-memory sample and a 512 MiB `SyntheticByteStream`. |
 | [`HooksScreen`](HooksScreen.cs) | class | Starts and stops owned `WindowsKeyboardHook` and `WindowsMouseHook` observation with bounded output. |
 | [`ImageResizeScreen`](ImageResizeScreen.cs) | class | Compares image resizing and alignment modes, disposing each generated bitmap. |
 | [`LoadingCircleTestScreen`](LoadingCircleTestScreen.cs) | class | `LoadingCircle` styles with live appearance settings and animations scoped to the work they show. |
@@ -65,6 +70,7 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`SettingsTest`](SettingsTest.cs) | class | Screen preferences declared through attributes beside standalone user and global `Test1Settings` records. |
 | [`SourceGridGalleryRow`](SourceGridGalleryRow.cs) | class | Editable row values shared by the raw SourceGrid binding examples. |
 | [`SourceGridGalleryScreen`](SourceGridGalleryScreen.cs) | class | Raw SourceGrid cell, bound, virtual and planning grids, with CSV, HTML and image export. |
+| [`SyntheticByteStream`](SyntheticByteStream.cs) | class | Seekable stream whose bytes are computed from their offset, with writes kept in a sparse overlay and read statistics. |
 | [`TabControlTestControl`](TabControlTestControl.cs) | class | User control whose draft input survives tab changes. |
 | [`TabControlTestScreen`](TabControlTestScreen.cs) | class | Tab pages holding nested `TabControlTestControl` instances and ordinary grouped controls. |
 | [`TelemetryChartTestScreen`](TelemetryChartTestScreen.cs) | class | Simulated CPU, memory, throughput and temperature samples in four `TelemetryChart` controls, with interval and gap options. |
@@ -78,6 +84,8 @@ The sample types here are test data rather than reusable components. `Employee`,
 | [`UrlIDTestScreen`](UrlIDTestScreen.cs) | class | Shows numbers beside their `UrlID` encodings in the selected format. |
 | [`UserControl1`](CustomTestDropDownControl.cs) | class | Composite selection editor hosted in the custom dropdown example. |
 | [`ValidationIndicatorTestScreen`](ValidationIndicatorTestScreen.cs) | class | `ValidationIndicator` states set manually and by completed asynchronous validation, updated on the UI thread. |
+| [`VisualGridDetailSamplePanel`](VisualGridDetailSamplePanel.cs) | class | Designer-editable image-and-description panel shown as a Visual Grid row detail. |
+| [`VisualGridDetailsDemo`](VisualGridDetailsDemo.cs) | class | Visual Grid with expandable row details holding recursive child grids, the sample panel and an editable text box. |
 | [`VisualGridTestScreen`](VisualGridTestScreen.cs) | class | Employee CRUD in a `VisualGrid` with reference editors, live snapshots from a polling data source and saved grid preferences. |
 | [`VisualInheritanceFixerBaseForm`](VisualInheritanceFixerBaseForm.cs) | class | Base form with designer-defined menu, toolbar and status strip items. |
 | [`VisualInheritanceFixerSubForm`](VisualInheritanceFixerSubForm.cs) | class | Form derived from `VisualInheritanceFixerBaseForm` that adds its own menu, toolbar and status items. |

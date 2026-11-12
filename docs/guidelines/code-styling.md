@@ -137,10 +137,95 @@ public APIs when consolidating physical source locations.
 
 ### Callable bodies
 
-Use multiline block bodies for methods, constructors, finalizers, operators and
-property accessors, including trivial forwarding methods and getters. Do not use
-one-line or expression-bodied implementations. Automatic properties may retain
-their ordinary compact declaration. Apply this rule to source, tests and examples.
+Prefer `=>` expression bodies for methods, constructors, finalizers and operators
+whose body is a single expression, including trivial forwarding methods, one-line
+returns and single `switch` expressions. Use a block body when the member needs
+several statements or comments between logical steps. Property syntax follows the
+rules below. Apply these conventions to source, tests, utilities and C# examples.
+
+```csharp
+public Task LoadAsync(CancellationToken cancellationToken = default) => Task.Run(Load, cancellationToken);
+```
+
+### Custom events
+
+Custom events are an exception to the general multiline callable-body rule.
+Their declarations and `add`/`remove` block bodies may stay compact on one line;
+expression-bodied accessors are also accepted. Prefer a compact declaration for
+simple forwarding events when it fits within about 170 characters.
+
+```csharp
+public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
+
+public event EventHandler Changed { add { EnsureReady(); _changed += value; } remove { EnsureReady(); _changed -= value; } }
+```
+
+Preserve existing compact event declarations and accessor blocks, including
+longer forms and multiple-statement blocks the author chose to keep compact.
+Do not automatically expand them for general line-length or method-body rules.
+Keep multiline bodies where the logic or comments need them; do not force
+compact forms. These event conventions are separate from property accessor
+formatting.
+
+### Properties and backing fields
+
+Prefer `=>` for getter-only properties and individual `get`, `set` or `init`
+accessors when the body is a one-line expression or a switch expression. A switch
+expression may span multiple lines when needed for clarity.
+
+Choose each accessor's form independently. A simple `get => ...;` may accompany
+a block-bodied `set` or `init`; the accessors do not have to match. Use a block
+when the accessor needs multiple statements or comments between logical steps.
+
+Ordinary auto-properties keep their compact `{ get; set; }`, `{ get; init; }` or
+`{ get; }` declarations.
+
+Use C# 14's contextual `field` keyword when a property needs custom accessors
+over ordinary backing storage. Remove the separate private backing field;
+use an auto-property when neither accessor needs custom behavior. For example:
+
+```csharp
+public string Name {
+	get => field;
+	set => field = value.Trim();
+} = string.Empty;
+
+public ILogger Logger {
+	get => field;
+	set {
+		field = value;
+		SetLogger(value);
+	}
+}
+
+public bool IsActive { get; set; }
+
+public string StatusText => IsActive switch { true => "Active", false => "Inactive" };
+```
+
+Retain explicit fields for a concrete requirement such as `volatile` storage,
+ref/out access outside an accessor, interop layout, a field-name-dependent
+serialization/reflection contract or demonstrated performance needs. A field
+used outside its property is not automatically exempt: use the property where
+that preserves behavior. Preserve direct-access semantics where routing through
+the property would introduce validation, notifications, virtual dispatch or a
+different initialization order. Keep the reason clear when retaining such storage.
+
+Property initializers assign the synthesized field directly. Constructor
+assignments invoke a setter when one exists, including a virtual setter, so these
+forms are not interchangeable during conversion. Preserve field-targeted
+attributes and observable `nameof` results. Escape an existing identifier as
+`@field` when necessary to keep its meaning inside an accessor.
+
+Check every partial declaration, including Razor markup references, before
+removing storage. Qualified references must still address that storage after
+conversion; they must not become recursive calls to the same property.
+
+Microsoft's [field-keyword specification](https://learn.microsoft.com/dotnet/csharp/language-reference/proposals/csharp-14.0/field-keyword)
+describes constructor assignment, initializers and field-targeted attributes.
+
+These property rules supersede the former requirement for block-bodied getters
+and setters. Methods and constructors follow [callable bodies](#callable-bodies).
 
 ### Naming Conventions
 
@@ -200,11 +285,11 @@ public interface IApplicationMenu {
 
 ### Member Ordering
 
-Class members should be ordered according to the following guide. Within the
-methods, put the most general or commonly used entry points first, followed by
-the lower-level utility and auxiliary methods they use. Visibility does not
-determine method order: an internal main operation belongs above a public
-auxiliary operation. Apply this reading order to code generally.
+Class members should be ordered according to the following guide. Public
+methods come first, then internal, then protected and private methods. Within
+one visibility, put the most general or commonly used entry points first,
+followed by the lower-level utility and auxiliary methods they use. Related
+members may be grouped in `#region` blocks.
 
 ```csharp
 
@@ -223,8 +308,8 @@ public class SomeClass {
 
 	// 6. Internal/protected/private properties
 
-	// 7. Methods: general/common entry points first, utilities and auxiliary methods last
-	//    Order by responsibility and use, regardless of public/internal/protected/private visibility.
+	// 7. Methods: public, then internal, then protected and private
+	//    Within one visibility: general/common entry points first, utilities and auxiliary methods last.
 
 	// 8. Inner class/type declarations
 }

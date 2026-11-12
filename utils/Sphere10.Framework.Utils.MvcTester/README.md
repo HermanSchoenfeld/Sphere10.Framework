@@ -41,6 +41,8 @@ Every folder of `Sphere10.Framework.Utils.MvcTester` is a domain with its own RE
 
 | Location | Responsibility |
 | --- | --- |
+| [Program.cs](Program.cs) | Registers controllers/views and Sphere10 Framework with the ASP.NET Core module that ends the framework when the host stops, starts the framework, and maps conventional MVC routing. |
+| [Controllers/HomeController.cs](Controllers/HomeController.cs) | Returns the landing view from `Index`. |
 | [Views/Home/Index.cshtml](Views/Home/Index.cshtml) | Complete HTML landing page with `Layout = null`. |
 | [Sphere10.Framework.Utils.MvcTester.csproj](Sphere10.Framework.Utils.MvcTester.csproj) | Web SDK host targeting `net10.0`, with a reference to the MVC library and packaging disabled. |
 

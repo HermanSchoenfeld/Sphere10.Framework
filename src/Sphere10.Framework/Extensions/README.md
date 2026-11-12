@@ -53,7 +53,7 @@ Each class extends one target type or family, and its name says which. The membe
 | [`StringBuilderExtensions`](StringBuilderExtensions.cs) | static class | Formatted `AppendLine` and `Clear` for `StringBuilder`. |
 | [`StringCollectionExtensions`](StringCollectionExtensions.cs) | static class | Trims many strings and joins them into paragraph-case text. |
 | [`StringExtensions`](StringExtensions.cs) | static class | Trimming, casing, escaping, splitting, parsing, formatting and path helpers for `string`. |
-| [`TaskExtensions`](TaskExtensions.cs) | static class | Timeouts, cancellation, retry, fail-over, exception filtering and safe waits for `Task` and `Task<T>`. |
+| [`TaskExtensions`](TaskExtensions.cs) | static class | Timeouts, cancellation, retry, fail-over, exception filtering and safe waits for `Task` and `Task<T>`, and `Task.ExecuteSyncOverAsync` for synchronous members that must run an asynchronous operation. |
 | [`TextReaderExtensions`](TextReaderExtensions.cs) | static class | Character-level peek, read and match on `TextReader`. |
 | [`TextWriterExtensions`](TextWriterExtensions.cs) | static class | Prints a hierarchy as an indented text diagram to a `TextWriter`. |
 | [`TimeSpanExtensions`](TimespanExtensions.cs) | static class | Empty placeholder for `TimeSpan` extensions. |

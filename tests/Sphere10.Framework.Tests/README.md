@@ -104,6 +104,7 @@ Two internal values attributes supply the policy and storage-type matrices.
 | [ClusteredStreamOwnershipTests](ClusteredStreams/ClusteredStreamOwnershipTests.cs) | Close and finalizer ownership of opened streams, retry after failed finalizers or descriptor writes, and `ObjectStream` stream return. |
 | [ClusteredStreamsConcurrentStreamsTests](ClusteredStreams/ClusteredStreamsConcurrentStreamsTests.cs) | Which reads, writes, adds, inserts, removes and clears are allowed while another stream is open. |
 | [ClusteredStreamsMetaDataTests](ClusteredStreams/ClusteredStreamsMetaDataTests.cs) | Opaque metadata allocation, padding, reopening, rollback and legacy storage without metadata. |
+| [ClusteredStreamsReadOnlyMetaDataTests](ClusteredStreams/ClusteredStreamsReadOnlyMetaDataTests.cs) | Header inspection of borrowed read-only storage keeps the stream position and metadata. |
 | [ClusteredStreamsTests](ClusteredStreams/ClusteredStreamsTests.cs) | Add, insert, remove, update and clear, structure checks, corrupt-data detection and integration runs across storage types and policies. |
 | [StreamContainerTestsHelper](ClusteredStreams/ClusteredStreamsTests.cs) | Static assertions that check stream descriptors and cluster chain consistency. |
 | [ClusterMapChangedEventArgsTests](ClusteredStreams/ClusterMapChangedEventArgsTests.cs) | `ClusterMapChangedEventArgs` collection ownership, move and terminal tracking, and allocation. |
@@ -119,7 +120,10 @@ Shared collection tests for the [collections domain](../../src/Sphere10.Framewor
 
 | Fixture | Purpose |
 |---|---|
+| [BoundedHistoryTests](Collections/BoundedHistoryTests.cs) | `BoundedHistory` count and cost bounds, oldest-first discard and concurrent publication. |
+| [CollectionComparisonTests](Collections/CollectionComparisonTests.cs) | `Tools.Collection.CompareByKey` change reports, explicit comparers, duplicate keys and default values. |
 | [DefaultCollectionInterfaceTests](Collections/DefaultCollectionInterfaceTests.cs) | Default members of the extended collection, list, stack, queue and dictionary-list contracts dispatch to the long-indexed primitives, including remapped subclasses. |
+| [SampledCallTreeTests](Collections/SampledCallTreeTests.cs) | `SampledCallTree<T>.Build` inclusive and exclusive counts, recursion, node and depth bounds, and cancellation. |
 | [StreamPersistedCollectionTestsBase](Collections/StreamPersistedCollectionTestsBase.cs) | Base class that creates memory, file-mapped and transactional backing streams for stream-persisted collection fixtures. |
 
 ### Collections/BTree
@@ -344,6 +348,12 @@ Tests for the [data source domain](../../src/Sphere10.Framework/DataSource).
 
 | Fixture | Purpose |
 |---|---|
+| [ArrayDataSourceTests](DataSource/ArrayDataSourceTests.cs) | `ArrayDataSource` search, sort, paging, formatting, replacement and storage isolation. |
+| [DataSourceLifetimeTests](DataSource/DataSourceLifetimeTests.cs) | `DataSourceLifetime` registration, stop draining, failure reporting and owner cancellation. |
+| [DataSourceNotificationTests](DataSource/DataSourceNotificationTests.cs) | Change notifications across refresh, publication, decorators, list CRUD and failing subscribers. |
+| [ListDataSourceTests](DataSource/ListDataSourceTests.cs) | `ListDataSource` lazy and preloaded loading, shared fetches, failed fetch retry and row refresh. |
+| [PollingDataSourceTests](DataSource/PollingDataSourceTests.cs) | `PollingDataSource` scheduling, manual refresh, cancellation, failure reporting, stop and disposal. This fixture is non-parallel. |
+| [RefreshableDataSourceTests](DataSource/RefreshableDataSourceTests.cs) | `RefreshableDataSourceBase` fetch coalescing, source swaps, publication order, load direction and disposal. |
 
 ### DateTime
 
@@ -387,6 +397,7 @@ Tests for the [extensions domain](../../src/Sphere10.Framework/Extensions).
 |---|---|
 | [DebugExtensionsTests](Extensions/DebugExtensionsTests.cs) | Main-thread debug assertions and data source work kept off the captured main thread. This fixture is non-parallel. |
 | [GraphTraversalTests](Extensions/GraphTraversalTests.cs) | Depth-first `Visit` order, shared visited state, pruning, lazy enumeration and cleanup. |
+| [TaskExtensionsTests](Extensions/TaskExtensionsTests.cs) | `WaitSafe` and `ResultSafe` results, failures and cancellation, and `AsyncLoadableBase` synchronous loads. |
 
 ### FileSystem
 
@@ -446,6 +457,7 @@ Tests for the [maths domain](../../src/Sphere10.Framework/Maths).
 
 | Fixture | Purpose |
 |---|---|
+| [ModTests](Maths/ModTests.cs) | `Tools.Maths.Mod` remainders and modulus validation. |
 | [StatisticsTests](Maths/StatisticsTests.cs) | `Statistics` population variance over long runs. |
 
 ### Memory
@@ -498,6 +510,10 @@ Tests for the [network domain](../../src/Sphere10.Framework/Network).
 
 | Fixture | Purpose |
 |---|---|
+| [MacAddressTests](Network/MacAddressTests.cs) | MAC address listing and the default salted address. |
+| [NetworkDiagnosticsTests](Network/NetworkDiagnosticsTests.cs) | Whois against a loopback server, host resolution and a loopback trace route. |
+| [NetworkProbeDataSourceTests](Network/NetworkProbeDataSourceTests.cs) | `NetworkProbeDataSource` commands, repetition, cancellation, stop and retained-data bounds. |
+| [NetworkProtocolTests](Network/NetworkProtocolTests.cs) | DNS response and TLS ClientHello decoding, including malformed input. |
 
 ### ObjectSpaces
 
@@ -505,8 +521,8 @@ Tests for the [ObjectSpaces domain](../../src/Sphere10.Framework/ObjectSpaces). 
 
 | Fixture | Purpose |
 |---|---|
-| [BuilderTests](ObjectSpaces/BuilderTests.cs) | `ObjectSpaceBuilder` conflicts between custom factories and registrations, and annotations. |
-| [ConfigurationTests](ObjectSpaces/ConfigurationTests.cs) | Index orders, member indexes, `GetAll`, slot reuse and custom factories. |
+| [BuilderTests](ObjectSpaces/BuilderTests.cs) | `ObjectSpaceBuilder` conflicts between custom factories and registrations, and typed/runtime-Type annotation parity. |
+| [ConfigurationTests](ObjectSpaces/ConfigurationTests.cs) | Index orders, member indexes, `GetAll`, slot reuse, custom factories, autosave/no-flush disposal, stream ownership and uncommitted file-data preservation. |
 | [DefaultsCompatibilityTests](ObjectSpaces/DefaultsCompatibilityTests.cs) | Default and historical layouts, deferred loads, builder reuse and reopen of memory and file stores. |
 | [DimensionBuilderInterfaceTests](ObjectSpaces/DimensionBuilderInterfaceTests.cs) | Base and typed dimension builder contracts. |
 | [FileMappedTests](ObjectSpaces/FileMappedTests.cs) | File-backed load, commit, rollback and clear. |
@@ -571,6 +587,7 @@ Tests for the [scopes domain](../../src/Sphere10.Framework/Scopes).
 | [DisposableBaseTests](Scopes/DisposableBaseTests.cs) | `SyncDisposable` and `AsyncDisposable` finalize once, retry and use the right thread. |
 | [ScopeAsyncAdapterTests](Scopes/ScopeAsyncAdapterTests.cs) | Async finalization of synchronous resource scopes. |
 | [ScopeDecoratorConstructionTests](Scopes/ScopeDecoratorConstructionTests.cs) | The transactional scope decorator rejects a null scope. |
+| [ScopeToolAllocationTests](Scopes/ScopeToolAllocationTests.cs) | Warm `Tools.Scope` factories do not allocate. |
 | [ScopeToolTests](Scopes/ScopeToolTests.cs) | `Tools.Scope` callback, lock, access, position, page, wait and hasher factories. |
 | [TransactionalScopeInterfaceTests](Scopes/TransactionalScopeInterfaceTests.cs) | Transactional scope roots, nesting, voting, decorators and async adapters. |
 
@@ -581,6 +598,8 @@ Tests for the [serialization domain](../../src/Sphere10.Framework/Serialization)
 | Fixture | Purpose |
 |---|---|
 | [AutoSizedSerializerTest](Serialization/AutoSizedSerializerTest.cs) | Auto-sized string serialization and an oversized byte descriptor. |
+| [BinarySerializerTests](Serialization/BinarySerializerTests.cs) | `BinarySerializer` round trips of .NET collections, value types, structs, shared references and deep graphs, and the type codes of collection serializers. |
+| [BoundedStringSerializerTests](Serialization/BoundedStringSerializerTests.cs) | Bounded string serializers reject oversized length prefixes. |
 | [ConstantSizeCompoundKeySerializerTests](Serialization/ConstantSizeCompoundKeySerializerTests.cs) | `ConstantSizeCompoundKeySerializer` layouts and component validation. |
 | [CyclicReferenceTests](Serialization/CyclicReferenceTests.cs) | Cyclic references and their calculated sizes. |
 | [EmbeddedStorageFormatTests](Serialization/EmbeddedStorageFormatTests.cs) | Shared header and metadata blob layout of self-describing storage. |
@@ -675,9 +694,11 @@ Tests for the [threading domain](../../src/Sphere10.Framework/Threading). `Produ
 |---|---|
 | [AsyncSynchronizedGateTests](Threading/AsyncSynchronizedGateTests.cs) | `AsyncSynchronizedGate` admission handoff and cancellation. |
 | [LeafValueScopeTests](Threading/LeafValueScopeTests.cs) | Semaphore, fast, non-reentrant, producer-consumer and monitor lock scopes. |
+| [SchedulerJobLifecycleTests](Threading/SchedulerJobLifecycleTests.cs) | Removing or pausing a repeating job while it is queued or running. This fixture is non-parallel. |
 | [SchedulerTest](Threading/SchedulerTest.cs) | `Scheduler` start times, repeats, reschedule policies, end dates, errors and serialization. This fixture is non-parallel. |
 | [SchedulerTestErrorJob](Threading/SchedulerTestErrorJob.cs) | Scheduler job that throws when executed. |
 | [SchedulerTestNopJob](Threading/SchedulerTestNopJob.cs) | Scheduler job that does nothing when executed. |
+| [ScopeAllocationDiagnostics](Threading/ScopeAllocationDiagnostics.cs) | Scope types and forwarders avoid boxing and per-acquisition allocation. One case is ignored. |
 | [SerialThreadPoolTests](Threading/SerialThreadPoolTests.cs) | `SerialThreadPool` ordering, rescheduling and failure handling. |
 | [ThreadAffineScopeTests](Threading/ThreadAffineScopeTests.cs) | Thread-affine scopes reject async disposal and capture their lock before open hooks. |
 | [ThroughputOptimizerTests](Threading/ThroughputOptimizerTests.cs) | `ThroughputOptimizer` direction, sizing and optimum tracking. |

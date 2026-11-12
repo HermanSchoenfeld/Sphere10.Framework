@@ -29,6 +29,19 @@ the contract and add behavior. Use those layers when the abstraction needs
 them. Immutable values, screen definitions and directly executable actions
 remain ordinary concrete classes when inheritance is not their purpose.
 
+A capability that extends an existing abstraction (refresh, cadence,
+synchronization, observation) is a decorator over the contract, not a new
+inheritance line. Concrete storage stays minimal and holds data; a composition
+assembles the usable product from storage and decorators. Decorators are
+direction-agnostic: they add the members their feature needs and call the matching
+direction of their inner object; only the leaf adapts one direction to the other,
+through a `Sync*` or `Async*` lineage, and every `Sync*` type has an `Async*` dual.
+A base meant only for derivation is an abstract template with protected hooks
+(`FooBase`); a client that composes without deriving uses an `Action*` variant.
+The data-source family (`ListDataSource`/`AsyncListDataSource` storage,
+`RefreshableDataSourceBase` and `PollingDataSource` decorators) is the reference; see
+[the three kinds of data source](data-sources.md#three-kinds-of-data-source).
+
 For a current example, [IApplicationMenu](../../../src/Sphere10.Framework.Application/UI/IApplicationMenu.cs)
 defines the contract, [ApplicationMenuBase](../../../src/Sphere10.Framework.Application/UI/ApplicationMenuBase.cs)
 implements item storage and ownership, and

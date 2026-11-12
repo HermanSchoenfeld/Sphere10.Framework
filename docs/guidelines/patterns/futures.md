@@ -66,9 +66,12 @@ and getter copies. An array copy preserves membership, not deep element immutabi
   resolves provider-bound services lazily only after runtime attachment and refreshes
   its futures when the active provider changes. A future does not justify DI work
   in a design-mode constructor.
-- [FutureListDataSource](../../../src/Sphere10.Framework/DataSource/FutureListDataSource.cs)
-  delegates to a supplied future list. [BulkFetchDataSource](../../../src/Sphere10.Framework/DataSource/BulkFetchDataSource.cs)
-  chooses Reloadable and exposes Invalidate for a later re-fetch.
+- [ListDataSource](../../../src/Sphere10.Framework/DataSource/ListDataSource.cs)
+  serves a supplied list, or fetches one on first load through its
+  `Fetch` hook ([AsyncListDataSource](../../../src/Sphere10.Framework/DataSource/AsyncListDataSource.cs)
+  through `FetchAsync`). A later re-fetch is not a reload of that future: a
+  [RefreshableDataSourceBase](../../../src/Sphere10.Framework/DataSource/RefreshableDataSourceBase.cs)
+  swaps in a fresh source.
 - [RegistryTree](../../../src/Sphere10.Framework.Windows/Registry/RegistryTree.cs)
   accepts IFuture<RegistryValue[]> and IFuture<RegistrySubTree[]> for ValuesFuture
   and SubKeysFuture. Values/SubKeys evaluate those futures and return the cached

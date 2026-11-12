@@ -54,6 +54,7 @@ Types declared in the project folder itself:
 | [`BorderLine`](BorderLine.cs) | struct | One border edge: color, width, dash style and padding, with `NoBorder` and `Black1Width` presets |
 | [`BrushCache`](BrushCache.cs) | class | Disposable cache of `SolidBrush`es by color with a fixed number of reusable slots, which owns every brush it returns until disposed |
 | [`ColorMatrices`](ColorMatrices.cs) | static class | Builds and multiplies 5x5 GDI+ `ColorMatrix` values for brightness, contrast, inversion, monochrome, sepia, saturation, hue rotation, threshold and colour-vision-deficiency simulation, and interpolates between matrices |
+| [`ColorVisionDeficiency`](ColorVisionDeficiency.cs) | enum | Deficiencies that `ColorMatrices.CreateColorVisionDeficiency` simulates, from protanopia to achromatomaly |
 | [`Gradient3DBorderStyle`](Gradient3DBorderStyle.cs) | enum | Raised or sunken style for `GraphicsExtensions.DrawGradient3DBorder` |
 | [`GradientFillDirection`](GradientFillDirection.cs) | enum | Horizontal or vertical direction for `GraphicsExtensions.GradientFill` |
 | [`GraphicsCache`](GraphicsCache.cs) | class | Borrows a `Graphics` and a clip rectangle and owns a `PenCache` and `BrushCache` for one drawing pass, disposing the caches but not the graphics |
@@ -65,7 +66,7 @@ Types declared in the project folder itself:
 | [`RectanglePartType`](RectanglePartType.cs) | enum | Part of a bordered rectangle hit by a point: none, content area or one of the four borders |
 | [`RoundedCorners`](RoundedCorners.cs) | enum | Flags that select which corners of a rectangle are rounded |
 | [`RoundedRectangle`](RoundedRectangle.cs) | struct | Rectangle with a 0 to 1 rounding value that converts to a `GraphicsPath` |
-| [`Tools.Drawing`](DrawingTool.cs) | tools | Color conversion, gradients and contrast, content-alignment and `StringFormat` mapping, image-format detection, JPEG compression, icon resizing, disabled images, and rounded-rectangle paths in `DrawingTool.Paths.cs` |
+| [`Tools.Drawing`](DrawingTool.cs) | tools | Color conversion, gradients and contrast, content-alignment and `StringFormat` mapping, image-format detection, JPEG compression, icon resizing, disabled images, and rounded-rectangle paths in [`DrawingTool.Paths.cs`](DrawingTool.Paths.cs) |
 <!-- domains:end -->
 
 ## 🏗️ What It Contains
@@ -77,9 +78,9 @@ The extension classes and the `RoundedCorners`, `GradientFillDirection` and `Poi
 | Color | `Tools.Drawing.CalculateColorGradient`, `CalculateMiddleColor`, `CalculateLightDarkColor`, `GetContrastingTextColor`, `ConvertStringToColor`, `ConvertColorToString` and `RandomColor`, and the `Color` extensions `ToARGBString`, `GetShade` and `GetTranslucentShade` | Any |
 | Geometry | Extensions for `Point`, `PointF`, `Size`, `SizeF`, `Rectangle` and `RectangleF`, such as `CenterCenter`, `Translate`, `ExpandBy`, `ShrinkBy`, `IntersectWith`, `DistanceTo`, `ScaleBy` and `Clip`, and the fixed-point `PointFP` | Any, except `GetRoundPath` |
 | Images | The `Image` extensions `Resize`, `Zoom`, `FocusZoom`, `Copy`, `ToByteArray` and `SaveJpegWithCompression`, `byte[].ToImage`, `Icon.ToBitmap(width, height)`, and the `Tools.Drawing` helpers for disabled images, image formats and codecs | Windows |
-| GDI+ drawing | `Graphics` extensions for gradient fills, rounded rectangles and borders, 3D gradient borders, circles, and justified or ellipsis-truncated text, with `RoundedRectangle`, `RoundedCorners` and `GraphicsCache` | Windows |
+| GDI+ drawing | `Graphics` extensions for gradient fills, rounded rectangles and borders, 3D gradient borders, circles, and justified or ellipsis-truncated text, with `RoundedRectangle`, `RoundedCorners` and `GraphicsCache`, and `Tools.Drawing.CreateRoundedRectanglePath(bounds, radius, corners)` for a `GraphicsPath` with any combination of rounded corners | Windows |
 | Borders and layout | `RectangleBorder`, `BorderLine`, `Padding`, `AnchorArea` and `IBorder`, which the Windows Forms visual elements use | Layout on any platform, `Draw` on Windows |
-| Color matrices | `ColorMatrices` and the `ColorMatrix` extensions | Windows |
+| Color matrices | `ColorMatrices` and the `ColorMatrix` extensions, including `Transform(color)` for one colour and `ApplyTo(image)`, which draws an image through the matrix into a new bitmap. Standard factories: `CreateInversion`, `CreateMonochrome` (BT.709 luma, optionally tinted), `CreateSepia`, `CreateSaturation` and `CreateHueRotation` (W3C Filter Effects), `CreateThreshold`, `CreateBrightness`, `CreateContrast` and `CreateColorVisionDeficiency` (Machado, Oliveira and Fernandes 2009, for the eight `ColorVisionDeficiency` values), plus `FromRgbTransform` for 3x3 column-vector matrices from papers and specifications. Compose with `Then`; for example a smart inversion is `CreateInversion().Then(CreateHueRotation(180))` | Windows |
 
 ## 🔧 Core Examples
 

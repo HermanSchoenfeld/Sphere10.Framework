@@ -42,6 +42,43 @@ For concrete utility choices, read [Framework Utilities](framework-utilities.md)
 For design responsibilities, select the applicable topics from the
 [Patterns and Practices index](../patterns-and-practices.md).
 
+## Dogfooding and componentization
+
+Prefer the simplest correct composition of existing owners. Each added wrapper,
+coordinator, stored flag or abstraction must solve a concrete requirement that
+the current mechanism cannot already express. Derive state from its actual
+owner when possible, and remove superseded paths when adopting shared behavior.
+Judge simplicity over the complete execution path, including callers and cleanup.
+Moving the same machinery behind another facade or shortening source text does
+not reduce complexity. Preserve required behavior and failure/lifetime contracts
+when simplifying.
+
+Dogfooding means using Sphere10's existing mechanisms in its own libraries,
+demonstrations and products. Componentization means giving each shared behavior
+one encapsulated owner, then composing that owner wherever the behavior is
+needed. The goal is a normalized implementation, not several similarly named
+helpers which solve the same problem differently.
+
+Before adding a capability, identify the existing implementation, its contracts
+and its real consumers. If another feature already performs all or part of the
+operation, extract the reusable mechanism from that owner when necessary,
+preserve its behavior, and migrate both the existing and new consumers to it.
+Extend the existing Framework component when it nearly meets the requirement.
+Do not copy its implementation into a screen or retain a second active path
+after the shared component replaces it.
+
+Keep the extracted mechanism at its actual reusable boundary. Native resource
+operations, query engines, parsers and general controls can belong in Framework;
+product sampling, projections, confirmations and policy remain in the product.
+Several screens using the same code is a reason to encapsulate it, not proof
+that it belongs in Framework. Apply the boundaries below before moving it.
+
+Verify the original and new consumer paths together, including ownership,
+failure and cancellation behavior. Record the reused owner and the remaining
+extension in implementation documentation. New dependencies and changes to
+unrelated behavior still require their existing approvals; dogfooding does not
+authorize an adjacent rewrite.
+
 ## Application and Framework boundaries
 
 Application-specific business logic, presentation logic and all other

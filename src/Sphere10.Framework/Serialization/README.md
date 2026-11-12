@@ -16,11 +16,36 @@ var bytes = serializer.SerializeBytesLE(person);
 var copy = serializer.DeserializeBytesLE(bytes);
 ```
 
+## BinarySerializer and automatic assembly
+
+`BinarySerializer` takes the place of `BinaryFormatter` for code that saves an object graph and loads it again. Its `Serialize(stream, item)` and `Deserialize(stream)` overloads match the calls being replaced. It has its own wire format, so it cannot read streams that `BinaryFormatter` wrote.
+
+A type without a registered serializer is assembled from its public read-write properties and fields. This is the same rule that `RegisterAutoBuild` and `SerializerBuilder.FactoryAssemble` apply.
+
+- A class needs a public parameterless constructor. A struct does not, provided it has at least one public read-write member.
+- Private fields, get-only properties and properties with a non-public setter are not saved and come back with the value the constructor gives them. Members marked `[Transient]` are skipped. A type with a public read-write indexer cannot be serialized.
+- Shared references and cycles are preserved, and a member typed as `object`, a base class or an interface gets back the concrete type it held.
+- A graph nested more deeply than the thread's stack allows throws `InsufficientExecutionStackException`. A chain of about 1,600 linked objects fits the default 1 MB stack, and a thread with a larger stack reads and writes longer chains.
+
+These .NET types round-trip on their own, as members and inside each other.
+
+| Kind | Types |
+|---|---|
+| Values | `bool`, the integer and floating-point types, `decimal`, `string`, enums, `Guid`, `DateTime`, `DateTimeOffset`, `TimeSpan`, `Nullable<T>`, `KeyValuePair<TKey, TValue>`, `Tuple` up to eight components and `ValueTuple` up to seven |
+| Arrays | `byte[]`, `T[]` and jagged arrays |
+| Lists and sets | `List<T>`, `Collection<T>`, `ObservableCollection<T>`, `ReadOnlyCollection<T>`, `ArrayList`, `LinkedList<T>`, `Queue<T>`, `Stack<T>`, `HashSet<T>`, `SortedSet<T>` |
+| Dictionaries | `Dictionary<TKey, TValue>`, `SortedList<TKey, TValue>`, `SortedDictionary<TKey, TValue>` |
+| Concurrent | `ConcurrentDictionary<TKey, TValue>`, `ConcurrentQueue<T>`, `ConcurrentStack<T>`, `ConcurrentBag<T>` |
+
+Collections are rebuilt from their items. A queue keeps its dequeue order and a stack keeps its pop order, while a `ConcurrentBag<T>` has no order to keep. A custom comparer is not saved, so a dictionary, set or sorted collection comes back with the default comparer for its key type. A `ReadOnlyCollection<T>` comes back as a view over its own copy of the items. A class that derives from one of these collections is assembled from its members like any other class, which does not save its items. Multi-dimensional arrays such as `int[,]`, `char` values, delegates, streams and immutable types without public read-write members, such as `DateOnly`, `Uri` and `Version`, are not supported. A `DateTimeOffset` within a day of `DateTimeOffset.MinValue` or `MaxValue` may not come back exactly.
+
+Every type in the table is a registration of `SerializerFactory.Default`, so `SerializerFactory.Default.GetSerializer<Queue<int>>()` resolves directly. Type codes 0 to 99,999 are reserved for these built-in registrations, and the first type you register in a factory copied from `Default` takes `SerializerFactory.UserTypeCodeStart` (100,000). A serializer added to the defaults later therefore never moves the code of one of your types in stored data. Data written before this reservation holds user type codes from 80 and cannot be read by later builds.
+
 ## Contents
 
 | Type | Kind | Purpose |
 |---|---|---|
-| [`BinarySerializer`](BinarySerializer.cs) | class | Replacement for the deprecated .NET `BinaryFormatter` that writes the ad hoc type registrations it needed before the polymorphic, reference-tracked object. |
+| [`BinarySerializer`](BinarySerializer.cs) | class | Replacement for the deprecated .NET `BinaryFormatter` that writes the ad hoc type registrations it needed before the polymorphic, reference-tracked object. It saves public read-write members in its own wire format. |
 | [`ConstantSizeItemSerializerBase<TItem>`](ConstantSizeItemSerializerBase.cs) | abstract class | Base for serializers whose items all serialize to the same byte count. |
 | [`IItemSerializer`](IItemSerializer.cs) | interface | Untyped serializer contract, an `IItemSizer` that can also be invoked over `object` values. |
 | [`IItemSerializer<TItem>`](IItemSerializer.cs) | interface | Typed contract that serializes to an `EndianBinaryWriter` and deserializes from an `EndianBinaryReader` within a `SerializationContext`. |
@@ -98,13 +123,24 @@ var copy = serializer.DeserializeBytesLE(bytes);
 | [`ArraySerializer<T>`](Collections/ArraySerializer.cs) | class | Count-prefixed `T[]` serializer that can register the array before its elements for cyclic references. |
 | [`ByteArraySerializer`](Collections/ByteArraySerializer.cs) | class | Length-prefixed `byte[]` serializer. |
 | [`CollectionSerializer<T>`](Collections/CollectionSerializer.cs) | class | Count-prefixed `Collection<T>` serializer. |
-| [`CollectionSerializerBase<TCollection, TItem>`](Collections/CollectionSerializerBase.cs) | abstract class | Base for count-prefixed collection serializers that implement `GetLength`, `Activate` and `SetItem`. |
+| [`CollectionSerializerBase<TCollection, TItem>`](Collections/CollectionSerializerBase.cs) | abstract class | Base for count-prefixed collection serializers that implement `GetLength`, `Activate` and `SetItem`, with an optional `OnItemsSet` step after the last item. |
+| [`ConcurrentBagSerializer<T>`](Collections/ConcurrentBagSerializer.cs) | class | Count-prefixed `ConcurrentBag<T>` serializer, which does not preserve item order. |
+| [`ConcurrentDictionarySerializer<TKey, TValue>`](Collections/DictionarySerializers.cs) | class | `ConcurrentDictionary<TKey, TValue>` written as a count followed by key-value pairs. |
+| [`ConcurrentQueueSerializer<T>`](Collections/ConcurrentQueueSerializer.cs) | class | Count-prefixed `ConcurrentQueue<T>` serializer that preserves dequeue order. |
+| [`ConcurrentStackSerializer<T>`](Collections/ConcurrentStackSerializer.cs) | class | Count-prefixed `ConcurrentStack<T>` serializer that preserves pop order. |
 | [`DictionarySerializer<TKey, TValue>`](Collections/DictionarySerializers.cs) | class | `Dictionary<TKey, TValue>` written as a count followed by key-value pairs. |
 | [`EnumerableSerializer<T>`](Collections/EnumerableSerializer.cs) | class | Writes any `IEnumerable<T>` with its count and reads it back as an array. |
 | [`ExtendedListSerializer<T>`](Collections/ExtendedListSerializers.cs) | class | Count-prefixed `ExtendedList<T>` serializer. |
 | [`HashSetSerializer<TItem>`](Collections/HashSetSerializer.cs) | class | Count-prefixed `HashSet<TItem>` serializer. |
+| [`LinkedListSerializer<T>`](Collections/LinkedListSerializer.cs) | class | Count-prefixed `LinkedList<T>` serializer that preserves node order. |
 | [`ListSerializer<T>`](Collections/ListSerializer.cs) | class | Count-prefixed `List<T>` serializer. |
+| [`ObservableCollectionSerializer<T>`](Collections/ObservableCollectionSerializer.cs) | class | Count-prefixed serializer for the .NET `System.Collections.ObjectModel.ObservableCollection<T>`. |
+| [`QueueSerializer<T>`](Collections/QueueSerializer.cs) | class | Count-prefixed `Queue<T>` serializer that preserves dequeue order. |
+| [`ReadOnlyCollectionSerializer<T>`](Collections/ReadOnlyCollectionSerializer.cs) | class | Writes a `ReadOnlyCollection<T>` as an array of its items and reads it back as a read-only view of that array. |
+| [`SortedDictionarySerializer<TKey, TValue>`](Collections/DictionarySerializers.cs) | class | `SortedDictionary<TKey, TValue>` written as a count followed by key-value pairs. |
+| [`SortedListSerializer<TKey, TValue>`](Collections/DictionarySerializers.cs) | class | `SortedList<TKey, TValue>` written as a count followed by key-value pairs. |
 | [`SortedSetSerializer<TItem>`](Collections/SortedSetSerializer.cs) | class | Count-prefixed `SortedSet<TItem>` serializer. |
+| [`StackSerializer<T>`](Collections/StackSerializer.cs) | class | Count-prefixed `Stack<T>` serializer that preserves pop order. |
 
 ### Factory
 

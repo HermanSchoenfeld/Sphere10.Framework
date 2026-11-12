@@ -73,7 +73,9 @@ Types are declared in the `Sphere10.Framework.Android` namespace.
 |---|---|
 | [`AndroidSettingsProvider.cs`](AndroidSettingsProvider.cs) | `AndroidSettingsProvider`, whose parameterless constructor passes the `ApplicationSettings` folder under `Environment.SpecialFolder.ApplicationData` to its base class. |
 | [`Resources/values/Strings.xml`](Resources/values/Strings.xml) | The project template's `hello` and `app_name` strings. |
+| [`Resources/Resource.designer.cs`](Resources/Resource.designer.cs) | Generated Android resource IDs, including those of the AppCompat support library. |
 | [`Resources/AboutResources.txt`](Resources/AboutResources.txt) | The project template's notes on Android resources. |
+| [`Properties/AssemblyInfo.cs`](Properties/AssemblyInfo.cs) | Template assembly attributes, with the title `Sphere10.Android` and version `1.0.0.0`. |
 
 ## 💡 Examples
 

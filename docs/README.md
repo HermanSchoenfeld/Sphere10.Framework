@@ -87,9 +87,9 @@ These guides cover individual APIs and migrations in more depth than the project
 | [Builder API migration](usage/builder-api-migration.md) | The `Add*`, `With*` and `On*` names that replace earlier builder methods such as `ConfigurePlugin` and `UseModule`, and screen registration with `AddScreen` |
 | [Screen Options](usage/screen-options.md) | Screen, block and plugin settings objects, the Options editors on WinForms and Blazor, and grid column layouts kept in screen settings |
 | [SourceGrid](usage/sourcegrid.md) | When to use SourceGrid directly instead of VisualGrid, component ownership and the raw engine gallery in the WinForms tester |
-| Portable executable inspection | PE structure inspection without loading the target, and bounded process-memory reads |
-| Managed diagnostics | Assembly inspection, managed process and dump capture, native stacks and detached symbol resolution |
-| Process inspection | `WindowsProcess` tokens and mitigations, module details, page state and the explicit working-set watch |
+| [Portable executable inspection](usage/portable-executable-inspection.md) | PE structure inspection without loading the target, and bounded process-memory reads |
+| [Managed diagnostics](usage/managed-diagnostics.md) | Assembly inspection, managed process and dump capture, native stacks and detached symbol resolution |
+| [Process inspection](usage/process-inspection.md) | `WindowsProcess` tokens and mitigations, module details, page state and the explicit working-set watch |
 | [Blazor theme sources](theming-template-sources.md) | Origin, palettes, font fallbacks and component treatments of each Blazor theme family |
 
 ---
@@ -285,7 +285,7 @@ Each record in this group builds on the one before it. [Resource scopes](guideli
 | 25 Oct | [Borrowed array scopes](performance/borrow-array-scopes.md) | `BorrowArrayScope<T>` ownership of pooled arrays and the migration of production rental sites |
 | 25–26 Oct | [Disposable template review](performance/disposable-template-review.md) | Class-owner disposal templates, three cleanup failure fixes and clustered-stream close retry |
 
-The [evidence folder](performance/evidence/) archives captures, harness sources and validation logs for several of these records. The scope abstraction evidence includes reproduction steps, and the value scope evidence includes its frozen measurement harness.
+The [evidence folder](performance/evidence/) archives captures, harness sources and validation logs for several of these records. The scope abstraction evidence includes [reproduction steps](performance/evidence/20261024-scope-abstraction/REPRODUCING.md), and the value scope evidence includes its [frozen measurement harness](performance/evidence/20261024-value-scopes/harness/README.md).
 
 ---
 

@@ -20,6 +20,8 @@ long count = list.Count;                     // 3
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`CollectionDifference<T, TKey>`](SpecialTypes.cs) | record | One keyed change between two snapshots, carrying the previous and current item and a `CollectionDifferenceKind`. |
+| [`CollectionDifferenceKind`](CollectionDifferenceKind.cs) | enum | Classifies a `CollectionDifference<T, TKey>` as `Added`, `Removed` or `Modified`. |
 | [`Tools.Collection`](CollectionTool.cs) | tools | Compares keyed snapshots (`CompareByKey`), generates and repeats sequences, partitions counts, binary-searches lists and resizes arrays within the 32-bit addressing limit. |
 
 ### Arrays
@@ -325,6 +327,7 @@ long count = list.Count;                     // 3
 | Type | Kind | Purpose |
 |---|---|---|
 | [`BinaryHeap<T>`](Queues/BinaryHeap.cs) | class | Array-backed binary min-heap of `IComparable<T>` items with `Peek`, `Pop` and `Copy`. |
+| [`BoundedHistory<T>`](Queues/BoundedHistory.cs) | class | Synchronized oldest-first history bounded by item count and caller-defined cost, with `TryAdd`, `Snapshot` and received and discarded counters. |
 | [`IHeap<T>`](Queues/IHeap.cs) | interface | Collection contract with `Peek` and `Pop` of the top item. |
 | [`IQueue<T>`](Queues/IQueue.cs) | interface | Collection contract with `Enqueue`, `TryPeek` and `TryDequeue`. |
 | [`IQueueExtensions`](Queues/IQueue.cs) | static class | Adds throwing `Dequeue` and `Peek` to `IQueue<T>`. |
@@ -446,3 +449,5 @@ long count = list.Count;                     // 3
 
 | Type | Kind | Purpose |
 |---|---|---|
+| [`SampledCallTree<TFrame>`](Trees/SampledCallTree.cs) | class | Builds a detached call tree from sampled stacks, bounded by node count and depth, with counts of missing and truncated samples. |
+| [`SampledCallTreeNode<TFrame>`](Trees/SpecialTypes.cs) | record | One call-path node with parent, depth, frame and inclusive and exclusive sample counts. |

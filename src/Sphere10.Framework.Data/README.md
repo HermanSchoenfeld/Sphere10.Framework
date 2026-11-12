@@ -498,10 +498,13 @@ using var stream = store.Open(key, FileMode.Open, FileAccess.Read);
 
 **Implementations:**
 
-- `GuidFileStore` - Uses GUIDs as file keys
-- `SimpleFileStore` - Uses string keys (filename-based)
-- `TempFileStore` - Temporary file storage
+- `GuidFileStore` - Uses GUIDs as file keys, with the first two hex digits as a subfolder
+- `SimpleFileStore` - Uses string keys tracked in a persisted registry
+- `TempFileStore` - Temporary file storage deleted on dispose
 - `GuidStringFileStore` - GUID-based with string key interface
+- `KeyTransformedFileStore<TFromKey, TToKey>` - Exposes another store under a different key type
+
+A `GuidFileStore` also keeps large or binary data outside a database, with each row storing only the file's `Guid` key. The [File Store README](FileStore/README.md) describes that pattern and the stores' pitfalls.
 
 ## 🔌 Database-Specific Packages
 

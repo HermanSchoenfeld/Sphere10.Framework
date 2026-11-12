@@ -2,7 +2,7 @@
 
 Build and run `Sphere10.Framework.Utils.WinFormsTester.csproj` on Windows. The application starts with `BlockMainForm.ScreenMode = ScreenMode.MultiView` configured through `UseMainForm`. It uses `HighDpiMode.DpiUnaware` so Windows bitmap-scales the complete interface, preserving the legacy screen and dialog layouts. Shared build settings keep `ForceDesignerDPIUnaware=true` for the Visual Studio designer. `UseMainFormSettings()` enables per-user window placement: resize or move the main window, close it through an accepted exit, then restart to restore its size, monitor, maximized state, and left menu width. Settings are written once by the framework shutdown task after accepted exit. The menu starts at 320 logical pixels and can expand to 480, with a smaller limit when the content needs room. Drag the divider to test your own width, including closing with the menu collapsed; moving or resizing does not write settings.
 
-`Program.cs` loads two application plugins through `AddWinFormsApplicationPlugin`. **Workspace demonstrations**, configured by `WinFormsDemoPlugin.Configure`, contributes Workspace and Notes. **Component demonstrations**, configured by `WinFormsComponentDemoPlugin.Configure`, contributes Controls, Data And Collections, Integration, and Utilities. Both appear in `IApplication.LoadedPlugins`; each block's `Source` identifies its contributing plugin. The application's live `Blocks` array supplies six independent bottom-left navigation buttons in the same order. Startup selects Settings from the Workspace block.
+`Program.cs` loads two application plugins through `AddWinFormsApplicationPlugin`. **Workspace demonstrations**, configured by `WinFormsDemoPlugin.Configure`, contributes Workspace and Notes. **Component demonstrations**, configured by `WinFormsComponentDemoPlugin.Configure`, contributes Controls, Styling, Data And Collections, Integration, and Utilities. Both appear in `IApplication.LoadedPlugins`; each block's `Source` identifies its contributing plugin. The application's live `Blocks` array supplies seven independent bottom-left navigation buttons in the same order. Startup selects Settings from the Workspace block.
 
 <!-- domains:begin -->
 ## Domains
@@ -23,7 +23,7 @@ Types declared in the project folder itself:
 | Type | Kind | Purpose |
 |---|---|---|
 | [`ModuleConfiguration`](ModuleConfiguration.cs) | class | Module configuration that registers the usage-count initializer and installs the application's Views menu through `WinFormsDemoPlugin.ConfigureApplicationCommands` during initialization. |
-| [`WinFormsComponentDemoPlugin`](WinFormsComponentDemoPlugin.cs) | static class | Configures the Component demonstrations plugin with its Controls, Data And Collections, Integration and Utilities blocks, lifecycle tasks and output lifetime. |
+| [`WinFormsComponentDemoPlugin`](WinFormsComponentDemoPlugin.cs) | static class | Configures the Component demonstrations plugin with its Controls, Styling, Data And Collections, Integration and Utilities blocks, lifecycle tasks and output lifetime. |
 | [`WinFormsDemoPlugin`](WinFormsDemoPlugin.cs) | static class | Configures the Workspace demonstrations plugin with its Workspace and optional Notes blocks, the demo wizard and the screen-mode commands. |
 <!-- domains:end -->
 
@@ -58,7 +58,8 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p
 |---|---|
 | Workspace | Screen Hosting, single/multi-view switching, navigation samples, and wizard. The empty workspace is a hidden screen definition in this block. |
 | Notes | Permanent Notes and guarded removal of the Notes block. |
-| Controls | The complete searchable control catalog, input controls, layout, and visual feedback. |
+| Controls | The complete searchable control catalog, input controls, the hex editor, layout, and visual feedback. |
+| Styling | Block Selector Styles, which switches this window's block selector shape and colour style live, and the Explorer Bar Designer, which edits a complete explorer bar theme and applies it to the navigation sidebar. |
 | Data And Collections | Visual Grid, the separate raw SourceGrid engine gallery, ObjectSpace, transactional/observable collections, Merkle trees, and Bloom filters. |
 | Integration | Email, WebSockets, database connection controls, Windows input/hooks, sounds, and application services. |
 | Utilities | Compression, cryptography, text/image/file transformations, logging output, user settings, scheduling, and visual inheritance. |
@@ -84,6 +85,22 @@ dotnet run --project utils/Sphere10.Framework.Utils.WinFormsTester -c Release -p
 ```
 
 Open Settings, then choose **Workspace > Screen Hosting > Close Ordinary Screens**. The returned placeholder has a new instance number and fresh notes because the previous instance was disposed on navigation. Both profiles use the same host and shared policies; `WinFormsDemoPlugin.Configure` sets the Workspace default, hidden placeholder lifetime, and optional Notes block together.
+
+## Expandable grid panels and recursive hierarchy
+
+Open **Data And Collections > Visual Grid > Expandable Panels And Hierarchy**.
+Use the + gutter or select a row and press Right/Left. The recursive-table row
+opens a child `VisualGrid`, whose children can open more grids below their own
+rows. Child tables hide title/search, column headings and footer independently;
+they explicitly use Single Paged and retain native vertical scrolling.
+
+The other rows show a designer-authored image-and-description panel and an
+ordinary editable TextBox panel through the same `VisualGridControlDetail` API.
+Type into the panel, enable **Simulate Slow Detail Preparation**, then **Publish
+New Snapshot**. Native rows and editors stay usable while detached values are
+prepared. Surviving panels, selection and widths remain; collapse disposes the
+owned panel and recursive descendants. The top checkboxes independently toggle
+the root title/search, column headings and footer. No OS inventory is queried.
 
 ## Screen Hosting walkthrough
 
@@ -293,6 +310,23 @@ is visible, has a handle and Live is selected; closing the screen disposes it.
 In both dashboards, the screen owns capture and retention. The chart controls
 render supplied snapshots and do not collect telemetry themselves.
 
+## Hex Editor walkthrough
+
+Open **Controls > Input > Hex Editor**. The screen hosts the real `HexEditorControl`
+over three kinds of document: **Open Sample Bytes** (a writable in-memory sample of
+a few hundred bytes with a little-endian record for the data inspector), **Open
+File...** (in place, optionally read-only), and **Open 512 MiB Synthetic Stream**.
+The synthetic document is a [SyntheticByteStream](Screens/SyntheticByteStream.cs)
+whose bytes are computed from their offset, so no 512 MiB buffer exists; the
+statistics line shows the stream read calls, the block cache (64 blocks of 4 KiB)
+and the managed heap while you scroll, page and jump with Go To. Every 4 KiB block
+starts with a readable `BLK 0000000000` header: search for the text `BLK 000000001F`
+or the bytes `42 4C 4B 20` forward and backward to watch the streaming search cross
+block boundaries. Type hex digits in the hex pane or characters in the text pane to
+overwrite bytes; they stay highlighted until **Save** writes them back to the stream
+or **Revert** discards them. The control catalog also lists `HexEditorControl`,
+`HexEditorView`, `HexEditorForm`, `HexEditorFindDialog` and `HexEditorGoToDialog`.
+
 ## Loading Indicator gallery
 
 Open **Controls > Feedback > Loading Indicator** to compare the four native animations:
@@ -328,7 +362,7 @@ immediately without the spinner or temporary disabling. Use **Refresh Grid** to
 compare this with the default loading feedback. Pending reads still join and
 retain their stale-query protection in either mode.
 
-The **Live Snapshots** tab demonstrates a separate read-only Text/Image grid backed by `RefreshableSnapshotDataSource<T,TKey>` and `VisualGridSnapshotController<T>`. **Capture Snapshot** creates 500 immutable synthetic rows on a worker, including a deliberate asynchronous capture delay. No operating-system telemetry or files are read. **Live Updates (750 ms)** repeats capture while this workspace is visible; disposal stops the timer and cancels pending collection. The status line shows the capture and UI thread IDs. Employee sample generation also runs on a worker before its first binding.
+The **Live Snapshots** tab demonstrates a separate read-only Text/Image grid backed by canonical `RefreshableBulkFetchDataSource<T,TKey>` and its normal source notification binding. **Capture Snapshot** creates 500 immutable synthetic rows on a worker, including a deliberate asynchronous capture delay. No operating-system telemetry or files are read. **Live Updates (750 ms)** repeats capture while this workspace is visible; the source owns the schedule, atomic data publication and `Changed` event. Disposal disables and drains that source before releasing its borrowed images. **Refresh Current Page** reads accepted data without another capture and demonstrates **Show Loading Feedback**; automatic source notifications always use the silent update path. The status line shows the capture and UI thread IDs. Employee sample generation also runs on a worker before its first binding.
 
 Live updates default to `SuppressLoadingIndicator = true`, `PrepareReadOnlyCellsInBackground = true` and `AutoSizeRowsOnRefresh = false`. Keep clicking different rows or resizing while capture runs: the committed grid remains enabled, compatible native cell slots are reused, and stable row IDs transfer selection to replacement instances. **Show Loading Feedback**, **Prepare Cells On Worker**, and **Measure Rows On Each Refresh** let you compare the supported paths. The first binding still uses the grid's normal full-size loading surface.
 
